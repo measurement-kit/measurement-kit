@@ -23,6 +23,7 @@
 
 #include <sys/queue.h>
 
+#include <string.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -64,10 +65,91 @@ struct NeubotPoller {
 #endif
 };
 
-struct CallbackContext {
+struct NeubotEvent {
 	NeubotPoller_callback callback;
+	NeubotPoller_callback timeback;
+	struct event ev;
+	struct timeval tv;
+	evutil_socket_t fileno;
 	void *opaque;
 };
+
+/*
+ * NeubotEvent implementation
+ */
+
+static void
+NeubotEvent_noop(void *opaque)
+{
+	/* nothing */ ;
+}
+
+static void
+NeubotEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
+{
+	struct NeubotEvent *nevp;
+	NeubotPoller_callback callback;
+	void *nevp_opaque;
+
+	nevp = (struct NeubotEvent *) opaque;
+	if (event & EV_TIMEOUT)
+		callback = nevp->timeback;
+	else
+		callback = nevp->callback;
+	nevp_opaque = nevp->opaque;
+	free(nevp);
+	callback(nevp_opaque);
+}
+
+static inline struct NeubotEvent *
+NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
+    NeubotPoller_callback callback, NeubotPoller_callback timeback,
+    void *opaque, double timeout, short event)
+{
+	struct NeubotEvent *nevp;
+	int result;
+
+	/* TODO: treat negative timeouts as "infinite" */
+
+	if (callback == NULL)
+		callback = NeubotEvent_noop;
+	if (timeback == NULL)
+		timeback = NeubotEvent_noop;
+
+	nevp = calloc(1, sizeof (*nevp));
+	if (nevp == NULL)
+		goto cleanup;
+
+	/*
+	 * Note: `long long` simplifies the interaction with SWIG and
+	 * shall be wide enough to hold evutil_socket_t, which is `int`
+	 * on Unix and `uintptr_t` on Windows.
+	 */
+	nevp->fileno = (evutil_socket_t) fileno;
+	nevp->callback = callback;
+	nevp->timeback = timeback;
+	nevp->opaque = opaque;
+
+	event_set(&nevp->ev, nevp->fileno, event, NeubotEvent_dispatch, nevp);
+	neubot_timeval_init(&nevp->tv, timeout);
+
+	result = event_add(&nevp->ev, &nevp->tv);
+	if (result != 0)
+		goto cleanup;
+
+	return (nevp);
+
+      cleanup:
+	neubot_xfree(nevp);
+	return (NULL);
+}
+
+void
+NeubotEvent_cancel(struct NeubotEvent *nevp)
+{
+	event_del(&nevp->ev);
+	free(nevp);
+}
 
 /*
  * NeubotPoller implementation
@@ -98,7 +180,7 @@ NeubotPoller_periodic(void *opaque)
 
 	self = (struct NeubotPoller *) opaque;
 	retval = NeubotPoller_sched(self, 10.0, NeubotPoller_periodic, self);
-	if (retval < 0)
+	if (retval != 0)
 		abort();	/* XXX */
 
 	curtime = neubot_time_now();
@@ -163,41 +245,41 @@ NeubotPoller_construct(void)
 	return (NULL);
 }
 
-static void
-NeubotPoller_callfunc(evutil_socket_t fileno, short event, void *opaque)
-{
-	NeubotPoller_callback callback;
-	struct CallbackContext *context;
-
-	context = (struct CallbackContext *) opaque;
-	callback = context->callback;
-	opaque = context->opaque;
-
-	free(context);
-
-	callback(opaque);
-}
-
 int
 NeubotPoller_sched(struct NeubotPoller *self, double delta,
     NeubotPoller_callback callback, void *opaque)
 {
-	struct CallbackContext *context;
-	struct timeval tvdelta;
+	struct NeubotEvent *nevp;
 
-	context = calloc(1, sizeof(*context));
-	if (context == NULL)
+	nevp = NeubotEvent_construct(self, -1, NeubotEvent_noop,
+	    callback, opaque, delta, EV_TIMEOUT);
+	if (nevp == NULL)
 		return (-1);
+	return (0);
+}
 
-	tvdelta.tv_sec = (time_t) floor(delta);
-	tvdelta.tv_usec = (suseconds_t) ((delta - floor(delta)) * 1000000);
+/*
+ * The defer_read/defer_write/cancel interface allows to write
+ * simpler code on the Python side, even though the interface is
+ * less efficient than the Pollable interface.
+ */
 
-	context->callback = callback;
-	context->opaque = opaque;
+struct NeubotEvent *
+NeubotPoller_defer_read(struct NeubotPoller *self, long long fileno,
+    NeubotPoller_callback callback, NeubotPoller_callback timeback,
+    void *opaque, double timeout)
+{
+	return (NeubotEvent_construct(self, fileno, callback,
+            timeback, opaque, timeout, EV_READ));
+}
 
-	/* TODO: free context if event_once() fails */
-	return (event_once(-1, EV_TIMEOUT, NeubotPoller_callfunc,
-		context, &tvdelta));
+struct NeubotEvent *
+NeubotPoller_defer_write(struct NeubotPoller *self, long long fileno,
+    NeubotPoller_callback callback, NeubotPoller_callback timeback,
+    void *opaque, double timeout)
+{
+	return (NeubotEvent_construct(self, fileno, callback,
+            timeback, opaque, timeout, EV_WRITE));
 }
 
 void
