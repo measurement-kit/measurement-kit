@@ -120,7 +120,6 @@ static void
 NeubotPoller_sigint(int signo, short event, void *opaque)
 {
 	struct NeubotPoller *self;
-
 	self = (struct NeubotPoller *) opaque;
 	NeubotPoller_break_loop(self);
 }
