@@ -62,4 +62,4 @@ uninstall:
 	rm -f -- $(DESTDIR)$(INCLUDEDIR)/$(HEADER)
 	rmdir $(DESTDIR)$(INCLUDEDIR) || true
 	rm -r -- $(DESTDIR)$(DATADIR)/libneubot/$(PYMODULE)
-	rmdir -- $(DESTDIR)$(DATADIR)/libneubot
+	rmdir -- $(DESTDIR)$(DATADIR)/libneubot || true
