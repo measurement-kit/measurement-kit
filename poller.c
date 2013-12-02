@@ -307,7 +307,7 @@ void
 NeubotPollable_detach(struct NeubotPollable *self)
 {
 	if (self->fileno != -1) {
-		/* FIXME: here we should also evend_del()! */
+		/* FIXME: here we should also event_del()! */
 		NeubotPoller_unregister_pollable(self->poller, self);
 		self->fileno = -1;
 	}
