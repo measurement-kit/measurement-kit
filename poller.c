@@ -158,6 +158,7 @@ NeubotPoller_construct(void)
 	return (self);
 
       failure:
+	/* TODO: make sure we close everything */
 	if (self != NULL)
 		free(self);
 	return (NULL);
@@ -195,6 +196,7 @@ NeubotPoller_sched(struct NeubotPoller *self, double delta,
 	context->callback = callback;
 	context->opaque = opaque;
 
+	/* TODO: free context if event_once() fails */
 	return (event_once(-1, EV_TIMEOUT, NeubotPoller_callfunc,
 		context, &tvdelta));
 }
