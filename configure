@@ -44,7 +44,7 @@ fi
 for FILE in *.in; do
     NEWFILE=$(echo $FILE|sed 's/\.in$//g')
     echo "Generate: $NEWFILE"
-    cp -p $FILE $NEWFILE
+    cp -p $FILE $NEWFILE  # Note: we preserve the perms
     sed -e "s|@CFLAGS@|$CFLAGS|g" \
         -e "s|@LDFLAGS@|$LDFLAGS|g" \
         -e "s|@SHARED_LIBRARY_EXT@|$SHARED_LIBRARY_EXT|g" \
