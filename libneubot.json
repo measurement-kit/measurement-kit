@@ -1,0 +1,44 @@
+{
+    "__license__": "Public domain, 2013 Simone Basso.",
+    "callbacks": [
+        ["void", "NeubotPoller_callback", ["void_p", "opaque"]],
+        ["void", "NeubotPollable_callback", ["NeubotPollable_p", "self"]]
+    ],
+    "classes": {
+
+        "NeubotEchoServer": [
+            ["__construct__", ["NeubotPoller_p", "poller"],
+                ["int", "use_ipv6"], ["cstring", "address"],
+                ["cstring", "port"]]
+        ],
+
+        "NeubotPollable": [
+            ["__construct__", ["NeubotPoller_p", "poller"],
+                ["NeubotPollable_callback", "handle_read"],
+                ["NeubotPollable_callback", "handle_write"],
+                ["NeubotPollable_callback", "handle_close"],
+                ["void_p", "opaque"]],
+            ["void_p", "opaque"],
+            ["NeubotPoller_p", "poller"],
+            ["int", "attach", ["long long", "filenum"]],
+            ["void", "detach"],
+            ["long long", "fileno"],
+            ["int", "set_readable"],
+            ["int", "unset_readable"],
+            ["int", "set_writable"],
+            ["int", "unset_writable"],
+            ["void", "set_timeout", ["double", "delta"]],
+            ["void", "clear_timeout"],
+            ["void", "close"]
+        ],
+
+        "NeubotPoller": [
+            ["__construct__"],
+            ["int", "sched", ["double", "delta"], ["NeubotPoller_callback",
+                "callback"], ["void_p", "opaque"]],
+            ["void", "loop"],
+            ["void", "break_loop"]
+        ]
+
+    }
+}

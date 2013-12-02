@@ -1,0 +1,139 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>.
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+import json
+import sys
+
+PYLANG_TYPE = {
+    "cstring": "ctypes.c_char_p",
+    "double": "ctypes.c_double",
+    "int": "ctypes.c_int",
+    "long long": "ctypes.c_longlong",
+    "void_p": "ctypes.py_object",
+    "void": "None",
+}
+
+def pylang_comment(string):
+    sys.stdout.write("# %s\n" % string)
+
+def pylang_empty_line():
+    sys.stdout.write("\n")
+
+def pylang_write_copyright():
+    sys.stdout.write("#\n")
+    sys.stdout.write("# LibNeubot interface - Public domain.\n")
+    sys.stdout.write("#\n")
+
+def pylang_load_libneubot():
+    pylang_empty_line()
+    sys.stdout.write("import ctypes\n")
+    sys.stdout.write("import sys\n")
+    sys.stdout.write("""
+if sys.platform == "darwin":
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib"
+else:
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so"
+
+LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
+""")
+
+def pylang_type(name):
+    if name not in PYLANG_TYPE and name.endswith("_p"):
+        return "ctypes.c_void_p"
+    return PYLANG_TYPE.get(name, name)
+
+def pylang_declare_callback(retval, cbname, params):
+    retval = pylang_type(retval)
+    uppername = cbname.upper().replace("NEUBOT", "NEUBOT_", 1)
+    sys.stdout.write("%s = ctypes.CFUNCTYPE(%s" % (uppername, retval))
+    for elem in params:
+        name, value = elem
+        name = pylang_type(name)
+        sys.stdout.write(", %s" % name)
+    sys.stdout.write(")\n")
+    PYLANG_TYPE[cbname] = uppername
+
+def pylang_declare_class(name):
+    sys.stdout.write("# struct %s\n" % name)
+
+def pylang_declare_method(name, method):
+
+    if method[0] == "__construct__":
+        retval = name + "_p"
+        funcname = name + "_construct"
+        args = method[1:]
+    else:
+        retval = method[0]
+        funcname = name + "_" + method[1]
+        args = method[2:]
+        args.insert(0, (name + "_p", "self"))
+
+    if retval != "void":
+        retval = pylang_type(retval)
+        sys.stdout.write("LIBNEUBOT.%s.restype = %s\n" % (funcname, retval))
+
+    sys.stdout.write("LIBNEUBOT.%s.argtypes = (" % funcname)
+    if args:
+        for elem in args:
+            name, value = elem
+            name = pylang_type(name)
+            sys.stdout.write("%s, " % name)
+    sys.stdout.write(")\n")
+
+def main():
+    path = sys.argv[1]
+    filep = open(path, "r")
+    interface = json.load(filep)
+
+    pylang_write_copyright()
+
+    pylang_load_libneubot()
+
+    pylang_empty_line()
+    pylang_comment("Classes:")
+    pylang_empty_line()
+
+    for name in sorted(interface["classes"]):
+        pylang_declare_class(name)
+
+    pylang_empty_line()
+    pylang_comment("Callbacks:")
+    pylang_empty_line()
+
+    for callback in interface["callbacks"]:
+        retval = callback[0]
+        name = callback[1]
+        params = callback[2:]
+        pylang_declare_callback(retval, name, params)
+
+    pylang_empty_line()
+
+    for name in sorted(interface["classes"]):
+        pylang_comment("%s API:" % name)
+        pylang_empty_line()
+        for method in interface["classes"][name]:
+            pylang_declare_method(name, method)
+            pylang_empty_line()
+
+if __name__ == "__main__":
+    main()
