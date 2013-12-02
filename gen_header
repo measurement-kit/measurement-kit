@@ -25,6 +25,7 @@ import json
 import sys
 
 CLANG_TYPE = {
+    "Object": "void *",
     "cstring": "const char *",
     "void_p": "void *",
 }

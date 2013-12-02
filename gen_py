@@ -25,11 +25,12 @@ import json
 import sys
 
 PYLANG_TYPE = {
+    "Object": "ctypes.py_object",
     "cstring": "ctypes.c_char_p",
     "double": "ctypes.c_double",
     "int": "ctypes.c_int",
     "long long": "ctypes.c_longlong",
-    "void_p": "ctypes.py_object",
+    "void_p": "ctypes.c_void_p",
     "void": "None",
 }
 
