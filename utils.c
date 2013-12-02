@@ -26,6 +26,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#include <math.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -128,4 +129,18 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
       cleanup:
 	(void) close(filedesc);
 	return (-1);
+}
+
+void
+neubot_xfree(void *ptr)
+{
+	if (ptr != NULL)
+		free(ptr);
+}
+
+void
+neubot_timeval_init(struct timeval *tv, double delta)
+{
+        tv->tv_sec = (time_t) floor(delta);
+        tv->tv_usec = (suseconds_t) ((delta - floor(delta)) * 1000000);
 }
