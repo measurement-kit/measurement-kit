@@ -279,6 +279,12 @@ NeubotPollable_poller(struct NeubotPollable *self)
 	return (self->poller);
 }
 
+/*
+ * Note: attach() is separated from construct(), because in Neubot there
+ * are cases in which we create a pollable and then we attach() and detach()
+ * file descriptors to it (e.g., the Connector object does that).
+ */
+
 int
 NeubotPollable_attach(struct NeubotPollable *self, long long fileno)
 {
