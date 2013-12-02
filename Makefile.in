@@ -54,7 +54,7 @@ strtonum.o: strtonum.c
 utils.o: utils.c
 
 clean:
-	rm -f -- $(OBJECTS) $(LIBRARY) 
+	rm -f -- $(OBJECTS) $(LIBRARY) `cat .gitignore`
 install: $(LIBRARY)
 	install -d $(DESTDIR)$(LIBDIR)
 	install -m 644 $(LIBRARY) $(DESTDIR)$(LIBDIR)/
