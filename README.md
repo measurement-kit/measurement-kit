@@ -12,7 +12,7 @@ systems: MacOS 10.8, OpenBSD 5.4-current, Ubuntu 13.10.
 
 To build the library you need a C compiler (the Makefile.in assumes
 clang, but you can edit it), Python (in particular, some scripts assume
-that there is an executable named python), and an Unix environment.
+that there is an executable named python), and a Unix environment.
 
 As said, the library depends on libevent. Under Linux the very simple
 build system assumes that libevent is installed under /usr, while on
