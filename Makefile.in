@@ -38,6 +38,12 @@ LIBRARY = libneubot.@SHARED_LIBRARY_EXT@
 OBJECTS = echo.o log.o poller.o strtonum.o utils.o
 PYMODULE = libneubot.py
 
+#
+# TODO: make sure we properly compile (and name!) the library, by
+# following the recommendations available here:
+#
+# http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html
+#
 $(LIBRARY): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $(LIBRARY) -levent -lm
 
