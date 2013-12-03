@@ -122,7 +122,7 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 		goto cleanup;
 
 	/*
-	 * Note: `long long` simplifies the interaction with SWIG and
+	 * Note: `long long` simplifies the interaction with Java and
 	 * shall be wide enough to hold evutil_socket_t, which is `int`
 	 * on Unix and `uintptr_t` on Windows.
 	 */
@@ -373,7 +373,7 @@ NeubotPollable_attach(struct NeubotPollable *self, long long fileno)
 	if (self->fileno != -1)
 		return (-1);
 	/*
-	 * Note: `long long` simplifies the interaction with SWIG and
+	 * Note: `long long` simplifies the interaction with Java and
 	 * shall be wide enough to hold evutil_socket_t, which is `int`
 	 * on Unix and `uintptr_t` on Windows.
 	 */
