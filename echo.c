@@ -130,13 +130,13 @@ Connection_construct(struct NeubotPollable *pollable)
 	 * WARNING! From this point on, we have a complete object that
 	 * can be free()d by using NeubotPollable_close() and consequently
 	 * with Connection_close(). To make sure that Connection_close()
-	 * is idempotent, below we properly and explicitly initialize
-	 * fileno to -1 and buffer to NULL.
+	 * deals with incomplete fileno and buffer fields, below we properly
+	 * and explicitly initialize fileno to -1 and buffer to NULL.
 	 * _____________________________________________________________
 	 */
 
-	conn->buffer = NULL;
 	conn->fileno = -1;
+	conn->buffer = NULL;
 
 	conn->fileno = accept(self->fileno, NULL, NULL);
 	if (conn->fileno == -1)
