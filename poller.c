@@ -56,6 +56,13 @@
 # error "LLONG_MAX must be larger than EVUTIL_SOCKET_MAX"
 #endif
 
+/* To mark sockets as invalid */
+#ifdef WIN32
+# define EVUTIL_SOCKET_INVALID INVALID_SOCKET
+#else
+# define EVUTIL_SOCKET_INVALID -1
+#endif
+
 struct NeubotPollable {
 	TAILQ_ENTRY(NeubotPollable) entry;
 	NeubotPollable_callback handle_close;
@@ -67,6 +74,7 @@ struct NeubotPollable {
 	struct event evread;
 	struct event evwrite;
 	void *opaque;
+	unsigned isattached;
 };
 
 struct NeubotPoller {
@@ -385,7 +393,7 @@ NeubotPollable_construct(struct NeubotPoller *poller, NeubotPollable_callback
 	self->handle_close = handle_close;
 	self->handle_read = handle_read;
 	self->handle_write = handle_write;
-	self->fileno = -1;
+	self->fileno = EVUTIL_SOCKET_INVALID;
 	self->opaque = opaque;
 	self->timeout = -1.0;
 
@@ -413,7 +421,7 @@ NeubotPollable_poller(struct NeubotPollable *self)
 int
 NeubotPollable_attach(struct NeubotPollable *self, long long fileno)
 {
-	if (self->fileno != -1)
+	if (self->isattached)
 		return (-1);
 	if (!neubot_socket_valid(fileno))
 		return (-1);
@@ -428,29 +436,34 @@ NeubotPollable_attach(struct NeubotPollable *self, long long fileno)
 	event_set(&self->evwrite, self->fileno, EV_WRITE | EV_PERSIST,
 	    NeubotPollable_dispatch, self);
 	NeubotPoller_register_pollable(self->poller, self);
+	self->isattached = 1;
 	return (0);
 }
 
 void
 NeubotPollable_detach(struct NeubotPollable *self)
 {
-	if (self->fileno != -1) {
+	if (self->isattached) {
 		/* FIXME: here we should also event_del()! */
 		NeubotPoller_unregister_pollable(self->poller, self);
-		self->fileno = -1;
+		self->fileno = EVUTIL_SOCKET_INVALID;
+		self->isattached = 0;
 	}
 }
 
 long long
 NeubotPollable_fileno(struct NeubotPollable *self)
 {
-	return ((long long) self->fileno);
+	if (self->isattached)
+		return ((long long) self->fileno);
+	else
+		return (-1);
 }
 
 int
 NeubotPollable_set_readable(struct NeubotPollable *self)
 {
-	if (self->fileno == -1)
+	if (!self->isattached)
 		return (-1);
 	return (event_add(&self->evread, NULL));
 }
@@ -458,7 +471,7 @@ NeubotPollable_set_readable(struct NeubotPollable *self)
 int
 NeubotPollable_unset_readable(struct NeubotPollable *self)
 {
-	if (self->fileno == -1)
+	if (!self->isattached)
 		return (-1);
 	return (event_del(&self->evread));
 }
@@ -466,7 +479,7 @@ NeubotPollable_unset_readable(struct NeubotPollable *self)
 int
 NeubotPollable_set_writable(struct NeubotPollable *self)
 {
-	if (self->fileno == -1)
+	if (!self->isattached)
 		return (-1);
 	return (event_add(&self->evwrite, NULL));
 }
@@ -474,7 +487,7 @@ NeubotPollable_set_writable(struct NeubotPollable *self)
 int
 NeubotPollable_unset_writable(struct NeubotPollable *self)
 {
-	if (self->fileno == -1)
+	if (!self->isattached)
 		return (-1);
 	return (event_del(&self->evwrite));
 }
