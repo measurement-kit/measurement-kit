@@ -79,6 +79,7 @@ struct NeubotPollable {
 
 struct NeubotPoller {
 	TAILQ_HEAD(, NeubotPollable) head;
+	struct event evperiodic;
 #ifndef WIN32
 	struct event evsignal;    /* for SIGINT */
 #endif
@@ -222,25 +223,21 @@ NeubotPoller_unregister_pollable(struct NeubotPoller *self,
 }
 
 static void
-NeubotPoller_periodic(void *opaque)
+NeubotPoller_periodic(evutil_socket_t fileno, short event, void *opaque)
 {
 	struct NeubotPoller *self;
 	struct NeubotPollable *pollable;
 	struct NeubotPollable *tmp;
 	double curtime;
-	int retval;
 
 	self = (struct NeubotPoller *) opaque;
-	retval = NeubotPoller_sched(self, 10.0, NeubotPoller_periodic, self);
-	if (retval != 0)
-		abort();	/* XXX */
 
 	curtime = neubot_time_now();
 
 	pollable = TAILQ_FIRST(&self->head);
 	while (pollable != NULL) {
 		if (pollable->timeout >= 0.0 && curtime > pollable->timeout) {
-			neubot_warn("poller.c: watchdog timeout");
+			neubot_warn("libneubot: watchdog timeout");
 			tmp = pollable;
 			pollable = TAILQ_NEXT(pollable, entry);
 			NeubotPollable_close(tmp);
@@ -264,6 +261,7 @@ NeubotPoller_construct(void)
 {
 	struct NeubotPoller *self;
 	struct event_base *base;
+	struct timeval tv;
 	int retval;
 
 	self = (struct NeubotPoller *) calloc(1, sizeof(*self));
@@ -284,7 +282,11 @@ NeubotPoller_construct(void)
 		goto failure;
 #endif
 
-	retval = NeubotPoller_sched(self, 10.0, NeubotPoller_periodic, self);
+	event_set(&self->evperiodic, -1, EV_TIMEOUT|EV_PERSIST,
+	    NeubotPoller_periodic, self);
+	memset(&tv, 0, sizeof (tv));
+	tv.tv_sec = 10;
+	retval = event_add(&self->evperiodic, &tv);
 	if (retval != 0)
 		goto failure;
 
