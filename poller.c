@@ -62,7 +62,7 @@ struct NeubotPollable {
 struct NeubotPoller {
 	TAILQ_HEAD(, NeubotPollable) head;
 #ifndef WIN32
-	struct event evsignal;
+	struct event evsignal;    /* for SIGINT */
 #endif
 };
 
