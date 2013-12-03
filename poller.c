@@ -124,9 +124,8 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
     void *opaque, double timeout, short event)
 {
 	struct NeubotEvent *nevp;
+	struct timeval *tvp;
 	int result;
-
-	/* TODO: treat negative timeouts as "infinite" */
 
 	nevp = NULL;
 
@@ -170,9 +169,15 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 	nevp->opaque = opaque;
 
 	event_set(&nevp->ev, nevp->fileno, event, NeubotEvent_dispatch, nevp);
-	neubot_timeval_init(&nevp->tv, timeout);
 
-	result = event_add(&nevp->ev, &nevp->tv);
+	/* Treat negative timeouts as "infinite" */
+	if (timeout >= 0.0) {
+		neubot_timeval_init(&nevp->tv, timeout);
+		tvp = &nevp->tv;
+	} else
+		tvp = NULL;
+
+	result = event_add(&nevp->ev, tvp);
 	if (result != 0)
 		goto cleanup;
 
