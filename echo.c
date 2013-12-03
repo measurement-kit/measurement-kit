@@ -92,13 +92,12 @@ Connection_close(struct NeubotPollable *pollable)
 	struct Connection *self;
 
 	/*
-	 * Note: in this function we don't NeubotPollable_close() because
-	 * this function is invoked by NeubotPollable_close().
+	 * Perhaps obvious, but: in this function we don't call
+	 * NeubotPollable_close() because this function is invoked
+	 * by NeubotPollable_close().
 	 */
 
 	self = (struct Connection *) NeubotPollable_opaque(pollable);
-	if (self == NULL)
-		return;
 
 	if (self->fileno != -1)
 		(void) close(self->fileno);
@@ -121,17 +120,30 @@ Connection_construct(struct NeubotPollable *pollable)
 	if (conn == NULL)
 		goto cleanup;
 
+	conn->pollable = NeubotPollable_construct(self->poller,
+	    Connection_read, Connection_write, Connection_close, conn);
+	if (conn->pollable == NULL)
+		goto cleanup;
+
+	/* _____________________________________________________________
+	 *
+	 * WARNING! From this point on, we have a complete object that
+	 * can be free()d by using NeubotPollable_close() and consequently
+	 * with Connection_close(). To make sure that Connection_close()
+	 * is idempotent, below we properly and explicitly initialize
+	 * fileno to -1 and buffer to NULL.
+	 * _____________________________________________________________
+	 */
+
+	conn->buffer = NULL;
+	conn->fileno = -1;
+
 	conn->fileno = accept(self->fileno, NULL, NULL);
 	if (conn->fileno == -1)
 		goto cleanup;
 
 	conn->buffer = evbuffer_new();
 	if (conn->buffer == NULL)
-		goto cleanup;
-
-	conn->pollable = NeubotPollable_construct(self->poller,
-	    Connection_read, Connection_write, Connection_close, conn);
-	if (conn->pollable == NULL)
 		goto cleanup;
 
 	NeubotPollable_attach(conn->pollable, (long long) conn->fileno);
@@ -141,7 +153,10 @@ Connection_construct(struct NeubotPollable *pollable)
 		return;		/* success */
 
       cleanup:
-	/* FIXME: leak */ ;
+	if (conn != NULL && conn->pollable != NULL)
+		NeubotPollable_close(conn->pollable);
+	else
+		neubot_xfree(conn);
 }
 
 /*
@@ -157,7 +172,7 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
 
 	self = calloc(1, sizeof(*self));
 	if (self == NULL)
-		goto cleanup;
+		return (NULL);
 
 	self->fileno = neubot_listen(use_ipv6, address, port);
 	if (self->fileno == -1)
@@ -179,11 +194,10 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
 	return (self);
 
       cleanup:
-	if (self != NULL && self->pollable != NULL)
+	if (self->pollable != NULL)
 		NeubotPollable_close(self->pollable);
-	if (self != NULL && self->fileno != -1)
+	if (self->fileno != -1)
 		(void) close(self->fileno);
-	if (self != NULL && self != NULL)
-		free(self);
+	free(self);
 	return (NULL);
 }
