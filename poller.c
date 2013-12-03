@@ -510,4 +510,5 @@ NeubotPollable_close(struct NeubotPollable *self)
 {
 	NeubotPollable_detach(self);
 	self->handle_close(self);
+	free(self);
 }
