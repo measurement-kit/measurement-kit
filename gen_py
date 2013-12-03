@@ -51,9 +51,9 @@ def pylang_load_libneubot():
     sys.stdout.write("import sys\n")
     sys.stdout.write("""
 if sys.platform == "darwin":
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib"
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.0"
 else:
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so"
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.0"
 
 LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 """)
