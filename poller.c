@@ -444,9 +444,10 @@ void
 NeubotPollable_detach(struct NeubotPollable *self)
 {
 	if (self->isattached) {
-		/* FIXME: here we should also event_del()! */
-		NeubotPoller_unregister_pollable(self->poller, self);
 		self->fileno = EVUTIL_SOCKET_INVALID;
+		event_del(&self->evread);
+		event_del(&self->evwrite);
+		NeubotPoller_unregister_pollable(self->poller, self);
 		self->isattached = 0;
 	}
 }
