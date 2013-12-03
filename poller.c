@@ -46,6 +46,16 @@
 # endif
 #endif
 
+/* To convert long long to sockets */
+#ifdef WIN32
+# define EVUTIL_SOCKET_MAX UINTPTR_MAX
+#else
+# define EVUTIL_SOCKET_MAX INT_MAX
+#endif
+#if !(LLONG_MAX >= EVUTIL_SOCKET_MAX)
+# error "LLONG_MAX must be larger than EVUTIL_SOCKET_MAX"
+#endif
+
 struct NeubotPollable {
 	TAILQ_ENTRY(NeubotPollable) entry;
 	NeubotPollable_callback handle_close;
@@ -74,6 +84,12 @@ struct NeubotEvent {
 	evutil_socket_t fileno;
 	void *opaque;
 };
+
+static inline int
+neubot_socket_valid(long long socket)
+{
+	return (socket >= 0 && socket <= EVUTIL_SOCKET_MAX);
+}
 
 /*
  * NeubotEvent implementation
@@ -111,6 +127,28 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 	int result;
 
 	/* TODO: treat negative timeouts as "infinite" */
+
+	nevp = NULL;
+
+	/*
+	 * Make sure that, if we want to do I/O, the socket is
+	 * valid; otherwise, if we want to do timeout, make sure
+	 * that the socket is invalid; while there, catch the
+	 * case in which the user passes us an unexpected event.
+	 */
+	switch (event) {
+	case EV_READ:
+	case EV_WRITE:
+		if (!neubot_socket_valid(fileno))
+			goto cleanup;
+		break;
+	case EV_TIMEOUT:
+		if (fileno != -1)
+			goto cleanup;
+		break;
+	default:
+		goto cleanup;
+	}
 
 	if (callback == NULL)
 		callback = NeubotEvent_noop;
@@ -371,6 +409,8 @@ int
 NeubotPollable_attach(struct NeubotPollable *self, long long fileno)
 {
 	if (self->fileno != -1)
+		return (-1);
+	if (!neubot_socket_valid(fileno))
 		return (-1);
 	/*
 	 * Note: `long long` simplifies the interaction with Java and
