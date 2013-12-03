@@ -33,19 +33,18 @@ CC = clang
 CFLAGS = -Wall -pedantic -fPIC -g @CFLAGS@
 LDFLAGS = @LDFLAGS@ -shared
 
+MAJOR = 0
+MINOR = 0
+
 HEADER = neubot.h
-LIBRARY = libneubot.@SHARED_LIBRARY_EXT@
+LINKERNAME = libneubot.@SHARED_LIBRARY_EXT@
+SONAME = $(LINKERNAME).$(MAJOR)
+REALNAME = $(SONAME).$(MINOR)
 OBJECTS = echo.o log.o poller.o strtonum.o utils.o
 PYMODULE = libneubot.py
 
-#
-# TODO: make sure we properly compile (and name!) the library, by
-# following the recommendations available here:
-#
-# http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html
-#
-$(LIBRARY): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $(LIBRARY) -levent -lm
+$(REALNAME): $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $(REALNAME) -levent -lm
 
 echo.o: echo.c
 log.o: log.c
@@ -54,16 +53,20 @@ strtonum.o: strtonum.c
 utils.o: utils.c
 
 clean:
-	rm -f -- $(OBJECTS) $(LIBRARY) `cat .gitignore`
-install: $(LIBRARY)
+	rm -f -- $(OBJECTS) $(REALNAME) `cat .gitignore`
+install: $(REALNAME)
 	install -d $(DESTDIR)$(LIBDIR)
-	install -m 644 $(LIBRARY) $(DESTDIR)$(LIBDIR)/
+	ln -s $(DESTDIR)$(LIBDIR)/$(SONAME) $(DESTDIR)$(LIBDIR)/$(LINKERNAME)
+	ln -s $(DESTDIR)$(LIBDIR)/$(REALNAME) $(DESTDIR)$(LIBDIR)/$(SONAME)
+	install -m 644 $(REALNAME) $(DESTDIR)$(LIBDIR)/
 	install -d $(DESTDIR)$(INCLUDEDIR)
 	install -m 644 $(HEADER) $(DESTDIR)$(INCLUDEDIR)/
 	install -d $(DESTDIR)$(DATADIR)/libneubot
 	install -m 644 $(PYMODULE) $(DESTDIR)$(DATADIR)/libneubot/
 uninstall:
-	rm -f -- $(DESTDIR)$(LIBDIR)/$(LIBRARY)
+	rm -f -- $(DESTDIR)$(LIBDIR)/$(REALNAME)
+	rm -f -- $(DESTDIR)$(LIBDIR)/$(SONAME)
+	rm -f -- $(DESTDIR)$(LIBDIR)/$(LINKERNAME)
 	rmdir $(DESTDIR)$(LIBDIR) || true
 	rm -f -- $(DESTDIR)$(INCLUDEDIR)/$(HEADER)
 	rmdir $(DESTDIR)$(INCLUDEDIR) || true
