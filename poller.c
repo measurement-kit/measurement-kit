@@ -496,7 +496,7 @@ NeubotPollable_unset_writable(struct NeubotPollable *self)
 void
 NeubotPollable_set_timeout(struct NeubotPollable *self, double timeout)
 {
-	self->timeout = neubot_time_now() + timeout;
+	self->timeout = timeout;
 }
 
 void
