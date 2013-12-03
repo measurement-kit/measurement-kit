@@ -184,8 +184,9 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
 	self->poller = poller;
 
 	/*
-	 * NOTE to self: the cleanup strategy must change
-	 * if you add a destructor function.
+	 * NOTE to self: the cleanup strategy must change if you add a
+	 * a destructor function, because, in such case, NeubotPollable
+	 * close() will also very likely free() self.
 	 */
 	self->pollable = NeubotPollable_construct(self->poller,
 	    Connection_construct, NULL, NULL, self);
