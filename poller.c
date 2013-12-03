@@ -28,7 +28,7 @@
 #include <math.h>
 
 #ifndef WIN32
-#include <signal.h>
+# include <signal.h>
 #endif
 
 #include <event.h>
