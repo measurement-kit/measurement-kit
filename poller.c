@@ -150,7 +150,7 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 			goto cleanup;
 		break;
 	case EV_TIMEOUT:
-		if (fileno != -1)
+		if (fileno != EVUTIL_SOCKET_INVALID)
 			goto cleanup;
 		break;
 	default:
@@ -303,8 +303,8 @@ NeubotPoller_sched(struct NeubotPoller *self, double delta,
 {
 	struct NeubotEvent *nevp;
 
-	nevp = NeubotEvent_construct(self, -1, NeubotEvent_noop,
-	    callback, opaque, delta, EV_TIMEOUT);
+	nevp = NeubotEvent_construct(self, EVUTIL_SOCKET_INVALID,
+	    NeubotEvent_noop, callback, opaque, delta, EV_TIMEOUT);
 	if (nevp == NULL)
 		return (-1);
 	return (0);
