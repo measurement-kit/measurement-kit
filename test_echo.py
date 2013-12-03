@@ -8,7 +8,7 @@ from libneubot import LIBNEUBOT
 def main():
     """ Main function """
     poller = LIBNEUBOT.NeubotPoller_construct()
-    LIBNEUBOT.NeubotEchoServer_construct(poller, 1, "::1", "12345")
+    LIBNEUBOT.NeubotEchoServer_construct(poller, 0, "127.0.0.1", "12345")
     LIBNEUBOT.NeubotPoller_loop(poller)
 
 if __name__ == "__main__":
