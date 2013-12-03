@@ -199,7 +199,7 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
 		goto cleanup;
 
 	result = NeubotPollable_set_readable(self->pollable);
-	if (result == -1)
+	if (result != 0)
 		goto cleanup;
 
 	return (self);
