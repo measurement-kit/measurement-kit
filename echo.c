@@ -152,7 +152,7 @@ Connection_construct(struct NeubotPollable *pollable)
 		goto cleanup;
 
 	result = NeubotPollable_set_readable(conn->pollable);
-	if (result != -1)
+	if (result == 0)
 		return;		/* success */
 
       cleanup:
