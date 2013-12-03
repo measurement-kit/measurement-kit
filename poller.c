@@ -37,6 +37,7 @@
 #include "neubot.h"
 #include "utils.h"
 
+/* Be compatible with older libevents */
 #ifndef evutil_socket_t
 # ifdef WIN32
 #  define evutil_socket_t uintptr_t
