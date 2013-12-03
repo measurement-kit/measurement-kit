@@ -264,26 +264,28 @@ NeubotPoller_construct(void)
 	struct timeval tv;
 	int retval;
 
-	self = (struct NeubotPoller *) calloc(1, sizeof(*self));
-	if (self == NULL)
-		goto failure;
-
-	TAILQ_INIT(&self->head);
-
 	base = event_init();
 	if (base == NULL)
-		goto failure;
+		return (NULL);
+
+	self = (struct NeubotPoller *) calloc(1, sizeof(*self));
+	if (self == NULL)
+		return (NULL);
+
+	TAILQ_INIT(&self->head);
 
 #ifndef WIN32
 	event_set(&self->evsignal, SIGINT, EV_SIGNAL,
 	    NeubotPoller_sigint, self);
+#endif
+	event_set(&self->evperiodic, -1, EV_TIMEOUT|EV_PERSIST,
+	    NeubotPoller_periodic, self);
+
+#ifndef WIN32
 	retval = event_add(&self->evsignal, NULL);
 	if (retval != 0)
 		goto failure;
 #endif
-
-	event_set(&self->evperiodic, -1, EV_TIMEOUT|EV_PERSIST,
-	    NeubotPoller_periodic, self);
 	memset(&tv, 0, sizeof (tv));
 	tv.tv_sec = 10;
 	retval = event_add(&self->evperiodic, &tv);
@@ -293,9 +295,11 @@ NeubotPoller_construct(void)
 	return (self);
 
       failure:
-	/* TODO: make sure we close everything */
-	if (self != NULL)
-		free(self);
+	event_del(&self->evperiodic);
+#ifndef WIN32
+	event_del(&self->evsignal);
+#endif
+	free(self);
 	return (NULL);
 }
 
