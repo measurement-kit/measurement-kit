@@ -146,7 +146,10 @@ Connection_construct(struct NeubotPollable *pollable)
 	if (conn->buffer == NULL)
 		goto cleanup;
 
-	NeubotPollable_attach(conn->pollable, (long long) conn->fileno);
+	result = NeubotPollable_attach(conn->pollable,
+	    (long long) conn->fileno);
+	if (result != 0)
+		goto cleanup;
 
 	result = NeubotPollable_set_readable(conn->pollable);
 	if (result != -1)
