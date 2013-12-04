@@ -29,6 +29,10 @@ echo "Generate: libneubot.py"
 
 ./gen_py libneubot.json > libneubot.py
 
+echo "Generate: LibNeubot.java"
+
+./gen_java libneubot.json > LibNeubot.java
+
 SYSTEM=$(uname)
 
 if [ "$SYSTEM" = "Darwin" ]; then
