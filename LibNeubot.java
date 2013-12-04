@@ -4,7 +4,12 @@
 //
 public class LibNeubot {
 
-    // Classes:
+    // 
+    // In the following we list the C-level structs and
+    // C-level callbacks, to give you more context.
+    // 
+
+    // Structs:
 
     //struct NeubotEchoServer;
     //struct NeubotEvent;
@@ -15,6 +20,22 @@ public class LibNeubot {
 
     //typedef void (*NeubotPoller_callback)(long);
     //typedef void (*NeubotPollable_callback)(long);
+
+    // 
+    // Note: in the following there is a number of functions
+    // that in C receive an opaque object and one or more
+    // callback functions; i.e., the callbacks are, in a sense,
+    // bound to the opaque object.
+    // 
+    // Because Java does not allow you to take the address of
+    // a function, from Java to C we do not pass the callbacks,
+    // rather we pass their names. Also, the bound opaque object
+    // must be a Java object, and the passed names must refer
+    // to methods of such Java object.
+    // 
+    // Also, note that we pass around C opaque objects (i.e.,
+    // address of structures) using the jlong type.
+    // 
 
     // NeubotEchoServer API:
 

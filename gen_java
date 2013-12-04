@@ -102,7 +102,13 @@ def main():
     sys.stdout.write("public class LibNeubot {\n")
 
     jlang_empty_line()
-    jlang_comment("Classes:")
+    jlang_comment("")
+    jlang_comment("In the following we list the C-level structs and")
+    jlang_comment("C-level callbacks, to give you more context.")
+    jlang_comment("")
+
+    jlang_empty_line()
+    jlang_comment("Structs:")
     jlang_empty_line()
 
     for name in sorted(interface["classes"]):
@@ -118,6 +124,22 @@ def main():
         params = callback[2:]
         jlang_declare_callback(retval, name, params)
 
+    jlang_empty_line()
+    jlang_comment("")
+    jlang_comment("Note: in the following there is a number of functions")
+    jlang_comment("that in C receive an opaque object and one or more")
+    jlang_comment("callback functions; i.e., the callbacks are, in a sense,")
+    jlang_comment("bound to the opaque object.")
+    jlang_comment("")
+    jlang_comment("Because Java does not allow you to take the address of")
+    jlang_comment("a function, from Java to C we do not pass the callbacks,")
+    jlang_comment("rather we pass their names. Also, the bound opaque object")
+    jlang_comment("must be a Java object, and the passed names must refer")
+    jlang_comment("to methods of such Java object.")
+    jlang_comment("")
+    jlang_comment("Also, note that we pass around C opaque objects (i.e.,")
+    jlang_comment("address of structures) using the jlong type.")
+    jlang_comment("")
     jlang_empty_line()
 
     for name in sorted(interface["classes"]):
