@@ -56,8 +56,8 @@ clean:
 	rm -f -- $(OBJECTS) $(REALNAME) `cat .gitignore`
 install: $(REALNAME)
 	install -d $(DESTDIR)$(LIBDIR)
-	ln -s $(DESTDIR)$(LIBDIR)/$(SONAME) $(DESTDIR)$(LIBDIR)/$(LINKERNAME)
-	ln -s $(DESTDIR)$(LIBDIR)/$(REALNAME) $(DESTDIR)$(LIBDIR)/$(SONAME)
+	ln -fs $(DESTDIR)$(LIBDIR)/$(SONAME) $(DESTDIR)$(LIBDIR)/$(LINKERNAME)
+	ln -fs $(DESTDIR)$(LIBDIR)/$(REALNAME) $(DESTDIR)$(LIBDIR)/$(SONAME)
 	install -m 644 $(REALNAME) $(DESTDIR)$(LIBDIR)/
 	install -d $(DESTDIR)$(INCLUDEDIR)
 	install -m 644 $(HEADER) $(DESTDIR)$(INCLUDEDIR)/
