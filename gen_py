@@ -94,12 +94,12 @@ def pylang_declare_method(name, method):
         retval = pylang_type(retval)
         sys.stdout.write("LIBNEUBOT.%s.restype = %s\n" % (funcname, retval))
 
-    sys.stdout.write("LIBNEUBOT.%s.argtypes = (" % funcname)
+    sys.stdout.write("LIBNEUBOT.%s.argtypes = (\n" % funcname)
     if args:
         for elem in args:
             name, value = elem
             name = pylang_type(name)
-            sys.stdout.write("%s, " % name)
+            sys.stdout.write("    %s,\n" % name)
     sys.stdout.write(")\n")
 
 def main():
