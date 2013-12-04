@@ -21,6 +21,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# pylint: disable = C0111
+
 import json
 import sys
 
@@ -69,7 +71,7 @@ def pylang_declare_callback(retval, cbname, params):
     uppername = cbname.upper().replace("NEUBOT", "NEUBOT_", 1)
     sys.stdout.write("%s = ctypes.CFUNCTYPE(%s" % (uppername, retval))
     for elem in params:
-        name, value = elem
+        name, _ = elem
         name = pylang_type(name)
         sys.stdout.write(", %s" % name)
     sys.stdout.write(")\n")
@@ -97,7 +99,7 @@ def pylang_declare_method(name, method):
     sys.stdout.write("LIBNEUBOT.%s.argtypes = (\n" % funcname)
     if args:
         for elem in args:
-            name, value = elem
+            name, _ = elem
             name = pylang_type(name)
             sys.stdout.write("    %s,\n" % name)
     sys.stdout.write(")\n")

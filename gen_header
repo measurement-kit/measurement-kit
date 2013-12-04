@@ -21,6 +21,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# pylint: disable = C0111
+
 import json
 import sys
 
@@ -48,7 +50,7 @@ def clang_type(name):
 def clang_declare_callback(retval, cbname, params):
     sys.stdout.write("typedef %s (*%s)(" % (retval, cbname))
     for index, elem in enumerate(params):
-        name, value = elem
+        name, _ = elem
         name = clang_type(name)
         sys.stdout.write("%s" % name)
         if index < len(params) - 1:
@@ -81,7 +83,7 @@ def clang_declare_method(name, method):
     if args:
         total = len(retval) + len(funcname) + 2
         for index, elem in enumerate(args):
-            name, value = elem
+            name, _ = elem
             name = clang_type(name)
             if total + len(name) >= 78:
                 sys.stdout.write("\n    ")

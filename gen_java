@@ -21,6 +21,8 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# pylint: disable = C0111
+
 import json
 import sys
 
@@ -50,7 +52,7 @@ def jlang_declare_callback(retval, cbname, params):
     JLANG_TYPE[cbname] = "String"
     sys.stdout.write("    //typedef %s (*%s)(" % (retval, cbname))
     for index, elem in enumerate(params):
-        name, value = elem
+        name, _ = elem
         name = jlang_type(name)
         sys.stdout.write("%s" % name)
         if index < len(params) - 1:
