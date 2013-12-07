@@ -12,6 +12,7 @@ struct NeubotPoller;
 
 /* Callbacks: */
 
+typedef void (*NeubotPoller_resolve_callback)(void *, const char *);
 typedef void (*NeubotPoller_callback)(void *);
 typedef void (*NeubotPollable_callback)(struct NeubotPollable *);
 
@@ -66,6 +67,9 @@ struct NeubotEvent *NeubotPoller_defer_read(struct NeubotPoller *, long long,
 
 struct NeubotEvent *NeubotPoller_defer_write(struct NeubotPoller *, 
     long long, NeubotPoller_callback, NeubotPoller_callback, void *, double);
+
+int NeubotPoller_resolve(struct NeubotPoller *, int, const char *, 
+    NeubotPoller_resolve_callback, void *);
 
 void NeubotPoller_loop(struct NeubotPoller *);
 

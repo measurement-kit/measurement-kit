@@ -34,7 +34,7 @@ CFLAGS = -Wall -pedantic -fPIC -g @CFLAGS@
 LDFLAGS = @LDFLAGS@ -shared
 
 MAJOR = 0
-MINOR = 0
+MINOR = 1
 
 HEADER = neubot.h
 LINKERNAME = libneubot.@SHARED_LIBRARY_EXT@

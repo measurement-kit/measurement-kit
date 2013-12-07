@@ -18,6 +18,7 @@ public class LibNeubot {
 
     // Callbacks:
 
+    //typedef void (*NeubotPoller_resolve_callback)(long, String);
     //typedef void (*NeubotPoller_callback)(long);
     //typedef void (*NeubotPollable_callback)(long);
 
@@ -92,6 +93,9 @@ public class LibNeubot {
     public final static native long NeubotPoller_defer_write(long self, 
         long fileno, String handle_ok, String handle_timeout, 
         long object, double timeout);
+
+    public final static native int NeubotPoller_resolve(long self, 
+        int use_ipv6, String name, String callback, long opaque);
 
     public final static native void NeubotPoller_loop(long self);
 

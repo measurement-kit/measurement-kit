@@ -22,6 +22,7 @@ LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 
 # Callbacks:
 
+NEUBOT_POLLER_RESOLVE_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_char_p)
 NEUBOT_POLLER_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
 NEUBOT_POLLABLE_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
 
@@ -142,6 +143,15 @@ LIBNEUBOT.NeubotPoller_defer_write.argtypes = (
     NEUBOT_POLLER_CALLBACK,
     ctypes.py_object,
     ctypes.c_double,
+)
+
+LIBNEUBOT.NeubotPoller_resolve.restype = ctypes.c_int
+LIBNEUBOT.NeubotPoller_resolve.argtypes = (
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_char_p,
+    NEUBOT_POLLER_RESOLVE_CALLBACK,
+    ctypes.py_object,
 )
 
 LIBNEUBOT.NeubotPoller_loop.argtypes = (

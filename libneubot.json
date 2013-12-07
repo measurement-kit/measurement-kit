@@ -5,6 +5,8 @@
         "generate libneubot.py, and by gen_java to generate LibNeubot.java"
     ],
     "callbacks": [
+        ["void", "NeubotPoller_resolve_callback", ["void_p", "opaque"],
+            ["cstring", "address"]],
         ["void", "NeubotPoller_callback", ["void_p", "opaque"]],
         ["void", "NeubotPollable_callback", ["NeubotPollable_p", "self"]]
     ],
@@ -52,6 +54,9 @@
                 ["NeubotPoller_callback", "handle_ok"],
                 ["NeubotPoller_callback", "handle_timeout"],
                 ["Object", "object"], ["double", "timeout"]],
+            ["int", "resolve", ["int", "use_ipv6"], ["cstring", "name"],
+                ["NeubotPoller_resolve_callback", "callback"],
+                ["Object", "opaque"]],
             ["void", "loop"],
             ["void", "break_loop"]
         ]
