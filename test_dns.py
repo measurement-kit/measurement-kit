@@ -6,23 +6,22 @@
 import ctypes
 import sys
 
-from libneubot import LIBNEUBOT
-from libneubot import NEUBOT_POLLER_RESOLVE_CALLBACK
+import libneubot
 
 def resolve_callback(opaque, address):
     """ The periodic callback """
     sys.stdout.write("address: %s\n" % address)
     poller = ctypes.cast(opaque, ctypes.py_object).value
-    LIBNEUBOT.NeubotPoller_break_loop(poller)
+    libneubot.NeubotPoller_break_loop(poller)
 
-RESOLVE_CALLBACK = NEUBOT_POLLER_RESOLVE_CALLBACK(resolve_callback)
+RESOLVE_CALLBACK = libneubot.NEUBOT_POLLER_RESOLVE_CALLBACK(resolve_callback)
 
 def main():
     """ Main function """
-    poller = LIBNEUBOT.NeubotPoller_construct()
-    LIBNEUBOT.NeubotPoller_resolve(poller, 0, "www.youtube.com",
+    poller = libneubot.NeubotPoller_construct()
+    libneubot.NeubotPoller_resolve(poller, 0, "www.youtube.com",
       RESOLVE_CALLBACK, poller)
-    LIBNEUBOT.NeubotPoller_loop(poller)
+    libneubot.NeubotPoller_loop(poller)
 
 if __name__ == "__main__":
     main()

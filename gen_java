@@ -29,6 +29,7 @@ import sys
 JLANG_TYPE = {
     "Object": "long",
     "cstring": "String",
+    "status_t": "int",
     "void_p": "long",
     "long long": "long",
 }

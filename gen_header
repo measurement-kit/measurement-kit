@@ -29,6 +29,7 @@ import sys
 CLANG_TYPE = {
     "Object": "void *",
     "cstring": "const char *",
+    "status_t": "int",
     "void_p": "void *",
 }
 

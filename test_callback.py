@@ -5,25 +5,24 @@
 
 import sys
 
-from libneubot import LIBNEUBOT
-from libneubot import NEUBOT_POLLER_CALLBACK
+import libneubot
 
 def periodic_callback(poller):
     """ The periodic callback """
     sys.stdout.write("Periodic callback\n")
     schedule_callback(poller)
 
-PERIODIC_CALLBACK = NEUBOT_POLLER_CALLBACK(periodic_callback)
+PERIODIC_CALLBACK = libneubot.NEUBOT_POLLER_CALLBACK(periodic_callback)
 
 def schedule_callback(poller):
     """ Schedule the periodic callback """
-    LIBNEUBOT.NeubotPoller_sched(poller, 1.0, PERIODIC_CALLBACK, poller)
+    libneubot.NeubotPoller_sched(poller, 1.0, PERIODIC_CALLBACK, poller)
 
 def main():
     """ Main function """
-    poller = LIBNEUBOT.NeubotPoller_construct()
+    poller = libneubot.NeubotPoller_construct()
     schedule_callback(poller)
-    LIBNEUBOT.NeubotPoller_loop(poller)
+    libneubot.NeubotPoller_loop(poller)
 
 if __name__ == "__main__":
     main()
