@@ -208,8 +208,8 @@ LIBNEUBOT.NeubotPoller_sched.argtypes = (
     ctypes.py_object,
 )
 
-def NeubotPoller_sched(handle, delta, callback, object):
-    ret = LIBNEUBOT.NeubotPoller_sched(handle, delta, callback, object)
+def NeubotPoller_sched(handle, delta, callback, obj):
+    ret = LIBNEUBOT.NeubotPoller_sched(handle, delta, callback, obj)
     if ret != 0:
         raise RuntimeError('LibNeubot error')
     return ret
@@ -225,9 +225,9 @@ LIBNEUBOT.NeubotPoller_defer_read.argtypes = (
 )
 
 def NeubotPoller_defer_read(handle, fileno, handle_ok, handle_timeout, 
-      object, timeout):
+      obj, timeout):
     ret = LIBNEUBOT.NeubotPoller_defer_read(handle, fileno, handle_ok, 
-      handle_timeout, object, timeout)
+      handle_timeout, obj, timeout)
     if not ret:
         raise RuntimeError('LibNeubot error')
     return ret
@@ -243,9 +243,9 @@ LIBNEUBOT.NeubotPoller_defer_write.argtypes = (
 )
 
 def NeubotPoller_defer_write(handle, fileno, handle_ok, handle_timeout, 
-      object, timeout):
+      obj, timeout):
     ret = LIBNEUBOT.NeubotPoller_defer_write(handle, fileno, handle_ok, 
-      handle_timeout, object, timeout)
+      handle_timeout, obj, timeout)
     if not ret:
         raise RuntimeError('LibNeubot error')
     return ret

@@ -84,15 +84,15 @@ public class LibNeubot {
     public final static native long NeubotPoller_construct();
 
     public final static native int NeubotPoller_sched(long self, 
-        double delta, String callback, long object);
+        double delta, String callback, long obj);
 
     public final static native long NeubotPoller_defer_read(long self, 
-        long fileno, String handle_ok, String handle_timeout, 
-        long object, double timeout);
+        long fileno, String handle_ok, String handle_timeout, long obj, 
+        double timeout);
 
     public final static native long NeubotPoller_defer_write(long self, 
-        long fileno, String handle_ok, String handle_timeout, 
-        long object, double timeout);
+        long fileno, String handle_ok, String handle_timeout, long obj, 
+        double timeout);
 
     public final static native int NeubotPoller_resolve(long self, 
         int use_ipv6, String name, String callback, long opaque);
