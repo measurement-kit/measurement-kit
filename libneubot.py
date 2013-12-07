@@ -22,7 +22,8 @@ LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 
 # Callbacks:
 
-NEUBOT_POLLER_RESOLVE_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p, ctypes.c_char_p)
+NEUBOT_POLLER_RESOLVE_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p, 
+    ctypes.c_char_p)
 NEUBOT_POLLER_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
 NEUBOT_POLLABLE_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
 

@@ -71,10 +71,17 @@ def pylang_declare_callback(retval, cbname, params):
     retval = pylang_type(retval)
     uppername = cbname.upper().replace("NEUBOT", "NEUBOT_", 1)
     sys.stdout.write("%s = ctypes.CFUNCTYPE(%s" % (uppername, retval))
+    total = len(uppername) + 20 + len(retval)
     for elem in params:
         name, _ = elem
         name = pylang_type(name)
-        sys.stdout.write(", %s" % name)
+        sys.stdout.write(", ")
+        total += 2
+        if total + len(name) >= 72:
+            sys.stdout.write("\n    ")
+            total = 4
+        sys.stdout.write("%s" % name)
+        total += len(name)
     sys.stdout.write(")\n")
     PYLANG_TYPE[cbname] = uppername
 
