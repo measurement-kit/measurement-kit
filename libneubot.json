@@ -1,6 +1,9 @@
 {
     "__license__": "Public domain, 2013 Simone Basso.",
-    "__comment__": "Used by gen_header to generate neubot.h and by gen_py to generate libneubot.py",
+    "__comment__": [
+        "Used by gen_header to generate neubot.h and by gen_py to",
+        "generate libneubot.py"
+    ],
     "callbacks": [
         ["void", "NeubotPoller_callback", ["void_p", "opaque"]],
         ["void", "NeubotPollable_callback", ["NeubotPollable_p", "self"]]
