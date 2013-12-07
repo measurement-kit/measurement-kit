@@ -161,6 +161,9 @@ def main():
 
     pylang_write_copyright()
 
+    pylang_empty_line()
+    sys.stdout.write("#pylint: disable = C0111, C0103\n")
+
     pylang_load_libneubot()
 
     pylang_empty_line()
