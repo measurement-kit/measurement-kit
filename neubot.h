@@ -12,12 +12,14 @@ struct NeubotPoller;
 
 /* Callbacks: */
 
+typedef void (*NeubotPoller_resolve_callback)(void *, const char *);
 typedef void (*NeubotPoller_callback)(void *);
 typedef void (*NeubotPollable_callback)(struct NeubotPollable *);
 
 /* NeubotEchoServer API: */
 
-struct NeubotEchoServer * NeubotEchoServer_construct(struct NeubotPoller *, int, const char *, const char *);
+struct NeubotEchoServer *NeubotEchoServer_construct(struct NeubotPoller *, 
+    int, const char *, const char *);
 
 /* NeubotEvent API: */
 
@@ -25,11 +27,13 @@ void NeubotEvent_cancel(struct NeubotEvent *);
 
 /* NeubotPollable API: */
 
-struct NeubotPollable * NeubotPollable_construct(struct NeubotPoller *, NeubotPollable_callback, NeubotPollable_callback, NeubotPollable_callback, void *);
+struct NeubotPollable *NeubotPollable_construct(struct NeubotPoller *, 
+    NeubotPollable_callback, NeubotPollable_callback, NeubotPollable_callback, 
+    void *);
 
-void * NeubotPollable_opaque(struct NeubotPollable *);
+void *NeubotPollable_opaque(struct NeubotPollable *);
 
-struct NeubotPoller * NeubotPollable_poller(struct NeubotPollable *);
+struct NeubotPoller *NeubotPollable_poller(struct NeubotPollable *);
 
 int NeubotPollable_attach(struct NeubotPollable *, long long);
 
@@ -53,13 +57,19 @@ void NeubotPollable_close(struct NeubotPollable *);
 
 /* NeubotPoller API: */
 
-struct NeubotPoller * NeubotPoller_construct(void);
+struct NeubotPoller *NeubotPoller_construct(void);
 
-int NeubotPoller_sched(struct NeubotPoller *, double, NeubotPoller_callback, void *);
+int NeubotPoller_sched(struct NeubotPoller *, double, NeubotPoller_callback, 
+    void *);
 
-struct NeubotEvent * NeubotPoller_defer_read(struct NeubotPoller *, long long, NeubotPoller_callback, NeubotPoller_callback, void *, double);
+struct NeubotEvent *NeubotPoller_defer_read(struct NeubotPoller *, long long, 
+    NeubotPoller_callback, NeubotPoller_callback, void *, double);
 
-struct NeubotEvent * NeubotPoller_defer_write(struct NeubotPoller *, long long, NeubotPoller_callback, NeubotPoller_callback, void *, double);
+struct NeubotEvent *NeubotPoller_defer_write(struct NeubotPoller *, 
+    long long, NeubotPoller_callback, NeubotPoller_callback, void *, double);
+
+int NeubotPoller_resolve(struct NeubotPoller *, int, const char *, 
+    NeubotPoller_resolve_callback, void *);
 
 void NeubotPoller_loop(struct NeubotPoller *);
 

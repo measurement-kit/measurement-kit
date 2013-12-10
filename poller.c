@@ -21,6 +21,7 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <arpa/inet.h>
 #include <sys/queue.h>
 
 #include <limits.h>
@@ -33,6 +34,9 @@
 #endif
 
 #include <event.h>
+
+#include <event2/dns.h>
+#include <event2/dns_compat.h>
 
 #include "log.h"
 #include "neubot.h"
@@ -92,6 +96,11 @@ struct NeubotEvent {
 	struct event ev;
 	struct timeval tv;
 	evutil_socket_t fileno;
+	void *opaque;
+};
+
+struct ResolveContext {
+	NeubotPoller_resolve_callback callback;
 	void *opaque;
 };
 
@@ -269,6 +278,9 @@ NeubotPoller_construct(void)
 	if (base == NULL)
 		return (NULL);
 
+	if (evdns_init() != 0)
+		return (NULL);
+
 	self = (struct NeubotPoller *) calloc(1, sizeof(*self));
 	if (self == NULL)
 		return (NULL);
@@ -339,6 +351,74 @@ NeubotPoller_defer_write(struct NeubotPoller *self, long long fileno,
 {
 	return (NeubotEvent_construct(self, fileno, callback,
             timeback, opaque, timeout, EV_WRITE));
+}
+
+static void
+NeubotPoller_resolve_callback_internal(int result, char type, int count,
+    int ttl, void *addresses, void *opaque)
+{
+	struct ResolveContext *rc;
+	const char *p;
+	char string[128];
+
+	rc = (struct ResolveContext *) opaque;
+
+	switch (type) {
+	case DNS_IPv4_A:
+		while (--count >= 0) {
+			/* Note: address already in network byte order */
+			p = inet_ntop(AF_INET, (char *)addresses + count * 4,
+			    string, sizeof (string));
+			if (p == NULL)
+				continue;
+			rc->callback(rc->opaque, string);
+		}
+		break;
+	case DNS_IPv6_AAAA:
+		while (--count >= 0) {
+			/* Note: address already in network byte order */
+			p = inet_ntop(AF_INET6, (char *)addresses + count * 16,
+			    string, sizeof (string));
+			if (p == NULL)
+				continue;
+			rc->callback(rc->opaque, string);
+		}
+		break;
+	default:
+		/* nothing */ ;
+		break;
+	}
+
+	rc->callback(rc->opaque, NULL);
+	free(rc);
+}
+
+int
+NeubotPoller_resolve(struct NeubotPoller *poller, int use_ipv6,
+    const char *address, NeubotPoller_resolve_callback callback,
+    void *opaque)
+{
+	struct ResolveContext *rc;
+	int result;
+
+	rc = calloc(1, sizeof (*rc));
+	if (rc == NULL)
+		return (-1);
+
+	rc->callback = callback;
+	rc->opaque = opaque;
+
+	if (use_ipv6)
+		result = evdns_resolve_ipv6(address, DNS_QUERY_NO_SEARCH,
+		    NeubotPoller_resolve_callback_internal, rc);
+	else
+		result = evdns_resolve_ipv4(address, DNS_QUERY_NO_SEARCH,
+		    NeubotPoller_resolve_callback_internal, rc);
+
+	if (result != 0)
+		return (-1);
+
+	return (0);
 }
 
 void

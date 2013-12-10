@@ -38,6 +38,7 @@
 struct Connection {
 	struct NeubotPollable *pollable;
 	struct evbuffer *buffer;
+	int seen_eof;
 	int fileno;
 };
 
@@ -62,6 +63,11 @@ Connection_read(struct NeubotPollable *pollable)
 	self = (struct Connection *) NeubotPollable_opaque(pollable);
 	result = evbuffer_read(self->buffer, self->fileno, MAXREAD);
 	if (result <= 0) {
+		if (EVBUFFER_LENGTH(self->buffer) > 0) {
+			self->seen_eof = 1;
+			NeubotPollable_unset_readable(self->pollable);
+			return;
+		}
 		NeubotPollable_close(self->pollable);
 		return;
 	}
@@ -84,6 +90,9 @@ Connection_write(struct NeubotPollable *pollable)
 
 	if (EVBUFFER_LENGTH(self->buffer) == 0)
 		NeubotPollable_unset_writable(self->pollable);
+
+	if (self->seen_eof)
+		NeubotPollable_close(self->pollable);
 }
 
 static void

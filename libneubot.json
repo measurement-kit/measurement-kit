@@ -1,7 +1,12 @@
 {
     "__license__": "Public domain, 2013 Simone Basso.",
-    "__comment__": "Used by gen_header to generate neubot.h and by gen_py to generate libneubot.py",
+    "__comment__": [
+        "Used by gen_header to generate neubot.h, by gen_py to",
+        "generate libneubot.py, and by gen_java to generate LibNeubot.java"
+    ],
     "callbacks": [
+        ["void", "NeubotPoller_resolve_callback", ["void_p", "opaque"],
+            ["cstring", "address"]],
         ["void", "NeubotPoller_callback", ["void_p", "opaque"]],
         ["void", "NeubotPollable_callback", ["NeubotPollable_p", "self"]]
     ],
@@ -21,13 +26,13 @@
                 ["void_p", "opaque"]],
             ["void_p", "opaque"],
             ["NeubotPoller_p", "poller"],
-            ["int", "attach", ["long long", "filenum"]],
+            ["status_t", "attach", ["long long", "filenum"]],
             ["void", "detach"],
             ["long long", "fileno"],
-            ["int", "set_readable"],
-            ["int", "unset_readable"],
-            ["int", "set_writable"],
-            ["int", "unset_writable"],
+            ["status_t", "set_readable"],
+            ["status_t", "unset_readable"],
+            ["status_t", "set_writable"],
+            ["status_t", "unset_writable"],
             ["void", "set_timeout", ["double", "delta"]],
             ["void", "clear_timeout"],
             ["void", "close"]
@@ -39,16 +44,19 @@
 
         "NeubotPoller": [
             ["__construct__"],
-            ["int", "sched", ["double", "delta"], ["NeubotPoller_callback",
-                "callback"], ["Object", "object"]],
+            ["status_t", "sched", ["double", "delta"], ["NeubotPoller_callback",
+                "callback"], ["Object", "obj"]],
             ["NeubotEvent_p", "defer_read", ["long long", "fileno"],
                 ["NeubotPoller_callback", "handle_ok"],
                 ["NeubotPoller_callback", "handle_timeout"],
-                ["Object", "object"], ["double", "timeout"]],
+                ["Object", "obj"], ["double", "timeout"]],
             ["NeubotEvent_p", "defer_write", ["long long", "fileno"],
                 ["NeubotPoller_callback", "handle_ok"],
                 ["NeubotPoller_callback", "handle_timeout"],
-                ["Object", "object"], ["double", "timeout"]],
+                ["Object", "obj"], ["double", "timeout"]],
+            ["status_t", "resolve", ["int", "use_ipv6"], ["cstring", "name"],
+                ["NeubotPoller_resolve_callback", "callback"],
+                ["Object", "opaque"]],
             ["void", "loop"],
             ["void", "break_loop"]
         ]
