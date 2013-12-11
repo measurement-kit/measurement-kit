@@ -9,9 +9,9 @@ import ctypes
 import sys
 
 if sys.platform == "darwin":
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.0"
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.1"
 else:
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.0"
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.1"
 
 LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 
