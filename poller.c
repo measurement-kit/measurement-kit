@@ -38,8 +38,10 @@
 #include <event2/dns.h>
 #include <event2/dns_compat.h>
 
-#include "log.h"
 #include "neubot.h"
+
+#include "log.h"
+#include "poller.h"
 #include "utils.h"
 
 /* Be compatible with older libevents */
@@ -88,6 +90,8 @@ struct NeubotPoller {
 #ifndef WIN32
 	struct event evsignal;    /* for SIGINT */
 #endif
+	struct event_base *base;
+	struct evdns_base *dnsbase;
 };
 
 struct NeubotEvent {
@@ -286,6 +290,8 @@ NeubotPoller_construct(void)
 		return (NULL);
 
 	TAILQ_INIT(&self->head);
+	self->base = base;
+	self->dnsbase = evdns_get_global_base();
 
 #ifndef WIN32
 	event_set(&self->evsignal, SIGINT, EV_SIGNAL,
@@ -314,6 +320,20 @@ NeubotPoller_construct(void)
 #endif
 	free(self);
 	return (NULL);
+}
+
+/* Method that we use only internally: */
+struct event_base *
+NeubotPoller_event_base_(struct NeubotPoller *self)
+{
+	return (self->base);
+}
+
+/* Method that we use only internally: */
+struct evdns_base *
+NeubotPoller_evdns_base_(struct NeubotPoller *self)
+{
+	return (self->dnsbase);
 }
 
 int
