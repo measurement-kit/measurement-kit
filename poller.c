@@ -382,36 +382,54 @@ NeubotPoller_resolve_callback_internal(int result, char type, int count,
 
 	rc = (struct ResolveContext *) opaque;
 
+	/*
+	 * Note: It was a stupid idea to invoke the callback more
+	 * than once, because (at least in Python) the HookClosure
+	 * object is destroyed at the end of the callback, which
+	 * means that `opaque` is no longer a valid memory address
+	 * after the first callback invocation.
+	 *
+	 * Therefore, to fix the above bug, now we only pass to
+	 * the callback the last resolved address.
+	 *
+	 * Yet, this fix makes this function less useful than it
+	 * was before it was fixed, so I deprecated it.
+	 */
+
 	switch (type) {
 	case DNS_IPv4_A:
-		while (--count >= 0) {
+		if (--count >= 0) {
 			/* Note: address already in network byte order */
 			p = inet_ntop(AF_INET, (char *)addresses + count * 4,
 			    string, sizeof (string));
-			if (p == NULL)
-				continue;
-			rc->callback(rc->opaque, string);
-		}
+			if (p != NULL)
+				rc->callback(rc->opaque, string);
+			else
+				rc->callback(rc->opaque, "");
+		} else
+			rc->callback(rc->opaque, "");
 		break;
 	case DNS_IPv6_AAAA:
-		while (--count >= 0) {
+		if (--count >= 0) {
 			/* Note: address already in network byte order */
 			p = inet_ntop(AF_INET6, (char *)addresses + count * 16,
 			    string, sizeof (string));
-			if (p == NULL)
-				continue;
-			rc->callback(rc->opaque, string);
-		}
+			if (p != NULL)
+				rc->callback(rc->opaque, string);
+			else
+				rc->callback(rc->opaque, "");
+		} else
+			rc->callback(rc->opaque, "");
 		break;
 	default:
-		/* nothing */ ;
+		rc->callback(rc->opaque, "");
 		break;
 	}
 
-	rc->callback(rc->opaque, NULL);
 	free(rc);
 }
 
+/* DEPRECATED */
 int
 NeubotPoller_resolve(struct NeubotPoller *poller, int use_ipv6,
     const char *address, neubot_hook_vos callback, void *opaque)
