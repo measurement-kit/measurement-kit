@@ -5,9 +5,9 @@
         "generate libneubot.py, and by gen_java to generate LibNeubot.java"
     ],
     "callbacks": [
-        ["void", "NeubotPoller_resolve_callback", ["void_p", "opaque"],
+        ["void", "NeubotPoller_resolve_callback", ["Object", "opaque"],
             ["cstring", "address"]],
-        ["void", "NeubotPoller_callback", ["void_p", "opaque"]],
+        ["void", "NeubotPoller_callback", ["Object", "opaque"]],
         ["void", "NeubotPollable_callback", ["NeubotPollable_p", "self"]]
     ],
     "classes": {
@@ -23,7 +23,7 @@
                 ["NeubotPollable_callback", "handle_read"],
                 ["NeubotPollable_callback", "handle_write"],
                 ["NeubotPollable_callback", "handle_close"],
-                ["void_p", "opaque"]],
+                ["Object", "opaque"]],
             ["void_p", "opaque"],
             ["NeubotPoller_p", "poller"],
             ["status_t", "attach", ["long long", "filenum"]],

@@ -8,10 +8,9 @@ import sys
 
 import libneubot
 
-def resolve_callback(opaque, address):
+def resolve_callback(poller, address):
     """ The periodic callback """
     sys.stdout.write("address: %s\n" % address)
-    poller = ctypes.cast(opaque, ctypes.py_object).value
     libneubot.NeubotPoller_break_loop(poller)
 
 RESOLVE_CALLBACK = libneubot.NEUBOT_POLLER_RESOLVE_CALLBACK(resolve_callback)

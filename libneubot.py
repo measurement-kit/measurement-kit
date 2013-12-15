@@ -23,9 +23,9 @@ LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 
 # Callbacks:
 
-NEUBOT_POLLER_RESOLVE_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p, 
-    ctypes.c_char_p)
-NEUBOT_POLLER_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
+NEUBOT_POLLER_RESOLVE_CALLBACK = ctypes.CFUNCTYPE(None, 
+    ctypes.py_object, ctypes.c_char_p)
+NEUBOT_POLLER_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.py_object)
 NEUBOT_POLLABLE_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
 
 # NeubotEchoServer API:
@@ -53,7 +53,7 @@ LIBNEUBOT.NeubotPollable_construct.argtypes = (
     NEUBOT_POLLABLE_CALLBACK,
     NEUBOT_POLLABLE_CALLBACK,
     NEUBOT_POLLABLE_CALLBACK,
-    ctypes.c_void_p,
+    ctypes.py_object,
 )
 
 def NeubotPollable_construct(poller, handle_read, handle_write, 
