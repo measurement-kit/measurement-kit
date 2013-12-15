@@ -6,7 +6,6 @@
 /* Classes: */
 
 struct NeubotEchoServer;
-struct NeubotEvent;
 struct NeubotPollable;
 struct NeubotPoller;
 
@@ -20,10 +19,6 @@ typedef void (*NeubotPollable_callback)(struct NeubotPollable *);
 
 struct NeubotEchoServer *NeubotEchoServer_construct(struct NeubotPoller *, 
     int, const char *, const char *);
-
-/* NeubotEvent API: */
-
-void NeubotEvent_cancel(struct NeubotEvent *);
 
 /* NeubotPollable API: */
 
@@ -62,11 +57,11 @@ struct NeubotPoller *NeubotPoller_construct(void);
 int NeubotPoller_sched(struct NeubotPoller *, double, NeubotPoller_callback, 
     void *);
 
-struct NeubotEvent *NeubotPoller_defer_read(struct NeubotPoller *, long long, 
+int NeubotPoller_defer_read(struct NeubotPoller *, long long, 
     NeubotPoller_callback, NeubotPoller_callback, void *, double);
 
-struct NeubotEvent *NeubotPoller_defer_write(struct NeubotPoller *, 
-    long long, NeubotPoller_callback, NeubotPoller_callback, void *, double);
+int NeubotPoller_defer_write(struct NeubotPoller *, long long, 
+    NeubotPoller_callback, NeubotPoller_callback, void *, double);
 
 int NeubotPoller_resolve(struct NeubotPoller *, int, const char *, 
     NeubotPoller_resolve_callback, void *);

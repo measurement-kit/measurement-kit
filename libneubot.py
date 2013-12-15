@@ -18,7 +18,6 @@ LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 # Classes:
 
 # struct NeubotEchoServer
-# struct NeubotEvent
 # struct NeubotPollable
 # struct NeubotPoller
 
@@ -45,15 +44,6 @@ def NeubotEchoServer_construct(poller, use_ipv6, address, port):
     if not ret:
         raise RuntimeError('LibNeubot error')
     return ret
-
-# NeubotEvent API:
-
-LIBNEUBOT.NeubotEvent_cancel.argtypes = (
-    ctypes.c_void_p,
-)
-
-def NeubotEvent_cancel(handle):
-    LIBNEUBOT.NeubotEvent_cancel(handle)
 
 # NeubotPollable API:
 
@@ -216,7 +206,7 @@ def NeubotPoller_sched(handle, delta, callback, obj):
         raise RuntimeError('LibNeubot error')
     return ret
 
-LIBNEUBOT.NeubotPoller_defer_read.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotPoller_defer_read.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_defer_read.argtypes = (
     ctypes.c_void_p,
     ctypes.c_longlong,
@@ -230,11 +220,11 @@ def NeubotPoller_defer_read(handle, fileno, handle_ok, handle_timeout,
       obj, timeout):
     ret = LIBNEUBOT.NeubotPoller_defer_read(handle, fileno, handle_ok, 
       handle_timeout, obj, timeout)
-    if not ret:
+    if ret != 0:
         raise RuntimeError('LibNeubot error')
     return ret
 
-LIBNEUBOT.NeubotPoller_defer_write.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotPoller_defer_write.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_defer_write.argtypes = (
     ctypes.c_void_p,
     ctypes.c_longlong,
@@ -248,7 +238,7 @@ def NeubotPoller_defer_write(handle, fileno, handle_ok, handle_timeout,
       obj, timeout):
     ret = LIBNEUBOT.NeubotPoller_defer_write(handle, fileno, handle_ok, 
       handle_timeout, obj, timeout)
-    if not ret:
+    if ret != 0:
         raise RuntimeError('LibNeubot error')
     return ret
 

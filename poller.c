@@ -211,13 +211,6 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 	return (NULL);
 }
 
-void
-NeubotEvent_cancel(struct NeubotEvent *nevp)
-{
-	event_del(&nevp->ev);
-	free(nevp);
-}
-
 /*
  * NeubotPoller implementation
  */
@@ -355,22 +348,32 @@ NeubotPoller_sched(struct NeubotPoller *self, double delta,
  * less efficient than the Pollable interface.
  */
 
-struct NeubotEvent *
+int
 NeubotPoller_defer_read(struct NeubotPoller *self, long long fileno,
     NeubotPoller_callback callback, NeubotPoller_callback timeback,
     void *opaque, double timeout)
 {
-	return (NeubotEvent_construct(self, fileno, callback,
-            timeback, opaque, timeout, EV_READ));
+	struct NeubotEvent *nevp;
+
+	nevp = NeubotEvent_construct(self, fileno, callback,
+            timeback, opaque, timeout, EV_READ);
+	if (nevp == NULL)
+		return (-1);
+	return (0);
 }
 
-struct NeubotEvent *
+int
 NeubotPoller_defer_write(struct NeubotPoller *self, long long fileno,
     NeubotPoller_callback callback, NeubotPoller_callback timeback,
     void *opaque, double timeout)
 {
-	return (NeubotEvent_construct(self, fileno, callback,
-            timeback, opaque, timeout, EV_WRITE));
+	struct NeubotEvent *nevp;
+
+	nevp = NeubotEvent_construct(self, fileno, callback,
+            timeback, opaque, timeout, EV_WRITE);
+	if (nevp == NULL)
+		return (-1);
+	return (0);
 }
 
 static void

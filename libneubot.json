@@ -38,19 +38,15 @@
             ["void", "close"]
         ],
 
-        "NeubotEvent": [
-            ["void", "cancel"]
-        ],
-
         "NeubotPoller": [
             ["__construct__"],
             ["status_t", "sched", ["double", "delta"], ["NeubotPoller_callback",
                 "callback"], ["Object", "obj"]],
-            ["NeubotEvent_p", "defer_read", ["long long", "fileno"],
+            ["status_t", "defer_read", ["long long", "fileno"],
                 ["NeubotPoller_callback", "handle_ok"],
                 ["NeubotPoller_callback", "handle_timeout"],
                 ["Object", "obj"], ["double", "timeout"]],
-            ["NeubotEvent_p", "defer_write", ["long long", "fileno"],
+            ["status_t", "defer_write", ["long long", "fileno"],
                 ["NeubotPoller_callback", "handle_ok"],
                 ["NeubotPoller_callback", "handle_timeout"],
                 ["Object", "obj"], ["double", "timeout"]],

@@ -35,7 +35,7 @@ READ_TIMEO = libneubot.NEUBOT_POLLER_CALLBACK(read_timeo)
 
 def schedule_read(poller):
     """ Schedule a read operation """
-    nevp = libneubot.NeubotPoller_defer_read(poller, 0, READ_OK, READ_TIMEO,
+    libneubot.NeubotPoller_defer_read(poller, 0, READ_OK, READ_TIMEO,
       poller, ctypes.c_double(10.0))
 
 def main():
