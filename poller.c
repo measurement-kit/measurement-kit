@@ -128,17 +128,13 @@ static void
 NeubotEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
 {
 	struct NeubotEvent *nevp;
-	NeubotPoller_callback callback;
-	void *nevp_opaque;
 
 	nevp = (struct NeubotEvent *) opaque;
 	if (event & EV_TIMEOUT)
-		callback = nevp->timeback;
+		nevp->timeback(nevp->opaque);
 	else
-		callback = nevp->callback;
-	nevp_opaque = nevp->opaque;
+		nevp->callback(nevp->opaque);
 	free(nevp);
-	callback(nevp_opaque);
 }
 
 static inline struct NeubotEvent *
