@@ -55,12 +55,12 @@ struct NeubotEchoServer {
  */
 
 static void
-Connection_read(struct NeubotPollable *pollable)
+Connection_read(void *opaque)
 {
 	struct Connection *self;
 	int result;
 
-	self = (struct Connection *) NeubotPollable_opaque(pollable);
+	self = (struct Connection *) opaque;
 	result = evbuffer_read(self->buffer, self->fileno, MAXREAD);
 	if (result <= 0) {
 		if (EVBUFFER_LENGTH(self->buffer) > 0) {
@@ -76,12 +76,12 @@ Connection_read(struct NeubotPollable *pollable)
 }
 
 static void
-Connection_write(struct NeubotPollable *pollable)
+Connection_write(void *opaque)
 {
 	struct Connection *self;
 	int result;
 
-	self = (struct Connection *) NeubotPollable_opaque(pollable);
+	self = (struct Connection *) opaque;
 	result = evbuffer_write(self->buffer, self->fileno);
 	if (result == -1) {
 		NeubotPollable_close(self->pollable);
@@ -96,7 +96,7 @@ Connection_write(struct NeubotPollable *pollable)
 }
 
 static void
-Connection_close(struct NeubotPollable *pollable)
+Connection_close(void *opaque)
 {
 	struct Connection *self;
 
@@ -106,7 +106,7 @@ Connection_close(struct NeubotPollable *pollable)
 	 * by NeubotPollable_close().
 	 */
 
-	self = (struct Connection *) NeubotPollable_opaque(pollable);
+	self = (struct Connection *) opaque;
 
 	if (self->fileno != -1)
 		(void) close(self->fileno);
@@ -117,13 +117,13 @@ Connection_close(struct NeubotPollable *pollable)
 }
 
 static void
-Connection_construct(struct NeubotPollable *pollable)
+Connection_construct(void *opaque)
 {
 	struct Connection *conn;
 	struct NeubotEchoServer *self;
 	int result;
 
-	self = (struct NeubotEchoServer *) NeubotPollable_opaque(pollable);
+	self = (struct NeubotEchoServer *) opaque;
 
 	conn = calloc(1, sizeof(*conn));
 	if (conn == NULL)

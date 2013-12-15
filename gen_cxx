@@ -1,0 +1,247 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>.
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# pylint: disable = C0111
+
+import json
+import sys
+
+def cxx_type(types, name):
+    return types.get(name, name)
+
+def gen_cxx_func_top(stream, types, retval_type, func_name, arguments):
+    stream.write("        ")
+    nwritten = 8
+    if retval_type:
+        retval_type = cxx_type(types, retval_type)
+        stream.write(retval_type)
+        nwritten += len(retval_type)
+        if not retval_type.endswith("*"):
+            stream.write(" ")
+            nwritten += 1
+    stream.write(func_name)
+    nwritten += len(func_name)
+    stream.write("(")
+    nwritten += 1
+    if arguments:
+        for index, arg in enumerate(arguments):
+            if index > 0:
+                stream.write(",")
+                nwritten += 1
+            argtype, argname = arg
+            argtype = cxx_type(types, argtype)
+            if nwritten + len(argtype) + len(argname) + 1 >= 75:
+                stream.write("\n")
+                stream.write("          ")
+                nwritten = 10
+            elif index > 0:
+                stream.write(" ")
+                nwritten += 1
+            stream.write(argtype)
+            nwritten += len(argtype)
+            if not argtype.endswith("*"):
+                stream.write(" ")
+                nwritten += 1
+            stream.write(argname)
+            nwritten += len(argname)
+    else:
+        stream.write("void")
+    stream.write(") {\n")
+
+def gen_cxx_func_bottom(stream):
+    stream.write("        };\n")
+    stream.write("\n")
+
+def gen_cxx_slot(stream, class_name, slot_type, slot_name):
+    if slot_type != "slot_vo":
+        raise RuntimeErrot("unrecognised slot type")
+    stream.write("        ")
+    stream.write("virtual void %s(void) {\n" % slot_name)
+    stream.write("        };\n")
+    stream.write("\n")
+    stream.write("        ")
+    stream.write("static void %s__(void *opaque) {\n" % slot_name)
+    stream.write("            ")
+    stream.write("%s *self = (%s *) opaque;\n" % (class_name, class_name))
+    stream.write("            ")
+    stream.write("self->%s();\n" % slot_name)
+    stream.write("        };\n")
+    stream.write("\n")
+
+def gen_cxx_callfunc(stream, nwritten, func_name, args):
+    stream.write(func_name)
+    nwritten += len(func_name)
+    stream.write("(")
+    nwritten += 1
+    for index, arg in enumerate(args):
+        if index > 0:
+            stream.write(",")
+            nwritten += 1
+        if arg[0] and arg[0].endswith("_p"):
+            cast = "(struct %s *) " % arg[0][:-2]
+        else:
+            cast = ""
+        if nwritten + len(cast) + len(arg[1]) >= 78:
+            stream.write("\n")
+            stream.write("              ")
+            nwritten = 14
+        elif index > 0:
+            stream.write(" ")
+            nwritten += 1
+        stream.write(cast)
+        nwritten += len(cast)
+        stream.write(arg[1])
+        nwritten += len(arg[1])
+    stream.write(")")
+
+def gen_cxx_init(stream, types, class_name, struct_name, init_args):
+
+    # Generate the slots
+    cxx_args = []
+    c_args = []
+    for argtype, argname in init_args:
+        if argtype.startswith("slot_"):
+            for slotname in argname:
+                gen_cxx_slot(stream, class_name, argtype, slotname)
+                c_args.append(("neubot_" + argtype, "this->" + slotname + "__"))
+            c_args.append(("Object", "this"))
+        else:
+            cxx_args.append((argtype, argname))
+            c_args.append((argtype, argname))
+
+    gen_cxx_func_top(stream, types, None, class_name, cxx_args)
+    stream.write("            ")
+    nwritten = 12
+    stream.write("this->_context = ")
+    nwritten += 17
+    gen_cxx_callfunc(stream, nwritten, "%s_construct" % struct_name, c_args)
+    stream.write(";\n")
+    stream.write("            ")
+    stream.write("if (this->_context == NULL)\n")
+    stream.write("                ")
+    stream.write("throw new std::bad_alloc();\n")
+    gen_cxx_func_bottom(stream);
+
+def gen_cxx_del(stream, class_name, struct_name, func_name):
+    stream.write("        ")
+    stream.write("~%s(void) {\n" % class_name)
+    stream.write("            ")
+    stream.write("%s_%s(this->_context);\n" % (struct_name, func_name))
+    stream.write("        };\n")
+    stream.write("\n")
+
+def gen_cxx_method(stream, types, struct_name, retval_type,
+                   meth_name, meth_args):
+
+    # Generate the hooks
+    new_args = []
+    for argtype, argname in meth_args:
+        if argtype.startswith("hook_"):
+            for hookname in argname:
+                new_args.append(("neubot_" + argtype, hookname))
+            new_args.append(("Object", "opaque"))
+        else:
+            new_args.append((argtype, argname))
+
+    gen_cxx_func_top(stream, types, retval_type, meth_name, new_args)
+    stream.write("            ")
+    nwritten = 12
+    if retval_type != "void":
+        stream.write("return (")
+        nwritten += 8
+    new_args.insert(0, (None, "this->_context"))
+    gen_cxx_callfunc(stream, nwritten, "%s_%s" % (struct_name, meth_name),
+                     new_args)
+    if retval_type != "void":
+        stream.write(")")
+    stream.write(";\n")
+    gen_cxx_func_bottom(stream);
+
+def main():
+    path = sys.argv[1]
+    filep = open(path, "r")
+    interface = json.load(filep)
+    stream = sys.stdout
+
+    stream.write("//\n")
+    stream.write("// LibNeubot interface - Public domain.\n")
+    stream.write("// WARNING: Autogenerated file - do not edit!\n")
+    stream.write("//\n")
+    stream.write("\n")
+
+    stream.write("#include <stdlib.h>\n")
+    stream.write("#include <new>\n")
+    stream.write("\n")
+
+    stream.write("namespace Neubot {\n")
+    stream.write("\n")
+
+    stream.write("#include <neubot.h>\n")
+    stream.write("\n")
+
+    types = {
+        "Object": "void *",
+        "cstring": "const char *",
+        "status_t": "int",
+        "void_p": "void *",
+    }
+
+    # Process all class names once, to register all the types
+    for struct_name in sorted(interface["classes"]):
+        class_name = struct_name.replace("Neubot", "", 1)
+        types[struct_name + "_p"] = class_name + " *"
+        types[struct_name] = class_name
+        stream.write("    class %s;\n" % class_name)
+    stream.write("\n")
+
+    for struct_name in sorted(interface["classes"]):
+        class_name = struct_name.replace("Neubot", "", 1)
+        struct_name = struct_name
+        stream.write("    class %s {\n" % class_name)
+        stream.write("        struct %s *_context;\n" % struct_name);
+        stream.write("\n")
+
+        stream.write("      public:\n")
+
+        stream.write("        operator struct %s *(void) {\n" % struct_name)
+        stream.write("            return (this->_context);\n")
+        stream.write("        }\n")
+        stream.write("\n")
+
+        for method_info in interface["classes"][struct_name]:
+            if method_info[0] == "__construct__":
+                gen_cxx_init(stream, types, class_name, struct_name,
+                  method_info[1:])
+            elif method_info[0] == "__destruct__":
+                gen_cxx_del(stream, class_name, struct_name, method_info[1])
+            else:
+                gen_cxx_method(stream, types, struct_name, method_info[0],
+                  method_info[1], method_info[2:])
+
+        stream.write("    };\n")
+        stream.write("\n")
+
+    stream.write("};\n")
+
+if __name__ == "__main__":
+    main()

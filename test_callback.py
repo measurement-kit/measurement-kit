@@ -12,7 +12,7 @@ def periodic_callback(poller):
     sys.stdout.write("Periodic callback\n")
     schedule_callback(poller)
 
-PERIODIC_CALLBACK = libneubot.NEUBOT_POLLER_CALLBACK(periodic_callback)
+PERIODIC_CALLBACK = libneubot.NEUBOT_HOOK_VO(periodic_callback)
 
 def schedule_callback(poller):
     """ Schedule the periodic callback """

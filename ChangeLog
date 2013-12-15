@@ -1,2 +1,9 @@
+LibNeubot 1.0.0 [2013-12-15]
+	* Return status_t in NeubotPoller_defer_{read,write}
+	* Pass opaque, not pollable, to NeubotPollable callbacks
+	* libneubot.json: Add and use hooks, slots and __destructor__
+	* Add easier-to-use libneubot1.py wrappers
+	* Add neubot.hh, wrappers for C++
+
 LibNeubot 0.1.0 [2013-12-12]
 	* Initial release

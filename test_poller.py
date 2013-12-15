@@ -11,15 +11,13 @@ import sys
 
 import libneubot
 
-def read_timeo(pyobject):
+def read_timeo(poller):
     """ Read timed out """
-    poller = ctypes.cast(pyobject, ctypes.py_object).value
     sys.stderr.write("Timeout!\n")
     libneubot.NeubotPoller_break_loop(poller)
 
-def read_ok(pyobject):
+def read_ok(poller):
     """ Can read from the socket """
-    poller = ctypes.cast(pyobject, ctypes.py_object).value
 
     data = os.read(0, 1024)
     if not data:
@@ -30,12 +28,12 @@ def read_ok(pyobject):
     sys.stdout.write(data)
     schedule_read(poller)
 
-READ_OK = libneubot.NEUBOT_POLLER_CALLBACK(read_ok)
-READ_TIMEO = libneubot.NEUBOT_POLLER_CALLBACK(read_timeo)
+READ_OK = libneubot.NEUBOT_HOOK_VO(read_ok)
+READ_TIMEO = libneubot.NEUBOT_HOOK_VO(read_timeo)
 
 def schedule_read(poller):
     """ Schedule a read operation """
-    nevp = libneubot.NeubotPoller_defer_read(poller, 0, READ_OK, READ_TIMEO,
+    libneubot.NeubotPoller_defer_read(poller, 0, READ_OK, READ_TIMEO,
       poller, ctypes.c_double(10.0))
 
 def main():

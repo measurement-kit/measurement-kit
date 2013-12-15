@@ -72,9 +72,9 @@
 
 struct NeubotPollable {
 	TAILQ_ENTRY(NeubotPollable) entry;
-	NeubotPollable_callback handle_close;
-	NeubotPollable_callback handle_read;
-	NeubotPollable_callback handle_write;
+	neubot_slot_vo handle_close;
+	neubot_slot_vo handle_read;
+	neubot_slot_vo handle_write;
 	evutil_socket_t fileno;
 	struct NeubotPoller *poller;
 	double timeout;
@@ -95,8 +95,8 @@ struct NeubotPoller {
 };
 
 struct NeubotEvent {
-	NeubotPoller_callback callback;
-	NeubotPoller_callback timeback;
+	neubot_hook_vo callback;
+	neubot_hook_vo timeback;
 	struct event ev;
 	struct timeval tv;
 	evutil_socket_t fileno;
@@ -104,7 +104,7 @@ struct NeubotEvent {
 };
 
 struct ResolveContext {
-	NeubotPoller_resolve_callback callback;
+	neubot_hook_vos callback;
 	void *opaque;
 };
 
@@ -128,23 +128,19 @@ static void
 NeubotEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
 {
 	struct NeubotEvent *nevp;
-	NeubotPoller_callback callback;
-	void *nevp_opaque;
 
 	nevp = (struct NeubotEvent *) opaque;
 	if (event & EV_TIMEOUT)
-		callback = nevp->timeback;
+		nevp->timeback(nevp->opaque);
 	else
-		callback = nevp->callback;
-	nevp_opaque = nevp->opaque;
+		nevp->callback(nevp->opaque);
 	free(nevp);
-	callback(nevp_opaque);
 }
 
 static inline struct NeubotEvent *
 NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
-    NeubotPoller_callback callback, NeubotPoller_callback timeback,
-    void *opaque, double timeout, short event)
+    neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
+    double timeout, short event)
 {
 	struct NeubotEvent *nevp;
 	struct timeval *tvp;
@@ -209,13 +205,6 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
       cleanup:
 	neubot_xfree(nevp);
 	return (NULL);
-}
-
-void
-NeubotEvent_cancel(struct NeubotEvent *nevp)
-{
-	event_del(&nevp->ev);
-	free(nevp);
 }
 
 /*
@@ -338,7 +327,7 @@ NeubotPoller_evdns_base_(struct NeubotPoller *self)
 
 int
 NeubotPoller_sched(struct NeubotPoller *self, double delta,
-    NeubotPoller_callback callback, void *opaque)
+    neubot_hook_vo callback, void *opaque)
 {
 	struct NeubotEvent *nevp;
 
@@ -355,22 +344,32 @@ NeubotPoller_sched(struct NeubotPoller *self, double delta,
  * less efficient than the Pollable interface.
  */
 
-struct NeubotEvent *
+int
 NeubotPoller_defer_read(struct NeubotPoller *self, long long fileno,
-    NeubotPoller_callback callback, NeubotPoller_callback timeback,
-    void *opaque, double timeout)
+    neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
+    double timeout)
 {
-	return (NeubotEvent_construct(self, fileno, callback,
-            timeback, opaque, timeout, EV_READ));
+	struct NeubotEvent *nevp;
+
+	nevp = NeubotEvent_construct(self, fileno, callback,
+            timeback, opaque, timeout, EV_READ);
+	if (nevp == NULL)
+		return (-1);
+	return (0);
 }
 
-struct NeubotEvent *
+int
 NeubotPoller_defer_write(struct NeubotPoller *self, long long fileno,
-    NeubotPoller_callback callback, NeubotPoller_callback timeback,
-    void *opaque, double timeout)
+    neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
+    double timeout)
 {
-	return (NeubotEvent_construct(self, fileno, callback,
-            timeback, opaque, timeout, EV_WRITE));
+	struct NeubotEvent *nevp;
+
+	nevp = NeubotEvent_construct(self, fileno, callback,
+            timeback, opaque, timeout, EV_WRITE);
+	if (nevp == NULL)
+		return (-1);
+	return (0);
 }
 
 static void
@@ -383,40 +382,57 @@ NeubotPoller_resolve_callback_internal(int result, char type, int count,
 
 	rc = (struct ResolveContext *) opaque;
 
+	/*
+	 * Note: It was a stupid idea to invoke the callback more
+	 * than once, because (at least in Python) the HookClosure
+	 * object is destroyed at the end of the callback, which
+	 * means that `opaque` is no longer a valid memory address
+	 * after the first callback invocation.
+	 *
+	 * Therefore, to fix the above bug, now we only pass to
+	 * the callback the last resolved address.
+	 *
+	 * Yet, this fix makes this function less useful than it
+	 * was before it was fixed, so I deprecated it.
+	 */
+
 	switch (type) {
 	case DNS_IPv4_A:
-		while (--count >= 0) {
+		if (--count >= 0) {
 			/* Note: address already in network byte order */
 			p = inet_ntop(AF_INET, (char *)addresses + count * 4,
 			    string, sizeof (string));
-			if (p == NULL)
-				continue;
-			rc->callback(rc->opaque, string);
-		}
+			if (p != NULL)
+				rc->callback(rc->opaque, string);
+			else
+				rc->callback(rc->opaque, "");
+		} else
+			rc->callback(rc->opaque, "");
 		break;
 	case DNS_IPv6_AAAA:
-		while (--count >= 0) {
+		if (--count >= 0) {
 			/* Note: address already in network byte order */
 			p = inet_ntop(AF_INET6, (char *)addresses + count * 16,
 			    string, sizeof (string));
-			if (p == NULL)
-				continue;
-			rc->callback(rc->opaque, string);
-		}
+			if (p != NULL)
+				rc->callback(rc->opaque, string);
+			else
+				rc->callback(rc->opaque, "");
+		} else
+			rc->callback(rc->opaque, "");
 		break;
 	default:
-		/* nothing */ ;
+		rc->callback(rc->opaque, "");
 		break;
 	}
 
-	rc->callback(rc->opaque, NULL);
 	free(rc);
 }
 
+/* DEPRECATED */
 int
 NeubotPoller_resolve(struct NeubotPoller *poller, int use_ipv6,
-    const char *address, NeubotPoller_resolve_callback callback,
-    void *opaque)
+    const char *address, neubot_hook_vos callback, void *opaque)
 {
 	struct ResolveContext *rc;
 	int result;
@@ -458,7 +474,7 @@ NeubotPoller_break_loop(struct NeubotPoller *self)
  */
 
 static void
-NeubotPollable_noop(struct NeubotPollable *self)
+NeubotPollable_noop(void *opaque)
 {
 	/* nothing */ ;
 }
@@ -471,17 +487,17 @@ NeubotPollable_dispatch(evutil_socket_t filenum, short event, void *opaque)
 	pollable = (struct NeubotPollable *) opaque;
 
 	if (event & EV_READ)
-		pollable->handle_read(pollable);
+		pollable->handle_read(pollable->opaque);
 	else if (event & EV_WRITE)
-		pollable->handle_write(pollable);
+		pollable->handle_write(pollable->opaque);
 	else
 		/* nothing */ ;
 }
 
 struct NeubotPollable *
-NeubotPollable_construct(struct NeubotPoller *poller, NeubotPollable_callback
-    handle_read, NeubotPollable_callback handle_write, NeubotPollable_callback
-    handle_close, void *opaque)
+NeubotPollable_construct(struct NeubotPoller *poller,
+    neubot_slot_vo handle_read, neubot_slot_vo handle_write,
+    neubot_slot_vo handle_close, void *opaque)
 {
 	struct NeubotPollable *self;
 
@@ -505,18 +521,6 @@ NeubotPollable_construct(struct NeubotPoller *poller, NeubotPollable_callback
 	self->timeout = -1.0;
 
 	return (self);
-}
-
-void *
-NeubotPollable_opaque(struct NeubotPollable *self)
-{
-	return (self->opaque);
-}
-
-struct NeubotPoller *
-NeubotPollable_poller(struct NeubotPollable *self)
-{
-	return (self->poller);
 }
 
 /*
@@ -616,6 +620,6 @@ void
 NeubotPollable_close(struct NeubotPollable *self)
 {
 	NeubotPollable_detach(self);
-	self->handle_close(self);
+	self->handle_close(self->opaque);
 	free(self);
 }

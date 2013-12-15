@@ -4,23 +4,11 @@
 //
 public class LibNeubot {
 
-    // 
-    // In the following we list the C-level structs and
-    // C-level callbacks, to give you more context.
-    // 
-
     // Structs:
 
     //struct NeubotEchoServer;
-    //struct NeubotEvent;
     //struct NeubotPollable;
     //struct NeubotPoller;
-
-    // Callbacks:
-
-    //typedef void (*NeubotPoller_resolve_callback)(long, String);
-    //typedef void (*NeubotPoller_callback)(long);
-    //typedef void (*NeubotPollable_callback)(long);
 
     // 
     // Note: in the following there is a number of functions
@@ -43,19 +31,11 @@ public class LibNeubot {
     public final static native long NeubotEchoServer_construct(long poller, 
         int use_ipv6, String address, String port);
 
-    // NeubotEvent API:
-
-    public final static native void NeubotEvent_cancel(long self);
-
     // NeubotPollable API:
 
     public final static native long NeubotPollable_construct(long poller, 
         String handle_read, String handle_write, String handle_close, 
         long opaque);
-
-    public final static native long NeubotPollable_opaque(long self);
-
-    public final static native long NeubotPollable_poller(long self);
 
     public final static native int NeubotPollable_attach(long self, 
         long filenum);
@@ -84,15 +64,15 @@ public class LibNeubot {
     public final static native long NeubotPoller_construct();
 
     public final static native int NeubotPoller_sched(long self, 
-        double delta, String callback, long obj);
+        double delta, String callback, long opaque);
 
-    public final static native long NeubotPoller_defer_read(long self, 
-        long fileno, String handle_ok, String handle_timeout, long obj, 
-        double timeout);
+    public final static native int NeubotPoller_defer_read(long self, 
+        long fileno, String handle_ok, String handle_timeout, 
+        long opaque, double timeout);
 
-    public final static native long NeubotPoller_defer_write(long self, 
-        long fileno, String handle_ok, String handle_timeout, long obj, 
-        double timeout);
+    public final static native int NeubotPoller_defer_write(long self, 
+        long fileno, String handle_ok, String handle_timeout, 
+        long opaque, double timeout);
 
     public final static native int NeubotPoller_resolve(long self, 
         int use_ipv6, String name, String callback, long opaque);

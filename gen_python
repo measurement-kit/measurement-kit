@@ -1,0 +1,475 @@
+#!/usr/bin/env python
+
+#
+# Copyright (c) 2013
+#     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+#     and Simone Basso <bassosimone@gmail.com>.
+#
+# This file is part of Neubot <http://www.neubot.org/>.
+#
+# Neubot is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Neubot is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+#
+# Note: gen_python is the new, improved Python code generator,
+# and gen_py is the old Python code generator.
+#
+
+# pylint: disable = C0111
+
+import json
+import sys
+
+def python_type(types, name):
+    return types.get(name, name)
+
+def gen_python_imports(stream):
+    stream.write("import ctypes\n")
+    stream.write("import logging\n")
+    stream.write("import sys\n")
+    stream.write("\n")
+    stream.write('if sys.platform == "darwin":\n')
+    stream.write('    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.1"\n')
+    stream.write("else:\n")
+    stream.write('    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.1"\n')
+    stream.write("\n")
+    stream.write("LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)\n")
+
+def gen_python_prototype(stream, types, class_name, method_info):
+
+    if method_info[0] == "__construct__":
+        retval = class_name + "_p"
+        funcname = class_name + "_construct"
+
+        # Generate the slots
+        args__ = method_info[1:]
+        args = []
+        for argtype, argname in args__:
+            if argtype.startswith("slot_"):
+                for slotname in argname:
+                    args.append(("NEUBOT_" + argtype.upper(), slotname))
+                args.append(("Object", "opaque"))
+            else:
+                args.append((argtype, argname))
+
+    elif method_info[0] == "__destruct__":
+        retval = "void"
+        funcname = class_name + "_" + method_info[1]
+        args = [(class_name + "_p", "self")]
+
+    else:
+        retval = method_info[0]
+        funcname = class_name + "_" + method_info[1]
+
+        # Generate the hooks
+        args__ = method_info[2:]
+        args = []
+        for argtype, argname in args__:
+            if argtype.startswith("hook_"):
+                for hookname in argname:
+                    args.append(("NEUBOT_" + argtype.upper(), hookname))
+                args.append(("Object", "opaque"))
+            else:
+                args.append((argtype, argname))
+
+        args.insert(0, (class_name + "_p", "self"))
+
+    if retval != "void":
+        stream.write("LIBNEUBOT.%s.restype = %s\n" % (funcname,
+          python_type(types, retval)))
+    stream.write("LIBNEUBOT.%s.argtypes = (\n" % funcname)
+    for argtype, _ in args:
+        argtype = python_type(types, argtype)
+        stream.write("    %s,\n" % argtype)
+    stream.write(")\n")
+
+def gen_python_func_top(stream, types, retval_type, func_name, arguments):
+    stream.write("    ")
+    nwritten = 4
+    stream.write("def ")
+    nwritten += 4
+    stream.write(func_name)
+    nwritten += len(func_name)
+    stream.write("(")
+    nwritten += 1
+    if arguments:
+        for index, arg in enumerate(arguments):
+            if index > 0:
+                stream.write(",")
+                nwritten += 1
+            _, argname = arg
+            if nwritten + len(argname) >= 75:
+                stream.write("\n")
+                stream.write("          ")
+                nwritten = 10
+            elif index > 0:
+                stream.write(" ")
+                nwritten += 1
+            stream.write(argname)
+            nwritten += len(argname)
+    else:
+        stream.write("")
+    stream.write("):\n")
+
+def gen_python_func_bottom(stream):
+    stream.write("\n")
+
+def gen_py_slot(stream, class_name, slot_type, slot_name, destructor_name):
+    if slot_type != "slot_vo":
+        raise RuntimeError("unrecognised slot type")
+    stream.write("    ")
+    stream.write("def %s(self):\n" % slot_name)
+    stream.write("        pass\n")
+    stream.write("\n")
+    stream.write("    ")
+    stream.write("@staticmethod\n")
+    stream.write("    ")
+    stream.write("def _%s_(opaque):\n" % slot_name)
+    stream.write("        # pylint: disable = W0702\n")
+    stream.write("        try:\n")
+    stream.write("            opaque.%s()\n" % slot_name)
+    stream.write("        except:\n")
+    stream.write("            logging.warning('Exception', exc_info=1)\n")
+    stream.write("            opaque.%s()\n" % destructor_name)
+    stream.write("        # pylint: enable = W0702\n")
+    stream.write("\n")
+
+def gen_python_callfunc(stream, nwritten, func_name, args):
+    stream.write(func_name)
+    nwritten += len(func_name)
+    stream.write("(")
+    nwritten += 1
+    for index, arg in enumerate(args):
+        argtype, argname = arg
+        if index > 0:
+            stream.write(",")
+            nwritten += 1
+        if argtype and argtype.endswith("_p"):
+            argname = argname + "._context"
+        if nwritten + len(argname) >= 78:
+            stream.write("\n")
+            stream.write("          ")
+            nwritten = 10
+        elif index > 0:
+            stream.write(" ")
+            nwritten += 1
+        stream.write(argname)
+        nwritten += len(argname)
+    stream.write(")")
+
+def gen_python_init(stream, types, class_name, struct_name, init_args,
+      destructor_name):
+
+    # Generate the slots
+    py_args = []
+    c_args = []
+    have_slots = 0
+    for argtype, argname in init_args:
+        if argtype.startswith("slot_"):
+            if not have_slots:
+                stream.write("    #\n")
+                stream.write("    # <Slots>\n")
+                stream.write("    #\n")
+                stream.write("\n")
+            have_slots = 1
+            for slotname in argname:
+                gen_py_slot(stream, class_name, argtype, slotname,
+                  destructor_name)
+                c_args.append(("NEUBOT_" + argtype.upper(),
+                  "self._c_" + slotname + "_"))
+            c_args.append(("Object", "self._c_self"))
+        else:
+            py_args.append((argtype, argname))
+            c_args.append((argtype, argname))
+
+    if have_slots:
+        stream.write("    #\n")
+        stream.write("    # </Slots>\n")
+        stream.write("    #\n")
+        stream.write("\n")
+
+    py_args.insert(0, ("Object", "self"))
+    gen_python_func_top(stream, types, None, "__init__", py_args)
+
+    # If we have slots, keep the ctypes wrappers safe
+    if have_slots:
+        for argtype, argname in c_args:
+            if argtype.startswith("NEUBOT_SLOT_"):
+                stream.write("        ")
+                stream.write("%s = %s(%s)\n" % (argname,
+                  argtype, argname.replace("self._c_", "self._", 1)))
+        stream.write("        ")
+        stream.write("self._c_self = ctypes.py_object(self)\n")
+
+    stream.write("        # We cannot destroy until the object is complete\n")
+    stream.write("        self._can_destroy = False\n")
+
+    stream.write("        ")
+    nwritten = 8
+    stream.write("self._context = ")
+    nwritten += 17
+    gen_python_callfunc(stream, nwritten, "LIBNEUBOT.%s_construct"
+      % struct_name, c_args)
+    stream.write("\n")
+
+    stream.write("        ")
+    stream.write("if not self._context:\n")
+    stream.write("            ")
+    stream.write("raise RuntimeError('out of memory')\n")
+
+    stream.write("        # From now on we can destroy this object\n")
+    stream.write("        self._can_destroy = True\n")
+
+    stream.write("        ")
+    stream.write("LIBNEUBOT_OBJECTS.add(self)\n")
+
+def gen_python_method(stream, types, struct_name, retval_type,
+                   meth_name, meth_args):
+
+    # Generate the hooks
+    c_args = []
+    py_args = []
+    for argtype, argname in meth_args:
+        if argtype.startswith("hook_"):
+            for hookname in argname:
+                py_args.append(("NEUBOT_" + argtype.upper(), hookname))
+                c_args.append(("NEUBOT_" + argtype.upper(),
+                    "self._%s_%s" % (meth_name, hookname)))
+            py_args.append(("Object", "opaque"))
+            c_args.append(("Object", "closure"))
+        else:
+            py_args.append((argtype, argname))
+            c_args.append((argtype, argname))
+
+    py_args.insert(0, ("Object", "self"))
+    c_args.insert(0, ("Object", "self._context"))
+
+    gen_python_func_top(stream, types, retval_type, meth_name, py_args)
+
+    for argtype, argname in meth_args:
+        if argtype.startswith("hook_"):
+            stream.write("        ")
+            stream.write("closure = NeubotHookClosure()\n")
+            stream.write("        ")
+            stream.write("# pylint: disable = W0201\n")
+            for hookname in argname:
+                stream.write("        ")
+                stream.write("closure.pyfunc_%s = %s\n" %
+                  (hookname, hookname))
+            stream.write("        ")
+            stream.write("closure.opaque = opaque\n")
+            stream.write("        ")
+            stream.write("# pylint: enable = W0201\n")
+            stream.write("        ")
+            stream.write("LIBNEUBOT_OBJECTS.add(closure)\n")
+
+    stream.write("        ")
+    nwritten = 8
+    if retval_type == "status_t":
+        stream.write("retval = ")
+        nwritten += 9
+    elif retval_type != "void":
+        stream.write("return ")
+        nwritten += 7
+    gen_python_callfunc(stream, nwritten, "LIBNEUBOT.%s_%s" %
+      (struct_name, meth_name), c_args)
+    stream.write("\n")
+
+    if retval_type == "status_t":
+        stream.write("        ")
+        stream.write("if retval != 0:\n")
+        stream.write("            ")
+        stream.write("raise RuntimeError('%s failed')\n" % meth_name)
+        stream.write("        ")
+        stream.write("return retval\n")
+
+def main():
+    path = sys.argv[1]
+    filep = open(path, "r")
+    interface = json.load(filep)
+    stream = sys.stdout
+
+    stream.write("#\n")
+    stream.write("# LibNeubot interface - Public domain.\n")
+    stream.write("# WARNING: Autogenerated file - do not edit!\n")
+    stream.write("#\n")
+    stream.write("\n")
+
+    stream.write("# pylint: disable = C0111\n")
+    stream.write("\n")
+
+    gen_python_imports(stream)
+
+    stream.write("LIBNEUBOT_OBJECTS = set()\n")
+    stream.write("\n")
+
+    stream.write("NEUBOT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)\n")
+    stream.write("NEUBOT_SLOT_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,\n")
+    stream.write("  ctypes.c_char_p)\n")
+    stream.write("\n")
+    stream.write("NEUBOT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)\n")
+    stream.write("NEUBOT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,\n")
+    stream.write("  ctypes.c_char_p)\n")
+    stream.write("\n")
+
+    stream.write("class NeubotHookClosure(object):\n")
+    stream.write("    pass\n")
+    stream.write("\n")
+
+    types = {
+        "Object": "ctypes.py_object",
+        "cstring": "ctypes.c_char_p",
+        "double": "ctypes.c_double",
+        "int": "ctypes.c_int",
+        "long long": "ctypes.c_longlong",
+        "status_t": "ctypes.c_int",
+        "void_p": "ctypes.c_void_p",
+    }
+
+    # Process all class names once, to register all the types
+    for struct_name in sorted(interface["classes"]):
+        class_name = struct_name.replace("Neubot", "", 1)
+        types[struct_name + "_p"] = "ctypes.c_void_p"
+
+    # Process once more, to generate all the prototypes
+    for struct_name in sorted(interface["classes"]):
+        class_name = struct_name.replace("Neubot", "", 1)
+
+        stream.write("#\n")
+        stream.write("# %s prototypes:\n" % struct_name)
+        stream.write("#\n")
+        stream.write("\n")
+
+        for method_info in interface["classes"][struct_name]:
+            gen_python_prototype(stream, types, struct_name, method_info)
+            stream.write("\n")
+
+    # Finally, generate the wrapper classes
+    for struct_name in sorted(interface["classes"]):
+        class_name = struct_name.replace("Neubot", "", 1)
+
+        stream.write("#\n")
+        stream.write("# %s wrapper:\n" % struct_name)
+        stream.write("#\n")
+        stream.write("\n")
+
+        stream.write("class %s(object):\n" % class_name)
+        stream.write("\n")
+
+        # Process the methods once, to find the name of the destructor
+        destructor_name = None
+        for method_info in interface["classes"][struct_name]:
+            if method_info[0] == "__destruct__":
+                destructor_name = method_info[1]
+                break
+
+        # Process all the methods once, to generate all the hook wrappers
+        hooks_to_init = []
+
+        for index, method_info in enumerate(interface["classes"][struct_name]):
+            if method_info[0] == "__construct__":
+                continue
+            if method_info[0] == "__destruct__":
+                continue
+            method_name = method_info[1]
+            for argtype, argname in method_info[2:]:
+                if not argtype.startswith("hook_"):
+                    continue
+                if not hooks_to_init:
+                    stream.write("    #\n")
+                    stream.write("    # <Hooks>\n")
+                    stream.write("    #\n")
+                    stream.write("\n")
+                for hookname in argname:
+                    stream.write("    ")
+                    stream.write("@staticmethod\n")
+                    stream.write("    ")
+                    if argtype == "hook_vo":
+                        stream.write("def _%s_%s_(closure):\n" % (
+                          method_name, hookname))
+                        stream.write("        ")
+                        stream.write("LIBNEUBOT_OBJECTS.remove(closure)\n")
+                        stream.write("        ")
+                        stream.write("closure.pyfunc_%s(closure.opaque)\n" % (
+                          hookname))
+                        stream.write("\n")
+                        hooks_to_init.append((argtype, method_name, hookname))
+                    elif argtype == "hook_vos":
+                        stream.write("def _%s_%s_(closure, string):\n" % (
+                          method_name, hookname))
+                        stream.write("        ")
+                        stream.write("LIBNEUBOT_OBJECTS.remove(closure)\n")
+                        stream.write("        ")
+                        stream.write("closure.pyfunc_%s(closure.opaque, "
+                                     "string)\n" % (hookname))
+                        stream.write("\n")
+                        hooks_to_init.append((argtype, method_name, hookname))
+                    else:
+                        raise RuntimeError("unsupported hook")
+
+        if hooks_to_init:
+            stream.write("    #\n")
+            stream.write("    # </Hooks>\n")
+            stream.write("    #\n")
+            stream.write("\n")
+
+        # Process the methods once more
+        for method_info in interface["classes"][struct_name]:
+            if method_info[0] == "__construct__":
+
+                gen_python_init(stream, types, class_name, struct_name,
+                  method_info[1:], destructor_name)
+
+                if hooks_to_init:
+                    stream.write("\n")
+                    stream.write("        ")
+                    stream.write("# Initialise hooks\n")
+
+                for argtype, method_name, hookname in hooks_to_init:
+                    if argtype == "hook_vo":
+                        stream.write("        ")
+                        stream.write("self._%s_%s = NEUBOT_HOOK_VO(\n"
+                                     % (method_name, hookname))
+                        stream.write("          ")
+                        stream.write("self._%s_%s_)\n" % (method_name,
+                                     hookname))
+
+                    elif argtype == "hook_vos":
+                        stream.write("        ")
+                        stream.write("self._%s_%s = NEUBOT_HOOK_VOS(\n"
+                                     % (method_name, hookname))
+                        stream.write("          ")
+                        stream.write("self._%s_%s_)\n" % (method_name,
+                                     hookname))
+
+                    else:
+                        raise RuntimeError("unsupported hook")
+
+            elif method_info[0] == "__destruct__":
+                stream.write("    def %s(self):\n" % method_info[1])
+                stream.write("        if not self._can_destroy:\n")
+                stream.write("            return\n")
+                stream.write("        # Idempotent destructor for safety\n")
+                stream.write("        self._can_destroy = False\n")
+                stream.write("        LIBNEUBOT_OBJECTS.remove(self)\n")
+                stream.write("        LIBNEUBOT.%s_%s(self._context)\n" % (
+                  struct_name, method_info[1]))
+
+            else:
+                gen_python_method(stream, types, struct_name, method_info[0],
+                  method_info[1], method_info[2:])
+            gen_python_func_bottom(stream);
+
+if __name__ == "__main__":
+    main()

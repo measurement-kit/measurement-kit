@@ -25,9 +25,17 @@ echo "Generate: neubot.h"
 
 ./gen_header libneubot.json > neubot.h
 
+echo "Generate: neubot.hh"
+
+./gen_cxx libneubot.json > neubot.hh
+
 echo "Generate: libneubot.py"
 
 ./gen_py libneubot.json > libneubot.py
+
+echo "Generate: libneubot1.py"
+
+./gen_python libneubot.json > libneubot1.py
 
 echo "Generate: LibNeubot.java"
 
