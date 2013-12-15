@@ -26,7 +26,7 @@ LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 NEUBOT_POLLER_RESOLVE_CALLBACK = ctypes.CFUNCTYPE(None, 
     ctypes.py_object, ctypes.c_char_p)
 NEUBOT_POLLER_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.py_object)
-NEUBOT_POLLABLE_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_void_p)
+NEUBOT_POLLABLE_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.py_object)
 
 # NeubotEchoServer API:
 
@@ -60,28 +60,6 @@ def NeubotPollable_construct(poller, handle_read, handle_write,
       handle_close, opaque):
     ret = LIBNEUBOT.NeubotPollable_construct(poller, handle_read, 
       handle_write, handle_close, opaque)
-    if not ret:
-        raise RuntimeError('LibNeubot error')
-    return ret
-
-LIBNEUBOT.NeubotPollable_opaque.restype = ctypes.c_void_p
-LIBNEUBOT.NeubotPollable_opaque.argtypes = (
-    ctypes.c_void_p,
-)
-
-def NeubotPollable_opaque(handle):
-    ret = LIBNEUBOT.NeubotPollable_opaque(handle)
-    if not ret:
-        raise RuntimeError('LibNeubot error')
-    return ret
-
-LIBNEUBOT.NeubotPollable_poller.restype = ctypes.c_void_p
-LIBNEUBOT.NeubotPollable_poller.argtypes = (
-    ctypes.c_void_p,
-)
-
-def NeubotPollable_poller(handle):
-    ret = LIBNEUBOT.NeubotPollable_poller(handle)
     if not ret:
         raise RuntimeError('LibNeubot error')
     return ret

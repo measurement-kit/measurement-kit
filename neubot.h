@@ -13,7 +13,7 @@ struct NeubotPoller;
 
 typedef void (*NeubotPoller_resolve_callback)(void *, const char *);
 typedef void (*NeubotPoller_callback)(void *);
-typedef void (*NeubotPollable_callback)(struct NeubotPollable *);
+typedef void (*NeubotPollable_callback)(void *);
 
 /* NeubotEchoServer API: */
 
@@ -25,10 +25,6 @@ struct NeubotEchoServer *NeubotEchoServer_construct(struct NeubotPoller *,
 struct NeubotPollable *NeubotPollable_construct(struct NeubotPoller *, 
     NeubotPollable_callback, NeubotPollable_callback, NeubotPollable_callback, 
     void *);
-
-void *NeubotPollable_opaque(struct NeubotPollable *);
-
-struct NeubotPoller *NeubotPollable_poller(struct NeubotPollable *);
 
 int NeubotPollable_attach(struct NeubotPollable *, long long);
 

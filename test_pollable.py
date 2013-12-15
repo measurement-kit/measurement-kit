@@ -3,25 +3,27 @@
 
 """ Test for NeubotPollable """
 
+import ctypes
 import os
 import sys
 
 import libneubot
 
-def read_callback(pollable):
+def read_callback(ccontext):
     """ Read callback """
+    _, pollable = ccontext
     data = os.read(0, 1024)
     if not data:
         libneubot.NeubotPollable_close(pollable)
         return
     sys.stdout.write(data)
 
-def write_callback(pollable):
+def write_callback(ccontext):
     """ Write callback """
 
-def close_callback(pollable):
+def close_callback(ccontext):
     """ Close callback """
-    poller = libneubot.NeubotPollable_poller(pollable)
+    poller, _ = ccontext
     libneubot.NeubotPoller_break_loop(poller)
 
 READ_CALLBACK = libneubot.NEUBOT_POLLABLE_CALLBACK(read_callback)
@@ -33,8 +35,14 @@ def main():
 
     poller = libneubot.NeubotPoller_construct()
 
+    context = [ poller ]
+    ccontext = ctypes.py_object(context)
+
     pollable = libneubot.NeubotPollable_construct(poller, READ_CALLBACK,
-      WRITE_CALLBACK, CLOSE_CALLBACK, None)
+      WRITE_CALLBACK, CLOSE_CALLBACK, ccontext)
+
+    context.append(pollable)
+
     libneubot.NeubotPollable_attach(pollable, 0)
     libneubot.NeubotPollable_set_readable(pollable)
 

@@ -8,7 +8,7 @@
         ["void", "NeubotPoller_resolve_callback", ["Object", "opaque"],
             ["cstring", "address"]],
         ["void", "NeubotPoller_callback", ["Object", "opaque"]],
-        ["void", "NeubotPollable_callback", ["NeubotPollable_p", "self"]]
+        ["void", "NeubotPollable_callback", ["Object", "opaque"]]
     ],
     "classes": {
 
@@ -24,8 +24,6 @@
                 ["NeubotPollable_callback", "handle_write"],
                 ["NeubotPollable_callback", "handle_close"],
                 ["Object", "opaque"]],
-            ["void_p", "opaque"],
-            ["NeubotPoller_p", "poller"],
             ["status_t", "attach", ["long long", "filenum"]],
             ["void", "detach"],
             ["long long", "fileno"],

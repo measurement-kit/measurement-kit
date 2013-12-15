@@ -48,10 +48,6 @@ public class LibNeubot {
         String handle_read, String handle_write, String handle_close, 
         long opaque);
 
-    public final static native long NeubotPollable_opaque(long self);
-
-    public final static native long NeubotPollable_poller(long self);
-
     public final static native int NeubotPollable_attach(long self, 
         long filenum);
 
