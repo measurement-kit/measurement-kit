@@ -20,3 +20,6 @@
 
 # Auto-generated files
 Makefile
+
+# Python compiled files
+*.pyc
