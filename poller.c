@@ -72,9 +72,9 @@
 
 struct NeubotPollable {
 	TAILQ_ENTRY(NeubotPollable) entry;
-	NeubotPollable_callback handle_close;
-	NeubotPollable_callback handle_read;
-	NeubotPollable_callback handle_write;
+	neubot_slot_vo handle_close;
+	neubot_slot_vo handle_read;
+	neubot_slot_vo handle_write;
 	evutil_socket_t fileno;
 	struct NeubotPoller *poller;
 	double timeout;
@@ -95,8 +95,8 @@ struct NeubotPoller {
 };
 
 struct NeubotEvent {
-	NeubotPoller_callback callback;
-	NeubotPoller_callback timeback;
+	neubot_hook_vo callback;
+	neubot_hook_vo timeback;
 	struct event ev;
 	struct timeval tv;
 	evutil_socket_t fileno;
@@ -104,7 +104,7 @@ struct NeubotEvent {
 };
 
 struct ResolveContext {
-	NeubotPoller_resolve_callback callback;
+	neubot_hook_vos callback;
 	void *opaque;
 };
 
@@ -139,8 +139,8 @@ NeubotEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
 
 static inline struct NeubotEvent *
 NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
-    NeubotPoller_callback callback, NeubotPoller_callback timeback,
-    void *opaque, double timeout, short event)
+    neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
+    double timeout, short event)
 {
 	struct NeubotEvent *nevp;
 	struct timeval *tvp;
@@ -327,7 +327,7 @@ NeubotPoller_evdns_base_(struct NeubotPoller *self)
 
 int
 NeubotPoller_sched(struct NeubotPoller *self, double delta,
-    NeubotPoller_callback callback, void *opaque)
+    neubot_hook_vo callback, void *opaque)
 {
 	struct NeubotEvent *nevp;
 
@@ -346,8 +346,8 @@ NeubotPoller_sched(struct NeubotPoller *self, double delta,
 
 int
 NeubotPoller_defer_read(struct NeubotPoller *self, long long fileno,
-    NeubotPoller_callback callback, NeubotPoller_callback timeback,
-    void *opaque, double timeout)
+    neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
+    double timeout)
 {
 	struct NeubotEvent *nevp;
 
@@ -360,8 +360,8 @@ NeubotPoller_defer_read(struct NeubotPoller *self, long long fileno,
 
 int
 NeubotPoller_defer_write(struct NeubotPoller *self, long long fileno,
-    NeubotPoller_callback callback, NeubotPoller_callback timeback,
-    void *opaque, double timeout)
+    neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
+    double timeout)
 {
 	struct NeubotEvent *nevp;
 
@@ -414,8 +414,7 @@ NeubotPoller_resolve_callback_internal(int result, char type, int count,
 
 int
 NeubotPoller_resolve(struct NeubotPoller *poller, int use_ipv6,
-    const char *address, NeubotPoller_resolve_callback callback,
-    void *opaque)
+    const char *address, neubot_hook_vos callback, void *opaque)
 {
 	struct ResolveContext *rc;
 	int result;
@@ -478,9 +477,9 @@ NeubotPollable_dispatch(evutil_socket_t filenum, short event, void *opaque)
 }
 
 struct NeubotPollable *
-NeubotPollable_construct(struct NeubotPoller *poller, NeubotPollable_callback
-    handle_read, NeubotPollable_callback handle_write, NeubotPollable_callback
-    handle_close, void *opaque)
+NeubotPollable_construct(struct NeubotPoller *poller,
+    neubot_slot_vo handle_read, neubot_slot_vo handle_write,
+    neubot_slot_vo handle_close, void *opaque)
 {
 	struct NeubotPollable *self;
 

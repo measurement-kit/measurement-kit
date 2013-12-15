@@ -4,12 +4,6 @@
         "Used by gen_header to generate neubot.h, by gen_py to",
         "generate libneubot.py, and by gen_java to generate LibNeubot.java"
     ],
-    "callbacks": [
-        ["void", "NeubotPoller_resolve_callback", ["Object", "opaque"],
-            ["cstring", "address"]],
-        ["void", "NeubotPoller_callback", ["Object", "opaque"]],
-        ["void", "NeubotPollable_callback", ["Object", "opaque"]]
-    ],
     "classes": {
 
         "NeubotEchoServer": [
@@ -19,11 +13,8 @@
         ],
 
         "NeubotPollable": [
-            ["__construct__", ["NeubotPoller_p", "poller"],
-                ["NeubotPollable_callback", "handle_read"],
-                ["NeubotPollable_callback", "handle_write"],
-                ["NeubotPollable_callback", "handle_close"],
-                ["Object", "opaque"]],
+            ["__construct__", ["NeubotPoller_p", "poller"], ["slot_vo",
+                ["handle_read", "handle_write", "handle_close"]]],
             ["status_t", "attach", ["long long", "filenum"]],
             ["void", "detach"],
             ["long long", "fileno"],
@@ -33,24 +24,21 @@
             ["status_t", "unset_writable"],
             ["void", "set_timeout", ["double", "delta"]],
             ["void", "clear_timeout"],
-            ["void", "close"]
+            ["__destruct__", "close"]
         ],
 
         "NeubotPoller": [
             ["__construct__"],
-            ["status_t", "sched", ["double", "delta"], ["NeubotPoller_callback",
-                "callback"], ["Object", "obj"]],
+            ["status_t", "sched", ["double", "delta"],
+                ["hook_vo", ["callback"]]],
             ["status_t", "defer_read", ["long long", "fileno"],
-                ["NeubotPoller_callback", "handle_ok"],
-                ["NeubotPoller_callback", "handle_timeout"],
-                ["Object", "obj"], ["double", "timeout"]],
+                ["hook_vo", ["handle_ok", "handle_timeout"]],
+                ["double", "timeout"]],
             ["status_t", "defer_write", ["long long", "fileno"],
-                ["NeubotPoller_callback", "handle_ok"],
-                ["NeubotPoller_callback", "handle_timeout"],
-                ["Object", "obj"], ["double", "timeout"]],
+                ["hook_vo", ["handle_ok", "handle_timeout"]],
+                ["double", "timeout"]],
             ["status_t", "resolve", ["int", "use_ipv6"], ["cstring", "name"],
-                ["NeubotPoller_resolve_callback", "callback"],
-                ["Object", "opaque"]],
+                ["hook_vos", ["callback"]]],
             ["void", "loop"],
             ["void", "break_loop"]
         ]

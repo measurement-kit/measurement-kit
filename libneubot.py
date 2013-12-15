@@ -15,6 +15,14 @@ else:
 
 LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 
+NEUBOT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
+NEUBOT_SLOT_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,
+  ctypes.c_char_p)
+
+NEUBOT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
+NEUBOT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,
+  ctypes.c_char_p)
+
 # Classes:
 
 # struct NeubotEchoServer
@@ -22,11 +30,6 @@ LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 # struct NeubotPoller
 
 # Callbacks:
-
-NEUBOT_POLLER_RESOLVE_CALLBACK = ctypes.CFUNCTYPE(None, 
-    ctypes.py_object, ctypes.c_char_p)
-NEUBOT_POLLER_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.py_object)
-NEUBOT_POLLABLE_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.py_object)
 
 # NeubotEchoServer API:
 
@@ -50,9 +53,9 @@ def NeubotEchoServer_construct(poller, use_ipv6, address, port):
 LIBNEUBOT.NeubotPollable_construct.restype = ctypes.c_void_p
 LIBNEUBOT.NeubotPollable_construct.argtypes = (
     ctypes.c_void_p,
-    NEUBOT_POLLABLE_CALLBACK,
-    NEUBOT_POLLABLE_CALLBACK,
-    NEUBOT_POLLABLE_CALLBACK,
+    NEUBOT_SLOT_VO,
+    NEUBOT_SLOT_VO,
+    NEUBOT_SLOT_VO,
     ctypes.py_object,
 )
 
@@ -174,12 +177,12 @@ LIBNEUBOT.NeubotPoller_sched.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_sched.argtypes = (
     ctypes.c_void_p,
     ctypes.c_double,
-    NEUBOT_POLLER_CALLBACK,
+    NEUBOT_HOOK_VO,
     ctypes.py_object,
 )
 
-def NeubotPoller_sched(handle, delta, callback, obj):
-    ret = LIBNEUBOT.NeubotPoller_sched(handle, delta, callback, obj)
+def NeubotPoller_sched(handle, delta, callback, opaque):
+    ret = LIBNEUBOT.NeubotPoller_sched(handle, delta, callback, opaque)
     if ret != 0:
         raise RuntimeError('LibNeubot error')
     return ret
@@ -188,16 +191,16 @@ LIBNEUBOT.NeubotPoller_defer_read.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_defer_read.argtypes = (
     ctypes.c_void_p,
     ctypes.c_longlong,
-    NEUBOT_POLLER_CALLBACK,
-    NEUBOT_POLLER_CALLBACK,
+    NEUBOT_HOOK_VO,
+    NEUBOT_HOOK_VO,
     ctypes.py_object,
     ctypes.c_double,
 )
 
 def NeubotPoller_defer_read(handle, fileno, handle_ok, handle_timeout, 
-      obj, timeout):
+      opaque, timeout):
     ret = LIBNEUBOT.NeubotPoller_defer_read(handle, fileno, handle_ok, 
-      handle_timeout, obj, timeout)
+      handle_timeout, opaque, timeout)
     if ret != 0:
         raise RuntimeError('LibNeubot error')
     return ret
@@ -206,16 +209,16 @@ LIBNEUBOT.NeubotPoller_defer_write.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_defer_write.argtypes = (
     ctypes.c_void_p,
     ctypes.c_longlong,
-    NEUBOT_POLLER_CALLBACK,
-    NEUBOT_POLLER_CALLBACK,
+    NEUBOT_HOOK_VO,
+    NEUBOT_HOOK_VO,
     ctypes.py_object,
     ctypes.c_double,
 )
 
 def NeubotPoller_defer_write(handle, fileno, handle_ok, handle_timeout, 
-      obj, timeout):
+      opaque, timeout):
     ret = LIBNEUBOT.NeubotPoller_defer_write(handle, fileno, handle_ok, 
-      handle_timeout, obj, timeout)
+      handle_timeout, opaque, timeout)
     if ret != 0:
         raise RuntimeError('LibNeubot error')
     return ret
@@ -225,7 +228,7 @@ LIBNEUBOT.NeubotPoller_resolve.argtypes = (
     ctypes.c_void_p,
     ctypes.c_int,
     ctypes.c_char_p,
-    NEUBOT_POLLER_RESOLVE_CALLBACK,
+    NEUBOT_HOOK_VOS,
     ctypes.py_object,
 )
 

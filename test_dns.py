@@ -13,7 +13,7 @@ def resolve_callback(poller, address):
     sys.stdout.write("address: %s\n" % address)
     libneubot.NeubotPoller_break_loop(poller)
 
-RESOLVE_CALLBACK = libneubot.NEUBOT_POLLER_RESOLVE_CALLBACK(resolve_callback)
+RESOLVE_CALLBACK = libneubot.NEUBOT_HOOK_VOS(resolve_callback)
 
 def main():
     """ Main function """

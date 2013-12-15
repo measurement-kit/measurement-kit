@@ -26,9 +26,9 @@ def close_callback(ccontext):
     poller, _ = ccontext
     libneubot.NeubotPoller_break_loop(poller)
 
-READ_CALLBACK = libneubot.NEUBOT_POLLABLE_CALLBACK(read_callback)
-WRITE_CALLBACK = libneubot.NEUBOT_POLLABLE_CALLBACK(write_callback)
-CLOSE_CALLBACK = libneubot.NEUBOT_POLLABLE_CALLBACK(close_callback)
+READ_CALLBACK = libneubot.NEUBOT_SLOT_VO(read_callback)
+WRITE_CALLBACK = libneubot.NEUBOT_SLOT_VO(write_callback)
+CLOSE_CALLBACK = libneubot.NEUBOT_SLOT_VO(close_callback)
 
 def main():
     """ Main function """

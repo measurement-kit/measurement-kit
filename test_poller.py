@@ -28,8 +28,8 @@ def read_ok(poller):
     sys.stdout.write(data)
     schedule_read(poller)
 
-READ_OK = libneubot.NEUBOT_POLLER_CALLBACK(read_ok)
-READ_TIMEO = libneubot.NEUBOT_POLLER_CALLBACK(read_timeo)
+READ_OK = libneubot.NEUBOT_HOOK_VO(read_ok)
+READ_TIMEO = libneubot.NEUBOT_HOOK_VO(read_timeo)
 
 def schedule_read(poller):
     """ Schedule a read operation """
