@@ -35,6 +35,21 @@ namespace Neubot {
     class Pollable {
         struct NeubotPollable *_context;
 
+        static void handle_read__(void *opaque) {
+            Pollable *self = (Pollable *) opaque;
+            self->handle_read();
+        };
+
+        static void handle_write__(void *opaque) {
+            Pollable *self = (Pollable *) opaque;
+            self->handle_write();
+        };
+
+        static void handle_close__(void *opaque) {
+            Pollable *self = (Pollable *) opaque;
+            self->handle_close();
+        };
+
       public:
         operator struct NeubotPollable *(void) {
             return (this->_context);
@@ -42,24 +57,9 @@ namespace Neubot {
 
         virtual void handle_read(void) = 0;
 
-        static void handle_read__(void *opaque) {
-            Pollable *self = (Pollable *) opaque;
-            self->handle_read();
-        };
-
         virtual void handle_write(void) = 0;
 
-        static void handle_write__(void *opaque) {
-            Pollable *self = (Pollable *) opaque;
-            self->handle_write();
-        };
-
         virtual void handle_close(void) = 0;
-
-        static void handle_close__(void *opaque) {
-            Pollable *self = (Pollable *) opaque;
-            self->handle_close();
-        };
 
         Pollable(Poller *poller) {
             this->_context = NeubotPollable_construct(

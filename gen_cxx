@@ -72,12 +72,16 @@ def gen_cxx_func_bottom(stream):
     stream.write("        };\n")
     stream.write("\n")
 
-def gen_cxx_slot(stream, class_name, slot_type, slot_name):
+def gen_cxx_slot_public(stream, class_name, slot_type, slot_name):
     if slot_type != "slot_vo":
         raise RuntimeErrot("unrecognised slot type")
     stream.write("        ")
     stream.write("virtual void %s(void) = 0;\n" % slot_name)
     stream.write("\n")
+
+def gen_cxx_slot_private(stream, class_name, slot_type, slot_name):
+    if slot_type != "slot_vo":
+        raise RuntimeErrot("unrecognised slot type")
     stream.write("        ")
     stream.write("static void %s__(void *opaque) {\n" % slot_name)
     stream.write("            ")
@@ -115,13 +119,13 @@ def gen_cxx_callfunc(stream, nwritten, func_name, args):
 
 def gen_cxx_init(stream, types, class_name, struct_name, init_args):
 
-    # Generate the slots
+    # Generate the slots (public)
     cxx_args = []
     c_args = []
     for argtype, argname in init_args:
         if argtype.startswith("slot_"):
             for slotname in argname:
-                gen_cxx_slot(stream, class_name, argtype, slotname)
+                gen_cxx_slot_public(stream, class_name, argtype, slotname)
                 c_args.append(("neubot_" + argtype, "this->" + slotname + "__"))
             c_args.append(("Object", "this"))
         else:
@@ -219,6 +223,16 @@ def main():
         stream.write("    class %s {\n" % class_name)
         stream.write("        struct %s *_context;\n" % struct_name);
         stream.write("\n")
+
+        # Generate the slots (private)
+        for method_info in interface["classes"][struct_name]:
+            if method_info[0] != "__construct__":
+                continue
+            for argtype, argname in method_info[1:]:
+                if argtype.startswith("slot_"):
+                    for slotname in argname:
+                        gen_cxx_slot_private(stream, class_name,
+                          argtype, slotname)
 
         stream.write("      public:\n")
 
