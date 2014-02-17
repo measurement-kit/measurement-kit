@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2013
+# Copyright (c) 2013-2014
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>.
 #
@@ -147,6 +147,8 @@ def main():
         clang_comment("%s API:" % name)
         clang_empty_line()
         for method in interface["classes"][name]:
+            if method[0] == "__cast_to_c__":
+                continue
             clang_declare_method(name, method)
             clang_empty_line()
 
