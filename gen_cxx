@@ -76,8 +76,7 @@ def gen_cxx_slot(stream, class_name, slot_type, slot_name):
     if slot_type != "slot_vo":
         raise RuntimeErrot("unrecognised slot type")
     stream.write("        ")
-    stream.write("virtual void %s(void) {\n" % slot_name)
-    stream.write("        };\n")
+    stream.write("virtual void %s(void) = 0;\n" % slot_name)
     stream.write("\n")
     stream.write("        ")
     stream.write("static void %s__(void *opaque) {\n" % slot_name)

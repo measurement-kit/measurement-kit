@@ -40,24 +40,21 @@ namespace Neubot {
             return (this->_context);
         }
 
-        virtual void handle_read(void) {
-        };
+        virtual void handle_read(void) = 0;
 
         static void handle_read__(void *opaque) {
             Pollable *self = (Pollable *) opaque;
             self->handle_read();
         };
 
-        virtual void handle_write(void) {
-        };
+        virtual void handle_write(void) = 0;
 
         static void handle_write__(void *opaque) {
             Pollable *self = (Pollable *) opaque;
             self->handle_write();
         };
 
-        virtual void handle_close(void) {
-        };
+        virtual void handle_close(void) = 0;
 
         static void handle_close__(void *opaque) {
             Pollable *self = (Pollable *) opaque;
