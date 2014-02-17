@@ -105,7 +105,7 @@ namespace Neubot {
             NeubotPollable_clear_timeout(this->_context);
         };
 
-        ~Pollable(void) {
+        virtual ~Pollable(void) {
             NeubotPollable_close(this->_context);
         };
 

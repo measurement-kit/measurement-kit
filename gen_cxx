@@ -147,6 +147,7 @@ def gen_cxx_init(stream, types, class_name, struct_name, init_args):
 
 def gen_cxx_del(stream, class_name, struct_name, func_name):
     stream.write("        ")
+    stream.write("virtual ")  # XXX: simplifies things
     stream.write("~%s(void) {\n" % class_name)
     stream.write("            ")
     stream.write("%s_%s(this->_context);\n" % (struct_name, func_name))
