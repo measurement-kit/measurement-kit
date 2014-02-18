@@ -1,0 +1,5 @@
+Experimental Neubot module that uses libneubot to provide functionalities
+that in the stable Neubot are implemented in Python.
+
+I am not sure whether this solution is technically preferrable to the solution
+in which we build libneubot and we use ctypes.
