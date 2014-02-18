@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2013-2014
+# Copyright (c) 2013
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>.
 #
@@ -139,8 +139,6 @@ def main():
         jlang_comment("%s API:" % name)
         jlang_empty_line()
         for method in interface["classes"][name]:
-            if method[0] == "__cast_to_c__":
-                continue
             jlang_declare_method(name, method)
             jlang_empty_line()
 
