@@ -51,27 +51,15 @@ public class Pollable {
   }
 
   public void handle_read() {
-    if (getClass() == Pollable.class) LibNeubotJNI.Pollable_handle_read(swigCPtr, this); else LibNeubotJNI.Pollable_handle_readSwigExplicitPollable(swigCPtr, this);
-  }
-
-  public static void handle_read__(SWIGTYPE_p_void opaque) {
-    LibNeubotJNI.Pollable_handle_read__(SWIGTYPE_p_void.getCPtr(opaque));
+    LibNeubotJNI.Pollable_handle_read(swigCPtr, this);
   }
 
   public void handle_write() {
-    if (getClass() == Pollable.class) LibNeubotJNI.Pollable_handle_write(swigCPtr, this); else LibNeubotJNI.Pollable_handle_writeSwigExplicitPollable(swigCPtr, this);
-  }
-
-  public static void handle_write__(SWIGTYPE_p_void opaque) {
-    LibNeubotJNI.Pollable_handle_write__(SWIGTYPE_p_void.getCPtr(opaque));
+    LibNeubotJNI.Pollable_handle_write(swigCPtr, this);
   }
 
   public void handle_close() {
-    if (getClass() == Pollable.class) LibNeubotJNI.Pollable_handle_close(swigCPtr, this); else LibNeubotJNI.Pollable_handle_closeSwigExplicitPollable(swigCPtr, this);
-  }
-
-  public static void handle_close__(SWIGTYPE_p_void opaque) {
-    LibNeubotJNI.Pollable_handle_close__(SWIGTYPE_p_void.getCPtr(opaque));
+    LibNeubotJNI.Pollable_handle_close(swigCPtr, this);
   }
 
   public Pollable(Poller poller) {

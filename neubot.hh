@@ -18,9 +18,13 @@ namespace Neubot {
         struct NeubotEchoServer *_context;
 
       public:
+
+// Swig doesn't understand the cast operator
+#ifndef SWIG
         operator struct NeubotEchoServer *(void) {
             return (this->_context);
         }
+#endif
 
         EchoServer(Poller *poller, int use_ipv6, const char *address,
           const char *port) {
@@ -51,9 +55,13 @@ namespace Neubot {
         };
 
       public:
+
+// Swig doesn't understand the cast operator
+#ifndef SWIG
         operator struct NeubotPollable *(void) {
             return (this->_context);
         }
+#endif
 
         virtual void handle_read(void) = 0;
 
@@ -115,9 +123,13 @@ namespace Neubot {
         struct NeubotPoller *_context;
 
       public:
+
+// Swig doesn't understand the cast operator
+#ifndef SWIG
         operator struct NeubotPoller *(void) {
             return (this->_context);
         }
+#endif
 
         Poller(void) {
             this->_context = NeubotPoller_construct();
@@ -125,27 +137,43 @@ namespace Neubot {
                 throw new std::bad_alloc();
         };
 
+
+// We use another strategy to generate closure code
+#ifndef SWIG
         int sched(double delta, neubot_hook_vo callback, void *opaque) {
             return (NeubotPoller_sched(this->_context, delta, callback, opaque));
         };
+#endif
 
+
+// We use another strategy to generate closure code
+#ifndef SWIG
         int defer_read(long long fileno, neubot_hook_vo handle_ok,
           neubot_hook_vo handle_timeout, void *opaque, double timeout) {
             return (NeubotPoller_defer_read(this->_context, fileno, handle_ok,
               handle_timeout, opaque, timeout));
         };
+#endif
 
+
+// We use another strategy to generate closure code
+#ifndef SWIG
         int defer_write(long long fileno, neubot_hook_vo handle_ok,
           neubot_hook_vo handle_timeout, void *opaque, double timeout) {
             return (NeubotPoller_defer_write(this->_context, fileno, handle_ok,
               handle_timeout, opaque, timeout));
         };
+#endif
 
+
+// We use another strategy to generate closure code
+#ifndef SWIG
         int resolve(int use_ipv6, const char *name,
           neubot_hook_vos callback, void *opaque) {
             return (NeubotPoller_resolve(this->_context, use_ipv6, name,
               callback, opaque));
         };
+#endif
 
         void loop(void) {
             NeubotPoller_loop(this->_context);
