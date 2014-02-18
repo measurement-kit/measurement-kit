@@ -14,8 +14,6 @@ namespace Neubot {
     class Pollable;
     class Poller;
 
-// Too many low-level types if we SWIG this class.
-#ifndef SWIG
     class EchoServer {
         struct NeubotEchoServer *_context;
 
@@ -33,10 +31,7 @@ namespace Neubot {
         };
 
     };
-#endif  // SWIG
 
-// Too many low-level types if we SWIG this class.
-#ifndef SWIG
     class Pollable {
         struct NeubotPollable *_context;
 
@@ -115,10 +110,7 @@ namespace Neubot {
         };
 
     };
-#endif  // SWIG
 
-// Too many low-level types if we SWIG this class.
-#ifndef SWIG
     class Poller {
         struct NeubotPoller *_context;
 
@@ -164,6 +156,5 @@ namespace Neubot {
         };
 
     };
-#endif  // SWIG
 
 };

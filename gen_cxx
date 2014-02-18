@@ -219,18 +219,6 @@ def main():
     stream.write("\n")
 
     for struct_name in sorted(interface["classes"]):
-
-        # Check whether we want to export this class to Java
-        want_export = 1
-        for method_info in interface["classes"][struct_name]:
-            if method_info[0] == "__cast_to_c__":
-                want_export = 0
-                break
-
-        if not want_export:
-            stream.write("// Too many low-level types if we SWIG this class.\n")
-            stream.write("#ifndef SWIG\n")
-
         class_name = struct_name.replace("Neubot", "", 1)
         struct_name = struct_name
         stream.write("    class %s {\n" % class_name)
@@ -266,8 +254,6 @@ def main():
                   method_info[1], method_info[2:])
 
         stream.write("    };\n")
-        if not want_export:
-            stream.write("#endif  // SWIG\n")
         stream.write("\n")
 
     stream.write("};\n")
