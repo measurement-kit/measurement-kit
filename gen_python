@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2013
+# Copyright (c) 2013-2014
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>.
 #
@@ -352,6 +352,8 @@ def main():
         stream.write("\n")
 
         for method_info in interface["classes"][struct_name]:
+            if method_info[0] == "__cast_to_c__":
+                continue
             gen_python_prototype(stream, types, struct_name, method_info)
             stream.write("\n")
 
@@ -381,6 +383,8 @@ def main():
             if method_info[0] == "__construct__":
                 continue
             if method_info[0] == "__destruct__":
+                continue
+            if method_info[0] == "__cast_to_c__":
                 continue
             method_name = method_info[1]
             for argtype, argname in method_info[2:]:
@@ -465,6 +469,9 @@ def main():
                 stream.write("        LIBNEUBOT_OBJECTS.remove(self)\n")
                 stream.write("        LIBNEUBOT.%s_%s(self._context)\n" % (
                   struct_name, method_info[1]))
+
+            elif method_info[0] == "__cast_to_c__":
+                continue
 
             else:
                 gen_python_method(stream, types, struct_name, method_info[0],

@@ -14,6 +14,8 @@ namespace Neubot {
     class Pollable;
     class Poller;
 
+// Too many low-level types if we SWIG this class.
+#ifndef SWIG
     class EchoServer {
         struct NeubotEchoServer *_context;
 
@@ -31,24 +33,16 @@ namespace Neubot {
         };
 
     };
+#endif  // SWIG
 
+// Too many low-level types if we SWIG this class.
+#ifndef SWIG
     class Pollable {
         struct NeubotPollable *_context;
-
-      public:
-        operator struct NeubotPollable *(void) {
-            return (this->_context);
-        }
-
-        virtual void handle_read(void) {
-        };
 
         static void handle_read__(void *opaque) {
             Pollable *self = (Pollable *) opaque;
             self->handle_read();
-        };
-
-        virtual void handle_write(void) {
         };
 
         static void handle_write__(void *opaque) {
@@ -56,13 +50,21 @@ namespace Neubot {
             self->handle_write();
         };
 
-        virtual void handle_close(void) {
-        };
-
         static void handle_close__(void *opaque) {
             Pollable *self = (Pollable *) opaque;
             self->handle_close();
         };
+
+      public:
+        operator struct NeubotPollable *(void) {
+            return (this->_context);
+        }
+
+        virtual void handle_read(void) = 0;
+
+        virtual void handle_write(void) = 0;
+
+        virtual void handle_close(void) = 0;
 
         Pollable(Poller *poller) {
             this->_context = NeubotPollable_construct(
@@ -108,12 +110,15 @@ namespace Neubot {
             NeubotPollable_clear_timeout(this->_context);
         };
 
-        ~Pollable(void) {
+        virtual ~Pollable(void) {
             NeubotPollable_close(this->_context);
         };
 
     };
+#endif  // SWIG
 
+// Too many low-level types if we SWIG this class.
+#ifndef SWIG
     class Poller {
         struct NeubotPoller *_context;
 
@@ -159,5 +164,6 @@ namespace Neubot {
         };
 
     };
+#endif  // SWIG
 
 };

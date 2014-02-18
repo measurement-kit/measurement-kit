@@ -7,12 +7,14 @@
     "classes": {
 
         "NeubotEchoServer": [
+            ["__cast_to_c__"],
             ["__construct__", ["NeubotPoller_p", "poller"],
                 ["int", "use_ipv6"], ["cstring", "address"],
                 ["cstring", "port"]]
         ],
 
         "NeubotPollable": [
+            ["__cast_to_c__"],
             ["__construct__", ["NeubotPoller_p", "poller"], ["slot_vo",
                 ["handle_read", "handle_write", "handle_close"]]],
             ["status_t", "attach", ["long long", "filenum"]],
@@ -28,6 +30,7 @@
         ],
 
         "NeubotPoller": [
+            ["__cast_to_c__"],
             ["__construct__"],
             ["status_t", "sched", ["double", "delta"],
                 ["hook_vo", ["callback"]]],
