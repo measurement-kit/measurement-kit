@@ -11,21 +11,5 @@
 #ifndef SWIG_LibNeubot_WRAP_H_
 #define SWIG_LibNeubot_WRAP_H_
 
-class SwigDirector_Pollable : public Neubot::Pollable, public Swig::Director {
-
-public:
-    void swig_connect_director(JNIEnv *jenv, jobject jself, jclass jcls, bool swig_mem_own, bool weak_global);
-    SwigDirector_Pollable(JNIEnv *jenv, Neubot::Poller *poller);
-    virtual void handle_read();
-    virtual void handle_write();
-    virtual void handle_close();
-public:
-    bool swig_overrides(int n) {
-      return (n < 3 ? swig_override[n] : false);
-    }
-protected:
-    bool swig_override[3];
-};
-
 
 #endif
