@@ -68,8 +68,11 @@ def gen_cxx_func_top(stream, types, retval_type, func_name, arguments):
         stream.write("void")
     stream.write(") {\n")
 
-def gen_cxx_func_bottom(stream):
+def gen_cxx_func_bottom_(stream):
     stream.write("        };\n")
+
+def gen_cxx_func_bottom(stream):
+    gen_cxx_func_bottom_(stream)
     stream.write("\n")
 
 def gen_cxx_slot_public(stream, class_name, slot_type, slot_name):
@@ -157,6 +160,8 @@ def gen_cxx_del(stream, class_name, struct_name, func_name):
 def gen_cxx_method(stream, types, struct_name, retval_type,
                    meth_name, meth_args):
 
+    swig_shall_not_see = 0
+
     # Generate the hooks
     new_args = []
     for argtype, argname in meth_args:
@@ -164,8 +169,14 @@ def gen_cxx_method(stream, types, struct_name, retval_type,
             for hookname in argname:
                 new_args.append(("neubot_" + argtype, hookname))
             new_args.append(("Object", "opaque"))
+            swig_shall_not_see = 1
         else:
             new_args.append((argtype, argname))
+
+    if swig_shall_not_see:
+        stream.write("\n")
+        stream.write("// We use another strategy to generate closure code\n")
+        stream.write("#ifndef SWIG\n")
 
     gen_cxx_func_top(stream, types, retval_type, meth_name, new_args)
     stream.write("            ")
@@ -179,7 +190,12 @@ def gen_cxx_method(stream, types, struct_name, retval_type,
     if retval_type != "void":
         stream.write(")")
     stream.write(";\n")
-    gen_cxx_func_bottom(stream);
+    gen_cxx_func_bottom_(stream);
+
+    if swig_shall_not_see:
+        stream.write("#endif\n")
+
+    stream.write("\n")
 
 def main():
     path = sys.argv[1]
