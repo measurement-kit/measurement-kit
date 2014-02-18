@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #
-# Copyright (c) 2013
+# Copyright (c) 2013-2014
 #     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
 #     and Simone Basso <bassosimone@gmail.com>.
 #
@@ -221,6 +221,7 @@ def main():
     for struct_name in sorted(interface["classes"]):
         class_name = struct_name.replace("Neubot", "", 1)
         struct_name = struct_name
+
         stream.write("    class %s {\n" % class_name)
         stream.write("        struct %s *_context;\n" % struct_name);
         stream.write("\n")
@@ -237,9 +238,13 @@ def main():
 
         stream.write("      public:\n")
 
+        stream.write("\n")
+        stream.write("// Swig doesn't understand the cast operator\n")
+        stream.write("#ifndef SWIG\n")
         stream.write("        operator struct %s *(void) {\n" % struct_name)
         stream.write("            return (this->_context);\n")
         stream.write("        }\n")
+        stream.write("#endif\n")
         stream.write("\n")
 
         for method_info in interface["classes"][struct_name]:
