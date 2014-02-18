@@ -1,3 +1,7 @@
+LibNeubot 1.0.1 [2014-02-18]
+	* Tweak gen_cxx to generate code that SWIG can handle
+	* Use SWIG to generate Java and Python wrappers
+
 LibNeubot 1.0.0 [2013-12-15]
 	* Return status_t in NeubotPoller_defer_{read,write}
 	* Pass opaque, not pollable, to NeubotPollable callbacks
