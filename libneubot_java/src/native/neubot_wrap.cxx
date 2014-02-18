@@ -409,6 +409,12 @@ namespace Swig {
 #endif /* __cplusplus */
 
 
+namespace Swig {
+  namespace {
+    jclass jclass_LibNeubotJNI = NULL;
+    jmethodID director_methids[3];
+  }
+}
 
 #include "../neubot.hh"
 
@@ -420,10 +426,433 @@ namespace Swig {
 
 #include "neubot_wrap.h"
 
+SwigDirector_Pollable::SwigDirector_Pollable(JNIEnv *jenv, Neubot::Poller *poller) : Neubot::Pollable(poller), Swig::Director(jenv) {
+}
+
+void SwigDirector_Pollable::handle_read() {
+  JNIEnvWrapper swigjnienv(this) ;
+  JNIEnv * jenv = swigjnienv.getJNIEnv() ;
+  jobject swigjobj = (jobject) NULL ;
+  
+  if (!swig_override[0]) {
+    SWIG_JavaThrowException(JNIEnvWrapper(this).getJNIEnv(), SWIG_JavaDirectorPureVirtual, "Attempted to invoke pure virtual method Neubot::Pollable::handle_read.");
+    return;
+  }
+  swigjobj = swig_get_self(jenv);
+  if (swigjobj && jenv->IsSameObject(swigjobj, NULL) == JNI_FALSE) {
+    jenv->CallStaticVoidMethod(Swig::jclass_LibNeubotJNI, Swig::director_methids[0], swigjobj);
+    if (jenv->ExceptionCheck() == JNI_TRUE) return ;
+  } else {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null upcall object");
+  }
+  if (swigjobj) jenv->DeleteLocalRef(swigjobj);
+}
+
+void SwigDirector_Pollable::handle_write() {
+  JNIEnvWrapper swigjnienv(this) ;
+  JNIEnv * jenv = swigjnienv.getJNIEnv() ;
+  jobject swigjobj = (jobject) NULL ;
+  
+  if (!swig_override[1]) {
+    SWIG_JavaThrowException(JNIEnvWrapper(this).getJNIEnv(), SWIG_JavaDirectorPureVirtual, "Attempted to invoke pure virtual method Neubot::Pollable::handle_write.");
+    return;
+  }
+  swigjobj = swig_get_self(jenv);
+  if (swigjobj && jenv->IsSameObject(swigjobj, NULL) == JNI_FALSE) {
+    jenv->CallStaticVoidMethod(Swig::jclass_LibNeubotJNI, Swig::director_methids[1], swigjobj);
+    if (jenv->ExceptionCheck() == JNI_TRUE) return ;
+  } else {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null upcall object");
+  }
+  if (swigjobj) jenv->DeleteLocalRef(swigjobj);
+}
+
+void SwigDirector_Pollable::handle_close() {
+  JNIEnvWrapper swigjnienv(this) ;
+  JNIEnv * jenv = swigjnienv.getJNIEnv() ;
+  jobject swigjobj = (jobject) NULL ;
+  
+  if (!swig_override[2]) {
+    SWIG_JavaThrowException(JNIEnvWrapper(this).getJNIEnv(), SWIG_JavaDirectorPureVirtual, "Attempted to invoke pure virtual method Neubot::Pollable::handle_close.");
+    return;
+  }
+  swigjobj = swig_get_self(jenv);
+  if (swigjobj && jenv->IsSameObject(swigjobj, NULL) == JNI_FALSE) {
+    jenv->CallStaticVoidMethod(Swig::jclass_LibNeubotJNI, Swig::director_methids[2], swigjobj);
+    if (jenv->ExceptionCheck() == JNI_TRUE) return ;
+  } else {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null upcall object");
+  }
+  if (swigjobj) jenv->DeleteLocalRef(swigjobj);
+}
+
+SwigDirector_Pollable::~SwigDirector_Pollable() {
+  swig_disconnect_director_self("swigDirectorDisconnect");
+}
+
+
+void SwigDirector_Pollable::swig_connect_director(JNIEnv *jenv, jobject jself, jclass jcls, bool swig_mem_own, bool weak_global) {
+  static struct {
+    const char *mname;
+    const char *mdesc;
+    jmethodID base_methid;
+  } methods[] = {
+    {
+      "handle_read", "()V", NULL 
+    },
+    {
+      "handle_write", "()V", NULL 
+    },
+    {
+      "handle_close", "()V", NULL 
+    }
+  };
+  
+  static jclass baseclass = 0 ;
+  
+  if (swig_set_self(jenv, jself, swig_mem_own, weak_global)) {
+    if (!baseclass) {
+      baseclass = jenv->FindClass("org/neubot/swig/Pollable");
+      if (!baseclass) return;
+      baseclass = (jclass) jenv->NewGlobalRef(baseclass);
+    }
+    bool derived = (jenv->IsSameObject(baseclass, jcls) ? false : true);
+    for (int i = 0; i < 3; ++i) {
+      if (!methods[i].base_methid) {
+        methods[i].base_methid = jenv->GetMethodID(baseclass, methods[i].mname, methods[i].mdesc);
+        if (!methods[i].base_methid) return;
+      }
+      swig_override[i] = false;
+      if (derived) {
+        jmethodID methid = jenv->GetMethodID(jcls, methods[i].mname, methods[i].mdesc);
+        swig_override[i] = (methid != methods[i].base_methid);
+        jenv->ExceptionClear();
+      }
+    }
+  }
+}
+
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+SWIGEXPORT jlong JNICALL Java_org_neubot_swig_LibNeubotJNI_new_1EchoServer(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jstring jarg3, jstring jarg4) {
+  jlong jresult = 0 ;
+  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
+  int arg2 ;
+  char *arg3 = (char *) 0 ;
+  char *arg4 = (char *) 0 ;
+  Neubot::EchoServer *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Poller **)&jarg1; 
+  arg2 = (int)jarg2; 
+  arg3 = 0;
+  if (jarg3) {
+    arg3 = (char *)jenv->GetStringUTFChars(jarg3, 0);
+    if (!arg3) return 0;
+  }
+  arg4 = 0;
+  if (jarg4) {
+    arg4 = (char *)jenv->GetStringUTFChars(jarg4, 0);
+    if (!arg4) return 0;
+  }
+  result = (Neubot::EchoServer *)new Neubot::EchoServer(arg1,arg2,(char const *)arg3,(char const *)arg4);
+  *(Neubot::EchoServer **)&jresult = result; 
+  if (arg3) jenv->ReleaseStringUTFChars(jarg3, (const char *)arg3);
+  if (arg4) jenv->ReleaseStringUTFChars(jarg4, (const char *)arg4);
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_delete_1EchoServer(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  Neubot::EchoServer *arg1 = (Neubot::EchoServer *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(Neubot::EchoServer **)&jarg1; 
+  delete arg1;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1handle_1read(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  (arg1)->handle_read();
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1handle_1write(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  (arg1)->handle_write();
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1handle_1close(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  (arg1)->handle_close();
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_neubot_swig_LibNeubotJNI_new_1Pollable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
+  Neubot::Pollable *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Poller **)&jarg1; 
+  result = (Neubot::Pollable *)new SwigDirector_Pollable(jenv,arg1);
+  *(Neubot::Pollable **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jint JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1attach(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2) {
+  jint jresult = 0 ;
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  long long arg2 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  arg2 = (long long)jarg2; 
+  result = (int)(arg1)->attach(arg2);
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1detach(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  (arg1)->detach();
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1fileno(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jlong jresult = 0 ;
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  long long result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  result = (long long)(arg1)->fileno();
+  jresult = (jlong)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jint JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1set_1readable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  result = (int)(arg1)->set_readable();
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jint JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1unset_1readable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  result = (int)(arg1)->unset_readable();
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jint JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1set_1writable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  result = (int)(arg1)->set_writable();
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT jint JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1unset_1writable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  jint jresult = 0 ;
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  int result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  result = (int)(arg1)->unset_writable();
+  jresult = (jint)result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1set_1timeout(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jdouble jarg2) {
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  double arg2 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  arg2 = (double)jarg2; 
+  (arg1)->set_timeout(arg2);
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1clear_1timeout(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  (arg1)->clear_timeout();
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_delete_1Pollable(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(Neubot::Pollable **)&jarg1; 
+  delete arg1;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1director_1connect(JNIEnv *jenv, jclass jcls, jobject jself, jlong objarg, jboolean jswig_mem_own, jboolean jweak_global) {
+  Neubot::Pollable *obj = *((Neubot::Pollable **)&objarg);
+  (void)jcls;
+  SwigDirector_Pollable *director = dynamic_cast<SwigDirector_Pollable *>(obj);
+  if (director) {
+    director->swig_connect_director(jenv, jself, jenv->GetObjectClass(jself), (jswig_mem_own == JNI_TRUE), (jweak_global == JNI_TRUE));
+  }
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_Pollable_1change_1ownership(JNIEnv *jenv, jclass jcls, jobject jself, jlong objarg, jboolean jtake_or_release) {
+  Neubot::Pollable *obj = *((Neubot::Pollable **)&objarg);
+  SwigDirector_Pollable *director = dynamic_cast<SwigDirector_Pollable *>(obj);
+  (void)jcls;
+  if (director) {
+    director->swig_java_change_ownership(jenv, jself, jtake_or_release ? true : false);
+  }
+}
+
+
+SWIGEXPORT jlong JNICALL Java_org_neubot_swig_LibNeubotJNI_new_1Poller(JNIEnv *jenv, jclass jcls) {
+  jlong jresult = 0 ;
+  Neubot::Poller *result = 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  result = (Neubot::Poller *)new Neubot::Poller();
+  *(Neubot::Poller **)&jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_Poller_1loop(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Poller **)&jarg1; 
+  (arg1)->loop();
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_Poller_1break_1loop(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(Neubot::Poller **)&jarg1; 
+  (arg1)->break_loop();
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_delete_1Poller(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
+  
+  (void)jenv;
+  (void)jcls;
+  arg1 = *(Neubot::Poller **)&jarg1; 
+  delete arg1;
+}
+
+
+SWIGEXPORT void JNICALL Java_org_neubot_swig_LibNeubotJNI_swig_1module_1init(JNIEnv *jenv, jclass jcls) {
+  int i;
+  
+  static struct {
+    const char *method;
+    const char *signature;
+  } methods[3] = {
+    {
+      "SwigDirector_Pollable_handle_read", "(Lorg/neubot/swig/Pollable;)V" 
+    },
+    {
+      "SwigDirector_Pollable_handle_write", "(Lorg/neubot/swig/Pollable;)V" 
+    },
+    {
+      "SwigDirector_Pollable_handle_close", "(Lorg/neubot/swig/Pollable;)V" 
+    }
+  };
+  Swig::jclass_LibNeubotJNI = (jclass) jenv->NewGlobalRef(jcls);
+  if (!Swig::jclass_LibNeubotJNI) return;
+  for (i = 0; i < (int) (sizeof(methods)/sizeof(methods[0])); ++i) {
+    Swig::director_methids[i] = jenv->GetStaticMethodID(jcls, methods[i].method, methods[i].signature);
+    if (!Swig::director_methids[i]) return;
+  }
+}
+
 
 #ifdef __cplusplus
 }

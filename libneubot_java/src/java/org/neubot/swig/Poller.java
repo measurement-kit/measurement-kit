@@ -39,22 +39,6 @@ public class Poller {
     this(LibNeubotJNI.new_Poller(), true);
   }
 
-  public int sched(double delta, SWIGTYPE_p_neubot_hook_vo callback, SWIGTYPE_p_void opaque) {
-    return LibNeubotJNI.Poller_sched(swigCPtr, this, delta, SWIGTYPE_p_neubot_hook_vo.getCPtr(callback), SWIGTYPE_p_void.getCPtr(opaque));
-  }
-
-  public int defer_read(long fileno, SWIGTYPE_p_neubot_hook_vo handle_ok, SWIGTYPE_p_neubot_hook_vo handle_timeout, SWIGTYPE_p_void opaque, double timeout) {
-    return LibNeubotJNI.Poller_defer_read(swigCPtr, this, fileno, SWIGTYPE_p_neubot_hook_vo.getCPtr(handle_ok), SWIGTYPE_p_neubot_hook_vo.getCPtr(handle_timeout), SWIGTYPE_p_void.getCPtr(opaque), timeout);
-  }
-
-  public int defer_write(long fileno, SWIGTYPE_p_neubot_hook_vo handle_ok, SWIGTYPE_p_neubot_hook_vo handle_timeout, SWIGTYPE_p_void opaque, double timeout) {
-    return LibNeubotJNI.Poller_defer_write(swigCPtr, this, fileno, SWIGTYPE_p_neubot_hook_vo.getCPtr(handle_ok), SWIGTYPE_p_neubot_hook_vo.getCPtr(handle_timeout), SWIGTYPE_p_void.getCPtr(opaque), timeout);
-  }
-
-  public int resolve(int use_ipv6, String name, SWIGTYPE_p_neubot_hook_vos callback, SWIGTYPE_p_void opaque) {
-    return LibNeubotJNI.Poller_resolve(swigCPtr, this, use_ipv6, name, SWIGTYPE_p_neubot_hook_vos.getCPtr(callback), SWIGTYPE_p_void.getCPtr(opaque));
-  }
-
   public void loop() {
     LibNeubotJNI.Poller_loop(swigCPtr, this);
   }

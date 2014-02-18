@@ -68,8 +68,11 @@ def gen_cxx_func_top(stream, types, retval_type, func_name, arguments):
         stream.write("void")
     stream.write(") {\n")
 
-def gen_cxx_func_bottom(stream):
+def gen_cxx_func_bottom_(stream):
     stream.write("        };\n")
+
+def gen_cxx_func_bottom(stream):
+    gen_cxx_func_bottom_(stream)
     stream.write("\n")
 
 def gen_cxx_slot_public(stream, class_name, slot_type, slot_name):
@@ -157,6 +160,8 @@ def gen_cxx_del(stream, class_name, struct_name, func_name):
 def gen_cxx_method(stream, types, struct_name, retval_type,
                    meth_name, meth_args):
 
+    swig_shall_not_see = 0
+
     # Generate the hooks
     new_args = []
     for argtype, argname in meth_args:
@@ -164,8 +169,14 @@ def gen_cxx_method(stream, types, struct_name, retval_type,
             for hookname in argname:
                 new_args.append(("neubot_" + argtype, hookname))
             new_args.append(("Object", "opaque"))
+            swig_shall_not_see = 1
         else:
             new_args.append((argtype, argname))
+
+    if swig_shall_not_see:
+        stream.write("\n")
+        stream.write("// We use another strategy to generate closure code\n")
+        stream.write("#ifndef SWIG\n")
 
     gen_cxx_func_top(stream, types, retval_type, meth_name, new_args)
     stream.write("            ")
@@ -179,7 +190,12 @@ def gen_cxx_method(stream, types, struct_name, retval_type,
     if retval_type != "void":
         stream.write(")")
     stream.write(";\n")
-    gen_cxx_func_bottom(stream);
+    gen_cxx_func_bottom_(stream);
+
+    if swig_shall_not_see:
+        stream.write("#endif\n")
+
+    stream.write("\n")
 
 def main():
     path = sys.argv[1]
@@ -219,20 +235,9 @@ def main():
     stream.write("\n")
 
     for struct_name in sorted(interface["classes"]):
-
-        # Check whether we want to export this class to Java
-        want_export = 1
-        for method_info in interface["classes"][struct_name]:
-            if method_info[0] == "__cast_to_c__":
-                want_export = 0
-                break
-
-        if not want_export:
-            stream.write("// Too many low-level types if we SWIG this class.\n")
-            stream.write("#ifndef SWIG\n")
-
         class_name = struct_name.replace("Neubot", "", 1)
         struct_name = struct_name
+
         stream.write("    class %s {\n" % class_name)
         stream.write("        struct %s *_context;\n" % struct_name);
         stream.write("\n")
@@ -249,25 +254,26 @@ def main():
 
         stream.write("      public:\n")
 
+        stream.write("\n")
+        stream.write("// Swig doesn't understand the cast operator\n")
+        stream.write("#ifndef SWIG\n")
+        stream.write("        operator struct %s *(void) {\n" % struct_name)
+        stream.write("            return (this->_context);\n")
+        stream.write("        }\n")
+        stream.write("#endif\n")
+        stream.write("\n")
+
         for method_info in interface["classes"][struct_name]:
             if method_info[0] == "__construct__":
                 gen_cxx_init(stream, types, class_name, struct_name,
                   method_info[1:])
             elif method_info[0] == "__destruct__":
                 gen_cxx_del(stream, class_name, struct_name, method_info[1])
-            elif method_info[0] == "__cast_to_c__":
-                stream.write("        operator struct %s *(void) {\n" %
-                  struct_name)
-                stream.write("            return (this->_context);\n")
-                stream.write("        }\n")
-                stream.write("\n")
             else:
                 gen_cxx_method(stream, types, struct_name, method_info[0],
                   method_info[1], method_info[2:])
 
         stream.write("    };\n")
-        if not want_export:
-            stream.write("#endif  // SWIG\n")
         stream.write("\n")
 
     stream.write("};\n")
