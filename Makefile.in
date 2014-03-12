@@ -42,13 +42,15 @@ HEADER = neubot.h
 LINKERNAME = libneubot.@SHARED_LIBRARY_EXT@
 SONAME = $(LINKERNAME).$(MAJOR)
 REALNAME = $(SONAME).$(MINOR)
-OBJECTS = echo.o libneubot.o log.o pollable.o poller.o strtonum.o utils.o
+OBJECTS = echo.o http-parser/http_parser.o libneubot.o log.o pollable.o \
+    poller.o strtonum.o utils.o
 PYMODULE = libneubot.py
 
 $(REALNAME): $(OBJECTS)
 	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(REALNAME) -levent -lm
 
 echo.o: echo.c
+http-parser/http-parser.o: http-parser/http-parser.c
 libneubot.o: libneubot.cpp
 log.o: log.c
 pollable.o: pollable.cpp
