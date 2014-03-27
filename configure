@@ -37,25 +37,11 @@ echo "Generate: libneubot1.py"
 
 ./gen_python libneubot.json > libneubot1.py
 
-echo "Generate: libneubot_java/..."
-
-JAVADIR=libneubot_java/src
-JAVASRCDIR=$JAVADIR/java/org/neubot/swig
-JAVANATIVEDIR=$JAVADIR/native
-
-install -d $JAVASRCDIR $JAVANATIVEDIR
-swig -c++ -java -package org.neubot.swig -outdir $JAVASRCDIR \
-    $JAVANATIVEDIR/neubot.i
-
 echo "Generate: libneubot_python/..."
 
 PYDIR=libneubot_python
 install -d $PYDIR
 swig -c++ -python -outdir $PYDIR $PYDIR/neubot.i
-
-echo "Generate: LibNeubot.java [DEPRECATED]"
-
-./gen_java libneubot.json > LibNeubot.java
 
 SYSTEM=$(uname)
 
