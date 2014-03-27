@@ -8,7 +8,7 @@
 
 namespace Neubot {
 
-#include <neubot.h>
+#include "neubot.h"
 
     class EchoServer;
     class Pollable;
@@ -31,7 +31,7 @@ namespace Neubot {
             this->_context = NeubotEchoServer_construct(
               (struct NeubotPoller *) poller, use_ipv6, address, port);
             if (this->_context == NULL)
-                throw new std::bad_alloc();
+                abort();
         };
 
     };
@@ -74,7 +74,7 @@ namespace Neubot {
               (struct NeubotPoller *) poller, this->handle_read__,
               this->handle_write__, this->handle_close__, this);
             if (this->_context == NULL)
-                throw new std::bad_alloc();
+                abort();
         };
 
         int attach(long long filenum) {
@@ -134,7 +134,7 @@ namespace Neubot {
         Poller(void) {
             this->_context = NeubotPoller_construct();
             if (this->_context == NULL)
-                throw new std::bad_alloc();
+                abort();
         };
 
 
