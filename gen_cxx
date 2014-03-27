@@ -145,7 +145,7 @@ def gen_cxx_init(stream, types, class_name, struct_name, init_args):
     stream.write("            ")
     stream.write("if (this->_context == NULL)\n")
     stream.write("                ")
-    stream.write("throw new std::bad_alloc();\n")
+    stream.write("abort();\n")
     gen_cxx_func_bottom(stream);
 
 def gen_cxx_del(stream, class_name, struct_name, func_name):
@@ -216,7 +216,7 @@ def main():
     stream.write("namespace Neubot {\n")
     stream.write("\n")
 
-    stream.write("#include <neubot.h>\n")
+    stream.write('#include "neubot.h"\n')
     stream.write("\n")
 
     types = {
