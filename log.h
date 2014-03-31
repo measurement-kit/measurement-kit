@@ -6,7 +6,8 @@
 extern "C" {
 #endif
 
-void neubot_warn(const char *, ...);
+void neubot_warn(const char *, ...)
+  __attribute__((format(printf, 1, 2)));
 
 #ifdef __cplusplus
 }
