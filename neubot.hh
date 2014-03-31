@@ -24,11 +24,11 @@ namespace Neubot {
         operator struct NeubotPoller *(void) {
             return (this->_context);
         }
-#endif
 
         NeubotPoller *get_struct(void) {
             return (this->_context);
         };
+#endif
 
         Poller(void) {
             this->_context = NeubotPoller_construct();
