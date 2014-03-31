@@ -21,6 +21,10 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef NEUBOT_ANDROID
+#include <android/log.h>
+#endif
+
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -29,8 +33,12 @@
 static void
 neubot_warnv(const char *fmt, va_list ap)
 {
+#ifndef NEUBOT_ANDROID
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, "\n");
+#else
+	__android_log_vprint(ANDROID_LOG_WARN, "libneubot", fmt, ap);
+#endif
 }
 
 void
