@@ -104,7 +104,7 @@ def gen_cxx_callfunc(stream, nwritten, func_name, args):
             stream.write(",")
             nwritten += 1
         if arg[0] and arg[0].endswith("_p"):
-            cast = "(struct %s *) " % arg[0][:-2]
+            cast = "->pointer()"
         else:
             cast = ""
         if nwritten + len(cast) + len(arg[1]) >= 78:
@@ -114,10 +114,10 @@ def gen_cxx_callfunc(stream, nwritten, func_name, args):
         elif index > 0:
             stream.write(" ")
             nwritten += 1
-        stream.write(cast)
-        nwritten += len(cast)
         stream.write(arg[1])
         nwritten += len(arg[1])
+        stream.write(cast)
+        nwritten += len(cast)
     stream.write(")")
 
 def gen_cxx_init(stream, types, class_name, struct_name, init_args):
@@ -234,7 +234,7 @@ def main():
         stream.write("    class %s;\n" % class_name)
     stream.write("\n")
 
-    for struct_name in sorted(interface["classes"]):
+    for struct_name in interface["classes"]:
         class_name = struct_name.replace("Neubot", "", 1)
         struct_name = struct_name
 
@@ -257,7 +257,7 @@ def main():
         stream.write("\n")
         stream.write("// Swig doesn't understand the cast operator\n")
         stream.write("#ifndef SWIG\n")
-        stream.write("        operator struct %s *(void) {\n" % struct_name)
+        stream.write("        struct %s *pointer(void) {\n" % struct_name)
         stream.write("            return (this->_context);\n")
         stream.write("        }\n")
         stream.write("#endif\n")

@@ -6,6 +6,22 @@
     ],
     "classes": {
 
+        "NeubotPoller": [
+            ["__construct__"],
+            ["status_t", "sched", ["double", "delta"],
+                ["hook_vo", ["callback"]]],
+            ["status_t", "defer_read", ["long long", "fileno"],
+                ["hook_vo", ["handle_ok", "handle_timeout"]],
+                ["double", "timeout"]],
+            ["status_t", "defer_write", ["long long", "fileno"],
+                ["hook_vo", ["handle_ok", "handle_timeout"]],
+                ["double", "timeout"]],
+            ["status_t", "resolve", ["int", "use_ipv6"], ["cstring", "name"],
+                ["hook_vos", ["callback"]]],
+            ["void", "loop"],
+            ["void", "break_loop"]
+        ],
+
         "NeubotEchoServer": [
             ["__construct__", ["NeubotPoller_p", "poller"],
                 ["int", "use_ipv6"], ["cstring", "address"],
@@ -25,22 +41,6 @@
             ["void", "set_timeout", ["double", "delta"]],
             ["void", "clear_timeout"],
             ["__destruct__", "close"]
-        ],
-
-        "NeubotPoller": [
-            ["__construct__"],
-            ["status_t", "sched", ["double", "delta"],
-                ["hook_vo", ["callback"]]],
-            ["status_t", "defer_read", ["long long", "fileno"],
-                ["hook_vo", ["handle_ok", "handle_timeout"]],
-                ["double", "timeout"]],
-            ["status_t", "defer_write", ["long long", "fileno"],
-                ["hook_vo", ["handle_ok", "handle_timeout"]],
-                ["double", "timeout"]],
-            ["status_t", "resolve", ["int", "use_ipv6"], ["cstring", "name"],
-                ["hook_vos", ["callback"]]],
-            ["void", "loop"],
-            ["void", "break_loop"]
         ]
 
     }

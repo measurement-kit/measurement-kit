@@ -25,9 +25,9 @@ echo "Generate: neubot.h"
 
 ./gen_header libneubot.json > neubot.h
 
-echo "Generate: neubot.hh [WARNING: currently disabled]"
+echo "Generate: neubot.hh"
 
-###./gen_cxx libneubot.json > neubot.hh
+./gen_cxx libneubot.json > neubot.hh
 
 echo "Generate: libneubot.py"
 
