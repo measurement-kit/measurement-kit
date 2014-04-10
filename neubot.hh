@@ -21,13 +21,9 @@ namespace Neubot {
 
 // Swig doesn't understand the cast operator
 #ifndef SWIG
-        operator struct NeubotPoller *(void) {
+        struct NeubotPoller *pointer(void) {
             return (this->_context);
         }
-
-        NeubotPoller *get_struct(void) {
-            return (this->_context);
-        };
 #endif
 
         Poller(void) {
@@ -91,16 +87,15 @@ namespace Neubot {
 
 // Swig doesn't understand the cast operator
 #ifndef SWIG
-        operator struct NeubotEchoServer *(void) {
+        struct NeubotEchoServer *pointer(void) {
             return (this->_context);
         }
 #endif
 
         EchoServer(Poller *poller, int use_ipv6, const char *address,
           const char *port) {
-            this->_context = NeubotEchoServer_construct(
-              poller->get_struct(), use_ipv6, address,
-              port);
+            this->_context = NeubotEchoServer_construct(poller->pointer(),
+              use_ipv6, address, port);
             if (this->_context == NULL)
                 abort();
         };
@@ -129,7 +124,7 @@ namespace Neubot {
 
 // Swig doesn't understand the cast operator
 #ifndef SWIG
-        operator struct NeubotPollable *(void) {
+        struct NeubotPollable *pointer(void) {
             return (this->_context);
         }
 #endif
@@ -141,9 +136,9 @@ namespace Neubot {
         virtual void handle_close(void) = 0;
 
         Pollable(Poller *poller) {
-            this->_context = NeubotPollable_construct(
-              poller->get_struct(), this->handle_read__,
-              this->handle_write__, this->handle_close__, this);
+            this->_context = NeubotPollable_construct(poller->pointer(),
+              this->handle_read__, this->handle_write__, this->handle_close__,
+              this);
             if (this->_context == NULL)
                 abort();
         };
