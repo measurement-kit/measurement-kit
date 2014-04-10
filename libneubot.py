@@ -226,15 +226,15 @@ def NeubotPoller_defer_write(handle, fileno, handle_ok, handle_timeout,
 LIBNEUBOT.NeubotPoller_resolve.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_resolve.argtypes = (
     ctypes.c_void_p,
-    ctypes.c_int,
+    ctypes.c_char_p,
     ctypes.c_char_p,
     NEUBOT_HOOK_VOS,
     ctypes.py_object,
 )
 
-def NeubotPoller_resolve(handle, use_ipv6, name, callback, opaque):
-    ret = LIBNEUBOT.NeubotPoller_resolve(handle, use_ipv6, name, 
-      callback, opaque)
+def NeubotPoller_resolve(handle, family, name, callback, opaque):
+    ret = LIBNEUBOT.NeubotPoller_resolve(handle, family, name, callback, 
+      opaque)
     if ret != 0:
         raise RuntimeError('LibNeubot error')
     return ret

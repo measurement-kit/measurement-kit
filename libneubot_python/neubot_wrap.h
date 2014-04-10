@@ -18,10 +18,10 @@
 class SwigDirector_Pollable : public Neubot::Pollable, public Swig::Director {
 
 public:
-    SwigDirector_Pollable(PyObject *self, Neubot::Poller *poller);
+    SwigDirector_Pollable(PyObject *self);
     virtual void handle_read();
     virtual void handle_write();
-    virtual void handle_close();
+    virtual void handle_error();
     virtual ~SwigDirector_Pollable();
 
 

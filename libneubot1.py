@@ -140,7 +140,7 @@ LIBNEUBOT.NeubotPoller_defer_write.argtypes = (
 LIBNEUBOT.NeubotPoller_resolve.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_resolve.argtypes = (
     ctypes.c_void_p,
-    ctypes.c_int,
+    ctypes.c_char_p,
     ctypes.c_char_p,
     NEUBOT_HOOK_VOS,
     ctypes.py_object,
@@ -403,14 +403,14 @@ class Poller(object):
             raise RuntimeError('defer_write failed')
         return retval
 
-    def resolve(self, use_ipv6, name, callback, opaque):
+    def resolve(self, family, name, callback, opaque):
         closure = NeubotHookClosure()
         # pylint: disable = W0201
         closure.pyfunc_callback = callback
         closure.opaque = opaque
         # pylint: enable = W0201
         LIBNEUBOT_OBJECTS.add(closure)
-        retval = LIBNEUBOT.NeubotPoller_resolve(self._context, use_ipv6, name,
+        retval = LIBNEUBOT.NeubotPoller_resolve(self._context, family, name,
           self._resolve_callback, closure)
         if retval != 0:
             raise RuntimeError('resolve failed')

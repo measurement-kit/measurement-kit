@@ -3823,7 +3823,7 @@ SWIG_From_long_SS_long  (long long value)
 
 #include "neubot_wrap.h"
 
-SwigDirector_Pollable::SwigDirector_Pollable(PyObject *self, Neubot::Poller *poller): Neubot::Pollable(poller), Swig::Director(self) {
+SwigDirector_Pollable::SwigDirector_Pollable(PyObject *self): Neubot::Pollable(), Swig::Director(self) {
   SWIG_DIRECTOR_RGTR((Neubot::Pollable *)this, this); 
 }
 
@@ -3872,22 +3872,22 @@ void SwigDirector_Pollable::handle_write() {
 }
 
 
-void SwigDirector_Pollable::handle_close() {
+void SwigDirector_Pollable::handle_error() {
   if (!swig_get_self()) {
     Swig::DirectorException::raise("'self' uninitialized, maybe you forgot to call Pollable.__init__.");
   }
 #if defined(SWIG_PYTHON_DIRECTOR_VTABLE)
   const size_t swig_method_index = 2;
-  const char * const swig_method_name = "handle_close";
+  const char * const swig_method_name = "handle_error";
   PyObject* method = swig_get_method(swig_method_index, swig_method_name);
   swig::SwigVar_PyObject result = PyObject_CallFunction(method, NULL, NULL);
 #else
-  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *) "handle_close", NULL);
+  swig::SwigVar_PyObject result = PyObject_CallMethod(swig_get_self(), (char *) "handle_error", NULL);
 #endif
   if (!result) {
     PyObject *error = PyErr_Occurred();
     if (error) {
-      Swig::DirectorMethodException::raise("Error detected when calling 'Pollable.handle_close'");
+      Swig::DirectorMethodException::raise("Error detected when calling 'Pollable.handle_error'");
     }
   }
 }
@@ -3899,6 +3899,89 @@ SwigDirector_Pollable::~SwigDirector_Pollable() {
 #ifdef __cplusplus
 extern "C" {
 #endif
+SWIGINTERN PyObject *_wrap_new_Poller(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Neubot::Poller *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)":new_Poller")) SWIG_fail;
+  result = (Neubot::Poller *)new Neubot::Poller();
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Neubot__Poller, SWIG_POINTER_NEW |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Poller_loop(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Poller_loop",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Neubot__Poller, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Poller_loop" "', argument " "1"" of type '" "Neubot::Poller *""'"); 
+  }
+  arg1 = reinterpret_cast< Neubot::Poller * >(argp1);
+  (arg1)->loop();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_Poller_break_loop(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:Poller_break_loop",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Neubot__Poller, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Poller_break_loop" "', argument " "1"" of type '" "Neubot::Poller *""'"); 
+  }
+  arg1 = reinterpret_cast< Neubot::Poller * >(argp1);
+  (arg1)->break_loop();
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_delete_Poller(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:delete_Poller",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Neubot__Poller, SWIG_POINTER_DISOWN |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Poller" "', argument " "1"" of type '" "Neubot::Poller *""'"); 
+  }
+  arg1 = reinterpret_cast< Neubot::Poller * >(argp1);
+  delete arg1;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *Poller_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *obj;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
+  SWIG_TypeNewClientData(SWIGTYPE_p_Neubot__Poller, SWIG_NewClientData(obj));
+  return SWIG_Py_Void();
+}
+
 SWIGINTERN PyObject *_wrap_new_EchoServer(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
@@ -4048,7 +4131,7 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_Pollable_handle_close(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_Pollable_handle_error(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
   void *argp1 = 0 ;
@@ -4057,19 +4140,19 @@ SWIGINTERN PyObject *_wrap_Pollable_handle_close(PyObject *SWIGUNUSEDPARM(self),
   Swig::Director *director = 0;
   bool upcall = false;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:Pollable_handle_close",&obj0)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:Pollable_handle_error",&obj0)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Neubot__Pollable, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Pollable_handle_close" "', argument " "1"" of type '" "Neubot::Pollable *""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Pollable_handle_error" "', argument " "1"" of type '" "Neubot::Pollable *""'"); 
   }
   arg1 = reinterpret_cast< Neubot::Pollable * >(argp1);
   director = SWIG_DIRECTOR_CAST(arg1);
   upcall = (director && (director->swig_get_self()==obj0));
   try {
     if (upcall) {
-      Swig::DirectorPureVirtualException::raise("Neubot::Pollable::handle_close");
+      Swig::DirectorPureVirtualException::raise("Neubot::Pollable::handle_error");
     } else {
-      (arg1)->handle_close();
+      (arg1)->handle_error();
     }
   } catch (Swig::DirectorException&) {
     SWIG_fail;
@@ -4084,23 +4167,14 @@ fail:
 SWIGINTERN PyObject *_wrap_new_Pollable(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   PyObject *arg1 = (PyObject *) 0 ;
-  Neubot::Poller *arg2 = (Neubot::Poller *) 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
   PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
   Neubot::Pollable *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:new_Pollable",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"O:new_Pollable",&obj0)) SWIG_fail;
   arg1 = obj0;
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_Neubot__Poller, 0 |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "new_Pollable" "', argument " "2"" of type '" "Neubot::Poller *""'"); 
-  }
-  arg2 = reinterpret_cast< Neubot::Poller * >(argp2);
   if ( arg1 != Py_None ) {
     /* subclassed */
-    result = (Neubot::Pollable *)new SwigDirector_Pollable(arg1,arg2); 
+    result = (Neubot::Pollable *)new SwigDirector_Pollable(arg1); 
   } else {
     SWIG_SetErrorMsg(PyExc_RuntimeError,"accessing abstract class or protected constructor"); 
     SWIG_fail;
@@ -4116,27 +4190,36 @@ fail:
 SWIGINTERN PyObject *_wrap_Pollable_attach(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   Neubot::Pollable *arg1 = (Neubot::Pollable *) 0 ;
-  long long arg2 ;
+  Neubot::Poller *arg2 = (Neubot::Poller *) 0 ;
+  long long arg3 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
-  long long val2 ;
-  int ecode2 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  long long val3 ;
+  int ecode3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:Pollable_attach",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOO:Pollable_attach",&obj0,&obj1,&obj2)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Neubot__Pollable, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Pollable_attach" "', argument " "1"" of type '" "Neubot::Pollable *""'"); 
   }
   arg1 = reinterpret_cast< Neubot::Pollable * >(argp1);
-  ecode2 = SWIG_AsVal_long_SS_long(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "Pollable_attach" "', argument " "2"" of type '" "long long""'");
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_Neubot__Poller, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "Pollable_attach" "', argument " "2"" of type '" "Neubot::Poller *""'"); 
+  }
+  arg2 = reinterpret_cast< Neubot::Poller * >(argp2);
+  ecode3 = SWIG_AsVal_long_SS_long(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "Pollable_attach" "', argument " "3"" of type '" "long long""'");
   } 
-  arg2 = static_cast< long long >(val2);
-  result = (int)(arg1)->attach(arg2);
+  arg3 = static_cast< long long >(val3);
+  result = (int)(arg1)->attach(arg2,arg3);
   resultobj = SWIG_From_int(static_cast< int >(result));
   return resultobj;
 fail:
@@ -4379,97 +4462,19 @@ SWIGINTERN PyObject *Pollable_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObj
   return SWIG_Py_Void();
 }
 
-SWIGINTERN PyObject *_wrap_new_Poller(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Neubot::Poller *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)":new_Poller")) SWIG_fail;
-  result = (Neubot::Poller *)new Neubot::Poller();
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_Neubot__Poller, SWIG_POINTER_NEW |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Poller_loop(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Poller_loop",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Neubot__Poller, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Poller_loop" "', argument " "1"" of type '" "Neubot::Poller *""'"); 
-  }
-  arg1 = reinterpret_cast< Neubot::Poller * >(argp1);
-  (arg1)->loop();
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_Poller_break_loop(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:Poller_break_loop",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Neubot__Poller, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "Poller_break_loop" "', argument " "1"" of type '" "Neubot::Poller *""'"); 
-  }
-  arg1 = reinterpret_cast< Neubot::Poller * >(argp1);
-  (arg1)->break_loop();
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_delete_Poller(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  Neubot::Poller *arg1 = (Neubot::Poller *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:delete_Poller",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_Neubot__Poller, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_Poller" "', argument " "1"" of type '" "Neubot::Poller *""'"); 
-  }
-  arg1 = reinterpret_cast< Neubot::Poller * >(argp1);
-  delete arg1;
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *Poller_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *obj;
-  if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
-  SWIG_TypeNewClientData(SWIGTYPE_p_Neubot__Poller, SWIG_NewClientData(obj));
-  return SWIG_Py_Void();
-}
-
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
+	 { (char *)"new_Poller", _wrap_new_Poller, METH_VARARGS, NULL},
+	 { (char *)"Poller_loop", _wrap_Poller_loop, METH_VARARGS, NULL},
+	 { (char *)"Poller_break_loop", _wrap_Poller_break_loop, METH_VARARGS, NULL},
+	 { (char *)"delete_Poller", _wrap_delete_Poller, METH_VARARGS, NULL},
+	 { (char *)"Poller_swigregister", Poller_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_EchoServer", _wrap_new_EchoServer, METH_VARARGS, NULL},
 	 { (char *)"delete_EchoServer", _wrap_delete_EchoServer, METH_VARARGS, NULL},
 	 { (char *)"EchoServer_swigregister", EchoServer_swigregister, METH_VARARGS, NULL},
 	 { (char *)"Pollable_handle_read", _wrap_Pollable_handle_read, METH_VARARGS, NULL},
 	 { (char *)"Pollable_handle_write", _wrap_Pollable_handle_write, METH_VARARGS, NULL},
-	 { (char *)"Pollable_handle_close", _wrap_Pollable_handle_close, METH_VARARGS, NULL},
+	 { (char *)"Pollable_handle_error", _wrap_Pollable_handle_error, METH_VARARGS, NULL},
 	 { (char *)"new_Pollable", _wrap_new_Pollable, METH_VARARGS, NULL},
 	 { (char *)"Pollable_attach", _wrap_Pollable_attach, METH_VARARGS, NULL},
 	 { (char *)"Pollable_detach", _wrap_Pollable_detach, METH_VARARGS, NULL},
@@ -4483,11 +4488,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"delete_Pollable", _wrap_delete_Pollable, METH_VARARGS, NULL},
 	 { (char *)"disown_Pollable", _wrap_disown_Pollable, METH_VARARGS, NULL},
 	 { (char *)"Pollable_swigregister", Pollable_swigregister, METH_VARARGS, NULL},
-	 { (char *)"new_Poller", _wrap_new_Poller, METH_VARARGS, NULL},
-	 { (char *)"Poller_loop", _wrap_Poller_loop, METH_VARARGS, NULL},
-	 { (char *)"Poller_break_loop", _wrap_Poller_break_loop, METH_VARARGS, NULL},
-	 { (char *)"delete_Poller", _wrap_delete_Poller, METH_VARARGS, NULL},
-	 { (char *)"Poller_swigregister", Poller_swigregister, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
 

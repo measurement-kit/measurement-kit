@@ -63,9 +63,9 @@ namespace Neubot {
 
 // We use another strategy to generate closure code
 #ifndef SWIG
-        int resolve(int use_ipv6, const char *name,
+        int resolve(const char *family, const char *name,
           neubot_hook_vos callback, void *opaque) {
-            return (NeubotPoller_resolve(this->_context, use_ipv6, name,
+            return (NeubotPoller_resolve(this->_context, family, name,
               callback, opaque));
         };
 #endif

@@ -76,6 +76,23 @@ except:
     weakref_proxy = lambda x: x
 
 
+class Poller(_object):
+    __swig_setmethods__ = {}
+    __setattr__ = lambda self, name, value: _swig_setattr(self, Poller, name, value)
+    __swig_getmethods__ = {}
+    __getattr__ = lambda self, name: _swig_getattr(self, Poller, name)
+    __repr__ = _swig_repr
+    def __init__(self): 
+        this = _libneubot_python.new_Poller()
+        try: self.this.append(this)
+        except: self.this = this
+    def loop(self): return _libneubot_python.Poller_loop(self)
+    def break_loop(self): return _libneubot_python.Poller_break_loop(self)
+    __swig_destroy__ = _libneubot_python.delete_Poller
+    __del__ = lambda self : None;
+Poller_swigregister = _libneubot_python.Poller_swigregister
+Poller_swigregister(Poller)
+
 class EchoServer(_object):
     __swig_setmethods__ = {}
     __setattr__ = lambda self, name, value: _swig_setattr(self, EchoServer, name, value)
@@ -99,13 +116,13 @@ class Pollable(_object):
     __repr__ = _swig_repr
     def handle_read(self): return _libneubot_python.Pollable_handle_read(self)
     def handle_write(self): return _libneubot_python.Pollable_handle_write(self)
-    def handle_close(self): return _libneubot_python.Pollable_handle_close(self)
-    def __init__(self, *args): 
+    def handle_error(self): return _libneubot_python.Pollable_handle_error(self)
+    def __init__(self): 
         if self.__class__ == Pollable:
             _self = None
         else:
             _self = self
-        this = _libneubot_python.new_Pollable(_self, *args)
+        this = _libneubot_python.new_Pollable(_self, )
         try: self.this.append(this)
         except: self.this = this
     def attach(self, *args): return _libneubot_python.Pollable_attach(self, *args)
@@ -125,23 +142,6 @@ class Pollable(_object):
         return weakref_proxy(self)
 Pollable_swigregister = _libneubot_python.Pollable_swigregister
 Pollable_swigregister(Pollable)
-
-class Poller(_object):
-    __swig_setmethods__ = {}
-    __setattr__ = lambda self, name, value: _swig_setattr(self, Poller, name, value)
-    __swig_getmethods__ = {}
-    __getattr__ = lambda self, name: _swig_getattr(self, Poller, name)
-    __repr__ = _swig_repr
-    def __init__(self): 
-        this = _libneubot_python.new_Poller()
-        try: self.this.append(this)
-        except: self.this = this
-    def loop(self): return _libneubot_python.Poller_loop(self)
-    def break_loop(self): return _libneubot_python.Poller_break_loop(self)
-    __swig_destroy__ = _libneubot_python.delete_Poller
-    __del__ = lambda self : None;
-Poller_swigregister = _libneubot_python.Poller_swigregister
-Poller_swigregister(Poller)
 
 # This file is compatible with both classic and new-style classes.
 
