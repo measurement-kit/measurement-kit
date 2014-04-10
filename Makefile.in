@@ -30,24 +30,28 @@ LIBDIR = $(PREFIX)/lib
 .PHONY: clean
 
 CC = clang
+CXX = clang++
 CFLAGS = -Wall -Wmissing-prototypes -pedantic -fPIC -g @CFLAGS@
+CXXFLAGS = -Wall -Wmissing-prototypes -pedantic -std=c++11 -fPIC -g @CFLAGS@
 LDFLAGS = @LDFLAGS@ -shared
 
-MAJOR = 1
+MAJOR = 2
 MINOR = 0
 
 HEADER = neubot.h
 LINKERNAME = libneubot.@SHARED_LIBRARY_EXT@
 SONAME = $(LINKERNAME).$(MAJOR)
 REALNAME = $(SONAME).$(MINOR)
-OBJECTS = echo.o log.o poller.o strtonum.o utils.o
+OBJECTS = echo.o libneubot.o log.o pollable.o poller.o strtonum.o utils.o
 PYMODULE = libneubot.py
 
 $(REALNAME): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $(REALNAME) -levent -lm
+	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(REALNAME) -levent -lm
 
 echo.o: echo.c
+libneubot.o: libneubot.cpp
 log.o: log.c
+pollable.o: pollable.cpp
 poller.o: poller.c
 strtonum.o: strtonum.c
 utils.o: utils.c

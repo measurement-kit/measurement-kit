@@ -38,12 +38,12 @@ def main():
     context = [ poller ]
     ccontext = ctypes.py_object(context)
 
-    pollable = libneubot.NeubotPollable_construct(poller, READ_CALLBACK,
+    pollable = libneubot.NeubotPollable_construct(READ_CALLBACK,
       WRITE_CALLBACK, CLOSE_CALLBACK, ccontext)
 
     context.append(pollable)
 
-    libneubot.NeubotPollable_attach(pollable, 0)
+    libneubot.NeubotPollable_attach(pollable, poller, 0)
     libneubot.NeubotPollable_set_readable(pollable)
 
     libneubot.NeubotPoller_loop(poller)

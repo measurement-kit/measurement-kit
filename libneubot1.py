@@ -10,9 +10,9 @@ import logging
 import sys
 
 if sys.platform == "darwin":
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.1"
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.2"
 else:
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.1"
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.2"
 
 LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 LIBNEUBOT_OBJECTS = set()
@@ -46,7 +46,6 @@ LIBNEUBOT.NeubotEchoServer_construct.argtypes = (
 
 LIBNEUBOT.NeubotPollable_construct.restype = ctypes.c_void_p
 LIBNEUBOT.NeubotPollable_construct.argtypes = (
-    ctypes.c_void_p,
     NEUBOT_SLOT_VO,
     NEUBOT_SLOT_VO,
     NEUBOT_SLOT_VO,
@@ -55,6 +54,7 @@ LIBNEUBOT.NeubotPollable_construct.argtypes = (
 
 LIBNEUBOT.NeubotPollable_attach.restype = ctypes.c_int
 LIBNEUBOT.NeubotPollable_attach.argtypes = (
+    ctypes.c_void_p,
     ctypes.c_void_p,
     ctypes.c_longlong,
 )
@@ -224,14 +224,14 @@ class Pollable(object):
     # </Slots>
     #
 
-    def __init__(self, poller):
+    def __init__(self):
         self._c_handle_read_ = NEUBOT_SLOT_VO(self._handle_read_)
         self._c_handle_write_ = NEUBOT_SLOT_VO(self._handle_write_)
         self._c_handle_close_ = NEUBOT_SLOT_VO(self._handle_close_)
         self._c_self = ctypes.py_object(self)
         # We cannot destroy until the object is complete
         self._can_destroy = False
-        self._context = LIBNEUBOT.NeubotPollable_construct(poller._context,
+        self._context = LIBNEUBOT.NeubotPollable_construct(
           self._c_handle_read_, self._c_handle_write_, self._c_handle_close_,
           self._c_self)
         if not self._context:
@@ -240,8 +240,9 @@ class Pollable(object):
         self._can_destroy = True
         LIBNEUBOT_OBJECTS.add(self)
 
-    def attach(self, filenum):
-        retval = LIBNEUBOT.NeubotPollable_attach(self._context, filenum)
+    def attach(self, poller, filenum):
+        retval = LIBNEUBOT.NeubotPollable_attach(self._context,
+          poller._context, filenum)
         if retval != 0:
             raise RuntimeError('attach failed')
         return retval

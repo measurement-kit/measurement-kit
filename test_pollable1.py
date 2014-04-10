@@ -12,9 +12,13 @@ from libneubot1 import Poller
 
 class EchoPollable(Pollable):
 
-    def __init__(self, poller):
-        Pollable.__init__(self, poller)
+    def __init__(self):
+        Pollable.__init__(self)
+        self.poller = None
+
+    def attach(self, poller, filenum):
         self.poller = poller
+        Pollable.attach(self, poller, filenum)
 
     def handle_read(self):
         data = os.read(0, 1024)
@@ -28,8 +32,8 @@ class EchoPollable(Pollable):
 
 def main():
     poller = Poller()
-    pollable = EchoPollable(poller)
-    pollable.attach(0)
+    pollable = EchoPollable()
+    pollable.attach(poller, 0)
     pollable.set_readable()
     poller.loop()
 

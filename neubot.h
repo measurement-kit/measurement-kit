@@ -31,10 +31,11 @@ struct NeubotEchoServer *NeubotEchoServer_construct(struct NeubotPoller *,
 
 /* NeubotPollable API: */
 
-struct NeubotPollable *NeubotPollable_construct(struct NeubotPoller *, 
-    neubot_slot_vo, neubot_slot_vo, neubot_slot_vo, void *);
+struct NeubotPollable *NeubotPollable_construct(neubot_slot_vo, 
+    neubot_slot_vo, neubot_slot_vo, void *);
 
-int NeubotPollable_attach(struct NeubotPollable *, long long);
+int NeubotPollable_attach(struct NeubotPollable *, struct NeubotPoller *, 
+    long long);
 
 void NeubotPollable_detach(struct NeubotPollable *);
 
