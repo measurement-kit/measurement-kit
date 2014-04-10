@@ -115,9 +115,9 @@ namespace Neubot {
             self->handle_write();
         };
 
-        static void handle_close__(void *opaque) {
+        static void handle_error__(void *opaque) {
             Pollable *self = (Pollable *) opaque;
-            self->handle_close();
+            self->handle_error();
         };
 
       public:
@@ -133,18 +133,18 @@ namespace Neubot {
 
         virtual void handle_write(void) = 0;
 
-        virtual void handle_close(void) = 0;
+        virtual void handle_error(void) = 0;
 
-        Pollable(Poller *poller) {
-            this->_context = NeubotPollable_construct(poller->pointer(),
-              this->handle_read__, this->handle_write__, this->handle_close__,
-              this);
+        Pollable(void) {
+            this->_context = NeubotPollable_construct(this->handle_read__,
+              this->handle_write__, this->handle_error__, this);
             if (this->_context == NULL)
                 abort();
         };
 
-        int attach(long long filenum) {
-            return (NeubotPollable_attach(this->_context, filenum));
+        int attach(Poller *poller, long long filenum) {
+            return (NeubotPollable_attach(this->_context, poller->pointer(),
+              filenum));
         };
 
         void detach(void) {
