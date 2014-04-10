@@ -16,7 +16,7 @@
             ["status_t", "defer_write", ["long long", "fileno"],
                 ["hook_vo", ["handle_ok", "handle_timeout"]],
                 ["double", "timeout"]],
-            ["status_t", "resolve", ["int", "use_ipv6"], ["cstring", "name"],
+            ["status_t", "resolve", ["cstring", "family"], ["cstring", "name"],
                 ["hook_vos", ["callback"]]],
             ["void", "loop"],
             ["void", "break_loop"]
