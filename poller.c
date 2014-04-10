@@ -89,6 +89,7 @@ struct NeubotEvent {
 
 struct ResolveContext {
 	neubot_hook_vos callback;
+	struct evbuffer *names;
 	void *opaque;
 };
 
@@ -312,83 +313,113 @@ NeubotPoller_resolve_callback_internal(int result, char type, int count,
 {
 	struct ResolveContext *rc;
 	const char *p;
+	int error, family, size;
 	char string[128];
 
 	rc = (struct ResolveContext *) opaque;
 
-	/*
-	 * Note: It was a stupid idea to invoke the callback more
-	 * than once, because (at least in Python) the HookClosure
-	 * object is destroyed at the end of the callback, which
-	 * means that `opaque` is no longer a valid memory address
-	 * after the first callback invocation.
-	 *
-	 * Therefore, to fix the above bug, now we only pass to
-	 * the callback the last resolved address.
-	 *
-	 * Yet, this fix makes this function less useful than it
-	 * was before it was fixed, so I deprecated it.
-	 */
-
 	switch (type) {
 	case DNS_IPv4_A:
-		if (--count >= 0) {
-			/* Note: address already in network byte order */
-			p = inet_ntop(AF_INET, (char *)addresses + count * 4,
-			    string, sizeof (string));
-			if (p != NULL)
-				rc->callback(rc->opaque, string);
-			else
-				rc->callback(rc->opaque, "");
-		} else
-			rc->callback(rc->opaque, "");
+		family = AF_INET;
+		size = 4;
 		break;
 	case DNS_IPv6_AAAA:
-		if (--count >= 0) {
-			/* Note: address already in network byte order */
-			p = inet_ntop(AF_INET6, (char *)addresses + count * 16,
-			    string, sizeof (string));
-			if (p != NULL)
-				rc->callback(rc->opaque, string);
-			else
-				rc->callback(rc->opaque, "");
-		} else
-			rc->callback(rc->opaque, "");
+		family = AF_INET6;
+		size = 16;
 		break;
 	default:
-		rc->callback(rc->opaque, "");
-		break;
+		neubot_warn("resolve: invalid type");
+		goto failure;
 	}
 
+	while (--count >= 0) {
+		/* Note: address already in network byte order */
+		p = inet_ntop(family, (char *)addresses + count * size,
+		    string, sizeof (string));
+		if (p == NULL) {
+			neubot_warn("resolve: inet_ntop() failed");
+			continue;
+		}
+		error = evbuffer_add(rc->names, p, strlen(p));
+		if (error != 0) {
+			neubot_warn("resolve: evbuffer_add() failed");
+			goto failure;
+		}
+		error = evbuffer_add(rc->names, " ", 1);
+		if (error != 0) {
+			neubot_warn("resolve: evbuffer_add() failed");
+			goto failure;
+		}
+	}
+
+	error = evbuffer_add(rc->names, "\0", 1);
+	if (error != 0) {
+		neubot_warn("resolve: evbuffer_add() failed");
+		goto failure;
+	}
+	p = (const char *) evbuffer_pullup(rc->names, -1);
+	if (p == NULL) {
+		neubot_warn("resolve: evbuffer_pullup() failed");
+		goto failure;
+	}
+
+	rc->callback(rc->opaque, p);
+	goto cleanup;
+
+    failure:
+	rc->callback(rc->opaque, "");
+    cleanup:
+	evbuffer_free(rc->names);
 	free(rc);
 }
 
-/* DEPRECATED */
 int
-NeubotPoller_resolve(struct NeubotPoller *poller, int use_ipv6,
+NeubotPoller_resolve(struct NeubotPoller *poller, const char *family,
     const char *address, neubot_hook_vos callback, void *opaque)
 {
 	struct ResolveContext *rc;
 	int result;
 
 	rc = calloc(1, sizeof (*rc));
-	if (rc == NULL)
-		return (-1);
+	if (rc == NULL) {
+		neubot_warn("resolve: calloc() failed");
+		goto failure;
+	}
 
 	rc->callback = callback;
 	rc->opaque = opaque;
 
-	if (use_ipv6)
+	rc->names = evbuffer_new();
+	if (rc->names == NULL) {
+		neubot_warn("resolve: evbuffer_new() failed");
+		goto failure;
+	}
+
+	if (strcmp(family, "PF_INET6") == 0)
 		result = evdns_resolve_ipv6(address, DNS_QUERY_NO_SEARCH,
 		    NeubotPoller_resolve_callback_internal, rc);
-	else
+	else if (strcmp(family, "PF_INET") == 0)
 		result = evdns_resolve_ipv4(address, DNS_QUERY_NO_SEARCH,
 		    NeubotPoller_resolve_callback_internal, rc);
+	else {
+		neubot_warn("resolve: invalid family");
+		goto failure;
+	}
 
-	if (result != 0)
-		return (-1);
+	if (result != 0) {
+		neubot_warn("resolve: evdns_resolve_ipvX() failed");
+		goto failure;
+	}
 
 	return (0);
+
+    failure:
+	if (rc != NULL && rc->names != NULL)
+		evbuffer_free(rc->names);
+	if (rc != NULL)
+		free(rc);
+
+	return (-1);
 }
 
 void

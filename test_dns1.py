@@ -7,15 +7,15 @@ import sys
 
 from libneubot1 import Poller
 
-def resolve_callback(poller, address):
-    """ The periodic callback """
-    sys.stdout.write("address: %s\n" % address)
+def resolve_callback(poller, addresses):
+    """ The resolve callback """
+    sys.stdout.write("addresses: %s\n" % addresses.split())
     poller.break_loop()
 
 def main():
     """ Main function """
     poller = Poller()
-    poller.resolve(0, "www.youtube.com", resolve_callback, poller)
+    poller.resolve("PF_INET", "www.youtube.com", resolve_callback, poller)
     poller.loop()
 
 if __name__ == "__main__":

@@ -67,7 +67,7 @@ int NeubotPoller_defer_read(struct NeubotPoller *, long long, neubot_hook_vo,
 int NeubotPoller_defer_write(struct NeubotPoller *, long long, neubot_hook_vo, 
     neubot_hook_vo, void *, double);
 
-int NeubotPoller_resolve(struct NeubotPoller *, int, const char *, 
+int NeubotPoller_resolve(struct NeubotPoller *, const char *, const char *, 
     neubot_hook_vos, void *);
 
 void NeubotPoller_loop(struct NeubotPoller *);
