@@ -94,6 +94,53 @@ def gen_python_prototype(stream, types, class_name, method_info):
         stream.write("    %s,\n" % argtype)
     stream.write(")\n")
 
+    # Adapted from gen_py:
+
+    stream.write("\n")
+    if args and args[0][1] == "self":
+        args = list(args)
+        args[0] = (args[0][0], "handle")  # Avoid using self outside classes
+
+    stream.write("def %s(" % funcname)
+    total = len(funcname) + 5
+    for index, elem in enumerate(args):
+        _, value = elem
+        if total + len(value) >= 72:
+            stream.write("\n      ")
+            total = 6
+        stream.write("%s" % value)
+        total += len(value)
+        if index < len(args) - 1:
+            stream.write(", ")
+            total += 2
+    stream.write("):\n")
+    stream.write("    ")
+    total = 4
+    if retval != "void":
+        stream.write("ret = ")
+        total += 5
+    stream.write("LIBNEUBOT.%s(" % funcname)
+    total += len(funcname) + 11
+    for index, elem in enumerate(args):
+        _, value = elem
+        if total + len(value) >= 72:
+            stream.write("\n      ")
+            total = 6
+        stream.write("%s" % value)
+        total += len(value)
+        if index < len(args) - 1:
+            stream.write(", ")
+            total += 2
+    stream.write(")\n")
+    if retval != "void":
+        if retval.endswith("_p"):
+            stream.write("    if not ret:\n")
+            stream.write("        raise RuntimeError('LibNeubot error')\n")
+        elif retval == "status_t":
+            stream.write("    if ret != 0:\n")
+            stream.write("        raise RuntimeError('LibNeubot error')\n")
+        stream.write("    return ret\n")
+
 def gen_python_func_top(stream, types, retval_type, func_name, arguments):
     stream.write("    ")
     nwritten = 4
@@ -306,7 +353,7 @@ def main():
     stream.write("#\n")
     stream.write("\n")
 
-    stream.write("# pylint: disable = C0111\n")
+    stream.write("#pylint: disable = C0111, C0103\n")
     stream.write("\n")
 
     gen_python_imports(stream)
@@ -321,10 +368,6 @@ def main():
     stream.write("NEUBOT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)\n")
     stream.write("NEUBOT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,\n")
     stream.write("  ctypes.c_char_p)\n")
-    stream.write("\n")
-
-    stream.write("class NeubotHookClosure(object):\n")
-    stream.write("    pass\n")
     stream.write("\n")
 
     types = {
@@ -347,13 +390,17 @@ def main():
         class_name = struct_name.replace("Neubot", "", 1)
 
         stream.write("#\n")
-        stream.write("# %s prototypes:\n" % struct_name)
+        stream.write("# %s API:\n" % struct_name)
         stream.write("#\n")
         stream.write("\n")
 
         for method_info in interface["classes"][struct_name]:
             gen_python_prototype(stream, types, struct_name, method_info)
             stream.write("\n")
+
+    stream.write("class NeubotHookClosure(object):\n")
+    stream.write("    pass\n")
+    stream.write("\n")
 
     # Finally, generate the wrapper classes
     for struct_name in sorted(interface["classes"]):
