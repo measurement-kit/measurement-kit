@@ -9,9 +9,9 @@ import ctypes
 import sys
 
 if sys.platform == "darwin":
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.1"
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.2"
 else:
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.1"
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.2"
 
 LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 
@@ -52,17 +52,16 @@ def NeubotEchoServer_construct(poller, use_ipv6, address, port):
 
 LIBNEUBOT.NeubotPollable_construct.restype = ctypes.c_void_p
 LIBNEUBOT.NeubotPollable_construct.argtypes = (
-    ctypes.c_void_p,
     NEUBOT_SLOT_VO,
     NEUBOT_SLOT_VO,
     NEUBOT_SLOT_VO,
     ctypes.py_object,
 )
 
-def NeubotPollable_construct(poller, handle_read, handle_write, 
-      handle_close, opaque):
-    ret = LIBNEUBOT.NeubotPollable_construct(poller, handle_read, 
-      handle_write, handle_close, opaque)
+def NeubotPollable_construct(handle_read, handle_write, handle_error, 
+      opaque):
+    ret = LIBNEUBOT.NeubotPollable_construct(handle_read, handle_write, 
+      handle_error, opaque)
     if not ret:
         raise RuntimeError('LibNeubot error')
     return ret
@@ -70,11 +69,12 @@ def NeubotPollable_construct(poller, handle_read, handle_write,
 LIBNEUBOT.NeubotPollable_attach.restype = ctypes.c_int
 LIBNEUBOT.NeubotPollable_attach.argtypes = (
     ctypes.c_void_p,
+    ctypes.c_void_p,
     ctypes.c_longlong,
 )
 
-def NeubotPollable_attach(handle, filenum):
-    ret = LIBNEUBOT.NeubotPollable_attach(handle, filenum)
+def NeubotPollable_attach(handle, poller, filenum):
+    ret = LIBNEUBOT.NeubotPollable_attach(handle, poller, filenum)
     if ret != 0:
         raise RuntimeError('LibNeubot error')
     return ret

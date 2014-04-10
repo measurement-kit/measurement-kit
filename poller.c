@@ -70,23 +70,7 @@
 # define EVUTIL_SOCKET_INVALID -1
 #endif
 
-struct NeubotPollable {
-	TAILQ_ENTRY(NeubotPollable) entry;
-	neubot_slot_vo handle_close;
-	neubot_slot_vo handle_read;
-	neubot_slot_vo handle_write;
-	evutil_socket_t fileno;
-	struct NeubotPoller *poller;
-	double timeout;
-	struct event evread;
-	struct event evwrite;
-	void *opaque;
-	unsigned isattached;
-};
-
 struct NeubotPoller {
-	TAILQ_HEAD(, NeubotPollable) head;
-	struct event evperiodic;
 #ifndef WIN32
 	struct event evsignal;    /* for SIGINT */
 #endif
@@ -108,7 +92,7 @@ struct ResolveContext {
 	void *opaque;
 };
 
-static inline int
+int
 neubot_socket_valid(long long socket)
 {
 	return (socket >= 0 && socket <= EVUTIL_SOCKET_MAX);
@@ -211,44 +195,6 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
  * NeubotPoller implementation
  */
 
-static inline void
-NeubotPoller_register_pollable(struct NeubotPoller *self,
-    struct NeubotPollable *pollable)
-{
-	TAILQ_INSERT_TAIL(&self->head, pollable, entry);
-}
-
-static inline void
-NeubotPoller_unregister_pollable(struct NeubotPoller *self,
-    struct NeubotPollable *pollable)
-{
-	TAILQ_REMOVE(&self->head, pollable, entry);
-}
-
-static void
-NeubotPoller_periodic(evutil_socket_t fileno, short event, void *opaque)
-{
-	struct NeubotPoller *self;
-	struct NeubotPollable *pollable;
-	struct NeubotPollable *tmp;
-	double curtime;
-
-	self = (struct NeubotPoller *) opaque;
-
-	curtime = neubot_time_now();
-
-	pollable = TAILQ_FIRST(&self->head);
-	while (pollable != NULL) {
-		if (pollable->timeout >= 0.0 && curtime > pollable->timeout) {
-			neubot_warn("libneubot: watchdog timeout");
-			tmp = pollable;
-			pollable = TAILQ_NEXT(pollable, entry);
-			NeubotPollable_close(tmp);
-		} else
-			pollable = TAILQ_NEXT(pollable, entry);
-	}
-}
-
 #ifndef WIN32
 static void
 NeubotPoller_sigint(int signo, short event, void *opaque)
@@ -264,7 +210,6 @@ NeubotPoller_construct(void)
 {
 	struct NeubotPoller *self;
 	struct event_base *base;
-	struct timeval tv;
 	int retval;
 
 	base = event_init();
@@ -278,32 +223,21 @@ NeubotPoller_construct(void)
 	if (self == NULL)
 		return (NULL);
 
-	TAILQ_INIT(&self->head);
 	self->base = base;
 	self->dnsbase = evdns_get_global_base();
 
 #ifndef WIN32
 	event_set(&self->evsignal, SIGINT, EV_SIGNAL,
 	    NeubotPoller_sigint, self);
-#endif
-	event_set(&self->evperiodic, -1, EV_TIMEOUT|EV_PERSIST,
-	    NeubotPoller_periodic, self);
 
-#ifndef WIN32
 	retval = event_add(&self->evsignal, NULL);
 	if (retval != 0)
 		goto failure;
 #endif
-	memset(&tv, 0, sizeof (tv));
-	tv.tv_sec = 10;
-	retval = event_add(&self->evperiodic, &tv);
-	if (retval != 0)
-		goto failure;
 
 	return (self);
 
       failure:
-	event_del(&self->evperiodic);
 #ifndef WIN32
 	event_del(&self->evsignal);
 #endif
@@ -467,159 +401,4 @@ void
 NeubotPoller_break_loop(struct NeubotPoller *self)
 {
 	event_loopbreak();
-}
-
-/*
- * NeubotPollable implementation
- */
-
-static void
-NeubotPollable_noop(void *opaque)
-{
-	/* nothing */ ;
-}
-
-static void
-NeubotPollable_dispatch(evutil_socket_t filenum, short event, void *opaque)
-{
-	struct NeubotPollable *pollable;
-
-	pollable = (struct NeubotPollable *) opaque;
-
-	if (event & EV_READ)
-		pollable->handle_read(pollable->opaque);
-	else if (event & EV_WRITE)
-		pollable->handle_write(pollable->opaque);
-	else
-		/* nothing */ ;
-}
-
-struct NeubotPollable *
-NeubotPollable_construct(struct NeubotPoller *poller,
-    neubot_slot_vo handle_read, neubot_slot_vo handle_write,
-    neubot_slot_vo handle_close, void *opaque)
-{
-	struct NeubotPollable *self;
-
-	if (handle_read == NULL)
-		handle_read = NeubotPollable_noop;
-	if (handle_write == NULL)
-		handle_write = NeubotPollable_noop;
-	if (handle_close == NULL)
-		handle_close = NeubotPollable_noop;
-
-	self = calloc(1, sizeof(*self));
-	if (self == NULL)
-		return (NULL);
-
-	self->poller = poller;
-	self->handle_close = handle_close;
-	self->handle_read = handle_read;
-	self->handle_write = handle_write;
-	self->fileno = EVUTIL_SOCKET_INVALID;
-	self->opaque = opaque;
-	self->timeout = -1.0;
-
-	return (self);
-}
-
-/*
- * Note: attach() is separated from construct(), because in Neubot there
- * are cases in which we create a pollable and then we attach() and detach()
- * file descriptors to it (e.g., the Connector object does that).
- */
-
-int
-NeubotPollable_attach(struct NeubotPollable *self, long long fileno)
-{
-	if (self->isattached)
-		return (-1);
-	if (!neubot_socket_valid(fileno))
-		return (-1);
-	/*
-	 * Note: `long long` simplifies the interaction with Java and
-	 * shall be wide enough to hold evutil_socket_t, which is `int`
-	 * on Unix and `uintptr_t` on Windows.
-	 */
-	self->fileno = (evutil_socket_t) fileno;
-	event_set(&self->evread, self->fileno, EV_READ | EV_PERSIST,
-	    NeubotPollable_dispatch, self);
-	event_set(&self->evwrite, self->fileno, EV_WRITE | EV_PERSIST,
-	    NeubotPollable_dispatch, self);
-	NeubotPoller_register_pollable(self->poller, self);
-	self->isattached = 1;
-	return (0);
-}
-
-void
-NeubotPollable_detach(struct NeubotPollable *self)
-{
-	if (self->isattached) {
-		self->fileno = EVUTIL_SOCKET_INVALID;
-		event_del(&self->evread);
-		event_del(&self->evwrite);
-		NeubotPoller_unregister_pollable(self->poller, self);
-		self->isattached = 0;
-	}
-}
-
-long long
-NeubotPollable_fileno(struct NeubotPollable *self)
-{
-	if (self->isattached)
-		return ((long long) self->fileno);
-	else
-		return (-1);
-}
-
-int
-NeubotPollable_set_readable(struct NeubotPollable *self)
-{
-	if (!self->isattached)
-		return (-1);
-	return (event_add(&self->evread, NULL));
-}
-
-int
-NeubotPollable_unset_readable(struct NeubotPollable *self)
-{
-	if (!self->isattached)
-		return (-1);
-	return (event_del(&self->evread));
-}
-
-int
-NeubotPollable_set_writable(struct NeubotPollable *self)
-{
-	if (!self->isattached)
-		return (-1);
-	return (event_add(&self->evwrite, NULL));
-}
-
-int
-NeubotPollable_unset_writable(struct NeubotPollable *self)
-{
-	if (!self->isattached)
-		return (-1);
-	return (event_del(&self->evwrite));
-}
-
-void
-NeubotPollable_set_timeout(struct NeubotPollable *self, double timeout)
-{
-	self->timeout = timeout;
-}
-
-void
-NeubotPollable_clear_timeout(struct NeubotPollable *self)
-{
-	self->timeout = -1.0;
-}
-
-void
-NeubotPollable_close(struct NeubotPollable *self)
-{
-	NeubotPollable_detach(self);
-	self->handle_close(self->opaque);
-	free(self);
 }

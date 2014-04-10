@@ -129,7 +129,7 @@ Connection_construct(void *opaque)
 	if (conn == NULL)
 		goto cleanup;
 
-	conn->pollable = NeubotPollable_construct(self->poller,
+	conn->pollable = NeubotPollable_construct(
 	    Connection_read, Connection_write, Connection_close, conn);
 	if (conn->pollable == NULL)
 		goto cleanup;
@@ -155,7 +155,7 @@ Connection_construct(void *opaque)
 	if (conn->buffer == NULL)
 		goto cleanup;
 
-	result = NeubotPollable_attach(conn->pollable,
+	result = NeubotPollable_attach(conn->pollable, self->poller,
 	    (long long) conn->fileno);
 	if (result != 0)
 		goto cleanup;
@@ -197,12 +197,12 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
 	 * a destructor function, because, in such case, NeubotPollable
 	 * close() will also very likely free() self.
 	 */
-	self->pollable = NeubotPollable_construct(self->poller,
+	self->pollable = NeubotPollable_construct(
 	    Connection_construct, NULL, NULL, self);
 	if (self->pollable == NULL)
 		goto cleanup;
 
-	result = NeubotPollable_attach(self->pollable,
+	result = NeubotPollable_attach(self->pollable, self->poller,
 	    (long long) self->fileno);
 	if (result != 0)
 		goto cleanup;
