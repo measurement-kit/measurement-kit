@@ -137,8 +137,6 @@ NeubotPollable::detach(void)
 	event_del(&state->evwrite);
 	free(state);
 	state = NULL;
-
-	this->handle_close();
 }
 
 long long
@@ -273,7 +271,7 @@ NeubotPollable::handle_write(void)
 }
 
 void
-NeubotPollable::handle_close(void)
+NeubotPollable::handle_error(void)
 {
 	// TODO: override
 }

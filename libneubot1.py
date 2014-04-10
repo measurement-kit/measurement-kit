@@ -207,14 +207,14 @@ class Pollable(object):
             opaque.close()
         # pylint: enable = W0702
 
-    def handle_close(self):
+    def handle_error(self):
         pass
 
     @staticmethod
-    def _handle_close_(opaque):
+    def _handle_error_(opaque):
         # pylint: disable = W0702
         try:
-            opaque.handle_close()
+            opaque.handle_error()
         except:
             logging.warning('Exception', exc_info=1)
             opaque.close()
@@ -227,12 +227,12 @@ class Pollable(object):
     def __init__(self):
         self._c_handle_read_ = NEUBOT_SLOT_VO(self._handle_read_)
         self._c_handle_write_ = NEUBOT_SLOT_VO(self._handle_write_)
-        self._c_handle_close_ = NEUBOT_SLOT_VO(self._handle_close_)
+        self._c_handle_error_ = NEUBOT_SLOT_VO(self._handle_error_)
         self._c_self = ctypes.py_object(self)
         # We cannot destroy until the object is complete
         self._can_destroy = False
         self._context = LIBNEUBOT.NeubotPollable_construct(
-          self._c_handle_read_, self._c_handle_write_, self._c_handle_close_,
+          self._c_handle_read_, self._c_handle_write_, self._c_handle_error_,
           self._c_self)
         if not self._context:
             raise RuntimeError('out of memory')

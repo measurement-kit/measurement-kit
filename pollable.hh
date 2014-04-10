@@ -40,8 +40,8 @@ struct NeubotPollable {
 	int unset_writable(void);
 	void set_timeout(double);
 	void clear_timeout(void);
+	virtual void handle_error(void);
 	virtual void handle_read(void);
 	virtual void handle_write(void);
-	virtual void handle_close(void);
 	virtual ~NeubotPollable(void);
 };

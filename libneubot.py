@@ -58,10 +58,10 @@ LIBNEUBOT.NeubotPollable_construct.argtypes = (
     ctypes.py_object,
 )
 
-def NeubotPollable_construct(handle_read, handle_write, handle_close, 
+def NeubotPollable_construct(handle_read, handle_write, handle_error, 
       opaque):
     ret = LIBNEUBOT.NeubotPollable_construct(handle_read, handle_write, 
-      handle_close, opaque)
+      handle_error, opaque)
     if not ret:
         raise RuntimeError('LibNeubot error')
     return ret

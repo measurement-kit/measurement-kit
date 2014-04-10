@@ -32,17 +32,17 @@
 
 struct __NeubotPollable : public NeubotPollable {
 
+	neubot_slot_vo on_handle_error;
 	neubot_slot_vo on_handle_read;
 	neubot_slot_vo on_handle_write;
-	neubot_slot_vo on_handle_close;
 	void *opaque;
 
 	__NeubotPollable(neubot_slot_vo on_read, neubot_slot_vo on_write,
-	    neubot_slot_vo on_close, void *opaque) {
+	    neubot_slot_vo on_error, void *opaque) {
 		neubot_warn("__pollable: __NeubotPollable()");
+		this->on_handle_error = on_error;
 		this->on_handle_read = on_read;
 		this->on_handle_write = on_write;
-		this->on_handle_close = on_close;
 		this->opaque = opaque;
 	};
 
@@ -56,9 +56,9 @@ struct __NeubotPollable : public NeubotPollable {
 		this->on_handle_write(this->opaque);
 	};
 
-	virtual void handle_close(void) {
-		neubot_warn("__pollable: handle_close()");
-		this->on_handle_close(this->opaque);
+	virtual void handle_error(void) {
+		neubot_warn("__pollable: handle_error()");
+		this->on_handle_error(this->opaque);
 	};
 
 	virtual ~__NeubotPollable(void) {
@@ -68,11 +68,11 @@ struct __NeubotPollable : public NeubotPollable {
 
 struct NeubotPollable *
 NeubotPollable_construct(neubot_slot_vo handle_read,
-    neubot_slot_vo handle_write, neubot_slot_vo handle_close,
+    neubot_slot_vo handle_write, neubot_slot_vo handle_error,
     void *opaque)
 {
 	return (new (std::nothrow) __NeubotPollable(handle_read,
-	    handle_write, handle_close, opaque));
+	    handle_write, handle_error, opaque));
 }
 
 /*

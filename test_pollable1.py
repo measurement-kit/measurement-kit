@@ -23,12 +23,12 @@ class EchoPollable(Pollable):
     def handle_read(self):
         data = os.read(0, 1024)
         if not data:
-            self.close()
+            self.poller.break_loop()
             return
         sys.stdout.write(data)
 
-    def handle_close(self):
-        self.poller.break_loop()
+    def handle_error(self):
+        self.close()
 
 def main():
     poller = Poller()
