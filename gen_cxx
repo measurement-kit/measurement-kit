@@ -234,7 +234,7 @@ def main():
         stream.write("    class %s;\n" % class_name)
     stream.write("\n")
 
-    for struct_name in sorted(interface["classes"]):
+    for struct_name in interface["classes"]:
         class_name = struct_name.replace("Neubot", "", 1)
         struct_name = struct_name
 
