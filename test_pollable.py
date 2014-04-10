@@ -23,6 +23,9 @@ def write_callback(ccontext):
 
 def error_callback(ccontext):
     """ Error callback """
+    poller, _ = ccontext
+    sys.stderr.write("error!\n")
+    libneubot.NeubotPoller_break_loop(poller)
 
 ERROR_CALLBACK = libneubot.NEUBOT_SLOT_VO(error_callback)
 READ_CALLBACK = libneubot.NEUBOT_SLOT_VO(read_callback)
@@ -42,6 +45,7 @@ def main():
     context.append(pollable)
 
     libneubot.NeubotPollable_attach(pollable, poller, 0)
+    libneubot.NeubotPollable_set_timeout(pollable, 7.0)
     libneubot.NeubotPollable_set_readable(pollable)
 
     libneubot.NeubotPoller_loop(poller)

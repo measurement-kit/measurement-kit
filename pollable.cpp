@@ -59,12 +59,14 @@ dispatch(evutil_socket_t filenum, short event, void *opaque)
 
 	pollable = (NeubotPollable *) opaque;
 
-	if (event & EV_READ)
+	if (event & EV_TIMEOUT)
+		pollable->handle_error();
+	else if (event & EV_READ)
 		pollable->handle_read();
 	else if (event & EV_WRITE)
 		pollable->handle_write();
 	else
-		abort();
+		pollable->handle_error();
 }
 
 int
@@ -153,6 +155,7 @@ NeubotPollable::fileno(void)
 int
 NeubotPollable::set_readable(void)
 {
+	struct timeval tv, *tvp;
 	int result;
 
 	neubot_warn("pollable: set_readable()");
@@ -162,7 +165,13 @@ NeubotPollable::set_readable(void)
 		return (-1);
 	}
 
-	result = event_add(&state->evread, NULL);
+	if (state->timeout >= 0) {
+		neubot_timeval_init(&tv, state->timeout);
+		tvp = &tv;
+	} else
+		tvp = NULL;
+
+	result = event_add(&state->evread, tvp);
 	if (result != 0) {
 		neubot_warn("pollable: event_add() failed");
 		return (-1);
@@ -174,6 +183,7 @@ NeubotPollable::set_readable(void)
 int
 NeubotPollable::set_writable(void)
 {
+	struct timeval tv, *tvp;
 	int result;
 
 	neubot_warn("pollable: set_writable()");
@@ -183,7 +193,13 @@ NeubotPollable::set_writable(void)
 		return (-1);
 	}
 
-	result = event_add(&state->evwrite, NULL);
+	if (state->timeout >= 0) {
+		neubot_timeval_init(&tv, state->timeout);
+		tvp = &tv;
+	} else
+		tvp = NULL;
+
+	result = event_add(&state->evwrite, tvp);
 	if (result != 0) {
 		neubot_warn("pollable: event_add() failed");
 		return (-1);
@@ -237,8 +253,6 @@ NeubotPollable::unset_writable(void)
 void
 NeubotPollable::set_timeout(double timeout)
 {
-	/* TODO: implement */
-
 	if (state == NULL) {
 		neubot_warn("pollable: not initialized");
 		return;

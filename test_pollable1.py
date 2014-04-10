@@ -28,12 +28,14 @@ class EchoPollable(Pollable):
         sys.stdout.write(data)
 
     def handle_error(self):
-        self.close()
+        sys.stderr.write("error!\n")
+        self.poller.break_loop()
 
 def main():
     poller = Poller()
     pollable = EchoPollable()
     pollable.attach(poller, 0)
+    pollable.set_timeout(7.0)
     pollable.set_readable()
     poller.loop()
 
