@@ -7,8 +7,8 @@ import ctypes
 import os
 import sys
 
-from libneubot1 import Pollable
-from libneubot1 import Poller
+from libneubot import Pollable
+from libneubot import Poller
 
 class EchoPollable(Pollable):
 

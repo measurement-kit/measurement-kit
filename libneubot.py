@@ -6,6 +6,7 @@
 #pylint: disable = C0111, C0103
 
 import ctypes
+import logging
 import sys
 
 if sys.platform == "darwin":
@@ -14,6 +15,7 @@ else:
     LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.2"
 
 LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
+LIBNEUBOT_OBJECTS = set()
 
 NEUBOT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
 NEUBOT_SLOT_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,
@@ -23,15 +25,9 @@ NEUBOT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
 NEUBOT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,
   ctypes.c_char_p)
 
-# Classes:
-
-# struct NeubotEchoServer
-# struct NeubotPollable
-# struct NeubotPoller
-
-# Callbacks:
-
+#
 # NeubotEchoServer API:
+#
 
 LIBNEUBOT.NeubotEchoServer_construct.restype = ctypes.c_void_p
 LIBNEUBOT.NeubotEchoServer_construct.argtypes = (
@@ -48,7 +44,9 @@ def NeubotEchoServer_construct(poller, use_ipv6, address, port):
         raise RuntimeError('LibNeubot error')
     return ret
 
+#
 # NeubotPollable API:
+#
 
 LIBNEUBOT.NeubotPollable_construct.restype = ctypes.c_void_p
 LIBNEUBOT.NeubotPollable_construct.argtypes = (
@@ -161,7 +159,9 @@ LIBNEUBOT.NeubotPollable_close.argtypes = (
 def NeubotPollable_close(handle):
     LIBNEUBOT.NeubotPollable_close(handle)
 
+#
 # NeubotPoller API:
+#
 
 LIBNEUBOT.NeubotPoller_construct.restype = ctypes.c_void_p
 LIBNEUBOT.NeubotPoller_construct.argtypes = (
@@ -252,4 +252,275 @@ LIBNEUBOT.NeubotPoller_break_loop.argtypes = (
 
 def NeubotPoller_break_loop(handle):
     LIBNEUBOT.NeubotPoller_break_loop(handle)
+
+class NeubotHookClosure(object):
+    pass
+
+#
+# NeubotEchoServer wrapper:
+#
+
+class EchoServer(object):
+
+    def __init__(self, poller, use_ipv6, address, port):
+        # We cannot destroy until the object is complete
+        self._can_destroy = False
+        self._context = LIBNEUBOT.NeubotEchoServer_construct(poller._context,
+          use_ipv6, address, port)
+        if not self._context:
+            raise RuntimeError('out of memory')
+        # From now on we can destroy this object
+        self._can_destroy = True
+        LIBNEUBOT_OBJECTS.add(self)
+
+#
+# NeubotPollable wrapper:
+#
+
+class Pollable(object):
+
+    #
+    # <Slots>
+    #
+
+    def handle_read(self):
+        pass
+
+    @staticmethod
+    def _handle_read_(opaque):
+        # pylint: disable = W0702
+        try:
+            opaque.handle_read()
+        except:
+            logging.warning('Exception', exc_info=1)
+            opaque.close()
+        # pylint: enable = W0702
+
+    def handle_write(self):
+        pass
+
+    @staticmethod
+    def _handle_write_(opaque):
+        # pylint: disable = W0702
+        try:
+            opaque.handle_write()
+        except:
+            logging.warning('Exception', exc_info=1)
+            opaque.close()
+        # pylint: enable = W0702
+
+    def handle_error(self):
+        pass
+
+    @staticmethod
+    def _handle_error_(opaque):
+        # pylint: disable = W0702
+        try:
+            opaque.handle_error()
+        except:
+            logging.warning('Exception', exc_info=1)
+            opaque.close()
+        # pylint: enable = W0702
+
+    #
+    # </Slots>
+    #
+
+    def __init__(self):
+        self._c_handle_read_ = NEUBOT_SLOT_VO(self._handle_read_)
+        self._c_handle_write_ = NEUBOT_SLOT_VO(self._handle_write_)
+        self._c_handle_error_ = NEUBOT_SLOT_VO(self._handle_error_)
+        self._c_self = ctypes.py_object(self)
+        # We cannot destroy until the object is complete
+        self._can_destroy = False
+        self._context = LIBNEUBOT.NeubotPollable_construct(
+          self._c_handle_read_, self._c_handle_write_, self._c_handle_error_,
+          self._c_self)
+        if not self._context:
+            raise RuntimeError('out of memory')
+        # From now on we can destroy this object
+        self._can_destroy = True
+        LIBNEUBOT_OBJECTS.add(self)
+
+    def attach(self, poller, filenum):
+        retval = LIBNEUBOT.NeubotPollable_attach(self._context,
+          poller._context, filenum)
+        if retval != 0:
+            raise RuntimeError('attach failed')
+        return retval
+
+    def detach(self):
+        LIBNEUBOT.NeubotPollable_detach(self._context)
+
+    def fileno(self):
+        return LIBNEUBOT.NeubotPollable_fileno(self._context)
+
+    def set_readable(self):
+        retval = LIBNEUBOT.NeubotPollable_set_readable(self._context)
+        if retval != 0:
+            raise RuntimeError('set_readable failed')
+        return retval
+
+    def unset_readable(self):
+        retval = LIBNEUBOT.NeubotPollable_unset_readable(self._context)
+        if retval != 0:
+            raise RuntimeError('unset_readable failed')
+        return retval
+
+    def set_writable(self):
+        retval = LIBNEUBOT.NeubotPollable_set_writable(self._context)
+        if retval != 0:
+            raise RuntimeError('set_writable failed')
+        return retval
+
+    def unset_writable(self):
+        retval = LIBNEUBOT.NeubotPollable_unset_writable(self._context)
+        if retval != 0:
+            raise RuntimeError('unset_writable failed')
+        return retval
+
+    def set_timeout(self, delta):
+        LIBNEUBOT.NeubotPollable_set_timeout(self._context, delta)
+
+    def clear_timeout(self):
+        LIBNEUBOT.NeubotPollable_clear_timeout(self._context)
+
+    def close(self):
+        if not self._can_destroy:
+            return
+        # Idempotent destructor for safety
+        self._can_destroy = False
+        LIBNEUBOT_OBJECTS.remove(self)
+        LIBNEUBOT.NeubotPollable_close(self._context)
+
+#
+# NeubotPoller wrapper:
+#
+
+class Poller(object):
+
+    #
+    # <Hooks>
+    #
+
+    @staticmethod
+    def _sched_callback_(closure):
+        LIBNEUBOT_OBJECTS.remove(closure)
+        closure.pyfunc_callback(closure.opaque)
+
+    @staticmethod
+    def _defer_read_handle_ok_(closure):
+        LIBNEUBOT_OBJECTS.remove(closure)
+        closure.pyfunc_handle_ok(closure.opaque)
+
+    @staticmethod
+    def _defer_read_handle_timeout_(closure):
+        LIBNEUBOT_OBJECTS.remove(closure)
+        closure.pyfunc_handle_timeout(closure.opaque)
+
+    @staticmethod
+    def _defer_write_handle_ok_(closure):
+        LIBNEUBOT_OBJECTS.remove(closure)
+        closure.pyfunc_handle_ok(closure.opaque)
+
+    @staticmethod
+    def _defer_write_handle_timeout_(closure):
+        LIBNEUBOT_OBJECTS.remove(closure)
+        closure.pyfunc_handle_timeout(closure.opaque)
+
+    @staticmethod
+    def _resolve_callback_(closure, string):
+        LIBNEUBOT_OBJECTS.remove(closure)
+        closure.pyfunc_callback(closure.opaque, string)
+
+    #
+    # </Hooks>
+    #
+
+    def __init__(self):
+        # We cannot destroy until the object is complete
+        self._can_destroy = False
+        self._context = LIBNEUBOT.NeubotPoller_construct()
+        if not self._context:
+            raise RuntimeError('out of memory')
+        # From now on we can destroy this object
+        self._can_destroy = True
+        LIBNEUBOT_OBJECTS.add(self)
+
+        # Initialise hooks
+        self._sched_callback = NEUBOT_HOOK_VO(
+          self._sched_callback_)
+        self._defer_read_handle_ok = NEUBOT_HOOK_VO(
+          self._defer_read_handle_ok_)
+        self._defer_read_handle_timeout = NEUBOT_HOOK_VO(
+          self._defer_read_handle_timeout_)
+        self._defer_write_handle_ok = NEUBOT_HOOK_VO(
+          self._defer_write_handle_ok_)
+        self._defer_write_handle_timeout = NEUBOT_HOOK_VO(
+          self._defer_write_handle_timeout_)
+        self._resolve_callback = NEUBOT_HOOK_VOS(
+          self._resolve_callback_)
+
+    def sched(self, delta, callback, opaque):
+        closure = NeubotHookClosure()
+        # pylint: disable = W0201
+        closure.pyfunc_callback = callback
+        closure.opaque = opaque
+        # pylint: enable = W0201
+        LIBNEUBOT_OBJECTS.add(closure)
+        retval = LIBNEUBOT.NeubotPoller_sched(self._context, delta,
+          self._sched_callback, closure)
+        if retval != 0:
+            raise RuntimeError('sched failed')
+        return retval
+
+    def defer_read(self, fileno, handle_ok, handle_timeout, opaque, timeout):
+        closure = NeubotHookClosure()
+        # pylint: disable = W0201
+        closure.pyfunc_handle_ok = handle_ok
+        closure.pyfunc_handle_timeout = handle_timeout
+        closure.opaque = opaque
+        # pylint: enable = W0201
+        LIBNEUBOT_OBJECTS.add(closure)
+        retval = LIBNEUBOT.NeubotPoller_defer_read(self._context, fileno,
+          self._defer_read_handle_ok, self._defer_read_handle_timeout, closure,
+          timeout)
+        if retval != 0:
+            raise RuntimeError('defer_read failed')
+        return retval
+
+    def defer_write(self, fileno, handle_ok, handle_timeout, opaque,
+          timeout):
+        closure = NeubotHookClosure()
+        # pylint: disable = W0201
+        closure.pyfunc_handle_ok = handle_ok
+        closure.pyfunc_handle_timeout = handle_timeout
+        closure.opaque = opaque
+        # pylint: enable = W0201
+        LIBNEUBOT_OBJECTS.add(closure)
+        retval = LIBNEUBOT.NeubotPoller_defer_write(self._context, fileno,
+          self._defer_write_handle_ok, self._defer_write_handle_timeout,
+          closure, timeout)
+        if retval != 0:
+            raise RuntimeError('defer_write failed')
+        return retval
+
+    def resolve(self, family, name, callback, opaque):
+        closure = NeubotHookClosure()
+        # pylint: disable = W0201
+        closure.pyfunc_callback = callback
+        closure.opaque = opaque
+        # pylint: enable = W0201
+        LIBNEUBOT_OBJECTS.add(closure)
+        retval = LIBNEUBOT.NeubotPoller_resolve(self._context, family, name,
+          self._resolve_callback, closure)
+        if retval != 0:
+            raise RuntimeError('resolve failed')
+        return retval
+
+    def loop(self):
+        LIBNEUBOT.NeubotPoller_loop(self._context)
+
+    def break_loop(self):
+        LIBNEUBOT.NeubotPoller_break_loop(self._context)
 

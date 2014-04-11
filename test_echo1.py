@@ -3,8 +3,8 @@
 
 """ Test for NeubotEchoServer """
 
-from libneubot1 import EchoServer
-from libneubot1 import Poller
+from libneubot import EchoServer
+from libneubot import Poller
 
 def main():
     """ Main function """

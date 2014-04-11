@@ -8,7 +8,7 @@
 import os
 import sys
 
-from libneubot1 import Poller
+from libneubot import Poller
 
 def read_timeo(poller):
     sys.stderr.write("Timeout!\n")
