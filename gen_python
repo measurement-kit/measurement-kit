@@ -21,11 +21,6 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-#
-# Note: gen_python is the new, improved Python code generator,
-# and gen_py is the old Python code generator.
-#
-
 # pylint: disable = C0111
 
 import json
