@@ -56,10 +56,6 @@ poller.o: poller.c
 strtonum.o: strtonum.c
 utils.o: utils.c
 
-LibNeubot.h: LibNeubot.java
-	javac LibNeubot.java
-	javah LibNeubot
-
 clean:
 	rm -f -- $(OBJECTS) $(REALNAME) `cat .gitignore`
 install: $(REALNAME)
