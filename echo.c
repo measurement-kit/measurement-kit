@@ -55,6 +55,20 @@ struct NeubotEchoServer {
  */
 
 static void
+Connection_close(struct Connection *self)
+{
+	struct NeubotPollable *pollable;
+
+	pollable = self->pollable;
+
+	(void) close(self->fileno);
+	evbuffer_free(self->buffer);
+	free(self);
+
+	NeubotPollable_close(pollable);
+}
+
+static void
 Connection_read(void *opaque)
 {
 	struct Connection *self;
@@ -68,7 +82,7 @@ Connection_read(void *opaque)
 			NeubotPollable_unset_readable(self->pollable);
 			return;
 		}
-		NeubotPollable_close(self->pollable);
+		Connection_close(self);
 		return;
 	}
 
@@ -84,7 +98,7 @@ Connection_write(void *opaque)
 	self = (struct Connection *) opaque;
 	result = evbuffer_write(self->buffer, self->fileno);
 	if (result == -1) {
-		NeubotPollable_close(self->pollable);
+		Connection_close(self);
 		return;
 	}
 
@@ -92,28 +106,15 @@ Connection_write(void *opaque)
 		NeubotPollable_unset_writable(self->pollable);
 
 	if (self->seen_eof)
-		NeubotPollable_close(self->pollable);
+		Connection_close(self);
 }
 
 static void
-Connection_close(void *opaque)
+Connection_error(void *opaque)
 {
 	struct Connection *self;
-
-	/*
-	 * Perhaps obvious, but: in this function we don't call
-	 * NeubotPollable_close() because this function is invoked
-	 * by NeubotPollable_close().
-	 */
-
 	self = (struct Connection *) opaque;
-
-	if (self->fileno != -1)
-		(void) close(self->fileno);
-	if (self->buffer != NULL)
-		evbuffer_free(self->buffer);
-
-	free(self);
+	Connection_close(self);
 }
 
 static void
@@ -129,30 +130,21 @@ Connection_construct(void *opaque)
 	if (conn == NULL)
 		goto cleanup;
 
-	conn->pollable = NeubotPollable_construct(
-	    Connection_read, Connection_write, Connection_close, conn);
-	if (conn->pollable == NULL)
-		goto cleanup;
-
-	/* _____________________________________________________________
-	 *
-	 * WARNING! From this point on, we have a complete object that
-	 * can be free()d by using NeubotPollable_close() and consequently
-	 * with Connection_close(). To make sure that Connection_close()
-	 * deals with incomplete fileno and buffer fields, below we properly
-	 * and explicitly initialize fileno to -1 and buffer to NULL.
-	 * _____________________________________________________________
-	 */
-
-	conn->fileno = -1;
 	conn->buffer = NULL;
+	conn->fileno = -1;
+	conn->pollable = NULL;
+
+	conn->buffer = evbuffer_new();
+	if (conn->buffer == NULL)
+		goto cleanup;
 
 	conn->fileno = accept(self->fileno, NULL, NULL);
 	if (conn->fileno == -1)
 		goto cleanup;
 
-	conn->buffer = evbuffer_new();
-	if (conn->buffer == NULL)
+	conn->pollable = NeubotPollable_construct(
+	    Connection_read, Connection_write, Connection_error, conn);
+	if (conn->pollable == NULL)
 		goto cleanup;
 
 	result = NeubotPollable_attach(conn->pollable, self->poller,
@@ -165,10 +157,13 @@ Connection_construct(void *opaque)
 		return;		/* success */
 
       cleanup:
+	if (conn != NULL && conn->buffer != NULL)
+		evbuffer_free(conn->buffer);
+	if (conn != NULL && conn->fileno != -1)
+		(void)close(conn->fileno);
 	if (conn != NULL && conn->pollable != NULL)
 		NeubotPollable_close(conn->pollable);
-	else
-		neubot_xfree(conn);
+	free(conn);
 }
 
 /*
