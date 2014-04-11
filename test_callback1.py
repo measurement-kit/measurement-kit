@@ -5,7 +5,7 @@
 
 import sys
 
-from libneubot1 import Poller
+from libneubot import Poller
 
 def periodic_callback(poller):
     """ The periodic callback """

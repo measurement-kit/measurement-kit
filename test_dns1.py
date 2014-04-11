@@ -5,7 +5,7 @@
 
 import sys
 
-from libneubot1 import Poller
+from libneubot import Poller
 
 def resolve_callback(poller, addresses):
     """ The resolve callback """

@@ -31,11 +31,7 @@ echo "Generate: neubot.hh"
 
 echo "Generate: libneubot.py"
 
-./gen_py libneubot.json > libneubot.py
-
-echo "Generate: libneubot1.py"
-
-./gen_python libneubot.json > libneubot1.py
+./gen_python libneubot.json > libneubot.py
 
 echo "Generate: libneubot_python/..."
 
