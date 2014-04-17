@@ -142,7 +142,7 @@ NeubotPollable::detach(void)
 }
 
 long long
-NeubotPollable::fileno(void)
+NeubotPollable::filedesc(void)
 {
 	if (state == NULL) {
 		neubot_warn("pollable: not initialized");

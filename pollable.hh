@@ -33,7 +33,7 @@ struct NeubotPollable {
 	NeubotPollable(void);
 	int attach(NeubotPoller *, long long);
 	void detach(void);
-	long long fileno(void);
+	long long filedesc(void);
 	int set_readable(void);
 	int set_writable(void);
 	int unset_readable(void);

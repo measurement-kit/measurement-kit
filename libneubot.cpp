@@ -102,7 +102,7 @@ NeubotPollable_detach(NeubotPollable *self)
 long long
 NeubotPollable_fileno(NeubotPollable *self)
 {
-	return (self->fileno());
+	return (self->filedesc());
 }
 
 int
