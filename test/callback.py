@@ -5,6 +5,8 @@
 
 import sys
 
+sys.path.insert(0, "/usr/local/share/libneubot")
+
 import libneubot
 
 def periodic_callback(poller):

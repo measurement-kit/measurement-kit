@@ -7,6 +7,8 @@ import ctypes
 import os
 import sys
 
+sys.path.insert(0, "/usr/local/share/libneubot")
+
 import libneubot
 
 def read_callback(ccontext):

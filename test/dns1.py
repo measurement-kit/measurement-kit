@@ -5,6 +5,8 @@
 
 import sys
 
+sys.path.insert(0, "/usr/local/share/libneubot")
+
 from libneubot import Poller
 
 def resolve_callback(poller, addresses):

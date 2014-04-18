@@ -8,6 +8,8 @@
 import os
 import sys
 
+sys.path.insert(0, "/usr/local/share/libneubot")
+
 from libneubot import Poller
 
 def read_timeo(poller):
