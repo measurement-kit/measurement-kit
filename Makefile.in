@@ -50,7 +50,7 @@ $(REALNAME): $(OBJECTS)
 	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(REALNAME) -levent -lm
 
 echo.o: echo.c
-http-parser/http-parser.o: http-parser/http-parser.c
+http-parser/http_parser.o: http-parser/http_parser.c
 libneubot.o: libneubot.cpp
 log.o: log.c
 pollable.o: pollable.cpp
