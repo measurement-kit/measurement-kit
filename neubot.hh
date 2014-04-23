@@ -135,24 +135,24 @@ namespace Neubot {
 
         virtual void handle_error(void) = 0;
 
-        Pollable(void) {
-            this->_context = NeubotPollable_construct(this->handle_read__,
-              this->handle_write__, this->handle_error__, this);
+        Pollable(Poller *poller) {
+            this->_context = NeubotPollable_construct(poller->pointer(),
+              this->handle_read__, this->handle_write__, this->handle_error__,
+              this);
             if (this->_context == NULL)
                 abort();
         };
 
-        int attach(Poller *poller, long long filenum) {
-            return (NeubotPollable_attach(this->_context, poller->pointer(),
-              filenum));
+        int attach(long long filenum) {
+            return (NeubotPollable_attach(this->_context, filenum));
         };
 
         void detach(void) {
             NeubotPollable_detach(this->_context);
         };
 
-        long long fileno(void) {
-            return (NeubotPollable_fileno(this->_context));
+        long long get_fileno(void) {
+            return (NeubotPollable_get_fileno(this->_context));
         };
 
         int set_readable(void) {

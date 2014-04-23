@@ -10,9 +10,9 @@ import logging
 import sys
 
 if sys.platform == "darwin":
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.2"
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.3"
 else:
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.2"
+    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.3"
 
 LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 LIBNEUBOT_OBJECTS = set()
@@ -50,16 +50,17 @@ def NeubotEchoServer_construct(poller, use_ipv6, address, port):
 
 LIBNEUBOT.NeubotPollable_construct.restype = ctypes.c_void_p
 LIBNEUBOT.NeubotPollable_construct.argtypes = (
+    ctypes.c_void_p,
     NEUBOT_SLOT_VO,
     NEUBOT_SLOT_VO,
     NEUBOT_SLOT_VO,
     ctypes.py_object,
 )
 
-def NeubotPollable_construct(handle_read, handle_write, handle_error, 
-      opaque):
-    ret = LIBNEUBOT.NeubotPollable_construct(handle_read, handle_write, 
-      handle_error, opaque)
+def NeubotPollable_construct(poller, handle_read, handle_write, 
+      handle_error, opaque):
+    ret = LIBNEUBOT.NeubotPollable_construct(poller, handle_read, 
+      handle_write, handle_error, opaque)
     if not ret:
         raise RuntimeError('LibNeubot error')
     return ret
@@ -67,12 +68,11 @@ def NeubotPollable_construct(handle_read, handle_write, handle_error,
 LIBNEUBOT.NeubotPollable_attach.restype = ctypes.c_int
 LIBNEUBOT.NeubotPollable_attach.argtypes = (
     ctypes.c_void_p,
-    ctypes.c_void_p,
     ctypes.c_longlong,
 )
 
-def NeubotPollable_attach(handle, poller, filenum):
-    ret = LIBNEUBOT.NeubotPollable_attach(handle, poller, filenum)
+def NeubotPollable_attach(handle, filenum):
+    ret = LIBNEUBOT.NeubotPollable_attach(handle, filenum)
     if ret != 0:
         raise RuntimeError('LibNeubot error')
     return ret
@@ -84,13 +84,13 @@ LIBNEUBOT.NeubotPollable_detach.argtypes = (
 def NeubotPollable_detach(handle):
     LIBNEUBOT.NeubotPollable_detach(handle)
 
-LIBNEUBOT.NeubotPollable_fileno.restype = ctypes.c_longlong
-LIBNEUBOT.NeubotPollable_fileno.argtypes = (
+LIBNEUBOT.NeubotPollable_get_fileno.restype = ctypes.c_longlong
+LIBNEUBOT.NeubotPollable_get_fileno.argtypes = (
     ctypes.c_void_p,
 )
 
-def NeubotPollable_fileno(handle):
-    ret = LIBNEUBOT.NeubotPollable_fileno(handle)
+def NeubotPollable_get_fileno(handle):
+    ret = LIBNEUBOT.NeubotPollable_get_fileno(handle)
     return ret
 
 LIBNEUBOT.NeubotPollable_set_readable.restype = ctypes.c_int
@@ -326,14 +326,14 @@ class Pollable(object):
     # </Slots>
     #
 
-    def __init__(self):
+    def __init__(self, poller):
         self._c_handle_read_ = NEUBOT_SLOT_VO(self._handle_read_)
         self._c_handle_write_ = NEUBOT_SLOT_VO(self._handle_write_)
         self._c_handle_error_ = NEUBOT_SLOT_VO(self._handle_error_)
         self._c_self = ctypes.py_object(self)
         # We cannot destroy until the object is complete
         self._can_destroy = False
-        self._context = LIBNEUBOT.NeubotPollable_construct(
+        self._context = LIBNEUBOT.NeubotPollable_construct(poller._context,
           self._c_handle_read_, self._c_handle_write_, self._c_handle_error_,
           self._c_self)
         if not self._context:
@@ -342,9 +342,8 @@ class Pollable(object):
         self._can_destroy = True
         LIBNEUBOT_OBJECTS.add(self)
 
-    def attach(self, poller, filenum):
-        retval = LIBNEUBOT.NeubotPollable_attach(self._context,
-          poller._context, filenum)
+    def attach(self, filenum):
+        retval = LIBNEUBOT.NeubotPollable_attach(self._context, filenum)
         if retval != 0:
             raise RuntimeError('attach failed')
         return retval
@@ -352,8 +351,8 @@ class Pollable(object):
     def detach(self):
         LIBNEUBOT.NeubotPollable_detach(self._context)
 
-    def fileno(self):
-        return LIBNEUBOT.NeubotPollable_fileno(self._context)
+    def get_fileno(self):
+        return LIBNEUBOT.NeubotPollable_get_fileno(self._context)
 
     def set_readable(self):
         retval = LIBNEUBOT.NeubotPollable_set_readable(self._context)

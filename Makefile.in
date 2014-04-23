@@ -37,7 +37,7 @@ CFLAGS = $(WARNINGS) -pedantic -fPIC -g @CFLAGS@
 CXXFLAGS = $(WARNINGS) -pedantic -std=c++11 -fPIC -g @CFLAGS@
 LDFLAGS = @LDFLAGS@ -shared
 
-MAJOR = 2
+MAJOR = 3
 MINOR = 0
 
 HEADER = neubot.h

@@ -35,9 +35,9 @@ def gen_python_imports(stream):
     stream.write("import sys\n")
     stream.write("\n")
     stream.write('if sys.platform == "darwin":\n')
-    stream.write('    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.2"\n')
+    stream.write('    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.3"\n')
     stream.write("else:\n")
-    stream.write('    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.2"\n')
+    stream.write('    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.3"\n')
     stream.write("\n")
     stream.write("LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)\n")
 

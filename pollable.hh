@@ -20,28 +20,38 @@
  */
 
 //
-// Pollable
+// You must include <event/event.h> before this file to get the
+// definition of evutil_socket_t.
 //
 
-struct NeubotPollableState;
 struct NeubotPoller;
+struct event;
 
-struct NeubotPollable {
-#ifndef SWIG
-	NeubotPollableState *state;
-#endif
-	NeubotPollable(void);
-	int attach(NeubotPoller *, long long);
-	void detach(void);
-	long long filedesc(void);
-	int set_readable(void);
-	int set_writable(void);
-	int unset_readable(void);
-	int unset_writable(void);
-	void set_timeout(double);
-	void clear_timeout(void);
-	virtual void handle_error(void);
-	virtual void handle_read(void);
-	virtual void handle_write(void);
-	virtual ~NeubotPollable(void);
+namespace Neubot {
+    class Pollable {
+        NeubotPoller *poller;
+        double timeout;
+        event *evread;
+        event *evwrite;
+        evutil_socket_t fileno;
+        int setunset(const char *, unsigned, event *);
+    protected:
+        Pollable(void);
+        int init(NeubotPoller *);
+    public:
+        static Pollable *construct(NeubotPoller *);
+        int attach(long long);
+        void detach(void);
+        long long get_fileno(void);
+        int set_readable(void);
+        int set_writable(void);
+        int unset_readable(void);
+        int unset_writable(void);
+        void set_timeout(double);
+        void clear_timeout(void);
+        virtual void handle_error(void);
+        virtual void handle_read(void);
+        virtual void handle_write(void);
+        virtual ~Pollable(void);
+    };
 };

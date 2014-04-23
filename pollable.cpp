@@ -1,6 +1,7 @@
 /*-
  * Copyright (c) 2014
- *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
+ *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN),
+ *     Simone Basso <bassosimone@gmail.com>
  *     and Alessandro Quaranta <alessandro.quaranta92@gmail.com>.
  *
  * This file is part of Neubot <http://www.neubot.org/>.
@@ -20,57 +21,94 @@
  */
 
 //
-// Pollable
+// Pollable: an object that tries to be compatible with the namesake
+// object implemented by Neubot.
+//
+// The presence of this object should facilitate the testing of a
+// modified Neubot that uses libneubot as backend.
+//
+// The mid-term plan is to design Python objects at higher level (e.g.,
+// at the stream level) that are more compatible with C++ objects.
 //
 
-#include <sys/queue.h>
-
+#include <new>
 #include <stdlib.h>
 
 #include <event2/event.h>
-#include <event2/event_compat.h>
-#include <event2/event_struct.h>
 
 #include "log.h"
+#include "poller.h"
 #include "utils.h"
 
 #include "pollable.hh"
 
-struct NeubotPollableState {
-	NeubotPoller *poller;
-	double timeout;
-	event evread;
-	event evwrite;
-	evutil_socket_t fileno;
-};
+using namespace Neubot;
 
-NeubotPollable::NeubotPollable(void)
+Pollable::Pollable(void)
 {
-	neubot_warn("pollable: NeubotPollable()");
-	state = NULL;
+	neubot_warn("pollable: Pollable()");
+
+	this->poller = NULL;
+	this->timeout = -1.0;
+	this->evread = NULL;
+	this->evwrite = NULL;
+	this->fileno = -1;
+}
+
+Pollable *
+Pollable::construct(NeubotPoller *poller)
+{
+	Pollable *self = new (std::nothrow) Pollable();
+	if (self == NULL)
+		return (NULL);
+
+	/*
+	 * The construction is split in construct() and init() because
+	 * there are child classes that need to call init().
+	 */
+	if (self->init(poller) != 0) {
+		delete self;
+		return (NULL);
+	}
+
+	return (self);
+}
+
+int
+Pollable::init(NeubotPoller *poller)
+{
+	if (poller == NULL)
+		return (-1);
+
+	this->poller = poller;
+
+	return (0);
 }
 
 static void
 dispatch(evutil_socket_t filenum, short event, void *opaque)
 {
-	NeubotPollable *pollable;
+	Pollable *self = (Pollable *) opaque;
 
 	(void)filenum;
 
-	pollable = (NeubotPollable *) opaque;
-
 	if (event & EV_TIMEOUT)
-		pollable->handle_error();
+		self->handle_error();
 	else if (event & EV_READ)
-		pollable->handle_read();
+		self->handle_read();
 	else if (event & EV_WRITE)
-		pollable->handle_write();
+		self->handle_write();
 	else
-		pollable->handle_error();
+		self->handle_error();
 }
 
+/*
+ * Note: attach() is separated from construct(), because in Neubot there
+ * are cases in which we create a Pollable and then we attach() and detach()
+ * file descriptors to it (e.g., the Connector object does that).
+ */
 int
-NeubotPollable::attach(NeubotPoller *poller, long long fileno)
+Pollable::attach(long long fileno)
 {
 	//
 	// Sanity
@@ -78,12 +116,17 @@ NeubotPollable::attach(NeubotPoller *poller, long long fileno)
 
 	neubot_warn("pollable: attach()");
 
-	if (state != NULL) {
-		neubot_warn("pollable: already initialized");
+	if (this->fileno != -1) {
+		neubot_warn("pollable: already attached");
 		return (-1);
 	}	
 
-	if (poller == NULL || !neubot_socket_valid(fileno)) {
+	/*
+	 * Note: `long long` simplifies the interaction with Java and
+	 * shall be wide enough to hold evutil_socket_t, which is `int`
+	 * on Unix and `intptr_t` on Windows.
+	 */
+	if (!neubot_socket_valid(fileno)) {
 		neubot_warn("pollable: invalid argument");
 		return (-1);
 	}
@@ -92,88 +135,98 @@ NeubotPollable::attach(NeubotPoller *poller, long long fileno)
 	// Init
 	//
 
-	state = (NeubotPollableState *) calloc(1, sizeof (*state));
-	if (state == NULL) {
-		neubot_warn("pollable: calloc() failed");
-		goto fail;
+	event_base *evbase = NeubotPoller_event_base_(this->poller);
+	if (evbase == NULL)
+		abort();
+
+	this->evread = event_new(evbase, fileno, EV_READ | EV_PERSIST,
+	    dispatch, this);
+	this->evwrite = event_new(evbase, fileno, EV_WRITE | EV_PERSIST,
+	    dispatch, this);
+
+	if (this->evread == NULL || this->evwrite == NULL) {
+		neubot_warn("pollable: event_new() failed");
+		return (-1);
 	}
 
-	state->fileno = fileno;
-	state->poller = poller;
-	state->timeout = -1.0;
-
-	event_set(&state->evread, fileno, EV_READ | EV_PERSIST,
-	    dispatch, this);
-
-	event_set(&state->evwrite, fileno, EV_WRITE | EV_PERSIST,
-	    dispatch, this);
+	// Set the fileno to indicate success
+	this->fileno = fileno;
 
 	return (0);
-
-	//
-	// Handle failure
-	//
-
-fail:
-	if (state != NULL)
-		free(state);
-	state = NULL;
-	return (-1);
 }
 
 void
-NeubotPollable::detach(void)
+Pollable::detach(void)
 {
-	if (state == NULL)
+	if (this->fileno == -1)
 		return;
 
 	neubot_warn("pollable: detach()");
 
+	// poller: continue to point to the poller
+
+	this->timeout = -1.0;
+
+	if (this->evread != NULL) {
+		event_free(this->evread);
+		this->evread = NULL;
+	}
+	if (this->evwrite != NULL) {
+		event_free(this->evwrite);
+		this->evwrite = NULL;
+	}
+
 	//
 	// We don't close the file descriptor because the Neubot pollable
-	// class does not close the file description as well
+	// class does not close the file description as well.
 	//
-
-	state->fileno = -1;
-	event_del(&state->evread);
-	event_del(&state->evwrite);
-	free(state);
-	state = NULL;
+	this->fileno = -1;
 }
 
+/*
+ * This name is different from the name used by Neubot because the
+ * fileno() name clashes with the fileno() macro in some headers.
+ */
 long long
-NeubotPollable::filedesc(void)
+Pollable::get_fileno(void)
 {
-	if (state == NULL) {
-		neubot_warn("pollable: not initialized");
-		return (-1);
-	}
-
-	return (state->fileno);
+	return (this->fileno);
 }
 
+#define OPERATION_SET 1
+#define OPERATION_UNSET 2
+
 int
-NeubotPollable::set_readable(void)
+Pollable::setunset(const char *what, unsigned opcode, event *evp)
 {
 	struct timeval tv, *tvp;
 	int result;
 
-	neubot_warn("pollable: set_readable()");
+	neubot_warn("pollable: %s()", what);
 
-	if (state == NULL) {
-		neubot_warn("pollable: not initialized");
+	if (this->fileno == -1) {
+		neubot_warn("%s: not attached", what);
 		return (-1);
 	}
 
-	if (state->timeout >= 0) {
-		neubot_timeval_init(&tv, state->timeout);
-		tvp = &tv;
-	} else
-		tvp = NULL;
+	switch (opcode) {
+	case OPERATION_SET:
+		if (this->timeout >= 0) {
+			neubot_timeval_init(&tv, this->timeout);
+			tvp = &tv;
+		} else
+			tvp = NULL;
+		result = event_add(evp, tvp);
+		break;
+	case OPERATION_UNSET:
+		result = event_del(evp);
+		break;
+	default:
+		abort();
+	}
 
-	result = event_add(&state->evread, tvp);
 	if (result != 0) {
-		neubot_warn("pollable: event_add() failed");
+		neubot_warn("%s: event_add/event_del() failed", what);
 		return (-1);
 	}
 
@@ -181,117 +234,72 @@ NeubotPollable::set_readable(void)
 }
 
 int
-NeubotPollable::set_writable(void)
+Pollable::set_readable(void)
 {
-	struct timeval tv, *tvp;
-	int result;
-
-	neubot_warn("pollable: set_writable()");
-
-	if (state == NULL) {
-		neubot_warn("pollable: not initialized");
-		return (-1);
-	}
-
-	if (state->timeout >= 0) {
-		neubot_timeval_init(&tv, state->timeout);
-		tvp = &tv;
-	} else
-		tvp = NULL;
-
-	result = event_add(&state->evwrite, tvp);
-	if (result != 0) {
-		neubot_warn("pollable: event_add() failed");
-		return (-1);
-	}
-
-	return (0);
+	return (this->setunset("set_readable", OPERATION_SET,
+	    this->evread));
 }
 
 int
-NeubotPollable::unset_readable(void)
+Pollable::set_writable(void)
 {
-	int result;
-
-	neubot_warn("pollable: unset_readable()");
-
-	if (state == NULL) {
-		neubot_warn("pollable: not initialized");
-		return (-1);
-	}
-
-	result = event_del(&state->evread);
-	if (result != 0) {
-		neubot_warn("pollable: event_del() failed");
-		return (-1);
-	}
-
-	return (0);
+	return (this->setunset("set_writable", OPERATION_SET,
+	    this->evwrite));
 }
 
 int
-NeubotPollable::unset_writable(void)
+Pollable::unset_readable(void)
 {
-	int result;
+	return (this->setunset("unset_readable", OPERATION_UNSET,
+	    this->evread));
+}
 
-	neubot_warn("pollable: unset_writable()");
-
-	if (state == NULL) {
-		neubot_warn("pollable: not initialized");
-		return (-1);
-	}
-
-	result = event_del(&state->evwrite);
-	if (result != 0) {
-		neubot_warn("pollable: event_del() failed");
-		return (-1);
-	}
-
-	return (0);
+int
+Pollable::unset_writable(void)
+{
+	return (this->setunset("unset_writable", OPERATION_UNSET,
+	    this->evwrite));
 }
 
 void
-NeubotPollable::set_timeout(double timeout)
+Pollable::set_timeout(double timeout)
 {
-	if (state == NULL) {
-		neubot_warn("pollable: not initialized");
-		return;
-	}
-
-	state->timeout = timeout;
+	this->timeout = timeout;
 }
 
 void
-NeubotPollable::clear_timeout(void)
+Pollable::clear_timeout(void)
 {
-	if (state == NULL) {
-		neubot_warn("pollable: not initialized");
-		return;
-	}
-
-	state->timeout = -1;
+	this->timeout = -1;
 }
 
 void
-NeubotPollable::handle_read(void)
+Pollable::handle_read(void)
 {
 	// TODO: override
 }
 
 void
-NeubotPollable::handle_write(void)
+Pollable::handle_write(void)
 {
 	// TODO: override
 }
 
+/*
+ * This is another difference wrt Neubot: in Neubot the handle_close()
+ * method is called when a pollable is closed. Here, on the contrary, we
+ * have not close notification, because this is the way in which the
+ * destruction works on C++ (i.e., derived classes are destroyed earlier
+ * than parent classes, thus, it's not possible to notify derived classes).
+ */
 void
-NeubotPollable::handle_error(void)
+Pollable::handle_error(void)
 {
 	// TODO: override
 }
 
-NeubotPollable::~NeubotPollable(void)
+Pollable::~Pollable(void)
 {
-	neubot_warn("pollable: ~NeubotPollable()");
+	neubot_warn("pollable: ~Pollable()");
 	this->detach();
 }

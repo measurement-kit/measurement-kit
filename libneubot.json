@@ -29,12 +29,11 @@
         ],
 
         "NeubotPollable": [
-            ["__construct__", ["slot_vo", ["handle_read",
-             "handle_write", "handle_error"]]],
-            ["status_t", "attach", ["NeubotPoller_p", "poller"],
-              ["long long", "filenum"]],
+            ["__construct__", ["NeubotPoller_p", "poller"], ["slot_vo",
+             ["handle_read", "handle_write", "handle_error"]]],
+            ["status_t", "attach", ["long long", "filenum"]],
             ["void", "detach"],
-            ["long long", "fileno"],
+            ["long long", "get_fileno"],
             ["status_t", "set_readable"],
             ["status_t", "unset_readable"],
             ["status_t", "set_writable"],

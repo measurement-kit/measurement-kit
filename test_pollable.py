@@ -39,16 +39,18 @@ def main():
     context = [poller]
     ccontext = ctypes.py_object(context)
 
-    pollable = libneubot.NeubotPollable_construct(READ_CALLBACK,
+    pollable = libneubot.NeubotPollable_construct(poller, READ_CALLBACK,
       WRITE_CALLBACK, ERROR_CALLBACK, ccontext)
 
     context.append(pollable)
 
-    libneubot.NeubotPollable_attach(pollable, poller, 0)
+    libneubot.NeubotPollable_attach(pollable, 0)
     libneubot.NeubotPollable_set_timeout(pollable, 7.0)
     libneubot.NeubotPollable_set_readable(pollable)
 
     libneubot.NeubotPoller_loop(poller)
+
+    libneubot.NeubotPollable_close(pollable)
 
 if __name__ == "__main__":
     main()
