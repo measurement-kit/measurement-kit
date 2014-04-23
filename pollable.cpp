@@ -46,7 +46,7 @@ using namespace Neubot;
 
 Pollable::Pollable(void)
 {
-	neubot_warn("pollable: Pollable()");
+	neubot_info("pollable: Pollable()");
 
 	this->poller = NULL;
 	this->timeout = -1.0;
@@ -114,7 +114,7 @@ Pollable::attach(long long fileno)
 	// Sanity
 	//
 
-	neubot_warn("pollable: attach()");
+	neubot_info("pollable: attach()");
 
 	if (this->fileno != -1) {
 		neubot_warn("pollable: already attached");
@@ -161,7 +161,7 @@ Pollable::detach(void)
 	if (this->fileno == -1)
 		return;
 
-	neubot_warn("pollable: detach()");
+	neubot_info("pollable: detach()");
 
 	// poller: continue to point to the poller
 
@@ -202,7 +202,7 @@ Pollable::setunset(const char *what, unsigned opcode, event *evp)
 	struct timeval tv, *tvp;
 	int result;
 
-	neubot_warn("pollable: %s()", what);
+	neubot_info("pollable: %s()", what);
 
 	if (this->fileno == -1) {
 		neubot_warn("%s: not attached", what);
@@ -300,6 +300,6 @@ Pollable::handle_error(void)
 
 Pollable::~Pollable(void)
 {
-	neubot_warn("pollable: ~Pollable()");
+	neubot_info("pollable: ~Pollable()");
 	this->detach();
 }

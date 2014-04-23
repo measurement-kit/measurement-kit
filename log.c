@@ -50,3 +50,13 @@ neubot_warn(const char *fmt, ...)
 	neubot_warnv(fmt, ap);
 	va_end(ap);
 }
+
+void
+neubot_info(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	neubot_warnv(fmt, ap);
+	va_end(ap);
+}
