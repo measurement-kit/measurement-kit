@@ -33,11 +33,13 @@ echo "Generate: libneubot.py"
 
 ./gen_python libneubot.json > libneubot.py
 
-echo "Generate: libneubot_python/..."
-
-PYDIR=libneubot_python
-install -d $PYDIR
-swig -c++ -python -outdir $PYDIR $PYDIR/neubot.i
+if [ $(which swig 2> /dev/null) ]; then
+    echo "Generate files in libneubot_python/..."
+    PYDIR=libneubot_python
+    swig -c++ -python -outdir $PYDIR $PYDIR/neubot.i
+else
+    echo "WARNING: libneubot_python: swig not available..."
+fi
 
 SYSTEM=$(uname)
 
