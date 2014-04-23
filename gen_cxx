@@ -21,6 +21,11 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+# DISCONTINUED - This file is no longer used to generate the
+# neubot.hh header file, and will be removed soon.
+#
+
 # pylint: disable = C0111
 
 import json
