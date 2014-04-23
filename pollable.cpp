@@ -31,11 +31,13 @@
 // at the stream level) that are more compatible with C++ objects.
 //
 
+#include <limits.h>
 #include <new>
 #include <stdlib.h>
 
 #include <event2/event.h>
 
+#include "ll2sock.h"
 #include "log.h"
 #include "poller.h"
 #include "utils.h"

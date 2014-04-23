@@ -43,26 +43,10 @@
 
 #include "neubot.h"
 
+#include "ll2sock.h"
 #include "log.h"
 #include "poller.h"
 #include "utils.h"
-
-/* To convert long long to sockets */
-#ifdef WIN32
-# define EVUTIL_SOCKET_MAX UINTPTR_MAX
-#else
-# define EVUTIL_SOCKET_MAX INT_MAX
-#endif
-#if !(LLONG_MAX >= EVUTIL_SOCKET_MAX)
-# error "LLONG_MAX must be larger than EVUTIL_SOCKET_MAX"
-#endif
-
-/* To mark sockets as invalid */
-#ifdef WIN32
-# define EVUTIL_SOCKET_INVALID INVALID_SOCKET
-#else
-# define EVUTIL_SOCKET_INVALID -1
-#endif
 
 struct NeubotPoller {
 #ifndef WIN32
@@ -86,12 +70,6 @@ struct ResolveContext {
 	struct evbuffer *names;
 	void *opaque;
 };
-
-int
-neubot_socket_valid(long long socket)
-{
-	return (socket >= 0 && socket <= EVUTIL_SOCKET_MAX);
-}
 
 /*
  * NeubotEvent implementation
@@ -146,7 +124,7 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 			goto cleanup;
 		break;
 	case EV_TIMEOUT:
-		if (fileno != EVUTIL_SOCKET_INVALID)
+		if (fileno != NEUBOT_SOCKET_INVALID)
 			goto cleanup;
 		break;
 	default:
@@ -265,7 +243,7 @@ NeubotPoller_sched(struct NeubotPoller *self, double delta,
 {
 	struct NeubotEvent *nevp;
 
-	nevp = NeubotEvent_construct(self, EVUTIL_SOCKET_INVALID,
+	nevp = NeubotEvent_construct(self, NEUBOT_SOCKET_INVALID,
 	    NeubotEvent_noop, callback, opaque, delta, EV_TIMEOUT);
 	if (nevp == NULL)
 		return (-1);

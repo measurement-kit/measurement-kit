@@ -18,9 +18,6 @@ void neubot_xfree(void *);
 
 struct timeval *neubot_timeval_init(struct timeval *, double);
 
-/* Note: at the moment in poller.c */
-int neubot_socket_valid(long long);
-
 #ifdef __cplusplus
 }
 #endif
