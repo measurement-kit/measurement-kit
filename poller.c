@@ -47,15 +47,6 @@
 #include "poller.h"
 #include "utils.h"
 
-/* Be compatible with older libevents */
-#ifndef evutil_socket_t
-# ifdef WIN32
-#  define evutil_socket_t uintptr_t
-# else
-#  define evutil_socket_t int
-# endif
-#endif
-
 /* To convert long long to sockets */
 #ifdef WIN32
 # define EVUTIL_SOCKET_MAX UINTPTR_MAX
