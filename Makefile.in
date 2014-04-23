@@ -52,8 +52,10 @@ $(REALNAME): $(OBJECTS)
 echo.o: echo.c
 http-parser/http_parser.o: http-parser/http_parser.c
 libneubot.o: libneubot.cpp
+	$(CXX) $(CXXFLAGS) -o libneubot.o -c libneubot.cpp
 log.o: log.c
 pollable.o: pollable.cpp
+	$(CXX) $(CXXFLAGS) -o pollable.o -c pollable.cpp
 poller.o: poller.c
 strtonum.o: strtonum.c
 utils.o: utils.c
