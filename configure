@@ -45,6 +45,12 @@ if [ "$SYSTEM" = "Darwin" ]; then
     CFLAGS="-I/opt/local/include"
     LDFLAGS="-L/opt/local/lib"
     SHARED_LIBRARY_EXT="dylib"
+
+elif [ "$SYSTEM" = "OpenBSD" ]; then
+    CFLAGS="-I/usr/local/include"
+    LDFLAGS="-L/usr/local/lib"
+    SHARED_LIBRARY_EXT="so"
+
 else
     CFLAGS=""
     LDFLAGS=""
