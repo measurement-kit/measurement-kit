@@ -33,6 +33,7 @@
 
 #include <event2/event.h>
 
+#include "log.h"
 #include "strtonum.h"
 #include "utils.h"
 
@@ -143,9 +144,18 @@ neubot_xfree(void *ptr)
 		free(ptr);
 }
 
-void
+struct timeval *
 neubot_timeval_init(struct timeval *tv, double delta)
 {
-        tv->tv_sec = (time_t) floor(delta);
-        tv->tv_usec = (suseconds_t) ((delta - floor(delta)) * 1000000);
+	neubot_info("utils:neubot_timeval_init - enter");
+
+	if (delta < 0) {
+		neubot_info("utils:neubot_timeval_init - no init needed");
+		return (NULL);
+	}
+	tv->tv_sec = (time_t) floor(delta);
+	tv->tv_usec = (suseconds_t) ((delta - floor(delta)) * 1000000);
+
+	neubot_info("utils:neubot_timeval_init - ok");
+	return (tv);
 }

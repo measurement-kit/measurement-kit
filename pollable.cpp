@@ -211,11 +211,7 @@ Pollable::setunset(const char *what, unsigned opcode, event *evp)
 
 	switch (opcode) {
 	case OPERATION_SET:
-		if (this->timeout >= 0) {
-			neubot_timeval_init(&tv, this->timeout);
-			tvp = &tv;
-		} else
-			tvp = NULL;
+		tvp = neubot_timeval_init(&tv, this->timeout);
 		result = event_add(evp, tvp);
 		break;
 	case OPERATION_UNSET:
