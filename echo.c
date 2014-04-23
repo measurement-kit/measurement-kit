@@ -29,7 +29,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <event.h>
+#include <event2/buffer.h>
+#include <event2/buffer_compat.h>
+#include <event2/event.h>
 
 #include "log.h"
 #include "neubot.h"

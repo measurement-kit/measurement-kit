@@ -29,10 +29,12 @@ LIBDIR = $(PREFIX)/lib
 
 .PHONY: clean
 
+WARNINGS = -Wall -Wmissing-prototypes -Wextra
+
 CC = clang
 CXX = clang++
-CFLAGS = -Wall -Wmissing-prototypes -pedantic -fPIC -g @CFLAGS@
-CXXFLAGS = -Wall -Wmissing-prototypes -pedantic -std=c++11 -fPIC -g @CFLAGS@
+CFLAGS = $(WARNINGS) -pedantic -fPIC -g @CFLAGS@
+CXXFLAGS = $(WARNINGS) -pedantic -std=c++11 -fPIC -g @CFLAGS@
 LDFLAGS = @LDFLAGS@ -shared
 
 MAJOR = 2
@@ -42,7 +44,7 @@ HEADER = neubot.h
 LINKERNAME = libneubot.@SHARED_LIBRARY_EXT@
 SONAME = $(LINKERNAME).$(MAJOR)
 REALNAME = $(SONAME).$(MINOR)
-OBJECTS = echo.o http-parser/http_parser.o libneubot.o log.o pollable.o \
+OBJECTS = echo.o http_parser.o libneubot.o log.o pollable.o \
     poller.o strtonum.o utils.o
 PYMODULE = libneubot.py
 
@@ -50,10 +52,13 @@ $(REALNAME): $(OBJECTS)
 	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(REALNAME) -levent -lm
 
 echo.o: echo.c
-http-parser/http-parser.o: http-parser/http-parser.c
+http_parser.o: http-parser/http_parser.c
+	$(CC) $(CFLAGS) -o http_parser.o -c http-parser/http_parser.c
 libneubot.o: libneubot.cpp
+	$(CXX) $(CXXFLAGS) -o libneubot.o -c libneubot.cpp
 log.o: log.c
 pollable.o: pollable.cpp
+	$(CXX) $(CXXFLAGS) -o pollable.o -c pollable.cpp
 poller.o: poller.c
 strtonum.o: strtonum.c
 utils.o: utils.c

@@ -33,7 +33,10 @@
 # include <signal.h>
 #endif
 
-#include <event.h>
+#include <event2/buffer.h>
+#include <event2/event.h>
+#include <event2/event_compat.h>
+#include <event2/event_struct.h>
 
 #include <event2/dns.h>
 #include <event2/dns_compat.h>
@@ -106,6 +109,8 @@ neubot_socket_valid(long long socket)
 static void
 NeubotEvent_noop(void *opaque)
 {
+	(void) opaque;
+
 	/* nothing */ ;
 }
 
@@ -113,6 +118,8 @@ static void
 NeubotEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
 {
 	struct NeubotEvent *nevp;
+
+	(void) socket;
 
 	nevp = (struct NeubotEvent *) opaque;
 	if (event & EV_TIMEOUT)
@@ -130,6 +137,8 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 	struct NeubotEvent *nevp;
 	struct timeval *tvp;
 	int result;
+
+	(void) poller;
 
 	nevp = NULL;
 
@@ -201,6 +210,10 @@ static void
 NeubotPoller_sigint(int signo, short event, void *opaque)
 {
 	struct NeubotPoller *self;
+
+	(void) signo;
+	(void) event;
+
 	self = (struct NeubotPoller *) opaque;
 	NeubotPoller_break_loop(self);
 }
@@ -316,6 +329,9 @@ NeubotPoller_resolve_callback_internal(int result, char type, int count,
 	int error, family, size;
 	char string[128];
 
+	(void) result;
+	(void) ttl;
+
 	rc = (struct ResolveContext *) opaque;
 
 	switch (type) {
@@ -380,6 +396,8 @@ NeubotPoller_resolve(struct NeubotPoller *poller, const char *family,
 	struct ResolveContext *rc;
 	int result;
 
+	(void) poller;
+
 	rc = calloc(1, sizeof (*rc));
 	if (rc == NULL) {
 		neubot_warn("resolve: calloc() failed");
@@ -425,11 +443,15 @@ NeubotPoller_resolve(struct NeubotPoller *poller, const char *family,
 void
 NeubotPoller_loop(struct NeubotPoller *self)
 {
+	(void) self;
+
 	event_dispatch();
 }
 
 void
 NeubotPoller_break_loop(struct NeubotPoller *self)
 {
+	(void) self;
+
 	event_loopbreak();
 }

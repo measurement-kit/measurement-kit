@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <event.h>
+#include <event2/event.h>
 
 #include "strtonum.h"
 #include "utils.h"
