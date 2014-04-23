@@ -30,6 +30,7 @@ LIBDIR = $(PREFIX)/lib
 .PHONY: clean
 
 WARNINGS = -Wall -Wmissing-prototypes -Wextra
+LIBS = @LIBS@ -lm
 
 CC = clang
 CXX = clang++
@@ -49,7 +50,7 @@ OBJECTS = echo.o http_parser.o libneubot.o log.o pollable.o \
 PYMODULE = libneubot.py
 
 $(REALNAME): $(OBJECTS)
-	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(REALNAME) -levent -lm
+	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(REALNAME) $(LIBS)
 
 echo.o: echo.c
 http_parser.o: http-parser/http_parser.c

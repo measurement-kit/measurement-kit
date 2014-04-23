@@ -46,16 +46,19 @@ SYSTEM=$(uname)
 if [ "$SYSTEM" = "Darwin" ]; then
     CFLAGS="-I/opt/local/include"
     LDFLAGS="-L/opt/local/lib"
+    LIBS="-levent"
     SHARED_LIBRARY_EXT="dylib"
 
 elif [ "$SYSTEM" = "OpenBSD" ]; then
     CFLAGS="-I/usr/local/include"
     LDFLAGS="-L/usr/local/lib"
+    LIBS="-levent_core -levent_extra"
     SHARED_LIBRARY_EXT="so"
 
 else
     CFLAGS=""
     LDFLAGS=""
+    LIBS="-levent"
     SHARED_LIBRARY_EXT="so"
 fi
 
@@ -65,6 +68,7 @@ for FILE in *.in; do
     cp -p $FILE $NEWFILE  # Note: we preserve the perms
     sed -e "s|@CFLAGS@|$CFLAGS|g" \
         -e "s|@LDFLAGS@|$LDFLAGS|g" \
+        -e "s|@LIBS@|$LIBS|g" \
         -e "s|@SHARED_LIBRARY_EXT@|$SHARED_LIBRARY_EXT|g" \
         $FILE > $NEWFILE
 done
