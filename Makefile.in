@@ -29,10 +29,12 @@ LIBDIR = $(PREFIX)/lib
 
 .PHONY: clean
 
+WARNINGS = -Wall -Wmissing-prototypes -Wextra
+
 CC = clang
 CXX = clang++
-CFLAGS = -Wall -Wmissing-prototypes -pedantic -fPIC -g @CFLAGS@
-CXXFLAGS = -Wall -Wmissing-prototypes -pedantic -std=c++11 -fPIC -g @CFLAGS@
+CFLAGS = $(WARNINGS) -pedantic -fPIC -g @CFLAGS@
+CXXFLAGS = $(WARNINGS) -pedantic -std=c++11 -fPIC -g @CFLAGS@
 LDFLAGS = @LDFLAGS@ -shared
 
 MAJOR = 2
