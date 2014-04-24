@@ -19,9 +19,11 @@ typedef void (*neubot_slot_vo)(void *);
 
 /* Classes: */
 
+struct NeubotConnection;
 struct NeubotEchoServer;
 struct NeubotPollable;
 struct NeubotPoller;
+struct NeubotProtocol;
 
 /* NeubotPoller API: */
 
@@ -46,6 +48,51 @@ void NeubotPoller_break_loop(struct NeubotPoller *);
 
 struct NeubotEchoServer *NeubotEchoServer_construct(struct NeubotPoller *,
     int, const char *, const char *);
+
+/* NeubotProtocol API: */
+
+struct NeubotProtocol *NeubotProtocol_construct(struct NeubotPoller *,
+    neubot_slot_vo, neubot_slot_vo, neubot_slot_vo, neubot_slot_vo,
+    neubot_slot_vo, neubot_slot_vo, void *);
+
+struct NeubotPoller *NeubotProtocol_get_poller(struct NeubotProtocol *);
+
+void NeubotProtocol_destruct(struct NeubotProtocol *);
+
+/* NeubotConnection API: */
+
+struct NeubotConnection *NeubotConnection_attach(struct NeubotProtocol *,
+    long long);
+
+struct NeubotConnection *NeubotConnection_connect(struct NeubotProtocol *,
+    const char *, const char *, const char *);
+
+struct NeubotProtocol *NeubotConnection_get_protocol(
+    struct NeubotConnection *);
+
+int NeubotConnection_set_timeout(struct NeubotConnection *, double);
+
+int NeubotConnection_clear_timeout(struct NeubotConnection *);
+
+int NeubotConnection_start_tls(struct NeubotConnection *, unsigned);
+
+int NeubotConnection_read(struct NeubotConnection *, char *, size_t);
+
+int NeubotConnection_readline(struct NeubotConnection *, char *, size_t);
+
+int NeubotConnection_readn(struct NeubotConnection *, char *, size_t);
+
+int NeubotConnection_discardn(struct NeubotConnection *, size_t);
+
+int NeubotConnection_write(struct NeubotConnection *, const char *, size_t);
+
+int NeubotConnection_puts(struct NeubotConnection *, const char *);
+
+int NeubotConnection_read_into_(struct NeubotConnection *, struct evbuffer *);
+
+int NeubotConnection_write_from_(struct NeubotConnection *, struct evbuffer *);
+
+void NeubotConnection_close(struct NeubotConnection *);
 
 /* NeubotPollable API: */
 

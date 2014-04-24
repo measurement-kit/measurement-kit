@@ -47,22 +47,28 @@ REALNAME = $(SONAME).$(MINOR)
 PYMODULE = libneubot.py
 
 HEADERS = \
+    connection.h \
     log.h \
+    protocol.h \
     neubot.h
 
 OBJECTS = \
+    connection.o \
     echo.o \
     http_parser.o \
     libneubot.o \
     log.o \
     pollable.o \
     poller.o \
+    protocol.o \
     strtonum.o \
     utils.o
 
 $(REALNAME): $(OBJECTS)
 	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(REALNAME) $(LIBS)
 
+connection.o: connection.cpp
+	$(CXX) $(CXXFLAGS) -o connection.o -c connection.cpp
 echo.o: echo.c
 http_parser.o: http-parser/http_parser.c
 	$(CC) $(CFLAGS) -o http_parser.o -c http-parser/http_parser.c
@@ -71,6 +77,8 @@ libneubot.o: libneubot.cpp
 log.o: log.c
 pollable.o: pollable.cpp
 	$(CXX) $(CXXFLAGS) -o pollable.o -c pollable.cpp
+protocol.o: protocol.cpp
+	$(CXX) $(CXXFLAGS) -o protocol.o -c protocol.cpp
 poller.o: poller.c
 strtonum.o: strtonum.c
 utils.o: utils.c

@@ -24,6 +24,35 @@
                 ["cstring", "port"]]
         ]],
 
+        ["NeubotProtocol", [
+            ["__construct__", "construct", ["NeubotPoller_p", "poller"],
+             ["slot_vo", ["slot_connect", "slot_ssl", "slot_data",
+              "slot_flush", "slot_eof", "slot_error"]]],
+            ["NeubotPoller_p", "get_poller"],
+            ["__destruct__", "destruct"]
+        ]],
+
+        ["NeubotConnection", [
+            ["__construct__", "attach", ["NeubotProtocol_p", "proto"],
+             ["long long", "filenum"]],
+            ["__construct__", "connect", ["NeubotProtocol_p", "proto"],
+             ["cstring", "family"], ["cstring", "address"],
+             ["cstring", "port"]],
+            ["NeubotProtocol_p", "get_protocol"],
+            ["status_t", "set_timeout", ["double", "timeo"]],
+            ["status_t", "clear_timeout"],
+            ["status_t", "start_tls", ["unsigned", "server_side"]],
+            ["ioresult_t", "read", ["string", "base"], ["size_t", "count"]],
+            ["ioresult_t", "readline", ["string", "base"], ["size_t", "count"]],
+            ["ioresult_t", "readn", ["string", "base"], ["size_t", "count"]],
+            ["ioresult_t", "discardn", ["size_t", "count"]],
+            ["status_t", "write", ["cstring", "base"], ["size_t", "count"]],
+            ["status_t", "puts", ["cstring", "base"]],
+            ["status_t", "read_into_", ["evbuffer_p", "evdest"]],
+            ["status_t", "write_from_", ["evbuffer_p", "evsource"]],
+            ["__destruct__", "close"]
+        ]],
+
         ["NeubotPollable", [
             ["__construct__", "construct", ["NeubotPoller_p", "poller"],
              ["slot_vo", ["handle_read", "handle_write", "handle_error"]]],

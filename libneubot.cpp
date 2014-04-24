@@ -32,9 +32,10 @@
 
 #include <event2/event.h>
 
-#include "neubot.h"
+#include "connection.h"
 #include "log.h"
-
+#include "neubot.h"
+#include "protocol.h"
 #include "pollable.hh"
 
 //
@@ -182,4 +183,239 @@ NeubotPollable_close(NeubotPollable *self)
 		abort();
 
 	delete (self);
+}
+
+//
+// Protocol
+//
+
+struct NeubotProtocolWrapper : public NeubotProtocol {
+
+	NeubotPoller *poller;
+	neubot_slot_vo fn_connect;
+	neubot_slot_vo fn_ssl;
+	neubot_slot_vo fn_data;
+	neubot_slot_vo fn_flush;
+	neubot_slot_vo fn_eof;
+	neubot_slot_vo fn_error;
+	void *opaque;
+
+	NeubotProtocolWrapper(NeubotPoller *p, neubot_slot_vo slot_connect,
+	    neubot_slot_vo slot_ssl, neubot_slot_vo slot_data,
+	    neubot_slot_vo slot_flush, neubot_slot_vo slot_eof,
+	    neubot_slot_vo slot_error, void *o) : NeubotProtocol() {
+		this->poller = p;
+		this->fn_connect = slot_connect;
+		this->fn_ssl = slot_ssl;
+		this->fn_data = slot_data;
+		this->fn_flush = slot_flush;
+		this->fn_eof = slot_eof;
+		this->fn_error = slot_error;
+		this->opaque = o;
+	}
+
+	virtual void on_connect(void) {
+		if (this->fn_connect != NULL)
+			this->fn_connect(this->opaque);
+	}
+
+	virtual void on_ssl(void) {
+		if (this->fn_ssl != NULL)
+			this->fn_ssl(this->opaque);
+	}
+
+	virtual void on_data(void) {
+		if (this->fn_data != NULL)
+			this->fn_data(this->opaque);
+	}
+
+	virtual void on_flush(void) {
+		if (this->fn_flush != NULL)
+			this->fn_flush(this->opaque);
+	}
+
+	virtual void on_eof(void) {
+		if (this->fn_eof != NULL)
+			this->fn_eof(this->opaque);
+	}
+
+	virtual void on_error(void) {
+		if (this->fn_error != NULL)
+			this->fn_error(this->opaque);
+	}
+
+	// Defined out-of-line to avoid -Wweak-vtables warning
+	virtual NeubotPoller *get_poller(void);
+};
+
+// Defined here to avoid -Wweak-vtables warning
+NeubotPoller *
+NeubotProtocolWrapper::get_poller(void)
+{
+	return (this->poller);
+}
+
+NeubotProtocol *
+NeubotProtocol_construct(NeubotPoller *p, neubot_slot_vo slot_connect,
+    neubot_slot_vo slot_ssl, neubot_slot_vo slot_data,
+    neubot_slot_vo slot_flush, neubot_slot_vo slot_eof,
+    neubot_slot_vo slot_error, void *o)
+{
+	if (p == NULL)
+		abort();
+
+	return (new (std::nothrow) NeubotProtocolWrapper(p, slot_connect,
+	    slot_ssl, slot_data, slot_flush, slot_eof, slot_error, o));
+}
+
+NeubotPoller *
+NeubotProtocol_get_poller(NeubotProtocol *self)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->get_poller());
+}
+
+void
+NeubotProtocol_destruct(NeubotProtocol *self)
+{
+	if (self == NULL)
+		abort();
+
+	delete (self);
+}
+
+//
+// Connection
+//
+
+NeubotConnection *
+NeubotConnection_attach(NeubotProtocol *proto, long long filenum)
+{
+	return (NeubotConnection::attach(proto, filenum));
+}
+
+NeubotConnection *
+NeubotConnection_connect(NeubotProtocol *proto, const char *family,
+    const char *address, const char *port)
+{
+	return (NeubotConnection::connect(proto, family, address, port));
+}
+
+NeubotProtocol *
+NeubotConnection_get_protocol(NeubotConnection *self)
+{
+	if (self == NULL)
+		abort();
+
+	return (static_cast<NeubotProtocol *>(self->get_protocol()));
+}
+
+int
+NeubotConnection_set_timeout(NeubotConnection *self, double timeo)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->set_timeout(timeo));
+}
+
+int
+NeubotConnection_clear_timeout(NeubotConnection *self)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->clear_timeout());
+}
+
+int
+NeubotConnection_start_tls(NeubotConnection *self, unsigned server_side)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->start_tls(server_side));
+}
+
+int
+NeubotConnection_read(NeubotConnection *self, char *base, size_t count)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->read(base, count));
+}
+
+int
+NeubotConnection_readline(NeubotConnection *self, char *base, size_t count)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->readline(base, count));
+}
+
+int
+NeubotConnection_readn(NeubotConnection *self, char *base, size_t count)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->readn(base, count));
+}
+
+int
+NeubotConnection_discardn(NeubotConnection *self, size_t count)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->discardn(count));
+}
+
+int
+NeubotConnection_write(NeubotConnection *self, const char *base, size_t count)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->write(base, count));
+}
+
+int
+NeubotConnection_puts(NeubotConnection *self, const char *str)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->puts(str));
+}
+
+int
+NeubotConnection_read_into_(NeubotConnection *self, evbuffer *dest)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->read_into_(dest));
+}
+
+int
+NeubotConnection_write_from_(NeubotConnection *self, evbuffer *source)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->write_from_(source));
+}
+
+void
+NeubotConnection_close(NeubotConnection *self)
+{
+	if (self == NULL)
+		abort();
+
+	self->close();
 }
