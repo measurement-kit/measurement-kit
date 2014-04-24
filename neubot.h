@@ -24,6 +24,25 @@ struct NeubotEchoServer;
 struct NeubotPollable;
 struct NeubotPoller;
 
+/* NeubotPoller API: */
+
+struct NeubotPoller *NeubotPoller_construct(void);
+
+int NeubotPoller_sched(struct NeubotPoller *, double, neubot_hook_vo, void *);
+
+int NeubotPoller_defer_read(struct NeubotPoller *, long long, neubot_hook_vo, 
+    neubot_hook_vo, void *, double);
+
+int NeubotPoller_defer_write(struct NeubotPoller *, long long, neubot_hook_vo, 
+    neubot_hook_vo, void *, double);
+
+int NeubotPoller_resolve(struct NeubotPoller *, const char *, const char *, 
+    neubot_hook_vos, void *);
+
+void NeubotPoller_loop(struct NeubotPoller *);
+
+void NeubotPoller_break_loop(struct NeubotPoller *);
+
 /* NeubotEchoServer API: */
 
 struct NeubotEchoServer *NeubotEchoServer_construct(struct NeubotPoller *, 
@@ -53,25 +72,6 @@ void NeubotPollable_set_timeout(struct NeubotPollable *, double);
 void NeubotPollable_clear_timeout(struct NeubotPollable *);
 
 void NeubotPollable_close(struct NeubotPollable *);
-
-/* NeubotPoller API: */
-
-struct NeubotPoller *NeubotPoller_construct(void);
-
-int NeubotPoller_sched(struct NeubotPoller *, double, neubot_hook_vo, void *);
-
-int NeubotPoller_defer_read(struct NeubotPoller *, long long, neubot_hook_vo, 
-    neubot_hook_vo, void *, double);
-
-int NeubotPoller_defer_write(struct NeubotPoller *, long long, neubot_hook_vo, 
-    neubot_hook_vo, void *, double);
-
-int NeubotPoller_resolve(struct NeubotPoller *, const char *, const char *, 
-    neubot_hook_vos, void *);
-
-void NeubotPoller_loop(struct NeubotPoller *);
-
-void NeubotPoller_break_loop(struct NeubotPoller *);
 
 #ifdef __cplusplus
 }
