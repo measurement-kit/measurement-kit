@@ -65,7 +65,7 @@ strtonum.o: strtonum.c
 utils.o: utils.c
 
 clean:
-	rm -f -- $(OBJECTS) $(REALNAME) `cat .gitignore`
+	rm -f -- $(OBJECTS) $(REALNAME)
 install: $(REALNAME)
 	install -d $(DESTDIR)$(LIBDIR)
 	ln -fs $(DESTDIR)$(LIBDIR)/$(SONAME) $(DESTDIR)$(LIBDIR)/$(LINKERNAME)
