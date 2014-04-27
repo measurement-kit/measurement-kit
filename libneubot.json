@@ -4,9 +4,9 @@
         "Used by gen_header to generate neubot.h, by gen_py to",
         "generate libneubot.py, and by gen_java to generate LibNeubot.java"
     ],
-    "classes": {
+    "classes": [
 
-        "NeubotPoller": [
+        ["NeubotPoller", [
             ["__construct__"],
             ["status_t", "sched", ["double", "delta"],
                 ["hook_vo", ["callback"]]],
@@ -20,15 +20,15 @@
                 ["hook_vos", ["callback"]]],
             ["void", "loop"],
             ["void", "break_loop"]
-        ],
+        ]],
 
-        "NeubotEchoServer": [
+        ["NeubotEchoServer", [
             ["__construct__", ["NeubotPoller_p", "poller"],
                 ["int", "use_ipv6"], ["cstring", "address"],
                 ["cstring", "port"]]
-        ],
+        ]],
 
-        "NeubotPollable": [
+        ["NeubotPollable", [
             ["__construct__", ["NeubotPoller_p", "poller"], ["slot_vo",
              ["handle_read", "handle_write", "handle_error"]]],
             ["status_t", "attach", ["long long", "filenum"]],
@@ -41,7 +41,7 @@
             ["void", "set_timeout", ["double", "delta"]],
             ["void", "clear_timeout"],
             ["__destruct__", "close"]
-        ]
+        ]]
 
-    }
+    ]
 }

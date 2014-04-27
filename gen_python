@@ -376,12 +376,12 @@ def main():
     }
 
     # Process all class names once, to register all the types
-    for struct_name in sorted(interface["classes"]):
+    for struct_name, _ in sorted(interface["classes"]):
         class_name = struct_name.replace("Neubot", "", 1)
         types[struct_name + "_p"] = "ctypes.c_void_p"
 
     # Process once more, to generate all the prototypes
-    for struct_name in sorted(interface["classes"]):
+    for struct_name, methods in sorted(interface["classes"]):
         class_name = struct_name.replace("Neubot", "", 1)
 
         stream.write("#\n")
@@ -389,7 +389,7 @@ def main():
         stream.write("#\n")
         stream.write("\n")
 
-        for method_info in interface["classes"][struct_name]:
+        for method_info in methods:
             gen_python_prototype(stream, types, struct_name, method_info)
             stream.write("\n")
 
@@ -398,7 +398,7 @@ def main():
     stream.write("\n")
 
     # Finally, generate the wrapper classes
-    for struct_name in sorted(interface["classes"]):
+    for struct_name, methods in sorted(interface["classes"]):
         class_name = struct_name.replace("Neubot", "", 1)
 
         stream.write("#\n")
@@ -411,7 +411,7 @@ def main():
 
         # Process the methods once, to find the name of the destructor
         destructor_name = None
-        for method_info in interface["classes"][struct_name]:
+        for method_info in methods:
             if method_info[0] == "__destruct__":
                 destructor_name = method_info[1]
                 break
@@ -419,7 +419,7 @@ def main():
         # Process all the methods once, to generate all the hook wrappers
         hooks_to_init = []
 
-        for index, method_info in enumerate(interface["classes"][struct_name]):
+        for index, method_info in enumerate(methods):
             if method_info[0] == "__construct__":
                 continue
             if method_info[0] == "__destruct__":
@@ -467,7 +467,7 @@ def main():
             stream.write("\n")
 
         # Process the methods once more
-        for method_info in interface["classes"][struct_name]:
+        for method_info in methods:
             if method_info[0] == "__construct__":
 
                 gen_python_init(stream, types, class_name, struct_name,
