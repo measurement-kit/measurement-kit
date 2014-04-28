@@ -26,6 +26,7 @@
 //
 
 #include <new>
+#include <stdlib.h>
 
 #include <event2/event.h>
 
@@ -33,6 +34,10 @@
 #include "log.h"
 
 #include "pollable.hh"
+
+//
+// Pollable
+//
 
 struct NeubotPollable : public Neubot::Pollable {
 
@@ -98,6 +103,9 @@ NeubotPollable_construct(NeubotPoller *poller, neubot_slot_vo handle_read,
     neubot_slot_vo handle_write, neubot_slot_vo handle_error,
     void *opaque)
 {
+	if (poller == NULL)
+		abort();
+
 	return (NeubotPollable::construct(poller, handle_read, handle_write,
 	    handle_error, opaque));
 }
@@ -105,59 +113,89 @@ NeubotPollable_construct(NeubotPoller *poller, neubot_slot_vo handle_read,
 int
 NeubotPollable_attach(NeubotPollable *self, long long fileno)
 {
+	if (self == NULL)
+		abort();
+
 	return (self->attach(fileno));
 }
 
 void
 NeubotPollable_detach(NeubotPollable *self)
 {
+	if (self == NULL)
+		abort();
+
 	self->detach();
 }
 
 long long
 NeubotPollable_get_fileno(NeubotPollable *self)
 {
+	if (self == NULL)
+		abort();
+
 	return (self->get_fileno());
 }
 
 int
 NeubotPollable_set_readable(NeubotPollable *self)
 {
+	if (self == NULL)
+		abort();
+
 	return (self->set_readable());
 }
 
 int
 NeubotPollable_unset_readable(NeubotPollable *self)
 {
+	if (self == NULL)
+		abort();
+
 	return (self->unset_readable());
 }
 
 int
 NeubotPollable_set_writable(NeubotPollable *self)
 {
+	if (self == NULL)
+		abort();
+
 	return (self->set_writable());
 }
 
 int
 NeubotPollable_unset_writable(NeubotPollable *self)
 {
+	if (self == NULL)
+		abort();
+
 	return (self->unset_writable());
 }
 
 void
 NeubotPollable_set_timeout(NeubotPollable *self, double timeout)
 {
+	if (self == NULL)
+		abort();
+
 	self->set_timeout(timeout);
 }
 
 void
 NeubotPollable_clear_timeout(NeubotPollable *self)
 {
+	if (self == NULL)
+		abort();
+
 	self->clear_timeout();
 }
 
 void
 NeubotPollable_close(NeubotPollable *self)
 {
+	if (self == NULL)
+		abort();
+
 	delete (self);
 }
