@@ -130,6 +130,16 @@ LIBNEUBOT.NeubotConnection_connect.argtypes = (
 
 
 
+LIBNEUBOT.NeubotConnection_connect_hostname.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotConnection_connect_hostname.argtypes = (
+    ProtocolBase,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+)
+
+
+
 LIBNEUBOT.NeubotConnection_get_protocol.restype = ctypes.c_void_p
 LIBNEUBOT.NeubotConnection_get_protocol.argtypes = (
     ConnectionBase,
@@ -670,6 +680,14 @@ class Connection(ConnectionBase):
         ConnectionBase.__init__(self)
         self.context_ = LIBNEUBOT.NeubotConnection_connect(proto, family,
           address, port)
+        if not self.context_:
+            DIE(1)
+        _ctypes.Py_INCREF(self)
+
+    def __init__(self, proto, family, address, port):
+        ConnectionBase.__init__(self)
+        self.context_ = LIBNEUBOT.NeubotConnection_connect_hostname(proto,
+          family, address, port)
         if not self.context_:
             DIE(1)
         _ctypes.Py_INCREF(self)

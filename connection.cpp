@@ -21,6 +21,8 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <arpa/inet.h>
+
 #include <limits.h>
 #include <new>
 #include <stdlib.h>
@@ -28,11 +30,15 @@
 
 #include <event2/buffer.h>
 #include <event2/bufferevent.h>
+#include <event2/dns.h>
 #include <event2/event.h>
 
 #include "ll2sock.h"
+#include "log.h"
+#include "neubot.h"
 #include "poller.h"
 #include "protocol.h"
+#include "stringvector.h"
 #include "utils.h"
 
 #include "connection.h"
@@ -46,6 +52,10 @@ NeubotConnection::NeubotConnection(void)
 	this->closing = 0;
 	this->connecting = 0;
 	this->reading = 0;
+	this->address = NULL;
+	this->port = NULL;
+	this->addrlist = NULL;
+	this->_family = "PF_UNSPEC";
 }
 
 NeubotConnection::~NeubotConnection(void)
@@ -64,6 +74,15 @@ NeubotConnection::~NeubotConnection(void)
 	// closing: nothing to be done
 	// connecting: nothing to be done
 	// reading: nothing to be done
+
+	if (this->address != NULL)
+		free(this->address);
+	if (this->port != NULL)
+		free(this->port);
+	if (this->addrlist != NULL)
+		delete (this->addrlist);
+
+	// _family: nothing to be done
 }
 
 void
@@ -106,10 +125,10 @@ NeubotConnection::handle_event(bufferevent *bev, short what, void *opaque)
 	if (self->connecting && self->closing) {
 		delete (self);
 		return;
-	} else if (self->connecting)
-		self->connecting = 0;
+	}
 
 	if (what & BEV_EVENT_CONNECTED) {
+		self->connecting = 0;
 		int result = bufferevent_enable(self->bev, EV_READ);
 		if (result != 0) {
 			self->protocol->on_error();
@@ -121,6 +140,12 @@ NeubotConnection::handle_event(bufferevent *bev, short what, void *opaque)
 
 	if (what & BEV_EVENT_EOF) {
 		self->protocol->on_eof();
+		return;
+	}
+
+	if (self->connecting) {
+		neubot_info("connection::handle_event - try connect next");
+		self->connect_next();
 		return;
 	}
 
@@ -173,6 +198,26 @@ NeubotConnection::attach(NeubotProtocol *proto, long long filenum)
 	// closing: nothing to be done
 	// connecting: nothing to be done
 	// reading: nothing to be done
+
+	self->address = strdup("0.0.0.0");
+	if (self->address == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	self->port = strdup("0");
+	if (self->address == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	self->addrlist = new (std::nothrow) NeubotStringVector(poller, 16);
+	if (self->addrlist == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	// _family: nothing to be done
 
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);
@@ -244,6 +289,26 @@ NeubotConnection::connect(NeubotProtocol *proto, const char *family,
 
 	// reading: nothing to be done
 
+	self->address = strdup(address);
+	if (self->address == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	self->port = strdup(port);
+	if (self->address == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	self->addrlist = new (std::nothrow) NeubotStringVector(poller, 16);
+	if (self->addrlist == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	// _family: nothing to be done
+
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);
 
@@ -251,6 +316,239 @@ NeubotConnection::connect(NeubotProtocol *proto, const char *family,
 
 	result = bufferevent_socket_connect(self->bev, (struct sockaddr *)
 	    &storage, (int) total);
+	if (result != 0) {
+		delete self;
+		return (NULL);
+	}
+
+	return (self);
+}
+
+void
+NeubotConnection::connect_next(void)
+{
+	const char *address;
+	int error;
+	struct sockaddr_storage storage;
+	socklen_t total;
+
+	neubot_info("connect_next - enter");
+
+	for (;;) {
+		address = this->addrlist->get_next();
+		if (address == NULL) {
+			neubot_warn("connect_next - no more available addrs");
+			break;
+		}
+
+		error = neubot_storage_init(&storage, &total, this->_family,
+		    address, this->port);
+		if (error != 0)
+			continue;
+
+		this->filedesc = neubot_socket_create(storage.ss_family,
+		    SOCK_STREAM, 0);
+		if (this->filedesc == NEUBOT_SOCKET_INVALID)
+			continue;
+
+		error = bufferevent_setfd(this->bev, (evutil_socket_t)
+		    this->filedesc);
+		if (error != 0) {
+			(void) evutil_closesocket(this->filedesc);
+			this->filedesc = NEUBOT_SOCKET_INVALID;
+			continue;
+		}
+
+		// Note: cannot enable EV_READ until the connection is made
+
+		error = bufferevent_socket_connect(this->bev, (struct
+		    sockaddr *) &storage, (int) total);
+		if (error != 0) {
+			(void) evutil_closesocket(this->filedesc);
+			this->filedesc = NEUBOT_SOCKET_INVALID;
+			error = bufferevent_setfd(this->bev,
+			    NEUBOT_SOCKET_INVALID);
+			if (error != 0) {
+				neubot_warn("connect_next - internal error");
+				break;
+			}
+			continue;
+		}
+
+		neubot_info("connect_next - ok");
+		return;
+	}
+
+	this->connecting = 0;
+	this->protocol->on_error();
+}
+
+void
+NeubotConnection::handle_resolve(int result, char type, int count,
+    int ttl, void *addresses, void *opaque)
+{
+	NeubotConnection *self = (NeubotConnection *) opaque;
+	const char *p;
+	int error, family, size;
+	char string[128];
+
+	(void) ttl;
+
+	neubot_info("handle_resolve - enter");
+
+	if (!self->connecting)
+		abort();
+
+	if (self->closing) {
+		delete (self);
+		return;
+	}
+
+	if (result != DNS_ERR_NONE)
+		goto finally;
+
+	switch (type) {
+	case DNS_IPv4_A:
+		neubot_info("handle_resolve - IPv4");
+		family = AF_INET;
+		self->_family = "PF_INET";
+		size = 4;
+		break;
+	case DNS_IPv6_AAAA:
+		neubot_info("handle_resolve - IPv6");
+		family = AF_INET6;
+		self->_family = "PF_INET6";
+		size = 16;
+		break;
+	default:
+		abort();
+	}
+
+	while (--count >= 0) {
+		if (count > INT_MAX / size) {
+			continue;
+		}
+		// Note: address already in network byte order
+		p = inet_ntop(family, (char *)addresses + count * size,
+		    string, sizeof (string));
+		if (p == NULL) {
+			neubot_warn("handle_resolve - inet_ntop() failed");
+			continue;
+		}
+		neubot_info("handle_resolve - address %s", p);
+		error = self->addrlist->append(string);
+		if (error != 0) {
+			neubot_warn("handle_resolve - cannot append");
+			continue;
+		}
+	}
+
+    finally:
+	self->connect_next();
+}
+
+void
+NeubotConnection::resolve(void *opaque)
+{
+	NeubotConnection *self = (NeubotConnection *) opaque;
+
+	if (!self->connecting)
+		abort();
+
+	if (self->closing) {
+		delete (self);
+		return;
+	}
+
+	NeubotPoller *poller = self->protocol->get_poller();
+	if (poller == NULL)
+		abort();
+
+	evdns_base *dns_base = NeubotPoller_evdns_base_(poller);
+	if (dns_base == NULL)
+		abort();
+
+	evdns_request *request = evdns_base_resolve_ipv4(dns_base,
+	    self->address, DNS_QUERY_NO_SEARCH, self->handle_resolve, self);
+	if (request == NULL) {
+		self->connecting = 0;
+		self->protocol->on_error();
+		return;
+	}
+}
+
+NeubotConnection *
+NeubotConnection::connect_hostname(NeubotProtocol *proto,
+    const char *family, const char *address, const char *port)
+{
+	event_base *evbase;
+	NeubotPoller *poller;
+	int result;
+	NeubotConnection *self;
+
+	if (proto == NULL || family == NULL || address == NULL || port == NULL)
+		abort();
+	poller = proto->get_poller();
+	if (poller == NULL)
+		abort();
+	evbase = NeubotPoller_event_base_(poller);
+	if (evbase == NULL)
+		abort();
+
+	self = new (std::nothrow) NeubotConnection();
+	if (self == NULL)
+		return (NULL);
+
+	// filedesc: nothing to be done
+
+	self->bev = bufferevent_socket_new(evbase,
+	    (evutil_socket_t) NEUBOT_SOCKET_INVALID,
+	    BEV_OPT_DEFER_CALLBACKS);
+	if (self->bev == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	self->protocol = proto;
+
+	self->readbuf = evbuffer_new();
+	if (self->readbuf == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	// closing: nothing to be done
+
+	self->connecting = 1;
+
+	// reading: nothing to be done
+
+	self->address = strdup(address);
+	if (self->address == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	self->port = strdup(port);
+	if (self->address == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	self->addrlist = new (std::nothrow) NeubotStringVector(poller, 16);
+	if (self->addrlist == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	// _family: nothing to be done
+
+	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
+	    self->handle_event, self);
+
+	// Note: cannot enable EV_READ until the connection is made
+
+	result = NeubotPoller_sched(poller, 0.0, self->resolve, self);
 	if (result != 0) {
 		delete self;
 		return (NULL);

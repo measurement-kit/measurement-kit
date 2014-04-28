@@ -82,6 +82,9 @@ struct NeubotConnection *NeubotConnection_attach(struct NeubotProtocol *,
 struct NeubotConnection *NeubotConnection_connect(struct NeubotProtocol *,
     const char *, const char *, const char *);
 
+struct NeubotConnection *NeubotConnection_connect_hostname(
+    struct NeubotProtocol *, const char *, const char *, const char *);
+
 struct NeubotProtocol *NeubotConnection_get_protocol(
     struct NeubotConnection *);
 

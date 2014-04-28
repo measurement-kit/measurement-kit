@@ -70,7 +70,10 @@ struct NeubotConnection {
 	unsigned int closing;
 	unsigned int connecting;
 	unsigned int reading;
-
+	char *address;
+	char *port;
+	NeubotStringVector *addrlist;
+	const char *_family;
 	NeubotConnection(void);
 
 	// Private destructor because destruction may be delayed
@@ -81,10 +84,19 @@ struct NeubotConnection {
 	static void handle_write(bufferevent *, void *);
 	static void handle_event(bufferevent *, short, void *);
 
+	// Functions used by connect_hostname()
+	void connect_next(void);
+	static void handle_resolve(int, char, int, int,
+	    void *, void *);
+	static void resolve(void *);
+
     public:
 	static NeubotConnection *attach(NeubotProtocol *, long long);
 
 	static NeubotConnection *connect(NeubotProtocol *, const char *,
+	    const char *, const char *);
+
+	static NeubotConnection *connect_hostname(NeubotProtocol *, const char *,
 	    const char *, const char *);
 
 	NeubotProtocol *get_protocol(void);
