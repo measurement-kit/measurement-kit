@@ -332,9 +332,14 @@ def main():
         "Object": "ctypes.py_object",
         "cstring": "ctypes.c_char_p",
         "double": "ctypes.c_double",
+        "evbuffer_p": "ctypes.c_void_p",
         "int": "ctypes.c_int",
+        "ioresult_t": "ctypes.c_int",
         "long long": "ctypes.c_longlong",
+        "size_t": "ctypes.c_size_t",
         "status_t": "ctypes.c_int",
+        "string": "ctypes.c_char_p",
+        "unsigned": "ctypes.c_uint",
         "void_p": "ctypes.c_void_p",
     }
 
