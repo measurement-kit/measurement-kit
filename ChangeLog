@@ -1,3 +1,30 @@
+LibNeubot 3.0.0 [2014-05-04]
+	* Rewrite NeubotPollable now that I know that, in C++, a structure can
+	  inherit from a class. As a result, the FooState structure is now gone
+	  and the API now looks like v1.0 again. That is, again the poller is
+	  passed to the Pollable constructor, not to init().
+	* Related to the previous change: clarified that the Pollable main
+	  purpose is to allow experiments in which Neubot uses LibNeubot.
+	* Related to the previous change: crank major (we're now at API 3.0).
+	* Take advantage of the API 3.0 cranking and install the headers
+	  at a different location (<neubot.h> becomes <libneubot/neubot.h>).
+	* Add (but do not use yet) joyent/http-parser as submodule.
+	* Update the OpenBSD port and fix the code accordingly (mainly cases
+	  in which mixed libevent 1.4 and 2.0 headers were being used).
+	* Related to the previous change: update README to better clarify
+	  which are the dependencies.
+	* Deprecate gen_cxx and neubot.hh, now that it's clear that the code
+	  will be written in C++ to ease the interaction with SWIG.
+	* Move testing code in `test/`.
+	* Significant improvements in gen_python, which now enforces the
+	  type safety (i.e., you can only pass to Pollable_foo() an instance
+	  of the Python Pollable class), and in general produces much
+	  less bloated and more pythonic Python code.
+	* Related to the previous change: half of the unit test is now gone
+	  because it was not typesafe (we passed integers to functions in
+	  hope that they were pointer to the right C/C++ objects).
+	* More minor changes, fixes and tweaks.
+
 LibNeubot 2.0.0 [2014-04-11]
 	* Add Android.mk to compile a static library for Android
 	* Remove the unused LibNeubot.java/gen_java thing
