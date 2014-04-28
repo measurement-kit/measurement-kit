@@ -63,8 +63,8 @@ def clang_declare_method(name, method):
 
     if method[0] == "__construct__":
         retval = name + "_p"
-        funcname = name + "_construct"
-        args = method[1:]
+        funcname = name + "_" + method[1]
+        args = method[2:]
     elif method[0] == "__destruct__":
         retval = "void"
         funcname = name + "_" + method[1]

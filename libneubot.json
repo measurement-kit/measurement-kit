@@ -3,7 +3,7 @@
     "classes": [
 
         ["NeubotPoller", [
-            ["__construct__"],
+            ["__construct__", "construct"],
             ["status_t", "sched", ["double", "delta"],
                 ["hook_vo", ["callback"]]],
             ["status_t", "defer_read", ["long long", "fileno"],
@@ -19,14 +19,14 @@
         ]],
 
         ["NeubotEchoServer", [
-            ["__construct__", ["NeubotPoller_p", "poller"],
+            ["__construct__", "construct", ["NeubotPoller_p", "poller"],
                 ["int", "use_ipv6"], ["cstring", "address"],
                 ["cstring", "port"]]
         ]],
 
         ["NeubotPollable", [
-            ["__construct__", ["NeubotPoller_p", "poller"], ["slot_vo",
-             ["handle_read", "handle_write", "handle_error"]]],
+            ["__construct__", "construct", ["NeubotPoller_p", "poller"],
+             ["slot_vo", ["handle_read", "handle_write", "handle_error"]]],
             ["status_t", "attach", ["long long", "filenum"]],
             ["void", "detach"],
             ["long long", "get_fileno"],

@@ -47,10 +47,10 @@ def gen_python_prototype(stream, types, class_name, method_info):
 
     if method_info[0] == "__construct__":
         retval = class_name + "_p"
-        funcname = class_name + "_construct"
+        funcname = class_name + "_" + method_info[1]
 
         # Generate the slots
-        args__ = method_info[1:]
+        args__ = method_info[2:]
         args = []
         for argtype, argname in args__:
             if argtype.startswith("slot_"):
@@ -213,8 +213,8 @@ def gen_python_callfunc(stream, nwritten, func_name, args):
         nwritten += len(argname)
     stream.write(")")
 
-def gen_python_init(stream, types, class_name, struct_name, init_args,
-      destructor_name):
+def gen_python_init(stream, types, class_name, struct_name, ctor_name,
+      init_args, destructor_name):
 
     # Generate the slots
     py_args = []
@@ -242,8 +242,8 @@ def gen_python_init(stream, types, class_name, struct_name, init_args,
     nwritten = 8
     stream.write("self.context_ = ")
     nwritten += 17
-    gen_python_callfunc(stream, nwritten, "LIBNEUBOT.%s_construct"
-      % struct_name, c_args)
+    gen_python_callfunc(stream, nwritten, "LIBNEUBOT.%s_%s"
+      % (struct_name, ctor_name), c_args)
     stream.write("\n")
 
     stream.write("        ")
@@ -397,7 +397,7 @@ def main():
             if method_info[0] == "__construct__":
 
                 gen_python_init(stream, types, class_name, struct_name,
-                  method_info[1:], destructor_name)
+                  method_info[1], method_info[2:], destructor_name)
 
             elif method_info[0] == "__destruct__":
                 stream.write("    def %s(self):\n" % method_info[1])
