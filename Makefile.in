@@ -50,6 +50,7 @@ HEADERS = \
     connection.h \
     log.h \
     protocol.h \
+    stringvector.h \
     neubot.h
 
 OBJECTS = \
@@ -61,6 +62,7 @@ OBJECTS = \
     pollable.o \
     poller.o \
     protocol.o \
+    stringvector.o \
     strtonum.o \
     utils.o
 
@@ -80,6 +82,8 @@ pollable.o: pollable.cpp
 protocol.o: protocol.cpp
 	$(CXX) $(CXXFLAGS) -o protocol.o -c protocol.cpp
 poller.o: poller.c
+stringvector.o: stringvector.cpp
+	$(CXX) $(CXXFLAGS) -o stringvector.o -c stringvector.cpp
 strtonum.o: strtonum.c
 utils.o: utils.c
 

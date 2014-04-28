@@ -35,40 +35,38 @@ struct NeubotPoller;
 
 typedef void (*neubot_slot_vo)(void *);  /* XXX Duplicate definition */
 
-namespace Neubot {
-	struct Protocol {
-		virtual void on_connect(void) {
-			// TODO: override
-		}
+struct NeubotProtocol {
+	virtual void on_connect(void) {
+		// TODO: override
+	}
 
-		virtual void on_ssl(void) {
-			// TODO: override
-		}
+	virtual void on_ssl(void) {
+		// TODO: override
+	}
 
-		virtual void on_data(void) {
-			// TODO: override
-		}
+	virtual void on_data(void) {
+		// TODO: override
+	}
 
-		virtual void on_flush(void) {
-			// TODO: override
-		}
+	virtual void on_flush(void) {
+		// TODO: override
+	}
 
-		virtual void on_eof(void) {
-			// TODO: override
-		}
+	virtual void on_eof(void) {
+		// TODO: override
+	}
 
-		virtual void on_error(void) {
-			// TODO: override
-		}
+	virtual void on_error(void) {
+		// TODO: override
+	}
 
-		// Defined out-of-line to avoid -Wweak-vtables warning
-		virtual NeubotPoller *get_poller(void);
+	// Defined out-of-line to avoid -Wweak-vtables warning
+	virtual NeubotPoller *get_poller(void);
 
-		virtual ~Protocol(void) {
-			// TODO: override
-		}
-	};
-}
+	virtual ~NeubotProtocol(void) {
+		// TODO: override
+	}
+};
 
 # endif  /* __cplusplus */
 #endif  /* LIBNEUBOT_PROTOCOL_H */

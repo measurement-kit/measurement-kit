@@ -24,6 +24,7 @@ struct NeubotEchoServer;
 struct NeubotPollable;
 struct NeubotPoller;
 struct NeubotProtocol;
+struct NeubotStringVector;
 
 /* NeubotPoller API: */
 
@@ -43,6 +44,20 @@ int NeubotPoller_resolve(struct NeubotPoller *, const char *, const char *,
 void NeubotPoller_loop(struct NeubotPoller *);
 
 void NeubotPoller_break_loop(struct NeubotPoller *);
+
+/* NeubotStringVector API: */
+
+struct NeubotStringVector *NeubotStringVector_construct(
+    struct NeubotPoller *, size_t);
+
+int NeubotStringVector_append(struct NeubotStringVector *, const char *);
+
+struct NeubotPoller *NeubotStringVector_get_poller(
+    struct NeubotStringVector *);
+
+const char *NeubotStringVector_get_next(struct NeubotStringVector *);
+
+void NeubotStringVector_destruct(struct NeubotStringVector *);
 
 /* NeubotEchoServer API: */
 

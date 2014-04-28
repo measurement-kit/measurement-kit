@@ -1,7 +1,7 @@
-/* libneubot/protocol.cpp */
+/* libneubot/stringvector.h */
 
 /*-
- * Copyright (c) 2013-2014
+ * Copyright (c) 2014
  *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
  *     and Simone Basso <bassosimone@gmail.com>.
  *
@@ -21,15 +21,31 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
+#ifndef LIBNEUBOT_STRINGVECTOR_H
+# define LIBNEUBOT_STRINGVECTOR_H
+# ifdef __cplusplus
 
-#include <new>
+/*-
+ * StringVector
+ *   A vector of strings that is used to implement the resolver.
+ */
 
-#include "protocol.h"
+struct NeubotPoller;
 
-// Defined here to avoid -Wweak-vtables warning
-NeubotPoller *
-NeubotProtocol::get_poller(void)
-{
-	return (NULL);  // TODO: override
-}
+struct NeubotStringVector {
+    private: 
+	char **base;
+	size_t count;
+	size_t iter;
+	size_t pos;
+	NeubotPoller *poller;
+    public:
+	NeubotStringVector(NeubotPoller *, size_t);
+	int append(const char *);
+	NeubotPoller *get_poller(void);
+	const char *get_next(void);
+	~NeubotStringVector(void);
+};
+
+# endif  /* __cplusplus */
+#endif  /* LIBNEUBOT_STRINGVECTOR_H */

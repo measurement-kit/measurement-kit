@@ -18,6 +18,15 @@
             ["void", "break_loop"]
         ]],
 
+        ["NeubotStringVector", [
+            ["__construct__", "construct", ["NeubotPoller_p", "poller"],
+             ["size_t", "count"]],
+            ["status_t", "append", ["cstring", "str"]],
+            ["NeubotPoller_p", "get_poller"],
+            ["cstring", "get_next"],
+            ["__destruct__", "destruct"]
+        ]],
+
         ["NeubotEchoServer", [
             ["__construct__", "construct", ["NeubotPoller_p", "poller"],
                 ["int", "use_ipv6"], ["cstring", "address"],

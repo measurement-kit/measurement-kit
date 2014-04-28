@@ -96,6 +96,20 @@ class ProtocolBase(object):
             obj.voidp_ = ctypes.c_void_p(obj.context_)
         return obj.voidp_
 
+class StringVectorBase(object):
+
+    def __init__(self):
+        self.context_ = None
+        self.voidp_ = None
+
+    @classmethod
+    def from_param(cls, obj):
+        if not isinstance(obj, cls):
+            raise RuntimeError('invalid cast')
+        if not obj.voidp_:
+            obj.voidp_ = ctypes.c_void_p(obj.context_)
+        return obj.voidp_
+
 
 
 LIBNEUBOT.NeubotConnection_attach.restype = ctypes.c_void_p
@@ -600,6 +614,42 @@ LIBNEUBOT.NeubotProtocol_destruct.argtypes = (
 
 
 
+LIBNEUBOT.NeubotStringVector_construct.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotStringVector_construct.argtypes = (
+    PollerBase,
+    ctypes.c_size_t,
+)
+
+
+
+LIBNEUBOT.NeubotStringVector_append.restype = ctypes.c_int
+LIBNEUBOT.NeubotStringVector_append.argtypes = (
+    StringVectorBase,
+    ctypes.c_char_p,
+)
+
+
+
+LIBNEUBOT.NeubotStringVector_get_poller.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotStringVector_get_poller.argtypes = (
+    StringVectorBase,
+)
+
+
+
+LIBNEUBOT.NeubotStringVector_get_next.restype = ctypes.c_char_p
+LIBNEUBOT.NeubotStringVector_get_next.argtypes = (
+    StringVectorBase,
+)
+
+
+
+LIBNEUBOT.NeubotStringVector_destruct.argtypes = (
+    StringVectorBase,
+)
+
+
+
 class NeubotHookClosure(object):
     def __init__(self):
         self.opaque = None
@@ -839,5 +889,32 @@ class Protocol(ProtocolBase):
             return
         _ctypes.Py_DECREF(self)
         LIBNEUBOT.NeubotProtocol_destruct(self)
+        self.context_ = None
+
+
+
+class StringVector(StringVectorBase):
+
+    def __init__(self, poller, count):
+        StringVectorBase.__init__(self)
+        self.context_ = LIBNEUBOT.NeubotStringVector_construct(poller, count)
+        if not self.context_:
+            DIE(1)
+        _ctypes.Py_INCREF(self)
+
+    def append(self, str):
+        return LIBNEUBOT.NeubotStringVector_append(self, str)
+
+    def get_poller(self):
+        return LIBNEUBOT.NeubotStringVector_get_poller(self)
+
+    def get_next(self):
+        return LIBNEUBOT.NeubotStringVector_get_next(self)
+
+    def destruct(self):
+        if not self.context_:
+            return
+        _ctypes.Py_DECREF(self)
+        LIBNEUBOT.NeubotStringVector_destruct(self)
         self.context_ = None
 
