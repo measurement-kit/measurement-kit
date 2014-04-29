@@ -55,7 +55,10 @@ NeubotConnection::NeubotConnection(void)
 	this->address = NULL;
 	this->port = NULL;
 	this->addrlist = NULL;
-	this->_family = "PF_UNSPEC";
+	this->family = NULL;
+	this->pflist = NULL;
+	this->must_resolve_ipv4 = 0;
+	this->must_resolve_ipv6 = 0;
 }
 
 NeubotConnection::~NeubotConnection(void)
@@ -82,7 +85,13 @@ NeubotConnection::~NeubotConnection(void)
 	if (this->addrlist != NULL)
 		delete (this->addrlist);
 
-	// _family: nothing to be done
+	if (this->family != NULL)
+		free(this->family);
+	if (this->pflist != NULL)
+		free(this->pflist);
+
+	// must_resolve_ipv4: nothing to be done
+	// must_resolve_ipv6: nothing to be done
 }
 
 void
@@ -217,7 +226,20 @@ NeubotConnection::attach(NeubotProtocol *proto, long long filenum)
 		return (NULL);
 	}
 
-	// _family: nothing to be done
+	self->family = strdup("PF_UNSPEC");
+	if (self->family == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	self->pflist = new (std::nothrow) NeubotStringVector(poller, 16);
+	if (self->pflist == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	// must_resolve_ipv4: nothing to be done
+	// must_resolve_ipv6: nothing to be done
 
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);
@@ -307,7 +329,20 @@ NeubotConnection::connect(NeubotProtocol *proto, const char *family,
 		return (NULL);
 	}
 
-	// _family: nothing to be done
+	self->family = strdup(family);
+	if (self->family == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	self->pflist = new (std::nothrow) NeubotStringVector(poller, 16);
+	if (self->pflist == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	// must_resolve_ipv4: nothing to be done
+	// must_resolve_ipv6: nothing to be done
 
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);
@@ -329,6 +364,7 @@ NeubotConnection::connect_next(void)
 {
 	const char *address;
 	int error;
+	const char *family;
 	struct sockaddr_storage storage;
 	socklen_t total;
 
@@ -340,8 +376,13 @@ NeubotConnection::connect_next(void)
 			neubot_warn("connect_next - no more available addrs");
 			break;
 		}
+		family = this->pflist->get_next();
+		if (family == NULL)
+			abort();
 
-		error = neubot_storage_init(&storage, &total, this->_family,
+		neubot_info("connect_next - %s %s", family, address);
+
+		error = neubot_storage_init(&storage, &total, family,
 		    address, this->port);
 		if (error != 0)
 			continue;
@@ -388,6 +429,7 @@ NeubotConnection::handle_resolve(int result, char type, int count,
     int ttl, void *addresses, void *opaque)
 {
 	NeubotConnection *self = (NeubotConnection *) opaque;
+	const char *_family;
 	const char *p;
 	int error, family, size;
 	char string[128];
@@ -411,13 +453,13 @@ NeubotConnection::handle_resolve(int result, char type, int count,
 	case DNS_IPv4_A:
 		neubot_info("handle_resolve - IPv4");
 		family = AF_INET;
-		self->_family = "PF_INET";
+		_family = "PF_INET";
 		size = 4;
 		break;
 	case DNS_IPv6_AAAA:
 		neubot_info("handle_resolve - IPv6");
 		family = AF_INET6;
-		self->_family = "PF_INET6";
+		_family = "PF_INET6";
 		size = 16;
 		break;
 	default:
@@ -441,9 +483,42 @@ NeubotConnection::handle_resolve(int result, char type, int count,
 			neubot_warn("handle_resolve - cannot append");
 			continue;
 		}
+		neubot_info("handle_resolve - family %s", _family);
+		error = self->pflist->append(_family);
+		if (error != 0) {
+			neubot_warn("handle_resolve - cannot append");
+			// Oops the two vectors are not in sync anymore now
+			self->connecting = 0;
+			self->protocol->on_error();
+			return;
+		}
 	}
 
     finally:
+	NeubotPoller *poller = self->protocol->get_poller();
+	if (poller == NULL)
+		abort();
+	evdns_base *dns_base = NeubotPoller_evdns_base_(poller);
+	if (dns_base == NULL)
+		abort();
+	if (self->must_resolve_ipv6) {
+		self->must_resolve_ipv6 = 0;
+		evdns_request *request = evdns_base_resolve_ipv6(dns_base,
+		    self->address, DNS_QUERY_NO_SEARCH, self->handle_resolve,
+		    self);
+		if (request != NULL)
+			return;
+		/* FALLTHROUGH */
+	}
+	if (self->must_resolve_ipv4) {
+		self->must_resolve_ipv4 = 0;
+		evdns_request *request = evdns_base_resolve_ipv4(dns_base,
+		    self->address, DNS_QUERY_NO_SEARCH, self->handle_resolve,
+		    self);
+		if (request != NULL)
+			return;
+		/* FALLTHROUGH */
+	}
 	self->connect_next();
 }
 
@@ -468,13 +543,44 @@ NeubotConnection::resolve(void *opaque)
 	if (dns_base == NULL)
 		abort();
 
-	evdns_request *request = evdns_base_resolve_ipv4(dns_base,
-	    self->address, DNS_QUERY_NO_SEARCH, self->handle_resolve, self);
+	// Note: PF_UNSPEC6 means that we try with IPv6 first
+	if (strcmp(self->family, "PF_INET") == 0)
+		self->must_resolve_ipv4 = 1;
+	else if (strcmp(self->family, "PF_INET6") == 0)
+		self->must_resolve_ipv6 = 1;
+	else if (strcmp(self->family, "PF_UNSPEC") == 0)
+		self->must_resolve_ipv4 = 1;
+	else if (strcmp(self->family, "PF_UNSPEC6") == 0)
+		self->must_resolve_ipv6 = 1;
+	else {
+		neubot_warn("connection::resolve - invalid PF_xxx");
+		self->connecting = 0;
+		self->protocol->on_error();
+		return;
+	}
+
+	evdns_request *request;
+
+	if (self->must_resolve_ipv4) {
+		self->must_resolve_ipv4 = 0;
+		request = evdns_base_resolve_ipv4(dns_base, self->address,
+		    DNS_QUERY_NO_SEARCH, self->handle_resolve, self);
+	} else {
+		self->must_resolve_ipv6 = 0;
+		request = evdns_base_resolve_ipv6(dns_base, self->address,
+		    DNS_QUERY_NO_SEARCH, self->handle_resolve, self);
+	}
 	if (request == NULL) {
 		self->connecting = 0;
 		self->protocol->on_error();
 		return;
 	}
+
+	// Arrange for the next resolve operation that we will need
+	if (strcmp(self->family, "PF_UNSPEC") == 0)
+		self->must_resolve_ipv6 = 1;
+	else if (strcmp(self->family, "PF_UNSPEC6") == 0)
+		self->must_resolve_ipv4 = 1;
 }
 
 NeubotConnection *
@@ -541,7 +647,20 @@ NeubotConnection::connect_hostname(NeubotProtocol *proto,
 		return (NULL);
 	}
 
-	// _family: nothing to be done
+	self->family = strdup(family);
+	if (self->family == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	self->pflist = new (std::nothrow) NeubotStringVector(poller, 16);
+	if (self->pflist == NULL) {
+		delete self;
+		return (NULL);
+	}
+
+	// must_resolve_ipv4: set later by self->resolve()
+	// must_resolve_ipv6: set later by self->resolve()
 
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);

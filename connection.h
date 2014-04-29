@@ -63,32 +63,36 @@ struct NeubotProtocol;
 
 struct NeubotConnection {
     private:
-	long long filedesc;
-	bufferevent *bev;
-	NeubotProtocol *protocol;
-	evbuffer *readbuf;
-	unsigned int closing;
-	unsigned int connecting;
-	unsigned int reading;
-	char *address;
-	char *port;
-	NeubotStringVector *addrlist;
-	const char *_family;
-	NeubotConnection(void);
+	    long long filedesc;
+	    bufferevent *bev;
+	    NeubotProtocol *protocol;
+	    evbuffer *readbuf;
+	    unsigned int closing;
+	    unsigned int connecting;
+	    unsigned int reading;
+	    char *address;
+	    char *port;
+	    NeubotStringVector *addrlist;
+	    char *family;
+	    NeubotStringVector *pflist;
+	    unsigned int must_resolve_ipv4;
+	    unsigned int must_resolve_ipv6;
 
-	// Private destructor because destruction may be delayed
-	~NeubotConnection(void);
+	    NeubotConnection(void);
 
-	// Libevent callbacks
-	static void handle_read(bufferevent *, void *);
-	static void handle_write(bufferevent *, void *);
-	static void handle_event(bufferevent *, short, void *);
+	    // Private destructor because destruction may be delayed
+	    ~NeubotConnection(void);
 
-	// Functions used by connect_hostname()
-	void connect_next(void);
-	static void handle_resolve(int, char, int, int,
-	    void *, void *);
-	static void resolve(void *);
+	    // Libevent callbacks
+	    static void handle_read(bufferevent *, void *);
+	    static void handle_write(bufferevent *, void *);
+	    static void handle_event(bufferevent *, short, void *);
+
+	    // Functions used by connect_hostname()
+	    void connect_next(void);
+	    static void handle_resolve(int, char, int, int,
+		void *, void *);
+	    static void resolve(void *);
 
     public:
 	static NeubotConnection *attach(NeubotProtocol *, long long);
@@ -122,7 +126,6 @@ struct NeubotConnection {
 
 	void close(void);
 };
-}
 
 # endif  /* __cplusplus */
 #endif  /* LIBNEUBOT_CONNECTION_H */
