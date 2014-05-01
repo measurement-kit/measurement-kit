@@ -420,6 +420,24 @@ NeubotConnection_write_from_(NeubotConnection *self, evbuffer *source)
 	return (self->write_from_(source));
 }
 
+int
+NeubotConnection_enable_read(struct NeubotConnection *self)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->enable_read());
+}
+
+int
+NeubotConnection_disable_read(struct NeubotConnection *self)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->disable_read());
+}
+
 void
 NeubotConnection_close(NeubotConnection *self)
 {

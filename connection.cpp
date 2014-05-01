@@ -244,12 +244,6 @@ NeubotConnection::attach(NeubotProtocol *proto, long long filenum)
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);
 
-	result = bufferevent_enable(self->bev, EV_READ);
-	if (result != 0) {
-		delete self;
-		return (NULL);
-	}
-
 	// Only own the filedesc when we know there were no errors
 	self->filedesc = filenum;
 	return (self);
@@ -347,8 +341,6 @@ NeubotConnection::connect(NeubotProtocol *proto, const char *family,
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);
 
-	// Note: cannot enable EV_READ until the connection is made
-
 	result = bufferevent_socket_connect(self->bev, (struct sockaddr *)
 	    &storage, (int) total);
 	if (result != 0) {
@@ -399,8 +391,6 @@ NeubotConnection::connect_next(void)
 			this->filedesc = NEUBOT_SOCKET_INVALID;
 			continue;
 		}
-
-		// Note: cannot enable EV_READ until the connection is made
 
 		error = bufferevent_socket_connect(this->bev, (struct
 		    sockaddr *) &storage, (int) total);
@@ -665,8 +655,6 @@ NeubotConnection::connect_hostname(NeubotProtocol *proto,
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);
 
-	// Note: cannot enable EV_READ until the connection is made
-
 	result = NeubotPoller_sched(poller, 0.0, self->resolve, self);
 	if (result != 0) {
 		delete self;
@@ -799,6 +787,18 @@ NeubotConnection::write_from_(evbuffer *sourcebuf)
 		return (-1);
 
 	return (bufferevent_write_buffer(this->bev, sourcebuf));
+}
+
+int
+Neubot::Connection::enable_read(void)
+{
+	return (bufferevent_enable(this->bev, EV_READ));
+}
+
+int
+Neubot::Connection::disable_read(void)
+{
+	return (bufferevent_disable(this->bev, EV_READ));
 }
 
 void

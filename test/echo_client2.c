@@ -82,6 +82,14 @@ EchoProtocol_connect(struct NeubotPoller *p, const char *family,
 		return (NULL);
 	}
 
+	result = NeubotConnection_enable_read(self->connection);
+	if (result != 0) {
+		NeubotConnection_close(self->connection);
+		NeubotProtocol_destruct(self->protocol);
+		free(self);
+		return (NULL);
+	}
+
 	return (self);
 }
 

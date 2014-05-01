@@ -67,6 +67,12 @@ class EchoProtocol : public Neubot::Protocol {
 			return (NULL);
 		}
 
+		result = self->connection->enable_read();
+		if (result != 0) {
+			delete self;
+			return (NULL);
+		}
+
 		return (self);
 	}
 

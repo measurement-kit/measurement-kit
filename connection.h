@@ -63,36 +63,36 @@ struct NeubotProtocol;
 
 struct NeubotConnection {
     private:
-	    long long filedesc;
-	    bufferevent *bev;
-	    NeubotProtocol *protocol;
-	    evbuffer *readbuf;
-	    unsigned int closing;
-	    unsigned int connecting;
-	    unsigned int reading;
-	    char *address;
-	    char *port;
-	    NeubotStringVector *addrlist;
-	    char *family;
-	    NeubotStringVector *pflist;
-	    unsigned int must_resolve_ipv4;
-	    unsigned int must_resolve_ipv6;
+	long long filedesc;
+	bufferevent *bev;
+	NeubotProtocol *protocol;
+	evbuffer *readbuf;
+	unsigned int closing;
+	unsigned int connecting;
+	unsigned int reading;
+	char *address;
+	char *port;
+	NeubotStringVector *addrlist;
+	char *family;
+	NeubotStringVector *pflist;
+	unsigned int must_resolve_ipv4;
+	unsigned int must_resolve_ipv6;
 
-	    NeubotConnection(void);
+	NeubotConnection(void);
 
-	    // Private destructor because destruction may be delayed
-	    ~NeubotConnection(void);
+	// Private destructor because destruction may be delayed
+	~NeubotConnection(void);
 
-	    // Libevent callbacks
-	    static void handle_read(bufferevent *, void *);
-	    static void handle_write(bufferevent *, void *);
-	    static void handle_event(bufferevent *, short, void *);
+	// Libevent callbacks
+	static void handle_read(bufferevent *, void *);
+	static void handle_write(bufferevent *, void *);
+	static void handle_event(bufferevent *, short, void *);
 
-	    // Functions used by connect_hostname()
-	    void connect_next(void);
-	    static void handle_resolve(int, char, int, int,
-		void *, void *);
-	    static void resolve(void *);
+	// Functions used by connect_hostname()
+	void connect_next(void);
+	static void handle_resolve(int, char, int, int,
+	    void *, void *);
+	static void resolve(void *);
 
     public:
 	static NeubotConnection *attach(NeubotProtocol *, long long);
@@ -123,6 +123,9 @@ struct NeubotConnection {
 	int read_into_(evbuffer *);
 	int write_from_(evbuffer *);
 #endif
+
+	int enable_read(void);
+	int disable_read(void);
 
 	void close(void);
 };

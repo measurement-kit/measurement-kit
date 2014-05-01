@@ -238,6 +238,20 @@ LIBNEUBOT.NeubotConnection_write_from_.argtypes = (
 
 
 
+LIBNEUBOT.NeubotConnection_enable_read.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_enable_read.argtypes = (
+    ConnectionBase,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_disable_read.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_disable_read.argtypes = (
+    ConnectionBase,
+)
+
+
+
 LIBNEUBOT.NeubotConnection_close.argtypes = (
     ConnectionBase,
 )
@@ -727,6 +741,12 @@ class Connection(ConnectionBase):
 
     def write_from_(self, evsource):
         return LIBNEUBOT.NeubotConnection_write_from_(self, evsource)
+
+    def enable_read(self):
+        return LIBNEUBOT.NeubotConnection_enable_read(self)
+
+    def disable_read(self):
+        return LIBNEUBOT.NeubotConnection_disable_read(self)
 
     def close(self):
         if not self.context_:

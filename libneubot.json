@@ -62,6 +62,8 @@
             ["status_t", "puts", ["cstring", "base"]],
             ["status_t", "read_into_", ["evbuffer_p", "evdest"]],
             ["status_t", "write_from_", ["evbuffer_p", "evsource"]],
+            ["status_t", "enable_read"],
+            ["status_t", "disable_read"],
             ["__destruct__", "close"]
         ]],
 

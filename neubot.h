@@ -110,6 +110,10 @@ int NeubotConnection_read_into_(struct NeubotConnection *, struct evbuffer *);
 
 int NeubotConnection_write_from_(struct NeubotConnection *, struct evbuffer *);
 
+int NeubotConnection_enable_read(struct NeubotConnection *);
+
+int NeubotConnection_disable_read(struct NeubotConnection *);
+
 void NeubotConnection_close(struct NeubotConnection *);
 
 /* NeubotPollable API: */
