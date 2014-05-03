@@ -40,11 +40,6 @@
 #include "strtonum.h"
 #include "utils.h"
 
-/* Apparently, this is needed to compile on Android */
-#ifndef in_port_t
-# define in_port_t uint16_t
-#endif
-
 void
 neubot_timeval_now(struct timeval *tv)
 {
