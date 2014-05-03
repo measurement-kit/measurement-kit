@@ -11,8 +11,8 @@ LOCAL_CFLAGS := -DNEUBOT_ANDROID
 
 LOCAL_SRC_FILES := \
     echo.c \
-    log.c \
     libneubot.cpp \
+    log.c \
     pollable.cpp \
     poller.c \
     strtonum.c \
