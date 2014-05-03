@@ -83,13 +83,9 @@ def clang_declare_method(name, method):
         total = len(retval) + len(funcname) + 2
         new_args = []
         for argtype, argname in args:
-            if argtype.startswith("slot_"):
-                for slotname in argname:
-                    new_args.append((argtype, slotname))
-                new_args.append(("Object", "opaque"))
-            elif argtype.startswith("hook_"):
-                for hookname in argname:
-                    new_args.append((argtype, hookname))
+            if argtype.startswith("slot_") or argtype.startswith("hook_"):
+                for sh_name in argname:
+                    new_args.append((argtype, sh_name))
                 new_args.append(("Object", "opaque"))
             else:
                 new_args.append((argtype, argname))
