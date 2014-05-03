@@ -90,8 +90,5 @@ uninstall:
 	rm -f -- $(DESTDIR)$(LIBDIR)/$(REALNAME)
 	rm -f -- $(DESTDIR)$(LIBDIR)/$(SONAME)
 	rm -f -- $(DESTDIR)$(LIBDIR)/$(LINKERNAME)
-	rmdir $(DESTDIR)$(LIBDIR) || true
 	rm -rf -- $(DESTDIR)$(INCLUDEDIR)/libneubot
-	rmdir $(DESTDIR)$(INCLUDEDIR) || true
-	rm -r -- $(DESTDIR)$(DATADIR)/libneubot/$(PYMODULE)
-	rmdir $(DESTDIR)$(DATADIR)/libneubot || true
+	rm -rf -- $(DESTDIR)$(DATADIR)/libneubot
