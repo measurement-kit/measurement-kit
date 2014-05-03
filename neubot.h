@@ -16,7 +16,6 @@ typedef void (*neubot_hook_vo)(void *);
 typedef void (*neubot_hook_vos)(void *, const char *);
 
 typedef void (*neubot_slot_vo)(void *);
-typedef void (*neubot_slot_vos)(void *, const char *);
 
 /* Classes: */
 

@@ -32,7 +32,6 @@ CLANG_TYPE = {
     "hook_vo": "neubot_hook_vo",
     "hook_vos": "neubot_hook_vos",
     "slot_vo": "neubot_slot_vo",
-    "slot_vos": "neubot_slot_vos",
     "status_t": "int",
     "void_p": "void *",
 }
@@ -132,7 +131,6 @@ def main():
     sys.stdout.write("typedef void (*neubot_hook_vos)(void *, const char *);\n")
     sys.stdout.write("\n")
     sys.stdout.write("typedef void (*neubot_slot_vo)(void *);\n")
-    sys.stdout.write("typedef void (*neubot_slot_vos)(void *, const char *);\n")
     sys.stdout.write("\n")
 
     clang_comment("Classes:")
