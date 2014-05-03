@@ -26,6 +26,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#include <limits.h>
 #include <errno.h>
 #include <math.h>
 #include <string.h>
@@ -34,19 +35,16 @@
 
 #include <event2/event.h>
 
+#include "ll2sock.h"
 #include "log.h"
 #include "strtonum.h"
 #include "utils.h"
 
-/* Apparently, this is needed to compile on Android */
-#ifndef in_port_t
-# define in_port_t uint16_t
-#endif
-
 void
 neubot_timeval_now(struct timeval *tv)
 {
-	(void) gettimeofday(tv, NULL);
+	if (gettimeofday(tv, NULL) != 0)
+		abort();
 }
 
 double
@@ -55,7 +53,7 @@ neubot_time_now(void)
 	struct timeval tv;
 	double result;
 
-	(void) gettimeofday(&tv, NULL);
+	neubot_timeval_now(&tv);
 	result = tv.tv_sec + tv.tv_usec / (double) 1000000.0;
 
 	return (result);
@@ -80,7 +78,7 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
 		return (-1);
 
 	filedesc = neubot_socket_create(storage.ss_family, SOCK_STREAM, 0);
-	if (filedesc == -1)
+	if (filedesc == NEUBOT_SOCKET_INVALID)
 		return (-1);
 
 	result = neubot_socket_listen(filedesc, &storage, salen);
@@ -92,6 +90,7 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
 	return (filedesc);
 }
 
+/* Many system's free() handle NULL; is this needed? */
 void
 neubot_xfree(void *ptr)
 {
@@ -124,6 +123,7 @@ neubot_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
 
 	neubot_info("utils:neubot_storage_init - enter");
 
+	/* TODO: support also AF_INET, AF_INET6, ... */
 	if (strcmp(family, "PF_INET") == 0) {
 		_family = PF_INET;
 	} else if (strcmp(family, "PF_INET6") == 0) {
@@ -169,8 +169,7 @@ neubot_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
 	}
 
 	default:
-	      neubot_warn("utils:neubot_storage_init: internal error");
-	      return (-1);
+		abort();
 	}
 
 	neubot_info("utils:neubot_storage_init - ok");
@@ -186,16 +185,16 @@ neubot_socket_create(int domain, int type, int protocol)
 	neubot_info("utils:neubot_socket - enter");
 
 	filedesc = socket(domain, type, protocol);
-	if (filedesc == -1) {
+	if (filedesc == NEUBOT_SOCKET_INVALID) {
 		neubot_warn("utils:neubot_socket: cannot create socket");
-		return (-1);
+		return (NEUBOT_SOCKET_INVALID);
 	}
 
 	result = evutil_make_socket_nonblocking(filedesc);
 	if (result != 0) {
 		neubot_warn("utils:neubot_socket: cannot make nonblocking");
 		(void) evutil_closesocket(filedesc);
-		return (-1);
+		return (NEUBOT_SOCKET_INVALID);
 	}
 
 	neubot_info("utils:neubot_socket - ok");

@@ -25,6 +25,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -33,6 +34,7 @@
 #include <event2/buffer_compat.h>
 #include <event2/event.h>
 
+#include "ll2sock.h"
 #include "log.h"
 #include "neubot.h"
 #include "utils.h"
@@ -41,13 +43,13 @@ struct Connection {
 	struct NeubotPollable *pollable;
 	struct evbuffer *buffer;
 	int seen_eof;
-	int fileno;
+	evutil_socket_t fileno;
 };
 
 struct NeubotEchoServer {
 	struct NeubotPollable *pollable;
 	struct NeubotPoller *poller;
-	int fileno;
+	evutil_socket_t fileno;
 };
 
 #define MAXREAD 8000
@@ -59,15 +61,10 @@ struct NeubotEchoServer {
 static void
 Connection_close(struct Connection *self)
 {
-	struct NeubotPollable *pollable;
-
-	pollable = self->pollable;
-
-	(void) close(self->fileno);
+	(void) evutil_closesocket(self->fileno);
 	evbuffer_free(self->buffer);
+	NeubotPollable_close(self->pollable);
 	free(self);
-
-	NeubotPollable_close(pollable);
 }
 
 static void
@@ -99,12 +96,12 @@ Connection_write(void *opaque)
 
 	self = (struct Connection *) opaque;
 	result = evbuffer_write(self->buffer, self->fileno);
-	if (result == -1) {
+	if (result < 0) {
 		Connection_close(self);
 		return;
 	}
 
-	if (EVBUFFER_LENGTH(self->buffer) == 0)
+	if (EVBUFFER_LENGTH(self->buffer) <= 0)
 		NeubotPollable_unset_writable(self->pollable);
 
 	if (self->seen_eof)
@@ -130,10 +127,10 @@ Connection_construct(void *opaque)
 
 	conn = calloc(1, sizeof(*conn));
 	if (conn == NULL)
-		goto cleanup;
+		return;
 
 	conn->buffer = NULL;
-	conn->fileno = -1;
+	conn->fileno = NEUBOT_SOCKET_INVALID;
 	conn->pollable = NULL;
 
 	conn->buffer = evbuffer_new();
@@ -141,7 +138,7 @@ Connection_construct(void *opaque)
 		goto cleanup;
 
 	conn->fileno = accept(self->fileno, NULL, NULL);
-	if (conn->fileno == -1)
+	if (conn->fileno == NEUBOT_SOCKET_INVALID)
 		goto cleanup;
 
 	conn->pollable = NeubotPollable_construct(self->poller,
@@ -161,8 +158,8 @@ Connection_construct(void *opaque)
       cleanup:
 	if (conn != NULL && conn->buffer != NULL)
 		evbuffer_free(conn->buffer);
-	if (conn != NULL && conn->fileno != -1)
-		(void)close(conn->fileno);
+	if (conn != NULL && conn->fileno != NEUBOT_SOCKET_INVALID)
+		(void) evutil_closesocket(conn->fileno);
 	if (conn != NULL && conn->pollable != NULL)
 		NeubotPollable_close(conn->pollable);
 	free(conn);
@@ -184,16 +181,11 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
 		return (NULL);
 
 	self->fileno = neubot_listen(use_ipv6, address, port);
-	if (self->fileno == -1)
+	if (self->fileno == NEUBOT_SOCKET_INVALID)
 		goto cleanup;
 
 	self->poller = poller;
 
-	/*
-	 * NOTE to self: the cleanup strategy must change if you add a
-	 * a destructor function, because, in such case, NeubotPollable
-	 * close() will also very likely free() self.
-	 */
 	self->pollable = NeubotPollable_construct(self->poller,
 	    Connection_construct, NULL, NULL, self);
 	if (self->pollable == NULL)
@@ -213,8 +205,8 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
       cleanup:
 	if (self->pollable != NULL)
 		NeubotPollable_close(self->pollable);
-	if (self->fileno != -1)
-		(void) close(self->fileno);
+	if (self->fileno != NEUBOT_SOCKET_INVALID)
+		(void) evutil_closesocket(self->fileno);
 	free(self);
 	return (NULL);
 }

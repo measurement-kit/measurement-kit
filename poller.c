@@ -128,7 +128,7 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 			goto cleanup;
 		break;
 	default:
-		goto cleanup;
+		abort();
 	}
 
 	if (callback == NULL)
@@ -203,6 +203,8 @@ NeubotPoller_construct(void)
 
 	self->base = base;
 	self->dnsbase = evdns_get_global_base();
+	if (self->dnsbase == NULL)
+		abort();
 
 #ifndef WIN32
 	event_set(&self->evsignal, SIGINT, EV_SIGNAL,
@@ -237,6 +239,10 @@ NeubotPoller_evdns_base_(struct NeubotPoller *self)
 	return (self->dnsbase);
 }
 
+/*
+ * This is implemented like in Neubot; however, it is a bit dangerous
+ * and/or annoying that one cannot destroy pending callbacks.
+ */
 int
 NeubotPoller_sched(struct NeubotPoller *self, double delta,
     neubot_hook_vo callback, void *opaque)
@@ -308,8 +314,7 @@ NeubotPoller_resolve_callback_internal(int result, char type, int count,
 		size = 16;
 		break;
 	default:
-		neubot_warn("resolve: invalid type");
-		goto failure;
+		abort();
 	}
 
 	while (--count >= 0) {

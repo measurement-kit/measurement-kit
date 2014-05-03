@@ -11,12 +11,13 @@ import sys
 
 sys.path.insert(0, "/usr/local/share/libneubot")
 
-import libneubot
+from libneubot import LIBNEUBOT
+from libneubot import NEUBOT_HOOK_VO
 
 def read_timeo(poller):
     """ Read timed out """
     sys.stderr.write("Timeout!\n")
-    libneubot.NeubotPoller_break_loop(poller)
+    LIBNEUBOT.NeubotPoller_break_loop(poller)
 
 def read_ok(poller):
     """ Can read from the socket """
@@ -24,26 +25,26 @@ def read_ok(poller):
     data = os.read(0, 1024)
     if not data:
         sys.stderr.write("EOF!\n")
-        libneubot.NeubotPoller_break_loop(poller)
+        LIBNEUBOT.NeubotPoller_break_loop(poller)
         return
 
     sys.stdout.write(data)
     schedule_read(poller)
 
-READ_OK = libneubot.NEUBOT_HOOK_VO(read_ok)
-READ_TIMEO = libneubot.NEUBOT_HOOK_VO(read_timeo)
+READ_OK = NEUBOT_HOOK_VO(read_ok)
+READ_TIMEO = NEUBOT_HOOK_VO(read_timeo)
 
 def schedule_read(poller):
     """ Schedule a read operation """
-    libneubot.NeubotPoller_defer_read(poller, 0, READ_OK, READ_TIMEO,
+    LIBNEUBOT.NeubotPoller_defer_read(poller, 0, READ_OK, READ_TIMEO,
       poller, ctypes.c_double(10.0))
 
 def main():
     """ Main function """
 
-    poller = libneubot.NeubotPoller_construct()
+    poller = LIBNEUBOT.NeubotPoller_construct()
     schedule_read(poller)
-    libneubot.NeubotPoller_loop(poller)
+    LIBNEUBOT.NeubotPoller_loop(poller)
 
 if __name__ == "__main__":
     main()

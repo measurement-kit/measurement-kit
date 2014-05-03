@@ -1,3 +1,5 @@
+/* libneubot/pollable.hh */
+
 /*-
  * Copyright (c) 2014
  *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
@@ -23,6 +25,9 @@
 // You must include <event/event.h> before this file to get the
 // definition of evutil_socket_t.
 //
+// Note: this file is not installed and is only used internally
+// by libneubot.cpp to implement NeubotPollable_xxx().
+//
 
 struct NeubotPoller;
 struct event;
@@ -35,11 +40,8 @@ namespace Neubot {
         event *evwrite;
         evutil_socket_t fileno;
         int setunset(const char *, unsigned, event *);
-    protected:
-        Pollable(void);
-        int init(NeubotPoller *);
     public:
-        static Pollable *construct(NeubotPoller *);
+        Pollable(NeubotPoller *);
         int attach(long long);
         void detach(void);
         long long get_fileno(void);

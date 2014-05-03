@@ -1,3 +1,5 @@
+/* libneubot/pollable.cpp */
+
 /*-
  * Copyright (c) 2014
  *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN),
@@ -46,45 +48,15 @@
 
 using namespace Neubot;
 
-Pollable::Pollable(void)
+Pollable::Pollable(NeubotPoller *poller)
 {
 	neubot_info("pollable: Pollable()");
 
-	this->poller = NULL;
+	this->poller = poller;
 	this->timeout = -1.0;
 	this->evread = NULL;
 	this->evwrite = NULL;
-	this->fileno = -1;
-}
-
-Pollable *
-Pollable::construct(NeubotPoller *poller)
-{
-	Pollable *self = new (std::nothrow) Pollable();
-	if (self == NULL)
-		return (NULL);
-
-	/*
-	 * The construction is split in construct() and init() because
-	 * there are child classes that need to call init().
-	 */
-	if (self->init(poller) != 0) {
-		delete self;
-		return (NULL);
-	}
-
-	return (self);
-}
-
-int
-Pollable::init(NeubotPoller *poller)
-{
-	if (poller == NULL)
-		return (-1);
-
-	this->poller = poller;
-
-	return (0);
+	this->fileno = NEUBOT_SOCKET_INVALID;
 }
 
 static void
@@ -118,7 +90,7 @@ Pollable::attach(long long fileno)
 
 	neubot_info("pollable: attach()");
 
-	if (this->fileno != -1) {
+	if (this->fileno != NEUBOT_SOCKET_INVALID) {
 		neubot_warn("pollable: already attached");
 		return (-1);
 	}	
@@ -157,12 +129,10 @@ Pollable::attach(long long fileno)
 	return (0);
 }
 
+// MUST be idempotent and MUST work with half-initialized objects
 void
 Pollable::detach(void)
 {
-	if (this->fileno == -1)
-		return;
-
 	neubot_info("pollable: detach()");
 
 	// poller: continue to point to the poller
@@ -182,7 +152,7 @@ Pollable::detach(void)
 	// We don't close the file descriptor because the Neubot pollable
 	// class does not close the file description as well.
 	//
-	this->fileno = -1;
+	this->fileno = NEUBOT_SOCKET_INVALID;
 }
 
 /*
@@ -206,7 +176,7 @@ Pollable::setunset(const char *what, unsigned opcode, event *evp)
 
 	neubot_info("pollable: %s()", what);
 
-	if (this->fileno == -1) {
+	if (this->fileno == NEUBOT_SOCKET_INVALID) {
 		neubot_warn("%s: not attached", what);
 		return (-1);
 	}
@@ -268,7 +238,7 @@ Pollable::set_timeout(double timeout)
 void
 Pollable::clear_timeout(void)
 {
-	this->timeout = -1;
+	this->timeout = -1.0;
 }
 
 void

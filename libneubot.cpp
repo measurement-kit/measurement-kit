@@ -1,3 +1,5 @@
+/* libneubot/libneubot.cpp */
+
 /*-
  * Copyright (c) 2013-2014
  *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
@@ -46,55 +48,33 @@ struct NeubotPollable : public Neubot::Pollable {
 	neubot_slot_vo on_handle_write;
 	void *opaque;
 
-	NeubotPollable(void) : Neubot::Pollable() {
-		neubot_warn("NeubotPollable::NeubotPollable");
-		this->on_handle_error = NULL;
-		this->on_handle_read = NULL;
-		this->on_handle_write = NULL;
-		this->opaque = NULL;
-	};
-
-	static NeubotPollable *construct(NeubotPoller *poller,
-	    neubot_slot_vo on_read, neubot_slot_vo on_write,
-	    neubot_slot_vo on_error, void *opaque) {
-
-		neubot_warn("NeubotPollable::construct - enter");
-
-		NeubotPollable *self = new (std::nothrow) NeubotPollable();
-		if (self == NULL)
-			return (NULL);
-
-		if (self->init(poller) != 0) {
-			delete self;
-			return (NULL);
-		}
-
-		self->on_handle_error = on_error;
-		self->on_handle_read = on_read;
-		self->on_handle_write = on_write;
-		self->opaque = opaque;
-
-		neubot_warn("NeubotPollable::construct - ok");
-		return (self);
+	NeubotPollable(NeubotPoller *poller, neubot_slot_vo on_read,
+	    neubot_slot_vo on_write, neubot_slot_vo on_error,
+	    void *opaque) : Neubot::Pollable(poller) {
+		neubot_info("NeubotPollable::construct");
+		this->on_handle_error = on_error;
+		this->on_handle_read = on_read;
+		this->on_handle_write = on_write;
+		this->opaque = opaque;
 	};
 
 	virtual void handle_read(void) {
-		neubot_warn("NeubotPollable::handle_read");
+		neubot_info("NeubotPollable::handle_read");
 		this->on_handle_read(this->opaque);
 	};
 
 	virtual void handle_write(void) {
-		neubot_warn("NeubotPollable::handle_write");
+		neubot_info("NeubotPollable::handle_write");
 		this->on_handle_write(this->opaque);
 	};
 
 	virtual void handle_error(void) {
-		neubot_warn("NeubotPollable::handle_error");
+		neubot_info("NeubotPollable::handle_error");
 		this->on_handle_error(this->opaque);
 	};
 
 	virtual ~NeubotPollable(void) {
-		neubot_warn("NeubotPollable::~NeubotPollable");
+		neubot_info("NeubotPollable::~NeubotPollable");
 	};
 };
 
@@ -106,8 +86,12 @@ NeubotPollable_construct(NeubotPoller *poller, neubot_slot_vo handle_read,
 	if (poller == NULL)
 		abort();
 
-	return (NeubotPollable::construct(poller, handle_read, handle_write,
-	    handle_error, opaque));
+	try {
+		return (new NeubotPollable(poller, handle_read, handle_write,
+		    handle_error, opaque));
+	} catch (...) {
+		return (NULL);
+	}
 }
 
 int

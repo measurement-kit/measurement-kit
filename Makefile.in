@@ -82,7 +82,6 @@ install: $(REALNAME)
 	ln -fs $(DESTDIR)$(LIBDIR)/$(SONAME) $(DESTDIR)$(LIBDIR)/$(LINKERNAME)
 	ln -fs $(DESTDIR)$(LIBDIR)/$(REALNAME) $(DESTDIR)$(LIBDIR)/$(SONAME)
 	install -m 644 $(REALNAME) $(DESTDIR)$(LIBDIR)/
-	install -d $(DESTDIR)$(INCLUDEDIR)
 	install -d $(DESTDIR)$(INCLUDEDIR)/libneubot
 	install -m 644 $(HEADERS) $(DESTDIR)$(INCLUDEDIR)/libneubot
 	install -d $(DESTDIR)$(DATADIR)/libneubot
@@ -91,8 +90,5 @@ uninstall:
 	rm -f -- $(DESTDIR)$(LIBDIR)/$(REALNAME)
 	rm -f -- $(DESTDIR)$(LIBDIR)/$(SONAME)
 	rm -f -- $(DESTDIR)$(LIBDIR)/$(LINKERNAME)
-	rmdir $(DESTDIR)$(LIBDIR) || true
 	rm -rf -- $(DESTDIR)$(INCLUDEDIR)/libneubot
-	rmdir $(DESTDIR)$(INCLUDEDIR) || true
-	rm -r -- $(DESTDIR)$(DATADIR)/libneubot/$(PYMODULE)
-	rmdir $(DESTDIR)$(DATADIR)/libneubot || true
+	rm -rf -- $(DESTDIR)$(DATADIR)/libneubot

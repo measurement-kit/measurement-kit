@@ -32,7 +32,6 @@ CLANG_TYPE = {
     "hook_vo": "neubot_hook_vo",
     "hook_vos": "neubot_hook_vos",
     "slot_vo": "neubot_slot_vo",
-    "slot_vos": "neubot_slot_vos",
     "status_t": "int",
     "void_p": "void *",
 }
@@ -84,27 +83,26 @@ def clang_declare_method(name, method):
         total = len(retval) + len(funcname) + 2
         new_args = []
         for argtype, argname in args:
-            if argtype.startswith("slot_"):
-                for slotname in argname:
-                    new_args.append((argtype, slotname))
-                new_args.append(("Object", "opaque"))
-            elif argtype.startswith("hook_"):
-                for hookname in argname:
-                    new_args.append((argtype, hookname))
+            if argtype.startswith("slot_") or argtype.startswith("hook_"):
+                for sh_name in argname:
+                    new_args.append((argtype, sh_name))
                 new_args.append(("Object", "opaque"))
             else:
                 new_args.append((argtype, argname))
         for index, elem in enumerate(new_args):
             name, _ = elem
             name = clang_type(name)
+            if index > 0:
+                sys.stdout.write(",")
+                total += 1
             if total + len(name) >= 78:
                 sys.stdout.write("\n    ")
                 total = 4
+            elif index > 0:
+                sys.stdout.write(" ")
+                total += 1
             total += len(name)
             sys.stdout.write("%s" % name)
-            if index < len(new_args) - 1:
-                sys.stdout.write(", ")
-                total += 2
     else:
         sys.stdout.write("void")
     sys.stdout.write(");\n")
@@ -118,7 +116,7 @@ def main():
     clang_empty_line()
 
     sys.stdout.write("#ifndef NEUBOT_H\n")
-    sys.stdout.write("# define NEUBOT_H 65537\n")
+    sys.stdout.write("# define NEUBOT_H\n")
     sys.stdout.write("\n")
 
     sys.stdout.write("#ifdef __cplusplus\n")
@@ -132,7 +130,6 @@ def main():
     sys.stdout.write("typedef void (*neubot_hook_vos)(void *, const char *);\n")
     sys.stdout.write("\n")
     sys.stdout.write("typedef void (*neubot_slot_vo)(void *);\n")
-    sys.stdout.write("typedef void (*neubot_slot_vos)(void *, const char *);\n")
     sys.stdout.write("\n")
 
     clang_comment("Classes:")

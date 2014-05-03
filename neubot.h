@@ -4,7 +4,7 @@
  */
 
 #ifndef NEUBOT_H
-# define NEUBOT_H 65537
+# define NEUBOT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -16,7 +16,6 @@ typedef void (*neubot_hook_vo)(void *);
 typedef void (*neubot_hook_vos)(void *, const char *);
 
 typedef void (*neubot_slot_vo)(void *);
-typedef void (*neubot_slot_vos)(void *, const char *);
 
 /* Classes: */
 
@@ -30,13 +29,13 @@ struct NeubotPoller *NeubotPoller_construct(void);
 
 int NeubotPoller_sched(struct NeubotPoller *, double, neubot_hook_vo, void *);
 
-int NeubotPoller_defer_read(struct NeubotPoller *, long long, neubot_hook_vo, 
+int NeubotPoller_defer_read(struct NeubotPoller *, long long, neubot_hook_vo,
     neubot_hook_vo, void *, double);
 
-int NeubotPoller_defer_write(struct NeubotPoller *, long long, neubot_hook_vo, 
+int NeubotPoller_defer_write(struct NeubotPoller *, long long, neubot_hook_vo,
     neubot_hook_vo, void *, double);
 
-int NeubotPoller_resolve(struct NeubotPoller *, const char *, const char *, 
+int NeubotPoller_resolve(struct NeubotPoller *, const char *, const char *,
     neubot_hook_vos, void *);
 
 void NeubotPoller_loop(struct NeubotPoller *);
@@ -45,12 +44,12 @@ void NeubotPoller_break_loop(struct NeubotPoller *);
 
 /* NeubotEchoServer API: */
 
-struct NeubotEchoServer *NeubotEchoServer_construct(struct NeubotPoller *, 
+struct NeubotEchoServer *NeubotEchoServer_construct(struct NeubotPoller *,
     int, const char *, const char *);
 
 /* NeubotPollable API: */
 
-struct NeubotPollable *NeubotPollable_construct(struct NeubotPoller *, 
+struct NeubotPollable *NeubotPollable_construct(struct NeubotPoller *,
     neubot_slot_vo, neubot_slot_vo, neubot_slot_vo, void *);
 
 int NeubotPollable_attach(struct NeubotPollable *, long long);
