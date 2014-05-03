@@ -92,14 +92,17 @@ def clang_declare_method(name, method):
         for index, elem in enumerate(new_args):
             name, _ = elem
             name = clang_type(name)
+            if index > 0:
+                sys.stdout.write(",")
+                total += 1
             if total + len(name) >= 78:
                 sys.stdout.write("\n    ")
                 total = 4
+            elif index > 0:
+                sys.stdout.write(" ")
+                total += 1
             total += len(name)
             sys.stdout.write("%s" % name)
-            if index < len(new_args) - 1:
-                sys.stdout.write(", ")
-                total += 2
     else:
         sys.stdout.write("void")
     sys.stdout.write(");\n")
