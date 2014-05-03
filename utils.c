@@ -89,6 +89,7 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
 	return (filedesc);
 }
 
+/* Many system's free() handle NULL; is this needed? */
 void
 neubot_xfree(void *ptr)
 {
@@ -121,6 +122,7 @@ neubot_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
 
 	neubot_info("utils:neubot_storage_init - enter");
 
+	/* TODO: support also AF_INET, AF_INET6, ... */
 	if (strcmp(family, "PF_INET") == 0) {
 		_family = PF_INET;
 	} else if (strcmp(family, "PF_INET6") == 0) {

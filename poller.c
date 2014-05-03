@@ -239,6 +239,10 @@ NeubotPoller_evdns_base_(struct NeubotPoller *self)
 	return (self->dnsbase);
 }
 
+/*
+ * This is implemented like in Neubot; however, it is a bit dangerous
+ * and/or annoying that one cannot destroy pending callbacks.
+ */
 int
 NeubotPoller_sched(struct NeubotPoller *self, double delta,
     neubot_hook_vo callback, void *opaque)
