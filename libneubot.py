@@ -21,8 +21,6 @@ LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
 DIE = getattr(os, '_exit')
 
 NEUBOT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
-NEUBOT_SLOT_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,
-  ctypes.c_char_p)
 
 NEUBOT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
 NEUBOT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,

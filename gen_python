@@ -319,8 +319,6 @@ def main():
     stream.write("DIE = getattr(os, '_exit')\n\n")
 
     stream.write("NEUBOT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)\n")
-    stream.write("NEUBOT_SLOT_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,\n")
-    stream.write("  ctypes.c_char_p)\n")
     stream.write("\n")
     stream.write("NEUBOT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)\n")
     stream.write("NEUBOT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,\n")
