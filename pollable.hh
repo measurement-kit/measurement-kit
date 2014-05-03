@@ -25,6 +25,9 @@
 // You must include <event/event.h> before this file to get the
 // definition of evutil_socket_t.
 //
+// Note: this file is not installed and is only used internally
+// by libneubot.cpp to implement NeubotPollable_xxx().
+//
 
 struct NeubotPoller;
 struct event;
