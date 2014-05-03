@@ -48,45 +48,15 @@
 
 using namespace Neubot;
 
-Pollable::Pollable(void)
+Pollable::Pollable(NeubotPoller *poller)
 {
 	neubot_info("pollable: Pollable()");
 
-	this->poller = NULL;
+	this->poller = poller;
 	this->timeout = -1.0;
 	this->evread = NULL;
 	this->evwrite = NULL;
 	this->fileno = -1;
-}
-
-Pollable *
-Pollable::construct(NeubotPoller *poller)
-{
-	Pollable *self = new (std::nothrow) Pollable();
-	if (self == NULL)
-		return (NULL);
-
-	/*
-	 * The construction is split in construct() and init() because
-	 * there are child classes that need to call init().
-	 */
-	if (self->init(poller) != 0) {
-		delete self;
-		return (NULL);
-	}
-
-	return (self);
-}
-
-int
-Pollable::init(NeubotPoller *poller)
-{
-	if (poller == NULL)
-		return (-1);
-
-	this->poller = poller;
-
-	return (0);
 }
 
 static void

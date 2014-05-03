@@ -37,11 +37,8 @@ namespace Neubot {
         event *evwrite;
         evutil_socket_t fileno;
         int setunset(const char *, unsigned, event *);
-    protected:
-        Pollable(void);
-        int init(NeubotPoller *);
     public:
-        static Pollable *construct(NeubotPoller *);
+        Pollable(NeubotPoller *);
         int attach(long long);
         void detach(void);
         long long get_fileno(void);
