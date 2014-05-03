@@ -51,7 +51,7 @@ struct NeubotPollable : public Neubot::Pollable {
 	NeubotPollable(NeubotPoller *poller, neubot_slot_vo on_read,
 	    neubot_slot_vo on_write, neubot_slot_vo on_error,
 	    void *opaque) : Neubot::Pollable(poller) {
-		neubot_warn("NeubotPollable::construct");
+		neubot_info("NeubotPollable::construct");
 		this->on_handle_error = on_error;
 		this->on_handle_read = on_read;
 		this->on_handle_write = on_write;
@@ -59,22 +59,22 @@ struct NeubotPollable : public Neubot::Pollable {
 	};
 
 	virtual void handle_read(void) {
-		neubot_warn("NeubotPollable::handle_read");
+		neubot_info("NeubotPollable::handle_read");
 		this->on_handle_read(this->opaque);
 	};
 
 	virtual void handle_write(void) {
-		neubot_warn("NeubotPollable::handle_write");
+		neubot_info("NeubotPollable::handle_write");
 		this->on_handle_write(this->opaque);
 	};
 
 	virtual void handle_error(void) {
-		neubot_warn("NeubotPollable::handle_error");
+		neubot_info("NeubotPollable::handle_error");
 		this->on_handle_error(this->opaque);
 	};
 
 	virtual ~NeubotPollable(void) {
-		neubot_warn("NeubotPollable::~NeubotPollable");
+		neubot_info("NeubotPollable::~NeubotPollable");
 	};
 };
 
