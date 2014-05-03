@@ -5,6 +5,7 @@
 
 #pylint: disable = C0111, C0103
 
+import _ctypes
 import ctypes
 import logging
 import sys
@@ -15,8 +16,6 @@ else:
     LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.3"
 
 LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
-LIBNEUBOT_OBJECTS = set()
-
 NEUBOT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
 NEUBOT_SLOT_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,
   ctypes.c_char_p)
@@ -271,7 +270,7 @@ class EchoServer(object):
             raise RuntimeError('out of memory')
         # From now on we can destroy this object
         self._can_destroy = True
-        LIBNEUBOT_OBJECTS.add(self)
+        _ctypes.Py_INCREF(self)
 
 #
 # NeubotPollable wrapper:
@@ -340,7 +339,7 @@ class Pollable(object):
             raise RuntimeError('out of memory')
         # From now on we can destroy this object
         self._can_destroy = True
-        LIBNEUBOT_OBJECTS.add(self)
+        _ctypes.Py_INCREF(self)
 
     def attach(self, filenum):
         retval = LIBNEUBOT.NeubotPollable_attach(self._context, filenum)
@@ -389,7 +388,7 @@ class Pollable(object):
             return
         # Idempotent destructor for safety
         self._can_destroy = False
-        LIBNEUBOT_OBJECTS.remove(self)
+        _ctypes.Py_DECREF(self)
         LIBNEUBOT.NeubotPollable_close(self._context)
 
 #
@@ -404,32 +403,32 @@ class Poller(object):
 
     @staticmethod
     def _sched_callback_(closure):
-        LIBNEUBOT_OBJECTS.remove(closure)
+        _ctypes.Py_DECREF(closure)
         closure.pyfunc_callback(closure.opaque)
 
     @staticmethod
     def _defer_read_handle_ok_(closure):
-        LIBNEUBOT_OBJECTS.remove(closure)
+        _ctypes.Py_DECREF(closure)
         closure.pyfunc_handle_ok(closure.opaque)
 
     @staticmethod
     def _defer_read_handle_timeout_(closure):
-        LIBNEUBOT_OBJECTS.remove(closure)
+        _ctypes.Py_DECREF(closure)
         closure.pyfunc_handle_timeout(closure.opaque)
 
     @staticmethod
     def _defer_write_handle_ok_(closure):
-        LIBNEUBOT_OBJECTS.remove(closure)
+        _ctypes.Py_DECREF(closure)
         closure.pyfunc_handle_ok(closure.opaque)
 
     @staticmethod
     def _defer_write_handle_timeout_(closure):
-        LIBNEUBOT_OBJECTS.remove(closure)
+        _ctypes.Py_DECREF(closure)
         closure.pyfunc_handle_timeout(closure.opaque)
 
     @staticmethod
     def _resolve_callback_(closure, string):
-        LIBNEUBOT_OBJECTS.remove(closure)
+        _ctypes.Py_DECREF(closure)
         closure.pyfunc_callback(closure.opaque, string)
 
     #
@@ -444,7 +443,7 @@ class Poller(object):
             raise RuntimeError('out of memory')
         # From now on we can destroy this object
         self._can_destroy = True
-        LIBNEUBOT_OBJECTS.add(self)
+        _ctypes.Py_INCREF(self)
 
         # Initialise hooks
         self._sched_callback = NEUBOT_HOOK_VO(
@@ -466,7 +465,7 @@ class Poller(object):
         closure.pyfunc_callback = callback
         closure.opaque = opaque
         # pylint: enable = W0201
-        LIBNEUBOT_OBJECTS.add(closure)
+        _ctypes.Py_INCREF(closure)
         retval = LIBNEUBOT.NeubotPoller_sched(self._context, delta,
           self._sched_callback, closure)
         if retval != 0:
@@ -480,7 +479,7 @@ class Poller(object):
         closure.pyfunc_handle_timeout = handle_timeout
         closure.opaque = opaque
         # pylint: enable = W0201
-        LIBNEUBOT_OBJECTS.add(closure)
+        _ctypes.Py_INCREF(closure)
         retval = LIBNEUBOT.NeubotPoller_defer_read(self._context, fileno,
           self._defer_read_handle_ok, self._defer_read_handle_timeout, closure,
           timeout)
@@ -496,7 +495,7 @@ class Poller(object):
         closure.pyfunc_handle_timeout = handle_timeout
         closure.opaque = opaque
         # pylint: enable = W0201
-        LIBNEUBOT_OBJECTS.add(closure)
+        _ctypes.Py_INCREF(closure)
         retval = LIBNEUBOT.NeubotPoller_defer_write(self._context, fileno,
           self._defer_write_handle_ok, self._defer_write_handle_timeout,
           closure, timeout)
@@ -510,7 +509,7 @@ class Poller(object):
         closure.pyfunc_callback = callback
         closure.opaque = opaque
         # pylint: enable = W0201
-        LIBNEUBOT_OBJECTS.add(closure)
+        _ctypes.Py_INCREF(closure)
         retval = LIBNEUBOT.NeubotPoller_resolve(self._context, family, name,
           self._resolve_callback, closure)
         if retval != 0:

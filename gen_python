@@ -30,6 +30,7 @@ def python_type(types, name):
     return types.get(name, name)
 
 def gen_python_imports(stream):
+    stream.write("import _ctypes\n")
     stream.write("import ctypes\n")
     stream.write("import logging\n")
     stream.write("import sys\n")
@@ -274,7 +275,7 @@ def gen_python_init(stream, types, class_name, struct_name, init_args,
     stream.write("        self._can_destroy = True\n")
 
     stream.write("        ")
-    stream.write("LIBNEUBOT_OBJECTS.add(self)\n")
+    stream.write("_ctypes.Py_INCREF(self)\n")
 
 def gen_python_method(stream, types, struct_name, retval_type,
                    meth_name, meth_args):
@@ -314,7 +315,7 @@ def gen_python_method(stream, types, struct_name, retval_type,
             stream.write("        ")
             stream.write("# pylint: enable = W0201\n")
             stream.write("        ")
-            stream.write("LIBNEUBOT_OBJECTS.add(closure)\n")
+            stream.write("_ctypes.Py_INCREF(closure)\n")
 
     stream.write("        ")
     nwritten = 8
@@ -352,9 +353,6 @@ def main():
     stream.write("\n")
 
     gen_python_imports(stream)
-
-    stream.write("LIBNEUBOT_OBJECTS = set()\n")
-    stream.write("\n")
 
     stream.write("NEUBOT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)\n")
     stream.write("NEUBOT_SLOT_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,\n")
@@ -441,7 +439,7 @@ def main():
                         stream.write("def _%s_%s_(closure):\n" % (
                           method_name, hookname))
                         stream.write("        ")
-                        stream.write("LIBNEUBOT_OBJECTS.remove(closure)\n")
+                        stream.write("_ctypes.Py_DECREF(closure)\n")
                         stream.write("        ")
                         stream.write("closure.pyfunc_%s(closure.opaque)\n" % (
                           hookname))
@@ -451,7 +449,7 @@ def main():
                         stream.write("def _%s_%s_(closure, string):\n" % (
                           method_name, hookname))
                         stream.write("        ")
-                        stream.write("LIBNEUBOT_OBJECTS.remove(closure)\n")
+                        stream.write("_ctypes.Py_DECREF(closure)\n")
                         stream.write("        ")
                         stream.write("closure.pyfunc_%s(closure.opaque, "
                                      "string)\n" % (hookname))
@@ -504,7 +502,7 @@ def main():
                 stream.write("            return\n")
                 stream.write("        # Idempotent destructor for safety\n")
                 stream.write("        self._can_destroy = False\n")
-                stream.write("        LIBNEUBOT_OBJECTS.remove(self)\n")
+                stream.write("        _ctypes.Py_DECREF(self)\n")
                 stream.write("        LIBNEUBOT.%s_%s(self._context)\n" % (
                   struct_name, method_info[1]))
 
