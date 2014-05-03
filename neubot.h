@@ -4,7 +4,7 @@
  */
 
 #ifndef NEUBOT_H
-# define NEUBOT_H 65537
+# define NEUBOT_H
 
 #ifdef __cplusplus
 extern "C" {

@@ -118,7 +118,7 @@ def main():
     clang_empty_line()
 
     sys.stdout.write("#ifndef NEUBOT_H\n")
-    sys.stdout.write("# define NEUBOT_H 65537\n")
+    sys.stdout.write("# define NEUBOT_H\n")
     sys.stdout.write("\n")
 
     sys.stdout.write("#ifdef __cplusplus\n")
