@@ -41,13 +41,24 @@ LDFLAGS = @LDFLAGS@ -shared
 MAJOR = 3
 MINOR = 0
 
-HEADER = neubot.h
 LINKERNAME = libneubot.@SHARED_LIBRARY_EXT@
 SONAME = $(LINKERNAME).$(MAJOR)
 REALNAME = $(SONAME).$(MINOR)
-OBJECTS = echo.o http_parser.o libneubot.o log.o pollable.o \
-    poller.o strtonum.o utils.o
 PYMODULE = libneubot.py
+
+HEADERS = \
+    log.h \
+    neubot.h
+
+OBJECTS = \
+    echo.o \
+    http_parser.o \
+    libneubot.o \
+    log.o \
+    pollable.o \
+    poller.o \
+    strtonum.o \
+    utils.o
 
 $(REALNAME): $(OBJECTS)
 	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(REALNAME) $(LIBS)
@@ -72,7 +83,8 @@ install: $(REALNAME)
 	ln -fs $(DESTDIR)$(LIBDIR)/$(REALNAME) $(DESTDIR)$(LIBDIR)/$(SONAME)
 	install -m 644 $(REALNAME) $(DESTDIR)$(LIBDIR)/
 	install -d $(DESTDIR)$(INCLUDEDIR)
-	install -m 644 $(HEADER) $(DESTDIR)$(INCLUDEDIR)/
+	install -d $(DESTDIR)$(INCLUDEDIR)/libneubot
+	install -m 644 $(HEADERS) $(DESTDIR)$(INCLUDEDIR)/libneubot
 	install -d $(DESTDIR)$(DATADIR)/libneubot
 	install -m 644 $(PYMODULE) $(DESTDIR)$(DATADIR)/libneubot/
 uninstall:
@@ -80,7 +92,7 @@ uninstall:
 	rm -f -- $(DESTDIR)$(LIBDIR)/$(SONAME)
 	rm -f -- $(DESTDIR)$(LIBDIR)/$(LINKERNAME)
 	rmdir $(DESTDIR)$(LIBDIR) || true
-	rm -f -- $(DESTDIR)$(INCLUDEDIR)/$(HEADER)
+	rm -rf -- $(DESTDIR)$(INCLUDEDIR)/libneubot
 	rmdir $(DESTDIR)$(INCLUDEDIR) || true
 	rm -r -- $(DESTDIR)$(DATADIR)/libneubot/$(PYMODULE)
 	rmdir $(DESTDIR)$(DATADIR)/libneubot || true

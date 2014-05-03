@@ -1,9 +1,5 @@
 {
-    "__license__": "Public domain, 2013 Simone Basso.",
-    "__comment__": [
-        "Used by gen_header to generate neubot.h, by gen_py to",
-        "generate libneubot.py, and by gen_java to generate LibNeubot.java"
-    ],
+    "__license__": "Public domain, 2013-2014 Simone Basso.",
     "classes": [
 
         ["NeubotPoller", [
