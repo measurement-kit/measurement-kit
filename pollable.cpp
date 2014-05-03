@@ -1,3 +1,5 @@
+/* libneubot/pollable.cpp */
+
 /*-
  * Copyright (c) 2014
  *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN),

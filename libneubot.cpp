@@ -1,3 +1,5 @@
+/* libneubot/libneubot.cpp */
+
 /*-
  * Copyright (c) 2013-2014
  *     Nexa Center for Internet & Society, Politecnico di Torino (DAUIN)
