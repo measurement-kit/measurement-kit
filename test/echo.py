@@ -7,13 +7,13 @@ import sys
 
 sys.path.insert(0, "/usr/local/share/libneubot")
 
-import libneubot
+from libneubot import LIBNEUBOT
 
 def main():
     """ Main function """
-    poller = libneubot.NeubotPoller_construct()
-    libneubot.NeubotEchoServer_construct(poller, 0, "127.0.0.1", "12345")
-    libneubot.NeubotPoller_loop(poller)
+    poller = LIBNEUBOT.NeubotPoller_construct()
+    LIBNEUBOT.NeubotEchoServer_construct(poller, 0, "127.0.0.1", "12345")
+    LIBNEUBOT.NeubotPoller_loop(poller)
 
 if __name__ == "__main__":
     main()
