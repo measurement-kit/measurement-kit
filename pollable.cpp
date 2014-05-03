@@ -129,12 +129,10 @@ Pollable::attach(long long fileno)
 	return (0);
 }
 
+// MUST be idempotent and MUST work with half-initialized objects
 void
 Pollable::detach(void)
 {
-	if (this->fileno == NEUBOT_SOCKET_INVALID)
-		return;
-
 	neubot_info("pollable: detach()");
 
 	// poller: continue to point to the poller
