@@ -82,7 +82,6 @@ install: $(REALNAME)
 	ln -fs $(DESTDIR)$(LIBDIR)/$(SONAME) $(DESTDIR)$(LIBDIR)/$(LINKERNAME)
 	ln -fs $(DESTDIR)$(LIBDIR)/$(REALNAME) $(DESTDIR)$(LIBDIR)/$(SONAME)
 	install -m 644 $(REALNAME) $(DESTDIR)$(LIBDIR)/
-	install -d $(DESTDIR)$(INCLUDEDIR)
 	install -d $(DESTDIR)$(INCLUDEDIR)/libneubot
 	install -m 644 $(HEADERS) $(DESTDIR)$(INCLUDEDIR)/libneubot
 	install -d $(DESTDIR)$(DATADIR)/libneubot
