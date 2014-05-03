@@ -43,7 +43,8 @@
 void
 neubot_timeval_now(struct timeval *tv)
 {
-	(void) gettimeofday(tv, NULL);
+	if (gettimeofday(tv, NULL) != 0)
+		abort();
 }
 
 double
@@ -52,7 +53,7 @@ neubot_time_now(void)
 	struct timeval tv;
 	double result;
 
-	(void) gettimeofday(&tv, NULL);
+	neubot_timeval_now(&tv);
 	result = tv.tv_sec + tv.tv_usec / (double) 1000000.0;
 
 	return (result);
