@@ -171,8 +171,7 @@ neubot_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
 	}
 
 	default:
-	      neubot_warn("utils:neubot_storage_init: internal error");
-	      return (-1);
+		abort();
 	}
 
 	neubot_info("utils:neubot_storage_init - ok");
