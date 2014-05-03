@@ -25,6 +25,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -33,6 +34,7 @@
 #include <event2/buffer_compat.h>
 #include <event2/event.h>
 
+#include "ll2sock.h"
 #include "log.h"
 #include "neubot.h"
 #include "utils.h"
@@ -133,7 +135,7 @@ Connection_construct(void *opaque)
 		goto cleanup;
 
 	conn->buffer = NULL;
-	conn->fileno = -1;
+	conn->fileno = NEUBOT_SOCKET_INVALID;
 	conn->pollable = NULL;
 
 	conn->buffer = evbuffer_new();
@@ -141,7 +143,7 @@ Connection_construct(void *opaque)
 		goto cleanup;
 
 	conn->fileno = accept(self->fileno, NULL, NULL);
-	if (conn->fileno == -1)
+	if (conn->fileno == NEUBOT_SOCKET_INVALID)
 		goto cleanup;
 
 	conn->pollable = NeubotPollable_construct(self->poller,
@@ -161,7 +163,7 @@ Connection_construct(void *opaque)
       cleanup:
 	if (conn != NULL && conn->buffer != NULL)
 		evbuffer_free(conn->buffer);
-	if (conn != NULL && conn->fileno != -1)
+	if (conn != NULL && conn->fileno != NEUBOT_SOCKET_INVALID)
 		(void)close(conn->fileno);
 	if (conn != NULL && conn->pollable != NULL)
 		NeubotPollable_close(conn->pollable);
@@ -184,7 +186,7 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
 		return (NULL);
 
 	self->fileno = neubot_listen(use_ipv6, address, port);
-	if (self->fileno == -1)
+	if (self->fileno == NEUBOT_SOCKET_INVALID)
 		goto cleanup;
 
 	self->poller = poller;
@@ -213,7 +215,7 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
       cleanup:
 	if (self->pollable != NULL)
 		NeubotPollable_close(self->pollable);
-	if (self->fileno != -1)
+	if (self->fileno != NEUBOT_SOCKET_INVALID)
 		(void) close(self->fileno);
 	free(self);
 	return (NULL);

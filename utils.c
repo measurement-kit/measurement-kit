@@ -26,6 +26,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#include <limits.h>
 #include <errno.h>
 #include <math.h>
 #include <string.h>
@@ -34,6 +35,7 @@
 
 #include <event2/event.h>
 
+#include "ll2sock.h"
 #include "log.h"
 #include "strtonum.h"
 #include "utils.h"
@@ -80,7 +82,7 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
 		return (-1);
 
 	filedesc = neubot_socket_create(storage.ss_family, SOCK_STREAM, 0);
-	if (filedesc == -1)
+	if (filedesc == NEUBOT_SOCKET_INVALID)
 		return (-1);
 
 	result = neubot_socket_listen(filedesc, &storage, salen);
@@ -186,16 +188,16 @@ neubot_socket_create(int domain, int type, int protocol)
 	neubot_info("utils:neubot_socket - enter");
 
 	filedesc = socket(domain, type, protocol);
-	if (filedesc == -1) {
+	if (filedesc == NEUBOT_SOCKET_INVALID) {
 		neubot_warn("utils:neubot_socket: cannot create socket");
-		return (-1);
+		return (NEUBOT_SOCKET_INVALID);
 	}
 
 	result = evutil_make_socket_nonblocking(filedesc);
 	if (result != 0) {
 		neubot_warn("utils:neubot_socket: cannot make nonblocking");
 		(void) evutil_closesocket(filedesc);
-		return (-1);
+		return (NEUBOT_SOCKET_INVALID);
 	}
 
 	neubot_info("utils:neubot_socket - ok");
