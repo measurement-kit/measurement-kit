@@ -26,11 +26,53 @@ NEUBOT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
 NEUBOT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,
   ctypes.c_char_p)
 
+class EchoServerBase(object):
+
+    def __init__(self):
+        self.context_ = None
+        self.voidp_ = None
+
+    @classmethod
+    def from_param(cls, obj):
+        if not isinstance(obj, cls):
+            raise RuntimeError('invalid cast')
+        if not obj.voidp_:
+            obj.voidp_ = ctypes.c_void_p(obj.context_)
+        return obj.voidp_
+
+class PollableBase(object):
+
+    def __init__(self):
+        self.context_ = None
+        self.voidp_ = None
+
+    @classmethod
+    def from_param(cls, obj):
+        if not isinstance(obj, cls):
+            raise RuntimeError('invalid cast')
+        if not obj.voidp_:
+            obj.voidp_ = ctypes.c_void_p(obj.context_)
+        return obj.voidp_
+
+class PollerBase(object):
+
+    def __init__(self):
+        self.context_ = None
+        self.voidp_ = None
+
+    @classmethod
+    def from_param(cls, obj):
+        if not isinstance(obj, cls):
+            raise RuntimeError('invalid cast')
+        if not obj.voidp_:
+            obj.voidp_ = ctypes.c_void_p(obj.context_)
+        return obj.voidp_
+
 
 
 LIBNEUBOT.NeubotEchoServer_construct.restype = ctypes.c_void_p
 LIBNEUBOT.NeubotEchoServer_construct.argtypes = (
-    ctypes.c_void_p,
+    PollerBase,
     ctypes.c_int,
     ctypes.c_char_p,
     ctypes.c_char_p,
@@ -40,7 +82,7 @@ LIBNEUBOT.NeubotEchoServer_construct.argtypes = (
 
 LIBNEUBOT.NeubotPollable_construct.restype = ctypes.c_void_p
 LIBNEUBOT.NeubotPollable_construct.argtypes = (
-    ctypes.c_void_p,
+    PollerBase,
     NEUBOT_SLOT_VO,
     NEUBOT_SLOT_VO,
     NEUBOT_SLOT_VO,
@@ -90,68 +132,68 @@ NEUBOTPOLLABLE_HANDLE_ERROR_SLOT_VO = NEUBOT_SLOT_VO(
 
 LIBNEUBOT.NeubotPollable_attach.restype = ctypes.c_int
 LIBNEUBOT.NeubotPollable_attach.argtypes = (
-    ctypes.c_void_p,
+    PollableBase,
     ctypes.c_longlong,
 )
 
 
 
 LIBNEUBOT.NeubotPollable_detach.argtypes = (
-    ctypes.c_void_p,
+    PollableBase,
 )
 
 
 
 LIBNEUBOT.NeubotPollable_get_fileno.restype = ctypes.c_longlong
 LIBNEUBOT.NeubotPollable_get_fileno.argtypes = (
-    ctypes.c_void_p,
+    PollableBase,
 )
 
 
 
 LIBNEUBOT.NeubotPollable_set_readable.restype = ctypes.c_int
 LIBNEUBOT.NeubotPollable_set_readable.argtypes = (
-    ctypes.c_void_p,
+    PollableBase,
 )
 
 
 
 LIBNEUBOT.NeubotPollable_unset_readable.restype = ctypes.c_int
 LIBNEUBOT.NeubotPollable_unset_readable.argtypes = (
-    ctypes.c_void_p,
+    PollableBase,
 )
 
 
 
 LIBNEUBOT.NeubotPollable_set_writable.restype = ctypes.c_int
 LIBNEUBOT.NeubotPollable_set_writable.argtypes = (
-    ctypes.c_void_p,
+    PollableBase,
 )
 
 
 
 LIBNEUBOT.NeubotPollable_unset_writable.restype = ctypes.c_int
 LIBNEUBOT.NeubotPollable_unset_writable.argtypes = (
-    ctypes.c_void_p,
+    PollableBase,
 )
 
 
 
 LIBNEUBOT.NeubotPollable_set_timeout.argtypes = (
-    ctypes.c_void_p,
+    PollableBase,
     ctypes.c_double,
 )
 
 
 
 LIBNEUBOT.NeubotPollable_clear_timeout.argtypes = (
-    ctypes.c_void_p,
+    PollableBase,
 )
 
 
 
 LIBNEUBOT.NeubotPollable_close.argtypes = (
-    ctypes.c_void_p,
+    PollableBase,
 )
 
 
@@ -164,7 +206,7 @@ LIBNEUBOT.NeubotPoller_construct.argtypes = (
 
 LIBNEUBOT.NeubotPoller_sched.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_sched.argtypes = (
-    ctypes.c_void_p,
+    PollerBase,
     ctypes.c_double,
     NEUBOT_HOOK_VO,
     ctypes.py_object,
@@ -188,7 +230,7 @@ NEUBOTPOLLER_SCHED_CALLBACK_HOOK_VO = NEUBOT_HOOK_VO(
 
 LIBNEUBOT.NeubotPoller_defer_read.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_defer_read.argtypes = (
-    ctypes.c_void_p,
+    PollerBase,
     ctypes.c_longlong,
     NEUBOT_HOOK_VO,
     NEUBOT_HOOK_VO,
@@ -228,7 +270,7 @@ NEUBOTPOLLER_DEFER_READ_HANDLE_TIMEOUT_HOOK_VO = NEUBOT_HOOK_VO(
 
 LIBNEUBOT.NeubotPoller_defer_write.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_defer_write.argtypes = (
-    ctypes.c_void_p,
+    PollerBase,
     ctypes.c_longlong,
     NEUBOT_HOOK_VO,
     NEUBOT_HOOK_VO,
@@ -268,7 +310,7 @@ NEUBOTPOLLER_DEFER_WRITE_HANDLE_TIMEOUT_HOOK_VO = NEUBOT_HOOK_VO(
 
 LIBNEUBOT.NeubotPoller_resolve.restype = ctypes.c_int
 LIBNEUBOT.NeubotPoller_resolve.argtypes = (
-    ctypes.c_void_p,
+    PollerBase,
     ctypes.c_char_p,
     ctypes.c_char_p,
     NEUBOT_HOOK_VOS,
@@ -292,13 +334,13 @@ NEUBOTPOLLER_RESOLVE_CALLBACK_HOOK_VOS = NEUBOT_HOOK_VOS(
 
 
 LIBNEUBOT.NeubotPoller_loop.argtypes = (
-    ctypes.c_void_p,
+    PollerBase,
 )
 
 
 
 LIBNEUBOT.NeubotPoller_break_loop.argtypes = (
-    ctypes.c_void_p,
+    PollerBase,
 )
 
 
@@ -310,18 +352,19 @@ class NeubotHookClosure(object):
 
 
 
-class EchoServer(object):
+class EchoServer(EchoServerBase):
 
     def __init__(self, poller, use_ipv6, address, port):
-        self.context_ = LIBNEUBOT.NeubotEchoServer_construct(poller.context_,
-          use_ipv6, address, port)
+        EchoServerBase.__init__(self)
+        self.context_ = LIBNEUBOT.NeubotEchoServer_construct(poller, use_ipv6,
+          address, port)
         if not self.context_:
             DIE(1)
         _ctypes.Py_INCREF(self)
 
 
 
-class Pollable(object):
+class Pollable(PollableBase):
 
     def handle_read(self):
         pass
@@ -333,7 +376,8 @@ class Pollable(object):
         pass
 
     def __init__(self, poller):
-        self.context_ = LIBNEUBOT.NeubotPollable_construct(poller.context_,
+        PollableBase.__init__(self)
+        self.context_ = LIBNEUBOT.NeubotPollable_construct(poller,
           NEUBOTPOLLABLE_HANDLE_READ_SLOT_VO,
           NEUBOTPOLLABLE_HANDLE_WRITE_SLOT_VO,
           NEUBOTPOLLABLE_HANDLE_ERROR_SLOT_VO, self)
@@ -342,44 +386,45 @@ class Pollable(object):
         _ctypes.Py_INCREF(self)
 
     def attach(self, filenum):
-        return LIBNEUBOT.NeubotPollable_attach(self.context_, filenum)
+        return LIBNEUBOT.NeubotPollable_attach(self, filenum)
 
     def detach(self):
-        LIBNEUBOT.NeubotPollable_detach(self.context_)
+        LIBNEUBOT.NeubotPollable_detach(self)
 
     def get_fileno(self):
-        return LIBNEUBOT.NeubotPollable_get_fileno(self.context_)
+        return LIBNEUBOT.NeubotPollable_get_fileno(self)
 
     def set_readable(self):
-        return LIBNEUBOT.NeubotPollable_set_readable(self.context_)
+        return LIBNEUBOT.NeubotPollable_set_readable(self)
 
     def unset_readable(self):
-        return LIBNEUBOT.NeubotPollable_unset_readable(self.context_)
+        return LIBNEUBOT.NeubotPollable_unset_readable(self)
 
     def set_writable(self):
-        return LIBNEUBOT.NeubotPollable_set_writable(self.context_)
+        return LIBNEUBOT.NeubotPollable_set_writable(self)
 
     def unset_writable(self):
-        return LIBNEUBOT.NeubotPollable_unset_writable(self.context_)
+        return LIBNEUBOT.NeubotPollable_unset_writable(self)
 
     def set_timeout(self, delta):
-        LIBNEUBOT.NeubotPollable_set_timeout(self.context_, delta)
+        LIBNEUBOT.NeubotPollable_set_timeout(self, delta)
 
     def clear_timeout(self):
-        LIBNEUBOT.NeubotPollable_clear_timeout(self.context_)
+        LIBNEUBOT.NeubotPollable_clear_timeout(self)
 
     def close(self):
         if not self.context_:
             return
         _ctypes.Py_DECREF(self)
-        LIBNEUBOT.NeubotPollable_close(self.context_)
+        LIBNEUBOT.NeubotPollable_close(self)
         self.context_ = None
 
 
 
-class Poller(object):
+class Poller(PollerBase):
 
     def __init__(self):
+        PollerBase.__init__(self)
         self.context_ = LIBNEUBOT.NeubotPoller_construct()
         if not self.context_:
             DIE(1)
@@ -392,7 +437,7 @@ class Poller(object):
         closure.opaque = opaque
         _ctypes.Py_INCREF(closure)
 
-        return LIBNEUBOT.NeubotPoller_sched(self.context_, delta,
+        return LIBNEUBOT.NeubotPoller_sched(self, delta,
           NEUBOTPOLLER_SCHED_CALLBACK_HOOK_VO, closure)
 
     def defer_read(self, fileno, handle_ok, handle_timeout, opaque, timeout):
@@ -403,7 +448,7 @@ class Poller(object):
         closure.opaque = opaque
         _ctypes.Py_INCREF(closure)
 
-        return LIBNEUBOT.NeubotPoller_defer_read(self.context_, fileno,
+        return LIBNEUBOT.NeubotPoller_defer_read(self, fileno,
           NEUBOTPOLLER_DEFER_READ_HANDLE_OK_HOOK_VO,
           NEUBOTPOLLER_DEFER_READ_HANDLE_TIMEOUT_HOOK_VO, closure, timeout)
 
@@ -416,7 +461,7 @@ class Poller(object):
         closure.opaque = opaque
         _ctypes.Py_INCREF(closure)
 
-        return LIBNEUBOT.NeubotPoller_defer_write(self.context_, fileno,
+        return LIBNEUBOT.NeubotPoller_defer_write(self, fileno,
           NEUBOTPOLLER_DEFER_WRITE_HANDLE_OK_HOOK_VO,
           NEUBOTPOLLER_DEFER_WRITE_HANDLE_TIMEOUT_HOOK_VO, closure, timeout)
 
@@ -427,12 +472,12 @@ class Poller(object):
         closure.opaque = opaque
         _ctypes.Py_INCREF(closure)
 
-        return LIBNEUBOT.NeubotPoller_resolve(self.context_, family, name,
+        return LIBNEUBOT.NeubotPoller_resolve(self, family, name,
           NEUBOTPOLLER_RESOLVE_CALLBACK_HOOK_VOS, closure)
 
     def loop(self):
-        LIBNEUBOT.NeubotPoller_loop(self.context_)
+        LIBNEUBOT.NeubotPoller_loop(self)
 
     def break_loop(self):
-        LIBNEUBOT.NeubotPoller_break_loop(self.context_)
+        LIBNEUBOT.NeubotPoller_break_loop(self)
 

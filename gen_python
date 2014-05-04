@@ -85,8 +85,11 @@ def gen_python_prototype(stream, types, class_name, method_info):
     stream.write("\n\n")
 
     if retval != "void":
-        stream.write("LIBNEUBOT.%s.restype = %s\n" % (funcname,
-          python_type(types, retval)))
+        if not retval.endswith("_p"):
+            result = python_type(types, retval)
+        else:
+            result = "ctypes.c_void_p"
+        stream.write("LIBNEUBOT.%s.restype = %s\n" % (funcname, result))
 
     stream.write("LIBNEUBOT.%s.argtypes = (\n" % funcname)
     for argtype, _ in args:
@@ -199,8 +202,6 @@ def gen_python_callfunc(stream, nwritten, func_name, args):
         if index > 0:
             stream.write(",")
             nwritten += 1
-        if argtype and argtype.endswith("_p"):
-            argname = argname + ".context_"
         if nwritten + len(argname) >= 78:
             stream.write("\n")
             stream.write("          ")
@@ -234,6 +235,8 @@ def gen_python_init(stream, types, class_name, struct_name, init_args,
 
     py_args.insert(0, ("Object", "self"))
     gen_python_func_top(stream, types, None, "__init__", py_args)
+    stream.write("        ")
+    stream.write("%sBase.__init__(self)\n" % class_name)
 
     stream.write("        ")
     nwritten = 8
@@ -271,7 +274,7 @@ def gen_python_method(stream, types, struct_name, retval_type,
             c_args.append((argtype, argname))
 
     py_args.insert(0, ("Object", "self"))
-    c_args.insert(0, ("Object", "self.context_"))
+    c_args.insert(0, ("Object", "self"))
 
     gen_python_func_top(stream, types, retval_type, meth_name, py_args)
 
@@ -335,10 +338,27 @@ def main():
         "void_p": "ctypes.c_void_p",
     }
 
+    #
     # Process all class names once, to register all the types
+    # and, while there, also generate the base classes
+    #
     for struct_name, _ in sorted(interface["classes"]):
         class_name = struct_name.replace("Neubot", "", 1)
-        types[struct_name + "_p"] = "ctypes.c_void_p"
+        types[struct_name + "_p"] = class_name + "Base"
+        stream.write("class %sBase(object):\n" % class_name)
+        stream.write("\n")
+        stream.write("    def __init__(self):\n")
+        stream.write("        self.context_ = None\n")
+        stream.write("        self.voidp_ = None\n")
+        stream.write("\n")
+        stream.write("    @classmethod\n")
+        stream.write("    def from_param(cls, obj):\n")
+        stream.write("        if not isinstance(obj, cls):\n")
+        stream.write("            raise RuntimeError('invalid cast')\n")
+        stream.write("        if not obj.voidp_:\n")
+        stream.write("            obj.voidp_ = ctypes.c_void_p(obj.context_)\n")
+        stream.write("        return obj.voidp_\n")
+        stream.write("\n")
 
     # Process once more, to generate all the prototypes
     for struct_name, methods in sorted(interface["classes"]):
@@ -357,7 +377,7 @@ def main():
     for struct_name, methods in sorted(interface["classes"]):
         class_name = struct_name.replace("Neubot", "", 1)
 
-        stream.write("\n\nclass %s(object):\n" % class_name)
+        stream.write("\n\nclass %s(%sBase):\n" % (class_name, class_name))
         stream.write("\n")
 
         # Process the methods once, to find the name of the destructor
@@ -379,7 +399,7 @@ def main():
                 stream.write("        if not self.context_:\n")
                 stream.write("            return\n")
                 stream.write("        _ctypes.Py_DECREF(self)\n")
-                stream.write("        LIBNEUBOT.%s_%s(self.context_)\n" % (
+                stream.write("        LIBNEUBOT.%s_%s(self)\n" % (
                   struct_name, method_info[1]))
                 stream.write("        self.context_ = None\n")
 
