@@ -23,7 +23,7 @@
  */
 
 //
-// Pollable: an object that tries to be compatible with the namesake
+// NeubotPollable: an object that tries to be compatible with the namesake
 // object implemented by Neubot.
 //
 // The presence of this object should facilitate the testing of a
@@ -46,11 +46,9 @@
 
 #include "pollable.hh"
 
-using namespace Neubot;
-
-Pollable::Pollable(NeubotPoller *poller)
+NeubotPollable::NeubotPollable(NeubotPoller *poller)
 {
-	neubot_info("pollable: Pollable()");
+	neubot_info("pollable: NeubotPollable()");
 
 	this->poller = poller;
 	this->timeout = -1.0;
@@ -62,7 +60,7 @@ Pollable::Pollable(NeubotPoller *poller)
 static void
 dispatch(evutil_socket_t filenum, short event, void *opaque)
 {
-	Pollable *self = (Pollable *) opaque;
+	NeubotPollable *self = (NeubotPollable *) opaque;
 
 	(void)filenum;
 
@@ -78,11 +76,11 @@ dispatch(evutil_socket_t filenum, short event, void *opaque)
 
 /*
  * Note: attach() is separated from construct(), because in Neubot there
- * are cases in which we create a Pollable and then we attach() and detach()
+ * are cases in which we create a NeubotPollable and then we attach() and detach()
  * file descriptors to it (e.g., the Connector object does that).
  */
 int
-Pollable::attach(long long fileno)
+NeubotPollable::attach(long long fileno)
 {
 	//
 	// Sanity
@@ -131,7 +129,7 @@ Pollable::attach(long long fileno)
 
 // MUST be idempotent and MUST work with half-initialized objects
 void
-Pollable::detach(void)
+NeubotPollable::detach(void)
 {
 	neubot_info("pollable: detach()");
 
@@ -160,7 +158,7 @@ Pollable::detach(void)
  * fileno() name clashes with the fileno() macro in some headers.
  */
 long long
-Pollable::get_fileno(void)
+NeubotPollable::get_fileno(void)
 {
 	return (this->fileno);
 }
@@ -169,7 +167,7 @@ Pollable::get_fileno(void)
 #define OPERATION_UNSET 2
 
 int
-Pollable::setunset(const char *what, unsigned opcode, event *evp)
+NeubotPollable::setunset(const char *what, unsigned opcode, event *evp)
 {
 	struct timeval tv, *tvp;
 	int result;
@@ -202,53 +200,53 @@ Pollable::setunset(const char *what, unsigned opcode, event *evp)
 }
 
 int
-Pollable::set_readable(void)
+NeubotPollable::set_readable(void)
 {
 	return (this->setunset("set_readable", OPERATION_SET,
 	    this->evread));
 }
 
 int
-Pollable::set_writable(void)
+NeubotPollable::set_writable(void)
 {
 	return (this->setunset("set_writable", OPERATION_SET,
 	    this->evwrite));
 }
 
 int
-Pollable::unset_readable(void)
+NeubotPollable::unset_readable(void)
 {
 	return (this->setunset("unset_readable", OPERATION_UNSET,
 	    this->evread));
 }
 
 int
-Pollable::unset_writable(void)
+NeubotPollable::unset_writable(void)
 {
 	return (this->setunset("unset_writable", OPERATION_UNSET,
 	    this->evwrite));
 }
 
 void
-Pollable::set_timeout(double timeout)
+NeubotPollable::set_timeout(double timeout)
 {
 	this->timeout = timeout;
 }
 
 void
-Pollable::clear_timeout(void)
+NeubotPollable::clear_timeout(void)
 {
 	this->timeout = -1.0;
 }
 
 void
-Pollable::handle_read(void)
+NeubotPollable::handle_read(void)
 {
 	// TODO: override
 }
 
 void
-Pollable::handle_write(void)
+NeubotPollable::handle_write(void)
 {
 	// TODO: override
 }
@@ -261,13 +259,13 @@ Pollable::handle_write(void)
  * than parent classes, thus, it's not possible to notify derived classes).
  */
 void
-Pollable::handle_error(void)
+NeubotPollable::handle_error(void)
 {
 	// TODO: override
 }
 
-Pollable::~Pollable(void)
+NeubotPollable::~NeubotPollable(void)
 {
-	neubot_info("pollable: ~Pollable()");
+	neubot_info("pollable: ~NeubotPollable()");
 	this->detach();
 }
