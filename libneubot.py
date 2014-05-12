@@ -26,6 +26,20 @@ NEUBOT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
 NEUBOT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,
   ctypes.c_char_p)
 
+class ConnectionBase(object):
+
+    def __init__(self):
+        self.context_ = None
+        self.voidp_ = None
+
+    @classmethod
+    def from_param(cls, obj):
+        if not isinstance(obj, cls):
+            raise RuntimeError('invalid cast')
+        if not obj.voidp_:
+            obj.voidp_ = ctypes.c_void_p(obj.context_)
+        return obj.voidp_
+
 class EchoServerBase(object):
 
     def __init__(self):
@@ -67,6 +81,180 @@ class PollerBase(object):
         if not obj.voidp_:
             obj.voidp_ = ctypes.c_void_p(obj.context_)
         return obj.voidp_
+
+class ProtocolBase(object):
+
+    def __init__(self):
+        self.context_ = None
+        self.voidp_ = None
+
+    @classmethod
+    def from_param(cls, obj):
+        if not isinstance(obj, cls):
+            raise RuntimeError('invalid cast')
+        if not obj.voidp_:
+            obj.voidp_ = ctypes.c_void_p(obj.context_)
+        return obj.voidp_
+
+class StringVectorBase(object):
+
+    def __init__(self):
+        self.context_ = None
+        self.voidp_ = None
+
+    @classmethod
+    def from_param(cls, obj):
+        if not isinstance(obj, cls):
+            raise RuntimeError('invalid cast')
+        if not obj.voidp_:
+            obj.voidp_ = ctypes.c_void_p(obj.context_)
+        return obj.voidp_
+
+
+
+LIBNEUBOT.NeubotConnection_attach.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotConnection_attach.argtypes = (
+    ProtocolBase,
+    ctypes.c_longlong,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_connect.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotConnection_connect.argtypes = (
+    ProtocolBase,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_connect_hostname.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotConnection_connect_hostname.argtypes = (
+    ProtocolBase,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+    ctypes.c_char_p,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_get_protocol.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotConnection_get_protocol.argtypes = (
+    ConnectionBase,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_set_timeout.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_set_timeout.argtypes = (
+    ConnectionBase,
+    ctypes.c_double,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_clear_timeout.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_clear_timeout.argtypes = (
+    ConnectionBase,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_start_tls.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_start_tls.argtypes = (
+    ConnectionBase,
+    ctypes.c_uint,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_read.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_read.argtypes = (
+    ConnectionBase,
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_readline.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_readline.argtypes = (
+    ConnectionBase,
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_readn.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_readn.argtypes = (
+    ConnectionBase,
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_discardn.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_discardn.argtypes = (
+    ConnectionBase,
+    ctypes.c_size_t,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_write.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_write.argtypes = (
+    ConnectionBase,
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_puts.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_puts.argtypes = (
+    ConnectionBase,
+    ctypes.c_char_p,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_read_into_.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_read_into_.argtypes = (
+    ConnectionBase,
+    ctypes.c_void_p,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_write_from_.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_write_from_.argtypes = (
+    ConnectionBase,
+    ctypes.c_void_p,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_enable_read.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_enable_read.argtypes = (
+    ConnectionBase,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_disable_read.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_disable_read.argtypes = (
+    ConnectionBase,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_close.argtypes = (
+    ConnectionBase,
+)
 
 
 
@@ -345,10 +533,227 @@ LIBNEUBOT.NeubotPoller_break_loop.argtypes = (
 
 
 
+LIBNEUBOT.NeubotProtocol_construct.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotProtocol_construct.argtypes = (
+    PollerBase,
+    NEUBOT_SLOT_VO,
+    NEUBOT_SLOT_VO,
+    NEUBOT_SLOT_VO,
+    NEUBOT_SLOT_VO,
+    NEUBOT_SLOT_VO,
+    NEUBOT_SLOT_VO,
+    ctypes.py_object,
+)
+
+def NeubotProtocol_slot_connect_slot_vo(selfptr):
+    try:
+        selfptr.slot_connect()
+    except (KeyboardInterrupt, SystemExit):
+        DIE(0)
+    except:
+        logging.error("Unhandled exception", exc_info=1)
+        DIE(1)
+
+NEUBOTPROTOCOL_SLOT_CONNECT_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_slot_connect_slot_vo
+)
+
+def NeubotProtocol_slot_ssl_slot_vo(selfptr):
+    try:
+        selfptr.slot_ssl()
+    except (KeyboardInterrupt, SystemExit):
+        DIE(0)
+    except:
+        logging.error("Unhandled exception", exc_info=1)
+        DIE(1)
+
+NEUBOTPROTOCOL_SLOT_SSL_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_slot_ssl_slot_vo
+)
+
+def NeubotProtocol_slot_data_slot_vo(selfptr):
+    try:
+        selfptr.slot_data()
+    except (KeyboardInterrupt, SystemExit):
+        DIE(0)
+    except:
+        logging.error("Unhandled exception", exc_info=1)
+        DIE(1)
+
+NEUBOTPROTOCOL_SLOT_DATA_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_slot_data_slot_vo
+)
+
+def NeubotProtocol_slot_flush_slot_vo(selfptr):
+    try:
+        selfptr.slot_flush()
+    except (KeyboardInterrupt, SystemExit):
+        DIE(0)
+    except:
+        logging.error("Unhandled exception", exc_info=1)
+        DIE(1)
+
+NEUBOTPROTOCOL_SLOT_FLUSH_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_slot_flush_slot_vo
+)
+
+def NeubotProtocol_slot_eof_slot_vo(selfptr):
+    try:
+        selfptr.slot_eof()
+    except (KeyboardInterrupt, SystemExit):
+        DIE(0)
+    except:
+        logging.error("Unhandled exception", exc_info=1)
+        DIE(1)
+
+NEUBOTPROTOCOL_SLOT_EOF_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_slot_eof_slot_vo
+)
+
+def NeubotProtocol_slot_error_slot_vo(selfptr):
+    try:
+        selfptr.slot_error()
+    except (KeyboardInterrupt, SystemExit):
+        DIE(0)
+    except:
+        logging.error("Unhandled exception", exc_info=1)
+        DIE(1)
+
+NEUBOTPROTOCOL_SLOT_ERROR_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_slot_error_slot_vo
+)
+
+
+
+LIBNEUBOT.NeubotProtocol_get_poller.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotProtocol_get_poller.argtypes = (
+    ProtocolBase,
+)
+
+
+
+LIBNEUBOT.NeubotProtocol_destruct.argtypes = (
+    ProtocolBase,
+)
+
+
+
+LIBNEUBOT.NeubotStringVector_construct.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotStringVector_construct.argtypes = (
+    PollerBase,
+    ctypes.c_size_t,
+)
+
+
+
+LIBNEUBOT.NeubotStringVector_append.restype = ctypes.c_int
+LIBNEUBOT.NeubotStringVector_append.argtypes = (
+    StringVectorBase,
+    ctypes.c_char_p,
+)
+
+
+
+LIBNEUBOT.NeubotStringVector_get_poller.restype = ctypes.c_void_p
+LIBNEUBOT.NeubotStringVector_get_poller.argtypes = (
+    StringVectorBase,
+)
+
+
+
+LIBNEUBOT.NeubotStringVector_get_next.restype = ctypes.c_char_p
+LIBNEUBOT.NeubotStringVector_get_next.argtypes = (
+    StringVectorBase,
+)
+
+
+
+LIBNEUBOT.NeubotStringVector_destruct.argtypes = (
+    StringVectorBase,
+)
+
+
+
 class NeubotHookClosure(object):
     def __init__(self):
         self.opaque = None
         self.functions = {}
+
+
+
+class Connection(ConnectionBase):
+
+    def __init__(self, proto, filenum):
+        ConnectionBase.__init__(self)
+        self.context_ = LIBNEUBOT.NeubotConnection_attach(proto, filenum)
+        if not self.context_:
+            DIE(1)
+        _ctypes.Py_INCREF(self)
+
+    def __init__(self, proto, family, address, port):
+        ConnectionBase.__init__(self)
+        self.context_ = LIBNEUBOT.NeubotConnection_connect(proto, family,
+          address, port)
+        if not self.context_:
+            DIE(1)
+        _ctypes.Py_INCREF(self)
+
+    def __init__(self, proto, family, address, port):
+        ConnectionBase.__init__(self)
+        self.context_ = LIBNEUBOT.NeubotConnection_connect_hostname(proto,
+          family, address, port)
+        if not self.context_:
+            DIE(1)
+        _ctypes.Py_INCREF(self)
+
+    def get_protocol(self):
+        return LIBNEUBOT.NeubotConnection_get_protocol(self)
+
+    def set_timeout(self, timeo):
+        return LIBNEUBOT.NeubotConnection_set_timeout(self, timeo)
+
+    def clear_timeout(self):
+        return LIBNEUBOT.NeubotConnection_clear_timeout(self)
+
+    def start_tls(self, server_side):
+        return LIBNEUBOT.NeubotConnection_start_tls(self, server_side)
+
+    def read(self, base, count):
+        return LIBNEUBOT.NeubotConnection_read(self, base, count)
+
+    def readline(self, base, count):
+        return LIBNEUBOT.NeubotConnection_readline(self, base, count)
+
+    def readn(self, base, count):
+        return LIBNEUBOT.NeubotConnection_readn(self, base, count)
+
+    def discardn(self, count):
+        return LIBNEUBOT.NeubotConnection_discardn(self, count)
+
+    def write(self, base, count):
+        return LIBNEUBOT.NeubotConnection_write(self, base, count)
+
+    def puts(self, base):
+        return LIBNEUBOT.NeubotConnection_puts(self, base)
+
+    def read_into_(self, evdest):
+        return LIBNEUBOT.NeubotConnection_read_into_(self, evdest)
+
+    def write_from_(self, evsource):
+        return LIBNEUBOT.NeubotConnection_write_from_(self, evsource)
+
+    def enable_read(self):
+        return LIBNEUBOT.NeubotConnection_enable_read(self)
+
+    def disable_read(self):
+        return LIBNEUBOT.NeubotConnection_disable_read(self)
+
+    def close(self):
+        if not self.context_:
+            return
+        _ctypes.Py_DECREF(self)
+        LIBNEUBOT.NeubotConnection_close(self)
+        self.context_ = None
 
 
 
@@ -480,4 +885,74 @@ class Poller(PollerBase):
 
     def break_loop(self):
         LIBNEUBOT.NeubotPoller_break_loop(self)
+
+
+
+class Protocol(ProtocolBase):
+
+    def slot_connect(self):
+        pass
+
+    def slot_ssl(self):
+        pass
+
+    def slot_data(self):
+        pass
+
+    def slot_flush(self):
+        pass
+
+    def slot_eof(self):
+        pass
+
+    def slot_error(self):
+        pass
+
+    def __init__(self, poller):
+        ProtocolBase.__init__(self)
+        self.context_ = LIBNEUBOT.NeubotProtocol_construct(poller,
+          NEUBOTPROTOCOL_SLOT_CONNECT_SLOT_VO, NEUBOTPROTOCOL_SLOT_SSL_SLOT_VO,
+          NEUBOTPROTOCOL_SLOT_DATA_SLOT_VO, NEUBOTPROTOCOL_SLOT_FLUSH_SLOT_VO,
+          NEUBOTPROTOCOL_SLOT_EOF_SLOT_VO, NEUBOTPROTOCOL_SLOT_ERROR_SLOT_VO,
+          self)
+        if not self.context_:
+            DIE(1)
+        _ctypes.Py_INCREF(self)
+
+    def get_poller(self):
+        return LIBNEUBOT.NeubotProtocol_get_poller(self)
+
+    def destruct(self):
+        if not self.context_:
+            return
+        _ctypes.Py_DECREF(self)
+        LIBNEUBOT.NeubotProtocol_destruct(self)
+        self.context_ = None
+
+
+
+class StringVector(StringVectorBase):
+
+    def __init__(self, poller, count):
+        StringVectorBase.__init__(self)
+        self.context_ = LIBNEUBOT.NeubotStringVector_construct(poller, count)
+        if not self.context_:
+            DIE(1)
+        _ctypes.Py_INCREF(self)
+
+    def append(self, str):
+        return LIBNEUBOT.NeubotStringVector_append(self, str)
+
+    def get_poller(self):
+        return LIBNEUBOT.NeubotStringVector_get_poller(self)
+
+    def get_next(self):
+        return LIBNEUBOT.NeubotStringVector_get_next(self)
+
+    def destruct(self):
+        if not self.context_:
+            return
+        _ctypes.Py_DECREF(self)
+        LIBNEUBOT.NeubotStringVector_destruct(self)
+        self.context_ = None
 
