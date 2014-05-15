@@ -121,6 +121,9 @@ struct NeubotConnection {
 	int write(const char *, size_t);
 	int puts(const char *);
 	int write_rand(size_t);
+	int write_readbuf(const char *, size_t);
+	int puts_readbuf(const char *);
+	int write_rand_readbuf(size_t);
 
 	// Internally-used zero-copy read and write
 #ifndef SWIG

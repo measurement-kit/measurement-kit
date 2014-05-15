@@ -848,6 +848,33 @@ NeubotConnection::write_rand(size_t count)
 }
 
 int
+NeubotConnection::write_readbuf(const char *base, size_t count)
+{
+	if (base == NULL || count == 0)
+		return (-1);
+
+	return (evbuffer_add(this->readbuf, (void *) base, count));
+}
+
+int
+NeubotConnection::puts_readbuf(const char *str)
+{
+	if (str == NULL)
+		return (-1);
+
+	return (this->write_readbuf(str, strlen(str)));
+}
+
+int
+NeubotConnection::write_rand_readbuf(size_t count)
+{
+	if (count == 0)
+		return (-1);
+
+	return (write_rand_evbuffer(this->readbuf, count));
+}
+
+int
 NeubotConnection::read_into_(evbuffer *destbuf)
 {
 	if (destbuf == NULL)

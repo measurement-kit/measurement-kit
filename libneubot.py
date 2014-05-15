@@ -230,6 +230,31 @@ LIBNEUBOT.NeubotConnection_write_rand.argtypes = (
 
 
 
+LIBNEUBOT.NeubotConnection_write_readbuf.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_write_readbuf.argtypes = (
+    ConnectionBase,
+    ctypes.c_char_p,
+    ctypes.c_size_t,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_puts_readbuf.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_puts_readbuf.argtypes = (
+    ConnectionBase,
+    ctypes.c_char_p,
+)
+
+
+
+LIBNEUBOT.NeubotConnection_write_rand_readbuf.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_write_rand_readbuf.argtypes = (
+    ConnectionBase,
+    ctypes.c_size_t,
+)
+
+
+
 LIBNEUBOT.NeubotConnection_read_into_.restype = ctypes.c_int
 LIBNEUBOT.NeubotConnection_read_into_.argtypes = (
     ConnectionBase,
@@ -756,6 +781,15 @@ class Connection(ConnectionBase):
 
     def write_rand(self, count):
         return LIBNEUBOT.NeubotConnection_write_rand(self, count)
+
+    def write_readbuf(self, base, count):
+        return LIBNEUBOT.NeubotConnection_write_readbuf(self, base, count)
+
+    def puts_readbuf(self, base):
+        return LIBNEUBOT.NeubotConnection_puts_readbuf(self, base)
+
+    def write_rand_readbuf(self, count):
+        return LIBNEUBOT.NeubotConnection_write_rand_readbuf(self, count)
 
     def read_into_(self, evdest):
         return LIBNEUBOT.NeubotConnection_read_into_(self, evdest)

@@ -108,6 +108,13 @@ int NeubotConnection_puts(struct NeubotConnection *, const char *);
 
 int NeubotConnection_write_rand(struct NeubotConnection *, size_t);
 
+int NeubotConnection_write_readbuf(struct NeubotConnection *, const char *,
+    size_t);
+
+int NeubotConnection_puts_readbuf(struct NeubotConnection *, const char *);
+
+int NeubotConnection_write_rand_readbuf(struct NeubotConnection *, size_t);
+
 int NeubotConnection_read_into_(struct NeubotConnection *, struct evbuffer *);
 
 int NeubotConnection_write_from_(struct NeubotConnection *, struct evbuffer *);

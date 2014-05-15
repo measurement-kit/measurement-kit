@@ -412,6 +412,32 @@ NeubotConnection_write_rand(NeubotConnection *self, size_t count)
 }
 
 int
+NeubotConnection_write_readbuf(NeubotConnection *self, const char *base, size_t count)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->write_readbuf(base, count));
+}
+
+int
+NeubotConnection_puts_readbuf(NeubotConnection *self, const char *str)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->puts_readbuf(str));
+}
+
+int
+NeubotConnection_write_rand_readbuf(NeubotConnection *self, size_t count)
+{
+	if (self == NULL)
+		abort();
+	return (self->write_rand_readbuf(count));
+}
+
+int
 NeubotConnection_read_into_(NeubotConnection *self, evbuffer *dest)
 {
 	if (self == NULL)
