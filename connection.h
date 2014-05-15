@@ -94,6 +94,9 @@ struct NeubotConnection {
 	    void *, void *);
 	static void resolve(void *);
 
+	// Function used by write_rand() and write_rand_readbuf()
+	int write_rand_evbuffer(struct evbuffer *buf, size_t count);
+
     public:
 	static NeubotConnection *attach(NeubotProtocol *, long long);
 
@@ -117,6 +120,7 @@ struct NeubotConnection {
 	int discardn(size_t);
 	int write(const char *, size_t);
 	int puts(const char *);
+	int write_rand(size_t);
 
 	// Internally-used zero-copy read and write
 #ifndef SWIG

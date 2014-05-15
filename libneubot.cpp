@@ -403,6 +403,15 @@ NeubotConnection_puts(NeubotConnection *self, const char *str)
 }
 
 int
+NeubotConnection_write_rand(NeubotConnection *self, size_t count)
+{
+	if (self == NULL)
+		abort();
+
+	return (self->write_rand(count));
+}
+
+int
 NeubotConnection_read_into_(NeubotConnection *self, evbuffer *dest)
 {
 	if (self == NULL)

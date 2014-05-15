@@ -222,6 +222,14 @@ LIBNEUBOT.NeubotConnection_puts.argtypes = (
 
 
 
+LIBNEUBOT.NeubotConnection_write_rand.restype = ctypes.c_int
+LIBNEUBOT.NeubotConnection_write_rand.argtypes = (
+    ConnectionBase,
+    ctypes.c_size_t,
+)
+
+
+
 LIBNEUBOT.NeubotConnection_read_into_.restype = ctypes.c_int
 LIBNEUBOT.NeubotConnection_read_into_.argtypes = (
     ConnectionBase,
@@ -745,6 +753,9 @@ class Connection(ConnectionBase):
 
     def puts(self, base):
         return LIBNEUBOT.NeubotConnection_puts(self, base)
+
+    def write_rand(self, count):
+        return LIBNEUBOT.NeubotConnection_write_rand(self, count)
 
     def read_into_(self, evdest):
         return LIBNEUBOT.NeubotConnection_read_into_(self, evdest)

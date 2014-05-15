@@ -803,6 +803,50 @@ NeubotConnection::puts(const char *str)
 	return (this->write(str, strlen(str)));
 }
 
+#define N_EXTENTS 2
+
+int
+NeubotConnection::write_rand_evbuffer(struct evbuffer *evbuf, size_t count)
+{
+        struct evbuffer_iovec vec[N_EXTENTS];
+        int n_extents, i;
+
+        n_extents = evbuffer_reserve_space(evbuf, count, vec, N_EXTENTS);
+        if (n_extents < 0 || n_extents > N_EXTENTS)
+                return (-1);
+
+        for (i = 0; i < n_extents; i++) {
+                if (count <= vec[i].iov_len) {
+                        evutil_secure_rng_get_bytes(vec[i].iov_base, count);
+                        vec[i].iov_len = count;
+                        break;
+                }
+
+                evutil_secure_rng_get_bytes(vec[i].iov_base, vec[i].iov_len);
+                count -= vec[i].iov_len;
+        }
+
+        if (i >= n_extents)
+                return (-1);  // Should not happen
+
+        return (evbuffer_commit_space(evbuf, vec, i + 1));
+}
+
+int
+NeubotConnection::write_rand(size_t count)
+{
+	struct evbuffer *evbuf_output;
+	
+	if (count == 0)
+		return (-1);
+
+	evbuf_output = bufferevent_get_output(this->bev);
+	if (evbuf_output == NULL)
+		return (-1);
+
+	return (this->write_rand_evbuffer(evbuf_output, count));
+}
+
 int
 NeubotConnection::read_into_(evbuffer *destbuf)
 {
