@@ -88,7 +88,7 @@ NeubotConnection::~NeubotConnection(void)
 	if (this->family != NULL)
 		free(this->family);
 	if (this->pflist != NULL)
-		free(this->pflist);
+		delete (this->pflist);
 
 	// must_resolve_ipv4: nothing to be done
 	// must_resolve_ipv6: nothing to be done
@@ -215,7 +215,7 @@ NeubotConnection::attach(NeubotProtocol *proto, long long filenum)
 	}
 
 	self->port = strdup("0");
-	if (self->address == NULL) {
+	if (self->port == NULL) {
 		delete self;
 		return (NULL);
 	}
@@ -312,7 +312,7 @@ NeubotConnection::connect(NeubotProtocol *proto, const char *family,
 	}
 
 	self->port = strdup(port);
-	if (self->address == NULL) {
+	if (self->port == NULL) {
 		delete self;
 		return (NULL);
 	}
@@ -662,7 +662,7 @@ NeubotConnection::connect_hostname(NeubotProtocol *proto,
 	}
 
 	self->port = strdup(port);
-	if (self->address == NULL) {
+	if (self->port == NULL) {
 		delete self;
 		return (NULL);
 	}
