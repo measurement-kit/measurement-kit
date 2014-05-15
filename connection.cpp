@@ -760,10 +760,6 @@ NeubotConnection::readline(char *base, size_t count)
 	if (llen < 0)
 		return (-1);
 
-	int error = evbuffer_drain(this->readbuf, eol_length);
-	if (error != 0)
-		return (-1);
-
 	return (llen);
 }
 
