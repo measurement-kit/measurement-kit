@@ -683,28 +683,38 @@ class NeubotHookClosure(object):
 
 class Connection(ConnectionBase):
 
-    def __init__(self, proto, filenum):
+    def __init__(self):
         ConnectionBase.__init__(self)
+        self.context_ = None
+
+    @staticmethod
+    def attach(proto, filenum):
+        self = Connection()
         self.context_ = LIBNEUBOT.NeubotConnection_attach(proto, filenum)
         if not self.context_:
             DIE(1)
         _ctypes.Py_INCREF(self)
+        return self
 
-    def __init__(self, proto, family, address, port):
-        ConnectionBase.__init__(self)
+    @staticmethod
+    def connect(proto, family, address, port):
+        self = Connection()
         self.context_ = LIBNEUBOT.NeubotConnection_connect(proto, family,
           address, port)
         if not self.context_:
             DIE(1)
         _ctypes.Py_INCREF(self)
+        return self
 
-    def __init__(self, proto, family, address, port):
-        ConnectionBase.__init__(self)
+    @staticmethod
+    def connect_hostname(proto, family, address, port):
+        self = Connection()
         self.context_ = LIBNEUBOT.NeubotConnection_connect_hostname(proto,
           family, address, port)
         if not self.context_:
             DIE(1)
         _ctypes.Py_INCREF(self)
+        return self
 
     def get_protocol(self):
         return LIBNEUBOT.NeubotConnection_get_protocol(self)
