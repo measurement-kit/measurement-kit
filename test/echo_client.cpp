@@ -35,8 +35,8 @@
 #include <libneubot/neubot.h>
 #include <libneubot/protocol.h>
 
-class EchoProtocol : public Neubot::Protocol {
-	Neubot::Connection *connection;
+class EchoProtocol : public NeubotProtocol {
+	NeubotConnection *connection;
 	NeubotPoller *poller;
 
 	EchoProtocol(void) {
@@ -54,7 +54,7 @@ class EchoProtocol : public Neubot::Protocol {
 
 		self->poller = p;
 
-		self->connection = Neubot::Connection::connect(self, family,
+		self->connection = NeubotConnection::connect(self, family,
 		    address, port);
 		if (self->connection == NULL) {
 			delete self;
