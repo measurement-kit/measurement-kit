@@ -61,7 +61,7 @@ def clang_declare_class(name):
 
 def clang_declare_method(name, method):
 
-    if method[0] == "__construct__":
+    if method[0] in ("__construct__", "__static_construct__"):
         retval = name + "_p"
         funcname = name + "_" + method[1]
         args = method[2:]
@@ -146,7 +146,26 @@ def main():
     for name, methods in interface["classes"]:
         clang_comment("%s API:" % name)
         clang_empty_line()
+
+        gettables = {}
+
         for method in methods:
+            if method[0] in ("__construct__", "__static_construct__"):
+                new_method = [method[0], method[1]]
+                for elem in method[2:]:
+                    if len(elem) == 2:
+                        new_method.append(elem)
+                        continue
+                    if len(elem) != 3 or elem[0] != "__gettable__":
+                        raise RuntimeError("invalid argument")
+                    new_method.append([elem[1], elem[2]])
+                    if elem[2] not in gettables:
+                        gettables[elem[2]] = elem[1]
+                    elif gettables[elem[2]] != elem[1]:
+                        raise RuntimeError("inconsistent gettables")
+                method = new_method
+            elif method[0] == "__object_getter__":
+                method = [gettables[method[1]], "get_" + method[1]]
             clang_declare_method(name, method)
             clang_empty_line()
 
