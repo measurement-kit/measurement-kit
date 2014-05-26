@@ -31,3 +31,8 @@ Makefile
 libneubot_python/libneubot_python.py
 libneubot_python/neubot_wrap.cxx
 libneubot_python/neubot_wrap.h
+
+# Regression tests
+test/echo_client
+test/echo_client2
+test/echo_client_evbuf

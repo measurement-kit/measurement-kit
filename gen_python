@@ -47,10 +47,10 @@ def gen_python_prototype(stream, types, class_name, method_info):
 
     if method_info[0] == "__construct__":
         retval = class_name + "_p"
-        funcname = class_name + "_construct"
+        funcname = class_name + "_" + method_info[1]
 
         # Generate the slots
-        args__ = method_info[1:]
+        args__ = method_info[2:]
         args = []
         for argtype, argname in args__:
             if argtype.startswith("slot_"):
@@ -213,8 +213,8 @@ def gen_python_callfunc(stream, nwritten, func_name, args):
         nwritten += len(argname)
     stream.write(")")
 
-def gen_python_init(stream, types, class_name, struct_name, init_args,
-      destructor_name):
+def gen_python_init(stream, types, class_name, struct_name, ctor_name,
+      init_args, destructor_name):
 
     # Generate the slots
     py_args = []
@@ -233,17 +233,27 @@ def gen_python_init(stream, types, class_name, struct_name, init_args,
             py_args.append((argtype, argname))
             c_args.append((argtype, argname))
 
-    py_args.insert(0, ("Object", "self"))
-    gen_python_func_top(stream, types, None, "__init__", py_args)
-    stream.write("        ")
-    stream.write("%sBase.__init__(self)\n" % class_name)
+    #
+    # XXX When the constructor name is not "construct", we assume
+    # that we want to create a static constructor.
+    #
+
+    if ctor_name != "construct":
+        stream.write("    @staticmethod\n")
+        gen_python_func_top(stream, types, None, ctor_name, py_args)
+        stream.write("        self = %s()\n" % class_name)
+    else:
+        py_args.insert(0, ("Object", "self"))
+        gen_python_func_top(stream, types, None, "__init__", py_args)
+        stream.write("        ")
+        stream.write("%sBase.__init__(self)\n" % class_name)
 
     stream.write("        ")
     nwritten = 8
     stream.write("self.context_ = ")
     nwritten += 17
-    gen_python_callfunc(stream, nwritten, "LIBNEUBOT.%s_construct"
-      % struct_name, c_args)
+    gen_python_callfunc(stream, nwritten, "LIBNEUBOT.%s_%s"
+      % (struct_name, ctor_name), c_args)
     stream.write("\n")
 
     stream.write("        ")
@@ -253,6 +263,9 @@ def gen_python_init(stream, types, class_name, struct_name, init_args,
 
     stream.write("        ")
     stream.write("_ctypes.Py_INCREF(self)\n")
+
+    if ctor_name != "construct":
+        stream.write("        return self\n")
 
 def gen_python_method(stream, types, struct_name, retval_type,
                       meth_name, meth_args):
@@ -332,9 +345,14 @@ def main():
         "Object": "ctypes.py_object",
         "cstring": "ctypes.c_char_p",
         "double": "ctypes.c_double",
+        "evbuffer_p": "ctypes.c_void_p",
         "int": "ctypes.c_int",
+        "ioresult_t": "ctypes.c_int",
         "long long": "ctypes.c_longlong",
+        "size_t": "ctypes.c_size_t",
         "status_t": "ctypes.c_int",
+        "string": "ctypes.c_char_p",
+        "unsigned": "ctypes.c_uint",
         "void_p": "ctypes.c_void_p",
     }
 
@@ -380,19 +398,33 @@ def main():
         stream.write("\n\nclass %s(%sBase):\n" % (class_name, class_name))
         stream.write("\n")
 
+        #
         # Process the methods once, to find the name of the destructor
+        # and whether there is the default constructor
+        #
         destructor_name = None
+        has_default_ctor = False
         for method_info in methods:
             if method_info[0] == "__destruct__":
                 destructor_name = method_info[1]
-                break
+                continue
+            if (method_info[0] == "__construct__" and
+                method_info[1] == "construct"):
+                has_default_ctor = True
+                continue
+
+        # Provide the default ctor if it is not already defined
+        if not has_default_ctor:
+            stream.write("    def __init__(self):\n")
+            stream.write("        %sBase.__init__(self)\n" % class_name)
+            stream.write("        self.context_ = None\n\n")
 
         # Process the methods once more
         for method_info in methods:
             if method_info[0] == "__construct__":
 
                 gen_python_init(stream, types, class_name, struct_name,
-                  method_info[1:], destructor_name)
+                  method_info[1], method_info[2:], destructor_name)
 
             elif method_info[0] == "__destruct__":
                 stream.write("    def %s(self):\n" % method_info[1])
