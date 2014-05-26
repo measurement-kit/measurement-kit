@@ -19,10 +19,10 @@
         ]],
 
         ["NeubotStringVector", [
-            ["__construct__", "construct", ["NeubotPoller_p", "poller"],
+            ["__construct__", "construct", ["__gettable__", "NeubotPoller_p", "poller"],
              ["size_t", "count"]],
             ["status_t", "append", ["cstring", "str"]],
-            ["NeubotPoller_p", "get_poller"],
+            ["__object_getter__", "poller"],
             ["cstring", "get_next"],
             ["__destruct__", "destruct"]
         ]],
@@ -34,23 +34,23 @@
         ]],
 
         ["NeubotProtocol", [
-            ["__construct__", "construct", ["NeubotPoller_p", "poller"],
+            ["__construct__", "construct", ["__gettable__", "NeubotPoller_p", "poller"],
              ["slot_vo", ["handle_connect", "handle_ssl", "handle_data",
               "handle_flush", "handle_eof", "handle_error"]]],
-            ["NeubotPoller_p", "get_poller"],
+            ["__object_getter__", "poller"],
             ["__destruct__", "destruct"]
         ]],
 
         ["NeubotConnection", [
-            ["__construct__", "attach", ["NeubotProtocol_p", "proto"],
+            ["__construct__", "attach", ["__gettable__", "NeubotProtocol_p", "protocol"],
              ["long long", "filenum"]],
-            ["__construct__", "connect", ["NeubotProtocol_p", "proto"],
+            ["__construct__", "connect", ["__gettable__", "NeubotProtocol_p", "protocol"],
              ["cstring", "family"], ["cstring", "address"],
              ["cstring", "port"]],
-            ["__construct__", "connect_hostname", ["NeubotProtocol_p", "proto"],
+            ["__construct__", "connect_hostname", ["__gettable__", "NeubotProtocol_p", "protocol"],
              ["cstring", "family"], ["cstring", "address"],
              ["cstring", "port"]],
-            ["NeubotProtocol_p", "get_protocol"],
+            ["__object_getter__", "protocol"],
             ["status_t", "set_timeout", ["double", "timeo"]],
             ["status_t", "clear_timeout"],
             ["status_t", "start_tls", ["unsigned", "server_side"]],
