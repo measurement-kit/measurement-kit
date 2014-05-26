@@ -578,82 +578,82 @@ LIBNEUBOT.NeubotProtocol_construct.argtypes = (
     ctypes.py_object,
 )
 
-def NeubotProtocol_slot_connect_slot_vo(selfptr):
+def NeubotProtocol_handle_connect_slot_vo(selfptr):
     try:
-        selfptr.slot_connect()
+        selfptr.handle_connect()
     except (KeyboardInterrupt, SystemExit):
         DIE(0)
     except:
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-NEUBOTPROTOCOL_SLOT_CONNECT_SLOT_VO = NEUBOT_SLOT_VO(
-    NeubotProtocol_slot_connect_slot_vo
+NEUBOTPROTOCOL_HANDLE_CONNECT_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_handle_connect_slot_vo
 )
 
-def NeubotProtocol_slot_ssl_slot_vo(selfptr):
+def NeubotProtocol_handle_ssl_slot_vo(selfptr):
     try:
-        selfptr.slot_ssl()
+        selfptr.handle_ssl()
     except (KeyboardInterrupt, SystemExit):
         DIE(0)
     except:
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-NEUBOTPROTOCOL_SLOT_SSL_SLOT_VO = NEUBOT_SLOT_VO(
-    NeubotProtocol_slot_ssl_slot_vo
+NEUBOTPROTOCOL_HANDLE_SSL_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_handle_ssl_slot_vo
 )
 
-def NeubotProtocol_slot_data_slot_vo(selfptr):
+def NeubotProtocol_handle_data_slot_vo(selfptr):
     try:
-        selfptr.slot_data()
+        selfptr.handle_data()
     except (KeyboardInterrupt, SystemExit):
         DIE(0)
     except:
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-NEUBOTPROTOCOL_SLOT_DATA_SLOT_VO = NEUBOT_SLOT_VO(
-    NeubotProtocol_slot_data_slot_vo
+NEUBOTPROTOCOL_HANDLE_DATA_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_handle_data_slot_vo
 )
 
-def NeubotProtocol_slot_flush_slot_vo(selfptr):
+def NeubotProtocol_handle_flush_slot_vo(selfptr):
     try:
-        selfptr.slot_flush()
+        selfptr.handle_flush()
     except (KeyboardInterrupt, SystemExit):
         DIE(0)
     except:
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-NEUBOTPROTOCOL_SLOT_FLUSH_SLOT_VO = NEUBOT_SLOT_VO(
-    NeubotProtocol_slot_flush_slot_vo
+NEUBOTPROTOCOL_HANDLE_FLUSH_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_handle_flush_slot_vo
 )
 
-def NeubotProtocol_slot_eof_slot_vo(selfptr):
+def NeubotProtocol_handle_eof_slot_vo(selfptr):
     try:
-        selfptr.slot_eof()
+        selfptr.handle_eof()
     except (KeyboardInterrupt, SystemExit):
         DIE(0)
     except:
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-NEUBOTPROTOCOL_SLOT_EOF_SLOT_VO = NEUBOT_SLOT_VO(
-    NeubotProtocol_slot_eof_slot_vo
+NEUBOTPROTOCOL_HANDLE_EOF_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_handle_eof_slot_vo
 )
 
-def NeubotProtocol_slot_error_slot_vo(selfptr):
+def NeubotProtocol_handle_error_slot_vo(selfptr):
     try:
-        selfptr.slot_error()
+        selfptr.handle_error()
     except (KeyboardInterrupt, SystemExit):
         DIE(0)
     except:
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-NEUBOTPROTOCOL_SLOT_ERROR_SLOT_VO = NEUBOT_SLOT_VO(
-    NeubotProtocol_slot_error_slot_vo
+NEUBOTPROTOCOL_HANDLE_ERROR_SLOT_VO = NEUBOT_SLOT_VO(
+    NeubotProtocol_handle_error_slot_vo
 )
 
 
@@ -945,31 +945,33 @@ class Poller(PollerBase):
 
 class Protocol(ProtocolBase):
 
-    def slot_connect(self):
+    def handle_connect(self):
         pass
 
-    def slot_ssl(self):
+    def handle_ssl(self):
         pass
 
-    def slot_data(self):
+    def handle_data(self):
         pass
 
-    def slot_flush(self):
+    def handle_flush(self):
         pass
 
-    def slot_eof(self):
+    def handle_eof(self):
         pass
 
-    def slot_error(self):
+    def handle_error(self):
         pass
 
     def __init__(self, poller):
         ProtocolBase.__init__(self)
         self.context_ = LIBNEUBOT.NeubotProtocol_construct(poller,
-          NEUBOTPROTOCOL_SLOT_CONNECT_SLOT_VO, NEUBOTPROTOCOL_SLOT_SSL_SLOT_VO,
-          NEUBOTPROTOCOL_SLOT_DATA_SLOT_VO, NEUBOTPROTOCOL_SLOT_FLUSH_SLOT_VO,
-          NEUBOTPROTOCOL_SLOT_EOF_SLOT_VO, NEUBOTPROTOCOL_SLOT_ERROR_SLOT_VO,
-          self)
+          NEUBOTPROTOCOL_HANDLE_CONNECT_SLOT_VO,
+          NEUBOTPROTOCOL_HANDLE_SSL_SLOT_VO,
+          NEUBOTPROTOCOL_HANDLE_DATA_SLOT_VO,
+          NEUBOTPROTOCOL_HANDLE_FLUSH_SLOT_VO,
+          NEUBOTPROTOCOL_HANDLE_EOF_SLOT_VO,
+          NEUBOTPROTOCOL_HANDLE_ERROR_SLOT_VO, self)
         if not self.context_:
             DIE(1)
         _ctypes.Py_INCREF(self)

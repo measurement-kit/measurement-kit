@@ -17,10 +17,10 @@ BUFF_TYPE = ctypes.c_char * BUFF_LENGTH
 
 class MyProtocol(Protocol):
 
-    def slot_connect(self):
+    def handle_connect(self):
         sys.exit("connection - unexpected connect event")
 
-    def slot_data(self):
+    def handle_data(self):
         buff = bytearray(BUFF_LENGTH)
         llbuff = BUFF_TYPE.from_buffer(buff)
         while True:
@@ -34,17 +34,17 @@ class MyProtocol(Protocol):
             if result != 0:
                 sys.exit("connection - write failed")
 
-    def slot_ssl(self):
+    def handle_ssl(self):
         sys.stderr.write("connection - SSL\n")
 
-    def slot_flush(self):
+    def handle_flush(self):
         sys.stderr.write("connection - flushed\n")
 
-    def slot_eof(self):
+    def handle_eof(self):
         sys.stderr.write("connection - eof\n")
         _terminate(self)
 
-    def slot_error(self):
+    def handle_error(self):
         sys.stderr.write("connection - error\n")
         _terminate(self)
 

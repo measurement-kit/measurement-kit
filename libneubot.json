@@ -35,8 +35,8 @@
 
         ["NeubotProtocol", [
             ["__construct__", "construct", ["NeubotPoller_p", "poller"],
-             ["slot_vo", ["slot_connect", "slot_ssl", "slot_data",
-              "slot_flush", "slot_eof", "slot_error"]]],
+             ["slot_vo", ["handle_connect", "handle_ssl", "handle_data",
+              "handle_flush", "handle_eof", "handle_error"]]],
             ["NeubotPoller_p", "get_poller"],
             ["__destruct__", "destruct"]
         ]],
