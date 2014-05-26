@@ -15,6 +15,15 @@ from libneubot import Protocol
 BUFF_LENGTH = 65535
 BUFF_TYPE = ctypes.c_char * BUFF_LENGTH
 
+def _terminate(self):
+    proto = self.connection.get_protocol()
+    if not proto:
+        sys.exit("connection - cannot get protocol")
+    poller = self.get_poller()
+    if not poller:
+        sys.exit("connection - cannot get poller")
+    poller.break_loop()
+
 class MyProtocol(Protocol):
 
     def handle_connect(self):

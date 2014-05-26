@@ -37,8 +37,8 @@
 
 #include <event2/buffer.h>
 
-class EchoProtocol : public Neubot::Protocol {
-	Neubot::Connection *connection;
+class EchoProtocol : public NeubotProtocol {
+	NeubotConnection *connection;
 	evbuffer *evbuf;
 	NeubotPoller *poller;
 
@@ -64,7 +64,7 @@ class EchoProtocol : public Neubot::Protocol {
 
 		self->poller = p;
 
-		self->connection = Neubot::Connection::connect(self, family,
+		self->connection = NeubotConnection::connect(self, family,
 		    address, port);
 		if (self->connection == NULL) {
 			delete self;
