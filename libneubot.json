@@ -42,12 +42,12 @@
         ]],
 
         ["NeubotConnection", [
-            ["__construct__", "attach", ["__gettable__", "NeubotProtocol_p", "protocol"],
+            ["__static_construct__", "attach", ["__gettable__", "NeubotProtocol_p", "protocol"],
              ["long long", "filenum"]],
-            ["__construct__", "connect", ["__gettable__", "NeubotProtocol_p", "protocol"],
+            ["__static_construct__", "connect", ["__gettable__", "NeubotProtocol_p", "protocol"],
              ["cstring", "family"], ["cstring", "address"],
              ["cstring", "port"]],
-            ["__construct__", "connect_hostname", ["__gettable__", "NeubotProtocol_p", "protocol"],
+            ["__static_construct__", "connect_hostname", ["__gettable__", "NeubotProtocol_p", "protocol"],
              ["cstring", "family"], ["cstring", "address"],
              ["cstring", "port"]],
             ["__object_getter__", "protocol"],

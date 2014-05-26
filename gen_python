@@ -45,7 +45,7 @@ def gen_python_imports(stream):
 
 def gen_python_prototype(stream, types, class_name, method_info):
 
-    if method_info[0] == "__construct__":
+    if method_info[0] in ("__construct__", "__static_construct__"):
         retval = class_name + "_p"
         funcname = class_name + "_" + method_info[1]
 
@@ -225,7 +225,7 @@ def gen_python_callfunc(stream, nwritten, func_name, args):
     stream.write(")")
 
 def gen_python_init(stream, types, class_name, struct_name, ctor_name,
-      init_args, destructor_name, gettables):
+      init_args, destructor_name, gettables, isstatic):
 
     # Generate the slots
     py_args = []
@@ -255,12 +255,7 @@ def gen_python_init(stream, types, class_name, struct_name, ctor_name,
             py_args.append((argtype, argname))
             c_args.append((argtype, argname))
 
-    #
-    # XXX When the constructor name is not "construct", we assume
-    # that we want to create a static constructor.
-    #
-
-    if ctor_name != "construct":
+    if isstatic:
         stream.write("    @staticmethod\n")
         gen_python_func_top(stream, types, None, ctor_name, py_args)
         stream.write("        self = %s()\n" % class_name)
@@ -290,7 +285,7 @@ def gen_python_init(stream, types, class_name, struct_name, ctor_name,
         stream.write("        self.%s = %s\n" % (gettable, gettable))
     gettables.update(local_gettables)
 
-    if ctor_name != "construct":
+    if isstatic:
         stream.write("        return self\n")
 
 def gen_python_method(stream, types, struct_name, retval_type,
@@ -448,10 +443,11 @@ def main():
         # Process the methods once more
         gettables = {}
         for method_info in methods:
-            if method_info[0] == "__construct__":
+            if method_info[0] in ("__construct__", "__static_construct__"):
 
                 gen_python_init(stream, types, class_name, struct_name,
-                  method_info[1], method_info[2:], destructor_name, gettables)
+                  method_info[1], method_info[2:], destructor_name, gettables,
+                  method_info[0] == "__static_construct__")
 
             elif method_info[0] == "__destruct__":
                 stream.write("    def %s(self):\n" % method_info[1])
