@@ -169,7 +169,6 @@ NeubotConnection::attach(NeubotProtocol *proto, long long filenum)
 	event_base *evbase;
 	NeubotPoller *poller;
 	NeubotConnection *self;
-	int result;
 
 	if (proto == NULL)
 		abort();
