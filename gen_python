@@ -45,14 +45,20 @@ def gen_python_imports(stream):
 
 def gen_python_prototype(stream, types, class_name, method_info):
 
-    if method_info[0] == "__construct__":
+    if method_info[0] in ("__construct__", "__static_construct__"):
         retval = class_name + "_p"
         funcname = class_name + "_" + method_info[1]
 
         # Generate the slots
         args__ = method_info[2:]
         args = []
-        for argtype, argname in args__:
+        for argstuff in args__:
+            if len(argstuff) == 2:
+                argtype, argname = argstuff
+            elif len(argstuff) == 3 and argstuff[0] == "__gettable__":
+                _, argtype, argname = argstuff
+            else:
+                raise RuntimeError("invalid argstuff")
             if argtype.startswith("slot_"):
                 for slotname in argname:
                     args.append(("NEUBOT_" + argtype.upper(), slotname))
@@ -63,6 +69,11 @@ def gen_python_prototype(stream, types, class_name, method_info):
     elif method_info[0] == "__destruct__":
         retval = "void"
         funcname = class_name + "_" + method_info[1]
+        args = [(class_name + "_p", "self")]
+
+    elif method_info[0] == "__object_getter__":
+        retval = "void_p"
+        funcname = class_name + "_get_" + method_info[1]
         args = [(class_name + "_p", "self")]
 
     else:
@@ -214,12 +225,23 @@ def gen_python_callfunc(stream, nwritten, func_name, args):
     stream.write(")")
 
 def gen_python_init(stream, types, class_name, struct_name, ctor_name,
-      init_args, destructor_name):
+      init_args, destructor_name, gettables, isstatic):
 
     # Generate the slots
     py_args = []
     c_args = []
-    for argtype, argname in init_args:
+    local_gettables = {}
+    for arg_elem in init_args:
+        if len(arg_elem) == 2:
+            argtype, argname = arg_elem
+        elif len(arg_elem) == 3:
+            _, argtype, argname = arg_elem
+            if argname not in local_gettables:
+                local_gettables[argname] = argtype
+            elif local_gettables[argname] != argtype:
+                raise RuntimeError("invalid gettable")
+        else:
+            raise RuntimeError("invalid argument")
         if argtype.startswith("slot_"):
             have_slots = 1
             for slotname in argname:
@@ -233,12 +255,7 @@ def gen_python_init(stream, types, class_name, struct_name, ctor_name,
             py_args.append((argtype, argname))
             c_args.append((argtype, argname))
 
-    #
-    # XXX When the constructor name is not "construct", we assume
-    # that we want to create a static constructor.
-    #
-
-    if ctor_name != "construct":
+    if isstatic:
         stream.write("    @staticmethod\n")
         gen_python_func_top(stream, types, None, ctor_name, py_args)
         stream.write("        self = %s()\n" % class_name)
@@ -264,7 +281,11 @@ def gen_python_init(stream, types, class_name, struct_name, ctor_name,
     stream.write("        ")
     stream.write("_ctypes.Py_INCREF(self)\n")
 
-    if ctor_name != "construct":
+    for gettable in local_gettables:
+        stream.write("        self.%s = %s\n" % (gettable, gettable))
+    gettables.update(local_gettables)
+
+    if isstatic:
         stream.write("        return self\n")
 
 def gen_python_method(stream, types, struct_name, retval_type,
@@ -420,11 +441,13 @@ def main():
             stream.write("        self.context_ = None\n\n")
 
         # Process the methods once more
+        gettables = {}
         for method_info in methods:
-            if method_info[0] == "__construct__":
+            if method_info[0] in ("__construct__", "__static_construct__"):
 
                 gen_python_init(stream, types, class_name, struct_name,
-                  method_info[1], method_info[2:], destructor_name)
+                  method_info[1], method_info[2:], destructor_name, gettables,
+                  method_info[0] == "__static_construct__")
 
             elif method_info[0] == "__destruct__":
                 stream.write("    def %s(self):\n" % method_info[1])
@@ -434,6 +457,10 @@ def main():
                 stream.write("        LIBNEUBOT.%s_%s(self)\n" % (
                   struct_name, method_info[1]))
                 stream.write("        self.context_ = None\n")
+
+            elif method_info[0] == "__object_getter__":
+                stream.write("    def get_%s(self):\n" % method_info[1])
+                stream.write("        return self.%s\n" % method_info[1])
 
             else:
                 gen_python_method(stream, types, struct_name, method_info[0],
