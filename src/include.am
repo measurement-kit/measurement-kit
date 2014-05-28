@@ -1,0 +1,12 @@
+include src/common/include.am
+include src/ext/include.am
+include src/net/include.am
+include src/neubot.am
+
+ight_include_HEADERS = \
+  src/ight_wrappers.h
+
+noinst_LIBRARIES += src/ight.a
+
+src_ext_ext_a_SOURCES += \
+    src/ight_wrappers.cpp
