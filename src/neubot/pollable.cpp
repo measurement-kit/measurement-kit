@@ -44,7 +44,7 @@
 #include "poller.h"
 #include "utils.h"
 
-#include "pollable.hh"
+#include "neubot/pollable.hh"
 
 NeubotPollable::NeubotPollable(NeubotPoller *poller)
 {

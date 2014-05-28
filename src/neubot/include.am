@@ -1,0 +1,5 @@
+noinst_LIBRARIES += src/neubot/neubot.a
+
+src_neubot_neubot_SOURCES += \
+    src/neubot/echo.c
+    src/neubot/pollable/pollable.cpp

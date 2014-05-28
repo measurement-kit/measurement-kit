@@ -1,0 +1,5 @@
+noinst_LIBRARIES += src/ext/ext.a
+
+src_ext_ext_a_SOURCES += \
+    src/ext/strtonum.c
+    src/ext/http-parser/http_parser.c
