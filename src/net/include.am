@@ -1,0 +1,5 @@
+noinst_LIBRARIES += src/net/net.a
+
+src_net_net_a_SOURCES += \
+	src/net/connection.cpp \
+	src/net/protocol.cpp
