@@ -33,15 +33,17 @@
 #include <event2/dns.h>
 #include <event2/event.h>
 
-#include "ll2sock.h"
-#include "log.h"
-#include "neubot.h"
-#include "poller.h"
-#include "protocol.h"
-#include "stringvector.h"
-#include "utils.h"
 
-#include "connection.h"
+#include "ight_wrappers.h"
+
+#include "common/stringvector.h"
+#include "common/poller.h"
+#include "common/utils.h"
+#include "common/log.h"
+
+#include "net/connection.h"
+#include "net/protocol.h"
+#include "net/ll2sock.h"
 
 NeubotConnection::NeubotConnection(void)
 {

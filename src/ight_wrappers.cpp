@@ -32,12 +32,15 @@
 
 #include <event2/event.h>
 
-#include "connection.h"
-#include "log.h"
-#include "neubot.h"
-#include "protocol.h"
-#include "pollable.hh"
-#include "stringvector.h"
+#include "ight_wrappers.h"
+
+#include "common/stringvector.h"
+#include "common/log.h"
+
+#include "net/connection.h"
+#include "net/protocol.h"
+
+#include "neubot/pollable.hh"
 
 //
 // Pollable

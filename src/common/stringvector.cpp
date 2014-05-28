@@ -25,7 +25,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "stringvector.h"
+#include "common/stringvector.h"
 
 #define NEUBOT_STRINGVECTOR_MAX 512  // Large enough
 

@@ -25,7 +25,7 @@
 
 #include <new>
 
-#include "protocol.h"
+#include "net/protocol.h"
 
 // Defined here to avoid -Wweak-vtables warning
 NeubotPoller *
