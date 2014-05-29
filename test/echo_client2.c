@@ -33,9 +33,9 @@
 #include "../src/ight_wrappers.h"
 
 struct EchoProtocol {
-	struct NeubotConnection *connection;
-	struct NeubotPoller *poller;
-	struct NeubotProtocol *protocol;
+	struct IghtConnection *connection;
+	struct IghtPoller *poller;
+	struct IghtProtocol *protocol;
 };
 
 static void	EchoProtocol_on_connect(void *);
@@ -46,7 +46,7 @@ static void	EchoProtocol_on_error(void *);
 static void	EchoProtocol_destruct(struct EchoProtocol *);
 
 static struct EchoProtocol *
-EchoProtocol_connect(struct NeubotPoller *p, const char *family,
+EchoProtocol_connect(struct IghtPoller *p, const char *family,
     const char *address, const char *port, double timeo)
 {
 	struct EchoProtocol *self;
@@ -56,7 +56,7 @@ EchoProtocol_connect(struct NeubotPoller *p, const char *family,
 	if (self == NULL)
 		return (NULL);
 
-	self->protocol = NeubotProtocol_construct(p, EchoProtocol_on_connect,
+	self->protocol = IghtProtocol_construct(p, EchoProtocol_on_connect,
 	    NULL, EchoProtocol_on_data, EchoProtocol_on_flush,
 	    EchoProtocol_on_eof, EchoProtocol_on_error, self);
 	if (self->protocol == NULL) {
@@ -66,26 +66,26 @@ EchoProtocol_connect(struct NeubotPoller *p, const char *family,
 
 	self->poller = p;
 
-	self->connection = NeubotConnection_connect(self->protocol, family,
+	self->connection = IghtConnection_connect(self->protocol, family,
 	    address, port);
 	if (self->connection == NULL) {
-		NeubotProtocol_destruct(self->protocol);
+		IghtProtocol_destruct(self->protocol);
 		free(self);
 		return (NULL);
 	}
 
-	result = NeubotConnection_set_timeout(self->connection, timeo);
+	result = IghtConnection_set_timeout(self->connection, timeo);
 	if (result != 0) {
-		NeubotConnection_close(self->connection);
-		NeubotProtocol_destruct(self->protocol);
+		IghtConnection_close(self->connection);
+		IghtProtocol_destruct(self->protocol);
 		free(self);
 		return (NULL);
 	}
 
-	result = NeubotConnection_enable_read(self->connection);
+	result = IghtConnection_enable_read(self->connection);
 	if (result != 0) {
-		NeubotConnection_close(self->connection);
-		NeubotProtocol_destruct(self->protocol);
+		IghtConnection_close(self->connection);
+		IghtProtocol_destruct(self->protocol);
 		free(self);
 		return (NULL);
 	}
@@ -110,7 +110,7 @@ EchoProtocol_on_data(void *opaque)
 	self = (struct EchoProtocol *) opaque;
 
 	for (;;) {
-		result = NeubotConnection_read(self->connection,
+		result = IghtConnection_read(self->connection,
 		    buffer, sizeof (buffer));
 		if (result < 0) {
 			EchoProtocol_destruct(self);
@@ -120,7 +120,7 @@ EchoProtocol_on_data(void *opaque)
 			neubot_info("echo - exhausted input buffer");
 			break;
 		}
-		result = NeubotConnection_write(self->connection,
+		result = IghtConnection_write(self->connection,
 		    buffer, (size_t) result);
 		if (result != 0) {
 			EchoProtocol_destruct(self);
@@ -154,20 +154,20 @@ static void
 EchoProtocol_destruct(struct EchoProtocol *self)
 {
 	neubot_info("echo - destructor");
-	NeubotConnection_close(self->connection);
-	NeubotProtocol_destruct(self->protocol);
+	IghtConnection_close(self->connection);
+	IghtProtocol_destruct(self->protocol);
 	free(self);
 }
 
 int
 main(void)
 {
-	struct NeubotPoller *poller;
+	struct IghtPoller *poller;
 	struct EchoProtocol *self;
 
 	neubot_info("echo - creating the poller...");
 
-	poller = NeubotPoller_construct();
+	poller = IghtPoller_construct();
 	if (poller == NULL)
 		exit(EXIT_FAILURE);
 
@@ -180,7 +180,7 @@ main(void)
 
 	neubot_info("echo - poller loop...");
 
-	NeubotPoller_loop(poller);
+	IghtPoller_loop(poller);
 
 	neubot_info("echo - exit");
 

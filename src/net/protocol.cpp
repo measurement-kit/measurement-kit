@@ -28,8 +28,8 @@
 #include "net/protocol.h"
 
 // Defined here to avoid -Wweak-vtables warning
-NeubotPoller *
-NeubotProtocol::get_poller(void)
+IghtPoller *
+IghtProtocol::get_poller(void)
 {
 	return (NULL);  // TODO: override
 }

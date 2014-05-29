@@ -46,17 +46,17 @@
 // Pollable
 //
 
-struct NeubotPollableWrapper : public NeubotPollable {
+struct IghtPollableWrapper : public IghtPollable {
 
 	neubot_slot_vo on_handle_error;
 	neubot_slot_vo on_handle_read;
 	neubot_slot_vo on_handle_write;
 	void *opaque;
 
-	NeubotPollableWrapper(NeubotPoller *poller, neubot_slot_vo on_read,
+	IghtPollableWrapper(IghtPoller *poller, neubot_slot_vo on_read,
 	    neubot_slot_vo on_write, neubot_slot_vo on_error,
-	    void *opaque) : NeubotPollable(poller) {
-		neubot_info("NeubotPollable::construct");
+	    void *opaque) : IghtPollable(poller) {
+		neubot_info("IghtPollable::construct");
 		this->on_handle_error = on_error;
 		this->on_handle_read = on_read;
 		this->on_handle_write = on_write;
@@ -64,27 +64,27 @@ struct NeubotPollableWrapper : public NeubotPollable {
 	};
 
 	virtual void handle_read(void) {
-		neubot_info("NeubotPollable::handle_read");
+		neubot_info("IghtPollable::handle_read");
 		this->on_handle_read(this->opaque);
 	};
 
 	virtual void handle_write(void) {
-		neubot_info("NeubotPollable::handle_write");
+		neubot_info("IghtPollable::handle_write");
 		this->on_handle_write(this->opaque);
 	};
 
 	virtual void handle_error(void) {
-		neubot_info("NeubotPollable::handle_error");
+		neubot_info("IghtPollable::handle_error");
 		this->on_handle_error(this->opaque);
 	};
 
-	virtual ~NeubotPollableWrapper(void) {
-		neubot_info("NeubotPollable::~NeubotPollable");
+	virtual ~IghtPollableWrapper(void) {
+		neubot_info("IghtPollable::~IghtPollable");
 	};
 };
 
-NeubotPollable *
-NeubotPollable_construct(NeubotPoller *poller, neubot_slot_vo handle_read,
+IghtPollable *
+IghtPollable_construct(IghtPoller *poller, neubot_slot_vo handle_read,
     neubot_slot_vo handle_write, neubot_slot_vo handle_error,
     void *opaque)
 {
@@ -92,7 +92,7 @@ NeubotPollable_construct(NeubotPoller *poller, neubot_slot_vo handle_read,
 		abort();
 
 	try {
-		return (new NeubotPollableWrapper(poller, handle_read, handle_write,
+		return (new IghtPollableWrapper(poller, handle_read, handle_write,
 		    handle_error, opaque));
 	} catch (...) {
 		return (NULL);
@@ -100,7 +100,7 @@ NeubotPollable_construct(NeubotPoller *poller, neubot_slot_vo handle_read,
 }
 
 int
-NeubotPollable_attach(NeubotPollable *self, long long fileno)
+IghtPollable_attach(IghtPollable *self, long long fileno)
 {
 	if (self == NULL)
 		abort();
@@ -109,7 +109,7 @@ NeubotPollable_attach(NeubotPollable *self, long long fileno)
 }
 
 void
-NeubotPollable_detach(NeubotPollable *self)
+IghtPollable_detach(IghtPollable *self)
 {
 	if (self == NULL)
 		abort();
@@ -118,7 +118,7 @@ NeubotPollable_detach(NeubotPollable *self)
 }
 
 long long
-NeubotPollable_get_fileno(NeubotPollable *self)
+IghtPollable_get_fileno(IghtPollable *self)
 {
 	if (self == NULL)
 		abort();
@@ -127,7 +127,7 @@ NeubotPollable_get_fileno(NeubotPollable *self)
 }
 
 int
-NeubotPollable_set_readable(NeubotPollable *self)
+IghtPollable_set_readable(IghtPollable *self)
 {
 	if (self == NULL)
 		abort();
@@ -136,7 +136,7 @@ NeubotPollable_set_readable(NeubotPollable *self)
 }
 
 int
-NeubotPollable_unset_readable(NeubotPollable *self)
+IghtPollable_unset_readable(IghtPollable *self)
 {
 	if (self == NULL)
 		abort();
@@ -145,7 +145,7 @@ NeubotPollable_unset_readable(NeubotPollable *self)
 }
 
 int
-NeubotPollable_set_writable(NeubotPollable *self)
+IghtPollable_set_writable(IghtPollable *self)
 {
 	if (self == NULL)
 		abort();
@@ -154,7 +154,7 @@ NeubotPollable_set_writable(NeubotPollable *self)
 }
 
 int
-NeubotPollable_unset_writable(NeubotPollable *self)
+IghtPollable_unset_writable(IghtPollable *self)
 {
 	if (self == NULL)
 		abort();
@@ -163,7 +163,7 @@ NeubotPollable_unset_writable(NeubotPollable *self)
 }
 
 void
-NeubotPollable_set_timeout(NeubotPollable *self, double timeout)
+IghtPollable_set_timeout(IghtPollable *self, double timeout)
 {
 	if (self == NULL)
 		abort();
@@ -172,7 +172,7 @@ NeubotPollable_set_timeout(NeubotPollable *self, double timeout)
 }
 
 void
-NeubotPollable_clear_timeout(NeubotPollable *self)
+IghtPollable_clear_timeout(IghtPollable *self)
 {
 	if (self == NULL)
 		abort();
@@ -181,7 +181,7 @@ NeubotPollable_clear_timeout(NeubotPollable *self)
 }
 
 void
-NeubotPollable_close(NeubotPollable *self)
+IghtPollable_close(IghtPollable *self)
 {
 	if (self == NULL)
 		abort();
@@ -193,9 +193,9 @@ NeubotPollable_close(NeubotPollable *self)
 // Protocol
 //
 
-struct NeubotProtocolWrapper : public NeubotProtocol {
+struct IghtProtocolWrapper : public IghtProtocol {
 
-	NeubotPoller *poller;
+	IghtPoller *poller;
 	neubot_slot_vo fn_connect;
 	neubot_slot_vo fn_ssl;
 	neubot_slot_vo fn_data;
@@ -204,10 +204,10 @@ struct NeubotProtocolWrapper : public NeubotProtocol {
 	neubot_slot_vo fn_error;
 	void *opaque;
 
-	NeubotProtocolWrapper(NeubotPoller *p, neubot_slot_vo slot_connect,
+	IghtProtocolWrapper(IghtPoller *p, neubot_slot_vo slot_connect,
 	    neubot_slot_vo slot_ssl, neubot_slot_vo slot_data,
 	    neubot_slot_vo slot_flush, neubot_slot_vo slot_eof,
-	    neubot_slot_vo slot_error, void *o) : NeubotProtocol() {
+	    neubot_slot_vo slot_error, void *o) : IghtProtocol() {
 		this->poller = p;
 		this->fn_connect = slot_connect;
 		this->fn_ssl = slot_ssl;
@@ -249,18 +249,18 @@ struct NeubotProtocolWrapper : public NeubotProtocol {
 	}
 
 	// Defined out-of-line to avoid -Wweak-vtables warning
-	virtual NeubotPoller *get_poller(void);
+	virtual IghtPoller *get_poller(void);
 };
 
 // Defined here to avoid -Wweak-vtables warning
-NeubotPoller *
-NeubotProtocolWrapper::get_poller(void)
+IghtPoller *
+IghtProtocolWrapper::get_poller(void)
 {
 	return (this->poller);
 }
 
-NeubotProtocol *
-NeubotProtocol_construct(NeubotPoller *p, neubot_slot_vo slot_connect,
+IghtProtocol *
+IghtProtocol_construct(IghtPoller *p, neubot_slot_vo slot_connect,
     neubot_slot_vo slot_ssl, neubot_slot_vo slot_data,
     neubot_slot_vo slot_flush, neubot_slot_vo slot_eof,
     neubot_slot_vo slot_error, void *o)
@@ -268,12 +268,12 @@ NeubotProtocol_construct(NeubotPoller *p, neubot_slot_vo slot_connect,
 	if (p == NULL)
 		abort();
 
-	return (new (std::nothrow) NeubotProtocolWrapper(p, slot_connect,
+	return (new (std::nothrow) IghtProtocolWrapper(p, slot_connect,
 	    slot_ssl, slot_data, slot_flush, slot_eof, slot_error, o));
 }
 
-NeubotPoller *
-NeubotProtocol_get_poller(NeubotProtocol *self)
+IghtPoller *
+IghtProtocol_get_poller(IghtProtocol *self)
 {
 	if (self == NULL)
 		abort();
@@ -282,7 +282,7 @@ NeubotProtocol_get_poller(NeubotProtocol *self)
 }
 
 void
-NeubotProtocol_destruct(NeubotProtocol *self)
+IghtProtocol_destruct(IghtProtocol *self)
 {
 	if (self == NULL)
 		abort();
@@ -294,38 +294,38 @@ NeubotProtocol_destruct(NeubotProtocol *self)
 // Connection
 //
 
-NeubotConnection *
-NeubotConnection_attach(NeubotProtocol *proto, long long filenum)
+IghtConnection *
+IghtConnection_attach(IghtProtocol *proto, long long filenum)
 {
-	return (NeubotConnection::attach(proto, filenum));
+	return (IghtConnection::attach(proto, filenum));
 }
 
-NeubotConnection *
-NeubotConnection_connect(NeubotProtocol *proto, const char *family,
+IghtConnection *
+IghtConnection_connect(IghtProtocol *proto, const char *family,
     const char *address, const char *port)
 {
-	return (NeubotConnection::connect(proto, family, address, port));
+	return (IghtConnection::connect(proto, family, address, port));
 }
 
-NeubotConnection *
-NeubotConnection_connect_hostname(NeubotProtocol *proto, const char *family,
+IghtConnection *
+IghtConnection_connect_hostname(IghtProtocol *proto, const char *family,
     const char *address, const char *port)
 {
-	return (NeubotConnection::connect_hostname(proto,
+	return (IghtConnection::connect_hostname(proto,
 	    family, address, port));
 }
 
-NeubotProtocol *
-NeubotConnection_get_protocol(NeubotConnection *self)
+IghtProtocol *
+IghtConnection_get_protocol(IghtConnection *self)
 {
 	if (self == NULL)
 		abort();
 
-	return (static_cast<NeubotProtocol *>(self->get_protocol()));
+	return (static_cast<IghtProtocol *>(self->get_protocol()));
 }
 
 int
-NeubotConnection_set_timeout(NeubotConnection *self, double timeo)
+IghtConnection_set_timeout(IghtConnection *self, double timeo)
 {
 	if (self == NULL)
 		abort();
@@ -334,7 +334,7 @@ NeubotConnection_set_timeout(NeubotConnection *self, double timeo)
 }
 
 int
-NeubotConnection_clear_timeout(NeubotConnection *self)
+IghtConnection_clear_timeout(IghtConnection *self)
 {
 	if (self == NULL)
 		abort();
@@ -343,7 +343,7 @@ NeubotConnection_clear_timeout(NeubotConnection *self)
 }
 
 int
-NeubotConnection_start_tls(NeubotConnection *self, unsigned server_side)
+IghtConnection_start_tls(IghtConnection *self, unsigned server_side)
 {
 	if (self == NULL)
 		abort();
@@ -352,7 +352,7 @@ NeubotConnection_start_tls(NeubotConnection *self, unsigned server_side)
 }
 
 int
-NeubotConnection_read(NeubotConnection *self, char *base, size_t count)
+IghtConnection_read(IghtConnection *self, char *base, size_t count)
 {
 	if (self == NULL)
 		abort();
@@ -361,7 +361,7 @@ NeubotConnection_read(NeubotConnection *self, char *base, size_t count)
 }
 
 int
-NeubotConnection_readline(NeubotConnection *self, char *base, size_t count)
+IghtConnection_readline(IghtConnection *self, char *base, size_t count)
 {
 	if (self == NULL)
 		abort();
@@ -370,7 +370,7 @@ NeubotConnection_readline(NeubotConnection *self, char *base, size_t count)
 }
 
 int
-NeubotConnection_readn(NeubotConnection *self, char *base, size_t count)
+IghtConnection_readn(IghtConnection *self, char *base, size_t count)
 {
 	if (self == NULL)
 		abort();
@@ -379,7 +379,7 @@ NeubotConnection_readn(NeubotConnection *self, char *base, size_t count)
 }
 
 int
-NeubotConnection_discardn(NeubotConnection *self, size_t count)
+IghtConnection_discardn(IghtConnection *self, size_t count)
 {
 	if (self == NULL)
 		abort();
@@ -388,7 +388,7 @@ NeubotConnection_discardn(NeubotConnection *self, size_t count)
 }
 
 int
-NeubotConnection_write(NeubotConnection *self, const char *base, size_t count)
+IghtConnection_write(IghtConnection *self, const char *base, size_t count)
 {
 	if (self == NULL)
 		abort();
@@ -397,7 +397,7 @@ NeubotConnection_write(NeubotConnection *self, const char *base, size_t count)
 }
 
 int
-NeubotConnection_puts(NeubotConnection *self, const char *str)
+IghtConnection_puts(IghtConnection *self, const char *str)
 {
 	if (self == NULL)
 		abort();
@@ -406,7 +406,7 @@ NeubotConnection_puts(NeubotConnection *self, const char *str)
 }
 
 int
-NeubotConnection_write_rand(NeubotConnection *self, size_t count)
+IghtConnection_write_rand(IghtConnection *self, size_t count)
 {
 	if (self == NULL)
 		abort();
@@ -415,7 +415,7 @@ NeubotConnection_write_rand(NeubotConnection *self, size_t count)
 }
 
 int
-NeubotConnection_write_readbuf(NeubotConnection *self, const char *base, size_t count)
+IghtConnection_write_readbuf(IghtConnection *self, const char *base, size_t count)
 {
 	if (self == NULL)
 		abort();
@@ -424,7 +424,7 @@ NeubotConnection_write_readbuf(NeubotConnection *self, const char *base, size_t 
 }
 
 int
-NeubotConnection_puts_readbuf(NeubotConnection *self, const char *str)
+IghtConnection_puts_readbuf(IghtConnection *self, const char *str)
 {
 	if (self == NULL)
 		abort();
@@ -433,7 +433,7 @@ NeubotConnection_puts_readbuf(NeubotConnection *self, const char *str)
 }
 
 int
-NeubotConnection_write_rand_readbuf(NeubotConnection *self, size_t count)
+IghtConnection_write_rand_readbuf(IghtConnection *self, size_t count)
 {
 	if (self == NULL)
 		abort();
@@ -441,7 +441,7 @@ NeubotConnection_write_rand_readbuf(NeubotConnection *self, size_t count)
 }
 
 int
-NeubotConnection_read_into_(NeubotConnection *self, evbuffer *dest)
+IghtConnection_read_into_(IghtConnection *self, evbuffer *dest)
 {
 	if (self == NULL)
 		abort();
@@ -450,7 +450,7 @@ NeubotConnection_read_into_(NeubotConnection *self, evbuffer *dest)
 }
 
 int
-NeubotConnection_write_from_(NeubotConnection *self, evbuffer *source)
+IghtConnection_write_from_(IghtConnection *self, evbuffer *source)
 {
 	if (self == NULL)
 		abort();
@@ -459,7 +459,7 @@ NeubotConnection_write_from_(NeubotConnection *self, evbuffer *source)
 }
 
 int
-NeubotConnection_enable_read(struct NeubotConnection *self)
+IghtConnection_enable_read(struct IghtConnection *self)
 {
 	if (self == NULL)
 		abort();
@@ -468,7 +468,7 @@ NeubotConnection_enable_read(struct NeubotConnection *self)
 }
 
 int
-NeubotConnection_disable_read(struct NeubotConnection *self)
+IghtConnection_disable_read(struct IghtConnection *self)
 {
 	if (self == NULL)
 		abort();
@@ -477,7 +477,7 @@ NeubotConnection_disable_read(struct NeubotConnection *self)
 }
 
 void
-NeubotConnection_close(NeubotConnection *self)
+IghtConnection_close(IghtConnection *self)
 {
 	if (self == NULL)
 		abort();
@@ -489,14 +489,14 @@ NeubotConnection_close(NeubotConnection *self)
 // StringVector
 //
 
-NeubotStringVector *
-NeubotStringVector_construct(NeubotPoller *poller, size_t count)
+IghtStringVector *
+IghtStringVector_construct(IghtPoller *poller, size_t count)
 {
-	return (new (std::nothrow) NeubotStringVector(poller, count));
+	return (new (std::nothrow) IghtStringVector(poller, count));
 }
 
 int
-NeubotStringVector_append(NeubotStringVector *self, const char *str)
+IghtStringVector_append(IghtStringVector *self, const char *str)
 {
 	if (self == NULL)
 		abort();
@@ -504,8 +504,8 @@ NeubotStringVector_append(NeubotStringVector *self, const char *str)
 	return (self->append(str));
 }
 
-NeubotPoller *
-NeubotStringVector_get_poller(NeubotStringVector *self)
+IghtPoller *
+IghtStringVector_get_poller(IghtStringVector *self)
 {
 	if (self == NULL)
 		abort();
@@ -514,7 +514,7 @@ NeubotStringVector_get_poller(NeubotStringVector *self)
 }
 
 const char *
-NeubotStringVector_get_next(NeubotStringVector *self)
+IghtStringVector_get_next(IghtStringVector *self)
 {
 	if (self == NULL)
 		abort();
@@ -523,7 +523,7 @@ NeubotStringVector_get_next(NeubotStringVector *self)
 }
 
 void
-NeubotStringVector_destruct(NeubotStringVector *self)
+IghtStringVector_destruct(IghtStringVector *self)
 {
 	if (self == NULL)
 		abort();

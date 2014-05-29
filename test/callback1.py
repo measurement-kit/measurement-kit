@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Public domain, 2013 Simone Basso <bassosimone@gmail.com>.
 
-""" Test for NeubotPoller_sched() """
+""" Test for IghtPoller_sched() """
 
 import sys
 

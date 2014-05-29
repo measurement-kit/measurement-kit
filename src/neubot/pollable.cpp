@@ -23,7 +23,7 @@
  */
 
 //
-// NeubotPollable: an object that tries to be compatible with the namesake
+// IghtPollable: an object that tries to be compatible with the namesake
 // object implemented by Neubot.
 //
 // The presence of this object should facilitate the testing of a
@@ -46,9 +46,9 @@
 
 #include "neubot/pollable.hh"
 
-NeubotPollable::NeubotPollable(NeubotPoller *poller)
+IghtPollable::IghtPollable(IghtPoller *poller)
 {
-	neubot_info("pollable: NeubotPollable()");
+	neubot_info("pollable: IghtPollable()");
 
 	this->poller = poller;
 	this->timeout = -1.0;
@@ -60,7 +60,7 @@ NeubotPollable::NeubotPollable(NeubotPoller *poller)
 static void
 dispatch(evutil_socket_t filenum, short event, void *opaque)
 {
-	NeubotPollable *self = (NeubotPollable *) opaque;
+	IghtPollable *self = (IghtPollable *) opaque;
 
 	(void)filenum;
 
@@ -76,11 +76,11 @@ dispatch(evutil_socket_t filenum, short event, void *opaque)
 
 /*
  * Note: attach() is separated from construct(), because in Neubot there
- * are cases in which we create a NeubotPollable and then we attach() and detach()
+ * are cases in which we create a IghtPollable and then we attach() and detach()
  * file descriptors to it (e.g., the Connector object does that).
  */
 int
-NeubotPollable::attach(long long fileno)
+IghtPollable::attach(long long fileno)
 {
 	//
 	// Sanity
@@ -107,7 +107,7 @@ NeubotPollable::attach(long long fileno)
 	// Init
 	//
 
-	event_base *evbase = NeubotPoller_event_base_(this->poller);
+	event_base *evbase = IghtPoller_event_base_(this->poller);
 	if (evbase == NULL)
 		abort();
 
@@ -129,7 +129,7 @@ NeubotPollable::attach(long long fileno)
 
 // MUST be idempotent and MUST work with half-initialized objects
 void
-NeubotPollable::detach(void)
+IghtPollable::detach(void)
 {
 	neubot_info("pollable: detach()");
 
@@ -158,7 +158,7 @@ NeubotPollable::detach(void)
  * fileno() name clashes with the fileno() macro in some headers.
  */
 long long
-NeubotPollable::get_fileno(void)
+IghtPollable::get_fileno(void)
 {
 	return (this->fileno);
 }
@@ -167,7 +167,7 @@ NeubotPollable::get_fileno(void)
 #define OPERATION_UNSET 2
 
 int
-NeubotPollable::setunset(const char *what, unsigned opcode, event *evp)
+IghtPollable::setunset(const char *what, unsigned opcode, event *evp)
 {
 	struct timeval tv, *tvp;
 	int result;
@@ -200,72 +200,72 @@ NeubotPollable::setunset(const char *what, unsigned opcode, event *evp)
 }
 
 int
-NeubotPollable::set_readable(void)
+IghtPollable::set_readable(void)
 {
 	return (this->setunset("set_readable", OPERATION_SET,
 	    this->evread));
 }
 
 int
-NeubotPollable::set_writable(void)
+IghtPollable::set_writable(void)
 {
 	return (this->setunset("set_writable", OPERATION_SET,
 	    this->evwrite));
 }
 
 int
-NeubotPollable::unset_readable(void)
+IghtPollable::unset_readable(void)
 {
 	return (this->setunset("unset_readable", OPERATION_UNSET,
 	    this->evread));
 }
 
 int
-NeubotPollable::unset_writable(void)
+IghtPollable::unset_writable(void)
 {
 	return (this->setunset("unset_writable", OPERATION_UNSET,
 	    this->evwrite));
 }
 
 void
-NeubotPollable::set_timeout(double timeout)
+IghtPollable::set_timeout(double timeout)
 {
 	this->timeout = timeout;
 }
 
 void
-NeubotPollable::clear_timeout(void)
+IghtPollable::clear_timeout(void)
 {
 	this->timeout = -1.0;
 }
 
 void
-NeubotPollable::handle_read(void)
+IghtPollable::handle_read(void)
 {
 	// TODO: override
 }
 
 void
-NeubotPollable::handle_write(void)
+IghtPollable::handle_write(void)
 {
 	// TODO: override
 }
 
 /*
- * This is another difference wrt Neubot: in Neubot the handle_close()
+ * This is another difference wrt Ight: in Ight the handle_close()
  * method is called when a pollable is closed. Here, on the contrary, we
  * have not close notification, because this is the way in which the
  * destruction works on C++ (i.e., derived classes are destroyed earlier
  * than parent classes, thus, it's not possible to notify derived classes).
  */
 void
-NeubotPollable::handle_error(void)
+IghtPollable::handle_error(void)
 {
 	// TODO: override
 }
 
-NeubotPollable::~NeubotPollable(void)
+IghtPollable::~IghtPollable(void)
 {
-	neubot_info("pollable: ~NeubotPollable()");
+	neubot_info("pollable: ~IghtPollable()");
 	this->detach();
 }

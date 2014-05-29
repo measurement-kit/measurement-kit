@@ -49,7 +49,7 @@
 #include "common/utils.h"
 #include "common/log.h"
 
-struct NeubotPoller {
+struct IghtPoller {
 #ifndef WIN32
 	struct event evsignal;    /* for SIGINT */
 #endif
@@ -57,7 +57,7 @@ struct NeubotPoller {
 	struct evdns_base *dnsbase;
 };
 
-struct NeubotEvent {
+struct IghtEvent {
 	neubot_hook_vo callback;
 	neubot_hook_vo timeback;
 	struct event ev;
@@ -73,11 +73,11 @@ struct ResolveContext {
 };
 
 /*
- * NeubotEvent implementation
+ * IghtEvent implementation
  */
 
 static void
-NeubotEvent_noop(void *opaque)
+IghtEvent_noop(void *opaque)
 {
 	(void) opaque;
 
@@ -85,13 +85,13 @@ NeubotEvent_noop(void *opaque)
 }
 
 static void
-NeubotEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
+IghtEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
 {
-	struct NeubotEvent *nevp;
+	struct IghtEvent *nevp;
 
 	(void) socket;
 
-	nevp = (struct NeubotEvent *) opaque;
+	nevp = (struct IghtEvent *) opaque;
 	if (event & EV_TIMEOUT)
 		nevp->timeback(nevp->opaque);
 	else
@@ -99,12 +99,12 @@ NeubotEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
 	free(nevp);
 }
 
-static inline struct NeubotEvent *
-NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
+static inline struct IghtEvent *
+IghtEvent_construct(struct IghtPoller *poller, long long fileno,
     neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
     double timeout, short event)
 {
-	struct NeubotEvent *nevp;
+	struct IghtEvent *nevp;
 	struct timeval *tvp;
 	int result;
 
@@ -133,9 +133,9 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 	}
 
 	if (callback == NULL)
-		callback = NeubotEvent_noop;
+		callback = IghtEvent_noop;
 	if (timeback == NULL)
-		timeback = NeubotEvent_noop;
+		timeback = IghtEvent_noop;
 
 	nevp = calloc(1, sizeof (*nevp));
 	if (nevp == NULL)
@@ -151,7 +151,7 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 	nevp->timeback = timeback;
 	nevp->opaque = opaque;
 
-	event_set(&nevp->ev, nevp->fileno, event, NeubotEvent_dispatch, nevp);
+	event_set(&nevp->ev, nevp->fileno, event, IghtEvent_dispatch, nevp);
 
 	tvp = neubot_timeval_init(&nevp->tv, timeout);
 
@@ -167,27 +167,27 @@ NeubotEvent_construct(struct NeubotPoller *poller, long long fileno,
 }
 
 /*
- * NeubotPoller implementation
+ * IghtPoller implementation
  */
 
 #ifndef WIN32
 static void
-NeubotPoller_sigint(int signo, short event, void *opaque)
+IghtPoller_sigint(int signo, short event, void *opaque)
 {
-	struct NeubotPoller *self;
+	struct IghtPoller *self;
 
 	(void) signo;
 	(void) event;
 
-	self = (struct NeubotPoller *) opaque;
-	NeubotPoller_break_loop(self);
+	self = (struct IghtPoller *) opaque;
+	IghtPoller_break_loop(self);
 }
 #endif
 
-struct NeubotPoller *
-NeubotPoller_construct(void)
+struct IghtPoller *
+IghtPoller_construct(void)
 {
-	struct NeubotPoller *self;
+	struct IghtPoller *self;
 	struct event_base *base;
 	int retval;
 
@@ -198,7 +198,7 @@ NeubotPoller_construct(void)
 	if (evdns_init() != 0)
 		return (NULL);
 
-	self = (struct NeubotPoller *) calloc(1, sizeof(*self));
+	self = (struct IghtPoller *) calloc(1, sizeof(*self));
 	if (self == NULL)
 		return (NULL);
 
@@ -209,7 +209,7 @@ NeubotPoller_construct(void)
 
 #ifndef WIN32
 	event_set(&self->evsignal, SIGINT, EV_SIGNAL,
-	    NeubotPoller_sigint, self);
+	    IghtPoller_sigint, self);
 
 	retval = event_add(&self->evsignal, NULL);
 	if (retval != 0)
@@ -228,14 +228,14 @@ NeubotPoller_construct(void)
 
 /* Method that we use only internally: */
 struct event_base *
-NeubotPoller_event_base_(struct NeubotPoller *self)
+IghtPoller_event_base_(struct IghtPoller *self)
 {
 	return (self->base);
 }
 
 /* Method that we use only internally: */
 struct evdns_base *
-NeubotPoller_evdns_base_(struct NeubotPoller *self)
+IghtPoller_evdns_base_(struct IghtPoller *self)
 {
 	return (self->dnsbase);
 }
@@ -245,13 +245,13 @@ NeubotPoller_evdns_base_(struct NeubotPoller *self)
  * and/or annoying that one cannot destroy pending callbacks.
  */
 int
-NeubotPoller_sched(struct NeubotPoller *self, double delta,
+IghtPoller_sched(struct IghtPoller *self, double delta,
     neubot_hook_vo callback, void *opaque)
 {
-	struct NeubotEvent *nevp;
+	struct IghtEvent *nevp;
 
-	nevp = NeubotEvent_construct(self, NEUBOT_SOCKET_INVALID,
-	    NeubotEvent_noop, callback, opaque, delta, EV_TIMEOUT);
+	nevp = IghtEvent_construct(self, NEUBOT_SOCKET_INVALID,
+	    IghtEvent_noop, callback, opaque, delta, EV_TIMEOUT);
 	if (nevp == NULL)
 		return (-1);
 	return (0);
@@ -264,13 +264,13 @@ NeubotPoller_sched(struct NeubotPoller *self, double delta,
  */
 
 int
-NeubotPoller_defer_read(struct NeubotPoller *self, long long fileno,
+IghtPoller_defer_read(struct IghtPoller *self, long long fileno,
     neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
     double timeout)
 {
-	struct NeubotEvent *nevp;
+	struct IghtEvent *nevp;
 
-	nevp = NeubotEvent_construct(self, fileno, callback,
+	nevp = IghtEvent_construct(self, fileno, callback,
             timeback, opaque, timeout, EV_READ);
 	if (nevp == NULL)
 		return (-1);
@@ -278,13 +278,13 @@ NeubotPoller_defer_read(struct NeubotPoller *self, long long fileno,
 }
 
 int
-NeubotPoller_defer_write(struct NeubotPoller *self, long long fileno,
+IghtPoller_defer_write(struct IghtPoller *self, long long fileno,
     neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
     double timeout)
 {
-	struct NeubotEvent *nevp;
+	struct IghtEvent *nevp;
 
-	nevp = NeubotEvent_construct(self, fileno, callback,
+	nevp = IghtEvent_construct(self, fileno, callback,
             timeback, opaque, timeout, EV_WRITE);
 	if (nevp == NULL)
 		return (-1);
@@ -292,7 +292,7 @@ NeubotPoller_defer_write(struct NeubotPoller *self, long long fileno,
 }
 
 static void
-NeubotPoller_resolve_callback_internal(int result, char type, int count,
+IghtPoller_resolve_callback_internal(int result, char type, int count,
     int ttl, void *addresses, void *opaque)
 {
 	struct ResolveContext *rc;
@@ -360,7 +360,7 @@ NeubotPoller_resolve_callback_internal(int result, char type, int count,
 }
 
 int
-NeubotPoller_resolve(struct NeubotPoller *poller, const char *family,
+IghtPoller_resolve(struct IghtPoller *poller, const char *family,
     const char *address, neubot_hook_vos callback, void *opaque)
 {
 	struct ResolveContext *rc;
@@ -385,10 +385,10 @@ NeubotPoller_resolve(struct NeubotPoller *poller, const char *family,
 
 	if (strcmp(family, "PF_INET6") == 0)
 		result = evdns_resolve_ipv6(address, DNS_QUERY_NO_SEARCH,
-		    NeubotPoller_resolve_callback_internal, rc);
+		    IghtPoller_resolve_callback_internal, rc);
 	else if (strcmp(family, "PF_INET") == 0)
 		result = evdns_resolve_ipv4(address, DNS_QUERY_NO_SEARCH,
-		    NeubotPoller_resolve_callback_internal, rc);
+		    IghtPoller_resolve_callback_internal, rc);
 	else {
 		neubot_warn("resolve: invalid family");
 		goto failure;
@@ -411,7 +411,7 @@ NeubotPoller_resolve(struct NeubotPoller *poller, const char *family,
 }
 
 void
-NeubotPoller_loop(struct NeubotPoller *self)
+IghtPoller_loop(struct IghtPoller *self)
 {
 	(void) self;
 
@@ -419,7 +419,7 @@ NeubotPoller_loop(struct NeubotPoller *self)
 }
 
 void
-NeubotPoller_break_loop(struct NeubotPoller *self)
+IghtPoller_break_loop(struct IghtPoller *self)
 {
 	(void) self;
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Public domain, 2014 Simone Basso <bassosimone@gmail.com>.
 
-""" Test for NeubotPollable """
+""" Test for IghtPollable """
 
 import sys
 

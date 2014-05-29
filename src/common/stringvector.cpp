@@ -29,7 +29,7 @@
 
 #define NEUBOT_STRINGVECTOR_MAX 512  // Large enough
 
-NeubotStringVector::NeubotStringVector(NeubotPoller *p, size_t cnt)
+IghtStringVector::IghtStringVector(IghtPoller *p, size_t cnt)
 {
 	if (p == NULL || cnt == 0 || cnt > NEUBOT_STRINGVECTOR_MAX)
 		throw new (std::bad_alloc);
@@ -45,7 +45,7 @@ NeubotStringVector::NeubotStringVector(NeubotPoller *p, size_t cnt)
 }
 
 int
-NeubotStringVector::append(const char *str)
+IghtStringVector::append(const char *str)
 {
 	if (this->pos > this->count)
 		abort();
@@ -58,14 +58,14 @@ NeubotStringVector::append(const char *str)
 	return (0);
 }
 
-NeubotPoller *
-NeubotStringVector::get_poller(void)
+IghtPoller *
+IghtStringVector::get_poller(void)
 {
 	return (this->poller);
 }
 
 const char *
-NeubotStringVector::get_next(void)
+IghtStringVector::get_next(void)
 {
 	if (this->iter > this->pos)
 		abort();
@@ -74,7 +74,7 @@ NeubotStringVector::get_next(void)
 	return (this->base[this->iter++]);
 }
 
-NeubotStringVector::~NeubotStringVector(void)
+IghtStringVector::~IghtStringVector(void)
 {
 	size_t i;
 

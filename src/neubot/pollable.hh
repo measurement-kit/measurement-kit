@@ -26,22 +26,22 @@
 // definition of evutil_socket_t.
 //
 // Note: this file is not installed and is only used internally
-// by libneubot.cpp to implement NeubotPollable_xxx().
+// by libneubot.cpp to implement IghtPollable_xxx().
 //
 
-struct NeubotPoller;
+struct IghtPoller;
 struct event;
 
-struct NeubotPollable {
+struct IghtPollable {
     private:
-	    NeubotPoller *poller;
+	    IghtPoller *poller;
 	    double timeout;
 	    event *evread;
 	    event *evwrite;
 	    evutil_socket_t fileno;
 	    int setunset(const char *, unsigned, event *);
     public:
-	    NeubotPollable(NeubotPoller *);
+	    IghtPollable(IghtPoller *);
 	    int attach(long long);
 	    void detach(void);
 	    long long get_fileno(void);
@@ -54,5 +54,5 @@ struct NeubotPollable {
 	    virtual void handle_error(void);
 	    virtual void handle_read(void);
 	    virtual void handle_write(void);
-	    virtual ~NeubotPollable(void);
+	    virtual ~IghtPollable(void);
 };

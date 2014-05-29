@@ -35,9 +35,9 @@
 #include "../src/ight_wrappers.h"
 #include "../src/net/protocol.h"
 
-class EchoProtocol : public NeubotProtocol {
-	NeubotConnection *connection;
-	NeubotPoller *poller;
+class EchoProtocol : public IghtProtocol {
+	IghtConnection *connection;
+	IghtPoller *poller;
 
 	EchoProtocol(void) {
 		this->connection = NULL;
@@ -45,7 +45,7 @@ class EchoProtocol : public NeubotProtocol {
 	}
 
     public:
-	static EchoProtocol *connect(NeubotPoller *p, const char *family,
+	static EchoProtocol *connect(IghtPoller *p, const char *family,
 	    const char *address, const char *port, double timeo) {
 
 		EchoProtocol *self = new (std::nothrow) EchoProtocol();
@@ -54,7 +54,7 @@ class EchoProtocol : public NeubotProtocol {
 
 		self->poller = p;
 
-		self->connection = NeubotConnection::connect(self, family,
+		self->connection = IghtConnection::connect(self, family,
 		    address, port);
 		if (self->connection == NULL) {
 			delete self;
@@ -119,7 +119,7 @@ class EchoProtocol : public NeubotProtocol {
 	}
 
 	// Implemented out-of-line to avoid the -Wweak-vtables warning
-	virtual NeubotPoller *get_poller(void);
+	virtual IghtPoller *get_poller(void);
 
 	virtual ~EchoProtocol(void) {
 		neubot_info("echo - destructor");
@@ -129,7 +129,7 @@ class EchoProtocol : public NeubotProtocol {
 };
 
 // Implemented here to avoid the -Wweak-vtables warning
-NeubotPoller *
+IghtPoller *
 EchoProtocol::get_poller(void)
 {
 	return (this->poller);
@@ -138,12 +138,12 @@ EchoProtocol::get_poller(void)
 int
 main(void)
 {
-	NeubotPoller *poller;
+	IghtPoller *poller;
 	EchoProtocol *self;
 
 	neubot_info("echo - creating the poller...");
 
-	poller = NeubotPoller_construct();
+	poller = IghtPoller_construct();
 	if (poller == NULL)
 		exit(EXIT_FAILURE);
 
@@ -156,7 +156,7 @@ main(void)
 
 	neubot_info("echo - poller loop...");
 
-	NeubotPoller_loop(poller);
+	IghtPoller_loop(poller);
 
 	neubot_info("echo - exit");
 

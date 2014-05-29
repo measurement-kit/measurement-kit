@@ -31,11 +31,11 @@
  *   traits of a protocol on top of, e.g., a Connection.
  */
 
-struct NeubotPoller;
+struct IghtPoller;
 
 typedef void (*neubot_slot_vo)(void *);  /* XXX Duplicate definition */
 
-struct NeubotProtocol {
+struct IghtProtocol {
 	virtual void on_connect(void) {
 		// TODO: override
 	}
@@ -61,9 +61,9 @@ struct NeubotProtocol {
 	}
 
 	// Defined out-of-line to avoid -Wweak-vtables warning
-	virtual NeubotPoller *get_poller(void);
+	virtual IghtPoller *get_poller(void);
 
-	virtual ~NeubotProtocol(void) {
+	virtual ~IghtProtocol(void) {
 		// TODO: override
 	}
 };

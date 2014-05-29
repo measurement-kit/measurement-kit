@@ -8,8 +8,8 @@
 extern "C" {
 #endif
 
-struct event_base *NeubotPoller_event_base_(struct NeubotPoller *);
-struct evdns_base *NeubotPoller_evdns_base_(struct NeubotPoller *);
+struct event_base *IghtPoller_event_base_(struct IghtPoller *);
+struct evdns_base *IghtPoller_evdns_base_(struct IghtPoller *);
 
 #ifdef __cplusplus
 }

@@ -41,15 +41,15 @@
 #include "ight_wrappers.h"
 
 struct Connection {
-	struct NeubotPollable *pollable;
+	struct IghtPollable *pollable;
 	struct evbuffer *buffer;
 	int seen_eof;
 	evutil_socket_t fileno;
 };
 
-struct NeubotEchoServer {
-	struct NeubotPollable *pollable;
-	struct NeubotPoller *poller;
+struct IghtEchoServer {
+	struct IghtPollable *pollable;
+	struct IghtPoller *poller;
 	evutil_socket_t fileno;
 };
 
@@ -64,7 +64,7 @@ Connection_close(struct Connection *self)
 {
 	(void) evutil_closesocket(self->fileno);
 	evbuffer_free(self->buffer);
-	NeubotPollable_close(self->pollable);
+	IghtPollable_close(self->pollable);
 	free(self);
 }
 
@@ -79,14 +79,14 @@ Connection_read(void *opaque)
 	if (result <= 0) {
 		if (EVBUFFER_LENGTH(self->buffer) > 0) {
 			self->seen_eof = 1;
-			NeubotPollable_unset_readable(self->pollable);
+			IghtPollable_unset_readable(self->pollable);
 			return;
 		}
 		Connection_close(self);
 		return;
 	}
 
-	NeubotPollable_set_writable(self->pollable);
+	IghtPollable_set_writable(self->pollable);
 }
 
 static void
@@ -103,7 +103,7 @@ Connection_write(void *opaque)
 	}
 
 	if (EVBUFFER_LENGTH(self->buffer) <= 0)
-		NeubotPollable_unset_writable(self->pollable);
+		IghtPollable_unset_writable(self->pollable);
 
 	if (self->seen_eof)
 		Connection_close(self);
@@ -121,10 +121,10 @@ static void
 Connection_construct(void *opaque)
 {
 	struct Connection *conn;
-	struct NeubotEchoServer *self;
+	struct IghtEchoServer *self;
 	int result;
 
-	self = (struct NeubotEchoServer *) opaque;
+	self = (struct IghtEchoServer *) opaque;
 
 	conn = calloc(1, sizeof(*conn));
 	if (conn == NULL)
@@ -142,17 +142,17 @@ Connection_construct(void *opaque)
 	if (conn->fileno == NEUBOT_SOCKET_INVALID)
 		goto cleanup;
 
-	conn->pollable = NeubotPollable_construct(self->poller,
+	conn->pollable = IghtPollable_construct(self->poller,
 	    Connection_read, Connection_write, Connection_error, conn);
 	if (conn->pollable == NULL)
 		goto cleanup;
 
-	result = NeubotPollable_attach(conn->pollable,
+	result = IghtPollable_attach(conn->pollable,
 	    (long long) conn->fileno);
 	if (result != 0)
 		goto cleanup;
 
-	result = NeubotPollable_set_readable(conn->pollable);
+	result = IghtPollable_set_readable(conn->pollable);
 	if (result == 0)
 		return;		/* success */
 
@@ -162,19 +162,19 @@ Connection_construct(void *opaque)
 	if (conn != NULL && conn->fileno != NEUBOT_SOCKET_INVALID)
 		(void) evutil_closesocket(conn->fileno);
 	if (conn != NULL && conn->pollable != NULL)
-		NeubotPollable_close(conn->pollable);
+		IghtPollable_close(conn->pollable);
 	free(conn);
 }
 
 /*
- * NeubotEchoServer implementation
+ * IghtEchoServer implementation
  */
 
-struct NeubotEchoServer *
-NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
+struct IghtEchoServer *
+IghtEchoServer_construct(struct IghtPoller *poller, int use_ipv6,
     const char *address, const char *port)
 {
-	struct NeubotEchoServer *self;
+	struct IghtEchoServer *self;
 	int result;
 
 	self = calloc(1, sizeof(*self));
@@ -187,17 +187,17 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
 
 	self->poller = poller;
 
-	self->pollable = NeubotPollable_construct(self->poller,
+	self->pollable = IghtPollable_construct(self->poller,
 	    Connection_construct, NULL, NULL, self);
 	if (self->pollable == NULL)
 		goto cleanup;
 
-	result = NeubotPollable_attach(self->pollable,
+	result = IghtPollable_attach(self->pollable,
 	    (long long) self->fileno);
 	if (result != 0)
 		goto cleanup;
 
-	result = NeubotPollable_set_readable(self->pollable);
+	result = IghtPollable_set_readable(self->pollable);
 	if (result != 0)
 		goto cleanup;
 
@@ -205,7 +205,7 @@ NeubotEchoServer_construct(struct NeubotPoller *poller, int use_ipv6,
 
       cleanup:
 	if (self->pollable != NULL)
-		NeubotPollable_close(self->pollable);
+		IghtPollable_close(self->pollable);
 	if (self->fileno != NEUBOT_SOCKET_INVALID)
 		(void) evutil_closesocket(self->fileno);
 	free(self);

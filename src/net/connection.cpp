@@ -45,7 +45,7 @@
 #include "net/protocol.h"
 #include "net/ll2sock.h"
 
-NeubotConnection::NeubotConnection(void)
+IghtConnection::IghtConnection(void)
 {
 	this->filedesc = NEUBOT_SOCKET_INVALID;
 	this->bev = NULL;
@@ -63,7 +63,7 @@ NeubotConnection::NeubotConnection(void)
 	this->must_resolve_ipv6 = 0;
 }
 
-NeubotConnection::~NeubotConnection(void)
+IghtConnection::~IghtConnection(void)
 {
 	if (this->filedesc != NEUBOT_SOCKET_INVALID)
 		(void) evutil_closesocket((evutil_socket_t) this->filedesc);
@@ -97,9 +97,9 @@ NeubotConnection::~NeubotConnection(void)
 }
 
 void
-NeubotConnection::handle_read(bufferevent *bev, void *opaque)
+IghtConnection::handle_read(bufferevent *bev, void *opaque)
 {
-	NeubotConnection *self = (NeubotConnection *) opaque;
+	IghtConnection *self = (IghtConnection *) opaque;
 	int result;
 
 	(void) bev;  // Suppress warning about unused variable
@@ -119,17 +119,17 @@ NeubotConnection::handle_read(bufferevent *bev, void *opaque)
 }
 
 void
-NeubotConnection::handle_write(bufferevent *bev, void *opaque)
+IghtConnection::handle_write(bufferevent *bev, void *opaque)
 {
-	NeubotConnection *self = (NeubotConnection *) opaque;
+	IghtConnection *self = (IghtConnection *) opaque;
 	(void) bev;  // Suppress warning about unused variable
 	self->protocol->on_flush();
 }
 
 void
-NeubotConnection::handle_event(bufferevent *bev, short what, void *opaque)
+IghtConnection::handle_event(bufferevent *bev, short what, void *opaque)
 {
-	NeubotConnection *self = (NeubotConnection *) opaque;
+	IghtConnection *self = (IghtConnection *) opaque;
 
 	(void) bev;  // Suppress warning about unused variable
 
@@ -165,26 +165,26 @@ NeubotConnection::handle_event(bufferevent *bev, short what, void *opaque)
 	self->protocol->on_error();
 }
 
-NeubotConnection *
-NeubotConnection::attach(NeubotProtocol *proto, long long filenum)
+IghtConnection *
+IghtConnection::attach(IghtProtocol *proto, long long filenum)
 {
 	event_base *evbase;
-	NeubotPoller *poller;
-	NeubotConnection *self;
+	IghtPoller *poller;
+	IghtConnection *self;
 
 	if (proto == NULL)
 		abort();
 	poller = proto->get_poller();
 	if (poller == NULL)
 		abort();
-	evbase = NeubotPoller_event_base_(poller);
+	evbase = IghtPoller_event_base_(poller);
 	if (evbase == NULL)
 		abort();
 
 	if (!neubot_socket_valid(filenum))
 		return (NULL);
 
-	self = new (std::nothrow) NeubotConnection();
+	self = new (std::nothrow) IghtConnection();
 	if (self == NULL)
 		return (NULL);
 
@@ -221,7 +221,7 @@ NeubotConnection::attach(NeubotProtocol *proto, long long filenum)
 		return (NULL);
 	}
 
-	self->addrlist = new (std::nothrow) NeubotStringVector(poller, 16);
+	self->addrlist = new (std::nothrow) IghtStringVector(poller, 16);
 	if (self->addrlist == NULL) {
 		delete self;
 		return (NULL);
@@ -233,7 +233,7 @@ NeubotConnection::attach(NeubotProtocol *proto, long long filenum)
 		return (NULL);
 	}
 
-	self->pflist = new (std::nothrow) NeubotStringVector(poller, 16);
+	self->pflist = new (std::nothrow) IghtStringVector(poller, 16);
 	if (self->pflist == NULL) {
 		delete self;
 		return (NULL);
@@ -250,14 +250,14 @@ NeubotConnection::attach(NeubotProtocol *proto, long long filenum)
 	return (self);
 }
 
-NeubotConnection *
-NeubotConnection::connect(NeubotProtocol *proto, const char *family,
+IghtConnection *
+IghtConnection::connect(IghtProtocol *proto, const char *family,
     const char *address, const char *port)
 {
 	event_base *evbase;
-	NeubotPoller *poller;
+	IghtPoller *poller;
 	int result;
-	NeubotConnection *self;
+	IghtConnection *self;
 	struct sockaddr_storage storage;
 	socklen_t total;
 
@@ -266,7 +266,7 @@ NeubotConnection::connect(NeubotProtocol *proto, const char *family,
 	poller = proto->get_poller();
 	if (poller == NULL)
 		abort();
-	evbase = NeubotPoller_event_base_(poller);
+	evbase = IghtPoller_event_base_(poller);
 	if (evbase == NULL)
 		abort();
 
@@ -274,7 +274,7 @@ NeubotConnection::connect(NeubotProtocol *proto, const char *family,
 	if (result != 0)
 		return (NULL);
 
-	self = new (std::nothrow) NeubotConnection();
+	self = new (std::nothrow) IghtConnection();
 	if (self == NULL)
 		return (NULL);
 
@@ -318,7 +318,7 @@ NeubotConnection::connect(NeubotProtocol *proto, const char *family,
 		return (NULL);
 	}
 
-	self->addrlist = new (std::nothrow) NeubotStringVector(poller, 16);
+	self->addrlist = new (std::nothrow) IghtStringVector(poller, 16);
 	if (self->addrlist == NULL) {
 		delete self;
 		return (NULL);
@@ -330,7 +330,7 @@ NeubotConnection::connect(NeubotProtocol *proto, const char *family,
 		return (NULL);
 	}
 
-	self->pflist = new (std::nothrow) NeubotStringVector(poller, 16);
+	self->pflist = new (std::nothrow) IghtStringVector(poller, 16);
 	if (self->pflist == NULL) {
 		delete self;
 		return (NULL);
@@ -353,7 +353,7 @@ NeubotConnection::connect(NeubotProtocol *proto, const char *family,
 }
 
 void
-NeubotConnection::connect_next(void)
+IghtConnection::connect_next(void)
 {
 	const char *address;
 	int error;
@@ -416,10 +416,10 @@ NeubotConnection::connect_next(void)
 }
 
 void
-NeubotConnection::handle_resolve(int result, char type, int count,
+IghtConnection::handle_resolve(int result, char type, int count,
     int ttl, void *addresses, void *opaque)
 {
-	NeubotConnection *self = (NeubotConnection *) opaque;
+	IghtConnection *self = (IghtConnection *) opaque;
 	const char *_family;
 	const char *p;
 	int error, family, size;
@@ -486,10 +486,10 @@ NeubotConnection::handle_resolve(int result, char type, int count,
 	}
 
     finally:
-	NeubotPoller *poller = self->protocol->get_poller();
+	IghtPoller *poller = self->protocol->get_poller();
 	if (poller == NULL)
 		abort();
-	evdns_base *dns_base = NeubotPoller_evdns_base_(poller);
+	evdns_base *dns_base = IghtPoller_evdns_base_(poller);
 	if (dns_base == NULL)
 		abort();
 	if (self->must_resolve_ipv6) {
@@ -514,9 +514,9 @@ NeubotConnection::handle_resolve(int result, char type, int count,
 }
 
 void
-NeubotConnection::resolve(void *opaque)
+IghtConnection::resolve(void *opaque)
 {
-	NeubotConnection *self = (NeubotConnection *) opaque;
+	IghtConnection *self = (IghtConnection *) opaque;
 	struct sockaddr_storage storage;
 	int result;
 
@@ -562,11 +562,11 @@ NeubotConnection::resolve(void *opaque)
 		return;
 	}
 
-	NeubotPoller *poller = self->protocol->get_poller();
+	IghtPoller *poller = self->protocol->get_poller();
 	if (poller == NULL)
 		abort();
 
-	evdns_base *dns_base = NeubotPoller_evdns_base_(poller);
+	evdns_base *dns_base = IghtPoller_evdns_base_(poller);
 	if (dns_base == NULL)
 		abort();
 
@@ -610,25 +610,25 @@ NeubotConnection::resolve(void *opaque)
 		self->must_resolve_ipv4 = 1;
 }
 
-NeubotConnection *
-NeubotConnection::connect_hostname(NeubotProtocol *proto,
+IghtConnection *
+IghtConnection::connect_hostname(IghtProtocol *proto,
     const char *family, const char *address, const char *port)
 {
 	event_base *evbase;
-	NeubotPoller *poller;
+	IghtPoller *poller;
 	int result;
-	NeubotConnection *self;
+	IghtConnection *self;
 
 	if (proto == NULL || family == NULL || address == NULL || port == NULL)
 		abort();
 	poller = proto->get_poller();
 	if (poller == NULL)
 		abort();
-	evbase = NeubotPoller_event_base_(poller);
+	evbase = IghtPoller_event_base_(poller);
 	if (evbase == NULL)
 		abort();
 
-	self = new (std::nothrow) NeubotConnection();
+	self = new (std::nothrow) IghtConnection();
 	if (self == NULL)
 		return (NULL);
 
@@ -668,7 +668,7 @@ NeubotConnection::connect_hostname(NeubotProtocol *proto,
 		return (NULL);
 	}
 
-	self->addrlist = new (std::nothrow) NeubotStringVector(poller, 16);
+	self->addrlist = new (std::nothrow) IghtStringVector(poller, 16);
 	if (self->addrlist == NULL) {
 		delete self;
 		return (NULL);
@@ -680,7 +680,7 @@ NeubotConnection::connect_hostname(NeubotProtocol *proto,
 		return (NULL);
 	}
 
-	self->pflist = new (std::nothrow) NeubotStringVector(poller, 16);
+	self->pflist = new (std::nothrow) IghtStringVector(poller, 16);
 	if (self->pflist == NULL) {
 		delete self;
 		return (NULL);
@@ -692,7 +692,7 @@ NeubotConnection::connect_hostname(NeubotProtocol *proto,
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);
 
-	result = NeubotPoller_sched(poller, 0.0, self->resolve, self);
+	result = IghtPoller_sched(poller, 0.0, self->resolve, self);
 	if (result != 0) {
 		delete self;
 		return (NULL);
@@ -701,14 +701,14 @@ NeubotConnection::connect_hostname(NeubotProtocol *proto,
 	return (self);
 }
 
-NeubotProtocol *
-NeubotConnection::get_protocol(void)
+IghtProtocol *
+IghtConnection::get_protocol(void)
 {
 	return (this->protocol);
 }
 
 int
-NeubotConnection::set_timeout(double timeout)
+IghtConnection::set_timeout(double timeout)
 {
 	struct timeval tv, *tvp;
 	tvp = neubot_timeval_init(&tv, timeout);
@@ -716,13 +716,13 @@ NeubotConnection::set_timeout(double timeout)
 }
 
 int
-NeubotConnection::clear_timeout(void)
+IghtConnection::clear_timeout(void)
 {
 	return (this->set_timeout(-1));
 }
 
 int
-NeubotConnection::start_tls(unsigned server_side)
+IghtConnection::start_tls(unsigned server_side)
 {
 	(void) server_side;
 
@@ -730,7 +730,7 @@ NeubotConnection::start_tls(unsigned server_side)
 }
 
 int
-NeubotConnection::read(char *base, size_t count)
+IghtConnection::read(char *base, size_t count)
 {
 	if (base == NULL || count == 0 || count > INT_MAX)
 		return (-1);
@@ -739,7 +739,7 @@ NeubotConnection::read(char *base, size_t count)
 }
 
 int
-NeubotConnection::readline(char *base, size_t count)
+IghtConnection::readline(char *base, size_t count)
 {
 	size_t eol_length = 0;
 	evbuffer_ptr result = evbuffer_search_eol(this->readbuf,
@@ -765,7 +765,7 @@ NeubotConnection::readline(char *base, size_t count)
 }
 
 int
-NeubotConnection::readn(char *base, size_t count)
+IghtConnection::readn(char *base, size_t count)
 {
 	if (base == NULL || count == 0 || count > INT_MAX)
 		return (-1);
@@ -776,7 +776,7 @@ NeubotConnection::readn(char *base, size_t count)
 }
 
 int
-NeubotConnection::discardn(size_t count)
+IghtConnection::discardn(size_t count)
 {
 	if (count == 0 || count > INT_MAX)
 		return (-1);
@@ -787,7 +787,7 @@ NeubotConnection::discardn(size_t count)
 }
 
 int
-NeubotConnection::write(const char *base, size_t count)
+IghtConnection::write(const char *base, size_t count)
 {
 	if (base == NULL || count == 0)
 		return (-1);
@@ -796,7 +796,7 @@ NeubotConnection::write(const char *base, size_t count)
 }
 
 int
-NeubotConnection::puts(const char *str)
+IghtConnection::puts(const char *str)
 {
 	if (str == NULL)
 		return (-1);
@@ -807,7 +807,7 @@ NeubotConnection::puts(const char *str)
 #define N_EXTENTS 2
 
 int
-NeubotConnection::write_rand_evbuffer(struct evbuffer *evbuf, size_t count)
+IghtConnection::write_rand_evbuffer(struct evbuffer *evbuf, size_t count)
 {
         struct evbuffer_iovec vec[N_EXTENTS];
         int n_extents, i;
@@ -834,7 +834,7 @@ NeubotConnection::write_rand_evbuffer(struct evbuffer *evbuf, size_t count)
 }
 
 int
-NeubotConnection::write_rand(size_t count)
+IghtConnection::write_rand(size_t count)
 {
 	struct evbuffer *evbuf_output;
 	
@@ -849,7 +849,7 @@ NeubotConnection::write_rand(size_t count)
 }
 
 int
-NeubotConnection::write_readbuf(const char *base, size_t count)
+IghtConnection::write_readbuf(const char *base, size_t count)
 {
 	if (base == NULL || count == 0)
 		return (-1);
@@ -858,7 +858,7 @@ NeubotConnection::write_readbuf(const char *base, size_t count)
 }
 
 int
-NeubotConnection::puts_readbuf(const char *str)
+IghtConnection::puts_readbuf(const char *str)
 {
 	if (str == NULL)
 		return (-1);
@@ -867,7 +867,7 @@ NeubotConnection::puts_readbuf(const char *str)
 }
 
 int
-NeubotConnection::write_rand_readbuf(size_t count)
+IghtConnection::write_rand_readbuf(size_t count)
 {
 	if (count == 0)
 		return (-1);
@@ -876,7 +876,7 @@ NeubotConnection::write_rand_readbuf(size_t count)
 }
 
 int
-NeubotConnection::read_into_(evbuffer *destbuf)
+IghtConnection::read_into_(evbuffer *destbuf)
 {
 	if (destbuf == NULL)
 		return (-1);
@@ -885,7 +885,7 @@ NeubotConnection::read_into_(evbuffer *destbuf)
 }
 
 int
-NeubotConnection::write_from_(evbuffer *sourcebuf)
+IghtConnection::write_from_(evbuffer *sourcebuf)
 {
 	if (sourcebuf == NULL)
 		return (-1);
@@ -894,19 +894,19 @@ NeubotConnection::write_from_(evbuffer *sourcebuf)
 }
 
 int
-NeubotConnection::enable_read(void)
+IghtConnection::enable_read(void)
 {
 	return (bufferevent_enable(this->bev, EV_READ));
 }
 
 int
-NeubotConnection::disable_read(void)
+IghtConnection::disable_read(void)
 {
 	return (bufferevent_disable(this->bev, EV_READ));
 }
 
 void
-NeubotConnection::close(void)
+IghtConnection::close(void)
 {
 	this->closing = 1;
 	if (this->reading != 0 || this->connecting != 0)
