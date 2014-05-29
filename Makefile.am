@@ -45,3 +45,4 @@ libight_la_SOURCES =
 noinst_LTLIBRARIES =
 
 include src/include.am
+include test/include.am
