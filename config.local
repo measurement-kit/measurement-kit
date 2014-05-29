@@ -28,11 +28,3 @@ echo "Generate: src/ight_wrappers.h"
 echo "Generate: libneubot.py"
 
 ./gen_python libneubot.json > libneubot.py
-
-if [ $(which swig 2> /dev/null) ]; then
-    echo "Generate files in libneubot_python/..."
-    PYDIR=libneubot_python
-    swig -c++ -python -outdir $PYDIR $PYDIR/neubot.i
-else
-    echo "WARNING: libneubot_python: swig not available..."
-fi
