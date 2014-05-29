@@ -41,7 +41,7 @@
 #include <event2/dns.h>
 #include <event2/dns_compat.h>
 
-#include "ight_wrapper.h"
+#include "ight_wrappers.h"
 
 #include "net/ll2sock.h"
 

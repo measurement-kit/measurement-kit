@@ -1,36 +1,47 @@
+# Makefile.am
+
+#
+# Copyright (c) 2014, Simone Basso, Arturo Filastò, Centro Nexa
+#   su Internet & Società, Politecnico di Torino (DAUIN).
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer
+#    in the documentation and/or other materials provided with the
+#    distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+# THE POSSIBILITY OF SUCH DAMAGE.
+#
+
 AUTOMAKE_OPTIONS = foreign 1.9 subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 
-include src/include.am
-
 VERSION_INFO = 4:0:0
-AM_CFLAGS = -Wall -Wextra -I $(top_srcdir)/src
+AM_CFLAGS = -Wall -Wmissing-prototypes -Wextra -I $(top_srcdir)/src
+AM_CXXFLAGS = -Wall -Wmissing-prototypes -Wextra -I $(top_srcdir)/src
 
 lib_LTLIBRARIES = libight.la
 libight_la_LDFLAGS = -version-info $(VERSION_INFO)
-libight_la_LIBADD = $(PTHREAD_LIBS)
+libight_la_SOURCES =
 
-libight_la_SOURCES =				\
-	src/common/log.c			\
-	src/common/stringvector.cpp		\
-	src/common/utils.c			\
-	src/common/poller.c			\
-	src/net/protocol.cpp			\
-	src/net/echo.c				\
-	src/net/connection.cpp			\
-	src/neubot/pollable.cpp			\
-	src/ight_wrappers.cpp			\
-	src/ext/http-parser/http_parser.c	\
-	src/ext/strtonum.c
+noinst_LTLIBRARIES =
 
-include_HEADERS	=				\
-	src/common/utils.h			\
-	src/common/stringvector.h		\
-	src/common/poller.h			\
-	src/common/log.h			\
-	src/net/ll2sock.h			\
-	src/net/protocol.h			\
-	src/net/connection.h			\
-	src/ext/http-parser/http_parser.h	\
-	src/ext/strtonum.h			\
-	src/ight_wrappers.h
+include src/include.am

@@ -1,5 +1,7 @@
-noinst_LIBRARIES += src/net/net.a
+noinst_LTLIBRARIES += src/net/libnet.la
 
-src_net_net_a_SOURCES += \
+src_net_libnet_la_SOURCES = \
 	src/net/connection.cpp \
 	src/net/protocol.cpp
+
+libight_la_LIBADD += src/net/libnet.la
