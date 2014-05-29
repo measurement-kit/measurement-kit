@@ -1,8 +1,5 @@
-#
-# Not yet:
-#
-#ight_include_HEADERS = \
-#  src/ight_wrappers.h
+pkginclude_HEADERS = \
+    src/ight_wrappers.h
 
 noinst_LTLIBRARIES += src/libight.la
 
