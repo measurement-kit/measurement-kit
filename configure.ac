@@ -74,4 +74,5 @@ AC_CHECK_LIB(event, event_new, [],
 AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT
-AC_CONFIG_COMMANDS_POST([./config.local])
+
+./config.local
