@@ -21,9 +21,9 @@
 # along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-echo "Generate: neubot.h"
+echo "Generate: src/ight_wrappers.h"
 
-./gen_header libneubot.json > neubot.h
+./gen_header libneubot.json > src/ight_wrappers.h
 
 echo "Generate: libneubot.py"
 
