@@ -23,8 +23,8 @@
 
 echo "Generate: src/ight_wrappers.h"
 
-./gen_header libneubot.json > src/ight_wrappers.h
+./scripts/gen_header libneubot.json > src/ight_wrappers.h
 
 echo "Generate: libneubot.py"
 
-./gen_python libneubot.json > libneubot.py
+./scripts/gen_python libneubot.json > libneubot.py
