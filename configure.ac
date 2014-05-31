@@ -69,7 +69,26 @@ AC_CHECK_LIB(event, event_new, [],
 # checks for header files
 # checks for types
 # checks for structures
+
 # checks for compiler characteristics
+
+AC_PROG_CC_C99
+if test x"$ac_cv_prog_cc_c99" = xno; then
+    AC_MSG_ERROR([a C99 compiler is required])
+fi
+
+ight_saved_cxxflags="$CXXFLAGS"
+CXXFLAGS=-std=c++11
+AC_MSG_CHECKING([whether CXX supports -std=c++11])
+AC_LANG_PUSH([C++])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+    [AC_MSG_RESULT([yes])]
+    [],
+    [AC_MSG_ERROR([a C++11 compiler is required])]
+)
+CXXFLAGS="$ight_saved_cxxflags -std=c++11"
+AC_LANG_POP([C++])
+
 # checks for library functions
 # checks for system services
 
