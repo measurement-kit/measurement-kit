@@ -37,7 +37,7 @@ ight_warnv(const char *fmt, va_list ap)
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, "\n");
 #else
-	__android_log_vprint(ANDROID_LOG_WARN, "libneubot", fmt, ap);
+	__android_log_vprint(ANDROID_LOG_WARN, "libight", fmt, ap);
 #endif
 }
 

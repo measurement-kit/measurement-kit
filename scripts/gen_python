@@ -37,9 +37,9 @@ def gen_python_imports(stream):
     stream.write("import sys\n")
     stream.write("\n")
     stream.write('if sys.platform == "darwin":\n')
-    stream.write('    LIBIGHT_NAME = "/usr/local/lib/libneubot.dylib.3"\n')
+    stream.write('    LIBIGHT_NAME = "/usr/local/lib/libight.dylib.3"\n')
     stream.write("else:\n")
-    stream.write('    LIBIGHT_NAME = "/usr/local/lib/libneubot.so.3"\n')
+    stream.write('    LIBIGHT_NAME = "/usr/local/lib/libight.so.3"\n')
     stream.write("\n")
     stream.write("LIBIGHT = ctypes.CDLL(LIBIGHT_NAME)\n\n")
 

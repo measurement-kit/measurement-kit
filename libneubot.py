@@ -12,9 +12,9 @@ import os
 import sys
 
 if sys.platform == "darwin":
-    LIBIGHT_NAME = "/usr/local/lib/libneubot.dylib.3"
+    LIBIGHT_NAME = "/usr/local/lib/libight.dylib.3"
 else:
-    LIBIGHT_NAME = "/usr/local/lib/libneubot.so.3"
+    LIBIGHT_NAME = "/usr/local/lib/libight.so.3"
 
 LIBIGHT = ctypes.CDLL(LIBIGHT_NAME)
 
