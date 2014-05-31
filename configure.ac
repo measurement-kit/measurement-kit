@@ -55,9 +55,6 @@ AC_ARG_WITH([libevent],
             [AS_HELP_STRING([--with-libevent],
              [event I/O library @<:@default=check@:>@])
             ], [
-              #if ! test $withval/include/event2/event.h; then
-              #    AC_MSG_ERROR([unable to find event2/event.h])
-              #fi
               CPPFLAGS="$CPPFLAGS -I$withval/include"
               LDFLAGS="$LDFLAGS -L$withval/lib"
             ], [])
