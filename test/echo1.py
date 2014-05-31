@@ -5,10 +5,10 @@
 
 import sys
 
-sys.path.insert(0, "/usr/local/share/libneubot")
+sys.path.insert(0, "/usr/local/share/libight")
 
-from libneubot import EchoServer
-from libneubot import Poller
+from _libight import EchoServer
+from _libight import Poller
 
 def main():
     """ Main function """

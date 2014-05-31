@@ -5,11 +5,11 @@ import ctypes
 import os
 import sys
 
-sys.path.insert(0, "/usr/local/share/libneubot")
+sys.path.insert(0, "/usr/local/share/libight")
 
-from libneubot import Connection
-from libneubot import Poller
-from libneubot import Protocol
+from _libight import Connection
+from _libight import Poller
+from _libight import Protocol
 
 BUFF_LENGTH = 65535
 BUFF_TYPE = ctypes.c_char * BUFF_LENGTH

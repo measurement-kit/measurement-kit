@@ -3,9 +3,9 @@
 
 import sys
 
-sys.path.insert(0, "/usr/local/share/libneubot")
+sys.path.insert(0, "/usr/local/share/libight")
 
-from libneubot import LIBIGHT
+from _libight import LIBIGHT
 
 def main():
     poller = LIBIGHT.IghtPoller_construct()
