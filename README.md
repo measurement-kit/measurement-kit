@@ -29,3 +29,8 @@ If `./configure` does not find libevent, consider using the
 installed below `/opt/local`, run:
 
     ./configure --with-libevent=/opt/local
+
+To tell make to produce less output (as in the Linux kernel
+build process) run:
+
+    make V=0

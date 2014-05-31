@@ -38,6 +38,7 @@ AC_INIT(libight, 4.0.0, bassosimone@gmail.com)
 AC_CONFIG_SRCDIR([src/ight_wrappers.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 LT_INIT
 AC_CONFIG_HEADERS([config.h])
 
