@@ -181,7 +181,7 @@ IghtEchoServer_construct(struct IghtPoller *poller, int use_ipv6,
 	if (self == NULL)
 		return (NULL);
 
-	self->fileno = neubot_listen(use_ipv6, address, port);
+	self->fileno = ight_listen(use_ipv6, address, port);
 	if (self->fileno == IGHT_SOCKET_INVALID)
 		goto cleanup;
 

@@ -48,15 +48,15 @@
 
 struct IghtPollableWrapper : public IghtPollable {
 
-	neubot_slot_vo on_handle_error;
-	neubot_slot_vo on_handle_read;
-	neubot_slot_vo on_handle_write;
+	ight_slot_vo on_handle_error;
+	ight_slot_vo on_handle_read;
+	ight_slot_vo on_handle_write;
 	void *opaque;
 
-	IghtPollableWrapper(IghtPoller *poller, neubot_slot_vo on_read,
-	    neubot_slot_vo on_write, neubot_slot_vo on_error,
+	IghtPollableWrapper(IghtPoller *poller, ight_slot_vo on_read,
+	    ight_slot_vo on_write, ight_slot_vo on_error,
 	    void *opaque) : IghtPollable(poller) {
-		neubot_info("IghtPollable::construct");
+		ight_info("IghtPollable::construct");
 		this->on_handle_error = on_error;
 		this->on_handle_read = on_read;
 		this->on_handle_write = on_write;
@@ -64,28 +64,28 @@ struct IghtPollableWrapper : public IghtPollable {
 	};
 
 	virtual void handle_read(void) {
-		neubot_info("IghtPollable::handle_read");
+		ight_info("IghtPollable::handle_read");
 		this->on_handle_read(this->opaque);
 	};
 
 	virtual void handle_write(void) {
-		neubot_info("IghtPollable::handle_write");
+		ight_info("IghtPollable::handle_write");
 		this->on_handle_write(this->opaque);
 	};
 
 	virtual void handle_error(void) {
-		neubot_info("IghtPollable::handle_error");
+		ight_info("IghtPollable::handle_error");
 		this->on_handle_error(this->opaque);
 	};
 
 	virtual ~IghtPollableWrapper(void) {
-		neubot_info("IghtPollable::~IghtPollable");
+		ight_info("IghtPollable::~IghtPollable");
 	};
 };
 
 IghtPollable *
-IghtPollable_construct(IghtPoller *poller, neubot_slot_vo handle_read,
-    neubot_slot_vo handle_write, neubot_slot_vo handle_error,
+IghtPollable_construct(IghtPoller *poller, ight_slot_vo handle_read,
+    ight_slot_vo handle_write, ight_slot_vo handle_error,
     void *opaque)
 {
 	if (poller == NULL)
@@ -196,18 +196,18 @@ IghtPollable_close(IghtPollable *self)
 struct IghtProtocolWrapper : public IghtProtocol {
 
 	IghtPoller *poller;
-	neubot_slot_vo fn_connect;
-	neubot_slot_vo fn_ssl;
-	neubot_slot_vo fn_data;
-	neubot_slot_vo fn_flush;
-	neubot_slot_vo fn_eof;
-	neubot_slot_vo fn_error;
+	ight_slot_vo fn_connect;
+	ight_slot_vo fn_ssl;
+	ight_slot_vo fn_data;
+	ight_slot_vo fn_flush;
+	ight_slot_vo fn_eof;
+	ight_slot_vo fn_error;
 	void *opaque;
 
-	IghtProtocolWrapper(IghtPoller *p, neubot_slot_vo slot_connect,
-	    neubot_slot_vo slot_ssl, neubot_slot_vo slot_data,
-	    neubot_slot_vo slot_flush, neubot_slot_vo slot_eof,
-	    neubot_slot_vo slot_error, void *o) : IghtProtocol() {
+	IghtProtocolWrapper(IghtPoller *p, ight_slot_vo slot_connect,
+	    ight_slot_vo slot_ssl, ight_slot_vo slot_data,
+	    ight_slot_vo slot_flush, ight_slot_vo slot_eof,
+	    ight_slot_vo slot_error, void *o) : IghtProtocol() {
 		this->poller = p;
 		this->fn_connect = slot_connect;
 		this->fn_ssl = slot_ssl;
@@ -260,10 +260,10 @@ IghtProtocolWrapper::get_poller(void)
 }
 
 IghtProtocol *
-IghtProtocol_construct(IghtPoller *p, neubot_slot_vo slot_connect,
-    neubot_slot_vo slot_ssl, neubot_slot_vo slot_data,
-    neubot_slot_vo slot_flush, neubot_slot_vo slot_eof,
-    neubot_slot_vo slot_error, void *o)
+IghtProtocol_construct(IghtPoller *p, ight_slot_vo slot_connect,
+    ight_slot_vo slot_ssl, ight_slot_vo slot_data,
+    ight_slot_vo slot_flush, ight_slot_vo slot_eof,
+    ight_slot_vo slot_error, void *o)
 {
 	if (p == NULL)
 		abort();

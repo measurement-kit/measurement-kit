@@ -31,7 +31,7 @@
 #include "common/log.h"
 
 static void
-neubot_warnv(const char *fmt, va_list ap)
+ight_warnv(const char *fmt, va_list ap)
 {
 #ifndef IGHT_ANDROID
 	vfprintf(stderr, fmt, ap);
@@ -42,21 +42,21 @@ neubot_warnv(const char *fmt, va_list ap)
 }
 
 void
-neubot_warn(const char *fmt, ...)
+ight_warn(const char *fmt, ...)
 {
 	va_list ap;
 
 	va_start(ap, fmt);
-	neubot_warnv(fmt, ap);
+	ight_warnv(fmt, ap);
 	va_end(ap);
 }
 
 void
-neubot_info(const char *fmt, ...)
+ight_info(const char *fmt, ...)
 {
 	va_list ap;
 
 	va_start(ap, fmt);
-	neubot_warnv(fmt, ap);
+	ight_warnv(fmt, ap);
 	va_end(ap);
 }

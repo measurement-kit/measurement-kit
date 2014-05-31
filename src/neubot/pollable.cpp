@@ -48,7 +48,7 @@
 
 IghtPollable::IghtPollable(IghtPoller *poller)
 {
-	neubot_info("pollable: IghtPollable()");
+	ight_info("pollable: IghtPollable()");
 
 	this->poller = poller;
 	this->timeout = -1.0;
@@ -86,10 +86,10 @@ IghtPollable::attach(long long fileno)
 	// Sanity
 	//
 
-	neubot_info("pollable: attach()");
+	ight_info("pollable: attach()");
 
 	if (this->fileno != IGHT_SOCKET_INVALID) {
-		neubot_warn("pollable: already attached");
+		ight_warn("pollable: already attached");
 		return (-1);
 	}	
 
@@ -98,8 +98,8 @@ IghtPollable::attach(long long fileno)
 	 * shall be wide enough to hold evutil_socket_t, which is `int`
 	 * on Unix and `intptr_t` on Windows.
 	 */
-	if (!neubot_socket_valid(fileno)) {
-		neubot_warn("pollable: invalid argument");
+	if (!ight_socket_valid(fileno)) {
+		ight_warn("pollable: invalid argument");
 		return (-1);
 	}
 
@@ -117,7 +117,7 @@ IghtPollable::attach(long long fileno)
 	    dispatch, this);
 
 	if (this->evread == NULL || this->evwrite == NULL) {
-		neubot_warn("pollable: event_new() failed");
+		ight_warn("pollable: event_new() failed");
 		return (-1);
 	}
 
@@ -131,7 +131,7 @@ IghtPollable::attach(long long fileno)
 void
 IghtPollable::detach(void)
 {
-	neubot_info("pollable: detach()");
+	ight_info("pollable: detach()");
 
 	// poller: continue to point to the poller
 
@@ -172,16 +172,16 @@ IghtPollable::setunset(const char *what, unsigned opcode, event *evp)
 	struct timeval tv, *tvp;
 	int result;
 
-	neubot_info("pollable: %s()", what);
+	ight_info("pollable: %s()", what);
 
 	if (this->fileno == IGHT_SOCKET_INVALID) {
-		neubot_warn("%s: not attached", what);
+		ight_warn("%s: not attached", what);
 		return (-1);
 	}
 
 	switch (opcode) {
 	case OPERATION_SET:
-		tvp = neubot_timeval_init(&tv, this->timeout);
+		tvp = ight_timeval_init(&tv, this->timeout);
 		result = event_add(evp, tvp);
 		break;
 	case OPERATION_UNSET:
@@ -192,7 +192,7 @@ IghtPollable::setunset(const char *what, unsigned opcode, event *evp)
 	}
 
 	if (result != 0) {
-		neubot_warn("%s: event_add/event_del() failed", what);
+		ight_warn("%s: event_add/event_del() failed", what);
 		return (-1);
 	}
 
@@ -266,6 +266,6 @@ IghtPollable::handle_error(void)
 
 IghtPollable::~IghtPollable(void)
 {
-	neubot_info("pollable: ~IghtPollable()");
+	ight_info("pollable: ~IghtPollable()");
 	this->detach();
 }

@@ -58,8 +58,8 @@ struct IghtPoller {
 };
 
 struct IghtEvent {
-	neubot_hook_vo callback;
-	neubot_hook_vo timeback;
+	ight_hook_vo callback;
+	ight_hook_vo timeback;
 	struct event ev;
 	struct timeval tv;
 	evutil_socket_t fileno;
@@ -67,7 +67,7 @@ struct IghtEvent {
 };
 
 struct ResolveContext {
-	neubot_hook_vos callback;
+	ight_hook_vos callback;
 	struct evbuffer *names;
 	void *opaque;
 };
@@ -101,7 +101,7 @@ IghtEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
 
 static inline struct IghtEvent *
 IghtEvent_construct(struct IghtPoller *poller, long long fileno,
-    neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
+    ight_hook_vo callback, ight_hook_vo timeback, void *opaque,
     double timeout, short event)
 {
 	struct IghtEvent *nevp;
@@ -121,7 +121,7 @@ IghtEvent_construct(struct IghtPoller *poller, long long fileno,
 	switch (event) {
 	case EV_READ:
 	case EV_WRITE:
-		if (!neubot_socket_valid(fileno))
+		if (!ight_socket_valid(fileno))
 			goto cleanup;
 		break;
 	case EV_TIMEOUT:
@@ -153,7 +153,7 @@ IghtEvent_construct(struct IghtPoller *poller, long long fileno,
 
 	event_set(&nevp->ev, nevp->fileno, event, IghtEvent_dispatch, nevp);
 
-	tvp = neubot_timeval_init(&nevp->tv, timeout);
+	tvp = ight_timeval_init(&nevp->tv, timeout);
 
 	result = event_add(&nevp->ev, tvp);
 	if (result != 0)
@@ -162,7 +162,7 @@ IghtEvent_construct(struct IghtPoller *poller, long long fileno,
 	return (nevp);
 
       cleanup:
-	neubot_xfree(nevp);
+	ight_xfree(nevp);
 	return (NULL);
 }
 
@@ -246,7 +246,7 @@ IghtPoller_evdns_base_(struct IghtPoller *self)
  */
 int
 IghtPoller_sched(struct IghtPoller *self, double delta,
-    neubot_hook_vo callback, void *opaque)
+    ight_hook_vo callback, void *opaque)
 {
 	struct IghtEvent *nevp;
 
@@ -265,7 +265,7 @@ IghtPoller_sched(struct IghtPoller *self, double delta,
 
 int
 IghtPoller_defer_read(struct IghtPoller *self, long long fileno,
-    neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
+    ight_hook_vo callback, ight_hook_vo timeback, void *opaque,
     double timeout)
 {
 	struct IghtEvent *nevp;
@@ -279,7 +279,7 @@ IghtPoller_defer_read(struct IghtPoller *self, long long fileno,
 
 int
 IghtPoller_defer_write(struct IghtPoller *self, long long fileno,
-    neubot_hook_vo callback, neubot_hook_vo timeback, void *opaque,
+    ight_hook_vo callback, ight_hook_vo timeback, void *opaque,
     double timeout)
 {
 	struct IghtEvent *nevp;
@@ -323,29 +323,29 @@ IghtPoller_resolve_callback_internal(int result, char type, int count,
 		p = inet_ntop(family, (char *)addresses + count * size,
 		    string, sizeof (string));
 		if (p == NULL) {
-			neubot_warn("resolve: inet_ntop() failed");
+			ight_warn("resolve: inet_ntop() failed");
 			continue;
 		}
 		error = evbuffer_add(rc->names, p, strlen(p));
 		if (error != 0) {
-			neubot_warn("resolve: evbuffer_add() failed");
+			ight_warn("resolve: evbuffer_add() failed");
 			goto failure;
 		}
 		error = evbuffer_add(rc->names, " ", 1);
 		if (error != 0) {
-			neubot_warn("resolve: evbuffer_add() failed");
+			ight_warn("resolve: evbuffer_add() failed");
 			goto failure;
 		}
 	}
 
 	error = evbuffer_add(rc->names, "\0", 1);
 	if (error != 0) {
-		neubot_warn("resolve: evbuffer_add() failed");
+		ight_warn("resolve: evbuffer_add() failed");
 		goto failure;
 	}
 	p = (const char *) evbuffer_pullup(rc->names, -1);
 	if (p == NULL) {
-		neubot_warn("resolve: evbuffer_pullup() failed");
+		ight_warn("resolve: evbuffer_pullup() failed");
 		goto failure;
 	}
 
@@ -361,7 +361,7 @@ IghtPoller_resolve_callback_internal(int result, char type, int count,
 
 int
 IghtPoller_resolve(struct IghtPoller *poller, const char *family,
-    const char *address, neubot_hook_vos callback, void *opaque)
+    const char *address, ight_hook_vos callback, void *opaque)
 {
 	struct ResolveContext *rc;
 	int result;
@@ -370,7 +370,7 @@ IghtPoller_resolve(struct IghtPoller *poller, const char *family,
 
 	rc = calloc(1, sizeof (*rc));
 	if (rc == NULL) {
-		neubot_warn("resolve: calloc() failed");
+		ight_warn("resolve: calloc() failed");
 		goto failure;
 	}
 
@@ -379,7 +379,7 @@ IghtPoller_resolve(struct IghtPoller *poller, const char *family,
 
 	rc->names = evbuffer_new();
 	if (rc->names == NULL) {
-		neubot_warn("resolve: evbuffer_new() failed");
+		ight_warn("resolve: evbuffer_new() failed");
 		goto failure;
 	}
 
@@ -390,12 +390,12 @@ IghtPoller_resolve(struct IghtPoller *poller, const char *family,
 		result = evdns_resolve_ipv4(address, DNS_QUERY_NO_SEARCH,
 		    IghtPoller_resolve_callback_internal, rc);
 	else {
-		neubot_warn("resolve: invalid family");
+		ight_warn("resolve: invalid family");
 		goto failure;
 	}
 
 	if (result != 0) {
-		neubot_warn("resolve: evdns_resolve_ipvX() failed");
+		ight_warn("resolve: evdns_resolve_ipvX() failed");
 		goto failure;
 	}
 

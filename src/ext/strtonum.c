@@ -28,7 +28,7 @@
 #define	TOOLARGE        3
 
 long long
-neubot_strtonum(const char *numstr, long long minval, long long maxval,
+ight_strtonum(const char *numstr, long long minval, long long maxval,
     const char **errstrp)
 {
 	long long ll = 0;

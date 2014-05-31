@@ -33,7 +33,7 @@
 
 struct IghtPoller;
 
-typedef void (*neubot_slot_vo)(void *);  /* XXX Duplicate definition */
+typedef void (*ight_slot_vo)(void *);  /* XXX Duplicate definition */
 
 struct IghtProtocol {
 	virtual void on_connect(void) {

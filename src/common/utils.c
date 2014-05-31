@@ -44,26 +44,26 @@
 #include "net/ll2sock.h"
 
 void
-neubot_timeval_now(struct timeval *tv)
+ight_timeval_now(struct timeval *tv)
 {
 	if (gettimeofday(tv, NULL) != 0)
 		abort();
 }
 
 double
-neubot_time_now(void)
+ight_time_now(void)
 {
 	struct timeval tv;
 	double result;
 
-	neubot_timeval_now(&tv);
+	ight_timeval_now(&tv);
 	result = tv.tv_sec + tv.tv_usec / (double) 1000000.0;
 
 	return (result);
 }
 
 evutil_socket_t
-neubot_listen(int use_ipv6, const char *address, const char *port)
+ight_listen(int use_ipv6, const char *address, const char *port)
 {
 	struct sockaddr_storage storage;
 	socklen_t salen;
@@ -76,15 +76,15 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
 	else
 		family = "PF_INET";
 
-	result = neubot_storage_init(&storage, &salen, family, address, port);
+	result = ight_storage_init(&storage, &salen, family, address, port);
 	if (result == -1)
 		return (-1);
 
-	filedesc = neubot_socket_create(storage.ss_family, SOCK_STREAM, 0);
+	filedesc = ight_socket_create(storage.ss_family, SOCK_STREAM, 0);
 	if (filedesc == IGHT_SOCKET_INVALID)
 		return (-1);
 
-	result = neubot_socket_listen(filedesc, &storage, salen);
+	result = ight_socket_listen(filedesc, &storage, salen);
 	if (result != 0) {
 		(void) evutil_closesocket(filedesc);
 		return (-1);
@@ -95,36 +95,36 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
 
 /* Many system's free() handle NULL; is this needed? */
 void
-neubot_xfree(void *ptr)
+ight_xfree(void *ptr)
 {
 	if (ptr != NULL)
 		free(ptr);
 }
 
 struct timeval *
-neubot_timeval_init(struct timeval *tv, double delta)
+ight_timeval_init(struct timeval *tv, double delta)
 {
-	neubot_info("utils:neubot_timeval_init - enter");
+	ight_info("utils:ight_timeval_init - enter");
 
 	if (delta < 0) {
-		neubot_info("utils:neubot_timeval_init - no init needed");
+		ight_info("utils:ight_timeval_init - no init needed");
 		return (NULL);
 	}
 	tv->tv_sec = (time_t) floor(delta);
 	tv->tv_usec = (suseconds_t) ((delta - floor(delta)) * 1000000);
 
-	neubot_info("utils:neubot_timeval_init - ok");
+	ight_info("utils:ight_timeval_init - ok");
 	return (tv);
 }
 
 int
-neubot_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
+ight_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
     const char *family, const char *address, const char *port)
 {
 	int _family, _port, result;
 	const char *errstr;
 
-	neubot_info("utils:neubot_storage_init - enter");
+	ight_info("utils:ight_storage_init - enter");
 
 	/* TODO: support also AF_INET, AF_INET6, ... */
 	if (strcmp(family, "PF_INET") == 0) {
@@ -132,13 +132,13 @@ neubot_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
 	} else if (strcmp(family, "PF_INET6") == 0) {
 		_family = PF_INET6;
 	} else {
-		neubot_warn("utils:neubot_storage_init: invalid family");
+		ight_warn("utils:ight_storage_init: invalid family");
 		return (-1);
 	}
 
-	_port = (int) neubot_strtonum(port, 0, 65535, &errstr);
+	_port = (int) ight_strtonum(port, 0, 65535, &errstr);
 	if (errstr != NULL) {
-		neubot_warn("utils:neubot_storage_init: invalid port");
+		ight_warn("utils:ight_storage_init: invalid port");
 		return (-1);
 	}
 
@@ -151,7 +151,7 @@ neubot_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
 	       sin6->sin6_port = htons(_port);
 	       result = inet_pton(AF_INET6, address, &sin6->sin6_addr);
 	       if (result != 1) {
-		       neubot_warn("utils:neubot_storage_init: invalid addr");
+		       ight_warn("utils:ight_storage_init: invalid addr");
 		       return (-1);
 	       }
 	       *salen = sizeof (struct sockaddr_in6);
@@ -164,7 +164,7 @@ neubot_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
 	      sin->sin_port = htons(_port);
 	      result = inet_pton(AF_INET, address, &sin->sin_addr);
 	      if (result != 1) {
-		      neubot_warn("utils:neubot_storage_init: invalid addr");
+		      ight_warn("utils:ight_storage_init: invalid addr");
 		      return (-1);
 	      }
 	      *salen = sizeof (struct sockaddr_in);
@@ -175,42 +175,42 @@ neubot_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
 		abort();
 	}
 
-	neubot_info("utils:neubot_storage_init - ok");
+	ight_info("utils:ight_storage_init - ok");
 	return (0);
 }
 
 evutil_socket_t
-neubot_socket_create(int domain, int type, int protocol)
+ight_socket_create(int domain, int type, int protocol)
 {
 	evutil_socket_t filedesc;
 	int result;
 
-	neubot_info("utils:neubot_socket - enter");
+	ight_info("utils:ight_socket - enter");
 
 	filedesc = socket(domain, type, protocol);
 	if (filedesc == IGHT_SOCKET_INVALID) {
-		neubot_warn("utils:neubot_socket: cannot create socket");
+		ight_warn("utils:ight_socket: cannot create socket");
 		return (IGHT_SOCKET_INVALID);
 	}
 
 	result = evutil_make_socket_nonblocking(filedesc);
 	if (result != 0) {
-		neubot_warn("utils:neubot_socket: cannot make nonblocking");
+		ight_warn("utils:ight_socket: cannot make nonblocking");
 		(void) evutil_closesocket(filedesc);
 		return (IGHT_SOCKET_INVALID);
 	}
 
-	neubot_info("utils:neubot_socket - ok");
+	ight_info("utils:ight_socket - ok");
 	return (filedesc);
 }
 
 int
-neubot_socket_connect(evutil_socket_t filedesc,
+ight_socket_connect(evutil_socket_t filedesc,
     struct sockaddr_storage *storage, socklen_t salen)
 {
 	int result;
 
-	neubot_info("utils:neubot_socket_connect - enter");
+	ight_info("utils:ight_socket_connect - enter");
 
 	result = connect(filedesc, (struct sockaddr *) storage, salen);
 	if (result != 0) {
@@ -220,43 +220,43 @@ neubot_socket_connect(evutil_socket_t filedesc,
 		if (WSAGetLastError() == WSA_EINPROGRESS)  /* untested */
 #endif
 			goto looksgood;
-		neubot_warn("utils:neubot_socket_connect - connect() failed");
+		ight_warn("utils:ight_socket_connect - connect() failed");
 		return (-1);
 	}
 
     looksgood:
-	neubot_info("utils:neubot_socket_connect - ok");
+	ight_info("utils:ight_socket_connect - ok");
 	return (0);
 }
 
 int
-neubot_socket_listen(evutil_socket_t filedesc, struct sockaddr_storage *storage,
+ight_socket_listen(evutil_socket_t filedesc, struct sockaddr_storage *storage,
     socklen_t salen)
 {
 	int result, activate;
 
-	neubot_info("utils:neubot_socket_listen - enter");
+	ight_info("utils:ight_socket_listen - enter");
 
 	activate = 1;
 	result = setsockopt(filedesc, SOL_SOCKET, SO_REUSEADDR,
 	    &activate, sizeof(activate));
 	if (result != 0) {
-		neubot_warn("utils:neubot_socket_listen - setsockopt() failed");
+		ight_warn("utils:ight_socket_listen - setsockopt() failed");
 		return (-1);
 	}
 
 	result = bind(filedesc, (struct sockaddr *) storage, salen);
 	if (result != 0) {
-		neubot_warn("utils:neubot_socket_listen - bind() failed");
+		ight_warn("utils:ight_socket_listen - bind() failed");
 		return (-1);
 	}
 
 	result = listen(filedesc, 10);
 	if (result != 0) {
-		neubot_warn("utils:neubot_socket_listen - listen() failed");
+		ight_warn("utils:ight_socket_listen - listen() failed");
 		return (-1);
 	}
 
-	neubot_info("utils:neubot_socket_listen - ok");
+	ight_info("utils:ight_socket_listen - ok");
 	return (0);
 }

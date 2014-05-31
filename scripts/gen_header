@@ -30,10 +30,10 @@ CLANG_TYPE = {
     "Object": "void *",
     "cstring": "const char *",
     "evbuffer_p": "struct evbuffer *",
-    "hook_vo": "neubot_hook_vo",
-    "hook_vos": "neubot_hook_vos",
+    "hook_vo": "ight_hook_vo",
+    "hook_vos": "ight_hook_vos",
     "ioresult_t": "int",
-    "slot_vo": "neubot_slot_vo",
+    "slot_vo": "ight_slot_vo",
     "status_t": "int",
     "string": "char *",
     "void_p": "void *",
@@ -129,10 +129,10 @@ def main():
 
     sys.stdout.write("/* Hooks and slots: */\n")
     sys.stdout.write("\n")
-    sys.stdout.write("typedef void (*neubot_hook_vo)(void *);\n")
-    sys.stdout.write("typedef void (*neubot_hook_vos)(void *, const char *);\n")
+    sys.stdout.write("typedef void (*ight_hook_vo)(void *);\n")
+    sys.stdout.write("typedef void (*ight_hook_vos)(void *, const char *);\n")
     sys.stdout.write("\n")
-    sys.stdout.write("typedef void (*neubot_slot_vo)(void *);\n")
+    sys.stdout.write("typedef void (*ight_slot_vo)(void *);\n")
     sys.stdout.write("\n")
     sys.stdout.write("struct evbuffer;\n")
     sys.stdout.write("\n")

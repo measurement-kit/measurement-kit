@@ -155,7 +155,7 @@ IghtConnection::handle_event(bufferevent *bev, short what, void *opaque)
 	}
 
 	if (self->connecting) {
-		neubot_info("connection::handle_event - try connect next");
+		ight_info("connection::handle_event - try connect next");
 		self->connect_next();
 		return;
 	}
@@ -181,7 +181,7 @@ IghtConnection::attach(IghtProtocol *proto, long long filenum)
 	if (evbase == NULL)
 		abort();
 
-	if (!neubot_socket_valid(filenum))
+	if (!ight_socket_valid(filenum))
 		return (NULL);
 
 	self = new (std::nothrow) IghtConnection();
@@ -270,7 +270,7 @@ IghtConnection::connect(IghtProtocol *proto, const char *family,
 	if (evbase == NULL)
 		abort();
 
-	result = neubot_storage_init(&storage, &total, family, address, port);
+	result = ight_storage_init(&storage, &total, family, address, port);
 	if (result != 0)
 		return (NULL);
 
@@ -278,7 +278,7 @@ IghtConnection::connect(IghtProtocol *proto, const char *family,
 	if (self == NULL)
 		return (NULL);
 
-	self->filedesc = neubot_socket_create(storage.ss_family,
+	self->filedesc = ight_socket_create(storage.ss_family,
 	    SOCK_STREAM, 0);
 	if (self->filedesc == IGHT_SOCKET_INVALID) {
 		delete self;
@@ -361,26 +361,26 @@ IghtConnection::connect_next(void)
 	struct sockaddr_storage storage;
 	socklen_t total;
 
-	neubot_info("connect_next - enter");
+	ight_info("connect_next - enter");
 
 	for (;;) {
 		address = this->addrlist->get_next();
 		if (address == NULL) {
-			neubot_warn("connect_next - no more available addrs");
+			ight_warn("connect_next - no more available addrs");
 			break;
 		}
 		family = this->pflist->get_next();
 		if (family == NULL)
 			abort();
 
-		neubot_info("connect_next - %s %s", family, address);
+		ight_info("connect_next - %s %s", family, address);
 
-		error = neubot_storage_init(&storage, &total, family,
+		error = ight_storage_init(&storage, &total, family,
 		    address, this->port);
 		if (error != 0)
 			continue;
 
-		this->filedesc = neubot_socket_create(storage.ss_family,
+		this->filedesc = ight_socket_create(storage.ss_family,
 		    SOCK_STREAM, 0);
 		if (this->filedesc == IGHT_SOCKET_INVALID)
 			continue;
@@ -401,13 +401,13 @@ IghtConnection::connect_next(void)
 			error = bufferevent_setfd(this->bev,
 			    IGHT_SOCKET_INVALID);
 			if (error != 0) {
-				neubot_warn("connect_next - internal error");
+				ight_warn("connect_next - internal error");
 				break;
 			}
 			continue;
 		}
 
-		neubot_info("connect_next - ok");
+		ight_info("connect_next - ok");
 		return;
 	}
 
@@ -427,7 +427,7 @@ IghtConnection::handle_resolve(int result, char type, int count,
 
 	(void) ttl;
 
-	neubot_info("handle_resolve - enter");
+	ight_info("handle_resolve - enter");
 
 	if (!self->connecting)
 		abort();
@@ -442,13 +442,13 @@ IghtConnection::handle_resolve(int result, char type, int count,
 
 	switch (type) {
 	case DNS_IPv4_A:
-		neubot_info("handle_resolve - IPv4");
+		ight_info("handle_resolve - IPv4");
 		family = PF_INET;
 		_family = "PF_INET";
 		size = 4;
 		break;
 	case DNS_IPv6_AAAA:
-		neubot_info("handle_resolve - IPv6");
+		ight_info("handle_resolve - IPv6");
 		family = PF_INET6;
 		_family = "PF_INET6";
 		size = 16;
@@ -465,19 +465,19 @@ IghtConnection::handle_resolve(int result, char type, int count,
 		p = inet_ntop(family, (char *)addresses + count * size,
 		    string, sizeof (string));
 		if (p == NULL) {
-			neubot_warn("handle_resolve - inet_ntop() failed");
+			ight_warn("handle_resolve - inet_ntop() failed");
 			continue;
 		}
-		neubot_info("handle_resolve - address %s", p);
+		ight_info("handle_resolve - address %s", p);
 		error = self->addrlist->append(string);
 		if (error != 0) {
-			neubot_warn("handle_resolve - cannot append");
+			ight_warn("handle_resolve - cannot append");
 			continue;
 		}
-		neubot_info("handle_resolve - family %s", _family);
+		ight_info("handle_resolve - family %s", _family);
 		error = self->pflist->append(_family);
 		if (error != 0) {
-			neubot_warn("handle_resolve - cannot append");
+			ight_warn("handle_resolve - cannot append");
 			// Oops the two vectors are not in sync anymore now
 			self->connecting = 0;
 			self->protocol->on_error();
@@ -532,11 +532,11 @@ IghtConnection::resolve(void *opaque)
 	memset(&storage, 0, sizeof (storage));
 	result = inet_pton(PF_INET, self->address, &storage);
 	if (result == 1) {
-		neubot_info("resolve - address %s", self->address);
-		neubot_info("resolve - family PF_INET");
+		ight_info("resolve - address %s", self->address);
+		ight_info("resolve - family PF_INET");
 		if (self->addrlist->append(self->address) != 0 ||
 		    self->pflist->append("PF_INET") != 0) {
-			neubot_warn("resolve - cannot append");
+			ight_warn("resolve - cannot append");
 			self->connecting = 0;
 			self->protocol->on_error();
 			return;
@@ -549,11 +549,11 @@ IghtConnection::resolve(void *opaque)
 	memset(&storage, 0, sizeof (storage));
 	result = inet_pton(PF_INET6, self->address, &storage);
 	if (result == 1) {
-		neubot_info("resolve - address %s", self->address);
-		neubot_info("resolve - family PF_INET6");
+		ight_info("resolve - address %s", self->address);
+		ight_info("resolve - family PF_INET6");
 		if (self->addrlist->append(self->address) != 0 ||
 		    self->pflist->append("PF_INET6") != 0) {
-			neubot_warn("resolve - cannot append");
+			ight_warn("resolve - cannot append");
 			self->connecting = 0;
 			self->protocol->on_error();
 			return;
@@ -580,7 +580,7 @@ IghtConnection::resolve(void *opaque)
 	else if (strcmp(self->family, "PF_UNSPEC6") == 0)
 		self->must_resolve_ipv6 = 1;
 	else {
-		neubot_warn("connection::resolve - invalid PF_xxx");
+		ight_warn("connection::resolve - invalid PF_xxx");
 		self->connecting = 0;
 		self->protocol->on_error();
 		return;
@@ -711,7 +711,7 @@ int
 IghtConnection::set_timeout(double timeout)
 {
 	struct timeval tv, *tvp;
-	tvp = neubot_timeval_init(&tv, timeout);
+	tvp = ight_timeval_init(&tv, timeout);
 	return (bufferevent_set_timeouts(this->bev, tvp, tvp));
 }
 

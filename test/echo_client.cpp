@@ -77,7 +77,7 @@ class EchoProtocol : public IghtProtocol {
 	}
 
 	virtual void on_connect(void) {
-		neubot_info("echo - connected");
+		ight_info("echo - connected");
 	}
 
 	virtual void on_data(void) {
@@ -92,7 +92,7 @@ class EchoProtocol : public IghtProtocol {
 				return;
 			}
 			if (result == 0) {
-				neubot_info("echo - exhausted input buffer");
+				ight_info("echo - exhausted input buffer");
 				break;
 			}
 			result = this->connection->write(buffer,
@@ -105,16 +105,16 @@ class EchoProtocol : public IghtProtocol {
 	}
 
 	virtual void on_flush(void) {
-		neubot_info("echo - flushed");
+		ight_info("echo - flushed");
 	}
 
 	virtual void on_eof(void) {
-		neubot_info("echo - eof");
+		ight_info("echo - eof");
 		delete this;
 	}
 
 	virtual void on_error(void) {
-		neubot_info("echo - error");
+		ight_info("echo - error");
 		delete this;
 	}
 
@@ -122,7 +122,7 @@ class EchoProtocol : public IghtProtocol {
 	virtual IghtPoller *get_poller(void);
 
 	virtual ~EchoProtocol(void) {
-		neubot_info("echo - destructor");
+		ight_info("echo - destructor");
 		if (this->connection != NULL)
 			this->connection->close();
 	}
@@ -141,24 +141,24 @@ main(void)
 	IghtPoller *poller;
 	EchoProtocol *self;
 
-	neubot_info("echo - creating the poller...");
+	ight_info("echo - creating the poller...");
 
 	poller = IghtPoller_construct();
 	if (poller == NULL)
 		exit(EXIT_FAILURE);
 
-	neubot_info("echo - creating the connection...");
+	ight_info("echo - creating the connection...");
 
 	self = EchoProtocol::connect(poller, "PF_INET",
 	    "127.0.0.1", "54321", 7.0);
 	if (self == NULL)
 		exit(EXIT_FAILURE);
 
-	neubot_info("echo - poller loop...");
+	ight_info("echo - poller loop...");
 
 	IghtPoller_loop(poller);
 
-	neubot_info("echo - exit");
+	ight_info("echo - exit");
 
 	exit(EXIT_SUCCESS);
 }

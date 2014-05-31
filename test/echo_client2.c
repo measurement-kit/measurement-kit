@@ -96,7 +96,7 @@ EchoProtocol_connect(struct IghtPoller *p, const char *family,
 static void
 EchoProtocol_on_connect(void *opaque)
 {
-	neubot_info("echo - connected");
+	ight_info("echo - connected");
 	(void) opaque;
 }
 
@@ -117,7 +117,7 @@ EchoProtocol_on_data(void *opaque)
 			return;
 		}
 		if (result == 0) {
-			neubot_info("echo - exhausted input buffer");
+			ight_info("echo - exhausted input buffer");
 			break;
 		}
 		result = IghtConnection_write(self->connection,
@@ -132,28 +132,28 @@ EchoProtocol_on_data(void *opaque)
 static void
 EchoProtocol_on_flush(void *opaque)
 {
-	neubot_info("echo - flushed");
+	ight_info("echo - flushed");
 	(void) opaque;
 }
 
 static void
 EchoProtocol_on_eof(void *opaque)
 {
-	neubot_info("echo - eof");
+	ight_info("echo - eof");
 	EchoProtocol_destruct((struct EchoProtocol *) opaque);
 }
 
 static void
 EchoProtocol_on_error(void *opaque)
 {
-	neubot_info("echo - error");
+	ight_info("echo - error");
 	EchoProtocol_destruct((struct EchoProtocol *) opaque);
 }
 
 static void
 EchoProtocol_destruct(struct EchoProtocol *self)
 {
-	neubot_info("echo - destructor");
+	ight_info("echo - destructor");
 	IghtConnection_close(self->connection);
 	IghtProtocol_destruct(self->protocol);
 	free(self);
@@ -165,24 +165,24 @@ main(void)
 	struct IghtPoller *poller;
 	struct EchoProtocol *self;
 
-	neubot_info("echo - creating the poller...");
+	ight_info("echo - creating the poller...");
 
 	poller = IghtPoller_construct();
 	if (poller == NULL)
 		exit(EXIT_FAILURE);
 
-	neubot_info("echo - creating the connection...");
+	ight_info("echo - creating the connection...");
 
 	self = EchoProtocol_connect(poller, "PF_INET",
 	    "127.0.0.1", "54321", 7.0);
 	if (self == NULL)
 		exit(EXIT_FAILURE);
 
-	neubot_info("echo - poller loop...");
+	ight_info("echo - poller loop...");
 
 	IghtPoller_loop(poller);
 
-	neubot_info("echo - exit");
+	ight_info("echo - exit");
 
 	exit(EXIT_SUCCESS);
 }

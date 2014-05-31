@@ -29,7 +29,7 @@
 #endif
 
 static inline int
-neubot_socket_valid(long long filenum)
+ight_socket_valid(long long filenum)
 {
 	return (filenum >= 0 && filenum <= IGHT_SOCKET_MAX);
 }

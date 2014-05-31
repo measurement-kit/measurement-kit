@@ -10,7 +10,7 @@ extern "C" {
  * TODO: this function should be only compiled if the system does not
  * already provide its own strtonum().
  */
-long long neubot_strtonum(const char *, long long, long long,
+long long ight_strtonum(const char *, long long, long long,
                           const char **);
 
 #ifdef __cplusplus

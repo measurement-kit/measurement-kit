@@ -12,10 +12,10 @@ extern "C" {
 
 /* Hooks and slots: */
 
-typedef void (*neubot_hook_vo)(void *);
-typedef void (*neubot_hook_vos)(void *, const char *);
+typedef void (*ight_hook_vo)(void *);
+typedef void (*ight_hook_vos)(void *, const char *);
 
-typedef void (*neubot_slot_vo)(void *);
+typedef void (*ight_slot_vo)(void *);
 
 struct evbuffer;
 
@@ -32,16 +32,16 @@ struct IghtStringVector;
 
 struct IghtPoller *IghtPoller_construct(void);
 
-int IghtPoller_sched(struct IghtPoller *, double, neubot_hook_vo, void *);
+int IghtPoller_sched(struct IghtPoller *, double, ight_hook_vo, void *);
 
-int IghtPoller_defer_read(struct IghtPoller *, long long, neubot_hook_vo,
-    neubot_hook_vo, void *, double);
+int IghtPoller_defer_read(struct IghtPoller *, long long, ight_hook_vo,
+    ight_hook_vo, void *, double);
 
-int IghtPoller_defer_write(struct IghtPoller *, long long, neubot_hook_vo,
-    neubot_hook_vo, void *, double);
+int IghtPoller_defer_write(struct IghtPoller *, long long, ight_hook_vo,
+    ight_hook_vo, void *, double);
 
 int IghtPoller_resolve(struct IghtPoller *, const char *, const char *,
-    neubot_hook_vos, void *);
+    ight_hook_vos, void *);
 
 void IghtPoller_loop(struct IghtPoller *);
 
@@ -67,9 +67,9 @@ struct IghtEchoServer *IghtEchoServer_construct(struct IghtPoller *, int,
 
 /* IghtProtocol API: */
 
-struct IghtProtocol *IghtProtocol_construct(struct IghtPoller *,
-    neubot_slot_vo, neubot_slot_vo, neubot_slot_vo, neubot_slot_vo,
-    neubot_slot_vo, neubot_slot_vo, void *);
+struct IghtProtocol *IghtProtocol_construct(struct IghtPoller *, ight_slot_vo,
+    ight_slot_vo, ight_slot_vo, ight_slot_vo, ight_slot_vo, ight_slot_vo,
+    void *);
 
 struct IghtPoller *IghtProtocol_get_poller(struct IghtProtocol *);
 
@@ -125,8 +125,8 @@ void IghtConnection_close(struct IghtConnection *);
 
 /* IghtPollable API: */
 
-struct IghtPollable *IghtPollable_construct(struct IghtPoller *,
-    neubot_slot_vo, neubot_slot_vo, neubot_slot_vo, void *);
+struct IghtPollable *IghtPollable_construct(struct IghtPoller *, ight_slot_vo,
+    ight_slot_vo, ight_slot_vo, void *);
 
 int IghtPollable_attach(struct IghtPollable *, long long);
 
