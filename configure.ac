@@ -46,6 +46,7 @@ AC_CANONICAL_HOST
 # checks for programs
 AC_PROG_INSTALL
 AC_PROG_CXX([clang++ g++ c++])
+AM_PATH_PYTHON([2.6])
 
 # checks for libraries
 

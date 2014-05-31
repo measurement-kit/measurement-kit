@@ -12,9 +12,9 @@ on [libevent2].
 I have successfully compiled and run its simple tests in the following
 systems: MacOS 10.8, OpenBSD 5.5-current, Ubuntu 13.10.
 
-To build the library you need a C/C++ compiler, Python 2.7+ (in
-particular, `./config.local` assume that there is an executable named
-python), and a Unix environment.
+To build the library you need a C/C++ compiler, Python 2.7+,
+and a Unix environment. (The `./configure` script should check
+whether all the dependencies are in place.)
 
 How to build it
 ---------------
