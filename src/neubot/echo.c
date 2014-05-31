@@ -131,7 +131,7 @@ Connection_construct(void *opaque)
 		return;
 
 	conn->buffer = NULL;
-	conn->fileno = NEUBOT_SOCKET_INVALID;
+	conn->fileno = IGHT_SOCKET_INVALID;
 	conn->pollable = NULL;
 
 	conn->buffer = evbuffer_new();
@@ -139,7 +139,7 @@ Connection_construct(void *opaque)
 		goto cleanup;
 
 	conn->fileno = accept(self->fileno, NULL, NULL);
-	if (conn->fileno == NEUBOT_SOCKET_INVALID)
+	if (conn->fileno == IGHT_SOCKET_INVALID)
 		goto cleanup;
 
 	conn->pollable = IghtPollable_construct(self->poller,
@@ -159,7 +159,7 @@ Connection_construct(void *opaque)
       cleanup:
 	if (conn != NULL && conn->buffer != NULL)
 		evbuffer_free(conn->buffer);
-	if (conn != NULL && conn->fileno != NEUBOT_SOCKET_INVALID)
+	if (conn != NULL && conn->fileno != IGHT_SOCKET_INVALID)
 		(void) evutil_closesocket(conn->fileno);
 	if (conn != NULL && conn->pollable != NULL)
 		IghtPollable_close(conn->pollable);
@@ -182,7 +182,7 @@ IghtEchoServer_construct(struct IghtPoller *poller, int use_ipv6,
 		return (NULL);
 
 	self->fileno = neubot_listen(use_ipv6, address, port);
-	if (self->fileno == NEUBOT_SOCKET_INVALID)
+	if (self->fileno == IGHT_SOCKET_INVALID)
 		goto cleanup;
 
 	self->poller = poller;
@@ -206,7 +206,7 @@ IghtEchoServer_construct(struct IghtPoller *poller, int use_ipv6,
       cleanup:
 	if (self->pollable != NULL)
 		IghtPollable_close(self->pollable);
-	if (self->fileno != NEUBOT_SOCKET_INVALID)
+	if (self->fileno != IGHT_SOCKET_INVALID)
 		(void) evutil_closesocket(self->fileno);
 	free(self);
 	return (NULL);

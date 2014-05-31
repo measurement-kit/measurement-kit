@@ -21,8 +21,8 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBNEUBOT_STRINGVECTOR_H
-# define LIBNEUBOT_STRINGVECTOR_H
+#ifndef LIBIGHT_STRINGVECTOR_H
+# define LIBIGHT_STRINGVECTOR_H
 # ifdef __cplusplus
 
 /*-
@@ -48,4 +48,4 @@ struct IghtStringVector {
 };
 
 # endif  /* __cplusplus */
-#endif  /* LIBNEUBOT_STRINGVECTOR_H */
+#endif  /* LIBIGHT_STRINGVECTOR_H */

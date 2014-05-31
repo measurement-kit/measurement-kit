@@ -54,7 +54,7 @@ IghtPollable::IghtPollable(IghtPoller *poller)
 	this->timeout = -1.0;
 	this->evread = NULL;
 	this->evwrite = NULL;
-	this->fileno = NEUBOT_SOCKET_INVALID;
+	this->fileno = IGHT_SOCKET_INVALID;
 }
 
 static void
@@ -88,7 +88,7 @@ IghtPollable::attach(long long fileno)
 
 	neubot_info("pollable: attach()");
 
-	if (this->fileno != NEUBOT_SOCKET_INVALID) {
+	if (this->fileno != IGHT_SOCKET_INVALID) {
 		neubot_warn("pollable: already attached");
 		return (-1);
 	}	
@@ -150,7 +150,7 @@ IghtPollable::detach(void)
 	// We don't close the file descriptor because the Neubot pollable
 	// class does not close the file description as well.
 	//
-	this->fileno = NEUBOT_SOCKET_INVALID;
+	this->fileno = IGHT_SOCKET_INVALID;
 }
 
 /*
@@ -174,7 +174,7 @@ IghtPollable::setunset(const char *what, unsigned opcode, event *evp)
 
 	neubot_info("pollable: %s()", what);
 
-	if (this->fileno == NEUBOT_SOCKET_INVALID) {
+	if (this->fileno == IGHT_SOCKET_INVALID) {
 		neubot_warn("%s: not attached", what);
 		return (-1);
 	}

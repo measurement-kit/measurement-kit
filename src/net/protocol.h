@@ -21,8 +21,8 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBNEUBOT_PROTOCOL_H
-# define LIBNEUBOT_PROTOCOL_H
+#ifndef LIBIGHT_PROTOCOL_H
+# define LIBIGHT_PROTOCOL_H
 # ifdef __cplusplus
 
 /*-
@@ -69,4 +69,4 @@ struct IghtProtocol {
 };
 
 # endif  /* __cplusplus */
-#endif  /* LIBNEUBOT_PROTOCOL_H */
+#endif  /* LIBIGHT_PROTOCOL_H */

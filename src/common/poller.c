@@ -125,7 +125,7 @@ IghtEvent_construct(struct IghtPoller *poller, long long fileno,
 			goto cleanup;
 		break;
 	case EV_TIMEOUT:
-		if (fileno != NEUBOT_SOCKET_INVALID)
+		if (fileno != IGHT_SOCKET_INVALID)
 			goto cleanup;
 		break;
 	default:
@@ -250,7 +250,7 @@ IghtPoller_sched(struct IghtPoller *self, double delta,
 {
 	struct IghtEvent *nevp;
 
-	nevp = IghtEvent_construct(self, NEUBOT_SOCKET_INVALID,
+	nevp = IghtEvent_construct(self, IGHT_SOCKET_INVALID,
 	    IghtEvent_noop, callback, opaque, delta, EV_TIMEOUT);
 	if (nevp == NULL)
 		return (-1);

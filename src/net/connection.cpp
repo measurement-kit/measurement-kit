@@ -47,7 +47,7 @@
 
 IghtConnection::IghtConnection(void)
 {
-	this->filedesc = NEUBOT_SOCKET_INVALID;
+	this->filedesc = IGHT_SOCKET_INVALID;
 	this->bev = NULL;
 	this->protocol = NULL;
 	this->readbuf = NULL;
@@ -65,7 +65,7 @@ IghtConnection::IghtConnection(void)
 
 IghtConnection::~IghtConnection(void)
 {
-	if (this->filedesc != NEUBOT_SOCKET_INVALID)
+	if (this->filedesc != IGHT_SOCKET_INVALID)
 		(void) evutil_closesocket((evutil_socket_t) this->filedesc);
 
 	if (this->bev != NULL)
@@ -280,7 +280,7 @@ IghtConnection::connect(IghtProtocol *proto, const char *family,
 
 	self->filedesc = neubot_socket_create(storage.ss_family,
 	    SOCK_STREAM, 0);
-	if (self->filedesc == NEUBOT_SOCKET_INVALID) {
+	if (self->filedesc == IGHT_SOCKET_INVALID) {
 		delete self;
 		return (NULL);
 	}
@@ -382,14 +382,14 @@ IghtConnection::connect_next(void)
 
 		this->filedesc = neubot_socket_create(storage.ss_family,
 		    SOCK_STREAM, 0);
-		if (this->filedesc == NEUBOT_SOCKET_INVALID)
+		if (this->filedesc == IGHT_SOCKET_INVALID)
 			continue;
 
 		error = bufferevent_setfd(this->bev, (evutil_socket_t)
 		    this->filedesc);
 		if (error != 0) {
 			(void) evutil_closesocket(this->filedesc);
-			this->filedesc = NEUBOT_SOCKET_INVALID;
+			this->filedesc = IGHT_SOCKET_INVALID;
 			continue;
 		}
 
@@ -397,9 +397,9 @@ IghtConnection::connect_next(void)
 		    sockaddr *) &storage, (int) total);
 		if (error != 0) {
 			(void) evutil_closesocket(this->filedesc);
-			this->filedesc = NEUBOT_SOCKET_INVALID;
+			this->filedesc = IGHT_SOCKET_INVALID;
 			error = bufferevent_setfd(this->bev,
-			    NEUBOT_SOCKET_INVALID);
+			    IGHT_SOCKET_INVALID);
 			if (error != 0) {
 				neubot_warn("connect_next - internal error");
 				break;
@@ -635,7 +635,7 @@ IghtConnection::connect_hostname(IghtProtocol *proto,
 	// filedesc: nothing to be done
 
 	self->bev = bufferevent_socket_new(evbase,
-	    (evutil_socket_t) NEUBOT_SOCKET_INVALID,
+	    (evutil_socket_t) IGHT_SOCKET_INVALID,
 	    BEV_OPT_DEFER_CALLBACKS);
 	if (self->bev == NULL) {
 		delete self;

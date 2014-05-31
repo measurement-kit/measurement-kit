@@ -81,7 +81,7 @@ neubot_listen(int use_ipv6, const char *address, const char *port)
 		return (-1);
 
 	filedesc = neubot_socket_create(storage.ss_family, SOCK_STREAM, 0);
-	if (filedesc == NEUBOT_SOCKET_INVALID)
+	if (filedesc == IGHT_SOCKET_INVALID)
 		return (-1);
 
 	result = neubot_socket_listen(filedesc, &storage, salen);
@@ -188,16 +188,16 @@ neubot_socket_create(int domain, int type, int protocol)
 	neubot_info("utils:neubot_socket - enter");
 
 	filedesc = socket(domain, type, protocol);
-	if (filedesc == NEUBOT_SOCKET_INVALID) {
+	if (filedesc == IGHT_SOCKET_INVALID) {
 		neubot_warn("utils:neubot_socket: cannot create socket");
-		return (NEUBOT_SOCKET_INVALID);
+		return (IGHT_SOCKET_INVALID);
 	}
 
 	result = evutil_make_socket_nonblocking(filedesc);
 	if (result != 0) {
 		neubot_warn("utils:neubot_socket: cannot make nonblocking");
 		(void) evutil_closesocket(filedesc);
-		return (NEUBOT_SOCKET_INVALID);
+		return (IGHT_SOCKET_INVALID);
 	}
 
 	neubot_info("utils:neubot_socket - ok");

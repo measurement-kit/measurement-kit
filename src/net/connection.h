@@ -21,8 +21,8 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBNEUBOT_CONNECTION_H
-# define LIBNEUBOT_CONNECTION_H
+#ifndef LIBIGHT_CONNECTION_H
+# define LIBIGHT_CONNECTION_H
 # ifdef __cplusplus
 
 /*-
@@ -138,4 +138,4 @@ struct IghtConnection {
 };
 
 # endif  /* __cplusplus */
-#endif  /* LIBNEUBOT_CONNECTION_H */
+#endif  /* LIBIGHT_CONNECTION_H */

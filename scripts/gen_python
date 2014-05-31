@@ -37,11 +37,11 @@ def gen_python_imports(stream):
     stream.write("import sys\n")
     stream.write("\n")
     stream.write('if sys.platform == "darwin":\n')
-    stream.write('    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.3"\n')
+    stream.write('    LIBIGHT_NAME = "/usr/local/lib/libneubot.dylib.3"\n')
     stream.write("else:\n")
-    stream.write('    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.3"\n')
+    stream.write('    LIBIGHT_NAME = "/usr/local/lib/libneubot.so.3"\n')
     stream.write("\n")
-    stream.write("LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)\n\n")
+    stream.write("LIBIGHT = ctypes.CDLL(LIBIGHT_NAME)\n\n")
 
 def gen_python_prototype(stream, types, class_name, method_info):
 
@@ -61,7 +61,7 @@ def gen_python_prototype(stream, types, class_name, method_info):
                 raise RuntimeError("invalid argstuff")
             if argtype.startswith("slot_"):
                 for slotname in argname:
-                    args.append(("NEUBOT_" + argtype.upper(), slotname))
+                    args.append(("IGHT_" + argtype.upper(), slotname))
                 args.append(("Object", "opaque"))
             else:
                 args.append((argtype, argname))
@@ -86,7 +86,7 @@ def gen_python_prototype(stream, types, class_name, method_info):
         for argtype, argname in args__:
             if argtype.startswith("hook_"):
                 for hookname in argname:
-                    args.append(("NEUBOT_" + argtype.upper(), hookname))
+                    args.append(("IGHT_" + argtype.upper(), hookname))
                 args.append(("Object", "opaque"))
             else:
                 args.append((argtype, argname))
@@ -100,9 +100,9 @@ def gen_python_prototype(stream, types, class_name, method_info):
             result = python_type(types, retval)
         else:
             result = "ctypes.c_void_p"
-        stream.write("LIBNEUBOT.%s.restype = %s\n" % (funcname, result))
+        stream.write("LIBIGHT.%s.restype = %s\n" % (funcname, result))
 
-    stream.write("LIBNEUBOT.%s.argtypes = (\n" % funcname)
+    stream.write("LIBIGHT.%s.argtypes = (\n" % funcname)
     for argtype, _ in args:
         argtype = python_type(types, argtype)
         stream.write("    %s,\n" % argtype)
@@ -121,7 +121,7 @@ def %s_%s_slot_vo(selfptr):
     except:
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)\n
-%s_%s_SLOT_VO = NEUBOT_SLOT_VO(
+%s_%s_SLOT_VO = IGHT_SLOT_VO(
     %s_%s_slot_vo
 )\n
 """ % (class_name, argname, argname, class_name.upper(), argname.upper(),
@@ -139,7 +139,7 @@ def %s_%s_hook_vo(closure):
     except:
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)\n
-%s_%s_HOOK_VO = NEUBOT_HOOK_VO(
+%s_%s_HOOK_VO = IGHT_HOOK_VO(
     %s_%s_hook_vo
 )\n
 """ % (funcname, argname, argname, funcname.upper(), argname.upper(),
@@ -157,7 +157,7 @@ def %s_%s_hook_vos(closure, string):
     except:
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)\n
-%s_%s_HOOK_VOS = NEUBOT_HOOK_VOS(
+%s_%s_HOOK_VOS = IGHT_HOOK_VOS(
     %s_%s_hook_vos
 )\n
 """ % (funcname, argname, argname, funcname.upper(), argname.upper(),
@@ -247,7 +247,7 @@ def gen_python_init(stream, types, class_name, struct_name, ctor_name,
             for slotname in argname:
                 gen_py_slot(stream, class_name, argtype, slotname,
                   destructor_name)
-                c_args.append(("NEUBOT_" + argtype.upper(),
+                c_args.append(("IGHT_" + argtype.upper(),
                   struct_name.upper() + "_" + slotname.upper() + "_" +
                   argtype.upper()))
             c_args.append(("Object", "self"))
@@ -269,7 +269,7 @@ def gen_python_init(stream, types, class_name, struct_name, ctor_name,
     nwritten = 8
     stream.write("self.context_ = ")
     nwritten += 17
-    gen_python_callfunc(stream, nwritten, "LIBNEUBOT.%s_%s"
+    gen_python_callfunc(stream, nwritten, "LIBIGHT.%s_%s"
       % (struct_name, ctor_name), c_args)
     stream.write("\n")
 
@@ -297,8 +297,8 @@ def gen_python_method(stream, types, struct_name, retval_type,
     for argtype, argname in meth_args:
         if argtype.startswith("hook_"):
             for hookname in argname:
-                py_args.append(("NEUBOT_" + argtype.upper(), hookname))
-                c_args.append(("NEUBOT_" + argtype.upper(),
+                py_args.append(("IGHT_" + argtype.upper(), hookname))
+                c_args.append(("IGHT_" + argtype.upper(),
                     "%s_%s_%s_%s" % (struct_name.upper(), meth_name.upper(),
                                      hookname.upper(), argtype.upper())))
             py_args.append(("Object", "opaque"))
@@ -332,7 +332,7 @@ def gen_python_method(stream, types, struct_name, retval_type,
     if retval_type != "void":
         stream.write("return ")
         nwritten += 7
-    gen_python_callfunc(stream, nwritten, "LIBNEUBOT.%s_%s" %
+    gen_python_callfunc(stream, nwritten, "LIBIGHT.%s_%s" %
       (struct_name, meth_name), c_args)
     stream.write("\n")
 
@@ -355,10 +355,10 @@ def main():
 
     stream.write("DIE = getattr(os, '_exit')\n\n")
 
-    stream.write("NEUBOT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)\n")
+    stream.write("IGHT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)\n")
     stream.write("\n")
-    stream.write("NEUBOT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)\n")
-    stream.write("NEUBOT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,\n")
+    stream.write("IGHT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)\n")
+    stream.write("IGHT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,\n")
     stream.write("  ctypes.c_char_p)\n")
     stream.write("\n")
 
@@ -454,7 +454,7 @@ def main():
                 stream.write("        if not self.context_:\n")
                 stream.write("            return\n")
                 stream.write("        _ctypes.Py_DECREF(self)\n")
-                stream.write("        LIBNEUBOT.%s_%s(self)\n" % (
+                stream.write("        LIBIGHT.%s_%s(self)\n" % (
                   struct_name, method_info[1]))
                 stream.write("        self.context_ = None\n")
 

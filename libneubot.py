@@ -12,18 +12,18 @@ import os
 import sys
 
 if sys.platform == "darwin":
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.dylib.3"
+    LIBIGHT_NAME = "/usr/local/lib/libneubot.dylib.3"
 else:
-    LIBNEUBOT_NAME = "/usr/local/lib/libneubot.so.3"
+    LIBIGHT_NAME = "/usr/local/lib/libneubot.so.3"
 
-LIBNEUBOT = ctypes.CDLL(LIBNEUBOT_NAME)
+LIBIGHT = ctypes.CDLL(LIBIGHT_NAME)
 
 DIE = getattr(os, '_exit')
 
-NEUBOT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
+IGHT_SLOT_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
 
-NEUBOT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
-NEUBOT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,
+IGHT_HOOK_VO = ctypes.CFUNCTYPE(None, ctypes.py_object)
+IGHT_HOOK_VOS = ctypes.CFUNCTYPE(None, ctypes.py_object,
   ctypes.c_char_p)
 
 class ConnectionBase(object):
@@ -112,16 +112,16 @@ class StringVectorBase(object):
 
 
 
-LIBNEUBOT.IghtConnection_attach.restype = ctypes.c_void_p
-LIBNEUBOT.IghtConnection_attach.argtypes = (
+LIBIGHT.IghtConnection_attach.restype = ctypes.c_void_p
+LIBIGHT.IghtConnection_attach.argtypes = (
     ProtocolBase,
     ctypes.c_longlong,
 )
 
 
 
-LIBNEUBOT.IghtConnection_connect.restype = ctypes.c_void_p
-LIBNEUBOT.IghtConnection_connect.argtypes = (
+LIBIGHT.IghtConnection_connect.restype = ctypes.c_void_p
+LIBIGHT.IghtConnection_connect.argtypes = (
     ProtocolBase,
     ctypes.c_char_p,
     ctypes.c_char_p,
@@ -130,8 +130,8 @@ LIBNEUBOT.IghtConnection_connect.argtypes = (
 
 
 
-LIBNEUBOT.IghtConnection_connect_hostname.restype = ctypes.c_void_p
-LIBNEUBOT.IghtConnection_connect_hostname.argtypes = (
+LIBIGHT.IghtConnection_connect_hostname.restype = ctypes.c_void_p
+LIBIGHT.IghtConnection_connect_hostname.argtypes = (
     ProtocolBase,
     ctypes.c_char_p,
     ctypes.c_char_p,
@@ -140,38 +140,38 @@ LIBNEUBOT.IghtConnection_connect_hostname.argtypes = (
 
 
 
-LIBNEUBOT.IghtConnection_get_protocol.restype = ctypes.c_void_p
-LIBNEUBOT.IghtConnection_get_protocol.argtypes = (
+LIBIGHT.IghtConnection_get_protocol.restype = ctypes.c_void_p
+LIBIGHT.IghtConnection_get_protocol.argtypes = (
     ConnectionBase,
 )
 
 
 
-LIBNEUBOT.IghtConnection_set_timeout.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_set_timeout.argtypes = (
+LIBIGHT.IghtConnection_set_timeout.restype = ctypes.c_int
+LIBIGHT.IghtConnection_set_timeout.argtypes = (
     ConnectionBase,
     ctypes.c_double,
 )
 
 
 
-LIBNEUBOT.IghtConnection_clear_timeout.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_clear_timeout.argtypes = (
+LIBIGHT.IghtConnection_clear_timeout.restype = ctypes.c_int
+LIBIGHT.IghtConnection_clear_timeout.argtypes = (
     ConnectionBase,
 )
 
 
 
-LIBNEUBOT.IghtConnection_start_tls.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_start_tls.argtypes = (
+LIBIGHT.IghtConnection_start_tls.restype = ctypes.c_int
+LIBIGHT.IghtConnection_start_tls.argtypes = (
     ConnectionBase,
     ctypes.c_uint,
 )
 
 
 
-LIBNEUBOT.IghtConnection_read.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_read.argtypes = (
+LIBIGHT.IghtConnection_read.restype = ctypes.c_int
+LIBIGHT.IghtConnection_read.argtypes = (
     ConnectionBase,
     ctypes.c_char_p,
     ctypes.c_size_t,
@@ -179,8 +179,8 @@ LIBNEUBOT.IghtConnection_read.argtypes = (
 
 
 
-LIBNEUBOT.IghtConnection_readline.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_readline.argtypes = (
+LIBIGHT.IghtConnection_readline.restype = ctypes.c_int
+LIBIGHT.IghtConnection_readline.argtypes = (
     ConnectionBase,
     ctypes.c_char_p,
     ctypes.c_size_t,
@@ -188,8 +188,8 @@ LIBNEUBOT.IghtConnection_readline.argtypes = (
 
 
 
-LIBNEUBOT.IghtConnection_readn.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_readn.argtypes = (
+LIBIGHT.IghtConnection_readn.restype = ctypes.c_int
+LIBIGHT.IghtConnection_readn.argtypes = (
     ConnectionBase,
     ctypes.c_char_p,
     ctypes.c_size_t,
@@ -197,16 +197,16 @@ LIBNEUBOT.IghtConnection_readn.argtypes = (
 
 
 
-LIBNEUBOT.IghtConnection_discardn.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_discardn.argtypes = (
+LIBIGHT.IghtConnection_discardn.restype = ctypes.c_int
+LIBIGHT.IghtConnection_discardn.argtypes = (
     ConnectionBase,
     ctypes.c_size_t,
 )
 
 
 
-LIBNEUBOT.IghtConnection_write.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_write.argtypes = (
+LIBIGHT.IghtConnection_write.restype = ctypes.c_int
+LIBIGHT.IghtConnection_write.argtypes = (
     ConnectionBase,
     ctypes.c_char_p,
     ctypes.c_size_t,
@@ -214,24 +214,24 @@ LIBNEUBOT.IghtConnection_write.argtypes = (
 
 
 
-LIBNEUBOT.IghtConnection_puts.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_puts.argtypes = (
+LIBIGHT.IghtConnection_puts.restype = ctypes.c_int
+LIBIGHT.IghtConnection_puts.argtypes = (
     ConnectionBase,
     ctypes.c_char_p,
 )
 
 
 
-LIBNEUBOT.IghtConnection_write_rand.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_write_rand.argtypes = (
+LIBIGHT.IghtConnection_write_rand.restype = ctypes.c_int
+LIBIGHT.IghtConnection_write_rand.argtypes = (
     ConnectionBase,
     ctypes.c_size_t,
 )
 
 
 
-LIBNEUBOT.IghtConnection_write_readbuf.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_write_readbuf.argtypes = (
+LIBIGHT.IghtConnection_write_readbuf.restype = ctypes.c_int
+LIBIGHT.IghtConnection_write_readbuf.argtypes = (
     ConnectionBase,
     ctypes.c_char_p,
     ctypes.c_size_t,
@@ -239,60 +239,60 @@ LIBNEUBOT.IghtConnection_write_readbuf.argtypes = (
 
 
 
-LIBNEUBOT.IghtConnection_puts_readbuf.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_puts_readbuf.argtypes = (
+LIBIGHT.IghtConnection_puts_readbuf.restype = ctypes.c_int
+LIBIGHT.IghtConnection_puts_readbuf.argtypes = (
     ConnectionBase,
     ctypes.c_char_p,
 )
 
 
 
-LIBNEUBOT.IghtConnection_write_rand_readbuf.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_write_rand_readbuf.argtypes = (
+LIBIGHT.IghtConnection_write_rand_readbuf.restype = ctypes.c_int
+LIBIGHT.IghtConnection_write_rand_readbuf.argtypes = (
     ConnectionBase,
     ctypes.c_size_t,
 )
 
 
 
-LIBNEUBOT.IghtConnection_read_into_.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_read_into_.argtypes = (
+LIBIGHT.IghtConnection_read_into_.restype = ctypes.c_int
+LIBIGHT.IghtConnection_read_into_.argtypes = (
     ConnectionBase,
     ctypes.c_void_p,
 )
 
 
 
-LIBNEUBOT.IghtConnection_write_from_.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_write_from_.argtypes = (
+LIBIGHT.IghtConnection_write_from_.restype = ctypes.c_int
+LIBIGHT.IghtConnection_write_from_.argtypes = (
     ConnectionBase,
     ctypes.c_void_p,
 )
 
 
 
-LIBNEUBOT.IghtConnection_enable_read.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_enable_read.argtypes = (
+LIBIGHT.IghtConnection_enable_read.restype = ctypes.c_int
+LIBIGHT.IghtConnection_enable_read.argtypes = (
     ConnectionBase,
 )
 
 
 
-LIBNEUBOT.IghtConnection_disable_read.restype = ctypes.c_int
-LIBNEUBOT.IghtConnection_disable_read.argtypes = (
+LIBIGHT.IghtConnection_disable_read.restype = ctypes.c_int
+LIBIGHT.IghtConnection_disable_read.argtypes = (
     ConnectionBase,
 )
 
 
 
-LIBNEUBOT.IghtConnection_close.argtypes = (
+LIBIGHT.IghtConnection_close.argtypes = (
     ConnectionBase,
 )
 
 
 
-LIBNEUBOT.IghtEchoServer_construct.restype = ctypes.c_void_p
-LIBNEUBOT.IghtEchoServer_construct.argtypes = (
+LIBIGHT.IghtEchoServer_construct.restype = ctypes.c_void_p
+LIBIGHT.IghtEchoServer_construct.argtypes = (
     PollerBase,
     ctypes.c_int,
     ctypes.c_char_p,
@@ -301,12 +301,12 @@ LIBNEUBOT.IghtEchoServer_construct.argtypes = (
 
 
 
-LIBNEUBOT.IghtPollable_construct.restype = ctypes.c_void_p
-LIBNEUBOT.IghtPollable_construct.argtypes = (
+LIBIGHT.IghtPollable_construct.restype = ctypes.c_void_p
+LIBIGHT.IghtPollable_construct.argtypes = (
     PollerBase,
-    NEUBOT_SLOT_VO,
-    NEUBOT_SLOT_VO,
-    NEUBOT_SLOT_VO,
+    IGHT_SLOT_VO,
+    IGHT_SLOT_VO,
+    IGHT_SLOT_VO,
     ctypes.py_object,
 )
 
@@ -319,7 +319,7 @@ def IghtPollable_handle_read_slot_vo(selfptr):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPOLLABLE_HANDLE_READ_SLOT_VO = NEUBOT_SLOT_VO(
+IGHTPOLLABLE_HANDLE_READ_SLOT_VO = IGHT_SLOT_VO(
     IghtPollable_handle_read_slot_vo
 )
 
@@ -332,7 +332,7 @@ def IghtPollable_handle_write_slot_vo(selfptr):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPOLLABLE_HANDLE_WRITE_SLOT_VO = NEUBOT_SLOT_VO(
+IGHTPOLLABLE_HANDLE_WRITE_SLOT_VO = IGHT_SLOT_VO(
     IghtPollable_handle_write_slot_vo
 )
 
@@ -345,91 +345,91 @@ def IghtPollable_handle_error_slot_vo(selfptr):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPOLLABLE_HANDLE_ERROR_SLOT_VO = NEUBOT_SLOT_VO(
+IGHTPOLLABLE_HANDLE_ERROR_SLOT_VO = IGHT_SLOT_VO(
     IghtPollable_handle_error_slot_vo
 )
 
 
 
-LIBNEUBOT.IghtPollable_attach.restype = ctypes.c_int
-LIBNEUBOT.IghtPollable_attach.argtypes = (
+LIBIGHT.IghtPollable_attach.restype = ctypes.c_int
+LIBIGHT.IghtPollable_attach.argtypes = (
     PollableBase,
     ctypes.c_longlong,
 )
 
 
 
-LIBNEUBOT.IghtPollable_detach.argtypes = (
+LIBIGHT.IghtPollable_detach.argtypes = (
     PollableBase,
 )
 
 
 
-LIBNEUBOT.IghtPollable_get_fileno.restype = ctypes.c_longlong
-LIBNEUBOT.IghtPollable_get_fileno.argtypes = (
+LIBIGHT.IghtPollable_get_fileno.restype = ctypes.c_longlong
+LIBIGHT.IghtPollable_get_fileno.argtypes = (
     PollableBase,
 )
 
 
 
-LIBNEUBOT.IghtPollable_set_readable.restype = ctypes.c_int
-LIBNEUBOT.IghtPollable_set_readable.argtypes = (
+LIBIGHT.IghtPollable_set_readable.restype = ctypes.c_int
+LIBIGHT.IghtPollable_set_readable.argtypes = (
     PollableBase,
 )
 
 
 
-LIBNEUBOT.IghtPollable_unset_readable.restype = ctypes.c_int
-LIBNEUBOT.IghtPollable_unset_readable.argtypes = (
+LIBIGHT.IghtPollable_unset_readable.restype = ctypes.c_int
+LIBIGHT.IghtPollable_unset_readable.argtypes = (
     PollableBase,
 )
 
 
 
-LIBNEUBOT.IghtPollable_set_writable.restype = ctypes.c_int
-LIBNEUBOT.IghtPollable_set_writable.argtypes = (
+LIBIGHT.IghtPollable_set_writable.restype = ctypes.c_int
+LIBIGHT.IghtPollable_set_writable.argtypes = (
     PollableBase,
 )
 
 
 
-LIBNEUBOT.IghtPollable_unset_writable.restype = ctypes.c_int
-LIBNEUBOT.IghtPollable_unset_writable.argtypes = (
+LIBIGHT.IghtPollable_unset_writable.restype = ctypes.c_int
+LIBIGHT.IghtPollable_unset_writable.argtypes = (
     PollableBase,
 )
 
 
 
-LIBNEUBOT.IghtPollable_set_timeout.argtypes = (
+LIBIGHT.IghtPollable_set_timeout.argtypes = (
     PollableBase,
     ctypes.c_double,
 )
 
 
 
-LIBNEUBOT.IghtPollable_clear_timeout.argtypes = (
+LIBIGHT.IghtPollable_clear_timeout.argtypes = (
     PollableBase,
 )
 
 
 
-LIBNEUBOT.IghtPollable_close.argtypes = (
+LIBIGHT.IghtPollable_close.argtypes = (
     PollableBase,
 )
 
 
 
-LIBNEUBOT.IghtPoller_construct.restype = ctypes.c_void_p
-LIBNEUBOT.IghtPoller_construct.argtypes = (
+LIBIGHT.IghtPoller_construct.restype = ctypes.c_void_p
+LIBIGHT.IghtPoller_construct.argtypes = (
 )
 
 
 
-LIBNEUBOT.IghtPoller_sched.restype = ctypes.c_int
-LIBNEUBOT.IghtPoller_sched.argtypes = (
+LIBIGHT.IghtPoller_sched.restype = ctypes.c_int
+LIBIGHT.IghtPoller_sched.argtypes = (
     PollerBase,
     ctypes.c_double,
-    NEUBOT_HOOK_VO,
+    IGHT_HOOK_VO,
     ctypes.py_object,
 )
 
@@ -443,18 +443,18 @@ def IghtPoller_sched_callback_hook_vo(closure):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPOLLER_SCHED_CALLBACK_HOOK_VO = NEUBOT_HOOK_VO(
+IGHTPOLLER_SCHED_CALLBACK_HOOK_VO = IGHT_HOOK_VO(
     IghtPoller_sched_callback_hook_vo
 )
 
 
 
-LIBNEUBOT.IghtPoller_defer_read.restype = ctypes.c_int
-LIBNEUBOT.IghtPoller_defer_read.argtypes = (
+LIBIGHT.IghtPoller_defer_read.restype = ctypes.c_int
+LIBIGHT.IghtPoller_defer_read.argtypes = (
     PollerBase,
     ctypes.c_longlong,
-    NEUBOT_HOOK_VO,
-    NEUBOT_HOOK_VO,
+    IGHT_HOOK_VO,
+    IGHT_HOOK_VO,
     ctypes.py_object,
     ctypes.c_double,
 )
@@ -469,7 +469,7 @@ def IghtPoller_defer_read_handle_ok_hook_vo(closure):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPOLLER_DEFER_READ_HANDLE_OK_HOOK_VO = NEUBOT_HOOK_VO(
+IGHTPOLLER_DEFER_READ_HANDLE_OK_HOOK_VO = IGHT_HOOK_VO(
     IghtPoller_defer_read_handle_ok_hook_vo
 )
 
@@ -483,18 +483,18 @@ def IghtPoller_defer_read_handle_timeout_hook_vo(closure):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPOLLER_DEFER_READ_HANDLE_TIMEOUT_HOOK_VO = NEUBOT_HOOK_VO(
+IGHTPOLLER_DEFER_READ_HANDLE_TIMEOUT_HOOK_VO = IGHT_HOOK_VO(
     IghtPoller_defer_read_handle_timeout_hook_vo
 )
 
 
 
-LIBNEUBOT.IghtPoller_defer_write.restype = ctypes.c_int
-LIBNEUBOT.IghtPoller_defer_write.argtypes = (
+LIBIGHT.IghtPoller_defer_write.restype = ctypes.c_int
+LIBIGHT.IghtPoller_defer_write.argtypes = (
     PollerBase,
     ctypes.c_longlong,
-    NEUBOT_HOOK_VO,
-    NEUBOT_HOOK_VO,
+    IGHT_HOOK_VO,
+    IGHT_HOOK_VO,
     ctypes.py_object,
     ctypes.c_double,
 )
@@ -509,7 +509,7 @@ def IghtPoller_defer_write_handle_ok_hook_vo(closure):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPOLLER_DEFER_WRITE_HANDLE_OK_HOOK_VO = NEUBOT_HOOK_VO(
+IGHTPOLLER_DEFER_WRITE_HANDLE_OK_HOOK_VO = IGHT_HOOK_VO(
     IghtPoller_defer_write_handle_ok_hook_vo
 )
 
@@ -523,18 +523,18 @@ def IghtPoller_defer_write_handle_timeout_hook_vo(closure):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPOLLER_DEFER_WRITE_HANDLE_TIMEOUT_HOOK_VO = NEUBOT_HOOK_VO(
+IGHTPOLLER_DEFER_WRITE_HANDLE_TIMEOUT_HOOK_VO = IGHT_HOOK_VO(
     IghtPoller_defer_write_handle_timeout_hook_vo
 )
 
 
 
-LIBNEUBOT.IghtPoller_resolve.restype = ctypes.c_int
-LIBNEUBOT.IghtPoller_resolve.argtypes = (
+LIBIGHT.IghtPoller_resolve.restype = ctypes.c_int
+LIBIGHT.IghtPoller_resolve.argtypes = (
     PollerBase,
     ctypes.c_char_p,
     ctypes.c_char_p,
-    NEUBOT_HOOK_VOS,
+    IGHT_HOOK_VOS,
     ctypes.py_object,
 )
 
@@ -548,33 +548,33 @@ def IghtPoller_resolve_callback_hook_vos(closure, string):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPOLLER_RESOLVE_CALLBACK_HOOK_VOS = NEUBOT_HOOK_VOS(
+IGHTPOLLER_RESOLVE_CALLBACK_HOOK_VOS = IGHT_HOOK_VOS(
     IghtPoller_resolve_callback_hook_vos
 )
 
 
 
-LIBNEUBOT.IghtPoller_loop.argtypes = (
+LIBIGHT.IghtPoller_loop.argtypes = (
     PollerBase,
 )
 
 
 
-LIBNEUBOT.IghtPoller_break_loop.argtypes = (
+LIBIGHT.IghtPoller_break_loop.argtypes = (
     PollerBase,
 )
 
 
 
-LIBNEUBOT.IghtProtocol_construct.restype = ctypes.c_void_p
-LIBNEUBOT.IghtProtocol_construct.argtypes = (
+LIBIGHT.IghtProtocol_construct.restype = ctypes.c_void_p
+LIBIGHT.IghtProtocol_construct.argtypes = (
     PollerBase,
-    NEUBOT_SLOT_VO,
-    NEUBOT_SLOT_VO,
-    NEUBOT_SLOT_VO,
-    NEUBOT_SLOT_VO,
-    NEUBOT_SLOT_VO,
-    NEUBOT_SLOT_VO,
+    IGHT_SLOT_VO,
+    IGHT_SLOT_VO,
+    IGHT_SLOT_VO,
+    IGHT_SLOT_VO,
+    IGHT_SLOT_VO,
+    IGHT_SLOT_VO,
     ctypes.py_object,
 )
 
@@ -587,7 +587,7 @@ def IghtProtocol_handle_connect_slot_vo(selfptr):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPROTOCOL_HANDLE_CONNECT_SLOT_VO = NEUBOT_SLOT_VO(
+IGHTPROTOCOL_HANDLE_CONNECT_SLOT_VO = IGHT_SLOT_VO(
     IghtProtocol_handle_connect_slot_vo
 )
 
@@ -600,7 +600,7 @@ def IghtProtocol_handle_ssl_slot_vo(selfptr):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPROTOCOL_HANDLE_SSL_SLOT_VO = NEUBOT_SLOT_VO(
+IGHTPROTOCOL_HANDLE_SSL_SLOT_VO = IGHT_SLOT_VO(
     IghtProtocol_handle_ssl_slot_vo
 )
 
@@ -613,7 +613,7 @@ def IghtProtocol_handle_data_slot_vo(selfptr):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPROTOCOL_HANDLE_DATA_SLOT_VO = NEUBOT_SLOT_VO(
+IGHTPROTOCOL_HANDLE_DATA_SLOT_VO = IGHT_SLOT_VO(
     IghtProtocol_handle_data_slot_vo
 )
 
@@ -626,7 +626,7 @@ def IghtProtocol_handle_flush_slot_vo(selfptr):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPROTOCOL_HANDLE_FLUSH_SLOT_VO = NEUBOT_SLOT_VO(
+IGHTPROTOCOL_HANDLE_FLUSH_SLOT_VO = IGHT_SLOT_VO(
     IghtProtocol_handle_flush_slot_vo
 )
 
@@ -639,7 +639,7 @@ def IghtProtocol_handle_eof_slot_vo(selfptr):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPROTOCOL_HANDLE_EOF_SLOT_VO = NEUBOT_SLOT_VO(
+IGHTPROTOCOL_HANDLE_EOF_SLOT_VO = IGHT_SLOT_VO(
     IghtProtocol_handle_eof_slot_vo
 )
 
@@ -652,56 +652,56 @@ def IghtProtocol_handle_error_slot_vo(selfptr):
         logging.error("Unhandled exception", exc_info=1)
         DIE(1)
 
-IGHTPROTOCOL_HANDLE_ERROR_SLOT_VO = NEUBOT_SLOT_VO(
+IGHTPROTOCOL_HANDLE_ERROR_SLOT_VO = IGHT_SLOT_VO(
     IghtProtocol_handle_error_slot_vo
 )
 
 
 
-LIBNEUBOT.IghtProtocol_get_poller.restype = ctypes.c_void_p
-LIBNEUBOT.IghtProtocol_get_poller.argtypes = (
+LIBIGHT.IghtProtocol_get_poller.restype = ctypes.c_void_p
+LIBIGHT.IghtProtocol_get_poller.argtypes = (
     ProtocolBase,
 )
 
 
 
-LIBNEUBOT.IghtProtocol_destruct.argtypes = (
+LIBIGHT.IghtProtocol_destruct.argtypes = (
     ProtocolBase,
 )
 
 
 
-LIBNEUBOT.IghtStringVector_construct.restype = ctypes.c_void_p
-LIBNEUBOT.IghtStringVector_construct.argtypes = (
+LIBIGHT.IghtStringVector_construct.restype = ctypes.c_void_p
+LIBIGHT.IghtStringVector_construct.argtypes = (
     PollerBase,
     ctypes.c_size_t,
 )
 
 
 
-LIBNEUBOT.IghtStringVector_append.restype = ctypes.c_int
-LIBNEUBOT.IghtStringVector_append.argtypes = (
+LIBIGHT.IghtStringVector_append.restype = ctypes.c_int
+LIBIGHT.IghtStringVector_append.argtypes = (
     StringVectorBase,
     ctypes.c_char_p,
 )
 
 
 
-LIBNEUBOT.IghtStringVector_get_poller.restype = ctypes.c_void_p
-LIBNEUBOT.IghtStringVector_get_poller.argtypes = (
+LIBIGHT.IghtStringVector_get_poller.restype = ctypes.c_void_p
+LIBIGHT.IghtStringVector_get_poller.argtypes = (
     StringVectorBase,
 )
 
 
 
-LIBNEUBOT.IghtStringVector_get_next.restype = ctypes.c_char_p
-LIBNEUBOT.IghtStringVector_get_next.argtypes = (
+LIBIGHT.IghtStringVector_get_next.restype = ctypes.c_char_p
+LIBIGHT.IghtStringVector_get_next.argtypes = (
     StringVectorBase,
 )
 
 
 
-LIBNEUBOT.IghtStringVector_destruct.argtypes = (
+LIBIGHT.IghtStringVector_destruct.argtypes = (
     StringVectorBase,
 )
 
@@ -723,7 +723,7 @@ class Connection(ConnectionBase):
     @staticmethod
     def attach(protocol, filenum):
         self = Connection()
-        self.context_ = LIBNEUBOT.IghtConnection_attach(protocol, filenum)
+        self.context_ = LIBIGHT.IghtConnection_attach(protocol, filenum)
         if not self.context_:
             DIE(1)
         _ctypes.Py_INCREF(self)
@@ -733,7 +733,7 @@ class Connection(ConnectionBase):
     @staticmethod
     def connect(protocol, family, address, port):
         self = Connection()
-        self.context_ = LIBNEUBOT.IghtConnection_connect(protocol, family,
+        self.context_ = LIBIGHT.IghtConnection_connect(protocol, family,
           address, port)
         if not self.context_:
             DIE(1)
@@ -744,7 +744,7 @@ class Connection(ConnectionBase):
     @staticmethod
     def connect_hostname(protocol, family, address, port):
         self = Connection()
-        self.context_ = LIBNEUBOT.IghtConnection_connect_hostname(protocol,
+        self.context_ = LIBIGHT.IghtConnection_connect_hostname(protocol,
           family, address, port)
         if not self.context_:
             DIE(1)
@@ -756,61 +756,61 @@ class Connection(ConnectionBase):
         return self.protocol
 
     def set_timeout(self, timeo):
-        return LIBNEUBOT.IghtConnection_set_timeout(self, timeo)
+        return LIBIGHT.IghtConnection_set_timeout(self, timeo)
 
     def clear_timeout(self):
-        return LIBNEUBOT.IghtConnection_clear_timeout(self)
+        return LIBIGHT.IghtConnection_clear_timeout(self)
 
     def start_tls(self, server_side):
-        return LIBNEUBOT.IghtConnection_start_tls(self, server_side)
+        return LIBIGHT.IghtConnection_start_tls(self, server_side)
 
     def read(self, base, count):
-        return LIBNEUBOT.IghtConnection_read(self, base, count)
+        return LIBIGHT.IghtConnection_read(self, base, count)
 
     def readline(self, base, count):
-        return LIBNEUBOT.IghtConnection_readline(self, base, count)
+        return LIBIGHT.IghtConnection_readline(self, base, count)
 
     def readn(self, base, count):
-        return LIBNEUBOT.IghtConnection_readn(self, base, count)
+        return LIBIGHT.IghtConnection_readn(self, base, count)
 
     def discardn(self, count):
-        return LIBNEUBOT.IghtConnection_discardn(self, count)
+        return LIBIGHT.IghtConnection_discardn(self, count)
 
     def write(self, base, count):
-        return LIBNEUBOT.IghtConnection_write(self, base, count)
+        return LIBIGHT.IghtConnection_write(self, base, count)
 
     def puts(self, base):
-        return LIBNEUBOT.IghtConnection_puts(self, base)
+        return LIBIGHT.IghtConnection_puts(self, base)
 
     def write_rand(self, count):
-        return LIBNEUBOT.IghtConnection_write_rand(self, count)
+        return LIBIGHT.IghtConnection_write_rand(self, count)
 
     def write_readbuf(self, base, count):
-        return LIBNEUBOT.IghtConnection_write_readbuf(self, base, count)
+        return LIBIGHT.IghtConnection_write_readbuf(self, base, count)
 
     def puts_readbuf(self, base):
-        return LIBNEUBOT.IghtConnection_puts_readbuf(self, base)
+        return LIBIGHT.IghtConnection_puts_readbuf(self, base)
 
     def write_rand_readbuf(self, count):
-        return LIBNEUBOT.IghtConnection_write_rand_readbuf(self, count)
+        return LIBIGHT.IghtConnection_write_rand_readbuf(self, count)
 
     def read_into_(self, evdest):
-        return LIBNEUBOT.IghtConnection_read_into_(self, evdest)
+        return LIBIGHT.IghtConnection_read_into_(self, evdest)
 
     def write_from_(self, evsource):
-        return LIBNEUBOT.IghtConnection_write_from_(self, evsource)
+        return LIBIGHT.IghtConnection_write_from_(self, evsource)
 
     def enable_read(self):
-        return LIBNEUBOT.IghtConnection_enable_read(self)
+        return LIBIGHT.IghtConnection_enable_read(self)
 
     def disable_read(self):
-        return LIBNEUBOT.IghtConnection_disable_read(self)
+        return LIBIGHT.IghtConnection_disable_read(self)
 
     def close(self):
         if not self.context_:
             return
         _ctypes.Py_DECREF(self)
-        LIBNEUBOT.IghtConnection_close(self)
+        LIBIGHT.IghtConnection_close(self)
         self.context_ = None
 
 
@@ -819,7 +819,7 @@ class EchoServer(EchoServerBase):
 
     def __init__(self, poller, use_ipv6, address, port):
         EchoServerBase.__init__(self)
-        self.context_ = LIBNEUBOT.IghtEchoServer_construct(poller, use_ipv6,
+        self.context_ = LIBIGHT.IghtEchoServer_construct(poller, use_ipv6,
           address, port)
         if not self.context_:
             DIE(1)
@@ -840,7 +840,7 @@ class Pollable(PollableBase):
 
     def __init__(self, poller):
         PollableBase.__init__(self)
-        self.context_ = LIBNEUBOT.IghtPollable_construct(poller,
+        self.context_ = LIBIGHT.IghtPollable_construct(poller,
           IGHTPOLLABLE_HANDLE_READ_SLOT_VO, IGHTPOLLABLE_HANDLE_WRITE_SLOT_VO,
           IGHTPOLLABLE_HANDLE_ERROR_SLOT_VO, self)
         if not self.context_:
@@ -848,37 +848,37 @@ class Pollable(PollableBase):
         _ctypes.Py_INCREF(self)
 
     def attach(self, filenum):
-        return LIBNEUBOT.IghtPollable_attach(self, filenum)
+        return LIBIGHT.IghtPollable_attach(self, filenum)
 
     def detach(self):
-        LIBNEUBOT.IghtPollable_detach(self)
+        LIBIGHT.IghtPollable_detach(self)
 
     def get_fileno(self):
-        return LIBNEUBOT.IghtPollable_get_fileno(self)
+        return LIBIGHT.IghtPollable_get_fileno(self)
 
     def set_readable(self):
-        return LIBNEUBOT.IghtPollable_set_readable(self)
+        return LIBIGHT.IghtPollable_set_readable(self)
 
     def unset_readable(self):
-        return LIBNEUBOT.IghtPollable_unset_readable(self)
+        return LIBIGHT.IghtPollable_unset_readable(self)
 
     def set_writable(self):
-        return LIBNEUBOT.IghtPollable_set_writable(self)
+        return LIBIGHT.IghtPollable_set_writable(self)
 
     def unset_writable(self):
-        return LIBNEUBOT.IghtPollable_unset_writable(self)
+        return LIBIGHT.IghtPollable_unset_writable(self)
 
     def set_timeout(self, delta):
-        LIBNEUBOT.IghtPollable_set_timeout(self, delta)
+        LIBIGHT.IghtPollable_set_timeout(self, delta)
 
     def clear_timeout(self):
-        LIBNEUBOT.IghtPollable_clear_timeout(self)
+        LIBIGHT.IghtPollable_clear_timeout(self)
 
     def close(self):
         if not self.context_:
             return
         _ctypes.Py_DECREF(self)
-        LIBNEUBOT.IghtPollable_close(self)
+        LIBIGHT.IghtPollable_close(self)
         self.context_ = None
 
 
@@ -887,7 +887,7 @@ class Poller(PollerBase):
 
     def __init__(self):
         PollerBase.__init__(self)
-        self.context_ = LIBNEUBOT.IghtPoller_construct()
+        self.context_ = LIBIGHT.IghtPoller_construct()
         if not self.context_:
             DIE(1)
         _ctypes.Py_INCREF(self)
@@ -899,7 +899,7 @@ class Poller(PollerBase):
         closure.opaque = opaque
         _ctypes.Py_INCREF(closure)
 
-        return LIBNEUBOT.IghtPoller_sched(self, delta,
+        return LIBIGHT.IghtPoller_sched(self, delta,
           IGHTPOLLER_SCHED_CALLBACK_HOOK_VO, closure)
 
     def defer_read(self, fileno, handle_ok, handle_timeout, opaque, timeout):
@@ -910,7 +910,7 @@ class Poller(PollerBase):
         closure.opaque = opaque
         _ctypes.Py_INCREF(closure)
 
-        return LIBNEUBOT.IghtPoller_defer_read(self, fileno,
+        return LIBIGHT.IghtPoller_defer_read(self, fileno,
           IGHTPOLLER_DEFER_READ_HANDLE_OK_HOOK_VO,
           IGHTPOLLER_DEFER_READ_HANDLE_TIMEOUT_HOOK_VO, closure, timeout)
 
@@ -923,7 +923,7 @@ class Poller(PollerBase):
         closure.opaque = opaque
         _ctypes.Py_INCREF(closure)
 
-        return LIBNEUBOT.IghtPoller_defer_write(self, fileno,
+        return LIBIGHT.IghtPoller_defer_write(self, fileno,
           IGHTPOLLER_DEFER_WRITE_HANDLE_OK_HOOK_VO,
           IGHTPOLLER_DEFER_WRITE_HANDLE_TIMEOUT_HOOK_VO, closure, timeout)
 
@@ -934,14 +934,14 @@ class Poller(PollerBase):
         closure.opaque = opaque
         _ctypes.Py_INCREF(closure)
 
-        return LIBNEUBOT.IghtPoller_resolve(self, family, name,
+        return LIBIGHT.IghtPoller_resolve(self, family, name,
           IGHTPOLLER_RESOLVE_CALLBACK_HOOK_VOS, closure)
 
     def loop(self):
-        LIBNEUBOT.IghtPoller_loop(self)
+        LIBIGHT.IghtPoller_loop(self)
 
     def break_loop(self):
-        LIBNEUBOT.IghtPoller_break_loop(self)
+        LIBIGHT.IghtPoller_break_loop(self)
 
 
 
@@ -967,7 +967,7 @@ class Protocol(ProtocolBase):
 
     def __init__(self, poller):
         ProtocolBase.__init__(self)
-        self.context_ = LIBNEUBOT.IghtProtocol_construct(poller,
+        self.context_ = LIBIGHT.IghtProtocol_construct(poller,
           IGHTPROTOCOL_HANDLE_CONNECT_SLOT_VO, IGHTPROTOCOL_HANDLE_SSL_SLOT_VO,
           IGHTPROTOCOL_HANDLE_DATA_SLOT_VO, IGHTPROTOCOL_HANDLE_FLUSH_SLOT_VO,
           IGHTPROTOCOL_HANDLE_EOF_SLOT_VO, IGHTPROTOCOL_HANDLE_ERROR_SLOT_VO,
@@ -984,7 +984,7 @@ class Protocol(ProtocolBase):
         if not self.context_:
             return
         _ctypes.Py_DECREF(self)
-        LIBNEUBOT.IghtProtocol_destruct(self)
+        LIBIGHT.IghtProtocol_destruct(self)
         self.context_ = None
 
 
@@ -993,25 +993,25 @@ class StringVector(StringVectorBase):
 
     def __init__(self, poller, count):
         StringVectorBase.__init__(self)
-        self.context_ = LIBNEUBOT.IghtStringVector_construct(poller, count)
+        self.context_ = LIBIGHT.IghtStringVector_construct(poller, count)
         if not self.context_:
             DIE(1)
         _ctypes.Py_INCREF(self)
         self.poller = poller
 
     def append(self, str):
-        return LIBNEUBOT.IghtStringVector_append(self, str)
+        return LIBIGHT.IghtStringVector_append(self, str)
 
     def get_poller(self):
         return self.poller
 
     def get_next(self):
-        return LIBNEUBOT.IghtStringVector_get_next(self)
+        return LIBIGHT.IghtStringVector_get_next(self)
 
     def destruct(self):
         if not self.context_:
             return
         _ctypes.Py_DECREF(self)
-        LIBNEUBOT.IghtStringVector_destruct(self)
+        LIBIGHT.IghtStringVector_destruct(self)
         self.context_ = None
 

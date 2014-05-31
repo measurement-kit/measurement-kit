@@ -27,11 +27,11 @@
 
 #include "common/stringvector.h"
 
-#define NEUBOT_STRINGVECTOR_MAX 512  // Large enough
+#define IGHT_STRINGVECTOR_MAX 512  // Large enough
 
 IghtStringVector::IghtStringVector(IghtPoller *p, size_t cnt)
 {
-	if (p == NULL || cnt == 0 || cnt > NEUBOT_STRINGVECTOR_MAX)
+	if (p == NULL || cnt == 0 || cnt > IGHT_STRINGVECTOR_MAX)
 		throw new (std::bad_alloc);
 
 	this->base = (char **) calloc(cnt, sizeof (char *));
