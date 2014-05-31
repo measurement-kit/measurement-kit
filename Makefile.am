@@ -35,8 +35,8 @@ AUTOMAKE_OPTIONS = foreign 1.9 subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 
 VERSION_INFO = 4:0:0
-AM_CFLAGS = -Wall -Wmissing-prototypes -Wextra -I $(top_srcdir)/src
-AM_CXXFLAGS = -Wall -Wmissing-prototypes -Wextra -I $(top_srcdir)/src
+AM_CFLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic -I $(top_srcdir)/src
+AM_CXXFLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic -I $(top_srcdir)/src
 
 lib_LTLIBRARIES = libight.la
 libight_la_LDFLAGS = -version-info $(VERSION_INFO)
