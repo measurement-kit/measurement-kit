@@ -118,8 +118,8 @@ def main():
     clang_write_copyright()
     clang_empty_line()
 
-    sys.stdout.write("#ifndef IGHT_H\n")
-    sys.stdout.write("# define IGHT_H\n")
+    sys.stdout.write("#ifndef IGHT_WRAPPERS_H\n")
+    sys.stdout.write("# define IGHT_WRAPPERS_H\n")
     sys.stdout.write("\n")
 
     sys.stdout.write("#ifdef __cplusplus\n")
@@ -176,7 +176,7 @@ def main():
     sys.stdout.write("#endif\n")
     sys.stdout.write("\n")
 
-    sys.stdout.write("#endif  /* IGHT_H */\n")
+    sys.stdout.write("#endif  /* IGHT_WRAPPERS_H */\n")
 
 if __name__ == "__main__":
     main()
