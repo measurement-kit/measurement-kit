@@ -23,7 +23,7 @@
  */
 
 //
-// IghtPollable: an object that tries to be compatible with the namesake
+// IghtPollable: an object that tries to be compatible with the Pollable
 // object implemented by Neubot.
 //
 // The presence of this object should facilitate the testing of a
@@ -76,7 +76,7 @@ dispatch(evutil_socket_t filenum, short event, void *opaque)
 
 /*
  * Note: attach() is separated from construct(), because in Neubot there
- * are cases in which we create a IghtPollable and then we attach() and detach()
+ * are cases in which we create a Pollable and then we attach() and detach()
  * file descriptors to it (e.g., the Connector object does that).
  */
 int
@@ -252,7 +252,7 @@ IghtPollable::handle_write(void)
 }
 
 /*
- * This is another difference wrt Ight: in Ight the handle_close()
+ * This is another difference wrt Neubot: in Neubot the handle_close()
  * method is called when a pollable is closed. Here, on the contrary, we
  * have not close notification, because this is the way in which the
  * destruction works on C++ (i.e., derived classes are destroyed earlier
