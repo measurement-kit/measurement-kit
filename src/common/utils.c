@@ -35,10 +35,13 @@
 
 #include <event2/event.h>
 
-#include "ll2sock.h"
-#include "log.h"
-#include "strtonum.h"
-#include "utils.h"
+#include "ext/strtonum.h"
+
+#include "common/log.h"
+
+#include "common/utils.h"
+
+#include "net/ll2sock.h"
 
 void
 neubot_timeval_now(struct timeval *tv)

@@ -134,6 +134,8 @@ def main():
     sys.stdout.write("\n")
     sys.stdout.write("typedef void (*neubot_slot_vo)(void *);\n")
     sys.stdout.write("\n")
+    sys.stdout.write("struct evbuffer;\n")
+    sys.stdout.write("\n")
 
     clang_comment("Classes:")
     clang_empty_line()

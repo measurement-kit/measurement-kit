@@ -28,7 +28,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "log.h"
+#include "common/log.h"
 
 static void
 neubot_warnv(const char *fmt, va_list ap)

@@ -34,10 +34,11 @@
 #include <event2/buffer_compat.h>
 #include <event2/event.h>
 
-#include "ll2sock.h"
-#include "log.h"
-#include "neubot.h"
-#include "utils.h"
+#include "net/ll2sock.h"
+#include "common/log.h"
+#include "common/utils.h"
+
+#include "ight_wrappers.h"
 
 struct Connection {
 	struct NeubotPollable *pollable;

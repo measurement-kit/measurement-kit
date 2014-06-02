@@ -17,6 +17,8 @@ typedef void (*neubot_hook_vos)(void *, const char *);
 
 typedef void (*neubot_slot_vo)(void *);
 
+struct evbuffer;
+
 /* Classes: */
 
 struct NeubotConnection;

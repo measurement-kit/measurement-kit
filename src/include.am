@@ -1,0 +1,14 @@
+pkginclude_HEADERS = \
+    src/ight_wrappers.h
+
+noinst_LTLIBRARIES += src/libight.la
+
+src_libight_la_SOURCES = \
+    src/ight_wrappers.cpp
+
+libight_la_LIBADD = src/libight.la
+
+include src/common/include.am
+include src/ext/include.am
+include src/net/include.am
+include src/neubot/include.am

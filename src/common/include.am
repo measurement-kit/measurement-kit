@@ -1,0 +1,9 @@
+noinst_LTLIBRARIES += src/common/libcommon.la
+
+src_common_libcommon_la_SOURCES = \
+	src/common/log.c \
+	src/common/poller.c \
+	src/common/stringvector.cpp \
+	src/common/utils.c
+
+libight_la_LIBADD += src/common/libcommon.la

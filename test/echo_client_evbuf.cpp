@@ -30,10 +30,10 @@
 
 #include <stdlib.h>
 
-#include <libneubot/connection.h>
-#include <libneubot/log.h>
-#include <libneubot/neubot.h>
-#include <libneubot/protocol.h>
+#include "../src/net/connection.h"
+#include "../src/common/log.h"
+#include "../src/ight_wrappers.h"
+#include "../src/net/protocol.h"
 
 #include <event2/buffer.h>
 

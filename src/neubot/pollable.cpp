@@ -39,12 +39,12 @@
 
 #include <event2/event.h>
 
-#include "ll2sock.h"
-#include "log.h"
-#include "poller.h"
-#include "utils.h"
+#include "net/ll2sock.h"
+#include "common/log.h"
+#include "common/poller.h"
+#include "common/utils.h"
 
-#include "pollable.hh"
+#include "neubot/pollable.hh"
 
 NeubotPollable::NeubotPollable(NeubotPoller *poller)
 {

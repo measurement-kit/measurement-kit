@@ -41,12 +41,13 @@
 #include <event2/dns.h>
 #include <event2/dns_compat.h>
 
-#include "neubot.h"
+#include "ight_wrappers.h"
 
-#include "ll2sock.h"
-#include "log.h"
-#include "poller.h"
-#include "utils.h"
+#include "net/ll2sock.h"
+
+#include "common/poller.h"
+#include "common/utils.h"
+#include "common/log.h"
 
 struct NeubotPoller {
 #ifndef WIN32
