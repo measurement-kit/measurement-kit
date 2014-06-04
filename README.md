@@ -1,7 +1,7 @@
-LibIght
+Libight
 =======
 
-LibIght is an experimental library that provides common functionalities
+Libight is an experimental library that provides common functionalities
 useful to implement open measurement tools on mobile platforms.
 
 As of version 3.0.0, we have successfully compiled and run its tests in the
