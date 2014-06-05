@@ -21,7 +21,7 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef NEUBOT_ANDROID
+#ifdef IGHT_ANDROID
 #include <android/log.h>
 #endif
 
@@ -31,32 +31,32 @@
 #include "common/log.h"
 
 static void
-neubot_warnv(const char *fmt, va_list ap)
+ight_warnv(const char *fmt, va_list ap)
 {
-#ifndef NEUBOT_ANDROID
+#ifndef IGHT_ANDROID
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, "\n");
 #else
-	__android_log_vprint(ANDROID_LOG_WARN, "libneubot", fmt, ap);
+	__android_log_vprint(ANDROID_LOG_WARN, "libight", fmt, ap);
 #endif
 }
 
 void
-neubot_warn(const char *fmt, ...)
+ight_warn(const char *fmt, ...)
 {
 	va_list ap;
 
 	va_start(ap, fmt);
-	neubot_warnv(fmt, ap);
+	ight_warnv(fmt, ap);
 	va_end(ap);
 }
 
 void
-neubot_info(const char *fmt, ...)
+ight_info(const char *fmt, ...)
 {
 	va_list ap;
 
 	va_start(ap, fmt);
-	neubot_warnv(fmt, ap);
+	ight_warnv(fmt, ap);
 	va_end(ap);
 }

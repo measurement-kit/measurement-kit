@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # Public domain, 2013 Simone Basso <bassosimone@gmail.com>.
 
-""" Test for NeubotPoller_sched() """
+""" Test for IghtPoller_sched() """
 
 import sys
 
-sys.path.insert(0, "/usr/local/share/libneubot")
+sys.path.insert(0, "/usr/local/share/libight")
 
-from libneubot import Poller
+from _libight import Poller
 
 def periodic_callback(poller):
     """ The periodic callback """

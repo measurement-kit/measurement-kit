@@ -37,10 +37,10 @@
 
 #include <event2/buffer.h>
 
-class EchoProtocol : public NeubotProtocol {
-	NeubotConnection *connection;
+class EchoProtocol : public IghtProtocol {
+	IghtConnection *connection;
 	evbuffer *evbuf;
-	NeubotPoller *poller;
+	IghtPoller *poller;
 
 	EchoProtocol(void) {
 		this->connection = NULL;
@@ -49,7 +49,7 @@ class EchoProtocol : public NeubotProtocol {
 	}
 
     public:
-	static EchoProtocol *connect(NeubotPoller *p, const char *family,
+	static EchoProtocol *connect(IghtPoller *p, const char *family,
 	    const char *address, const char *port, double timeo) {
 
 		EchoProtocol *self = new (std::nothrow) EchoProtocol();
@@ -64,7 +64,7 @@ class EchoProtocol : public NeubotProtocol {
 
 		self->poller = p;
 
-		self->connection = NeubotConnection::connect(self, family,
+		self->connection = IghtConnection::connect(self, family,
 		    address, port);
 		if (self->connection == NULL) {
 			delete self;
@@ -87,7 +87,7 @@ class EchoProtocol : public NeubotProtocol {
 	}
 
 	virtual void on_connect(void) {
-		neubot_info("echo - connected");
+		ight_info("echo - connected");
 	}
 
 	virtual void on_data(void) {
@@ -104,24 +104,24 @@ class EchoProtocol : public NeubotProtocol {
 	}
 
 	virtual void on_flush(void) {
-		neubot_info("echo - flushed");
+		ight_info("echo - flushed");
 	}
 
 	virtual void on_eof(void) {
-		neubot_info("echo - eof");
+		ight_info("echo - eof");
 		delete this;
 	}
 
 	virtual void on_error(void) {
-		neubot_info("echo - error");
+		ight_info("echo - error");
 		delete this;
 	}
 
 	// Implemented out-of-line to avoid the -Wweak-vtables warning
-	virtual NeubotPoller *get_poller(void);
+	virtual IghtPoller *get_poller(void);
 
 	virtual ~EchoProtocol(void) {
-		neubot_info("echo - destructor");
+		ight_info("echo - destructor");
 		if (this->connection != NULL)
 			this->connection->close();
 		if (this->evbuf != NULL)
@@ -130,7 +130,7 @@ class EchoProtocol : public NeubotProtocol {
 };
 
 // Implemented here to avoid the -Wweak-vtables warning
-NeubotPoller *
+IghtPoller *
 EchoProtocol::get_poller(void)
 {
 	return (this->poller);
@@ -139,27 +139,27 @@ EchoProtocol::get_poller(void)
 int
 main(void)
 {
-	NeubotPoller *poller;
+	IghtPoller *poller;
 	EchoProtocol *self;
 
-	neubot_info("echo - creating the poller...");
+	ight_info("echo - creating the poller...");
 
-	poller = NeubotPoller_construct();
+	poller = IghtPoller_construct();
 	if (poller == NULL)
 		exit(EXIT_FAILURE);
 
-	neubot_info("echo - creating the connection...");
+	ight_info("echo - creating the connection...");
 
 	self = EchoProtocol::connect(poller, "PF_INET",
 	    "127.0.0.1", "54321", 7.0);
 	if (self == NULL)
 		exit(EXIT_FAILURE);
 
-	neubot_info("echo - poller loop...");
+	ight_info("echo - poller loop...");
 
-	NeubotPoller_loop(poller);
+	IghtPoller_loop(poller);
 
-	neubot_info("echo - exit");
+	ight_info("echo - exit");
 
 	exit(EXIT_SUCCESS);
 }

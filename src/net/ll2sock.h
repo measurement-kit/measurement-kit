@@ -13,25 +13,25 @@
 
 /* To convert long long to sockets */
 #ifdef WIN32
-# define NEUBOT_SOCKET_MAX (INVALID_SOCKET - 1)
+# define IGHT_SOCKET_MAX (INVALID_SOCKET - 1)
 #else
-# define NEUBOT_SOCKET_MAX INT_MAX
+# define IGHT_SOCKET_MAX INT_MAX
 #endif
-#if !(LLONG_MAX >= NEUBOT_SOCKET_MAX)
-# error "LLONG_MAX must be larger than NEUBOT_SOCKET_MAX"
+#if !(LLONG_MAX >= IGHT_SOCKET_MAX)
+# error "LLONG_MAX must be larger than IGHT_SOCKET_MAX"
 #endif
 
 /* To mark sockets as invalid */
 #ifdef WIN32
-# define NEUBOT_SOCKET_INVALID INVALID_SOCKET
+# define IGHT_SOCKET_INVALID INVALID_SOCKET
 #else
-# define NEUBOT_SOCKET_INVALID -1
+# define IGHT_SOCKET_INVALID -1
 #endif
 
 static inline int
-neubot_socket_valid(long long filenum)
+ight_socket_valid(long long filenum)
 {
-	return (filenum >= 0 && filenum <= NEUBOT_SOCKET_MAX);
+	return (filenum >= 0 && filenum <= IGHT_SOCKET_MAX);
 }
 
 #endif  /* LL2SOCK_H */

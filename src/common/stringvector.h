@@ -21,8 +21,8 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBNEUBOT_STRINGVECTOR_H
-# define LIBNEUBOT_STRINGVECTOR_H
+#ifndef LIBIGHT_STRINGVECTOR_H
+# define LIBIGHT_STRINGVECTOR_H
 # ifdef __cplusplus
 
 /*-
@@ -30,22 +30,22 @@
  *   A vector of strings that is used to implement the resolver.
  */
 
-struct NeubotPoller;
+struct IghtPoller;
 
-struct NeubotStringVector {
+struct IghtStringVector {
     private: 
 	char **base;
 	size_t count;
 	size_t iter;
 	size_t pos;
-	NeubotPoller *poller;
+	IghtPoller *poller;
     public:
-	NeubotStringVector(NeubotPoller *, size_t);
+	IghtStringVector(IghtPoller *, size_t);
 	int append(const char *);
-	NeubotPoller *get_poller(void);
+	IghtPoller *get_poller(void);
 	const char *get_next(void);
-	~NeubotStringVector(void);
+	~IghtStringVector(void);
 };
 
 # endif  /* __cplusplus */
-#endif  /* LIBNEUBOT_STRINGVECTOR_H */
+#endif  /* LIBIGHT_STRINGVECTOR_H */

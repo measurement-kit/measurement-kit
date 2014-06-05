@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # Public domain, 2014 Simone Basso <bassosimone@gmail.com>.
 
-""" Test for NeubotPollable """
+""" Test for IghtPollable """
 
 import sys
 
-sys.path.insert(0, "/usr/local/share/libneubot")
+sys.path.insert(0, "/usr/local/share/libight")
 
-from libneubot import Poller
-from libneubot import StringVector
+from _libight import Poller
+from _libight import StringVector
 
 def main():
     """ Main function """

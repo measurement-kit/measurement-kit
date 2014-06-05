@@ -21,8 +21,8 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBNEUBOT_CONNECTION_H
-# define LIBNEUBOT_CONNECTION_H
+#ifndef LIBIGHT_CONNECTION_H
+# define LIBIGHT_CONNECTION_H
 # ifdef __cplusplus
 
 /*-
@@ -58,30 +58,30 @@
 struct bufferevent;
 struct evbuffer;
 
-struct NeubotStringVector;
-struct NeubotProtocol;
+struct IghtStringVector;
+struct IghtProtocol;
 
-struct NeubotConnection {
+struct IghtConnection {
     private:
 	long long filedesc;
 	bufferevent *bev;
-	NeubotProtocol *protocol;
+	IghtProtocol *protocol;
 	evbuffer *readbuf;
 	unsigned int closing;
 	unsigned int connecting;
 	unsigned int reading;
 	char *address;
 	char *port;
-	NeubotStringVector *addrlist;
+	IghtStringVector *addrlist;
 	char *family;
-	NeubotStringVector *pflist;
+	IghtStringVector *pflist;
 	unsigned int must_resolve_ipv4;
 	unsigned int must_resolve_ipv6;
 
-	NeubotConnection(void);
+	IghtConnection(void);
 
 	// Private destructor because destruction may be delayed
-	~NeubotConnection(void);
+	~IghtConnection(void);
 
 	// Libevent callbacks
 	static void handle_read(bufferevent *, void *);
@@ -98,15 +98,15 @@ struct NeubotConnection {
 	int write_rand_evbuffer(struct evbuffer *buf, size_t count);
 
     public:
-	static NeubotConnection *attach(NeubotProtocol *, long long);
+	static IghtConnection *attach(IghtProtocol *, long long);
 
-	static NeubotConnection *connect(NeubotProtocol *, const char *,
+	static IghtConnection *connect(IghtProtocol *, const char *,
 	    const char *, const char *);
 
-	static NeubotConnection *connect_hostname(NeubotProtocol *, const char *,
+	static IghtConnection *connect_hostname(IghtProtocol *, const char *,
 	    const char *, const char *);
 
-	NeubotProtocol *get_protocol(void);
+	IghtProtocol *get_protocol(void);
 
 	int set_timeout(double);
 
@@ -138,4 +138,4 @@ struct NeubotConnection {
 };
 
 # endif  /* __cplusplus */
-#endif  /* LIBNEUBOT_CONNECTION_H */
+#endif  /* LIBIGHT_CONNECTION_H */

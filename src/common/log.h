@@ -6,10 +6,10 @@
 extern "C" {
 #endif
 
-void neubot_warn(const char *, ...)
+void ight_warn(const char *, ...)
   __attribute__((format(printf, 1, 2)));
 
-void neubot_info(const char *, ...)
+void ight_info(const char *, ...)
   __attribute__((format(printf, 1, 2)));
 
 #ifdef __cplusplus

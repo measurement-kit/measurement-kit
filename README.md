@@ -1,16 +1,11 @@
-LibNeubot
-=========
+Libight
+=======
 
-LibNeubot is an experimental support library for [Neubot][neubot] (especially
-for [Neubot for Android][neubot_android]) that is written in C/C++ and based
-on [libevent2].
+Libight is an experimental library that provides common functionalities
+useful to implement open measurement tools on mobile platforms.
 
-[neubot_android]: https://github.com/neubot/neubot_android
-[neubot]: https://github.com/neubot/neubot
-[libevent2]: https://github.com/libevent/libevent
-
-I have successfully compiled and run its simple tests in the following
-systems: MacOS 10.8, OpenBSD 5.5-current, Ubuntu 13.10.
+As of version 3.0.0, we have successfully compiled and run its tests in the
+following systems: MacOS 10.8, OpenBSD 5.5-current, Ubuntu 13.10.
 
 To build the library you need a C/C++ compiler, Python 2.7+,
 and a Unix environment. (The `./configure` script should check

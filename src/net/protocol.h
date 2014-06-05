@@ -21,8 +21,8 @@
  * along with Neubot.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBNEUBOT_PROTOCOL_H
-# define LIBNEUBOT_PROTOCOL_H
+#ifndef LIBIGHT_PROTOCOL_H
+# define LIBIGHT_PROTOCOL_H
 # ifdef __cplusplus
 
 /*-
@@ -31,11 +31,11 @@
  *   traits of a protocol on top of, e.g., a Connection.
  */
 
-struct NeubotPoller;
+struct IghtPoller;
 
-typedef void (*neubot_slot_vo)(void *);  /* XXX Duplicate definition */
+typedef void (*ight_slot_vo)(void *);  /* XXX Duplicate definition */
 
-struct NeubotProtocol {
+struct IghtProtocol {
 	virtual void on_connect(void) {
 		// TODO: override
 	}
@@ -61,12 +61,12 @@ struct NeubotProtocol {
 	}
 
 	// Defined out-of-line to avoid -Wweak-vtables warning
-	virtual NeubotPoller *get_poller(void);
+	virtual IghtPoller *get_poller(void);
 
-	virtual ~NeubotProtocol(void) {
+	virtual ~IghtProtocol(void) {
 		// TODO: override
 	}
 };
 
 # endif  /* __cplusplus */
-#endif  /* LIBNEUBOT_PROTOCOL_H */
+#endif  /* LIBIGHT_PROTOCOL_H */

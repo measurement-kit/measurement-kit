@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # Public domain, 2013 Simone Basso <bassosimone@gmail.com>.
 
-""" Test for NeubotPoller """
+""" Test for IghtPoller """
 
 # pylint: disable = C0111
 
 import os
 import sys
 
-sys.path.insert(0, "/usr/local/share/libneubot")
+sys.path.insert(0, "/usr/local/share/libight")
 
-from libneubot import Poller
+from _libight import Poller
 
 def read_timeo(poller):
     sys.stderr.write("Timeout!\n")
