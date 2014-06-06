@@ -47,7 +47,6 @@ AC_CANONICAL_HOST
 # checks for programs
 AC_PROG_INSTALL
 AC_PROG_CXX([clang++ g++ c++])
-AM_PATH_PYTHON([2.6])
 
 # checks for libraries
 
@@ -92,5 +91,3 @@ AC_LANG_POP([C++])
 AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT
-
-./config.local
