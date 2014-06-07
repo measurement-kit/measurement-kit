@@ -21,8 +21,6 @@ struct evbuffer;
 
 /* Classes: */
 
-struct IghtEchoServer;
-struct IghtPollable;
 struct IghtPoller;
 
 /* IghtPoller API: */
@@ -43,36 +41,6 @@ int IghtPoller_resolve(struct IghtPoller *, const char *, const char *,
 void IghtPoller_loop(struct IghtPoller *);
 
 void IghtPoller_break_loop(struct IghtPoller *);
-
-/* IghtEchoServer API: */
-
-struct IghtEchoServer *IghtEchoServer_construct(struct IghtPoller *, int,
-    const char *, const char *);
-
-/* IghtPollable API: */
-
-struct IghtPollable *IghtPollable_construct(struct IghtPoller *, ight_slot_vo,
-    ight_slot_vo, ight_slot_vo, void *);
-
-int IghtPollable_attach(struct IghtPollable *, long long);
-
-void IghtPollable_detach(struct IghtPollable *);
-
-long long IghtPollable_get_fileno(struct IghtPollable *);
-
-int IghtPollable_set_readable(struct IghtPollable *);
-
-int IghtPollable_unset_readable(struct IghtPollable *);
-
-int IghtPollable_set_writable(struct IghtPollable *);
-
-int IghtPollable_unset_writable(struct IghtPollable *);
-
-void IghtPollable_set_timeout(struct IghtPollable *, double);
-
-void IghtPollable_clear_timeout(struct IghtPollable *);
-
-void IghtPollable_close(struct IghtPollable *);
 
 #ifdef __cplusplus
 }
