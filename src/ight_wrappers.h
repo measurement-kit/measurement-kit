@@ -29,9 +29,6 @@ struct IghtPoller *IghtPoller_construct(void);
 
 int IghtPoller_sched(struct IghtPoller *, double, ight_hook_vo, void *);
 
-int IghtPoller_resolve(struct IghtPoller *, const char *, const char *,
-    ight_hook_vos, void *);
-
 void IghtPoller_loop(struct IghtPoller *);
 
 void IghtPoller_break_loop(struct IghtPoller *);

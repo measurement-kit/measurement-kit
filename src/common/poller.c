@@ -66,12 +66,6 @@ struct IghtEvent {
 	void *opaque;
 };
 
-struct ResolveContext {
-	ight_hook_vos callback;
-	struct evbuffer *names;
-	void *opaque;
-};
-
 /*
  * IghtEvent implementation
  */
@@ -255,125 +249,6 @@ IghtPoller_sched(struct IghtPoller *self, double delta,
 	if (nevp == NULL)
 		return (-1);
 	return (0);
-}
-
-static void
-IghtPoller_resolve_callback_internal(int result, char type, int count,
-    int ttl, void *addresses, void *opaque)
-{
-	struct ResolveContext *rc;
-	const char *p;
-	int error, family, size;
-	char string[128];
-
-	(void) result;
-	(void) ttl;
-
-	rc = (struct ResolveContext *) opaque;
-
-	switch (type) {
-	case DNS_IPv4_A:
-		family = AF_INET;
-		size = 4;
-		break;
-	case DNS_IPv6_AAAA:
-		family = AF_INET6;
-		size = 16;
-		break;
-	default:
-		abort();
-	}
-
-	while (--count >= 0) {
-		/* Note: address already in network byte order */
-		p = inet_ntop(family, (char *)addresses + count * size,
-		    string, sizeof (string));
-		if (p == NULL) {
-			ight_warn("resolve: inet_ntop() failed");
-			continue;
-		}
-		error = evbuffer_add(rc->names, p, strlen(p));
-		if (error != 0) {
-			ight_warn("resolve: evbuffer_add() failed");
-			goto failure;
-		}
-		error = evbuffer_add(rc->names, " ", 1);
-		if (error != 0) {
-			ight_warn("resolve: evbuffer_add() failed");
-			goto failure;
-		}
-	}
-
-	error = evbuffer_add(rc->names, "\0", 1);
-	if (error != 0) {
-		ight_warn("resolve: evbuffer_add() failed");
-		goto failure;
-	}
-	p = (const char *) evbuffer_pullup(rc->names, -1);
-	if (p == NULL) {
-		ight_warn("resolve: evbuffer_pullup() failed");
-		goto failure;
-	}
-
-	rc->callback(rc->opaque, p);
-	goto cleanup;
-
-    failure:
-	rc->callback(rc->opaque, "");
-    cleanup:
-	evbuffer_free(rc->names);
-	free(rc);
-}
-
-int
-IghtPoller_resolve(struct IghtPoller *poller, const char *family,
-    const char *address, ight_hook_vos callback, void *opaque)
-{
-	struct ResolveContext *rc;
-	int result;
-
-	(void) poller;
-
-	rc = calloc(1, sizeof (*rc));
-	if (rc == NULL) {
-		ight_warn("resolve: calloc() failed");
-		goto failure;
-	}
-
-	rc->callback = callback;
-	rc->opaque = opaque;
-
-	rc->names = evbuffer_new();
-	if (rc->names == NULL) {
-		ight_warn("resolve: evbuffer_new() failed");
-		goto failure;
-	}
-
-	if (strcmp(family, "PF_INET6") == 0)
-		result = evdns_resolve_ipv6(address, DNS_QUERY_NO_SEARCH,
-		    IghtPoller_resolve_callback_internal, rc);
-	else if (strcmp(family, "PF_INET") == 0)
-		result = evdns_resolve_ipv4(address, DNS_QUERY_NO_SEARCH,
-		    IghtPoller_resolve_callback_internal, rc);
-	else {
-		ight_warn("resolve: invalid family");
-		goto failure;
-	}
-
-	if (result != 0) {
-		ight_warn("resolve: evdns_resolve_ipvX() failed");
-		goto failure;
-	}
-
-	return (0);
-
-    failure:
-	if (rc != NULL && rc->names != NULL)
-		evbuffer_free(rc->names);
-	if (rc != NULL)
-		free(rc);
-
-	return (-1);
 }
 
 void
