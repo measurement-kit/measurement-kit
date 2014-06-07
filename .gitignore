@@ -39,11 +39,14 @@ config.h
 config.log
 config.status
 libtool
-src/common/.deps/
-src/ext/.deps/
-src/net/.deps/
 stamp-h1
-test/.deps/
+
+# Files generated at compile time
+.deps
+.dirstamp
+.libs
+*.la
+*.lo
 
 # Python compiled files
 *.pyc
