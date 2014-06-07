@@ -56,4 +56,5 @@ stamp-h1
 
 # Regression tests
 test/echo_client
+test/echo_client2
 test/echo_client_evbuf
