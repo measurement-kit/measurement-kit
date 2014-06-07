@@ -257,40 +257,6 @@ IghtPoller_sched(struct IghtPoller *self, double delta,
 	return (0);
 }
 
-/*
- * The defer_read/defer_write/cancel interface allows to write
- * simpler code on the Python side, even though the interface is
- * less efficient than the Pollable interface.
- */
-
-int
-IghtPoller_defer_read(struct IghtPoller *self, long long fileno,
-    ight_hook_vo callback, ight_hook_vo timeback, void *opaque,
-    double timeout)
-{
-	struct IghtEvent *nevp;
-
-	nevp = IghtEvent_construct(self, fileno, callback,
-            timeback, opaque, timeout, EV_READ);
-	if (nevp == NULL)
-		return (-1);
-	return (0);
-}
-
-int
-IghtPoller_defer_write(struct IghtPoller *self, long long fileno,
-    ight_hook_vo callback, ight_hook_vo timeback, void *opaque,
-    double timeout)
-{
-	struct IghtEvent *nevp;
-
-	nevp = IghtEvent_construct(self, fileno, callback,
-            timeback, opaque, timeout, EV_WRITE);
-	if (nevp == NULL)
-		return (-1);
-	return (0);
-}
-
 static void
 IghtPoller_resolve_callback_internal(int result, char type, int count,
     int ttl, void *addresses, void *opaque)
