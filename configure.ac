@@ -11,7 +11,7 @@
 AC_INIT(libight, 4.0.0, bassosimone@gmail.com)
 
 # information on the package
-AC_CONFIG_SRCDIR([src/ight_wrappers.cpp])
+AC_CONFIG_SRCDIR([src/ight_wrappers.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
@@ -23,7 +23,6 @@ AC_CANONICAL_HOST
 # checks for programs
 AC_PROG_INSTALL
 AC_PROG_CXX([clang++ g++ c++])
-AM_PATH_PYTHON([2.6])
 
 # checks for libraries
 
@@ -68,5 +67,3 @@ AC_LANG_POP([C++])
 AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT
-
-./config.local

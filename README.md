@@ -7,9 +7,8 @@ useful to implement open measurement tools on mobile platforms.
 As of version 3.0.0, we have successfully compiled and run its tests in the
 following systems: MacOS 10.8, OpenBSD 5.5-current, Ubuntu 13.10.
 
-To build the library you need a C/C++ compiler, Python 2.7+,
-and a Unix environment. (The `./configure` script should check
-whether all the dependencies are in place.)
+To build the library you need a C/C++ compiler and a Unix environment. (The
+`./configure` script checks whether all the dependencies are in place.)
 
 How to build it
 ---------------

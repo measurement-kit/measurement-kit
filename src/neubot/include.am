@@ -1,7 +1,0 @@
-noinst_LTLIBRARIES += src/neubot/libneubot.la
-
-src_neubot_libneubot_la_SOURCES = \
-    src/neubot/echo.c \
-    src/neubot/pollable.cpp
-
-libight_la_LIBADD += src/neubot/libneubot.la

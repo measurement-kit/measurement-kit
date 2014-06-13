@@ -1,13 +1,9 @@
 check_PROGRAMS = \
     test/echo_client \
-    test/echo_client2 \
     test/echo_client_evbuf
 
 test_echo_client_SOURCES = test/echo_client.cpp
 test_echo_client_LDADD = libight.la
-
-test_echo_client2_SOURCES = test/echo_client2.c
-test_echo_client2_LDADD = libight.la
 
 test_echo_client_evbuf_SOURCES = test/echo_client_evbuf.cpp
 test_echo_client_evbuf_LDADD = libight.la
