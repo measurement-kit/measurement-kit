@@ -1,16 +1,29 @@
-/*
- * Public domain, 2013 Simone Basso.
+/*-
+ * This file is part of Libight <https://libight.github.io/>.
+ *
+ * Libight is free software. See AUTHORS and LICENSE for more
+ * information on the copying conditions.
  */
 
-/* Methods that we only use internally: */
+#ifndef LIBIGHT_POLLER_H
+# define LIBIGHT_POLLER_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+struct event_base;
+struct evdns_base;
+struct IghtPoller;
 
-struct event_base *IghtPoller_event_base_(struct IghtPoller *);
-struct evdns_base *IghtPoller_evdns_base_(struct IghtPoller *);
+typedef void (*ight_hook_vo)(void *);
 
-#ifdef __cplusplus
-}
-#endif
+IghtPoller *IghtPoller_construct(void);
+
+event_base *IghtPoller_event_base_(IghtPoller *);
+
+evdns_base *IghtPoller_evdns_base_(IghtPoller *);
+
+int IghtPoller_sched(IghtPoller *, double, ight_hook_vo, void *);
+
+void IghtPoller_loop(IghtPoller *);
+
+void IghtPoller_break_loop(IghtPoller *);
+
+#endif  // LIBIGHT_POLLER_H

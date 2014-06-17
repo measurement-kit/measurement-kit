@@ -17,9 +17,6 @@
 #include <event2/dns.h>
 #include <event2/event.h>
 
-
-#include "ight_wrappers.h"
-
 #include "common/stringvector.h"
 #include "common/poller.h"
 #include "common/utils.h"

@@ -16,7 +16,7 @@
 
 #include "../src/net/connection.h"
 #include "../src/common/log.h"
-#include "../src/ight_wrappers.h"
+#include "../src/common/poller.h"
 #include "../src/net/protocol.h"
 
 class EchoProtocol : public IghtProtocol {
