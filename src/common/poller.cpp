@@ -115,7 +115,7 @@ IghtEvent_construct(struct IghtPoller *poller, long long fileno,
 	if (timeback == NULL)
 		timeback = IghtEvent_noop;
 
-	nevp = calloc(1, sizeof (*nevp));
+	nevp = (struct IghtEvent *) calloc(1, sizeof (*nevp));
 	if (nevp == NULL)
 		goto cleanup;
 
