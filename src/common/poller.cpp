@@ -35,7 +35,7 @@
 
 struct IghtPoller {
 #ifndef WIN32
-	struct event evsignal;    /* for SIGINT */
+	struct event *evsignal;    /* for SIGINT */
 #endif
 	struct event_base *base;
 	struct evdns_base *dnsbase;
@@ -186,10 +186,12 @@ IghtPoller_construct(void)
 		abort();
 
 #ifndef WIN32
-	event_set(&self->evsignal, SIGINT, EV_SIGNAL,
+	self->evsignal = event_new(self->base, SIGINT, EV_SIGNAL,
 	    IghtPoller_sigint, self);
+	if (self->evsignal == NULL)
+		goto failure;
 
-	retval = event_add(&self->evsignal, NULL);
+	retval = event_add(self->evsignal, NULL);
 	if (retval != 0)
 		goto failure;
 #endif
@@ -198,7 +200,8 @@ IghtPoller_construct(void)
 
       failure:
 #ifndef WIN32
-	event_del(&self->evsignal);
+	if (self->evsignal)
+		event_free(self->evsignal);
 #endif
 	free(self);
 	return (NULL);
