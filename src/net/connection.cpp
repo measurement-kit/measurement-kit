@@ -158,7 +158,7 @@ IghtConnection::attach(IghtProtocol *proto, long long filenum)
 	poller = proto->get_poller();
 	if (poller == NULL)
 		abort();
-	evbase = IghtPoller_event_base_(poller);
+	evbase = IghtPoller_get_event_base(poller);
 	if (evbase == NULL)
 		abort();
 
@@ -247,7 +247,7 @@ IghtConnection::connect(IghtProtocol *proto, const char *family,
 	poller = proto->get_poller();
 	if (poller == NULL)
 		abort();
-	evbase = IghtPoller_event_base_(poller);
+	evbase = IghtPoller_get_event_base(poller);
 	if (evbase == NULL)
 		abort();
 
@@ -470,7 +470,7 @@ IghtConnection::handle_resolve(int result, char type, int count,
 	IghtPoller *poller = self->protocol->get_poller();
 	if (poller == NULL)
 		abort();
-	evdns_base *dns_base = IghtPoller_evdns_base_(poller);
+	evdns_base *dns_base = IghtPoller_get_evdns_base(poller);
 	if (dns_base == NULL)
 		abort();
 	if (self->must_resolve_ipv6) {
@@ -547,7 +547,7 @@ IghtConnection::resolve(void *opaque)
 	if (poller == NULL)
 		abort();
 
-	evdns_base *dns_base = IghtPoller_evdns_base_(poller);
+	evdns_base *dns_base = IghtPoller_get_evdns_base(poller);
 	if (dns_base == NULL)
 		abort();
 
@@ -605,7 +605,7 @@ IghtConnection::connect_hostname(IghtProtocol *proto,
 	poller = proto->get_poller();
 	if (poller == NULL)
 		abort();
-	evbase = IghtPoller_event_base_(poller);
+	evbase = IghtPoller_get_event_base(poller);
 	if (evbase == NULL)
 		abort();
 

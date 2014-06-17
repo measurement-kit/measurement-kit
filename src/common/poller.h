@@ -16,9 +16,9 @@ typedef void (*ight_hook_vo)(void *);
 
 IghtPoller *IghtPoller_construct(void);
 
-event_base *IghtPoller_event_base_(IghtPoller *);
+event_base *IghtPoller_get_event_base(IghtPoller *);
 
-evdns_base *IghtPoller_evdns_base_(IghtPoller *);
+evdns_base *IghtPoller_get_evdns_base(IghtPoller *);
 
 int IghtPoller_sched(IghtPoller *, double, ight_hook_vo, void *);
 

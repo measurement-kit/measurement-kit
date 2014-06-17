@@ -165,16 +165,14 @@ IghtPoller_construct(void)
 	return (NULL);
 }
 
-/* Method that we use only internally: */
 struct event_base *
-IghtPoller_event_base_(struct IghtPoller *self)
+IghtPoller_get_event_base(struct IghtPoller *self)
 {
 	return (self->base);
 }
 
-/* Method that we use only internally: */
 struct evdns_base *
-IghtPoller_evdns_base_(struct IghtPoller *self)
+IghtPoller_get_evdns_base(struct IghtPoller *self)
 {
 	return (self->dnsbase);
 }
