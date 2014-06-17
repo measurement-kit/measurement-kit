@@ -17,8 +17,6 @@
 
 struct IghtPoller;
 
-typedef void (*ight_slot_vo)(void *);  /* XXX Duplicate definition */
-
 struct IghtProtocol {
 	virtual void on_connect(void) {
 		// TODO: override
