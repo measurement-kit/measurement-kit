@@ -42,11 +42,9 @@ struct IghtPoller {
 };
 
 struct IghtEvent {
-	ight_hook_vo callback;
 	ight_hook_vo timeback;
 	struct event ev;
 	struct timeval tv;
-	evutil_socket_t fileno;
 	void *opaque;
 };
 
@@ -65,22 +63,17 @@ IghtEvent_noop(void *opaque)
 static void
 IghtEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
 {
-	struct IghtEvent *nevp;
-
 	(void) socket;
+	(void) event;
 
-	nevp = (struct IghtEvent *) opaque;
-	if (event & EV_TIMEOUT)
-		nevp->timeback(nevp->opaque);
-	else
-		nevp->callback(nevp->opaque);
+	auto nevp = (struct IghtEvent *) opaque;
+	nevp->timeback(nevp->opaque);
 	free(nevp);
 }
 
 static inline struct IghtEvent *
-IghtEvent_construct(struct IghtPoller *poller, long long fileno,
-    ight_hook_vo callback, ight_hook_vo timeback, void *opaque,
-    double timeout, short event)
+IghtEvent_construct(struct IghtPoller *poller, ight_hook_vo timeback,
+    void *opaque, double timeout)
 {
 	struct IghtEvent *nevp;
 	struct timeval *tvp;
@@ -90,28 +83,6 @@ IghtEvent_construct(struct IghtPoller *poller, long long fileno,
 
 	nevp = NULL;
 
-	/*
-	 * Make sure that, if we want to do I/O, the socket is
-	 * valid; otherwise, if we want to do timeout, make sure
-	 * that the socket is invalid; while there, catch the
-	 * case in which the user passes us an unexpected event.
-	 */
-	switch (event) {
-	case EV_READ:
-	case EV_WRITE:
-		if (!ight_socket_valid(fileno))
-			goto cleanup;
-		break;
-	case EV_TIMEOUT:
-		if (fileno != IGHT_SOCKET_INVALID)
-			goto cleanup;
-		break;
-	default:
-		abort();
-	}
-
-	if (callback == NULL)
-		callback = IghtEvent_noop;
 	if (timeback == NULL)
 		timeback = IghtEvent_noop;
 
@@ -119,17 +90,11 @@ IghtEvent_construct(struct IghtPoller *poller, long long fileno,
 	if (nevp == NULL)
 		goto cleanup;
 
-	/*
-	 * Note: `long long` simplifies the interaction with Java and
-	 * shall be wide enough to hold evutil_socket_t, which is `int`
-	 * on Unix and `uintptr_t` on Windows.
-	 */
-	nevp->fileno = (evutil_socket_t) fileno;
-	nevp->callback = callback;
 	nevp->timeback = timeback;
 	nevp->opaque = opaque;
 
-	event_set(&nevp->ev, nevp->fileno, event, IghtEvent_dispatch, nevp);
+	event_set(&nevp->ev, IGHT_SOCKET_INVALID, EV_TIMEOUT,
+	    IghtEvent_dispatch, nevp);
 
 	tvp = ight_timeval_init(&nevp->tv, timeout);
 
@@ -231,8 +196,7 @@ IghtPoller_sched(struct IghtPoller *self, double delta,
 {
 	struct IghtEvent *nevp;
 
-	nevp = IghtEvent_construct(self, IGHT_SOCKET_INVALID,
-	    IghtEvent_noop, callback, opaque, delta, EV_TIMEOUT);
+	nevp = IghtEvent_construct(self, callback, opaque, delta);
 	if (nevp == NULL)
 		return (-1);
 	return (0);
