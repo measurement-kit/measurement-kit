@@ -5,19 +5,14 @@
  * information on the copying conditions.
  */
 
-#include <arpa/inet.h>
-#include <sys/queue.h>
-
 #include <limits.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
 
 #ifndef WIN32
 # include <signal.h>
 #endif
 
-#include <event2/buffer.h>
 #include <event2/event.h>
 #include <event2/event_compat.h>
 #include <event2/event_struct.h>
