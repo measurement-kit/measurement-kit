@@ -35,23 +35,14 @@ struct IghtPoller {
 };
 
 struct IghtEvent {
-	ight_hook_vo timeback;
+	std::function<void(void)> timeback;
 	struct event ev;
 	struct timeval tv;
-	void *opaque;
 };
 
 /*
  * IghtEvent implementation
  */
-
-static void
-IghtEvent_noop(void *opaque)
-{
-	(void) opaque;
-
-	/* nothing */ ;
-}
 
 static void
 IghtEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
@@ -60,13 +51,13 @@ IghtEvent_dispatch(evutil_socket_t socket, short event, void *opaque)
 	(void) event;
 
 	auto nevp = (struct IghtEvent *) opaque;
-	nevp->timeback(nevp->opaque);
+	nevp->timeback();
 	free(nevp);
 }
 
 static inline struct IghtEvent *
-IghtEvent_construct(struct IghtPoller *poller, ight_hook_vo timeback,
-    void *opaque, double timeout)
+IghtEvent_construct(struct IghtPoller *poller,
+    std::function<void(void)> timeback, double timeout)
 {
 	struct IghtEvent *nevp;
 	struct timeval *tvp;
@@ -74,17 +65,11 @@ IghtEvent_construct(struct IghtPoller *poller, ight_hook_vo timeback,
 
 	(void) poller;
 
-	nevp = NULL;
-
-	if (timeback == NULL)
-		timeback = IghtEvent_noop;
-
 	nevp = (struct IghtEvent *) calloc(1, sizeof (*nevp));
 	if (nevp == NULL)
 		goto cleanup;
 
 	nevp->timeback = timeback;
-	nevp->opaque = opaque;
 
 	event_set(&nevp->ev, IGHT_SOCKET_INVALID, EV_TIMEOUT,
 	    IghtEvent_dispatch, nevp);
@@ -183,11 +168,11 @@ IghtPoller_get_evdns_base(struct IghtPoller *self)
  */
 int
 IghtPoller_sched(struct IghtPoller *self, double delta,
-    ight_hook_vo callback, void *opaque)
+    std::function<void(void)> callback)
 {
 	struct IghtEvent *nevp;
 
-	nevp = IghtEvent_construct(self, callback, opaque, delta);
+	nevp = IghtEvent_construct(self, callback, delta);
 	if (nevp == NULL)
 		return (-1);
 	return (0);

@@ -673,7 +673,7 @@ IghtConnection::connect_hostname(IghtProtocol *proto,
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);
 
-	result = IghtPoller_sched(poller, 0.0, self->resolve, self);
+	result = IghtPoller_sched(poller, 0.0, std::bind(self->resolve, self));
 	if (result != 0) {
 		delete self;
 		return (NULL);

@@ -8,11 +8,11 @@
 #ifndef LIBIGHT_POLLER_H
 # define LIBIGHT_POLLER_H
 
+#include <functional>
+
 struct event_base;
 struct evdns_base;
 struct IghtPoller;
-
-typedef void (*ight_hook_vo)(void *);
 
 IghtPoller *IghtPoller_construct(void);
 
@@ -20,7 +20,7 @@ event_base *IghtPoller_get_event_base(IghtPoller *);
 
 evdns_base *IghtPoller_get_evdns_base(IghtPoller *);
 
-int IghtPoller_sched(IghtPoller *, double, ight_hook_vo, void *);
+int IghtPoller_sched(IghtPoller *, double, std::function<void(void)>);
 
 void IghtPoller_loop(IghtPoller *);
 
