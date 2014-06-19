@@ -10,6 +10,11 @@ following systems: MacOS 10.8, OpenBSD 5.5-current, Ubuntu 13.10.
 To build the library you need a C/C++ compiler and a Unix environment. (The
 `./configure` script checks whether all the dependencies are in place.)
 
+Before running any of the below build commands be sure to initialize the
+submodules with:
+    
+    git submodule update --init
+
 How to build it
 ---------------
 
