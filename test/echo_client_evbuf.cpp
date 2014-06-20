@@ -123,25 +123,18 @@ EchoProtocol::get_poller(void)
 int
 main(void)
 {
-	IghtPoller *poller;
 	EchoProtocol *self;
-
-	ight_info("echo - creating the poller...");
-
-	poller = IghtPoller_construct();
-	if (poller == NULL)
-		exit(EXIT_FAILURE);
 
 	ight_info("echo - creating the connection...");
 
-	self = EchoProtocol::connect(poller, "PF_INET",
+	self = EchoProtocol::connect(ight_get_global_poller(), "PF_INET",
 	    "127.0.0.1", "54321", 7.0);
 	if (self == NULL)
 		exit(EXIT_FAILURE);
 
 	ight_info("echo - poller loop...");
 
-	IghtPoller_loop(poller);
+	ight_loop();
 
 	ight_info("echo - exit");
 

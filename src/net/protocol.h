@@ -15,7 +15,7 @@
  *   traits of a protocol on top of, e.g., a Connection.
  */
 
-struct IghtPoller;
+class IghtPoller;
 
 struct IghtProtocol {
 	virtual void on_connect(void) {

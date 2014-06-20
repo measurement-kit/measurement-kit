@@ -14,7 +14,7 @@
  *   A vector of strings that is used to implement the resolver.
  */
 
-struct IghtPoller;
+class IghtPoller;
 
 struct IghtStringVector {
     private: 
