@@ -32,5 +32,14 @@ main(void)
 
 	auto d3 = IghtDelayedCall(0.5, std::function<void(void)>());
 
+	//
+	// The compiler should refuse the compile the following (I wonder
+	// which is the best way to test that):
+	//
+	// d1 = d3;
+	//
+	// IghtDelayedCall d4(d1);
+	//
+
 	ight_loop();
 }
