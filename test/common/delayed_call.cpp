@@ -30,5 +30,7 @@ main(void)
 
 	d2 = move_semantic();
 
+	auto d3 = IghtDelayedCall(0.5, std::function<void(void)>());
+
 	ight_loop();
 }
