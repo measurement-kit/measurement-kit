@@ -101,7 +101,7 @@ IghtPoller::IghtPoller(void)
 		throw std::bad_alloc();
 
 	if ((this->dnsbase = evdns_get_global_base()) == NULL)
-		throw std::runtime_error("enexpected libevent error");
+		throw std::runtime_error("unexpected libevent error");
 
 #ifndef WIN32
 	if ((this->evsignal = event_new(this->base, SIGINT, EV_SIGNAL,
