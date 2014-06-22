@@ -40,11 +40,15 @@ IghtDelayedCall::IghtDelayedCall(double t, std::function<void(void)> &&f)
 	if ((this->evp = event_new(ight_get_global_event_base(),
 	    IGHT_SOCKET_INVALID, EV_TIMEOUT, this->dispatch,
 	    this->func)) == NULL) {
+		delete (this->func);
 		throw std::bad_alloc();
 	}
 
-	if (event_add(this->evp, ight_timeval_init(&timeo, t)) != 0)
+	if (event_add(this->evp, ight_timeval_init(&timeo, t)) != 0) {
+		delete (this->func);
+		event_free(this->evp);
 		throw std::runtime_error("cannot register new event");
+	}
 
 	std::swap(*this->func, f);
 }
