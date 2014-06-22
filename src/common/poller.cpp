@@ -111,7 +111,7 @@ IghtPoller::IghtPoller(void)
 
 	if (event_add(this->evsignal, NULL) != 0) {
 		event_free(this->evsignal);
-		throw std::bad_alloc();
+		throw std::runtime_error("unexpected libevent error");
 	}
 #endif
 }
