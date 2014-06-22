@@ -66,6 +66,7 @@ AC_LANG_POP([C++])
 
 ight_saved_cxxflags="$CXXFLAGS"
 CXXFLAGS="-std=c++11"
+ight_cxx_stdlib_flags=""
 AC_MSG_CHECKING([whether the C++ library supports C++11])
 AC_LANG_PUSH([C++])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>],
@@ -74,10 +75,27 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>],
     [],
     [
      AC_MSG_RESULT([no])
-     AC_MSG_ERROR([a C++11 library is required])
+     #
+     # Special case for MacOS 10.8, in which we need to explicitly
+     # tell the compiler to use libc++ (which supports C++11).
+     #
+     AC_MSG_CHECKING([whether libc++ is available])
+     CXXFLAGS="-std=c++11 -stdlib=libc++"
+     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>],
+                                         [std::function<void(void)> f;]])],
+        [
+         AC_MSG_RESULT([yes])
+         ight_cxx_stdlib_flags="-stdlib=libc++"
+        ]
+        [],
+        [
+         AC_MSG_RESULT([no])
+         AC_MSG_ERROR([a C++11 library is required])
+        ]
+     )
     ]
 )
-CXXFLAGS="$ight_saved_cxxflags"
+CXXFLAGS="$ight_saved_cxxflags $ight_cxx_stdlib_flags"
 AC_LANG_POP([C++])
 
 # checks for library functions
