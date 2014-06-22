@@ -56,9 +56,28 @@ AC_LANG_PUSH([C++])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
     [AC_MSG_RESULT([yes])]
     [],
-    [AC_MSG_ERROR([a C++11 compiler is required])]
+    [
+     AC_MSG_RESULT([no])
+     AC_MSG_ERROR([a C++11 compiler is required])
+    ]
 )
 CXXFLAGS="$ight_saved_cxxflags -std=c++11"
+AC_LANG_POP([C++])
+
+ight_saved_cxxflags="$CXXFLAGS"
+CXXFLAGS="-std=c++11"
+AC_MSG_CHECKING([whether the C++ library supports C++11])
+AC_LANG_PUSH([C++])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>],
+                                    [std::function<void(void)> f;]])],
+    [AC_MSG_RESULT([yes])]
+    [],
+    [
+     AC_MSG_RESULT([no])
+     AC_MSG_ERROR([a C++11 library is required])
+    ]
+)
+CXXFLAGS="$ight_saved_cxxflags"
 AC_LANG_POP([C++])
 
 # checks for library functions
