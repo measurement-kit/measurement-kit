@@ -9,6 +9,10 @@
 
 #include <iostream>
 
+struct X {
+	IghtDelayedCall d;
+};
+
 static IghtDelayedCall
 move_semantic(void)
 {
@@ -61,6 +65,18 @@ main(void)
 	//
 	// IghtDelayedCall d4(d1);
 	//
+
+	//
+	// Make sure that the delayed call is unscheduled when the
+	// object X is deleted, which simplifies life when you have
+	// a delayed call bound to a connection that may be closed
+	// at any time by peer.
+	//
+	X *x = new X();
+	x->d = IghtDelayedCall(0.0, [](void) {
+		std::cout << "This message shouldn't be printed" << "\n";
+	});
+	delete (x);
 
 	ight_loop();
 }
