@@ -18,18 +18,39 @@ move_semantic(void)
 	}));
 }
 
+//
+// TODO: Once we've chosen a testing framework, this unit test
+// be rewritten using the primitives of such framework.
+//
 int
 main(void)
 {
+	//
+	// Make sure that an empty delayed call is successfully
+	// destroyed (no segfault) when we leave the scope.
+	//
 	auto d1 = IghtDelayedCall();
 
+	//
+	// Register a first delayed call (which will be overriden
+	// later) to ensure that move semantic works.
+	//
 	auto d2 = IghtDelayedCall(3.0, [](void) {
 		std::cout << "The wrong delayed call" << "\n";
 		ight_break_loop();
 	});
 
+	//
+	// Replace the delayed call (which should clear the previous
+	// delayed call contained by d2, if any) with a new one, using
+	// the move semantic.
+	//
 	d2 = move_semantic();
 
+	//
+	// Make sure that we don't raise an exception in the libevent
+	// callback, when we're passed an empty std::function.
+	//
 	auto d3 = IghtDelayedCall(0.5, std::function<void(void)>());
 
 	//
