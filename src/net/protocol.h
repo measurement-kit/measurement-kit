@@ -15,9 +15,7 @@
  *   traits of a protocol on top of, e.g., a Connection.
  */
 
-struct IghtPoller;
-
-typedef void (*ight_slot_vo)(void *);  /* XXX Duplicate definition */
+class IghtPoller;
 
 struct IghtProtocol {
 	virtual void on_connect(void) {

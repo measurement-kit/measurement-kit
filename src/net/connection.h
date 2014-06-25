@@ -39,6 +39,8 @@
  *     language.
  */
 
+#include "src/common/poller.h"
+
 struct bufferevent;
 struct evbuffer;
 
@@ -61,6 +63,7 @@ struct IghtConnection {
 	IghtStringVector *pflist;
 	unsigned int must_resolve_ipv4;
 	unsigned int must_resolve_ipv6;
+	IghtDelayedCall start_connect;
 
 	IghtConnection(void);
 

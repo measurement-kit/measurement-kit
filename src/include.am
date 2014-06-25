@@ -1,6 +1,3 @@
-pkginclude_HEADERS = \
-    src/ight_wrappers.h
-
 libight_la_LIBADD =  # Empty
 
 include src/common/include.am

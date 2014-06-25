@@ -55,6 +55,7 @@ stamp-h1
 .DS_Store
 
 # Regression tests
+test/common/delayed_call
 test/echo_client
 test/echo_client2
 test/echo_client_evbuf

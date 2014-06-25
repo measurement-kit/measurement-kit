@@ -17,9 +17,6 @@
 #include <event2/dns.h>
 #include <event2/event.h>
 
-
-#include "ight_wrappers.h"
-
 #include "common/stringvector.h"
 #include "common/poller.h"
 #include "common/utils.h"
@@ -161,7 +158,7 @@ IghtConnection::attach(IghtProtocol *proto, long long filenum)
 	poller = proto->get_poller();
 	if (poller == NULL)
 		abort();
-	evbase = IghtPoller_event_base_(poller);
+	evbase = poller->get_event_base();
 	if (evbase == NULL)
 		abort();
 
@@ -250,7 +247,7 @@ IghtConnection::connect(IghtProtocol *proto, const char *family,
 	poller = proto->get_poller();
 	if (poller == NULL)
 		abort();
-	evbase = IghtPoller_event_base_(poller);
+	evbase = poller->get_event_base();
 	if (evbase == NULL)
 		abort();
 
@@ -473,7 +470,7 @@ IghtConnection::handle_resolve(int result, char type, int count,
 	IghtPoller *poller = self->protocol->get_poller();
 	if (poller == NULL)
 		abort();
-	evdns_base *dns_base = IghtPoller_evdns_base_(poller);
+	evdns_base *dns_base = poller->get_evdns_base();
 	if (dns_base == NULL)
 		abort();
 	if (self->must_resolve_ipv6) {
@@ -550,7 +547,7 @@ IghtConnection::resolve(void *opaque)
 	if (poller == NULL)
 		abort();
 
-	evdns_base *dns_base = IghtPoller_evdns_base_(poller);
+	evdns_base *dns_base = poller->get_evdns_base();
 	if (dns_base == NULL)
 		abort();
 
@@ -600,7 +597,6 @@ IghtConnection::connect_hostname(IghtProtocol *proto,
 {
 	event_base *evbase;
 	IghtPoller *poller;
-	int result;
 	IghtConnection *self;
 
 	if (proto == NULL || family == NULL || address == NULL || port == NULL)
@@ -608,7 +604,7 @@ IghtConnection::connect_hostname(IghtProtocol *proto,
 	poller = proto->get_poller();
 	if (poller == NULL)
 		abort();
-	evbase = IghtPoller_event_base_(poller);
+	evbase = poller->get_event_base();
 	if (evbase == NULL)
 		abort();
 
@@ -676,11 +672,8 @@ IghtConnection::connect_hostname(IghtProtocol *proto,
 	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
 	    self->handle_event, self);
 
-	result = IghtPoller_sched(poller, 0.0, self->resolve, self);
-	if (result != 0) {
-		delete self;
-		return (NULL);
-	}
+	self->start_connect = IghtDelayedCall(0.0, std::bind(
+	    self->resolve, self));
 
 	return (self);
 }
