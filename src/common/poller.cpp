@@ -15,11 +15,7 @@
 #endif
 
 #include <event2/event.h>
-#include <event2/event_compat.h>
-#include <event2/event_struct.h>
-
 #include <event2/dns.h>
-#include <event2/dns_compat.h>
 
 #include "net/ll2sock.h"
 
@@ -88,49 +84,76 @@ IghtPoller_sigint(int signo, short event, void *opaque)
 }
 #endif
 
-/*
- * TODO: Here we should use the new libevent API, which does not
- * use global event_base and evdns_base.
- */
 IghtPoller::IghtPoller(void)
 {
-	if ((this->base = event_init()) == NULL)
-		throw std::bad_alloc();
+	if ((this->base = event_base_new()) == NULL)
+		goto error;
 
-	if (evdns_init() != 0)
-		throw std::bad_alloc();
-
-	if ((this->dnsbase = evdns_get_global_base()) == NULL)
-		throw std::runtime_error("unexpected libevent error");
+	if ((this->dnsbase = evdns_base_new(this->base, 1)) == NULL)
+		goto error;
 
 #ifndef WIN32
+	/*
+	 * Note: The move semantic is incompatible with this object
+	 * because we pass `this` to `event_new()`.
+	 */
 	if ((this->evsignal = event_new(this->base, SIGINT, EV_SIGNAL,
 	    IghtPoller_sigint, this)) == NULL) {
-		throw std::bad_alloc();
-	}
-
-	if (event_add(this->evsignal, NULL) != 0) {
-		event_free(this->evsignal);
-		throw std::runtime_error("unexpected libevent error");
+		goto error;
 	}
 #endif
+
+	return;
+
+    error:
+	if (this->evsignal)
+		event_free(this->evsignal);
+	if (this->dnsbase)
+		evdns_base_free(this->dnsbase, 0);
+	if (this->base)
+		event_base_free(this->base);
+
+	throw std::bad_alloc();
 }
 
 IghtPoller::~IghtPoller(void)
 {
 	event_free(this->evsignal);
+	evdns_base_free(this->dnsbase, 0);
+	event_base_free(this->base);
 }
 
 void
 IghtPoller::loop(void)
 {
-	event_dispatch();
+	/*
+	 * XXX I'm not sure there could be more than one poller, since
+	 * we can only have one signal handler. So, do we need to enforce
+	 * a single poller in a hard way by using a singleton?
+	 */
+#ifndef WIN32
+	if (event_add(this->evsignal, NULL) != 0)
+		throw std::runtime_error("cannot add SIGINT event");
+#endif
+
+	auto result = event_base_dispatch(this->base);
+	if (result < 0)
+		throw std::runtime_error("event_base_dispatch() failed");
+	if (result == 1)
+		ight_warn("loop: no pending and/or active events");
+
+	// XXX what is done by libevent after the signal handler is removed?
+#ifndef WIN32
+	if (event_del(this->evsignal) != 0)
+		throw std::runtime_error("cannot del SIGINT event");
+#endif
 }
 
 void
 IghtPoller::break_loop(void)
 {
-	event_loopbreak();
+	if (event_base_loopbreak(this->base) != 0)
+		throw std::runtime_error("event_base_loopbreak() failed");
 }
 
 /*

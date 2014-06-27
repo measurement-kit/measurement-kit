@@ -60,9 +60,9 @@ class IghtDelayedCall {
 
 class IghtPoller {
 
-	event_base *base;
-	evdns_base *dnsbase;
-	event *evsignal;		/* for SIGINT on UNIX */
+	event_base *base = NULL;
+	evdns_base *dnsbase = NULL;
+	event *evsignal = NULL;		/* for SIGINT on UNIX */
 
     public:
 	IghtPoller(void);
