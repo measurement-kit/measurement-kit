@@ -126,14 +126,17 @@ main(void)
 
 	ight_info("echo - creating the connection...");
 
-	self = EchoProtocol::connect(ight_get_global_poller(), "PF_INET",
+	auto poller = ight_get_global_poller();
+
+	self = EchoProtocol::connect(poller, "PF_INET",
 	    "127.0.0.1", "54321", 7.0);
 	if (self == NULL)
 		exit(EXIT_FAILURE);
 
 	ight_info("echo - poller loop...");
 
-	ight_loop();
+	poller->break_loop_on_sigint_();
+	poller->loop();
 
 	ight_info("echo - exit");
 

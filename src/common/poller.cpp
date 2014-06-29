@@ -124,29 +124,36 @@ IghtPoller::~IghtPoller(void)
 }
 
 void
+IghtPoller::break_loop_on_sigint_(int enable)
+{
+#ifndef WIN32
+	/*
+	 * XXX There is a comment in libevent/signal.c saying that, for
+	 * historical reasons, "only one event base can be set up to use
+	 * [signals] at a time", unless kqueue is used as backend.
+	 *
+	 * We don't plan to use multiple pollers and this function is not
+	 * meant to be used by the real Android application; yet, it is
+	 * good to remember that this limitation exists.
+	 */
+	if (enable) {
+		if (event_add(this->evsignal, NULL) != 0)
+			throw std::runtime_error("cannot add SIGINT event");
+	} else {
+		if (event_del(this->evsignal) != 0)
+			throw std::runtime_error("cannot del SIGINT event");
+	}
+#endif
+}
+
+void
 IghtPoller::loop(void)
 {
-	/*
-	 * XXX I'm not sure there could be more than one poller, since
-	 * we can only have one signal handler. So, do we need to enforce
-	 * a single poller in a hard way by using a singleton?
-	 */
-#ifndef WIN32
-	if (event_add(this->evsignal, NULL) != 0)
-		throw std::runtime_error("cannot add SIGINT event");
-#endif
-
 	auto result = event_base_dispatch(this->base);
 	if (result < 0)
 		throw std::runtime_error("event_base_dispatch() failed");
 	if (result == 1)
 		ight_warn("loop: no pending and/or active events");
-
-	// XXX what is done by libevent after the signal handler is removed?
-#ifndef WIN32
-	if (event_del(this->evsignal) != 0)
-		throw std::runtime_error("cannot del SIGINT event");
-#endif
 }
 
 void

@@ -76,6 +76,14 @@ class IghtPoller {
 		return (this->dnsbase);
 	}
 
+	/*
+	 * Register a SIGINT handler that breaks the poller loop when
+	 * the SIGINT signal is received. Generally speaking, a library
+	 * should provide mechanism, not policy. However, this method
+	 * is meant to be used in test programs only.
+	 */
+	void break_loop_on_sigint_(int enable = 1);
+
 	void loop(void);
 
 	void break_loop(void);
