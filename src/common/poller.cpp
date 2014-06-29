@@ -109,7 +109,7 @@ IghtPoller::IghtPoller(void)
 	if (this->evsignal)
 		event_free(this->evsignal);
 	if (this->dnsbase)
-		evdns_base_free(this->dnsbase, 0);
+		evdns_base_free(this->dnsbase, 1);
 	if (this->base)
 		event_base_free(this->base);
 
@@ -119,7 +119,7 @@ IghtPoller::IghtPoller(void)
 IghtPoller::~IghtPoller(void)
 {
 	event_free(this->evsignal);
-	evdns_base_free(this->dnsbase, 0);
+	evdns_base_free(this->dnsbase, 1);
 	event_base_free(this->base);
 }
 
