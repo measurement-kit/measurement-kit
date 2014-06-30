@@ -81,6 +81,11 @@ class IghtPoller {
 	 * the SIGINT signal is received. Generally speaking, a library
 	 * should provide mechanism, not policy. However, this method
 	 * is meant to be used in test programs only.
+	 *
+	 * The use case for which this functionality exists, in particular,
+	 * is the following: I want ^C to break the poller loop and lead
+	 * to a clean exit, so Valgrind can check whether there are leaks
+	 * for long running test programs (i.e., servers).
 	 */
 	void break_loop_on_sigint_(int enable = 1);
 
