@@ -72,9 +72,9 @@ main(void)
 	// a delayed call bound to a connection that may be closed
 	// at any time by peer.
 	//
-	X *x = new X();
+	auto x = new X();
 	x->d = IghtDelayedCall(0.0, [](void) {
-		std::cout << "This message shouldn't be printed" << "\n";
+		throw std::runtime_error("This should not happen");
 	});
 	delete (x);
 
