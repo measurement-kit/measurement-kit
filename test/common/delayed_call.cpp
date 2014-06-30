@@ -78,5 +78,25 @@ main(void)
 	});
 	delete (x);
 
+	//
+	// Same as above, but this time cancelling the callback
+	// right before it is due.
+	//
+	// This models the case in which an asynchronous event, e.g.
+	// a FIN packet, triggers the deletion of an object that
+	// contains a delayed call that, in turn, is about to run.
+	//
+	// In such case, we want the delayed call not to run, no
+	// matter how close the deadline is.
+	//
+	auto d4 = new IghtDelayedCall(0.25, [](void) {
+		throw std::runtime_error("This should not happen");
+	});
+	auto d5 = IghtDelayedCall(0.249, [d4](void) {
+		std::cout << "Clear the pending delayed call" << "\n";
+		delete (d4);
+	});
+	d4 = NULL;  /* Clear the pointer, just in case */
+
 	ight_loop();
 }
