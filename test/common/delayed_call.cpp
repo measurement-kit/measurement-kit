@@ -40,8 +40,7 @@ main(void)
 	// later) to ensure that move semantic works.
 	//
 	auto d2 = IghtDelayedCall(3.0, [](void) {
-		std::cout << "The wrong delayed call" << "\n";
-		ight_break_loop();
+		throw std::runtime_error("This should not happen");
 	});
 
 	//
