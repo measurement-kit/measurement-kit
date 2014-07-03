@@ -86,11 +86,14 @@ IghtPoller_sigint(int signo, short event, void *opaque)
 
 IghtPoller::IghtPoller(void)
 {
-	if ((this->base = event_base_new()) == NULL)
-		goto error;
+	if ((this->base = event_base_new()) == NULL) {
+		throw std::bad_alloc();
+	}
 
-	if ((this->dnsbase = evdns_base_new(this->base, 1)) == NULL)
-		goto error;
+	if ((this->dnsbase = evdns_base_new(this->base, 1)) == NULL) {
+		event_base_free(this->base);
+		throw std::bad_alloc();
+	}
 
 #ifndef WIN32
 	/*
@@ -99,21 +102,11 @@ IghtPoller::IghtPoller(void)
 	 */
 	if ((this->evsignal = event_new(this->base, SIGINT, EV_SIGNAL,
 	    IghtPoller_sigint, this)) == NULL) {
-		goto error;
+		evdns_base_free(this->dnsbase, 1);
+		event_base_free(this->base);
+		throw std::bad_alloc();
 	}
 #endif
-
-	return;
-
-    error:
-	if (this->evsignal)
-		event_free(this->evsignal);
-	if (this->dnsbase)
-		evdns_base_free(this->dnsbase, 1);
-	if (this->base)
-		event_base_free(this->base);
-
-	throw std::bad_alloc();
 }
 
 IghtPoller::~IghtPoller(void)
