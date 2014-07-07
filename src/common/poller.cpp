@@ -15,11 +15,7 @@
 #endif
 
 #include <event2/event.h>
-#include <event2/event_compat.h>
-#include <event2/event_struct.h>
-
 #include <event2/dns.h>
-#include <event2/dns_compat.h>
 
 #include "net/ll2sock.h"
 
@@ -88,30 +84,27 @@ IghtPoller_sigint(int signo, short event, void *opaque)
 }
 #endif
 
-/*
- * TODO: Here we should use the new libevent API, which does not
- * use global event_base and evdns_base.
- */
 IghtPoller::IghtPoller(void)
 {
-	if ((this->base = event_init()) == NULL)
-		throw std::bad_alloc();
-
-	if (evdns_init() != 0)
-		throw std::bad_alloc();
-
-	if ((this->dnsbase = evdns_get_global_base()) == NULL)
-		throw std::runtime_error("unexpected libevent error");
-
-#ifndef WIN32
-	if ((this->evsignal = event_new(this->base, SIGINT, EV_SIGNAL,
-	    IghtPoller_sigint, this)) == NULL) {
+	if ((this->base = event_base_new()) == NULL) {
 		throw std::bad_alloc();
 	}
 
-	if (event_add(this->evsignal, NULL) != 0) {
-		event_free(this->evsignal);
-		throw std::runtime_error("unexpected libevent error");
+	if ((this->dnsbase = evdns_base_new(this->base, 1)) == NULL) {
+		event_base_free(this->base);
+		throw std::bad_alloc();
+	}
+
+#ifndef WIN32
+	/*
+	 * Note: The move semantic is incompatible with this object
+	 * because we pass `this` to `event_new()`.
+	 */
+	if ((this->evsignal = event_new(this->base, SIGINT, EV_SIGNAL,
+	    IghtPoller_sigint, this)) == NULL) {
+		evdns_base_free(this->dnsbase, 1);
+		event_base_free(this->base);
+		throw std::bad_alloc();
 	}
 #endif
 }
@@ -119,18 +112,48 @@ IghtPoller::IghtPoller(void)
 IghtPoller::~IghtPoller(void)
 {
 	event_free(this->evsignal);
+	evdns_base_free(this->dnsbase, 1);
+	event_base_free(this->base);
+}
+
+void
+IghtPoller::break_loop_on_sigint_(int enable)
+{
+#ifndef WIN32
+	/*
+	 * XXX There is a comment in libevent/signal.c saying that, for
+	 * historical reasons, "only one event base can be set up to use
+	 * [signals] at a time", unless kqueue is used as backend.
+	 *
+	 * We don't plan to use multiple pollers and this function is not
+	 * meant to be used by the real Android application; yet, it is
+	 * good to remember that this limitation exists.
+	 */
+	if (enable) {
+		if (event_add(this->evsignal, NULL) != 0)
+			throw std::runtime_error("cannot add SIGINT event");
+	} else {
+		if (event_del(this->evsignal) != 0)
+			throw std::runtime_error("cannot del SIGINT event");
+	}
+#endif
 }
 
 void
 IghtPoller::loop(void)
 {
-	event_dispatch();
+	auto result = event_base_dispatch(this->base);
+	if (result < 0)
+		throw std::runtime_error("event_base_dispatch() failed");
+	if (result == 1)
+		ight_warn("loop: no pending and/or active events");
 }
 
 void
 IghtPoller::break_loop(void)
 {
-	event_loopbreak();
+	if (event_base_loopbreak(this->base) != 0)
+		throw std::runtime_error("event_base_loopbreak() failed");
 }
 
 /*
