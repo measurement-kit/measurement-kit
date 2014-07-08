@@ -13,7 +13,7 @@
  * TODO: refactor all the tests in this file to be functions, so we
  * are ready to migrate to a unit testing framework.
  *
- * For now, I've written as functions the three most recent tests
+ * For now, I've written as functions the three^W^W most recent tests
  * that I've added to this file.
  */
 
@@ -88,6 +88,52 @@ test_event_free_called(void)
 	}
 
 	if (!event_free_called)
+		std::cout << "failed";
+	else
+		std::cout << "ok";
+
+	std::cout << std::endl;
+}
+
+static void
+test_move_preserves_libevent(void)
+{
+	auto event_free_called = 0;
+	IghtLibevent libevent;
+
+	std::cout << "test move_preserves_libevent... ";
+
+	libevent.event_free = [&event_free_called](event *evp) {
+		++event_free_called;
+		::event_free(evp);
+	};
+
+	{
+		auto d1 = IghtDelayedCall(0.0, [](void) { }, &libevent);
+		{
+			// Move constructor
+			IghtDelayedCall d2(std::move(d1));
+		}
+
+		if (event_free_called == 1)
+			std::cout << "ok ";
+		else
+			std::cout << "failed ";
+
+		auto d3 = IghtDelayedCall(0.0, [](void) { }, &libevent);
+		{
+			// Move assignment
+			auto d4 = IghtDelayedCall();
+			d4 = std::move(d3);
+		}
+
+		if (event_free_called == 2)
+			std::cout << "ok ";
+		else
+			std::cout << "failed ";
+	}
+
+	if (event_free_called != 2)
 		std::cout << "failed";
 	else
 		std::cout << "ok";
@@ -188,4 +234,5 @@ main(void)
 	test_event_new_failure();
 	test_event_add_failure();
 	test_event_free_called();
+	test_move_preserves_libevent();
 }
