@@ -8,14 +8,9 @@
 #ifndef LIBIGHT_POLLER_H
 # define LIBIGHT_POLLER_H
 
-#include <event2/util.h>	/* for evutil_socket_t */
-#include <stddef.h>		/* for NULL */
+#include "common/libevent.h"
 
 #include <functional>
-
-struct event_base;
-struct evdns_base;
-struct event;
 
 class IghtDelayedCall {
 
@@ -25,6 +20,7 @@ class IghtDelayedCall {
 	 */
 	std::function<void(void)> *func = NULL;
 	event *evp = NULL;
+	IghtLibevent *libevent = &IGHT_LIBEVENT;
 
 	// Callback for libevent
 	static void dispatch(evutil_socket_t, short, void *);
@@ -34,7 +30,8 @@ class IghtDelayedCall {
 		/* nothing */
 	}
 
-	IghtDelayedCall(double, std::function<void(void)>&&);
+	IghtDelayedCall(double, std::function<void(void)>&&,
+	    IghtLibevent *libevent = NULL);
 	~IghtDelayedCall(void);
 
 	/*
@@ -48,10 +45,12 @@ class IghtDelayedCall {
 	 * Enable move semantic.
 	 */
 	IghtDelayedCall(IghtDelayedCall&& d) {
+		std::swap(this->libevent, d.libevent);
 		std::swap(this->evp, d.evp);
 		std::swap(this->func, d.func);
 	}
 	IghtDelayedCall& operator=(IghtDelayedCall&& d) {
+		std::swap(this->libevent, d.libevent);
 		std::swap(this->evp, d.evp);
 		std::swap(this->func, d.func);
 		return (*this);
@@ -64,8 +63,10 @@ class IghtPoller {
 	evdns_base *dnsbase;
 	event *evsignal;		/* for SIGINT on UNIX */
 
+	IghtLibevent *libevent = &IGHT_LIBEVENT;
+
     public:
-	IghtPoller(void);
+	IghtPoller(IghtLibevent *libevent = NULL);
 	~IghtPoller(void);
 
 	event_base *get_event_base(void) {
