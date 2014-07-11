@@ -1,7 +1,6 @@
 noinst_LTLIBRARIES += src/common/libcommon.la
 
 src_common_libcommon_la_SOURCES = \
-	src/common/libevent.cpp \
 	src/common/log.c \
 	src/common/poller.cpp \
 	src/common/stringvector.cpp \

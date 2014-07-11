@@ -162,39 +162,3 @@ IghtPoller::break_loop(void)
 	if (this->libevent->event_base_loopbreak(this->base) != 0)
 		throw std::runtime_error("event_base_loopbreak() failed");
 }
-
-/*
- * API to access/use global objects.
- */
-
-IghtPoller GLOBAL_POLLER;
-
-IghtPoller *
-ight_get_global_poller(void)
-{
-	return (&GLOBAL_POLLER);
-}
-
-event_base *
-ight_get_global_event_base(void)
-{
-	return (GLOBAL_POLLER.get_event_base());
-}
-
-evdns_base *
-ight_get_global_evdns_base(void)
-{
-	return (GLOBAL_POLLER.get_evdns_base());
-}
-
-void
-ight_loop(void)
-{
-	GLOBAL_POLLER.loop();
-}
-
-void
-ight_break_loop(void)
-{
-	GLOBAL_POLLER.break_loop();
-}

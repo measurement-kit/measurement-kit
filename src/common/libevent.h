@@ -59,6 +59,21 @@ struct IghtLibevent {
 	std::function<void(event*)> event_free = ::event_free;
 };
 
-extern IghtLibevent IGHT_LIBEVENT;	/* Default libevent wrapper */
+struct IghtGlobalLibevent {
+
+	IghtGlobalLibevent(void) {
+		/* nothing */
+	}
+
+	static IghtLibevent *get(void) {
+		static IghtLibevent singleton;
+		return (&singleton);
+	}
+
+	IghtGlobalLibevent(IghtGlobalLibevent&) = delete;
+	IghtGlobalLibevent& operator=(IghtGlobalLibevent&) = delete;
+	IghtGlobalLibevent(IghtGlobalLibevent&&) = delete;
+	IghtGlobalLibevent& operator=(IghtGlobalLibevent&&) = delete;
+};
 
 #endif  // LIBIGHT_COMMON_LIBEVENT_H

@@ -20,7 +20,7 @@ class IghtDelayedCall {
 	 */
 	std::function<void(void)> *func = NULL;
 	event *evp = NULL;
-	IghtLibevent *libevent = &IGHT_LIBEVENT;
+	IghtLibevent *libevent = IghtGlobalLibevent::get();
 
 	// Callback for libevent
 	static void dispatch(evutil_socket_t, short, void *);
@@ -63,7 +63,7 @@ class IghtPoller {
 	evdns_base *dnsbase;
 	event *evsignal;		/* for SIGINT on UNIX */
 
-	IghtLibevent *libevent = &IGHT_LIBEVENT;
+	IghtLibevent *libevent = IghtGlobalLibevent::get();
 
     public:
 	IghtPoller(IghtLibevent *libevent = NULL);
@@ -103,14 +103,45 @@ class IghtPoller {
 	IghtPoller& operator=(const IghtPoller&& other) = delete;
 };
 
-IghtPoller *ight_get_global_poller(void);
+struct IghtGlobalPoller {
 
-event_base *ight_get_global_event_base(void);
+	IghtGlobalPoller(void) {
+		/* nothing */
+	}
 
-evdns_base *ight_get_global_evdns_base(void);
+	static IghtPoller *get(void) {
+		static IghtPoller singleton;
+		return (&singleton);
+	}
 
-void ight_loop(void);
+	IghtGlobalPoller(IghtGlobalPoller&) = delete;
+	IghtGlobalPoller& operator=(IghtGlobalPoller&) = delete;
+	IghtGlobalPoller(IghtGlobalPoller&&) = delete;
+	IghtGlobalPoller& operator=(IghtGlobalPoller&&) = delete;
+};
 
-void ight_break_loop(void);
+/*
+ * Syntactic sugar:
+ */
+
+inline IghtPoller *ight_get_global_poller(void) {
+	return (IghtGlobalPoller::get());
+}
+
+inline event_base *ight_get_global_event_base(void) {
+	return (IghtGlobalPoller::get()->get_event_base());
+}
+
+inline evdns_base *ight_get_global_evdns_base(void) {
+	return (IghtGlobalPoller::get()->get_evdns_base());
+}
+
+inline void ight_loop(void) {
+	IghtGlobalPoller::get()->loop();
+}
+
+inline void ight_break_loop(void) {
+	IghtGlobalPoller::get()->break_loop();
+}
 
 #endif  // LIBIGHT_POLLER_H
