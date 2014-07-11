@@ -1,5 +1,9 @@
 check_PROGRAMS += \
-    test/common/delayed_call
+    test/common/delayed_call \
+    test/common/poller
 
 test_common_delayed_call_SOURCES = test/common/delayed_call.cpp
 test_common_delayed_call_LDADD = libight.la
+
+test_common_poller_SOURCES = test/common/poller.cpp
+test_common_poller_LDADD = libight.la

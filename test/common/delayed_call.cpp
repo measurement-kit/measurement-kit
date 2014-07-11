@@ -5,6 +5,10 @@
  * information on the copying conditions.
  */
 
+//
+// Tests for src/common/poller.cpp's IghtDelayedCall()
+//
+
 #include "../src/common/poller.h"
 
 #include <iostream>
