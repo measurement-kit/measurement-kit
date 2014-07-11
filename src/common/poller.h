@@ -31,7 +31,7 @@ class IghtDelayedCall {
 	}
 
 	IghtDelayedCall(double, std::function<void(void)>&&,
-	    IghtLibevent *libevent = NULL);
+	    IghtLibevent *libevent = NULL, event_base *evbase = NULL);
 	~IghtDelayedCall(void);
 
 	/*

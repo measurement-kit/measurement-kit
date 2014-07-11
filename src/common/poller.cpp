@@ -25,17 +25,18 @@
  */
 
 IghtDelayedCall::IghtDelayedCall(double t, std::function<void(void)> &&f,
-    IghtLibevent *libevent)
+    IghtLibevent *libevent, event_base *evbase)
 {
 	timeval timeo;
 
 	if (libevent != NULL)
 		this->libevent = libevent;
+	if (evbase == NULL)
+		evbase = ight_get_global_event_base();
 
 	this->func = new std::function<void(void)>();
 
-	if ((this->evp = this->libevent->event_new(
-	    ight_get_global_event_base(), IGHT_SOCKET_INVALID,
+	if ((this->evp = this->libevent->event_new(evbase, IGHT_SOCKET_INVALID,
 	    EV_TIMEOUT, this->dispatch, this->func)) == NULL) {
 		delete (this->func);
 		throw std::bad_alloc();
