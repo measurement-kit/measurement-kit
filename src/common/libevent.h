@@ -13,12 +13,24 @@
 # define LIBIGHT_COMMON_LIBEVENT_H
 
 #include <event2/buffer.h>
+#include <event2/bufferevent.h>
 #include <event2/dns.h>
 #include <event2/event.h>
 
 #include <functional>
+#include <stdexcept>
 
 struct IghtLibevent {
+
+	/*
+	 * bufferevent
+	 */
+
+	std::function<bufferevent *(event_base *, evutil_socket_t, int)>
+	    bufferevent_socket_new = ::bufferevent_socket_new;
+
+	std::function<void(bufferevent *)>
+	    bufferevent_free = ::bufferevent_free;
 
 	/*
 	 * event_base
@@ -121,6 +133,54 @@ class IghtEvbuffer {
 	IghtEvbuffer& operator=(IghtEvbuffer&& other) {
 		std::swap(evbuf, other.evbuf);
 		std::swap(libevent, other.libevent);
+		return (*this);
+	}
+};
+
+class IghtBuffereventSocket {
+	IghtLibevent *libevent = IghtGlobalLibevent::get();
+	bufferevent *bev = NULL;
+
+    public:
+	IghtBuffereventSocket(IghtLibevent *lev = NULL) {
+		if (lev != NULL)
+			libevent = lev;
+	}
+
+	IghtBuffereventSocket(event_base *base, evutil_socket_t fd,
+	    int options, IghtLibevent *lev = NULL) {
+		if (lev != NULL)
+			libevent = lev;
+		if ((bev = libevent->bufferevent_socket_new(base, fd,
+		    options)) == NULL)
+			throw std::bad_alloc();
+	}
+
+	~IghtBuffereventSocket(void) {
+		if (bev != NULL)
+			libevent->bufferevent_free(bev);
+	}
+
+	operator bufferevent *(void) {
+		if (bev == NULL)
+			throw std::runtime_error("Accessing NULL bufferevent");
+		return (bev);
+	}
+
+	IghtLibevent *get_libevent(void) {
+		return (libevent);
+	}
+
+	IghtBuffereventSocket(IghtBuffereventSocket&) = delete;
+	IghtBuffereventSocket& operator=(IghtBuffereventSocket&) = delete;
+
+	IghtBuffereventSocket(IghtBuffereventSocket&& other) {
+		std::swap(libevent, other.libevent);
+		std::swap(bev, other.bev);
+	}
+	IghtBuffereventSocket& operator=(IghtBuffereventSocket&& other) {
+		std::swap(libevent, other.libevent);
+		std::swap(bev, other.bev);
 		return (*this);
 	}
 };

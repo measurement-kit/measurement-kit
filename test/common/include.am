@@ -1,7 +1,11 @@
 check_PROGRAMS += \
+    test/common/bufferevent \
     test/common/delayed_call \
     test/common/evbuffer \
     test/common/poller
+
+test_common_bufferevent_SOURCES = test/common/bufferevent.cpp
+test_common_bufferevent_LDADD = libight.la
 
 test_common_delayed_call_SOURCES = test/common/delayed_call.cpp
 test_common_delayed_call_LDADD = libight.la
