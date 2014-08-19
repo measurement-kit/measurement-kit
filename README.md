@@ -40,6 +40,10 @@ installed below `/opt/local`, run:
 
     ./configure --with-libevent=/opt/local
 
+To compile the unit test programs, run:
+
+    make check
+
 To tell make to produce less output (as in the Linux kernel
 build process) run:
 
