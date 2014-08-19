@@ -14,11 +14,9 @@
 
 #include <event2/buffer.h>
 #include <event2/dns.h>
-#include <event2/event.h>
 
 #include "common/stringvector.h"
 #include "common/poller.h"
-#include "common/utils.h"
 #include "common/log.h"
 
 #include "net/connection.h"
@@ -550,55 +548,6 @@ IghtConnection::connect(IghtProtocol *proto,
 	    self->resolve, self));
 
 	return (self);
-}
-
-IghtProtocol *
-IghtConnection::get_protocol(void)
-{
-	return (this->protocol);
-}
-
-int
-IghtConnection::set_timeout(double timeout)
-{
-	struct timeval tv, *tvp;
-	tvp = ight_timeval_init(&tv, timeout);
-	return (bufferevent_set_timeouts(this->bev, tvp, tvp));
-}
-
-int
-IghtConnection::clear_timeout(void)
-{
-	return (this->set_timeout(-1));
-}
-
-int
-IghtConnection::start_tls(unsigned server_side)
-{
-	(void) server_side;
-
-	return (-1);  // TODO: implement
-}
-
-int
-IghtConnection::write_from(evbuffer *sourcebuf)
-{
-	if (sourcebuf == NULL)
-		return (-1);
-
-	return (bufferevent_write_buffer(this->bev, sourcebuf));
-}
-
-int
-IghtConnection::enable_read(void)
-{
-	return (bufferevent_enable(this->bev, EV_READ));
-}
-
-int
-IghtConnection::disable_read(void)
-{
-	return (bufferevent_disable(this->bev, EV_READ));
 }
 
 void

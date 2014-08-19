@@ -10,8 +10,10 @@
 # ifdef __cplusplus
 
 #include "common/poller.h"
+#include "common/utils.h"
 
 #include <event2/bufferevent.h>
+#include <event2/event.h>
 
 struct evbuffer;
 
@@ -57,12 +59,23 @@ class IghtConnection {
 	static IghtConnection *connect(IghtProtocol *, const char *,
 	    const char *, const char *);
 
-	IghtProtocol *get_protocol(void);
+	IghtProtocol *get_protocol(void) {
+		return (this->protocol);
+	}
 
-	int set_timeout(double);
-	int clear_timeout(void);
+	int set_timeout(double timeout) {
+		struct timeval tv, *tvp;
+		tvp = ight_timeval_init(&tv, timeout);
+		return (bufferevent_set_timeouts(this->bev, tvp, tvp));
+	}
 
-	int start_tls(unsigned int);
+	int clear_timeout(void) {
+		return (this->set_timeout(-1));
+	}
+
+	int start_tls(unsigned int) {
+		return (-1);		/* TODO: implement */
+	}
 
 	int write(const char *base, size_t count) {
 		if (base == NULL || count == 0)
@@ -76,10 +89,19 @@ class IghtConnection {
 		return (this->write(str, strlen(str)));
 	}
 
-	int write_from(evbuffer *);
+	int write_from(evbuffer *sourcebuf) {
+		if (sourcebuf == NULL)
+			return (-1);
+		return (bufferevent_write_buffer(this->bev, sourcebuf));
+	}
 
-	int enable_read(void);
-	int disable_read(void);
+	int enable_read(void) {
+		return (bufferevent_enable(this->bev, EV_READ));
+	}
+
+	int disable_read(void) {
+		return (bufferevent_disable(this->bev, EV_READ));
+	}
 
 	void close(void);
 };
