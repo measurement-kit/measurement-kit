@@ -11,7 +11,8 @@
 
 #include "common/poller.h"
 
-struct bufferevent;
+#include <event2/bufferevent.h>
+
 struct evbuffer;
 
 struct IghtStringVector;
@@ -62,6 +63,18 @@ class IghtConnection {
 	int clear_timeout(void);
 
 	int start_tls(unsigned int);
+
+	int write(const char *base, size_t count) {
+		if (base == NULL || count == 0)
+			return (-1);
+		return (bufferevent_write(this->bev, base, count));
+	}
+
+	int puts(const char *str) {
+		if (str == NULL)
+			return (-1);
+		return (this->write(str, strlen(str)));
+	}
 
 	int write_from(evbuffer *);
 
