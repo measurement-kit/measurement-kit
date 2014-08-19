@@ -20,7 +20,6 @@
 #include "common/log.h"
 
 #include "net/connection.h"
-#include "net/protocol.h"
 
 IghtConnection::~IghtConnection(void)
 {
@@ -33,8 +32,6 @@ IghtConnection::~IghtConnection(void)
 
 	if (this->bev != NULL)
 		bufferevent_free(this->bev);
-
-	// protocol: should already be dead
 
 	// closing: nothing to be done
 	// connecting: nothing to be done
@@ -64,7 +61,7 @@ IghtConnection::handle_read(bufferevent *bev, void *opaque)
 	(void) bev;  // Suppress warning about unused variable
 
 	self->reading = 1;
-	self->protocol->on_data(bufferevent_get_input(self->bev));
+	self->on_data(bufferevent_get_input(self->bev));
 	self->reading = 0;
 
 	if (self->closing)
@@ -76,7 +73,7 @@ IghtConnection::handle_write(bufferevent *bev, void *opaque)
 {
 	IghtConnection *self = (IghtConnection *) opaque;
 	(void) bev;  // Suppress warning about unused variable
-	self->protocol->on_flush();
+	self->on_flush();
 }
 
 void
@@ -93,12 +90,12 @@ IghtConnection::handle_event(bufferevent *bev, short what, void *opaque)
 
 	if (what & BEV_EVENT_CONNECTED) {
 		self->connecting = 0;
-		self->protocol->on_connect();
+		self->on_connect();
 		return;
 	}
 
 	if (what & BEV_EVENT_EOF) {
-		self->protocol->on_eof();
+		self->on_error(IghtError(0));
 		return;
 	}
 
@@ -110,10 +107,10 @@ IghtConnection::handle_event(bufferevent *bev, short what, void *opaque)
 
 	// TODO: also handle the timeout
 
-	self->protocol->on_error();
+	self->on_error(IghtError(-1));
 }
 
-IghtConnection::IghtConnection(IghtProtocol *proto, long long filenum)
+IghtConnection::IghtConnection(long long filenum)
 {
 	auto evbase = ight_get_global_event_base();
 	auto poller = ight_get_global_poller();
@@ -130,8 +127,6 @@ IghtConnection::IghtConnection(IghtProtocol *proto, long long filenum)
 	if ((this->bev = bufferevent_socket_new(evbase, (evutil_socket_t)
 	    filenum, BEV_OPT_DEFER_CALLBACKS)) == NULL)
 		throw std::runtime_error("Cannot allocate bufferevent");
-
-	this->protocol = proto;
 
 	// closing: nothing to be done
 	// connecting: nothing to be done
@@ -244,7 +239,7 @@ IghtConnection::connect_next(void)
 	}
 
 	this->connecting = 0;
-	this->protocol->on_error();
+	this->on_error(IghtError(-2));
 }
 
 void
@@ -312,18 +307,14 @@ IghtConnection::handle_resolve(int result, char type, int count,
 			ight_warn("handle_resolve - cannot append");
 			// Oops the two vectors are not in sync anymore now
 			self->connecting = 0;
-			self->protocol->on_error();
+			self->on_error(IghtError(-3));
 			return;
 		}
 	}
 
     finally:
-	IghtPoller *poller = self->protocol->get_poller();
-	if (poller == NULL)
-		abort();
-	evdns_base *dns_base = poller->get_evdns_base();
-	if (dns_base == NULL)
-		abort();
+	auto dns_base = ight_get_global_evdns_base();
+
 	if (self->must_resolve_ipv6) {
 		self->must_resolve_ipv6 = 0;
 		evdns_request *request = evdns_base_resolve_ipv6(dns_base,
@@ -370,7 +361,7 @@ IghtConnection::resolve(void *opaque)
 		    self->pflist->append("PF_INET") != 0) {
 			ight_warn("resolve - cannot append");
 			self->connecting = 0;
-			self->protocol->on_error();
+			self->on_error(IghtError(-4));
 			return;
 		}
 		self->connect_next();
@@ -387,20 +378,14 @@ IghtConnection::resolve(void *opaque)
 		    self->pflist->append("PF_INET6") != 0) {
 			ight_warn("resolve - cannot append");
 			self->connecting = 0;
-			self->protocol->on_error();
+			self->on_error(IghtError(-4));
 			return;
 		}
 		self->connect_next();
 		return;
 	}
 
-	IghtPoller *poller = self->protocol->get_poller();
-	if (poller == NULL)
-		abort();
-
-	evdns_base *dns_base = poller->get_evdns_base();
-	if (dns_base == NULL)
-		abort();
+	auto dns_base = ight_get_global_evdns_base();
 
 	// Note: PF_UNSPEC6 means that we try with IPv6 first
 	if (strcmp(self->family, "PF_INET") == 0)
@@ -414,7 +399,7 @@ IghtConnection::resolve(void *opaque)
 	else {
 		ight_warn("connection::resolve - invalid PF_xxx");
 		self->connecting = 0;
-		self->protocol->on_error();
+		self->on_error(IghtError(-5));
 		return;
 	}
 
@@ -431,7 +416,7 @@ IghtConnection::resolve(void *opaque)
 	}
 	if (request == NULL) {
 		self->connecting = 0;
-		self->protocol->on_error();
+		self->on_error(IghtError(-6));
 		return;
 	}
 
@@ -442,8 +427,8 @@ IghtConnection::resolve(void *opaque)
 		self->must_resolve_ipv4 = 1;
 }
 
-IghtConnection::IghtConnection(IghtProtocol *proto,
-    const char *family, const char *address, const char *port)
+IghtConnection::IghtConnection(const char *family,
+    const char *address, const char *port)
 {
 	auto evbase = ight_get_global_event_base();
 	auto poller = ight_get_global_poller();
@@ -457,8 +442,6 @@ IghtConnection::IghtConnection(IghtProtocol *proto,
 	if ((this->bev = bufferevent_socket_new(evbase, (evutil_socket_t)
 	    IGHT_SOCKET_INVALID, BEV_OPT_DEFER_CALLBACKS)) == NULL)
 		throw std::runtime_error("Cannot allocate bufferevent");
-
-	this->protocol = proto;
 
 	// closing: nothing to be done
 

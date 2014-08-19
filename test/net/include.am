@@ -1,0 +1,5 @@
+check_PROGRAMS += \
+    test/net/echo_client
+
+test_net_echo_client_SOURCES = test/net/echo_client.cpp
+test_net_echo_client_LDADD = libight.la

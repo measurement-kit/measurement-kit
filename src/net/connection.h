@@ -9,6 +9,7 @@
 # define LIBIGHT_NET_CONNECTION_H
 # ifdef __cplusplus
 
+#include "common/error.h"
 #include "common/poller.h"
 #include "common/utils.h"
 
@@ -20,13 +21,11 @@
 struct evbuffer;
 
 struct IghtStringVector;
-struct IghtProtocol;
 
 class IghtConnection {
 
 	long long filedesc = IGHT_SOCKET_INVALID;
 	bufferevent *bev = NULL;
-	IghtProtocol *protocol = NULL;
 	unsigned int closing = 0;
 	unsigned int connecting = 0;
 	unsigned int reading = 0;
@@ -54,13 +53,28 @@ class IghtConnection {
 	static void resolve(void *);
 
     public:
-	IghtConnection(IghtProtocol *, long long);
-	IghtConnection(IghtProtocol *, const char *, const char *,
-	    const char *);
+	IghtConnection(long long);
+	IghtConnection(const char *, const char *, const char *);
 
-	IghtProtocol *get_protocol(void) {
-		return (this->protocol);
-	}
+	std::function<void(void)> on_connect = [](void) {
+		/* nothing */
+	};
+
+	std::function<void(void)> on_ssl = [](void) {
+		/* nothing */
+	};
+
+	std::function<void(evbuffer *)> on_data = [](evbuffer *) {
+		/* nothing */
+	};
+
+	std::function<void(void)> on_flush = [](void) {
+		/* nothing */
+	};
+
+	std::function<void(IghtError)> on_error = [](IghtError) {
+		/* nothing */
+	};
 
 	int set_timeout(double timeout) {
 		struct timeval tv, *tvp;
