@@ -12,6 +12,8 @@
 #include "common/poller.h"
 #include "common/utils.h"
 
+#include "net/ll2sock.h"
+
 #include <event2/bufferevent.h>
 #include <event2/event.h>
 
@@ -22,22 +24,20 @@ struct IghtProtocol;
 
 class IghtConnection {
 
-	long long filedesc;
-	bufferevent *bev;
-	IghtProtocol *protocol;
-	unsigned int closing;
-	unsigned int connecting;
-	unsigned int reading;
-	char *address;
-	char *port;
-	IghtStringVector *addrlist;
-	char *family;
-	IghtStringVector *pflist;
-	unsigned int must_resolve_ipv4;
-	unsigned int must_resolve_ipv6;
+	long long filedesc = IGHT_SOCKET_INVALID;
+	bufferevent *bev = NULL;
+	IghtProtocol *protocol = NULL;
+	unsigned int closing = 0;
+	unsigned int connecting = 0;
+	unsigned int reading = 0;
+	char *address = NULL;
+	char *port = NULL;
+	IghtStringVector *addrlist = NULL;
+	char *family = NULL;
+	IghtStringVector *pflist = NULL;
+	unsigned int must_resolve_ipv4 = 0;
+	unsigned int must_resolve_ipv6 = 0;
 	IghtDelayedCall start_connect;
-
-	IghtConnection(void);
 
 	// Private destructor because destruction may be delayed
 	~IghtConnection(void);
@@ -54,10 +54,9 @@ class IghtConnection {
 	static void resolve(void *);
 
     public:
-	static IghtConnection *attach(IghtProtocol *, long long);
-
-	static IghtConnection *connect(IghtProtocol *, const char *,
-	    const char *, const char *);
+	IghtConnection(IghtProtocol *, long long);
+	IghtConnection(IghtProtocol *, const char *, const char *,
+	    const char *);
 
 	IghtProtocol *get_protocol(void) {
 		return (this->protocol);

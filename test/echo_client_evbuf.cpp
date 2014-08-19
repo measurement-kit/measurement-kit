@@ -40,12 +40,9 @@ class EchoProtocol : public IghtProtocol {
 
 		self->poller = p;
 
-		self->connection = IghtConnection::connect(self, family,
-		    address, port);
-		if (self->connection == NULL) {
-			delete self;
-			return (NULL);
-		}
+		/* It's OK to throw on error */
+		self->connection = new IghtConnection::IghtConnection(self,
+		    family, address, port);
 
 		int result = self->connection->set_timeout(timeo);
 		if (result != 0) {
