@@ -93,11 +93,6 @@ IghtConnection::handle_event(bufferevent *bev, short what, void *opaque)
 
 	if (what & BEV_EVENT_CONNECTED) {
 		self->connecting = 0;
-		int result = bufferevent_enable(self->bev, EV_READ);
-		if (result != 0) {
-			self->protocol->on_error();
-			return;
-		}
 		self->protocol->on_connect();
 		return;
 	}
