@@ -17,8 +17,8 @@ struct evbuffer;
 struct IghtStringVector;
 struct IghtProtocol;
 
-struct IghtConnection {
-    private:
+class IghtConnection {
+
 	long long filedesc;
 	bufferevent *bev;
 	IghtProtocol *protocol;
