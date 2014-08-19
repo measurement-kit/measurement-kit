@@ -51,9 +51,6 @@ class IghtConnection {
 	    void *, void *);
 	static void resolve(void *);
 
-	// Function used by write_rand() and write_rand_readbuf()
-	int write_rand_evbuffer(struct evbuffer *buf, size_t count);
-
     public:
 	static IghtConnection *attach(IghtProtocol *, long long);
 
@@ -66,23 +63,10 @@ class IghtConnection {
 	IghtProtocol *get_protocol(void);
 
 	int set_timeout(double);
-
 	int clear_timeout(void);
 
 	int start_tls(unsigned int);
 
-	int read(char *, size_t);
-	int readline(char *, size_t);
-	int readn(char *, size_t);
-	int discardn(size_t);
-	int write(const char *, size_t);
-	int puts(const char *);
-	int write_rand(size_t);
-	int write_readbuf(const char *, size_t);
-	int puts_readbuf(const char *);
-	int write_rand_readbuf(size_t);
-
-	int read_into(evbuffer *);
 	int write_from(evbuffer *);
 
 	int enable_read(void);
