@@ -23,12 +23,10 @@
 
 class EchoProtocol : public IghtProtocol {
 	IghtConnection *connection;
-	evbuffer *evbuf;
 	IghtPoller *poller;
 
 	EchoProtocol(void) {
 		this->connection = NULL;
-		this->evbuf = NULL;
 		this->poller = NULL;
 	}
 
@@ -39,12 +37,6 @@ class EchoProtocol : public IghtProtocol {
 		EchoProtocol *self = new (std::nothrow) EchoProtocol();
 		if (self == NULL)
 			return (NULL);
-
-		self->evbuf = evbuffer_new();
-		if (self->evbuf == NULL) {
-			delete self;
-			return (NULL);
-		}
 
 		self->poller = p;
 
@@ -74,13 +66,8 @@ class EchoProtocol : public IghtProtocol {
 		ight_info("echo - connected");
 	}
 
-	virtual void on_data(void) {
-		int result = this->connection->read_into(this->evbuf);
-		if (result != 0) {
-			delete this;
-			return;
-		}
-		result = this->connection->write_from(this->evbuf);
+	virtual void on_data(evbuffer *e) {
+		int result = this->connection->write_from(e);
 		if (result != 0) {
 			delete this;
 			return;
@@ -108,8 +95,6 @@ class EchoProtocol : public IghtProtocol {
 		ight_info("echo - destructor");
 		if (this->connection != NULL)
 			this->connection->close();
-		if (this->evbuf != NULL)
-			evbuffer_free(this->evbuf);
 	}
 };
 

@@ -31,7 +31,6 @@ IghtConnection::IghtConnection(void)
 	this->filedesc = IGHT_SOCKET_INVALID;
 	this->bev = NULL;
 	this->protocol = NULL;
-	this->readbuf = NULL;
 	this->closing = 0;
 	this->connecting = 0;
 	this->reading = 0;
@@ -53,9 +52,6 @@ IghtConnection::~IghtConnection(void)
 		bufferevent_free(this->bev);
 
 	// protocol: should already be dead
-
-	if (this->readbuf != NULL)
-		evbuffer_free(this->readbuf);
 
 	// closing: nothing to be done
 	// connecting: nothing to be done
@@ -81,18 +77,11 @@ void
 IghtConnection::handle_read(bufferevent *bev, void *opaque)
 {
 	IghtConnection *self = (IghtConnection *) opaque;
-	int result;
 
 	(void) bev;  // Suppress warning about unused variable
 
-	result = bufferevent_read_buffer(self->bev, self->readbuf);
-	if (result != 0) {
-		self->protocol->on_error();
-		return;
-	}
-
 	self->reading = 1;
-	self->protocol->on_data();
+	self->protocol->on_data(bufferevent_get_input(self->bev));
 	self->reading = 0;
 
 	if (self->closing)
@@ -179,12 +168,6 @@ IghtConnection::attach(IghtProtocol *proto, long long filenum)
 	}
 
 	self->protocol = proto;
-
-	self->readbuf = evbuffer_new();
-	if (self->readbuf == NULL) {
-		delete self;
-		return (NULL);
-	}
 
 	// closing: nothing to be done
 	// connecting: nothing to be done
@@ -274,12 +257,6 @@ IghtConnection::connect(IghtProtocol *proto, const char *family,
 	}
 
 	self->protocol = proto;
-
-	self->readbuf = evbuffer_new();
-	if (self->readbuf == NULL) {
-		delete self;
-		return (NULL);
-	}
 
 	// closing: nothing to be done
 
@@ -624,12 +601,6 @@ IghtConnection::connect_hostname(IghtProtocol *proto,
 
 	self->protocol = proto;
 
-	self->readbuf = evbuffer_new();
-	if (self->readbuf == NULL) {
-		delete self;
-		return (NULL);
-	}
-
 	// closing: nothing to be done
 
 	self->connecting = 1;
@@ -704,15 +675,6 @@ IghtConnection::start_tls(unsigned server_side)
 	(void) server_side;
 
 	return (-1);  // TODO: implement
-}
-
-int
-IghtConnection::read_into(evbuffer *destbuf)
-{
-	if (destbuf == NULL)
-		return (-1);
-
-	return (evbuffer_add_buffer(destbuf, this->readbuf));
 }
 
 int

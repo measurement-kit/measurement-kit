@@ -22,7 +22,6 @@ class IghtConnection {
 	long long filedesc;
 	bufferevent *bev;
 	IghtProtocol *protocol;
-	evbuffer *readbuf;
 	unsigned int closing;
 	unsigned int connecting;
 	unsigned int reading;

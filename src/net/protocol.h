@@ -16,6 +16,7 @@
  */
 
 class IghtPoller;
+struct evbuffer;
 
 struct IghtProtocol {
 	virtual void on_connect(void) {
@@ -26,7 +27,7 @@ struct IghtProtocol {
 		// TODO: override
 	}
 
-	virtual void on_data(void) {
+	virtual void on_data(evbuffer *) {
 		// TODO: override
 	}
 
