@@ -9,7 +9,7 @@
 # define LIBIGHT_NET_CONNECTION_H
 # ifdef __cplusplus
 
-#include "src/common/poller.h"
+#include "common/poller.h"
 
 struct bufferevent;
 struct evbuffer;
