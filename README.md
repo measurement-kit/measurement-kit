@@ -24,7 +24,7 @@ To clone properly libight repository, make sure that you specify the
 Such flag tells git to clone not only the libight repository, but also
 the [submodules](http://git-scm.com/docs/git-submodule) contained therein.
 
-Alternatively, once you have cloned the repository, you can get all
+Alternatively, once you have cloned the repository, you can checkout all
 the submodules using:
 
     git submodule update --init
