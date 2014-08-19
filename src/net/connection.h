@@ -5,8 +5,8 @@
  * information on the copying conditions.
  */
 
-#ifndef LIBIGHT_CONNECTION_H
-# define LIBIGHT_CONNECTION_H
+#ifndef LIBIGHT_NET_CONNECTION_H
+# define LIBIGHT_NET_CONNECTION_H
 # ifdef __cplusplus
 
 #include "src/common/poller.h"
@@ -76,4 +76,4 @@ class IghtConnection {
 };
 
 # endif  /* __cplusplus */
-#endif  /* LIBIGHT_CONNECTION_H */
+#endif  /* LIBIGHT_NET_CONNECTION_H */
