@@ -9,36 +9,6 @@
 # define LIBIGHT_CONNECTION_H
 # ifdef __cplusplus
 
-/*-
- * 3.6.4 Neubot Library Modules
- *
- *   Connection
- *     The connection is a C/C++ module that provides an abstraction,
- *     Σ, representing a stream-like network connection. As such, it
- *     is suitable to represent, e.g., a connected TCP socket (but
- *     possibly also a UNIX-domain socket). Of course, the Neubot
- *     library shall implement and export the Σ abstraction because
- *     it is the basic building block to construct TCP-based
- *     network-performance tests.
- *
- *     The features that Σ shall implement are the following. One shall
- *     be able to establish a TCP connection by providing Σ with the
- *     protocol family, the address and the port number. Moreover, the
- *     programmer shall be able to initialize Σ with a file descriptor.
- *     Additionally, once Σ is attached to a file description, it shall
- *     be possible to establish a SSL connection. In addition to the
- *     common methods that allow to receive and send data, Σ shall
- *     also export methods that allow to read a line, to read an exact
- *     amount of bytes and to discard an exact amount of bytes.
- *
- *     All the features described above are useful to efficiently
- *     implement network-performance tests. In particular, as discussed
- *     in Section 3.6.3, the functionality that allows to discard an
- *     exact number of bytes is useful to reduce the impact on performance
- *     of data copying when a test is implemented using a high-level
- *     language.
- */
-
 #include "src/common/poller.h"
 
 struct bufferevent;
