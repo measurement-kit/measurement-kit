@@ -35,7 +35,6 @@ How to build it
     autoreconf -i
     ./configure
     make
-    make check
 
 If `./configure` does not find libevent, consider using the
 `--with-libevent=DIR` option. For example, if libevent is
