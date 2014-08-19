@@ -10,7 +10,6 @@
 #include <new>
 #include <stdexcept>
 #include <stdlib.h>
-#include <string.h>
 
 #include <event2/buffer.h>
 #include <event2/dns.h>
