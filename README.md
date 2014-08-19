@@ -10,9 +10,20 @@ following systems: MacOS 10.8, OpenBSD 5.5-current, Ubuntu 13.10.
 To build the library you need a C/C++ compiler and a Unix environment. (The
 `./configure` script checks whether all the dependencies are in place.)
 
-Before running any of the below build commands be sure to initialize the
-submodules with:
-    
+How to clone the repository
+---------------------------
+
+To clone properly libight repository, make sure that you specify the
+`--recursive` command line flag, as in:
+
+    git clone --recursive https://github.com/bassosimone/libight
+
+Such flag tells git to clone not only the libight repository, but also
+the [submodules](http://git-scm.com/docs/git-submodule) contained therein.
+
+Alternatively, once you have cloned the repository, you can get all
+the submodules using:
+
     git submodule update --init
 
 How to build it
