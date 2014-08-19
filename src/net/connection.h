@@ -56,9 +56,6 @@ class IghtConnection {
 	static IghtConnection *connect(IghtProtocol *, const char *,
 	    const char *, const char *);
 
-	static IghtConnection *connect_hostname(IghtProtocol *, const char *,
-	    const char *, const char *);
-
 	IghtProtocol *get_protocol(void);
 
 	int set_timeout(double);

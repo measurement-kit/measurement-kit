@@ -214,102 +214,6 @@ IghtConnection::attach(IghtProtocol *proto, long long filenum)
 	return (self);
 }
 
-IghtConnection *
-IghtConnection::connect(IghtProtocol *proto, const char *family,
-    const char *address, const char *port)
-{
-	event_base *evbase;
-	IghtPoller *poller;
-	int result;
-	IghtConnection *self;
-	struct sockaddr_storage storage;
-	socklen_t total;
-
-	if (proto == NULL || family == NULL || address == NULL || port == NULL)
-		abort();
-	poller = proto->get_poller();
-	if (poller == NULL)
-		abort();
-	evbase = poller->get_event_base();
-	if (evbase == NULL)
-		abort();
-
-	result = ight_storage_init(&storage, &total, family, address, port);
-	if (result != 0)
-		return (NULL);
-
-	self = new (std::nothrow) IghtConnection();
-	if (self == NULL)
-		return (NULL);
-
-	self->filedesc = ight_socket_create(storage.ss_family,
-	    SOCK_STREAM, 0);
-	if (self->filedesc == IGHT_SOCKET_INVALID) {
-		delete self;
-		return (NULL);
-	}
-
-	self->bev = bufferevent_socket_new(evbase,
-	    (evutil_socket_t)self->filedesc, BEV_OPT_DEFER_CALLBACKS);
-	if (self->bev == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->protocol = proto;
-
-	// closing: nothing to be done
-
-	self->connecting = 1;
-
-	// reading: nothing to be done
-
-	self->address = strdup(address);
-	if (self->address == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->port = strdup(port);
-	if (self->port == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->addrlist = new (std::nothrow) IghtStringVector(poller, 16);
-	if (self->addrlist == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->family = strdup(family);
-	if (self->family == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->pflist = new (std::nothrow) IghtStringVector(poller, 16);
-	if (self->pflist == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	// must_resolve_ipv4: nothing to be done
-	// must_resolve_ipv6: nothing to be done
-
-	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
-	    self->handle_event, self);
-
-	result = bufferevent_socket_connect(self->bev, (struct sockaddr *)
-	    &storage, (int) total);
-	if (result != 0) {
-		delete self;
-		return (NULL);
-	}
-
-	return (self);
-}
-
 void
 IghtConnection::connect_next(void)
 {
@@ -569,7 +473,7 @@ IghtConnection::resolve(void *opaque)
 }
 
 IghtConnection *
-IghtConnection::connect_hostname(IghtProtocol *proto,
+IghtConnection::connect(IghtProtocol *proto,
     const char *family, const char *address, const char *port)
 {
 	event_base *evbase;
