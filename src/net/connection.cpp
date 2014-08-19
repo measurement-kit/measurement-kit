@@ -853,7 +853,7 @@ IghtConnection::write_rand_readbuf(size_t count)
 }
 
 int
-IghtConnection::read_into_(evbuffer *destbuf)
+IghtConnection::read_into(evbuffer *destbuf)
 {
 	if (destbuf == NULL)
 		return (-1);
@@ -862,7 +862,7 @@ IghtConnection::read_into_(evbuffer *destbuf)
 }
 
 int
-IghtConnection::write_from_(evbuffer *sourcebuf)
+IghtConnection::write_from(evbuffer *sourcebuf)
 {
 	if (sourcebuf == NULL)
 		return (-1);

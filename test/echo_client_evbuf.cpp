@@ -75,12 +75,12 @@ class EchoProtocol : public IghtProtocol {
 	}
 
 	virtual void on_data(void) {
-		int result = this->connection->read_into_(this->evbuf);
+		int result = this->connection->read_into(this->evbuf);
 		if (result != 0) {
 			delete this;
 			return;
 		}
-		result = this->connection->write_from_(this->evbuf);
+		result = this->connection->write_from(this->evbuf);
 		if (result != 0) {
 			delete this;
 			return;

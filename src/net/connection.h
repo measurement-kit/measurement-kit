@@ -82,11 +82,8 @@ class IghtConnection {
 	int puts_readbuf(const char *);
 	int write_rand_readbuf(size_t);
 
-	// Internally-used zero-copy read and write
-#ifndef SWIG
-	int read_into_(evbuffer *);
-	int write_from_(evbuffer *);
-#endif
+	int read_into(evbuffer *);
+	int write_from(evbuffer *);
 
 	int enable_read(void);
 	int disable_read(void);
