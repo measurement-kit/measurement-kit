@@ -23,7 +23,9 @@ How to build it
     make
     make check
 
-If `./configure` does not find libevent, consider using the
+If libevent is not found, the build system will configure and
+compile the built-in libevent (`src/ext/libevent`). To force
+`./configure` to use the libevent at `DIR`, consider using the
 `--with-libevent=DIR` option. For example, if libevent is
 installed below `/opt/local`, run:
 
