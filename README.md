@@ -26,8 +26,10 @@ How to build it
 If libevent is not found, the build system will configure and
 compile the built-in libevent (`src/ext/libevent`). To force
 `./configure` to use the libevent at `DIR`, consider using the
-`--with-libevent=DIR` option. For example, if libevent is
-installed below `/opt/local`, run:
+`--with-libevent=DIR` option. To force `./configure` to use
+the bult-in libevent, specify `--with-libevent=builtin`. For
+example, if you want to force `./configure` to use the libevent
+installed at `/opt/local`, run:
 
     ./configure --with-libevent=/opt/local
 
