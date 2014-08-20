@@ -1,4 +1,7 @@
-check_PROGRAMS =  # nothing
+check_PROGRAMS = \
+    test/echo_client_evbuf
+
+test_echo_client_evbuf_SOURCES = test/echo_client_evbuf.cpp
+test_echo_client_evbuf_LDADD = libight.la
 
 include test/common/include.am
-include test/net/include.am
