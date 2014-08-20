@@ -5,6 +5,8 @@
 struct sockaddr_storage;
 struct timeval;
 
+#include <event2/util.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
