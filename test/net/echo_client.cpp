@@ -13,28 +13,28 @@
 int
 main(void)
 {
-	auto s = new IghtConnection("PF_INET", "127.0.0.1", "54321");
+	auto s = IghtConnection("PF_INET", "127.0.0.1", "54321");
 
-	s->on_connect = [=](void) {
-		if (s->enable_read() != 0)
-			s->close();
-	};
+	s.on_connect([&](void) {
+		if (s.enable_read() != 0)
+			s.close();
+	});
 
-	s->on_data = [=](evbuffer *b) {
-		if (s->write_from(b) != 0)
-			s->close();
-	};
+	s.on_data([&](evbuffer *b) {
+		if (s.write_from(b) != 0)
+			s.close();
+	});
 
-	s->on_flush = [](void) {
+	s.on_flush([](void) {
 		ight_info("echo - connection flushed");
-	};
+	});
 
-	s->on_error = [=](IghtError e) {
+	s.on_error([&](IghtError e) {
 		ight_info("echo - connection error %d", e.error);
-		s->close();
-	};
+		s.close();
+	});
 
-	if (s->set_timeout(7.0) != 0)
+	if (s.set_timeout(7.0) != 0)
 		exit(EXIT_FAILURE);
 
 	ight_get_global_poller()->break_loop_on_sigint_();

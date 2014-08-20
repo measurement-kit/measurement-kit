@@ -18,13 +18,13 @@
 #include <event2/bufferevent.h>
 #include <event2/event.h>
 
+#include <stdexcept>
 #include <string.h>
 
+struct IghtStringVector;
 struct evbuffer;
 
-struct IghtStringVector;
-
-class IghtConnection {
+class IghtConnectionState {
 
 	long long filedesc = IGHT_SOCKET_INVALID;
 	bufferevent *bev = NULL;
@@ -41,22 +41,27 @@ class IghtConnection {
 	IghtDelayedCall start_connect;
 
 	// Private destructor because destruction may be delayed
-	~IghtConnection(void);
+	~IghtConnectionState(void);
 
 	// Libevent callbacks
 	static void handle_read(bufferevent *, void *);
 	static void handle_write(bufferevent *, void *);
 	static void handle_event(bufferevent *, short, void *);
 
-	// Functions used by connect_hostname()
+	// Functions used when connecting
 	void connect_next(void);
 	static void handle_resolve(int, char, int, int,
 	    void *, void *);
-	static void resolve(void *);
+	static void resolve(IghtConnectionState *);
 
     public:
-	IghtConnection(long long);
-	IghtConnection(const char *, const char *, const char *);
+	IghtConnectionState(const char *, const char *, const char *,
+	    long long = IGHT_SOCKET_INVALID);
+
+	IghtConnectionState(IghtConnectionState&) = delete;
+	IghtConnectionState& operator=(IghtConnectionState&) = delete;
+	IghtConnectionState(IghtConnectionState&&) = delete;
+	IghtConnectionState& operator=(IghtConnectionState&&) = delete;
 
 	std::function<void(void)> on_connect = [](void) {
 		/* nothing */
@@ -119,6 +124,123 @@ class IghtConnection {
 	}
 
 	void close(void);
+};
+
+class IghtConnection {
+	IghtConnectionState *state = NULL;
+
+    public:
+	IghtConnection(void) {
+		/* nothing to do */
+	}
+	IghtConnection(long long fd) {
+		state = new IghtConnectionState("PF_UNSPEC", "0.0.0.0",
+		    "0", fd);
+	}
+	IghtConnection(const char *af, const char *a, const char *p) {
+		state = new IghtConnectionState(af, a, p);
+	}
+
+	/* We don't want multiple copies of `state` */
+	IghtConnection(IghtConnection&) = delete;
+	IghtConnection& operator=(IghtConnection&) = delete;
+
+	IghtConnection(IghtConnection&& other) {
+		std::swap(state, other.state);
+	}
+	IghtConnection& operator=(IghtConnection&& other) {
+		std::swap(state, other.state);
+		return (*this);
+	}
+
+	void close(void) {
+		if (state == NULL)
+			return;
+		state->close();
+		state = NULL;		/* Idempotent */
+	}
+
+	~IghtConnection(void) {
+		close();
+	}
+
+	void on_connect(std::function<void(void)>&& fn) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->on_connect = fn;
+	};
+
+	void on_ssl(std::function<void(void)>&& fn) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->on_ssl = fn;
+	};
+
+	void on_data(std::function<void(evbuffer *)>&& fn) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->on_data = fn;
+	};
+
+	void on_flush(std::function<void(void)>&& fn) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->on_flush = fn;
+	};
+
+	void on_error(std::function<void(IghtError)>&& fn) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->on_error = fn;
+	};
+
+	int set_timeout(double timeout) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->set_timeout(timeout));
+	}
+
+	int clear_timeout(void) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->clear_timeout());
+	}
+
+	int start_tls(unsigned int d) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->start_tls(d));
+	}
+
+	int write(const char *base, size_t count) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->write(base, count));
+	}
+
+	int puts(const char *str) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->puts(str));
+	}
+
+	int write_from(evbuffer *sourcebuf) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->write_from(sourcebuf));
+	}
+
+	int enable_read(void) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->enable_read());
+	}
+
+	int disable_read(void) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->disable_read());
+	}
 };
 
 # endif  /* __cplusplus */

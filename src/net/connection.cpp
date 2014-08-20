@@ -8,19 +8,15 @@
 #include <arpa/inet.h>
 
 #include <new>
-#include <stdexcept>
 #include <stdlib.h>
 
-#include <event2/buffer.h>
 #include <event2/dns.h>
 
-#include "common/stringvector.h"
-#include "common/poller.h"
 #include "common/log.h"
-
+#include "common/stringvector.h"
 #include "net/connection.h"
 
-IghtConnection::~IghtConnection(void)
+IghtConnectionState::~IghtConnectionState(void)
 {
 	/*
 	 * TODO: switch to RAII.
@@ -53,9 +49,9 @@ IghtConnection::~IghtConnection(void)
 }
 
 void
-IghtConnection::handle_read(bufferevent *bev, void *opaque)
+IghtConnectionState::handle_read(bufferevent *bev, void *opaque)
 {
-	IghtConnection *self = (IghtConnection *) opaque;
+	auto self = (IghtConnectionState *) opaque;
 
 	(void) bev;  // Suppress warning about unused variable
 
@@ -68,17 +64,17 @@ IghtConnection::handle_read(bufferevent *bev, void *opaque)
 }
 
 void
-IghtConnection::handle_write(bufferevent *bev, void *opaque)
+IghtConnectionState::handle_write(bufferevent *bev, void *opaque)
 {
-	IghtConnection *self = (IghtConnection *) opaque;
+	auto self = (IghtConnectionState *) opaque;
 	(void) bev;  // Suppress warning about unused variable
 	self->on_flush();
 }
 
 void
-IghtConnection::handle_event(bufferevent *bev, short what, void *opaque)
+IghtConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 {
-	IghtConnection *self = (IghtConnection *) opaque;
+	auto self = (IghtConnectionState *) opaque;
 
 	(void) bev;  // Suppress warning about unused variable
 
@@ -109,37 +105,41 @@ IghtConnection::handle_event(bufferevent *bev, short what, void *opaque)
 	self->on_error(IghtError(-1));
 }
 
-IghtConnection::IghtConnection(long long filenum)
+IghtConnectionState::IghtConnectionState(const char *family, const char *address,
+    const char *port, long long filenum)
 {
 	auto evbase = ight_get_global_event_base();
 	auto poller = ight_get_global_poller();
 
 	if (!ight_socket_valid(filenum))
-		throw std::runtime_error("Invalid socket");
+		filenum = IGHT_SOCKET_INVALID;		/* Normalize */
 
 	/*
 	 * TODO: switch to RAII.
 	 */
 
-	// filedesc: only set on success
+	// filedesc: if valid, it is set on success only
 
 	if ((this->bev = bufferevent_socket_new(evbase, (evutil_socket_t)
 	    filenum, BEV_OPT_DEFER_CALLBACKS)) == NULL)
-		throw std::runtime_error("Cannot allocate bufferevent");
+		throw std::bad_alloc();
 
 	// closing: nothing to be done
-	// connecting: nothing to be done
+
+	if (!ight_socket_valid(filenum))
+		this->connecting = 1;
+
 	// reading: nothing to be done
 
-	if ((this->address = strdup("0.0.0.0")) == NULL) {
+	if ((this->address = strdup(address)) == NULL) {
 		bufferevent_free(this->bev);
-		throw std::runtime_error("Cannot duplicate address");
+		throw std::bad_alloc();
 	}
 
-	if ((this->port = strdup("0")) == NULL) {
+	if ((this->port = strdup(port)) == NULL) {
 		bufferevent_free(this->bev);
 		free(this->address);
-		throw std::runtime_error("Cannot duplicate port");
+		throw std::bad_alloc();
 	}
 
 	if ((this->addrlist = new (std::nothrow) IghtStringVector(poller,
@@ -147,15 +147,15 @@ IghtConnection::IghtConnection(long long filenum)
 		bufferevent_free(this->bev);
 		free(this->address);
 		free(this->port);
-		throw std::runtime_error("Cannot create addrlist");
+		throw std::bad_alloc();
 	}
 
-	if ((this->family = strdup("PF_UNSPEC")) == NULL) {
+	if ((this->family = strdup(family)) == NULL) {
 		bufferevent_free(this->bev);
 		free(this->address);
 		free(this->port);
 		delete (this->addrlist);
-		throw std::runtime_error("Cannot duplicate family");
+		throw std::bad_alloc();
 	}
 
 	if ((this->pflist = new (std::nothrow) IghtStringVector(poller,
@@ -165,21 +165,27 @@ IghtConnection::IghtConnection(long long filenum)
 		free(this->port);
 		delete (this->addrlist);
 		free(this->family);
-		throw std::runtime_error("Cannot create pflist");
+		throw std::bad_alloc();
 	}
 
-	// must_resolve_ipv4: nothing to be done
-	// must_resolve_ipv6: nothing to be done
+	// must_resolve_ipv4: if connecting, set later by this->resolve()
+	// must_resolve_ipv6: if connecting, set later by this->resolve()
 
+	/*
+	 * The following makes this non copyable and non movable.
+	 */
 	bufferevent_setcb(this->bev, this->handle_read, this->handle_write,
 	    this->handle_event, this);
 
-	// Only own the filedesc when we know there were no errors
-	this->filedesc = filenum;
+	if (!ight_socket_valid(filenum))
+		this->start_connect = IghtDelayedCall(0.0, std::bind(
+		    this->resolve, this));
+	else
+		this->filedesc = filenum;	/* Own the socket on success */
 }
 
 void
-IghtConnection::connect_next(void)
+IghtConnectionState::connect_next(void)
 {
 	const char *address;
 	int error;
@@ -242,10 +248,10 @@ IghtConnection::connect_next(void)
 }
 
 void
-IghtConnection::handle_resolve(int result, char type, int count,
+IghtConnectionState::handle_resolve(int result, char type, int count,
     int ttl, void *addresses, void *opaque)
 {
-	IghtConnection *self = (IghtConnection *) opaque;
+	auto self = (IghtConnectionState *) opaque;
 	const char *_family;
 	const char *p;
 	int error, family, size;
@@ -336,9 +342,8 @@ IghtConnection::handle_resolve(int result, char type, int count,
 }
 
 void
-IghtConnection::resolve(void *opaque)
+IghtConnectionState::resolve(IghtConnectionState *self)
 {
-	IghtConnection *self = (IghtConnection *) opaque;
 	struct sockaddr_storage storage;
 	int result;
 
@@ -426,77 +431,8 @@ IghtConnection::resolve(void *opaque)
 		self->must_resolve_ipv4 = 1;
 }
 
-IghtConnection::IghtConnection(const char *family,
-    const char *address, const char *port)
-{
-	auto evbase = ight_get_global_event_base();
-	auto poller = ight_get_global_poller();
-
-	/*
-	 * TODO: switch to RAII.
-	 */
-
-	// filedesc: nothing to be done
-
-	if ((this->bev = bufferevent_socket_new(evbase, (evutil_socket_t)
-	    IGHT_SOCKET_INVALID, BEV_OPT_DEFER_CALLBACKS)) == NULL)
-		throw std::runtime_error("Cannot allocate bufferevent");
-
-	// closing: nothing to be done
-
-	this->connecting = 1;
-
-	// reading: nothing to be done
-
-	if ((this->address = strdup(address)) == NULL) {
-		bufferevent_free(this->bev);
-		throw std::runtime_error("Cannot duplicate address");
-	}
-
-	if ((this->port = strdup(port)) == NULL) {
-		bufferevent_free(this->bev);
-		free(this->address);
-		throw std::runtime_error("Cannot duplicate port");
-	}
-
-	if ((this->addrlist = new (std::nothrow) IghtStringVector(poller,
-	    16)) == NULL) {
-		bufferevent_free(this->bev);
-		free(this->address);
-		free(this->port);
-		throw std::runtime_error("Cannot create addrlist");
-	}
-
-	if ((this->family = strdup(family)) == NULL) {
-		bufferevent_free(this->bev);
-		free(this->address);
-		free(this->port);
-		delete (this->addrlist);
-		throw std::runtime_error("Cannot duplicate family");
-	}
-
-	if ((this->pflist = new (std::nothrow) IghtStringVector(poller,
-	    16)) == NULL) {
-		bufferevent_free(this->bev);
-		free(this->address);
-		free(this->port);
-		delete (this->addrlist);
-		free(this->family);
-		throw std::runtime_error("Cannot create pflist");
-	}
-
-	// must_resolve_ipv4: set later by this->resolve()
-	// must_resolve_ipv6: set later by this->resolve()
-
-	bufferevent_setcb(this->bev, this->handle_read, this->handle_write,
-	    this->handle_event, this);
-
-	this->start_connect = IghtDelayedCall(0.0, std::bind(
-	    this->resolve, this));
-}
-
 void
-IghtConnection::close(void)
+IghtConnectionState::close(void)
 {
 	this->closing = 1;
 	if (this->reading != 0 || this->connecting != 0)
