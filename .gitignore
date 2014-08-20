@@ -56,4 +56,6 @@ stamp-h1
 
 # Regression tests
 test/common/delayed_call
-test/net/echo_client
+test/echo_client
+test/echo_client2
+test/echo_client_evbuf
