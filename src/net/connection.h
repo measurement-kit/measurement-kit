@@ -167,31 +167,31 @@ class IghtConnection {
 	void on_connect(std::function<void(void)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_connect = fn;
+		state->on_connect = std::move(fn);
 	};
 
 	void on_ssl(std::function<void(void)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_ssl = fn;
+		state->on_ssl = std::move(fn);
 	};
 
 	void on_data(std::function<void(evbuffer *)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_data = fn;
+		state->on_data = std::move(fn);
 	};
 
 	void on_flush(std::function<void(void)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_flush = fn;
+		state->on_flush = std::move(fn);
 	};
 
 	void on_error(std::function<void(IghtError)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_error = fn;
+		state->on_error = std::move(fn);
 	};
 
 	int set_timeout(double timeout) {
