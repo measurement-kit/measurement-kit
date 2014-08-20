@@ -26,17 +26,39 @@ AC_PROG_CXX([clang++ g++ c++])
 
 # checks for libraries
 
+ight_libevent_path=
+
 AC_ARG_WITH([libevent],
             [AS_HELP_STRING([--with-libevent],
              [event I/O library @<:@default=check@:>@])
             ], [
-              CPPFLAGS="$CPPFLAGS -I$withval/include"
-              LDFLAGS="$LDFLAGS -L$withval/lib"
+              ight_libevent_path=$withval
+              if test "$withval"x != "builtin"x; then
+                  CPPFLAGS="$CPPFLAGS -I$withval/include"
+                  LDFLAGS="$LDFLAGS -L$withval/lib"
+              fi
             ], [])
-AC_CHECK_HEADERS(event2/event.h, [],
-  AC_MSG_ERROR([unable to find libevent headers]))
-AC_CHECK_LIB(event, event_new, [],
-  AC_MSG_ERROR([unable to find libevent library]))
+
+if test "$ight_libevent_path"x != "builtin"x; then
+    AC_CHECK_HEADERS(event2/event.h, [],
+      [ight_libevent_path=builtin])
+
+    AC_CHECK_LIB(event, event_new, [],
+      [ight_libevent_path=builtin])
+
+    if test "$ight_libevent_path"x = "builtin"x; then
+       AC_MSG_WARN([No libevent found: will use the builtin libevent])
+    fi
+fi
+
+if test "$ight_libevent_path"x = "builtin"x; then
+    CPPFLAGS="$CPPFLAGS -Isrc/ext/libevent/include"
+    LDFLAGS="$LDFLAGS -Lsrc/ext/libevent -levent"
+    AC_CONFIG_SUBDIRS([src/ext/libevent])
+fi
+
+AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
+    [test "$ight_libevent_path"x = "builtin"x])
 
 # checks for header files
 # checks for types
