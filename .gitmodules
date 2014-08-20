@@ -4,3 +4,6 @@
 [submodule "src/ext/libevent"]
 	path = src/ext/libevent
 	url = git@github.com:bassosimone/libevent
+[submodule "src/ext/Catch"]
+	path = src/ext/Catch
+	url = https://github.com/philsquared/Catch
