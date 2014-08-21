@@ -97,9 +97,7 @@ TEST_CASE("Foreach works correctly", "[IghtBuffer]") {
 	 * Initialize the source evbuffer.
 	 */
 
-	auto evbuf = evbuffer_new();
-	if (evbuf == NULL)
-		throw std::bad_alloc();
+	auto evbuf = IghtEvbuffer();
 
 	auto sa = std::string(512, 'A');
 	auto sb = std::string(512, 'B');
