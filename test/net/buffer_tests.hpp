@@ -5,10 +5,50 @@
  * information on the copying conditions.
  */
 
+#include "common/libevent.h"
 #include "net/buffer.hpp"
 
 TEST_CASE("The constructor works correctly", "[IghtBuffer]") {
 	REQUIRE_NOTHROW(auto buff = IghtBuffer());
+}
+
+TEST_CASE("Insertion/extraction work correctly for evbuffer") {
+
+	auto buff = IghtBuffer();
+	auto source = IghtEvbuffer();
+	auto dest = IghtEvbuffer();
+	auto sa = std::string(65536, 'A');
+	auto r = std::string();
+
+	char data[65536];
+
+	if (evbuffer_add(source, sa.c_str(), sa.length()) != 0)
+		throw std::runtime_error("evbuffer_add failed");
+
+	SECTION("Insertion works correctly") {
+		buff << source;
+		REQUIRE(buff.length() == 65536);
+		r = buff.read<char>();
+		REQUIRE(r == sa);
+	}
+
+	SECTION("Insertion throws for NULL evbuffer") {
+		REQUIRE_THROWS(buff << (evbuffer *) NULL);
+	}
+
+	SECTION("Extraction works correctly") {
+		buff << source;
+		buff >> dest;
+		REQUIRE(buff.length() == 0);
+		if (evbuffer_remove(dest, data, sizeof (data)) != sizeof (data))
+			throw std::runtime_error("evbuffer remove failed");
+		r = std::string(data, sizeof (data));
+		REQUIRE(r == sa);
+	}
+
+	SECTION("Extraction throws for NULL evbuffer") {
+		REQUIRE_THROWS(buff >> (evbuffer *) NULL);
+	}
 }
 
 TEST_CASE("length() works correctly", "[IghtBuffer]") {
@@ -107,7 +147,6 @@ TEST_CASE("Foreach works correctly", "[IghtBuffer]") {
 		REQUIRE(counter == 1);
 		REQUIRE(expect.substr(0, r.length()) == r);
 	}
-
 }
 
 TEST_CASE("Discard works correctly", "[IghtBuffer]") {
