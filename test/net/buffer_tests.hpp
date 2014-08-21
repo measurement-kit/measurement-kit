@@ -325,16 +325,28 @@ TEST_CASE("Write works correctly", "[IghtBuffer]") {
 		REQUIRE(buff.read<char>() == str);
 	}
 
+	SECTION("Writing a NULL C string throws") {
+		REQUIRE_THROWS(buff.write(NULL));
+	}
+
 	SECTION("Inserting a C string works") {
 		buff << pc;
 		REQUIRE(buff.length() == 10);
 		REQUIRE(buff.read<char>() == str);
 	}
 
+	SECTION("Inserting a NULL C string throws") {
+		REQUIRE_THROWS(buff << (char *) NULL);
+	}
+
 	SECTION("Writing pointer-and-size works") {
 		buff.write((void *) pc, 10);
 		REQUIRE(buff.length() == 10);
 		REQUIRE(buff.read<char>() == str);
+	}
+
+	SECTION("Writing NULL pointer and size throws") {
+		REQUIRE_THROWS(buff.write(NULL, 10));
 	}
 
 	SECTION("Writing random bytes works") {

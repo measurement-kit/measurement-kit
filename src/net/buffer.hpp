@@ -269,6 +269,8 @@ class IghtBuffer {
 	}
 
 	void write(const char *in) {
+		if (in == NULL)
+			throw std::runtime_error("in is NULL");
 		write(in, strlen(in));
 	}
 
@@ -278,6 +280,8 @@ class IghtBuffer {
 	}
 
 	void write(const void *buf, size_t count) {
+		if (buf == NULL)
+			throw std::runtime_error("buf is NULL");
 		if (evbuffer_add(evbuf, buf, count) != 0)
 			throw std::runtime_error("evbuffer_add failed");
 	}
