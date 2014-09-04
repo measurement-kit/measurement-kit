@@ -1,5 +1,10 @@
 noinst_LTLIBRARIES += src/ext/libext.la
 
+if USE_BUILTIN_LIBEVENT
+    DIST_SUBDIRS = src/ext/libevent
+    SUBDIRS = src/ext/libevent
+endif
+
 src_ext_libext_la_SOURCES = \
     src/ext/strtonum.c \
     src/ext/http-parser/http_parser.c
