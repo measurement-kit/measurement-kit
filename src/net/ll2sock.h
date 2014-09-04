@@ -8,8 +8,11 @@
  * a Unix socket (a `int`) and a Win32 socket (a uintptr_t).
  */
 
-#ifndef LL2SOCK_H
-# define LL2SOCK_H
+#ifndef IGHT_NET_LL2SOCK_H
+# define IGHT_NET_LL2SOCK_H
+
+#include <limits.h>
+#include <stdint.h>
 
 /* To convert long long to sockets */
 #ifdef WIN32
@@ -34,4 +37,4 @@ ight_socket_valid(long long filenum)
 	return (filenum >= 0 && filenum <= IGHT_SOCKET_MAX);
 }
 
-#endif  /* LL2SOCK_H */
+#endif  /* IGHT_NET_LL2SOCK_H */

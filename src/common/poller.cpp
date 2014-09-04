@@ -5,7 +5,6 @@
  * information on the copying conditions.
  */
 
-#include <limits.h>
 #include <string.h>
 #include <stdexcept>
 #include <stdlib.h>

@@ -7,55 +7,26 @@
 
 #include <arpa/inet.h>
 
-#include <limits.h>
 #include <new>
 #include <stdlib.h>
-#include <string.h>
 
-#include <event2/buffer.h>
-#include <event2/bufferevent.h>
 #include <event2/dns.h>
-#include <event2/event.h>
 
-#include "common/stringvector.h"
-#include "common/poller.h"
-#include "common/utils.h"
 #include "common/log.h"
-
+#include "common/stringvector.h"
 #include "net/connection.h"
-#include "net/protocol.h"
-#include "net/ll2sock.h"
 
-IghtConnection::IghtConnection(void)
+IghtConnectionState::~IghtConnectionState(void)
 {
-	this->filedesc = IGHT_SOCKET_INVALID;
-	this->bev = NULL;
-	this->protocol = NULL;
-	this->readbuf = NULL;
-	this->closing = 0;
-	this->connecting = 0;
-	this->reading = 0;
-	this->address = NULL;
-	this->port = NULL;
-	this->addrlist = NULL;
-	this->family = NULL;
-	this->pflist = NULL;
-	this->must_resolve_ipv4 = 0;
-	this->must_resolve_ipv6 = 0;
-}
+	/*
+	 * TODO: switch to RAII.
+	 */
 
-IghtConnection::~IghtConnection(void)
-{
 	if (this->filedesc != IGHT_SOCKET_INVALID)
 		(void) evutil_closesocket((evutil_socket_t) this->filedesc);
 
 	if (this->bev != NULL)
 		bufferevent_free(this->bev);
-
-	// protocol: should already be dead
-
-	if (this->readbuf != NULL)
-		evbuffer_free(this->readbuf);
 
 	// closing: nothing to be done
 	// connecting: nothing to be done
@@ -78,21 +49,14 @@ IghtConnection::~IghtConnection(void)
 }
 
 void
-IghtConnection::handle_read(bufferevent *bev, void *opaque)
+IghtConnectionState::handle_read(bufferevent *bev, void *opaque)
 {
-	IghtConnection *self = (IghtConnection *) opaque;
-	int result;
+	auto self = (IghtConnectionState *) opaque;
 
 	(void) bev;  // Suppress warning about unused variable
 
-	result = bufferevent_read_buffer(self->bev, self->readbuf);
-	if (result != 0) {
-		self->protocol->on_error();
-		return;
-	}
-
 	self->reading = 1;
-	self->protocol->on_data();
+	self->on_data(bufferevent_get_input(self->bev));
 	self->reading = 0;
 
 	if (self->closing)
@@ -100,17 +64,17 @@ IghtConnection::handle_read(bufferevent *bev, void *opaque)
 }
 
 void
-IghtConnection::handle_write(bufferevent *bev, void *opaque)
+IghtConnectionState::handle_write(bufferevent *bev, void *opaque)
 {
-	IghtConnection *self = (IghtConnection *) opaque;
+	auto self = (IghtConnectionState *) opaque;
 	(void) bev;  // Suppress warning about unused variable
-	self->protocol->on_flush();
+	self->on_flush();
 }
 
 void
-IghtConnection::handle_event(bufferevent *bev, short what, void *opaque)
+IghtConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 {
-	IghtConnection *self = (IghtConnection *) opaque;
+	auto self = (IghtConnectionState *) opaque;
 
 	(void) bev;  // Suppress warning about unused variable
 
@@ -121,17 +85,12 @@ IghtConnection::handle_event(bufferevent *bev, short what, void *opaque)
 
 	if (what & BEV_EVENT_CONNECTED) {
 		self->connecting = 0;
-		int result = bufferevent_enable(self->bev, EV_READ);
-		if (result != 0) {
-			self->protocol->on_error();
-			return;
-		}
-		self->protocol->on_connect();
+		self->on_connect();
 		return;
 	}
 
 	if (what & BEV_EVENT_EOF) {
-		self->protocol->on_eof();
+		self->on_error(IghtError(0));
 		return;
 	}
 
@@ -143,198 +102,90 @@ IghtConnection::handle_event(bufferevent *bev, short what, void *opaque)
 
 	// TODO: also handle the timeout
 
-	self->protocol->on_error();
+	self->on_error(IghtError(-1));
 }
 
-IghtConnection *
-IghtConnection::attach(IghtProtocol *proto, long long filenum)
+IghtConnectionState::IghtConnectionState(const char *family, const char *address,
+    const char *port, long long filenum)
 {
-	event_base *evbase;
-	IghtPoller *poller;
-	IghtConnection *self;
-
-	if (proto == NULL)
-		abort();
-	poller = proto->get_poller();
-	if (poller == NULL)
-		abort();
-	evbase = poller->get_event_base();
-	if (evbase == NULL)
-		abort();
+	auto evbase = ight_get_global_event_base();
+	auto poller = ight_get_global_poller();
 
 	if (!ight_socket_valid(filenum))
-		return (NULL);
+		filenum = IGHT_SOCKET_INVALID;		/* Normalize */
 
-	self = new (std::nothrow) IghtConnection();
-	if (self == NULL)
-		return (NULL);
+	/*
+	 * TODO: switch to RAII.
+	 */
 
-	// filedesc: only set on success
+	// filedesc: if valid, it is set on success only
 
-	self->bev = bufferevent_socket_new(evbase, (evutil_socket_t)filenum,
-	    BEV_OPT_DEFER_CALLBACKS);
-	if (self->bev == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->protocol = proto;
-
-	self->readbuf = evbuffer_new();
-	if (self->readbuf == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	// closing: nothing to be done
-	// connecting: nothing to be done
-	// reading: nothing to be done
-
-	self->address = strdup("0.0.0.0");
-	if (self->address == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->port = strdup("0");
-	if (self->port == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->addrlist = new (std::nothrow) IghtStringVector(poller, 16);
-	if (self->addrlist == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->family = strdup("PF_UNSPEC");
-	if (self->family == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->pflist = new (std::nothrow) IghtStringVector(poller, 16);
-	if (self->pflist == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	// must_resolve_ipv4: nothing to be done
-	// must_resolve_ipv6: nothing to be done
-
-	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
-	    self->handle_event, self);
-
-	// Only own the filedesc when we know there were no errors
-	self->filedesc = filenum;
-	return (self);
-}
-
-IghtConnection *
-IghtConnection::connect(IghtProtocol *proto, const char *family,
-    const char *address, const char *port)
-{
-	event_base *evbase;
-	IghtPoller *poller;
-	int result;
-	IghtConnection *self;
-	struct sockaddr_storage storage;
-	socklen_t total;
-
-	if (proto == NULL || family == NULL || address == NULL || port == NULL)
-		abort();
-	poller = proto->get_poller();
-	if (poller == NULL)
-		abort();
-	evbase = poller->get_event_base();
-	if (evbase == NULL)
-		abort();
-
-	result = ight_storage_init(&storage, &total, family, address, port);
-	if (result != 0)
-		return (NULL);
-
-	self = new (std::nothrow) IghtConnection();
-	if (self == NULL)
-		return (NULL);
-
-	self->filedesc = ight_socket_create(storage.ss_family,
-	    SOCK_STREAM, 0);
-	if (self->filedesc == IGHT_SOCKET_INVALID) {
-		delete self;
-		return (NULL);
-	}
-
-	self->bev = bufferevent_socket_new(evbase,
-	    (evutil_socket_t)self->filedesc, BEV_OPT_DEFER_CALLBACKS);
-	if (self->bev == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->protocol = proto;
-
-	self->readbuf = evbuffer_new();
-	if (self->readbuf == NULL) {
-		delete self;
-		return (NULL);
-	}
+	if ((this->bev = bufferevent_socket_new(evbase, (evutil_socket_t)
+	    filenum, BEV_OPT_DEFER_CALLBACKS)) == NULL)
+		throw std::bad_alloc();
 
 	// closing: nothing to be done
 
-	self->connecting = 1;
+	if (!ight_socket_valid(filenum))
+		this->connecting = 1;
 
 	// reading: nothing to be done
 
-	self->address = strdup(address);
-	if (self->address == NULL) {
-		delete self;
-		return (NULL);
+	if ((this->address = strdup(address)) == NULL) {
+		bufferevent_free(this->bev);
+		throw std::bad_alloc();
 	}
 
-	self->port = strdup(port);
-	if (self->port == NULL) {
-		delete self;
-		return (NULL);
+	if ((this->port = strdup(port)) == NULL) {
+		bufferevent_free(this->bev);
+		free(this->address);
+		throw std::bad_alloc();
 	}
 
-	self->addrlist = new (std::nothrow) IghtStringVector(poller, 16);
-	if (self->addrlist == NULL) {
-		delete self;
-		return (NULL);
+	if ((this->addrlist = new (std::nothrow) IghtStringVector(poller,
+	    16)) == NULL) {
+		bufferevent_free(this->bev);
+		free(this->address);
+		free(this->port);
+		throw std::bad_alloc();
 	}
 
-	self->family = strdup(family);
-	if (self->family == NULL) {
-		delete self;
-		return (NULL);
+	if ((this->family = strdup(family)) == NULL) {
+		bufferevent_free(this->bev);
+		free(this->address);
+		free(this->port);
+		delete (this->addrlist);
+		throw std::bad_alloc();
 	}
 
-	self->pflist = new (std::nothrow) IghtStringVector(poller, 16);
-	if (self->pflist == NULL) {
-		delete self;
-		return (NULL);
+	if ((this->pflist = new (std::nothrow) IghtStringVector(poller,
+	    16)) == NULL) {
+		bufferevent_free(this->bev);
+		free(this->address);
+		free(this->port);
+		delete (this->addrlist);
+		free(this->family);
+		throw std::bad_alloc();
 	}
 
-	// must_resolve_ipv4: nothing to be done
-	// must_resolve_ipv6: nothing to be done
+	// must_resolve_ipv4: if connecting, set later by this->resolve()
+	// must_resolve_ipv6: if connecting, set later by this->resolve()
 
-	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
-	    self->handle_event, self);
+	/*
+	 * The following makes this non copyable and non movable.
+	 */
+	bufferevent_setcb(this->bev, this->handle_read, this->handle_write,
+	    this->handle_event, this);
 
-	result = bufferevent_socket_connect(self->bev, (struct sockaddr *)
-	    &storage, (int) total);
-	if (result != 0) {
-		delete self;
-		return (NULL);
-	}
-
-	return (self);
+	if (!ight_socket_valid(filenum))
+		this->start_connect = IghtDelayedCall(0.0, std::bind(
+		    this->resolve, this));
+	else
+		this->filedesc = filenum;	/* Own the socket on success */
 }
 
 void
-IghtConnection::connect_next(void)
+IghtConnectionState::connect_next(void)
 {
 	const char *address;
 	int error;
@@ -393,14 +244,14 @@ IghtConnection::connect_next(void)
 	}
 
 	this->connecting = 0;
-	this->protocol->on_error();
+	this->on_error(IghtError(-2));
 }
 
 void
-IghtConnection::handle_resolve(int result, char type, int count,
+IghtConnectionState::handle_resolve(int result, char type, int count,
     int ttl, void *addresses, void *opaque)
 {
-	IghtConnection *self = (IghtConnection *) opaque;
+	auto self = (IghtConnectionState *) opaque;
 	const char *_family;
 	const char *p;
 	int error, family, size;
@@ -461,18 +312,14 @@ IghtConnection::handle_resolve(int result, char type, int count,
 			ight_warn("handle_resolve - cannot append");
 			// Oops the two vectors are not in sync anymore now
 			self->connecting = 0;
-			self->protocol->on_error();
+			self->on_error(IghtError(-3));
 			return;
 		}
 	}
 
     finally:
-	IghtPoller *poller = self->protocol->get_poller();
-	if (poller == NULL)
-		abort();
-	evdns_base *dns_base = poller->get_evdns_base();
-	if (dns_base == NULL)
-		abort();
+	auto dns_base = ight_get_global_evdns_base();
+
 	if (self->must_resolve_ipv6) {
 		self->must_resolve_ipv6 = 0;
 		evdns_request *request = evdns_base_resolve_ipv6(dns_base,
@@ -495,9 +342,8 @@ IghtConnection::handle_resolve(int result, char type, int count,
 }
 
 void
-IghtConnection::resolve(void *opaque)
+IghtConnectionState::resolve(IghtConnectionState *self)
 {
-	IghtConnection *self = (IghtConnection *) opaque;
 	struct sockaddr_storage storage;
 	int result;
 
@@ -519,7 +365,7 @@ IghtConnection::resolve(void *opaque)
 		    self->pflist->append("PF_INET") != 0) {
 			ight_warn("resolve - cannot append");
 			self->connecting = 0;
-			self->protocol->on_error();
+			self->on_error(IghtError(-4));
 			return;
 		}
 		self->connect_next();
@@ -536,20 +382,14 @@ IghtConnection::resolve(void *opaque)
 		    self->pflist->append("PF_INET6") != 0) {
 			ight_warn("resolve - cannot append");
 			self->connecting = 0;
-			self->protocol->on_error();
+			self->on_error(IghtError(-4));
 			return;
 		}
 		self->connect_next();
 		return;
 	}
 
-	IghtPoller *poller = self->protocol->get_poller();
-	if (poller == NULL)
-		abort();
-
-	evdns_base *dns_base = poller->get_evdns_base();
-	if (dns_base == NULL)
-		abort();
+	auto dns_base = ight_get_global_evdns_base();
 
 	// Note: PF_UNSPEC6 means that we try with IPv6 first
 	if (strcmp(self->family, "PF_INET") == 0)
@@ -563,7 +403,7 @@ IghtConnection::resolve(void *opaque)
 	else {
 		ight_warn("connection::resolve - invalid PF_xxx");
 		self->connecting = 0;
-		self->protocol->on_error();
+		self->on_error(IghtError(-5));
 		return;
 	}
 
@@ -580,7 +420,7 @@ IghtConnection::resolve(void *opaque)
 	}
 	if (request == NULL) {
 		self->connecting = 0;
-		self->protocol->on_error();
+		self->on_error(IghtError(-6));
 		return;
 	}
 
@@ -591,299 +431,8 @@ IghtConnection::resolve(void *opaque)
 		self->must_resolve_ipv4 = 1;
 }
 
-IghtConnection *
-IghtConnection::connect_hostname(IghtProtocol *proto,
-    const char *family, const char *address, const char *port)
-{
-	event_base *evbase;
-	IghtPoller *poller;
-	IghtConnection *self;
-
-	if (proto == NULL || family == NULL || address == NULL || port == NULL)
-		abort();
-	poller = proto->get_poller();
-	if (poller == NULL)
-		abort();
-	evbase = poller->get_event_base();
-	if (evbase == NULL)
-		abort();
-
-	self = new (std::nothrow) IghtConnection();
-	if (self == NULL)
-		return (NULL);
-
-	// filedesc: nothing to be done
-
-	self->bev = bufferevent_socket_new(evbase,
-	    (evutil_socket_t) IGHT_SOCKET_INVALID,
-	    BEV_OPT_DEFER_CALLBACKS);
-	if (self->bev == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->protocol = proto;
-
-	self->readbuf = evbuffer_new();
-	if (self->readbuf == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	// closing: nothing to be done
-
-	self->connecting = 1;
-
-	// reading: nothing to be done
-
-	self->address = strdup(address);
-	if (self->address == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->port = strdup(port);
-	if (self->port == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->addrlist = new (std::nothrow) IghtStringVector(poller, 16);
-	if (self->addrlist == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->family = strdup(family);
-	if (self->family == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	self->pflist = new (std::nothrow) IghtStringVector(poller, 16);
-	if (self->pflist == NULL) {
-		delete self;
-		return (NULL);
-	}
-
-	// must_resolve_ipv4: set later by self->resolve()
-	// must_resolve_ipv6: set later by self->resolve()
-
-	bufferevent_setcb(self->bev, self->handle_read, self->handle_write,
-	    self->handle_event, self);
-
-	self->start_connect = IghtDelayedCall(0.0, std::bind(
-	    self->resolve, self));
-
-	return (self);
-}
-
-IghtProtocol *
-IghtConnection::get_protocol(void)
-{
-	return (this->protocol);
-}
-
-int
-IghtConnection::set_timeout(double timeout)
-{
-	struct timeval tv, *tvp;
-	tvp = ight_timeval_init(&tv, timeout);
-	return (bufferevent_set_timeouts(this->bev, tvp, tvp));
-}
-
-int
-IghtConnection::clear_timeout(void)
-{
-	return (this->set_timeout(-1));
-}
-
-int
-IghtConnection::start_tls(unsigned server_side)
-{
-	(void) server_side;
-
-	return (-1);  // TODO: implement
-}
-
-int
-IghtConnection::read(char *base, size_t count)
-{
-	if (base == NULL || count == 0 || count > INT_MAX)
-		return (-1);
-
-	return (evbuffer_remove(this->readbuf, base, count));
-}
-
-int
-IghtConnection::readline(char *base, size_t count)
-{
-	size_t eol_length = 0;
-	evbuffer_ptr result = evbuffer_search_eol(this->readbuf,
-	    NULL, &eol_length, EVBUFFER_EOL_CRLF);
-	if (result.pos < 0) {
-		if (evbuffer_get_length(this->readbuf) > count)
-			return (-1);  /* line too long */
-		return (0);
-	}
-
-	if ((size_t) result.pos > SSIZE_MAX - eol_length)
-		return (-1);
-	result.pos += eol_length;
-
-	if ((size_t) result.pos > count)
-		return (-1);  /* line too long */
-
-	int llen = this->read(base, (size_t) result.pos);
-	if (llen < 0)
-		return (-1);
-
-	return (llen);
-}
-
-int
-IghtConnection::readn(char *base, size_t count)
-{
-	if (base == NULL || count == 0 || count > INT_MAX)
-		return (-1);
-	if (evbuffer_get_length(this->readbuf) < count)
-		return (0);
-
-	return (evbuffer_remove(this->readbuf, base, count));
-}
-
-int
-IghtConnection::discardn(size_t count)
-{
-	if (count == 0 || count > INT_MAX)
-		return (-1);
-	if (evbuffer_get_length(this->readbuf) < count)
-		return (0);
-
-	return (evbuffer_drain(this->readbuf, count));
-}
-
-int
-IghtConnection::write(const char *base, size_t count)
-{
-	if (base == NULL || count == 0)
-		return (-1);
-
-	return (bufferevent_write(this->bev, base, count));
-}
-
-int
-IghtConnection::puts(const char *str)
-{
-	if (str == NULL)
-		return (-1);
-
-	return (this->write(str, strlen(str)));
-}
-
-#define N_EXTENTS 2
-
-int
-IghtConnection::write_rand_evbuffer(struct evbuffer *evbuf, size_t count)
-{
-        struct evbuffer_iovec vec[N_EXTENTS];
-        int n_extents, i;
-
-        n_extents = evbuffer_reserve_space(evbuf, count, vec, N_EXTENTS);
-        if (n_extents < 0 || n_extents > N_EXTENTS)
-                return (-1);
-
-        for (i = 0; i < n_extents; i++) {
-                if (count <= vec[i].iov_len) {
-                        evutil_secure_rng_get_bytes(vec[i].iov_base, count);
-                        vec[i].iov_len = count;
-                        break;
-                }
-
-                evutil_secure_rng_get_bytes(vec[i].iov_base, vec[i].iov_len);
-                count -= vec[i].iov_len;
-        }
-
-        if (i >= n_extents)
-                return (-1);  // Should not happen
-
-        return (evbuffer_commit_space(evbuf, vec, i + 1));
-}
-
-int
-IghtConnection::write_rand(size_t count)
-{
-	struct evbuffer *evbuf_output;
-	
-	if (count == 0)
-		return (-1);
-
-	evbuf_output = bufferevent_get_output(this->bev);
-	if (evbuf_output == NULL)
-		return (-1);
-
-	return (this->write_rand_evbuffer(evbuf_output, count));
-}
-
-int
-IghtConnection::write_readbuf(const char *base, size_t count)
-{
-	if (base == NULL || count == 0)
-		return (-1);
-
-	return (evbuffer_add(this->readbuf, (void *) base, count));
-}
-
-int
-IghtConnection::puts_readbuf(const char *str)
-{
-	if (str == NULL)
-		return (-1);
-
-	return (this->write_readbuf(str, strlen(str)));
-}
-
-int
-IghtConnection::write_rand_readbuf(size_t count)
-{
-	if (count == 0)
-		return (-1);
-
-	return (write_rand_evbuffer(this->readbuf, count));
-}
-
-int
-IghtConnection::read_into_(evbuffer *destbuf)
-{
-	if (destbuf == NULL)
-		return (-1);
-
-	return (evbuffer_add_buffer(destbuf, this->readbuf));
-}
-
-int
-IghtConnection::write_from_(evbuffer *sourcebuf)
-{
-	if (sourcebuf == NULL)
-		return (-1);
-
-	return (bufferevent_write_buffer(this->bev, sourcebuf));
-}
-
-int
-IghtConnection::enable_read(void)
-{
-	return (bufferevent_enable(this->bev, EV_READ));
-}
-
-int
-IghtConnection::disable_read(void)
-{
-	return (bufferevent_disable(this->bev, EV_READ));
-}
-
 void
-IghtConnection::close(void)
+IghtConnectionState::close(void)
 {
 	this->closing = 1;
 	if (this->reading != 0 || this->connecting != 0)

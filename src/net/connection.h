@@ -5,124 +5,243 @@
  * information on the copying conditions.
  */
 
-#ifndef LIBIGHT_CONNECTION_H
-# define LIBIGHT_CONNECTION_H
+#ifndef LIBIGHT_NET_CONNECTION_H
+# define LIBIGHT_NET_CONNECTION_H
 # ifdef __cplusplus
 
-/*-
- * 3.6.4 Neubot Library Modules
- *
- *   Connection
- *     The connection is a C/C++ module that provides an abstraction,
- *     Σ, representing a stream-like network connection. As such, it
- *     is suitable to represent, e.g., a connected TCP socket (but
- *     possibly also a UNIX-domain socket). Of course, the Neubot
- *     library shall implement and export the Σ abstraction because
- *     it is the basic building block to construct TCP-based
- *     network-performance tests.
- *
- *     The features that Σ shall implement are the following. One shall
- *     be able to establish a TCP connection by providing Σ with the
- *     protocol family, the address and the port number. Moreover, the
- *     programmer shall be able to initialize Σ with a file descriptor.
- *     Additionally, once Σ is attached to a file description, it shall
- *     be possible to establish a SSL connection. In addition to the
- *     common methods that allow to receive and send data, Σ shall
- *     also export methods that allow to read a line, to read an exact
- *     amount of bytes and to discard an exact amount of bytes.
- *
- *     All the features described above are useful to efficiently
- *     implement network-performance tests. In particular, as discussed
- *     in Section 3.6.3, the functionality that allows to discard an
- *     exact number of bytes is useful to reduce the impact on performance
- *     of data copying when a test is implemented using a high-level
- *     language.
- */
+#include "common/error.h"
+#include "common/poller.h"
+#include "common/utils.h"
 
-#include "src/common/poller.h"
+#include "net/ll2sock.h"
 
-struct bufferevent;
-struct evbuffer;
+#include <event2/bufferevent.h>
+#include <event2/event.h>
+
+#include <stdexcept>
+#include <string.h>
 
 struct IghtStringVector;
-struct IghtProtocol;
+struct evbuffer;
 
-struct IghtConnection {
-    private:
-	long long filedesc;
-	bufferevent *bev;
-	IghtProtocol *protocol;
-	evbuffer *readbuf;
-	unsigned int closing;
-	unsigned int connecting;
-	unsigned int reading;
-	char *address;
-	char *port;
-	IghtStringVector *addrlist;
-	char *family;
-	IghtStringVector *pflist;
-	unsigned int must_resolve_ipv4;
-	unsigned int must_resolve_ipv6;
+class IghtConnectionState {
+
+	long long filedesc = IGHT_SOCKET_INVALID;
+	bufferevent *bev = NULL;
+	unsigned int closing = 0;
+	unsigned int connecting = 0;
+	unsigned int reading = 0;
+	char *address = NULL;
+	char *port = NULL;
+	IghtStringVector *addrlist = NULL;
+	char *family = NULL;
+	IghtStringVector *pflist = NULL;
+	unsigned int must_resolve_ipv4 = 0;
+	unsigned int must_resolve_ipv6 = 0;
 	IghtDelayedCall start_connect;
 
-	IghtConnection(void);
-
 	// Private destructor because destruction may be delayed
-	~IghtConnection(void);
+	~IghtConnectionState(void);
 
 	// Libevent callbacks
 	static void handle_read(bufferevent *, void *);
 	static void handle_write(bufferevent *, void *);
 	static void handle_event(bufferevent *, short, void *);
 
-	// Functions used by connect_hostname()
+	// Functions used when connecting
 	void connect_next(void);
 	static void handle_resolve(int, char, int, int,
 	    void *, void *);
-	static void resolve(void *);
-
-	// Function used by write_rand() and write_rand_readbuf()
-	int write_rand_evbuffer(struct evbuffer *buf, size_t count);
+	static void resolve(IghtConnectionState *);
 
     public:
-	static IghtConnection *attach(IghtProtocol *, long long);
+	IghtConnectionState(const char *, const char *, const char *,
+	    long long = IGHT_SOCKET_INVALID);
 
-	static IghtConnection *connect(IghtProtocol *, const char *,
-	    const char *, const char *);
+	IghtConnectionState(IghtConnectionState&) = delete;
+	IghtConnectionState& operator=(IghtConnectionState&) = delete;
+	IghtConnectionState(IghtConnectionState&&) = delete;
+	IghtConnectionState& operator=(IghtConnectionState&&) = delete;
 
-	static IghtConnection *connect_hostname(IghtProtocol *, const char *,
-	    const char *, const char *);
+	std::function<void(void)> on_connect = [](void) {
+		/* nothing */
+	};
 
-	IghtProtocol *get_protocol(void);
+	std::function<void(void)> on_ssl = [](void) {
+		/* nothing */
+	};
 
-	int set_timeout(double);
+	std::function<void(evbuffer *)> on_data = [](evbuffer *) {
+		/* nothing */
+	};
 
-	int clear_timeout(void);
+	std::function<void(void)> on_flush = [](void) {
+		/* nothing */
+	};
 
-	int start_tls(unsigned int);
+	std::function<void(IghtError)> on_error = [](IghtError) {
+		/* nothing */
+	};
 
-	int read(char *, size_t);
-	int readline(char *, size_t);
-	int readn(char *, size_t);
-	int discardn(size_t);
-	int write(const char *, size_t);
-	int puts(const char *);
-	int write_rand(size_t);
-	int write_readbuf(const char *, size_t);
-	int puts_readbuf(const char *);
-	int write_rand_readbuf(size_t);
+	int set_timeout(double timeout) {
+		struct timeval tv, *tvp;
+		tvp = ight_timeval_init(&tv, timeout);
+		return (bufferevent_set_timeouts(this->bev, tvp, tvp));
+	}
 
-	// Internally-used zero-copy read and write
-#ifndef SWIG
-	int read_into_(evbuffer *);
-	int write_from_(evbuffer *);
-#endif
+	int clear_timeout(void) {
+		return (this->set_timeout(-1));
+	}
 
-	int enable_read(void);
-	int disable_read(void);
+	int start_tls(unsigned int) {
+		return (-1);		/* TODO: implement */
+	}
+
+	int write(const char *base, size_t count) {
+		if (base == NULL || count == 0)
+			return (-1);
+		return (bufferevent_write(this->bev, base, count));
+	}
+
+	int puts(const char *str) {
+		if (str == NULL)
+			return (-1);
+		return (this->write(str, strlen(str)));
+	}
+
+	int write_from(evbuffer *sourcebuf) {
+		if (sourcebuf == NULL)
+			return (-1);
+		return (bufferevent_write_buffer(this->bev, sourcebuf));
+	}
+
+	int enable_read(void) {
+		return (bufferevent_enable(this->bev, EV_READ));
+	}
+
+	int disable_read(void) {
+		return (bufferevent_disable(this->bev, EV_READ));
+	}
 
 	void close(void);
 };
 
+class IghtConnection {
+	IghtConnectionState *state = NULL;
+
+    public:
+	IghtConnection(void) {
+		/* nothing to do */
+	}
+	IghtConnection(long long fd) {
+		state = new IghtConnectionState("PF_UNSPEC", "0.0.0.0",
+		    "0", fd);
+	}
+	IghtConnection(const char *af, const char *a, const char *p) {
+		state = new IghtConnectionState(af, a, p);
+	}
+
+	/* We don't want multiple copies of `state` */
+	IghtConnection(IghtConnection&) = delete;
+	IghtConnection& operator=(IghtConnection&) = delete;
+
+	IghtConnection(IghtConnection&& other) {
+		std::swap(state, other.state);
+	}
+	IghtConnection& operator=(IghtConnection&& other) {
+		std::swap(state, other.state);
+		return (*this);
+	}
+
+	void close(void) {
+		if (state == NULL)
+			return;
+		state->close();
+		state = NULL;		/* Idempotent */
+	}
+
+	~IghtConnection(void) {
+		close();
+	}
+
+	void on_connect(std::function<void(void)>&& fn) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->on_connect = std::move(fn);
+	};
+
+	void on_ssl(std::function<void(void)>&& fn) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->on_ssl = std::move(fn);
+	};
+
+	void on_data(std::function<void(evbuffer *)>&& fn) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->on_data = std::move(fn);
+	};
+
+	void on_flush(std::function<void(void)>&& fn) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->on_flush = std::move(fn);
+	};
+
+	void on_error(std::function<void(IghtError)>&& fn) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->on_error = std::move(fn);
+	};
+
+	int set_timeout(double timeout) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->set_timeout(timeout));
+	}
+
+	int clear_timeout(void) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->clear_timeout());
+	}
+
+	int start_tls(unsigned int d) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->start_tls(d));
+	}
+
+	int write(const char *base, size_t count) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->write(base, count));
+	}
+
+	int puts(const char *str) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->puts(str));
+	}
+
+	int write_from(evbuffer *sourcebuf) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->write_from(sourcebuf));
+	}
+
+	int enable_read(void) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->enable_read());
+	}
+
+	int disable_read(void) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->disable_read());
+	}
+};
+
 # endif  /* __cplusplus */
-#endif  /* LIBIGHT_CONNECTION_H */
+#endif  /* LIBIGHT_NET_CONNECTION_H */

@@ -10,7 +10,6 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#include <limits.h>
 #include <errno.h>
 #include <math.h>
 #include <string.h>
@@ -20,11 +19,8 @@
 #include <event2/event.h>
 
 #include "ext/strtonum.h"
-
 #include "common/log.h"
-
 #include "common/utils.h"
-
 #include "net/ll2sock.h"
 
 void
