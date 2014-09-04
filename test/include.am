@@ -5,3 +5,7 @@ test_echo_client_evbuf_SOURCES = test/echo_client_evbuf.cpp
 test_echo_client_evbuf_LDADD = libight.la
 
 include test/common/include.am
+
+check_PROGRAMS += test/tests
+test_tests_SOURCES = test/tests.cpp
+test_tests_LDADD = libight.la
