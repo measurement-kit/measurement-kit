@@ -1,0 +1,6 @@
+language: cpp
+install: autoreconf -i
+script: ./configure && make && make check
+compiler:
+  - clang
+#  - g++
