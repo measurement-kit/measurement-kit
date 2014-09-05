@@ -13,14 +13,6 @@
 
 #include <iostream>
 
-/*
- * TODO: refactor all the tests in this file to be functions, so we
- * are ready to migrate to a unit testing framework.
- *
- * For now, I've written as functions the three^W^W most recent tests
- * that I've added to this file.
- */
-
 TEST_CASE("Bad allocations triggers a failure ") {
 	IghtLibevent libevent;
 
