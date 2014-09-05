@@ -62,3 +62,4 @@ test/common/poller
 test/echo_client
 test/echo_client2
 test/echo_client_evbuf
+test-driver
