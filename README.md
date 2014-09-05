@@ -1,6 +1,8 @@
 Libight
 =======
 
+[![Build Status](https://travis-ci.org/bassosimone/libight.svg?branch=master)](https://travis-ci.org/bassosimone/libight)
+
 Libight is an experimental library that provides common functionalities
 useful to implement open measurement tools on mobile platforms.
 
