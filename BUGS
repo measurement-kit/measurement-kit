@@ -5,3 +5,7 @@
 
 2. The Connection module, when receiving the EOF, closes the connection, even if
    there is still something to write.
+
+This file is now historical. Please, see and use GitHub issues:
+
+    https://github.com/bassosimone/libight/issues
