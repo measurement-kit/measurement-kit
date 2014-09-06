@@ -5,6 +5,7 @@
  * information on the copying conditions.
  */
 
+#include "src/ext/Catch/single_include/catch.hpp"
 #include "common/libevent.h"
 #include "net/buffer.hpp"
 
