@@ -90,8 +90,6 @@ TEST_CASE("IghtBufferEventSocket operations") {
     auto libevent = IghtLibevent();
     auto underlying = (bufferevent *) NULL;
 
-    std::cout << "test access_underlying_bev_ok... ";
-
     libevent.bufferevent_socket_new = [&](event_base *b,
         evutil_socket_t s, int o) {
       return (underlying = ::bufferevent_socket_new(b, s, o));
