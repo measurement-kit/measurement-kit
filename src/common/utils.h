@@ -5,6 +5,9 @@
  * information on the copying conditions.
  */
 
+#ifndef LIBIGHT_COMMON_UTILS_H
+# define LIBIGHT_COMMON_UTILS_H
+
 struct sockaddr_storage;
 struct timeval;
 
@@ -74,3 +77,5 @@ int ight_socket_listen(evutil_socket_t, struct sockaddr_storage *,
 #ifdef __cplusplus
 }
 #endif
+
+#endif  /* LIBIGHT_COMMON_UTILS_H */
