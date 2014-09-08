@@ -3,18 +3,20 @@
  */
 
 /*
- * Macros and functions useful to convert `long long` integers
- * to sockets. We use `long long`, because it can represent both
- * a Unix socket (a `int`) and a Win32 socket (a uintptr_t).
+ * Macros and functions useful to check whether sockets are valid. We
+ * use the same definition of sockets as libevent, i.e., a `int` on Unix
+ * and a `intptr_t` on Win32.
  */
 
 #ifndef IGHT_NET_LL2SOCK_H
 # define IGHT_NET_LL2SOCK_H
 
+#include <event2/util.h>
+
 #include <limits.h>
 #include <stdint.h>
 
-/* To convert long long to sockets */
+/* Range in which a socket is valid */
 #ifdef WIN32
 # define IGHT_SOCKET_MAX (INVALID_SOCKET - 1)
 #else
@@ -32,7 +34,7 @@
 #endif
 
 static inline int
-ight_socket_valid(long long filenum)
+ight_socket_valid(evutil_socket_t filenum)
 {
 	return (filenum >= 0 && filenum <= IGHT_SOCKET_MAX);
 }

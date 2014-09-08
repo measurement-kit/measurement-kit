@@ -26,7 +26,7 @@ struct evbuffer;
 
 class IghtConnectionState {
 
-	long long filedesc = IGHT_SOCKET_INVALID;
+	evutil_socket_t filedesc = IGHT_SOCKET_INVALID;
 	bufferevent *bev = NULL;
 	unsigned int closing = 0;
 	unsigned int connecting = 0;
@@ -56,7 +56,7 @@ class IghtConnectionState {
 
     public:
 	IghtConnectionState(const char *, const char *, const char *,
-	    long long = IGHT_SOCKET_INVALID);
+	    evutil_socket_t = IGHT_SOCKET_INVALID);
 
 	IghtConnectionState(IghtConnectionState&) = delete;
 	IghtConnectionState& operator=(IghtConnectionState&) = delete;
@@ -133,7 +133,7 @@ class IghtConnection {
 	IghtConnection(void) {
 		/* nothing to do */
 	}
-	IghtConnection(long long fd) {
+	IghtConnection(evutil_socket_t fd) {
 		state = new IghtConnectionState("PF_UNSPEC", "0.0.0.0",
 		    "0", fd);
 	}
