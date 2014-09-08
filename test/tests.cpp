@@ -7,6 +7,3 @@
 
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
-
-#include "test/common/delayed_call.hpp"
-#include "test/net/buffer_tests.hpp"

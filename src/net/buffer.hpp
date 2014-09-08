@@ -17,7 +17,7 @@
 
 #include <functional>
 #include <stdlib.h>
-#include <string>
+#include <string.h>
 #include <stdexcept>
 #include <vector>
 
