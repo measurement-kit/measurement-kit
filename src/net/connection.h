@@ -13,8 +13,6 @@
 #include "common/poller.h"
 #include "common/utils.h"
 
-#include "net/ll2sock.h"
-
 #include <event2/bufferevent.h>
 #include <event2/event.h>
 

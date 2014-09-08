@@ -13,8 +13,6 @@
 # include <signal.h>
 #endif
 
-#include "net/ll2sock.h"
-
 #include "common/poller.h"
 #include "common/utils.h"
 #include "common/log.h"

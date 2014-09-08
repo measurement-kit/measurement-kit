@@ -21,7 +21,6 @@
 #include "ext/strtonum.h"
 #include "common/log.h"
 #include "common/utils.h"
-#include "net/ll2sock.h"
 
 void
 ight_timeval_now(struct timeval *tv)
