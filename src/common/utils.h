@@ -31,9 +31,6 @@ extern "C" {
 #else
 # define IGHT_SOCKET_MAX INT_MAX
 #endif
-#if !(LLONG_MAX >= IGHT_SOCKET_MAX)
-# error "LLONG_MAX must be larger than IGHT_SOCKET_MAX"
-#endif
 
 /* To mark sockets as invalid */
 #ifdef WIN32
