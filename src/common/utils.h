@@ -25,25 +25,71 @@ extern "C" {
  * and a `intptr_t` on Win32.
  */
 
-/* Range in which a socket is valid */
-#ifdef WIN32
-# define IGHT_SOCKET_MAX (INVALID_SOCKET - 1)
-#else
+/* Range in which a socket is valid on Unix platforms */
+#ifndef WIN32
 # define IGHT_SOCKET_MAX INT_MAX
 #endif
 
-/* To mark sockets as invalid */
-#ifdef WIN32
-# define IGHT_SOCKET_INVALID INVALID_SOCKET
-#else
-# define IGHT_SOCKET_INVALID -1
-#endif
+/*
+ * To mark sockets as invalid. Strictly speaking on Windows it should
+ * be INVALID_SOCKET, which however is an unsigned constant. Since
+ * libevent uses inptr_t for sockets, here we use -1 to indicate that
+ * a socket is not valid, to avoid compiler warnings.
+ *
+ * See also the much longer comment on this topic below.
+ */
+#define IGHT_SOCKET_INVALID -1
 
 static inline int
 ight_socket_valid(evutil_socket_t filenum)
 {
+#ifdef WIN32
+	/*
+	 * On Windows there is only one value marking the socket as invalid,
+	 * all the other values are to be considered valid sockets:
+	 *
+	 * "Windows Sockets handles have no restrictions, other than that
+	 *  the value INVALID_SOCKET is not a valid socket. Socket handles may
+	 *  take any value in the range 0 to INVALID_SOCKET–1".
+	 *
+	 *     http://goo.gl/FTesjR  (msdn.microsoft.com)
+	 *
+	 * This makes me wonder why libevent defines the socket to be
+	 * intptr_t rather than uintptr_t. Probably because they use a
+	 * signed value to represent the invalid socket?
+	 *
+	 * For reference, wine's winsock.h defines in fact SOCKET as
+	 * UINT_PTR and INVALID_SOCKET as (~0):
+	 *
+	 *     http://goo.gl/Mo4ReU  (github.com/wine-mirror/wine)
+	 *
+	 * I assume that libevent uses intptr_t for convenience given
+	 * the negative return value and, since a socket is indeed a
+	 * uintptr_t, that negative values but IGHT_SOCKET_INVALID are
+	 * to be treated as valid sockets as well.
+	 */
+	return (filenum != IGHT_SOCKET_INVALID);
+#else
 	return (filenum >= 0 && filenum <= IGHT_SOCKET_MAX);
+#endif
 }
+
+static inline evutil_socket_t
+ight_socket_normalize_if_invalid(evutil_socket_t filenum)
+{
+#ifndef WIN32
+	/*
+	 * This makes sense only in the Unix world in which a negative
+	 * integer is not a valid socket descriptor (i.e., in which there
+	 * are several non canonical invalid-socket values).
+	 */
+	if (!ight_socket_valid(filenum))
+		filenum = IGHT_SOCKET_INVALID;
+#endif
+	return (filenum);
+}
+
+#undef IGHT_SOCKET_MAX  /* Leave not traces */
 
 /*
  * Other utility functions:

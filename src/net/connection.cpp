@@ -111,8 +111,7 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 	auto evbase = ight_get_global_event_base();
 	auto poller = ight_get_global_poller();
 
-	if (!ight_socket_valid(filenum))
-		filenum = IGHT_SOCKET_INVALID;		/* Normalize */
+	filenum = ight_socket_normalize_if_invalid(filenum);
 
 	/*
 	 * TODO: switch to RAII.
