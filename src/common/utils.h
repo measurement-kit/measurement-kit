@@ -14,7 +14,6 @@ struct timeval;
 #include <event2/util.h>
 
 #include <limits.h>
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
