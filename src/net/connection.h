@@ -81,6 +81,10 @@ class IghtConnectionState {
 		/* nothing */
 	};
 
+	evutil_socket_t get_fileno(void) {
+		return (this->filedesc);
+	}
+
 	int set_timeout(double timeout) {
 		struct timeval tv, *tvp;
 		tvp = ight_timeval_init(&tv, timeout);
@@ -191,6 +195,12 @@ class IghtConnection {
 			throw std::runtime_error("Invalid state");
 		state->on_error = std::move(fn);
 	};
+
+	evutil_socket_t get_fileno(void) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->get_fileno());
+	}
 
 	int set_timeout(double timeout) {
 		if (state == NULL)
