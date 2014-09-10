@@ -41,9 +41,8 @@ extern "C" {
 #define IGHT_SOCKET_INVALID -1
 
 static inline int
-ight_socket_valid(evutil_socket_t filenum)
+ight_socket_valid_win32_(intptr_t filenum)
 {
-#ifdef WIN32
 	/*
 	 * On Windows there is only one value marking the socket as invalid,
 	 * all the other values are to be considered valid sockets:
@@ -69,15 +68,33 @@ ight_socket_valid(evutil_socket_t filenum)
 	 * to be treated as valid sockets as well.
 	 */
 	return (filenum != IGHT_SOCKET_INVALID);
-#else
+}
+
+static inline int
+ight_socket_valid_unix_(int filenum)
+{
 	return (filenum >= 0 && filenum <= IGHT_SOCKET_MAX);
+}
+
+static inline int
+ight_socket_valid(evutil_socket_t filenum)
+{
+#ifdef WIN32
+	return (ight_socket_valid_win32_(filenum));
+#else
+	return (ight_socket_valid_unix_(filenum));
 #endif
 }
 
-static inline evutil_socket_t
-ight_socket_normalize_if_invalid(evutil_socket_t filenum)
+static inline intptr_t
+ight_socket_normalize_if_invalid_win32_(intptr_t filenum)
 {
-#ifndef WIN32
+	return (filenum);
+}
+
+static inline int
+ight_socket_normalize_if_invalid_unix_(int filenum)
+{
 	/*
 	 * This makes sense only in the Unix world in which a negative
 	 * integer is not a valid socket descriptor (i.e., in which there
@@ -85,8 +102,17 @@ ight_socket_normalize_if_invalid(evutil_socket_t filenum)
 	 */
 	if (!ight_socket_valid(filenum))
 		filenum = IGHT_SOCKET_INVALID;
-#endif
 	return (filenum);
+}
+
+static inline evutil_socket_t
+ight_socket_normalize_if_invalid(evutil_socket_t filenum)
+{
+#ifdef WIN32
+	return (ight_socket_normalize_if_invalid_win32_(filenum));
+#else
+	return (ight_socket_normalize_if_invalid_unix_(filenum));
+#endif
 }
 
 #undef IGHT_SOCKET_MAX  /* Leave not traces */
