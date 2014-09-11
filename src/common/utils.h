@@ -49,18 +49,19 @@ ight_socket_valid_win32_(intptr_t filenum)
 	 *     http://goo.gl/FTesjR  (msdn.microsoft.com)
 	 *
 	 * This makes me wonder why libevent defines the socket to be
-	 * intptr_t rather than uintptr_t. Probably because they use a
-	 * signed value to represent the invalid socket?
+	 * intptr_t rather than uintptr_t, because they use a negative
+	 * value, -1, to represent the invalid socket.
 	 *
 	 * For reference, wine's winsock.h defines in fact SOCKET as
 	 * UINT_PTR and INVALID_SOCKET as (~0):
 	 *
 	 *     http://goo.gl/Mo4ReU  (github.com/wine-mirror/wine)
 	 *
-	 * I assume that libevent uses intptr_t for convenience given
-	 * the negative return value and, since a socket is indeed a
-	 * uintptr_t, that negative values but IGHT_SOCKET_INVALID are
-	 * to be treated as valid sockets as well.
+	 * Note that the unsigned value ~0 is equal to -1 if converted to a
+	 * signed value of the same size (i.e., uintptr_t => intptr_t).
+	 *
+	 * To conclude, only -1 (equal to ~0) is invalid socket, hence
+	 * the check below:
 	 */
 	return (filenum != IGHT_SOCKET_INVALID);
 }
