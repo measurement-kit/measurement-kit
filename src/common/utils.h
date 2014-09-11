@@ -48,8 +48,8 @@ ight_socket_valid_win32_(intptr_t filenum)
 	 *
 	 *     http://goo.gl/FTesjR  (msdn.microsoft.com)
 	 *
-	 * This makes me wonder why libevent defines the socket to be
-	 * intptr_t rather than uintptr_t, because they use a negative
+	 * This explains why libevent on Windows defines the socket to be
+	 * intptr_t rather than uintptr_t: because they use a negative
 	 * value, -1, to represent the invalid socket.
 	 *
 	 * For reference, wine's winsock.h defines in fact SOCKET as
