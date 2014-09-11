@@ -85,6 +85,10 @@ ight_socket_valid(evutil_socket_t filenum)
 static inline intptr_t
 ight_socket_normalize_if_invalid_win32_(intptr_t filenum)
 {
+	/*
+	 * Nothing do to; on Windows there is a single, canonical
+	 * representation of the invalid socket: ~0.
+	 */
 	return (filenum);
 }
 
@@ -92,9 +96,9 @@ static inline int
 ight_socket_normalize_if_invalid_unix_(int filenum)
 {
 	/*
-	 * This makes sense only in the Unix world in which a negative
-	 * integer is not a valid socket descriptor (i.e., in which there
-	 * are several non canonical invalid-socket values).
+	 * This makes sense only in the Unix world in which all negative
+	 * integers different from -1 are non-canonical representations of
+	 * the invalid socket descriptor.
 	 */
 	if (!ight_socket_valid(filenum))
 		filenum = IGHT_SOCKET_INVALID;
