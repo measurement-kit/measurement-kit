@@ -10,6 +10,7 @@ include test/common/include.am
 check_PROGRAMS += test/tests
 test_tests_SOURCES = \
         test/common/delayed_call.cpp \
+        test/common/evbuffer.cpp \
         test/common/bufferevent.cpp  \
         test/net/buffer_tests.cpp    \
         test/tests.cpp
