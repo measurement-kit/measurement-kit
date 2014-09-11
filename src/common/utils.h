@@ -25,11 +25,6 @@ extern "C" {
  * and a `intptr_t` on Win32.
  */
 
-/* Range in which a socket is valid on Unix platforms */
-#ifndef WIN32
-# define IGHT_SOCKET_MAX INT_MAX
-#endif
-
 /*
  * To mark sockets as invalid. Strictly speaking on Windows it should
  * be INVALID_SOCKET, which however is an unsigned constant. Since
@@ -73,7 +68,7 @@ ight_socket_valid_win32_(intptr_t filenum)
 static inline int
 ight_socket_valid_unix_(int filenum)
 {
-	return (filenum >= 0 && filenum <= IGHT_SOCKET_MAX);
+	return (filenum >= 0 && filenum <= INT_MAX);
 }
 
 static inline int
@@ -114,8 +109,6 @@ ight_socket_normalize_if_invalid(evutil_socket_t filenum)
 	return (ight_socket_normalize_if_invalid_unix_(filenum));
 #endif
 }
-
-#undef IGHT_SOCKET_MAX  /* Leave not traces */
 
 /*
  * Other utility functions:
