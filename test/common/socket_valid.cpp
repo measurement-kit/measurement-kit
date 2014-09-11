@@ -57,9 +57,8 @@ TEST_CASE("Negative integers are normalized as -1 on Unix") {
 }
 
 /*
- * Test Win32 (using unsigned sockets as input, as used by the Windows API,
- * and signed sockets internally, as used by libevent; see also the long
- * comment on this topic in `common/utils.h`):
+ * Test Win32 (using signed sockets as input, as used by libevent; see also
+ * the long comment on this topic in `common/utils.h`):
  */
 
 static inline void
