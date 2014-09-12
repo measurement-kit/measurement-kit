@@ -9,9 +9,8 @@
 // Tests for src/common/poller.cpp's Poller()
 //
 
+#include "src/ext/Catch/single_include/catch.hpp"
 #include "common/poller.h"
-
-#include <iostream>
 
 #ifndef WIN32
 # include <sys/types.h>
@@ -20,17 +19,10 @@
 # include <unistd.h>
 #endif
 
-//
-// TODO When we use a testing framework, each function describes
-// a specific test case.
-//
+TEST_CASE("Constructor") {
 
-static void
-test_event_base_new_failure(void)
-{
+    SECTION("We deal with event_base_new() failure") {
 	auto libevent = IghtLibevent();
-
-	std::cout << "Test event_base_new_failure... ";
 
 	libevent.event_base_new = [](void) {
 		return ((event_base *) NULL);
@@ -43,20 +35,11 @@ test_event_base_new_failure(void)
 		bad_alloc_fired = true;
 	}
 
-	if (bad_alloc_fired)
-		std::cout << "ok";
-	else
-		std::cout << "FAIL";
+	REQUIRE(bad_alloc_fired);
+    }
 
-	std::cout << std::endl;
-}
-
-static void
-test_evdns_base_new_failure(void)
-{
+    SECTION("We deal with evdns_base_new() failure") {
 	auto libevent = IghtLibevent();
-
-	std::cout << "Test evdns_base_new_failure... ";
 
 	auto event_base_free_fired = false;
 
@@ -75,20 +58,12 @@ test_evdns_base_new_failure(void)
 		bad_alloc_fired = true;
 	}
 
-	if (bad_alloc_fired && event_base_free_fired)
-		std::cout << "ok";
-	else
-		std::cout << "FAIL";
+	REQUIRE(bad_alloc_fired);
+	REQUIRE(event_base_free_fired);
+    }
 
-	std::cout << std::endl;
-}
-
-static void
-test_evsignal_failure(void)
-{
+    SECTION("We deal with evsignal failure") {
 	auto libevent = IghtLibevent();
-
-	std::cout << "Test evsignal_failure... ";
 
 	auto event_base_free_fired = false;
 	auto evdns_base_free_fired = false;
@@ -114,20 +89,15 @@ test_evsignal_failure(void)
 		bad_alloc_fired = true;
 	}
 
-	if (bad_alloc_fired && event_base_free_fired && evdns_base_free_fired)
-		std::cout << "ok";
-	else
-		std::cout << "FAIL";
-
-	std::cout << std::endl;
+	REQUIRE(bad_alloc_fired);
+	REQUIRE(event_base_free_fired);
+	REQUIRE(evdns_base_free_fired);
+    }
 }
 
-static void
-test_proper_destruction(void)
-{
-	auto libevent = IghtLibevent();
+TEST_CASE("The destructor works properly") {
 
-	std::cout << "Test proper_destruction... ";
+	auto libevent = IghtLibevent();
 
 	auto event_base_free_fired = false;
 	auto evdns_base_free_fired = false;
@@ -151,21 +121,14 @@ test_proper_destruction(void)
 		IghtPoller poller(&libevent);
 	}
 
-	if (event_base_free_fired && evdns_base_free_fired && event_free_fired)
-		std::cout << "ok";
-	else
-		std::cout << "FAIL";
-
-	std::cout << std::endl;
+	REQUIRE(event_base_free_fired);
+	REQUIRE(evdns_base_free_fired);
+	REQUIRE(event_free_fired);
 }
 
-static void
-test_event_add_failure(void)
-{
+TEST_CASE("We deal with event_add() failure in break_loop_on_sigint_()") {
 #ifndef WIN32
 	auto libevent = IghtLibevent();
-
-	std::cout << "Test event_add_failure... ";
 
 	libevent.event_add = [](event *, timeval *) {
 		return (-1);
@@ -180,22 +143,13 @@ test_event_add_failure(void)
 		runtime_error_fired = true;
 	}
 
-	if (runtime_error_fired)
-		std::cout << "ok";
-	else
-		std::cout << "FAIL";
-
-	std::cout << std::endl;
+	REQUIRE(runtime_error_fired);
 #endif
 }
 
-static void
-test_event_del_failure(void)
-{
+TEST_CASE("We deal with event_del() failure in break_loop_on_sigint_()") {
 #ifndef WIN32
 	auto libevent = IghtLibevent();
-
-	std::cout << "Test event_del_failure... ";
 
 	libevent.event_del = [](event *) {
 		return (-1);
@@ -211,20 +165,12 @@ test_event_del_failure(void)
 		runtime_error_fired = true;
 	}
 
-	if (runtime_error_fired)
-		std::cout << "ok";
-	else
-		std::cout << "FAIL";
-
-	std::cout << std::endl;
+	REQUIRE(runtime_error_fired);
 #endif
 }
 
-static void
-test_multiple_break_loop_on_sigint_(void)
-{
+TEST_CASE("break_loop_on_sigint_() is idempotent") {
 #ifndef WIN32
-	std::cout << "Test multiple_break_loop_on_sigint_... ";
 
 	//
 	// Make sure it's OK (as it ought to be) to add() or del()
@@ -235,14 +181,12 @@ test_multiple_break_loop_on_sigint_(void)
 		IghtPoller poller;
 		poller.break_loop_on_sigint_(false);
 		poller.break_loop_on_sigint_(false);
-		std::cout << "ok ";
 	}
 
 	{
 		IghtPoller poller;
 		poller.break_loop_on_sigint_(true);
 		poller.break_loop_on_sigint_(true);
-		std::cout << "ok ";
 	}
 
 	{
@@ -250,23 +194,15 @@ test_multiple_break_loop_on_sigint_(void)
 		poller.break_loop_on_sigint_(true);
 		poller.break_loop_on_sigint_(false);
 		poller.break_loop_on_sigint_(false);
-		std::cout << "ok ";
 	}
-
-	std::cout << std::endl;
 #endif
 }
 
-static void
-test_loop(void)
-{
+TEST_CASE("poller.loop() works properly in corner cases") {
+
+
+    SECTION("We deal with event_base_dispatch() returning -1") {
 	IghtLibevent libevent;
-
-	std::cout << "Test loop... ";
-
-	//
-	// Scenario #1
-	//
 
 	libevent.event_base_dispatch = [](event_base *) {
 		return (-1);
@@ -281,31 +217,22 @@ test_loop(void)
 		runtime_error_fired = true;
 	}
 
-	if (runtime_error_fired)
-		std::cout << "ok ";
-	else
-		std::cout << "FAIL ";
+	REQUIRE(runtime_error_fired);
+    }
 
-	//
-	// Scenario #2
-	//
+    SECTION("We deal with event_base_dispatch() returning 1") {
+	IghtLibevent libevent;
 
 	libevent.event_base_dispatch = [](event_base *) {
 		return (1);
 	};
 	IghtPoller poller2(&libevent);
 	poller2.loop();
-	std::cout << "ok ";
-
-	std::cout << std::endl;
+    }
 }
 
-static void
-test_break_loop(void)
-{
+TEST_CASE("poller.break_loop() works properly") {
 	IghtLibevent libevent;
-
-	std::cout << "Test break_loop... ";
 
 	libevent.event_base_loopbreak = [](event_base *) {
 		return (-1);
@@ -320,42 +247,30 @@ test_break_loop(void)
 		runtime_error_fired = true;
 	}
 
-	if (runtime_error_fired)
-		std::cout << "ok";
-	else
-		std::cout << "FAIL";
-
-	std::cout << std::endl;
+	REQUIRE(runtime_error_fired);
 }
 
-static void
-test_sigint_correctly_handled(void)
-{
+TEST_CASE("SIGINT is correctly handled on Unix") {
 #ifndef WIN32
-	std::cout << "Test sigint_correctly_handled... ";
 
+    SECTION("SIGINT is correctly handled after the handler is set") {
 	IghtPoller poller;
+
 	auto d = IghtDelayedCall(0.01, [](void) {
 	    raise(SIGINT);
 	}, NULL, poller.get_event_base());
+
 	poller.break_loop_on_sigint_();
 	poller.loop();
+    }
 
-	std::cout << "ok" << std::endl;
-#endif
-}
-
-static void
-test_sigint_correctly_handled_once_removed(void)
-{
-#ifndef WIN32
-	std::cout << "Test sigint_correctly_handled_once_removed... ";
+    SECTION("SIGINT is correctly handled after the handler is removed") {
 
 	int status;
 	pid_t pid;
 
-	if ((pid = fork()) < 0)
-		throw std::runtime_error("fork failed");
+	pid = fork();
+	REQUIRE(pid >= 0);
 
 	if (pid == 0) {
 		IghtPoller poller;
@@ -372,30 +287,11 @@ test_sigint_correctly_handled_once_removed(void)
 		exit(EXIT_FAILURE);	/* Should not happen */
 	}
 
-	if (waitpid(pid, &status, 0) < 0)
-		throw std::runtime_error("waitpid failed");
+	pid = waitpid(pid, &status, 0);
+	REQUIRE(pid >= 0);
 
-	if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
-		std::cout << "ok";
-	else
-		std::cout << "FAIL";
-
-	std::cout << std::endl;
+	REQUIRE(WIFSIGNALED(status));
+	REQUIRE(WTERMSIG(status) == SIGINT);
+    }
 #endif
-}
-
-int
-main(void)
-{
-	test_event_base_new_failure();
-	test_evdns_base_new_failure();
-	test_evsignal_failure();
-	test_proper_destruction();
-	test_event_add_failure();
-	test_event_del_failure();
-	test_multiple_break_loop_on_sigint_();
-	test_loop();
-	test_break_loop();
-	test_sigint_correctly_handled();
-	test_sigint_correctly_handled_once_removed();
 }
