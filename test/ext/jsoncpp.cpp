@@ -10,10 +10,7 @@
 //
 
 #include "src/ext/Catch/single_include/catch.hpp"
-
-#include <jsoncpp/json/json.h>
-
-#include <iostream>
+#include "src/ext/jsoncpp.hpp"
 
 TEST_CASE("We can parse a simple JSON document", "[JsonCpp]") {
 	std::string document = "{\"key\":314}";

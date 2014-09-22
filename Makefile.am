@@ -10,15 +10,9 @@
 AUTOMAKE_OPTIONS = foreign 1.9 subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 
-IGHT_INCLUDES = -I $(top_srcdir)/src
-
-if USE_BUILTIN_LIBJSONCPP
-    IGHT_INCLUDES += -I $(top_srcdir)/src/ext/jsoncpp
-endif
-
 VERSION_INFO = 4:0:0
-AM_CFLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic $(IGHT_INCLUDES)
-AM_CXXFLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic $(IGHT_INCLUDES)
+AM_CFLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic -I $(top_srcdir)/src
+AM_CXXFLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic -I $(top_srcdir)/src
 
 lib_LTLIBRARIES = libight.la
 libight_la_LDFLAGS = -version-info $(VERSION_INFO)
