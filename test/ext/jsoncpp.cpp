@@ -11,22 +11,21 @@
 
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <json.h>
+#include <jsoncpp/json/json.h>
 
 #include <iostream>
 
 TEST_CASE("We can parse a simple JSON document", "[JsonCpp]") {
-	std::string document = "{\"key\":3.14}";
+	std::string document = "{\"key\":314}";
 	Json::Value root;
 	Json::Reader reader;
 	REQUIRE(reader.parse(document, root));
-	REQUIRE(root["key"] == 3.14);
+	REQUIRE(root["key"] == 314);
 }
 
 TEST_CASE("We can write a simple JSON document", "[JsonCpp]") {
 	Json::Value root;
 	Json::FastWriter writer;
-	writer.omitEndingLineFeed();
-	root["key"] = 3.14;
-	REQUIRE(writer.write(root) == "{\"key\":3.14}");
+	root["key"] = 314;
+	REQUIRE(writer.write(root) == "{\"key\":314}\n");
 }

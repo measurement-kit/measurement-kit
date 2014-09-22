@@ -60,6 +60,55 @@ fi
 AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
     [test "$ight_libevent_path"x = "builtin"x])
 
+### Check for JsonCpp ###
+
+#
+# Note: Debian, Fedora and FreeBSD all install the headers
+# at $prefix/include/jsoncpp/json/foo.h
+#
+
+ight_jsoncpp_path=
+
+AC_ARG_WITH([jsoncpp],
+            [AS_HELP_STRING([--with-jsoncpp],
+             [C++ JSON library @<:@default=check@:>@])
+            ], [
+              ight_jsoncpp_path=$withval
+              if test "$withval"x != "builtin"x; then
+                  CPPFLAGS="$CPPFLAGS -I$withval/include"
+                  LDFLAGS="$LDFLAGS -L$withval/lib"
+              fi
+            ], [])
+
+if test "$ight_jsoncpp_path"x != "builtin"x; then
+
+    AC_LANG_PUSH([C++])
+    AC_CHECK_HEADERS(jsoncpp/json/json.h, [],
+      [ight_jsoncpp_path=builtin])
+
+    AC_MSG_CHECKING([for libjsoncpp])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <jsoncpp/json/json.h>],
+                                        [Json::Value root;]])],
+        [
+         AC_MSG_RESULT([yes])
+        ]
+        [],
+        [
+         AC_MSG_RESULT([no])
+         ight_jsoncpp_path=builtin
+        ]
+     )
+    AC_LANG_POP([C++])
+    LDFLAGS="$LDFLAGS -ljsoncpp"
+
+    if test "$ight_jsoncpp_path"x = "builtin"x; then
+       AC_MSG_WARN([No jsoncpp found: will use the builtin jsoncpp])
+    fi
+fi
+
+AM_CONDITIONAL([USE_BUILTIN_LIBJSONCPP],
+    [test "$ight_jsoncpp_path"x = "builtin"x])
+
 # checks for header files
 # checks for types
 # checks for structures
