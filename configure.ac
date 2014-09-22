@@ -99,11 +99,16 @@ if test "$ight_jsoncpp_path"x != "builtin"x; then
         ]
      )
     AC_LANG_POP([C++])
-    LDFLAGS="$LDFLAGS -ljsoncpp"
 
     if test "$ight_jsoncpp_path"x = "builtin"x; then
        AC_MSG_WARN([No jsoncpp found: will use the builtin jsoncpp])
+    else
+       LDFLAGS="$LDFLAGS -ljsoncpp"
     fi
+fi
+
+if test "$ight_jsoncpp_path"x = "builtin"x; then
+    CPPFLAGS="$CPPFLAGS -Isrc/ext/jsoncpp/"  # For the amalgamated source
 fi
 
 AM_CONDITIONAL([USE_BUILTIN_LIBJSONCPP],
