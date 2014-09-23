@@ -7,3 +7,6 @@
 [submodule "src/ext/Catch"]
 	path = src/ext/Catch
 	url = https://github.com/philsquared/Catch
+[submodule "src/ext/jsoncpp/jsoncpp"]
+	path = src/ext/jsoncpp/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp

@@ -9,4 +9,9 @@ src_ext_libext_la_SOURCES = \
     src/ext/strtonum.c \
     src/ext/http-parser/http_parser.c
 
+if USE_BUILTIN_LIBJSONCPP
+    src_ext_libext_la_SOURCES += \
+        src/ext/jsoncpp/jsoncpp.cpp
+endif
+
 libight_la_LIBADD += src/ext/libext.la
