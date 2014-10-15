@@ -1,9 +1,5 @@
 check_PROGRAMS += \
-    test/common/evbuffer \
     test/common/poller
-
-test_common_evbuffer_SOURCES = test/common/evbuffer.cpp
-test_common_evbuffer_LDADD = libight.la
 
 test_common_poller_SOURCES = test/common/poller.cpp
 test_common_poller_LDADD = libight.la
