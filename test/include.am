@@ -38,10 +38,10 @@ test_common_socket_valid_LDADD = libight.la
 check_PROGRAMS += test/common/socket_valid
 TESTS += test/common/socket_valid
 
-test_net_buffer_tests_SOURCES = test/net/buffer_tests.cpp
-test_net_buffer_tests_LDADD = libight.la
-check_PROGRAMS += test/net/buffer_tests
-TESTS += test/net/buffer_tests
+test_net_buffer_SOURCES = test/net/buffer.cpp
+test_net_buffer_LDADD = libight.la
+check_PROGRAMS += test/net/buffer
+TESTS += test/net/buffer
 
 test_net_connection_SOURCES = test/net/connection.cpp
 test_net_connection_LDADD = libight.la
