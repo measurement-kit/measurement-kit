@@ -59,7 +59,12 @@ test/common/bufferevent
 test/common/delayed_call
 test/common/evbuffer
 test/common/poller
+test/common/socket_valid
 test/echo_client
 test/echo_client2
 test/echo_client_evbuf
+test/net/buffer_tests
+test/net/connection
 test-driver
+*.log
+*.trs
