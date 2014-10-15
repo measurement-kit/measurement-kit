@@ -13,8 +13,6 @@
 #include "common/poller.h"
 #include "common/utils.h"
 
-#include "net/ll2sock.h"
-
 #include <event2/bufferevent.h>
 #include <event2/event.h>
 
@@ -26,7 +24,7 @@ struct evbuffer;
 
 class IghtConnectionState {
 
-	long long filedesc = IGHT_SOCKET_INVALID;
+	evutil_socket_t filedesc = IGHT_SOCKET_INVALID;
 	bufferevent *bev = NULL;
 	unsigned int closing = 0;
 	unsigned int connecting = 0;
@@ -56,7 +54,7 @@ class IghtConnectionState {
 
     public:
 	IghtConnectionState(const char *, const char *, const char *,
-	    long long = IGHT_SOCKET_INVALID);
+	    evutil_socket_t = IGHT_SOCKET_INVALID);
 
 	IghtConnectionState(IghtConnectionState&) = delete;
 	IghtConnectionState& operator=(IghtConnectionState&) = delete;
@@ -82,6 +80,10 @@ class IghtConnectionState {
 	std::function<void(IghtError)> on_error = [](IghtError) {
 		/* nothing */
 	};
+
+	evutil_socket_t get_fileno(void) {
+		return (this->filedesc);
+	}
 
 	int set_timeout(double timeout) {
 		struct timeval tv, *tvp;
@@ -133,7 +135,7 @@ class IghtConnection {
 	IghtConnection(void) {
 		/* nothing to do */
 	}
-	IghtConnection(long long fd) {
+	IghtConnection(evutil_socket_t fd) {
 		state = new IghtConnectionState("PF_UNSPEC", "0.0.0.0",
 		    "0", fd);
 	}
@@ -193,6 +195,12 @@ class IghtConnection {
 			throw std::runtime_error("Invalid state");
 		state->on_error = std::move(fn);
 	};
+
+	evutil_socket_t get_fileno(void) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		return (state->get_fileno());
+	}
 
 	int set_timeout(double timeout) {
 		if (state == NULL)

@@ -9,17 +9,13 @@
 // Tests for src/common/libevent.h's IghtEvbuffer
 //
 
+#include "src/ext/Catch/single_include/catch.hpp"
 #include "common/libevent.h"
 
-#include <iostream>
+TEST_CASE("The constructor is lazy") {
 
-static void
-test_lazy_construct(void)
-{
 	auto libevent = IghtLibevent();
 	auto calls = 0;
-
-	std::cout << "test lazy_construct... ";
 
 	libevent.evbuffer_new = [&](void) {
 		++calls;
@@ -33,19 +29,13 @@ test_lazy_construct(void)
 		auto evbuf = IghtEvbuffer(&libevent);
 	}
 
-	if (calls != 0)
-		throw std::runtime_error("FAIL");
-
-	std::cout << "ok" << std::endl;
+	REQUIRE(calls == 0);
 }
 
-static void
-test_alloc_if_cast(void)
-{
+TEST_CASE("The (evbuffer*) operation allocates the internal evbuffer") {
+
 	auto libevent = IghtLibevent();
 	auto calls = 0;
-
-	std::cout << "test alloc_if_cast... ";
 
 	libevent.evbuffer_new = [&](void) {
 		++calls;
@@ -62,16 +52,10 @@ test_alloc_if_cast(void)
 		(void) p;
 	}
 
-	if (calls != 2)
-		throw std::runtime_error("FAIL");
-
-	std::cout << "ok" << std::endl;
+	REQUIRE(calls == 2);
 }
 
-static void
-test_multiple_cast_ok(void)
-{
-	std::cout << "test multiple_cast_ok... ";
+TEST_CASE("The (evbuffer *) operation is idempotent") {
 
 	auto libevent = IghtLibevent();
 	auto calls = 0;
@@ -85,43 +69,29 @@ test_multiple_cast_ok(void)
 	auto p1 = (evbuffer *) evbuf;
 	auto p2 = (evbuffer *) evbuf;
 
-	if (p1 != p2)
-		throw std::runtime_error("FAIL");
-	if (calls != 1)
-		throw std::runtime_error("FAIL");
-
-	std::cout << "ok" << std::endl;
+	REQUIRE(p1 == p2);
+	REQUIRE(calls == 1);
 }
 
-static void
-test_oom(void)
-{
-	auto libevent = IghtLibevent();
-	auto raised = 0;
+TEST_CASE("std::bad_alloc is raised when out of memory") {
 
-	std::cout << "test oom... ";
+	auto libevent = IghtLibevent();
 
 	libevent.evbuffer_new = [&](void) {
 		return ((evbuffer *) NULL);
 	};
 
-	try {
+	REQUIRE_THROWS_AS([&](void) {
+		/* Yes, I really really love inline functions <3 */
 		auto evbuf = IghtEvbuffer(&libevent);
 		auto p = (evbuffer *) evbuf;
 		(void) p;
-	} catch (std::bad_alloc&) {
-		++raised;
-	}
-
-	if (!raised)
-		throw std::runtime_error("FAIL");
-
-	std::cout << "ok" << std::endl;
+	}(), std::bad_alloc);
 }
 
-static void
-test_move_constructor(void)
-{
+TEST_CASE("Move semantic") {
+
+    SECTION("Move constructor") {
 	auto libevent = IghtLibevent();
 
 	auto underlying = (evbuffer *) NULL;
@@ -129,29 +99,20 @@ test_move_constructor(void)
 		return (underlying = ::evbuffer_new());
 	};
 
-	std::cout << "test move_constructor... ";
-
 	auto evbuf1 = IghtEvbuffer(&libevent);
 	auto p1 = (evbuffer *) evbuf1;
 	(void) p1;
 
 	auto evbuf2 = std::move(evbuf1);
 
-	if ((evbuffer *) evbuf2 != underlying)
-		throw std::runtime_error("FAIL");
-	if (evbuf2.get_libevent() != &libevent)
-		throw std::runtime_error("FAIL");
-	if ((evbuffer *) evbuf1 == underlying)
-		throw std::runtime_error("FAIL");
-	if (evbuf1.get_libevent() != IghtGlobalLibevent::get())
-		throw std::runtime_error("FAIL");
+	REQUIRE((evbuffer *) evbuf2 == underlying);
+	REQUIRE(evbuf2.get_libevent() == &libevent);
+	REQUIRE((evbuffer *) evbuf1 != underlying);
+	REQUIRE(evbuf1.get_libevent() == IghtGlobalLibevent::get());
+    }
 
-	std::cout << "ok" << std::endl;
-}
+    SECTION("Move assignment") {
 
-static void
-test_move_assignment(void)
-{
 	auto libevent1 = IghtLibevent(),
 	    libevent2 = IghtLibevent();
 
@@ -166,8 +127,6 @@ test_move_assignment(void)
 		/* nothing!!! */
 	};
 
-	std::cout << "test move_assignment... ";
-
 	auto evbuf1 = IghtEvbuffer(&libevent1);
 	auto p1 = (evbuffer *) evbuf1;
 	(void) p1;
@@ -178,25 +137,9 @@ test_move_assignment(void)
 
 	evbuf2 = std::move(evbuf1);
 
-	if ((evbuffer *) evbuf2 != underlying)
-		throw std::runtime_error("FAIL");
-	if (evbuf2.get_libevent() != &libevent1)
-		throw std::runtime_error("FAIL");
-	if ((evbuffer *) evbuf1 != (evbuffer *) 1234)
-		throw std::runtime_error("FAIL");
-	if (evbuf1.get_libevent() != &libevent2)
-		throw std::runtime_error("FAIL");
-
-	std::cout << "ok" << std::endl;
-}
-
-int
-main(void)
-{
-	test_lazy_construct();
-	test_alloc_if_cast();
-	test_multiple_cast_ok();
-	test_oom();
-	test_move_constructor();
-	test_move_assignment();
+	REQUIRE((evbuffer *) evbuf2 == underlying);
+	REQUIRE(evbuf2.get_libevent() == &libevent1);
+	REQUIRE((evbuffer *) evbuf1 == (evbuffer *) 1234);
+	REQUIRE (evbuf1.get_libevent() == &libevent2);
+    }
 }

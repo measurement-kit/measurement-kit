@@ -5,8 +5,6 @@
  * information on the copying conditions.
  */
 
-#include <sys/time.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
@@ -21,7 +19,6 @@
 #include "ext/strtonum.h"
 #include "common/log.h"
 #include "common/utils.h"
-#include "net/ll2sock.h"
 
 void
 ight_timeval_now(struct timeval *tv)

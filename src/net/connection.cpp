@@ -106,13 +106,12 @@ IghtConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 }
 
 IghtConnectionState::IghtConnectionState(const char *family, const char *address,
-    const char *port, long long filenum)
+    const char *port, evutil_socket_t filenum)
 {
 	auto evbase = ight_get_global_event_base();
 	auto poller = ight_get_global_poller();
 
-	if (!ight_socket_valid(filenum))
-		filenum = IGHT_SOCKET_INVALID;		/* Normalize */
+	filenum = ight_socket_normalize_if_invalid(filenum);
 
 	/*
 	 * TODO: switch to RAII.
