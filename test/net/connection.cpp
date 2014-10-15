@@ -11,6 +11,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
+
 #include "net/connection.h"
 
 TEST_CASE("Ensure that the constructor socket-validity checks work") {

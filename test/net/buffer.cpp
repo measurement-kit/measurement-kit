@@ -5,8 +5,13 @@
  * information on the copying conditions.
  */
 
+//
+// Tests for net/buffer.hpp buffer.
+//
+
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
+
 #include "common/libevent.h"
 #include "net/buffer.hpp"
 
