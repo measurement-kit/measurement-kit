@@ -51,6 +51,19 @@ ight_info(const char *fmt, ...)
 }
 
 void
+ight_debug(const char *fmt, ...)
+{
+	if (!IGHT_VERBOSE)
+		return;
+
+	va_list ap;
+
+	va_start(ap, fmt);
+	ight_warnv(fmt, ap);
+	va_end(ap);
+}
+
+void
 ight_set_verbose(int v)
 {
 	IGHT_VERBOSE = v;
