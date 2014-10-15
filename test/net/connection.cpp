@@ -9,6 +9,7 @@
 // Tests for src/net/connection.h's IghtConnection{State,}
 //
 
+#define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 #include "net/connection.h"
 

@@ -1,18 +1,49 @@
-TESTS = test/tests
-check_PROGRAMS = \
-    test/echo_client_evbuf
+TESTS =  # Empty
+check_PROGRAMS =  # Empty
 
+#
+# This is not managed by Catch and we cannot add this to TESTS because
+# it is an interactive test.
+#
 test_echo_client_evbuf_SOURCES = test/echo_client_evbuf.cpp
 test_echo_client_evbuf_LDADD = libight.la
+check_PROGRAMS += test/echo_client_evbuf
 
-check_PROGRAMS += test/tests
-test_tests_SOURCES = \
-        test/common/delayed_call.cpp \
-        test/common/evbuffer.cpp \
-        test/common/bufferevent.cpp  \
-        test/common/poller.cpp  \
-        test/common/socket_valid.cpp  \
-        test/net/buffer_tests.cpp    \
-        test/net/connection.cpp    \
-        test/tests.cpp
-test_tests_LDADD = libight.la
+#
+# The following tests instead are managed by Catch
+#
+
+test_common_delayed_call_SOURCES = test/common/delayed_call.cpp
+test_common_delayed_call_LDADD = libight.la
+check_PROGRAMS += test/common/delayed_call
+TESTS += test/common/delayed_call
+
+test_common_evbuffer_SOURCES = test/common/evbuffer.cpp
+test_common_evbuffer_LDADD = libight.la
+check_PROGRAMS += test/common/evbuffer
+TESTS += test/common/evbuffer
+
+test_common_bufferevent_SOURCES = test/common/bufferevent.cpp
+test_common_bufferevent_LDADD = libight.la
+check_PROGRAMS += test/common/bufferevent
+TESTS += test/common/bufferevent
+
+test_common_poller_SOURCES = test/common/poller.cpp
+test_common_poller_LDADD = libight.la
+check_PROGRAMS += test/common/poller
+TESTS += test/common/poller
+
+test_common_socket_valid_SOURCES = test/common/socket_valid.cpp
+test_common_socket_valid_LDADD = libight.la
+check_PROGRAMS += test/common/socket_valid
+TESTS += test/common/socket_valid
+
+test_net_buffer_tests_SOURCES = test/net/buffer_tests.cpp
+test_net_buffer_tests_LDADD = libight.la
+check_PROGRAMS += test/net/buffer_tests
+TESTS += test/net/buffer_tests
+
+test_net_connection_SOURCES = test/net/connection.cpp
+test_net_connection_LDADD = libight.la
+check_PROGRAMS += test/net/connection
+TESTS += test/net/connection
