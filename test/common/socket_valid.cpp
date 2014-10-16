@@ -9,7 +9,9 @@
 // Tests for src/common/utils.h's ight_socket_valid()
 //
 
+#define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
+
 #include "common/utils.h"
 
 /*

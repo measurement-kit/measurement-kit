@@ -9,10 +9,10 @@
 // Tests for src/common/libevent.h's IghtBufferevent
 //
 
+#define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
-#include "common/poller.h"
 
-#include <iostream>
+#include "common/poller.h"
 
 TEST_CASE("Constructors") {
   
