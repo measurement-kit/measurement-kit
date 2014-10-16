@@ -10,3 +10,45 @@ src_ext_libext_la_SOURCES = \
     src/ext/http-parser/http_parser.c
 
 libight_la_LIBADD += src/ext/libext.la
+
+#
+# YAML-CPP
+#
+
+noinst_LTLIBRARIES += src/ext/libyamlcpp.la
+
+# Adapt CXXFLAGS to yaml-cpp:
+src_ext_libyamlcpp_la_CXXFLAGS = $(AM_CXXFLAGS) -Wno-deprecated-declarations -Wno-missing-prototypes
+
+src_ext_libyamlcpp_la_SOURCES = \
+	src/ext/yaml-cpp/src/stream.cpp \
+	src/ext/yaml-cpp/src/emitter.cpp \
+	src/ext/yaml-cpp/src/emit.cpp \
+	src/ext/yaml-cpp/src/scantag.cpp \
+	src/ext/yaml-cpp/src/emitterutils.cpp \
+	src/ext/yaml-cpp/src/exp.cpp \
+	src/ext/yaml-cpp/src/nodeevents.cpp \
+	src/ext/yaml-cpp/src/tag.cpp \
+	src/ext/yaml-cpp/src/emitfromevents.cpp \
+	src/ext/yaml-cpp/src/convert.cpp \
+	src/ext/yaml-cpp/src/binary.cpp \
+	src/ext/yaml-cpp/src/parse.cpp \
+	src/ext/yaml-cpp/src/node.cpp \
+	src/ext/yaml-cpp/src/directives.cpp \
+	src/ext/yaml-cpp/src/simplekey.cpp \
+	src/ext/yaml-cpp/src/emitterstate.cpp \
+	src/ext/yaml-cpp/src/regex_yaml.cpp \
+	src/ext/yaml-cpp/src/memory.cpp \
+	src/ext/yaml-cpp/src/scanscalar.cpp \
+	src/ext/yaml-cpp/src/scanner.cpp \
+	src/ext/yaml-cpp/src/singledocparser.cpp \
+	src/ext/yaml-cpp/src/node_data.cpp \
+	src/ext/yaml-cpp/src/ostream_wrapper.cpp \
+	src/ext/yaml-cpp/src/parser.cpp \
+	src/ext/yaml-cpp/src/contrib/graphbuilder.cpp \
+	src/ext/yaml-cpp/src/contrib/graphbuilderadapter.cpp \
+	src/ext/yaml-cpp/src/null.cpp \
+	src/ext/yaml-cpp/src/nodebuilder.cpp \
+	src/ext/yaml-cpp/src/scantoken.cpp
+
+libight_la_LIBADD += src/ext/libyamlcpp.la
