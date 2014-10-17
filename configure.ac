@@ -107,6 +107,8 @@ if test "$ight_yamlcpp_path"x != "builtin"x; then
     # Step 2.4: restore {CPP,LD}FLAGS if we have failed
     if test "$ight_yamlcpp_path"x = "builtin"x; then
        AC_MSG_WARN([No yaml-cpp found: will use the builtin yaml-cpp])
+       AC_MSG_WARN([Possible causes: yaml-cpp and/or boost not installed])
+       AC_MSG_WARN([Note that yaml-cpp headers include boost headers])
        CPPFLAGS=$ight_saved_cppflags
        LDFLAGS=$ight_saved_ldflags
     fi
