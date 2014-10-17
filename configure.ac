@@ -62,10 +62,10 @@ AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
 
 
 
-# Step 1: process --with-yaml-cpp and set ight_yamlcpp_path accordingly
+# Step 1: process --with-libyaml-cpp and set ight_yamlcpp_path accordingly
 ight_yamlcpp_path=
-AC_ARG_WITH([yaml-cpp],
-            [AS_HELP_STRING([--with-yaml-cpp],
+AC_ARG_WITH([libyaml-cpp],
+            [AS_HELP_STRING([--with-libyaml-cpp],
              [Library for managing YAML @<:@default=check@:>@])
             ], [
               ight_yamlcpp_path=$withval
