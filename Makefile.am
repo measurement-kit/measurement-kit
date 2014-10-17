@@ -10,15 +10,18 @@
 AUTOMAKE_OPTIONS = foreign 1.9 subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 
+LIBIGHT_I_FLAGS = -I $(top_srcdir)/src
+LIBIGHT_W_FLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic
+
 VERSION_INFO = 4:0:0
-AM_CFLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic -I $(top_srcdir)/src
-AM_CXXFLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic -I $(top_srcdir)/src
+AM_CFLAGS = $(LIBIGHT_W_FLAGS) $(LIBIGHT_I_FLAGS)
+AM_CXXFLAGS = $(LIBIGHT_W_FLAGS) $(LIBIGHT_I_FLAGS)
 
 lib_LTLIBRARIES = libight.la
 libight_la_LDFLAGS = -version-info $(VERSION_INFO)
-libight_la_SOURCES =
+libight_la_SOURCES =  # Empty
 
-noinst_LTLIBRARIES =
+noinst_LTLIBRARIES =  # Empty
 
 include src/include.am
 include test/include.am
