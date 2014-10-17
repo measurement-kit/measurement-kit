@@ -66,7 +66,7 @@ AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
 ight_boost_path=
 AC_ARG_WITH([libboost],
             [AS_HELP_STRING([--with-libboost],
-             [Library for managing YAML @<:@default=check@:>@])
+             [Quasi-standard C++ libraries @<:@default=check@:>@])
             ], [
               ight_boost_path=$withval
             ], [])
