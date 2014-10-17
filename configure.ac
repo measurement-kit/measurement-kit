@@ -74,11 +74,11 @@ AC_ARG_WITH([yaml-cpp],
 # Step 2: if not builtin, check whether we can use $ight_yamlcpp_path
 if test "$ight_yamlcpp_path"x != "builtin"x; then
 
-    # Step 2.1: backup {CXX,LD}FLAGS and eventually augment them
-    ight_saved_cxxflags="$CXXFLAGS"
+    # Step 2.1: backup {CPP,LD}FLAGS and eventually augment them
+    ight_saved_cppflags="$CPPFLAGS"
     ight_saved_ldflags="$LDFLAGS"
     if test "$ight_yamlcpp_path"x != "check"x; then
-        CXXFLAGS="$CXXFLAGS -I ${ight_yamlcpp_path}/include"
+        CPPFLAGS="$CPPFLAGS -I ${ight_yamlcpp_path}/include"
         LDFLAGS="$LDFLAGS -L$ight_yamlcpp_path/lib -lyaml-cpp"
     fi
 
@@ -101,10 +101,10 @@ if test "$ight_yamlcpp_path"x != "builtin"x; then
       ])
     AC_LANG_POP([C++])
 
-    # Step 2.4: restore {CXX,LD}FLAGS if we have failed
+    # Step 2.4: restore {CPP,LD}FLAGS if we have failed
     if test "$ight_yamlcpp_path"x = "builtin"x; then
        AC_MSG_WARN([No yaml-cpp found: will use the builtin yaml-cpp])
-       CXXFLAGS=$ight_saved_cxxflags
+       CPPFLAGS=$ight_saved_cppflags
        LDFLAGS=$ight_saved_ldflags
     fi
 fi
