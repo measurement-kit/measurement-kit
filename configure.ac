@@ -79,8 +79,9 @@ if test "$ight_yamlcpp_path"x != "builtin"x; then
     ight_saved_ldflags="$LDFLAGS"
     if test "$ight_yamlcpp_path"x != ""x; then
         CPPFLAGS="$CPPFLAGS -I ${ight_yamlcpp_path}/include"
-        LDFLAGS="$LDFLAGS -L$ight_yamlcpp_path/lib -lyaml-cpp"
+        LDFLAGS="$LDFLAGS -L$ight_yamlcpp_path/lib"
     fi
+    LDFLAGS="$LDFLAGS -lyaml-cpp"
 
     # Step 2.2: could we reach yaml-cpp header?
     AC_CHECK_HEADERS(yaml-cpp/yaml.h, [],
