@@ -77,7 +77,7 @@ if test "$ight_yamlcpp_path"x != "builtin"x; then
     # Step 2.1: backup {CXX,LD}FLAGS and eventually augment them
     ight_saved_cxxflags="$CXXFLAGS"
     ight_saved_ldflags="$LDFLAGS"
-    if [ "$ight_yamlcpp_path"x != "check"x ]; then
+    if test "$ight_yamlcpp_path"x != "check"x; then
         CXXFLAGS="$CXXFLAGS -I ${ight_yamlcpp_path}/include"
         LDFLAGS="$LDFLAGS -L$ight_yamlcpp_path/lib -lyaml-cpp"
     fi
@@ -114,7 +114,7 @@ if test "$ight_yamlcpp_path"x = "builtin"x; then
     CPPFLAGS="$CPPFLAGS -Isrc/ext/yaml-cpp/include"
     # To compile our own yaml-cpp we also need our own subset of boost
     for dirname in src/ext/boost/*; do
-        if [ -d $dirname ]; then
+        if test -d $dirname; then
             CPPFLAGS="$CPPFLAGS -I $dirname"
         fi
     done
