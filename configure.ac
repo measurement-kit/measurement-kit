@@ -77,7 +77,7 @@ if test "$ight_yamlcpp_path"x != "builtin"x; then
     # Step 2.1: backup {CPP,LD}FLAGS and eventually augment them
     ight_saved_cppflags="$CPPFLAGS"
     ight_saved_ldflags="$LDFLAGS"
-    if test "$ight_yamlcpp_path"x != "check"x; then
+    if test "$ight_yamlcpp_path"x != ""x; then
         CPPFLAGS="$CPPFLAGS -I ${ight_yamlcpp_path}/include"
         LDFLAGS="$LDFLAGS -L$ight_yamlcpp_path/lib -lyaml-cpp"
     fi
