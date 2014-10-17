@@ -62,6 +62,63 @@ AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
 
 
 
+# Step 1: process --with-libboost and set ight_boost_path accordingly
+ight_boost_path=
+AC_ARG_WITH([libboost],
+            [AS_HELP_STRING([--with-libboost],
+             [Library for managing YAML @<:@default=check@:>@])
+            ], [
+              ight_boost_path=$withval
+            ], [])
+
+# Step 2: if not builtin, check whether we can use $ight_boost_path
+if test "$ight_boost_path"x != "builtin"x; then
+
+    # Step 2.1: backup {CPP,LD}FLAGS and eventually augment them
+    ight_saved_cppflags="$CPPFLAGS"
+    if test "$ight_boost_path"x != ""x; then
+        CPPFLAGS="$CPPFLAGS -I ${ight_boost_path}/include"
+    fi
+
+    AC_LANG_PUSH([C++])
+
+    # Step 2.2: could we reach boost header neded by yaml-cpp 0.5.1?
+    AC_CHECK_HEADERS(boost/iterator/iterator_adaptor.hpp, [],
+      [ight_boost_path=builtin])
+    AC_CHECK_HEADERS(boost/iterator/iterator_facade.hpp, [],
+      [ight_boost_path=builtin])
+    AC_CHECK_HEADERS(boost/noncopyable.hpp, [],
+      [ight_boost_path=builtin])
+    AC_CHECK_HEADERS(boost/shared_ptr.hpp, [],
+      [ight_boost_path=builtin])
+    AC_CHECK_HEADERS(boost/smart_ptr/shared_ptr.hpp, [],
+      [ight_boost_path=builtin])
+    AC_CHECK_HEADERS(boost/type_traits.hpp, [],
+      [ight_boost_path=builtin])
+    AC_CHECK_HEADERS(boost/utility/enable_if.hpp, [],
+      [ight_boost_path=builtin])
+    AC_CHECK_HEADERS(boost/utility.hpp, [],
+      [ight_boost_path=builtin])
+
+    AC_LANG_POP([C++])
+
+    # Step 2.4: restore {CPP,LD}FLAGS if we have failed
+    if test "$ight_boost_path"x = "builtin"x; then
+       CPPFLAGS=$ight_saved_cppflags
+    fi
+fi
+
+# Step 3: if needed, prepare to include our own libboost
+if test "$ight_boost_path"x = "builtin"x; then
+    for dirname in src/ext/boost/*; do
+        if test -d $dirname; then
+            CPPFLAGS="$CPPFLAGS -I ${dirname}/include"
+        fi
+    done
+fi
+
+
+
 # Step 1: process --with-libyaml-cpp and set ight_yamlcpp_path accordingly
 ight_yamlcpp_path=
 AC_ARG_WITH([libyaml-cpp],
@@ -107,8 +164,6 @@ if test "$ight_yamlcpp_path"x != "builtin"x; then
     # Step 2.4: restore {CPP,LD}FLAGS if we have failed
     if test "$ight_yamlcpp_path"x = "builtin"x; then
        AC_MSG_WARN([No yaml-cpp found: will use the builtin yaml-cpp])
-       AC_MSG_WARN([Possible causes: yaml-cpp and/or boost not installed])
-       AC_MSG_WARN([Note that yaml-cpp headers include boost headers])
        CPPFLAGS=$ight_saved_cppflags
        LDFLAGS=$ight_saved_ldflags
     fi
@@ -117,12 +172,6 @@ fi
 # Step 3: if needed, prepare to compile our own yaml-cpp
 if test "$ight_yamlcpp_path"x = "builtin"x; then
     CPPFLAGS="$CPPFLAGS -Isrc/ext/yaml-cpp/include"
-    # To compile our own yaml-cpp we also need our own subset of boost
-    for dirname in src/ext/boost/*; do
-        if test -d $dirname; then
-            CPPFLAGS="$CPPFLAGS -I ${dirname}/include"
-        fi
-    done
 fi
 AM_CONDITIONAL([USE_BUILTIN_YAMLCPP],
     [test "$ight_yamlcpp_path"x = "builtin"x])
