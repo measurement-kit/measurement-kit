@@ -115,7 +115,7 @@ if test "$ight_yamlcpp_path"x = "builtin"x; then
     # To compile our own yaml-cpp we also need our own subset of boost
     for dirname in src/ext/boost/*; do
         if test -d $dirname; then
-            CPPFLAGS="$CPPFLAGS -I $dirname"
+            CPPFLAGS="$CPPFLAGS -I ${dirname}/include"
         fi
     done
 fi
