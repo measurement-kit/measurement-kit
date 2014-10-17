@@ -60,6 +60,70 @@ fi
 AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
     [test "$ight_libevent_path"x = "builtin"x])
 
+
+
+# Step 1: process --with-yaml-cpp and set ight_yamlcpp_path accordingly
+ight_yamlcpp_path=
+AC_ARG_WITH([yaml-cpp],
+            [AS_HELP_STRING([--with-yaml-cpp],
+             [Library for managing YAML @<:@default=check@:>@])
+            ], [
+              ight_yamlcpp_path=$withval
+            ], [])
+
+# Step 2: if not builtin, check whether we can use $ight_yamlcpp_path
+if test "$ight_yamlcpp_path"x != "builtin"x; then
+
+    # Step 2.1: backup {CXX,LD}FLAGS and eventually augment them
+    ight_saved_cxxflags="$CXXFLAGS"
+    ight_saved_ldflags="$LDFLAGS"
+    if [ "$ight_yamlcpp_path"x != "check"x ]; then
+        CXXFLAGS="$CXXFLAGS -I ${ight_yamlcpp_path}/include"
+        LDFLAGS="$LDFLAGS -L$ight_yamlcpp_path/lib -lyaml-cpp"
+    fi
+
+    # Step 2.2: could we reach yaml-cpp header?
+    AC_CHECK_HEADERS(yaml-cpp/yaml.h, [],
+      [ight_yamlcpp_path=builtin])
+
+    # Step 2.3: could we link with yaml-cpp?
+    AC_MSG_CHECKING([whether we can link with yaml-cpp])
+    AC_LANG_PUSH([C++])
+    AC_COMPILE_IFELSE([
+      AC_LANG_PROGRAM(
+        [[#include <yaml-cpp/yaml.h>], [YAML::Node node;]]
+      )],
+      [AC_MSG_RESULT([yes])]
+      [],
+      [
+        AC_MSG_RESULT([no])
+        ight_yamlcpp_path="builtin"
+      ])
+    AC_LANG_POP([C++])
+
+    # Step 2.4: restore {CXX,LD}FLAGS if we have failed
+    if test "$ight_yamlcpp_path"x = "builtin"x; then
+       AC_MSG_WARN([No yaml-cpp found: will use the builtin yaml-cpp])
+       CXXFLAGS=$ight_saved_cxxflags
+       LDFLAGS=$ight_saved_ldflags
+    fi
+fi
+
+# Step 3: if needed, prepare to compile our own yaml-cpp
+if test "$ight_yamlcpp_path"x = "builtin"x; then
+    CPPFLAGS="$CPPFLAGS -Isrc/ext/yaml-cpp/include"
+    # To compile our own yaml-cpp we also need our own subset of boost
+    for dirname in src/ext/boost/*; do
+        if [ -d $dirname ]; then
+            CPPFLAGS="$CPPFLAGS -I $dirname"
+        fi
+    done
+fi
+AM_CONDITIONAL([USE_BUILTIN_YAMLCPP],
+    [test "$ight_yamlcpp_path"x = "builtin"x])
+
+
+
 # checks for header files
 # checks for types
 # checks for structures
