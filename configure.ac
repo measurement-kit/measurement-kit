@@ -83,13 +83,14 @@ if test "$ight_yamlcpp_path"x != "builtin"x; then
     fi
     LDFLAGS="$LDFLAGS -lyaml-cpp"
 
+    AC_LANG_PUSH([C++])
+
     # Step 2.2: could we reach yaml-cpp header?
     AC_CHECK_HEADERS(yaml-cpp/yaml.h, [],
       [ight_yamlcpp_path=builtin])
 
     # Step 2.3: could we link with yaml-cpp?
     AC_MSG_CHECKING([whether we can link with yaml-cpp])
-    AC_LANG_PUSH([C++])
     AC_COMPILE_IFELSE([
       AC_LANG_PROGRAM(
         [[#include <yaml-cpp/yaml.h>], [YAML::Node node;]]
@@ -100,6 +101,7 @@ if test "$ight_yamlcpp_path"x != "builtin"x; then
         AC_MSG_RESULT([no])
         ight_yamlcpp_path="builtin"
       ])
+
     AC_LANG_POP([C++])
 
     # Step 2.4: restore {CPP,LD}FLAGS if we have failed
