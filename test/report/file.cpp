@@ -12,7 +12,7 @@ TEST_CASE("The constructor for [FileReport] works correctly", "[BaseReport]") {
   options["opt1"] = "value1";
   options["opt2"] = "value2";
 
-  REQUIRE_NOTHROW(auto reporter = FileReporter(
+  REQUIRE_NOTHROW(FileReporter reporter = FileReporter(
       "example_test", "0.0.1", start_time, "127.0.0.1",
       options, "example_test_report.yaml"
   ));
@@ -32,7 +32,7 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
     options["opt1"] = "value1";
     options["opt2"] = "value2";
 
-    auto reporter = FileReporter(
+    FileReporter reporter = FileReporter(
       test_name, test_version, start_time, probe_ip,
       options, report_file
     );
