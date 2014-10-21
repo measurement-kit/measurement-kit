@@ -65,6 +65,7 @@ test/echo_client2
 test/echo_client_evbuf
 test/net/buffer_tests
 test/net/connection
+test/report/file
 test-driver
 *.log
 *.trs

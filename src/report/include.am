@@ -1,0 +1,7 @@
+noinst_LTLIBRARIES += src/report/libreport.la
+
+src_report_libreport_la_SOURCES = \
+	src/report/base.cpp \
+	src/report/file.cpp
+
+libight_la_LIBADD += src/report/libreport.la
