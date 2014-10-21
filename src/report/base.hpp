@@ -30,7 +30,11 @@ public:
 
   ReporterBase(const ReporterBase& that) : test_name(that.test_name),
     test_version(that.test_version), probe_ip(that.probe_ip),
-    start_time(that.start_time), options(that.options) {};
+    probe_asn(that.probe_asn), probe_cc(that.probe_cc),
+    start_time(that.start_time), options(that.options) {
+    closed = that.closed;
+    openned = that.openned;
+  };
 
   ~ReporterBase() {};
 

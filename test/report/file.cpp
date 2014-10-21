@@ -44,25 +44,18 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
     
     std::vector<YAML::Node> entries = YAML::LoadAllFromFile(report_file);
 
-    {
+    // Check that the report header is correct
+    REQUIRE(entries[0]["test_name"].as<std::string>() == test_name);
+    REQUIRE(entries[0]["test_version"].as<std::string>() == test_version);
+    REQUIRE(entries[0]["probe_ip"].as<std::string>() == probe_ip);
 
-      REQUIRE(entries[0]["test_name"].as<std::string>() == test_name);
-      REQUIRE(entries[0]["test_version"].as<std::string>() == test_version);
-      REQUIRE(entries[0]["probe_ip"].as<std::string>() == probe_ip);
-
-      REQUIRE(entries[0]["software_name"].as<std::string>() == "ight");
-      REQUIRE(entries[0]["software_version"].as<std::string>() == "0.0.1");
-      REQUIRE(entries[0]["data_format_version"].as<std::string>() == "0.1");
-     
-    }
-   
-    {
-
-      REQUIRE(entries[1]["input"].as<std::string>() == input);
-      REQUIRE(entries[1]["antani"].as<std::string>() == "fuffa");
-     
-    }
-
+    REQUIRE(entries[0]["software_name"].as<std::string>() == "ight");
+    REQUIRE(entries[0]["software_version"].as<std::string>() == "0.0.1");
+    REQUIRE(entries[0]["data_format_version"].as<std::string>() == "0.1");
+      
+    // Check that the first report entry is correct.
+    REQUIRE(entries[1]["input"].as<std::string>() == input);
+    REQUIRE(entries[1]["antani"].as<std::string>() == "fuffa");
 
   }
 }

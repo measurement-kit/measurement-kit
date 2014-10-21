@@ -42,6 +42,8 @@ ReporterBase::writeEntry(ReportEntry& entry) {
   if (closed) {
     throw new std::runtime_error("The report has already been closed.");
   }
+  // This is here to silence compiler warnings
+  (void) entry;
 }
 
 void
