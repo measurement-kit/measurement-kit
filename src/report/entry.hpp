@@ -28,6 +28,8 @@ public:
     output << "..." << std::endl;
     return output.str();
   }
+
+  ~ReportEntry() {};
 };
 
 #endif /* ENTRY_HPP */

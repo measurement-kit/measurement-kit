@@ -3,7 +3,7 @@
 ReporterBase::ReporterBase(const std::string& test_name, const std::string&
     test_version, const time_t& start_time, const std::string& probe_ip, const
     std::map<std::string, std::string>& options) : test_name(test_name),
-  test_version(test_version), start_time(start_time), probe_ip(probe_ip),
+  test_version(test_version), probe_ip(probe_ip), start_time(start_time),
   options(options) {
     // this->probe_asn;
     // this->probe_cc;
