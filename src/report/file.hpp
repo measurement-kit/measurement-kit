@@ -15,9 +15,9 @@ public:
       const std::map<std::string, std::string>& options,
       const std::string& filename);
 
-  FileReporter(const FileReporter& that) : test_name(that.test_name),
-    test_version(that.test_version), probe_ip(that.probe_ip),
-    start_time(that.start_time), options(that.options) {};
+  FileReporter(const FileReporter& that) : ReporterBase(that.test_name,
+      that.test_version, that.start_time, that.probe_ip, that.options),
+    filename(that.filename) {};
 
   void open();
   void writeEntry(ReportEntry& entry);

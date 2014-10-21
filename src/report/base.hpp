@@ -8,6 +8,11 @@ class ReporterBase {
   bool closed = false;
   bool openned = false;
 
+  const std::string software_name = "ight";
+  const std::string software_version = "0.0.1";
+  const std::string data_format_version = "0.1";
+  
+public:
   const std::string test_name;
   const std::string test_version;
   const std::string probe_ip;
@@ -15,14 +20,9 @@ class ReporterBase {
   std::string probe_asn;
   std::string probe_cc;
 
-  time_t start_time;
+  const time_t start_time;
 
   const std::map<std::string, std::string> options;
-  const std::string software_name = "ight";
-  const std::string software_version = "0.0.1";
-  const std::string data_format_version = "0.1";
-  
-public:
 
   ReporterBase(const std::string& test_name, const std::string& test_version,
                const time_t& start_time, const std::string& probe_ip,
