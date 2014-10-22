@@ -63,9 +63,11 @@ test/common/socket_valid
 test/echo_client
 test/echo_client2
 test/echo_client_evbuf
-test/net/buffer_tests
+test/net/buffer
 test/net/connection
+test/net/dns
 test/report/file
 test-driver
 *.log
 *.trs
+example_test_report.yaml
