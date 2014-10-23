@@ -205,3 +205,50 @@ TEST_CASE("It is safe to forget about pending requests") {
 
     ight_loop();
 }
+
+TEST_CASE("It is safe to cancel requests in flight") {
+
+    //
+    // The general idea of this test is to measure the typical RTT with
+    // respect to a server and then systematically unschedule pending DNS
+    // requests when they are due, to trigger a race between receiving
+    // the response and unscheduling the request.
+    //
+    // This regress test only repeats the process 16 times but I have
+    // privately run this test repeating it for about one minute.
+    //
+
+    auto reso = ight::DNSResolver("8.8.8.8", "1");
+
+    // Step #1: estimate the average RTT
+
+    auto total = 0.0;
+    auto count = 0;
+    for (auto i = 0; i < 16; ++i) {
+        auto r = ight::DNSRequest("A", "www.neubot.org", [&](
+                                  ight::DNSResponse&& response) {
+            total += response.rtt;
+            count += 1;
+            ight_break_loop();
+        }, reso);
+        ight_loop();
+    }
+    auto avgrtt = total / count;
+
+    // Step #2: attempt to unschedule responses when they are due
+
+    //for (;;) {  // only try this at home
+    for (auto i = 0; i < 16; ++i) {
+        auto r = new ight::DNSRequest("A", "www.neubot.org", [&](
+                                      ight::DNSResponse&& /*response*/) {
+            ight_warn("- break_loop");
+            ight_break_loop();
+        }, reso);
+        auto d = IghtDelayedCall(avgrtt, [&](void) {
+            ight_warn("- cancel");
+            delete r;
+            ight_break_loop();
+        });
+        ight_loop();
+    }
+}
