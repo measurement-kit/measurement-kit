@@ -59,3 +59,100 @@ TEST_CASE("The system resolver works as expected") {
     });
     ight_loop();
 }
+
+TEST_CASE("The default custom resolver works as expected") {
+
+    auto d = IghtDelayedCall(10.0, [](void) {
+        throw std::runtime_error("Test failed");
+    });
+
+    auto reso = ight::DNSResolver();
+
+    auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
+      ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() == 1);
+        REQUIRE(response.results[0] == "130.192.16.172");
+        ight_break_loop();
+    }, reso);
+    ight_loop();
+
+    auto r2 = ight::DNSRequest("REVERSE_A", "130.192.16.172", [&](
+      ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() == 1);
+        REQUIRE(response.results[0] == "server-nexa.polito.it");
+        ight_break_loop();
+    }, reso);
+    ight_loop();
+
+    auto r3 = ight::DNSRequest("AAAA", "ooni.torproject.org", [&](
+                               ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() > 0);
+        auto found = false;
+        for (auto address : response.results) {
+            if (address == "2001:858:2:2:aabb:0:563b:1e28") {
+                found = true;
+            }
+        }
+        REQUIRE(found);
+        ight_break_loop();
+    }, reso);
+    ight_loop();
+
+    auto r4 = ight::DNSRequest("REVERSE_AAAA",
+                         "2001:858:2:2:aabb:0:563b:1e28",
+                         [&](ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() == 1);
+        REQUIRE(response.results[0] == "nova.torproject.org");
+        ight_break_loop();
+    }, reso);
+    ight_loop();
+}
+
+TEST_CASE("A specific custom resolver works as expected") {
+
+    auto d = IghtDelayedCall(10.0, [](void) {
+        throw std::runtime_error("Test failed");
+    });
+
+    auto reso = ight::DNSResolver("8.8.4.4");
+
+    auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
+      ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() == 1);
+        REQUIRE(response.results[0] == "130.192.16.172");
+        ight_break_loop();
+    }, reso);
+    ight_loop();
+
+    auto r2 = ight::DNSRequest("REVERSE_A", "130.192.16.172", [&](
+      ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() == 1);
+        REQUIRE(response.results[0] == "server-nexa.polito.it");
+        ight_break_loop();
+    }, reso);
+    ight_loop();
+
+    auto r3 = ight::DNSRequest("AAAA", "ooni.torproject.org", [&](
+                               ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() > 0);
+        auto found = false;
+        for (auto address : response.results) {
+            if (address == "2001:858:2:2:aabb:0:563b:1e28") {
+                found = true;
+            }
+        }
+        REQUIRE(found);
+        ight_break_loop();
+    }, reso);
+    ight_loop();
+
+    auto r4 = ight::DNSRequest("REVERSE_AAAA",
+                         "2001:858:2:2:aabb:0:563b:1e28",
+                         [&](ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() == 1);
+        REQUIRE(response.results[0] == "nova.torproject.org");
+        ight_break_loop();
+    }, reso);
+    ight_loop();
+}
+

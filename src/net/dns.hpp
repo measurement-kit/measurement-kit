@@ -250,5 +250,82 @@ class DNSRequest {
     }
 };
 
+//
+// DNS Resolver object.
+//
+// If no specific options are set, this is just an alias for
+// the global libight's evdns_base resolver.
+//
+// Otherwise, a custom evdns_base resolver is constructed using
+// the specified options.
+//
+// In both cases, this object can be passed as the fourth
+// argument of DNSRequest's constructor.
+//
+class DNSResolver {
+    evdns_base *base = NULL;
+
+    void cleanup(void) {
+        if (base != NULL) {
+            //
+            // Note: `1` means that pending requests are notified that
+            // this evdns_base is being closed.
+            //
+            evdns_base_free(base, 1);
+            base = NULL;
+        }
+    }
+
+  public:
+    DNSResolver(std::string nameserver = "", std::string attempts = "",
+                IghtPoller *poller = NULL) {
+        if (nameserver == "" && attempts == "" && poller == NULL) {
+            // No specific options? Then let's use the default evdns_base
+            return;
+        }
+        if (poller == NULL) {
+            poller = ight_get_global_poller();
+        }
+        auto evb = poller->get_event_base();
+        if (nameserver != "") {
+            if ((base = evdns_base_new(evb, 0)) == NULL) {
+                throw std::bad_alloc();
+            }
+            if (evdns_base_nameserver_ip_add(base, nameserver.c_str()) != 0) {
+                cleanup();
+                throw std::runtime_error("Cannot set server address");
+            }
+        } else if ((base = evdns_base_new(evb, 1)) == NULL) {
+            throw std::bad_alloc();
+        }
+        if (attempts != "" && evdns_base_set_option(base, "attempts",
+                              attempts.c_str()) != 0) {
+            cleanup();
+            throw std::runtime_error("Cannot set 'attempts' option");
+        }
+    }
+
+    operator evdns_base *(void) {
+        if (base == NULL) {
+            return ight_get_global_evdns_base();
+        }
+        return base;
+    }
+
+    ~DNSResolver(void) {
+        cleanup();
+    }
+
+    DNSResolver(DNSResolver& /*other*/) = delete;
+    DNSResolver& operator=(DNSResolver& /*other*/) = delete;
+    DNSResolver(DNSResolver&& other) {
+        std::swap(base, other.base);
+    }
+    DNSResolver& operator=(DNSResolver&& other) {
+        std::swap(base, other.base);
+        return *this;
+    }
+};
+
 }  // namespace
 #endif  // LIBIGHT_NET_DNS_HPP
