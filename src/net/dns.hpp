@@ -36,13 +36,13 @@ struct DNSResponse {
 
     int count;
     std::vector<std::string> results;
-    int result;
+    int code;
     double rtt;
     int ttl;
     char type;
 
-    DNSResponse(int result, char type, int count, int ttl, double rtt) {
-        this->result = result;
+    DNSResponse(int code, char type, int count, int ttl, double rtt) {
+        this->code = code;
         this->count = count;
         this->type = type;
         this->ttl = ttl;
@@ -132,7 +132,7 @@ class DNSRequestState {
         return (retval);
     }
 
-    static void handle_resolve(int result, char type, int count, int ttl,
+    static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
         auto state = static_cast<DNSRequestState *>(opaque);
 
@@ -143,10 +143,10 @@ class DNSRequestState {
         state->pending = false;
 
         auto rtt = ight_time_now() - state->ticks;
-        auto response = DNSResponse(result, type, count, ttl, rtt);
-        if (result == DNS_ERR_NONE) {
+        auto response = DNSResponse(code, type, count, ttl, rtt);
+        if (code == DNS_ERR_NONE) {
             if (!state->process_dns_reply(response, addresses)) {
-                response.result = DNS_ERR_UNKNOWN;
+                response.code = DNS_ERR_UNKNOWN;
             }
         }
 

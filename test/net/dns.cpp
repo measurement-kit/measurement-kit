@@ -156,3 +156,20 @@ TEST_CASE("A specific custom resolver works as expected") {
     ight_loop();
 }
 
+TEST_CASE("A request to a nonexistent server times out") {
+
+    auto reso = ight::DNSResolver("130.192.91.231", "1");
+    auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
+                               ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() == 0);
+        REQUIRE(response.code == DNS_ERR_TIMEOUT);
+        ight_break_loop();
+    }, reso);
+
+    auto d = IghtDelayedCall(10.0, [](void) {
+        throw std::runtime_error("Test failed");
+    });
+
+    ight_loop();
+}
+
