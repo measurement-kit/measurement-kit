@@ -188,3 +188,20 @@ TEST_CASE("It is safe to pass a dying DNSResolver to DNSRequest") {
 
     ight_loop();
 }
+
+TEST_CASE("It is safe to forget about pending requests") {
+
+    {
+        auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
+                                   ight::DNSResponse&& /*response*/) {
+            throw std::runtime_error("Should not happen");
+        });
+
+    }  // This should kill r1
+
+    auto d = IghtDelayedCall(5.0, [](void) {
+        ight_break_loop();  // We should receive a response earlier than this
+    });
+
+    ight_loop();
+}
