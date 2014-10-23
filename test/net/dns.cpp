@@ -173,3 +173,18 @@ TEST_CASE("A request to a nonexistent server times out") {
     ight_loop();
 }
 
+TEST_CASE("It is safe to pass a dying DNSResolver to DNSRequest") {
+
+    auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
+                               ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() == 0);
+        REQUIRE(response.code == DNS_ERR_SHUTDOWN);
+        ight_break_loop();
+    }, ight::DNSResolver("130.192.91.231"));
+
+    auto d = IghtDelayedCall(1.0, [](void) {
+        throw std::runtime_error("Test failed");
+    });
+
+    ight_loop();
+}
