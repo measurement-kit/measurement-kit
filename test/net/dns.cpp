@@ -252,3 +252,24 @@ TEST_CASE("It is safe to cancel requests in flight") {
         ight_loop();
     }
 }
+
+//
+// The following is useful to test with tcpdump and/or nc that the
+// resolver is actually sending messages to the specified address
+// and port and that the desired number of retries it tried by it.
+//
+// It is currently commented out because I don't know how this
+// test could be fully automated (especially in travis-ci).
+//
+// Anyway, it worked for me!
+//
+
+/*
+TEST_CASE("Make sure we can override host and number of tries") {
+    auto reso = ight::DNSResolver("127.0.0.1:5353", "2");
+    auto r = ight::DNSRequest("A", "www.neubot.org", [&](ight::DNSResponse) {
+        throw std::runtime_error("This should not happen");
+    }, reso);
+    ight_loop();
+}
+*/
