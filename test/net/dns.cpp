@@ -41,7 +41,8 @@ TEST_CASE("The system resolver works as expected") {
         REQUIRE(response.results.size() > 0);
         auto found = false;
         for (auto address : response.results) {
-            if (address == "2001:858:2:2:aabb:0:563b:1e28") {
+            if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
+                address == "2001:858:2:2:aabb::563b:1e28") {
                 found = true;
             }
         }
@@ -88,7 +89,8 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.results.size() > 0);
         auto found = false;
         for (auto address : response.results) {
-            if (address == "2001:858:2:2:aabb:0:563b:1e28") {
+            if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
+                address == "2001:858:2:2:aabb::563b:1e28") {
                 found = true;
             }
         }
@@ -135,7 +137,8 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.results.size() > 0);
         auto found = false;
         for (auto address : response.results) {
-            if (address == "2001:858:2:2:aabb:0:563b:1e28") {
+            if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
+                address == "2001:858:2:2:aabb::563b:1e28") {
                 found = true;
             }
         }
@@ -172,17 +175,18 @@ TEST_CASE("A request to a nonexistent server times out") {
 
 TEST_CASE("If the resolver dies, the requests are aborted") {
 
-    {
-        auto reso = ight::DNSResolver("130.192.91.231");
-        auto r1 = reso.request("A", "www.neubot.org", [&](
-                               ight::DNSResponse&& response) {
-            REQUIRE(response.results.size() == 0);
-            REQUIRE(response.code == DNS_ERR_SHUTDOWN);
-            ight_break_loop();
-        });
-    }  // This should kill reso and r1
+    auto reso = new ight::DNSResolver("130.192.91.231");
+    auto r1 = reso->request("A", "www.neubot.org", [&](
+                            ight::DNSResponse&& response) {
+        REQUIRE(response.results.size() == 0);
+        REQUIRE(response.code == DNS_ERR_SHUTDOWN);
+        ight_break_loop();
+    });
 
-    auto d = IghtDelayedCall(1.0, [](void) {
+    auto d1 = IghtDelayedCall(0.1, [&](void) {
+        delete reso;  // Destroy the resolver and see what happens
+    });
+    auto d2 = IghtDelayedCall(1.0, [](void) {
         throw std::runtime_error("Test failed");
     });
 
@@ -267,8 +271,11 @@ TEST_CASE("It is safe to cancel requests in flight") {
 /*
 TEST_CASE("Make sure we can override host and number of tries") {
     auto reso = ight::DNSResolver("127.0.0.1:5353", "2");
-    auto r = reso.request("A", "www.neubot.org", [&](ight::DNSResponse) {
-        throw std::runtime_error("This should not happen");
+    auto r = reso.request("A", "www.neubot.org", [&](
+                          ight::DNSResponse response) {
+        REQUIRE(response.results.size() == 0);
+        REQUIRE(response.code == DNS_ERR_TIMEOUT);
+        ight_break_loop();
     });
     ight_loop();
 }

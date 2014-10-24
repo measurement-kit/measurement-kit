@@ -324,9 +324,9 @@ class DNSResolver {
     }
 
     // Syntactic sugar:
-    DNSRequest&& request(std::string query, std::string address,
-                         std::function<void(DNSResponse&&)> func) {
-        return std::move(DNSRequest(query, address, func, get_evdns_base()));
+    DNSRequest request(std::string query, std::string address,
+                       std::function<void(DNSResponse&&)> func) {
+        return DNSRequest(query, address, func, get_evdns_base());
     }
 
     ~DNSResolver(void) {
