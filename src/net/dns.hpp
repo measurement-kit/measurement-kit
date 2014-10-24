@@ -219,6 +219,10 @@ class DNSRequestState {
 // This is the toplevel class that you should use to issue async
 // DNS requests; it supports A, AAAA and PTR queries.
 //
+// DNS requests issued using directly this class use the default DNS
+// resolver of libight; use a DNSResolver object to issue DNS requests
+// that are bound to a specific DNS resolver.
+//
 class DNSRequest {
     DNSRequestState *state = nullptr;
 
@@ -253,14 +257,21 @@ class DNSRequest {
 //
 // DNS Resolver object.
 //
-// If no specific options are set, this is just an alias for
-// the global libight's evdns_base resolver.
+// This object can be used to construct specific DNS resolvers that
+// differ from the default DNS resolver of libight.
 //
-// Otherwise, a custom evdns_base resolver is constructed using
-// the specified options.
+// In other words, to use the default DNS resolver, one does not need
+// to create an instance of this object.
 //
-// In both cases, this object can be passed as the fourth
-// argument of DNSRequest's constructor.
+// The default constructor creates a DNS resolver implementing the
+// same options of the the default one (i.e., `/etc/resolv.conf` is
+// parsed and requests are sent three times before timeout).
+//
+// Different settings can be selected by passing different options
+// to the constructor method.
+//
+// Once the object is created, it allows to issue DNS requests bound
+// to that DNS resolver rather than on the default one.
 //
 class DNSResolver {
     evdns_base *base = NULL;
@@ -305,11 +316,17 @@ class DNSResolver {
         }
     }
 
-    operator evdns_base *(void) {
+    evdns_base *get_evdns_base(void) {
         if (base == NULL) {
             return ight_get_global_evdns_base();
         }
         return base;
+    }
+
+    // Syntactic sugar:
+    DNSRequest&& request(std::string query, std::string address,
+                         std::function<void(DNSResponse&&)> func) {
+        return std::move(DNSRequest(query, address, func, get_evdns_base()));
     }
 
     ~DNSResolver(void) {
