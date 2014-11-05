@@ -111,6 +111,7 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "130.192.16.172");
         ight_break_loop();
@@ -126,6 +127,7 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
         ight_break_loop();
@@ -141,6 +143,7 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
@@ -163,6 +166,7 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "nova.torproject.org");
         ight_break_loop();
@@ -187,6 +191,7 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.get_resolver()[0] == "8.8.4.4");
         REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "130.192.16.172");
         ight_break_loop();
@@ -202,6 +207,7 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.get_resolver()[0] == "8.8.4.4");
         REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
         ight_break_loop();
@@ -217,6 +223,7 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.get_resolver()[0] == "8.8.4.4");
         REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
@@ -239,6 +246,7 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.get_resolver()[0] == "8.8.4.4");
         REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "nova.torproject.org");
         ight_break_loop();
