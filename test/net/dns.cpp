@@ -379,6 +379,10 @@ TEST_CASE("It is safe to forget about pending requests") {
     {
         auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
                                    ight::DNSResponse&& /*response*/) {
+            //
+            // Should not happen because when r1 dies the callback
+            // must not be invoked by the underlying DNSRequestImpl
+            //
             failed = true;
             ight_break_loop();
         });
@@ -386,7 +390,13 @@ TEST_CASE("It is safe to forget about pending requests") {
     }  // This should kill r1
 
     auto d = IghtDelayedCall(5.0, [](void) {
-        ight_break_loop();  // We should receive a response earlier than this
+        //
+        // After 5 seconds we should have received a response for
+        // www.neubot.org and the internal DNSRequestImpl should be
+        // already dead (yes, this is a race-condition-based test
+        // so we use 5 seconds to be on the safe side).
+        //
+        ight_break_loop();
     });
 
     ight_loop();
