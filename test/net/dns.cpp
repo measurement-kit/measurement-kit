@@ -252,10 +252,10 @@ TEST_CASE("It is safe to cancel requests in flight") {
         }, reso.get_evdns_base());
         auto d = IghtDelayedCall(avgrtt, [&](void) {
             ight_warn("- cancel");
-            delete r;
             ight_break_loop();
         });
         ight_loop();
+        delete r;
     }
 }
 

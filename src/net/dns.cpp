@@ -15,6 +15,10 @@
 
 using namespace ight;
 
+//
+// DNS response.
+//
+
 DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN)
 {
     // nothing

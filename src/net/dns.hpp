@@ -25,7 +25,7 @@ namespace ight {
 class DNSRequestImpl;  // Defined in net/dns.cpp
 
 //
-// This class represents a DNS response.
+// DNS response.
 //
 // The fields are the ones returned by evdns, plus the RTT because Neubot
 // may want to measure the time-to-reply of DNS servers.
