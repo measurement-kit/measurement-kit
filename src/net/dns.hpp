@@ -65,11 +65,6 @@ public:
     std::string get_reply_authoritative(void) {
         return "unknown";
     }
-    std::string get_query(void) {
-        std::string s;
-        s += "'[Query(''" + name + "'',1,1)]'";  // XXX
-        return s;
-    }
     std::string get_query_type(void) {
         return query_type;
     }
