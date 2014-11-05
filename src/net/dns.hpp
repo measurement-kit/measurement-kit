@@ -65,6 +65,9 @@ public:
         return "unknown";
     }
     std::vector<std::string> get_resolver(void) {
+        if (resolver == "") {
+            return {"<default>", "53"};
+        }
         auto pos = resolver.find(":");
         if (pos == std::string::npos) {
             return {resolver, "53"};
@@ -105,7 +108,7 @@ class DNSRequest {
     DNSRequest(std::string query, std::string address,
                std::function<void(DNSResponse&&)>&& func,
                evdns_base *dnsb = NULL,
-               std::string resolver = "default");
+               std::string resolver = "");
 
     DNSRequest(DNSRequest& /*other*/) = delete;
     DNSRequest& operator=(DNSRequest& /*other*/) = delete;
@@ -144,7 +147,7 @@ class DNSRequest {
 // to that DNS resolver rather than on the default one.
 //
 class DNSResolver {
-    std::string nameserver = "default";
+    std::string nameserver = "";
     evdns_base *base = NULL;
 
     void cleanup(void);

@@ -24,6 +24,14 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
                                ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "www.neubot.org");
+        REQUIRE(response.get_reply_type() == "A");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "<default>");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "130.192.16.172");
         ight_break_loop();
@@ -32,6 +40,14 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r2 = ight::DNSRequest("REVERSE_A", "130.192.16.172", [&](
                                ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "130.192.16.172");
+        REQUIRE(response.get_reply_type() == "PTR");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "<default>");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
         ight_break_loop();
@@ -40,6 +56,14 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r3 = ight::DNSRequest("AAAA", "ooni.torproject.org", [&](
                                ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "ooni.torproject.org");
+        REQUIRE(response.get_reply_type() == "AAAA");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "<default>");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
@@ -55,6 +79,14 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r4 = ight::DNSRequest("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
                                [&](ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
+        REQUIRE(response.get_reply_type() == "PTR");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "<default>");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "nova.torproject.org");
         ight_break_loop();
@@ -72,6 +104,13 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "www.neubot.org");
+        REQUIRE(response.get_reply_type() == "A");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "<default>");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "130.192.16.172");
         ight_break_loop();
@@ -80,6 +119,13 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
                            ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "130.192.16.172");
+        REQUIRE(response.get_reply_type() == "PTR");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "<default>");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
         ight_break_loop();
@@ -88,6 +134,13 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
                            ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "ooni.torproject.org");
+        REQUIRE(response.get_reply_type() == "AAAA");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "<default>");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_results().size() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
@@ -103,6 +156,13 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
                            [&](ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
+        REQUIRE(response.get_reply_type() == "PTR");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "<default>");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "nova.torproject.org");
         ight_break_loop();
@@ -120,6 +180,13 @@ TEST_CASE("A specific custom resolver works as expected") {
 
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "www.neubot.org");
+        REQUIRE(response.get_reply_type() == "A");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "8.8.4.4");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "130.192.16.172");
         ight_break_loop();
@@ -128,6 +195,13 @@ TEST_CASE("A specific custom resolver works as expected") {
 
     auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
                            ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "130.192.16.172");
+        REQUIRE(response.get_reply_type() == "PTR");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "8.8.4.4");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
         ight_break_loop();
@@ -136,6 +210,13 @@ TEST_CASE("A specific custom resolver works as expected") {
 
     auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
                            ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "ooni.torproject.org");
+        REQUIRE(response.get_reply_type() == "AAAA");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "8.8.4.4");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_results().size() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
@@ -151,6 +232,13 @@ TEST_CASE("A specific custom resolver works as expected") {
 
     auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
                            [&](ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
+        REQUIRE(response.get_reply_type() == "PTR");
+        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "8.8.4.4");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "nova.torproject.org");
         ight_break_loop();
