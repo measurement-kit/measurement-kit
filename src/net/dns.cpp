@@ -281,8 +281,9 @@ class DNSRequestImpl {
             }
             query_type = "PTR";
             query_class = "IN";
-        } else
+        } else {
             throw std::runtime_error("Unsupported query");
+        }
 
         pending = true;
         ticks = ight_time_now();
