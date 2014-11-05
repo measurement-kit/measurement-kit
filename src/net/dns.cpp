@@ -13,6 +13,64 @@
 #include <event2/dns.h>
 #include <arpa/inet.h>
 
+using namespace ight;
+
+DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN)
+{
+    // nothing
+}
+
+DNSResponse::DNSResponse(int code, char type, int count, int ttl,
+                         double rtt, void *addresses)
+    : code(code), type(type), ttl(ttl), rtt(rtt)
+{
+    if (code != DNS_ERR_NONE) {
+        ight_info("dns - request failed: %d", code);
+        // do not process the results if there was an error
+
+    } else if (type == DNS_PTR) {
+        ight_info("dns - PTR");
+        // Note: cast magic copied from libevent regress tests
+        results.push_back(std::string(*(char **) addresses));
+
+    } else if (type == DNS_IPv4_A || type == DNS_IPv6_AAAA) {
+
+        int family;
+        int size;
+        char string[128];  // Should be enough
+
+        if (type == DNS_IPv4_A) {
+            family = PF_INET;
+            size = 4;
+            ight_info("dns - IPv4");
+        } else {
+            family = PF_INET6;
+            size = 16;
+            ight_info("dns - IPv6");
+        }
+
+        for (auto i = 0; i < count; ++i) {
+            if (i > INT_MAX / size) {
+                ight_warn("Integer overflow");
+                code = DNS_ERR_UNKNOWN;
+                break;
+            }
+            // Note: address already in network byte order
+            if (inet_ntop(family, (char *)addresses + i * size,
+                string, sizeof (string)) == NULL) {
+                ight_warn("Unexpected inet_ntop failure");
+                code = DNS_ERR_UNKNOWN;
+                break;
+            }
+            ight_info("dns - adding '%s'", string);
+            results.push_back(string);
+        }
+
+    } else {
+        throw std::runtime_error("Invalid response type");
+    }
+}
+
 namespace ight {
 
 //
@@ -46,60 +104,11 @@ class DNSRequestImpl {
     bool pending = false;
     double ticks;
 
-    static bool process_ipv46_reply(DNSResponse& response, void *addresses,
-                                    int family, int size) {
-        int count;
-        char string[128];            // Should be enough
-
-        for (count = 0; count < response.count; ++count) {
-            if (count > INT_MAX / size) {
-                ight_info("dns - integer overflow");
-                return (false);
-            }
-            // Note: address already in network byte order
-            if (inet_ntop(family, (char *)addresses + count * size,
-                string, sizeof (string)) == NULL) {
-                ight_info("dns - inet_ntop failed");
-                return (false);
-            }
-            ight_info("dns - adding '%s'", string);
-            response.results.push_back(string);
-        }
-
-        return (true);
-    }
-
-    bool process_dns_reply(DNSResponse& response, void *addresses) {
-        bool retval = false;
-
-        switch (response.type) {
-        case DNS_IPv4_A:
-            ight_info("dns - IPv4");
-            retval = process_ipv46_reply(response, addresses, PF_INET, 4);
-            break;
-        case DNS_IPv6_AAAA:
-            ight_info("dns - IPv6");
-            retval = process_ipv46_reply(response, addresses, PF_INET6, 16);
-            break;
-        case DNS_PTR:
-            ight_info("dns - PTR");
-            // Note: cast magic copied from libevent regress tests
-            response.results.push_back(std::string(
-                *(char **) addresses));
-            retval = true;
-            break;
-        default:
-            ight_info("dns - invalid type");
-            retval = false;    // Yes, this is redundant
-            break;
-        }
-
-        return (retval);
-    }
-
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
+
         auto impl = static_cast<DNSRequestImpl *>(opaque);
+        auto rtt = ight_time_now() - impl->ticks;
 
         if (impl->cancelled) {
             delete impl;
@@ -107,15 +116,7 @@ class DNSRequestImpl {
         }
         impl->pending = false;
 
-        auto rtt = ight_time_now() - impl->ticks;
-        auto response = DNSResponse(code, type, count, ttl, rtt);
-        if (code == DNS_ERR_NONE) {
-            if (!impl->process_dns_reply(response, addresses)) {
-                response.code = DNS_ERR_UNKNOWN;
-            }
-        }
-
-        impl->callback(std::move(response));
+        impl->callback(DNSResponse(code, type, count, ttl, rtt, addresses));
     }
 
     in_addr *ipv4_pton(std::string address, in_addr *netaddr) {
@@ -181,8 +182,6 @@ class DNSRequestImpl {
 };
 
 }  // namespace
-
-using namespace ight;
 
 //
 // Async DNS request.

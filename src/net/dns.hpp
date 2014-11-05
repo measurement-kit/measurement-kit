@@ -32,20 +32,17 @@ class DNSRequestImpl;  // Defined in net/dns.cpp
 //
 struct DNSResponse {
 
-    int count;
-    std::vector<std::string> results;
     int code;
-    double rtt;
-    int ttl;
     char type;
+    int ttl;
+    double rtt;
 
-    DNSResponse(int code, char type, int count, int ttl, double rtt) {
-        this->code = code;
-        this->count = count;
-        this->type = type;
-        this->ttl = ttl;
-        this->rtt = rtt;
-    }
+    std::vector<std::string> results;
+
+    DNSResponse(void);
+
+    DNSResponse(int code, char type, int count, int ttl, double rtt,
+                void *addresses);
 };
 
 //
