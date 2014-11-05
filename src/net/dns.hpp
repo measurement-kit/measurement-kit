@@ -33,6 +33,7 @@ class DNSRequestImpl;  // Defined in net/dns.cpp
 class DNSResponse {
 
     std::string name;
+    std::string query_type;
     std::string resolver;
     int code;
     std::string reply_type;
@@ -45,7 +46,7 @@ class DNSResponse {
 public:
     DNSResponse(void);
 
-    DNSResponse(std::string name, std::string resolver,
+    DNSResponse(std::string name, std::string query_type, std::string resolver,
                 int code, char type, int count, int ttl, double rtt,
                 void *addresses);
 
@@ -63,6 +64,9 @@ public:
     }
     std::string get_reply_authoritative(void) {
         return "unknown";
+    }
+    std::string get_query_type(void) {
+        return query_type;
     }
     std::vector<std::string> get_resolver(void) {
         if (resolver == "") {

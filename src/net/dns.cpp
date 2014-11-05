@@ -24,10 +24,11 @@ DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN)
     // nothing
 }
 
-DNSResponse::DNSResponse(std::string name,
+DNSResponse::DNSResponse(std::string name, std::string query_type,
                          std::string resolver, int code, char type, int count,
                          int ttl, double rtt, void *addresses)
-    : name(name), resolver(resolver), code(code), ttl(ttl), rtt(rtt)
+    : name(name), query_type(query_type), resolver(resolver),
+      code(code), ttl(ttl), rtt(rtt)
 {
     if (code != DNS_ERR_NONE) {
         ight_info("dns - request failed: %d", code);
@@ -197,6 +198,7 @@ class DNSRequestImpl {
     bool pending = false;
     double ticks;
     std::string name;
+    std::string query_type;
     std::string resolver;
 
     static void handle_resolve(int code, char type, int count, int ttl,
@@ -211,7 +213,7 @@ class DNSRequestImpl {
         }
         impl->pending = false;
 
-        impl->callback(DNSResponse(impl->name, impl->resolver,
+        impl->callback(DNSResponse(impl->name, impl->query_type, impl->resolver,
                        code, type, count, ttl, rtt, addresses));
     }
 
@@ -242,23 +244,27 @@ class DNSRequestImpl {
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
+            query_type = "A";
         } else if (query == "AAAA") {
             if (evdns_base_resolve_ipv6(base, address.c_str(),
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
+            query_type = "AAAA";
         } else if (query == "REVERSE_A") {
             in_addr na;
             if (evdns_base_resolve_reverse(base, ipv4_pton(address,
                 &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
+            query_type = "PTR";
         } else if (query == "REVERSE_AAAA") {
             in6_addr na;
             if (evdns_base_resolve_reverse_ipv6(base, ipv6_pton(address,
                 &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
+            query_type = "PTR";
         } else
             throw std::runtime_error("Unsupported query");
 
