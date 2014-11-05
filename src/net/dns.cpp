@@ -58,14 +58,14 @@ DNSResponse::DNSResponse(std::string name, std::string query_type,
 
         for (auto i = 0; i < count; ++i) {
             if (i > INT_MAX / size) {
-                ight_warn("Integer overflow");
+                ight_warn("dns - integer overflow");
                 code = DNS_ERR_UNKNOWN;
                 break;
             }
             // Note: address already in network byte order
             if (inet_ntop(family, (char *)addresses + i * size,
                 string, sizeof (string)) == NULL) {
-                ight_warn("Unexpected inet_ntop failure");
+                ight_warn("dns - unexpected inet_ntop failure");
                 code = DNS_ERR_UNKNOWN;
                 break;
             }
@@ -74,7 +74,8 @@ DNSResponse::DNSResponse(std::string name, std::string query_type,
         }
 
     } else {
-        throw std::runtime_error("Invalid response type");
+        ight_warn("dns - invalid response type");
+        code = DNS_ERR_UNKNOWN;
     }
 }
 
