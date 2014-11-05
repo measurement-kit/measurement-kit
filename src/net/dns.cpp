@@ -25,10 +25,11 @@ DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN)
 }
 
 DNSResponse::DNSResponse(std::string name, std::string query_type,
-                         std::string resolver, int code, char type, int count,
+                         std::string query_class, std::string resolver,
+                         int code, char type, int count,
                          int ttl, double rtt, void *addresses)
-    : name(name), query_type(query_type), resolver(resolver),
-      code(code), ttl(ttl), rtt(rtt)
+    : name(name), query_type(query_type), query_class(query_class),
+      resolver(resolver), code(code), ttl(ttl), rtt(rtt)
 {
     if (code != DNS_ERR_NONE) {
         ight_info("dns - request failed: %d", code);
@@ -38,12 +39,8 @@ DNSResponse::DNSResponse(std::string name, std::string query_type,
         ight_info("dns - PTR");
         // Note: cast magic copied from libevent regress tests
         results.push_back(std::string(*(char **) addresses));
-        reply_class = "IN";
-        reply_type = "PTR";
 
     } else if (type == DNS_IPv4_A || type == DNS_IPv6_AAAA) {
-
-        reply_class = "IN";
 
         int family;
         int size;
@@ -53,12 +50,10 @@ DNSResponse::DNSResponse(std::string name, std::string query_type,
             family = PF_INET;
             size = 4;
             ight_info("dns - IPv4");
-            reply_type = "A";
         } else {
             family = PF_INET6;
             size = 16;
             ight_info("dns - IPv6");
-            reply_type = "AAAA";
         }
 
         for (auto i = 0; i < count; ++i) {
@@ -199,6 +194,7 @@ class DNSRequestImpl {
     double ticks;
     std::string name;
     std::string query_type;
+    std::string query_class;
     std::string resolver;
 
     static void handle_resolve(int code, char type, int count, int ttl,
@@ -213,8 +209,9 @@ class DNSRequestImpl {
         }
         impl->pending = false;
 
-        impl->callback(DNSResponse(impl->name, impl->query_type, impl->resolver,
-                       code, type, count, ttl, rtt, addresses));
+        impl->callback(DNSResponse(impl->name, impl->query_type,
+            impl->query_class, impl->resolver, code, type, count,
+            ttl, rtt, addresses));
     }
 
     in_addr *ipv4_pton(std::string address, in_addr *netaddr) {
@@ -245,12 +242,14 @@ class DNSRequestImpl {
                 throw std::runtime_error("Resolver error");
             }
             query_type = "A";
+            query_class = "IN";
         } else if (query == "AAAA") {
             if (evdns_base_resolve_ipv6(base, address.c_str(),
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
             query_type = "AAAA";
+            query_class = "IN";
         } else if (query == "REVERSE_A") {
             in_addr na;
             if (evdns_base_resolve_reverse(base, ipv4_pton(address,
@@ -258,6 +257,7 @@ class DNSRequestImpl {
                 throw std::runtime_error("Resolver error");
             }
             query_type = "PTR";
+            query_class = "IN";
         } else if (query == "REVERSE_AAAA") {
             in6_addr na;
             if (evdns_base_resolve_reverse_ipv6(base, ipv6_pton(address,
@@ -265,6 +265,7 @@ class DNSRequestImpl {
                 throw std::runtime_error("Resolver error");
             }
             query_type = "PTR";
+            query_class = "IN";
         } else
             throw std::runtime_error("Unsupported query");
 

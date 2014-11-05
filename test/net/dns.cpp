@@ -25,8 +25,8 @@ TEST_CASE("The system resolver works as expected") {
     auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
                                ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
-        REQUIRE(response.get_reply_type() == "A");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "A");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -41,8 +41,8 @@ TEST_CASE("The system resolver works as expected") {
     auto r2 = ight::DNSRequest("REVERSE_A", "130.192.16.172", [&](
                                ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "130.192.16.172");
-        REQUIRE(response.get_reply_type() == "PTR");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "PTR");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -57,8 +57,8 @@ TEST_CASE("The system resolver works as expected") {
     auto r3 = ight::DNSRequest("AAAA", "ooni.torproject.org", [&](
                                ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "ooni.torproject.org");
-        REQUIRE(response.get_reply_type() == "AAAA");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "AAAA");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -80,8 +80,8 @@ TEST_CASE("The system resolver works as expected") {
     auto r4 = ight::DNSRequest("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
                                [&](ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
-        REQUIRE(response.get_reply_type() == "PTR");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "PTR");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -105,8 +105,8 @@ TEST_CASE("The default custom resolver works as expected") {
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
-        REQUIRE(response.get_reply_type() == "A");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "A");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -120,8 +120,8 @@ TEST_CASE("The default custom resolver works as expected") {
     auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
                            ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "130.192.16.172");
-        REQUIRE(response.get_reply_type() == "PTR");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "PTR");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -135,8 +135,8 @@ TEST_CASE("The default custom resolver works as expected") {
     auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
                            ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "ooni.torproject.org");
-        REQUIRE(response.get_reply_type() == "AAAA");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "AAAA");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -157,8 +157,8 @@ TEST_CASE("The default custom resolver works as expected") {
     auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
                            [&](ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
-        REQUIRE(response.get_reply_type() == "PTR");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "PTR");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "<default>");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -181,8 +181,8 @@ TEST_CASE("A specific custom resolver works as expected") {
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
-        REQUIRE(response.get_reply_type() == "A");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "A");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "8.8.4.4");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -196,8 +196,8 @@ TEST_CASE("A specific custom resolver works as expected") {
     auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
                            ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "130.192.16.172");
-        REQUIRE(response.get_reply_type() == "PTR");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "PTR");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "8.8.4.4");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -211,8 +211,8 @@ TEST_CASE("A specific custom resolver works as expected") {
     auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
                            ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "ooni.torproject.org");
-        REQUIRE(response.get_reply_type() == "AAAA");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "AAAA");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "8.8.4.4");
         REQUIRE(response.get_resolver()[1] == "53");
@@ -233,8 +233,8 @@ TEST_CASE("A specific custom resolver works as expected") {
     auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
                            [&](ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
-        REQUIRE(response.get_reply_type() == "PTR");
-        REQUIRE(response.get_reply_class() == "IN");
+        REQUIRE(response.get_query_type() == "PTR");
+        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_resolver()[0] == "8.8.4.4");
         REQUIRE(response.get_resolver()[1] == "53");

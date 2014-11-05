@@ -34,10 +34,9 @@ class DNSResponse {
 
     std::string name;
     std::string query_type;
+    std::string query_class;
     std::string resolver;
     int code;
-    std::string reply_type;
-    std::string reply_class;
     int ttl;
     double rtt;
 
@@ -46,7 +45,8 @@ class DNSResponse {
 public:
     DNSResponse(void);
 
-    DNSResponse(std::string name, std::string query_type, std::string resolver,
+    DNSResponse(std::string name, std::string query_type,
+                std::string query_class, std::string resolver,
                 int code, char type, int count, int ttl, double rtt,
                 void *addresses);
 
@@ -56,17 +56,14 @@ public:
     std::string get_query_name(void) {
         return name;
     }
-    std::string get_reply_type(void) {
-        return reply_type;
+    std::string get_query_type(void) {
+        return query_type;
     }
-    std::string get_reply_class(void) {
-        return reply_class;
+    std::string get_query_class(void) {
+        return query_class;
     }
     std::string get_reply_authoritative(void) {
         return "unknown";
-    }
-    std::string get_query_type(void) {
-        return query_type;
     }
     std::vector<std::string> get_resolver(void) {
         if (resolver == "") {
