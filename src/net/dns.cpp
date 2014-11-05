@@ -201,13 +201,27 @@ class DNSRequestImpl {
                                void *addresses, void *opaque) {
 
         auto impl = static_cast<DNSRequestImpl *>(opaque);
-        auto rtt = ight_time_now() - impl->ticks;
+        auto rtt = 0.0;
 
         if (impl->cancelled) {
             delete impl;
             return;
         }
         impl->pending = false;
+
+        // Only compute RTT when we know that the server replied
+        switch (code) {
+        case DNS_ERR_NONE:
+        case DNS_ERR_FORMAT:
+        case DNS_ERR_SERVERFAILED:
+        case DNS_ERR_NOTEXIST:
+        case DNS_ERR_NOTIMPL:
+        case DNS_ERR_REFUSED:
+        case DNS_ERR_TRUNCATED:
+        case DNS_ERR_NODATA:
+            rtt = ight_time_now() - impl->ticks;
+            /* FALLTHROUGH */
+        }
 
         impl->callback(DNSResponse(impl->name, impl->query_type,
             impl->query_class, impl->resolver, code, type, count,

@@ -34,6 +34,8 @@ TEST_CASE("The system resolver works as expected") {
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "130.192.16.172");
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
     });
     ight_loop();
@@ -50,6 +52,8 @@ TEST_CASE("The system resolver works as expected") {
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
     });
     ight_loop();
@@ -65,6 +69,8 @@ TEST_CASE("The system resolver works as expected") {
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() > 0);
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
             if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
@@ -89,6 +95,8 @@ TEST_CASE("The system resolver works as expected") {
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "nova.torproject.org");
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
     });
     ight_loop();
@@ -114,6 +122,8 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "130.192.16.172");
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
     });
     ight_loop();
@@ -130,6 +140,8 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
     });
     ight_loop();
@@ -145,6 +157,8 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() > 0);
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
             if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
@@ -169,6 +183,8 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "nova.torproject.org");
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
     });
     ight_loop();
@@ -194,6 +210,8 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "130.192.16.172");
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
     });
     ight_loop();
@@ -210,6 +228,8 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
     });
     ight_loop();
@@ -225,6 +245,8 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() > 0);
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
             if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
@@ -249,6 +271,8 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "nova.torproject.org");
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
     });
     ight_loop();
@@ -271,8 +295,17 @@ TEST_CASE("A request to a nonexistent server times out") {
     auto reso = ight::DNSResolver("130.192.91.231", "1");
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "www.neubot.org");
+        REQUIRE(response.get_query_type() == "A");
+        REQUIRE(response.get_query_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "130.192.91.231");
+        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
+        REQUIRE(response.get_failure() == "deferred_timeout_error");
+        REQUIRE(response.get_ttl() == 0);
+        REQUIRE(response.get_rtt() == 0.0);
         ight_break_loop();
     });
 
@@ -288,8 +321,17 @@ TEST_CASE("If the resolver dies, the requests are aborted") {
     auto reso = new ight::DNSResolver("130.192.91.231");
     auto r1 = reso->request("A", "www.neubot.org", [&](
                             ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "www.neubot.org");
+        REQUIRE(response.get_query_type() == "A");
+        REQUIRE(response.get_query_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "130.192.91.231");
+        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_SHUTDOWN);
+        REQUIRE(response.get_failure() == "unknown failure 68");
+        REQUIRE(response.get_ttl() == 0);
+        REQUIRE(response.get_rtt() == 0.0);
         ight_break_loop();
     });
 
@@ -341,6 +383,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     for (auto i = 0; i < 16; ++i) {
         auto r = reso.request("A", "www.neubot.org", [&](
                               ight::DNSResponse&& response) {
+            // Assuming all the fields are OK
             total += response.get_rtt();
             count += 1;
             ight_break_loop();
@@ -355,6 +398,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     for (auto i = 0; i < 16; ++i) {
         auto r = new ight::DNSRequest("A", "www.neubot.org", [&](
                                       ight::DNSResponse&& /*response*/) {
+            // Ignoring all the fields here
             ight_warn("- break_loop");
             ight_break_loop();
         }, reso.get_evdns_base());
@@ -384,6 +428,7 @@ TEST_CASE("Make sure we can override host and number of tries") {
     auto reso = ight::DNSResolver("127.0.0.1:5353", "2");
     auto r = reso.request("A", "www.neubot.org", [&](
                           ight::DNSResponse response) {
+        // Assuming all the other fields are OK
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
         ight_break_loop();
