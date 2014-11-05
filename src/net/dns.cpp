@@ -29,7 +29,7 @@ DNSResponse::DNSResponse(std::string name, std::string query_type,
                          int code, char type, int count,
                          int ttl, double rtt, void *addresses)
     : name(name), query_type(query_type), query_class(query_class),
-      resolver(resolver), code(code), ttl(ttl), rtt(rtt)
+      resolver(resolver), code(code), rtt(rtt), ttl(ttl)
 {
     if (code != DNS_ERR_NONE) {
         ight_info("dns - request failed: %d", code);
