@@ -85,7 +85,7 @@ public:
         return code;
     }
     std::string get_failure(void) {
-        return "failure";  // FIXME map `code` to OONI's failures
+        return map_failure_(code);
     }
     int get_ttl(void) {
         return ttl;
@@ -93,6 +93,8 @@ public:
     double get_rtt(void) {
         return rtt;
     }
+
+    static std::string map_failure_(int code);  // Public to ease testing
 };
 
 //

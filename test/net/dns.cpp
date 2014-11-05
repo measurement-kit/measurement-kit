@@ -295,3 +295,38 @@ TEST_CASE("Make sure we can override host and number of tries") {
     ight_loop();
 }
 */
+
+TEST_CASE("Evdns errors are correctly mapped to OONI failures") {
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_NONE)
+            == "");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_FORMAT)
+            == "dns_lookup_error");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_SERVERFAILED)
+            == "dns_lookup_error");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_NOTEXIST)
+            == "dns_lookup_error");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_NOTIMPL)
+            == "dns_lookup_error");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_REFUSED)
+            == "dns_lookup_error");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_TRUNCATED)
+            == "dns_lookup_error");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_UNKNOWN)
+            == "unknown failure 66");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_TIMEOUT)
+            == "deferred_timeout_error");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_SHUTDOWN)
+            == "unknown failure 68");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_CANCEL)
+            == "unknown failure 69");
+    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_NODATA)
+            == "dns_lookup_error");
+
+    // Just three random numbers to increase confidence...
+    REQUIRE(ight::DNSResponse::map_failure_(1024)
+            == "unknown failure 1024");
+    REQUIRE(ight::DNSResponse::map_failure_(1025)
+            == "unknown failure 1025");
+    REQUIRE(ight::DNSResponse::map_failure_(1026)
+            == "unknown failure 1026");
+}

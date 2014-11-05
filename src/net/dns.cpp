@@ -83,6 +83,88 @@ DNSResponse::DNSResponse(std::string name, std::string query_type,
     }
 }
 
+std::string
+DNSResponse::map_failure_(int code)
+{
+    std::string s;
+
+    //
+    // Here we map evdns error codes to OONI failures.
+    //
+    // We start with errors specified in RFC 1035 (see also event2/dns.h).
+    //
+    // TODO for @hellais: make sure that the mapping below is
+    // correct with respect to OONI, and eventually consider
+    // the possiblity of specifying more errors.
+    //
+
+    if (code == DNS_ERR_NONE) {
+        // nothing to do
+
+    } else if (code == DNS_ERR_FORMAT) {
+        // The name server was unable to interpret the query
+        s += "dns_lookup_error";
+
+    } else if (code == DNS_ERR_SERVERFAILED) {
+        // The name server was unable to process this query due to a
+        // problem with the name server
+        s += "dns_lookup_error";
+
+    } else if (code == DNS_ERR_NOTEXIST) {
+        // The domain name does not exist
+        s += "dns_lookup_error";
+
+    } else if (code == DNS_ERR_NOTIMPL) {
+        // The name server does not support the requested kind of query
+        s += "dns_lookup_error";
+
+    } else if (code == DNS_ERR_REFUSED) {
+        // The name server refuses to perform the specified operation
+        // for policy reasons
+        s += "dns_lookup_error";
+
+    //
+    // The following are evdns specific errors
+    //
+
+    } else if (code == DNS_ERR_TRUNCATED) {
+        // The reply was truncated or ill-formatted
+        s += "dns_lookup_error";
+
+    } else if (code == DNS_ERR_UNKNOWN) {
+        // An unknown error occurred
+        s += "unknown failure ";
+        s += std::to_string(code);
+
+    } else if (code == DNS_ERR_TIMEOUT) {
+        // Communication with the server timed out
+        s += "deferred_timeout_error";
+
+    } else if (code == DNS_ERR_SHUTDOWN) {
+        // The request was canceled because the DNS subsystem was shut down.
+        s += "unknown failure ";
+        s += std::to_string(code);
+
+    } else if (code == DNS_ERR_CANCEL) {
+        // The request was canceled via a call to evdns_cancel_request
+        s += "unknown failure ";
+        s += std::to_string(code);
+
+    } else if (code == DNS_ERR_NODATA) {
+        // There were no answers and no error condition in the DNS packet.
+        // This can happen when you ask for an address that exists, but
+        // a record type that doesn't.
+        s += "dns_lookup_error";
+
+    } else {
+        // Safery net - should really not happen
+        s += "unknown failure ";
+        s += std::to_string(code);
+    }
+
+    return s;
+}
+
 namespace ight {
 
 //
