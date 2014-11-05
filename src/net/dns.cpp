@@ -24,9 +24,11 @@ DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN)
     // nothing
 }
 
-DNSResponse::DNSResponse(int code, char type, int count, int ttl,
-                         double rtt, void *addresses)
-    : code(code), type(type), ttl(ttl), rtt(rtt)
+DNSResponse::DNSResponse(std::string name, std::string query_type,
+                         std::string resolver, int code, char type, int count,
+                         int ttl, double rtt, void *addresses)
+    : name(name), query_type(query_type), resolver(resolver),
+      code(code), ttl(ttl), rtt(rtt)
 {
     if (code != DNS_ERR_NONE) {
         ight_info("dns - request failed: %d", code);
@@ -36,8 +38,12 @@ DNSResponse::DNSResponse(int code, char type, int count, int ttl,
         ight_info("dns - PTR");
         // Note: cast magic copied from libevent regress tests
         results.push_back(std::string(*(char **) addresses));
+        reply_class = "IN";
+        reply_type = "PTR";
 
     } else if (type == DNS_IPv4_A || type == DNS_IPv6_AAAA) {
+
+        reply_class = "IN";
 
         int family;
         int size;
@@ -47,10 +53,12 @@ DNSResponse::DNSResponse(int code, char type, int count, int ttl,
             family = PF_INET;
             size = 4;
             ight_info("dns - IPv4");
+            reply_type = "A";
         } else {
             family = PF_INET6;
             size = 16;
             ight_info("dns - IPv6");
+            reply_type = "AAAA";
         }
 
         for (auto i = 0; i < count; ++i) {
@@ -107,6 +115,9 @@ class DNSRequestImpl {
     bool cancelled = false;
     bool pending = false;
     double ticks;
+    std::string name;
+    std::string query_type;
+    std::string resolver;
 
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
@@ -120,7 +131,8 @@ class DNSRequestImpl {
         }
         impl->pending = false;
 
-        impl->callback(DNSResponse(code, type, count, ttl, rtt, addresses));
+        impl->callback(DNSResponse(impl->name, impl->query_type, impl->resolver,
+                       code, type, count, ttl, rtt, addresses));
     }
 
     in_addr *ipv4_pton(std::string address, in_addr *netaddr) {
@@ -138,7 +150,8 @@ class DNSRequestImpl {
   public:
     DNSRequestImpl(std::string query, std::string address,
                    std::function<void(DNSResponse&&)>&& f,
-                   evdns_base *base) : callback(f) {
+                   evdns_base *base, std::string resolver)
+            : callback(f), name(address), resolver(resolver) {
 
         //
         // We explain above why we don't store the return value
@@ -149,23 +162,27 @@ class DNSRequestImpl {
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
+            query_type = "A";
         } else if (query == "AAAA") {
             if (evdns_base_resolve_ipv6(base, address.c_str(),
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
+            query_type = "AAAA";
         } else if (query == "REVERSE_A") {
             in_addr na;
             if (evdns_base_resolve_reverse(base, ipv4_pton(address,
                 &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
+            query_type = "PTR";
         } else if (query == "REVERSE_AAAA") {
             in6_addr na;
             if (evdns_base_resolve_reverse_ipv6(base, ipv6_pton(address,
                 &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
+            query_type = "PTR";
         } else
             throw std::runtime_error("Unsupported query");
 
@@ -193,12 +210,13 @@ class DNSRequestImpl {
 
 DNSRequest::DNSRequest(std::string query, std::string address,
                        std::function<void(DNSResponse&&)>&& func,
-                       evdns_base *dnsb)
+                       evdns_base *dnsb, std::string resolver)
 {
     if (dnsb == NULL) {
         dnsb = ight_get_global_evdns_base();
     }
-    impl = new DNSRequestImpl(query, address, std::move(func), dnsb);
+    impl = new DNSRequestImpl(query, address, std::move(func),
+                              dnsb, resolver);
 }
 
 DNSRequest::~DNSRequest(void)
@@ -229,6 +247,7 @@ DNSResolver::cleanup(void)
 
 DNSResolver::DNSResolver(std::string nameserver, std::string attempts,
                          IghtPoller *poller)
+        : nameserver(nameserver)
 {
     if (nameserver == "" && attempts == "" && poller == NULL) {
         // No specific options? Then let's use the default evdns_base

@@ -27,13 +27,17 @@ class DNSRequestImpl;  // Defined in net/dns.cpp
 //
 // DNS response.
 //
-// The fields are the ones returned by evdns, plus the RTT because Neubot
-// may want to measure the time-to-reply of DNS servers.
+// The constructor receives the fields returned by evdns and converts
+// them in a format suitable to compile OONI's reports.
 //
 struct DNSResponse {
 
+    std::string name;
+    std::string query_type;
+    std::string resolver;
     int code;
-    char type;
+    std::string reply_type;
+    std::string reply_class;
     int ttl;
     double rtt;
 
@@ -41,7 +45,8 @@ struct DNSResponse {
 
     DNSResponse(void);
 
-    DNSResponse(int code, char type, int count, int ttl, double rtt,
+    DNSResponse(std::string name, std::string query_type, std::string resolver,
+                int code, char type, int count, int ttl, double rtt,
                 void *addresses);
 };
 
@@ -61,7 +66,8 @@ class DNSRequest {
   public:
     DNSRequest(std::string query, std::string address,
                std::function<void(DNSResponse&&)>&& func,
-               evdns_base *dnsb = NULL);
+               evdns_base *dnsb = NULL,
+               std::string resolver = "default");
 
     DNSRequest(DNSRequest& /*other*/) = delete;
     DNSRequest& operator=(DNSRequest& /*other*/) = delete;
@@ -96,6 +102,7 @@ class DNSRequest {
 // to that DNS resolver rather than on the default one.
 //
 class DNSResolver {
+    std::string nameserver = "default";
     evdns_base *base = NULL;
 
     void cleanup(void);
@@ -109,7 +116,8 @@ class DNSResolver {
     // Syntactic sugar:
     DNSRequest request(std::string query, std::string address,
                        std::function<void(DNSResponse&&)>&& func) {
-        return DNSRequest(query, address, std::move(func), get_evdns_base());
+        return DNSRequest(query, address, std::move(func), get_evdns_base(),
+                          nameserver);
     }
 
     ~DNSResolver(void) {
