@@ -35,6 +35,13 @@ TEST_CASE("The empty DNSResponse has sensible fields") {
     REQUIRE(response.get_ttl() == 0);
 }
 
+TEST_CASE("DNSRequest raises if the query is unsupported") {
+    REQUIRE_THROWS(ight::DNSRequest("PTR", "www.neubot.org",
+                   [&](ight::DNSResponse&& /*response*/) {
+        // nothing
+    }));
+}
+
 TEST_CASE("The system resolver works as expected") {
 
     auto failed = false;
