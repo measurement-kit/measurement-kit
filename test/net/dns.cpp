@@ -24,25 +24,25 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
                                ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 1);
-        REQUIRE(response.results[0] == "130.192.16.172");
+        REQUIRE(response.get_results().size() == 1);
+        REQUIRE(response.get_results()[0] == "130.192.16.172");
         ight_break_loop();
     });
     ight_loop();
 
     auto r2 = ight::DNSRequest("REVERSE_A", "130.192.16.172", [&](
                                ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 1);
-        REQUIRE(response.results[0] == "server-nexa.polito.it");
+        REQUIRE(response.get_results().size() == 1);
+        REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
         ight_break_loop();
     });
     ight_loop();
 
     auto r3 = ight::DNSRequest("AAAA", "ooni.torproject.org", [&](
                                ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() > 0);
+        REQUIRE(response.get_results().size() > 0);
         auto found = false;
-        for (auto address : response.results) {
+        for (auto address : response.get_results()) {
             if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
                 address == "2001:858:2:2:aabb::563b:1e28") {
                 found = true;
@@ -55,8 +55,8 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r4 = ight::DNSRequest("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
                                [&](ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 1);
-        REQUIRE(response.results[0] == "nova.torproject.org");
+        REQUIRE(response.get_results().size() == 1);
+        REQUIRE(response.get_results()[0] == "nova.torproject.org");
         ight_break_loop();
     });
     ight_loop();
@@ -72,25 +72,25 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 1);
-        REQUIRE(response.results[0] == "130.192.16.172");
+        REQUIRE(response.get_results().size() == 1);
+        REQUIRE(response.get_results()[0] == "130.192.16.172");
         ight_break_loop();
     });
     ight_loop();
 
     auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
                            ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 1);
-        REQUIRE(response.results[0] == "server-nexa.polito.it");
+        REQUIRE(response.get_results().size() == 1);
+        REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
         ight_break_loop();
     });
     ight_loop();
 
     auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
                            ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() > 0);
+        REQUIRE(response.get_results().size() > 0);
         auto found = false;
-        for (auto address : response.results) {
+        for (auto address : response.get_results()) {
             if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
                 address == "2001:858:2:2:aabb::563b:1e28") {
                 found = true;
@@ -103,8 +103,8 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
                            [&](ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 1);
-        REQUIRE(response.results[0] == "nova.torproject.org");
+        REQUIRE(response.get_results().size() == 1);
+        REQUIRE(response.get_results()[0] == "nova.torproject.org");
         ight_break_loop();
     });
     ight_loop();
@@ -120,25 +120,25 @@ TEST_CASE("A specific custom resolver works as expected") {
 
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 1);
-        REQUIRE(response.results[0] == "130.192.16.172");
+        REQUIRE(response.get_results().size() == 1);
+        REQUIRE(response.get_results()[0] == "130.192.16.172");
         ight_break_loop();
     });
     ight_loop();
 
     auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
                            ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 1);
-        REQUIRE(response.results[0] == "server-nexa.polito.it");
+        REQUIRE(response.get_results().size() == 1);
+        REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
         ight_break_loop();
     });
     ight_loop();
 
     auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
                            ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() > 0);
+        REQUIRE(response.get_results().size() > 0);
         auto found = false;
-        for (auto address : response.results) {
+        for (auto address : response.get_results()) {
             if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
                 address == "2001:858:2:2:aabb::563b:1e28") {
                 found = true;
@@ -151,8 +151,8 @@ TEST_CASE("A specific custom resolver works as expected") {
 
     auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
                            [&](ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 1);
-        REQUIRE(response.results[0] == "nova.torproject.org");
+        REQUIRE(response.get_results().size() == 1);
+        REQUIRE(response.get_results()[0] == "nova.torproject.org");
         ight_break_loop();
     });
     ight_loop();
@@ -163,8 +163,8 @@ TEST_CASE("A request to a nonexistent server times out") {
     auto reso = ight::DNSResolver("130.192.91.231", "1");
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 0);
-        REQUIRE(response.code == DNS_ERR_TIMEOUT);
+        REQUIRE(response.get_results().size() == 0);
+        REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
         ight_break_loop();
     });
 
@@ -180,8 +180,8 @@ TEST_CASE("If the resolver dies, the requests are aborted") {
     auto reso = new ight::DNSResolver("130.192.91.231");
     auto r1 = reso->request("A", "www.neubot.org", [&](
                             ight::DNSResponse&& response) {
-        REQUIRE(response.results.size() == 0);
-        REQUIRE(response.code == DNS_ERR_SHUTDOWN);
+        REQUIRE(response.get_results().size() == 0);
+        REQUIRE(response.get_evdns_status() == DNS_ERR_SHUTDOWN);
         ight_break_loop();
     });
 
@@ -233,7 +233,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     for (auto i = 0; i < 16; ++i) {
         auto r = reso.request("A", "www.neubot.org", [&](
                               ight::DNSResponse&& response) {
-            total += response.rtt;
+            total += response.get_rtt();
             count += 1;
             ight_break_loop();
         });
@@ -275,8 +275,8 @@ TEST_CASE("Make sure we can override host and number of tries") {
     auto reso = ight::DNSResolver("127.0.0.1:5353", "2");
     auto r = reso.request("A", "www.neubot.org", [&](
                           ight::DNSResponse response) {
-        REQUIRE(response.results.size() == 0);
-        REQUIRE(response.code == DNS_ERR_TIMEOUT);
+        REQUIRE(response.get_results().size() == 0);
+        REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
         ight_break_loop();
     });
     ight_loop();

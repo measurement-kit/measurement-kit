@@ -30,7 +30,7 @@ class DNSRequestImpl;  // Defined in net/dns.cpp
 // The constructor receives the fields returned by evdns and converts
 // them in a format suitable to compile OONI's reports.
 //
-struct DNSResponse {
+class DNSResponse {
 
     std::string name;
     std::string query_type;
@@ -43,11 +43,56 @@ struct DNSResponse {
 
     std::vector<std::string> results;
 
+public:
     DNSResponse(void);
 
     DNSResponse(std::string name, std::string query_type, std::string resolver,
                 int code, char type, int count, int ttl, double rtt,
                 void *addresses);
+
+    std::vector<std::string> get_results(void) {
+        return results;
+    }
+    std::string get_query_name(void) {
+        return name;
+    }
+    std::string get_reply_type(void) {
+        return reply_type;
+    }
+    std::string get_reply_class(void) {
+        return reply_class;
+    }
+    std::string get_reply_authoritative(void) {
+        return "unknown";
+    }
+    std::string get_query(void) {
+        std::string s;
+        s += "'[Query(''" + name + "'',1,1)]'";  // XXX
+        return s;
+    }
+    std::string get_query_type(void) {
+        return query_type;
+    }
+    std::vector<std::string> get_resolver(void) {
+        auto pos = resolver.find(":");
+        if (pos == std::string::npos) {
+            return {resolver, "53"};
+        }
+        return {resolver.substr(0, pos),
+            resolver.substr(pos + 1)};
+    }
+    int get_evdns_status(void) {
+        return code;
+    }
+    std::string get_failure(void) {
+        return "failure";  // FIXME map `code` to OONI's failures
+    }
+    int get_ttl(void) {
+        return ttl;
+    }
+    double get_rtt(void) {
+        return rtt;
+    }
 };
 
 //
