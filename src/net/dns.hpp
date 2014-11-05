@@ -174,9 +174,11 @@ class DNSResolver {
     DNSResolver& operator=(DNSResolver& /*other*/) = delete;
     DNSResolver(DNSResolver&& other) {
         std::swap(base, other.base);
+        std::swap(nameserver, other.nameserver);
     }
     DNSResolver& operator=(DNSResolver&& other) {
         std::swap(base, other.base);
+        std::swap(nameserver, other.nameserver);
         return *this;
     }
 };
