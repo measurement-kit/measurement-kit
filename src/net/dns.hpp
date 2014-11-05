@@ -12,9 +12,7 @@
 // DNS client functionality
 //
 
-#include "common/log.h"
 #include "common/poller.h"
-#include "common/utils.h"
 
 #include <functional>
 #include <vector>

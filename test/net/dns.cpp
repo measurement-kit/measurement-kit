@@ -14,6 +14,8 @@
 
 #include "net/dns.hpp"
 
+#include "common/log.h"
+
 TEST_CASE("The system resolver works as expected") {
 
     auto d = IghtDelayedCall(10.0, [](void) {

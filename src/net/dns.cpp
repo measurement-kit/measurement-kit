@@ -7,6 +7,9 @@
 
 #include "net/dns.hpp"
 
+#include "common/log.h"
+#include "common/utils.h"
+
 #include <event2/dns.h>
 #include <arpa/inet.h>
 
