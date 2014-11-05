@@ -63,7 +63,7 @@ public:
         return query_class;
     }
     std::string get_reply_authoritative(void) {
-        return "unknown";
+        return "unknown";  /* TODO */
     }
     std::vector<std::string> get_resolver(void) {
         if (resolver == "") {
