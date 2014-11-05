@@ -18,8 +18,11 @@
 
 TEST_CASE("The system resolver works as expected") {
 
-    auto d = IghtDelayedCall(10.0, [](void) {
-        throw std::runtime_error("Test failed");
+    auto failed = false;
+
+    auto d = IghtDelayedCall(10.0, [&](void) {
+        failed = true;
+        ight_break_loop();
     });
 
     auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
@@ -100,12 +103,17 @@ TEST_CASE("The system resolver works as expected") {
         ight_break_loop();
     });
     ight_loop();
+
+    REQUIRE(!failed);
 }
 
 TEST_CASE("The default custom resolver works as expected") {
 
-    auto d = IghtDelayedCall(10.0, [](void) {
-        throw std::runtime_error("Test failed");
+    auto failed = false;
+
+    auto d = IghtDelayedCall(10.0, [&](void) {
+        failed = true;
+        ight_break_loop();
     });
 
     auto reso = ight::DNSResolver();
@@ -188,12 +196,17 @@ TEST_CASE("The default custom resolver works as expected") {
         ight_break_loop();
     });
     ight_loop();
+
+    REQUIRE(!failed);
 }
 
 TEST_CASE("A specific custom resolver works as expected") {
 
-    auto d = IghtDelayedCall(10.0, [](void) {
-        throw std::runtime_error("Test failed");
+    auto failed = false;
+
+    auto d = IghtDelayedCall(10.0, [&](void) {
+        failed = true;
+        ight_break_loop();
     });
 
     auto reso = ight::DNSResolver("8.8.4.4");
@@ -276,18 +289,23 @@ TEST_CASE("A specific custom resolver works as expected") {
         ight_break_loop();
     });
     ight_loop();
+
+    REQUIRE(!failed);
 }
 
 TEST_CASE("Cancel is idempotent") {
 
     auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
                                ight::DNSResponse&& /*response*/) {
-        throw std::runtime_error("Test failed");
+        // nothing
     });
 
     r1.cancel();
     r1.cancel();
     r1.cancel();
+
+    // Here we only want to see that multiple cancel()s followed
+    // by the object being destroyed cause no harm
 }
 
 TEST_CASE("A request to a nonexistent server times out") {
@@ -309,11 +327,15 @@ TEST_CASE("A request to a nonexistent server times out") {
         ight_break_loop();
     });
 
-    auto d = IghtDelayedCall(10.0, [](void) {
-        throw std::runtime_error("Test failed");
+    auto failed = false;
+    auto d = IghtDelayedCall(10.0, [&](void) {
+        failed = true;
+        ight_break_loop();
     });
 
     ight_loop();
+
+    REQUIRE(!failed);
 }
 
 TEST_CASE("If the resolver dies, the requests are aborted") {
@@ -338,19 +360,27 @@ TEST_CASE("If the resolver dies, the requests are aborted") {
     auto d1 = IghtDelayedCall(0.1, [&](void) {
         delete reso;  // Destroy the resolver and see what happens
     });
-    auto d2 = IghtDelayedCall(1.0, [](void) {
-        throw std::runtime_error("Test failed");
+
+    auto failed = false;
+    auto d2 = IghtDelayedCall(1.0, [&](void) {
+        failed = true;
+        ight_break_loop();
     });
 
     ight_loop();
+
+    REQUIRE(!failed);
 }
 
 TEST_CASE("It is safe to forget about pending requests") {
 
+    auto failed = false;
+
     {
         auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
                                    ight::DNSResponse&& /*response*/) {
-            throw std::runtime_error("Should not happen");
+            failed = true;
+            ight_break_loop();
         });
 
     }  // This should kill r1
@@ -360,6 +390,8 @@ TEST_CASE("It is safe to forget about pending requests") {
     });
 
     ight_loop();
+
+    REQUIRE(!failed);
 }
 
 TEST_CASE("It is safe to cancel requests in flight") {
