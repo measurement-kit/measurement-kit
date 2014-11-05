@@ -63,7 +63,7 @@ class DNSRequest {
 
   public:
     DNSRequest(std::string query, std::string address,
-               std::function<void(DNSResponse&&)> func,
+               std::function<void(DNSResponse&&)>&& func,
                evdns_base *dnsb = NULL);
 
     DNSRequest(DNSRequest& /*other*/) = delete;
@@ -111,8 +111,8 @@ class DNSResolver {
 
     // Syntactic sugar:
     DNSRequest request(std::string query, std::string address,
-                       std::function<void(DNSResponse&&)> func) {
-        return DNSRequest(query, address, func, get_evdns_base());
+                       std::function<void(DNSResponse&&)>&& func) {
+        return DNSRequest(query, address, std::move(func), get_evdns_base());
     }
 
     ~DNSResolver(void) {

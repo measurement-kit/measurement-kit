@@ -19,7 +19,7 @@ namespace ight {
 // Implementation of DNSRequest.
 //
 // This is the internal object thanks to which DNSRequest is movable. Of
-// course, DNSRequestState is not movable, since its address is passed to
+// course, DNSRequestImpl is not movable, since its address is passed to
 // one of the many evnds delayed requests functions.
 //
 class DNSRequestImpl {
@@ -37,8 +37,8 @@ class DNSRequestImpl {
     //     already running (pending_cb is set)
     //
     // For the above reason this class does not explicitly
-    // cancel pending evdns requests and uses a cancelled bool
-    // to keep track of cancelled requests.
+    // cancel pending evdns requests and uses the `cancelled`
+    // variable to keep track of cancelled requests.
     //
 
     std::function<void(DNSResponse&&)> callback;
@@ -132,7 +132,7 @@ class DNSRequestImpl {
 
   public:
     DNSRequestImpl(std::string query, std::string address,
-                   std::function<void(DNSResponse&&)> f,
+                   std::function<void(DNSResponse&&)>&& f,
                    evdns_base *base) : callback(f) {
 
         //
@@ -189,13 +189,13 @@ using namespace ight;
 //
 
 DNSRequest::DNSRequest(std::string query, std::string address,
-                       std::function<void(DNSResponse&&)> func,
+                       std::function<void(DNSResponse&&)>&& func,
                        evdns_base *dnsb)
 {
     if (dnsb == NULL) {
         dnsb = ight_get_global_evdns_base();
     }
-    impl = new DNSRequestImpl(query, address, func, dnsb);
+    impl = new DNSRequestImpl(query, address, std::move(func), dnsb);
 }
 
 DNSRequest::~DNSRequest(void)
