@@ -16,6 +16,25 @@
 
 #include "common/log.h"
 
+TEST_CASE("The empty DNSResponse has sensible fields") {
+    auto response = ight::DNSResponse();
+    REQUIRE(response.get_query_name() == "");
+    REQUIRE(response.get_query_type() == "");
+    REQUIRE(response.get_query_class() == "");
+    //
+    // Not everything is empty, but an error is set (DNS_ERR_UNKNOWN)
+    // and, hey, I think this is acceptable.
+    //
+    REQUIRE(response.get_reply_authoritative() == "unknown");
+    REQUIRE(response.get_resolver()[0] == "<default>");
+    REQUIRE(response.get_resolver()[1] == "53");
+    REQUIRE(response.get_evdns_status() == DNS_ERR_UNKNOWN);
+    REQUIRE(response.get_failure() == "unknown failure 66");
+    REQUIRE(response.get_results().size() == 0);
+    REQUIRE(response.get_rtt() == 0.0);
+    REQUIRE(response.get_ttl() == 0);
+}
+
 TEST_CASE("The system resolver works as expected") {
 
     auto failed = false;

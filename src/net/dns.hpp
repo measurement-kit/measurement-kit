@@ -37,8 +37,8 @@ class DNSResponse {
     std::string query_class;
     std::string resolver;
     int code;
-    int ttl;
     double rtt;
+    int ttl;
 
     std::vector<std::string> results;
 

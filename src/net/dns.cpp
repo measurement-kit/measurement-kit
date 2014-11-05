@@ -19,7 +19,7 @@ using namespace ight;
 // DNS response.
 //
 
-DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN)
+DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
 {
     // nothing
 }
