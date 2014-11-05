@@ -124,7 +124,11 @@ class DNSRequest {
         return (*this);
     }
 
-    ~DNSRequest(void);
+    void cancel(void);
+
+    ~DNSRequest(void) {
+        cancel();
+    }
 };
 
 //

@@ -219,7 +219,8 @@ DNSRequest::DNSRequest(std::string query, std::string address,
                               dnsb, resolver);
 }
 
-DNSRequest::~DNSRequest(void)
+void
+DNSRequest::cancel(void)
 {
     if (impl == nullptr) {
         return;

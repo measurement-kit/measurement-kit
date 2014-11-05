@@ -158,6 +158,18 @@ TEST_CASE("A specific custom resolver works as expected") {
     ight_loop();
 }
 
+TEST_CASE("Cancel is idempotent") {
+
+    auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
+                               ight::DNSResponse&& /*response*/) {
+        throw std::runtime_error("Test failed");
+    });
+
+    r1.cancel();
+    r1.cancel();
+    r1.cancel();
+}
+
 TEST_CASE("A request to a nonexistent server times out") {
 
     auto reso = ight::DNSResolver("130.192.91.231", "1");
@@ -252,6 +264,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
         }, reso.get_evdns_base());
         auto d = IghtDelayedCall(avgrtt, [&](void) {
             ight_warn("- cancel");
+            r->cancel();
             ight_break_loop();
         });
         ight_loop();
