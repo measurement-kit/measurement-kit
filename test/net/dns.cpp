@@ -581,14 +581,16 @@ TEST_CASE("It is safe to cancel requests in flight") {
     for (auto i = 0; i < 16; ++i) {
         auto r = reso.request("A", "www.neubot.org", [&](
                               ight::DNSResponse&& response) {
-            REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-            // Assuming all the other fields are OK
-            total += response.get_rtt();
-            count += 1;
+            if (response.get_evdns_status() == DNS_ERR_NONE) {
+                total += response.get_rtt();
+                count += 1;
+            }
             ight_break_loop();
         });
         ight_loop();
     }
+    // We need at lest 8 good responses to compute the average
+    REQUIRE(count > 8);
     auto avgrtt = total / count;
 
     // Step #2: attempt to unschedule responses when they are due
