@@ -58,6 +58,12 @@ struct IghtLibevent {
 	std::function<void(evdns_base*, int)> evdns_base_free =
 	    ::evdns_base_free;
 
+	std::function<int(evdns_base *, const char *)>
+	    evdns_base_nameserver_ip_add = ::evdns_base_nameserver_ip_add;
+
+	std::function<int(evdns_base *, const char *, const char *)>
+	    evdns_base_set_option = ::evdns_base_set_option;
+
 	/*
 	 * event
 	 */

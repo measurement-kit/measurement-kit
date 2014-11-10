@@ -150,12 +150,13 @@ class DNSRequest {
 class DNSResolver {
     std::string nameserver = "";
     evdns_base *base = NULL;
+    IghtLibevent *libevent = IghtGlobalLibevent::get();
 
     void cleanup(void);
 
   public:
     DNSResolver(std::string nameserver = "", std::string attempts = "",
-                IghtPoller *poller = NULL);
+                IghtPoller *poller = NULL, IghtLibevent *lev = NULL);
 
     evdns_base *get_evdns_base(void);
 
@@ -175,10 +176,12 @@ class DNSResolver {
     DNSResolver(DNSResolver&& other) {
         std::swap(base, other.base);
         std::swap(nameserver, other.nameserver);
+        std::swap(libevent, other.libevent);
     }
     DNSResolver& operator=(DNSResolver&& other) {
         std::swap(base, other.base);
         std::swap(nameserver, other.nameserver);
+        std::swap(libevent, other.libevent);
         return *this;
     }
 };

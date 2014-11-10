@@ -675,3 +675,59 @@ TEST_CASE("Evdns errors are correctly mapped to OONI failures") {
     REQUIRE(ight::DNSResponse::map_failure_(1026)
             == "unknown failure 1026");
 }
+
+//
+// DNSResolver tests using mocked libevent
+//
+
+TEST_CASE("DNSResolver: evdns_base_new failure is correctly handled") {
+    auto libevent = IghtLibevent();
+
+    libevent.evdns_base_new = [](event_base *, int) {
+        return (evdns_base *) NULL;
+    };
+
+    // Handle the branch where nameserver is set
+    REQUIRE_THROWS(ight::DNSResolver("8.8.8.8", "", NULL, &libevent));
+
+    // Handle the branch using the default nameserver
+    REQUIRE_THROWS(ight::DNSResolver("", "", NULL, &libevent));
+}
+
+TEST_CASE(
+  "DNSResolver: evdns_base_nameserver_ip_add failure is correctly handled") {
+    auto libevent = IghtLibevent();
+
+    libevent.evdns_base_nameserver_ip_add = [](evdns_base *, const char *) {
+        return -1;
+    };
+
+    REQUIRE_THROWS(ight::DNSResolver("8.8.8.8", "", NULL, &libevent));
+}
+
+TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
+    auto libevent = IghtLibevent();
+
+    libevent.evdns_base_set_option = [](evdns_base *, const char *,
+      const char *) {
+        return -1;
+    };
+
+    REQUIRE_THROWS(ight::DNSResolver("", "1", NULL, &libevent));
+}
+
+TEST_CASE("DNSResolver: evdns_base_free is called") {
+    auto libevent = IghtLibevent();
+    auto called = false;
+
+    libevent.evdns_base_free = [&](evdns_base *p, int f) {
+        ::evdns_base_free(p, f);
+        called = true;
+    };
+
+    {
+        ight::DNSResolver("", "", NULL, &libevent);
+    }
+
+    REQUIRE(called);
+}

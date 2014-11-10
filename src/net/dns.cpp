@@ -340,35 +340,39 @@ DNSResolver::cleanup(void)
         // Note: `1` means that pending requests are notified that
         // this evdns_base is being closed.
         //
-        evdns_base_free(base, 1);
+        libevent->evdns_base_free(base, 1);
         base = NULL;  // Idempotent
     }
 }
 
 DNSResolver::DNSResolver(std::string nameserver, std::string attempts,
-                         IghtPoller *poller)
+                         IghtPoller *poller, IghtLibevent *lev)
         : nameserver(nameserver)
 {
-    if (nameserver == "" && attempts == "" && poller == NULL) {
+    if (nameserver == "" && attempts == "" && poller == NULL && lev == NULL) {
         // No specific options? Then let's use the default evdns_base
         return;
+    }
+    if (lev != NULL) {
+        libevent = lev;
     }
     if (poller == NULL) {
         poller = ight_get_global_poller();
     }
     auto evb = poller->get_event_base();
     if (nameserver != "") {
-        if ((base = evdns_base_new(evb, 0)) == NULL) {
+        if ((base = libevent->evdns_base_new(evb, 0)) == NULL) {
             throw std::bad_alloc();
         }
-        if (evdns_base_nameserver_ip_add(base, nameserver.c_str()) != 0) {
+        if (libevent->evdns_base_nameserver_ip_add(base,
+                         nameserver.c_str()) != 0) {
             cleanup();
             throw std::runtime_error("Cannot set server address");
         }
-    } else if ((base = evdns_base_new(evb, 1)) == NULL) {
+    } else if ((base = libevent->evdns_base_new(evb, 1)) == NULL) {
         throw std::bad_alloc();
     }
-    if (attempts != "" && evdns_base_set_option(base, "attempts",
+    if (attempts != "" && libevent->evdns_base_set_option(base, "attempts",
                           attempts.c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'attempts' option");
