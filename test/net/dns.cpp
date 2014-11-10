@@ -16,6 +16,108 @@
 
 #include "common/log.h"
 
+//
+// Class used to check whether the network is up.
+//
+// If the network is down, we skip some tests. To add such check to
+// a test, you simply need to add:
+//
+//     if (Network::is_down()) {
+//         return;
+//     }
+//
+// This class reports that the network is up if 8.8.4.4 works and returns
+// a valid IPv4 address for github.com. To reach 8.8.4.4 we use evdns, which
+// we assume to be working. If evdns is broken, 8.8.4.4 is not reachable or
+// github.com is no longer available, this class reports that the network
+// is down even if it is not actually down. All these three conditions are
+// quite unlikely, IMO, so this code should be robust enough.
+//
+class Network {
+    event_base *evbase = NULL;
+    evdns_base *dnsbase = NULL;
+    bool is_up = false;
+
+    void cleanup(void) {  // Idempotent cleanup function
+        if (dnsbase != NULL) {
+            evdns_base_free(dnsbase, 0);
+            dnsbase = NULL;
+        }
+        if (evbase != NULL) {
+            event_base_free(evbase);
+            evbase = NULL;
+        }
+    }
+
+    static void dns_callback(int result, char type, int count, int ttl,
+                             void *addresses, void *opaque) {
+
+        auto that = static_cast<Network *>(opaque);
+
+        // Suppress "unused variable" warnings
+        (void) type;
+        (void) count;
+        (void) ttl;
+        (void) addresses;
+
+        that->is_up = (result == DNS_ERR_NONE);
+
+        if (event_base_loopbreak(that->evbase) != 0) {
+            throw std::runtime_error("Cannot exit from event loop");
+        }
+    }
+
+    Network(void) {
+        if ((evbase = event_base_new()) == NULL) {
+            cleanup();
+            throw std::bad_alloc();
+        }
+
+        if ((dnsbase = evdns_base_new(evbase, 0)) == NULL) {
+            cleanup();
+            throw std::bad_alloc();
+        }
+        if (evdns_base_nameserver_ip_add(dnsbase, "8.8.4.4") != 0) {
+            cleanup();
+            throw std::runtime_error("cannot add IP address");
+        }
+
+        if (evdns_base_resolve_ipv4(dnsbase, "github.com",
+                                    DNS_QUERY_NO_SEARCH,
+                                    dns_callback, this) == NULL) {
+            cleanup();
+            throw std::runtime_error("cannot resolve 'github.com'");
+        }
+
+        if (event_base_dispatch(evbase) != 0) {
+            cleanup();
+            throw std::runtime_error("event_base_dispatch() failed");
+        }
+
+        cleanup();
+
+        if (!is_up) {
+            std::clog << "Network is down: skipping network related tests"
+                      << std::endl;
+        }
+    }
+
+    ~Network(void) {
+        cleanup();
+    }
+
+    Network(Network& /*other*/) = delete;
+    Network& operator=(Network& /*other*/) = delete;
+    Network(Network&& /*other*/) = delete;
+    Network& operator=(Network&& /*other*/) = delete;
+
+public:
+    static bool is_down(void) {
+        static Network singleton;
+        return !singleton.is_up;
+    }
+};
+
 TEST_CASE("The empty DNSResponse has sensible fields") {
     auto response = ight::DNSResponse();
     REQUIRE(response.get_query_name() == "");
@@ -43,6 +145,10 @@ TEST_CASE("DNSRequest raises if the query is unsupported") {
 }
 
 TEST_CASE("The system resolver works as expected") {
+
+    if (Network::is_down()) {
+        return;
+    }
 
     auto failed = false;
 
@@ -134,6 +240,10 @@ TEST_CASE("The system resolver works as expected") {
 }
 
 TEST_CASE("The default custom resolver works as expected") {
+
+    if (Network::is_down()) {
+        return;
+    }
 
     auto failed = false;
 
@@ -227,6 +337,10 @@ TEST_CASE("The default custom resolver works as expected") {
 }
 
 TEST_CASE("A specific custom resolver works as expected") {
+
+    if (Network::is_down()) {
+        return;
+    }
 
     auto failed = false;
 
@@ -336,6 +450,12 @@ TEST_CASE("Cancel is idempotent") {
 
 TEST_CASE("A request to a nonexistent server times out") {
 
+    //
+    // Note: this test also makes sense when the network is down, because,
+    // when the network is down, the DNS server is, in a sense, nonexistent,
+    // i.e., the request is aborted due to a timeout.
+    //
+
     auto reso = ight::DNSResolver("130.192.91.231", "1");
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
@@ -400,6 +520,12 @@ TEST_CASE("If the resolver dies, the requests are aborted") {
 
 TEST_CASE("It is safe to forget about pending requests") {
 
+    //
+    // Note: this test makes sense also when the network is down, because
+    // the internal DNSRequestImpl is killed by a timeout rather than by
+    // the receipt of a response, as happens when the network is up.
+    //
+
     auto failed = false;
 
     {
@@ -432,6 +558,10 @@ TEST_CASE("It is safe to forget about pending requests") {
 
 TEST_CASE("It is safe to cancel requests in flight") {
 
+    if (Network::is_down()) {
+        return;
+    }
+
     //
     // The general idea of this test is to measure the typical RTT with
     // respect to a server and then systematically unschedule pending DNS
@@ -451,7 +581,8 @@ TEST_CASE("It is safe to cancel requests in flight") {
     for (auto i = 0; i < 16; ++i) {
         auto r = reso.request("A", "www.neubot.org", [&](
                               ight::DNSResponse&& response) {
-            // Assuming all the fields are OK
+            REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+            // Assuming all the other fields are OK
             total += response.get_rtt();
             count += 1;
             ight_break_loop();
@@ -465,8 +596,11 @@ TEST_CASE("It is safe to cancel requests in flight") {
     //for (;;) {  // only try this at home
     for (auto i = 0; i < 16; ++i) {
         auto r = new ight::DNSRequest("A", "www.neubot.org", [&](
-                                      ight::DNSResponse&& /*response*/) {
-            // Ignoring all the fields here
+                                      ight::DNSResponse&& response) {
+            auto status_ok = (response.get_evdns_status() == DNS_ERR_CANCEL
+                    || response.get_evdns_status() == DNS_ERR_NONE);
+            REQUIRE(status_ok);
+            // Ignoring all the other fields here
             ight_warn("- break_loop");
             ight_break_loop();
         }, reso.get_evdns_base());
@@ -496,9 +630,9 @@ TEST_CASE("Make sure we can override host and number of tries") {
     auto reso = ight::DNSResolver("127.0.0.1:5353", "2");
     auto r = reso.request("A", "www.neubot.org", [&](
                           ight::DNSResponse response) {
-        // Assuming all the other fields are OK
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
+        // Assuming all the other fields are OK
         ight_break_loop();
     });
     ight_loop();
