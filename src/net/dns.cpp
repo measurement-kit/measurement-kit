@@ -351,6 +351,7 @@ DNSResolver::DNSResolver(std::string nameserver, std::string attempts,
 {
     if (nameserver == "" && attempts == "" && poller == NULL && lev == NULL) {
         // No specific options? Then let's use the default evdns_base
+        // Note: this is to quickly create objects used by move semantic
         return;
     }
     if (lev != NULL) {
