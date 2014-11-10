@@ -702,7 +702,15 @@ TEST_CASE(
         return -1;
     };
 
+    // Also make sure that the destructor is called
+    auto called = false;
+    libevent.evdns_base_free = [&](evdns_base *p, int f) {
+        ::evdns_base_free(p, f);
+        called = true;
+    };
+
     REQUIRE_THROWS(ight::DNSResolver("8.8.8.8", "", NULL, &libevent));
+    REQUIRE(called);
 }
 
 TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
@@ -713,13 +721,21 @@ TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
         return -1;
     };
 
+    // Also make sure that the destructor is called
+    auto called = false;
+    libevent.evdns_base_free = [&](evdns_base *p, int f) {
+        ::evdns_base_free(p, f);
+        called = true;
+    };
+
     REQUIRE_THROWS(ight::DNSResolver("", "1", NULL, &libevent));
+    REQUIRE(called);
 }
 
 TEST_CASE("DNSResolver: evdns_base_free is called") {
     auto libevent = IghtLibevent();
-    auto called = false;
 
+    auto called = false;
     libevent.evdns_base_free = [&](evdns_base *p, int f) {
         ::evdns_base_free(p, f);
         called = true;
