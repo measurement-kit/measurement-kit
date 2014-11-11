@@ -113,13 +113,8 @@ class DNSRequest {
 
     DNSRequest(DNSRequest& /*other*/) = delete;
     DNSRequest& operator=(DNSRequest& /*other*/) = delete;
-    DNSRequest(DNSRequest&& other) {
-        std::swap(impl, other.impl);
-    }
-    DNSRequest& operator=(DNSRequest&& other) {
-        std::swap(impl, other.impl);
-        return (*this);
-    }
+    DNSRequest(DNSRequest&& /*other*/) = default;
+    DNSRequest& operator=(DNSRequest&& /*other*/) = default;
 
     void cancel(void);
 
@@ -173,17 +168,8 @@ class DNSResolver {
 
     DNSResolver(DNSResolver& /*other*/) = delete;
     DNSResolver& operator=(DNSResolver& /*other*/) = delete;
-    DNSResolver(DNSResolver&& other) {
-        std::swap(base, other.base);
-        std::swap(nameserver, other.nameserver);
-        std::swap(libevent, other.libevent);
-    }
-    DNSResolver& operator=(DNSResolver&& other) {
-        std::swap(base, other.base);
-        std::swap(nameserver, other.nameserver);
-        std::swap(libevent, other.libevent);
-        return *this;
-    }
+    DNSResolver(DNSResolver&& /*other*/) = default;
+    DNSResolver& operator=(DNSResolver&& /*other*/) = default;
 };
 
 }  // namespace
