@@ -113,6 +113,7 @@ class DNSRequest {
 
     DNSRequest(DNSRequest& /*other*/) = delete;
     DNSRequest& operator=(DNSRequest& /*other*/) = delete;
+
     DNSRequest(DNSRequest&& /*other*/) = default;
     DNSRequest& operator=(DNSRequest&& /*other*/) = default;
 
@@ -168,6 +169,7 @@ class DNSResolver {
 
     DNSResolver(DNSResolver& /*other*/) = delete;
     DNSResolver& operator=(DNSResolver& /*other*/) = delete;
+
     DNSResolver(DNSResolver&& /*other*/) = default;
     DNSResolver& operator=(DNSResolver&& /*other*/) = default;
 };
