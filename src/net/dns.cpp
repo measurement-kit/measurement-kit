@@ -77,24 +77,27 @@ DNSResponse::DNSResponse(std::string name_, std::string query_type_,
             ight_info("dns - IPv6");
         }
 
-        for (auto i = start_from; i < count; ++i) {
+        //
+        // Note: make sure in advance `i * size` won't overflow
+        // This is here only for robustness
+        //
+        if (count >= 0 && count <= INT_MAX / size + 1) {
 
-            // Make sure we don't overflow
-            if (i > INT_MAX / size) {
-                ight_warn("dns - too many addresses");
-                code = DNS_ERR_UNKNOWN;
-                break;
+            for (auto i = start_from; i < count; ++i) {
+                // Note: address already in network byte order
+                if (libevent->inet_ntop(family, (char *)addresses + i * size,
+                            string, sizeof (string)) == NULL) {
+                    ight_warn("dns - unexpected inet_ntop failure");
+                    code = DNS_ERR_UNKNOWN;
+                    break;
+                }
+                ight_info("dns - adding '%s'", string);
+                results.push_back(string);
             }
 
-            // Note: address already in network byte order
-            if (libevent->inet_ntop(family, (char *)addresses + i * size,
-                string, sizeof (string)) == NULL) {
-                ight_warn("dns - unexpected inet_ntop failure");
-                code = DNS_ERR_UNKNOWN;
-                break;
-            }
-            ight_info("dns - adding '%s'", string);
-            results.push_back(string);
+        } else {
+            ight_warn("dns - too many addresses");
+            code = DNS_ERR_UNKNOWN;
         }
 
     } else {

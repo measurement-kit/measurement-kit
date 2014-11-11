@@ -1011,10 +1011,11 @@ TEST_CASE("DNSResponse returns an error when passed too many records") {
                 last_good - 10);              // Start from this value
             if (x <= last_good) {
                 REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
+                REQUIRE(r.get_results().size() > 0);
             } else {
                 REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+                REQUIRE(r.get_results().size() == 0);
             }
-            REQUIRE(r.get_results().size() > 0);
         }
     }
 
@@ -1028,10 +1029,11 @@ TEST_CASE("DNSResponse returns an error when passed too many records") {
                 last_good - 10);              // Start from this value
             if (x <= last_good) {
                 REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
+                REQUIRE(r.get_results().size() > 0);
             } else {
                 REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+                REQUIRE(r.get_results().size() == 0);
             }
-            REQUIRE(r.get_results().size() > 0);
         }
     }
 }
