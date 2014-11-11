@@ -23,13 +23,13 @@ DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
     // nothing
 }
 
-DNSResponse::DNSResponse(std::string name, std::string query_type,
-                         std::string query_class, std::string resolver,
-                         int code, char type, int count,
-                         int ttl, double rtt, void *addresses,
+DNSResponse::DNSResponse(std::string name_, std::string query_type_,
+                         std::string query_class_, std::string resolver_,
+                         int code_, char type, int count,
+                         int ttl_, double rtt_, void *addresses,
                          IghtLibevent *libevent)
-    : name(name), query_type(query_type), query_class(query_class),
-      resolver(resolver), code(code), rtt(rtt), ttl(ttl)
+    : name(name_), query_type(query_type_), query_class(query_class_),
+      resolver(resolver_), code(code_), rtt(rtt_), ttl(ttl_)
 {
     if (libevent == NULL) {
         libevent = IghtGlobalLibevent::get();
@@ -251,9 +251,9 @@ class DNSRequestImpl {
   public:
     DNSRequestImpl(std::string query, std::string address,
                    std::function<void(DNSResponse&&)>&& f,
-                   evdns_base *base, std::string resolver,
+                   evdns_base *base, std::string resolver_,
                    IghtLibevent *lev)
-            : callback(f), name(address), resolver(resolver), libevent(lev) {
+            : callback(f), name(address), resolver(resolver_), libevent(lev) {
 
         //
         // We explain above why we don't store the return value
@@ -358,9 +358,9 @@ DNSResolver::cleanup(void)
     }
 }
 
-DNSResolver::DNSResolver(std::string nameserver, std::string attempts,
+DNSResolver::DNSResolver(std::string nameserver_, std::string attempts,
                          IghtPoller *poller, IghtLibevent *lev)
-        : nameserver(nameserver)
+        : nameserver(nameserver_)
 {
     if (nameserver == "" && attempts == "" && poller == NULL && lev == NULL) {
         // No specific options? Then let's use the default evdns_base
