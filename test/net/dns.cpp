@@ -677,8 +677,37 @@ TEST_CASE("Evdns errors are correctly mapped to OONI failures") {
 }
 
 //
-// DNSResolver tests using mocked libevent
+// DNSResolver unit tests
 //
+
+TEST_CASE("DNSResolver: evdns_base_new is not called for default options") {
+    auto libevent = IghtLibevent();
+
+    libevent.evdns_base_new = [](event_base *, int) {
+        REQUIRE(false);  // We should not land here...
+        return (evdns_base *) NULL;
+    };
+
+    {
+        ight::DNSResolver();
+    }
+
+    {
+        ight::DNSResolver("");
+    }
+
+    {
+        ight::DNSResolver("", "");
+    }
+
+    {
+        ight::DNSResolver("", "", NULL);
+    }
+
+    {
+        ight::DNSResolver("", "", NULL, NULL);
+    }
+}
 
 TEST_CASE("DNSResolver: evdns_base_new failure is correctly handled") {
     auto libevent = IghtLibevent();
@@ -732,18 +761,88 @@ TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
     REQUIRE(called);
 }
 
-TEST_CASE("DNSResolver: evdns_base_free is called") {
+TEST_CASE("DNSResolver: cleanup works correctly when we have allocated") {
     auto libevent = IghtLibevent();
 
-    auto called = false;
+    auto called = 0;
     libevent.evdns_base_free = [&](evdns_base *p, int f) {
         ::evdns_base_free(p, f);
-        called = true;
+        called++;
     };
 
     {
         ight::DNSResolver("", "", NULL, &libevent);
     }
 
-    REQUIRE(called);
+    REQUIRE(called == 1);
+}
+
+TEST_CASE("DNSResolver: cleanup works correctly when we have not allocated") {
+    auto libevent = IghtLibevent();
+
+    auto called = 0;
+    libevent.evdns_base_free = [&](evdns_base *p, int f) {
+        ::evdns_base_free(p, f);
+        called++;
+    };
+
+    {
+        ight::DNSResolver("", "", NULL, NULL);
+    }
+
+    REQUIRE(called == 0);
+}
+
+TEST_CASE("DNSResolver: get_evdns_base behaves correctly") {
+
+    // Cases in which it must return the global evdns_base:
+
+    {
+        auto r = ight::DNSResolver();
+        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
+    }
+
+    {
+        auto r = ight::DNSResolver("");
+        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
+    }
+
+    {
+        auto r = ight::DNSResolver("", "");
+        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
+    }
+
+    {
+        auto r = ight::DNSResolver("", "", NULL);
+        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
+    }
+
+    {
+        auto r = ight::DNSResolver("", "", NULL, NULL);
+        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
+    }
+
+    // Cases in which it must return a private evdns_base:
+
+    {
+        auto r = ight::DNSResolver("8.8.8.8", "", NULL, NULL);
+        REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
+    }
+
+    {
+        auto r = ight::DNSResolver("", "1", NULL, NULL);
+        REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
+    }
+
+    {
+        IghtPoller p;
+        auto r = ight::DNSResolver("", "", &p, NULL);
+        REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
+    }
+
+    {
+        IghtLibevent libevent;
+        auto r = ight::DNSResolver("", "", NULL, &libevent);
+        REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
+    }
 }
