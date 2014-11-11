@@ -26,10 +26,15 @@ DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
 DNSResponse::DNSResponse(std::string name, std::string query_type,
                          std::string query_class, std::string resolver,
                          int code, char type, int count,
-                         int ttl, double rtt, void *addresses)
+                         int ttl, double rtt, void *addresses,
+                         IghtLibevent *libevent)
     : name(name), query_type(query_type), query_class(query_class),
       resolver(resolver), code(code), rtt(rtt), ttl(ttl)
 {
+    if (libevent == NULL) {
+        libevent = IghtGlobalLibevent::get();
+    }
+
     if (code != DNS_ERR_NONE) {
         ight_info("dns - request failed: %d", code);
         // do not process the results if there was an error
@@ -62,7 +67,7 @@ DNSResponse::DNSResponse(std::string name, std::string query_type,
                 break;
             }
             // Note: address already in network byte order
-            if (inet_ntop(family, (char *)addresses + i * size,
+            if (libevent->inet_ntop(family, (char *)addresses + i * size,
                 string, sizeof (string)) == NULL) {
                 ight_warn("dns - unexpected inet_ntop failure");
                 code = DNS_ERR_UNKNOWN;

@@ -108,6 +108,9 @@ struct IghtLibevent {
 	//
 
 	std::function<int(int, const char *, void *)> inet_pton = ::inet_pton;
+
+	std::function<const char *(int, const void *, char *, socklen_t)>
+	    inet_ntop = ::inet_ntop;
 };
 
 struct IghtGlobalLibevent {

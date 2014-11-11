@@ -48,7 +48,7 @@ public:
     DNSResponse(std::string name, std::string query_type,
                 std::string query_class, std::string resolver,
                 int code, char type, int count, int ttl, double rtt,
-                void *addresses);
+                void *addresses, IghtLibevent *libevent = NULL);
 
     std::vector<std::string> get_results(void) {
         return results;
