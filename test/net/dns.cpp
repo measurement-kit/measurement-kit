@@ -677,7 +677,7 @@ TEST_CASE("Evdns errors are correctly mapped to OONI failures") {
 }
 
 //
-// DNSResolver unit tests
+// DNSResolver tests using mocked libevent
 //
 
 TEST_CASE("DNSResolver: evdns_base_new is not called for default options") {
@@ -845,4 +845,106 @@ TEST_CASE("DNSResolver: get_evdns_base behaves correctly") {
         auto r = ight::DNSResolver("", "", NULL, &libevent);
         REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
     }
+}
+
+//
+// DNSRequest tests using mocked libevent
+//
+
+TEST_CASE("DNSRequest deals with failing evdns_base_resolve_ipv4") {
+    IghtLibevent libevent;
+
+    libevent.evdns_base_resolve_ipv4 = [](evdns_base *, const char *, int,
+                                          evdns_callback_type, void *) {
+        return (evdns_request *) NULL;
+    };
+
+    REQUIRE_THROWS(ight::DNSRequest("A", "www.google.com", [](
+                                    ight::DNSResponse&&) {
+        /* nothing */
+    }, NULL, "", &libevent));
+}
+
+TEST_CASE("DNSRequest deals with failing evdns_base_resolve_ipv6") {
+    IghtLibevent libevent;
+
+    libevent.evdns_base_resolve_ipv6 = [](evdns_base *, const char *, int,
+                                          evdns_callback_type, void *) {
+        return (evdns_request *) NULL;
+    };
+
+    REQUIRE_THROWS(ight::DNSRequest("AAAA", "github.com", [](
+                                    ight::DNSResponse&&) {
+        /* nothing */
+    }, NULL, "", &libevent));
+}
+
+TEST_CASE("DNSRequest deals with failing evdns_base_resolve_reverse") {
+    IghtLibevent libevent;
+
+    libevent.evdns_base_resolve_reverse = [](evdns_base *,
+                                             const struct in_addr *,
+                                             int,
+                                             evdns_callback_type,
+                                             void *) {
+        return (evdns_request *) NULL;
+    };
+
+    REQUIRE_THROWS(ight::DNSRequest("REVERSE_A", "8.8.8.8", [](
+                                    ight::DNSResponse&&) {
+        /* nothing */
+    }, NULL, "", &libevent));
+}
+
+TEST_CASE("DNSRequest deals with failing evdns_base_resolve_reverse_ipv6") {
+    IghtLibevent libevent;
+
+    libevent.evdns_base_resolve_reverse_ipv6 = [](evdns_base *,
+                                                  const struct in6_addr *,
+                                                  int,
+                                                  evdns_callback_type,
+                                                  void *) {
+        return (evdns_request *) NULL;
+    };
+
+    REQUIRE_THROWS(ight::DNSRequest("REVERSE_AAAA", "::1", [](
+                                    ight::DNSResponse&&) {
+        /* nothing */
+    }, NULL, "", &libevent));
+}
+
+TEST_CASE("DNSRequest deals with inet_pton returning 0") {
+    IghtLibevent libevent;
+
+    libevent.inet_pton = [](int, const char *, void *) {
+        return 0;
+    };
+
+    REQUIRE_THROWS(ight::DNSRequest("REVERSE_A", "8.8.8.8", [](
+                                    ight::DNSResponse&&) {
+        /* nothing */
+    }, NULL, "", &libevent));
+
+    REQUIRE_THROWS(ight::DNSRequest("REVERSE_AAAA", "::1", [](
+                                    ight::DNSResponse&&) {
+        /* nothing */
+    }, NULL, "", &libevent));
+}
+
+TEST_CASE("DNSRequest deals with inet_pton returning -1") {
+    IghtLibevent libevent;
+
+    libevent.inet_pton = [](int, const char *, void *) {
+        return -1;
+    };
+
+    REQUIRE_THROWS(ight::DNSRequest("REVERSE_A", "8.8.8.8", [](
+                                    ight::DNSResponse&&) {
+        /* nothing */
+    }, NULL, "", &libevent));
+
+    REQUIRE_THROWS(ight::DNSRequest("REVERSE_AAAA", "::1", [](
+                                    ight::DNSResponse&&) {
+        /* nothing */
+    }, NULL, "", &libevent));
 }
