@@ -984,13 +984,15 @@ TEST_CASE("DNSResponse puts a cap on the maximum number of values processed") {
     // Any value greater than SHRT_MAX / 16 should cause an error
     {
         auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
-            DNS_ERR_NONE, DNS_IPv6_AAAA, SHRT_MAX / 16 + 1, 123, 0.11, NULL);
+            DNS_ERR_NONE, DNS_IPv6_AAAA, SHRT_MAX / 16 + 1, 123, 0.11,
+            NULL, &libevent);
         REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
         REQUIRE(r.get_results().size() == 0);
     }
     {
         auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
-            DNS_ERR_NONE, DNS_IPv6_AAAA, SHRT_MAX / 16 + 2, 123, 0.11, NULL);
+            DNS_ERR_NONE, DNS_IPv6_AAAA, SHRT_MAX / 16 + 2, 123, 0.11,
+            NULL, &libevent);
         REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
         REQUIRE(r.get_results().size() == 0);
     }
@@ -1000,13 +1002,13 @@ TEST_CASE("DNSResponse puts a cap on the maximum number of values processed") {
     // Negative values should cause no addresses to be saved
     {
         auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
-            DNS_ERR_NONE, DNS_IPv6_AAAA, -1, 123, 0.11, NULL);
+            DNS_ERR_NONE, DNS_IPv6_AAAA, -1, 123, 0.11, NULL, &libevent);
         REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(r.get_results().size() == 0);
     }
     {
         auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
-            DNS_ERR_NONE, DNS_IPv6_AAAA, -2, 123, 0.11, NULL);
+            DNS_ERR_NONE, DNS_IPv6_AAAA, -2, 123, 0.11, NULL, &libevent);
         REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(r.get_results().size() == 0);
     }
