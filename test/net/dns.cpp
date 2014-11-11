@@ -578,9 +578,6 @@ TEST_CASE("The system resolver works as expected") {
     // Note: this test also makes sure that we get sensible
     // response fields from the system resolver.
     //
-    // TODO: this should be refactored such that each request we
-    // make lives on its separate section.
-    //
 
     if (Network::is_down()) {
         return;
@@ -588,7 +585,6 @@ TEST_CASE("The system resolver works as expected") {
 
     auto failed = false;
 
-    // XXX: again, is this needed?
     auto d = IghtDelayedCall(10.0, [&](void) {
         failed = true;
         ight_break_loop();
@@ -732,8 +728,6 @@ TEST_CASE("DNSResolver: evdns_base_new failure is correctly handled") {
         return (evdns_base *) NULL;
     };
 
-    // XXX: convert to sections?
-
     // Handle the branch where nameserver is set
     REQUIRE_THROWS(ight::DNSResolver("8.8.8.8", "", NULL, &libevent));
 
@@ -782,7 +776,6 @@ TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
 TEST_CASE("DNSResolver: get_evdns_base behaves correctly") {
 
     // Cases in which it must return the global evdns_base:
-    // TODO: convert to sections?
 
     {
         auto r = ight::DNSResolver();
@@ -1103,7 +1096,6 @@ TEST_CASE("A request to a nonexistent server times out") {
         ight_break_loop();
     });
 
-    // XXX: is this needed?
     auto failed = false;
     auto d = IghtDelayedCall(10.0, [&](void) {
         failed = true;
