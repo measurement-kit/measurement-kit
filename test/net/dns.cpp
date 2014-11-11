@@ -15,6 +15,7 @@
 #include "net/dns.hpp"
 
 #include "common/log.h"
+#include "common/utils.h"
 
 //
 // Class used to check whether the network is up.
@@ -1027,4 +1028,42 @@ TEST_CASE("DNSResponse deals with unlikely inet_ntop failures") {
     REQUIRE(r.get_results().size() == 0);
 
     REQUIRE(called);
+}
+
+TEST_CASE("DNSResponse only sets RTT when the server actually replied") {
+    auto ticks = ight_time_now() - 3.0;
+
+    for (auto code = 0; code < 128; ++code) {
+        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
+            code, DNS_IPv4_A, 0, 123, ticks, NULL);
+        switch (code) {
+        case DNS_ERR_NONE:
+        case DNS_ERR_FORMAT:
+        case DNS_ERR_SERVERFAILED:
+        case DNS_ERR_NOTEXIST:
+        case DNS_ERR_NOTIMPL:
+        case DNS_ERR_REFUSED:
+        case DNS_ERR_TRUNCATED:
+        case DNS_ERR_NODATA:
+            REQUIRE(r.get_rtt() > 0);
+            break;
+        default:
+            REQUIRE(r.get_rtt() == 0);
+            break;
+        }
+    }
+}
+
+TEST_CASE("If the response type is invalid DNSResponse sets an error") {
+    for (char type = 0; type < 16; ++type) {
+        switch (type) {
+        case DNS_IPv4_A:
+        case DNS_IPv6_AAAA:
+        case DNS_PTR:
+            continue;  // Skip the known-good cases
+        }
+        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
+            DNS_ERR_NONE, type, 0, 123, 0.0, NULL);
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    }
 }
