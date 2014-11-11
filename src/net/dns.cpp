@@ -11,7 +11,6 @@
 #include "common/utils.h"
 
 #include <event2/dns.h>
-#include <arpa/inet.h>
 
 using namespace ight;
 
@@ -197,6 +196,7 @@ class DNSRequestImpl {
     std::string query_type;
     std::string query_class;
     std::string resolver;
+    IghtLibevent *libevent;
 
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
@@ -230,36 +230,39 @@ class DNSRequestImpl {
     }
 
     in_addr *ipv4_pton(std::string address, in_addr *netaddr) {
-        if (inet_pton(AF_INET, address.c_str(), netaddr) != 1)
+        if (libevent->inet_pton(AF_INET, address.c_str(), netaddr) != 1) {
             throw std::runtime_error("Invalid IPv4 address");
+        }
         return (netaddr);
     }
 
     in6_addr *ipv6_pton(std::string address, in6_addr *netaddr) {
-        if (inet_pton(AF_INET6, address.c_str(), netaddr) != 1)
+        if (libevent->inet_pton(AF_INET6, address.c_str(), netaddr) != 1) {
             throw std::runtime_error("Invalid IPv6 address");
+        }
         return (netaddr);
     }
 
   public:
     DNSRequestImpl(std::string query, std::string address,
                    std::function<void(DNSResponse&&)>&& f,
-                   evdns_base *base, std::string resolver)
-            : callback(f), name(address), resolver(resolver) {
+                   evdns_base *base, std::string resolver,
+                   IghtLibevent *lev)
+            : callback(f), name(address), resolver(resolver), libevent(lev) {
 
         //
         // We explain above why we don't store the return value
         // of the evdns_base_resolve_xxx() functions below
         //
         if (query == "A") {
-            if (evdns_base_resolve_ipv4(base, address.c_str(),
+            if (libevent->evdns_base_resolve_ipv4(base, address.c_str(),
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
             query_type = "A";
             query_class = "IN";
         } else if (query == "AAAA") {
-            if (evdns_base_resolve_ipv6(base, address.c_str(),
+            if (libevent->evdns_base_resolve_ipv6(base, address.c_str(),
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
@@ -267,7 +270,7 @@ class DNSRequestImpl {
             query_class = "IN";
         } else if (query == "REVERSE_A") {
             in_addr na;
-            if (evdns_base_resolve_reverse(base, ipv4_pton(address,
+            if (libevent->evdns_base_resolve_reverse(base, ipv4_pton(address,
                 &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
@@ -275,8 +278,9 @@ class DNSRequestImpl {
             query_class = "IN";
         } else if (query == "REVERSE_AAAA") {
             in6_addr na;
-            if (evdns_base_resolve_reverse_ipv6(base, ipv6_pton(address,
-                &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
+            if (libevent->evdns_base_resolve_reverse_ipv6(base, ipv6_pton(
+                address, &na), DNS_QUERY_NO_SEARCH, handle_resolve, this)
+                == NULL) {
                 throw std::runtime_error("Resolver error");
             }
             query_type = "PTR";
@@ -309,13 +313,17 @@ class DNSRequestImpl {
 
 DNSRequest::DNSRequest(std::string query, std::string address,
                        std::function<void(DNSResponse&&)>&& func,
-                       evdns_base *dnsb, std::string resolver)
+                       evdns_base *dnsb, std::string resolver,
+                       IghtLibevent *libevent)
 {
     if (dnsb == NULL) {
         dnsb = ight_get_global_evdns_base();
     }
+    if (libevent == NULL) {
+        libevent = IghtGlobalLibevent::get();
+    }
     impl = new DNSRequestImpl(query, address, std::move(func),
-                              dnsb, resolver);
+                              dnsb, resolver, libevent);
 }
 
 void

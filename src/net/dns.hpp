@@ -108,8 +108,8 @@ class DNSRequest {
   public:
     DNSRequest(std::string query, std::string address,
                std::function<void(DNSResponse&&)>&& func,
-               evdns_base *dnsb = NULL,
-               std::string resolver = "");
+               evdns_base *dnsb = NULL, std::string resolver = "",
+               IghtLibevent *libevent = NULL);
 
     DNSRequest(DNSRequest& /*other*/) = delete;
     DNSRequest& operator=(DNSRequest& /*other*/) = delete;
@@ -160,7 +160,7 @@ class DNSResolver {
     DNSRequest request(std::string query, std::string address,
                        std::function<void(DNSResponse&&)>&& func) {
         return DNSRequest(query, address, std::move(func), get_evdns_base(),
-                          nameserver);
+                          nameserver, libevent);
     }
 
     ~DNSResolver(void) {
