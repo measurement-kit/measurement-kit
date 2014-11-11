@@ -1006,7 +1006,7 @@ TEST_CASE("DNSResponse returns an error when passed too many records") {
         for (auto x = last_good - 5; x <= last_good + 5; x += 1) {
             auto r = ight::DNSResponse("www.google.com", "A", "IN", "8.8.8.8",
                 DNS_ERR_NONE, DNS_IPv4_A,
-                x,                            // Up to this value
+                x,                            // Total number of records
                 123, 0.11, NULL, &libevent,
                 last_good - 10);              // Start from this value
             if (x <= last_good) {
@@ -1019,12 +1019,19 @@ TEST_CASE("DNSResponse returns an error when passed too many records") {
         }
     }
 
+    SECTION("IPv4: zero records are correctly handled by the overflow check") {
+        auto r = ight::DNSResponse("www.google.com", "A", "IN", "8.8.8.8",
+            DNS_ERR_NONE, DNS_IPv4_A, 0, 123, 0.11, NULL);
+        REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(r.get_results().size() == 0);
+    }
+
     SECTION("IPv6: the overflow check behaves correctly") {
         auto last_good = INT_MAX / 16 + 1;
         for (auto x = last_good - 5; x <= last_good + 5; x += 1) {
             auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "::1",
                 DNS_ERR_NONE, DNS_IPv6_AAAA,
-                x,                            // Up to this value
+                x,                            // Total number of records
                 123, 0.11, NULL, &libevent,
                 last_good - 10);              // Start from this value
             if (x <= last_good) {
@@ -1035,6 +1042,13 @@ TEST_CASE("DNSResponse returns an error when passed too many records") {
                 REQUIRE(r.get_results().size() == 0);
             }
         }
+    }
+
+    SECTION("IPv6: zero records are correctly handled by the overflow check") {
+        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "::1",
+            DNS_ERR_NONE, DNS_IPv6_AAAA, 0, 123, 0.11, NULL);
+        REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(r.get_results().size() == 0);
     }
 }
 
