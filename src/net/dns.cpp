@@ -27,7 +27,7 @@ DNSResponse::DNSResponse(std::string name_, std::string query_type_,
                          std::string query_class_, std::string resolver_,
                          int code_, char type, int count,
                          int ttl_, double started, void *addresses,
-                         IghtLibevent *libevent)
+                         IghtLibevent *libevent, int start_from)
     : name(name_), query_type(query_type_), query_class(query_class_),
       resolver(resolver_), code(code_), ttl(ttl_)
 {
@@ -77,16 +77,10 @@ DNSResponse::DNSResponse(std::string name_, std::string query_type_,
             ight_info("dns - IPv6");
         }
 
-        for (auto i = 0; i < count; ++i) {
+        for (auto i = start_from; i < count; ++i) {
 
-            //
-            // Put arbitrary cap on the amount of addresses that we
-            // accept to handle. Replacing SHRT_MAX with INT_MAX
-            // this becomes a check for multiplication-caused overflow,
-            // but also becomes very slow to test. So, I use SHRT_MAX
-            // that already seems to me very very large.
-            //
-            if (i > SHRT_MAX / size) {
+            // Make sure we don't overflow
+            if (i > INT_MAX / size) {
                 ight_warn("dns - too many addresses");
                 code = DNS_ERR_UNKNOWN;
                 break;
