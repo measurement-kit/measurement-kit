@@ -948,3 +948,83 @@ TEST_CASE("DNSRequest deals with inet_pton returning -1") {
         /* nothing */
     }, NULL, "", &libevent));
 }
+
+//
+// Unit tests for DNSResponse
+//
+
+TEST_CASE("DNSResponse puts a cap on the maximum number of values processed") {
+
+    IghtLibevent libevent;
+
+    libevent.inet_ntop = [](int, const void *, char *s, socklen_t l) {
+        REQUIRE(s != NULL);
+        REQUIRE(l > 0);
+        s[0] = '\0';
+        return s;
+    };
+
+    // All values up to SHRT_MAX / 16 should be accepted
+    {
+        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
+            DNS_ERR_NONE, DNS_IPv6_AAAA, SHRT_MAX / 16 - 1, 123, 0.11,
+            NULL, &libevent);
+        REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(r.get_results().size() > 0);
+    }
+    {
+        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
+            DNS_ERR_NONE, DNS_IPv6_AAAA, SHRT_MAX / 16, 123, 0.11,
+            NULL, &libevent);
+        REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(r.get_results().size() > 0);
+    }
+
+    // Any value greater than SHRT_MAX / 16 should cause an error
+    {
+        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
+            DNS_ERR_NONE, DNS_IPv6_AAAA, SHRT_MAX / 16 + 1, 123, 0.11, NULL);
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+        REQUIRE(r.get_results().size() == 0);
+    }
+    {
+        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
+            DNS_ERR_NONE, DNS_IPv6_AAAA, SHRT_MAX / 16 + 2, 123, 0.11, NULL);
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+        REQUIRE(r.get_results().size() == 0);
+    }
+
+    // ...
+
+    // Negative values should cause no addresses to be saved
+    {
+        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
+            DNS_ERR_NONE, DNS_IPv6_AAAA, -1, 123, 0.11, NULL);
+        REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(r.get_results().size() == 0);
+    }
+    {
+        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
+            DNS_ERR_NONE, DNS_IPv6_AAAA, -2, 123, 0.11, NULL);
+        REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
+        REQUIRE(r.get_results().size() == 0);
+    }
+}
+
+TEST_CASE("DNSResponse deals with unlikely inet_ntop failures") {
+
+    IghtLibevent libevent;
+    auto called = false;
+
+    libevent.inet_ntop = [&](int, const void *, char *, socklen_t) {
+        called = true;  // Make sure this function was called
+        return (const char *) NULL;
+    };
+
+    auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
+        DNS_ERR_NONE, DNS_IPv6_AAAA, 16, 123, 0.11, NULL, &libevent);
+    REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    REQUIRE(r.get_results().size() == 0);
+
+    REQUIRE(called);
+}

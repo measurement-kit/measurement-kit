@@ -61,11 +61,20 @@ DNSResponse::DNSResponse(std::string name_, std::string query_type_,
         }
 
         for (auto i = 0; i < count; ++i) {
-            if (i > INT_MAX / size) {
-                ight_warn("dns - integer overflow");
+
+            //
+            // Put arbitrary cap on the amount of addresses that we
+            // accept to handle. Replacing SHRT_MAX with INT_MAX
+            // this becomes a check for multiplication-caused overflow,
+            // but also becomes very slow to test. So, I use SHRT_MAX
+            // that already seems to me very very large.
+            //
+            if (i > SHRT_MAX / size) {
+                ight_warn("dns - too many addresses");
                 code = DNS_ERR_UNKNOWN;
                 break;
             }
+
             // Note: address already in network byte order
             if (libevent->inet_ntop(family, (char *)addresses + i * size,
                 string, sizeof (string)) == NULL) {
