@@ -26,13 +26,30 @@ DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
 DNSResponse::DNSResponse(std::string name_, std::string query_type_,
                          std::string query_class_, std::string resolver_,
                          int code_, char type, int count,
-                         int ttl_, double rtt_, void *addresses,
+                         int ttl_, double started, void *addresses,
                          IghtLibevent *libevent)
     : name(name_), query_type(query_type_), query_class(query_class_),
-      resolver(resolver_), code(code_), rtt(rtt_), ttl(ttl_)
+      resolver(resolver_), code(code_), ttl(ttl_)
 {
     if (libevent == NULL) {
         libevent = IghtGlobalLibevent::get();
+    }
+
+    // Only compute RTT when we know that the server replied
+    switch (code) {
+    case DNS_ERR_NONE:
+    case DNS_ERR_FORMAT:
+    case DNS_ERR_SERVERFAILED:
+    case DNS_ERR_NOTEXIST:
+    case DNS_ERR_NOTIMPL:
+    case DNS_ERR_REFUSED:
+    case DNS_ERR_TRUNCATED:
+    case DNS_ERR_NODATA:
+        rtt = ight_time_now() - started;
+        break;
+    default:
+        rtt = 0.0;
+        break;
     }
 
     if (code != DNS_ERR_NONE) {
@@ -216,7 +233,6 @@ class DNSRequestImpl {
                                void *addresses, void *opaque) {
 
         auto impl = static_cast<DNSRequestImpl *>(opaque);
-        auto rtt = 0.0;
 
         if (impl->cancelled) {
             delete impl;
@@ -224,23 +240,9 @@ class DNSRequestImpl {
         }
         impl->pending = false;
 
-        // Only compute RTT when we know that the server replied
-        switch (code) {
-        case DNS_ERR_NONE:
-        case DNS_ERR_FORMAT:
-        case DNS_ERR_SERVERFAILED:
-        case DNS_ERR_NOTEXIST:
-        case DNS_ERR_NOTIMPL:
-        case DNS_ERR_REFUSED:
-        case DNS_ERR_TRUNCATED:
-        case DNS_ERR_NODATA:
-            rtt = ight_time_now() - impl->ticks;
-            /* FALLTHROUGH */
-        }
-
         impl->callback(DNSResponse(impl->name, impl->query_type,
             impl->query_class, impl->resolver, code, type, count,
-            ttl, rtt, addresses));
+            ttl, impl->ticks, addresses));
     }
 
     in_addr *ipv4_pton(std::string address, in_addr *netaddr) {
