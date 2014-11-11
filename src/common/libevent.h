@@ -82,6 +82,8 @@ struct IghtLibevent {
 	    evdns_callback_type, void *)> evdns_base_resolve_reverse_ipv6 =
 	    ::evdns_base_resolve_reverse_ipv6;
 
+	std::function<void(int, char, int, int, void *, void *)> evdns_reply_hook;
+
 	/*
 	 * event
 	 */

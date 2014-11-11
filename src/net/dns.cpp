@@ -231,6 +231,12 @@ class DNSRequestImpl {
 
         auto impl = static_cast<DNSRequestImpl *>(opaque);
 
+        // Tell the libevent layer we received a DNS response
+        if (impl->libevent->evdns_reply_hook) {
+            impl->libevent->evdns_reply_hook(code, type, count, ttl,
+                                             addresses, opaque);
+        }
+
         if (impl->cancelled) {
             delete impl;
             return;

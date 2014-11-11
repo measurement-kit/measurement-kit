@@ -521,36 +521,42 @@ TEST_CASE("DNSRequest::cancel() is safe when a request is pending") {
     // of evdns; when the network is up, the event is the DNS reply.
     //
 
-    auto failed = false;
+    auto bad_code = false;
+    auto called = false;
 
+    IghtLibevent libevent;
+    libevent.evdns_reply_hook = [&](int code, char, int, int, void *, void *) {
+        called = true;
+        if (code != DNS_ERR_NONE && code != DNS_ERR_TIMEOUT) {
+            bad_code = true;
+        }
+        //
+        // We need to unblock the loop here, because this test deletes
+        // the DNSRequest immediately, so we don't have a callback where
+        // to report that we are done and we need to break the loop.
+        //
+        ight_break_loop();
+    };
+
+    auto failed = false;
     {
         auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
                                    ight::DNSResponse&& /*response*/) {
             //
             // This callback should not be invoked, because DNSRequestImpl
-            // should honor its `cancelled` field.
+            // should honor its `cancelled` field and therefore should delete
+            // itself rather than calling the callback.
             //
             failed = true;
             ight_break_loop();
-        });
+        }, NULL, "", &libevent);
 
-    }  // This kills DNSResponse, but not the underlying DNSResponseImpl
-
-    auto d = IghtDelayedCall(5.0, [](void) {
-        //
-        // After 5 seconds we should have received a response for
-        // www.neubot.org and the internal DNSRequestImpl should be
-        // already dead (yes, this is a race-condition-based test
-        // so we use 5 seconds to be on the safe side).
-        //
-        // XXX Is this callback needed? I don't think so...
-        //
-        ight_break_loop();
-    });
+    }  // This kills DNSRequest, but not the underlying DNSRequestImpl
 
     ight_loop();
-
     REQUIRE(!failed);
+    REQUIRE(!bad_code);
+    REQUIRE(called);
 }
 
 //
