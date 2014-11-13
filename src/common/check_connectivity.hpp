@@ -42,6 +42,11 @@ namespace ight {
  * once when is_down() is called for the first time. Therefore, this
  * class is not suitable to check whether the network is down in long
  * running programs.
+ *
+ * \warning Because it is designed for unit tests, this class uses its own
+ * event loop. This means that, the first time that is_down() is called,
+ * the current thread is blocked until the DNS response is received or until
+ * the evdns timeout expires.
  */
 class Network {
     event_base *evbase = NULL;

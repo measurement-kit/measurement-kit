@@ -21,8 +21,6 @@
 //
 // DNSResponse unit tests.
 //
-// Following the order in which methods are declared in `net/dns.hpp`.
-//
 
 TEST_CASE("The default DNSResponse() constructor sets sensible values") {
     auto response = ight::DNSResponse();
@@ -460,7 +458,7 @@ TEST_CASE("DNSRequest::cancel() is safe when a request is pending") {
 //
 // TODO: test the case when we receive the message and then free the request.
 //
-// Not urgent, because it's tested by losts of other tests.
+// Not urgent, because it's tested by lots of other tests.
 //
 
 //
@@ -612,11 +610,21 @@ TEST_CASE("DNSResolver: cleanup works correctly when we have not allocated") {
 
 // Now testing DNSResolver(...)
 
-//
-// TODO: test that we do nothing in DNSResolver().
-//
-// Also implicitly tested elsewhere.
-//
+TEST_CASE("DNSResolver: ensure that the constructor does not allocate") {
+    auto libevent = IghtLibevent();
+
+    libevent.evdns_base_new = [](event_base *, int) {
+        return (evdns_base *) NULL;
+    };
+
+    //
+    // Basically: if we go through the end we have not allocated because
+    // if we try to allocate we fail and the code will raise
+    //
+
+    //ight::DNSResolver();  // How to do this?
+    ight::DNSResolver(ight::DNSSettings().set_libevent(&libevent));
+}
 
 TEST_CASE("DNSResolver: evdns_base_new failure is correctly handled") {
     auto libevent = IghtLibevent();
@@ -708,6 +716,11 @@ TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
     REQUIRE(called == 4);  // twice for randomize-case
 }
 
+TEST_CASE("DNSResolver::get_evdns_base() is idempotent") {
+    auto reso = ight::DNSResolver();
+    REQUIRE(reso.get_evdns_base() == reso.get_evdns_base());
+}
+
 TEST_CASE("We can override the default timeout") {
 
     // I need to remember to never run a DNS on that machine :^)
@@ -734,6 +747,38 @@ TEST_CASE("We can override the default timeout") {
         auto elapsed = ight_time_now() - ticks;
         REQUIRE(elapsed > 0.4);
         REQUIRE(elapsed < 0.6);
+
+        ight_break_loop();
+    });
+    ight_loop();
+}
+
+TEST_CASE("We can override the default number of tries") {
+
+    // I need to remember to never run a DNS on that machine :^)
+    auto reso = ight::DNSResolver(ight::DNSSettings()
+        .set_nameserver("130.192.91.231")
+        .set_attempts(2)
+        .set_timeout(0.5));
+
+    auto ticks = ight_time_now();
+    auto r1 = reso.request("A", "www.neubot.org", [&](
+                           ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "www.neubot.org");
+        REQUIRE(response.get_query_type() == "A");
+        REQUIRE(response.get_query_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "130.192.91.231");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_results().size() == 0);
+        REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
+        REQUIRE(response.get_failure() == "deferred_timeout_error");
+        REQUIRE(response.get_ttl() == 0);
+        REQUIRE(response.get_rtt() == 0.0);
+
+        auto elapsed = ight_time_now() - ticks;
+        REQUIRE(elapsed > 0.8);
+        REQUIRE(elapsed < 1.2);
 
         ight_break_loop();
     });
@@ -943,6 +988,10 @@ TEST_CASE("A specific custom resolver works as expected") {
 }
 
 TEST_CASE("If the resolver dies, the requests are aborted") {
+
+    //
+    // This should work regardless of the network being up or down.
+    //
 
     // I need to remember to never run a DNS on that machine :^)
     auto reso = new ight::DNSResolver(ight::DNSSettings()

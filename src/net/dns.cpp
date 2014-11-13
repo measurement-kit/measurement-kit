@@ -12,6 +12,8 @@
 
 #include <event2/dns.h>
 
+#include <cassert>
+
 using namespace ight;
 
 //
@@ -78,11 +80,12 @@ DNSResponse::DNSResponse(std::string name_, std::string query_type_,
         }
 
         //
-        // Note: make sure in advance `i * size` won't overflow
-        // This is here only for robustness
+        // Note: make sure in advance `i * size` won't overflow,
+        // this is here only for robustness.
         //
         if (count >= 0 && count <= INT_MAX / size + 1) {
 
+            // Note: `start_from` is required by the unit test
             for (auto i = start_from; i < count; ++i) {
                 // Note: address already in network byte order
                 if (libevent->inet_ntop(family, (char *)addresses + i * size,
@@ -221,12 +224,12 @@ class DNSRequestImpl {
     std::function<void(DNSResponse&&)> callback;
     bool cancelled = false;
     bool pending = false;
-    double ticks;
+    double ticks = 0.0;  // just to initialize to something
     std::string name;
     std::string query_type;
     std::string query_class;
     std::string resolver;
-    IghtLibevent *libevent;
+    IghtLibevent *libevent;  // should not be NULL (this is asserted below)
 
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
@@ -275,6 +278,8 @@ class DNSRequestImpl {
                    evdns_base *base, std::string resolver_,
                    IghtLibevent *lev)
             : callback(f), name(address), resolver(resolver_), libevent(lev) {
+
+        assert(base != NULL && lev != NULL);
 
         //
         // We explain above why we don't store the return value
@@ -387,7 +392,7 @@ DNSResolver::cleanup(void)
 evdns_base *
 DNSResolver::get_evdns_base(void)
 {
-    if (base != NULL) {
+    if (base != NULL) {  // Idempotent
         return base;
     }
 
@@ -409,6 +414,7 @@ DNSResolver::get_evdns_base(void)
     } else if ((base = settings.libevent->evdns_base_new(evb, 1)) == NULL) {
         throw std::bad_alloc();
     }
+
     if (settings.attempts >= 0 && settings.libevent->evdns_base_set_option(base,
             "attempts", std::to_string(settings.attempts).c_str()) != 0) {
         cleanup();

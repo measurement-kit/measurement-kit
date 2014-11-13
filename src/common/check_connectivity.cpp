@@ -39,6 +39,11 @@ ight::Network::dns_callback(int result, char type, int count, int ttl,
     (void) ttl;
     (void) addresses;
 
+    //
+    // TODO: The following check is good for the unit test but, to be
+    // precise, there are other error conditions that can indicate that
+    // we have connectivity (e.g., DNS_ERR_NOTEXIST).
+    //
     that->is_up = (result == DNS_ERR_NONE);
 
     if (event_base_loopbreak(that->evbase) != 0) {

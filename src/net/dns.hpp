@@ -151,7 +151,7 @@ public:
     }
 
     /*!
-     * \brief Get the time tot live of the response.
+     * \brief Get the time to live of the response.
      */
     int get_ttl(void) {
         return ttl;
@@ -282,8 +282,10 @@ class DNSResolver;  // forward decl.
  *
  * Unless you modify the default configuration, the system wide DNS server
  * is used, every request is retried three times before giving up, the timeout
- * for a request is five seconds (these are the evdns defaults). Also, by
- * default the global libight's poller and libevent objects are used.
+ * for a request is five seconds (these are the evdns defaults), and the
+ * name randomization is *not* used (this is different from evdns defaults).
+ *
+ * Also, by default the global libight's poller and libevent objects are used.
  *
  * You can change all of this using the setter methods.
  *
@@ -305,7 +307,8 @@ public:
      * \brief Set number of attempts before a request is considered failed.
      * \param attempts_ Number of attempts before a request is considered
      *        failed (afterwards you get a timeout error).
-     * \remark The default value of this parameter is three (evnds default).
+     * \remark The default value of this parameter is -1 (which means that
+     *         evnds default must be used).
      * \returns A reference to this object, so you can chain calls.
      */
     DNSSettings& set_attempts(int attempts_) {
@@ -320,7 +323,7 @@ public:
      * \returns A reference to this object, so you can chain calls.
      */
     DNSSettings& set_libevent(IghtLibevent *libevent_) {
-        // TODO: change this function to receive a IghtLibevent object
+        // TODO: change this function to receive a IghtLibevent& object
         if (libevent_ != NULL) {
             libevent = libevent_;
         }
@@ -348,7 +351,7 @@ public:
      * \returns A reference to this object, so you can chain calls.
      */
     DNSSettings& set_poller(IghtPoller *poller_) {
-        // TODO: change this function to receive a IghtPoller object
+        // TODO: change this function to receive a IghtPoller& object
         if (poller_ != NULL) {
             poller = poller_;
         }
@@ -371,7 +374,8 @@ public:
     /*!
      * \brief Override the default DNS requests timeout.
      * \param timeout_ The new timeout in secionds.
-     * \remark The default value of this parameter is 5 (evdns default).
+     * \remark The default value of this parameter is -1 (which means that
+     *         evdns default must be used).
      * \returns A reference to this object, so you can chain calls.
      */
     DNSSettings& set_timeout(double timeout_) {
@@ -381,11 +385,23 @@ public:
 
     /*!
      * \brief Default copy constructor.
+     * \remark We can safely copy this object because its pointers to
+     *         IghtLibevent and IghtPoller are reference-like pointers,
+     *         meaning that it's not the responsibility of DNSSettings
+     *         to clean up these objects and that DNSSettings assume
+     *         that these objects will outlive it. So it is not an issue
+     *         to make a copy of such pointers.
      */
     DNSSettings(DNSSettings& /*other*/) = default;
 
     /*!
      * \brief Default assignment constructor.
+     * \remark We can safely copy this object because its pointers to
+     *         IghtLibevent and IghtPoller are reference-like pointers,
+     *         meaning that it's not the responsibility of DNSSettings
+     *         to clean up these objects and that DNSSettings assume
+     *         that these objects will outlive it. So it is not an issue
+     *         to make a copy of such pointers.
      */
     DNSSettings& operator=(DNSSettings& /*other*/) = default;
 
@@ -413,7 +429,7 @@ public:
  * This object can be used to construct specific DNS resolvers that
  * differ from the default DNS resolver of libight.
  *
- * Once a custom resolve is created, one can use it to issue DNS requests.
+ * Once a custom resolver is created, one can use it to issue DNS requests.
  *
  * In other words, to use the default DNS resolver, one does not need
  * to create an instance of this object.
