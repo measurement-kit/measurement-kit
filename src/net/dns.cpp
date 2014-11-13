@@ -190,13 +190,15 @@ DNSResponse::map_failure_(int code)
 
 namespace ight {
 
-//
-// Implementation of DNSRequest.
-//
-// This is the internal object thanks to which DNSRequest is movable. Of
-// course, DNSRequestImpl is not movable, since its address is passed to
-// one of the many evnds delayed requests functions.
-//
+/*!
+ * \brief Implementation of DNSRequest.
+ *
+ * This is the internal object thanks to which DNSRequest is movable. Of
+ * course, DNSRequestImpl is not movable, since its address is passed to
+ * one of the many evnds delayed requests functions.
+ *
+ * \remark You should not use this class directly, use DNSRequest instead.
+ */
 class DNSRequestImpl {
 
     //
@@ -263,6 +265,11 @@ class DNSRequestImpl {
     }
 
   public:
+
+    /*!
+     * \brief Issue an async DNS request.
+     * \see DNSRequest::DNSRequest().
+     */
     DNSRequestImpl(std::string query, std::string address,
                    std::function<void(DNSResponse&&)>&& f,
                    evdns_base *base, std::string resolver_,
@@ -312,6 +319,11 @@ class DNSRequestImpl {
         ticks = ight_time_now();
     }
 
+    /*!
+     * \brief Cancel a DNS request.
+     * \remark The object may or may not be deleted immediately, depending
+     * on whether the DNS request is pending or already completed.
+     */
     void cancel(void) {
         if (cancelled) {    // Idempotent
             return;
