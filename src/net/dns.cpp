@@ -373,10 +373,12 @@ DNSResolver::cleanup(void)
 }
 
 DNSResolver::DNSResolver(std::string nameserver_, unsigned attempts,
+                         double timeout,
                          IghtPoller *poller, IghtLibevent *lev)
         : nameserver(nameserver_)
 {
-    if (nameserver == "" && attempts == 0 && poller == NULL && lev == NULL) {
+    if (nameserver == "" && attempts == 0 && timeout == 0.0 &&
+        poller == NULL && lev == NULL) {
         // No specific options? Then let's use the default evdns_base
         // Note: this is to quickly create objects used by move semantic
         return;
@@ -404,6 +406,11 @@ DNSResolver::DNSResolver(std::string nameserver_, unsigned attempts,
                           std::to_string(attempts).c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'attempts' option");
+    }
+    if (timeout > 0.0 && libevent->evdns_base_set_option(base, "timeout:",
+                           std::to_string(timeout).c_str()) != 0) {
+        cleanup();
+        throw std::runtime_error("Cannot set 'timeout' option");
     }
 }
 

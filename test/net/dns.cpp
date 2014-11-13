@@ -688,7 +688,7 @@ TEST_CASE("DNSResolver: cleanup works correctly when we have allocated") {
     };
 
     {
-        ight::DNSResolver("", 0, NULL, &libevent);
+        ight::DNSResolver("", 0, 0.0, NULL, &libevent);
     }
 
     REQUIRE(called == 1);
@@ -707,8 +707,9 @@ TEST_CASE("DNSResolver: cleanup works correctly when we have not allocated") {
     ight::DNSResolver();
     ight::DNSResolver("");
     ight::DNSResolver("", 0);
-    ight::DNSResolver("", 0, NULL);
-    ight::DNSResolver("", 0, NULL, NULL);
+    ight::DNSResolver("", 0, 0.0);
+    ight::DNSResolver("", 0, 0.0, NULL);
+    ight::DNSResolver("", 0, 0.0, NULL, NULL);
 
     REQUIRE(called == 0);
 }
@@ -729,10 +730,10 @@ TEST_CASE("DNSResolver: evdns_base_new failure is correctly handled") {
     };
 
     // Handle the branch where nameserver is set
-    REQUIRE_THROWS(ight::DNSResolver("8.8.8.8", 0, NULL, &libevent));
+    REQUIRE_THROWS(ight::DNSResolver("8.8.8.8", 0, 0.0, NULL, &libevent));
 
     // Handle the branch using the default nameserver
-    REQUIRE_THROWS(ight::DNSResolver("", 0, NULL, &libevent));
+    REQUIRE_THROWS(ight::DNSResolver("", 0, 0.0, NULL, &libevent));
 }
 
 TEST_CASE(
@@ -750,7 +751,7 @@ TEST_CASE(
         called = true;
     };
 
-    REQUIRE_THROWS(ight::DNSResolver("8.8.8.8", 0, NULL, &libevent));
+    REQUIRE_THROWS(ight::DNSResolver("8.8.8.8", 0, 0.0, NULL, &libevent));
     REQUIRE(called);
 }
 
@@ -769,7 +770,8 @@ TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
         called = true;
     };
 
-    REQUIRE_THROWS(ight::DNSResolver("", 1, NULL, &libevent));
+    REQUIRE_THROWS(ight::DNSResolver("", 1, 0.0, NULL, &libevent));
+    REQUIRE_THROWS(ight::DNSResolver("", 0, 1.0, NULL, &libevent));
     REQUIRE(called);
 }
 
@@ -793,38 +795,77 @@ TEST_CASE("DNSResolver: get_evdns_base behaves correctly") {
     }
 
     {
-        auto r = ight::DNSResolver("", 0, NULL);
+        auto r = ight::DNSResolver("", 0, 0.0);
         REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
     }
 
     {
-        auto r = ight::DNSResolver("", 0, NULL, NULL);
+        auto r = ight::DNSResolver("", 0, 0.0, NULL);
+        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
+    }
+
+    {
+        auto r = ight::DNSResolver("", 0, 0.0, NULL, NULL);
         REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
     }
 
     // Cases in which it must return a private evdns_base:
 
     {
-        auto r = ight::DNSResolver("8.8.8.8", 0, NULL, NULL);
+        auto r = ight::DNSResolver("8.8.8.8", 0, 0.0, NULL, NULL);
         REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
     }
 
     {
-        auto r = ight::DNSResolver("", 1, NULL, NULL);
+        auto r = ight::DNSResolver("", 1, 0.0, NULL, NULL);
+        REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
+    }
+
+    {
+        auto r = ight::DNSResolver("", 0, 1.0, NULL, NULL);
         REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
     }
 
     {
         IghtPoller p;
-        auto r = ight::DNSResolver("", 0, &p, NULL);
+        auto r = ight::DNSResolver("", 0, 0.0, &p, NULL);
         REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
     }
 
     {
         IghtLibevent libevent;
-        auto r = ight::DNSResolver("", 0, NULL, &libevent);
+        auto r = ight::DNSResolver("", 0, 0.0, NULL, &libevent);
         REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
     }
+}
+
+TEST_CASE("We can override the default timeout") {
+
+    // I need to remember to never run a DNS on that machine :^)
+    auto reso = ight::DNSResolver("130.192.91.231", 1, 0.5);
+
+    auto ticks = ight_time_now();
+    auto r1 = reso.request("A", "www.neubot.org", [&](
+                           ight::DNSResponse&& response) {
+        REQUIRE(response.get_query_name() == "www.neubot.org");
+        REQUIRE(response.get_query_type() == "A");
+        REQUIRE(response.get_query_class() == "IN");
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_resolver()[0] == "130.192.91.231");
+        REQUIRE(response.get_resolver()[1] == "53");
+        REQUIRE(response.get_results().size() == 0);
+        REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
+        REQUIRE(response.get_failure() == "deferred_timeout_error");
+        REQUIRE(response.get_ttl() == 0);
+        REQUIRE(response.get_rtt() == 0.0);
+
+        auto elapsed = ight_time_now() - ticks;
+        REQUIRE(elapsed > 0.4);
+        REQUIRE(elapsed < 0.6);
+
+        ight_break_loop();
+    });
+    ight_loop();
 }
 
 //

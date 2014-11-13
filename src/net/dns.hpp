@@ -153,6 +153,7 @@ class DNSResolver {
 
   public:
     DNSResolver(std::string nameserver = "", unsigned attempts = 0,
+                double timeout = 0.0,
                 IghtPoller *poller = NULL, IghtLibevent *lev = NULL);
 
     evdns_base *get_evdns_base(void);
