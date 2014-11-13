@@ -14,111 +14,9 @@
 
 #include "net/dns.hpp"
 
+#include "common/check_connectivity.hpp"
 #include "common/log.h"
 #include "common/utils.h"
-
-//
-// Class used to check whether the network is up.
-//
-// If the network is down, we skip some tests. To add such check to
-// a test, you simply need to add:
-//
-//     if (Network::is_down()) {
-//         return;
-//     }
-//
-// This class reports that the network is up if 8.8.4.4 works and returns
-// a valid IPv4 address for github.com. To reach 8.8.4.4 we use evdns, which
-// we assume to be working. If evdns is broken, 8.8.4.4 is not reachable or
-// github.com is no longer available, this class reports that the network
-// is down even if it is not actually down. All these three conditions are
-// quite unlikely, IMO, so this code should be robust enough.
-//
-
-class Network {
-    event_base *evbase = NULL;
-    evdns_base *dnsbase = NULL;
-    bool is_up = false;
-
-    void cleanup(void) {  // Idempotent cleanup function
-        if (dnsbase != NULL) {
-            evdns_base_free(dnsbase, 0);
-            dnsbase = NULL;
-        }
-        if (evbase != NULL) {
-            event_base_free(evbase);
-            evbase = NULL;
-        }
-    }
-
-    static void dns_callback(int result, char type, int count, int ttl,
-                             void *addresses, void *opaque) {
-
-        auto that = static_cast<Network *>(opaque);
-
-        // Suppress "unused variable" warnings
-        (void) type;
-        (void) count;
-        (void) ttl;
-        (void) addresses;
-
-        that->is_up = (result == DNS_ERR_NONE);
-
-        if (event_base_loopbreak(that->evbase) != 0) {
-            throw std::runtime_error("Cannot exit from event loop");
-        }
-    }
-
-    Network(void) {
-        if ((evbase = event_base_new()) == NULL) {
-            cleanup();
-            throw std::bad_alloc();
-        }
-
-        if ((dnsbase = evdns_base_new(evbase, 0)) == NULL) {
-            cleanup();
-            throw std::bad_alloc();
-        }
-        if (evdns_base_nameserver_ip_add(dnsbase, "8.8.4.4") != 0) {
-            cleanup();
-            throw std::runtime_error("cannot add IP address");
-        }
-
-        if (evdns_base_resolve_ipv4(dnsbase, "github.com",
-                                    DNS_QUERY_NO_SEARCH,
-                                    dns_callback, this) == NULL) {
-            cleanup();
-            throw std::runtime_error("cannot resolve 'github.com'");
-        }
-
-        if (event_base_dispatch(evbase) != 0) {
-            cleanup();
-            throw std::runtime_error("event_base_dispatch() failed");
-        }
-
-        cleanup();
-
-        if (!is_up) {
-            std::clog << "Network is down: skipping network related tests"
-                      << std::endl;
-        }
-    }
-
-    ~Network(void) {
-        cleanup();
-    }
-
-    Network(Network& /*other*/) = delete;
-    Network& operator=(Network& /*other*/) = delete;
-    Network(Network&& /*other*/) = delete;
-    Network& operator=(Network&& /*other*/) = delete;
-
-public:
-    static bool is_down(void) {
-        static Network singleton;
-        return !singleton.is_up;
-    }
-};
 
 //
 // DNSResponse unit tests.
@@ -579,7 +477,7 @@ TEST_CASE("The system resolver works as expected") {
     // response fields from the system resolver.
     //
 
-    if (Network::is_down()) {
+    if (ight::Network::is_down()) {
         return;
     }
 
@@ -851,7 +749,7 @@ TEST_CASE("We can override the default timeout") {
 
 TEST_CASE("The default custom resolver works as expected") {
 
-    if (Network::is_down()) {
+    if (ight::Network::is_down()) {
         return;
     }
 
@@ -948,7 +846,7 @@ TEST_CASE("The default custom resolver works as expected") {
 
 TEST_CASE("A specific custom resolver works as expected") {
 
-    if (Network::is_down()) {
+    if (ight::Network::is_down()) {
         return;
     }
 
@@ -1090,7 +988,7 @@ TEST_CASE("A request to a nonexistent server times out") {
     //
     // So, I'm commentin out this check:
     //
-    //if (Network::is_down()) {
+    //if (ight::Network::is_down()) {
     //    return;
     //}
     //
@@ -1128,7 +1026,7 @@ TEST_CASE("A request to a nonexistent server times out") {
 
 TEST_CASE("It is safe to cancel requests in flight") {
 
-    if (Network::is_down()) {
+    if (ight::Network::is_down()) {
         return;
     }
 
