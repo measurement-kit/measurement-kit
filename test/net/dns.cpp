@@ -688,8 +688,9 @@ TEST_CASE("DNSResolver: cleanup works correctly when we have allocated") {
     };
 
     {
-        ight::DNSResolver(ight::DNSSettings()
-            .set_libevent(&libevent));
+        // Note: call .get_evdns_base() to trigger lazy allocation
+        ight::DNSResolver(ight::DNSSettings().set_libevent(&libevent))
+            .get_evdns_base();
     }
 
     REQUIRE(called == 1);
@@ -726,14 +727,16 @@ TEST_CASE("DNSResolver: evdns_base_new failure is correctly handled") {
         return (evdns_base *) NULL;
     };
 
+    // Note: call .get_evdns_base() to trigger lazy allocation
+
     // Handle the branch where nameserver is set
     REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
         .set_nameserver("8.8.8.8")
-        .set_libevent(&libevent)));
+        .set_libevent(&libevent)).get_evdns_base());
 
     // Handle the branch using the default nameserver
     REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
-        .set_libevent(&libevent)));
+        .set_libevent(&libevent)).get_evdns_base());
 }
 
 TEST_CASE(
@@ -751,9 +754,11 @@ TEST_CASE(
         called = true;
     };
 
+    // Note: call .get_evdns_base() to trigger lazy allocation
     REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
         .set_nameserver("8.8.8.8")
-        .set_libevent(&libevent)));
+        .set_libevent(&libevent)).get_evdns_base());
+
     REQUIRE(called);
 }
 
@@ -772,55 +777,15 @@ TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
         called = true;
     };
 
+    // Note: call .get_evdns_base() to trigger lazy allocation
+
     REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
-        .set_attempts(1).set_libevent(&libevent)));
+        .set_attempts(1).set_libevent(&libevent)).get_evdns_base());
+
     REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
-        .set_timeout(1.0).set_libevent(&libevent)));
+        .set_timeout(1.0).set_libevent(&libevent)).get_evdns_base());
+
     REQUIRE(called);
-}
-
-TEST_CASE("DNSResolver: get_evdns_base behaves correctly") {
-
-    // Cases in which it must return the global evdns_base:
-
-    {
-        auto r = ight::DNSResolver();
-        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
-    }
-
-    // Cases in which it must return a private evdns_base:
-
-    {
-        auto r = ight::DNSResolver(ight::DNSSettings()
-            .set_nameserver("8.8.8.8"));
-        REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
-    }
-
-    {
-        auto r = ight::DNSResolver(ight::DNSSettings()
-            .set_attempts(1));
-        REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
-    }
-
-    {
-        auto r = ight::DNSResolver(ight::DNSSettings()
-            .set_timeout(1.0));
-        REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
-    }
-
-    {
-        IghtPoller p;
-        auto r = ight::DNSResolver(ight::DNSSettings()
-            .set_poller(&p));
-        REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
-    }
-
-    {
-        IghtLibevent libevent;
-        auto r = ight::DNSResolver(ight::DNSSettings()
-            .set_libevent(&libevent));
-        REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
-    }
 }
 
 TEST_CASE("We can override the default timeout") {

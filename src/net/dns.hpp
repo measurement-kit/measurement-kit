@@ -178,8 +178,8 @@ public:
         return *this;
     }
 
-    DNSSettings(DNSSettings& /*other*/) = delete;
-    DNSSettings& operator=(DNSSettings& /*other*/) = delete;
+    DNSSettings(DNSSettings& /*other*/) = default;
+    DNSSettings& operator=(DNSSettings& /*other*/) = default;
 
     DNSSettings(DNSSettings&& /*other*/) = default;
     DNSSettings& operator=(DNSSettings&& /*other*/) = default;
@@ -209,9 +209,8 @@ public:
 // to this DNS resolver rather than on the default one.
 //
 class DNSResolver {
-    std::string nameserver = "";
+    DNSSettings settings;
     evdns_base *base = NULL;
-    IghtLibevent *libevent = IghtGlobalLibevent::get();
 
     void cleanup(void);
 
@@ -219,8 +218,9 @@ class DNSResolver {
     DNSResolver(void) {
         /* nothing to do */
     }
-
-    DNSResolver(DNSSettings& settings);
+    DNSResolver(DNSSettings& settings_) {
+        settings = settings_;
+    }
 
     evdns_base *get_evdns_base(void);
 
@@ -228,7 +228,7 @@ class DNSResolver {
     DNSRequest request(std::string query, std::string address,
                        std::function<void(DNSResponse&&)>&& func) {
         return DNSRequest(query, address, std::move(func), get_evdns_base(),
-                          nameserver, libevent);
+                          settings.nameserver, settings.libevent);
     }
 
     ~DNSResolver(void) {

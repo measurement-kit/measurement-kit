@@ -367,46 +367,46 @@ DNSResolver::cleanup(void)
         // Note: `1` means that pending requests are notified that
         // this evdns_base is being closed.
         //
-        libevent->evdns_base_free(base, 1);
+        settings.libevent->evdns_base_free(base, 1);
         base = NULL;  // Idempotent
-    }
-}
-
-DNSResolver::DNSResolver(DNSSettings& settings)
-{
-    libevent = settings.libevent;
-    nameserver = settings.nameserver;
-
-    auto evb = settings.poller->get_event_base();
-    if (nameserver != "") {
-        if ((base = libevent->evdns_base_new(evb, 0)) == NULL) {
-            throw std::bad_alloc();
-        }
-        if (libevent->evdns_base_nameserver_ip_add(base,
-                         nameserver.c_str()) != 0) {
-            cleanup();
-            throw std::runtime_error("Cannot set server address");
-        }
-    } else if ((base = libevent->evdns_base_new(evb, 1)) == NULL) {
-        throw std::bad_alloc();
-    }
-    if (settings.attempts > 0 && libevent->evdns_base_set_option(base,
-            "attempts", std::to_string(settings.attempts).c_str()) != 0) {
-        cleanup();
-        throw std::runtime_error("Cannot set 'attempts' option");
-    }
-    if (settings.timeout > 0.0 && libevent->evdns_base_set_option(base,
-            "timeout", std::to_string(settings.timeout).c_str()) != 0) {
-        cleanup();
-        throw std::runtime_error("Cannot set 'timeout' option");
     }
 }
 
 evdns_base *
 DNSResolver::get_evdns_base(void)
 {
-    if (base == NULL) {
-        return ight_get_global_evdns_base();
+    if (base != NULL) {
+        return base;
     }
+
+    //
+    // Note: in case of error, the object state is reset
+    // like nothing has happened.
+    //
+
+    auto evb = settings.poller->get_event_base();
+    if (settings.nameserver != "") {
+        if ((base = settings.libevent->evdns_base_new(evb, 0)) == NULL) {
+            throw std::bad_alloc();
+        }
+        if (settings.libevent->evdns_base_nameserver_ip_add(base,
+                settings.nameserver.c_str()) != 0) {
+            cleanup();
+            throw std::runtime_error("Cannot set server address");
+        }
+    } else if ((base = settings.libevent->evdns_base_new(evb, 1)) == NULL) {
+        throw std::bad_alloc();
+    }
+    if (settings.attempts > 0 && settings.libevent->evdns_base_set_option(base,
+            "attempts", std::to_string(settings.attempts).c_str()) != 0) {
+        cleanup();
+        throw std::runtime_error("Cannot set 'attempts' option");
+    }
+    if (settings.timeout > 0.0 && settings.libevent->evdns_base_set_option(base,
+            "timeout", std::to_string(settings.timeout).c_str()) != 0) {
+        cleanup();
+        throw std::runtime_error("Cannot set 'timeout' option");
+    }
+
     return base;
 }
