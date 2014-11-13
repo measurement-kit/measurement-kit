@@ -397,13 +397,13 @@ DNSResolver::get_evdns_base(void)
     } else if ((base = settings.libevent->evdns_base_new(evb, 1)) == NULL) {
         throw std::bad_alloc();
     }
-    if (settings.attempts > 0 && settings.libevent->evdns_base_set_option(base,
+    if (settings.attempts >= 0 && settings.libevent->evdns_base_set_option(base,
             "attempts", std::to_string(settings.attempts).c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'attempts' option");
     }
-    if (settings.timeout > 0.0 && settings.libevent->evdns_base_set_option(base,
-            "timeout", std::to_string(settings.timeout).c_str()) != 0) {
+    if (settings.timeout >= 0.0 && settings.libevent->evdns_base_set_option(
+            base, "timeout", std::to_string(settings.timeout).c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'timeout' option");
     }

@@ -140,14 +140,14 @@ class DNSResolver;  // forward decl.
 class DNSSettings {
     friend class DNSResolver;
 
-    unsigned attempts = 0;
+    int attempts = -1;
     IghtLibevent *libevent = IghtGlobalLibevent::get();
     std::string nameserver = "";
     IghtPoller *poller = ight_get_global_poller();
-    double timeout = 0.0;
+    double timeout = -1.0;
 
 public:
-    DNSSettings& set_attempts(unsigned attempts_) {
+    DNSSettings& set_attempts(int attempts_) {
         attempts = attempts_;
         return *this;
     }
