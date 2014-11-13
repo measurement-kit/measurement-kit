@@ -688,7 +688,8 @@ TEST_CASE("DNSResolver: cleanup works correctly when we have allocated") {
     };
 
     {
-        ight::DNSResolver("", 0, 0.0, NULL, &libevent);
+        ight::DNSResolver(ight::DNSSettings()
+            .set_libevent(&libevent));
     }
 
     REQUIRE(called == 1);
@@ -703,13 +704,9 @@ TEST_CASE("DNSResolver: cleanup works correctly when we have not allocated") {
         called++;
     };
 
-    // Test many combination of default values:
-    ight::DNSResolver();
-    ight::DNSResolver("");
-    ight::DNSResolver("", 0);
-    ight::DNSResolver("", 0, 0.0);
-    ight::DNSResolver("", 0, 0.0, NULL);
-    ight::DNSResolver("", 0, 0.0, NULL, NULL);
+    {
+        ight::DNSResolver();
+    }
 
     REQUIRE(called == 0);
 }
@@ -730,10 +727,13 @@ TEST_CASE("DNSResolver: evdns_base_new failure is correctly handled") {
     };
 
     // Handle the branch where nameserver is set
-    REQUIRE_THROWS(ight::DNSResolver("8.8.8.8", 0, 0.0, NULL, &libevent));
+    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
+        .set_nameserver("8.8.8.8")
+        .set_libevent(&libevent)));
 
     // Handle the branch using the default nameserver
-    REQUIRE_THROWS(ight::DNSResolver("", 0, 0.0, NULL, &libevent));
+    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
+        .set_libevent(&libevent)));
 }
 
 TEST_CASE(
@@ -751,7 +751,9 @@ TEST_CASE(
         called = true;
     };
 
-    REQUIRE_THROWS(ight::DNSResolver("8.8.8.8", 0, 0.0, NULL, &libevent));
+    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
+        .set_nameserver("8.8.8.8")
+        .set_libevent(&libevent)));
     REQUIRE(called);
 }
 
@@ -770,8 +772,10 @@ TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
         called = true;
     };
 
-    REQUIRE_THROWS(ight::DNSResolver("", 1, 0.0, NULL, &libevent));
-    REQUIRE_THROWS(ight::DNSResolver("", 0, 1.0, NULL, &libevent));
+    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
+        .set_attempts(1).set_libevent(&libevent)));
+    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
+        .set_timeout(1.0).set_libevent(&libevent)));
     REQUIRE(called);
 }
 
@@ -784,57 +788,37 @@ TEST_CASE("DNSResolver: get_evdns_base behaves correctly") {
         REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
     }
 
-    {
-        auto r = ight::DNSResolver("");
-        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
-    }
-
-    {
-        auto r = ight::DNSResolver("", 0);
-        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
-    }
-
-    {
-        auto r = ight::DNSResolver("", 0, 0.0);
-        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
-    }
-
-    {
-        auto r = ight::DNSResolver("", 0, 0.0, NULL);
-        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
-    }
-
-    {
-        auto r = ight::DNSResolver("", 0, 0.0, NULL, NULL);
-        REQUIRE(r.get_evdns_base() == ight_get_global_evdns_base());
-    }
-
     // Cases in which it must return a private evdns_base:
 
     {
-        auto r = ight::DNSResolver("8.8.8.8", 0, 0.0, NULL, NULL);
+        auto r = ight::DNSResolver(ight::DNSSettings()
+            .set_nameserver("8.8.8.8"));
         REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
     }
 
     {
-        auto r = ight::DNSResolver("", 1, 0.0, NULL, NULL);
+        auto r = ight::DNSResolver(ight::DNSSettings()
+            .set_attempts(1));
         REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
     }
 
     {
-        auto r = ight::DNSResolver("", 0, 1.0, NULL, NULL);
+        auto r = ight::DNSResolver(ight::DNSSettings()
+            .set_timeout(1.0));
         REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
     }
 
     {
         IghtPoller p;
-        auto r = ight::DNSResolver("", 0, 0.0, &p, NULL);
+        auto r = ight::DNSResolver(ight::DNSSettings()
+            .set_poller(&p));
         REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
     }
 
     {
         IghtLibevent libevent;
-        auto r = ight::DNSResolver("", 0, 0.0, NULL, &libevent);
+        auto r = ight::DNSResolver(ight::DNSSettings()
+            .set_libevent(&libevent));
         REQUIRE(r.get_evdns_base() != ight_get_global_evdns_base());
     }
 }
@@ -842,7 +826,10 @@ TEST_CASE("DNSResolver: get_evdns_base behaves correctly") {
 TEST_CASE("We can override the default timeout") {
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = ight::DNSResolver("130.192.91.231", 1, 0.5);
+    auto reso = ight::DNSResolver(ight::DNSSettings()
+        .set_nameserver("130.192.91.231")
+        .set_attempts(1)
+        .set_timeout(0.5));
 
     auto ticks = ight_time_now();
     auto r1 = reso.request("A", "www.neubot.org", [&](
@@ -985,7 +972,8 @@ TEST_CASE("A specific custom resolver works as expected") {
         ight_break_loop();
     });
 
-    auto reso = ight::DNSResolver("8.8.4.4");
+    auto reso = ight::DNSResolver(ight::DNSSettings()
+        .set_nameserver("8.8.4.4"));
 
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
@@ -1072,7 +1060,8 @@ TEST_CASE("A specific custom resolver works as expected") {
 TEST_CASE("If the resolver dies, the requests are aborted") {
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = new ight::DNSResolver("130.192.91.231");
+    auto reso = new ight::DNSResolver(ight::DNSSettings()
+        .set_nameserver("130.192.91.231"));
     auto r1 = reso->request("A", "www.neubot.org", [&](
                             ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
@@ -1120,7 +1109,9 @@ TEST_CASE("A request to a nonexistent server times out") {
     //
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = ight::DNSResolver("130.192.91.231", 1);
+    auto reso = ight::DNSResolver(ight::DNSSettings()
+        .set_nameserver("130.192.91.231")
+        .set_attempts(1));
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            ight::DNSResponse&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
@@ -1164,7 +1155,9 @@ TEST_CASE("It is safe to cancel requests in flight") {
     // privately run this test repeating it for about one minute.
     //
 
-    auto reso = ight::DNSResolver("8.8.8.8", 1);
+    auto reso = ight::DNSResolver(ight::DNSSettings()
+        .set_nameserver("8.8.8.8")
+        .set_attempts(1));
 
     // Step #1: estimate the average RTT
 
@@ -1222,7 +1215,9 @@ TEST_CASE("It is safe to cancel requests in flight") {
 
 /*
 TEST_CASE("Make sure we can override host and number of tries") {
-    auto reso = ight::DNSResolver("127.0.0.1:5353", 2);
+    auto reso = ight::DNSResolver(ight::DNSSettings()
+        .set_nameserver("127.0.0.1:5353")
+        .set_attempts(2));
     auto r = reso.request("A", "www.neubot.org", [&](
                           ight::DNSResponse response) {
         REQUIRE(response.get_results().size() == 0);

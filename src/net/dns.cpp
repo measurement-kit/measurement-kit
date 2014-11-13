@@ -372,24 +372,12 @@ DNSResolver::cleanup(void)
     }
 }
 
-DNSResolver::DNSResolver(std::string nameserver_, unsigned attempts,
-                         double timeout,
-                         IghtPoller *poller, IghtLibevent *lev)
-        : nameserver(nameserver_)
+DNSResolver::DNSResolver(DNSSettings& settings)
 {
-    if (nameserver == "" && attempts == 0 && timeout == 0.0 &&
-        poller == NULL && lev == NULL) {
-        // No specific options? Then let's use the default evdns_base
-        // Note: this is to quickly create objects used by move semantic
-        return;
-    }
-    if (lev != NULL) {
-        libevent = lev;
-    }
-    if (poller == NULL) {
-        poller = ight_get_global_poller();
-    }
-    auto evb = poller->get_event_base();
+    libevent = settings.libevent;
+    nameserver = settings.nameserver;
+
+    auto evb = settings.poller->get_event_base();
     if (nameserver != "") {
         if ((base = libevent->evdns_base_new(evb, 0)) == NULL) {
             throw std::bad_alloc();
@@ -402,13 +390,13 @@ DNSResolver::DNSResolver(std::string nameserver_, unsigned attempts,
     } else if ((base = libevent->evdns_base_new(evb, 1)) == NULL) {
         throw std::bad_alloc();
     }
-    if (attempts > 0 && libevent->evdns_base_set_option(base, "attempts",
-                          std::to_string(attempts).c_str()) != 0) {
+    if (settings.attempts > 0 && libevent->evdns_base_set_option(base,
+            "attempts", std::to_string(settings.attempts).c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'attempts' option");
     }
-    if (timeout > 0.0 && libevent->evdns_base_set_option(base, "timeout:",
-                           std::to_string(timeout).c_str()) != 0) {
+    if (settings.timeout > 0.0 && libevent->evdns_base_set_option(base,
+            "timeout", std::to_string(settings.timeout).c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'timeout' option");
     }

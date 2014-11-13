@@ -125,6 +125,70 @@ class DNSRequest {
     }
 };
 
+class DNSResolver;  // forward decl.
+
+//
+// Contains the settings used by a DNS resolver.
+//
+// Unless you modify the default configuration, the system wide DNS server
+// is used, every request is retried three times before giving up, the timeout
+// for a request is five seconds (these are the evdns defaults). Also, by
+// default the global libight's poller and libevent objects are used.
+//
+// You can change all of this using the setter methods.
+//
+class DNSSettings {
+    friend class DNSResolver;
+
+    unsigned attempts = 0;
+    IghtLibevent *libevent = IghtGlobalLibevent::get();
+    std::string nameserver = "";
+    IghtPoller *poller = ight_get_global_poller();
+    double timeout = 0.0;
+
+public:
+    DNSSettings& set_attempts(unsigned attempts_) {
+        attempts = attempts_;
+        return *this;
+    }
+
+    DNSSettings& set_libevent(IghtLibevent *libevent_) {
+        // TODO: change this function to receive a IghtLibevent object
+        if (libevent_ != NULL) {
+            libevent = libevent_;
+        }
+        return *this;
+    }
+
+    DNSSettings& set_nameserver(std::string nameserver_) {
+        nameserver = nameserver_;
+        return *this;
+    }
+
+    DNSSettings& set_poller(IghtPoller *poller_) {
+        // TODO: change this function to receive a IghtPoller object
+        if (poller_ != NULL) {
+            poller = poller_;
+        }
+        return *this;
+    }
+
+    DNSSettings& set_timeout(double timeout_) {
+        timeout = timeout_;
+        return *this;
+    }
+
+    DNSSettings(DNSSettings& /*other*/) = delete;
+    DNSSettings& operator=(DNSSettings& /*other*/) = delete;
+
+    DNSSettings(DNSSettings&& /*other*/) = default;
+    DNSSettings& operator=(DNSSettings&& /*other*/) = default;
+
+    DNSSettings(void) {
+        /* nothing */
+    }
+};
+
 //
 // DNS Resolver object.
 //
@@ -138,11 +202,11 @@ class DNSRequest {
 // same options of the the default one (i.e., `/etc/resolv.conf` is
 // parsed and requests are sent three times before timeout).
 //
-// Different settings can be selected by passing different options
-// to the constructor method.
+// Different settings can be selected by passing a specific DNSSettings
+// object to the constructor method.
 //
-// Once the object is created, it allows to issue DNS requests bound
-// to that DNS resolver rather than on the default one.
+// Once this object is created, it allows to issue DNS requests bound
+// to this DNS resolver rather than on the default one.
 //
 class DNSResolver {
     std::string nameserver = "";
@@ -152,9 +216,11 @@ class DNSResolver {
     void cleanup(void);
 
   public:
-    DNSResolver(std::string nameserver = "", unsigned attempts = 0,
-                double timeout = 0.0,
-                IghtPoller *poller = NULL, IghtLibevent *lev = NULL);
+    DNSResolver(void) {
+        /* nothing to do */
+    }
+
+    DNSResolver(DNSSettings& settings);
 
     evdns_base *get_evdns_base(void);
 
