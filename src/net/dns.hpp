@@ -152,7 +152,7 @@ class DNSResolver {
     void cleanup(void);
 
   public:
-    DNSResolver(std::string nameserver = "", std::string attempts = "",
+    DNSResolver(std::string nameserver = "", unsigned attempts = 0,
                 IghtPoller *poller = NULL, IghtLibevent *lev = NULL);
 
     evdns_base *get_evdns_base(void);
