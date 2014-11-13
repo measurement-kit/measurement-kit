@@ -765,27 +765,49 @@ TEST_CASE(
 TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
     auto libevent = IghtLibevent();
 
-    libevent.evdns_base_set_option = [](evdns_base *, const char *,
-      const char *) {
-        return -1;
-    };
-
     // Also make sure that the destructor is called
-    auto called = false;
+    auto called = 0;
     libevent.evdns_base_free = [&](evdns_base *p, int f) {
         ::evdns_base_free(p, f);
-        called = true;
+        called += 1;
     };
 
     // Note: call .get_evdns_base() to trigger lazy allocation
 
+    libevent.evdns_base_set_option = [](evdns_base *, const char *opt,
+      const char *) {
+        if (strcmp(opt, "attempts") == 0) {
+            return -1;
+        }
+        return 0;
+    };
     REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
         .set_attempts(1).set_libevent(&libevent)).get_evdns_base());
 
+    libevent.evdns_base_set_option = [](evdns_base *, const char *opt,
+      const char *) {
+        if (strcmp(opt, "timeout") == 0) {
+            return -1;
+        }
+        return 0;
+    };
     REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
         .set_timeout(1.0).set_libevent(&libevent)).get_evdns_base());
 
-    REQUIRE(called);
+    libevent.evdns_base_set_option = [](evdns_base *, const char *opt,
+      const char *) {
+        if (strcmp(opt, "randomize-case") == 0) {
+            return -1;
+        }
+        return 0;
+    };
+    // Make sure that randomize-case is called in both true and false cases
+    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
+        .set_randomize_case(1).set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
+        .set_randomize_case(0).set_libevent(&libevent)).get_evdns_base());
+
+    REQUIRE(called == 4);  // twice for randomize-case
 }
 
 TEST_CASE("We can override the default timeout") {

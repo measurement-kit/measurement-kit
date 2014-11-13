@@ -144,6 +144,7 @@ class DNSSettings {
     IghtLibevent *libevent = IghtGlobalLibevent::get();
     std::string nameserver = "";
     IghtPoller *poller = ight_get_global_poller();
+    unsigned randomize_case = 0;
     double timeout = -1.0;
 
 public:
@@ -170,6 +171,11 @@ public:
         if (poller_ != NULL) {
             poller = poller_;
         }
+        return *this;
+    }
+
+    DNSSettings& set_randomize_case(unsigned randomize_case_) {
+        randomize_case = randomize_case_ ? 1 : 0;  // Normalize value
         return *this;
     }
 

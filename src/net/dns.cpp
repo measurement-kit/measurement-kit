@@ -408,5 +408,11 @@ DNSResolver::get_evdns_base(void)
         throw std::runtime_error("Cannot set 'timeout' option");
     }
 
+    if (settings.libevent->evdns_base_set_option(base, "randomize-case",
+            std::to_string(settings.randomize_case).c_str()) != 0) {
+        cleanup();
+        throw std::runtime_error("Cannot set 'randomize-case' option");
+    }
+
     return base;
 }
