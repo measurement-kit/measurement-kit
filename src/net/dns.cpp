@@ -69,7 +69,7 @@ DNSResponse::DNSResponse(std::string name_, std::string query_type_,
 
         int family;
         int size;
-        char string[128];  // Should be enough
+        char string[128];  // Is wide enough (max. IPv6 length is 45 chars)
 
         if (type == DNS_IPv4_A) {
             family = PF_INET;
@@ -87,7 +87,7 @@ DNSResponse::DNSResponse(std::string name_, std::string query_type_,
         //
         if (count >= 0 && count <= INT_MAX / size + 1) {
 
-            // Note: `start_from` is required by the unit test
+            // Note: `start_from`, required by the unit test, defaults to 0
             for (auto i = start_from; i < count; ++i) {
                 // Note: address already in network byte order
                 if (libevent->inet_ntop(family, (char *)addresses + i * size,
@@ -237,6 +237,8 @@ class DNSRequestImpl {
                                void *addresses, void *opaque) {
 
         auto impl = static_cast<DNSRequestImpl *>(opaque);
+
+        assert(impl->pending);
 
         // Tell the libevent layer we received a DNS response
         if (impl->libevent->evdns_reply_hook) {

@@ -187,7 +187,7 @@ public:
  *
  * DNS requests issued using directly this class use the default DNS
  * resolver of libight; use a DNSResolver object to issue DNS requests
- * that are bound to a specific DNS resolver.
+ * that are bound to a specific DNSResolver.
  *
  * For example:
  *
@@ -226,12 +226,14 @@ class DNSRequest {
      * \param func The callback to call when the response is received; the
      *        callback receives a DNSResponse object, make sure you check
      *        the DNSResponse status code to see whether there was an error.
-     * \param dnsb Optional evdns_base structure to use.
-     * \param resolver Optional address of the DNS resolver (this is passed to
-     *        this class so that it can, in turn, provide it to the DNSResponse
-     *        object, but it is otherwise ignored by this class -- use a
-     *        custom evdns_base structure, or better a DNSResolver, to
-     *        issue requests to a custom DNS server).
+     * \param dnsb Optional evdns_base structure to use instead of the
+     *        default one. This parameter is not meant to be used directly
+     *        by the programmer. To issue requests using a specific evdns_base
+     *        with specific options, you should instead use a DNSResolver.
+     * \param resolver Optional address of the DNS nameserver. This address
+     *        is not processed by this class, who receives it only for passing
+     *        it to the DNSResponse constructor. To issue request towards a
+     *        specific nameserver, use a DNSResolver.
      * \param libevent Optional pointer to a mocked implementation of
      *        libight's libevent object (mainly useful to write unit tests).
      * \throws std::bad_alloc if some allocation fails.
@@ -283,7 +285,7 @@ class DNSRequest {
 class DNSResolver;  // forward decl.
 
 /*!
- * \brief Contains the settings used by a DNS resolver.
+ * \brief Contains the settings used by a DNSResolver.
  *
  * Unless you modify the default configuration, the system wide DNS server
  * is used, every request is retried three times before giving up, the timeout
@@ -313,7 +315,7 @@ public:
      * \param attempts_ Number of attempts before a request is considered
      *        failed (afterwards you get a timeout error).
      * \remark The default value of this parameter is -1 (which means that
-     *         evnds default must be used).
+     *         evnds default, i.e. 3, must be used).
      * \returns A reference to this object, so you can chain calls.
      */
     DNSSettings& set_attempts(int attempts_) {
@@ -380,7 +382,7 @@ public:
      * \brief Override the default DNS requests timeout.
      * \param timeout_ The new timeout in secionds.
      * \remark The default value of this parameter is -1 (which means that
-     *         evdns default must be used).
+     *         evdns default, i.e. 5, must be used).
      * \returns A reference to this object, so you can chain calls.
      */
     DNSSettings& set_timeout(double timeout_) {
@@ -434,10 +436,10 @@ public:
  * This object can be used to construct specific DNS resolvers that
  * differ from the default DNS resolver of libight.
  *
- * Once a custom resolver is created, one can use it to issue DNS requests.
- *
  * In other words, to use the default DNS resolver, one does not need
  * to create an instance of this object.
+ *
+ * Once a custom resolver is created, one can use it to issue DNS requests.
  *
  * For example:
  *
