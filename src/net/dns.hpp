@@ -206,6 +206,11 @@ public:
  *             ight::DNSResponse&& response) {
  *         // Process the response
  *     });
+ *
+ * Note that, for convenience, you don't need to construct the special
+ * domain name used for PTR queries. Rather, you only need to pass this
+ * class the IPv{4,6} address and the string "REVERSE_XXX" where XXX
+ * is "A" for IPv4 and is "AAAA" for IPv6.
  */
 class DNSRequest {
     DNSRequestImpl *impl = nullptr;
