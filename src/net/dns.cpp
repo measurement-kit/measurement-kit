@@ -33,6 +33,8 @@ DNSResponse::DNSResponse(std::string name_, std::string query_type_,
     : name(name_), query_type(query_type_), query_class(query_class_),
       resolver(resolver_), code(code_), ttl(ttl_)
 {
+    assert(start_from >= 0);
+
     if (libevent == NULL) {
         libevent = IghtGlobalLibevent::get();
     }

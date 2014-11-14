@@ -77,7 +77,7 @@ public:
                 std::string query_class, std::string resolver,
                 int code, char type, int count, int ttl, double started,
                 void *addresses, IghtLibevent *libevent = NULL,
-                int start_from=0);
+                int start_from = 0);
 
     /*!
      * \brief Get the results returned by the query.
