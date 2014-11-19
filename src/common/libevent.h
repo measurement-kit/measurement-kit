@@ -17,6 +17,8 @@
 #include <event2/dns.h>
 #include <event2/event.h>
 
+#include <arpa/inet.h>
+
 #include <functional>
 #include <stdexcept>
 
@@ -58,6 +60,30 @@ struct IghtLibevent {
 	std::function<void(evdns_base*, int)> evdns_base_free =
 	    ::evdns_base_free;
 
+	std::function<int(evdns_base *, const char *)>
+	    evdns_base_nameserver_ip_add = ::evdns_base_nameserver_ip_add;
+
+	std::function<int(evdns_base *, const char *, const char *)>
+	    evdns_base_set_option = ::evdns_base_set_option;
+
+	std::function<evdns_request *(evdns_base *, const char *, int,
+	    evdns_callback_type, void *)> evdns_base_resolve_ipv4 =
+	    ::evdns_base_resolve_ipv4;
+
+	std::function<evdns_request *(evdns_base *, const char *, int,
+	    evdns_callback_type, void *)> evdns_base_resolve_ipv6 =
+	    ::evdns_base_resolve_ipv6;
+
+	std::function<evdns_request *(evdns_base *, const struct in_addr *, int,
+	    evdns_callback_type, void *)> evdns_base_resolve_reverse =
+	    ::evdns_base_resolve_reverse;
+
+	std::function<evdns_request *(evdns_base *, const struct in6_addr *, int,
+	    evdns_callback_type, void *)> evdns_base_resolve_reverse_ipv6 =
+	    ::evdns_base_resolve_reverse_ipv6;
+
+	std::function<void(int, char, int, int, void *, void *)> evdns_reply_hook;
+
 	/*
 	 * event
 	 */
@@ -78,6 +104,15 @@ struct IghtLibevent {
 	std::function<evbuffer*(void)> evbuffer_new = ::evbuffer_new;
 
 	std::function<void(evbuffer*)> evbuffer_free = ::evbuffer_free;
+
+	//
+	// libc functions (we should probably rename this class and this file)
+	//
+
+	std::function<int(int, const char *, void *)> inet_pton = ::inet_pton;
+
+	std::function<const char *(int, const void *, char *, socklen_t)>
+	    inet_ntop = ::inet_ntop;
 };
 
 struct IghtGlobalLibevent {

@@ -52,3 +52,8 @@ test_report_file_SOURCES = test/report/file.cpp
 test_report_file_LDADD = libight.la
 check_PROGRAMS += test/report/file
 TESTS += test/report/file
+
+test_net_dns_SOURCES = test/net/dns.cpp
+test_net_dns_LDADD = libight.la
+check_PROGRAMS += test/net/dns
+TESTS += test/net/dns
