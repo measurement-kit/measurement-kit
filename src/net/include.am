@@ -1,6 +1,8 @@
 noinst_LTLIBRARIES += src/net/libnet.la
 
 src_net_libnet_la_SOURCES = \
-	src/net/connection.cpp
+	src/net/connection.cpp \
+	src/net/dns.cpp \
+	src/net/http.cpp
 
 libight_la_LIBADD += src/net/libnet.la
