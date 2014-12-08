@@ -367,6 +367,12 @@ public:
    
   }
 
+  Client(DNSResolver resolver) {
+   
+  }
+
+  // XXX Add proxy support.
+
   /*!
    * \brief Perform a HTTP Request.
    * \param headers The HTTP headers to use in the request
@@ -384,14 +390,14 @@ public:
    *                       the body is received.
    *
    */
-  Client request(Options request_options);
+  HTTPResponse request(Options request_options);
 
-  Client request(Options request_options,
+  HTTPResponse request(Options request_options,
                      Headers headers);
 
-  Client request(Options request_options,
-                     Headers headers,
-                     std::function<void(std::string&&)>&& body_callback);
+  HTTPResponse request(Options request_options,
+                 Headers headers,
+                 std::function<void(std::string&&)>&& body_callback);
 
   /*!
    * \brief Perform HTTP GET request.
@@ -403,16 +409,16 @@ public:
    * \param body_callback A callback that is fired every time a new chunk of
    *                      the body is received.
    */
-  Client get(std::string url,
-                 std::string body,
-                 Options request_options,
-                 Headers headers);
+  HTTPResponse get(std::string url,
+             std::string body,
+             Options request_options,
+             Headers headers);
 
-  Client get(std::string url,
-                 std::string body,
-                 Options request_options,
-                 Headers headers,
-                 std::function<void(std::string&&)>&& body_callback);
+  HTTPResponse get(std::string url,
+             std::string body,
+             Options request_options,
+             Headers headers,
+             std::function<void(std::string&&)>&& body_callback);
 
   /*!
    * \brief Perform HTTP POST request.
@@ -424,16 +430,16 @@ public:
    * \param body_callback A callback that is fired every time a new chunk of
    *                      the body is received.
    */
-  Client post(std::string url,
-                  std::string body,
-                  Options request_options,
-                  Headers headers,
-                  std::function<void(std::string&&)>&& body_callback);
+  HTTPResponse post(std::string url,
+              std::string body,
+              Options request_options,
+              Headers headers,
+              std::function<void(std::string&&)>&& body_callback);
 
-  Client post(std::string url,
-                  std::string body,
-                  Options request_options,
-                  Headers headers);
+  HTTPResponse post(std::string url,
+              std::string body,
+              Options request_options,
+              Headers headers);
 
   /*!
    * \brief Perform HTTP PUT request.
@@ -445,16 +451,16 @@ public:
    * \param body_callback A callback that is fired every time a new chunk of
    *                      the body is received.
    */
-  Client put(std::string url,
-                 std::string body,
-                 Options request_options,
-                 Headers headers,
-                 std::function<void(std::string&&)>&& body_callback);
+  HTTPResponse put(std::string url,
+             std::string body,
+             Options request_options,
+             Headers headers,
+             std::function<void(std::string&&)>&& body_callback);
 
-  Client put(std::string url,
-                 std::string body,
-                 Options request_options,
-                 Headers headers);
+  HTTPResponse put(std::string url,
+             std::string body,
+             Options request_options,
+             Headers headers);
 
   /*!
    * \brief Perform HTTP HEAD request.
@@ -466,16 +472,16 @@ public:
    * \param body_callback A callback that is fired every time a new chunk of
    *                      the body is received.
    */
-  Client head(std::string url,
-                 std::string body,
-                 Options request_options,
-                 Headers headers,
-                 std::function<void(std::string&&)>&& body_callback);
+  HTTPResponse head(std::string url,
+              std::string body,
+              Options request_options,
+              Headers headers,
+              std::function<void(std::string&&)>&& body_callback);
 
-  Client head(std::string url,
-                  std::string body,
-                  Options request_options,
-                  Headers headers);
+  HTTPResponse head(std::string url,
+              std::string body,
+              Options request_options,
+              Headers headers);
 
   /*!
    * \brief Perform HTTP DELETE request.
@@ -487,13 +493,13 @@ public:
    * \param body_callback A callback that is fired every time a new chunk of
    *                      the body is received.
    */
-  Client del(std::string url,
+  HTTPResponse del(std::string url,
              std::string body,
              Options request_options,
              Headers headers,
              std::function<void(std::string&&)>&& body_callback);
 
-  Client del(std::string url,
+  HTTPResponse del(std::string url,
              std::string body,
              Options request_options,
              Headers headers);
