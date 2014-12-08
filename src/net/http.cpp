@@ -7,6 +7,7 @@
 
 #include "common/log.h"
 
+#include "net/connection.h"
 #include "net/http.hpp"
 #include "net/buffer.hpp"
 
@@ -317,4 +318,222 @@ void
 ight::http::ResponseParser::feed(char c)
 {
     impl->feed(c);
+}
+
+//
+// HTTP Stream
+//
+
+namespace ight {
+namespace http {
+
+/*!
+ * \brief Implementation of ight::http::Stream.
+ * \remark This object is not movable.
+ */
+class StreamImpl {
+    IghtConnection connection;
+    ResponseParser parser;
+
+  public:
+
+    /*!
+     * \brief Deleted copy constructor.
+     */
+    StreamImpl(StreamImpl& /*other*/) = delete;
+
+    /*!
+     * \brief Deleted assignment constructor.
+     */
+    StreamImpl& operator=(StreamImpl& /*other*/) = delete;
+
+    /*!
+     * \brief Deleted move constructor.
+     */
+    StreamImpl(StreamImpl&& /*other*/) = delete;
+
+    /*!
+     * \brief Deleted move assignment.
+     */
+    StreamImpl& operator=(StreamImpl&& /*other*/) = delete;
+
+    /*!
+     * \brief Construct a stream that connects to a remote endpoint.
+     * \see Stream::Stream().
+     */
+    StreamImpl(std::string address, std::string port,
+            std::string family) {
+        // TODO: change the constructor of IghtConnection
+        connection = IghtConnection(family.c_str(), address.c_str(),
+                                    port.c_str());
+    }
+
+    /*!
+     * \brief Construct a stream that attaches to an already connected socket.
+     * \see Stream::Stream().
+     */
+    StreamImpl(evutil_socket_t sock) {
+        connection = IghtConnection(sock);
+    }
+
+    /*!
+     * \brief Register callback for "connect" event.
+     * \param fn Callback invoked when the connection is established.
+     * \remark The callback is not called if you constructed this
+     *         object attaching it to an already opened socket.
+     */
+    void on_connect(std::function<void(void)>&& fn) {
+        connection.on_connect(std::move(fn));
+    }
+
+    /*!
+     * \brief Write data on the underlying socket.
+     * \param data Data to be sent on the underlying socket.
+     * \throws std::runtime_error on error.
+     * \returns A reference to this stream for chaining operations.
+     */
+    StreamImpl& operator<<(std::string s) {
+        // TODO: change connection to accept a string in input
+        if (connection.puts(s.c_str()) != 0) {
+            throw std::runtime_error("Cannot write into the connection");
+        }
+        return *this;
+    }
+
+    /*!
+     * \brief Register callback for "drain" event.
+     * \param fn Callback invoked when the underlying socket is drained.
+     * \remark This callback allows you to control when to send more data
+     *         after some data was already passed to the kernel.
+     */
+    void on_flush(std::function<void(void)>&& fn) {
+        connection.on_flush(std::move(fn));
+    }
+
+    /*!
+     * \brief Register `begin` event handler.
+     * \param fn The `begin` event handler.
+     */
+    void on_begin(std::function<void(void)>&& fn) {
+        parser.on_begin(std::move(fn));
+    }
+
+    /*!
+     * \brief Register `headers_complete` event handler.
+     * \param fn The `headers_complete` event handler.
+     * \remark The parameters received by the event handler are, respectively,
+     *         the HTTP major version number, the HTTP minor version number,
+     *         the status code, the reason string, and a map containing the
+     *         HTTP headers.
+     */
+    void on_headers_complete(std::function<void(unsigned short, unsigned short,
+            unsigned int, std::string&&, std::map<std::string,
+            std::string>&&)>&& fn) {
+        parser.on_headers_complete(std::move(fn));
+    }
+
+    /*!
+     * \brief Register `body` event handler.
+     * \param fn The `body` event handler.
+     * \remark The parameter received by the event handler is the received
+     *         piece of body.
+     * \remark By default this event handler is unset, meaning that the
+     *         received body is ignored.
+     */
+    void on_body(std::function<void(std::string&&)>&& fn) {
+        parser.on_body(std::move(fn));
+    }
+
+    /*!
+     * \brief Register `end` event handler.
+     * \param fn The `end` event handler.
+     */
+    void on_end(std::function<void(void)>&& fn) {
+        parser.on_end(std::move(fn));
+    }
+};
+
+}}  // namespaces
+
+ight::http::Stream::Stream(std::string address, std::string port,
+        std::string family)
+{
+    impl = new ight::http::StreamImpl(address, port, family);
+}
+
+ight::http::Stream::Stream(evutil_socket_t sock)
+{
+    impl = new ight::http::StreamImpl(sock);
+}
+
+void
+ight::http::Stream::on_connect(std::function<void(void)>&& fn)
+{
+    if (impl == nullptr) {
+        throw std::runtime_error("Internal pointer is NULL");
+    }
+    impl->on_connect(std::move(fn));
+}
+
+ight::http::Stream::~Stream(void)
+{
+    delete impl;        /* delete handles nullptr */
+}
+
+ight::http::Stream&
+ight::http::Stream::operator<<(std::string s)
+{
+    if (impl == nullptr) {
+        throw std::runtime_error("Internal pointer is NULL");
+    }
+    *impl << s;
+    return *this;
+}
+
+void
+ight::http::Stream::on_flush(std::function<void(void)>&& fn)
+{
+    if (impl == nullptr) {
+        throw std::runtime_error("Internal pointer is NULL");
+    }
+    impl->on_flush(std::move(fn));
+}
+
+void
+ight::http::Stream::on_begin(std::function<void(void)>&& fn)
+{
+    if (impl == nullptr) {
+        throw std::runtime_error("Internal pointer is NULL");
+    }
+    impl->on_begin(std::move(fn));
+}
+
+void
+ight::http::Stream::on_headers_complete(std::function<void(
+        unsigned short http_major, unsigned short http_minor,
+        unsigned int status_code, std::string&& reason,
+        std::map<std::string, std::string>&& headers)>&& fn)
+{
+    if (impl == nullptr) {
+        throw std::runtime_error("Internal pointer is NULL");
+    }
+    impl->on_headers_complete(std::move(fn));
+}
+
+void
+ight::http::Stream::on_body(std::function<void(std::string&&)>&& fn)
+{
+    if (impl == nullptr) {
+        throw std::runtime_error("Internal pointer is NULL");
+    }
+    impl->on_body(std::move(fn));
+}
+
+void
+ight::http::Stream::on_end(std::function<void(void)>&& fn)
+{
+    if (impl == nullptr) {
+        throw std::runtime_error("Internal pointer is NULL");
+    }
+    impl->on_end(std::move(fn));
 }
