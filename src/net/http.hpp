@@ -25,6 +25,9 @@ struct evbuffer;
 namespace ight {
 namespace http {
 
+typedef Headers std::map<std::string, std::string>;
+typedef Options std::map<std::string, std::string>;
+
 class ResponseParserImpl;  // See http.cpp
 
 /*!
@@ -333,6 +336,169 @@ public:
      */
     void on_end(std::function<void(void)>&& fn);
 };
+
+class HTTPResponse {
+public:
+
+    int status_code;
+    std::string reason;
+    unsigned short http_major;
+    unsigned short http_minor;
+
+    std::string response_line;
+
+    Headers headers;
+    //body.read()
+    Body body;
+}
+
+class Client {
+  Stream *stream = nullptr;
+
+public:
+  
+  Client(Client& ) = delete;
+  Client& operator=(Client& ) = delete;
+  Client(Client&& ) = delete;
+
+  Client& operator=(Client&& ) = default;
+
+  Client(void) {
+   
+  }
+
+  /*!
+   * \brief Perform a HTTP Request.
+   * \param headers The HTTP headers to use in the request
+   * \param request_options A std::map with key values of the options
+   *                        supported.
+   *                        {
+   *                          "follow_redirects": "yes|no",
+   *                          "url": std::string,
+   *                          "ignore_body": "yes|no",
+   *                          "method": "GET|DELETE|PUT|POST|HEAD ...",
+   *                          "http_version": "HTTP/1.1",
+   *                          "path": by default is taken from the url
+   *                        }
+   *  \param body_callback A callback that is fired every time a new chunk of
+   *                       the body is received.
+   *
+   */
+  Client request(Options request_options);
+
+  Client request(Options request_options,
+                     Headers headers);
+
+  Client request(Options request_options,
+                     Headers headers,
+                     std::function<void(std::string&&)>&& body_callback);
+
+  /*!
+   * \brief Perform HTTP GET request.
+   * \param url  The url of the request.
+   * \param body The `body` of the request.
+   * \param request_options A std::map with key values of the options
+   *                        supported.
+   * \param headers The HTTP headers to use in the request
+   * \param body_callback A callback that is fired every time a new chunk of
+   *                      the body is received.
+   */
+  Client get(std::string url,
+                 std::string body,
+                 Options request_options,
+                 Headers headers);
+
+  Client get(std::string url,
+                 std::string body,
+                 Options request_options,
+                 Headers headers,
+                 std::function<void(std::string&&)>&& body_callback);
+
+  /*!
+   * \brief Perform HTTP POST request.
+   * \param url  The url of the request.
+   * \param body The `body` of the request.
+   * \param request_options A std::map with key values of the options
+   *                        supported.
+   * \param headers The HTTP headers to use in the request
+   * \param body_callback A callback that is fired every time a new chunk of
+   *                      the body is received.
+   */
+  Client post(std::string url,
+                  std::string body,
+                  Options request_options,
+                  Headers headers,
+                  std::function<void(std::string&&)>&& body_callback);
+
+  Client post(std::string url,
+                  std::string body,
+                  Options request_options,
+                  Headers headers);
+
+  /*!
+   * \brief Perform HTTP PUT request.
+   * \param url  The url of the request.
+   * \param body The `body` of the request.
+   * \param request_options A std::map with key values of the options
+   *                        supported.
+   * \param headers The HTTP headers to use in the request
+   * \param body_callback A callback that is fired every time a new chunk of
+   *                      the body is received.
+   */
+  Client put(std::string url,
+                 std::string body,
+                 Options request_options,
+                 Headers headers,
+                 std::function<void(std::string&&)>&& body_callback);
+
+  Client put(std::string url,
+                 std::string body,
+                 Options request_options,
+                 Headers headers);
+
+  /*!
+   * \brief Perform HTTP HEAD request.
+   * \param url  The url of the request.
+   * \param body The `body` of the request.
+   * \param request_options A std::map with key values of the options
+   *                        supported.
+   * \param headers The HTTP headers to use in the request
+   * \param body_callback A callback that is fired every time a new chunk of
+   *                      the body is received.
+   */
+  Client head(std::string url,
+                 std::string body,
+                 Options request_options,
+                 Headers headers,
+                 std::function<void(std::string&&)>&& body_callback);
+
+  Client head(std::string url,
+                  std::string body,
+                  Options request_options,
+                  Headers headers);
+
+  /*!
+   * \brief Perform HTTP DELETE request.
+   * \param url  The url of the request.
+   * \param body The `body` of the request.
+   * \param request_options A std::map with key values of the options
+   *                        supported.
+   * \param headers The HTTP headers to use in the request
+   * \param body_callback A callback that is fired every time a new chunk of
+   *                      the body is received.
+   */
+  Client del(std::string url,
+             std::string body,
+             Options request_options,
+             Headers headers,
+             std::function<void(std::string&&)>&& body_callback);
+
+  Client del(std::string url,
+             std::string body,
+             Options request_options,
+             Headers headers);
+
+}
 
 }}  // namespaces
 #endif  // LIBIGHT_NET_HTTP_HPP
