@@ -44,7 +44,7 @@ class ResponseParserImpl {
     unsigned int prev = S_NOTHING;
     std::string field;
     std::string value;
-    std::map<std::string, std::string> headers;
+    Headers headers;
     bool closing = false;
     bool parsing = false;
 
@@ -212,9 +212,9 @@ public:
      * \see RequestParser::on_headers_complete.
      */
     std::function<void(unsigned short, unsigned short, unsigned int,
-        std::string&&, std::map<std::string, std::string>&&)>
+        std::string&&, Headers&&)>
         headers_complete_fn = [](unsigned short, unsigned short,
-        unsigned int, std::string&&, std::map<std::string, std::string>&&) {
+        unsigned int, std::string&&, Headers&&) {
         // nothing
     };
 
@@ -315,7 +315,7 @@ ResponseParser::on_begin(std::function<void(void)>&& fn)
 void
 ResponseParser::on_headers_complete(std::function<void(
     unsigned short, unsigned short, unsigned int, std::string&&,
-    std::map<std::string, std::string>&&)>&& fn)
+    Headers&&)>&& fn)
 {
     get_impl()->headers_complete_fn = std::move(fn);
 }

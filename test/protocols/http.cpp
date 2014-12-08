@@ -12,6 +12,8 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
+#include "common/check_connectivity.hpp"
+#include "common/poller.h"
 #include "common/log.h"
 #include "protocols/http.hpp"
 
@@ -108,4 +110,56 @@ TEST_CASE("The HTTP response parser works as expected") {
         ight_debug("%c\n", c);
         parser.feed(c);
     }
+}
+
+TEST_CASE("HTTP stream works as expected") {
+    if (ight::Network::is_down()) {
+        return;
+    }
+    //ight_set_verbose(1);
+    auto stream = http::Stream::connect("www.google.com", "80");
+    stream.on_connect([&]() {
+        ight_debug("Connection made... sending request");
+        stream << "GET /robots.txt HTTP/1.1\r\n"
+               << "Host: www.google.com\r\n"
+               //<< "Connection: close\r\n"  // Cannot do this yet
+               << "\r\n";
+        stream.on_flush([]() {
+            ight_debug("Request sent... waiting for response");
+        });
+        stream.on_headers_complete([&](unsigned short major,
+                unsigned short minor, unsigned int status,
+                std::string&& reason, http::Headers&& headers) {
+            std::cout << "HTTP/" << major << "." << minor << " " <<
+                        status << " " << reason << "\r\n";
+            for (auto& kv : headers) {
+                std::cout << kv.first << ": " << kv.second << "\r\n";
+            }
+            std::cout << "\r\n";
+            stream.on_end([&](void) {
+                std::cout << "\r\n";
+                stream.close();
+                ight_break_loop();
+            });
+            stream.on_body([&](std::string&& chunk) {
+                std::cout << chunk;
+            });
+        });
+    });
+    ight_loop();
+}
+
+TEST_CASE("HTTP stream receives connection errors") {
+    if (ight::Network::is_down()) {
+        return;
+    }
+    //ight_set_verbose(1);
+    auto stream = http::Stream::connect("nexa.polito.it", "81");
+    stream.set_timeout(1.0);
+    stream.on_error([&](IghtError e) {
+        ight_debug("Connection error: %d", e.error);
+        stream.close();
+        ight_break_loop();
+    });
+    ight_loop();
 }
