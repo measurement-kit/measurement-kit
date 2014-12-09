@@ -337,10 +337,10 @@ public:
     void on_end(std::function<void(void)>&& fn);
 };
 
-class HTTPResponse {
+class Response {
 public:
 
-    int status_code;
+    unsigned int status_code;
     std::string reason;
     unsigned short http_major;
     unsigned short http_minor;
@@ -353,156 +353,156 @@ public:
 }
 
 class Client {
-  Stream *stream = nullptr;
+    Stream *stream = nullptr;
 
-public:
-  
-  Client(Client& ) = delete;
-  Client& operator=(Client& ) = delete;
-  Client(Client&& ) = delete;
+    public:
 
-  Client& operator=(Client&& ) = default;
+    Client(Client&) = delete;
+    Client& operator=(Client&) = delete;
 
-  Client(void) {
-   
-  }
+    Client(Client&&) = default;
+    Client& operator=(Client&&) = default;
 
-  Client(DNSResolver resolver) {
-   
-  }
+    Client(void) {
 
-  // XXX Add proxy support.
+    }
 
-  /*!
-   * \brief Perform a HTTP Request.
-   * \param headers The HTTP headers to use in the request
-   * \param request_options A std::map with key values of the options
-   *                        supported.
-   *                        {
-   *                          "follow_redirects": "yes|no",
-   *                          "url": std::string,
-   *                          "ignore_body": "yes|no",
-   *                          "method": "GET|DELETE|PUT|POST|HEAD ...",
-   *                          "http_version": "HTTP/1.1",
-   *                          "path": by default is taken from the url
-   *                        }
-   *  \param body_callback A callback that is fired every time a new chunk of
-   *                       the body is received.
-   *
-   */
-  HTTPResponse request(Options request_options);
+    Client(DNSResolver resolver) {
 
-  HTTPResponse request(Options request_options,
-                     Headers headers);
+    }
 
-  HTTPResponse request(Options request_options,
-                 Headers headers,
-                 std::function<void(std::string&&)>&& body_callback);
+    // XXX Add proxy support.
 
-  /*!
-   * \brief Perform HTTP GET request.
-   * \param url  The url of the request.
-   * \param body The `body` of the request.
-   * \param request_options A std::map with key values of the options
-   *                        supported.
-   * \param headers The HTTP headers to use in the request
-   * \param body_callback A callback that is fired every time a new chunk of
-   *                      the body is received.
-   */
-  HTTPResponse get(std::string url,
-             std::string body,
-             Options request_options,
-             Headers headers);
+    /*!
+     * \brief Perform a HTTP Request.
+     * \param headers The HTTP headers to use in the request
+     * \param request_options A std::map with key values of the options
+     *                        supported.
+     *                        {
+     *                          "follow_redirects": "yes|no",
+     *                          "url": std::string,
+     *                          "ignore_body": "yes|no",
+     *                          "method": "GET|DELETE|PUT|POST|HEAD ...",
+     *                          "http_version": "HTTP/1.1",
+     *                          "path": by default is taken from the url
+     *                        }
+     *  \param body_callback A callback that is fired every time a new chunk of
+     *                       the body is received.
+     *
+     */
+    Response request(Options request_options);
 
-  HTTPResponse get(std::string url,
-             std::string body,
-             Options request_options,
-             Headers headers,
-             std::function<void(std::string&&)>&& body_callback);
+    Response request(Options request_options,
+            Headers headers);
 
-  /*!
-   * \brief Perform HTTP POST request.
-   * \param url  The url of the request.
-   * \param body The `body` of the request.
-   * \param request_options A std::map with key values of the options
-   *                        supported.
-   * \param headers The HTTP headers to use in the request
-   * \param body_callback A callback that is fired every time a new chunk of
-   *                      the body is received.
-   */
-  HTTPResponse post(std::string url,
-              std::string body,
-              Options request_options,
-              Headers headers,
-              std::function<void(std::string&&)>&& body_callback);
+    Response request(Options request_options,
+            Headers headers,
+            std::function<void(std::string&&)>&& body_callback);
 
-  HTTPResponse post(std::string url,
-              std::string body,
-              Options request_options,
-              Headers headers);
+    /*!
+     * \brief Perform HTTP GET request.
+     * \param url  The url of the request.
+     * \param body The `body` of the request.
+     * \param request_options A std::map with key values of the options
+     *                        supported.
+     * \param headers The HTTP headers to use in the request
+     * \param body_callback A callback that is fired every time a new chunk of
+     *                      the body is received.
+     */
+    Response get(std::string url,
+            std::string body,
+            Options request_options,
+            Headers headers);
 
-  /*!
-   * \brief Perform HTTP PUT request.
-   * \param url  The url of the request.
-   * \param body The `body` of the request.
-   * \param request_options A std::map with key values of the options
-   *                        supported.
-   * \param headers The HTTP headers to use in the request
-   * \param body_callback A callback that is fired every time a new chunk of
-   *                      the body is received.
-   */
-  HTTPResponse put(std::string url,
-             std::string body,
-             Options request_options,
-             Headers headers,
-             std::function<void(std::string&&)>&& body_callback);
+    Response get(std::string url,
+            std::string body,
+            Options request_options,
+            Headers headers,
+            std::function<void(std::string&&)>&& body_callback);
 
-  HTTPResponse put(std::string url,
-             std::string body,
-             Options request_options,
-             Headers headers);
+    /*!
+     * \brief Perform HTTP POST request.
+     * \param url  The url of the request.
+     * \param body The `body` of the request.
+     * \param request_options A std::map with key values of the options
+     *                        supported.
+     * \param headers The HTTP headers to use in the request
+     * \param body_callback A callback that is fired every time a new chunk of
+     *                      the body is received.
+     */
+    Response post(std::string url,
+            std::string body,
+            Options request_options,
+            Headers headers,
+            std::function<void(std::string&&)>&& body_callback);
 
-  /*!
-   * \brief Perform HTTP HEAD request.
-   * \param url  The url of the request.
-   * \param body The `body` of the request.
-   * \param request_options A std::map with key values of the options
-   *                        supported.
-   * \param headers The HTTP headers to use in the request
-   * \param body_callback A callback that is fired every time a new chunk of
-   *                      the body is received.
-   */
-  HTTPResponse head(std::string url,
-              std::string body,
-              Options request_options,
-              Headers headers,
-              std::function<void(std::string&&)>&& body_callback);
+    Response post(std::string url,
+            std::string body,
+            Options request_options,
+            Headers headers);
 
-  HTTPResponse head(std::string url,
-              std::string body,
-              Options request_options,
-              Headers headers);
+    /*!
+     * \brief Perform HTTP PUT request.
+     * \param url  The url of the request.
+     * \param body The `body` of the request.
+     * \param request_options A std::map with key values of the options
+     *                        supported.
+     * \param headers The HTTP headers to use in the request
+     * \param body_callback A callback that is fired every time a new chunk of
+     *                      the body is received.
+     */
+    Response put(std::string url,
+            std::string body,
+            Options request_options,
+            Headers headers,
+            std::function<void(std::string&&)>&& body_callback);
 
-  /*!
-   * \brief Perform HTTP DELETE request.
-   * \param url  The url of the request.
-   * \param body The `body` of the request.
-   * \param request_options A std::map with key values of the options
-   *                        supported.
-   * \param headers The HTTP headers to use in the request
-   * \param body_callback A callback that is fired every time a new chunk of
-   *                      the body is received.
-   */
-  HTTPResponse del(std::string url,
-             std::string body,
-             Options request_options,
-             Headers headers,
-             std::function<void(std::string&&)>&& body_callback);
+    Response put(std::string url,
+            std::string body,
+            Options request_options,
+            Headers headers);
 
-  HTTPResponse del(std::string url,
-             std::string body,
-             Options request_options,
-             Headers headers);
+    /*!
+     * \brief Perform HTTP HEAD request.
+     * \param url  The url of the request.
+     * \param body The `body` of the request.
+     * \param request_options A std::map with key values of the options
+     *                        supported.
+     * \param headers The HTTP headers to use in the request
+     * \param body_callback A callback that is fired every time a new chunk of
+     *                      the body is received.
+     */
+    Response head(std::string url,
+            std::string body,
+            Options request_options,
+            Headers headers,
+            std::function<void(std::string&&)>&& body_callback);
+
+    Response head(std::string url,
+            std::string body,
+            Options request_options,
+            Headers headers);
+
+    /*!
+     * \brief Perform HTTP DELETE request.
+     * \param url  The url of the request.
+     * \param body The `body` of the request.
+     * \param request_options A std::map with key values of the options
+     *                        supported.
+     * \param headers The HTTP headers to use in the request
+     * \param body_callback A callback that is fired every time a new chunk of
+     *                      the body is received.
+     */
+    Response del(std::string url,
+            std::string body,
+            Options request_options,
+            Headers headers,
+            std::function<void(std::string&&)>&& body_callback);
+
+    Response del(std::string url,
+            std::string body,
+            Options request_options,
+            Headers headers);
 
 }
 
