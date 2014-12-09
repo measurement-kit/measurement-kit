@@ -3,4 +3,5 @@ libight_la_LIBADD =  # Empty
 include src/common/include.am
 include src/ext/include.am
 include src/net/include.am
+include src/protocols/include.am
 include src/report/include.am

@@ -5,7 +5,7 @@
  * information on the copying conditions.
  */
 
-#include "net/dns.hpp"
+#include "protocols/dns.hpp"
 
 #include "common/log.h"
 #include "common/utils.h"
@@ -14,18 +14,18 @@
 
 #include <cassert>
 
-using namespace ight;
+using namespace ight::protocols::dns;
 
 //
 // DNS response.
 //
 
-DNSResponse::DNSResponse(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
+Response::Response(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
 {
     // nothing
 }
 
-DNSResponse::DNSResponse(std::string name_, std::string query_type_,
+Response::Response(std::string name_, std::string query_type_,
                          std::string query_class_, std::string resolver_,
                          int code_, char type, int count,
                          int ttl_, double started, void *addresses,
@@ -112,7 +112,7 @@ DNSResponse::DNSResponse(std::string name_, std::string query_type_,
 }
 
 std::string
-DNSResponse::map_failure_(int code)
+Response::map_failure_(int code)
 {
     std::string s;
 
@@ -194,17 +194,19 @@ DNSResponse::map_failure_(int code)
 }
 
 namespace ight {
+namespace protocols {
+namespace dns {
 
 /*!
- * \brief Implementation of DNSRequest.
+ * \brief Implementation of Request.
  *
- * This is the internal object thanks to which DNSRequest is movable. Of
- * course, DNSRequestImpl is not movable, since its address is passed to
+ * This is the internal object thanks to which Request is movable. Of
+ * course, RequestImpl is not movable, since its address is passed to
  * one of the many evnds delayed requests functions.
  *
- * \remark You should not use this class directly, use DNSRequest instead.
+ * \remark You should not use this class directly, use Request instead.
  */
-class DNSRequestImpl {
+class RequestImpl {
 
     //
     // Note: evdns_base_resolve_xxx() return a evdns_request
@@ -223,7 +225,7 @@ class DNSRequestImpl {
     // variable to keep track of cancelled requests.
     //
 
-    std::function<void(DNSResponse&&)> callback;
+    std::function<void(Response&&)> callback;
     bool cancelled = false;
     bool pending = false;
     double ticks = 0.0;  // just to initialize to something
@@ -236,7 +238,7 @@ class DNSRequestImpl {
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
 
-        auto impl = static_cast<DNSRequestImpl *>(opaque);
+        auto impl = static_cast<RequestImpl *>(opaque);
 
         assert(impl->pending);
 
@@ -252,7 +254,7 @@ class DNSRequestImpl {
         }
         impl->pending = false;
 
-        impl->callback(DNSResponse(impl->name, impl->query_type,
+        impl->callback(Response(impl->name, impl->query_type,
             impl->query_class, impl->resolver, code, type, count,
             ttl, impl->ticks, addresses));
     }
@@ -275,10 +277,10 @@ class DNSRequestImpl {
 
     /*!
      * \brief Issue an async DNS request.
-     * \see DNSRequest::DNSRequest().
+     * \see Request::Request().
      */
-    DNSRequestImpl(std::string query, std::string address,
-                   std::function<void(DNSResponse&&)>&& f,
+    RequestImpl(std::string query, std::string address,
+                   std::function<void(Response&&)>&& f,
                    evdns_base *base, std::string resolver_,
                    IghtLibevent *lev)
             : callback(f), name(address), resolver(resolver_), libevent(lev) {
@@ -345,14 +347,14 @@ class DNSRequestImpl {
     }
 };
 
-}  // namespace
+}}}  // namespace
 
 //
 // Async DNS request.
 //
 
-DNSRequest::DNSRequest(std::string query, std::string address,
-                       std::function<void(DNSResponse&&)>&& func,
+Request::Request(std::string query, std::string address,
+                       std::function<void(Response&&)>&& func,
                        evdns_base *dnsb, std::string resolver,
                        IghtLibevent *libevent)
 {
@@ -362,12 +364,12 @@ DNSRequest::DNSRequest(std::string query, std::string address,
     if (libevent == NULL) {
         libevent = IghtGlobalLibevent::get();
     }
-    impl = new DNSRequestImpl(query, address, std::move(func),
+    impl = new RequestImpl(query, address, std::move(func),
                               dnsb, resolver, libevent);
 }
 
 void
-DNSRequest::cancel(void)
+Request::cancel(void)
 {
     if (impl == nullptr) {
         return;
@@ -381,7 +383,7 @@ DNSRequest::cancel(void)
 //
 
 void
-DNSResolver::cleanup(void)
+Resolver::cleanup(void)
 {
     if (base != NULL) {
         //
@@ -394,7 +396,7 @@ DNSResolver::cleanup(void)
 }
 
 evdns_base *
-DNSResolver::get_evdns_base(void)
+Resolver::get_evdns_base(void)
 {
     if (base != NULL) {  // Idempotent
         return base;
