@@ -4,6 +4,7 @@
 #include <iterator>
 #include <iostream>
 #include <fstream>
+
 #include "report/file.hpp"
 #include "common/settings.hpp"
 
@@ -14,28 +15,11 @@ namespace nettest {
 class InputFileIterator: public std::iterator<std::input_iterator_tag, std::string,
   std::ptrdiff_t, const std::string*, const std::string&>
 {
-
+public:
   InputFileIterator(void) {}
 
   InputFileIterator(std::string input_filepath) {
-    is = ifstream(input_filepath);
-  }
-
-  const std::string& operator*() const { return value; }
-  const std::string* operator->() const { return &value; }
-
-  InputFileIterator& operator++()
-  {
-    if (is && !getline(*is, value)) {
-      eof = true;
-    }
-    return *this;
-  }
-  InputFileIterator operator++(int)
-  {
-    InputFileIterator prev(*this);
-    ++*this;
-    return prev;
+    is = std::ifstream(input_filepath);
   }
 
   InputFileIterator begin()
@@ -52,6 +36,17 @@ class InputFileIterator: public std::iterator<std::input_iterator_tag, std::stri
     return o;
   }
 
+  const std::string& operator*() const { return value; }
+  const std::string* operator->() const { return &value; }
+
+  InputFileIterator& operator++()
+  {
+    if (is && !getline(is, value)) {
+      eof = true;
+    }
+    return *this;
+  }
+
   bool operator!=(const InputFileIterator& other) const
   {
     return is.eof != other.eof;
@@ -62,10 +57,10 @@ class InputFileIterator: public std::iterator<std::input_iterator_tag, std::stri
     return is.eof != other.eof;
   }
 private:
-  ifstream is;
+  std::ifstream is;
   std::string value;
   bool eof;
-}
+};
 
 class NetTest {
   
@@ -74,7 +69,7 @@ class NetTest {
 
 public:
   ight::common::Settings options;
-  std::string input;
+  InputFileIterator input;
 
   NetTest(void);
 
@@ -84,13 +79,15 @@ public:
 
   InputFileIterator input_file();
 
+  void run_next_measurement(std::function<void()>&& cb);
+
   void geoip_lookup();
 
-  void begin();
+  void begin(std::function<void()>&& cb);
 
   void write_header();
 
-  void end();
+  void end(std::function<void()>&& cb);
 
   // XXX leave both or only one?
   virtual void main(ight::common::Settings options,
@@ -101,7 +98,7 @@ public:
                     std::function<void(ReportEntry&&)>&& func);
 
 
-}
+};
 
 }}}
 
