@@ -16,6 +16,8 @@ class InputFileIterator: public std::iterator<std::input_iterator_tag, std::stri
   std::ptrdiff_t, const std::string*, const std::string&>
 {
 public:
+  bool eof;
+
   InputFileIterator(void) {}
 
   InputFileIterator(std::string input_filepath) {
@@ -49,17 +51,17 @@ public:
 
   bool operator!=(const InputFileIterator& other) const
   {
-    return is.eof != other.eof;
+    return eof != other.eof;
   }
 
   bool operator==(const InputFileIterator& other) const
   {
-    return is.eof != other.eof;
+    return eof != other.eof;
   }
+
 private:
   std::ifstream is;
   std::string value;
-  bool eof;
 };
 
 class NetTest {
