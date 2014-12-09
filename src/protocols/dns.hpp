@@ -302,13 +302,12 @@ class Request {
  *
  *     using namespace ight::protocols;
  *
- *     ight::common::Settings settings = {
+ *     auto reso = dns::Resolver({
  *         {"nameserver", "8.8.8.8"},
  *         {"timeout", "1.0"},
- *         {"attempts", "1"}
- *     }
- *
- *     auto reso = dns::Resolver(settings);
+ *         {"attempts", "4"},
+ *         {"randomize_case", "1"},
+ *     });
  *
  *     auto r2 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
  *             [](dns::Response&& response) {
