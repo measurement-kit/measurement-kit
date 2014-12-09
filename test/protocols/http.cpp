@@ -12,8 +12,11 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
+#include "common/poller.h"
 #include "common/log.h"
 #include "protocols/http.hpp"
+
+using namespace ight::protocols;
 
 //
 // ResponseParser unit test
@@ -107,4 +110,32 @@ TEST_CASE("The HTTP response parser works as expected")
         ight_debug("%c\n", c);
         parser.feed(c);
     }
+}
+
+TEST_CASE("HTTP stream works as expected") {
+    auto stream = http::Stream::connect("www.google.com", "80");
+    stream.on_connect([&]() {
+        stream << "GET /robots.txt HTTP/1.1\r\n"
+               << "Host: www.google.com\r\n"
+               << "\r\n";
+        stream.on_headers_complete([&](unsigned short major,
+                unsigned short minor, unsigned int status,
+                std::string&& reason, http::Headers&& headers) {
+            std::cout << "HTTP/" << major << "." << minor << " " <<
+                        status << " " << reason << "\r\n";
+            for (auto& kv : headers) {
+                std::cout << kv.first << ": " << kv.second << "\r\n";
+            }
+            std::cout << "\r\n";
+            stream.on_end([](void) {
+                std::cout << "\r\n";
+                //stream.close();
+                ight_break_loop();
+            });
+            stream.on_body([&](std::string&& chunk) {
+                std::cout << chunk;
+            });
+        });
+    });
+    ight_loop();
 }

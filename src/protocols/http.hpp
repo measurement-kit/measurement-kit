@@ -255,7 +255,7 @@ public:
      * \remark This is syntactic sugar for Stream::Stream().
      * \see Stream::Stream().
      */
-    Stream connect(std::string address, std::string port,
+    static Stream connect(std::string address, std::string port,
             std::string family = "PF_UNSPEC") {
         return Stream(address, port, family);
     }
