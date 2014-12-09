@@ -12,18 +12,20 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "net/dns.hpp"
+#include "protocols/dns.hpp"
 
 #include "common/check_connectivity.hpp"
 #include "common/log.h"
 #include "common/utils.h"
 
+using namespace ight::protocols::dns;
+
 //
-// DNSResponse unit tests.
+// Response unit tests.
 //
 
-TEST_CASE("The default DNSResponse() constructor sets sensible values") {
-    auto response = ight::DNSResponse();
+TEST_CASE("The default Response() constructor sets sensible values") {
+    auto response = Response();
     REQUIRE(response.get_query_name() == "");
     REQUIRE(response.get_query_type() == "");
     REQUIRE(response.get_query_class() == "");
@@ -42,17 +44,17 @@ TEST_CASE("The default DNSResponse() constructor sets sensible values") {
 }
 
 //
-// TODO: test that DNSResponse(...) correctly handles the `libevent` param.
+// TODO: test that Response(...) correctly handles the `libevent` param.
 //
 // Not urgent because this is implicitly tested by other tests.
 //
 
 TEST_CASE(
-  "DNSResponse(...) only computes RTT when the server actually replied") {
+  "Response(...) only computes RTT when the server actually replied") {
     auto ticks = ight_time_now() - 3.0;
 
     for (auto code = 0; code < 128; ++code) {
-        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "8.8.8.8",
+        auto r = Response("www.google.com", "AAAA", "IN", "8.8.8.8",
             code, DNS_IPv4_A, 0, 123, ticks, NULL);
         switch (code) {
         case DNS_ERR_NONE:
@@ -90,7 +92,7 @@ TEST_CASE(
 // Not urgent because implicitly tested by other tests.
 //
 
-TEST_CASE("DNSResponse(...) constructor is robust against overflow") {
+TEST_CASE("Response(...) constructor is robust against overflow") {
 
     //
     // Mock inet_ntop() so that we don't pass it a NULL pointer. This causes
@@ -146,7 +148,7 @@ TEST_CASE("DNSResponse(...) constructor is robust against overflow") {
     SECTION("IPv4: the overflow check behaves correctly") {
         auto last_good = INT_MAX / 4 + 1;
         for (auto x = last_good - 5; x <= last_good + 5; x += 1) {
-            auto r = ight::DNSResponse("www.google.com", "A", "IN", "8.8.8.8",
+            auto r = Response("www.google.com", "A", "IN", "8.8.8.8",
                 DNS_ERR_NONE, DNS_IPv4_A,
                 x,                            // value of count
                 123, 0.11, NULL, &libevent,
@@ -162,7 +164,7 @@ TEST_CASE("DNSResponse(...) constructor is robust against overflow") {
     }
 
     SECTION("IPv4: zero records are correctly handled by the overflow check") {
-        auto r = ight::DNSResponse("www.google.com", "A", "IN", "8.8.8.8",
+        auto r = Response("www.google.com", "A", "IN", "8.8.8.8",
             DNS_ERR_NONE, DNS_IPv4_A, 0, 123, 0.11, NULL);
         REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(r.get_results().size() == 0);
@@ -171,7 +173,7 @@ TEST_CASE("DNSResponse(...) constructor is robust against overflow") {
     SECTION("IPv6: the overflow check behaves correctly") {
         auto last_good = INT_MAX / 16 + 1;
         for (auto x = last_good - 5; x <= last_good + 5; x += 1) {
-            auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "::1",
+            auto r = Response("www.google.com", "AAAA", "IN", "::1",
                 DNS_ERR_NONE, DNS_IPv6_AAAA,
                 x,                            // value of count
                 123, 0.11, NULL, &libevent,
@@ -187,14 +189,14 @@ TEST_CASE("DNSResponse(...) constructor is robust against overflow") {
     }
 
     SECTION("IPv6: zero records are correctly handled by the overflow check") {
-        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "::1",
+        auto r = Response("www.google.com", "AAAA", "IN", "::1",
             DNS_ERR_NONE, DNS_IPv6_AAAA, 0, 123, 0.11, NULL);
         REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(r.get_results().size() == 0);
     }
 }
 
-TEST_CASE("DNSResponse(...) deals with unlikely inet_ntop failures") {
+TEST_CASE("Response(...) deals with unlikely inet_ntop failures") {
 
     IghtLibevent libevent;
     auto called = false;
@@ -204,7 +206,7 @@ TEST_CASE("DNSResponse(...) deals with unlikely inet_ntop failures") {
         return (const char *) NULL;
     };
 
-    auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "::1",
+    auto r = Response("www.google.com", "AAAA", "IN", "::1",
         DNS_ERR_NONE, DNS_IPv6_AAAA, 16, 123, 0.11, NULL, &libevent);
     REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
     REQUIRE(r.get_results().size() == 0);
@@ -212,7 +214,7 @@ TEST_CASE("DNSResponse(...) deals with unlikely inet_ntop failures") {
     REQUIRE(called);
 }
 
-TEST_CASE("If the response type is invalid DNSResponse sets an error") {
+TEST_CASE("If the response type is invalid Response sets an error") {
     for (char type = 0; type < 16; ++type) {
         switch (type) {
         case DNS_IPv4_A:
@@ -220,7 +222,7 @@ TEST_CASE("If the response type is invalid DNSResponse sets an error") {
         case DNS_PTR:
             continue;  // Skip the known-good cases
         }
-        auto r = ight::DNSResponse("www.google.com", "AAAA", "IN", "::1",
+        auto r = Response("www.google.com", "AAAA", "IN", "::1",
             DNS_ERR_NONE, type, 0, 123, 0.0, NULL);
         REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
     }
@@ -228,54 +230,54 @@ TEST_CASE("If the response type is invalid DNSResponse sets an error") {
 
 TEST_CASE("Evdns errors are correctly mapped to OONI failures") {
 
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_NONE)
+    REQUIRE(Response::map_failure_(DNS_ERR_NONE)
             == "");
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_FORMAT)
+    REQUIRE(Response::map_failure_(DNS_ERR_FORMAT)
             == "dns_lookup_error");
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_SERVERFAILED)
+    REQUIRE(Response::map_failure_(DNS_ERR_SERVERFAILED)
             == "dns_lookup_error");
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_NOTEXIST)
+    REQUIRE(Response::map_failure_(DNS_ERR_NOTEXIST)
             == "dns_lookup_error");
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_NOTIMPL)
+    REQUIRE(Response::map_failure_(DNS_ERR_NOTIMPL)
             == "dns_lookup_error");
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_REFUSED)
+    REQUIRE(Response::map_failure_(DNS_ERR_REFUSED)
             == "dns_lookup_error");
 
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_TRUNCATED)
+    REQUIRE(Response::map_failure_(DNS_ERR_TRUNCATED)
             == "dns_lookup_error");
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_UNKNOWN)
+    REQUIRE(Response::map_failure_(DNS_ERR_UNKNOWN)
             == "unknown failure 66");
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_TIMEOUT)
+    REQUIRE(Response::map_failure_(DNS_ERR_TIMEOUT)
             == "deferred_timeout_error");
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_SHUTDOWN)
+    REQUIRE(Response::map_failure_(DNS_ERR_SHUTDOWN)
             == "unknown failure 68");
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_CANCEL)
+    REQUIRE(Response::map_failure_(DNS_ERR_CANCEL)
             == "unknown failure 69");
-    REQUIRE(ight::DNSResponse::map_failure_(DNS_ERR_NODATA)
+    REQUIRE(Response::map_failure_(DNS_ERR_NODATA)
             == "dns_lookup_error");
 
     // Just three random numbers to increase confidence...
-    REQUIRE(ight::DNSResponse::map_failure_(1024)
+    REQUIRE(Response::map_failure_(1024)
             == "unknown failure 1024");
-    REQUIRE(ight::DNSResponse::map_failure_(1025)
+    REQUIRE(Response::map_failure_(1025)
             == "unknown failure 1025");
-    REQUIRE(ight::DNSResponse::map_failure_(1026)
+    REQUIRE(Response::map_failure_(1026)
             == "unknown failure 1026");
 }
 
 //
-// DNSRequest unit test
+// Request unit test
 //
 
 //
-// TODO: make sure that DNSRequest() correctly handle `dnsb` and `libevent`.
+// TODO: make sure that Request() correctly handle `dnsb` and `libevent`.
 //
 // Not urgent because already guaranteed by other tests.
 //
 
-// Now testing DNSRequestImpl()
+// Now testing RequestImpl()
 
-TEST_CASE("DNSRequest deals with failing evdns_base_resolve_ipv4") {
+TEST_CASE("Request deals with failing evdns_base_resolve_ipv4") {
     IghtLibevent libevent;
 
     libevent.evdns_base_resolve_ipv4 = [](evdns_base *, const char *, int,
@@ -283,13 +285,13 @@ TEST_CASE("DNSRequest deals with failing evdns_base_resolve_ipv4") {
         return (evdns_request *) NULL;
     };
 
-    REQUIRE_THROWS(ight::DNSRequest("A", "www.google.com", [](
-                                    ight::DNSResponse&&) {
+    REQUIRE_THROWS(Request("A", "www.google.com", [](
+                                    Response&&) {
         /* nothing */
     }, NULL, "", &libevent));
 }
 
-TEST_CASE("DNSRequest deals with failing evdns_base_resolve_ipv6") {
+TEST_CASE("Request deals with failing evdns_base_resolve_ipv6") {
     IghtLibevent libevent;
 
     libevent.evdns_base_resolve_ipv6 = [](evdns_base *, const char *, int,
@@ -297,13 +299,13 @@ TEST_CASE("DNSRequest deals with failing evdns_base_resolve_ipv6") {
         return (evdns_request *) NULL;
     };
 
-    REQUIRE_THROWS(ight::DNSRequest("AAAA", "github.com", [](
-                                    ight::DNSResponse&&) {
+    REQUIRE_THROWS(Request("AAAA", "github.com", [](
+                                    Response&&) {
         /* nothing */
     }, NULL, "", &libevent));
 }
 
-TEST_CASE("DNSRequest deals with failing evdns_base_resolve_reverse") {
+TEST_CASE("Request deals with failing evdns_base_resolve_reverse") {
     IghtLibevent libevent;
 
     libevent.evdns_base_resolve_reverse = [](evdns_base *,
@@ -314,13 +316,13 @@ TEST_CASE("DNSRequest deals with failing evdns_base_resolve_reverse") {
         return (evdns_request *) NULL;
     };
 
-    REQUIRE_THROWS(ight::DNSRequest("REVERSE_A", "8.8.8.8", [](
-                                    ight::DNSResponse&&) {
+    REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
+                                    Response&&) {
         /* nothing */
     }, NULL, "", &libevent));
 }
 
-TEST_CASE("DNSRequest deals with failing evdns_base_resolve_reverse_ipv6") {
+TEST_CASE("Request deals with failing evdns_base_resolve_reverse_ipv6") {
     IghtLibevent libevent;
 
     libevent.evdns_base_resolve_reverse_ipv6 = [](evdns_base *,
@@ -331,51 +333,51 @@ TEST_CASE("DNSRequest deals with failing evdns_base_resolve_reverse_ipv6") {
         return (evdns_request *) NULL;
     };
 
-    REQUIRE_THROWS(ight::DNSRequest("REVERSE_AAAA", "::1", [](
-                                    ight::DNSResponse&&) {
+    REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
+                                    Response&&) {
         /* nothing */
     }, NULL, "", &libevent));
 }
 
-TEST_CASE("DNSRequest deals with inet_pton returning 0") {
+TEST_CASE("Request deals with inet_pton returning 0") {
     IghtLibevent libevent;
 
     libevent.inet_pton = [](int, const char *, void *) {
         return 0;
     };
 
-    REQUIRE_THROWS(ight::DNSRequest("REVERSE_A", "8.8.8.8", [](
-                                    ight::DNSResponse&&) {
+    REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
+                                    Response&&) {
         /* nothing */
     }, NULL, "", &libevent));
 
-    REQUIRE_THROWS(ight::DNSRequest("REVERSE_AAAA", "::1", [](
-                                    ight::DNSResponse&&) {
+    REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
+                                    Response&&) {
         /* nothing */
     }, NULL, "", &libevent));
 }
 
-TEST_CASE("DNSRequest deals with inet_pton returning -1") {
+TEST_CASE("Request deals with inet_pton returning -1") {
     IghtLibevent libevent;
 
     libevent.inet_pton = [](int, const char *, void *) {
         return -1;
     };
 
-    REQUIRE_THROWS(ight::DNSRequest("REVERSE_A", "8.8.8.8", [](
-                                    ight::DNSResponse&&) {
+    REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
+                                    Response&&) {
         /* nothing */
     }, NULL, "", &libevent));
 
-    REQUIRE_THROWS(ight::DNSRequest("REVERSE_AAAA", "::1", [](
-                                    ight::DNSResponse&&) {
+    REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
+                                    Response&&) {
         /* nothing */
     }, NULL, "", &libevent));
 }
 
-TEST_CASE("DNSRequest raises if the query is unsupported") {
-    REQUIRE_THROWS(ight::DNSRequest("PTR", "www.neubot.org",
-                   [&](ight::DNSResponse&& /*response*/) {
+TEST_CASE("Request raises if the query is unsupported") {
+    REQUIRE_THROWS(Request("PTR", "www.neubot.org",
+                   [&](Response&& /*response*/) {
         // nothing
     }));
 }
@@ -387,7 +389,7 @@ TEST_CASE("DNSRequest raises if the query is unsupported") {
 // has already returned a value.
 //
 
-TEST_CASE("DNSRequest::cancel() is idempotent") {
+TEST_CASE("Request::cancel() is idempotent") {
 
     //
     // Here we only want to see that multiple cancel()s followed
@@ -397,8 +399,8 @@ TEST_CASE("DNSRequest::cancel() is idempotent") {
     // we check that we can get rid of a pending request.
     //
 
-    auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
-                               ight::DNSResponse&& /*response*/) {
+    auto r1 = Request("A", "www.neubot.org", [&](
+                               Response&& /*response*/) {
         // nothing
     });
 
@@ -407,12 +409,12 @@ TEST_CASE("DNSRequest::cancel() is idempotent") {
     r1.cancel();
 }
 
-TEST_CASE("DNSRequest::cancel() is safe when a request is pending") {
+TEST_CASE("Request::cancel() is safe when a request is pending") {
 
     //
     // Note: this test can be run both when the network is down and when
-    // the network is up. In both cases, the external DNSRequest is deleted
-    // before any event happens, and the DNSRequestImpl waits for some
+    // the network is up. In both cases, the external Request is deleted
+    // before any event happens, and the RequestImpl waits for some
     // event to happen. When the network is down, the event is the timeout
     // of evdns; when the network is up, the event is the DNS reply.
     //
@@ -428,7 +430,7 @@ TEST_CASE("DNSRequest::cancel() is safe when a request is pending") {
         }
         //
         // We need to unblock the loop here, because this test deletes
-        // the DNSRequest immediately, so we don't have a callback where
+        // the Request immediately, so we don't have a callback where
         // to report that we are done and we need to break the loop.
         //
         ight_break_loop();
@@ -436,10 +438,10 @@ TEST_CASE("DNSRequest::cancel() is safe when a request is pending") {
 
     auto failed = false;
     {
-        auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
-                                   ight::DNSResponse&& /*response*/) {
+        auto r1 = Request("A", "www.neubot.org", [&](
+                                   Response&& /*response*/) {
             //
-            // This callback should not be invoked, because DNSRequestImpl
+            // This callback should not be invoked, because RequestImpl
             // should honor its `cancelled` field and therefore should delete
             // itself rather than calling the callback.
             //
@@ -447,7 +449,7 @@ TEST_CASE("DNSRequest::cancel() is safe when a request is pending") {
             ight_break_loop();
         }, NULL, "", &libevent);
 
-    }  // This kills DNSRequest, but not the underlying DNSRequestImpl
+    }  // This kills Request, but not the underlying RequestImpl
 
     ight_loop();
     REQUIRE(!failed);
@@ -462,7 +464,7 @@ TEST_CASE("DNSRequest::cancel() is safe when a request is pending") {
 //
 
 //
-// Integration (or regress?) tests for DNSRequest.
+// Integration (or regress?) tests for Request.
 //
 // They generally need connectivity and are automatically skipped if
 // we are not connected to the 'Net.
@@ -486,8 +488,8 @@ TEST_CASE("The system resolver works as expected") {
         ight_break_loop();
     });
 
-    auto r1 = ight::DNSRequest("A", "www.neubot.org", [&](
-                               ight::DNSResponse&& response) {
+    auto r1 = Request("A", "www.neubot.org", [&](
+                               Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -504,8 +506,8 @@ TEST_CASE("The system resolver works as expected") {
     });
     ight_loop();
 
-    auto r2 = ight::DNSRequest("REVERSE_A", "130.192.16.172", [&](
-                               ight::DNSResponse&& response) {
+    auto r2 = Request("REVERSE_A", "130.192.16.172", [&](
+                               Response&& response) {
         REQUIRE(response.get_query_name() == "130.192.16.172");
         REQUIRE(response.get_query_type() == "PTR");
         REQUIRE(response.get_query_class() == "IN");
@@ -522,8 +524,8 @@ TEST_CASE("The system resolver works as expected") {
     });
     ight_loop();
 
-    auto r3 = ight::DNSRequest("AAAA", "ooni.torproject.org", [&](
-                               ight::DNSResponse&& response) {
+    auto r3 = Request("AAAA", "ooni.torproject.org", [&](
+                               Response&& response) {
         REQUIRE(response.get_query_name() == "ooni.torproject.org");
         REQUIRE(response.get_query_type() == "AAAA");
         REQUIRE(response.get_query_class() == "IN");
@@ -547,8 +549,8 @@ TEST_CASE("The system resolver works as expected") {
     });
     ight_loop();
 
-    auto r4 = ight::DNSRequest("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
-                               [&](ight::DNSResponse&& response) {
+    auto r4 = Request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+                               [&](Response&& response) {
         REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
         REQUIRE(response.get_query_type() == "PTR");
         REQUIRE(response.get_query_class() == "IN");
@@ -569,12 +571,12 @@ TEST_CASE("The system resolver works as expected") {
 }
 
 //
-// DNSResolver unit tests.
+// Resolver unit tests.
 //
 
 // Now testing: cleanup()
 
-TEST_CASE("DNSResolver: cleanup works correctly when we have allocated") {
+TEST_CASE("Resolver: cleanup works correctly when we have allocated") {
     auto libevent = IghtLibevent();
 
     auto called = 0;
@@ -585,14 +587,14 @@ TEST_CASE("DNSResolver: cleanup works correctly when we have allocated") {
 
     {
         // Note: call .get_evdns_base() to trigger lazy allocation
-        ight::DNSResolver(ight::DNSSettings().set_libevent(&libevent))
+        Resolver(ight::common::Settings(), &libevent)
             .get_evdns_base();
     }
 
     REQUIRE(called == 1);
 }
 
-TEST_CASE("DNSResolver: cleanup works correctly when we have not allocated") {
+TEST_CASE("Resolver: cleanup works correctly when we have not allocated") {
     auto libevent = IghtLibevent();
 
     auto called = 0;
@@ -602,15 +604,15 @@ TEST_CASE("DNSResolver: cleanup works correctly when we have not allocated") {
     };
 
     {
-        ight::DNSResolver();
+        Resolver();
     }
 
     REQUIRE(called == 0);
 }
 
-// Now testing DNSResolver(...)
+// Now testing Resolver(...)
 
-TEST_CASE("DNSResolver: ensure that the constructor does not allocate") {
+TEST_CASE("Resolver: ensure that the constructor does not allocate") {
     auto libevent = IghtLibevent();
 
     libevent.evdns_base_new = [](event_base *, int) {
@@ -622,11 +624,11 @@ TEST_CASE("DNSResolver: ensure that the constructor does not allocate") {
     // if we try to allocate we fail and the code will raise
     //
 
-    //ight::DNSResolver();  // How to do this?
-    ight::DNSResolver(ight::DNSSettings().set_libevent(&libevent));
+    //Resolver();  // How to do this?
+    Resolver(ight::common::Settings(), &libevent);
 }
 
-TEST_CASE("DNSResolver: evdns_base_new failure is correctly handled") {
+TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
     auto libevent = IghtLibevent();
 
     libevent.evdns_base_new = [](event_base *, int) {
@@ -636,17 +638,17 @@ TEST_CASE("DNSResolver: evdns_base_new failure is correctly handled") {
     // Note: call .get_evdns_base() to trigger lazy allocation
 
     // Handle the branch where nameserver is set
-    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
-        .set_nameserver("8.8.8.8")
-        .set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"nameserver", "8.8.8.8"}
+    }, &libevent).get_evdns_base());
 
     // Handle the branch using the default nameserver
-    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
-        .set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver(ight::common::Settings(),
+        &libevent).get_evdns_base());
 }
 
 TEST_CASE(
-  "DNSResolver: evdns_base_nameserver_ip_add failure is correctly handled") {
+  "Resolver: evdns_base_nameserver_ip_add failure is correctly handled") {
     auto libevent = IghtLibevent();
 
     libevent.evdns_base_nameserver_ip_add = [](evdns_base *, const char *) {
@@ -661,14 +663,14 @@ TEST_CASE(
     };
 
     // Note: call .get_evdns_base() to trigger lazy allocation
-    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
-        .set_nameserver("8.8.8.8")
-        .set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"nameserver", "8.8.8.8"}
+    }, &libevent).get_evdns_base());
 
     REQUIRE(called);
 }
 
-TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
+TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
     auto libevent = IghtLibevent();
 
     // Also make sure that the destructor is called
@@ -687,8 +689,9 @@ TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
         }
         return 0;
     };
-    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
-        .set_attempts(1).set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"attempts", "1"},
+    }, &libevent).get_evdns_base());
 
     libevent.evdns_base_set_option = [](evdns_base *, const char *opt,
       const char *) {
@@ -697,8 +700,9 @@ TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
         }
         return 0;
     };
-    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
-        .set_timeout(1.0).set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"timeout", "1.0"},
+    }, &libevent).get_evdns_base());
 
     libevent.evdns_base_set_option = [](evdns_base *, const char *opt,
       const char *) {
@@ -708,30 +712,33 @@ TEST_CASE("DNSResolver: evdns_base_set_option failure is correctly handled") {
         return 0;
     };
     // Make sure that randomize-case is called in both true and false cases
-    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
-        .set_randomize_case(1).set_libevent(&libevent)).get_evdns_base());
-    REQUIRE_THROWS(ight::DNSResolver(ight::DNSSettings()
-        .set_randomize_case(0).set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"randomize_case", "1"},
+    }, &libevent).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"randomize_case", "0"},
+    }, &libevent).get_evdns_base());
 
     REQUIRE(called == 4);  // twice for randomize-case
 }
 
-TEST_CASE("DNSResolver::get_evdns_base() is idempotent") {
-    auto reso = ight::DNSResolver();
+TEST_CASE("Resolver::get_evdns_base() is idempotent") {
+    auto reso = Resolver();
     REQUIRE(reso.get_evdns_base() == reso.get_evdns_base());
 }
 
 TEST_CASE("We can override the default timeout") {
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = ight::DNSResolver(ight::DNSSettings()
-        .set_nameserver("130.192.91.231")
-        .set_attempts(1)
-        .set_timeout(0.5));
+    auto reso = Resolver({
+        {"nameserver", "130.192.91.231"},
+        {"attempts", "1"},
+        {"timeout", "0.5"}
+    });
 
     auto ticks = ight_time_now();
     auto r1 = reso.request("A", "www.neubot.org", [&](
-                           ight::DNSResponse&& response) {
+                           Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -756,14 +763,15 @@ TEST_CASE("We can override the default timeout") {
 TEST_CASE("We can override the default number of tries") {
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = ight::DNSResolver(ight::DNSSettings()
-        .set_nameserver("130.192.91.231")
-        .set_attempts(2)
-        .set_timeout(0.5));
+    auto reso = Resolver({
+        {"nameserver", "130.192.91.231"},
+        {"attempts", "2"},
+        {"timeout", "0.5"},
+    });
 
     auto ticks = ight_time_now();
     auto r1 = reso.request("A", "www.neubot.org", [&](
-                           ight::DNSResponse&& response) {
+                           Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -786,7 +794,7 @@ TEST_CASE("We can override the default number of tries") {
 }
 
 //
-// Intregration (or regress?) tests for DNSResolver.
+// Intregration (or regress?) tests for Resolver.
 //
 // They generally need connectivity and are automatically skipped if
 // we are not connected to the 'Net.
@@ -805,10 +813,10 @@ TEST_CASE("The default custom resolver works as expected") {
         ight_break_loop();
     });
 
-    auto reso = ight::DNSResolver();
+    auto reso = Resolver();
 
     auto r1 = reso.request("A", "www.neubot.org", [&](
-                           ight::DNSResponse&& response) {
+                           Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -826,7 +834,7 @@ TEST_CASE("The default custom resolver works as expected") {
     ight_loop();
 
     auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
-                           ight::DNSResponse&& response) {
+                           Response&& response) {
         REQUIRE(response.get_query_name() == "130.192.16.172");
         REQUIRE(response.get_query_type() == "PTR");
         REQUIRE(response.get_query_class() == "IN");
@@ -844,7 +852,7 @@ TEST_CASE("The default custom resolver works as expected") {
     ight_loop();
 
     auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
-                           ight::DNSResponse&& response) {
+                           Response&& response) {
         REQUIRE(response.get_query_name() == "ooni.torproject.org");
         REQUIRE(response.get_query_type() == "AAAA");
         REQUIRE(response.get_query_class() == "IN");
@@ -869,7 +877,7 @@ TEST_CASE("The default custom resolver works as expected") {
     ight_loop();
 
     auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
-                           [&](ight::DNSResponse&& response) {
+                           [&](Response&& response) {
         REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
         REQUIRE(response.get_query_type() == "PTR");
         REQUIRE(response.get_query_class() == "IN");
@@ -902,11 +910,12 @@ TEST_CASE("A specific custom resolver works as expected") {
         ight_break_loop();
     });
 
-    auto reso = ight::DNSResolver(ight::DNSSettings()
-        .set_nameserver("8.8.4.4"));
+    auto reso = Resolver(ight::common::Settings({
+        {"nameserver", "8.8.4.4"},
+    }));
 
     auto r1 = reso.request("A", "www.neubot.org", [&](
-                           ight::DNSResponse&& response) {
+                           Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -924,7 +933,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     ight_loop();
 
     auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
-                           ight::DNSResponse&& response) {
+                           Response&& response) {
         REQUIRE(response.get_query_name() == "130.192.16.172");
         REQUIRE(response.get_query_type() == "PTR");
         REQUIRE(response.get_query_class() == "IN");
@@ -942,7 +951,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     ight_loop();
 
     auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
-                           ight::DNSResponse&& response) {
+                           Response&& response) {
         REQUIRE(response.get_query_name() == "ooni.torproject.org");
         REQUIRE(response.get_query_type() == "AAAA");
         REQUIRE(response.get_query_class() == "IN");
@@ -967,7 +976,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     ight_loop();
 
     auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
-                           [&](ight::DNSResponse&& response) {
+                           [&](Response&& response) {
         REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
         REQUIRE(response.get_query_type() == "PTR");
         REQUIRE(response.get_query_class() == "IN");
@@ -994,10 +1003,11 @@ TEST_CASE("If the resolver dies, the requests are aborted") {
     //
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = new ight::DNSResolver(ight::DNSSettings()
-        .set_nameserver("130.192.91.231"));
+    auto reso = new Resolver(ight::common::Settings({
+        {"nameserver", "130.192.91.231"},
+    }));
     auto r1 = reso->request("A", "www.neubot.org", [&](
-                            ight::DNSResponse&& response) {
+                            Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -1043,11 +1053,12 @@ TEST_CASE("A request to a nonexistent server times out") {
     //
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = ight::DNSResolver(ight::DNSSettings()
-        .set_nameserver("130.192.91.231")
-        .set_attempts(1));
+    auto reso = Resolver({
+        {"nameserver", "130.192.91.231"},
+        {"attempts", "1"},
+    });
     auto r1 = reso.request("A", "www.neubot.org", [&](
-                           ight::DNSResponse&& response) {
+                           Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -1089,9 +1100,10 @@ TEST_CASE("It is safe to cancel requests in flight") {
     // privately run this test repeating it for about one minute.
     //
 
-    auto reso = ight::DNSResolver(ight::DNSSettings()
-        .set_nameserver("8.8.8.8")
-        .set_attempts(1));
+    auto reso = Resolver({
+        {"nameserver", "8.8.8.8"},
+        {"attempts", "1"},
+    });
 
     // Step #1: estimate the average RTT
 
@@ -1099,7 +1111,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     auto count = 0;
     for (auto i = 0; i < 16; ++i) {
         auto r = reso.request("A", "www.neubot.org", [&](
-                              ight::DNSResponse&& response) {
+                              Response&& response) {
             if (response.get_evdns_status() == DNS_ERR_NONE) {
                 total += response.get_rtt();
                 count += 1;
@@ -1117,8 +1129,8 @@ TEST_CASE("It is safe to cancel requests in flight") {
 
     //for (;;) {  // only try this at home
     for (auto i = 0; i < 16; ++i) {
-        auto r = new ight::DNSRequest("A", "www.neubot.org", [&](
-                                      ight::DNSResponse&& response) {
+        auto r = new Request("A", "www.neubot.org", [&](
+                                      Response&& response) {
             auto status_ok = (response.get_evdns_status() == DNS_ERR_CANCEL
                     || response.get_evdns_status() == DNS_ERR_NONE);
             REQUIRE(status_ok);
@@ -1149,11 +1161,12 @@ TEST_CASE("It is safe to cancel requests in flight") {
 
 /*
 TEST_CASE("Make sure we can override host and number of tries") {
-    auto reso = ight::DNSResolver(ight::DNSSettings()
-        .set_nameserver("127.0.0.1:5353")
-        .set_attempts(2));
+    auto reso = Resolver({
+        {"nameserver", "127.0.0.1:5353"},
+        {"attempts", "2"},
+    });
     auto r = reso.request("A", "www.neubot.org", [&](
-                          ight::DNSResponse response) {
+                          Response response) {
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
         // Assuming all the other fields are OK

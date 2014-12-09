@@ -1,0 +1,6 @@
+noinst_LTLIBRARIES += src/protocols/libprotocols.la
+
+src_protocols_libprotocols_la_SOURCES = \
+	src/protocols/dns.cpp
+
+libight_la_LIBADD += src/protocols/libprotocols.la

@@ -5,14 +5,15 @@
  * information on the copying conditions.
  */
 
-#ifndef LIBIGHT_NET_DNS_HPP
-# define LIBIGHT_NET_DNS_HPP
+#ifndef LIBIGHT_PROTOCOLS_DNS_HPP
+# define LIBIGHT_PROTOCOLS_DNS_HPP
 
 //
 // DNS client functionality
 //
 
 #include "common/poller.h"
+#include "common/settings.hpp"
 
 #include <functional>
 #include <vector>
@@ -21,8 +22,10 @@
 struct evdns_base;  // Internally we use evdns
 
 namespace ight {
+namespace protocols {
+namespace dns {
 
-class DNSRequestImpl;  // Defined in net/dns.cpp
+class RequestImpl;  // Defined in net/dns.cpp
 
 /*!
  * \brief DNS response.
@@ -31,11 +34,11 @@ class DNSRequestImpl;  // Defined in net/dns.cpp
  * converts them in a format suitable to compile OONI's reports.
  *
  * You should not construct this class directly. Instead, this is the
- * object that DNSRequest's callback provides you.
+ * object that Request's callback provides you.
  *
- * \see DNSRequest for example usage.
+ * \see Request for example usage.
  */
-class DNSResponse {
+class Response {
 
     std::string name;
     std::string query_type;
@@ -53,7 +56,7 @@ public:
      * \brief Constructs an empty DNS response object.
      * \remark This is useful to implement the move semantic.
      */
-    DNSResponse(void);
+    Response(void);
 
     /*!
      * \brief Constructs a DNS response object.
@@ -73,7 +76,7 @@ public:
      *        record, rather than from zero, when processing the results
      *        (this is only used for implementing some test cases).
      */
-    DNSResponse(std::string name, std::string query_type,
+    Response(std::string name, std::string query_type,
                 std::string query_class, std::string resolver,
                 int code, char type, int count, int ttl, double started,
                 void *addresses, IghtLibevent *libevent = NULL,
@@ -186,13 +189,15 @@ public:
  * DNS requests; it supports A, AAAA and PTR queries.
  *
  * DNS requests issued using directly this class use the default DNS
- * resolver of libight; use a DNSResolver object to issue DNS requests
- * that are bound to a specific DNSResolver.
+ * resolver of libight; use a Resolver object to issue DNS requests
+ * that are bound to a specific Resolver.
  *
  * For example:
  *
- *     auto r1 = ight::DNSRequest("A", "ooni.torproject.org",
- *             [](ight::DNSResponse&& response) {
+ *     using namespace ight::protocols;
+ *
+ *     auto r1 = dns::Request("A", "ooni.torproject.org",
+ *             [](dns::Response&& response) {
  *         if (response.get_evdns_code() != DNS_ERR_NONE) {
  *             return;
  *         }
@@ -201,19 +206,19 @@ public:
  *         }
  *     });
  *
- *     auto r2 = ight::DNSRequest("REVERSE_AAAA",
+ *     auto r2 = dns::Request("REVERSE_AAAA",
  *             "2001:858:2:2:aabb:0:563b:1e28", [](
- *             ight::DNSResponse&& response) {
+ *             dns::Response&& response) {
  *         // Process the response
  *     });
  *
  * Note that, for convenience, you don't need to construct the special
  * domain name used for PTR queries. Rather, you only need to pass this
- * class the IPv{4,6} address and the string "REVERSE_XXX" where XXX
+ * class the IPv{4,6} address and the string "REVERSE_FOO" where FOO
  * is "A" for IPv4 and is "AAAA" for IPv6.
  */
-class DNSRequest {
-    DNSRequestImpl *impl = nullptr;
+class Request {
+    RequestImpl *impl = nullptr;
 
   public:
 
@@ -224,23 +229,23 @@ class DNSRequest {
      * \param address The address to query for (e.g., "www.neubot.org" for
      *        A and AAAA queries, "82.195.75.101" for REVERSE_A).
      * \param func The callback to call when the response is received; the
-     *        callback receives a DNSResponse object, make sure you check
-     *        the DNSResponse status code to see whether there was an error.
+     *        callback receives a Response object, make sure you check
+     *        the Response status code to see whether there was an error.
      * \param dnsb Optional evdns_base structure to use instead of the
      *        default one. This parameter is not meant to be used directly
      *        by the programmer. To issue requests using a specific evdns_base
-     *        with specific options, you should instead use a DNSResolver.
+     *        with specific options, you should instead use a Resolver.
      * \param resolver Optional address of the DNS nameserver. This address
      *        is not processed by this class, who receives it only for passing
-     *        it to the DNSResponse constructor. To issue request towards a
-     *        specific nameserver, use a DNSResolver.
+     *        it to the Response constructor. To issue request towards a
+     *        specific nameserver, use a Resolver.
      * \param libevent Optional pointer to a mocked implementation of
      *        libight's libevent object (mainly useful to write unit tests).
      * \throws std::bad_alloc if some allocation fails.
      * \throws std::runtime_error if some edvns API fails.
      */
-    DNSRequest(std::string query, std::string address,
-               std::function<void(DNSResponse&&)>&& func,
+    Request(std::string query, std::string address,
+               std::function<void(Response&&)>&& func,
                evdns_base *dnsb = NULL, std::string resolver = "",
                IghtLibevent *libevent = NULL);
 
@@ -249,27 +254,27 @@ class DNSRequest {
      * \remark We cannot copy this object because it contains a pointer
      *         to an object allocated with new that must not be shared.
      */
-    DNSRequest(DNSRequest& /*other*/) = delete;
+    Request(Request& /*other*/) = delete;
 
     /*!
      * \brief Deleted assignment constructor.
      * \remark We cannot copy this object because it contains a pointer
      *         to an object allocated with new that must not be shared.
      */
-    DNSRequest& operator=(DNSRequest& /*other*/) = delete;
+    Request& operator=(Request& /*other*/) = delete;
 
     /*!
      * \brief Default move constructor.
      */
-    DNSRequest(DNSRequest&& /*other*/) = default;
+    Request(Request&& /*other*/) = default;
 
     /*!
      * \brief Default move assignment constructor.
      */
-    DNSRequest& operator=(DNSRequest&& /*other*/) = default;
+    Request& operator=(Request&& /*other*/) = default;
 
     /*!
-     * \brief Cancel the pending DNSRequest.
+     * \brief Cancel the pending Request.
      * \remark This method is idempotent.
      */
     void cancel(void);
@@ -277,156 +282,8 @@ class DNSRequest {
     /*!
      * \brief Destructor.
      */
-    ~DNSRequest(void) {
+    ~Request(void) {
         cancel();
-    }
-};
-
-class DNSResolver;  // forward decl.
-
-/*!
- * \brief Contains the settings used by a DNSResolver.
- *
- * Unless you modify the default configuration, the system wide DNS server
- * is used, every request is retried three times before giving up, the timeout
- * for a request is five seconds (these are the evdns defaults), and the
- * name randomization is *not* used (this is different from evdns defaults).
- *
- * Also, by default the global libight's poller and libevent objects are used.
- *
- * You can change all of this using the setter methods.
- *
- * \see DNSResolver for example usage.
- */
-class DNSSettings {
-    friend class DNSResolver;
-
-    int attempts = -1;
-    IghtLibevent *libevent = IghtGlobalLibevent::get();
-    std::string nameserver = "";
-    IghtPoller *poller = ight_get_global_poller();
-    unsigned randomize_case = 0;
-    double timeout = -1.0;
-
-public:
-
-    /*!
-     * \brief Set number of attempts before a request is considered failed.
-     * \param attempts_ Number of attempts before a request is considered
-     *        failed (afterwards you get a timeout error).
-     * \remark The default value of this parameter is -1 (which means that
-     *         evnds default, i.e. 3, must be used).
-     * \returns A reference to this object, so you can chain calls.
-     */
-    DNSSettings& set_attempts(int attempts_) {
-        attempts = attempts_;
-        return *this;
-    }
-
-    /*!
-     * \brief Override the default libight's libevent object.
-     * \param libevent_ A mocked libevent object.
-     * \remark The global libight's libevent object is used by default.
-     * \returns A reference to this object, so you can chain calls.
-     */
-    DNSSettings& set_libevent(IghtLibevent *libevent_) {
-        // TODO: change this function to receive a IghtLibevent& object
-        if (libevent_ != NULL) {
-            libevent = libevent_;
-        }
-        return *this;
-    }
-
-    /*!
-     * \brief Set the nameserver to be used.
-     * \param nameserver_ Nameserver to use expressed by an IP address
-     *        followed by an optional port, e.g., '8.8.8.8' or '8.8.8.8:53'.
-     * \remark The default value of this parameter is "", meaning that the
-     *         evdns code will pick the system's DNS servers (usually
-     *         parsing /etc/resolv.conf if you are on Unix).
-     * \returns A reference to this object, so you can chain calls.
-     */
-    DNSSettings& set_nameserver(std::string nameserver_) {
-        nameserver = nameserver_;
-        return *this;
-    }
-
-    /*!
-     * \brief Override the default libight's poller object.
-     * \param libevent_ A mocked poller object.
-     * \remark The global libight's poller object is used by default.
-     * \returns A reference to this object, so you can chain calls.
-     */
-    DNSSettings& set_poller(IghtPoller *poller_) {
-        // TODO: change this function to receive a IghtPoller& object
-        if (poller_ != NULL) {
-            poller = poller_;
-        }
-        return *this;
-    }
-
-    /*!
-     * \brief Whether to randomize the request's case (a thing also
-     *        known as the 0x20 hack and used to mitigate injection attacks).
-     * \param randomize_case_ Nonzero to enable this feature, zero to
-     *        disable it.
-     * \remark The default value of this parameter is 0.
-     * \returns A reference to this object, so you can chain calls.
-     */
-    DNSSettings& set_randomize_case(unsigned randomize_case_) {
-        randomize_case = randomize_case_ ? 1 : 0;  // Normalize value
-        return *this;
-    }
-
-    /*!
-     * \brief Override the default DNS requests timeout.
-     * \param timeout_ The new timeout in secionds.
-     * \remark The default value of this parameter is -1 (which means that
-     *         evdns default, i.e. 5, must be used).
-     * \returns A reference to this object, so you can chain calls.
-     */
-    DNSSettings& set_timeout(double timeout_) {
-        timeout = timeout_;
-        return *this;
-    }
-
-    /*!
-     * \brief Default copy constructor.
-     * \remark We can safely copy this object because its pointers to
-     *         IghtLibevent and IghtPoller are reference-like pointers,
-     *         meaning that it's not the responsibility of DNSSettings
-     *         to clean up these objects and that DNSSettings assume
-     *         that these objects will outlive it. So it is not an issue
-     *         to make a copy of such pointers.
-     */
-    DNSSettings(DNSSettings& /*other*/) = default;
-
-    /*!
-     * \brief Default assignment constructor.
-     * \remark We can safely copy this object because its pointers to
-     *         IghtLibevent and IghtPoller are reference-like pointers,
-     *         meaning that it's not the responsibility of DNSSettings
-     *         to clean up these objects and that DNSSettings assume
-     *         that these objects will outlive it. So it is not an issue
-     *         to make a copy of such pointers.
-     */
-    DNSSettings& operator=(DNSSettings& /*other*/) = default;
-
-    /*!
-     * \brief Default move constructor.
-     */
-    DNSSettings(DNSSettings&& /*other*/) = default;
-
-    /*!
-     * \brief Default move assignment.
-     */
-    DNSSettings& operator=(DNSSettings&& /*other*/) = default;
-
-    /*!
-     * \brief Default constructor.
-     */
-    DNSSettings(void) {
-        /* nothing */
     }
 };
 
@@ -443,18 +300,24 @@ public:
  *
  * For example:
  *
- *     auto reso = ight::DNSResolver(ight::DNSSettings()
- *             .set_nameserver("8.8.8.8")
- *             .set_timeout(1.0)
- *             .set_attempts(1));
+ *     using namespace ight::protocols;
+ *
+ *     auto reso = dns::Resolver({
+ *         {"nameserver", "8.8.8.8"},
+ *         {"timeout", "1.0"},
+ *         {"attempts", "4"},
+ *         {"randomize_case", "1"},
+ *     });
  *
  *     auto r2 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
- *             [](ight::DNSResponse&& response) {
+ *             [](dns::Response&& response) {
  *         // Process the response
  *     });
  */
-class DNSResolver {
-    DNSSettings settings;
+class Resolver {
+    ight::common::Settings settings;
+    IghtLibevent *libevent = IghtGlobalLibevent::get();
+    IghtPoller *poller = ight_get_global_poller();
     evdns_base *base = NULL;
 
     void cleanup(void);
@@ -464,16 +327,33 @@ class DNSResolver {
     /*!
      * \brief Default constructor.
      */
-    DNSResolver(void) {
+    Resolver(void) {
         /* nothing to do */
     }
 
     /*!
      * \brief Constructor with specific settings.
-     * \param settings_ Specific settings.
-     * \see DNSSettings.
+     * \param settings_ Specific settings. In practice this is a map
+     *        from string to string in which the following settings
+     *        are accepted:
+     *
+     *            "nameserver": IP address of nameserver
+     *            "attempts": number of request attempts on error
+     *            "timeout": timeout in seconds (as a float)
+     *            "randomize_case": randomize query's case (0x20 hack)
+     *
+     *        The default is to use the system's nameserver, to make
+     *        3 attempts, to timeout after 5.0 seconds, not to randomize
+     *        the case.
      */
-    DNSResolver(DNSSettings& settings_) {
+    Resolver(ight::common::Settings settings_,
+            IghtLibevent *lev = NULL, IghtPoller *plr = NULL) {
+        if (lev != NULL) {
+            libevent = lev;
+        }
+        if (plr != NULL) {
+            poller = plr;
+        }
         settings = settings_;
     }
 
@@ -488,20 +368,20 @@ class DNSResolver {
     evdns_base *get_evdns_base(void);
 
     /*!
-     * \brief Issue a DNSRequest using this resolver.
-     * \remark This is just a wrapper that calls DNSRequest::DNSRequest().
-     * \see DNSRequest::DNSRequest().
+     * \brief Issue a Request using this resolver.
+     * \remark This is just a wrapper that calls Request::Request().
+     * \see Request::Request().
      */
-    DNSRequest request(std::string query, std::string address,
-                       std::function<void(DNSResponse&&)>&& func) {
-        return DNSRequest(query, address, std::move(func), get_evdns_base(),
-                          settings.nameserver, settings.libevent);
+    Request request(std::string query, std::string address,
+                       std::function<void(Response&&)>&& func) {
+        return Request(query, address, std::move(func), get_evdns_base(),
+                       settings["nameserver"], libevent);
     }
 
     /*!
      * \brief Default destructor.
      */
-    ~DNSResolver(void) {
+    ~Resolver(void) {
         cleanup();
     }
 
@@ -510,25 +390,25 @@ class DNSResolver {
      * \remark We cannot copy this object because it contains a pointer
      *         to an object allocated with new that must not be shared.
      */
-    DNSResolver(DNSResolver& /*other*/) = delete;
+    Resolver(Resolver& /*other*/) = delete;
 
     /*!
      * \brief Deleted assignment constructor.
      * \remark We cannot copy this object because it contains a pointer
      *         to an object allocated with new that must not be shared.
      */
-    DNSResolver& operator=(DNSResolver& /*other*/) = delete;
+    Resolver& operator=(Resolver& /*other*/) = delete;
 
     /*!
      * \brief Default move constructor.
      */
-    DNSResolver(DNSResolver&& /*other*/) = default;
+    Resolver(Resolver&& /*other*/) = default;
 
     /*!
      * \brief Default move assignment.
      */
-    DNSResolver& operator=(DNSResolver&& /*other*/) = default;
+    Resolver& operator=(Resolver&& /*other*/) = default;
 };
 
-}  // namespace
-#endif  // LIBIGHT_NET_DNS_HPP
+}}}  // namespace
+#endif  // LIBIGHT_PROTOCOLS_DNS_HPP
