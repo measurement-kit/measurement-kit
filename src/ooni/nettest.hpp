@@ -5,50 +5,82 @@
 #include <iostream>
 #include <fstream>
 #include "report/file.hpp"
+#include "common/settings.hpp"
 
 namespace ight {
 namespace ooni {
 namespace nettest {
 
-// FIXME to use pointer instead of functions
-class InputFileIterator: public std::iterator<std::output_iterator_tag, std::string>
+class InputFileIterator: public std::iterator<std::input_iterator_tag, std::string,
+  std::ptrdiff_t, const std::string*, const std::string&>
 {
-  std::string input_filepath;
-  ifstream input_file;
 
-  std::string input;
-public:
-  InputFileIterator(std::string input_filepath_) :
-    input_filepath(input_filepath_) {
-    input_file(input_filepath);
-  }
-  InputFileIterator& operator++() {
-    // Override this to provide your own custom handling.
-    std::getline(input_file, input);
-    return input;
-  }
-  InputFileIterator operator++(int) {
-    operator++(); return input;
-  }
-  std::string get() {
-    return input;
-  }
-};
+  InputFileIterator(void) {}
 
-typedef NetTestOptions std::map<std::string, std::string>;
+  InputFileIterator(std::string input_filepath) {
+    is = ifstream(input_filepath);
+  }
+
+  const std::string& operator*() const { return value; }
+  const std::string* operator->() const { return &value; }
+
+  InputFileIterator& operator++()
+  {
+    if (is && !getline(*is, value)) {
+      eof = true;
+    }
+    return *this;
+  }
+  InputFileIterator operator++(int)
+  {
+    InputFileIterator prev(*this);
+    ++*this;
+    return prev;
+  }
+
+  InputFileIterator begin()
+  {
+    InputFileIterator o;
+    o.eof = false;
+    return o;
+  }
+
+  InputFileIterator end()
+  {
+    InputFileIterator o;
+    o.eof = true;
+    return o;
+  }
+
+  bool operator!=(const InputFileIterator& other) const
+  {
+    return is.eof != other.eof;
+  }
+
+  bool operator==(const InputFileIterator& other) const
+  {
+    return is.eof != other.eof;
+  }
+private:
+  ifstream is;
+  std::string value;
+  bool eof;
+}
 
 class NetTest {
   
   std::string input_filepath;
-  NetTestOptions options;
   FileReporter file_report;
 
 public:
+  ight::common::Settings options;
+  std::string input;
+
   NetTest(void);
 
   NetTest(std::string input_filepath);
 
-  NetTest(std::string input_filepath, NetTestOptions options);
+  NetTest(std::string input_filepath, ight::common::Settings options);
 
   InputFileIterator input_file();
 
@@ -60,7 +92,14 @@ public:
 
   void end();
 
-  virtual void main(std::string input);
+  // XXX leave both or only one?
+  virtual void main(ight::common::Settings options,
+                    std::function<void(ReportEntry&&)>&& func);
+
+
+  virtual void main(std::string input, ight::common::Settings options,
+                    std::function<void(ReportEntry&&)>&& func);
+
 
 }
 
