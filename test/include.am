@@ -48,10 +48,10 @@ test_net_connection_LDADD = libight.la
 check_PROGRAMS += test/net/connection
 TESTS += test/net/connection
 
-test_net_http_SOURCES = test/net/http.cpp
-test_net_http_LDADD = libight.la
-check_PROGRAMS += test/net/http
-TESTS += test/net/http
+test_protocols_http_SOURCES = test/protocols/http.cpp
+test_protocols_http_LDADD = libight.la
+check_PROGRAMS += test/protocols/http
+TESTS += test/protocols/http
 
 test_report_file_SOURCES = test/report/file.cpp
 test_report_file_LDADD = libight.la

@@ -5,8 +5,8 @@
  * information on the copying conditions.
  */
 
-#ifndef LIBIGHT_NET_HTTP_HPP
-# define LIBIGHT_NET_HTTP_HPP
+#ifndef LIBIGHT_PROTOCOLS_HTTP_HPP
+# define LIBIGHT_PROTOCOLS_HTTP_HPP
 
 #include <event2/util.h>  /* XXX For evutil_socket_t */
 
@@ -23,10 +23,11 @@ struct http_parser_settings;
 struct evbuffer;
 
 namespace ight {
+namespace protocols {
 namespace http {
 
-typedef Headers std::map<std::string, std::string>;
-typedef Options std::map<std::string, std::string>;
+typedef std::map<std::string, std::string> Headers;
+typedef std::map<std::string, std::string> Options;
 
 class ResponseParserImpl;  // See http.cpp
 
@@ -337,6 +338,8 @@ public:
     void on_end(std::function<void(void)>&& fn);
 };
 
+#if 0
+
 class Response {
 public:
 
@@ -506,5 +509,7 @@ class Client {
 
 }
 
-}}  // namespaces
-#endif  // LIBIGHT_NET_HTTP_HPP
+#endif
+
+}}}  // namespaces
+#endif  // LIBIGHT_PROTOCOLS_HTTP_HPP

@@ -13,7 +13,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include "common/log.h"
-#include "net/http.hpp"
+#include "protocols/http.hpp"
 
 //
 // ResponseParser unit test
@@ -22,7 +22,7 @@
 TEST_CASE("The HTTP response parser works as expected")
 {
     auto data = std::string();
-    auto parser = ight::http::ResponseParser();
+    auto parser = ight::protocols::http::ResponseParser();
     auto body = std::string();
 
     /*ight_set_verbose(1);*/

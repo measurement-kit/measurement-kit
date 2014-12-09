@@ -8,7 +8,7 @@
 #include "common/log.h"
 
 #include "net/connection.h"
-#include "net/http.hpp"
+#include "protocols/http.hpp"
 #include "net/buffer.hpp"
 
 #include "ext/http-parser/http_parser.h"
@@ -19,7 +19,10 @@
 
 #define MAXLINE 4096
 
+using namespace ight::protocols::http;
+
 namespace ight {
+namespace protocols {
 namespace http {
 
 /*!
@@ -140,10 +143,10 @@ class ResponseParserImpl {
             size_t n = http_parser_execute(&parser, &settings,
                 (const char *) iov->iov_base, iov->iov_len);
             if (parser.upgrade) {
-                throw ight::http::UpgradeError("Unexpected UPGRADE");
+                throw UpgradeError("Unexpected UPGRADE");
             }
             if (n != iov->iov_len) {
-                throw ight::http::ParserError("Parser error");
+                throw ParserError("Parser error");
             }
             total += iov->iov_len;
             return true;
@@ -256,18 +259,18 @@ public:
     }
 };
 
-}}  // namespaces
+}}}  // namespaces
 
 //
 // ResponseParser
 //
 
-ight::http::ResponseParser::ResponseParser(void)
+ResponseParser::ResponseParser(void)
 {
-    impl = new ight::http::ResponseParserImpl();
+    impl = new ResponseParserImpl();
 }
 
-ight::http::ResponseParser::~ResponseParser(void)
+ResponseParser::~ResponseParser(void)
 {
     if (impl == nullptr) {
         return;
@@ -277,13 +280,13 @@ ight::http::ResponseParser::~ResponseParser(void)
 }
 
 void
-ight::http::ResponseParser::on_begin(std::function<void(void)>&& fn)
+ResponseParser::on_begin(std::function<void(void)>&& fn)
 {
     impl->begin_fn = std::move(fn);
 }
 
 void
-ight::http::ResponseParser::on_headers_complete(std::function<void(
+ResponseParser::on_headers_complete(std::function<void(
     unsigned short, unsigned short, unsigned int, std::string&&,
     std::map<std::string, std::string>&&)>&& fn)
 {
@@ -291,31 +294,32 @@ ight::http::ResponseParser::on_headers_complete(std::function<void(
 }
 
 void
-ight::http::ResponseParser::on_body(std::function<void(std::string&&)>&& fn)
+ResponseParser::on_body(
+        std::function<void(std::string&&)>&& fn)
 {
     impl->body_fn = std::move(fn);
 }
 
 void
-ight::http::ResponseParser::on_end(std::function<void(void)>&& fn)
+ResponseParser::on_end(std::function<void(void)>&& fn)
 {
     impl->end_fn = std::move(fn);
 }
 
 void
-ight::http::ResponseParser::feed(evbuffer *data)
+ResponseParser::feed(evbuffer *data)
 {
     impl->feed(data);
 }
 
 void
-ight::http::ResponseParser::feed(std::string data)
+ResponseParser::feed(std::string data)
 {
     impl->feed(data);
 }
 
 void
-ight::http::ResponseParser::feed(char c)
+ResponseParser::feed(char c)
 {
     impl->feed(c);
 }
@@ -325,10 +329,11 @@ ight::http::ResponseParser::feed(char c)
 //
 
 namespace ight {
+namespace protocols {
 namespace http {
 
 /*!
- * \brief Implementation of ight::http::Stream.
+ * \brief Implementation of Stream.
  * \remark This object is not movable.
  */
 class StreamImpl {
@@ -453,21 +458,21 @@ class StreamImpl {
     }
 };
 
-}}  // namespaces
+}}}  // namespaces
 
-ight::http::Stream::Stream(std::string address, std::string port,
+Stream::Stream(std::string address, std::string port,
         std::string family)
 {
-    impl = new ight::http::StreamImpl(address, port, family);
+    impl = new StreamImpl(address, port, family);
 }
 
-ight::http::Stream::Stream(evutil_socket_t sock)
+Stream::Stream(evutil_socket_t sock)
 {
-    impl = new ight::http::StreamImpl(sock);
+    impl = new StreamImpl(sock);
 }
 
 void
-ight::http::Stream::on_connect(std::function<void(void)>&& fn)
+Stream::on_connect(std::function<void(void)>&& fn)
 {
     if (impl == nullptr) {
         throw std::runtime_error("Internal pointer is NULL");
@@ -475,13 +480,13 @@ ight::http::Stream::on_connect(std::function<void(void)>&& fn)
     impl->on_connect(std::move(fn));
 }
 
-ight::http::Stream::~Stream(void)
+Stream::~Stream(void)
 {
     delete impl;        /* delete handles nullptr */
 }
 
-ight::http::Stream&
-ight::http::Stream::operator<<(std::string s)
+Stream&
+Stream::operator<<(std::string s)
 {
     if (impl == nullptr) {
         throw std::runtime_error("Internal pointer is NULL");
@@ -491,7 +496,7 @@ ight::http::Stream::operator<<(std::string s)
 }
 
 void
-ight::http::Stream::on_flush(std::function<void(void)>&& fn)
+Stream::on_flush(std::function<void(void)>&& fn)
 {
     if (impl == nullptr) {
         throw std::runtime_error("Internal pointer is NULL");
@@ -500,7 +505,7 @@ ight::http::Stream::on_flush(std::function<void(void)>&& fn)
 }
 
 void
-ight::http::Stream::on_begin(std::function<void(void)>&& fn)
+Stream::on_begin(std::function<void(void)>&& fn)
 {
     if (impl == nullptr) {
         throw std::runtime_error("Internal pointer is NULL");
@@ -509,7 +514,7 @@ ight::http::Stream::on_begin(std::function<void(void)>&& fn)
 }
 
 void
-ight::http::Stream::on_headers_complete(std::function<void(
+Stream::on_headers_complete(std::function<void(
         unsigned short http_major, unsigned short http_minor,
         unsigned int status_code, std::string&& reason,
         std::map<std::string, std::string>&& headers)>&& fn)
@@ -521,7 +526,7 @@ ight::http::Stream::on_headers_complete(std::function<void(
 }
 
 void
-ight::http::Stream::on_body(std::function<void(std::string&&)>&& fn)
+Stream::on_body(std::function<void(std::string&&)>&& fn)
 {
     if (impl == nullptr) {
         throw std::runtime_error("Internal pointer is NULL");
@@ -530,7 +535,7 @@ ight::http::Stream::on_body(std::function<void(std::string&&)>&& fn)
 }
 
 void
-ight::http::Stream::on_end(std::function<void(void)>&& fn)
+Stream::on_end(std::function<void(void)>&& fn)
 {
     if (impl == nullptr) {
         throw std::runtime_error("Internal pointer is NULL");
