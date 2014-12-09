@@ -1,0 +1,7 @@
+noinst_LTLIBRARIES += src/ooni/libooni.la
+
+src_ooni_libooni_la_SOURCES = \
+	src/ooni/nettest.cpp \
+	src/ooni/dns_injection.cpp
+
+libight_la_LIBADD += src/ooni/libooni.la
