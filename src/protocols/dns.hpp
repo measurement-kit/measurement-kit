@@ -13,6 +13,7 @@
 //
 
 #include "common/poller.h"
+#include "common/settings.hpp"
 
 #include <functional>
 #include <vector>
@@ -286,154 +287,6 @@ class Request {
     }
 };
 
-class Resolver;  // forward decl.
-
-/*!
- * \brief Contains the settings used by a Resolver.
- *
- * Unless you modify the default configuration, the system wide DNS server
- * is used, every request is retried three times before giving up, the timeout
- * for a request is five seconds (these are the evdns defaults), and the
- * name randomization is *not* used (this is different from evdns defaults).
- *
- * Also, by default the global libight's poller and libevent objects are used.
- *
- * You can change all of this using the setter methods.
- *
- * \see Resolver for example usage.
- */
-class Settings {
-    friend class Resolver;
-
-    int attempts = -1;
-    IghtLibevent *libevent = IghtGlobalLibevent::get();
-    std::string nameserver = "";
-    IghtPoller *poller = ight_get_global_poller();
-    unsigned randomize_case = 0;
-    double timeout = -1.0;
-
-public:
-
-    /*!
-     * \brief Set number of attempts before a request is considered failed.
-     * \param attempts_ Number of attempts before a request is considered
-     *        failed (afterwards you get a timeout error).
-     * \remark The default value of this parameter is -1 (which means that
-     *         evnds default, i.e. 3, must be used).
-     * \returns A reference to this object, so you can chain calls.
-     */
-    Settings& set_attempts(int attempts_) {
-        attempts = attempts_;
-        return *this;
-    }
-
-    /*!
-     * \brief Override the default libight's libevent object.
-     * \param libevent_ A mocked libevent object.
-     * \remark The global libight's libevent object is used by default.
-     * \returns A reference to this object, so you can chain calls.
-     */
-    Settings& set_libevent(IghtLibevent *libevent_) {
-        // TODO: change this function to receive a IghtLibevent& object
-        if (libevent_ != NULL) {
-            libevent = libevent_;
-        }
-        return *this;
-    }
-
-    /*!
-     * \brief Set the nameserver to be used.
-     * \param nameserver_ Nameserver to use expressed by an IP address
-     *        followed by an optional port, e.g., '8.8.8.8' or '8.8.8.8:53'.
-     * \remark The default value of this parameter is "", meaning that the
-     *         evdns code will pick the system's DNS servers (usually
-     *         parsing /etc/resolv.conf if you are on Unix).
-     * \returns A reference to this object, so you can chain calls.
-     */
-    Settings& set_nameserver(std::string nameserver_) {
-        nameserver = nameserver_;
-        return *this;
-    }
-
-    /*!
-     * \brief Override the default libight's poller object.
-     * \param libevent_ A mocked poller object.
-     * \remark The global libight's poller object is used by default.
-     * \returns A reference to this object, so you can chain calls.
-     */
-    Settings& set_poller(IghtPoller *poller_) {
-        // TODO: change this function to receive a IghtPoller& object
-        if (poller_ != NULL) {
-            poller = poller_;
-        }
-        return *this;
-    }
-
-    /*!
-     * \brief Whether to randomize the request's case (a thing also
-     *        known as the 0x20 hack and used to mitigate injection attacks).
-     * \param randomize_case_ Nonzero to enable this feature, zero to
-     *        disable it.
-     * \remark The default value of this parameter is 0.
-     * \returns A reference to this object, so you can chain calls.
-     */
-    Settings& set_randomize_case(unsigned randomize_case_) {
-        randomize_case = randomize_case_ ? 1 : 0;  // Normalize value
-        return *this;
-    }
-
-    /*!
-     * \brief Override the default DNS requests timeout.
-     * \param timeout_ The new timeout in secionds.
-     * \remark The default value of this parameter is -1 (which means that
-     *         evdns default, i.e. 5, must be used).
-     * \returns A reference to this object, so you can chain calls.
-     */
-    Settings& set_timeout(double timeout_) {
-        timeout = timeout_;
-        return *this;
-    }
-
-    /*!
-     * \brief Default copy constructor.
-     * \remark We can safely copy this object because its pointers to
-     *         IghtLibevent and IghtPoller are reference-like pointers,
-     *         meaning that it's not the responsibility of Settings
-     *         to clean up these objects and that Settings assume
-     *         that these objects will outlive it. So it is not an issue
-     *         to make a copy of such pointers.
-     */
-    Settings(Settings& /*other*/) = default;
-
-    /*!
-     * \brief Default assignment constructor.
-     * \remark We can safely copy this object because its pointers to
-     *         IghtLibevent and IghtPoller are reference-like pointers,
-     *         meaning that it's not the responsibility of Settings
-     *         to clean up these objects and that Settings assume
-     *         that these objects will outlive it. So it is not an issue
-     *         to make a copy of such pointers.
-     */
-    Settings& operator=(Settings& /*other*/) = default;
-
-    /*!
-     * \brief Default move constructor.
-     */
-    Settings(Settings&& /*other*/) = default;
-
-    /*!
-     * \brief Default move assignment.
-     */
-    Settings& operator=(Settings&& /*other*/) = default;
-
-    /*!
-     * \brief Default constructor.
-     */
-    Settings(void) {
-        /* nothing */
-    }
-};
-
 /*!
  * \brief DNS Resolver object.
  *
@@ -449,10 +302,13 @@ public:
  *
  *     using namespace ight::protocols;
  *
- *     auto reso = dns::Resolver(dns::Settings()
- *             .set_nameserver("8.8.8.8")
- *             .set_timeout(1.0)
- *             .set_attempts(1));
+ *     ight::common::Settings settings = {
+ *         {"nameserver", "8.8.8.8"},
+ *         {"timeout", "1.0"},
+ *         {"attempts", "1"}
+ *     }
+ *
+ *     auto reso = dns::Resolver(settings);
  *
  *     auto r2 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
  *             [](dns::Response&& response) {
@@ -460,7 +316,9 @@ public:
  *     });
  */
 class Resolver {
-    Settings settings;
+    ight::common::Settings settings;
+    IghtLibevent *libevent = IghtGlobalLibevent::get();
+    IghtPoller *poller = ight_get_global_poller();
     evdns_base *base = NULL;
 
     void cleanup(void);
@@ -476,10 +334,27 @@ class Resolver {
 
     /*!
      * \brief Constructor with specific settings.
-     * \param settings_ Specific settings.
-     * \see Settings.
+     * \param settings_ Specific settings. In practice this is a map
+     *        from string to string in which the following settings
+     *        are accepted:
+     *
+     *            "nameserver": IP address of nameserver
+     *            "attempts": number of request attempts on error
+     *            "timeout": timeout in seconds (as a float)
+     *            "randomize_case": randomize query's case (0x20 hack)
+     *
+     *        The default is to use the system's nameserver, to make
+     *        3 attempts, to timeout after 5.0 seconds, not to randomize
+     *        the case.
      */
-    Resolver(Settings& settings_) {
+    Resolver(ight::common::Settings settings_,
+            IghtLibevent *lev = NULL, IghtPoller *plr = NULL) {
+        if (lev != NULL) {
+            libevent = lev;
+        }
+        if (plr != NULL) {
+            poller = plr;
+        }
         settings = settings_;
     }
 
@@ -501,7 +376,7 @@ class Resolver {
     Request request(std::string query, std::string address,
                        std::function<void(Response&&)>&& func) {
         return Request(query, address, std::move(func), get_evdns_base(),
-                          settings.nameserver, settings.libevent);
+                       settings["nameserver"], libevent);
     }
 
     /*!

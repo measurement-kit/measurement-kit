@@ -587,7 +587,7 @@ TEST_CASE("Resolver: cleanup works correctly when we have allocated") {
 
     {
         // Note: call .get_evdns_base() to trigger lazy allocation
-        Resolver(Settings().set_libevent(&libevent))
+        Resolver(ight::common::Settings(), &libevent)
             .get_evdns_base();
     }
 
@@ -625,7 +625,7 @@ TEST_CASE("Resolver: ensure that the constructor does not allocate") {
     //
 
     //Resolver();  // How to do this?
-    Resolver(Settings().set_libevent(&libevent));
+    Resolver(ight::common::Settings(), &libevent);
 }
 
 TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
@@ -638,13 +638,13 @@ TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
     // Note: call .get_evdns_base() to trigger lazy allocation
 
     // Handle the branch where nameserver is set
-    REQUIRE_THROWS(Resolver(Settings()
-        .set_nameserver("8.8.8.8")
-        .set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"nameserver", "8.8.8.8"}
+    }, &libevent).get_evdns_base());
 
     // Handle the branch using the default nameserver
-    REQUIRE_THROWS(Resolver(Settings()
-        .set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver(ight::common::Settings(),
+        &libevent).get_evdns_base());
 }
 
 TEST_CASE(
@@ -663,9 +663,9 @@ TEST_CASE(
     };
 
     // Note: call .get_evdns_base() to trigger lazy allocation
-    REQUIRE_THROWS(Resolver(Settings()
-        .set_nameserver("8.8.8.8")
-        .set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"nameserver", "8.8.8.8"}
+    }, &libevent).get_evdns_base());
 
     REQUIRE(called);
 }
@@ -689,8 +689,9 @@ TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
         }
         return 0;
     };
-    REQUIRE_THROWS(Resolver(Settings()
-        .set_attempts(1).set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"attempts", "1"},
+    }, &libevent).get_evdns_base());
 
     libevent.evdns_base_set_option = [](evdns_base *, const char *opt,
       const char *) {
@@ -699,8 +700,9 @@ TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
         }
         return 0;
     };
-    REQUIRE_THROWS(Resolver(Settings()
-        .set_timeout(1.0).set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"timeout", "1.0"},
+    }, &libevent).get_evdns_base());
 
     libevent.evdns_base_set_option = [](evdns_base *, const char *opt,
       const char *) {
@@ -710,10 +712,12 @@ TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
         return 0;
     };
     // Make sure that randomize-case is called in both true and false cases
-    REQUIRE_THROWS(Resolver(Settings()
-        .set_randomize_case(1).set_libevent(&libevent)).get_evdns_base());
-    REQUIRE_THROWS(Resolver(Settings()
-        .set_randomize_case(0).set_libevent(&libevent)).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"randomize_case", "1"},
+    }, &libevent).get_evdns_base());
+    REQUIRE_THROWS(Resolver({
+        {"randomize_case", "0"},
+    }, &libevent).get_evdns_base());
 
     REQUIRE(called == 4);  // twice for randomize-case
 }
@@ -726,10 +730,11 @@ TEST_CASE("Resolver::get_evdns_base() is idempotent") {
 TEST_CASE("We can override the default timeout") {
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = Resolver(Settings()
-        .set_nameserver("130.192.91.231")
-        .set_attempts(1)
-        .set_timeout(0.5));
+    auto reso = Resolver({
+        {"nameserver", "130.192.91.231"},
+        {"attempts", "1"},
+        {"timeout", "0.5"}
+    });
 
     auto ticks = ight_time_now();
     auto r1 = reso.request("A", "www.neubot.org", [&](
@@ -758,10 +763,11 @@ TEST_CASE("We can override the default timeout") {
 TEST_CASE("We can override the default number of tries") {
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = Resolver(Settings()
-        .set_nameserver("130.192.91.231")
-        .set_attempts(2)
-        .set_timeout(0.5));
+    auto reso = Resolver({
+        {"nameserver", "130.192.91.231"},
+        {"attempts", "2"},
+        {"timeout", "0.5"},
+    });
 
     auto ticks = ight_time_now();
     auto r1 = reso.request("A", "www.neubot.org", [&](
@@ -904,8 +910,9 @@ TEST_CASE("A specific custom resolver works as expected") {
         ight_break_loop();
     });
 
-    auto reso = Resolver(Settings()
-        .set_nameserver("8.8.4.4"));
+    auto reso = Resolver(ight::common::Settings({
+        {"nameserver", "8.8.4.4"},
+    }));
 
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            Response&& response) {
@@ -996,8 +1003,9 @@ TEST_CASE("If the resolver dies, the requests are aborted") {
     //
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = new Resolver(Settings()
-        .set_nameserver("130.192.91.231"));
+    auto reso = new Resolver(ight::common::Settings({
+        {"nameserver", "130.192.91.231"},
+    }));
     auto r1 = reso->request("A", "www.neubot.org", [&](
                             Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
@@ -1045,9 +1053,10 @@ TEST_CASE("A request to a nonexistent server times out") {
     //
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = Resolver(Settings()
-        .set_nameserver("130.192.91.231")
-        .set_attempts(1));
+    auto reso = Resolver({
+        {"nameserver", "130.192.91.231"},
+        {"attempts", "1"},
+    });
     auto r1 = reso.request("A", "www.neubot.org", [&](
                            Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
@@ -1091,9 +1100,10 @@ TEST_CASE("It is safe to cancel requests in flight") {
     // privately run this test repeating it for about one minute.
     //
 
-    auto reso = Resolver(Settings()
-        .set_nameserver("8.8.8.8")
-        .set_attempts(1));
+    auto reso = Resolver({
+        {"nameserver", "8.8.8.8"},
+        {"attempts", "1"},
+    });
 
     // Step #1: estimate the average RTT
 
@@ -1151,9 +1161,10 @@ TEST_CASE("It is safe to cancel requests in flight") {
 
 /*
 TEST_CASE("Make sure we can override host and number of tries") {
-    auto reso = Resolver(Settings()
-        .set_nameserver("127.0.0.1:5353")
-        .set_attempts(2));
+    auto reso = Resolver({
+        {"nameserver", "127.0.0.1:5353"},
+        {"attempts", "2"},
+    });
     auto r = reso.request("A", "www.neubot.org", [&](
                           Response response) {
         REQUIRE(response.get_results().size() == 0);
