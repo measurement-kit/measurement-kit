@@ -80,6 +80,7 @@ private:
 class NetTest {
   std::string input_filepath;
   FileReporter file_report;
+
   IghtDelayedCall delayed_call;
 
   void run_next_measurement(std::function<void()>&& cb);
@@ -89,7 +90,14 @@ class NetTest {
   void write_header();
 
 protected:
-  // XXX leave both or only one?
+  IghtLibevent *libevent = IghtGlobalLibevent::get();
+
+  virtual void setup(std::string input);
+  virtual void setup();
+
+  virtual void teardown(std::string input);
+  virtual void teardown();
+
   virtual void main(ight::common::Settings options,
                     std::function<void(ReportEntry)>&& func);
 
@@ -98,6 +106,7 @@ protected:
                     std::function<void(ReportEntry)>&& func);
 
 public:
+  ReportEntry entry;
   ight::common::Settings options;
   InputFileIterator input;
 

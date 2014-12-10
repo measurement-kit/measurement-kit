@@ -54,7 +54,10 @@ NetTest::run_next_measurement(std::function<void()>&& cb)
     cb();
     return;
   }
+  entry = ReportEntry(*input);
+  setup();
   main(*input, options, [&](ReportEntry entry) {
+      teardown();
       file_report.writeEntry(entry);
       ++input;
       run_next_measurement(std::move(cb));
@@ -70,7 +73,10 @@ NetTest::begin(std::function<void()>&& cb)
     input = input_file();
     run_next_measurement(std::move(cb));
   } else {
+    entry = ReportEntry();
+    setup();
     main(options, [&](ReportEntry entry) {
+      teardown();
       file_report.writeEntry(entry);
       cb();
     });
@@ -89,6 +95,22 @@ NetTest::end(std::function<void()>&& cb)
   file_report.close();
   cb();
 }
+
+void
+NetTest::setup(std::string) {
+};
+
+void
+NetTest::setup() {
+};
+
+void
+NetTest::teardown(std::string) {
+};
+
+void
+NetTest::teardown() {
+};
 
 void
 NetTest::main(ight::common::Settings,

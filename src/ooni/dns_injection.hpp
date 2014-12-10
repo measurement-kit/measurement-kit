@@ -3,19 +3,17 @@
 
 #include "protocols/dns.hpp"
 #include "ooni/nettest.hpp"
+#include "ooni/dns_test.hpp"
+
+using namespace ight::ooni::dns_test;
 
 namespace ight {
 namespace ooni {
 namespace dns_injection {
 
-
-class DNSInjection : public nettest::NetTest {
-
-    protocols::dns::Resolver resolver;
+class DNSInjection : public DNSTest {
 
 public:
-    void setup(std::string input, ight::common::Settings options);
-
     void main(std::string input, ight::common::Settings options,
               std::function<void(ReportEntry)>&& cb);
 };
