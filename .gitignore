@@ -66,6 +66,7 @@ test/echo_client_evbuf
 test/net/buffer
 test/net/connection
 test/net/dns
+test/ooni/nettest
 test/report/file
 test-driver
 *.log
