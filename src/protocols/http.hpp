@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "common/settings.hpp"
 #include "common/error.h"
 #include "common/settings.hpp"
 #include "net/buffer.hpp"
@@ -484,6 +485,109 @@ struct Response {
     std::string reason;             /*!< HTTP reason string */
     Headers headers;                /*!< Response headers */
     IghtBuffer body;                /*!< Response body */
+};
+
+class Request;  // Forward declaration
+
+typedef std::function<void(IghtError, Response&&)> RequestCallback;
+
+/*!
+ * \brief HTTP request.
+ */
+class Request {
+
+    RequestCallback callback;
+    RequestSerializer serializer;
+    Stream stream;
+    Response response;
+
+public:
+
+    /*!
+     * \brief Constructor.
+     * \param settings A std::map with key values of the options supported:
+     *                     {
+     *                         "follow_redirects": "yes|no",
+     *                         "url": std::string,
+     *                         "ignore_body": "yes|no",
+     *                         "method": "GET|DELETE|PUT|POST|HEAD|...",
+     *                         "http_version": "HTTP/1.1",
+     *                         "path": by default is taken from the url
+     *                     }
+     * \param headers Request headers.
+     * \param callback Function invoked when request is complete.
+     */
+    Request(ight::common::Settings settings, Headers headers,
+            std::string body, RequestCallback&& callback_)
+                : callback(callback_) {
+        serializer = RequestSerializer(settings, headers, body);
+        stream = Stream::connect(serializer.address, serializer.port);
+        stream.on_error([this](IghtError err) {
+            close();
+            callback(err, std::move(response));
+        });
+        stream.on_connect([this](void) {
+            // TODO: improve the way in which we serialize the request
+            //       to reduce unnecessary copies
+            IghtBuffer buf;
+            serializer.serialize(buf);
+            stream << buf.read<char>();
+
+            stream.on_flush([]() {
+                ight_debug("http: request sent... waiting for response");
+            });
+
+            stream.on_headers_complete([&](unsigned short major,
+                    unsigned short minor, unsigned int status,
+                    std::string&& reason, Headers&& headers) {
+                ight_debug("http: headers received...");
+                response.http_major = major;
+                response.http_minor = minor;
+                response.status_code = status;
+                response.reason = std::move(reason);
+                response.headers = std::move(headers);
+            });
+
+            stream.on_body([&](std::string&& chunk) {
+                ight_debug("http: received body chunk...");
+                // FIXME: I am not sure whether the body callback
+                //        is still needed or not...
+                response.body << chunk;
+            });
+
+            stream.on_end([&]() {
+                ight_debug("http: we have reached end of response");
+                close();
+                callback(IghtError(0), std::move(response));
+            });
+
+        });
+    }
+
+    Request(Request&) = delete;
+    Request& operator=(Request&) = delete;
+
+    Request(Request&& other) {
+        std::swap(callback, other.callback);
+        std::swap(serializer, other.serializer);
+        std::swap(stream, other.stream);
+        std::swap(response, other.response);
+    }
+    Request& operator=(Request&& other) {
+        std::swap(callback, other.callback);
+        std::swap(serializer, other.serializer);
+        std::swap(stream, other.stream);
+        std::swap(response, other.response);
+        return *this;
+    }
+
+    void close() {
+        stream.close();
+    }
+
+    ~Request() {
+        close();
+    }
 };
 
 }}}  // namespaces

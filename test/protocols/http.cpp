@@ -184,3 +184,30 @@ TEST_CASE("HTTP Request serializer works as expected") {
     expect += "0123456789";
     REQUIRE(serialized == expect);
 }
+
+TEST_CASE("HTTP Request works as expected") {
+    ight_set_verbose(1);
+    auto r = http::Request({
+        {"url", "http://www.google.com/robots.txt"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&](IghtError error, http::Response&& response) {
+        if (error.error != 0) {
+            std::cout << "Error: " << error.error << "\r\n";
+            ight_break_loop();
+            return;
+        }
+        std::cout << "HTTP/" << response.http_major << "."
+                << response.http_minor << " " << response.status_code
+                << " " << response.reason << "\r\n";
+        for (auto& kv : response.headers) {
+            std::cout << kv.first << ": " << kv.second << "\r\n";
+        }
+        std::cout << "\r\n";
+        std::cout << response.body.read<char>() << "\r\n";
+        ight_break_loop();
+    });
+    ight_loop();
+}
