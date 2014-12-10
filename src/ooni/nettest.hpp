@@ -18,10 +18,10 @@ class InputFileIterator: public std::iterator<std::input_iterator_tag, std::stri
 {
 public:
 
-  InputFileIterator(void) {}
+  InputFileIterator() {}
 
   InputFileIterator(std::string input_filepath) {
-     is = new std::ifstream(input_filepath);
+    is = new std::ifstream(input_filepath);
   }
 
   ~InputFileIterator() {
@@ -33,52 +33,69 @@ public:
   InputFileIterator(InputFileIterator&&) = default;
   InputFileIterator& operator=(InputFileIterator&&) = default;
 
-  InputFileIterator begin()
-  {
+  InputFileIterator begin() {
     InputFileIterator o;
     o.eof = false;
     return o;
   }
 
-  InputFileIterator end()
-  {
+  InputFileIterator end() {
     InputFileIterator o;
     o.eof = true;
     return o;
   }
 
-  const std::string& operator*() const { return value; }
-  const std::string* operator->() const { return &value; }
+  const std::string& operator*() const {
+    return value;
+  }
 
-  InputFileIterator& operator++()
-  {
-    if (is && !getline(*is, value)) {
+  const std::string* operator->() const {
+    return &value;
+  }
+
+  InputFileIterator& operator++() {
+    if (is == nullptr) {
+      throw std::runtime_error("Iterator not bound to any file");
+    }
+    if (!getline(*is, value)) {
       eof = true;
     }
     return *this;
   }
 
-  bool operator!=(const InputFileIterator& other) const
-  {
+  bool operator!=(const InputFileIterator& other) const {
     return eof != other.eof;
   }
 
-  bool operator==(const InputFileIterator& other) const
-  {
-    return eof != other.eof;
+  bool operator==(const InputFileIterator& other) const {
+    return eof == other.eof;
   }
 
 private:
   std::ifstream *is = nullptr;
   std::string value;
-  bool eof;
+  bool eof = false;
 };
 
 class NetTest {
-  
   std::string input_filepath;
   FileReporter file_report;
   IghtDelayedCall delayed_call;
+
+  void run_next_measurement(std::function<void()>&& cb);
+
+  void geoip_lookup();
+
+  void write_header();
+
+protected:
+  // XXX leave both or only one?
+  virtual void main(ight::common::Settings options,
+                    std::function<void(ReportEntry)>&& func);
+
+
+  virtual void main(std::string input, ight::common::Settings options,
+                    std::function<void(ReportEntry)>&& func);
 
 public:
   ight::common::Settings options;
@@ -97,25 +114,17 @@ public:
 
   InputFileIterator input_file();
 
-  void run_next_measurement(std::function<void()>&& cb);
-
-  void geoip_lookup();
-
+  /*!
+   * \brief Start iterating over the input.
+   * \param cb Callback called when we are done.
+   */
   void begin(std::function<void()>&& cb);
 
-  void write_header();
-
+  /*!
+   * \brief Make sure that the report is written.
+   * \param cb Callback called when the report is written.
+   */
   void end(std::function<void()>&& cb);
-
-  // XXX leave both or only one?
-  virtual void main(ight::common::Settings options,
-                    std::function<void(ReportEntry)>&& func);
-
-
-  virtual void main(std::string input, ight::common::Settings options,
-                    std::function<void(ReportEntry)>&& func);
-
-
 };
 
 }}}

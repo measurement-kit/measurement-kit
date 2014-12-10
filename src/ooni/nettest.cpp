@@ -3,9 +3,8 @@
 
 using namespace ight::ooni::nettest;
 
-
-NetTest::NetTest(std::string input_filepath_, ight::common::Settings options_) : 
-  input_filepath(input_filepath_), options(options_)
+NetTest::NetTest(std::string input_filepath_, ight::common::Settings options_)
+  : input_filepath(input_filepath_), options(options_)
 {
   std::string report_file = "example_test_report.yaml";
   std::string test_name = "light-meter";
@@ -23,18 +22,17 @@ NetTest::NetTest(std::string input_filepath_, ight::common::Settings options_) :
   file_report.probe_ip = probe_ip;
   file_report.options = options;
   file_report.filename = report_file;
-
 }
 
 NetTest::NetTest(void) : NetTest::NetTest("", ight::common::Settings())
 {
-
+  // nothing
 }
 
 NetTest::NetTest(std::string input_filepath_) : 
   NetTest::NetTest(input_filepath_, ight::common::Settings())
 {
-
+  // nothing
 }
 
 InputFileIterator
@@ -46,13 +44,13 @@ NetTest::input_file()
 void
 NetTest::geoip_lookup()
 {
-
+  // TODO: implement
 }
 
 void
 NetTest::run_next_measurement(std::function<void()>&& cb)
 {
-  if (input==input.end()) {
+  if (input == input.end()) {
     cb();
     return;
   }
@@ -95,8 +93,8 @@ NetTest::end(std::function<void()>&& cb)
 void
 NetTest::main(ight::common::Settings,
               std::function<void(ReportEntry)>&& cb) {
-  ReportEntry entry;
-  delayed_call = IghtDelayedCall(1.25, [&](void) {
+  delayed_call = IghtDelayedCall(1.25, [=](void) {
+    ReportEntry entry;
     cb(entry);
   });
 }
@@ -104,8 +102,8 @@ NetTest::main(ight::common::Settings,
 void
 NetTest::main(std::string, ight::common::Settings,
               std::function<void(ReportEntry)>&& cb) {
-  ReportEntry entry;
-  delayed_call = IghtDelayedCall(1.25, [&](void) {
+  delayed_call = IghtDelayedCall(1.25, [=](void) {
+    ReportEntry entry;
     cb(entry);
   });
 }
