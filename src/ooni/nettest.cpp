@@ -56,7 +56,7 @@ NetTest::run_next_measurement(std::function<void()>&& cb)
   }
   entry = ReportEntry(*input);
   setup();
-  main(*input, options, [&](ReportEntry entry) {
+  main(*input, options, [=](ReportEntry entry) {
       teardown();
       file_report.writeEntry(entry);
       ++input;
@@ -75,7 +75,7 @@ NetTest::begin(std::function<void()>&& cb)
   } else {
     entry = ReportEntry();
     setup();
-    main(options, [&](ReportEntry entry) {
+    main(options, [=](ReportEntry entry) {
       teardown();
       file_report.writeEntry(entry);
       cb();
