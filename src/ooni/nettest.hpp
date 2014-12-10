@@ -21,7 +21,7 @@ public:
   InputFileIterator(void) {}
 
   InputFileIterator(std::string input_filepath) {
-    is = std::ifstream(input_filepath);
+    std::ifstream is (input_filepath);
   }
 
   InputFileIterator begin()
