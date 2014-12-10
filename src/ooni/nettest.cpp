@@ -91,3 +91,13 @@ NetTest::end(std::function<void()>&& cb)
   file_report.close();
   cb();
 }
+
+void
+NetTest::main(ight::common::Settings,
+              std::function<void(ReportEntry&&)>&&) {
+}
+
+void
+NetTest::main(std::string, ight::common::Settings,
+              std::function<void(ReportEntry&&)>&&) {
+}
