@@ -21,8 +21,17 @@ public:
   InputFileIterator(void) {}
 
   InputFileIterator(std::string input_filepath) {
-    std::ifstream is (input_filepath);
+     is = new std::ifstream(input_filepath);
   }
+
+  ~InputFileIterator() {
+    delete is;  /* delete handles nullptr */
+  }
+
+  InputFileIterator(InputFileIterator&) = delete;
+  InputFileIterator& operator=(InputFileIterator&) = delete;
+  InputFileIterator(InputFileIterator&&) = default;
+  InputFileIterator& operator=(InputFileIterator&&) = default;
 
   InputFileIterator begin()
   {
@@ -43,7 +52,7 @@ public:
 
   InputFileIterator& operator++()
   {
-    if (is && !getline(is, value)) {
+    if (is && !getline(*is, value)) {
       eof = true;
     }
     return *this;
@@ -60,7 +69,7 @@ public:
   }
 
 private:
-  std::ifstream is;
+  std::ifstream *is = nullptr;
   std::string value;
 };
 
