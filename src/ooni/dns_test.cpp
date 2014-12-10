@@ -9,7 +9,7 @@ protocols::dns::Request query(QueryType query_type, QueryClass query_class,
     resolver = protocols::dns::Resolver({
         {"nameserver", nameserver},
         {"attempts", "1"},
-    });
+    }, libevent);
 
     std::string nameserver_part;
     std::stringstream nameserver_ss(nameserver);
@@ -27,9 +27,9 @@ protocols::dns::Request query(QueryType query_type, QueryClass query_class,
     } else {
         throw UnsupportedQueryType("Currently we only support A");
     }
-    auto r = protocols::dns::Request(
+    auto r = resolver.request(
         query, query_name, 
-        [&](protocols::dns::Response&& response) {
+        [=](protocols::dns::Response&& response) {
             if (response.get_evdns_status() == DNS_ERR_NONE) {
                 for (auto result: response.get_results()) {
                     std::vector <std::string> answer;
@@ -37,22 +37,23 @@ protocols::dns::Request query(QueryType query_type, QueryClass query_class,
                         std::string rr;
                         rr = "<RR name=" + query_name + " ";
                         rr += "type=A class=IN ";
-                        rr += "ttl=" + std::to_string(response.get_rtt()) + " ";
+                        rr += "ttl=" + std::to_string(response.get_ttl()) + " ";
                         rr += "auth=False>, ";
                         rr += "<A address=" + result + " ";
-                        rr += "ttl=" + std::to_string(response.get_rtt()) + ">";
+                        rr += "ttl=" + std::to_string(response.get_ttl()) + ">";
                         answer.push_back(rr);
                     }
                     query_entry["answers"].push_back(answer);
                 }
             } else {
                 query_entry["answers"].push_back(NULL);
-                query_entry["failure"] = "generic_failure";
+                query_entry["failure"] = response.get_failure();
             }
+            query_entry["rtt"] = response.get_rtt();
+            // TODO add support for bytes received
+            // query_entry["bytes"] = response.get_bytes();
             entry["queries"].push_back(query_entry);
             cb(std::move(response));
-        },
-        resolver.get_evdns_base(),
-        options["nameserver"], libevent);
+        });
     return r;
 }

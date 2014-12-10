@@ -243,6 +243,7 @@ class Request {
      *        libight's libevent object (mainly useful to write unit tests).
      * \throws std::bad_alloc if some allocation fails.
      * \throws std::runtime_error if some edvns API fails.
+     * FIXME remove the resolver, because it is confusing...
      */
     Request(std::string query, std::string address,
                std::function<void(Response&&)>&& func,
