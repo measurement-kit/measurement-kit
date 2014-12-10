@@ -9,7 +9,7 @@ protocols::dns::Request query(QueryType query_type, QueryClass query_class,
     resolver = protocols::dns::Resolver({
         {"nameserver", nameserver},
         {"attempts", "1"},
-        });
+    });
 
     std::string nameserver_part;
     std::stringstream nameserver_ss(nameserver);
@@ -21,39 +21,38 @@ protocols::dns::Request query(QueryType query_type, QueryClass query_class,
     YAML::Node query_entry;
     std::string query;
     if (query_type == QueryType::A) {
-      query = "A";
-      query_entry["query_type"] = "A";
-      query_entry["query"] = "[Query('" + query_name +  ", 1, 1')]";
+        query = "A";
+        query_entry["query_type"] = "A";
+        query_entry["query"] = "[Query('" + query_name +  ", 1, 1')]";
     } else {
-      throw UnsupportedQueryType("Currently we only support A");
+        throw UnsupportedQueryType("Currently we only support A");
     }
     auto r = protocols::dns::Request(
         query, query_name, 
         [&](protocols::dns::Response&& response) {
-        if (response.get_evdns_status() == DNS_ERR_NONE) {
-        for (auto result: response.get_results()) {
-        std::vector <std::string> answer;
-        if (query_type == QueryType::A) {
-        std::string rr;
-        rr = "<RR name=" + query_name + " ";
-        rr += "type=A class=IN ";
-        rr += "ttl=" + std::to_string(response.get_rtt()) + " ";
-        rr += "auth=False>, ";
-        rr += "<A address=" + result + " ";
-        rr += "ttl=" + std::to_string(response.get_rtt()) + ">";
-        answer.push_back(rr);
-        }
-        query_entry["answers"].push_back(answer);
-        }
-        } else {
-        query_entry["answers"].push_back(NULL);
-        query_entry["failure"] = "generic_failure";
-        }
-        entry["queries"].push_back(query_entry);
-        cb(std::move(response));
+            if (response.get_evdns_status() == DNS_ERR_NONE) {
+                for (auto result: response.get_results()) {
+                    std::vector <std::string> answer;
+                    if (query_type == QueryType::A) {
+                        std::string rr;
+                        rr = "<RR name=" + query_name + " ";
+                        rr += "type=A class=IN ";
+                        rr += "ttl=" + std::to_string(response.get_rtt()) + " ";
+                        rr += "auth=False>, ";
+                        rr += "<A address=" + result + " ";
+                        rr += "ttl=" + std::to_string(response.get_rtt()) + ">";
+                        answer.push_back(rr);
+                    }
+                    query_entry["answers"].push_back(answer);
+                }
+            } else {
+                query_entry["answers"].push_back(NULL);
+                query_entry["failure"] = "generic_failure";
+            }
+            entry["queries"].push_back(query_entry);
+            cb(std::move(response));
         },
         resolver.get_evdns_base(),
-        options["nameserver"], libevent
-        );
+        options["nameserver"], libevent);
     return r;
 }
