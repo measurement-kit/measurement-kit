@@ -70,7 +70,7 @@ NetTest::begin(std::function<void()>&& cb)
     input = input_file();
     run_next_measurement(std::move(cb));
   } else {
-    main(options, [&](ReportEntry entry) {
+    main(options, [=](ReportEntry entry) {
       file_report.writeEntry(entry);
       cb();
     });
