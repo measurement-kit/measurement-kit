@@ -9,7 +9,7 @@
 using namespace ight::ooni::nettest;
 
 TEST_CASE("The NetTest should callback when it has finished running") {
-  NetTest nettest = NetTest("/tmp/example.txt");
+  NetTest nettest("/tmp/example.txt");
   nettest.begin([&](){
     nettest.end([&](){
       ight_break_loop();

@@ -84,6 +84,11 @@ public:
 
   NetTest(void);
 
+  NetTest(NetTest&) = delete;
+  NetTest& operator=(NetTest&) = delete;
+  NetTest(NetTest&&) = default;
+  NetTest& operator=(NetTest&&) = default;
+
   NetTest(std::string input_filepath);
 
   NetTest(std::string input_filepath, ight::common::Settings options);
