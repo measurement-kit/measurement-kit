@@ -43,7 +43,6 @@ class Response {
     std::string name;
     std::string query_type;
     std::string query_class;
-    std::string resolver;
     int code;
     double rtt;
     int ttl;
@@ -76,11 +75,10 @@ public:
      *        record, rather than from zero, when processing the results
      *        (this is only used for implementing some test cases).
      */
-    Response(std::string name, std::string query_type,
-                std::string query_class, std::string resolver,
-                int code, char type, int count, int ttl, double started,
-                void *addresses, IghtLibevent *libevent = NULL,
-                int start_from = 0);
+    Response(std::string name, std::string query_type, std::string query_class,
+             int code, char type, int count, int ttl, double started,
+             void *addresses, IghtLibevent *libevent = NULL,
+             int start_from = 0);
 
     /*!
      * \brief Get the results returned by the query.
@@ -120,23 +118,6 @@ public:
      */
     std::string get_reply_authoritative(void) {
         return "unknown";  /* TODO */
-    }
-
-    /*!
-     * \brief Get the resolver server address and port.
-     * \returns A vector containing two strings, the first string is the
-     *          resolver address, the second the resolver port.
-     */
-    std::vector<std::string> get_resolver(void) {
-        if (resolver == "") {
-            return {"<default>", "53"};
-        }
-        auto pos = resolver.find(":");
-        if (pos == std::string::npos) {
-            return {resolver, "53"};
-        }
-        return {resolver.substr(0, pos),
-            resolver.substr(pos + 1)};
     }
 
     /*!
@@ -235,19 +216,14 @@ class Request {
      *        default one. This parameter is not meant to be used directly
      *        by the programmer. To issue requests using a specific evdns_base
      *        with specific options, you should instead use a Resolver.
-     * \param resolver Optional address of the DNS nameserver. This address
-     *        is not processed by this class, who receives it only for passing
-     *        it to the Response constructor. To issue request towards a
-     *        specific nameserver, use a Resolver.
      * \param libevent Optional pointer to a mocked implementation of
      *        libight's libevent object (mainly useful to write unit tests).
      * \throws std::bad_alloc if some allocation fails.
      * \throws std::runtime_error if some edvns API fails.
      */
     Request(std::string query, std::string address,
-               std::function<void(Response&&)>&& func,
-               evdns_base *dnsb = NULL, std::string resolver = "",
-               IghtLibevent *libevent = NULL);
+            std::function<void(Response&&)>&& func, evdns_base *dnsb = NULL,
+            IghtLibevent *libevent = NULL);
 
     /*!
      * \brief Deleted copy constructor.
@@ -375,7 +351,7 @@ class Resolver {
     Request request(std::string query, std::string address,
                        std::function<void(Response&&)>&& func) {
         return Request(query, address, std::move(func), get_evdns_base(),
-                       settings["nameserver"], libevent);
+                       libevent);
     }
 
     /*!

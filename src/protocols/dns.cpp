@@ -26,12 +26,12 @@ Response::Response(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
 }
 
 Response::Response(std::string name_, std::string query_type_,
-                         std::string query_class_, std::string resolver_,
+                         std::string query_class_,
                          int code_, char type, int count,
                          int ttl_, double started, void *addresses,
                          IghtLibevent *libevent, int start_from)
     : name(name_), query_type(query_type_), query_class(query_class_),
-      resolver(resolver_), code(code_), ttl(ttl_)
+      code(code_), ttl(ttl_)
 {
     assert(start_from >= 0);
 
@@ -232,7 +232,6 @@ class RequestImpl {
     std::string name;
     std::string query_type;
     std::string query_class;
-    std::string resolver;
     IghtLibevent *libevent;  // should not be NULL (this is asserted below)
 
     static void handle_resolve(int code, char type, int count, int ttl,
@@ -255,7 +254,7 @@ class RequestImpl {
         impl->pending = false;
 
         impl->callback(Response(impl->name, impl->query_type,
-            impl->query_class, impl->resolver, code, type, count,
+            impl->query_class, code, type, count,
             ttl, impl->ticks, addresses));
     }
 
@@ -281,9 +280,9 @@ class RequestImpl {
      */
     RequestImpl(std::string query, std::string address,
                    std::function<void(Response&&)>&& f,
-                   evdns_base *base, std::string resolver_,
+                   evdns_base *base,
                    IghtLibevent *lev)
-            : callback(f), name(address), resolver(resolver_), libevent(lev) {
+            : callback(f), name(address), libevent(lev) {
 
         assert(base != NULL && lev != NULL);
 
@@ -355,7 +354,7 @@ class RequestImpl {
 
 Request::Request(std::string query, std::string address,
                        std::function<void(Response&&)>&& func,
-                       evdns_base *dnsb, std::string resolver,
+                       evdns_base *dnsb,
                        IghtLibevent *libevent)
 {
     if (dnsb == NULL) {
@@ -365,7 +364,7 @@ Request::Request(std::string query, std::string address,
         libevent = IghtGlobalLibevent::get();
     }
     impl = new RequestImpl(query, address, std::move(func),
-                              dnsb, resolver, libevent);
+                              dnsb, libevent);
 }
 
 void
