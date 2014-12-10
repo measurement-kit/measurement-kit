@@ -56,7 +56,7 @@ NetTest::run_next_measurement(std::function<void()>&& cb)
     cb();
     return;
   }
-  main(*input, options, [&](ReportEntry&& entry) {
+  main(*input, options, [&](ReportEntry entry) {
       file_report.writeEntry(entry);
       ++input;
       run_next_measurement(std::move(cb));
@@ -72,7 +72,7 @@ NetTest::begin(std::function<void()>&& cb)
     input = input_file();
     run_next_measurement(std::move(cb));
   } else {
-    main(options, [&](ReportEntry&& entry) {
+    main(options, [&](ReportEntry entry) {
       file_report.writeEntry(entry);
       cb();
     });
@@ -94,10 +94,18 @@ NetTest::end(std::function<void()>&& cb)
 
 void
 NetTest::main(ight::common::Settings,
-              std::function<void(ReportEntry&&)>&&) {
+              std::function<void(ReportEntry)>&& cb) {
+  ReportEntry entry;
+  delayed_call = IghtDelayedCall(1.25, [&](void) {
+    cb(entry);
+  });
 }
 
 void
 NetTest::main(std::string, ight::common::Settings,
-              std::function<void(ReportEntry&&)>&&) {
+              std::function<void(ReportEntry)>&& cb) {
+  ReportEntry entry;
+  delayed_call = IghtDelayedCall(1.25, [&](void) {
+    cb(entry);
+  });
 }

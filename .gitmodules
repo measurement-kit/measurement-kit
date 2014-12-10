@@ -1,3 +1,5 @@
+[core]
+  ignore = dirty
 [submodule "src/ext/http-parser"]
 	path = src/ext/http-parser
 	url = https://github.com/joyent/http-parser

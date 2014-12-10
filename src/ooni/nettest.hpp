@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include "report/file.hpp"
+#include "common/poller.h"
 #include "common/settings.hpp"
 
 namespace ight {
@@ -77,6 +78,7 @@ class NetTest {
   
   std::string input_filepath;
   FileReporter file_report;
+  IghtDelayedCall delayed_call;
 
 public:
   ight::common::Settings options;
@@ -107,11 +109,11 @@ public:
 
   // XXX leave both or only one?
   virtual void main(ight::common::Settings options,
-                    std::function<void(ReportEntry&&)>&& func);
+                    std::function<void(ReportEntry)>&& func);
 
 
   virtual void main(std::string input, ight::common::Settings options,
-                    std::function<void(ReportEntry&&)>&& func);
+                    std::function<void(ReportEntry)>&& func);
 
 
 };
