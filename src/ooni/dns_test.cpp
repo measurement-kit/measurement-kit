@@ -25,7 +25,7 @@ DNSTest::query(QueryType query_type, QueryClass query_class,
     } else {
         throw UnsupportedQueryType("Currently we only support A");
     }
-    auto r = resolver.request(
+    resolver.request(
         query, query_name, 
         [=](ight::protocols::dns::Response&& response) {
             ight_debug("Got a response!");
@@ -58,6 +58,5 @@ DNSTest::query(QueryType query_type, QueryClass query_class,
             // query_entry["bytes"] = response.get_bytes();
             entry["queries"].push_back(query_entry);
             cb(std::move(response));
-        });
-    return r;
+    });
 }
