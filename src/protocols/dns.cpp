@@ -25,13 +25,9 @@ Response::Response(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
     // nothing
 }
 
-Response::Response(std::string name_, std::string query_type_,
-                         std::string query_class_,
-                         int code_, char type, int count,
-                         int ttl_, double started, void *addresses,
-                         IghtLibevent *libevent, int start_from)
-    : name(name_), query_type(query_type_), query_class(query_class_),
-      code(code_), ttl(ttl_)
+Response::Response(int code_, char type, int count, int ttl_, double started,
+                   void *addresses, IghtLibevent *libevent, int start_from)
+    : code(code_), ttl(ttl_)
 {
     assert(start_from >= 0);
 
@@ -229,9 +225,6 @@ class RequestImpl {
     bool cancelled = false;
     bool pending = false;
     double ticks = 0.0;  // just to initialize to something
-    std::string name;
-    std::string query_type;
-    std::string query_class;
     IghtLibevent *libevent;  // should not be NULL (this is asserted below)
     bool autodel;  // Initialized by constructor
 
@@ -256,8 +249,7 @@ class RequestImpl {
         }
         impl->pending = false;
 
-        impl->callback(Response(impl->name, impl->query_type,
-            impl->query_class, code, type, count,
+        impl->callback(Response(code, type, count,
             ttl, impl->ticks, addresses));
 
         // Note: this is the case in which the request was created
@@ -299,7 +291,7 @@ class RequestImpl {
     RequestImpl(std::string query, std::string address,
                 std::function<void(Response&&)>&& f, evdns_base *base,
                 IghtLibevent *lev, bool autodel_)
-            : callback(f), name(address), libevent(lev), autodel(autodel_) {
+            : callback(f), libevent(lev), autodel(autodel_) {
 
         assert(base != NULL && lev != NULL);
 
@@ -312,23 +304,17 @@ class RequestImpl {
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
-            query_type = "A";
-            query_class = "IN";
         } else if (query == "AAAA") {
             if (libevent->evdns_base_resolve_ipv6(base, address.c_str(),
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
-            query_type = "AAAA";
-            query_class = "IN";
         } else if (query == "REVERSE_A") {
             in_addr na;
             if (libevent->evdns_base_resolve_reverse(base, ipv4_pton(address,
                 &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
-            query_type = "PTR";
-            query_class = "IN";
         } else if (query == "REVERSE_AAAA") {
             in6_addr na;
             if (libevent->evdns_base_resolve_reverse_ipv6(base, ipv6_pton(
@@ -336,8 +322,6 @@ class RequestImpl {
                 == NULL) {
                 throw std::runtime_error("Resolver error");
             }
-            query_type = "PTR";
-            query_class = "IN";
         } else {
             throw std::runtime_error("Unsupported query");
         }

@@ -30,9 +30,6 @@ class RequestImpl;  // Defined in net/dns.cpp
 /*!
  * \brief DNS response.
  *
- * The constructor of this class receives the fields returned by evdns and
- * converts them in a format suitable to compile OONI's reports.
- *
  * You should not construct this class directly. Instead, this is the
  * object that Request's callback provides you.
  *
@@ -40,9 +37,6 @@ class RequestImpl;  // Defined in net/dns.cpp
  */
 class Response {
 
-    std::string name;
-    std::string query_type;
-    std::string query_class;
     int code;
     double rtt;
     int ttl;
@@ -59,9 +53,6 @@ public:
 
     /*!
      * \brief Constructs a DNS response object.
-     * \param name the requested name (e.g., 'www.google.com').
-     * \param query_type the query type (e.g., 'A').
-     * \param query_class the query class (e.g., 'IN').
      * \param code evdns status code (e.g., DNS_ERR_NONE -- see
      *        [libevent's github](https://github.com/libevent/libevent/blob/master/include/event2/dns.h#L147) for the available status codes).
      * \param type evdns query type (e.g., DNS_IPv4_A -- see
@@ -75,8 +66,7 @@ public:
      *        record, rather than from zero, when processing the results
      *        (this is only used for implementing some test cases).
      */
-    Response(std::string name, std::string query_type, std::string query_class,
-             int code, char type, int count, int ttl, double started,
+    Response(int code, char type, int count, int ttl, double started,
              void *addresses, IghtLibevent *libevent = NULL,
              int start_from = 0);
 
@@ -88,27 +78,6 @@ public:
      */
     std::vector<std::string> get_results(void) {
         return results;
-    }
-
-    /*!
-     * \brief Get the name that was queried (e.g., 'www.google.com').
-     */
-    std::string get_query_name(void) {
-        return name;
-    }
-
-    /*!
-     * \brief Get the type of the query (e.g., 'A').
-     */
-    std::string get_query_type(void) {
-        return query_type;
-    }
-
-    /*!
-     * \brief Get the class of the query (e.g., 'IN').
-     */
-    std::string get_query_class(void) {
-        return query_class;
     }
 
     /*!
