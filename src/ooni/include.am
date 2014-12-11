@@ -1,7 +1,7 @@
 noinst_LTLIBRARIES += src/ooni/libooni.la
 
 src_ooni_libooni_la_SOURCES = \
-	src/ooni/nettest.cpp \
+	src/ooni/net_test.cpp \
 	src/ooni/dns_test.cpp \
 	src/ooni/dns_injection.cpp
 
