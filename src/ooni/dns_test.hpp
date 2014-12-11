@@ -28,7 +28,7 @@ public:
         test_version = "0.0.1";
     };
 
-    protocols::dns::Request query(QueryType query_type, QueryClass query_class,
+    void query(QueryType query_type, QueryClass query_class,
         std::string query_name, std::string nameserver,
         std::function<void(protocols::dns::Response&&)>&& cb);
 

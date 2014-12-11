@@ -2,8 +2,8 @@
 
 using namespace ight::ooni::dns_test;
 
-ight::protocols::dns::Request 
-DNSTest::query(QueryType query_type, QueryClass query_class,
+void
+DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
                std::string query_name, std::string nameserver,
                std::function<void(ight::protocols::dns::Response&&)>&& cb)
 {

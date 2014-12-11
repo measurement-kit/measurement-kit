@@ -7,7 +7,7 @@ DNSInjection::main(std::string input, ight::common::Settings options,
                    std::function<void(ReportEntry)>&& cb)
 {
     entry["injected"] = NULL;
-    auto r = query(QueryType::A, QueryClass::IN,
+    query(QueryType::A, QueryClass::IN,
                    input, options["nameserver"], [=](
                               protocols::dns::Response&& response) {
         ight_debug("Got response to DNS Injection test");
