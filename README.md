@@ -1,7 +1,7 @@
 Libight
 =======
 
-[![Build Status](https://travis-ci.org/bassosimone/libight.svg?branch=master)](https://travis-ci.org/bassosimone/libight)
+[![Build Status](https://travis-ci.org/TheTorProject/libight.svg?branch=master)](https://travis-ci.org/TheTorProject/libight)
 
 Libight is an experimental library that provides common functionalities
 useful to implement open measurement tools on mobile platforms.
@@ -21,7 +21,7 @@ How to clone the repository
 To clone properly libight repository, make sure that you specify the
 `--recursive` command line flag, as in:
 
-    git clone --recursive https://github.com/bassosimone/libight
+    git clone --recursive https://github.com/TheTorProject/libight
 
 Such flag tells git to clone not only the libight repository, but also
 the [submodules](http://git-scm.com/docs/git-submodule) contained therein.
