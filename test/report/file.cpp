@@ -6,7 +6,7 @@
 #include "report/entry.hpp"
 
 TEST_CASE("The constructor for [FileReport] works correctly", "[BaseReport]") {
-  REQUIRE_NOTHROW(FileReporter reporter = FileReporter());
+  REQUIRE_NOTHROW(FileReporter());
 }
 
 TEST_CASE("Report lifecycle", "[BaseReport]") {
@@ -17,7 +17,7 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
     options["opt1"] = "value1";
     options["opt2"] = "value2";
 
-    FileReporter reporter = FileReporter();
+    FileReporter reporter;
     reporter.test_name = "example_test";
     reporter.test_version = "0.0.1";
     reporter.filename = "example_test_report.yaml";
