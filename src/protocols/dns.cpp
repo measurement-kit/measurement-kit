@@ -233,6 +233,7 @@ class RequestImpl {
     std::string query_type;
     std::string query_class;
     IghtLibevent *libevent;  // should not be NULL (this is asserted below)
+    bool autodel;  // Initialized by constructor
 
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
@@ -247,6 +248,8 @@ class RequestImpl {
                                              addresses, opaque);
         }
 
+        // Note: the case of `impl->cancelled` is the case in which this
+        // impl is owned by a Request object that exited from the scope
         if (impl->cancelled) {
             delete impl;
             return;
@@ -256,6 +259,14 @@ class RequestImpl {
         impl->callback(Response(impl->name, impl->query_type,
             impl->query_class, code, type, count,
             ttl, impl->ticks, addresses));
+
+        // Note: this is the case in which the request was created
+        // with the automatic-delete feature, i.e., when the request
+        // was created by a Resolver.
+        if (impl->autodel) {
+            delete impl;
+            return;
+        }
     }
 
     in_addr *ipv4_pton(std::string address, in_addr *netaddr) {
@@ -272,17 +283,23 @@ class RequestImpl {
         return (netaddr);
     }
 
+    // Declared explicitly as private so one cannot delete this object
+    // and must instead call the cancel() method
+    ~RequestImpl() {
+        // Nothing to see here, move along :)
+    }
+
   public:
 
     /*!
      * \brief Issue an async DNS request.
+     * \param autodel_ Whether this request should autodelete self.
      * \see Request::Request().
      */
     RequestImpl(std::string query, std::string address,
-                   std::function<void(Response&&)>&& f,
-                   evdns_base *base,
-                   IghtLibevent *lev)
-            : callback(f), name(address), libevent(lev) {
+                std::function<void(Response&&)>&& f, evdns_base *base,
+                IghtLibevent *lev, bool autodel_)
+            : callback(f), name(address), libevent(lev), autodel(autodel_) {
 
         assert(base != NULL && lev != NULL);
 
@@ -364,7 +381,7 @@ Request::Request(std::string query, std::string address,
         libevent = IghtGlobalLibevent::get();
     }
     impl = new RequestImpl(query, address, std::move(func),
-                              dnsb, libevent);
+                           dnsb, libevent, false);
 }
 
 void
@@ -387,7 +404,12 @@ Resolver::cleanup(void)
     if (base != NULL) {
         //
         // Note: `1` means that pending requests are notified that
-        // this evdns_base is being closed.
+        // this evdns_base is being closed, i.e., their callback is
+        // called with error DNS_ERROR_SHUTDOWN.
+        //
+        // We need to call evdns_base_free() like this because
+        // this guarantees that request's callback is always invoked
+        // so RequestImpl:s are always freed (see request()).
         //
         libevent->evdns_base_free(base, 1);
         base = NULL;  // Idempotent
@@ -442,4 +464,19 @@ Resolver::get_evdns_base(void)
     }
 
     return base;
+}
+
+void
+Resolver::request(std::string query, std::string address,
+        std::function<void(Response&&)>&& func)
+{
+    //
+    // Note: here RequestImpl is created with autodel=true, meaning that
+    // it shall delete itself once its callback is called. The callback
+    // should always be called, either because of a successful response,
+    // or because of an error, or because the resolver is destroyed (this
+    // is guaranteed by the destructor's impl).
+    //
+    (void) new RequestImpl(query, address, std::move(func),
+            get_evdns_base(), libevent, true);
 }

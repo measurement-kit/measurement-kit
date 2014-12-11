@@ -285,10 +285,14 @@ class Request {
  *         {"randomize_case", "1"},
  *     });
  *
- *     auto r2 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+ *     reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
  *             [](dns::Response&& response) {
  *         // Process the response
  *     });
+ *
+ * The request created this way is bound to the resolver object and is
+ * destroyed when the resolver is destroyed (in particular, the callback
+ * will be invoked with evdns code equal to DNS_ERR_SHUTDOWN).
  */
 class Resolver {
     ight::common::Settings settings;
@@ -345,14 +349,10 @@ class Resolver {
 
     /*!
      * \brief Issue a Request using this resolver.
-     * \remark This is just a wrapper that calls Request::Request().
      * \see Request::Request().
      */
-    Request request(std::string query, std::string address,
-                       std::function<void(Response&&)>&& func) {
-        return Request(query, address, std::move(func), get_evdns_base(),
-                       libevent);
-    }
+    void request(std::string query, std::string address,
+                 std::function<void(Response&&)>&& func);
 
     /*!
      * \brief Default destructor.

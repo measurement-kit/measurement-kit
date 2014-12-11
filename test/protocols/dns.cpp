@@ -727,8 +727,7 @@ TEST_CASE("We can override the default timeout") {
     });
 
     auto ticks = ight_time_now();
-    auto r1 = reso.request("A", "www.neubot.org", [&](
-                           Response&& response) {
+    reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -758,8 +757,7 @@ TEST_CASE("We can override the default number of tries") {
     });
 
     auto ticks = ight_time_now();
-    auto r1 = reso.request("A", "www.neubot.org", [&](
-                           Response&& response) {
+    reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -801,8 +799,7 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto reso = Resolver();
 
-    auto r1 = reso.request("A", "www.neubot.org", [&](
-                           Response&& response) {
+    reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -817,8 +814,7 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
-                           Response&& response) {
+    reso.request("REVERSE_A", "130.192.16.172", [&](Response&& response) {
         REQUIRE(response.get_query_name() == "130.192.16.172");
         REQUIRE(response.get_query_type() == "PTR");
         REQUIRE(response.get_query_class() == "IN");
@@ -833,8 +829,7 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
-                           Response&& response) {
+    reso.request("AAAA", "ooni.torproject.org", [&](Response&& response) {
         REQUIRE(response.get_query_name() == "ooni.torproject.org");
         REQUIRE(response.get_query_type() == "AAAA");
         REQUIRE(response.get_query_class() == "IN");
@@ -856,8 +851,8 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
-                           [&](Response&& response) {
+    reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+            [&](Response&& response) {
         REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
         REQUIRE(response.get_query_type() == "PTR");
         REQUIRE(response.get_query_class() == "IN");
@@ -892,8 +887,7 @@ TEST_CASE("A specific custom resolver works as expected") {
         {"nameserver", "8.8.4.4"},
     }));
 
-    auto r1 = reso.request("A", "www.neubot.org", [&](
-                           Response&& response) {
+    reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -908,8 +902,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
-                           Response&& response) {
+    reso.request("REVERSE_A", "130.192.16.172", [&](Response&& response) {
         REQUIRE(response.get_query_name() == "130.192.16.172");
         REQUIRE(response.get_query_type() == "PTR");
         REQUIRE(response.get_query_class() == "IN");
@@ -924,8 +917,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
-                           Response&& response) {
+    reso.request("AAAA", "ooni.torproject.org", [&](Response&& response) {
         REQUIRE(response.get_query_name() == "ooni.torproject.org");
         REQUIRE(response.get_query_type() == "AAAA");
         REQUIRE(response.get_query_class() == "IN");
@@ -947,8 +939,8 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
-                           [&](Response&& response) {
+    reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+            [&](Response&& response) {
         REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
         REQUIRE(response.get_query_type() == "PTR");
         REQUIRE(response.get_query_class() == "IN");
@@ -966,7 +958,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     REQUIRE(!failed);
 }
 
-TEST_CASE("If the resolver dies, the requests are aborted") {
+TEST_CASE("If the resolver dies the requests are aborted") {
 
     //
     // This should work regardless of the network being up or down.
@@ -976,8 +968,8 @@ TEST_CASE("If the resolver dies, the requests are aborted") {
     auto reso = new Resolver(ight::common::Settings({
         {"nameserver", "130.192.91.231"},
     }));
-    auto r1 = reso->request("A", "www.neubot.org", [&](
-                            Response&& response) {
+
+    reso->request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -992,11 +984,13 @@ TEST_CASE("If the resolver dies, the requests are aborted") {
 
     auto d1 = IghtDelayedCall(0.1, [&](void) {
         delete reso;  // Destroy the resolver and see what happens..
-                      // in theory the callback above should be called
+                      // in theory the request callback *should* be called
     });
 
     auto failed = false;
     auto d2 = IghtDelayedCall(1.0, [&](void) {
+        // This *should not* be called, since the request callback
+        // shold be called before than this one.
         failed = true;
         ight_break_loop();
     });
@@ -1025,8 +1019,7 @@ TEST_CASE("A request to a nonexistent server times out") {
         {"nameserver", "130.192.91.231"},
         {"attempts", "1"},
     });
-    auto r1 = reso.request("A", "www.neubot.org", [&](
-                           Response&& response) {
+    reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_query_name() == "www.neubot.org");
         REQUIRE(response.get_query_type() == "A");
         REQUIRE(response.get_query_class() == "IN");
@@ -1076,8 +1069,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     auto total = 0.0;
     auto count = 0;
     for (auto i = 0; i < 16; ++i) {
-        auto r = reso.request("A", "www.neubot.org", [&](
-                              Response&& response) {
+        reso.request("A", "www.neubot.org", [&](Response&& response) {
             if (response.get_evdns_status() == DNS_ERR_NONE) {
                 total += response.get_rtt();
                 count += 1;
@@ -1131,8 +1123,7 @@ TEST_CASE("Make sure we can override host and number of tries") {
         {"nameserver", "127.0.0.1:5353"},
         {"attempts", "2"},
     });
-    auto r = reso.request("A", "www.neubot.org", [&](
-                          Response response) {
+    reso.request("A", "www.neubot.org", [&](Response response) {
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
         // Assuming all the other fields are OK
