@@ -473,5 +473,18 @@ struct RequestSerializer {
     }
 };
 
+/*!
+ * \brief HTTP response.
+ */
+struct Response {
+    std::string response_line;      /*!< Original HTTP response line */
+    unsigned short http_major;      /*!< HTTP major version number */
+    unsigned short http_minor;      /*!< HTTP minor version number */
+    unsigned int status_code;       /*!< HTTP status code */
+    std::string reason;             /*!< HTTP reason string */
+    Headers headers;                /*!< Response headers */
+    IghtBuffer body;                /*!< Response body */
+};
+
 }}}  // namespaces
 #endif  // LIBIGHT_NET_HTTP_HPP
