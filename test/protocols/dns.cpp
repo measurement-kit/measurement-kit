@@ -715,8 +715,10 @@ TEST_CASE("We can override the default timeout") {
         REQUIRE(response.get_rtt() == 0.0);
 
         auto elapsed = ight_time_now() - ticks;
-        REQUIRE(elapsed > 0.4);
-        REQUIRE(elapsed < 0.6);
+        // This interval is wide so the unit tests does not fail when
+        // we run it using valgrind on slow machines
+        REQUIRE(elapsed > 0.3);
+        REQUIRE(elapsed < 0.7);
 
         ight_break_loop();
     });
