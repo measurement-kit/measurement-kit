@@ -254,6 +254,102 @@ TEST_CASE("Evdns errors are correctly mapped to OONI failures") {
             == "unknown failure 1026");
 }
 
+struct TransparentResponse : public Response {
+    using Response::Response;
+
+    int get_code_() {
+        return code;
+    }
+    void set_code_(int v) {
+        code = v;
+    }
+
+    double get_rtt_() {
+        return rtt;
+    }
+    void set_rtt_(double v) {
+        rtt = v;
+    }
+
+    int get_ttl_() {
+        return ttl;
+    }
+    void set_ttl_(int v) {
+        ttl = v;
+    }
+
+    std::vector<std::string> get_results_() {
+        return results;
+    }
+    void set_results_(std::vector<std::string> v) {
+        results = v;
+    }
+
+};
+
+TEST_CASE("Move semantic works for response") {
+
+    std::vector<std::string> vector{
+        "antani", "blinda",
+    };
+
+    SECTION("Move assignment") {
+
+        TransparentResponse r1;
+
+        REQUIRE(r1.get_code_() == DNS_ERR_UNKNOWN);
+        REQUIRE(r1.get_rtt_() == 0.0);
+        REQUIRE(r1.get_ttl_() == 0);
+        REQUIRE(r1.get_results_().size() == 0);
+
+        TransparentResponse r2;
+
+        r2.set_code_(DNS_ERR_NONE);
+        r2.set_rtt_(1.0);
+        r2.set_ttl_(32764);
+        r2.set_results_(vector);
+
+        r1 = std::move(r2);  /* Move assignment */
+
+        REQUIRE(r1.get_code_() == DNS_ERR_NONE);
+        REQUIRE(r1.get_rtt_() == 1.0);
+        REQUIRE(r1.get_ttl_() == 32764);
+        REQUIRE(r1.get_results_().size() == 2);
+        REQUIRE(r1.get_results_()[0] == "antani");
+        REQUIRE(r1.get_results_()[1] == "blinda");
+
+        REQUIRE(r2.get_code_() == DNS_ERR_UNKNOWN);
+        REQUIRE(r2.get_rtt_() == 0.0);
+        REQUIRE(r2.get_ttl_() == 0);
+        REQUIRE(r2.get_results_().size() == 0);
+    }
+
+    SECTION("Move constructor") {
+
+        TransparentResponse r2;
+        r2.set_code_(DNS_ERR_NONE);
+        r2.set_rtt_(1.0);
+        r2.set_ttl_(32764);
+        r2.set_results_(vector);
+
+        [](TransparentResponse r1) {
+            REQUIRE(r1.get_code_() == DNS_ERR_NONE);
+            REQUIRE(r1.get_rtt_() == 1.0);
+            REQUIRE(r1.get_ttl_() == 32764);
+            REQUIRE(r1.get_results_().size() == 2);
+            REQUIRE(r1.get_results_()[0] == "antani");
+            REQUIRE(r1.get_results_()[1] == "blinda");
+
+        }(std::move(r2));  /* Move constructor */
+
+        REQUIRE(r2.get_code_() == DNS_ERR_UNKNOWN);
+        REQUIRE(r2.get_rtt_() == 0.0);
+        REQUIRE(r2.get_ttl_() == 0);
+        REQUIRE(r2.get_results_().size() == 0);
+    }
+
+}
+
 //
 // Request unit test
 //
@@ -451,6 +547,54 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
 //
 // Not urgent, because it's tested by lots of other tests.
 //
+
+struct TransparentRequest : public Request {
+    using Request::Request;
+
+    RequestImpl *get_impl_() {
+        return impl;
+    }
+};
+
+TEST_CASE("Move semantic works for request") {
+
+    SECTION("Move assignment") {
+
+        TransparentRequest r1;
+
+        REQUIRE(r1.get_impl_() == nullptr);
+
+        TransparentRequest r2{"A", "www.neubot.org",
+                [](Response&&) {
+            /* nothing */
+        }};
+        auto p = r2.get_impl_();
+        REQUIRE(p != nullptr);
+
+        r1 = std::move(r2);  /* Move assignment */
+
+        REQUIRE(r1.get_impl_() == p);
+
+        REQUIRE(r2.get_impl_() == nullptr);
+    }
+
+    SECTION("Move constructor") {
+        TransparentRequest r2{"A", "www.neubot.org",
+                [](Response&&) {
+            /* nothing */
+        }};
+        auto p = r2.get_impl_();
+        REQUIRE(p != nullptr);
+
+        [p](TransparentRequest r1) {
+            REQUIRE(r1.get_impl_() == p);
+
+        }(std::move(r2));  /* Move constructor */
+
+        REQUIRE(r2.get_impl_() == nullptr);
+    }
+
+}
 
 //
 // Integration (or regress?) tests for Request.
@@ -694,6 +838,92 @@ TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
 TEST_CASE("Resolver::get_evdns_base() is idempotent") {
     auto reso = Resolver();
     REQUIRE(reso.get_evdns_base() == reso.get_evdns_base());
+}
+
+struct TransparentResolver : public Resolver {
+    using Resolver::Resolver;
+
+    ight::common::Settings get_settings_() {
+        return settings;
+    }
+
+    IghtLibevent *get_libevent_() {
+        return libevent;
+    }
+
+    IghtPoller *get_poller_() {
+        return poller;
+    }
+
+    evdns_base *get_evdns_base_() {
+        return base;
+    }
+
+};
+
+TEST_CASE("Move semantic works for resolver") {
+
+    IghtLibevent libevent;
+    IghtPoller poller;
+
+    SECTION("Move assignment") {
+
+        TransparentResolver r1;
+
+        REQUIRE(r1.get_settings_().size() == 0);
+        REQUIRE(r1.get_libevent_() == IghtGlobalLibevent::get());
+        REQUIRE(r1.get_poller_() == ight_get_global_poller());
+        REQUIRE(r1.get_evdns_base_() == nullptr);
+
+        TransparentResolver r2{{
+            {"nameserver", "8.8.8.8"},
+        }, &libevent, &poller};
+
+        (void) r2.get_evdns_base();  /* Trigger lazy alloc */
+
+        //REQUIRE(r2.get_settings_().size() == 1);
+        REQUIRE(r2.get_settings_()["nameserver"] == "8.8.8.8");
+        REQUIRE(r2.get_libevent_() == &libevent);
+        REQUIRE(r2.get_poller_() == &poller);
+        REQUIRE(r2.get_evdns_base_() != nullptr);
+
+        r1 = std::move(r2);  /* Move assignment */
+
+        //REQUIRE(r1.get_settings_().size() == 1);
+        REQUIRE(r1.get_settings_()["nameserver"] == "8.8.8.8");
+        REQUIRE(r1.get_libevent_() == &libevent);
+        REQUIRE(r1.get_poller_() == &poller);
+        REQUIRE(r1.get_evdns_base_() != nullptr);
+
+        REQUIRE(r2.get_settings_().size() == 0);
+        REQUIRE(r2.get_libevent_() == IghtGlobalLibevent::get());
+        REQUIRE(r2.get_poller_() == ight_get_global_poller());
+        REQUIRE(r2.get_evdns_base_() == nullptr);
+    }
+
+    SECTION("Move constructor") {
+
+        TransparentResolver r2{{
+            {"nameserver", "8.8.8.8"},
+        }, &libevent, &poller};
+
+        (void) r2.get_evdns_base();  /* Trigger lazy alloc */
+
+        [&libevent, &poller](TransparentResolver r1) {
+            //REQUIRE(r1.get_settings_().size() == 1);
+            REQUIRE(r1.get_settings_()["nameserver"] == "8.8.8.8");
+            REQUIRE(r1.get_libevent_() == &libevent);
+            REQUIRE(r1.get_poller_() == &poller);
+            REQUIRE(r1.get_evdns_base_() != nullptr);
+
+        }(std::move(r2));  /* Move constructor */
+
+        REQUIRE(r2.get_settings_().size() == 0);
+        REQUIRE(r2.get_libevent_() == IghtGlobalLibevent::get());
+        REQUIRE(r2.get_poller_() == ight_get_global_poller());
+        REQUIRE(r2.get_evdns_base_() == nullptr);
+    }
+
 }
 
 TEST_CASE("We can override the default timeout") {

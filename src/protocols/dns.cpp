@@ -20,11 +20,6 @@ using namespace ight::protocols::dns;
 // DNS response.
 //
 
-Response::Response(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
-{
-    // nothing
-}
-
 Response::Response(int code_, char type, int count, int ttl_, double started,
                    void *addresses, IghtLibevent *libevent, int start_from)
     : code(code_), ttl(ttl_)
