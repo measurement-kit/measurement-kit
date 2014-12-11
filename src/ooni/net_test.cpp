@@ -4,7 +4,8 @@
 using namespace ight::ooni::net_test;
 
 NetTest::NetTest(std::string input_filepath_, ight::common::Settings options_)
-  : input_filepath(input_filepath_), options(options_)
+  : input_filepath(input_filepath_), options(options_),
+    test_name("net_test"), test_version("0.0.1")
 {
 }
 

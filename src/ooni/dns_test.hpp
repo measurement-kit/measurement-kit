@@ -22,6 +22,12 @@ class DNSTest : public net_test::NetTest {
     protocols::dns::Resolver resolver;
 
 public:
+    DNSTest(std::string input_filepath_, ight::common::Settings options_) : 
+      net_test::NetTest(input_filepath_, options_) {
+        test_name = "dns_test";
+        test_version = "0.0.1";
+    };
+
     protocols::dns::Request query(QueryType query_type, QueryClass query_class,
         std::string query_name, std::string nameserver,
         std::function<void(protocols::dns::Response&&)>&& cb);

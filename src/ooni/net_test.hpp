@@ -94,8 +94,8 @@ public:
   ight::common::Settings options;
   InputGenerator* input;
 
-  const std::string test_name = "net_test";
-  const std::string test_version = "0.0.1";
+  std::string test_name;
+  std::string test_version;
 
   std::string probe_ip = "127.0.0.1";
   std::string probe_asn = "AS0";
