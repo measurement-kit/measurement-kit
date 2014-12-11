@@ -11,7 +11,7 @@ using namespace ight::ooni::dns_injection;
 TEST_CASE("The DNS Injection test should run") {
   ight_set_verbose(1);
   ight::common::Settings options;
-  options["nameserver"] = "8.8.8.8:52";
+  options["nameserver"] = "8.8.8.8:53";
   DNSInjection dns_injection("/tmp/foo.txt", options);
   std::cout << "Antani\n";
   dns_injection.begin([&](){
