@@ -1,6 +1,6 @@
-noinst_LTLIBRARIES += src/protocols/libprotocols.la
+noinst_LTLIBRARIES += src/protocols/libhttp.la
 
-src_protocols_libprotocols_la_SOURCES = \
-	src/protocols/dns.cpp
+src_protocols_libhttp_la_SOURCES = \
+	src/protocols/http.cpp
 
-libight_la_LIBADD += src/protocols/libprotocols.la
+libight_la_LIBADD += src/protocols/libhttp.la
