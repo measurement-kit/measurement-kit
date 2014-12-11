@@ -26,16 +26,11 @@ using namespace ight::protocols::dns;
 
 TEST_CASE("The default Response() constructor sets sensible values") {
     auto response = Response();
-    REQUIRE(response.get_query_name() == "");
-    REQUIRE(response.get_query_type() == "");
-    REQUIRE(response.get_query_class() == "");
     //
     // Not everything is empty, but an error is set (DNS_ERR_UNKNOWN)
     // and, hey, I think this is acceptable.
     //
     REQUIRE(response.get_reply_authoritative() == "unknown");
-    REQUIRE(response.get_resolver()[0] == "<default>");
-    REQUIRE(response.get_resolver()[1] == "53");
     REQUIRE(response.get_evdns_status() == DNS_ERR_UNKNOWN);
     REQUIRE(response.get_failure() == "unknown failure 66");
     REQUIRE(response.get_results().size() == 0);
@@ -54,8 +49,7 @@ TEST_CASE(
     auto ticks = ight_time_now() - 3.0;
 
     for (auto code = 0; code < 128; ++code) {
-        auto r = Response("www.google.com", "AAAA", "IN", "8.8.8.8",
-            code, DNS_IPv4_A, 0, 123, ticks, NULL);
+        auto r = Response(code, DNS_IPv4_A, 0, 123, ticks, NULL);
         switch (code) {
         case DNS_ERR_NONE:
         case DNS_ERR_FORMAT:
@@ -148,8 +142,7 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
     SECTION("IPv4: the overflow check behaves correctly") {
         auto last_good = INT_MAX / 4 + 1;
         for (auto x = last_good - 5; x <= last_good + 5; x += 1) {
-            auto r = Response("www.google.com", "A", "IN", "8.8.8.8",
-                DNS_ERR_NONE, DNS_IPv4_A,
+            auto r = Response(DNS_ERR_NONE, DNS_IPv4_A,
                 x,                            // value of count
                 123, 0.11, NULL, &libevent,
                 last_good - 10);              // value of start_from
@@ -164,8 +157,7 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
     }
 
     SECTION("IPv4: zero records are correctly handled by the overflow check") {
-        auto r = Response("www.google.com", "A", "IN", "8.8.8.8",
-            DNS_ERR_NONE, DNS_IPv4_A, 0, 123, 0.11, NULL);
+        auto r = Response(DNS_ERR_NONE, DNS_IPv4_A, 0, 123, 0.11, NULL);
         REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(r.get_results().size() == 0);
     }
@@ -173,8 +165,7 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
     SECTION("IPv6: the overflow check behaves correctly") {
         auto last_good = INT_MAX / 16 + 1;
         for (auto x = last_good - 5; x <= last_good + 5; x += 1) {
-            auto r = Response("www.google.com", "AAAA", "IN", "::1",
-                DNS_ERR_NONE, DNS_IPv6_AAAA,
+            auto r = Response(DNS_ERR_NONE, DNS_IPv6_AAAA,
                 x,                            // value of count
                 123, 0.11, NULL, &libevent,
                 last_good - 10);              // value of start_from
@@ -189,8 +180,7 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
     }
 
     SECTION("IPv6: zero records are correctly handled by the overflow check") {
-        auto r = Response("www.google.com", "AAAA", "IN", "::1",
-            DNS_ERR_NONE, DNS_IPv6_AAAA, 0, 123, 0.11, NULL);
+        auto r = Response(DNS_ERR_NONE, DNS_IPv6_AAAA, 0, 123, 0.11, NULL);
         REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(r.get_results().size() == 0);
     }
@@ -206,8 +196,8 @@ TEST_CASE("Response(...) deals with unlikely inet_ntop failures") {
         return (const char *) NULL;
     };
 
-    auto r = Response("www.google.com", "AAAA", "IN", "::1",
-        DNS_ERR_NONE, DNS_IPv6_AAAA, 16, 123, 0.11, NULL, &libevent);
+    auto r = Response(DNS_ERR_NONE, DNS_IPv6_AAAA, 16, 123, 0.11, NULL,
+                    &libevent);
     REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
     REQUIRE(r.get_results().size() == 0);
 
@@ -222,8 +212,7 @@ TEST_CASE("If the response type is invalid Response sets an error") {
         case DNS_PTR:
             continue;  // Skip the known-good cases
         }
-        auto r = Response("www.google.com", "AAAA", "IN", "::1",
-            DNS_ERR_NONE, type, 0, 123, 0.0, NULL);
+        auto r = Response(DNS_ERR_NONE, type, 0, 123, 0.0, NULL);
         REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
     }
 }
@@ -288,7 +277,7 @@ TEST_CASE("Request deals with failing evdns_base_resolve_ipv4") {
     REQUIRE_THROWS(Request("A", "www.google.com", [](
                                     Response&&) {
         /* nothing */
-    }, NULL, "", &libevent));
+    }, NULL, &libevent));
 }
 
 TEST_CASE("Request deals with failing evdns_base_resolve_ipv6") {
@@ -302,7 +291,7 @@ TEST_CASE("Request deals with failing evdns_base_resolve_ipv6") {
     REQUIRE_THROWS(Request("AAAA", "github.com", [](
                                     Response&&) {
         /* nothing */
-    }, NULL, "", &libevent));
+    }, NULL, &libevent));
 }
 
 TEST_CASE("Request deals with failing evdns_base_resolve_reverse") {
@@ -319,7 +308,7 @@ TEST_CASE("Request deals with failing evdns_base_resolve_reverse") {
     REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
                                     Response&&) {
         /* nothing */
-    }, NULL, "", &libevent));
+    }, NULL, &libevent));
 }
 
 TEST_CASE("Request deals with failing evdns_base_resolve_reverse_ipv6") {
@@ -336,7 +325,7 @@ TEST_CASE("Request deals with failing evdns_base_resolve_reverse_ipv6") {
     REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
                                     Response&&) {
         /* nothing */
-    }, NULL, "", &libevent));
+    }, NULL, &libevent));
 }
 
 TEST_CASE("Request deals with inet_pton returning 0") {
@@ -349,12 +338,12 @@ TEST_CASE("Request deals with inet_pton returning 0") {
     REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
                                     Response&&) {
         /* nothing */
-    }, NULL, "", &libevent));
+    }, NULL, &libevent));
 
     REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
                                     Response&&) {
         /* nothing */
-    }, NULL, "", &libevent));
+    }, NULL, &libevent));
 }
 
 TEST_CASE("Request deals with inet_pton returning -1") {
@@ -367,12 +356,12 @@ TEST_CASE("Request deals with inet_pton returning -1") {
     REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
                                     Response&&) {
         /* nothing */
-    }, NULL, "", &libevent));
+    }, NULL, &libevent));
 
     REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
                                     Response&&) {
         /* nothing */
-    }, NULL, "", &libevent));
+    }, NULL, &libevent));
 }
 
 TEST_CASE("Request raises if the query is unsupported") {
@@ -447,7 +436,7 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
             //
             failed = true;
             ight_break_loop();
-        }, NULL, "", &libevent);
+        }, NULL, &libevent);
 
     }  // This kills Request, but not the underlying RequestImpl
 
@@ -490,12 +479,7 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r1 = Request("A", "www.neubot.org", [&](
                                Response&& response) {
-        REQUIRE(response.get_query_name() == "www.neubot.org");
-        REQUIRE(response.get_query_type() == "A");
-        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "<default>");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
@@ -508,12 +492,7 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r2 = Request("REVERSE_A", "130.192.16.172", [&](
                                Response&& response) {
-        REQUIRE(response.get_query_name() == "130.192.16.172");
-        REQUIRE(response.get_query_type() == "PTR");
-        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "<default>");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
@@ -526,12 +505,7 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r3 = Request("AAAA", "ooni.torproject.org", [&](
                                Response&& response) {
-        REQUIRE(response.get_query_name() == "ooni.torproject.org");
-        REQUIRE(response.get_query_type() == "AAAA");
-        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "<default>");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() > 0);
@@ -551,12 +525,7 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r4 = Request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
                                [&](Response&& response) {
-        REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
-        REQUIRE(response.get_query_type() == "PTR");
-        REQUIRE(response.get_query_class() == "IN");
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "<default>");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
@@ -737,14 +706,8 @@ TEST_CASE("We can override the default timeout") {
     });
 
     auto ticks = ight_time_now();
-    auto r1 = reso.request("A", "www.neubot.org", [&](
-                           Response&& response) {
-        REQUIRE(response.get_query_name() == "www.neubot.org");
-        REQUIRE(response.get_query_type() == "A");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "130.192.91.231");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
         REQUIRE(response.get_failure() == "deferred_timeout_error");
@@ -752,8 +715,10 @@ TEST_CASE("We can override the default timeout") {
         REQUIRE(response.get_rtt() == 0.0);
 
         auto elapsed = ight_time_now() - ticks;
-        REQUIRE(elapsed > 0.4);
-        REQUIRE(elapsed < 0.6);
+        // This interval is wide so the unit tests does not fail when
+        // we run it using valgrind on slow machines
+        REQUIRE(elapsed > 0.3);
+        REQUIRE(elapsed < 0.7);
 
         ight_break_loop();
     });
@@ -770,14 +735,8 @@ TEST_CASE("We can override the default number of tries") {
     });
 
     auto ticks = ight_time_now();
-    auto r1 = reso.request("A", "www.neubot.org", [&](
-                           Response&& response) {
-        REQUIRE(response.get_query_name() == "www.neubot.org");
-        REQUIRE(response.get_query_type() == "A");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "130.192.91.231");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
         REQUIRE(response.get_failure() == "deferred_timeout_error");
@@ -815,14 +774,8 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto reso = Resolver();
 
-    auto r1 = reso.request("A", "www.neubot.org", [&](
-                           Response&& response) {
-        REQUIRE(response.get_query_name() == "www.neubot.org");
-        REQUIRE(response.get_query_type() == "A");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "<default>");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
@@ -833,14 +786,8 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
-                           Response&& response) {
-        REQUIRE(response.get_query_name() == "130.192.16.172");
-        REQUIRE(response.get_query_type() == "PTR");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("REVERSE_A", "130.192.16.172", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "<default>");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
@@ -851,14 +798,8 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
-                           Response&& response) {
-        REQUIRE(response.get_query_name() == "ooni.torproject.org");
-        REQUIRE(response.get_query_type() == "AAAA");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("AAAA", "ooni.torproject.org", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "<default>");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() > 0);
@@ -876,14 +817,9 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
-                           [&](Response&& response) {
-        REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
-        REQUIRE(response.get_query_type() == "PTR");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+            [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "<default>");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
@@ -914,14 +850,8 @@ TEST_CASE("A specific custom resolver works as expected") {
         {"nameserver", "8.8.4.4"},
     }));
 
-    auto r1 = reso.request("A", "www.neubot.org", [&](
-                           Response&& response) {
-        REQUIRE(response.get_query_name() == "www.neubot.org");
-        REQUIRE(response.get_query_type() == "A");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "8.8.4.4");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
@@ -932,14 +862,8 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r2 = reso.request("REVERSE_A", "130.192.16.172", [&](
-                           Response&& response) {
-        REQUIRE(response.get_query_name() == "130.192.16.172");
-        REQUIRE(response.get_query_type() == "PTR");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("REVERSE_A", "130.192.16.172", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "8.8.4.4");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
@@ -950,14 +874,8 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r3 = reso.request("AAAA", "ooni.torproject.org", [&](
-                           Response&& response) {
-        REQUIRE(response.get_query_name() == "ooni.torproject.org");
-        REQUIRE(response.get_query_type() == "AAAA");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("AAAA", "ooni.torproject.org", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "8.8.4.4");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() > 0);
@@ -975,14 +893,9 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     ight_loop();
 
-    auto r4 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
-                           [&](Response&& response) {
-        REQUIRE(response.get_query_name() == "2001:858:2:2:aabb:0:563b:1e28");
-        REQUIRE(response.get_query_type() == "PTR");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+            [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "8.8.4.4");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
@@ -996,7 +909,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     REQUIRE(!failed);
 }
 
-TEST_CASE("If the resolver dies, the requests are aborted") {
+TEST_CASE("If the resolver dies the requests are aborted") {
 
     //
     // This should work regardless of the network being up or down.
@@ -1006,14 +919,9 @@ TEST_CASE("If the resolver dies, the requests are aborted") {
     auto reso = new Resolver(ight::common::Settings({
         {"nameserver", "130.192.91.231"},
     }));
-    auto r1 = reso->request("A", "www.neubot.org", [&](
-                            Response&& response) {
-        REQUIRE(response.get_query_name() == "www.neubot.org");
-        REQUIRE(response.get_query_type() == "A");
-        REQUIRE(response.get_query_class() == "IN");
+
+    reso->request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "130.192.91.231");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_SHUTDOWN);
         REQUIRE(response.get_failure() == "unknown failure 68");
@@ -1024,11 +932,13 @@ TEST_CASE("If the resolver dies, the requests are aborted") {
 
     auto d1 = IghtDelayedCall(0.1, [&](void) {
         delete reso;  // Destroy the resolver and see what happens..
-                      // in theory the callback above should be called
+                      // in theory the request callback *should* be called
     });
 
     auto failed = false;
     auto d2 = IghtDelayedCall(1.0, [&](void) {
+        // This *should not* be called, since the request callback
+        // shold be called before than this one.
         failed = true;
         ight_break_loop();
     });
@@ -1057,14 +967,8 @@ TEST_CASE("A request to a nonexistent server times out") {
         {"nameserver", "130.192.91.231"},
         {"attempts", "1"},
     });
-    auto r1 = reso.request("A", "www.neubot.org", [&](
-                           Response&& response) {
-        REQUIRE(response.get_query_name() == "www.neubot.org");
-        REQUIRE(response.get_query_type() == "A");
-        REQUIRE(response.get_query_class() == "IN");
+    reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_resolver()[0] == "130.192.91.231");
-        REQUIRE(response.get_resolver()[1] == "53");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
         REQUIRE(response.get_failure() == "deferred_timeout_error");
@@ -1110,8 +1014,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     auto total = 0.0;
     auto count = 0;
     for (auto i = 0; i < 16; ++i) {
-        auto r = reso.request("A", "www.neubot.org", [&](
-                              Response&& response) {
+        reso.request("A", "www.neubot.org", [&](Response&& response) {
             if (response.get_evdns_status() == DNS_ERR_NONE) {
                 total += response.get_rtt();
                 count += 1;
@@ -1165,8 +1068,7 @@ TEST_CASE("Make sure we can override host and number of tries") {
         {"nameserver", "127.0.0.1:5353"},
         {"attempts", "2"},
     });
-    auto r = reso.request("A", "www.neubot.org", [&](
-                          Response response) {
+    reso.request("A", "www.neubot.org", [&](Response response) {
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
         // Assuming all the other fields are OK

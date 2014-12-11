@@ -25,13 +25,9 @@ Response::Response(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
     // nothing
 }
 
-Response::Response(std::string name_, std::string query_type_,
-                         std::string query_class_, std::string resolver_,
-                         int code_, char type, int count,
-                         int ttl_, double started, void *addresses,
-                         IghtLibevent *libevent, int start_from)
-    : name(name_), query_type(query_type_), query_class(query_class_),
-      resolver(resolver_), code(code_), ttl(ttl_)
+Response::Response(int code_, char type, int count, int ttl_, double started,
+                   void *addresses, IghtLibevent *libevent, int start_from)
+    : code(code_), ttl(ttl_)
 {
     assert(start_from >= 0);
 
@@ -229,11 +225,8 @@ class RequestImpl {
     bool cancelled = false;
     bool pending = false;
     double ticks = 0.0;  // just to initialize to something
-    std::string name;
-    std::string query_type;
-    std::string query_class;
-    std::string resolver;
     IghtLibevent *libevent;  // should not be NULL (this is asserted below)
+    bool autodel;  // Initialized by constructor
 
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
@@ -248,15 +241,24 @@ class RequestImpl {
                                              addresses, opaque);
         }
 
+        // Note: the case of `impl->cancelled` is the case in which this
+        // impl is owned by a Request object that exited from the scope
         if (impl->cancelled) {
             delete impl;
             return;
         }
         impl->pending = false;
 
-        impl->callback(Response(impl->name, impl->query_type,
-            impl->query_class, impl->resolver, code, type, count,
+        impl->callback(Response(code, type, count,
             ttl, impl->ticks, addresses));
+
+        // Note: this is the case in which the request was created
+        // with the automatic-delete feature, i.e., when the request
+        // was created by a Resolver.
+        if (impl->autodel) {
+            delete impl;
+            return;
+        }
     }
 
     in_addr *ipv4_pton(std::string address, in_addr *netaddr) {
@@ -273,17 +275,23 @@ class RequestImpl {
         return (netaddr);
     }
 
+    // Declared explicitly as private so one cannot delete this object
+    // and must instead call the cancel() method
+    ~RequestImpl() {
+        // Nothing to see here, move along :)
+    }
+
   public:
 
     /*!
      * \brief Issue an async DNS request.
+     * \param autodel_ Whether this request should autodelete self.
      * \see Request::Request().
      */
     RequestImpl(std::string query, std::string address,
-                   std::function<void(Response&&)>&& f,
-                   evdns_base *base, std::string resolver_,
-                   IghtLibevent *lev)
-            : callback(f), name(address), resolver(resolver_), libevent(lev) {
+                std::function<void(Response&&)>&& f, evdns_base *base,
+                IghtLibevent *lev, bool autodel_)
+            : callback(f), libevent(lev), autodel(autodel_) {
 
         assert(base != NULL && lev != NULL);
 
@@ -296,23 +304,17 @@ class RequestImpl {
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
-            query_type = "A";
-            query_class = "IN";
         } else if (query == "AAAA") {
             if (libevent->evdns_base_resolve_ipv6(base, address.c_str(),
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
-            query_type = "AAAA";
-            query_class = "IN";
         } else if (query == "REVERSE_A") {
             in_addr na;
             if (libevent->evdns_base_resolve_reverse(base, ipv4_pton(address,
                 &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
-            query_type = "PTR";
-            query_class = "IN";
         } else if (query == "REVERSE_AAAA") {
             in6_addr na;
             if (libevent->evdns_base_resolve_reverse_ipv6(base, ipv6_pton(
@@ -320,8 +322,6 @@ class RequestImpl {
                 == NULL) {
                 throw std::runtime_error("Resolver error");
             }
-            query_type = "PTR";
-            query_class = "IN";
         } else {
             throw std::runtime_error("Unsupported query");
         }
@@ -355,7 +355,7 @@ class RequestImpl {
 
 Request::Request(std::string query, std::string address,
                        std::function<void(Response&&)>&& func,
-                       evdns_base *dnsb, std::string resolver,
+                       evdns_base *dnsb,
                        IghtLibevent *libevent)
 {
     if (dnsb == NULL) {
@@ -365,7 +365,7 @@ Request::Request(std::string query, std::string address,
         libevent = IghtGlobalLibevent::get();
     }
     impl = new RequestImpl(query, address, std::move(func),
-                              dnsb, resolver, libevent);
+                           dnsb, libevent, false);
 }
 
 void
@@ -388,7 +388,12 @@ Resolver::cleanup(void)
     if (base != NULL) {
         //
         // Note: `1` means that pending requests are notified that
-        // this evdns_base is being closed.
+        // this evdns_base is being closed, i.e., their callback is
+        // called with error DNS_ERROR_SHUTDOWN.
+        //
+        // We need to call evdns_base_free() like this because
+        // this guarantees that request's callback is always invoked
+        // so RequestImpl:s are always freed (see request()).
         //
         libevent->evdns_base_free(base, 1);
         base = NULL;  // Idempotent
@@ -443,4 +448,19 @@ Resolver::get_evdns_base(void)
     }
 
     return base;
+}
+
+void
+Resolver::request(std::string query, std::string address,
+        std::function<void(Response&&)>&& func)
+{
+    //
+    // Note: here RequestImpl is created with autodel=true, meaning that
+    // it shall delete itself once its callback is called. The callback
+    // should always be called, either because of a successful response,
+    // or because of an error, or because the resolver is destroyed (this
+    // is guaranteed by the destructor's impl).
+    //
+    (void) new RequestImpl(query, address, std::move(func),
+            get_evdns_base(), libevent, true);
 }
