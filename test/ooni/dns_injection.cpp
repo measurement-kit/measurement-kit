@@ -13,11 +13,8 @@ TEST_CASE("The DNS Injection test should run") {
   ight::common::Settings options;
   options["nameserver"] = "8.8.8.8:53";
   DNSInjection dns_injection("/tmp/foo.txt", options);
-  std::cout << "Antani\n";
   dns_injection.begin([&](){
-    std::cout << "Antani2\n";
     dns_injection.end([](){
-      std::cout << "Antani3\n";
       ight_break_loop();
     });
   });

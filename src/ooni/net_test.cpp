@@ -6,22 +6,6 @@ using namespace ight::ooni::net_test;
 NetTest::NetTest(std::string input_filepath_, ight::common::Settings options_)
   : input_filepath(input_filepath_), options(options_)
 {
-  std::string report_file = "example_test_report.yaml";
-  std::string test_name = "light-meter";
-  std::string test_version = "0.0.1";
-  std::string probe_ip = "127.0.0.1";
-
-  time_t start_time = time(0);
-  std::map<std::string, std::string> options;
-  options["opt1"] = "value1";
-  options["opt2"] = "value2";
-  
-  file_report.test_name = test_name;
-  file_report.test_version = test_version;
-  file_report.start_time = start_time;
-  file_report.probe_ip = probe_ip;
-  file_report.options = options;
-  file_report.filename = report_file;
 }
 
 NetTest::NetTest(void) : NetTest::NetTest("", ight::common::Settings())
@@ -41,10 +25,25 @@ NetTest::input_generator()
   return new InputFileGenerator(input_filepath);
 }
 
+std::string
+NetTest::get_report_filename()
+{
+  std::string filename;
+  char buffer[100];
+  strftime(buffer, sizeof(buffer), "%FT%H%M%SZ",
+           gmtime(&file_report.start_time));
+  std::string iso_8601_date(buffer);
+  filename = "report-" + file_report.test_name + "-";
+  filename += iso_8601_date + ".yamloo";
+  return filename;
+}
+
 void
 NetTest::geoip_lookup()
 {
-  // TODO: implement
+  probe_ip = "127.0.0.1";
+  probe_asn = "AS0";
+  probe_cc = "ZZ";
 }
 
 void
@@ -95,6 +94,17 @@ NetTest::begin(std::function<void()>&& cb)
 void
 NetTest::write_header()
 {
+  file_report.test_name = test_name;
+  file_report.test_version = test_version;
+  time(&file_report.start_time);
+
+  file_report.options = options;
+  file_report.filename = get_report_filename();
+
+  file_report.probe_ip = probe_ip;
+  file_report.probe_cc = probe_cc;
+  file_report.probe_asn = probe_asn;
+
   file_report.open();
 }
 

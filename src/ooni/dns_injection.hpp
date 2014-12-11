@@ -15,6 +15,9 @@ class DNSInjection : public DNSTest {
   using DNSTest::DNSTest;
 
 public:
+    const std::string test_name = "dns_injection";
+    const std::string test_version = "0.0.1";
+
     void main(std::string input, ight::common::Settings options,
               std::function<void(ReportEntry)>&& cb);
 };

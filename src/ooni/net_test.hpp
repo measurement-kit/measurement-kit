@@ -71,6 +71,8 @@ class NetTest {
 
   void write_header();
 
+  std::string get_report_filename();
+
 protected:
   IghtLibevent *libevent = IghtGlobalLibevent::get();
 
@@ -91,6 +93,13 @@ public:
   ReportEntry entry;
   ight::common::Settings options;
   InputGenerator* input;
+
+  const std::string test_name = "net_test";
+  const std::string test_version = "0.0.1";
+
+  std::string probe_ip = "127.0.0.1";
+  std::string probe_asn = "AS0";
+  std::string probe_cc = "ZZ";
 
   NetTest(void);
 
