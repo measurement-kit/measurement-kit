@@ -163,3 +163,24 @@ TEST_CASE("HTTP stream receives connection errors") {
     });
     ight_loop();
 }
+
+TEST_CASE("HTTP Request serializer works as expected") {
+    auto serializer = http::RequestSerializer({
+        {"follow_redirects", "yes"},
+        {"url", "http://www.example.com/antani?clacsonato=yes#melandri"},
+        {"ignore_body", "yes"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.0"},
+    }, {
+        {"User-Agent", "Antani/1.0.0.0"},
+    }, "0123456789");
+    auto buffer = IghtBuffer();
+    serializer.serialize(buffer);
+    auto serialized = buffer.read<char>();
+    std::string expect = "GET /antani?clacsonato=yes HTTP/1.0\r\n";
+    expect += "User-Agent: Antani/1.0.0.0\r\n";
+    expect += "Content-Length: 10\r\n";
+    expect += "\r\n";
+    expect += "0123456789";
+    REQUIRE(serialized == expect);
+}

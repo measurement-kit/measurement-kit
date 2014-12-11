@@ -16,6 +16,8 @@
 #include <string>
 
 #include "common/error.h"
+#include "common/settings.hpp"
+#include "net/buffer.hpp"
 #include "net/connection.h"
 
 // Internally we use joyent/http-parser
@@ -411,6 +413,62 @@ public:
     void set_timeout(double timeo) {
         if (connection.set_timeout(timeo) != 0) {
             throw std::runtime_error("Cannot set timeout");
+        }
+    }
+};
+
+/*!
+ * \brief HTTP request serializer.
+ */
+struct RequestSerializer {
+
+    std::string method;         /*!< Request method */
+    std::string schema;         /*!< URL schema */
+    std::string address;        /*!< URL address */
+    std::string port;           /*!< URL port */
+    std::string pathquery;      /*!< URL path followed by optional query */
+    std::string protocol;       /*!< Request protocol */
+    Headers headers;            /*!< Request headers */
+    std::string body;           /*!< Request body */
+
+    /*!
+     * \brief Constructor.
+     * \param s A std::map with key values of the options supported:
+     *
+     *             {
+     *                 "follow_redirects": "yes|no",
+     *                 "url": std::string,
+     *                 "ignore_body": "yes|no",
+     *                 "method": "GET|DELETE|PUT|POST|HEAD|...",
+     *                 "http_version": "HTTP/1.1",
+     *                 "path": by default is taken from the url
+     *             }
+     * \param headers HTTP headers (moved for efficiency).
+     * \param body Request body (moved for efficiency).
+     */
+    RequestSerializer(ight::common::Settings s, Headers headers,
+                      std::string body);
+
+    RequestSerializer() {
+        // nothing
+    }
+
+    /*!
+     * \brief Serialize request.
+     * \param buff Buffer where to serialize request.
+     */
+    void serialize(IghtBuffer& buff) {
+        buff << method << " " << pathquery << " " << protocol << "\r\n";
+        for (auto& kv : headers) {
+            buff << kv.first << ": " << kv.second << "\r\n";
+        }
+        if (body != "") {
+            buff << "Content-Length: " << std::to_string(body.length())
+                   << "\r\n";
+        }
+        buff << "\r\n";
+        if (body != "") {
+            buff << body;
         }
     }
 };
