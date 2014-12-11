@@ -28,6 +28,7 @@ DNSTest::query(QueryType query_type, QueryClass query_class,
     auto r = resolver.request(
         query, query_name, 
         [=](ight::protocols::dns::Response&& response) {
+            ight_debug("Got a response!");
             YAML::Node query_entry;
             if (query_type == QueryType::A) {
               query_entry["query_type"] = "A";

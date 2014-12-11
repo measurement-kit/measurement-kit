@@ -17,6 +17,7 @@ enum class QueryType {A, NS, MD, MF, CNAME, SOA, MB, MG, MR, NUL, WKS, PTR,
 enum class QueryClass {IN, CS, CH, HS};
 
 class DNSTest : public net_test::NetTest {
+    using net_test::NetTest::NetTest;
 
     protocols::dns::Resolver resolver;
 

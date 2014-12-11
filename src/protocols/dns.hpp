@@ -12,6 +12,7 @@
 // DNS client functionality
 //
 
+#include "common/log.h"
 #include "common/poller.h"
 #include "common/settings.hpp"
 
@@ -375,6 +376,7 @@ class Resolver {
      */
     Request request(std::string query, std::string address,
                        std::function<void(Response&&)>&& func) {
+        ight_debug("Performing query %s to %s", query.c_str(), address.c_str());
         return Request(query, address, std::move(func), get_evdns_base(),
                        settings["nameserver"], libevent);
     }

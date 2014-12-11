@@ -8,6 +8,7 @@
 #include "report/file.hpp"
 #include "common/poller.h"
 #include "common/settings.hpp"
+#include "common/log.h"
 
 namespace ight {
 namespace ooni {
@@ -22,6 +23,9 @@ public:
 
   InputFileIterator(std::string input_filepath) {
     is = new std::ifstream(input_filepath);
+    if (!getline(*is, value)) {
+      eof = true;
+    }
   }
 
   ~InputFileIterator() {
@@ -46,10 +50,12 @@ public:
   }
 
   const std::string& operator*() const {
+    ight_debug("Output * %s", value.c_str());
     return value;
   }
 
   const std::string* operator->() const {
+    ight_debug("Output -> %s", value.c_str());
     return &value;
   }
 
@@ -60,6 +66,7 @@ public:
     if (!getline(*is, value)) {
       eof = true;
     }
+    ight_debug("Calling ++ %s", value.c_str());
     return *this;
   }
 

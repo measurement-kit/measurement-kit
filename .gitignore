@@ -68,6 +68,7 @@ test/echo_client_evbuf
 test/net/buffer
 test/net/connection
 test/net/dns
+test/ooni/dns_injection
 test/ooni/net_test
 test/protocols/dns
 test/report/file

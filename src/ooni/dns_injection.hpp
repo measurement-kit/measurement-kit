@@ -12,6 +12,7 @@ namespace ooni {
 namespace dns_injection {
 
 class DNSInjection : public DNSTest {
+  using DNSTest::DNSTest;
 
 public:
     void main(std::string input, ight::common::Settings options,

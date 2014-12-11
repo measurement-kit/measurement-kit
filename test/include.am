@@ -53,6 +53,12 @@ test_report_file_LDADD = libight.la
 check_PROGRAMS += test/report/file
 TESTS += test/report/file
 
+test_ooni_dns_injection_SOURCES = test/ooni/dns_injection.cpp
+test_ooni_dns_injection_LDADD = libight.la
+check_PROGRAMS += test/ooni/dns_injection
+TESTS += test/ooni/dns_injection
+
+
 test_ooni_net_test_SOURCES = test/ooni/net_test.cpp
 test_ooni_net_test_LDADD = libight.la
 check_PROGRAMS += test/ooni/net_test

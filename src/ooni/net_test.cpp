@@ -1,4 +1,5 @@
 #include "ooni/net_test.hpp"
+#include "common/log.h"
 #include <ctime>
 
 using namespace ight::ooni::net_test;
@@ -50,15 +51,21 @@ NetTest::geoip_lookup()
 void
 NetTest::run_next_measurement(std::function<void()>&& cb)
 {
+  ight_debug("Running next measurement");
   if (input == input.end()) {
+    ight_debug("Reached the end of the input");
     cb();
     return;
   }
   entry = ReportEntry(*input);
+  ight_debug("Calling setup");
   setup();
+  ight_debug("Running with input %s", (*input).c_str());
   main(*input, options, [&](ReportEntry entry) {
+      ight_debug("Tearing down");
       teardown();
       file_report.writeEntry(entry);
+      ight_debug("Written entry");
       ++input;
       run_next_measurement(std::move(cb));
   }); 
@@ -70,9 +77,11 @@ NetTest::begin(std::function<void()>&& cb)
   geoip_lookup();
   write_header();
   if (input_filepath != ""){
+    ight_debug("Found input file");
     input = input_file();
     run_next_measurement(std::move(cb));
   } else {
+    ight_debug("No input file");
     entry = ReportEntry();
     setup();
     main(options, [=](ReportEntry entry) {
