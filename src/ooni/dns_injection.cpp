@@ -8,8 +8,9 @@ DNSInjection::main(std::string input, ight::common::Settings options,
 {
     entry["injected"] = NULL;
     auto r = query(QueryType::A, QueryClass::IN,
-                   input, options["nameserver"], [&](
+                   input, options["nameserver"], [=](
                               protocols::dns::Response&& response) {
+        ight_debug("Got response to DNS Injection test");
         if (response.get_evdns_status() == DNS_ERR_NONE) {
             entry["injected"] = true;
         } else {

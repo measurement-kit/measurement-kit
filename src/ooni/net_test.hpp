@@ -14,74 +14,49 @@ namespace ight {
 namespace ooni {
 namespace net_test {
 
-class InputFileIterator: public std::iterator<std::input_iterator_tag, std::string,
-  std::ptrdiff_t, const std::string*, const std::string&>
+class InputGenerator {
+
+public:
+    virtual void
+    next(std::function<void(std::string)>&& new_line, 
+         std::function<void()>&& done) = 0;
+};
+
+class InputFileGenerator : public InputGenerator
 {
 public:
+  InputFileGenerator() {}
 
-  InputFileIterator() {}
-
-  InputFileIterator(std::string input_filepath) {
+  InputFileGenerator(std::string input_filepath) {
     is = new std::ifstream(input_filepath);
-    if (!getline(*is, value)) {
-      eof = true;
-    }
   }
 
-  ~InputFileIterator() {
+  ~InputFileGenerator() {
     delete is;  /* delete handles nullptr */
   }
 
-  InputFileIterator(InputFileIterator&) = delete;
-  InputFileIterator& operator=(InputFileIterator&) = delete;
-  InputFileIterator(InputFileIterator&&) = default;
-  InputFileIterator& operator=(InputFileIterator&&) = default;
-
-  InputFileIterator begin() {
-    InputFileIterator o;
-    o.eof = false;
-    return o;
-  }
-
-  InputFileIterator end() {
-    InputFileIterator o;
-    o.eof = true;
-    return o;
-  }
-
-  const std::string& operator*() const {
-    ight_debug("Output * %s", value.c_str());
-    return value;
-  }
-
-  const std::string* operator->() const {
-    ight_debug("Output -> %s", value.c_str());
-    return &value;
-  }
-
-  InputFileIterator& operator++() {
-    if (is == nullptr) {
-      throw std::runtime_error("Iterator not bound to any file");
+  InputFileGenerator(InputFileGenerator&) = delete;
+  InputFileGenerator& operator=(InputFileGenerator&) = delete;
+  InputFileGenerator(InputFileGenerator&&) = default;
+  InputFileGenerator& operator=(InputFileGenerator&&) = default;
+  
+  void
+  next(std::function<void(std::string)>&& new_line,
+       std::function<void()>&& done) override {
+    ight_debug("Getting next line");
+    std::string line;
+    if (*is && !std::getline(*is, line).eof()) {
+      ight_debug("Returning new line");
+      new_line(line);
+    } else {
+      ight_debug("EOF reached.");
+      done(); 
     }
-    if (!getline(*is, value)) {
-      eof = true;
-    }
-    ight_debug("Calling ++ %s", value.c_str());
-    return *this;
-  }
-
-  bool operator!=(const InputFileIterator& other) const {
-    return eof != other.eof;
-  }
-
-  bool operator==(const InputFileIterator& other) const {
-    return eof == other.eof;
   }
 
 private:
   std::ifstream *is = nullptr;
-  std::string value;
-  bool eof = false;
+
 };
 
 class NetTest {
@@ -90,7 +65,7 @@ class NetTest {
 
   IghtDelayedCall delayed_call;
 
-  void run_next_measurement(std::function<void()>&& cb);
+  void run_next_measurement(const std::function<void()>&& cb);
 
   void geoip_lookup();
 
@@ -115,7 +90,7 @@ protected:
 public:
   ReportEntry entry;
   ight::common::Settings options;
-  InputFileIterator input;
+  InputGenerator* input;
 
   NetTest(void);
 
@@ -128,7 +103,7 @@ public:
 
   NetTest(std::string input_filepath, ight::common::Settings options);
 
-  InputFileIterator input_file();
+  InputGenerator* input_generator();
 
   /*!
    * \brief Start iterating over the input.

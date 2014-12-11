@@ -57,6 +57,8 @@ DNSTest::query(QueryType query_type, QueryClass query_class,
             // TODO add support for bytes received
             // query_entry["bytes"] = response.get_bytes();
             entry["queries"].push_back(query_entry);
+            ight_debug("Callbacking");
             cb(std::move(response));
+            ight_debug("called.");
     });
 }
