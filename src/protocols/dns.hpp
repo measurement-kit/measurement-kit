@@ -31,9 +31,6 @@ class RequestImpl;  // Defined in net/dns.cpp
 /*!
  * \brief DNS response.
  *
- * The constructor of this class receives the fields returned by evdns and
- * converts them in a format suitable to compile OONI's reports.
- *
  * You should not construct this class directly. Instead, this is the
  * object that Request's callback provides you.
  *
@@ -41,10 +38,6 @@ class RequestImpl;  // Defined in net/dns.cpp
  */
 class Response {
 
-    std::string name;
-    std::string query_type;
-    std::string query_class;
-    std::string resolver;
     int code;
     double rtt;
     int ttl;
@@ -61,9 +54,6 @@ public:
 
     /*!
      * \brief Constructs a DNS response object.
-     * \param name the requested name (e.g., 'www.google.com').
-     * \param query_type the query type (e.g., 'A').
-     * \param query_class the query class (e.g., 'IN').
      * \param code evdns status code (e.g., DNS_ERR_NONE -- see
      *        [libevent's github](https://github.com/libevent/libevent/blob/master/include/event2/dns.h#L147) for the available status codes).
      * \param type evdns query type (e.g., DNS_IPv4_A -- see
@@ -77,11 +67,9 @@ public:
      *        record, rather than from zero, when processing the results
      *        (this is only used for implementing some test cases).
      */
-    Response(std::string name, std::string query_type,
-                std::string query_class, std::string resolver,
-                int code, char type, int count, int ttl, double started,
-                void *addresses, IghtLibevent *libevent = NULL,
-                int start_from = 0);
+    Response(int code, char type, int count, int ttl, double started,
+             void *addresses, IghtLibevent *libevent = NULL,
+             int start_from = 0);
 
     /*!
      * \brief Get the results returned by the query.
@@ -94,50 +82,12 @@ public:
     }
 
     /*!
-     * \brief Get the name that was queried (e.g., 'www.google.com').
-     */
-    std::string get_query_name(void) {
-        return name;
-    }
-
-    /*!
-     * \brief Get the type of the query (e.g., 'A').
-     */
-    std::string get_query_type(void) {
-        return query_type;
-    }
-
-    /*!
-     * \brief Get the class of the query (e.g., 'IN').
-     */
-    std::string get_query_class(void) {
-        return query_class;
-    }
-
-    /*!
      * \brief Get whether the response was authoritative.
      * \bug This method always returns "unknown" since there is no
      *      simple way to get the authoritative flag in evdns.
      */
     std::string get_reply_authoritative(void) {
         return "unknown";  /* TODO */
-    }
-
-    /*!
-     * \brief Get the resolver server address and port.
-     * \returns A vector containing two strings, the first string is the
-     *          resolver address, the second the resolver port.
-     */
-    std::vector<std::string> get_resolver(void) {
-        if (resolver == "") {
-            return {"<default>", "53"};
-        }
-        auto pos = resolver.find(":");
-        if (pos == std::string::npos) {
-            return {resolver, "53"};
-        }
-        return {resolver.substr(0, pos),
-            resolver.substr(pos + 1)};
     }
 
     /*!
@@ -236,20 +186,14 @@ class Request {
      *        default one. This parameter is not meant to be used directly
      *        by the programmer. To issue requests using a specific evdns_base
      *        with specific options, you should instead use a Resolver.
-     * \param resolver Optional address of the DNS nameserver. This address
-     *        is not processed by this class, who receives it only for passing
-     *        it to the Response constructor. To issue request towards a
-     *        specific nameserver, use a Resolver.
      * \param libevent Optional pointer to a mocked implementation of
      *        libight's libevent object (mainly useful to write unit tests).
      * \throws std::bad_alloc if some allocation fails.
      * \throws std::runtime_error if some edvns API fails.
-     * FIXME remove the resolver, because it is confusing...
      */
     Request(std::string query, std::string address,
-               std::function<void(Response&&)>&& func,
-               evdns_base *dnsb = NULL, std::string resolver = "",
-               IghtLibevent *libevent = NULL);
+            std::function<void(Response&&)>&& func, evdns_base *dnsb = NULL,
+            IghtLibevent *libevent = NULL);
 
     /*!
      * \brief Deleted copy constructor.
@@ -311,10 +255,14 @@ class Request {
  *         {"randomize_case", "1"},
  *     });
  *
- *     auto r2 = reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+ *     reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
  *             [](dns::Response&& response) {
  *         // Process the response
  *     });
+ *
+ * The request created this way is bound to the resolver object and is
+ * destroyed when the resolver is destroyed (in particular, the callback
+ * will be invoked with evdns code equal to DNS_ERR_SHUTDOWN).
  */
 class Resolver {
     ight::common::Settings settings;
@@ -371,15 +319,10 @@ class Resolver {
 
     /*!
      * \brief Issue a Request using this resolver.
-     * \remark This is just a wrapper that calls Request::Request().
      * \see Request::Request().
      */
-    Request request(std::string query, std::string address,
-                       std::function<void(Response&&)>&& func) {
-        ight_debug("Performing query %s to %s", query.c_str(), address.c_str());
-        return Request(query, address, std::move(func), get_evdns_base(),
-                       settings["nameserver"], libevent);
-    }
+    void request(std::string query, std::string address,
+                 std::function<void(Response&&)>&& func);
 
     /*!
      * \brief Default destructor.
