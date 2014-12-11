@@ -67,6 +67,7 @@ test/net/buffer
 test/net/connection
 test/net/dns
 test/ooni/nettest
+test/protocols/dns
 test/report/file
 test-driver
 *.log
