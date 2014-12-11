@@ -2,6 +2,7 @@
 # define LIBIGHT_OONI_DNS_TEST_HPP
 
 #include "protocols/dns.hpp"
+#include "ooni/net_test.hpp"
 
 namespace ight {
 namespace ooni {
@@ -15,7 +16,7 @@ enum class QueryType {A, NS, MD, MF, CNAME, SOA, MB, MG, MR, NUL, WKS, PTR,
                       HINFO, MINFO, MX, TXT};
 enum class QueryClass {IN, CS, CH, HS};
 
-class DNSTest : public nettest::NetTest {
+class DNSTest : public net_test::NetTest {
 
     protocols::dns::Resolver resolver;
 

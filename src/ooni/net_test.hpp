@@ -11,7 +11,7 @@
 
 namespace ight {
 namespace ooni {
-namespace nettest {
+namespace net_test {
 
 class InputFileIterator: public std::iterator<std::input_iterator_tag, std::string,
   std::ptrdiff_t, const std::string*, const std::string&>

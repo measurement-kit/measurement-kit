@@ -1,7 +1,7 @@
-#include "ooni/nettest.hpp"
+#include "ooni/net_test.hpp"
 #include <ctime>
 
-using namespace ight::ooni::nettest;
+using namespace ight::ooni::net_test;
 
 NetTest::NetTest(std::string input_filepath_, ight::common::Settings options_)
   : input_filepath(input_filepath_), options(options_)

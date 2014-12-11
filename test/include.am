@@ -53,10 +53,10 @@ test_report_file_LDADD = libight.la
 check_PROGRAMS += test/report/file
 TESTS += test/report/file
 
-test_ooni_nettest_SOURCES = test/ooni/nettest.cpp
-test_ooni_nettest_LDADD = libight.la
-check_PROGRAMS += test/ooni/nettest
-TESTS += test/ooni/nettest
+test_ooni_net_test_SOURCES = test/ooni/net_test.cpp
+test_ooni_net_test_LDADD = libight.la
+check_PROGRAMS += test/ooni/net_test
+TESTS += test/ooni/net_test
 
 test_protocols_dns_SOURCES = test/protocols/dns.cpp
 test_protocols_dns_LDADD = libight.la

@@ -2,7 +2,7 @@
 # define LIBIGHT_OONI_DNS_INJECTION_HPP
 
 #include "protocols/dns.hpp"
-#include "ooni/nettest.hpp"
+#include "ooni/net_test.hpp"
 #include "ooni/dns_test.hpp"
 
 using namespace ight::ooni::dns_test;
