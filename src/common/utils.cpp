@@ -18,7 +18,7 @@
 
 #include "ext/strtonum.h"
 #include "common/log.h"
-#include "common/utils.h"
+#include "common/utils.hpp"
 
 void
 ight_timeval_now(struct timeval *tv)
@@ -236,4 +236,37 @@ ight_socket_listen(evutil_socket_t filedesc, struct sockaddr_storage *storage,
 
 	ight_info("utils:ight_socket_listen - ok");
 	return (0);
+}
+
+// Stolen from:
+// http://stackoverflow.com/questions/440133/how-do-i-create-a-random-alpha-numeric-string-in-c
+std::string randomStr(size_t length)
+{
+    auto randchar = []() -> char
+    {
+        const char charset[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+        const size_t max_index = (sizeof(charset) - 1);
+        return charset[rand() % max_index];
+    };
+    std::string str(length, 0);
+    std::generate_n(str.begin(), length, randchar);
+    return str;
+}
+
+std::string randomSTR(size_t length)
+{
+    auto randchar = []() -> char
+    {
+        const char charset[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const size_t max_index = (sizeof(charset) - 1);
+        return charset[rand() % max_index];
+    };
+    std::string str(length, 0);
+    std::generate_n(str.begin(), length, randchar);
+    return str;
 }

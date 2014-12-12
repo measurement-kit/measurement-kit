@@ -11,7 +11,7 @@
 
 #include "common/error.h"
 #include "common/poller.h"
-#include "common/utils.h"
+#include "common/utils.hpp"
 
 #include <event2/bufferevent.h>
 #include <event2/event.h>

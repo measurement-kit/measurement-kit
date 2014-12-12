@@ -11,13 +11,10 @@
 struct sockaddr_storage;
 struct timeval;
 
+#include <string>
 #include <event2/util.h>
 
 #include <limits.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
  * Macros and functions useful to check whether sockets are valid. We
@@ -140,8 +137,8 @@ int ight_socket_connect(evutil_socket_t, struct sockaddr_storage *,
 int ight_socket_listen(evutil_socket_t, struct sockaddr_storage *,
     socklen_t);
 
-#ifdef __cplusplus
-}
-#endif
+std::string randomStr(size_t length);
+
+std::string randomSTR(size_t length);
 
 #endif  /* LIBIGHT_COMMON_UTILS_H */

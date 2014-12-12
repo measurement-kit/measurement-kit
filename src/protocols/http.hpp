@@ -17,6 +17,7 @@
 #include <string>
 
 #include "common/settings.hpp"
+#include "common/log.h"
 #include "common/error.h"
 #include "common/settings.hpp"
 #include "net/buffer.hpp"

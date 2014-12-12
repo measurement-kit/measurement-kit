@@ -8,7 +8,7 @@
 #ifndef LIBIGHT_NET_BUFFER_HPP
 # define LIBIGHT_NET_BUFFER_HPP
 
-#include "common/utils.h"
+#include "common/utils.hpp"
 
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>

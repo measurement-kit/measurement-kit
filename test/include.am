@@ -58,6 +58,10 @@ test_ooni_dns_injection_LDADD = libight.la
 check_PROGRAMS += test/ooni/dns_injection
 TESTS += test/ooni/dns_injection
 
+test_ooni_http_invalid_request_line_SOURCES = test/ooni/http_invalid_request_line.cpp
+test_ooni_http_invalid_request_line_LDADD = libight.la
+check_PROGRAMS += test/ooni/http_invalid_request_line
+TESTS += test/ooni/http_invalid_request_line
 
 test_ooni_net_test_SOURCES = test/ooni/net_test.cpp
 test_ooni_net_test_LDADD = libight.la

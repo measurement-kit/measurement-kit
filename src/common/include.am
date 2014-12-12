@@ -5,6 +5,6 @@ src_common_libcommon_la_SOURCES = \
 	src/common/log.c \
 	src/common/poller.cpp \
 	src/common/stringvector.cpp \
-	src/common/utils.c
+	src/common/utils.cpp
 
 libight_la_LIBADD += src/common/libcommon.la
