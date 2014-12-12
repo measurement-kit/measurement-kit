@@ -71,6 +71,7 @@ test/net/dns
 test/ooni/dns_injection
 test/ooni/net_test
 test/protocols/dns
+test/protocols/http
 test/report/file
 test-driver
 *.log

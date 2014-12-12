@@ -68,3 +68,8 @@ test_protocols_dns_SOURCES = test/protocols/dns.cpp
 test_protocols_dns_LDADD = libight.la
 check_PROGRAMS += test/protocols/dns
 TESTS += test/protocols/dns
+
+test_protocols_http_SOURCES = test/protocols/http.cpp
+test_protocols_http_LDADD = libight.la
+check_PROGRAMS += test/protocols/http
+TESTS += test/protocols/http

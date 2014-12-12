@@ -20,11 +20,6 @@ using namespace ight::protocols::dns;
 // DNS response.
 //
 
-Response::Response(void) : code(DNS_ERR_UNKNOWN), rtt(0.0), ttl(0)
-{
-    // nothing
-}
-
 Response::Response(int code_, char type, int count, int ttl_, double started,
                    void *addresses, IghtLibevent *libevent, int start_from)
     : code(code_), ttl(ttl_)
@@ -413,7 +408,7 @@ Resolver::get_evdns_base(void)
     //
 
     auto evb = poller->get_event_base();
-    if (settings["nameserver"] != "") {
+    if (settings.find("nameserver") != settings.end()) {
         if ((base = libevent->evdns_base_new(evb, 0)) == NULL) {
             throw std::bad_alloc();
         }
@@ -426,23 +421,26 @@ Resolver::get_evdns_base(void)
         throw std::bad_alloc();
     }
 
-    if (settings["attempts"] != "" && libevent->evdns_base_set_option(base,
+    if (settings.find("attempts") != settings.end() &&
+            libevent->evdns_base_set_option(base,
             "attempts", settings["attempts"].c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'attempts' option");
     }
-    if (settings["timeout"] != "" && libevent->evdns_base_set_option(
+    if (settings.find("timeout") != settings.end() &&
+            libevent->evdns_base_set_option(
             base, "timeout", settings["timeout"].c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'timeout' option");
     }
 
     // By default we don't randomize the query's case
-    if (settings["randomize_case"] == "") {
-        settings["randomize_case"] = "0";
+    std::string randomiz{"0"};
+    if (settings.find("randomize_case") != settings.end()) {
+        randomiz = settings["randomize_case"];
     }
     if (libevent->evdns_base_set_option(base, "randomize-case",
-            settings["randomize_case"].c_str()) != 0) {
+            randomiz.c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'randomize-case' option");
     }

@@ -38,19 +38,39 @@ class RequestImpl;  // Defined in net/dns.cpp
  */
 class Response {
 
-    int code;
-    double rtt;
-    int ttl;
+protected:
+    int code = 66 /* = DNS_ERR_UNKNOWN */;
+    double rtt = 0.0;
+    int ttl = 0;
 
     std::vector<std::string> results;
 
 public:
+    Response(Response& /*other*/) = delete;
+    Response& operator=(Response& /*other*/) = delete;
+
+    Response(Response&& other) {
+        std::swap(code, other.code);
+        std::swap(rtt, other.rtt);
+        std::swap(ttl, other.ttl);
+        std::swap(results, other.results);
+    }
+
+    Response& operator=(Response&& other) {
+        std::swap(code, other.code);
+        std::swap(rtt, other.rtt);
+        std::swap(ttl, other.ttl);
+        std::swap(results, other.results);
+        return *this;
+    }
 
     /*!
      * \brief Constructs an empty DNS response object.
      * \remark This is useful to implement the move semantic.
      */
-    Response(void);
+    Response(void) {
+        // Nothing to do here
+    }
 
     /*!
      * \brief Constructs a DNS response object.
@@ -169,9 +189,18 @@ public:
  * is "A" for IPv4 and is "AAAA" for IPv6.
  */
 class Request {
+
+protected:
     RequestImpl *impl = nullptr;
 
-  public:
+public:
+
+    /*!
+     * \brief Default constructor.
+     */
+    Request() {
+        // nothing to do
+    }
 
     /*!
      * \brief Start an async DNS request.
@@ -210,14 +239,19 @@ class Request {
     Request& operator=(Request& /*other*/) = delete;
 
     /*!
-     * \brief Default move constructor.
+     * \brief Move constructor.
      */
-    Request(Request&& /*other*/) = default;
+    Request(Request&& other) {
+        std::swap(impl, other.impl);
+    }
 
     /*!
-     * \brief Default move assignment constructor.
+     * \brief Move assignment.
      */
-    Request& operator=(Request&& /*other*/) = default;
+    Request& operator=(Request&& other) {
+        std::swap(impl, other.impl);
+        return *this;
+    }
 
     /*!
      * \brief Cancel the pending Request.
@@ -265,15 +299,16 @@ class Request {
  * will be invoked with evdns code equal to DNS_ERR_SHUTDOWN).
  */
 class Resolver {
+
+    void cleanup(void);
+
+protected:
     ight::common::Settings settings;
     IghtLibevent *libevent = IghtGlobalLibevent::get();
     IghtPoller *poller = ight_get_global_poller();
     evdns_base *base = NULL;
 
-    void cleanup(void);
-
-  public:
-
+public:
     /*!
      * \brief Default constructor.
      */
@@ -346,14 +381,25 @@ class Resolver {
     Resolver& operator=(Resolver& /*other*/) = delete;
 
     /*!
-     * \brief Default move constructor.
+     * \brief Move constructor.
      */
-    Resolver(Resolver&& /*other*/) = default;
+    Resolver(Resolver&& other) {
+        std::swap(settings, other.settings);
+        std::swap(libevent, other.libevent);
+        std::swap(poller, other.poller);
+        std::swap(base, other.base);
+    }
 
     /*!
-     * \brief Default move assignment.
+     * \brief Move assignment.
      */
-    Resolver& operator=(Resolver&& /*other*/) = default;
+    Resolver& operator=(Resolver&& other) {
+        std::swap(settings, other.settings);
+        std::swap(libevent, other.libevent);
+        std::swap(poller, other.poller);
+        std::swap(base, other.base);
+        return *this;
+    }
 };
 
 }}}  // namespace
