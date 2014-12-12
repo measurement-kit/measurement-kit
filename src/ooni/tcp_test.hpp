@@ -23,7 +23,7 @@ std::map<std::string,
          std::vector<std::function<void()>>> events;
 
 std::map<std::string,
-         std::vector<std::function<void(std::stringbuf)>>> events_sb;
+         std::vector<std::function<void(std::string)>>> events_sb;
 
 public:
     TCPClient(TCPTest* tcp_test_) : tcp_test(tcp_test_) {};
@@ -32,13 +32,13 @@ public:
     emit(const std::string event_name) const;
 
     void
-    emit(const std::string event_name, std::stringbuf data) const;
+    emit(const std::string event_name, std::string data) const;
     
     void
     on(const std::string event_name, std::function<void()>&&);
 
     void
-    on(const std::string event_name, std::function<void(std::stringbuf)>&&);
+    on(const std::string event_name, std::function<void(std::string)>&&);
 
     void
     write(std::stringbuf data, std::function<void()>&&);
