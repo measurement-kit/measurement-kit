@@ -8,7 +8,7 @@
 
 using namespace ight::ooni::dns_injection;
 
-TEST_CASE("The DNS Injection test should run") {
+TEST_CASE("The DNS Injection test should run with an input file of DNS hostnames") {
   ight_set_verbose(1);
   ight::common::Settings options;
   options["nameserver"] = "8.8.8.8:53";
@@ -20,3 +20,25 @@ TEST_CASE("The DNS Injection test should run") {
   });
   ight_loop();
 }
+
+TEST_CASE("The DNS Injection test should throw an exception if an invalid file path is given") {
+  ight_set_verbose(1);
+  ight::common::Settings options;
+  options["nameserver"] = "8.8.8.8:53";
+  REQUIRE_THROWS_AS(
+      DNSInjection dns_injection("/tmp/this-file-does-not-exist.txt", options),
+      InputFileDoesNotExist
+  );
+}
+
+TEST_CASE("The DNS Injection test should throw an exception if no file path is given") {
+  ight_set_verbose(1);
+  ight::common::Settings options;
+  options["nameserver"] = "8.8.8.8:53";
+  REQUIRE_THROWS_AS(
+      DNSInjection dns_injection("", options),
+      InputFileRequired
+  );
+}
+
+
