@@ -6,7 +6,7 @@ ReporterBase::getHeader() {
     YAML::Node header;
     header["test_name"] = test_name;
     header["test_version"] = test_version;
-    // this->header["start_time"] = test_name;
+    header["start_time"] = start_time;
     // this->header["options"] = options;
     header["probe_ip"] = probe_ip;
     // this->header["probe_asn"] = probe_ip;

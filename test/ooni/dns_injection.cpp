@@ -12,7 +12,7 @@ TEST_CASE("The DNS Injection test should run") {
   ight_set_verbose(1);
   ight::common::Settings options;
   options["nameserver"] = "8.8.8.8:53";
-  DNSInjection dns_injection("/tmp/foo.txt", options);
+  DNSInjection dns_injection("test/fixtures/hosts.txt", options);
   dns_injection.begin([&](){
     dns_injection.end([](){
       ight_break_loop();
