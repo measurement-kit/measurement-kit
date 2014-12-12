@@ -122,7 +122,7 @@ TEST_CASE("HTTP stream works as expected") {
         ight_debug("Connection made... sending request");
         stream << "GET /robots.txt HTTP/1.1\r\n"
                << "Host: www.google.com\r\n"
-               //<< "Connection: close\r\n"  // Cannot do this yet
+               << "Connection: close\r\n"
                << "\r\n";
         stream.on_flush([]() {
             ight_debug("Request sent... waiting for response");
@@ -223,6 +223,7 @@ TEST_CASE("HTTP Client works as expected") {
         {"url", "http://www.google.com/robots.txt"},
         {"method", "GET"},
         {"http_version", "HTTP/1.1"},
+        {"Connection", "close"},
     }, {
         {"Accept", "*/*"},
     }, "", [&](IghtError, http::Response&& response) {

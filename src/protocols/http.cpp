@@ -266,6 +266,22 @@ public:
     }
 
     /*!
+     * \brief Tell the parser we hit EOF.
+     * \remark This allows us to implement the body-ends-at-EOF semantic.
+     * \throws std::runtime_error This method throws std::runtime_error (or
+     *         a class derived from it) on several error conditions.
+     */
+    void eof() {
+        size_t n = http_parser_execute(&parser, &settings, NULL, 0);
+        if (parser.upgrade) {
+            throw UpgradeError("Unexpected UPGRADE");
+        }
+        if (n != 0) {
+            throw ParserError("Parser error");
+        }
+    }
+
+    /*!
      * \brief Destroy this parser.
      * \remark Actual destruction may be delayed if parser is currently
      *         parsing any incoming data.
@@ -348,6 +364,12 @@ void
 ResponseParser::feed(char c)
 {
     get_impl()->feed(c);
+}
+
+void
+ResponseParser::eof()
+{
+    get_impl()->eof();
 }
 
 //

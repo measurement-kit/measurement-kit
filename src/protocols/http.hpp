@@ -206,6 +206,14 @@ public:
      *         a class derived from it) on several error conditions.
      */
     void feed(char c);
+
+    /*!
+     * \brief Tell the parser we hit EOF.
+     * \remark This allows us to implement the body-ends-at-EOF semantic.
+     * \throws std::runtime_error This method throws std::runtime_error (or
+     *         a class derived from it) on several error conditions.
+     */
+    void eof();
 };
 
 /*!
@@ -220,6 +228,7 @@ public:
 class Stream {
     IghtConnection connection;
     ResponseParser parser;
+    std::function<void(IghtError)> error_handler;
 
     void connection_ready(void) {
         if (connection.enable_read() != 0) {
@@ -227,6 +236,18 @@ class Stream {
         }
         connection.on_data([&](evbuffer *data) {
             parser.feed(data);
+        });
+        //
+        // Intercept EOF error to implement body-ends-at-EOF semantic.
+        // TODO: convert error from integer to exception.
+        //
+        connection.on_error([&](IghtError error) {
+            if (error.error == 0) {
+                parser.eof();
+            }
+            if (error_handler) {
+                error_handler(error);
+            }
         });
     }
 
@@ -282,6 +303,16 @@ public:
             std::string family = "PF_UNSPEC") {
         connection = IghtConnection(family.c_str(), address.c_str(),
                 port.c_str());
+        //
+        // While the connection is in progress, just forward the
+        // error if needed, we'll deal with body-terminated-by-EOF
+        // semantic when we know we are actually connected.
+        //
+        connection.on_error([&](IghtError error) {
+            if (error_handler) {
+                error_handler(error);
+            }
+        });
     }
 
     /*!
@@ -405,7 +436,7 @@ public:
      * \param fn The `error event handler.
      */
     void on_error(std::function<void(IghtError)>&& fn) {
-        connection.on_error(std::move(fn));
+        error_handler = std::move(fn);
     }
 
     /*!
