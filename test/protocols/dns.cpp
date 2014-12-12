@@ -881,7 +881,7 @@ TEST_CASE("Move semantic works for resolver") {
 
         (void) r2.get_evdns_base();  /* Trigger lazy alloc */
 
-        //REQUIRE(r2.get_settings_().size() == 1);
+        REQUIRE(r2.get_settings_().size() == 1);
         REQUIRE(r2.get_settings_()["nameserver"] == "8.8.8.8");
         REQUIRE(r2.get_libevent_() == &libevent);
         REQUIRE(r2.get_poller_() == &poller);
@@ -889,7 +889,7 @@ TEST_CASE("Move semantic works for resolver") {
 
         r1 = std::move(r2);  /* Move assignment */
 
-        //REQUIRE(r1.get_settings_().size() == 1);
+        REQUIRE(r1.get_settings_().size() == 1);
         REQUIRE(r1.get_settings_()["nameserver"] == "8.8.8.8");
         REQUIRE(r1.get_libevent_() == &libevent);
         REQUIRE(r1.get_poller_() == &poller);
@@ -910,7 +910,7 @@ TEST_CASE("Move semantic works for resolver") {
         (void) r2.get_evdns_base();  /* Trigger lazy alloc */
 
         [&libevent, &poller](TransparentResolver r1) {
-            //REQUIRE(r1.get_settings_().size() == 1);
+            REQUIRE(r1.get_settings_().size() == 1);
             REQUIRE(r1.get_settings_()["nameserver"] == "8.8.8.8");
             REQUIRE(r1.get_libevent_() == &libevent);
             REQUIRE(r1.get_poller_() == &poller);
