@@ -8,6 +8,10 @@ class ReportEntry {
 public:
   YAML::Node report;
 
+  ReportEntry() {
+    report["input"] = "";
+  };
+
   ReportEntry(std::string input) {
     report["input"] = input;
   };
