@@ -11,7 +11,7 @@ using namespace ight::ooni::http_invalid_request_line;
 TEST_CASE("The HTTP Invalid Request Line test should run") {
   ight_set_verbose(1);
   ight::common::Settings options;
-  options["backend"] = "google.com";
+  options["backend"] = "http://google.com/";
   HTTPInvalidRequestLine http_invalid_request_line(options);
   http_invalid_request_line.begin([&](){
     http_invalid_request_line.end([](){
