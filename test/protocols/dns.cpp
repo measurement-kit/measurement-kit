@@ -16,7 +16,7 @@
 
 #include "common/check_connectivity.hpp"
 #include "common/log.h"
-#include "common/utils.h"
+#include "common/utils.hpp"
 
 using namespace ight::protocols::dns;
 

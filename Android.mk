@@ -23,7 +23,7 @@ LOCAL_SRC_FILES := \
     src/common/log.c \
     src/common/poller.cpp \
     src/common/stringvector.cpp \
-    src/common/utils.c \
+    src/common/utils.cpp \
     src/ext/strtonum.c \
     src/net/connection.cpp \
     src/net/protocol.cpp

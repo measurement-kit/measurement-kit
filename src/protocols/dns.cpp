@@ -8,7 +8,7 @@
 #include "protocols/dns.hpp"
 
 #include "common/log.h"
-#include "common/utils.h"
+#include "common/utils.hpp"
 
 #include <event2/dns.h>
 

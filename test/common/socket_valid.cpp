@@ -6,13 +6,13 @@
  */
 
 //
-// Tests for src/common/utils.h's ight_socket_valid()
+// Tests for src/common/utils.hpp's ight_socket_valid()
 //
 
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "common/utils.h"
+#include "common/utils.hpp"
 
 /*
  * Test Unix:
@@ -60,7 +60,7 @@ TEST_CASE("Negative integers are normalized as -1 on Unix") {
 
 /*
  * Test Win32 (using signed sockets as input, as used by libevent; see also
- * the long comment on this topic in `common/utils.h`):
+ * the long comment on this topic in `common/utils.hpp`):
  */
 
 static inline void

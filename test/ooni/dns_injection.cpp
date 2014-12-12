@@ -4,7 +4,7 @@
 #include "ooni/dns_injection.hpp"
 #include "common/poller.h"
 #include "common/log.h"
-#include "common/utils.h"
+#include "common/utils.hpp"
 
 using namespace ight::ooni::dns_injection;
 

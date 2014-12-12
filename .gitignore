@@ -70,6 +70,7 @@ test/net/connection
 test/net/dns
 test/ooni/dns_injection
 test/ooni/net_test
+test/ooni/http_invalid_request_line
 test/protocols/dns
 test/protocols/http
 test/report/file

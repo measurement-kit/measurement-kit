@@ -4,7 +4,7 @@
 #include "ooni/net_test.hpp"
 #include "common/poller.h"
 #include "common/log.h"
-#include "common/utils.h"
+#include "common/utils.hpp"
 
 using namespace ight::ooni::net_test;
 
