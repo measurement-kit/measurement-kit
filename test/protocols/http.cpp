@@ -141,8 +141,8 @@ TEST_CASE("HTTP stream works as expected") {
                 stream.close();
                 ight_break_loop();
             });
-            stream.on_body([&](std::string&& chunk) {
-                std::cout << chunk;
+            stream.on_body([&](std::string&& /*chunk*/) {
+                //std::cout << chunk;
             });
         });
     });
@@ -179,6 +179,7 @@ TEST_CASE("HTTP Request serializer works as expected") {
     auto serialized = buffer.read<char>();
     std::string expect = "GET /antani?clacsonato=yes HTTP/1.0\r\n";
     expect += "User-Agent: Antani/1.0.0.0\r\n";
+    expect += "Host: www.example.com\r\n";
     expect += "Content-Length: 10\r\n";
     expect += "\r\n";
     expect += "0123456789";
@@ -186,7 +187,7 @@ TEST_CASE("HTTP Request serializer works as expected") {
 }
 
 TEST_CASE("HTTP Request works as expected") {
-    ight_set_verbose(1);
+    //ight_set_verbose(1);
     auto r = http::Request({
         {"url", "http://www.google.com/robots.txt"},
         {"method", "GET"},
@@ -206,14 +207,15 @@ TEST_CASE("HTTP Request works as expected") {
             std::cout << kv.first << ": " << kv.second << "\r\n";
         }
         std::cout << "\r\n";
-        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << "[snip]\r\n";
         ight_break_loop();
     });
     ight_loop();
 }
 
 TEST_CASE("HTTP Client works as expected") {
-    ight_set_verbose(1);
+    //ight_set_verbose(1);
     auto client = http::Client();
     auto count = 0;
 
@@ -225,7 +227,8 @@ TEST_CASE("HTTP Client works as expected") {
         {"Accept", "*/*"},
     }, "", [&](IghtError, http::Response&& response) {
         std::cout << "Google:\r\n";
-        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << "[snip]\r\n";
         if (++count >= 3) {
             ight_break_loop();
         }
@@ -238,8 +241,8 @@ TEST_CASE("HTTP Client works as expected") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](IghtError, http::Response&& response) {
-        std::cout << "Neubot:\r\n";
-        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << "[snip]\r\n";
         if (++count >= 3) {
             ight_break_loop();
         }
@@ -252,8 +255,8 @@ TEST_CASE("HTTP Client works as expected") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](IghtError, http::Response&& response) {
-        std::cout << "TorProject:\r\n";
-        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << "[snip]\r\n";
         if (++count >= 3) {
             ight_break_loop();
         }
