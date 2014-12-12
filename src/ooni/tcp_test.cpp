@@ -14,12 +14,12 @@ TCPClient::emit(const std::string event_name) const
 }
 
 void
-TCPClient::emit(const std::string event_name, std::stringbuf data) const
+TCPClient::emit(const std::string event_name, std::string data) const
 {
     auto it = events_sb.find(event_name);
     if (it != events_sb.end()) {
       for (auto event : it->second) {
-        event(std::move(data));
+        event(data);
       }
     }
 }
@@ -31,7 +31,7 @@ TCPClient::on(const std::string event_name, std::function<void()>&& cb)
 }
 
 void
-TCPClient::on(const std::string event_name, std::function<void(std::stringbuf)>&& cb)
+TCPClient::on(const std::string event_name, std::function<void(std::string)>&& cb)
 {
     events_sb[event_name].push_back(std::move(cb));
 }
