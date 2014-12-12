@@ -211,3 +211,53 @@ TEST_CASE("HTTP Request works as expected") {
     });
     ight_loop();
 }
+
+TEST_CASE("HTTP Client works as expected") {
+    ight_set_verbose(1);
+    auto client = http::Client();
+    auto count = 0;
+
+    client.request({
+        {"url", "http://www.google.com/robots.txt"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&](IghtError, http::Response&& response) {
+        std::cout << "Google:\r\n";
+        std::cout << response.body.read<char>() << "\r\n";
+        if (++count >= 3) {
+            ight_break_loop();
+        }
+    });
+
+    client.request({
+        {"url", "http://www.neubot.org/robots.txt"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&](IghtError, http::Response&& response) {
+        std::cout << "Neubot:\r\n";
+        std::cout << response.body.read<char>() << "\r\n";
+        if (++count >= 3) {
+            ight_break_loop();
+        }
+    });
+
+    client.request({
+        {"url", "http://www.torproject.org/robots.txt"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&](IghtError, http::Response&& response) {
+        std::cout << "TorProject:\r\n";
+        std::cout << response.body.read<char>() << "\r\n";
+        if (++count >= 3) {
+            ight_break_loop();
+        }
+    });
+
+    ight_loop();
+}

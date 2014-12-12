@@ -12,6 +12,7 @@
 
 #include <functional>
 #include <map>
+#include <set>
 #include <stdexcept>
 #include <string>
 
@@ -463,11 +464,21 @@ struct RequestSerializer {
         for (auto& kv : headers) {
             buff << kv.first << ": " << kv.second << "\r\n";
         }
+
+        buff << "Host: " << address;
+        if (port != "80") {
+            buff << ":";
+            buff << port;
+        }
+        buff << "\r\n";
+
         if (body != "") {
             buff << "Content-Length: " << std::to_string(body.length())
                    << "\r\n";
         }
+
         buff << "\r\n";
+
         if (body != "") {
             buff << body;
         }
@@ -500,9 +511,25 @@ class Request {
     RequestSerializer serializer;
     Stream stream;
     Response response;
+    std::set<Request *> *parent = nullptr;
+
+    void emit_end(IghtError error, Response&& response) {
+        close();
+        callback(error, std::move(response));
+        //
+        // Self cleanup when we're owned by a Client.
+        //
+        // Note: we only detach ourself if we reach the final state, otherwise
+        // the Client will manage to detach this object.
+        //
+        if (parent != nullptr) {
+            parent->erase(this);
+            delete this;
+            return;
+        }
+    }
 
 public:
-
     /*!
      * \brief Constructor.
      * \param settings A std::map with key values of the options supported:
@@ -516,15 +543,16 @@ public:
      *                     }
      * \param headers Request headers.
      * \param callback Function invoked when request is complete.
+     * \param parent Pointer to parent to implement self clean up.
      */
     Request(ight::common::Settings settings, Headers headers,
-            std::string body, RequestCallback&& callback_)
-                : callback(callback_) {
+            std::string body, RequestCallback&& callback_,
+            std::set<Request *> *parent_ = nullptr)
+                : callback(callback_), parent(parent_) {
         serializer = RequestSerializer(settings, headers, body);
         stream = Stream::connect(serializer.address, serializer.port);
         stream.on_error([this](IghtError err) {
-            close();
-            callback(err, std::move(response));
+            emit_end(err, std::move(response));
         });
         stream.on_connect([this](void) {
             // TODO: improve the way in which we serialize the request
@@ -557,8 +585,7 @@ public:
 
             stream.on_end([&]() {
                 ight_debug("http: we have reached end of response");
-                close();
-                callback(IghtError(0), std::move(response));
+                emit_end(IghtError(0), std::move(response));
             });
 
         });
@@ -588,6 +615,48 @@ public:
     ~Request() {
         close();
     }
+};
+
+/*!
+ * \brief HTTP client.
+ */
+class Client {
+
+protected:
+    std::set<Request *> pending;
+
+public:
+    /*!
+     * \brief Issue HTTP request.
+     * \see Request::Request.
+     */
+    void request(ight::common::Settings settings, Headers headers,
+            std::string body, RequestCallback&& callback) {
+        auto r = new Request(settings, headers, body,
+                std::move(callback), &pending);
+        pending.insert(r);
+    }
+
+    Client() {
+        // nothing to do
+    }
+
+    ~Client() {
+        for (auto& r: pending) {
+            //
+            // This calls the stream destructor which deletes every
+            // proxy object and possibly delayes the deletion of the
+            // real parser and connection, just to avoid running
+            // code over already deleted structures.
+            //
+            delete r;
+        }
+        pending.clear();
+    }
+
+    //
+    // TODO: implement all the fancy methods
+    //
 };
 
 }}}  // namespaces
