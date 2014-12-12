@@ -8,6 +8,8 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#include <algorithm>
+
 #include <errno.h>
 #include <math.h>
 #include <string.h>
