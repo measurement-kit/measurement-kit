@@ -1,4 +1,5 @@
 #include "ooni/dns_injection.hpp"
+#include <sys/stat.h>
 
 using namespace ight::ooni::dns_injection;
 
