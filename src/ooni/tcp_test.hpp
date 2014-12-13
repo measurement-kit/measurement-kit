@@ -10,8 +10,6 @@ namespace ight {
 namespace ooni {
 namespace tcp_test {
 
-class TCPTest;
-
 class TCPClient : public ight::common::emitter::EmitterVoid,
         public ight::common::emitter::Emitter<std::string> {
 
@@ -20,10 +18,10 @@ class TCPClient : public ight::common::emitter::EmitterVoid,
     using ight::common::emitter::EmitterVoid::on;
     using ight::common::emitter::EmitterVoid::emit;
 
-TCPTest* tcp_test;
-
 public:
-    TCPClient(TCPTest* tcp_test_) : tcp_test(tcp_test_) {};
+    TCPClient() {
+        // TODO: implement
+    }
 
     void write(std::string data, std::function<void()>) {
         // TODO: implement
