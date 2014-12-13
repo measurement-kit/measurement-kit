@@ -2,6 +2,7 @@
 # define LIBIGHT_OONI_DNS_TEST_HPP
 
 #include "net/connection.h"
+#include "common/emitter.hpp"
 #include "common/settings.hpp"
 #include "ooni/net_test.hpp"
 
@@ -11,38 +12,21 @@ namespace tcp_test {
 
 class TCPTest;
 
-class TCPClient {
+class TCPClient : public ight::common::emitter::EmitterVoid,
+        public ight::common::emitter::Emitter<std::string> {
+
+    using ight::common::emitter::Emitter<std::string>::on;
+    using ight::common::emitter::Emitter<std::string>::emit;
+    using ight::common::emitter::EmitterVoid::on;
+    using ight::common::emitter::EmitterVoid::emit;
+
 TCPTest* tcp_test;
-
-// XXX there is probably a way to make the argument to the function be a
-// template.
-// See:
-// http://stackoverflow.com/questions/14784441/how-to-have-template-type-deduced-in-stdfunction-arguments-with-lambda
-// http://stackoverflow.com/questions/13753801/stdfunction-template-argument-resolution
-std::map<std::string,
-         std::vector<std::function<void()>>> events;
-
-std::map<std::string,
-         std::vector<std::function<void(std::string)>>> events_sb;
 
 public:
     TCPClient(TCPTest* tcp_test_) : tcp_test(tcp_test_) {};
 
     void
-    emit(const std::string event_name) const;
-
-    void
-    emit(const std::string event_name, std::string data) const;
-    
-    void
-    on(const std::string event_name, std::function<void()>&&);
-
-    void
-    on(const std::string event_name, std::function<void(std::string)>&&);
-
-    void
     write(std::stringbuf data, std::function<void()>&&);
-
 };
 
 
