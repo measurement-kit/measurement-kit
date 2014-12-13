@@ -26,7 +26,7 @@ class TCPConnect : public TCPTest {
 public:
     TCPConnect(std::string input_filepath_, ight::common::Settings options_) : 
       TCPTest(input_filepath_, options_) {
-        test_name = "dns_injection";
+        test_name = "tcp_connect";
         test_version = "0.0.1";
 
         if (input_filepath_ == "") {

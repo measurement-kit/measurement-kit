@@ -12,24 +12,24 @@ TCPTest::connect(ight::common::Settings options, std::function<void()>&& cb)
         options["host"] = "localhost";
     }
 
-    auto tcp_client = TCPClient(options["host"], options["port"]);
+    auto connection = IghtConnection("PF_UNSPEC", options["host"].c_str(),
+            options["port"].c_str());
 
     //
-    // FIXME The lifecycle of `tcp_client` *is not* bound to
-    // the lifecycle of `this` but we pass `this` as an argument
-    // to a `tcp_client` callback.
+    // FIXME The connection and this are bound in the
+    // callbacks below, but they have possibly different
+    // life cycles, which is &disaster.
     //
 
-    tcp_client.on("connect", [this, cb]() {
-        entry["connection"] = "success";
-        cb();
-    });
-
-    tcp_client.on("error", [this, cb](IghtError e) {
+    connection.on_error([cb, this](IghtError e) {
         entry["error_code"] = e.error;
         entry["connection"] = "failed";
         cb();
     });
+    connection.on_connect([this, cb]() {
+        entry["connection"] = "success";
+        cb();
+    });
 
-    return tcp_client;
+    return connection;
 };

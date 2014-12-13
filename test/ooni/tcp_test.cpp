@@ -11,8 +11,9 @@
 
 using namespace ight::ooni::tcp_test;
 
-TEST_CASE("The HTTP Invalid Request Line test should run")
+TEST_CASE("TCPTest test should run")
 {
+#if 0
     ight_set_verbose(1);
 
     auto client = TCPClient("www.torproject.org", "80");
@@ -44,6 +45,7 @@ TEST_CASE("The HTTP Invalid Request Line test should run")
     });
 
     ight_loop();
+#endif
 }
 
 TEST_CASE("TCPTest works as expected in a common case")

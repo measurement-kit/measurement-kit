@@ -12,6 +12,7 @@ namespace ight {
 namespace ooni {
 namespace tcp_test {
 
+#if 0
 class TCPClient : public ight::common::emitter::EmitterVoid,
         public ight::common::emitter::Emitter<std::string>,
         public ight::common::emitter::Emitter<IghtError> {
@@ -62,7 +63,9 @@ public:
         }
     }
 };
+#endif
 
+typedef IghtConnection TCPClient;           /* XXX */
 
 class TCPTest : public net_test::NetTest {
     using net_test::NetTest::NetTest;
