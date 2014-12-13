@@ -20,6 +20,12 @@ NetTest::NetTest(std::string input_filepath_) :
   // nothing
 }
 
+NetTest::~NetTest()
+{
+    delete input;
+    input = nullptr;
+}
+
 InputGenerator *
 NetTest::input_generator()
 {
@@ -78,6 +84,10 @@ NetTest::begin(std::function<void()>&& cb)
   write_header();
   if (input_filepath != ""){
     ight_debug("Found input file");
+    if (input != nullptr) {
+      delete input;
+      input = nullptr;
+    }
     input = input_generator();
     run_next_measurement(std::move(cb));
   } else {

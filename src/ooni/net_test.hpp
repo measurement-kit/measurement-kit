@@ -20,6 +20,9 @@ public:
     virtual void
     next(std::function<void(std::string)>&& new_line, 
          std::function<void()>&& done) = 0;
+
+    virtual ~InputGenerator() {
+    }
 };
 
 class InputFileGenerator : public InputGenerator
@@ -31,7 +34,7 @@ public:
     is = new std::ifstream(input_filepath);
   }
 
-  ~InputFileGenerator() {
+  virtual ~InputFileGenerator() {
     delete is;  /* delete handles nullptr */
   }
 
@@ -92,7 +95,7 @@ protected:
 public:
   ReportEntry entry;
   ight::common::Settings options;
-  InputGenerator* input;
+  InputGenerator* input = nullptr;
 
   std::string test_name;
   std::string test_version;
@@ -102,6 +105,8 @@ public:
   std::string probe_cc = "ZZ";
 
   NetTest(void);
+
+  ~NetTest(void);
 
   NetTest(NetTest&) = delete;
   NetTest& operator=(NetTest&) = delete;
