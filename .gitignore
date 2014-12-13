@@ -71,6 +71,8 @@ test/net/dns
 test/ooni/dns_injection
 test/ooni/net_test
 test/ooni/http_invalid_request_line
+test/ooni/tcp_connect
+test/ooni/tcp_test
 test/protocols/dns
 test/protocols/http
 test/report/file
@@ -78,3 +80,4 @@ test-driver
 *.log
 *.trs
 example_test_report.yaml
+*.yamloo
