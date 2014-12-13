@@ -25,8 +25,9 @@ TCPTest* tcp_test;
 public:
     TCPClient(TCPTest* tcp_test_) : tcp_test(tcp_test_) {};
 
-    void
-    write(std::stringbuf data, std::function<void()>&&);
+    void write(std::string data, std::function<void()>) {
+        // TODO: implement
+    }
 };
 
 
