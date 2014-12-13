@@ -78,3 +78,4 @@ test-driver
 *.log
 *.trs
 example_test_report.yaml
+*.yamloo
