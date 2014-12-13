@@ -27,6 +27,8 @@ public:
     using ight::common::emitter::EmitterVoid::on;
     using ight::common::emitter::EmitterVoid::emit;
 
+    TCPClient() {}
+
     TCPClient(std::string hostname, std::string port) {
         connection = IghtConnection("PF_UNSPEC", hostname.c_str(),
                 port.c_str());

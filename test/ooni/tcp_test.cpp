@@ -48,6 +48,8 @@ TEST_CASE("The HTTP Invalid Request Line test should run")
 
 TEST_CASE("TCPTest works as expected in a common case")
 {
+    ight_set_verbose(1);
+
     auto count = 0;
     TCPTest tcp_test("", {});
 

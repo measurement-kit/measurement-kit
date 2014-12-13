@@ -68,6 +68,11 @@ test_ooni_tcp_test_LDADD = libight.la
 check_PROGRAMS += test/ooni/tcp_test
 TESTS += test/ooni/tcp_test
 
+test_ooni_tcp_connect_SOURCES = test/ooni/tcp_connect.cpp
+test_ooni_tcp_connect_LDADD = libight.la
+check_PROGRAMS += test/ooni/tcp_connect
+TESTS += test/ooni/tcp_connect
+
 test_ooni_net_test_SOURCES = test/ooni/net_test.cpp
 test_ooni_net_test_LDADD = libight.la
 check_PROGRAMS += test/ooni/net_test
