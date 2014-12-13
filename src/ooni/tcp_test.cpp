@@ -3,27 +3,33 @@
 using namespace ight::ooni::tcp_test;
 
 TCPClient
-TCPTest::connect(ight::common::Settings options, std::function<void()>&& cb) {
+TCPTest::connect(ight::common::Settings options, std::function<void()>&& cb)
+{
     if (options["port"] == "") {
-      throw std::runtime_error("Port is required");
+        throw std::runtime_error("Port is required");
     }
     if (options["host"] == "") {
-      options["host"] = "localhost";
+        options["host"] = "localhost";
     }
 
-    TCPClient tcp_client(this);
+    auto tcp_client = TCPClient(options["host"], options["port"]);
 
-    connection = IghtConnection("PF_UNSPEC", options["host"].c_str(),
-                                options["port"].c_str());
-    connection.on_connect([=](){
-      entry["connection"] = "success";
-      tcp_client.emit("connection");
-      cb();
+    //
+    // FIXME The lifecycle of `tcp_client` *is not* bound to
+    // the lifecycle of `this` but we pass `this` as an argument
+    // to a `tcp_client` callback.
+    //
+
+    tcp_client.on("connect", [this, cb]() {
+        entry["connection"] = "success";
+        cb();
     });
-	  connection.on_error([=](IghtError&& e) {
-      entry["error_code"] = e.error;
-      entry["connection"] = "failed";
-      cb();
+
+    tcp_client.on("error", [this, cb](IghtError e) {
+        entry["error_code"] = e.error;
+        entry["connection"] = "failed";
+        cb();
     });
+
     return tcp_client;
 };

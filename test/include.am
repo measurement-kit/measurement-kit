@@ -63,6 +63,11 @@ test_ooni_http_invalid_request_line_LDADD = libight.la
 check_PROGRAMS += test/ooni/http_invalid_request_line
 TESTS += test/ooni/http_invalid_request_line
 
+test_ooni_tcp_test_SOURCES = test/ooni/tcp_test.cpp
+test_ooni_tcp_test_LDADD = libight.la
+check_PROGRAMS += test/ooni/tcp_test
+TESTS += test/ooni/tcp_test
+
 test_ooni_net_test_SOURCES = test/ooni/net_test.cpp
 test_ooni_net_test_LDADD = libight.la
 check_PROGRAMS += test/ooni/net_test
