@@ -551,8 +551,8 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
 struct TransparentRequest : public Request {
     using Request::Request;
 
-    RequestImpl *get_impl_() {
-        return impl;
+    SharedPointer<bool> get_cancelled_() {
+        return cancelled;
     }
 };
 
@@ -562,20 +562,19 @@ TEST_CASE("Move semantic works for request") {
 
         TransparentRequest r1;
 
-        REQUIRE(r1.get_impl_() == nullptr);
+        REQUIRE_THROWS(*r1.get_cancelled_());
 
         TransparentRequest r2{"A", "www.neubot.org",
                 [](Response&&) {
             /* nothing */
         }};
-        auto p = r2.get_impl_();
-        REQUIRE(p != nullptr);
+        REQUIRE(*r2.get_cancelled_() == false);
 
         r1 = std::move(r2);  /* Move assignment */
 
-        REQUIRE(r1.get_impl_() == p);
+        REQUIRE(*r1.get_cancelled_() == false);
 
-        REQUIRE(r2.get_impl_() == nullptr);
+        REQUIRE_THROWS(*r2.get_cancelled_());
     }
 
     SECTION("Move constructor") {
@@ -583,15 +582,14 @@ TEST_CASE("Move semantic works for request") {
                 [](Response&&) {
             /* nothing */
         }};
-        auto p = r2.get_impl_();
-        REQUIRE(p != nullptr);
+        REQUIRE(*r2.get_cancelled_() == false);
 
-        [p](TransparentRequest r1) {
-            REQUIRE(r1.get_impl_() == p);
+        [](TransparentRequest r1) {
+            REQUIRE(*r1.get_cancelled_() == false);
 
         }(std::move(r2));  /* Move constructor */
 
-        REQUIRE(r2.get_impl_() == nullptr);
+        REQUIRE_THROWS(*r2.get_cancelled_());
     }
 
 }
