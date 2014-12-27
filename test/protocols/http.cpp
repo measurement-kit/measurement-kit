@@ -214,6 +214,34 @@ TEST_CASE("HTTP Request works as expected") {
     ight_loop();
 }
 
+TEST_CASE("HTTP Request correctly receives errors") {
+    ight_set_verbose(1);
+    auto r = http::Request({
+        {"url", "http://nexa.polito.it:81/robots.txt"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&](IghtError error, http::Response&& response) {
+        if (error.error) {
+            std::cout << "Error: " << error.error << "\r\n";
+            ight_break_loop();
+            return;
+        }
+        std::cout << "HTTP/" << response.http_major << "."
+                << response.http_minor << " " << response.status_code
+                << " " << response.reason << "\r\n";
+        for (auto& kv : response.headers) {
+            std::cout << kv.first << ": " << kv.second << "\r\n";
+        }
+        std::cout << "\r\n";
+        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << "[snip]\r\n";
+        ight_break_loop();
+    });
+    ight_loop();
+}
+
 TEST_CASE("HTTP Client works as expected") {
     //ight_set_verbose(1);
     auto client = http::Client();
