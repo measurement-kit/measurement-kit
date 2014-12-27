@@ -683,6 +683,27 @@ TEST_CASE("The system resolver works as expected") {
     REQUIRE(!failed);
 }
 
+class SafeToDeleteRequestInItsOwnCallback {
+    Request request;
+public:
+    SafeToDeleteRequestInItsOwnCallback() {
+        request = Request("A", "nexa.polito.it", [this](Response&&) {
+            // This assignment should trigger the original request's destructor
+            request = Request("AAAA", "nexa.polito.it", [this](Response&&) {
+                ight_break_loop();
+            });
+        });
+    }
+};
+
+TEST_CASE("It is safe to clear a request in its own callback") {
+    if (ight::Network::is_down()) {
+        return;
+    }
+    auto d = SafeToDeleteRequestInItsOwnCallback();
+    ight_loop();
+}
+
 //
 // Resolver unit tests.
 //
