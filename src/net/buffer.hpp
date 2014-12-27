@@ -168,7 +168,8 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 	 * appropriate, because it is surprising to store binary data into
 	 * an std::string, which is designed to hold text).
 	 */
-	template<typename T> std::basic_string<T> read(size_t upto) {
+	template<typename T> std::basic_string<T> readpeek(bool ispeek,
+			size_t upto) {
 		size_t nbytes = 0;
 		std::basic_string<T> out;
 
@@ -191,13 +192,34 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		 * We do this after foreach() because we are not supposed
 		 * to modify the underlying `evbuf` during foreach().
 		 */
-		discard(nbytes);
+		if (!ispeek)
+			discard(nbytes);
 
 		return (out);
 	}
 
+	template<typename T> std::basic_string<T> read(size_t upto) {
+		return readpeek<T>(false, upto);
+        }
+
 	template<typename T> std::basic_string<T> read(void) {
 		return (read<T>(length()));
+	}
+
+	std::string read(size_t upto) {
+		return read<char>(upto);
+	}
+
+	std::string read() {
+		return read<char>();
+	}
+
+	std::string peek(size_t upto) {
+		return readpeek<char>(true, upto);
+	}
+
+	std::string peek() {
+		return peek(length());
 	}
 
 	/*
@@ -208,6 +230,10 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		if (n > length())
 			return (std::basic_string<T>());	/* Empty str */
 		return (read<T>(n));
+	}
+
+	std::string readn(size_t n) {
+		return readn<char>(n);
 	}
 
 	std::tuple<int, std::string> readline(size_t maxline) {
@@ -274,6 +300,12 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		if (evbuffer_add(evbuf, buf, count) != 0)
 			throw std::runtime_error("evbuffer_add failed");
 	}
+
+	void write_uint8(uint8_t);
+
+	void write_uint16(uint16_t);
+
+	void write_uint32(uint32_t);
 
 	void write_rand(size_t count) {
 		if (count == 0)
