@@ -329,7 +329,7 @@ Request::Request(std::string query, std::string address,
     if (libevent == NULL) {
         libevent = IghtGlobalLibevent::get();
     }
-    cancelled = std::make_shared<bool>();
+    cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
     RequestImpl::issue(query, address, std::move(func),
                        dnsb, libevent, cancelled);
@@ -429,7 +429,7 @@ Resolver::request(std::string query, std::string address,
     // or because of an error, or because the resolver is destroyed (this
     // is guaranteed by the destructor's impl).
     //
-    auto cancelled = std::make_shared<bool>();
+    auto cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
     RequestImpl::issue(query, address, std::move(func),
                        get_evdns_base(), libevent, cancelled);
