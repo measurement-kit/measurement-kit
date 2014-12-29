@@ -8,6 +8,7 @@
 #ifndef LIBIGHT_POLLER_H
 # define LIBIGHT_POLLER_H
 
+#include "common/constraints.hpp"
 #include "common/libevent.h"
 
 #include <functional>
@@ -57,7 +58,8 @@ class IghtDelayedCall {
 	}
 };
 
-class IghtPoller {
+class IghtPoller : public ight::common::constraints::NonCopyable,
+		public ight::common::constraints::NonMovable {
 
 	event_base *base;
 	evdns_base *dnsbase;
@@ -93,14 +95,6 @@ class IghtPoller {
 	void loop(void);
 
 	void break_loop(void);
-
-	/*
-	 * No copy and no move.
-	 */
-	IghtPoller(const IghtPoller&) = delete;
-	IghtPoller& operator=(const IghtPoller& other) = delete;
-	IghtPoller(const IghtPoller&&) = delete;
-	IghtPoller& operator=(const IghtPoller&& other) = delete;
 };
 
 struct IghtGlobalPoller {
