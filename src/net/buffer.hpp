@@ -8,6 +8,7 @@
 #ifndef LIBIGHT_NET_BUFFER_HPP
 # define LIBIGHT_NET_BUFFER_HPP
 
+#include "common/constraints.hpp"
 #include "common/utils.hpp"
 
 #include <event2/bufferevent.h>
@@ -27,7 +28,8 @@
 #endif
 
 // Helper class for IghtBuffer (see below)
-class IghtIovec {
+class IghtIovec : public ight::common::constraints::NonCopyable,
+		public ight::common::constraints::NonMovable  {
 	evbuffer_iovec *iov = NULL;
 	size_t count = 0;
 
@@ -42,19 +44,6 @@ class IghtIovec {
 
 	~IghtIovec(void) {
 		ight_xfree(iov);
-	}
-
-	IghtIovec(IghtIovec&) = delete;
-	IghtIovec& operator=(IghtIovec&) = delete;
-
-	IghtIovec(IghtIovec&& other) {
-		std::swap(iov, other.iov);
-		std::swap(count, other.count);
-	}
-	IghtIovec& operator=(IghtIovec&& other) {
-		std::swap(iov, other.iov);
-		std::swap(count, other.count);
-		return (*this);
 	}
 
 	evbuffer_iovec *operator[](int i) {
@@ -148,7 +137,7 @@ class IghtBuffer {
 		if (required_size == 0)
 			return;
 
-		auto iov = IghtIovec(required_size);
+		IghtIovec iov(required_size);
 		auto used = evbuffer_peek(evbuf, -1, NULL,
 		    iov.get_base(), iov.get_length());
 		if (used != required_size)
@@ -290,7 +279,7 @@ class IghtBuffer {
 		if (count == 0)
 			return;
 
-		auto iov = IghtIovec(IOV_MAX);
+		IghtIovec iov(IOV_MAX);
 		int i, n_extents;
 
 		n_extents = evbuffer_reserve_space(evbuf, count,
