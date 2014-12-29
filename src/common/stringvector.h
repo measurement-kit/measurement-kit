@@ -9,6 +9,8 @@
 # define LIBIGHT_STRINGVECTOR_H
 # ifdef __cplusplus
 
+#include "common/constraints.hpp"
+
 /*-
  * StringVector
  *   A vector of strings that is used to implement the resolver.
@@ -16,7 +18,8 @@
 
 class IghtPoller;
 
-struct IghtStringVector {
+struct IghtStringVector : public ight::common::constraints::NonCopyable,
+		public ight::common::constraints::NonMovable {
     private: 
 	char **base;
 	size_t count;
