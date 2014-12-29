@@ -98,20 +98,10 @@ class IghtPoller : public ight::common::constraints::NonCopyable,
 };
 
 struct IghtGlobalPoller {
-
-	IghtGlobalPoller(void) {
-		/* nothing */
-	}
-
 	static IghtPoller *get(void) {
 		static IghtPoller singleton;
 		return (&singleton);
 	}
-
-	IghtGlobalPoller(IghtGlobalPoller&) = delete;
-	IghtGlobalPoller& operator=(IghtGlobalPoller&) = delete;
-	IghtGlobalPoller(IghtGlobalPoller&&) = delete;
-	IghtGlobalPoller& operator=(IghtGlobalPoller&&) = delete;
 };
 
 /*
