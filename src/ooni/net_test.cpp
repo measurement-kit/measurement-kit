@@ -145,7 +145,7 @@ NetTest::teardown() {
 void
 NetTest::main(ight::common::Settings,
               std::function<void(ReportEntry)>&& cb) {
-  delayed_call = IghtDelayedCall(1.25, [=](void) {
+  delayed_call = std::make_shared<IghtDelayedCall>(1.25, [=](void) {
     ReportEntry entry;
     cb(entry);
   });
@@ -154,7 +154,7 @@ NetTest::main(ight::common::Settings,
 void
 NetTest::main(std::string, ight::common::Settings,
               std::function<void(ReportEntry)>&& cb) {
-  delayed_call = IghtDelayedCall(1.25, [=](void) {
+  delayed_call = std::make_shared<IghtDelayedCall>(1.25, [=](void) {
     ReportEntry entry;
     cb(entry);
   });

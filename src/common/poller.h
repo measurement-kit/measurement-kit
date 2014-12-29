@@ -13,11 +13,13 @@
 
 #include <functional>
 
-class IghtDelayedCall {
+class IghtDelayedCall : public ight::common::constraints::NonCopyable,
+		public ight::common::constraints::NonMovable {
 
 	/*
-	 * The function must be a pointer and cannot be an object, because
-	 * we need to pass a stable pointer to event_new().
+	 * A previous implementation of this class required `func` to
+	 * be a pointer. The current implementation does not. So we can
+	 * rewrite the code to use an object rather than a pointer.
 	 */
 	std::function<void(void)> *func = NULL;
 	event *evp = NULL;
@@ -27,35 +29,9 @@ class IghtDelayedCall {
 	static void dispatch(evutil_socket_t, short, void *);
 
     public:
-	IghtDelayedCall(void) {
-		/* nothing */
-	}
-
 	IghtDelayedCall(double, std::function<void(void)>&&,
 	    IghtLibevent *libevent = NULL, event_base *evbase = NULL);
 	~IghtDelayedCall(void);
-
-	/*
-	 * It does not have sense to make a copy of this class, since we
-	 * don't want to manage/refcount multiple copies of `evp`.
-	 */
-	IghtDelayedCall(const IghtDelayedCall&) = delete;
-	IghtDelayedCall& operator=(const IghtDelayedCall& other) = delete;
-
-	/*
-	 * Enable move semantic.
-	 */
-	IghtDelayedCall(IghtDelayedCall&& d) {
-		std::swap(this->libevent, d.libevent);
-		std::swap(this->evp, d.evp);
-		std::swap(this->func, d.func);
-	}
-	IghtDelayedCall& operator=(IghtDelayedCall&& d) {
-		std::swap(this->libevent, d.libevent);
-		std::swap(this->evp, d.evp);
-		std::swap(this->func, d.func);
-		return (*this);
-	}
 };
 
 class IghtPoller : public ight::common::constraints::NonCopyable,
