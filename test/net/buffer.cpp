@@ -22,8 +22,8 @@ TEST_CASE("The constructor works correctly", "[IghtBuffer]") {
 TEST_CASE("Insertion/extraction work correctly for evbuffer") {
 
 	auto buff = IghtBuffer();
-	auto source = IghtEvbuffer();
-	auto dest = IghtEvbuffer();
+	IghtEvbuffer source;
+	IghtEvbuffer dest;
 	auto sa = std::string(65536, 'A');
 	auto r = std::string();
 
@@ -104,7 +104,7 @@ TEST_CASE("Foreach works correctly", "[IghtBuffer]") {
 	 * Initialize the source evbuffer.
 	 */
 
-	auto evbuf = IghtEvbuffer();
+	IghtEvbuffer evbuf;
 
 	auto sa = std::string(512, 'A');
 	auto sb = std::string(512, 'B');
