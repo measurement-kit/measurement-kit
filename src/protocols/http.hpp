@@ -270,6 +270,7 @@ public:
     Stream(Stream&& other) {
         std::swap(connection, other.connection);
         std::swap(parser, other.parser);
+        std::swap(error_handler, other.error_handler);
     }
 
     /*!
@@ -278,6 +279,7 @@ public:
     Stream& operator=(Stream&& other) {
         std::swap(connection, other.connection);
         std::swap(parser, other.parser);
+        std::swap(error_handler, other.error_handler);
         return *this;
     }
 
