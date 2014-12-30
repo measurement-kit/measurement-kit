@@ -231,25 +231,24 @@ class Stream {
     ResponseParser parser;
     std::function<void(IghtError)> error_handler;
 
-    void handle_error(IghtError error) {
-        //
-        // Intercept EOF error to implement body-ends-at-EOF semantic.
-        // TODO: convert error from integer to exception.
-        //
-        if (error.error == 0) {
-            parser.eof();
-        }
-        if (error_handler) {
-            error_handler(error);
-        }
-    }
-
     void connection_ready(void) {
         if (connection.enable_read() != 0) {
             throw std::runtime_error("Cannot enable read");
         }
         connection.on_data([&](evbuffer *data) {
             parser.feed(data);
+        });
+        //
+        // Intercept EOF error to implement body-ends-at-EOF semantic.
+        // TODO: convert error from integer to exception.
+        //
+        connection.on_error([&](IghtError error) {
+            if (error.error == 0) {
+                parser.eof();
+            }
+            if (error_handler) {
+                error_handler(error);
+            }
         });
     }
 
@@ -272,29 +271,6 @@ public:
         std::swap(connection, other.connection);
         std::swap(parser, other.parser);
         std::swap(error_handler, other.error_handler);
-
-        //
-        // FIXME Since this object is being moved, we need to change
-        //       the target of the registered callbacks so that
-        //       they bind to the correct `this`, otherwise they
-        //       are bound to a `this` that will soon be dead.
-        //
-        //       Note that the following is *not* enough to guarantee
-        //       the correct behavior because there are other bound
-        //       callbacks. Hence the `fixme` comment.
-        //
-        //       To be sure, one should allocate on the heap using new
-        //       and then rely on smart pointers, so `this` is never
-        //       relocated and it would also help to deny copy and move.
-        //
-        //       Yet, I'm adding this fix to illustrate that the
-        //       few lines of code below are enough to fix the regress
-        //       test that is currently crashing.
-        //
-        connection.on_error([this](IghtError error) {
-            handle_error(error);
-        });
-
     }
 
     /*!
@@ -304,12 +280,6 @@ public:
         std::swap(connection, other.connection);
         std::swap(parser, other.parser);
         std::swap(error_handler, other.error_handler);
-
-        // FIXME: See above...
-        connection.on_error([this](IghtError error) {
-            handle_error(error);
-        });
-
         return *this;
     }
 
@@ -336,8 +306,15 @@ public:
             std::string family = "PF_UNSPEC") {
         connection = IghtConnection(family.c_str(), address.c_str(),
                 port.c_str());
+        //
+        // While the connection is in progress, just forward the
+        // error if needed, we'll deal with body-terminated-by-EOF
+        // semantic when we know we are actually connected.
+        //
         connection.on_error([&](IghtError error) {
-            handle_error(error);
+            if (error_handler) {
+                error_handler(error);
+            }
         });
     }
 
