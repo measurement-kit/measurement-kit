@@ -633,12 +633,14 @@ public:
         std::swap(serializer, other.serializer);
         std::swap(stream, other.stream);
         std::swap(response, other.response);
+        std::swap(parent, other.parent);
     }
     Request& operator=(Request&& other) {
         std::swap(callback, other.callback);
         std::swap(serializer, other.serializer);
         std::swap(stream, other.stream);
         std::swap(response, other.response);
+        std::swap(parent, other.parent);
         return *this;
     }
 
