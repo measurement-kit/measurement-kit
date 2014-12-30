@@ -318,10 +318,14 @@ TEST_CASE("Move semantic works for response") {
         REQUIRE(r1.get_results_()[0] == "antani");
         REQUIRE(r1.get_results_()[1] == "blinda");
 
-        REQUIRE(r2.get_code_() == DNS_ERR_UNKNOWN);
-        REQUIRE(r2.get_rtt_() == 0.0);
-        REQUIRE(r2.get_ttl_() == 0);
-        REQUIRE(r2.get_results_().size() == 0);
+        //
+        // Note: move semantic is *copy* for integers and the like, which
+        // explains why everything but results is copied below.
+        //
+        REQUIRE(r2.get_code_() == DNS_ERR_NONE);  // copied
+        REQUIRE(r2.get_rtt_() == 1.0);            // copied
+        REQUIRE(r2.get_ttl_() == 32764);          // copied
+        REQUIRE(r2.get_results_().size() == 0);   // move
     }
 
     SECTION("Move constructor") {
@@ -342,10 +346,14 @@ TEST_CASE("Move semantic works for response") {
 
         }(std::move(r2));  /* Move constructor */
 
-        REQUIRE(r2.get_code_() == DNS_ERR_UNKNOWN);
-        REQUIRE(r2.get_rtt_() == 0.0);
-        REQUIRE(r2.get_ttl_() == 0);
-        REQUIRE(r2.get_results_().size() == 0);
+        //
+        // Note: move semantic is *copy* for integers and the like, which
+        // explains why everything but results is copied below.
+        //
+        REQUIRE(r2.get_code_() == DNS_ERR_NONE);  // copied
+        REQUIRE(r2.get_rtt_() == 1.0);            // copied
+        REQUIRE(r2.get_ttl_() == 32764);          // copied
+        REQUIRE(r2.get_results_().size() == 0);   // moved
     }
 
 }

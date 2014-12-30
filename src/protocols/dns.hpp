@@ -47,23 +47,10 @@ protected:
     std::vector<std::string> results;
 
 public:
-    Response(Response& /*other*/) = delete;
-    Response& operator=(Response& /*other*/) = delete;
-
-    Response(Response&& other) {
-        std::swap(code, other.code);
-        std::swap(rtt, other.rtt);
-        std::swap(ttl, other.ttl);
-        std::swap(results, other.results);
-    }
-
-    Response& operator=(Response&& other) {
-        std::swap(code, other.code);
-        std::swap(rtt, other.rtt);
-        std::swap(ttl, other.ttl);
-        std::swap(results, other.results);
-        return *this;
-    }
+    Response(Response&) = default;
+    Response& operator=(Response&) = default;
+    Response(Response&&) = default;
+    Response& operator=(Response&&) = default;
 
     /*!
      * \brief Constructs an empty DNS response object.
