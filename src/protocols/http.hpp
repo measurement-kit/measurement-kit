@@ -19,7 +19,8 @@
 #include "common/settings.hpp"
 #include "common/log.h"
 #include "common/error.h"
-#include "common/settings.hpp"
+#include "common/pointer.hpp"
+
 #include "net/buffer.hpp"
 #include "net/connection.h"
 
@@ -33,6 +34,8 @@ struct evbuffer;
 namespace ight {
 namespace protocols {
 namespace http {
+
+using namespace ight::common::pointer;
 
 /*!
  * \brief Raised when the parser receives the UPGRADE method.
@@ -256,32 +259,31 @@ public:
 
     /*!
      * \brief Deleted copy constructor.
+     * The `this` of this class is bound to lambdas, so it must
+     * not be copied or moved.
      */
     Stream(Stream& /*other*/) = delete;
 
     /*!
      * \brief Deleted copy assignment.
+     * The `this` of this class is bound to lambdas, so it must
+     * not be copied or moved.
      */
     Stream& operator=(Stream& /*other*/) = delete;
 
     /*!
-     * \brief Move constructor.
+     * \brief Deleted move constructor.
+     * The `this` of this class is bound to lambdas, so it must
+     * not be copied or moved.
      */
-    Stream(Stream&& other) {
-        std::swap(connection, other.connection);
-        std::swap(parser, other.parser);
-        std::swap(error_handler, other.error_handler);
-    }
+    Stream(Stream&& /*other*/) = delete;
 
     /*!
-     * \brief Move assignment.
+     * \brief Deleted move assignment.
+     * The `this` of this class is bound to lambdas, so it must
+     * not be copied or moved.
      */
-    Stream& operator=(Stream&& other) {
-        std::swap(connection, other.connection);
-        std::swap(parser, other.parser);
-        std::swap(error_handler, other.error_handler);
-        return *this;
-    }
+    Stream& operator=(Stream&& /*other*/) = delete;
 
     //
     // How do you construct this object:
@@ -316,16 +318,6 @@ public:
                 error_handler(error);
             }
         });
-    }
-
-    /*!
-     * \brief Create a stream connecting to the specified remote host.
-     * \remark This is syntactic sugar for Stream::Stream().
-     * \see Stream::Stream().
-     */
-    static Stream connect(std::string address, std::string port,
-            std::string family = "PF_UNSPEC") {
-        return Stream(address, port, family);
     }
 
     /*!
@@ -543,7 +535,7 @@ class Request {
 
     RequestCallback callback;
     RequestSerializer serializer;
-    Stream stream;
+    SharedPointer<Stream> stream;
     Response response;
     std::set<Request *> *parent = nullptr;
 
@@ -584,22 +576,23 @@ public:
             std::set<Request *> *parent_ = nullptr)
                 : callback(callback_), parent(parent_) {
         serializer = RequestSerializer(settings, headers, body);
-        stream = Stream::connect(serializer.address, serializer.port);
-        stream.on_error([this](IghtError err) {
+        stream = SharedPointer<Stream>{new Stream(
+                serializer.address, serializer.port)};
+        stream->on_error([this](IghtError err) {
             emit_end(err, std::move(response));
         });
-        stream.on_connect([this](void) {
+        stream->on_connect([this](void) {
             // TODO: improve the way in which we serialize the request
             //       to reduce unnecessary copies
             IghtBuffer buf;
             serializer.serialize(buf);
-            stream << buf.read<char>();
+            *stream << buf.read<char>();
 
-            stream.on_flush([]() {
+            stream->on_flush([]() {
                 ight_debug("http: request sent... waiting for response");
             });
 
-            stream.on_headers_complete([&](unsigned short major,
+            stream->on_headers_complete([&](unsigned short major,
                     unsigned short minor, unsigned int status,
                     std::string&& reason, Headers&& headers) {
                 ight_debug("http: headers received...");
@@ -610,14 +603,14 @@ public:
                 response.headers = std::move(headers);
             });
 
-            stream.on_body([&](std::string&& chunk) {
+            stream->on_body([&](std::string&& chunk) {
                 ight_debug("http: received body chunk...");
                 // FIXME: I am not sure whether the body callback
                 //        is still needed or not...
                 response.body << chunk;
             });
 
-            stream.on_end([&]() {
+            stream->on_end([&]() {
                 ight_debug("http: we have reached end of response");
                 emit_end(IghtError(0), std::move(response));
             });
@@ -645,7 +638,7 @@ public:
     }
 
     void close() {
-        stream.close();
+        stream->close();
     }
 
     ~Request() {
