@@ -15,6 +15,8 @@
 #include "common/poller.h"
 #include "common/utils.hpp"
 
+#include "protocols/dns.hpp"
+
 #include <event2/bufferevent.h>
 #include <event2/event.h>
 
@@ -29,6 +31,7 @@ class IghtConnectionState {
 	evutil_socket_t filedesc = IGHT_SOCKET_INVALID;
 	unsigned int closing = 0;
 	IghtBuffereventSocket bev;
+	ight::protocols::dns::Request dns_request;
 	unsigned int connecting = 0;
 	unsigned int reading = 0;
 	char *address = NULL;
@@ -50,9 +53,9 @@ class IghtConnectionState {
 
 	// Functions used when connecting
 	void connect_next(void);
-	static void handle_resolve(int, char, int, int,
-	    void *, void *);
+	void handle_resolve(int, char, std::vector<std::string>);
 	static void resolve(IghtConnectionState *);
+	bool resolve_internal(char);
 
     public:
 	IghtConnectionState(const char *, const char *, const char *,
