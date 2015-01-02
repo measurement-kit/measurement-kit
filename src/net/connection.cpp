@@ -25,9 +25,6 @@ IghtConnectionState::~IghtConnectionState(void)
 	if (this->filedesc != IGHT_SOCKET_INVALID)
 		(void) evutil_closesocket((evutil_socket_t) this->filedesc);
 
-	if (this->bev != NULL)
-		bufferevent_free(this->bev);
-
 	// closing: nothing to be done
 	// connecting: nothing to be done
 	// reading: nothing to be done
@@ -119,9 +116,7 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 
 	// filedesc: if valid, it is set on success only
 
-	if ((this->bev = bufferevent_socket_new(evbase, (evutil_socket_t)
-	    filenum, BEV_OPT_DEFER_CALLBACKS)) == NULL)
-		throw std::bad_alloc();
+	this->bev.make(evbase, filenum, BEV_OPT_DEFER_CALLBACKS);
 
 	// closing: nothing to be done
 
@@ -131,26 +126,22 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 	// reading: nothing to be done
 
 	if ((this->address = strdup(address)) == NULL) {
-		bufferevent_free(this->bev);
 		throw std::bad_alloc();
 	}
 
 	if ((this->port = strdup(port)) == NULL) {
-		bufferevent_free(this->bev);
 		free(this->address);
 		throw std::bad_alloc();
 	}
 
 	if ((this->addrlist = new (std::nothrow) IghtStringVector(poller,
 	    16)) == NULL) {
-		bufferevent_free(this->bev);
 		free(this->address);
 		free(this->port);
 		throw std::bad_alloc();
 	}
 
 	if ((this->family = strdup(family)) == NULL) {
-		bufferevent_free(this->bev);
 		free(this->address);
 		free(this->port);
 		delete (this->addrlist);
@@ -159,7 +150,6 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 
 	if ((this->pflist = new (std::nothrow) IghtStringVector(poller,
 	    16)) == NULL) {
-		bufferevent_free(this->bev);
 		free(this->address);
 		free(this->port);
 		delete (this->addrlist);
@@ -435,6 +425,7 @@ void
 IghtConnectionState::close(void)
 {
 	this->closing = 1;
+	this->bev.close();
 	if (this->reading != 0 || this->connecting != 0)
 		return;
 	delete this;

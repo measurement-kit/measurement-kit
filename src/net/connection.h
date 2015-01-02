@@ -27,8 +27,8 @@ struct evbuffer;
 class IghtConnectionState {
 
 	evutil_socket_t filedesc = IGHT_SOCKET_INVALID;
-	bufferevent *bev = NULL;
 	unsigned int closing = 0;
+	IghtBuffereventSocket bev;
 	unsigned int connecting = 0;
 	unsigned int reading = 0;
 	char *address = NULL;
