@@ -264,6 +264,7 @@ IghtConnectionState::handle_resolve(int result, char type, int count,
 		abort();
 
 	if (self->closing) {
+		ight_info("handle_resolve - delayed close");
 		delete (self);
 		return;
 	}
