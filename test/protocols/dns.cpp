@@ -699,7 +699,13 @@ TEST_CASE("It is safe to clear a request in its own callback") {
         return;
     }
     auto d = SafeToDeleteRequestInItsOwnCallback();
+    auto called = 0;
+    auto watchdog = IghtDelayedCall(5.0, [&called]() {
+        ++called;
+        ight_break_loop();
+    });
     ight_loop();
+    REQUIRE(called == 0);
 }
 
 //
