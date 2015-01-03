@@ -22,9 +22,6 @@ IghtConnectionState::~IghtConnectionState(void)
 	 * TODO: switch to RAII.
 	 */
 
-	if (this->filedesc != IGHT_SOCKET_INVALID)
-		(void) evutil_closesocket((evutil_socket_t) this->filedesc);
-
 	// connecting: nothing to be done
 
 	if (this->address != NULL)
@@ -100,9 +97,8 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 	 * TODO: switch to RAII.
 	 */
 
-	// filedesc: if valid, it is set on success only
-
-	this->bev.make(evbase, filenum, BEV_OPT_DEFER_CALLBACKS);
+	this->bev.make(evbase, filenum, BEV_OPT_DEFER_CALLBACKS|
+	    BEV_OPT_CLOSE_ON_FREE);
 
 	// closing: nothing to be done
 
@@ -153,8 +149,6 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 	if (!ight_socket_valid(filenum))
 		this->start_connect = std::make_shared<IghtDelayedCall>(0.0,
 		    std::bind(this->resolve, this));
-	else
-		this->filedesc = filenum;	/* Own the socket on success */
 }
 
 void
@@ -185,24 +179,21 @@ IghtConnectionState::connect_next(void)
 		if (error != 0)
 			continue;
 
-		this->filedesc = ight_socket_create(storage.ss_family,
+		auto filedesc = ight_socket_create(storage.ss_family,
 		    SOCK_STREAM, 0);
-		if (this->filedesc == IGHT_SOCKET_INVALID)
+		if (filedesc == IGHT_SOCKET_INVALID)
 			continue;
 
-		error = bufferevent_setfd(this->bev, (evutil_socket_t)
-		    this->filedesc);
+		error = bufferevent_setfd(this->bev, filedesc);
 		if (error != 0) {
-			(void) evutil_closesocket(this->filedesc);
-			this->filedesc = IGHT_SOCKET_INVALID;
+			(void) evutil_closesocket(filedesc);
 			continue;
 		}
 
 		error = bufferevent_socket_connect(this->bev, (struct
 		    sockaddr *) &storage, (int) total);
 		if (error != 0) {
-			(void) evutil_closesocket(this->filedesc);
-			this->filedesc = IGHT_SOCKET_INVALID;
+			(void) evutil_closesocket(filedesc);
 			error = bufferevent_setfd(this->bev,
 			    IGHT_SOCKET_INVALID);
 			if (error != 0) {
