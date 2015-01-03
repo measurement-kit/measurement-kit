@@ -20,7 +20,7 @@ main(void)
 	});
 
 	s.on_data([&](evbuffer *b) {
-		s.write_from(b);
+		s.send(b);
 	});
 
 	s.on_flush([](void) {

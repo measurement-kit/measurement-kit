@@ -367,7 +367,7 @@ public:
      * \returns A reference to this stream for chaining operations.
      */
     Stream& operator<<(std::string data) {
-        connection->puts(data.c_str());
+        connection->send(data);
         return *this;
     }
 

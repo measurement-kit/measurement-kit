@@ -87,7 +87,7 @@ TEST_CASE("IghtConnection::close() is idempotent") {
     IghtConnection s("PF_INET", "nexa.polito.it", "80");
     s.on_connect([&s]() {
         s.enable_read();
-        s.puts("GET / HTTP/1.0\r\n\r\n");
+        s.send("GET / HTTP/1.0\r\n\r\n");
     });
     s.on_data([&s](evbuffer *) {
         s.close();
@@ -106,7 +106,7 @@ TEST_CASE("It is safe to manipulate IghtConnection after close") {
     IghtConnection s("PF_INET", "nexa.polito.it", "80");
     s.on_connect([&s]() {
         s.enable_read();
-        s.puts("GET / HTTP/1.0\r\n\r\n");
+        s.send("GET / HTTP/1.0\r\n\r\n");
     });
     s.on_data([&s](evbuffer *) {
         s.close();

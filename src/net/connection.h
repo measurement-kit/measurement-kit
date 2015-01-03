@@ -122,27 +122,24 @@ class IghtConnectionState {
 		throw std::runtime_error("not implemented");
 	}
 
-	void write(const char *base, size_t count) {
+	void send(const void *base, size_t count) {
 		if (base == NULL || count == 0) {
 			throw std::runtime_error("invalid argument");
 		}
-		if (bufferevent_write(this->bev, base, count) != 0) {
+		if (bufferevent_write(bev, base, count) != 0) {
 			throw std::runtime_error("cannot write");
 		}
 	}
 
-	void puts(const char *str) {
-		if (str == NULL) {
-			throw std::runtime_error("invalid argument");
-		}
-		this->write(str, strlen(str));
+	void send(std::string data) {
+		send(data.c_str(), data.length());
 	}
 
-	void write_from(evbuffer *sourcebuf) {
-		if (sourcebuf == NULL) {
+	void send(evbuffer *data) {
+		if (data == NULL) {
 			throw std::runtime_error("invalid argument");
 		}
-		if (bufferevent_write_buffer(this->bev, sourcebuf) != 0) {
+		if (bufferevent_write_buffer(bev, data) != 0) {
 			throw std::runtime_error("cannot write");
 		}
 	}
@@ -243,22 +240,22 @@ class IghtConnection : public ight::common::constraints::NonCopyable,
 		state->start_tls(d);
 	}
 
-	void write(const char *base, size_t count) {
+	void send(const char *base, size_t count) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->write(base, count);
+		state->send(base, count);
 	}
 
-	void puts(const char *str) {
+	void send(std::string str) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->puts(str);
+		state->send(str);
 	}
 
-	void write_from(evbuffer *sourcebuf) {
+	void send(evbuffer *sourcebuf) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->write_from(sourcebuf);
+		state->send(sourcebuf);
 	}
 
 	void enable_read(void) {
