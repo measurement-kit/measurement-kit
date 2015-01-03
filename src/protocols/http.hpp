@@ -237,9 +237,7 @@ class Stream {
     std::function<void(IghtError)> error_handler;
 
     void connection_ready(void) {
-        if (connection->enable_read() != 0) {
-            throw std::runtime_error("Cannot enable read");
-        }
+        connection->enable_read();
         connection->on_data([&](evbuffer *data) {
             parser.feed(data);
         });
@@ -369,9 +367,7 @@ public:
      * \returns A reference to this stream for chaining operations.
      */
     Stream& operator<<(std::string data) {
-        if (connection->puts(data.c_str()) != 0) {
-            throw std::runtime_error("Cannot write into the connection");
-        }
+        connection->puts(data.c_str());
         return *this;
     }
 
@@ -441,9 +437,7 @@ public:
      * \param time The timeout in seconds.
      */
     void set_timeout(double timeo) {
-        if (connection->set_timeout(timeo) != 0) {
-            throw std::runtime_error("Cannot set timeout");
-        }
+        connection->set_timeout(timeo);
     }
 };
 

@@ -106,44 +106,57 @@ class IghtConnectionState {
 		return (bufferevent_getfd(this->bev));
 	}
 
-	int set_timeout(double timeout) {
+	void set_timeout(double timeout) {
 		struct timeval tv, *tvp;
 		tvp = ight_timeval_init(&tv, timeout);
-		return (bufferevent_set_timeouts(this->bev, tvp, tvp));
+		if (bufferevent_set_timeouts(this->bev, tvp, tvp) != 0) {
+			throw std::runtime_error("cannot set timeout");
+		}
 	}
 
-	int clear_timeout(void) {
-		return (this->set_timeout(-1));
+	void clear_timeout(void) {
+		this->set_timeout(-1);
 	}
 
-	int start_tls(unsigned int) {
-		return (-1);		/* TODO: implement */
+	void start_tls(unsigned int) {
+		throw std::runtime_error("not implemented");
 	}
 
-	int write(const char *base, size_t count) {
-		if (base == NULL || count == 0)
-			return (-1);
-		return (bufferevent_write(this->bev, base, count));
+	void write(const char *base, size_t count) {
+		if (base == NULL || count == 0) {
+			throw std::runtime_error("invalid argument");
+		}
+		if (bufferevent_write(this->bev, base, count) != 0) {
+			throw std::runtime_error("cannot write");
+		}
 	}
 
-	int puts(const char *str) {
-		if (str == NULL)
-			return (-1);
-		return (this->write(str, strlen(str)));
+	void puts(const char *str) {
+		if (str == NULL) {
+			throw std::runtime_error("invalid argument");
+		}
+		this->write(str, strlen(str));
 	}
 
-	int write_from(evbuffer *sourcebuf) {
-		if (sourcebuf == NULL)
-			return (-1);
-		return (bufferevent_write_buffer(this->bev, sourcebuf));
+	void write_from(evbuffer *sourcebuf) {
+		if (sourcebuf == NULL) {
+			throw std::runtime_error("invalid argument");
+		}
+		if (bufferevent_write_buffer(this->bev, sourcebuf) != 0) {
+			throw std::runtime_error("cannot write");
+		}
 	}
 
-	int enable_read(void) {
-		return (bufferevent_enable(this->bev, EV_READ));
+	void enable_read(void) {
+		if (bufferevent_enable(this->bev, EV_READ) != 0) {
+			throw std::runtime_error("cannot enable read");
+		}
 	}
 
-	int disable_read(void) {
-		return (bufferevent_disable(this->bev, EV_READ));
+	void disable_read(void) {
+		if (bufferevent_disable(this->bev, EV_READ) != 0) {
+			throw std::runtime_error("cannot disable read");
+		}
 	}
 
 	void close(void);
@@ -212,52 +225,52 @@ class IghtConnection : public ight::common::constraints::NonCopyable,
 		return (state->get_fileno());
 	}
 
-	int set_timeout(double timeout) {
+	void set_timeout(double timeout) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		return (state->set_timeout(timeout));
+		state->set_timeout(timeout);
 	}
 
-	int clear_timeout(void) {
+	void clear_timeout(void) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		return (state->clear_timeout());
+		state->clear_timeout();
 	}
 
-	int start_tls(unsigned int d) {
+	void start_tls(unsigned int d) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		return (state->start_tls(d));
+		state->start_tls(d);
 	}
 
-	int write(const char *base, size_t count) {
+	void write(const char *base, size_t count) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		return (state->write(base, count));
+		state->write(base, count);
 	}
 
-	int puts(const char *str) {
+	void puts(const char *str) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		return (state->puts(str));
+		state->puts(str);
 	}
 
-	int write_from(evbuffer *sourcebuf) {
+	void write_from(evbuffer *sourcebuf) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		return (state->write_from(sourcebuf));
+		state->write_from(sourcebuf);
 	}
 
-	int enable_read(void) {
+	void enable_read(void) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		return (state->enable_read());
+		state->enable_read();
 	}
 
-	int disable_read(void) {
+	void disable_read(void) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		return (state->disable_read());
+		state->disable_read();
 	}
 };
 
