@@ -18,6 +18,7 @@
 #include "protocols/http.hpp"
 
 using namespace ight::protocols;
+using namespace ight::common::pointer;
 
 //
 // ResponseParser unit test
@@ -117,17 +118,19 @@ TEST_CASE("HTTP stream works as expected") {
         return;
     }
     //ight_set_verbose(1);
-    auto stream = http::Stream::connect("www.google.com", "80");
-    stream.on_connect([&]() {
+    auto stream = SharedPointer<http::Stream>{
+        new http::Stream("www.google.com", "80")
+    };
+    stream->on_connect([&]() {
         ight_debug("Connection made... sending request");
-        stream << "GET /robots.txt HTTP/1.1\r\n"
+        *stream << "GET /robots.txt HTTP/1.1\r\n"
                << "Host: www.google.com\r\n"
                << "Connection: close\r\n"
                << "\r\n";
-        stream.on_flush([]() {
+        stream->on_flush([]() {
             ight_debug("Request sent... waiting for response");
         });
-        stream.on_headers_complete([&](unsigned short major,
+        stream->on_headers_complete([&](unsigned short major,
                 unsigned short minor, unsigned int status,
                 std::string&& reason, http::Headers&& headers) {
             std::cout << "HTTP/" << major << "." << minor << " " <<
@@ -136,12 +139,12 @@ TEST_CASE("HTTP stream works as expected") {
                 std::cout << kv.first << ": " << kv.second << "\r\n";
             }
             std::cout << "\r\n";
-            stream.on_end([&](void) {
+            stream->on_end([&](void) {
                 std::cout << "\r\n";
-                stream.close();
+                stream->close();
                 ight_break_loop();
             });
-            stream.on_body([&](std::string&& /*chunk*/) {
+            stream->on_body([&](std::string&& /*chunk*/) {
                 //std::cout << chunk;
             });
         });
@@ -154,11 +157,13 @@ TEST_CASE("HTTP stream receives connection errors") {
         return;
     }
     //ight_set_verbose(1);
-    auto stream = http::Stream::connect("nexa.polito.it", "81");
-    stream.set_timeout(1.0);
-    stream.on_error([&](IghtError e) {
+    auto stream = SharedPointer<http::Stream>{
+        new http::Stream("nexa.polito.it", "81")
+    };
+    stream->set_timeout(1.0);
+    stream->on_error([&](IghtError e) {
         ight_debug("Connection error: %d", e.error);
-        stream.close();
+        stream->close();
         ight_break_loop();
     });
     ight_loop();
@@ -196,6 +201,34 @@ TEST_CASE("HTTP Request works as expected") {
         {"Accept", "*/*"},
     }, "", [&](IghtError error, http::Response&& response) {
         if (error.error != 0) {
+            std::cout << "Error: " << error.error << "\r\n";
+            ight_break_loop();
+            return;
+        }
+        std::cout << "HTTP/" << response.http_major << "."
+                << response.http_minor << " " << response.status_code
+                << " " << response.reason << "\r\n";
+        for (auto& kv : response.headers) {
+            std::cout << kv.first << ": " << kv.second << "\r\n";
+        }
+        std::cout << "\r\n";
+        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << "[snip]\r\n";
+        ight_break_loop();
+    });
+    ight_loop();
+}
+
+TEST_CASE("HTTP Request correctly receives errors") {
+    ight_set_verbose(1);
+    auto r = http::Request({
+        {"url", "http://nexa.polito.it:81/robots.txt"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&](IghtError error, http::Response&& response) {
+        if (error.error) {
             std::cout << "Error: " << error.error << "\r\n";
             ight_break_loop();
             return;
