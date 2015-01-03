@@ -232,22 +232,22 @@ public:
  * degree of control is needed over the HTTP protocol.
  */
 class Stream {
-    IghtConnection connection;
+    SharedPointer<IghtConnection> connection;
     ResponseParser parser;
     std::function<void(IghtError)> error_handler;
 
     void connection_ready(void) {
-        if (connection.enable_read() != 0) {
+        if (connection->enable_read() != 0) {
             throw std::runtime_error("Cannot enable read");
         }
-        connection.on_data([&](evbuffer *data) {
+        connection->on_data([&](evbuffer *data) {
             parser.feed(data);
         });
         //
         // Intercept EOF error to implement body-ends-at-EOF semantic.
         // TODO: convert error from integer to exception.
         //
-        connection.on_error([&](IghtError error) {
+        connection->on_error([&](IghtError error) {
             if (error.error == 0) {
                 parser.eof();
             }
@@ -308,14 +308,14 @@ public:
      */
     Stream(std::string address, std::string port,
             std::string family = "PF_UNSPEC") {
-        connection = IghtConnection(family.c_str(), address.c_str(),
-                port.c_str());
+        connection = std::make_shared<IghtConnection>(family.c_str(),
+                address.c_str(), port.c_str());
         //
         // While the connection is in progress, just forward the
         // error if needed, we'll deal with body-terminated-by-EOF
         // semantic when we know we are actually connected.
         //
-        connection.on_error([&](IghtError error) {
+        connection->on_error([&](IghtError error) {
             if (error_handler) {
                 error_handler(error);
             }
@@ -327,7 +327,7 @@ public:
      * \sock The already connecte socket.
      */
     Stream(evutil_socket_t sock) {
-        connection = IghtConnection(sock);
+        connection = std::make_shared<IghtConnection>(sock);
         connection_ready();
     }
 
@@ -338,7 +338,7 @@ public:
      *         object attaching it to an already opened socket.
      */
     void on_connect(std::function<void(void)>&& fn) {
-        connection.on_connect([fn, this]() {
+        connection->on_connect([fn, this]() {
             connection_ready();
             fn();
         });
@@ -348,7 +348,7 @@ public:
      * \brief Close this stream.
      */
     void close() {
-        connection.close();
+        connection->close();
     }
 
     /*!
@@ -369,7 +369,7 @@ public:
      * \returns A reference to this stream for chaining operations.
      */
     Stream& operator<<(std::string data) {
-        if (connection.puts(data.c_str()) != 0) {
+        if (connection->puts(data.c_str()) != 0) {
             throw std::runtime_error("Cannot write into the connection");
         }
         return *this;
@@ -382,7 +382,7 @@ public:
      *         after some data was already passed to the kernel.
      */
     void on_flush(std::function<void(void)>&& fn) {
-        connection.on_flush(std::move(fn));
+        connection->on_flush(std::move(fn));
     }
 
     //
@@ -441,7 +441,7 @@ public:
      * \param time The timeout in seconds.
      */
     void set_timeout(double timeo) {
-        if (connection.set_timeout(timeo) != 0) {
+        if (connection->set_timeout(timeo) != 0) {
             throw std::runtime_error("Cannot set timeout");
         }
     }

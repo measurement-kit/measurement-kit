@@ -1,5 +1,6 @@
 #include "ooni/tcp_test.hpp"
 
+using namespace ight::common::pointer;
 using namespace ight::ooni::tcp_test;
 
 TCPClient
@@ -12,8 +13,8 @@ TCPTest::connect(ight::common::Settings options, std::function<void()>&& cb)
         options["host"] = "localhost";
     }
 
-    auto connection = IghtConnection("PF_UNSPEC", options["host"].c_str(),
-            options["port"].c_str());
+    auto connection = std::make_shared<IghtConnection>("PF_UNSPEC",
+            options["host"].c_str(), options["port"].c_str());
 
     //
     // FIXME The connection and this are bound in the
@@ -21,12 +22,12 @@ TCPTest::connect(ight::common::Settings options, std::function<void()>&& cb)
     // life cycles, which is &disaster.
     //
 
-    connection.on_error([cb, this](IghtError e) {
+    connection->on_error([cb, this](IghtError e) {
         entry["error_code"] = e.error;
         entry["connection"] = "failed";
         cb();
     });
-    connection.on_connect([this, cb]() {
+    connection->on_connect([this, cb]() {
         entry["connection"] = "success";
         cb();
     });

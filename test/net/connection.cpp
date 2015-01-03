@@ -19,17 +19,17 @@ TEST_CASE("Ensure that the constructor socket-validity checks work") {
 	SECTION("Invalid values are properly normalized") {
 		{
 			/* Common for both Unix and Windows */
-			auto conn = IghtConnection(-1);
+			IghtConnection conn(-1);
 			REQUIRE(conn.get_fileno() == -1);
 		}
 #ifndef WIN32
 		{
-			auto conn = IghtConnection(-2);
+			IghtConnection conn(-2);
 			REQUIRE(conn.get_fileno() == -1);
 		}
 		/* ... */
 		{
-			auto conn = IghtConnection(INT_MIN);
+			IghtConnection conn(INT_MIN);
 			REQUIRE(conn.get_fileno() == -1);
 		}
 #endif
@@ -37,39 +37,39 @@ TEST_CASE("Ensure that the constructor socket-validity checks work") {
 
 	SECTION("Valid values are accepted") {
 		{
-			auto conn = IghtConnection(0);
+			IghtConnection conn(0);
 			REQUIRE(conn.get_fileno() == 0);
 		}
 		{
-			auto conn = IghtConnection(1);
+			IghtConnection conn(1);
 			REQUIRE(conn.get_fileno() == 1);
 		}
 		{
-			auto conn = IghtConnection(2);
+			IghtConnection conn(2);
 			REQUIRE(conn.get_fileno() == 2);
 		}
 #ifdef WIN32
 		{
-			auto conn = IghtConnection(INTPTR_MAX);
+			IghtConnection conn(INTPTR_MAX);
 			REQUIRE(conn.get_fileno() == INTPTR_MAX);
 		}
 		/* Skip -1 that is INVALID_SOCKET */
 		{
-			auto conn = IghtConnection(-2);
+			IghtConnection conn(-2);
 			REQUIRE(conn.get_fileno() == -2);
 		}
 		{
-			auto conn = IghtConnection(-3);
+			IghtConnection conn(-3);
 			REQUIRE(conn.get_fileno() == -3);
 		}
 		/* ... */
 		{
-			auto conn = IghtConnection(INTPTR_MIN);
+			IghtConnection conn(INTPTR_MIN);
 			REQUIRE(conn.get_fileno() == INTPTR_MIN);
 		}
 #else
 		{
-			auto conn = IghtConnection(INT_MAX);
+			IghtConnection conn(INT_MAX);
 			REQUIRE(conn.get_fileno() == INT_MAX);
 		}
 

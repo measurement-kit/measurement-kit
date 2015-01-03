@@ -13,7 +13,7 @@
 int
 main(void)
 {
-	auto s = IghtConnection("PF_INET", "127.0.0.1", "54321");
+	IghtConnection s("PF_INET", "127.0.0.1", "54321");
 
 	s.on_connect([&](void) {
 		if (s.enable_read() != 0)
