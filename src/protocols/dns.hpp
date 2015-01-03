@@ -12,6 +12,7 @@
 // DNS client functionality
 //
 
+#include "common/constraints.hpp"
 #include "common/log.h"
 #include "common/pointer.hpp"
 #include "common/poller.h"
@@ -27,6 +28,7 @@ namespace ight {
 namespace protocols {
 namespace dns {
 
+using namespace ight::common::constraints;
 using namespace ight::common::pointer;
 
 /*!
@@ -290,7 +292,7 @@ public:
  * destroyed when the resolver is destroyed (in particular, the callback
  * will be invoked with evdns code equal to DNS_ERR_SHUTDOWN).
  */
-class Resolver {
+class Resolver : public NonCopyable, public NonMovable {
 
     void cleanup(void);
 
@@ -356,41 +358,6 @@ public:
      */
     ~Resolver(void) {
         cleanup();
-    }
-
-    /*!
-     * \brief Deleted copy constructor.
-     * \remark We cannot copy this object because it contains a pointer
-     *         to an object allocated with new that must not be shared.
-     */
-    Resolver(Resolver& /*other*/) = delete;
-
-    /*!
-     * \brief Deleted assignment constructor.
-     * \remark We cannot copy this object because it contains a pointer
-     *         to an object allocated with new that must not be shared.
-     */
-    Resolver& operator=(Resolver& /*other*/) = delete;
-
-    /*!
-     * \brief Move constructor.
-     */
-    Resolver(Resolver&& other) {
-        std::swap(settings, other.settings);
-        std::swap(libevent, other.libevent);
-        std::swap(poller, other.poller);
-        std::swap(base, other.base);
-    }
-
-    /*!
-     * \brief Move assignment.
-     */
-    Resolver& operator=(Resolver&& other) {
-        std::swap(settings, other.settings);
-        std::swap(libevent, other.libevent);
-        std::swap(poller, other.poller);
-        std::swap(base, other.base);
-        return *this;
     }
 };
 

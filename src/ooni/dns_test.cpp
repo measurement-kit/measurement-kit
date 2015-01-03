@@ -1,13 +1,15 @@
 #include "ooni/dns_test.hpp"
 
 using namespace ight::ooni::dns_test;
+using namespace ight::protocols::dns;
+using namespace ight::common;
 
 void
 DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
                std::string query_name, std::string nameserver,
                std::function<void(ight::protocols::dns::Response&&)>&& cb)
 {
-    resolver = ight::protocols::dns::Resolver({
+    resolver = std::make_shared<Resolver>(Settings{
         {"nameserver", nameserver},
         {"attempts", "1"},
     }, libevent);
@@ -25,7 +27,7 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
     } else {
         throw UnsupportedQueryType("Currently we only support A");
     }
-    resolver.request(
+    resolver->request(
         query, query_name, 
         [=](ight::protocols::dns::Response&& response) {
             ight_debug("Got a response!");
