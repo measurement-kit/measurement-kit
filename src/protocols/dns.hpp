@@ -214,38 +214,10 @@ public:
             std::function<void(Response&&)>&& func, evdns_base *dnsb = NULL,
             IghtLibevent *libevent = NULL);
 
-    /*!
-     * \brief Deleted copy constructor.
-     * \remark The original implementation of Request could not be
-     *         shared because it contained a raw pointer. This second
-     *         implementation retains the same behavior even though
-     *         now there are no technical restrictions to do so.
-     */
-    Request(Request& /*other*/) = delete;
-
-    /*!
-     * \brief Deleted assignment constructor.
-     * \remark The original implementation of Request could not be
-     *         shared because it contained a raw pointer. This second
-     *         implementation retains the same behavior even though
-     *         now there are no technical restrictions to do so.
-     */
-    Request& operator=(Request& /*other*/) = delete;
-
-    /*!
-     * \brief Move constructor.
-     */
-    Request(Request&& other) {
-        std::swap(cancelled, other.cancelled);
-    }
-
-    /*!
-     * \brief Move assignment.
-     */
-    Request& operator=(Request&& other) {
-        std::swap(cancelled, other.cancelled);
-        return *this;
-    }
+    Request(Request&) = default;
+    Request& operator=(Request&) = default;
+    Request(Request&&) = default;
+    Request& operator=(Request&&) = default;
 
     /*!
      * \brief Cancel the pending Request.
