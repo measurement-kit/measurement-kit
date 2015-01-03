@@ -237,7 +237,6 @@ class Stream {
     std::function<void(IghtError)> error_handler;
 
     void connection_ready(void) {
-        connection->enable_read();
         connection->on_data([&](evbuffer *data) {
             parser.feed(data);
         });

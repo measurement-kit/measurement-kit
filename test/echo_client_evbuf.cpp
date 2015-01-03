@@ -16,7 +16,7 @@ main(void)
 	IghtConnection s("PF_INET", "127.0.0.1", "54321");
 
 	s.on_connect([&](void) {
-		s.enable_read();
+		/* nothing */
 	});
 
 	s.on_data([&](evbuffer *b) {

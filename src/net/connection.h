@@ -92,6 +92,7 @@ class IghtConnectionState {
 
 	void on_data(std::function<void(evbuffer *)>&& fn) {
 		on_data_fn = std::move(fn);
+		enable_read();
 	};
 
 	void on_flush(std::function<void(void)>&& fn) {
