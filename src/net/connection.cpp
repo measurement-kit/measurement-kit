@@ -25,9 +25,7 @@ IghtConnectionState::~IghtConnectionState(void)
 	if (this->filedesc != IGHT_SOCKET_INVALID)
 		(void) evutil_closesocket((evutil_socket_t) this->filedesc);
 
-	// closing: nothing to be done
 	// connecting: nothing to be done
-	// reading: nothing to be done
 
 	if (this->address != NULL)
 		free(this->address);
@@ -49,15 +47,8 @@ void
 IghtConnectionState::handle_read(bufferevent *bev, void *opaque)
 {
 	auto self = (IghtConnectionState *) opaque;
-
 	(void) bev;  // Suppress warning about unused variable
-
-	self->reading = 1;
 	self->on_data(bufferevent_get_input(self->bev));
-	self->reading = 0;
-
-	if (self->closing)
-		delete (self);
 }
 
 void
@@ -74,11 +65,6 @@ IghtConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 	auto self = (IghtConnectionState *) opaque;
 
 	(void) bev;  // Suppress warning about unused variable
-
-	if (self->connecting && self->closing) {
-		delete (self);
-		return;
-	}
 
 	if (what & BEV_EVENT_CONNECTED) {
 		self->connecting = 0;
@@ -122,8 +108,6 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 
 	if (!ight_socket_valid(filenum))
 		this->connecting = 1;
-
-	// reading: nothing to be done
 
 	if ((this->address = strdup(address)) == NULL) {
 		throw std::bad_alloc();
@@ -248,12 +232,6 @@ IghtConnectionState::handle_resolve(int result, char type,
 	if (!connecting)
 		abort();
 
-	if (closing) {
-		ight_info("handle_resolve - delayed close");
-		delete this;
-		return;
-	}
-
 	if (result != DNS_ERR_NONE)
 		goto finally;
 
@@ -340,11 +318,6 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 	if (!self->connecting)
 		abort();
 
-	if (self->closing) {
-		delete (self);
-		return;
-	}
-
 	// If self->address is a valid IPv4 address, connect directly
 	memset(&storage, 0, sizeof (storage));
 	result = inet_pton(PF_INET, self->address, &storage);
@@ -420,10 +393,6 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 void
 IghtConnectionState::close(void)
 {
-	this->closing = 1;
 	this->bev.close();
 	this->dns_request.cancel();
-	if (this->reading != 0 || this->connecting != 0)
-		return;
-	delete this;
 }

@@ -29,11 +29,9 @@ struct evbuffer;
 class IghtConnectionState {
 
 	evutil_socket_t filedesc = IGHT_SOCKET_INVALID;
-	unsigned int closing = 0;
 	IghtBuffereventSocket bev;
 	ight::protocols::dns::Request dns_request;
 	unsigned int connecting = 0;
-	unsigned int reading = 0;
 	char *address = NULL;
 	char *port = NULL;
 	IghtStringVector *addrlist = NULL;
@@ -42,9 +40,6 @@ class IghtConnectionState {
 	unsigned int must_resolve_ipv4 = 0;
 	unsigned int must_resolve_ipv6 = 0;
 	ight::common::pointer::SharedPointer<IghtDelayedCall> start_connect;
-
-	// Private destructor because destruction may be delayed
-	~IghtConnectionState(void);
 
 	// Libevent callbacks
 	static void handle_read(bufferevent *, void *);
@@ -65,6 +60,8 @@ class IghtConnectionState {
 	IghtConnectionState& operator=(IghtConnectionState&) = delete;
 	IghtConnectionState(IghtConnectionState&&) = delete;
 	IghtConnectionState& operator=(IghtConnectionState&&) = delete;
+
+	~IghtConnectionState(void);
 
 	std::function<void(void)> on_connect = [](void) {
 		/* nothing */
@@ -151,10 +148,7 @@ class IghtConnection : public ight::common::constraints::NonCopyable,
 	}
 
 	void close(void) {
-		if (state == NULL)
-			return;
 		state->close();
-		state = NULL;		/* Idempotent */
 	}
 
 	~IghtConnection(void) {
