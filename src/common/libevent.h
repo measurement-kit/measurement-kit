@@ -177,7 +177,15 @@ class IghtBuffereventSocket : public ight::common::constraints::NonCopyable,
 
 	IghtBuffereventSocket(event_base *base, evutil_socket_t fd,
 	    int options, IghtLibevent *lev = NULL) {
-		if (lev != NULL)
+		make(base, fd, options, lev);
+	}
+
+	void make(event_base *base, evutil_socket_t fd,
+	    int options, IghtLibevent *lev = NULL) {
+		close();
+		if (lev == NULL)
+			libevent = IghtGlobalLibevent::get();
+		else
 			libevent = lev;
 		if ((bev = libevent->bufferevent_socket_new(base, fd,
 		    options)) == NULL)
@@ -185,8 +193,14 @@ class IghtBuffereventSocket : public ight::common::constraints::NonCopyable,
 	}
 
 	~IghtBuffereventSocket(void) {
-		if (bev != NULL)
+		close();
+	}
+
+	void close() {
+		if (bev != NULL) {
 			libevent->bufferevent_free(bev);
+			bev = NULL;
+		}
 	}
 
 	operator bufferevent *(void) {
