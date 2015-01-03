@@ -71,29 +71,15 @@ class IghtIovec : public ight::common::constraints::NonCopyable,
 	}
 };
 
-class IghtBuffer {
+class IghtBuffer : public ight::common::constraints::NonCopyable,
+		public ight::common::constraints::NonMovable  {
+
 	evbuffer *evbuf = NULL;
 
     public:
 	IghtBuffer(void) {
 		if ((evbuf = evbuffer_new()) == NULL)
 			throw std::bad_alloc();
-	}
-
-	IghtBuffer(IghtBuffer&) = delete;
-	IghtBuffer& operator=(IghtBuffer&) = delete;
-
-	/*
-	 * Note: move semantic entails an allocation. We can do better
-	 * by replacing the evbuffer with a wrapper object implementing
-	 * a lazy allocation strategy. (Coming soon...)
-	 */
-	IghtBuffer(IghtBuffer&& other) {
-		std::swap(evbuf, other.evbuf);
-	}
-	IghtBuffer& operator=(IghtBuffer&& other) {
-		std::swap(evbuf, other.evbuf);
-		return (*this);
 	}
 
 	~IghtBuffer(void) {

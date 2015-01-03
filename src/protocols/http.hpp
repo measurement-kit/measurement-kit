@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "common/constraints.hpp"
 #include "common/settings.hpp"
 #include "common/log.h"
 #include "common/error.h"
@@ -35,6 +36,7 @@ namespace ight {
 namespace protocols {
 namespace http {
 
+using namespace ight::common::constraints;
 using namespace ight::common::pointer;
 
 /*!
@@ -531,7 +533,7 @@ typedef std::function<void(IghtError, Response&&)> RequestCallback;
 /*!
  * \brief HTTP request.
  */
-class Request {
+class Request : public NonCopyable, public NonMovable {
 
     RequestCallback callback;
     RequestSerializer serializer;
@@ -616,25 +618,6 @@ public:
             });
 
         });
-    }
-
-    Request(Request&) = delete;
-    Request& operator=(Request&) = delete;
-
-    Request(Request&& other) {
-        std::swap(callback, other.callback);
-        std::swap(serializer, other.serializer);
-        std::swap(stream, other.stream);
-        std::swap(response, other.response);
-        std::swap(parent, other.parent);
-    }
-    Request& operator=(Request&& other) {
-        std::swap(callback, other.callback);
-        std::swap(serializer, other.serializer);
-        std::swap(stream, other.stream);
-        std::swap(response, other.response);
-        std::swap(parent, other.parent);
-        return *this;
     }
 
     void close() {

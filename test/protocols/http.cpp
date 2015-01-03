@@ -179,7 +179,7 @@ TEST_CASE("HTTP Request serializer works as expected") {
     }, {
         {"User-Agent", "Antani/1.0.0.0"},
     }, "0123456789");
-    auto buffer = IghtBuffer();
+    IghtBuffer buffer;
     serializer.serialize(buffer);
     auto serialized = buffer.read<char>();
     std::string expect = "GET /antani?clacsonato=yes HTTP/1.0\r\n";
@@ -193,7 +193,7 @@ TEST_CASE("HTTP Request serializer works as expected") {
 
 TEST_CASE("HTTP Request works as expected") {
     //ight_set_verbose(1);
-    auto r = http::Request({
+    http::Request r({
         {"url", "http://www.google.com/robots.txt"},
         {"method", "GET"},
         {"http_version", "HTTP/1.1"},
@@ -221,7 +221,7 @@ TEST_CASE("HTTP Request works as expected") {
 
 TEST_CASE("HTTP Request correctly receives errors") {
     ight_set_verbose(1);
-    auto r = http::Request({
+    http::Request r({
         {"url", "http://nexa.polito.it:81/robots.txt"},
         {"method", "GET"},
         {"http_version", "HTTP/1.1"},
