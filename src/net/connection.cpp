@@ -45,7 +45,7 @@ IghtConnectionState::handle_read(bufferevent *bev, void *opaque)
 {
 	auto self = (IghtConnectionState *) opaque;
 	(void) bev;  // Suppress warning about unused variable
-	self->on_data(bufferevent_get_input(self->bev));
+	self->on_data_fn(bufferevent_get_input(self->bev));
 }
 
 void
@@ -53,7 +53,7 @@ IghtConnectionState::handle_write(bufferevent *bev, void *opaque)
 {
 	auto self = (IghtConnectionState *) opaque;
 	(void) bev;  // Suppress warning about unused variable
-	self->on_flush();
+	self->on_flush_fn();
 }
 
 void
@@ -65,12 +65,12 @@ IghtConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 
 	if (what & BEV_EVENT_CONNECTED) {
 		self->connecting = 0;
-		self->on_connect();
+		self->on_connect_fn();
 		return;
 	}
 
 	if (what & BEV_EVENT_EOF) {
-		self->on_error(IghtError(0));
+		self->on_error_fn(IghtError(0));
 		return;
 	}
 
@@ -82,7 +82,7 @@ IghtConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 
 	// TODO: also handle the timeout
 
-	self->on_error(IghtError(-1));
+	self->on_error_fn(IghtError(-1));
 }
 
 IghtConnectionState::IghtConnectionState(const char *family, const char *address,
@@ -208,7 +208,7 @@ IghtConnectionState::connect_next(void)
 	}
 
 	this->connecting = 0;
-	this->on_error(IghtError(-2));
+	this->on_error_fn(IghtError(-2));
 }
 
 void
@@ -252,7 +252,7 @@ IghtConnectionState::handle_resolve(int result, char type,
 			ight_warn("handle_resolve - cannot append");
 			// Oops the two vectors are not in sync anymore now
 			connecting = 0;
-			on_error(IghtError(-3));
+			on_error_fn(IghtError(-3));
 			return;
 		}
 	}
@@ -319,7 +319,7 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 		    self->pflist->append("PF_INET") != 0) {
 			ight_warn("resolve - cannot append");
 			self->connecting = 0;
-			self->on_error(IghtError(-4));
+			self->on_error_fn(IghtError(-4));
 			return;
 		}
 		self->connect_next();
@@ -336,7 +336,7 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 		    self->pflist->append("PF_INET6") != 0) {
 			ight_warn("resolve - cannot append");
 			self->connecting = 0;
-			self->on_error(IghtError(-4));
+			self->on_error_fn(IghtError(-4));
 			return;
 		}
 		self->connect_next();
@@ -355,7 +355,7 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 	else {
 		ight_warn("connection::resolve - invalid PF_xxx");
 		self->connecting = 0;
-		self->on_error(IghtError(-5));
+		self->on_error_fn(IghtError(-5));
 		return;
 	}
 
@@ -370,7 +370,7 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 	}
 	if (!ok) {
 		self->connecting = 0;
-		self->on_error(IghtError(-6));
+		self->on_error_fn(IghtError(-6));
 		return;
 	}
 

@@ -51,6 +51,26 @@ class IghtConnectionState {
 	static void resolve(IghtConnectionState *);
 	bool resolve_internal(char);
 
+	std::function<void(void)> on_connect_fn = [](void) {
+		/* nothing */
+	};
+
+	std::function<void(void)> on_ssl_fn = [](void) {
+		/* nothing */
+	};
+
+	std::function<void(evbuffer *)> on_data_fn = [](evbuffer *) {
+		/* nothing */
+	};
+
+	std::function<void(void)> on_flush_fn = [](void) {
+		/* nothing */
+	};
+
+	std::function<void(IghtError)> on_error_fn = [](IghtError) {
+		/* nothing */
+	};
+
     public:
 	IghtConnectionState(const char *, const char *, const char *,
 	    evutil_socket_t = IGHT_SOCKET_INVALID);
@@ -62,24 +82,24 @@ class IghtConnectionState {
 
 	~IghtConnectionState(void);
 
-	std::function<void(void)> on_connect = [](void) {
-		/* nothing */
+	void on_connect(std::function<void(void)>&& fn) {
+		on_connect_fn = std::move(fn);
 	};
 
-	std::function<void(void)> on_ssl = [](void) {
-		/* nothing */
+	void on_ssl(std::function<void(void)>&& fn) {
+		on_ssl_fn = std::move(fn);
 	};
 
-	std::function<void(evbuffer *)> on_data = [](evbuffer *) {
-		/* nothing */
+	void on_data(std::function<void(evbuffer *)>&& fn) {
+		on_data_fn = std::move(fn);
 	};
 
-	std::function<void(void)> on_flush = [](void) {
-		/* nothing */
+	void on_flush(std::function<void(void)>&& fn) {
+		on_flush_fn = std::move(fn);
 	};
 
-	std::function<void(IghtError)> on_error = [](IghtError) {
-		/* nothing */
+	void on_error(std::function<void(IghtError)>&& fn) {
+		on_error_fn = std::move(fn);
 	};
 
 	evutil_socket_t get_fileno(void) {
@@ -159,31 +179,31 @@ class IghtConnection : public ight::common::constraints::NonCopyable,
 	void on_connect(std::function<void(void)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_connect = std::move(fn);
+		state->on_connect(std::move(fn));
 	};
 
 	void on_ssl(std::function<void(void)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_ssl = std::move(fn);
+		state->on_ssl(std::move(fn));
 	};
 
 	void on_data(std::function<void(evbuffer *)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_data = std::move(fn);
+		state->on_data(std::move(fn));
 	};
 
 	void on_flush(std::function<void(void)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_flush = std::move(fn);
+		state->on_flush(std::move(fn));
 	};
 
 	void on_error(std::function<void(IghtError)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_error = std::move(fn);
+		state->on_error(std::move(fn));
 	};
 
 	evutil_socket_t get_fileno(void) {
