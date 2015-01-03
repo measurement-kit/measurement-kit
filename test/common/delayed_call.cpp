@@ -98,6 +98,10 @@ TEST_CASE("Destructor cancels delayed calls") {
     IghtDelayedCall d2(0.249, [&](void) {
       delete (d1);
     });
+    IghtDelayedCall d3(0.33, []() {
+      ight_break_loop();
+    });
+    ight_loop();
     d1 = NULL;  /* Clear the pointer, just in case */
     REQUIRE(called == false);
   }
