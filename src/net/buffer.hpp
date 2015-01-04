@@ -74,12 +74,16 @@ class IghtIovec : public ight::common::constraints::NonCopyable,
 class IghtBuffer : public ight::common::constraints::NonCopyable,
 		public ight::common::constraints::NonMovable  {
 
-	evbuffer *evbuf = NULL;
+	evbuffer *evbuf;
 
     public:
-	IghtBuffer(void) {
+	IghtBuffer(evbuffer *b = NULL) {
 		if ((evbuf = evbuffer_new()) == NULL)
 			throw std::bad_alloc();
+		if (b != NULL && evbuffer_add_buffer(evbuf, b) != 0) {
+			evbuffer_free(evbuf);
+			throw std::runtime_error("evbuffer_add_buffer failed");
+		}
 	}
 
 	~IghtBuffer(void) {
@@ -105,6 +109,16 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 			throw std::runtime_error("dest is NULL");
 		if (evbuffer_add_buffer(dest, evbuf) != 0)
 			throw std::runtime_error("evbuffer_add_buffer failed");
+		return (*this);
+	}
+
+	IghtBuffer& operator<<(IghtBuffer& source) {
+		*this << source.evbuf;
+		return (*this);
+	}
+
+	IghtBuffer& operator>>(IghtBuffer& source) {
+		*this >> source.evbuf;
 		return (*this);
 	}
 

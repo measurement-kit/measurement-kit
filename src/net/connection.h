@@ -15,6 +15,8 @@
 #include "common/poller.h"
 #include "common/utils.hpp"
 
+#include "net/buffer.hpp"
+
 #include "protocols/dns.hpp"
 
 #include <event2/bufferevent.h>
@@ -24,7 +26,6 @@
 #include <string.h>
 
 struct IghtStringVector;
-struct evbuffer;
 
 namespace ight {
 namespace net {
@@ -67,7 +68,8 @@ class ConnectionState {
 		/* nothing */
 	};
 
-	std::function<void(evbuffer *)> on_data_fn = [](evbuffer *) {
+	std::function<void(SharedPointer<IghtBuffer>)> on_data_fn = [](
+			SharedPointer<IghtBuffer>) {
 		/* nothing */
 	};
 
@@ -98,7 +100,7 @@ class ConnectionState {
 		on_ssl_fn = std::move(fn);
 	};
 
-	void on_data(std::function<void(evbuffer *)>&& fn) {
+	void on_data(std::function<void(SharedPointer<IghtBuffer>)>&& fn) {
 		on_data_fn = std::move(fn);
 		enable_read();
 	};
@@ -144,13 +146,12 @@ class ConnectionState {
 		send(data.c_str(), data.length());
 	}
 
-	void send(evbuffer *data) {
-		if (data == NULL) {
-			throw std::runtime_error("invalid argument");
-		}
-		if (bufferevent_write_buffer(bev, data) != 0) {
-			throw std::runtime_error("cannot write");
-		}
+	void send(SharedPointer<IghtBuffer> data) {
+		send(*data);
+	}
+
+	void send(IghtBuffer& data) {
+		data >> bufferevent_get_output(bev);
 	}
 
 	void enable_read(void) {
@@ -206,7 +207,7 @@ class Connection : public NonCopyable, public NonMovable {
 		state->on_ssl(std::move(fn));
 	};
 
-	void on_data(std::function<void(evbuffer *)>&& fn) {
+	void on_data(std::function<void(SharedPointer<IghtBuffer>)>&& fn) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->on_data(std::move(fn));
@@ -260,7 +261,13 @@ class Connection : public NonCopyable, public NonMovable {
 		state->send(str);
 	}
 
-	void send(evbuffer *sourcebuf) {
+	void send(SharedPointer<IghtBuffer> sourcebuf) {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->send(sourcebuf);
+	}
+
+	void send(IghtBuffer& sourcebuf) {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->send(sourcebuf);

@@ -107,7 +107,7 @@ typedef std::map<std::string, std::string> Headers;
  *
  *     auto connection = Connection(...);
  *
- *     connection.on_data([&](evbuffer *data) {
+ *     connection.on_data([&](SharedPointer<IghtBuffer> data) {
  *         parser.feed(data);
  *     });
  */
@@ -196,7 +196,7 @@ public:
      * \throws std::runtime_error This method throws std::runtime_error (or
      *         a class derived from it) on several error conditions.
      */
-    void feed(evbuffer *data);
+    void feed(SharedPointer<IghtBuffer> data);
 
     /*!
      * \brief Feed the parser.
@@ -239,7 +239,7 @@ class Stream {
     std::function<void(IghtError)> error_handler;
 
     void connection_ready(void) {
-        connection->on_data([&](evbuffer *data) {
+        connection->on_data([&](SharedPointer<IghtBuffer> data) {
             parser.feed(data);
         });
         //

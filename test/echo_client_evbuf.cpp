@@ -10,6 +10,8 @@
 
 #include <stdlib.h>
 
+using namespace ight::common::pointer;
+
 int
 main(void)
 {
@@ -19,7 +21,7 @@ main(void)
 		/* nothing */
 	});
 
-	s.on_data([&](evbuffer *b) {
+	s.on_data([&](SharedPointer<IghtBuffer> b) {
 		s.send(b);
 	});
 

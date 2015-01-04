@@ -91,7 +91,7 @@ TEST_CASE("Connection::close() is idempotent") {
         s.enable_read();
         s.send("GET / HTTP/1.0\r\n\r\n");
     });
-    s.on_data([&s](evbuffer *) {
+    s.on_data([&s](SharedPointer<IghtBuffer>) {
         s.close();
         // It shall be safe to call close() more than once
         s.close();
@@ -110,7 +110,7 @@ TEST_CASE("It is safe to manipulate Connection after close") {
         s.enable_read();
         s.send("GET / HTTP/1.0\r\n\r\n");
     });
-    s.on_data([&s](evbuffer *) {
+    s.on_data([&s](SharedPointer<IghtBuffer>) {
         s.close();
         // It shall be safe to call any API after close()
 	// where safe means that we don't segfault
