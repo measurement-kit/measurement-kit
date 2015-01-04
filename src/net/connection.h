@@ -148,7 +148,11 @@ class IghtConnection : public ight::common::constraints::NonCopyable,
 	}
 
 	void close(void) {
+		if (state == NULL)
+			return;
 		state->close();
+		delete state;
+		state = NULL;		/* Idempotent */
 	}
 
 	~IghtConnection(void) {
