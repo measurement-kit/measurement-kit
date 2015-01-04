@@ -18,6 +18,7 @@
 #include "common/constraints.hpp"
 #include "common/error.h"
 #include "common/pointer.hpp"
+#include "common/settings.hpp"
 
 #include "net/buffer.hpp"
 
@@ -27,6 +28,7 @@ namespace transport {
 
 using namespace ight::common::constraints;
 using namespace ight::common::pointer;
+using namespace ight::common;
 
 struct Transport : public NonMovable, public NonCopyable {
 
@@ -56,6 +58,8 @@ struct Transport : public NonMovable, public NonCopyable {
 
     virtual void close() = 0;
 };
+
+SharedPointer<Transport> connect(Settings);
 
 }}}  // namespace
 
