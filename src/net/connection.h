@@ -149,14 +149,12 @@ class IghtConnection : public ight::common::constraints::NonCopyable,
 
 	void close(void) {
 		if (state == NULL)
-			return;
+			throw std::runtime_error("Invalid state");
 		state->close();
-		delete state;
-		state = NULL;		/* Idempotent */
 	}
 
 	~IghtConnection(void) {
-		close();
+		delete state;  /* delete handles NULL */
 	}
 
 	void on_connect(std::function<void(void)>&& fn) {
