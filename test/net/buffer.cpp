@@ -22,8 +22,8 @@ TEST_CASE("The constructor works correctly", "[IghtBuffer]") {
 TEST_CASE("Insertion/extraction work correctly for evbuffer") {
 
 	IghtBuffer buff;
-	auto source = IghtEvbuffer();
-	auto dest = IghtEvbuffer();
+	IghtEvbuffer source;
+	IghtEvbuffer dest;
 	auto sa = std::string(65536, 'A');
 	auto r = std::string();
 
