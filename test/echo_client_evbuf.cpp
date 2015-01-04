@@ -13,7 +13,7 @@
 int
 main(void)
 {
-	IghtConnection s("PF_INET", "127.0.0.1", "54321");
+	ight::net::connection::Connection s("PF_INET", "127.0.0.1", "54321");
 
 	s.on_connect([&](void) {
 		/* nothing */

@@ -26,10 +26,18 @@
 struct IghtStringVector;
 struct evbuffer;
 
-class IghtConnectionState {
+namespace ight {
+namespace net {
+namespace connection {
+
+using namespace ight::common::constraints;
+using namespace ight::common::pointer;
+using namespace ight::protocols;
+
+class ConnectionState {
 
 	IghtBuffereventSocket bev;
-	ight::protocols::dns::Request dns_request;
+	dns::Request dns_request;
 	unsigned int connecting = 0;
 	char *address = NULL;
 	char *port = NULL;
@@ -38,7 +46,7 @@ class IghtConnectionState {
 	IghtStringVector *pflist = NULL;
 	unsigned int must_resolve_ipv4 = 0;
 	unsigned int must_resolve_ipv6 = 0;
-	ight::common::pointer::SharedPointer<IghtDelayedCall> start_connect;
+	SharedPointer<IghtDelayedCall> start_connect;
 
 	// Libevent callbacks
 	static void handle_read(bufferevent *, void *);
@@ -48,7 +56,7 @@ class IghtConnectionState {
 	// Functions used when connecting
 	void connect_next(void);
 	void handle_resolve(int, char, std::vector<std::string>);
-	static void resolve(IghtConnectionState *);
+	static void resolve(ConnectionState *);
 	bool resolve_internal(char);
 
 	std::function<void(void)> on_connect_fn = [](void) {
@@ -72,15 +80,15 @@ class IghtConnectionState {
 	};
 
     public:
-	IghtConnectionState(const char *, const char *, const char *,
+	ConnectionState(const char *, const char *, const char *,
 	    evutil_socket_t = IGHT_SOCKET_INVALID);
 
-	IghtConnectionState(IghtConnectionState&) = delete;
-	IghtConnectionState& operator=(IghtConnectionState&) = delete;
-	IghtConnectionState(IghtConnectionState&&) = delete;
-	IghtConnectionState& operator=(IghtConnectionState&&) = delete;
+	ConnectionState(ConnectionState&) = delete;
+	ConnectionState& operator=(ConnectionState&) = delete;
+	ConnectionState(ConnectionState&&) = delete;
+	ConnectionState& operator=(ConnectionState&&) = delete;
 
-	~IghtConnectionState(void);
+	~ConnectionState(void);
 
 	void on_connect(std::function<void(void)>&& fn) {
 		on_connect_fn = std::move(fn);
@@ -160,21 +168,20 @@ class IghtConnectionState {
 	void close(void);
 };
 
-class IghtConnection : public ight::common::constraints::NonCopyable,
-		public ight::common::constraints::NonMovable {
+class Connection : public NonCopyable, public NonMovable {
 
-	IghtConnectionState *state = NULL;
+	ConnectionState *state = NULL;
 
     public:
-	IghtConnection(void) {
+	Connection(void) {
 		/* nothing to do */
 	}
-	IghtConnection(evutil_socket_t fd) {
-		state = new IghtConnectionState("PF_UNSPEC", "0.0.0.0",
+	Connection(evutil_socket_t fd) {
+		state = new ConnectionState("PF_UNSPEC", "0.0.0.0",
 		    "0", fd);
 	}
-	IghtConnection(const char *af, const char *a, const char *p) {
-		state = new IghtConnectionState(af, a, p);
+	Connection(const char *af, const char *a, const char *p) {
+		state = new ConnectionState(af, a, p);
 	}
 
 	void close(void) {
@@ -183,7 +190,7 @@ class IghtConnection : public ight::common::constraints::NonCopyable,
 		state->close();
 	}
 
-	~IghtConnection(void) {
+	~Connection(void) {
 		delete state;  /* delete handles NULL */
 	}
 
@@ -272,5 +279,6 @@ class IghtConnection : public ight::common::constraints::NonCopyable,
 	}
 };
 
+}}}
 # endif  /* __cplusplus */
 #endif  /* LIBIGHT_NET_CONNECTION_H */

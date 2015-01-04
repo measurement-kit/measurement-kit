@@ -6,7 +6,7 @@
  */
 
 //
-// Tests for src/net/connection.h's IghtConnection{State,}
+// Tests for src/net/connection.h's Connection{State,}
 //
 
 #define CATCH_CONFIG_MAIN
@@ -17,22 +17,24 @@
 
 #include "net/connection.h"
 
+using namespace ight::net::connection;
+
 TEST_CASE("Ensure that the constructor socket-validity checks work") {
 
 	SECTION("Invalid values are properly normalized") {
 		{
 			/* Common for both Unix and Windows */
-			IghtConnection conn(-1);
+			Connection conn(-1);
 			REQUIRE(conn.get_fileno() == -1);
 		}
 #ifndef WIN32
 		{
-			IghtConnection conn(-2);
+			Connection conn(-2);
 			REQUIRE(conn.get_fileno() == -1);
 		}
 		/* ... */
 		{
-			IghtConnection conn(INT_MIN);
+			Connection conn(INT_MIN);
 			REQUIRE(conn.get_fileno() == -1);
 		}
 #endif
@@ -40,39 +42,39 @@ TEST_CASE("Ensure that the constructor socket-validity checks work") {
 
 	SECTION("Valid values are accepted") {
 		{
-			IghtConnection conn(0);
+			Connection conn(0);
 			REQUIRE(conn.get_fileno() == 0);
 		}
 		{
-			IghtConnection conn(1);
+			Connection conn(1);
 			REQUIRE(conn.get_fileno() == 1);
 		}
 		{
-			IghtConnection conn(2);
+			Connection conn(2);
 			REQUIRE(conn.get_fileno() == 2);
 		}
 #ifdef WIN32
 		{
-			IghtConnection conn(INTPTR_MAX);
+			Connection conn(INTPTR_MAX);
 			REQUIRE(conn.get_fileno() == INTPTR_MAX);
 		}
 		/* Skip -1 that is INVALID_SOCKET */
 		{
-			IghtConnection conn(-2);
+			Connection conn(-2);
 			REQUIRE(conn.get_fileno() == -2);
 		}
 		{
-			IghtConnection conn(-3);
+			Connection conn(-3);
 			REQUIRE(conn.get_fileno() == -3);
 		}
 		/* ... */
 		{
-			IghtConnection conn(INTPTR_MIN);
+			Connection conn(INTPTR_MIN);
 			REQUIRE(conn.get_fileno() == INTPTR_MIN);
 		}
 #else
 		{
-			IghtConnection conn(INT_MAX);
+			Connection conn(INT_MAX);
 			REQUIRE(conn.get_fileno() == INT_MAX);
 		}
 
@@ -80,11 +82,11 @@ TEST_CASE("Ensure that the constructor socket-validity checks work") {
 	}
 }
 
-TEST_CASE("IghtConnection::close() is idempotent") {
+TEST_CASE("Connection::close() is idempotent") {
     if (ight::Network::is_down()) {
         return;
     }
-    IghtConnection s("PF_INET", "nexa.polito.it", "80");
+    Connection s("PF_INET", "nexa.polito.it", "80");
     s.on_connect([&s]() {
         s.enable_read();
         s.send("GET / HTTP/1.0\r\n\r\n");
@@ -99,11 +101,11 @@ TEST_CASE("IghtConnection::close() is idempotent") {
     ight_loop();
 }
 
-TEST_CASE("It is safe to manipulate IghtConnection after close") {
+TEST_CASE("It is safe to manipulate Connection after close") {
     if (ight::Network::is_down()) {
         return;
     }
-    IghtConnection s("PF_INET", "nexa.polito.it", "80");
+    Connection s("PF_INET", "nexa.polito.it", "80");
     s.on_connect([&s]() {
         s.enable_read();
         s.send("GET / HTTP/1.0\r\n\r\n");
@@ -119,12 +121,12 @@ TEST_CASE("It is safe to manipulate IghtConnection after close") {
     ight_loop();
 }
 
-TEST_CASE("It is safe to close IghtConnection while resolve is in progress") {
+TEST_CASE("It is safe to close Connection while resolve is in progress") {
     if (ight::Network::is_down()) {
         return;
     }
     ight_set_verbose(1);
-    IghtConnection s("PF_INET", "nexa.polito.it", "80");
+    Connection s("PF_INET", "nexa.polito.it", "80");
     IghtDelayedCall unsched(0.001, [&s]() {
         s.close();
     });

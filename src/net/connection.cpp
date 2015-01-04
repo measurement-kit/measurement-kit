@@ -16,7 +16,10 @@
 #include "common/stringvector.h"
 #include "net/connection.h"
 
-IghtConnectionState::~IghtConnectionState(void)
+using namespace ight::net::connection;
+using namespace ight::protocols;
+
+ConnectionState::~ConnectionState(void)
 {
 	/*
 	 * TODO: switch to RAII.
@@ -41,25 +44,25 @@ IghtConnectionState::~IghtConnectionState(void)
 }
 
 void
-IghtConnectionState::handle_read(bufferevent *bev, void *opaque)
+ConnectionState::handle_read(bufferevent *bev, void *opaque)
 {
-	auto self = (IghtConnectionState *) opaque;
+	auto self = (ConnectionState *) opaque;
 	(void) bev;  // Suppress warning about unused variable
 	self->on_data_fn(bufferevent_get_input(self->bev));
 }
 
 void
-IghtConnectionState::handle_write(bufferevent *bev, void *opaque)
+ConnectionState::handle_write(bufferevent *bev, void *opaque)
 {
-	auto self = (IghtConnectionState *) opaque;
+	auto self = (ConnectionState *) opaque;
 	(void) bev;  // Suppress warning about unused variable
 	self->on_flush_fn();
 }
 
 void
-IghtConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
+ConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 {
-	auto self = (IghtConnectionState *) opaque;
+	auto self = (ConnectionState *) opaque;
 
 	(void) bev;  // Suppress warning about unused variable
 
@@ -85,7 +88,7 @@ IghtConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 	self->on_error_fn(IghtError(-1));
 }
 
-IghtConnectionState::IghtConnectionState(const char *family, const char *address,
+ConnectionState::ConnectionState(const char *family, const char *address,
     const char *port, evutil_socket_t filenum)
 {
 	auto evbase = ight_get_global_event_base();
@@ -152,7 +155,7 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 }
 
 void
-IghtConnectionState::connect_next(void)
+ConnectionState::connect_next(void)
 {
 	const char *address;
 	int error;
@@ -212,7 +215,7 @@ IghtConnectionState::connect_next(void)
 }
 
 void
-IghtConnectionState::handle_resolve(int result, char type,
+ConnectionState::handle_resolve(int result, char type,
 		std::vector<std::string> results) {
 
 	const char *_family;
@@ -275,7 +278,7 @@ IghtConnectionState::handle_resolve(int result, char type,
 	connect_next();
 }
 
-bool IghtConnectionState::resolve_internal(char type) {
+bool ConnectionState::resolve_internal(char type) {
 
     std::string query;
 
@@ -288,8 +291,8 @@ bool IghtConnectionState::resolve_internal(char type) {
     }
 
     try {
-        dns_request = ight::protocols::dns::Request(query, address,
-                [this, type](ight::protocols::dns::Response&& resp) {
+        dns_request = dns::Request(query, address, [this, type](
+                dns::Response&& resp) {
             handle_resolve(resp.get_evdns_status(), type,
                     resp.get_results());
         });
@@ -301,7 +304,7 @@ bool IghtConnectionState::resolve_internal(char type) {
 }
 
 void
-IghtConnectionState::resolve(IghtConnectionState *self)
+ConnectionState::resolve(ConnectionState *self)
 {
 	struct sockaddr_storage storage;
 	int result;
@@ -382,7 +385,7 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 }
 
 void
-IghtConnectionState::close(void)
+ConnectionState::close(void)
 {
 	this->bev.close();
 	this->dns_request.cancel();

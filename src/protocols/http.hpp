@@ -39,6 +39,8 @@ namespace http {
 using namespace ight::common::constraints;
 using namespace ight::common::pointer;
 
+using namespace ight::net::connection;
+
 /*!
  * \brief Raised when the parser receives the UPGRADE method.
  * \remark This should not happen.
@@ -103,7 +105,7 @@ typedef std::map<std::string, std::string> Headers;
  *
  *     ...
  *
- *     auto connection = IghtConnection(...);
+ *     auto connection = Connection(...);
  *
  *     connection.on_data([&](evbuffer *data) {
  *         parser.feed(data);
@@ -232,7 +234,7 @@ public:
  * degree of control is needed over the HTTP protocol.
  */
 class Stream {
-    SharedPointer<IghtConnection> connection;
+    SharedPointer<Connection> connection;
     ResponseParser parser;
     std::function<void(IghtError)> error_handler;
 
@@ -305,7 +307,7 @@ public:
      */
     Stream(std::string address, std::string port,
             std::string family = "PF_UNSPEC") {
-        connection = std::make_shared<IghtConnection>(family.c_str(),
+        connection = std::make_shared<Connection>(family.c_str(),
                 address.c_str(), port.c_str());
         //
         // While the connection is in progress, just forward the
@@ -324,7 +326,7 @@ public:
      * \sock The already connecte socket.
      */
     Stream(evutil_socket_t sock) {
-        connection = std::make_shared<IghtConnection>(sock);
+        connection = std::make_shared<Connection>(sock);
         connection_ready();
     }
 
