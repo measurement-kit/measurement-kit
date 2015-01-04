@@ -6,7 +6,7 @@
  */
 
 #include "common/log.h"
-#include "net/connection.h"
+#include "net/connection.hpp"
 
 #include <stdlib.h>
 

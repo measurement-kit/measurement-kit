@@ -23,7 +23,7 @@
 #include "common/pointer.hpp"
 
 #include "net/buffer.hpp"
-#include "net/connection.h"
+#include "net/connection.hpp"
 
 // Internally we use joyent/http-parser
 struct http_parser;

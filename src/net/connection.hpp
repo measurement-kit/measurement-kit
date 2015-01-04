@@ -5,9 +5,8 @@
  * information on the copying conditions.
  */
 
-#ifndef LIBIGHT_NET_CONNECTION_H
-# define LIBIGHT_NET_CONNECTION_H
-# ifdef __cplusplus
+#ifndef LIBIGHT_NET_CONNECTION_HPP
+# define LIBIGHT_NET_CONNECTION_HPP
 
 #include "common/constraints.hpp"
 #include "common/error.h"
@@ -286,6 +285,5 @@ class Connection : public NonCopyable, public NonMovable {
 	}
 };
 
-}}}
-# endif  /* __cplusplus */
-#endif  /* LIBIGHT_NET_CONNECTION_H */
+}}}  // namespaces
+#endif  /* LIBIGHT_NET_CONNECTION_HPP */

@@ -14,7 +14,7 @@
 
 #include "common/log.h"
 #include "common/stringvector.h"
-#include "net/connection.h"
+#include "net/connection.hpp"
 
 using namespace ight::net::connection;
 using namespace ight::protocols;

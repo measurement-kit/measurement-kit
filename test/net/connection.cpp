@@ -15,7 +15,7 @@
 #include "common/check_connectivity.hpp"
 #include "common/log.h"
 
-#include "net/connection.h"
+#include "net/connection.hpp"
 
 using namespace ight::net::connection;
 

@@ -2,7 +2,7 @@
 # define LIBIGHT_OONI_DNS_TEST_HPP
 
 #include "net/buffer.hpp"
-#include "net/connection.h"
+#include "net/connection.hpp"
 
 #include "common/emitter.hpp"
 #include "common/pointer.hpp"
