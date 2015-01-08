@@ -23,7 +23,7 @@ TEST_CASE("The TCP connect test should run with an input file of DNS hostnames")
 
 TEST_CASE("The TCP connect test should throw an exception if an invalid file path is given") {
   REQUIRE_THROWS_AS(
-      TCPConnect("/tmp/this-file-does-not-exist.txt", {}),
+      TCPConnect("/tmp/this-file-does-not-exist.txt", ight::common::Settings()),
       InputFileDoesNotExist
   );
 }
@@ -31,7 +31,7 @@ TEST_CASE("The TCP connect test should throw an exception if an invalid file pat
 TEST_CASE("The TCP connect test should throw an exception if no file path is given") {
   ight_set_verbose(1);
   REQUIRE_THROWS_AS(
-      TCPConnect("", {}),
+      TCPConnect("", ight::common::Settings()),
       InputFileRequired
   );
 }
