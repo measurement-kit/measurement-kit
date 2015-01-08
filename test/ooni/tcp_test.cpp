@@ -53,7 +53,7 @@ TEST_CASE("TCPTest works as expected in a common case")
     ight_set_verbose(1);
 
     auto count = 0;
-    TCPTest tcp_test("", {});
+    TCPTest tcp_test("", ight::common::Settings());
 
     auto client1 = tcp_test.connect({
         {"host", "www.neubot.org"},
