@@ -12,11 +12,15 @@
 // Helper class to check whether we have connectivity
 //
 
+#include "common/constraints.hpp"
+
 // Forward declarations
 struct event_base;
 struct evdns_base;
 
 namespace ight {
+
+using namespace ight::common::constraints;
 
 /*!
  * \brief Class used to check whether the network is up.
@@ -48,7 +52,7 @@ namespace ight {
  * the current thread is blocked until the DNS response is received or until
  * the evdns timeout expires.
  */
-class Network {
+class Network : public NonCopyable, public NonMovable {
     event_base *evbase = NULL;
     evdns_base *dnsbase = NULL;
     bool is_up = false;
@@ -63,11 +67,6 @@ class Network {
     ~Network(void) {
         cleanup();
     }
-
-    Network(Network& /*other*/) = delete;
-    Network& operator=(Network& /*other*/) = delete;
-    Network(Network&& /*other*/) = delete;
-    Network& operator=(Network&& /*other*/) = delete;
 
 public:
 

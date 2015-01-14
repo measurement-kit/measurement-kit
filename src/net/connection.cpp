@@ -177,8 +177,8 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 	    this->handle_event, this);
 
 	if (!ight_socket_valid(filenum))
-		this->start_connect = IghtDelayedCall(0.0, std::bind(
-		    this->resolve, this));
+		this->start_connect = std::make_shared<IghtDelayedCall>(0.0,
+		    std::bind(this->resolve, this));
 	else
 		this->filedesc = filenum;	/* Own the socket on success */
 }

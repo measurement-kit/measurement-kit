@@ -12,9 +12,10 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
+#include "common/pointer.hpp"
 #include "common/poller.h"
 
-#include <iostream> 
+using namespace ight::common::pointer;
 
 TEST_CASE("Bad allocations triggers a failure ") {
 	IghtLibevent libevent;
@@ -43,76 +44,18 @@ TEST_CASE("Check that the event callbacks are fired") {
 	IghtLibevent libevent;
 
   SECTION("event_free must be called") {
-	  auto event_free_called = false;
+    auto event_free_called = false;
 
     libevent.event_free = [&event_free_called](event *evp) {
       event_free_called = true;
       ::event_free(evp);
     };
 
-		IghtDelayedCall(0.0, [](void) { }, &libevent);
+    IghtDelayedCall(0.0, [](void) { }, &libevent);
 
     REQUIRE(event_free_called == true);
   }
 }
-
-
-TEST_CASE("Move semantics must preserve libevent free calling") {
-
-  SECTION("Must preserve libevent free calling") {
-    auto event_free_called = 0;
-    IghtLibevent libevent;
-
-    libevent.event_free = [&event_free_called](event *evp) {
-      ++event_free_called;
-      ::event_free(evp);
-    };
-
-    auto d1 = IghtDelayedCall(0.0, [](void) { }, &libevent);
-    {
-      // Move constructor
-      IghtDelayedCall d2(std::move(d1));
-    }
-    REQUIRE(event_free_called == 1);
-
-    auto d3 = IghtDelayedCall(0.0, [](void) { }, &libevent);
-    {
-      // Move assignment
-      auto d4 = IghtDelayedCall();
-      d4 = std::move(d3);
-    }
-    REQUIRE(event_free_called == 2);
-  }
-  
-  SECTION("Replace a delayed call with a new one") {
-    auto called = false;
-    auto not_called = false;
-
-    //
-    // Register a first delayed call (which will be overriden
-    // later) to ensure that move semantic works.
-    //
-    auto d2 = IghtDelayedCall(0.0, [&](void) {
-        not_called = true;
-    });
-
-    //
-    // Replace the delayed call (which should clear the previous
-    // delayed call contained by d2, if any) with a new one, using
-    // the move semantic.
-    //
-    d2 = IghtDelayedCall(0.0, [&](void) {
-        called = true;
-        ight_break_loop();
-	  });
-
-    ight_loop();
-
-    REQUIRE(called == true);
-    REQUIRE(not_called == false);
-  }
-}
-
 
 TEST_CASE("Destructor cancels delayed calls") {
 
@@ -124,13 +67,13 @@ TEST_CASE("Destructor cancels delayed calls") {
     // at any time by peer.
     //
     struct X {
-      IghtDelayedCall d;
+      SharedPointer<IghtDelayedCall> d;
     };
 
     auto called = false;
     auto x = new X();
-    x->d = IghtDelayedCall(0.0, [&](void) {
-        called = true;
+    x->d = std::make_shared<IghtDelayedCall>(0.0, [&](void) {
+      called = true;
     });
     delete (x);
     REQUIRE(called == false);
@@ -150,11 +93,15 @@ TEST_CASE("Destructor cancels delayed calls") {
     //
     auto called = false; 
     auto d1 = new IghtDelayedCall(0.25, [&](void) {
-        called = true;
+      called = true;
     });
-    auto d2 = IghtDelayedCall(0.249, [&](void) {
+    IghtDelayedCall d2(0.249, [&](void) {
       delete (d1);
     });
+    IghtDelayedCall d3(0.33, []() {
+      ight_break_loop();
+    });
+    ight_loop();
     d1 = NULL;  /* Clear the pointer, just in case */
     REQUIRE(called == false);
   }
@@ -167,7 +114,7 @@ TEST_CASE("Delayed call construction") {
     // Make sure that an empty delayed call is successfully
     // destroyed (no segfault) when we leave the scope.
     //
-    auto d1 = IghtDelayedCall();
+    IghtDelayedCall d1{0.0, [](){}};
   }
 
   SECTION("Create a delayed call with empty std::function") {
@@ -175,9 +122,10 @@ TEST_CASE("Delayed call construction") {
     // Make sure that we don't raise an exception in the libevent
     // callback, when we're passed an empty std::function.
     //
-    auto d3 = IghtDelayedCall(0.5, std::function<void(void)>());
+    IghtDelayedCall d3(0.0, std::function<void(void)>());
+    IghtDelayedCall d4(0.1, []() {
+        ight_break_loop();
+    });
+    ight_loop();
   }
-  
 }
-
-

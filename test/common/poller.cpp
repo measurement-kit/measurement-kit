@@ -258,7 +258,7 @@ TEST_CASE("SIGINT is correctly handled on Unix") {
     SECTION("SIGINT is correctly handled after the handler is set") {
 	IghtPoller poller;
 
-	auto d = IghtDelayedCall(0.01, [](void) {
+	IghtDelayedCall d(0.01, [](void) {
 	    raise(SIGINT);
 	}, NULL, poller.get_event_base());
 
@@ -276,7 +276,7 @@ TEST_CASE("SIGINT is correctly handled on Unix") {
 
 	if (pid == 0) {
 		IghtPoller poller;
-		auto d = IghtDelayedCall(0.01, [](void) {
+		IghtDelayedCall d(0.01, [](void) {
 			raise(SIGINT);
 		}, NULL, poller.get_event_base());
 		/*
