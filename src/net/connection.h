@@ -28,7 +28,6 @@ struct evbuffer;
 
 class IghtConnectionState {
 
-	evutil_socket_t filedesc = IGHT_SOCKET_INVALID;
 	IghtBuffereventSocket bev;
 	ight::protocols::dns::Request dns_request;
 	unsigned int connecting = 0;
@@ -84,7 +83,7 @@ class IghtConnectionState {
 	};
 
 	evutil_socket_t get_fileno(void) {
-		return (this->filedesc);
+		return (bufferevent_getfd(this->bev));
 	}
 
 	int set_timeout(double timeout) {
