@@ -15,6 +15,8 @@
 #include "common/poller.h"
 #include "common/utils.hpp"
 
+#include "protocols/dns.hpp"
+
 #include <event2/bufferevent.h>
 #include <event2/event.h>
 
@@ -27,10 +29,9 @@ struct evbuffer;
 class IghtConnectionState {
 
 	evutil_socket_t filedesc = IGHT_SOCKET_INVALID;
-	bufferevent *bev = NULL;
-	unsigned int closing = 0;
+	IghtBuffereventSocket bev;
+	ight::protocols::dns::Request dns_request;
 	unsigned int connecting = 0;
-	unsigned int reading = 0;
 	char *address = NULL;
 	char *port = NULL;
 	IghtStringVector *addrlist = NULL;
@@ -40,9 +41,6 @@ class IghtConnectionState {
 	unsigned int must_resolve_ipv6 = 0;
 	ight::common::pointer::SharedPointer<IghtDelayedCall> start_connect;
 
-	// Private destructor because destruction may be delayed
-	~IghtConnectionState(void);
-
 	// Libevent callbacks
 	static void handle_read(bufferevent *, void *);
 	static void handle_write(bufferevent *, void *);
@@ -50,9 +48,9 @@ class IghtConnectionState {
 
 	// Functions used when connecting
 	void connect_next(void);
-	static void handle_resolve(int, char, int, int,
-	    void *, void *);
+	void handle_resolve(int, char, std::vector<std::string>);
 	static void resolve(IghtConnectionState *);
+	bool resolve_internal(char);
 
     public:
 	IghtConnectionState(const char *, const char *, const char *,
@@ -62,6 +60,8 @@ class IghtConnectionState {
 	IghtConnectionState& operator=(IghtConnectionState&) = delete;
 	IghtConnectionState(IghtConnectionState&&) = delete;
 	IghtConnectionState& operator=(IghtConnectionState&&) = delete;
+
+	~IghtConnectionState(void);
 
 	std::function<void(void)> on_connect = [](void) {
 		/* nothing */
@@ -149,13 +149,12 @@ class IghtConnection : public ight::common::constraints::NonCopyable,
 
 	void close(void) {
 		if (state == NULL)
-			return;
+			throw std::runtime_error("Invalid state");
 		state->close();
-		state = NULL;		/* Idempotent */
 	}
 
 	~IghtConnection(void) {
-		close();
+		delete state;  /* delete handles NULL */
 	}
 
 	void on_connect(std::function<void(void)>&& fn) {

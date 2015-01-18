@@ -25,12 +25,7 @@ IghtConnectionState::~IghtConnectionState(void)
 	if (this->filedesc != IGHT_SOCKET_INVALID)
 		(void) evutil_closesocket((evutil_socket_t) this->filedesc);
 
-	if (this->bev != NULL)
-		bufferevent_free(this->bev);
-
-	// closing: nothing to be done
 	// connecting: nothing to be done
-	// reading: nothing to be done
 
 	if (this->address != NULL)
 		free(this->address);
@@ -52,15 +47,8 @@ void
 IghtConnectionState::handle_read(bufferevent *bev, void *opaque)
 {
 	auto self = (IghtConnectionState *) opaque;
-
 	(void) bev;  // Suppress warning about unused variable
-
-	self->reading = 1;
 	self->on_data(bufferevent_get_input(self->bev));
-	self->reading = 0;
-
-	if (self->closing)
-		delete (self);
 }
 
 void
@@ -77,11 +65,6 @@ IghtConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 	auto self = (IghtConnectionState *) opaque;
 
 	(void) bev;  // Suppress warning about unused variable
-
-	if (self->connecting && self->closing) {
-		delete (self);
-		return;
-	}
 
 	if (what & BEV_EVENT_CONNECTED) {
 		self->connecting = 0;
@@ -119,38 +102,30 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 
 	// filedesc: if valid, it is set on success only
 
-	if ((this->bev = bufferevent_socket_new(evbase, (evutil_socket_t)
-	    filenum, BEV_OPT_DEFER_CALLBACKS)) == NULL)
-		throw std::bad_alloc();
+	this->bev.make(evbase, filenum, BEV_OPT_DEFER_CALLBACKS);
 
 	// closing: nothing to be done
 
 	if (!ight_socket_valid(filenum))
 		this->connecting = 1;
 
-	// reading: nothing to be done
-
 	if ((this->address = strdup(address)) == NULL) {
-		bufferevent_free(this->bev);
 		throw std::bad_alloc();
 	}
 
 	if ((this->port = strdup(port)) == NULL) {
-		bufferevent_free(this->bev);
 		free(this->address);
 		throw std::bad_alloc();
 	}
 
 	if ((this->addrlist = new (std::nothrow) IghtStringVector(poller,
 	    16)) == NULL) {
-		bufferevent_free(this->bev);
 		free(this->address);
 		free(this->port);
 		throw std::bad_alloc();
 	}
 
 	if ((this->family = strdup(family)) == NULL) {
-		bufferevent_free(this->bev);
 		free(this->address);
 		free(this->port);
 		delete (this->addrlist);
@@ -159,7 +134,6 @@ IghtConnectionState::IghtConnectionState(const char *family, const char *address
 
 	if ((this->pflist = new (std::nothrow) IghtStringVector(poller,
 	    16)) == NULL) {
-		bufferevent_free(this->bev);
 		free(this->address);
 		free(this->port);
 		delete (this->addrlist);
@@ -247,26 +221,16 @@ IghtConnectionState::connect_next(void)
 }
 
 void
-IghtConnectionState::handle_resolve(int result, char type, int count,
-    int ttl, void *addresses, void *opaque)
-{
-	auto self = (IghtConnectionState *) opaque;
-	const char *_family;
-	const char *p;
-	int error, family, size;
-	char string[128];
+IghtConnectionState::handle_resolve(int result, char type,
+		std::vector<std::string> results) {
 
-	(void) ttl;
+	const char *_family;
+	int error;
 
 	ight_info("handle_resolve - enter");
 
-	if (!self->connecting)
+	if (!connecting)
 		abort();
-
-	if (self->closing) {
-		delete (self);
-		return;
-	}
 
 	if (result != DNS_ERR_NONE)
 		goto finally;
@@ -274,70 +238,75 @@ IghtConnectionState::handle_resolve(int result, char type, int count,
 	switch (type) {
 	case DNS_IPv4_A:
 		ight_info("handle_resolve - IPv4");
-		family = PF_INET;
 		_family = "PF_INET";
-		size = 4;
 		break;
 	case DNS_IPv6_AAAA:
 		ight_info("handle_resolve - IPv6");
-		family = PF_INET6;
 		_family = "PF_INET6";
-		size = 16;
 		break;
 	default:
 		abort();
 	}
 
-	while (--count >= 0) {
-		if (count > INT_MAX / size) {
-			continue;
-		}
-		// Note: address already in network byte order
-		p = inet_ntop(family, (char *)addresses + count * size,
-		    string, sizeof (string));
-		if (p == NULL) {
-			ight_warn("handle_resolve - inet_ntop() failed");
-			continue;
-		}
-		ight_info("handle_resolve - address %s", p);
-		error = self->addrlist->append(string);
+	for (auto& address : results) {
+		ight_info("handle_resolve - address %s", address.c_str());
+		error = addrlist->append(address.c_str());
 		if (error != 0) {
 			ight_warn("handle_resolve - cannot append");
 			continue;
 		}
 		ight_info("handle_resolve - family %s", _family);
-		error = self->pflist->append(_family);
+		error = pflist->append(_family);
 		if (error != 0) {
 			ight_warn("handle_resolve - cannot append");
 			// Oops the two vectors are not in sync anymore now
-			self->connecting = 0;
-			self->on_error(IghtError(-3));
+			connecting = 0;
+			on_error(IghtError(-3));
 			return;
 		}
 	}
 
     finally:
-	auto dns_base = ight_get_global_evdns_base();
+	if (must_resolve_ipv6) {
+		must_resolve_ipv6 = 0;
+		bool ok = resolve_internal(DNS_IPv6_AAAA);
+		if (ok)
+			return;
+		/* FALLTHROUGH */
+	}
+	if (must_resolve_ipv4) {
+		must_resolve_ipv4 = 0;
+		bool ok = resolve_internal(DNS_IPv4_A);
+		if (ok)
+			return;
+		/* FALLTHROUGH */
+	}
+	connect_next();
+}
 
-	if (self->must_resolve_ipv6) {
-		self->must_resolve_ipv6 = 0;
-		evdns_request *request = evdns_base_resolve_ipv6(dns_base,
-		    self->address, DNS_QUERY_NO_SEARCH, self->handle_resolve,
-		    self);
-		if (request != NULL)
-			return;
-		/* FALLTHROUGH */
-	}
-	if (self->must_resolve_ipv4) {
-		self->must_resolve_ipv4 = 0;
-		evdns_request *request = evdns_base_resolve_ipv4(dns_base,
-		    self->address, DNS_QUERY_NO_SEARCH, self->handle_resolve,
-		    self);
-		if (request != NULL)
-			return;
-		/* FALLTHROUGH */
-	}
-	self->connect_next();
+bool IghtConnectionState::resolve_internal(char type) {
+
+    std::string query;
+
+    if (type == DNS_IPv6_AAAA) {
+        query = "AAAA";
+    } else if (type == DNS_IPv4_A) {
+        query = "A";
+    } else {
+        return false;
+    }
+
+    try {
+        dns_request = ight::protocols::dns::Request(query, address,
+                [this, type](ight::protocols::dns::Response&& resp) {
+            handle_resolve(resp.get_evdns_status(), type,
+                    resp.get_results());
+        });
+    } catch (...) {
+        return false;  /* TODO: save the error */
+    }
+
+    return true;
 }
 
 void
@@ -348,11 +317,6 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 
 	if (!self->connecting)
 		abort();
-
-	if (self->closing) {
-		delete (self);
-		return;
-	}
 
 	// If self->address is a valid IPv4 address, connect directly
 	memset(&storage, 0, sizeof (storage));
@@ -388,8 +352,6 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 		return;
 	}
 
-	auto dns_base = ight_get_global_evdns_base();
-
 	// Note: PF_UNSPEC6 means that we try with IPv6 first
 	if (strcmp(self->family, "PF_INET") == 0)
 		self->must_resolve_ipv4 = 1;
@@ -406,18 +368,16 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 		return;
 	}
 
-	evdns_request *request;
+	bool ok = false;
 
 	if (self->must_resolve_ipv4) {
 		self->must_resolve_ipv4 = 0;
-		request = evdns_base_resolve_ipv4(dns_base, self->address,
-		    DNS_QUERY_NO_SEARCH, self->handle_resolve, self);
+		ok = self->resolve_internal(DNS_IPv4_A);
 	} else {
 		self->must_resolve_ipv6 = 0;
-		request = evdns_base_resolve_ipv6(dns_base, self->address,
-		    DNS_QUERY_NO_SEARCH, self->handle_resolve, self);
+		ok = self->resolve_internal(DNS_IPv6_AAAA);
 	}
-	if (request == NULL) {
+	if (!ok) {
 		self->connecting = 0;
 		self->on_error(IghtError(-6));
 		return;
@@ -433,8 +393,6 @@ IghtConnectionState::resolve(IghtConnectionState *self)
 void
 IghtConnectionState::close(void)
 {
-	this->closing = 1;
-	if (this->reading != 0 || this->connecting != 0)
-		return;
-	delete this;
+	this->bev.close();
+	this->dns_request.cancel();
 }
