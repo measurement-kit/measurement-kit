@@ -9,3 +9,13 @@ src_ooni_libooni_la_SOURCES = \
 	src/ooni/dns_injection.cpp
 
 libight_la_LIBADD += src/ooni/libooni.la
+
+ooniincludedir = $(includedir)/ight/ooni
+ooniinclude_HEADERS = \
+   src/ooni/dns_injection.hpp \
+   src/ooni/dns_test.hpp \
+   src/ooni/http_invalid_request_line.hpp \
+   src/ooni/http_test.hpp \
+   src/ooni/net_test.hpp \
+   src/ooni/tcp_connect.hpp \
+   src/ooni/tcp_test.hpp
