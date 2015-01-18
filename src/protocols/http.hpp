@@ -8,8 +8,6 @@
 #ifndef LIBIGHT_PROTOCOLS_HTTP_HPP
 # define LIBIGHT_PROTOCOLS_HTTP_HPP
 
-#include <event2/util.h>  /* XXX for evutil_socket_t */
-
 #include <functional>
 #include <map>
 #include <set>
@@ -23,7 +21,7 @@
 #include "common/pointer.hpp"
 
 #include "net/buffer.hpp"
-#include "net/connection.hpp"
+#include "net/transport.hpp"
 
 // Internally we use joyent/http-parser
 struct http_parser;
@@ -39,7 +37,8 @@ namespace http {
 using namespace ight::common::constraints;
 using namespace ight::common::pointer;
 
-using namespace ight::net::connection;
+using namespace ight::net;
+using namespace ight::net::transport;
 
 /*!
  * \brief Raised when the parser receives the UPGRADE method.
@@ -105,7 +104,7 @@ typedef std::map<std::string, std::string> Headers;
  *
  *     ...
  *
- *     auto connection = Connection(...);
+ *     auto connection = ight::net::transport::connect(...);
  *
  *     connection.on_data([&](SharedPointer<IghtBuffer> data) {
  *         parser.feed(data);
@@ -234,7 +233,7 @@ public:
  * degree of control is needed over the HTTP protocol.
  */
 class Stream {
-    SharedPointer<Connection> connection;
+    SharedPointer<Transport> connection;
     ResponseParser parser;
     std::function<void(IghtError)> error_handler;
 
@@ -296,19 +295,11 @@ public:
 
     /*!
      * \brief Create a stream that connects to a remote host.
-     * \param address Address to connect to (this can either be an
-     *        IPv4 address, and IPv6 address or a domain name).
-     * \param port Port to connect to (service names are not accepted by
-     *        this interface, only port numbers are accepted).
-     * \param family Optionally, the address family to be used. Use
-     *        "PF_INET" to indicate IPv4, "PF_INET6" to indicate IPv6,
-     *        "PF_UNSPEC" to prefer IPv4 addresses to IPv6 addresses,
-     *        and "PF_UNSPEC6" to prefer IPv6 to IPv4.
+     * \param settings Settings passed to the transport to initialize
+     *        it (see transport.cpp for more info).
      */
-    Stream(std::string address, std::string port,
-            std::string family = "PF_UNSPEC") {
-        connection = std::make_shared<Connection>(family.c_str(),
-                address.c_str(), port.c_str());
+    Stream(Settings settings) {
+        connection = transport::connect(settings);
         //
         // While the connection is in progress, just forward the
         // error if needed, we'll deal with body-terminated-by-EOF
@@ -319,15 +310,6 @@ public:
                 error_handler(error);
             }
         });
-    }
-
-    /*!
-     * \brief Create a stream attached to an already connected socket.
-     * \sock The already connecte socket.
-     */
-    Stream(evutil_socket_t sock) {
-        connection = std::make_shared<Connection>(sock);
-        connection_ready();
     }
 
     /*!
@@ -573,8 +555,10 @@ public:
             std::set<Request *> *parent_ = nullptr)
                 : callback(callback_), parent(parent_) {
         serializer = RequestSerializer(settings, headers, body);
-        stream = SharedPointer<Stream>{new Stream(
-                serializer.address, serializer.port)};
+        // Extend settings with address and port to connect to
+        settings["port"] = serializer.port;
+        settings["address"] = serializer.address;
+        stream = std::make_shared<Stream>(settings);
         stream->on_error([this](IghtError err) {
             emit_end(err, std::move(response));
         });

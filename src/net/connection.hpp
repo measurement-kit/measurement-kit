@@ -15,6 +15,7 @@
 #include "common/utils.hpp"
 
 #include "net/buffer.hpp"
+#include "net/transport.hpp"
 
 #include "protocols/dns.hpp"
 
@@ -32,6 +33,9 @@ namespace connection {
 
 using namespace ight::common::constraints;
 using namespace ight::common::pointer;
+
+using namespace ight::net::transport;
+
 using namespace ight::protocols;
 
 class ConnectionState {
@@ -91,25 +95,25 @@ class ConnectionState {
 
 	~ConnectionState(void);
 
-	void on_connect(std::function<void(void)>&& fn) {
-		on_connect_fn = std::move(fn);
+	void on_connect(std::function<void(void)> fn) {
+		on_connect_fn = fn;
 	};
 
-	void on_ssl(std::function<void(void)>&& fn) {
-		on_ssl_fn = std::move(fn);
+	void on_ssl(std::function<void(void)> fn) {
+		on_ssl_fn = fn;
 	};
 
-	void on_data(std::function<void(SharedPointer<IghtBuffer>)>&& fn) {
-		on_data_fn = std::move(fn);
+	void on_data(std::function<void(SharedPointer<IghtBuffer>)> fn) {
+		on_data_fn = fn;
 		enable_read();
 	};
 
-	void on_flush(std::function<void(void)>&& fn) {
-		on_flush_fn = std::move(fn);
+	void on_flush(std::function<void(void)> fn) {
+		on_flush_fn = fn;
 	};
 
-	void on_error(std::function<void(IghtError)>&& fn) {
-		on_error_fn = std::move(fn);
+	void on_error(std::function<void(IghtError)> fn) {
+		on_error_fn = fn;
 	};
 
 	evutil_socket_t get_fileno(void) {
@@ -168,7 +172,7 @@ class ConnectionState {
 	void close(void);
 };
 
-class Connection : public NonCopyable, public NonMovable {
+class Connection : public Transport {
 
 	ConnectionState *state = NULL;
 
@@ -184,44 +188,43 @@ class Connection : public NonCopyable, public NonMovable {
 		state = new ConnectionState(af, a, p);
 	}
 
-	void close(void) {
+	virtual void close(void) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->close();
 	}
 
-	~Connection(void) {
-		delete state;  /* delete handles NULL */
-	}
+	virtual ~Connection();
 
-	void on_connect(std::function<void(void)>&& fn) {
+	virtual void on_connect(std::function<void(void)> fn) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_connect(std::move(fn));
+		state->on_connect(fn);
 	};
 
-	void on_ssl(std::function<void(void)>&& fn) {
+	virtual void on_ssl(std::function<void(void)> fn) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_ssl(std::move(fn));
+		state->on_ssl(fn);
 	};
 
-	void on_data(std::function<void(SharedPointer<IghtBuffer>)>&& fn) {
+	virtual void on_data(std::function<void(
+			SharedPointer<IghtBuffer>)> fn) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_data(std::move(fn));
+		state->on_data(fn);
 	};
 
-	void on_flush(std::function<void(void)>&& fn) {
+	virtual void on_flush(std::function<void(void)> fn) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_flush(std::move(fn));
+		state->on_flush(fn);
 	};
 
-	void on_error(std::function<void(IghtError)>&& fn) {
+	virtual void on_error(std::function<void(IghtError)> fn) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
-		state->on_error(std::move(fn));
+		state->on_error(fn);
 	};
 
 	evutil_socket_t get_fileno(void) {
@@ -230,13 +233,13 @@ class Connection : public NonCopyable, public NonMovable {
 		return (state->get_fileno());
 	}
 
-	void set_timeout(double timeout) {
+	virtual void set_timeout(double timeout) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->set_timeout(timeout);
 	}
 
-	void clear_timeout(void) {
+	virtual void clear_timeout(void) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->clear_timeout();
@@ -248,25 +251,25 @@ class Connection : public NonCopyable, public NonMovable {
 		state->start_tls(d);
 	}
 
-	void send(const char *base, size_t count) {
+	virtual void send(const void *base, size_t count) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->send(base, count);
 	}
 
-	void send(std::string str) {
+	virtual void send(std::string str) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->send(str);
 	}
 
-	void send(SharedPointer<IghtBuffer> sourcebuf) {
+	virtual void send(SharedPointer<IghtBuffer> sourcebuf) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->send(sourcebuf);
 	}
 
-	void send(IghtBuffer& sourcebuf) {
+	virtual void send(IghtBuffer& sourcebuf) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->send(sourcebuf);

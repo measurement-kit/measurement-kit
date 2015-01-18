@@ -19,6 +19,7 @@
 
 using namespace ight::protocols;
 using namespace ight::common::pointer;
+using namespace ight::common;
 
 //
 // ResponseParser unit test
@@ -118,9 +119,57 @@ TEST_CASE("HTTP stream works as expected") {
         return;
     }
     //ight_set_verbose(1);
-    auto stream = SharedPointer<http::Stream>{
-        new http::Stream("www.google.com", "80")
-    };
+    auto stream = std::make_shared<http::Stream>(Settings{
+        {"address", "www.google.com"},
+        {"port", "80"},
+    });
+    stream->on_connect([&]() {
+        ight_debug("Connection made... sending request");
+        *stream << "GET /robots.txt HTTP/1.1\r\n"
+               << "Host: www.google.com\r\n"
+               << "Connection: close\r\n"
+               << "\r\n";
+        stream->on_flush([]() {
+            ight_debug("Request sent... waiting for response");
+        });
+        stream->on_headers_complete([&](unsigned short major,
+                unsigned short minor, unsigned int status,
+                std::string&& reason, http::Headers&& headers) {
+            std::cout << "HTTP/" << major << "." << minor << " " <<
+                        status << " " << reason << "\r\n";
+            for (auto& kv : headers) {
+                std::cout << kv.first << ": " << kv.second << "\r\n";
+            }
+            std::cout << "\r\n";
+            stream->on_end([&](void) {
+                std::cout << "\r\n";
+                stream->close();
+                ight_break_loop();
+            });
+            stream->on_body([&](std::string&& /*chunk*/) {
+                //std::cout << chunk;
+            });
+        });
+    });
+    ight_loop();
+}
+
+TEST_CASE("HTTP stream works as expected when using Tor") {
+    if (ight::Network::is_down()) {
+        return;
+    }
+    ight_set_verbose(1);
+    auto stream = std::make_shared<http::Stream>(Settings{
+        {"address", "www.google.com"},
+        {"port", "80"},
+        {"socks5_proxy", "y"},
+    });
+    stream->set_timeout(1.0);
+    stream->on_error([&](IghtError e) {
+        ight_debug("Connection error: %d", e.error);
+        stream->close();
+        ight_break_loop();
+    });
     stream->on_connect([&]() {
         ight_debug("Connection made... sending request");
         *stream << "GET /robots.txt HTTP/1.1\r\n"
@@ -157,9 +206,10 @@ TEST_CASE("HTTP stream receives connection errors") {
         return;
     }
     //ight_set_verbose(1);
-    auto stream = SharedPointer<http::Stream>{
-        new http::Stream("nexa.polito.it", "81")
-    };
+    auto stream = std::make_shared<http::Stream>(Settings{
+        {"address", "nexa.polito.it"},
+        {"port", "81"},
+    });
     stream->set_timeout(1.0);
     stream->on_error([&](IghtError e) {
         ight_debug("Connection error: %d", e.error);
@@ -247,6 +297,35 @@ TEST_CASE("HTTP Request correctly receives errors") {
     ight_loop();
 }
 
+TEST_CASE("HTTP Request works as expected over Tor") {
+    ight_set_verbose(1);
+    http::Request r({
+        {"url", "http://www.google.com/robots.txt"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+        {"socks5_proxy", "y"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&](IghtError error, http::Response&& response) {
+        if (error.error != 0) {
+            std::cout << "Error: " << error.error << "\r\n";
+            ight_break_loop();
+            return;
+        }
+        std::cout << "HTTP/" << response.http_major << "."
+                << response.http_minor << " " << response.status_code
+                << " " << response.reason << "\r\n";
+        for (auto& kv : response.headers) {
+            std::cout << kv.first << ": " << kv.second << "\r\n";
+        }
+        std::cout << "\r\n";
+        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << "[snip]\r\n";
+        ight_break_loop();
+    });
+    ight_loop();
+}
+
 TEST_CASE("HTTP Client works as expected") {
     //ight_set_verbose(1);
     auto client = http::Client();
@@ -289,6 +368,64 @@ TEST_CASE("HTTP Client works as expected") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](IghtError, http::Response&& response) {
+        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << "[snip]\r\n";
+        if (++count >= 3) {
+            ight_break_loop();
+        }
+    });
+
+    ight_loop();
+}
+
+TEST_CASE("HTTP Client works as expected over Tor") {
+    ight_set_verbose(1);
+    auto client = http::Client();
+    auto count = 0;
+
+    client.request({
+        {"url", "http://www.google.com/robots.txt"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+        {"Connection", "close"},
+        {"socks5_proxy", "y"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&](IghtError error, http::Response&& response) {
+        std::cout << "Error: " << error.error << std::endl;
+        std::cout << "Google:\r\n";
+        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << "[snip]\r\n";
+        if (++count >= 3) {
+            ight_break_loop();
+        }
+    });
+
+    client.request({
+        {"url", "http://www.neubot.org/robots.txt"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+        {"socks5_proxy", "y"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&](IghtError error, http::Response&& response) {
+        std::cout << "Error: " << error.error << std::endl;
+        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << "[snip]\r\n";
+        if (++count >= 3) {
+            ight_break_loop();
+        }
+    });
+
+    client.request({
+        {"url", "http://www.torproject.org/robots.txt"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+        {"socks5_proxy", "y"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&](IghtError error, http::Response&& response) {
+        std::cout << "Error: " << error.error << std::endl;
         std::cout << response.body.read<char>(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {

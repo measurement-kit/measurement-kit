@@ -391,3 +391,7 @@ ConnectionState::close(void)
 	this->bev.close();
 	this->dns_request.cancel();
 }
+
+Connection::~Connection() {
+    delete state;  /* delete handles NULL */
+}
