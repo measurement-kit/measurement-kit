@@ -3,14 +3,19 @@
 
 #include "net/buffer.hpp"
 #include "net/connection.h"
+
 #include "common/emitter.hpp"
+#include "common/pointer.hpp"
 #include "common/settings.hpp"
 #include "common/log.h"
+
 #include "ooni/net_test.hpp"
 
 namespace ight {
 namespace ooni {
 namespace tcp_test {
+
+using namespace ight::common::pointer;
 
 #if 0
 class TCPClient : public ight::common::emitter::EmitterVoid,
@@ -65,7 +70,7 @@ public:
 };
 #endif
 
-typedef IghtConnection TCPClient;           /* XXX */
+typedef SharedPointer<IghtConnection> TCPClient;           /* XXX */
 
 class TCPTest : public net_test::NetTest {
     using net_test::NetTest::NetTest;

@@ -9,6 +9,7 @@
 # define LIBIGHT_NET_CONNECTION_H
 # ifdef __cplusplus
 
+#include "common/constraints.hpp"
 #include "common/error.h"
 #include "common/pointer.hpp"
 #include "common/poller.h"
@@ -129,7 +130,9 @@ class IghtConnectionState {
 	void close(void);
 };
 
-class IghtConnection {
+class IghtConnection : public ight::common::constraints::NonCopyable,
+		public ight::common::constraints::NonMovable {
+
 	IghtConnectionState *state = NULL;
 
     public:
@@ -142,18 +145,6 @@ class IghtConnection {
 	}
 	IghtConnection(const char *af, const char *a, const char *p) {
 		state = new IghtConnectionState(af, a, p);
-	}
-
-	/* We don't want multiple copies of `state` */
-	IghtConnection(IghtConnection&) = delete;
-	IghtConnection& operator=(IghtConnection&) = delete;
-
-	IghtConnection(IghtConnection&& other) {
-		std::swap(state, other.state);
-	}
-	IghtConnection& operator=(IghtConnection&& other) {
-		std::swap(state, other.state);
-		return (*this);
 	}
 
 	void close(void) {

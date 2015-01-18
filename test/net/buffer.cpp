@@ -16,7 +16,7 @@
 #include "net/buffer.hpp"
 
 TEST_CASE("The constructor works correctly", "[IghtBuffer]") {
-	REQUIRE_NOTHROW(auto buff = IghtBuffer());
+	REQUIRE_NOTHROW(IghtBuffer());
 }
 
 TEST_CASE("Insertion/extraction work correctly for evbuffer") {
@@ -59,7 +59,7 @@ TEST_CASE("Insertion/extraction work correctly for evbuffer") {
 }
 
 TEST_CASE("length() works correctly", "[IghtBuffer]") {
-	auto buff = IghtBuffer();
+	IghtBuffer buff;
 
 	SECTION("Lengh is zero at the beginning") {
 		REQUIRE(buff.length() == 0);
@@ -79,7 +79,7 @@ TEST_CASE("length() works correctly", "[IghtBuffer]") {
 }
 
 TEST_CASE("Foreach is robust to corner cases and errors", "[IghtBuffer]") {
-	auto buff = IghtBuffer();
+	IghtBuffer buff;
 
 	SECTION("No function is invoked when the buffer is empty") {
 		buff.foreach([](evbuffer_iovec *) {
@@ -96,7 +96,7 @@ TEST_CASE("Foreach is robust to corner cases and errors", "[IghtBuffer]") {
 
 TEST_CASE("Foreach works correctly", "[IghtBuffer]") {
 
-	auto buff = IghtBuffer();
+	IghtBuffer buff;
 	auto counter = 0;
 	auto r = std::string();
 
@@ -155,7 +155,7 @@ TEST_CASE("Foreach works correctly", "[IghtBuffer]") {
 }
 
 TEST_CASE("Discard works correctly", "[IghtBuffer]") {
-	auto buff = IghtBuffer();
+	IghtBuffer buff;
 
 	SECTION("Discard does not misbehave when the buffer is empty") {
 		buff.discard(1024);
@@ -188,7 +188,7 @@ TEST_CASE("Discard works correctly", "[IghtBuffer]") {
 }
 
 TEST_CASE("Read works correctly") {
-	auto buff = IghtBuffer();
+	IghtBuffer buff;
 
 	SECTION("Read does not misbehave when the buffer is empty") {
 		auto s = buff.read<char>(65535);
@@ -230,7 +230,7 @@ TEST_CASE("Read works correctly") {
 }
 
 TEST_CASE("Readn works correctly") {
-	auto buff = IghtBuffer();
+	IghtBuffer buff;
 
 	SECTION("Readn does not misbehave when the buffer is empty") {
 		auto s = buff.readn<char>(65535);
@@ -265,7 +265,7 @@ TEST_CASE("Readn works correctly") {
 }
 
 TEST_CASE("Readline works correctly", "[IghtBuffer]") {
-	auto buff = IghtBuffer();
+	IghtBuffer buff;
 	auto s = std::string();
 	int error = 0;
 
@@ -334,7 +334,7 @@ TEST_CASE("Readline works correctly", "[IghtBuffer]") {
 }
 
 TEST_CASE("Write works correctly", "[IghtBuffer]") {
-	auto buff = IghtBuffer();
+	IghtBuffer buff;
 	auto pc = "0123456789";
 	auto str = std::string(pc);
 	auto vect = std::vector<char>(str.begin(), str.end());
