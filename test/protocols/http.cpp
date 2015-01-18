@@ -435,3 +435,25 @@ TEST_CASE("HTTP Client works as expected over Tor") {
 
     ight_loop();
 }
+
+TEST_CASE("Make sure that we can access OONI's bouncer") {
+    ight_set_verbose(1);
+    auto client = http::Client();
+
+    client.request({
+        {"url", "http://nkvphnp3p6agi5qq.onion/bouncer"},
+        {"method", "POST"},
+        {"http_version", "HTTP/1.1"},
+        {"socks5_proxy", "y"},
+    }, {
+        {"Accept", "*/*"},
+    }, "{\"test-helpers\": [\"dns\"]}",
+                [](IghtError error, http::Response&& response) {
+        std::cout << "Error: " << error.error << std::endl;
+        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << "[snip]\r\n";
+        ight_break_loop();
+    });
+
+    ight_loop();
+}
