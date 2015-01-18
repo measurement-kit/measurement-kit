@@ -8,3 +8,17 @@ src_common_libcommon_la_SOURCES = \
 	src/common/utils.cpp
 
 libight_la_LIBADD += src/common/libcommon.la
+
+commonincludedir = $(includedir)/ight/common
+commoninclude_HEADERS = \
+    src/common/check_connectivity.hpp \
+    src/common/constraints.hpp \
+    src/common/emitter.hpp \
+    src/common/pointer.hpp \
+    src/common/settings.hpp \
+    src/common/utils.hpp \
+    src/common/error.h \
+    src/common/libevent.h \
+    src/common/log.h \
+    src/common/poller.h \
+    src/common/stringvector.h

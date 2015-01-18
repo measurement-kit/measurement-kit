@@ -7,3 +7,10 @@ src_net_libnet_la_SOURCES = \
 	src/net/transport.cpp
 
 libight_la_LIBADD += src/net/libnet.la
+
+netincludedir = $(includedir)/ight/net
+netinclude_HEADERS = \
+    src/net/buffer.hpp \
+    src/net/connection.hpp \
+    src/net/socks5.hpp \
+    src/net/transport.hpp

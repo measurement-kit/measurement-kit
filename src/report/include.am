@@ -5,3 +5,9 @@ src_report_libreport_la_SOURCES = \
 	src/report/file.cpp
 
 libight_la_LIBADD += src/report/libreport.la
+
+reportincludedir = $(includedir)/ight/report
+reportinclude_HEADERS = \
+    src/report/base.hpp \
+    src/report/entry.hpp \
+    src/report/file.hpp
