@@ -237,8 +237,8 @@ public:
      * \throws std::runtime_error This method throws std::runtime_error (or
      *         a class derived from it) on several error conditions.
      */
-    void feed(evbuffer *data) {
-        buffer << data;
+    void feed(SharedPointer<IghtBuffer> data) {
+        buffer << *data;
         parse();
     }
 
@@ -349,7 +349,7 @@ ResponseParser::on_end(std::function<void(void)>&& fn)
 }
 
 void
-ResponseParser::feed(evbuffer *data)
+ResponseParser::feed(SharedPointer<IghtBuffer> data)
 {
     get_impl()->feed(data);
 }

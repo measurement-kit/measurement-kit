@@ -2,7 +2,7 @@
 # define LIBIGHT_OONI_DNS_TEST_HPP
 
 #include "net/buffer.hpp"
-#include "net/connection.h"
+#include "net/connection.hpp"
 
 #include "common/emitter.hpp"
 #include "common/pointer.hpp"
@@ -16,13 +16,14 @@ namespace ooni {
 namespace tcp_test {
 
 using namespace ight::common::pointer;
+using namespace ight::net::connection;
 
 #if 0
 class TCPClient : public ight::common::emitter::EmitterVoid,
         public ight::common::emitter::Emitter<std::string>,
         public ight::common::emitter::Emitter<IghtError> {
 
-    IghtConnection connection;
+    Connection connection;
 
 public:
 
@@ -36,7 +37,7 @@ public:
     TCPClient() {}
 
     TCPClient(std::string hostname, std::string port) {
-        connection = IghtConnection("PF_UNSPEC", hostname.c_str(),
+        connection = Connection("PF_UNSPEC", hostname.c_str(),
                 port.c_str());
         connection.on_error([this](IghtError error) {
             ight_debug("tcpclient: error event");
@@ -70,7 +71,7 @@ public:
 };
 #endif
 
-typedef SharedPointer<IghtConnection> TCPClient;           /* XXX */
+typedef SharedPointer<Connection> TCPClient;           /* XXX */
 
 class TCPTest : public net_test::NetTest {
     using net_test::NetTest::NetTest;

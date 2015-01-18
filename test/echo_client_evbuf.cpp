@@ -6,23 +6,23 @@
  */
 
 #include "common/log.h"
-#include "net/connection.h"
+#include "net/connection.hpp"
 
 #include <stdlib.h>
+
+using namespace ight::common::pointer;
 
 int
 main(void)
 {
-	IghtConnection s("PF_INET", "127.0.0.1", "54321");
+	ight::net::connection::Connection s("PF_INET", "127.0.0.1", "54321");
 
 	s.on_connect([&](void) {
-		if (s.enable_read() != 0)
-			s.close();
+		/* nothing */
 	});
 
-	s.on_data([&](evbuffer *b) {
-		if (s.write_from(b) != 0)
-			s.close();
+	s.on_data([&](SharedPointer<IghtBuffer> b) {
+		s.send(b);
 	});
 
 	s.on_flush([](void) {
@@ -34,8 +34,7 @@ main(void)
 		s.close();
 	});
 
-	if (s.set_timeout(7.0) != 0)
-		exit(EXIT_FAILURE);
+	s.set_timeout(7.0);
 
 	ight_get_global_poller()->break_loop_on_sigint_();
 	ight_loop();

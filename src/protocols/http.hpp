@@ -23,7 +23,7 @@
 #include "common/pointer.hpp"
 
 #include "net/buffer.hpp"
-#include "net/connection.h"
+#include "net/connection.hpp"
 
 // Internally we use joyent/http-parser
 struct http_parser;
@@ -38,6 +38,8 @@ namespace http {
 
 using namespace ight::common::constraints;
 using namespace ight::common::pointer;
+
+using namespace ight::net::connection;
 
 /*!
  * \brief Raised when the parser receives the UPGRADE method.
@@ -103,9 +105,9 @@ typedef std::map<std::string, std::string> Headers;
  *
  *     ...
  *
- *     auto connection = IghtConnection(...);
+ *     auto connection = Connection(...);
  *
- *     connection.on_data([&](evbuffer *data) {
+ *     connection.on_data([&](SharedPointer<IghtBuffer> data) {
  *         parser.feed(data);
  *     });
  */
@@ -194,7 +196,7 @@ public:
      * \throws std::runtime_error This method throws std::runtime_error (or
      *         a class derived from it) on several error conditions.
      */
-    void feed(evbuffer *data);
+    void feed(SharedPointer<IghtBuffer> data);
 
     /*!
      * \brief Feed the parser.
@@ -232,15 +234,12 @@ public:
  * degree of control is needed over the HTTP protocol.
  */
 class Stream {
-    SharedPointer<IghtConnection> connection;
+    SharedPointer<Connection> connection;
     ResponseParser parser;
     std::function<void(IghtError)> error_handler;
 
     void connection_ready(void) {
-        if (connection->enable_read() != 0) {
-            throw std::runtime_error("Cannot enable read");
-        }
-        connection->on_data([&](evbuffer *data) {
+        connection->on_data([&](SharedPointer<IghtBuffer> data) {
             parser.feed(data);
         });
         //
@@ -308,7 +307,7 @@ public:
      */
     Stream(std::string address, std::string port,
             std::string family = "PF_UNSPEC") {
-        connection = std::make_shared<IghtConnection>(family.c_str(),
+        connection = std::make_shared<Connection>(family.c_str(),
                 address.c_str(), port.c_str());
         //
         // While the connection is in progress, just forward the
@@ -327,7 +326,7 @@ public:
      * \sock The already connecte socket.
      */
     Stream(evutil_socket_t sock) {
-        connection = std::make_shared<IghtConnection>(sock);
+        connection = std::make_shared<Connection>(sock);
         connection_ready();
     }
 
@@ -369,9 +368,7 @@ public:
      * \returns A reference to this stream for chaining operations.
      */
     Stream& operator<<(std::string data) {
-        if (connection->puts(data.c_str()) != 0) {
-            throw std::runtime_error("Cannot write into the connection");
-        }
+        connection->send(data);
         return *this;
     }
 
@@ -441,9 +438,7 @@ public:
      * \param time The timeout in seconds.
      */
     void set_timeout(double timeo) {
-        if (connection->set_timeout(timeo) != 0) {
-            throw std::runtime_error("Cannot set timeout");
-        }
+        connection->set_timeout(timeo);
     }
 };
 

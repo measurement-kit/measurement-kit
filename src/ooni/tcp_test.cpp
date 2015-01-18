@@ -13,7 +13,7 @@ TCPTest::connect(ight::common::Settings options, std::function<void()>&& cb)
         options["host"] = "localhost";
     }
 
-    auto connection = std::make_shared<IghtConnection>("PF_UNSPEC",
+    auto connection = std::make_shared<Connection>("PF_UNSPEC",
             options["host"].c_str(), options["port"].c_str());
 
     //
