@@ -1,12 +1,16 @@
 #ifndef LIBIGHT_OONI_DNS_TEST_HPP
 # define LIBIGHT_OONI_DNS_TEST_HPP
 
+#include "common/pointer.hpp"
+
 #include "protocols/dns.hpp"
 #include "ooni/net_test.hpp"
 
 namespace ight {
 namespace ooni {
 namespace dns_test {
+
+using namespace ight::common::pointer;
 
 struct UnsupportedQueryType : public std::runtime_error {
   using std::runtime_error::runtime_error;
@@ -19,7 +23,7 @@ enum class QueryClass {IN, CS, CH, HS};
 class DNSTest : public net_test::NetTest {
     using net_test::NetTest::NetTest;
 
-    protocols::dns::Resolver resolver;
+    SharedPointer<protocols::dns::Resolver> resolver;
 
 public:
     DNSTest(std::string input_filepath_, ight::common::Settings options_) : 

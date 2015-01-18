@@ -12,6 +12,7 @@
 // DNS client functionality
 //
 
+#include "common/constraints.hpp"
 #include "common/log.h"
 #include "common/pointer.hpp"
 #include "common/poller.h"
@@ -27,6 +28,7 @@ namespace ight {
 namespace protocols {
 namespace dns {
 
+using namespace ight::common::constraints;
 using namespace ight::common::pointer;
 
 /*!
@@ -47,23 +49,10 @@ protected:
     std::vector<std::string> results;
 
 public:
-    Response(Response& /*other*/) = delete;
-    Response& operator=(Response& /*other*/) = delete;
-
-    Response(Response&& other) {
-        std::swap(code, other.code);
-        std::swap(rtt, other.rtt);
-        std::swap(ttl, other.ttl);
-        std::swap(results, other.results);
-    }
-
-    Response& operator=(Response&& other) {
-        std::swap(code, other.code);
-        std::swap(rtt, other.rtt);
-        std::swap(ttl, other.ttl);
-        std::swap(results, other.results);
-        return *this;
-    }
+    Response(Response&) = default;
+    Response& operator=(Response&) = default;
+    Response(Response&&) = default;
+    Response& operator=(Response&&) = default;
 
     /*!
      * \brief Constructs an empty DNS response object.
@@ -225,38 +214,10 @@ public:
             std::function<void(Response&&)>&& func, evdns_base *dnsb = NULL,
             IghtLibevent *libevent = NULL);
 
-    /*!
-     * \brief Deleted copy constructor.
-     * \remark The original implementation of Request could not be
-     *         shared because it contained a raw pointer. This second
-     *         implementation retains the same behavior even though
-     *         now there are no technical restrictions to do so.
-     */
-    Request(Request& /*other*/) = delete;
-
-    /*!
-     * \brief Deleted assignment constructor.
-     * \remark The original implementation of Request could not be
-     *         shared because it contained a raw pointer. This second
-     *         implementation retains the same behavior even though
-     *         now there are no technical restrictions to do so.
-     */
-    Request& operator=(Request& /*other*/) = delete;
-
-    /*!
-     * \brief Move constructor.
-     */
-    Request(Request&& other) {
-        std::swap(cancelled, other.cancelled);
-    }
-
-    /*!
-     * \brief Move assignment.
-     */
-    Request& operator=(Request&& other) {
-        std::swap(cancelled, other.cancelled);
-        return *this;
-    }
+    Request(Request&) = default;
+    Request& operator=(Request&) = default;
+    Request(Request&&) = default;
+    Request& operator=(Request&&) = default;
 
     /*!
      * \brief Cancel the pending Request.
@@ -303,7 +264,7 @@ public:
  * destroyed when the resolver is destroyed (in particular, the callback
  * will be invoked with evdns code equal to DNS_ERR_SHUTDOWN).
  */
-class Resolver {
+class Resolver : public NonCopyable, public NonMovable {
 
     void cleanup(void);
 
@@ -369,41 +330,6 @@ public:
      */
     ~Resolver(void) {
         cleanup();
-    }
-
-    /*!
-     * \brief Deleted copy constructor.
-     * \remark We cannot copy this object because it contains a pointer
-     *         to an object allocated with new that must not be shared.
-     */
-    Resolver(Resolver& /*other*/) = delete;
-
-    /*!
-     * \brief Deleted assignment constructor.
-     * \remark We cannot copy this object because it contains a pointer
-     *         to an object allocated with new that must not be shared.
-     */
-    Resolver& operator=(Resolver& /*other*/) = delete;
-
-    /*!
-     * \brief Move constructor.
-     */
-    Resolver(Resolver&& other) {
-        std::swap(settings, other.settings);
-        std::swap(libevent, other.libevent);
-        std::swap(poller, other.poller);
-        std::swap(base, other.base);
-    }
-
-    /*!
-     * \brief Move assignment.
-     */
-    Resolver& operator=(Resolver&& other) {
-        std::swap(settings, other.settings);
-        std::swap(libevent, other.libevent);
-        std::swap(poller, other.poller);
-        std::swap(base, other.base);
-        return *this;
     }
 };
 

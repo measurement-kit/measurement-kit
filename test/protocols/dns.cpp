@@ -318,10 +318,14 @@ TEST_CASE("Move semantic works for response") {
         REQUIRE(r1.get_results_()[0] == "antani");
         REQUIRE(r1.get_results_()[1] == "blinda");
 
-        REQUIRE(r2.get_code_() == DNS_ERR_UNKNOWN);
-        REQUIRE(r2.get_rtt_() == 0.0);
-        REQUIRE(r2.get_ttl_() == 0);
-        REQUIRE(r2.get_results_().size() == 0);
+        //
+        // Note: move semantic is *copy* for integers and the like, which
+        // explains why everything but results is copied below.
+        //
+        REQUIRE(r2.get_code_() == DNS_ERR_NONE);  // copied
+        REQUIRE(r2.get_rtt_() == 1.0);            // copied
+        REQUIRE(r2.get_ttl_() == 32764);          // copied
+        REQUIRE(r2.get_results_().size() == 0);   // move
     }
 
     SECTION("Move constructor") {
@@ -342,10 +346,14 @@ TEST_CASE("Move semantic works for response") {
 
         }(std::move(r2));  /* Move constructor */
 
-        REQUIRE(r2.get_code_() == DNS_ERR_UNKNOWN);
-        REQUIRE(r2.get_rtt_() == 0.0);
-        REQUIRE(r2.get_ttl_() == 0);
-        REQUIRE(r2.get_results_().size() == 0);
+        //
+        // Note: move semantic is *copy* for integers and the like, which
+        // explains why everything but results is copied below.
+        //
+        REQUIRE(r2.get_code_() == DNS_ERR_NONE);  // copied
+        REQUIRE(r2.get_rtt_() == 1.0);            // copied
+        REQUIRE(r2.get_ttl_() == 32764);          // copied
+        REQUIRE(r2.get_results_().size() == 0);   // moved
     }
 
 }
@@ -861,100 +869,14 @@ TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
 }
 
 TEST_CASE("Resolver::get_evdns_base() is idempotent") {
-    auto reso = Resolver();
+    Resolver reso;
     REQUIRE(reso.get_evdns_base() == reso.get_evdns_base());
-}
-
-struct TransparentResolver : public Resolver {
-    using Resolver::Resolver;
-
-    ight::common::Settings get_settings_() {
-        return settings;
-    }
-
-    IghtLibevent *get_libevent_() {
-        return libevent;
-    }
-
-    IghtPoller *get_poller_() {
-        return poller;
-    }
-
-    evdns_base *get_evdns_base_() {
-        return base;
-    }
-
-};
-
-TEST_CASE("Move semantic works for resolver") {
-
-    IghtLibevent libevent;
-    IghtPoller poller;
-
-    SECTION("Move assignment") {
-
-        TransparentResolver r1;
-
-        REQUIRE(r1.get_settings_().size() == 0);
-        REQUIRE(r1.get_libevent_() == IghtGlobalLibevent::get());
-        REQUIRE(r1.get_poller_() == ight_get_global_poller());
-        REQUIRE(r1.get_evdns_base_() == nullptr);
-
-        TransparentResolver r2{{
-            {"nameserver", "8.8.8.8"},
-        }, &libevent, &poller};
-
-        (void) r2.get_evdns_base();  /* Trigger lazy alloc */
-
-        REQUIRE(r2.get_settings_().size() == 1);
-        REQUIRE(r2.get_settings_()["nameserver"] == "8.8.8.8");
-        REQUIRE(r2.get_libevent_() == &libevent);
-        REQUIRE(r2.get_poller_() == &poller);
-        REQUIRE(r2.get_evdns_base_() != nullptr);
-
-        r1 = std::move(r2);  /* Move assignment */
-
-        REQUIRE(r1.get_settings_().size() == 1);
-        REQUIRE(r1.get_settings_()["nameserver"] == "8.8.8.8");
-        REQUIRE(r1.get_libevent_() == &libevent);
-        REQUIRE(r1.get_poller_() == &poller);
-        REQUIRE(r1.get_evdns_base_() != nullptr);
-
-        REQUIRE(r2.get_settings_().size() == 0);
-        REQUIRE(r2.get_libevent_() == IghtGlobalLibevent::get());
-        REQUIRE(r2.get_poller_() == ight_get_global_poller());
-        REQUIRE(r2.get_evdns_base_() == nullptr);
-    }
-
-    SECTION("Move constructor") {
-
-        TransparentResolver r2{{
-            {"nameserver", "8.8.8.8"},
-        }, &libevent, &poller};
-
-        (void) r2.get_evdns_base();  /* Trigger lazy alloc */
-
-        [&libevent, &poller](TransparentResolver r1) {
-            REQUIRE(r1.get_settings_().size() == 1);
-            REQUIRE(r1.get_settings_()["nameserver"] == "8.8.8.8");
-            REQUIRE(r1.get_libevent_() == &libevent);
-            REQUIRE(r1.get_poller_() == &poller);
-            REQUIRE(r1.get_evdns_base_() != nullptr);
-
-        }(std::move(r2));  /* Move constructor */
-
-        REQUIRE(r2.get_settings_().size() == 0);
-        REQUIRE(r2.get_libevent_() == IghtGlobalLibevent::get());
-        REQUIRE(r2.get_poller_() == ight_get_global_poller());
-        REQUIRE(r2.get_evdns_base_() == nullptr);
-    }
-
 }
 
 TEST_CASE("We can override the default timeout") {
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = Resolver({
+    Resolver reso({
         {"nameserver", "130.192.91.231"},
         {"attempts", "1"},
         {"timeout", "0.5"}
@@ -983,7 +905,7 @@ TEST_CASE("We can override the default timeout") {
 TEST_CASE("We can override the default number of tries") {
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = Resolver({
+    Resolver reso({
         {"nameserver", "130.192.91.231"},
         {"attempts", "2"},
         {"timeout", "0.5"},
@@ -1027,7 +949,7 @@ TEST_CASE("The default custom resolver works as expected") {
         ight_break_loop();
     });
 
-    auto reso = Resolver();
+    Resolver reso;
 
     reso.request("A", "www.neubot.org", [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
@@ -1101,7 +1023,7 @@ TEST_CASE("A specific custom resolver works as expected") {
         ight_break_loop();
     });
 
-    auto reso = Resolver(ight::common::Settings({
+    Resolver reso(ight::common::Settings({
         {"nameserver", "8.8.4.4"},
     }));
 
@@ -1218,7 +1140,7 @@ TEST_CASE("A request to a nonexistent server times out") {
     //
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = Resolver({
+    Resolver reso({
         {"nameserver", "130.192.91.231"},
         {"attempts", "1"},
     });
@@ -1259,7 +1181,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     // privately run this test repeating it for about one minute.
     //
 
-    auto reso = Resolver({
+    Resolver reso({
         {"nameserver", "8.8.8.8"},
         {"attempts", "1"},
     });
@@ -1319,7 +1241,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
 
 /*
 TEST_CASE("Make sure we can override host and number of tries") {
-    auto reso = Resolver({
+    Resolver reso({
         {"nameserver", "127.0.0.1:5353"},
         {"attempts", "2"},
     });
