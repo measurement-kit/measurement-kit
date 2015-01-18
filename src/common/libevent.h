@@ -22,6 +22,8 @@
 #include <functional>
 #include <stdexcept>
 
+#include "common/constraints.hpp"
+
 struct IghtLibevent {
 
 	/*
@@ -132,7 +134,9 @@ struct IghtGlobalLibevent {
 	IghtGlobalLibevent& operator=(IghtGlobalLibevent&&) = delete;
 };
 
-class IghtEvbuffer {
+class IghtEvbuffer : public ight::common::constraints::NonCopyable,
+		public ight::common::constraints::NonMovable {
+
 	IghtLibevent *libevent = IghtGlobalLibevent::get();
 	evbuffer *evbuf = NULL;
 
@@ -157,22 +161,11 @@ class IghtEvbuffer {
 	IghtLibevent *get_libevent(void) {
 		return (libevent);
 	}
-
-	IghtEvbuffer(IghtEvbuffer&) = delete;
-	IghtEvbuffer& operator=(IghtEvbuffer&) = delete;
-
-	IghtEvbuffer(IghtEvbuffer&& other) {
-		std::swap(evbuf, other.evbuf);
-		std::swap(libevent, other.libevent);
-	}
-	IghtEvbuffer& operator=(IghtEvbuffer&& other) {
-		std::swap(evbuf, other.evbuf);
-		std::swap(libevent, other.libevent);
-		return (*this);
-	}
 };
 
-class IghtBuffereventSocket {
+class IghtBuffereventSocket : public ight::common::constraints::NonCopyable,
+		public ight::common::constraints::NonMovable {
+
 	IghtLibevent *libevent = IghtGlobalLibevent::get();
 	bufferevent *bev = NULL;
 
@@ -204,19 +197,6 @@ class IghtBuffereventSocket {
 
 	IghtLibevent *get_libevent(void) {
 		return (libevent);
-	}
-
-	IghtBuffereventSocket(IghtBuffereventSocket&) = delete;
-	IghtBuffereventSocket& operator=(IghtBuffereventSocket&) = delete;
-
-	IghtBuffereventSocket(IghtBuffereventSocket&& other) {
-		std::swap(libevent, other.libevent);
-		std::swap(bev, other.bev);
-	}
-	IghtBuffereventSocket& operator=(IghtBuffereventSocket&& other) {
-		std::swap(libevent, other.libevent);
-		std::swap(bev, other.bev);
-		return (*this);
 	}
 };
 

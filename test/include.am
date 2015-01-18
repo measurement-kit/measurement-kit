@@ -33,6 +33,11 @@ test_common_poller_LDADD = libight.la
 check_PROGRAMS += test/common/poller
 TESTS += test/common/poller
 
+test_common_pointer_SOURCES = test/common/pointer.cpp
+test_common_pointer_LDADD = libight.la
+check_PROGRAMS += test/common/pointer
+TESTS += test/common/pointer
+
 test_common_socket_valid_SOURCES = test/common/socket_valid.cpp
 test_common_socket_valid_LDADD = libight.la
 check_PROGRAMS += test/common/socket_valid

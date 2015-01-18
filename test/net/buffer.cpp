@@ -104,7 +104,7 @@ TEST_CASE("Foreach works correctly", "[IghtBuffer]") {
 	 * Initialize the source evbuffer.
 	 */
 
-	auto evbuf = IghtEvbuffer();
+	IghtEvbuffer evbuf;
 
 	auto sa = std::string(512, 'A');
 	auto sb = std::string(512, 'B');

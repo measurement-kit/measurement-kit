@@ -8,15 +8,18 @@
 #ifndef LIBIGHT_POLLER_H
 # define LIBIGHT_POLLER_H
 
+#include "common/constraints.hpp"
 #include "common/libevent.h"
 
 #include <functional>
 
-class IghtDelayedCall {
+class IghtDelayedCall : public ight::common::constraints::NonCopyable,
+		public ight::common::constraints::NonMovable {
 
 	/*
-	 * The function must be a pointer and cannot be an object, because
-	 * we need to pass a stable pointer to event_new().
+	 * A previous implementation of this class required `func` to
+	 * be a pointer. The current implementation does not. So we can
+	 * rewrite the code to use an object rather than a pointer.
 	 */
 	std::function<void(void)> *func = NULL;
 	event *evp = NULL;
@@ -26,38 +29,13 @@ class IghtDelayedCall {
 	static void dispatch(evutil_socket_t, short, void *);
 
     public:
-	IghtDelayedCall(void) {
-		/* nothing */
-	}
-
 	IghtDelayedCall(double, std::function<void(void)>&&,
 	    IghtLibevent *libevent = NULL, event_base *evbase = NULL);
 	~IghtDelayedCall(void);
-
-	/*
-	 * It does not have sense to make a copy of this class, since we
-	 * don't want to manage/refcount multiple copies of `evp`.
-	 */
-	IghtDelayedCall(const IghtDelayedCall&) = delete;
-	IghtDelayedCall& operator=(const IghtDelayedCall& other) = delete;
-
-	/*
-	 * Enable move semantic.
-	 */
-	IghtDelayedCall(IghtDelayedCall&& d) {
-		std::swap(this->libevent, d.libevent);
-		std::swap(this->evp, d.evp);
-		std::swap(this->func, d.func);
-	}
-	IghtDelayedCall& operator=(IghtDelayedCall&& d) {
-		std::swap(this->libevent, d.libevent);
-		std::swap(this->evp, d.evp);
-		std::swap(this->func, d.func);
-		return (*this);
-	}
 };
 
-class IghtPoller {
+class IghtPoller : public ight::common::constraints::NonCopyable,
+		public ight::common::constraints::NonMovable {
 
 	event_base *base;
 	evdns_base *dnsbase;
@@ -93,31 +71,13 @@ class IghtPoller {
 	void loop(void);
 
 	void break_loop(void);
-
-	/*
-	 * No copy and no move.
-	 */
-	IghtPoller(const IghtPoller&) = delete;
-	IghtPoller& operator=(const IghtPoller& other) = delete;
-	IghtPoller(const IghtPoller&&) = delete;
-	IghtPoller& operator=(const IghtPoller&& other) = delete;
 };
 
 struct IghtGlobalPoller {
-
-	IghtGlobalPoller(void) {
-		/* nothing */
-	}
-
 	static IghtPoller *get(void) {
 		static IghtPoller singleton;
 		return (&singleton);
 	}
-
-	IghtGlobalPoller(IghtGlobalPoller&) = delete;
-	IghtGlobalPoller& operator=(IghtGlobalPoller&) = delete;
-	IghtGlobalPoller(IghtGlobalPoller&&) = delete;
-	IghtGlobalPoller& operator=(IghtGlobalPoller&&) = delete;
 };
 
 /*

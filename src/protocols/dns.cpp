@@ -194,8 +194,6 @@ namespace dns {
  * This is the internal object thanks to which Request is movable. Of
  * course, RequestImpl is not movable, since its address is passed to
  * one of the many evnds delayed requests functions.
- *
- * \remark You should not use this class directly, use Request instead.
  */
 class RequestImpl {
 
@@ -217,18 +215,14 @@ class RequestImpl {
     //
 
     std::function<void(Response&&)> callback;
-    bool cancelled = false;
-    bool pending = false;
     double ticks = 0.0;  // just to initialize to something
     IghtLibevent *libevent;  // should not be NULL (this is asserted below)
-    bool autodel;  // Initialized by constructor
+    SharedPointer<bool> cancelled;
 
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
 
         auto impl = static_cast<RequestImpl *>(opaque);
-
-        assert(impl->pending);
 
         // Tell the libevent layer we received a DNS response
         if (impl->libevent->evdns_reply_hook) {
@@ -238,22 +232,15 @@ class RequestImpl {
 
         // Note: the case of `impl->cancelled` is the case in which this
         // impl is owned by a Request object that exited from the scope
-        if (impl->cancelled) {
+        if (*impl->cancelled) {
             delete impl;
             return;
         }
-        impl->pending = false;
 
         impl->callback(Response(code, type, count,
             ttl, impl->ticks, addresses));
 
-        // Note: this is the case in which the request was created
-        // with the automatic-delete feature, i.e., when the request
-        // was created by a Resolver.
-        if (impl->autodel) {
-            delete impl;
-            return;
-        }
+        delete impl;
     }
 
     in_addr *ipv4_pton(std::string address, in_addr *netaddr) {
@@ -271,22 +258,15 @@ class RequestImpl {
     }
 
     // Declared explicitly as private so one cannot delete this object
-    // and must instead call the cancel() method
     ~RequestImpl() {
         // Nothing to see here, move along :)
     }
 
-  public:
-
-    /*!
-     * \brief Issue an async DNS request.
-     * \param autodel_ Whether this request should autodelete self.
-     * \see Request::Request().
-     */
+    // Private to enforce usage through issue()
     RequestImpl(std::string query, std::string address,
                 std::function<void(Response&&)>&& f, evdns_base *base,
-                IghtLibevent *lev, bool autodel_)
-            : callback(f), libevent(lev), autodel(autodel_) {
+                IghtLibevent *lev, SharedPointer<bool> cancd)
+            : callback(f), libevent(lev), cancelled(cancd) {
 
         assert(base != NULL && lev != NULL);
 
@@ -321,24 +301,14 @@ class RequestImpl {
             throw std::runtime_error("Unsupported query");
         }
 
-        pending = true;
         ticks = ight_time_now();
     }
 
-    /*!
-     * \brief Cancel a DNS request.
-     * \remark The object may or may not be deleted immediately, depending
-     * on whether the DNS request is pending or already completed.
-     */
-    void cancel(void) {
-        if (cancelled) {    // Idempotent
-            return;
-        }
-        cancelled = true;
-        if (pending) {     // Delayed free
-            return;
-        }
-        delete this;
+public:
+    static void issue(std::string query, std::string address,
+                      std::function<void(Response&&)>&& func, evdns_base *base,
+                      IghtLibevent *lev, SharedPointer<bool> cancd) {
+        new RequestImpl(query, address, std::move(func), base, lev, cancd);
     }
 };
 
@@ -359,18 +329,18 @@ Request::Request(std::string query, std::string address,
     if (libevent == NULL) {
         libevent = IghtGlobalLibevent::get();
     }
-    impl = new RequestImpl(query, address, std::move(func),
-                           dnsb, libevent, false);
+    cancelled = SharedPointer<bool>(new bool());
+    *cancelled = false;
+    RequestImpl::issue(query, address, std::move(func),
+                       dnsb, libevent, cancelled);
 }
 
 void
 Request::cancel(void)
 {
-    if (impl == nullptr) {
-        return;
+    if (cancelled) {  // May not be set when we used the default constructor
+        *cancelled = true;
     }
-    impl->cancel();
-    impl = nullptr;    // Idempotent
 }
 
 //
@@ -453,12 +423,14 @@ Resolver::request(std::string query, std::string address,
         std::function<void(Response&&)>&& func)
 {
     //
-    // Note: here RequestImpl is created with autodel=true, meaning that
+    // Note: RequestImpl implements the autodelete behavior, meaning that
     // it shall delete itself once its callback is called. The callback
     // should always be called, either because of a successful response,
     // or because of an error, or because the resolver is destroyed (this
     // is guaranteed by the destructor's impl).
     //
-    (void) new RequestImpl(query, address, std::move(func),
-            get_evdns_base(), libevent, true);
+    auto cancelled = SharedPointer<bool>(new bool());
+    *cancelled = false;
+    RequestImpl::issue(query, address, std::move(func),
+                       get_evdns_base(), libevent, cancelled);
 }

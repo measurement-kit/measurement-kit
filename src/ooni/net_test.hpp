@@ -6,6 +6,8 @@
 #include <fstream>
 
 #include "report/file.hpp"
+
+#include "common/pointer.hpp"
 #include "common/poller.h"
 #include "common/settings.hpp"
 #include "common/log.h"
@@ -13,6 +15,8 @@
 namespace ight {
 namespace ooni {
 namespace net_test {
+
+using namespace ight::common::pointer;
 
 class InputGenerator {
 
@@ -66,7 +70,7 @@ class NetTest {
   std::string input_filepath;
   FileReporter file_report;
 
-  IghtDelayedCall delayed_call;
+  SharedPointer<IghtDelayedCall> delayed_call;
 
   void run_next_measurement(const std::function<void()>&& cb);
 

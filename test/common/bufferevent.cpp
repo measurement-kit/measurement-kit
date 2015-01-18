@@ -30,7 +30,7 @@ TEST_CASE("Constructors") {
     };
 
     {
-      auto b = IghtBuffereventSocket(&libevent);
+      IghtBuffereventSocket b(&libevent);
     }
     
     REQUIRE(calls == 0);
@@ -38,7 +38,7 @@ TEST_CASE("Constructors") {
 
   SECTION("An exception should be raised if bufferevent is NULL") {
     REQUIRE_THROWS_AS([](void) {
-        auto b = IghtBuffereventSocket();
+        IghtBuffereventSocket b;
         auto p = (bufferevent *) b;
         (void) p;
         return;
@@ -61,7 +61,7 @@ TEST_CASE("Constructors") {
 
     {
       auto poller = IghtGlobalPoller::get();
-      auto b = IghtBuffereventSocket(poller->get_event_base(),
+      IghtBuffereventSocket b(poller->get_event_base(),
           -1, 0, &libevent);
     }
 
@@ -96,61 +96,10 @@ TEST_CASE("IghtBufferEventSocket operations") {
     };
 
     auto poller = IghtGlobalPoller::get();
-    auto b = IghtBuffereventSocket(poller->get_event_base(), -1, 0,
+    IghtBuffereventSocket b(poller->get_event_base(), -1, 0,
         &libevent);
 
     REQUIRE(underlying == (bufferevent *) b);
   }
   
-  SECTION("Move constructor") {
-    auto libevent = IghtLibevent();
-    auto underlying = (bufferevent *) NULL;
-
-    libevent.bufferevent_socket_new = [&](event_base *b,
-        evutil_socket_t s, int o) {
-      return (underlying = ::bufferevent_socket_new(b, s, o));
-    };
-
-    auto poller = IghtGlobalPoller::get();
-    auto b1 = IghtBuffereventSocket(poller->get_event_base(),
-        0, 0, &libevent);
-    auto b2 = IghtBuffereventSocket(std::move(b1));
-
-    REQUIRE(b2.get_libevent() == &libevent);
-    REQUIRE(underlying == (bufferevent *) b2);
-    REQUIRE(b1.get_libevent() == IghtGlobalLibevent::get());
-
-    REQUIRE_THROWS_AS([&](void){
-      auto ppp = (bufferevent *) b1;
-      (void) ppp;
-    }(), std::runtime_error);
-
-  }
-
-  SECTION("Move assignment") {
-    auto libevent1 = IghtLibevent();
-    auto underlying = (bufferevent *) NULL;
-
-    libevent1.bufferevent_socket_new = [&](event_base *b,
-        evutil_socket_t s, int o) {
-      return (underlying = ::bufferevent_socket_new(b, s, o));
-    };
-
-    auto poller = IghtGlobalPoller::get();
-    auto b1 = IghtBuffereventSocket(poller->get_event_base(),
-        0, 0, &libevent1);
-    auto libevent2 = IghtLibevent();
-    auto b2 = IghtBuffereventSocket(&libevent2);
-    b2 = std::move(b1);
-
-    REQUIRE(b2.get_libevent() == &libevent1);
-    REQUIRE(underlying == (bufferevent *) b2);
-    REQUIRE(b1.get_libevent() == &libevent2);
-
-    REQUIRE_THROWS_AS([&](void){
-      auto ppp = (bufferevent *) b1;
-      (void) ppp;
-    }(), std::runtime_error);
-
-  }
 }

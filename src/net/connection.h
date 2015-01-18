@@ -11,6 +11,7 @@
 
 #include "common/constraints.hpp"
 #include "common/error.h"
+#include "common/pointer.hpp"
 #include "common/poller.h"
 #include "common/utils.hpp"
 
@@ -37,7 +38,7 @@ class IghtConnectionState {
 	IghtStringVector *pflist = NULL;
 	unsigned int must_resolve_ipv4 = 0;
 	unsigned int must_resolve_ipv6 = 0;
-	IghtDelayedCall start_connect;
+	ight::common::pointer::SharedPointer<IghtDelayedCall> start_connect;
 
 	// Private destructor because destruction may be delayed
 	~IghtConnectionState(void);

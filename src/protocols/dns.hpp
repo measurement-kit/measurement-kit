@@ -13,6 +13,7 @@
 //
 
 #include "common/log.h"
+#include "common/pointer.hpp"
 #include "common/poller.h"
 #include "common/settings.hpp"
 
@@ -26,7 +27,7 @@ namespace ight {
 namespace protocols {
 namespace dns {
 
-class RequestImpl;  // Defined in net/dns.cpp
+using namespace ight::common::pointer;
 
 /*!
  * \brief DNS response.
@@ -191,7 +192,7 @@ public:
 class Request {
 
 protected:
-    RequestImpl *impl = nullptr;
+    SharedPointer<bool> cancelled;
 
 public:
 
@@ -226,15 +227,19 @@ public:
 
     /*!
      * \brief Deleted copy constructor.
-     * \remark We cannot copy this object because it contains a pointer
-     *         to an object allocated with new that must not be shared.
+     * \remark The original implementation of Request could not be
+     *         shared because it contained a raw pointer. This second
+     *         implementation retains the same behavior even though
+     *         now there are no technical restrictions to do so.
      */
     Request(Request& /*other*/) = delete;
 
     /*!
      * \brief Deleted assignment constructor.
-     * \remark We cannot copy this object because it contains a pointer
-     *         to an object allocated with new that must not be shared.
+     * \remark The original implementation of Request could not be
+     *         shared because it contained a raw pointer. This second
+     *         implementation retains the same behavior even though
+     *         now there are no technical restrictions to do so.
      */
     Request& operator=(Request& /*other*/) = delete;
 
@@ -242,14 +247,14 @@ public:
      * \brief Move constructor.
      */
     Request(Request&& other) {
-        std::swap(impl, other.impl);
+        std::swap(cancelled, other.cancelled);
     }
 
     /*!
      * \brief Move assignment.
      */
     Request& operator=(Request&& other) {
-        std::swap(impl, other.impl);
+        std::swap(cancelled, other.cancelled);
         return *this;
     }
 

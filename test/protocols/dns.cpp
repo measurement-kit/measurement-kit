@@ -551,8 +551,8 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
 struct TransparentRequest : public Request {
     using Request::Request;
 
-    RequestImpl *get_impl_() {
-        return impl;
+    SharedPointer<bool> get_cancelled_() {
+        return cancelled;
     }
 };
 
@@ -562,20 +562,19 @@ TEST_CASE("Move semantic works for request") {
 
         TransparentRequest r1;
 
-        REQUIRE(r1.get_impl_() == nullptr);
+        REQUIRE_THROWS(*r1.get_cancelled_());
 
         TransparentRequest r2{"A", "www.neubot.org",
                 [](Response&&) {
             /* nothing */
         }};
-        auto p = r2.get_impl_();
-        REQUIRE(p != nullptr);
+        REQUIRE(*r2.get_cancelled_() == false);
 
         r1 = std::move(r2);  /* Move assignment */
 
-        REQUIRE(r1.get_impl_() == p);
+        REQUIRE(*r1.get_cancelled_() == false);
 
-        REQUIRE(r2.get_impl_() == nullptr);
+        REQUIRE_THROWS(*r2.get_cancelled_());
     }
 
     SECTION("Move constructor") {
@@ -583,15 +582,14 @@ TEST_CASE("Move semantic works for request") {
                 [](Response&&) {
             /* nothing */
         }};
-        auto p = r2.get_impl_();
-        REQUIRE(p != nullptr);
+        REQUIRE(*r2.get_cancelled_() == false);
 
-        [p](TransparentRequest r1) {
-            REQUIRE(r1.get_impl_() == p);
+        [](TransparentRequest r1) {
+            REQUIRE(*r1.get_cancelled_() == false);
 
         }(std::move(r2));  /* Move constructor */
 
-        REQUIRE(r2.get_impl_() == nullptr);
+        REQUIRE_THROWS(*r2.get_cancelled_());
     }
 
 }
@@ -616,7 +614,7 @@ TEST_CASE("The system resolver works as expected") {
 
     auto failed = false;
 
-    auto d = IghtDelayedCall(10.0, [&](void) {
+    IghtDelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -681,6 +679,33 @@ TEST_CASE("The system resolver works as expected") {
     ight_loop();
 
     REQUIRE(!failed);
+}
+
+class SafeToDeleteRequestInItsOwnCallback {
+    Request request;
+public:
+    SafeToDeleteRequestInItsOwnCallback() {
+        request = Request("A", "nexa.polito.it", [this](Response&&) {
+            // This assignment should trigger the original request's destructor
+            request = Request("AAAA", "nexa.polito.it", [this](Response&&) {
+                ight_break_loop();
+            });
+        });
+    }
+};
+
+TEST_CASE("It is safe to clear a request in its own callback") {
+    if (ight::Network::is_down()) {
+        return;
+    }
+    auto d = SafeToDeleteRequestInItsOwnCallback();
+    auto called = 0;
+    IghtDelayedCall watchdog(5.0, [&called]() {
+        ++called;
+        ight_break_loop();
+    });
+    ight_loop();
+    REQUIRE(called == 0);
 }
 
 //
@@ -997,7 +1022,7 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto failed = false;
 
-    auto d = IghtDelayedCall(10.0, [&](void) {
+    IghtDelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -1071,7 +1096,7 @@ TEST_CASE("A specific custom resolver works as expected") {
 
     auto failed = false;
 
-    auto d = IghtDelayedCall(10.0, [&](void) {
+    IghtDelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -1160,13 +1185,13 @@ TEST_CASE("If the resolver dies the requests are aborted") {
         ight_break_loop();
     });
 
-    auto d1 = IghtDelayedCall(0.1, [&](void) {
+    IghtDelayedCall d1(0.1, [&](void) {
         delete reso;  // Destroy the resolver and see what happens..
                       // in theory the request callback *should* be called
     });
 
     auto failed = false;
-    auto d2 = IghtDelayedCall(1.0, [&](void) {
+    IghtDelayedCall d2(1.0, [&](void) {
         // This *should not* be called, since the request callback
         // shold be called before than this one.
         failed = true;
@@ -1208,7 +1233,7 @@ TEST_CASE("A request to a nonexistent server times out") {
     });
 
     auto failed = false;
-    auto d = IghtDelayedCall(10.0, [&](void) {
+    IghtDelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -1271,7 +1296,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
             ight_warn("- break_loop");
             ight_break_loop();
         }, reso.get_evdns_base());
-        auto d = IghtDelayedCall(avgrtt, [&](void) {
+        IghtDelayedCall d(avgrtt, [&](void) {
             ight_warn("- cancel");
             r->cancel();
             ight_break_loop();
