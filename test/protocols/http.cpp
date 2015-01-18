@@ -436,15 +436,14 @@ TEST_CASE("HTTP Client works as expected over Tor") {
     ight_loop();
 }
 
-TEST_CASE("Make sure that we can access OONI's bouncer") {
+TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
     ight_set_verbose(1);
     auto client = http::Client();
 
     client.request({
-        {"url", "http://nkvphnp3p6agi5qq.onion/bouncer"},
+        {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
-        {"socks5_proxy", "127.0.0.1:9050"},
     }, {
         {"Accept", "*/*"},
     }, "{\"test-helpers\": [\"dns\"]}",
