@@ -33,17 +33,15 @@ SharedPointer<Transport> connect(Settings settings) {
     }
 
     if (settings.find("socks5_proxy") != settings.end()) {
-        // Use Tor default settings: localhost and 9050
-        if (settings.find("socks5_address") == settings.end()) {
-            if (settings["family"] != "PF_INET6") {
-                settings["socks5_address"] = "127.0.0.1";
-            } else {
-                settings["socks5_address"] = "::1";
-            }
+        auto proxy = settings["socks5_proxy"];
+        auto pos = proxy.find(":");
+        if (pos == std::string::npos) {
+            throw std::runtime_error("invalid argument");
         }
-        if (settings.find("socks5_port") == settings.end()) {
-            settings["socks5_port"] = "9050";
-        }
+        auto address = proxy.substr(0, pos);
+        auto port = proxy.substr(pos + 1);
+        settings["socks5_address"] = address;
+        settings["socks5_port"] = port;
         return std::make_shared<Socks5>(settings);
     }
 

@@ -162,7 +162,7 @@ TEST_CASE("HTTP stream works as expected when using Tor") {
     auto stream = std::make_shared<http::Stream>(Settings{
         {"address", "www.google.com"},
         {"port", "80"},
-        {"socks5_proxy", "y"},
+        {"socks5_proxy", "127.0.0.1:9050"},
     });
     stream->set_timeout(1.0);
     stream->on_error([&](IghtError e) {
@@ -303,7 +303,7 @@ TEST_CASE("HTTP Request works as expected over Tor") {
         {"url", "http://www.google.com/robots.txt"},
         {"method", "GET"},
         {"http_version", "HTTP/1.1"},
-        {"socks5_proxy", "y"},
+        {"socks5_proxy", "127.0.0.1:9050"},
     }, {
         {"Accept", "*/*"},
     }, "", [&](IghtError error, http::Response&& response) {
@@ -388,7 +388,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {"method", "GET"},
         {"http_version", "HTTP/1.1"},
         {"Connection", "close"},
-        {"socks5_proxy", "y"},
+        {"socks5_proxy", "127.0.0.1:9050"},
     }, {
         {"Accept", "*/*"},
     }, "", [&](IghtError error, http::Response&& response) {
@@ -405,7 +405,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {"url", "http://www.neubot.org/robots.txt"},
         {"method", "GET"},
         {"http_version", "HTTP/1.1"},
-        {"socks5_proxy", "y"},
+        {"socks5_proxy", "127.0.0.1:9050"},
     }, {
         {"Accept", "*/*"},
     }, "", [&](IghtError error, http::Response&& response) {
@@ -421,7 +421,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {"url", "http://www.torproject.org/robots.txt"},
         {"method", "GET"},
         {"http_version", "HTTP/1.1"},
-        {"socks5_proxy", "y"},
+        {"socks5_proxy", "127.0.0.1:9050"},
     }, {
         {"Accept", "*/*"},
     }, "", [&](IghtError error, http::Response&& response) {
@@ -444,7 +444,7 @@ TEST_CASE("Make sure that we can access OONI's bouncer") {
         {"url", "http://nkvphnp3p6agi5qq.onion/bouncer"},
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
-        {"socks5_proxy", "y"},
+        {"socks5_proxy", "127.0.0.1:9050"},
     }, {
         {"Accept", "*/*"},
     }, "{\"test-helpers\": [\"dns\"]}",
