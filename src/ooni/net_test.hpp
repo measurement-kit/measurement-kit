@@ -110,7 +110,7 @@ public:
 
   NetTest(void);
 
-  ~NetTest(void);
+  virtual ~NetTest(void);
 
   NetTest(NetTest&) = delete;
   NetTest& operator=(NetTest&) = delete;
