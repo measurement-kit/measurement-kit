@@ -558,7 +558,8 @@ public:
         // Extend settings with address and port to connect to
         settings["port"] = serializer.port;
         settings["address"] = serializer.address;
-        if (serializer.schema == "httpo") {
+        if (serializer.schema == "httpo" && settings.find(
+                "socks5_proxy") == settings.end()) {
             settings["socks5_proxy"] = "127.0.0.1:9050";  // over Tor
         }
         stream = std::make_shared<Stream>(settings);

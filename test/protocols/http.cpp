@@ -456,3 +456,27 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
 
     ight_loop();
 }
+
+TEST_CASE("Make sure that users can override default Tor proxy") {
+    ight_set_verbose(1);
+    auto client = http::Client();
+
+    client.request({
+        {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
+        {"method", "POST"},
+        {"http_version", "HTTP/1.1"},
+        {"socks5_proxy", "127.0.0.1:9999"},
+    }, {
+        {"Accept", "*/*"},
+    }, "{\"test-helpers\": [\"dns\"]}",
+                [](IghtError error, http::Response&& response) {
+        // XXX: assumes that Tor is not running on port 9050
+        REQUIRE(error.error != 0);
+        std::cout << "Error: " << error.error << std::endl;
+        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << "[snip]\r\n";
+        ight_break_loop();
+    });
+
+    ight_loop();
+}
