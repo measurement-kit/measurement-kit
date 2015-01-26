@@ -1,5 +1,5 @@
-#ifndef LIBIGHT_OONI_DNS_TEST_HPP
-# define LIBIGHT_OONI_DNS_TEST_HPP
+#ifndef LIBIGHT_OONI_TCP_TEST_HPP
+# define LIBIGHT_OONI_TCP_TEST_HPP
 
 #include "net/buffer.hpp"
 #include "net/connection.hpp"

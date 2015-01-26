@@ -1,5 +1,5 @@
-#ifndef LIBIGHT_OONI_NETTEST_HPP
-# define LIBIGHT_OONI_NETTEST_HPP
+#ifndef LIBIGHT_OONI_NET_TEST_HPP
+# define LIBIGHT_OONI_NET_TEST_HPP
 
 #include <iterator>
 #include <iostream>
@@ -138,4 +138,4 @@ public:
 
 }}}
 
-#endif  // LIBIGHT_OONI_NETTEST_HPP
+#endif  // LIBIGHT_OONI_NET_TEST_HPP
