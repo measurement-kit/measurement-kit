@@ -529,3 +529,36 @@ TEST_CASE("Ensure that socks5_proxy is honoured for httpo://...") {
 
     ight_loop();
 }
+
+TEST_CASE("Make sure that settings are not modified") {
+    ight_set_verbose(1);
+    auto client = http::Client();
+
+    ight::common::Settings settings{
+        {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
+        {"method", "POST"},
+        {"http_version", "HTTP/1.1"},
+        {"tor_socks_port", "9999"},
+    };
+
+    client.request(settings, {
+        {"Accept", "*/*"},
+    }, "{\"test-helpers\": [\"dns\"]}",
+                [](IghtError error, http::Response&& response) {
+        // XXX: assumes that Tor is not running on port 9999
+        REQUIRE(error.error != 0);
+        std::cout << "Error: " << error.error << std::endl;
+        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << "[snip]\r\n";
+        ight_break_loop();
+    });
+
+    ight_loop();
+
+    // Make sure that no changes were made
+    for (auto& iter : settings) {
+        auto ok = iter.first == "url" || iter.first == "method" ||
+              iter.first == "http_version" || iter.first == "tor_socks_port";
+        REQUIRE(ok);
+    }
+}
