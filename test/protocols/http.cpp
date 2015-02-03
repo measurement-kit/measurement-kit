@@ -463,7 +463,7 @@ TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     auto client = http::Client();
     auto count = 0;
 
-    // XXX: assumes that Tor IS running on port 9999
+    // XXX: assumes that Tor IS running on port 9050
 
     ight::common::Settings settings{
         {"method", "POST"},
