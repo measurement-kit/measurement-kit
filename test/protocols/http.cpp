@@ -457,74 +457,158 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
     ight_loop();
 }
 
-TEST_CASE("Make sure that httpo://... honours tor_socks_port") {
-    ight_set_verbose(1);
-    auto client = http::Client();
+TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
+    //ight_set_verbose(1);
 
-    client.request({
-        {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
+    auto client = http::Client();
+    auto count = 0;
+
+    // XXX: assumes that Tor IS running on port 9999
+
+    ight::common::Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
-        {"tor_socks_port", "9999"},
-    }, {
+        {"tor_socks_port", "9050"},
+    };
+
+    settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
+    client.request(settings, {
         {"Accept", "*/*"},
     }, "{\"test-helpers\": [\"dns\"]}",
-                [](IghtError error, http::Response&& response) {
-        // XXX: assumes that Tor is not running on port 9999
-        REQUIRE(error.error != 0);
-        std::cout << "Error: " << error.error << std::endl;
-        std::cout << response.body.read<char>() << "\r\n";
-        std::cout << "[snip]\r\n";
-        ight_break_loop();
+            [&count](IghtError error, http::Response&&) {
+        REQUIRE(error.error == 0);
+        if (++count == 2) {
+            ight_break_loop();
+        }
+    });
+
+    settings["url"] = "http://ooni.torproject.org/";
+    client.request(settings, {
+        {"Accept", "*/*"},
+    }, "{\"test-helpers\": [\"dns\"]}",
+            [&count](IghtError error, http::Response&&) {
+        REQUIRE(error.error == 0);
+        if (++count == 2) {
+            ight_break_loop();
+        }
     });
 
     ight_loop();
 }
 
-TEST_CASE("Ensure that tor_socks_port takes precedence over socks5_proxy") {
-    ight_set_verbose(1);
-    auto client = http::Client();
+TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
+    //ight_set_verbose(1);
 
-    client.request({
-        {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
+    auto client = http::Client();
+    auto count = 0;
+
+    // XXX: assumes that Tor IS NOT running on port 9999
+    // XXX: assumes that Tor IS running on port 9050
+
+    ight::common::Settings settings{
+        {"method", "POST"},
+        {"http_version", "HTTP/1.1"},
+        {"tor_socks_port", "9999"},
+        {"socks5_proxy", "127.0.0.1:9050"},
+    };
+
+    settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
+    client.request(settings, {
+        {"Accept", "*/*"},
+    }, "{\"test-helpers\": [\"dns\"]}",
+            [&count](IghtError error, http::Response&&) {
+        REQUIRE(error.error != 0);
+        if (++count == 2) {
+            ight_break_loop();
+        }
+    });
+
+    settings["url"] = "http://ooni.torproject.org/";
+    client.request(settings, {
+        {"Accept", "*/*"},
+    }, "{\"test-helpers\": [\"dns\"]}",
+            [&count](IghtError error, http::Response&&) {
+        REQUIRE(error.error == 0);
+        if (++count == 2) {
+            ight_break_loop();
+        }
+    });
+
+    ight_loop();
+}
+
+TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
+    //ight_set_verbose(1);
+
+    auto client = http::Client();
+    auto count = 0;
+
+    // XXX: assumes that Tor IS running on port 9050
+
+    ight::common::Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
         {"socks5_proxy", "127.0.0.1:9050"},
-        {"tor_socks_port", "9999"},
-    }, {
+    };
+
+    settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
+    client.request(settings, {
         {"Accept", "*/*"},
     }, "{\"test-helpers\": [\"dns\"]}",
-                [](IghtError error, http::Response&& response) {
-        // XXX: assumes that Tor is not running on port 9999
-        REQUIRE(error.error != 0);
-        std::cout << "Error: " << error.error << std::endl;
-        std::cout << response.body.read<char>() << "\r\n";
-        std::cout << "[snip]\r\n";
-        ight_break_loop();
+            [&count](IghtError error, http::Response&&) {
+        REQUIRE(error.error == 0);
+        if (++count == 2) {
+            ight_break_loop();
+        }
+    });
+
+    settings["url"] = "http://ooni.torproject.org/";
+    client.request(settings, {
+        {"Accept", "*/*"},
+    }, "{\"test-helpers\": [\"dns\"]}",
+            [&count](IghtError error, http::Response&&) {
+        REQUIRE(error.error == 0);
+        if (++count == 2) {
+            ight_break_loop();
+        }
     });
 
     ight_loop();
 }
 
-TEST_CASE("Ensure that socks5_proxy is honoured for httpo://...") {
-    ight_set_verbose(1);
-    auto client = http::Client();
+TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
+    //ight_set_verbose(1);
 
-    client.request({
-        {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
+    auto client = http::Client();
+    auto count = 0;
+
+    // XXX: assumes that Tor IS running on port 9050
+
+    ight::common::Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
-        {"socks5_proxy", "127.0.0.1:9999"},
-    }, {
+    };
+
+    settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
+    client.request(settings, {
         {"Accept", "*/*"},
     }, "{\"test-helpers\": [\"dns\"]}",
-                [](IghtError error, http::Response&& response) {
-        // XXX: assumes that Tor is not running on port 9999
-        REQUIRE(error.error != 0);
-        std::cout << "Error: " << error.error << std::endl;
-        std::cout << response.body.read<char>() << "\r\n";
-        std::cout << "[snip]\r\n";
-        ight_break_loop();
+            [&count](IghtError error, http::Response&&) {
+        REQUIRE(error.error == 0);
+        if (++count == 2) {
+            ight_break_loop();
+        }
+    });
+
+    settings["url"] = "http://ooni.torproject.org/";
+    client.request(settings, {
+        {"Accept", "*/*"},
+    }, "{\"test-helpers\": [\"dns\"]}",
+            [&count](IghtError error, http::Response&&) {
+        REQUIRE(error.error == 0);
+        if (++count == 2) {
+            ight_break_loop();
+        }
     });
 
     ight_loop();
