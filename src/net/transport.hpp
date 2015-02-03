@@ -57,6 +57,10 @@ struct Transport : public NonMovable, public NonCopyable {
     virtual void send(IghtBuffer&) = 0;
 
     virtual void close() = 0;
+
+    virtual std::string socks5_address() = 0;
+
+    virtual std::string socks5_port() = 0;
 };
 
 SharedPointer<Transport> connect(Settings);

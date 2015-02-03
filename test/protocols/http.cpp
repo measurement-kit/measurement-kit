@@ -460,158 +460,117 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
 TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     //ight_set_verbose(1);
 
-    auto client = http::Client();
-    auto count = 0;
-
-    // XXX: assumes that Tor IS running on port 9050
-
     ight::common::Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
-        {"tor_socks_port", "9050"},
+        {"tor_socks_port", "9055"},
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    client.request(settings, {
+    http::Request r1{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}",
-            [&count](IghtError error, http::Response&&) {
-        REQUIRE(error.error == 0);
-        if (++count == 2) {
-            ight_break_loop();
-        }
-    });
+    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+        /* nothing */
+    }};
 
     settings["url"] = "http://ooni.torproject.org/";
-    client.request(settings, {
+    http::Request r2{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}",
-            [&count](IghtError error, http::Response&&) {
-        REQUIRE(error.error == 0);
-        if (++count == 2) {
-            ight_break_loop();
-        }
-    });
+    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+        /* nothing */
+    }};
 
-    ight_loop();
+    REQUIRE(r1.socks5_address() == "127.0.0.1");
+    REQUIRE(r1.socks5_port() == "9055");
+    REQUIRE(r2.socks5_address() == "");
+    REQUIRE(r2.socks5_port() == "");
 }
 
 TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     //ight_set_verbose(1);
 
-    auto client = http::Client();
-    auto count = 0;
-
-    // XXX: assumes that Tor IS NOT running on port 9999
-    // XXX: assumes that Tor IS running on port 9050
-
     ight::common::Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
         {"tor_socks_port", "9999"},
-        {"socks5_proxy", "127.0.0.1:9050"},
+        {"socks5_proxy", "127.0.0.1:9055"},
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    client.request(settings, {
+    http::Request r1{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}",
-            [&count](IghtError error, http::Response&&) {
-        REQUIRE(error.error != 0);
-        if (++count == 2) {
-            ight_break_loop();
-        }
-    });
+    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+        /* nothing */
+    }};
 
     settings["url"] = "http://ooni.torproject.org/";
-    client.request(settings, {
+    http::Request r2{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}",
-            [&count](IghtError error, http::Response&&) {
-        REQUIRE(error.error == 0);
-        if (++count == 2) {
-            ight_break_loop();
-        }
-    });
+    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+        /* nothing */
+    }};
 
-    ight_loop();
+    REQUIRE(r1.socks5_address() == "127.0.0.1");
+    REQUIRE(r1.socks5_port() == "9999");
+    REQUIRE(r2.socks5_address() == "127.0.0.1");
+    REQUIRE(r2.socks5_port() == "9055");
 }
 
 TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
     //ight_set_verbose(1);
 
-    auto client = http::Client();
-    auto count = 0;
-
-    // XXX: assumes that Tor IS running on port 9050
-
     ight::common::Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
-        {"socks5_proxy", "127.0.0.1:9050"},
+        {"socks5_proxy", "127.0.0.1:9055"},
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    client.request(settings, {
+    http::Request r1{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}",
-            [&count](IghtError error, http::Response&&) {
-        REQUIRE(error.error == 0);
-        if (++count == 2) {
-            ight_break_loop();
-        }
-    });
+    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+        /* nothing */
+    }};
 
     settings["url"] = "http://ooni.torproject.org/";
-    client.request(settings, {
+    http::Request r2{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}",
-            [&count](IghtError error, http::Response&&) {
-        REQUIRE(error.error == 0);
-        if (++count == 2) {
-            ight_break_loop();
-        }
-    });
+    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+        /* nothing */
+    }};
 
-    ight_loop();
+    REQUIRE(r1.socks5_address() == "127.0.0.1");
+    REQUIRE(r1.socks5_port() == "9055");
+    REQUIRE(r2.socks5_address() == "127.0.0.1");
+    REQUIRE(r2.socks5_port() == "9055");
 }
 
 TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     //ight_set_verbose(1);
 
-    auto client = http::Client();
-    auto count = 0;
-
-    // XXX: assumes that Tor IS running on port 9050
-
     ight::common::Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    client.request(settings, {
+    http::Request r1{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}",
-            [&count](IghtError error, http::Response&&) {
-        REQUIRE(error.error == 0);
-        if (++count == 2) {
-            ight_break_loop();
-        }
-    });
+    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+        /* nothing */
+    }};
 
     settings["url"] = "http://ooni.torproject.org/";
-    client.request(settings, {
+    http::Request r2{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}",
-            [&count](IghtError error, http::Response&&) {
-        REQUIRE(error.error == 0);
-        if (++count == 2) {
-            ight_break_loop();
-        }
-    });
+    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+        /* nothing */
+    }};
 
-    ight_loop();
+    REQUIRE(r1.socks5_address() == "127.0.0.1");
+    REQUIRE(r1.socks5_port() == "9050");
+    REQUIRE(r2.socks5_address() == "");
+    REQUIRE(r2.socks5_port() == "");
 }
 
 TEST_CASE("Make sure that settings are not modified") {

@@ -422,6 +422,14 @@ public:
     void set_timeout(double timeo) {
         connection->set_timeout(timeo);
     }
+
+    std::string socks5_address() {
+        return connection->socks5_address();
+    }
+
+    std::string socks5_port() {
+        return connection->socks5_port();
+    }
 };
 
 /*!
@@ -617,6 +625,14 @@ public:
 
     ~Request() {
         close();
+    }
+
+    std::string socks5_address() {
+        return stream->socks5_address();
+    }
+
+    std::string socks5_port() {
+        return stream->socks5_port();
     }
 };
 

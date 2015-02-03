@@ -36,6 +36,8 @@ protected:
         std::make_shared<IghtBuffer>()
     };
     bool isclosed = false;
+    std::string proxy_address;
+    std::string proxy_port;
 
 public:
     Socks5(Settings);
@@ -89,6 +91,15 @@ public:
         isclosed = true;
         conn->close();
     }
+
+    virtual std::string socks5_address() override {
+        return proxy_address;
+    }
+
+    virtual std::string socks5_port() override {
+        return proxy_port;
+    }
+
 };
 
 }}}

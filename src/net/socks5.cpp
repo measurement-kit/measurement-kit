@@ -16,6 +16,10 @@ Socks5::Socks5(Settings s) : settings(s) {
         settings["socks5_address"].c_str(),
         settings["socks5_port"].c_str());
 
+    // Save address and port so they can be accessed later
+    proxy_address = settings["socks5_address"];
+    proxy_port = settings["socks5_port"];
+
     conn = std::make_shared<Connection>(settings["family"].c_str(),
         settings["socks5_address"].c_str(), settings["socks5_port"].c_str());
 
