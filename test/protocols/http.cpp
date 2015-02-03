@@ -457,7 +457,56 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
     ight_loop();
 }
 
-TEST_CASE("Make sure that users can override default Tor proxy") {
+TEST_CASE("Make sure that httpo://... honours tor_socks_port") {
+    ight_set_verbose(1);
+    auto client = http::Client();
+
+    client.request({
+        {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
+        {"method", "POST"},
+        {"http_version", "HTTP/1.1"},
+        {"tor_socks_port", "9999"},
+    }, {
+        {"Accept", "*/*"},
+    }, "{\"test-helpers\": [\"dns\"]}",
+                [](IghtError error, http::Response&& response) {
+        // XXX: assumes that Tor is not running on port 9999
+        REQUIRE(error.error != 0);
+        std::cout << "Error: " << error.error << std::endl;
+        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << "[snip]\r\n";
+        ight_break_loop();
+    });
+
+    ight_loop();
+}
+
+TEST_CASE("Ensure that tor_socks_port takes precedence over socks5_proxy") {
+    ight_set_verbose(1);
+    auto client = http::Client();
+
+    client.request({
+        {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
+        {"method", "POST"},
+        {"http_version", "HTTP/1.1"},
+        {"socks5_proxy", "127.0.0.1:9050"},
+        {"tor_socks_port", "9999"},
+    }, {
+        {"Accept", "*/*"},
+    }, "{\"test-helpers\": [\"dns\"]}",
+                [](IghtError error, http::Response&& response) {
+        // XXX: assumes that Tor is not running on port 9999
+        REQUIRE(error.error != 0);
+        std::cout << "Error: " << error.error << std::endl;
+        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << "[snip]\r\n";
+        ight_break_loop();
+    });
+
+    ight_loop();
+}
+
+TEST_CASE("Ensure that socks5_proxy is honoured for httpo://...") {
     ight_set_verbose(1);
     auto client = http::Client();
 
@@ -470,7 +519,7 @@ TEST_CASE("Make sure that users can override default Tor proxy") {
         {"Accept", "*/*"},
     }, "{\"test-helpers\": [\"dns\"]}",
                 [](IghtError error, http::Response&& response) {
-        // XXX: assumes that Tor is not running on port 9050
+        // XXX: assumes that Tor is not running on port 9999
         REQUIRE(error.error != 0);
         std::cout << "Error: " << error.error << std::endl;
         std::cout << response.body.read<char>() << "\r\n";
