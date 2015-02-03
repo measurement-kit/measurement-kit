@@ -537,7 +537,7 @@ class Request : public NonCopyable, public NonMovable {
 public:
     /*!
      * \brief Constructor.
-     * \param settings A std::map with key values of the options supported:
+     * \param settings_ A std::map with key values of the options supported:
      *                     {
      *                         "follow_redirects": "yes|no",
      *                         "url": std::string,
@@ -550,10 +550,11 @@ public:
      * \param callback Function invoked when request is complete.
      * \param parent Pointer to parent to implement self clean up.
      */
-    Request(ight::common::Settings settings, Headers headers,
+    Request(const ight::common::Settings settings_, Headers headers,
             std::string body, RequestCallback&& callback_,
             std::set<Request *> *parent_ = nullptr)
                 : callback(callback_), parent(parent_) {
+        auto settings = settings_;  // Make a copy and work on that
         serializer = RequestSerializer(settings, headers, body);
         // Extend settings with address and port to connect to
         settings["port"] = serializer.port;
