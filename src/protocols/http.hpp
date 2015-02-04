@@ -630,6 +630,10 @@ public:
         });
     }
 
+    SharedPointer<Stream> get_stream() {
+        return stream;
+    }
+
     void close() {
         stream->close();
     }
