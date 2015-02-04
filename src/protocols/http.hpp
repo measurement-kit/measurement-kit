@@ -234,13 +234,13 @@ public:
  */
 class Stream {
     SharedPointer<Transport> connection;
-    ResponseParser parser;
+    SharedPointer<ResponseParser> parser;
     std::function<void(IghtError)> error_handler;
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
         connection->on_data([&](SharedPointer<IghtBuffer> data) {
-            parser.feed(data);
+            parser->feed(data);
         });
         //
         // Intercept EOF error to implement body-ends-at-EOF semantic.
@@ -248,7 +248,7 @@ class Stream {
         //
         connection->on_error([&](IghtError error) {
             if (error.error == 0) {
-                parser.eof();
+                parser->eof();
             }
             if (error_handler) {
                 error_handler(error);
@@ -258,6 +258,14 @@ class Stream {
     }
 
 public:
+
+    /*!
+     * \brief Get response parser.
+     * This is useful for writing tests.
+     */
+    SharedPointer<ResponseParser> get_parser() {
+        return parser;
+    }
 
     /*!
      * \brief Deleted copy constructor.
@@ -301,6 +309,7 @@ public:
      *        it (see transport.cpp for more info).
      */
     Stream(Settings settings) {
+        parser = std::make_shared<ResponseParser>();
         connection = transport::connect(settings);
         //
         // While the connection is in progress, just forward the
@@ -375,7 +384,7 @@ public:
      * \param fn The `begin` event handler.
      */
     void on_begin(std::function<void(void)>&& fn) {
-        parser.on_begin(std::move(fn));
+        parser->on_begin(std::move(fn));
     }
 
     /*!
@@ -388,7 +397,7 @@ public:
      */
     void on_headers_complete(std::function<void(unsigned short,
       unsigned short, unsigned int, std::string&&, Headers&&)>&& fn) {
-        parser.on_headers_complete(std::move(fn));
+        parser->on_headers_complete(std::move(fn));
     }
 
     /*!
@@ -398,7 +407,7 @@ public:
      *         piece of body that was just received.
      */
     void on_body(std::function<void(std::string&&)>&& fn) {
-        parser.on_body(std::move(fn));
+        parser->on_body(std::move(fn));
     }
 
     /*!
@@ -406,7 +415,7 @@ public:
      * \param fn The `end` event handler.
      */
     void on_end(std::function<void(void)>&& fn) {
-        parser.on_end(std::move(fn));
+        parser->on_end(std::move(fn));
     }
 
     /*!
