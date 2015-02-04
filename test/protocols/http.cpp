@@ -352,6 +352,45 @@ TEST_CASE("HTTP Request works as expected") {
     ight_loop();
 }
 
+TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
+    //ight_set_verbose(1);
+
+    auto called = 0;
+
+    //
+    // TODO: find a way to prevent a connection to nexa.polito.it when
+    // this test run, possibly creating a stub for connect() just as
+    // we created stubs for many libevent APIs.
+    //
+
+    http::Request r({
+        {"url", "http://nexa.polito.it/"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&called](IghtError, http::Response&&) {
+        ++called;
+    });
+
+    auto stream = r.get_stream();
+    auto transport = stream->get_transport();
+
+    transport->emit_connect();
+
+    SharedPointer<IghtBuffer> data = std::make_shared<IghtBuffer>();
+    *data << "HTTP/1.1 200 Ok\r\n";
+    *data << "Content-Type: text/plain\r\n";
+    *data << "Connection: close\r\n";
+    *data << "Server: Antani/1.0.0.0\r\n";
+    *data << "\r\n";
+    *data << "1234567";
+    transport->emit_data(data);
+    transport->emit_error(0);
+
+    REQUIRE(called == 1);
+}
+
 TEST_CASE("HTTP Request correctly receives errors") {
     ight_set_verbose(1);
     http::Request r({
