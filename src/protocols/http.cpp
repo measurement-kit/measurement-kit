@@ -272,12 +272,18 @@ public:
      *         a class derived from it) on several error conditions.
      */
     void eof() {
+        parsing = true;
         size_t n = http_parser_execute(&parser, &settings, NULL, 0);
+        parsing = false;
         if (parser.upgrade) {
             throw UpgradeError("Unexpected UPGRADE");
         }
         if (n != 0) {
             throw ParserError("Parser error");
+        }
+        if (closing) {
+            delete this;
+            return;
         }
     }
 
