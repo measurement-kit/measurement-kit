@@ -7,8 +7,9 @@ TCPConnect::main(std::string input, ight::common::Settings options,
                  std::function<void(ReportEntry)>&& cb)
 {
     options["host"] = input;
-    client = connect(options, [=]() {
+    have_entry = cb;
+    client = connect(options, [this]() {
         ight_debug("Got response to TCP connect test");
-        cb(entry);
+        have_entry(entry);
     });
 }
