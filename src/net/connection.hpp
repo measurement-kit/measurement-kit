@@ -170,6 +170,22 @@ class ConnectionState {
 	}
 
 	void close(void);
+
+	void emit_connect() {
+		on_connect_fn();
+	}
+
+	void emit_data(SharedPointer<IghtBuffer> data) {
+		on_data_fn(data);
+	}
+
+	void emit_flush() {
+		on_flush_fn();
+	}
+
+	void emit_error(IghtError err) {
+		on_error_fn(err);
+	}
 };
 
 class Connection : public Transport {
@@ -177,6 +193,31 @@ class Connection : public Transport {
 	ConnectionState *state = NULL;
 
     public:
+
+	virtual void emit_connect() override {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->emit_connect();
+	}
+
+	virtual void emit_data(SharedPointer<IghtBuffer> data) override {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->emit_data(data);
+	}
+
+	virtual void emit_flush() override {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->emit_flush();
+	}
+
+	virtual void emit_error(IghtError err) override {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->emit_error(err);
+	}
+
 	Connection(void) {
 		/* nothing to do */
 	}

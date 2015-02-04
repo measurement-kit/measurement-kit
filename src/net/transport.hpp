@@ -32,6 +32,14 @@ using namespace ight::common;
 
 struct Transport : public NonMovable, public NonCopyable {
 
+    virtual void emit_connect() = 0;
+
+    virtual void emit_data(SharedPointer<IghtBuffer>) = 0;
+
+    virtual void emit_flush() = 0;
+
+    virtual void emit_error(IghtError) = 0;
+
     Transport() {}
 
     virtual void on_connect(std::function<void()>) = 0;
