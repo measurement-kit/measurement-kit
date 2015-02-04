@@ -267,6 +267,10 @@ public:
         return parser;
     }
 
+    SharedPointer<Transport> get_transport() {
+        return connection;
+    }
+
     /*!
      * \brief Deleted copy constructor.
      * The `this` of this class is bound to lambdas, so it must
