@@ -595,7 +595,12 @@ public:
         }
         stream = std::make_shared<Stream>(settings);
         stream->on_error([this](IghtError err) {
-            emit_end(err, std::move(response));
+            if (err.error != 0) {
+                emit_end(err, std::move(response));
+            } else {
+                // When EOF is received, on_end() is called, therefore we
+                // don't need to call emit_end() again here.
+            }
         });
         stream->on_connect([this](void) {
             // TODO: improve the way in which we serialize the request
