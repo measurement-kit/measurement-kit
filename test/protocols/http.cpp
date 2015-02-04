@@ -164,6 +164,39 @@ TEST_CASE("The HTTP response parser works as expected") {
     }
 }
 
+TEST_CASE("Response parser eof() does not trigger immediate distruction") {
+
+    //
+    // Provide input data by which the end of body is signalled by
+    // the connection being closed, such that invoking the parser's
+    // eof() method is goind to trigger the on_end() callback.
+    //
+    // Then, in the callback delete the parser object, which should
+    // not trigger a crash because the real parser should understand
+    // that it is parsing and should delay its destruction.
+    //
+
+    //ight_set_verbose(1);
+
+    auto parser = new http::ResponseParser();
+    std::string data;
+
+    data = "";
+    data += "HTTP/1.1 200 Ok\r\n";
+    data += "Content-Type: text/plain\r\n";
+    data += "Connection: close\r\n";
+    data += "Server: Antani/1.0.0.0\r\n";
+    data += "\r\n";
+    data += "1234567";
+
+    parser->feed(data);
+
+    parser->on_end([parser]() {
+        delete parser;
+    });
+    parser->eof();
+}
+
 TEST_CASE("HTTP stream works as expected") {
     if (ight::Network::is_down()) {
         return;
