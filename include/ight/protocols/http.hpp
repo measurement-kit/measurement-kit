@@ -249,11 +249,15 @@ class Stream {
         // TODO: convert error from integer to exception.
         //
         connection->on_error([&](Error error) {
+            auto safe_eh = error_handler;
             if (error.error == 0) {
                 parser->eof();
             }
-            if (error_handler) {
-                error_handler(error);
+            // parser->eof() may cause this object to go out of
+            // the scope, therefore we cannot trust `this` to be
+            // valid in the following code.
+            if (safe_eh) {
+                safe_eh(error);
             }
         });
         connect_handler();
