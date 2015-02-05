@@ -239,6 +239,44 @@ TEST_CASE("HTTP stream works as expected") {
     ight_loop();
 }
 
+TEST_CASE("HTTP stream is robust to EOF") {
+
+    //ight_set_verbose(1);
+
+    // We simulate the receipt of a message terminated by EOF followed by
+    // an EOF so that stream emits in sequence "end" followed by "error(0)"
+    // to check whether the code is prepared for the case in which the
+    // "end" handler deletes the stream.
+
+    auto stream = new http::Stream(Settings{
+        {"dumb_transport", "1"},
+    });
+    stream->on_error([](Error) {
+        /* nothing */
+    });
+    stream->on_end([stream]() {
+        delete stream;
+    });
+
+    auto transport = stream->get_transport();
+
+    stream->on_connect([stream, &transport]() {
+        auto data = std::make_shared<Buffer>();
+
+        *data << "HTTP/1.1 200 Ok\r\n";
+        *data << "Content-Type: text/plain\r\n";
+        *data << "Connection: close\r\n";
+        *data << "Server: Antani/1.0.0.0\r\n";
+        *data << "\r\n";
+        *data << "1234567";
+
+        transport->emit_data(data);
+        transport->emit_error(0);
+    });
+
+    transport->emit_connect();
+}
+
 TEST_CASE("HTTP stream works as expected when using Tor") {
     if (ight::Network::is_down()) {
         return;
