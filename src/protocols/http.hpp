@@ -236,6 +236,7 @@ class Stream {
     SharedPointer<Transport> connection;
     ResponseParser parser;
     std::function<void(IghtError)> error_handler;
+    std::function<void()> connect_handler;
 
     void connection_ready(void) {
         connection->on_data([&](SharedPointer<IghtBuffer> data) {
@@ -253,6 +254,7 @@ class Stream {
                 error_handler(error);
             }
         });
+        connect_handler();
     }
 
 public:
@@ -319,9 +321,9 @@ public:
      *         object attaching it to an already opened socket.
      */
     void on_connect(std::function<void(void)>&& fn) {
-        connection->on_connect([fn, this]() {
+        connect_handler = fn;
+        connection->on_connect([this]() {
             connection_ready();
-            fn();
         });
     }
 
