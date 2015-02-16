@@ -23,6 +23,8 @@ class InputFileRequired : public std::runtime_error {
 class DNSInjection : public DNSTest {
     using DNSTest::DNSTest;
 
+    std::function<void(ReportEntry)> have_entry;
+
 public:
     DNSInjection(std::string input_filepath_, ight::common::Settings options_) : 
       DNSTest(input_filepath_, options_) {
