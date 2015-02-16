@@ -1,5 +1,5 @@
-#ifndef LIBIGHT_OONI_DNS_TEST_HPP
-# define LIBIGHT_OONI_DNS_TEST_HPP
+#ifndef LIBIGHT_OONI_HTTP_TEST_HPP
+# define LIBIGHT_OONI_HTTP_TEST_HPP
 
 #include "common/settings.hpp"
 #include "protocols/http.hpp"

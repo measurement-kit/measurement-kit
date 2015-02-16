@@ -1,5 +1,5 @@
-#ifndef LIBIGHT_OONI_NETTEST_HPP
-# define LIBIGHT_OONI_NETTEST_HPP
+#ifndef LIBIGHT_OONI_NET_TEST_HPP
+# define LIBIGHT_OONI_NET_TEST_HPP
 
 #include <iterator>
 #include <iostream>
@@ -110,7 +110,7 @@ public:
 
   NetTest(void);
 
-  ~NetTest(void);
+  virtual ~NetTest(void);
 
   NetTest(NetTest&) = delete;
   NetTest& operator=(NetTest&) = delete;
@@ -138,4 +138,4 @@ public:
 
 }}}
 
-#endif  // LIBIGHT_OONI_NETTEST_HPP
+#endif  // LIBIGHT_OONI_NET_TEST_HPP
