@@ -422,6 +422,14 @@ public:
     void set_timeout(double timeo) {
         connection->set_timeout(timeo);
     }
+
+    std::string socks5_address() {
+        return connection->socks5_address();
+    }
+
+    std::string socks5_port() {
+        return connection->socks5_port();
+    }
 };
 
 /*!
@@ -537,7 +545,7 @@ class Request : public NonCopyable, public NonMovable {
 public:
     /*!
      * \brief Constructor.
-     * \param settings A std::map with key values of the options supported:
+     * \param settings_ A std::map with key values of the options supported:
      *                     {
      *                         "follow_redirects": "yes|no",
      *                         "url": std::string,
@@ -550,14 +558,26 @@ public:
      * \param callback Function invoked when request is complete.
      * \param parent Pointer to parent to implement self clean up.
      */
-    Request(ight::common::Settings settings, Headers headers,
+    Request(const ight::common::Settings settings_, Headers headers,
             std::string body, RequestCallback&& callback_,
             std::set<Request *> *parent_ = nullptr)
                 : callback(callback_), parent(parent_) {
+        auto settings = settings_;  // Make a copy and work on that
         serializer = RequestSerializer(settings, headers, body);
         // Extend settings with address and port to connect to
         settings["port"] = serializer.port;
         settings["address"] = serializer.address;
+        // If needed, extend settings with socks5 proxy info
+        if (serializer.schema == "httpo") {
+            // tor_socks_port takes precedence because it's more specific
+            if (settings.find("tor_socks_port") != settings.end()) {
+                std::string proxy = "127.0.0.1:";
+                proxy += settings["tor_socks_port"];
+                settings["socks5_proxy"] = proxy;
+            } else if (settings.find("socks5_proxy") == settings.end()) {
+                settings["socks5_proxy"] = "127.0.0.1:9050";
+            }
+        }
         stream = std::make_shared<Stream>(settings);
         stream->on_error([this](IghtError err) {
             emit_end(err, std::move(response));
@@ -605,6 +625,14 @@ public:
 
     ~Request() {
         close();
+    }
+
+    std::string socks5_address() {
+        return stream->socks5_address();
+    }
+
+    std::string socks5_port() {
+        return stream->socks5_port();
     }
 };
 

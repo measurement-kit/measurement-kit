@@ -286,6 +286,14 @@ class Connection : public Transport {
 			throw std::runtime_error("Invalid state");
 		state->disable_read();
 	}
+
+	virtual std::string socks5_address() override {
+		return "";  /* no proxy */
+	}
+
+	virtual std::string socks5_port() override {
+		return "";  /* no proxy */
+	}
 };
 
 }}}  // namespaces
