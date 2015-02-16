@@ -23,6 +23,8 @@ class TCPConnect : public TCPTest {
 
     TCPClient client;
 
+    std::function<void(ReportEntry)> have_entry;
+
 public:
     TCPConnect(std::string input_filepath_, ight::common::Settings options_) : 
       TCPTest(input_filepath_, options_) {
