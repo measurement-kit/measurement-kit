@@ -8,6 +8,6 @@ libight_la_LIBADD += src/report/libreport.la
 
 reportincludedir = $(includedir)/ight/report
 reportinclude_HEADERS = \
-    src/report/base.hpp \
-    src/report/entry.hpp \
-    src/report/file.hpp
+    include/ight/report/base.hpp \
+    include/ight/report/entry.hpp \
+    include/ight/report/file.hpp
