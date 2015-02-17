@@ -12,9 +12,9 @@
 
 #include <event2/dns.h>
 
-#include "common/log.h"
-#include "common/stringvector.h"
-#include "net/connection.hpp"
+#include <ight/common/log.h>
+#include <ight/common/stringvector.h>
+#include <ight/net/connection.hpp>
 
 using namespace ight::net::connection;
 using namespace ight::protocols;

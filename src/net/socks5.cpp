@@ -5,7 +5,7 @@
  * information on the copying conditions.
  */
 
-#include "net/socks5.hpp"
+#include <ight/net/socks5.hpp>
 
 using namespace ight::net::connection;
 using namespace ight::net::socks5;

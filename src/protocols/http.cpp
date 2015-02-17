@@ -5,12 +5,12 @@
  * information on the copying conditions.
  */
 
-#include "common/log.h"
+#include <ight/common/log.h>
 
-#include "protocols/http.hpp"
-#include "net/buffer.hpp"
+#include <ight/protocols/http.hpp>
+#include <ight/net/buffer.hpp>
 
-#include "ext/http-parser/http_parser.h"
+#include <ight/ext/http-parser/http_parser.h>
 
 //
 // ResponseParserImpl

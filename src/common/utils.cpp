@@ -18,9 +18,9 @@
 
 #include <event2/event.h>
 
-#include "ext/strtonum.h"
-#include "common/log.h"
-#include "common/utils.hpp"
+#include <ight/ext/strtonum.h>
+#include <ight/common/log.h>
+#include <ight/common/utils.hpp>
 
 void
 ight_timeval_now(struct timeval *tv)

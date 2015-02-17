@@ -7,7 +7,7 @@
 
 #include <arpa/inet.h>
 
-#include "net/buffer.hpp"
+#include <ight/net/buffer.hpp>
 
 void IghtBuffer::write_uint8(uint8_t num) {
     write(&num, sizeof (num));

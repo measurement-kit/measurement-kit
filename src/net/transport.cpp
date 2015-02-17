@@ -5,9 +5,9 @@
  * information on the copying conditions.
  */
 
-#include "net/connection.hpp"
-#include "net/socks5.hpp"
-#include "net/transport.hpp"
+#include <ight/net/connection.hpp>
+#include <ight/net/socks5.hpp>
+#include <ight/net/transport.hpp>
 
 namespace ight {
 namespace net {

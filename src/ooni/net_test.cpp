@@ -1,4 +1,4 @@
-#include "ooni/net_test.hpp"
+#include <ight/ooni/net_test.hpp>
 #include <ctime>
 
 using namespace ight::ooni::net_test;

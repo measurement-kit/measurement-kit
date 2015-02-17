@@ -12,7 +12,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "common/log.h"
+#include <ight/common/log.h>
 
 static int IGHT_VERBOSE = 0;
 
