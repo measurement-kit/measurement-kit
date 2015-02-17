@@ -140,10 +140,11 @@ class ResponseParserImpl {
 
     void parse(void) {
         auto total = (size_t) 0;
-        parsing = true;
         buffer.foreach([&](evbuffer_iovec *iov) {
+            parsing = true;
             size_t n = http_parser_execute(&parser, &settings,
                 (const char *) iov->iov_base, iov->iov_len);
+            parsing = false;
             if (parser.upgrade) {
                 throw UpgradeError("Unexpected UPGRADE");
             }
@@ -153,7 +154,6 @@ class ResponseParserImpl {
             total += iov->iov_len;
             return true;
         });
-        parsing = false;
         if (closing) {
             delete this;
             return;

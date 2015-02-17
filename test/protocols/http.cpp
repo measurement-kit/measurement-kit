@@ -25,6 +25,56 @@ using namespace ight::common;
 // ResponseParser unit test
 //
 
+TEST_CASE("We don't leak when we receive an invalid message") {
+
+    //ight_set_verbose(1);
+
+    http::ResponseParser parser;
+    std::string data;
+
+    //
+    // We pass the parser an invalid message that should trigger an
+    // exception. After the exception, the internal parser should be
+    // in a state by which, when the external parser is deleted,
+    // the internal parser is also deleted.
+    //
+
+    data = "";
+    data += "XXX XXX XXX XXX\r\n";
+    data += "Content-Type: text/plain\r\n";
+    data += "Connection: close\r\n";
+    data += "Server: Antani/1.0.0.0\r\n";
+    data += "\r\n";
+    data += "1234567";
+
+    REQUIRE_THROWS(parser.feed(data));
+}
+
+TEST_CASE("We don't leak when we receive a UPGRADE") {
+
+    //ight_set_verbose(1);
+
+    http::ResponseParser parser;
+    std::string data;
+
+    //
+    // We pass the parser an invalid message that should trigger an
+    // exception. After the exception, the internal parser should be
+    // in a state by which, when the external parser is deleted,
+    // the internal parser is also deleted.
+    //
+
+    data = "";
+    data += "HTTP/1.1 200 Ok\r\n";
+    data += "Content-Type: text/plain\r\n";
+    data += "Connection: upgrade\r\n";
+    data += "Upgrade: websockets\r\n";
+    data += "Server: Antani/1.0.0.0\r\n";
+    data += "\r\n";
+
+    REQUIRE_THROWS(parser.feed(data));
+}
+
 TEST_CASE("The HTTP response parser works as expected") {
     auto data = std::string();
     auto parser = ight::protocols::http::ResponseParser();
