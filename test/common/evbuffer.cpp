@@ -12,7 +12,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "common/libevent.h"
+#include <ight/common/libevent.h>
 
 TEST_CASE("The constructor is lazy") {
 

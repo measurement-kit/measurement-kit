@@ -12,7 +12,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "src/common/pointer.hpp"
+#include <ight/src/common/pointer.hpp>
 
 using namespace ight::common::pointer;
 

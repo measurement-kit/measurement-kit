@@ -12,10 +12,10 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "common/check_connectivity.hpp"
-#include "common/log.h"
+#include <ight/common/check_connectivity.hpp>
+#include <ight/common/log.h>
 
-#include "net/connection.hpp"
+#include <ight/net/connection.hpp>
 
 using namespace ight::net::connection;
 

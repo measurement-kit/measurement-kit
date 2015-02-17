@@ -12,10 +12,10 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "common/check_connectivity.hpp"
-#include "common/poller.h"
-#include "common/log.h"
-#include "protocols/http.hpp"
+#include <ight/common/check_connectivity.hpp>
+#include <ight/common/poller.h>
+#include <ight/common/log.h>
+#include <ight/protocols/http.hpp>
 
 using namespace ight::protocols;
 using namespace ight::common::pointer;

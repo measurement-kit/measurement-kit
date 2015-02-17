@@ -1,10 +1,10 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "ooni/tcp_connect.hpp"
-#include "common/poller.h"
-#include "common/log.h"
-#include "common/utils.hpp"
+#include <ight/ooni/tcp_connect.hpp>
+#include <ight/common/poller.h>
+#include <ight/common/log.h>
+#include <ight/common/utils.hpp>
 
 using namespace ight::ooni::tcp_connect;
 
