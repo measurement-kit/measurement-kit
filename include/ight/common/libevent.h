@@ -22,7 +22,7 @@
 #include <functional>
 #include <stdexcept>
 
-#include "common/constraints.hpp"
+#include <ight/common/constraints.hpp>
 
 struct IghtLibevent {
 

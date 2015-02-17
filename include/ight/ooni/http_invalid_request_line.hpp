@@ -1,10 +1,10 @@
 #ifndef LIBIGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
 # define LIBIGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
 
-#include "common/utils.hpp"
-#include "protocols/http.hpp"
-#include "ooni/net_test.hpp"
-#include "ooni/http_test.hpp"
+#include <ight/common/utils.hpp>
+#include <ight/protocols/http.hpp>
+#include <ight/ooni/net_test.hpp>
+#include <ight/ooni/http_test.hpp>
 #include <sys/stat.h>
 
 using namespace ight::ooni::http_test;

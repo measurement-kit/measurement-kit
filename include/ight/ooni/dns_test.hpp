@@ -1,10 +1,10 @@
 #ifndef LIBIGHT_OONI_DNS_TEST_HPP
 # define LIBIGHT_OONI_DNS_TEST_HPP
 
-#include "common/pointer.hpp"
+#include <ight/common/pointer.hpp>
 
-#include "protocols/dns.hpp"
-#include "ooni/net_test.hpp"
+#include <ight/protocols/dns.hpp>
+#include <ight/ooni/net_test.hpp>
 
 namespace ight {
 namespace ooni {

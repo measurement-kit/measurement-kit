@@ -15,12 +15,12 @@
 #include <functional>
 #include <string>
 
-#include "common/constraints.hpp"
-#include "common/error.h"
-#include "common/pointer.hpp"
-#include "common/settings.hpp"
+#include <ight/common/constraints.hpp>
+#include <ight/common/error.h>
+#include <ight/common/pointer.hpp>
+#include <ight/common/settings.hpp>
 
-#include "net/buffer.hpp"
+#include <ight/net/buffer.hpp>
 
 namespace ight {
 namespace net {

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "report/base.hpp"
+#include <ight/report/base.hpp>
 
 class FileReporter : public ReporterBase {
   std::ofstream file;

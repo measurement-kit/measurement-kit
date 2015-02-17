@@ -8,11 +8,11 @@
 #ifndef LIBIGHT_NET_SOCKS5_HPP
 # define LIBIGHT_NET_SOCKS5_HPP
 
-#include "common/log.h"
+#include <ight/common/log.h>
 
-#include "net/buffer.hpp"
-#include "net/connection.hpp"
-#include "net/transport.hpp"
+#include <ight/net/buffer.hpp>
+#include <ight/net/connection.hpp>
+#include <ight/net/transport.hpp>
 
 namespace ight {
 namespace net {

@@ -2,7 +2,7 @@
 #define LIBIGHT_REPORTER_BASE_HPP
 
 #include "yaml-cpp/yaml.h"
-#include "report/entry.hpp"
+#include <ight/report/entry.hpp>
 
 class ReporterBase {
   bool closed = false;

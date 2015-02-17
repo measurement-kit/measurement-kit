@@ -1,7 +1,7 @@
 #ifndef LIBIGHT_OONI_TCP_CONNECT_HPP
 # define LIBIGHT_OONI_TCP_CONNECT_HPP
 
-#include "ooni/tcp_test.hpp"
+#include <ight/ooni/tcp_test.hpp>
 #include <sys/stat.h>
 
 using namespace ight::ooni::tcp_test;

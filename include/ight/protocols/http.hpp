@@ -14,14 +14,14 @@
 #include <stdexcept>
 #include <string>
 
-#include "common/constraints.hpp"
-#include "common/settings.hpp"
-#include "common/log.h"
-#include "common/error.h"
-#include "common/pointer.hpp"
+#include <ight/common/constraints.hpp>
+#include <ight/common/settings.hpp>
+#include <ight/common/log.h>
+#include <ight/common/error.h>
+#include <ight/common/pointer.hpp>
 
-#include "net/buffer.hpp"
-#include "net/transport.hpp"
+#include <ight/net/buffer.hpp>
+#include <ight/net/transport.hpp>
 
 // Internally we use joyent/http-parser
 struct http_parser;

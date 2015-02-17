@@ -8,16 +8,16 @@
 #ifndef LIBIGHT_NET_CONNECTION_HPP
 # define LIBIGHT_NET_CONNECTION_HPP
 
-#include "common/constraints.hpp"
-#include "common/error.h"
-#include "common/pointer.hpp"
-#include "common/poller.h"
-#include "common/utils.hpp"
+#include <ight/common/constraints.hpp>
+#include <ight/common/error.h>
+#include <ight/common/pointer.hpp>
+#include <ight/common/poller.h>
+#include <ight/common/utils.hpp>
 
-#include "net/buffer.hpp"
-#include "net/transport.hpp"
+#include <ight/net/buffer.hpp>
+#include <ight/net/transport.hpp>
 
-#include "protocols/dns.hpp"
+#include <ight/protocols/dns.hpp>
 
 #include <event2/bufferevent.h>
 #include <event2/event.h>
