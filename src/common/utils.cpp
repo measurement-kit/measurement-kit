@@ -18,7 +18,7 @@
 
 #include <event2/event.h>
 
-#include <ight/ext/strtonum.h>
+#include "ext/strtonum.h"
 #include <ight/common/log.h>
 #include <ight/common/utils.hpp>
 

@@ -10,7 +10,7 @@
 #include <ight/protocols/http.hpp>
 #include <ight/net/buffer.hpp>
 
-#include <ight/ext/http-parser/http_parser.h>
+#include "ext/http-parser/http_parser.h"
 
 //
 // ResponseParserImpl
