@@ -19,11 +19,11 @@ public:
   template <typename Key>
   const YAML::Node operator[](const Key& key) const {
     return report[key];
-  };
+  }
   template <typename Key>
   YAML::Node operator[](const Key& key) {
     return report[key];
-  };
+  }
 
   std::string str() {
     std::stringstream output;

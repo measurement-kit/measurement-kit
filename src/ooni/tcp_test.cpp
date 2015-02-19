@@ -33,4 +33,4 @@ TCPTest::connect(ight::common::Settings options, std::function<void()>&& cb)
     });
 
     return connection;
-};
+}
