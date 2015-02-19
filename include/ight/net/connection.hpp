@@ -60,7 +60,7 @@ class ConnectionState {
 	// Functions used when connecting
 	void connect_next(void);
 	void handle_resolve(int, char, std::vector<std::string>);
-	static void resolve(ConnectionState *);
+	void resolve();
 	bool resolve_internal(char);
 
 	std::function<void(void)> on_connect_fn = [](void) {
