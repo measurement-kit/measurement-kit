@@ -52,4 +52,14 @@ if USE_BUILTIN_YAMLCPP
 	src/ext/yaml-cpp/src/null.cpp \
 	src/ext/yaml-cpp/src/nodebuilder.cpp \
 	src/ext/yaml-cpp/src/scantoken.cpp
+
+install-data-hook:
+	HBASE=$(top_srcdir)/src/ext/yaml-cpp/include && \
+	for HEADER in `find $$HBASE -type f`; do \
+	    REL_HEADER=`echo $$HEADER | sed "s|$$HBASE/||g"`; \
+	    HEADER_DIR=`dirname $$REL_HEADER`; \
+	    $(MKDIR_P) $(DESTDIR)$(includedir)/$$HEADER_DIR; \
+	    $(INSTALL_HEADER) $$HEADER $(DESTDIR)$(includedir)/$$REL_HEADER; \
+	done
+
 endif
