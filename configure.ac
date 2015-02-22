@@ -172,6 +172,7 @@ fi
 # Step 3: if needed, prepare to compile our own yaml-cpp
 if test "$ight_yamlcpp_path"x = "builtin"x; then
     CPPFLAGS="$CPPFLAGS -Isrc/ext/yaml-cpp/include"
+    LDFLAGS="$LDFLAGS -Lsrc/ext/"
 fi
 AM_CONDITIONAL([USE_BUILTIN_YAMLCPP],
     [test "$ight_yamlcpp_path"x = "builtin"x])

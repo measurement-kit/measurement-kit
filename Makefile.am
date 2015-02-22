@@ -18,11 +18,13 @@ VERSION_INFO = 4:0:0
 AM_CFLAGS = $(LIBIGHT_W_FLAGS) $(LIBIGHT_I_FLAGS)
 AM_CXXFLAGS = $(LIBIGHT_W_FLAGS) $(LIBIGHT_I_FLAGS)
 
-lib_LTLIBRARIES = libight.la
-libight_la_LDFLAGS = -version-info $(VERSION_INFO)
+lib_LTLIBRARIES =  # Empty
+libight_la_LDFLAGS = -version-info $(VERSION_INFO) -lyaml-cpp
 libight_la_SOURCES =  # Empty
 
 noinst_LTLIBRARIES =  # Empty
 
 include src/include.am
 include test/include.am
+
+lib_LTLIBRARIES += libight.la
