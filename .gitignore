@@ -60,6 +60,7 @@ stamp-h1
 test/common/bufferevent
 test/common/delayed_call
 test/common/evbuffer
+test/common/log
 test/common/poller
 test/common/pointer
 test/common/socket_valid

@@ -18,6 +18,11 @@ test_common_delayed_call_LDADD = libight.la
 check_PROGRAMS += test/common/delayed_call
 TESTS += test/common/delayed_call
 
+test_common_log_SOURCES = test/common/log.cpp
+test_common_log_LDADD = libight.la
+check_PROGRAMS += test/common/log
+TESTS += test/common/log
+
 test_common_evbuffer_SOURCES = test/common/evbuffer.cpp
 test_common_evbuffer_LDADD = libight.la
 check_PROGRAMS += test/common/evbuffer
