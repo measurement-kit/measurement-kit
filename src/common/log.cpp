@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "common/log.hpp"
+#include <ight/common/log.hpp>
 
 class Logger {
 

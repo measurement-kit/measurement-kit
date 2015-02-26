@@ -12,7 +12,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "common/log.hpp"
+#include <ight/common/log.hpp>
 
 #include <string>
 
