@@ -7,7 +7,7 @@
 #include <ight/common/emitter.hpp>
 #include <ight/common/pointer.hpp>
 #include <ight/common/settings.hpp>
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 
 #include <ight/ooni/net_test.hpp>
 

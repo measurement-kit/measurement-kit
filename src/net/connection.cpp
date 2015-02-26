@@ -12,7 +12,7 @@
 
 #include <event2/dns.h>
 
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 #include <ight/common/stringvector.h>
 #include <ight/net/connection.hpp>
 

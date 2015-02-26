@@ -15,7 +15,7 @@
 
 #include <ight/common/poller.h>
 #include <ight/common/utils.hpp>
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 
 /*
  * IghtDelayedCall implementation

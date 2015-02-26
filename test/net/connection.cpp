@@ -13,7 +13,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ight/common/check_connectivity.hpp>
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 
 #include <ight/net/connection.hpp>
 

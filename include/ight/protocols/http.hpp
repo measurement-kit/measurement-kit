@@ -16,7 +16,7 @@
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/settings.hpp>
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 #include <ight/common/error.h>
 #include <ight/common/pointer.hpp>
 

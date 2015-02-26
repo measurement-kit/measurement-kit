@@ -12,7 +12,7 @@
 #include <event2/dns.h>
 
 #include <ight/common/check_connectivity.hpp>
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 
 void
 ight::Network::cleanup(void)  // Idempotent cleanup function

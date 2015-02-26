@@ -19,7 +19,7 @@
 #include <event2/event.h>
 
 #include "ext/strtonum.h"
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 #include <ight/common/utils.hpp>
 
 void

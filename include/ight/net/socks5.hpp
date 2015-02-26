@@ -8,7 +8,7 @@
 #ifndef LIBIGHT_NET_SOCKS5_HPP
 # define LIBIGHT_NET_SOCKS5_HPP
 
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 
 #include <ight/net/buffer.hpp>
 #include <ight/net/connection.hpp>

@@ -5,7 +5,7 @@
  * information on the copying conditions.
  */
 
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 
 #include <ight/protocols/http.hpp>
 #include <ight/net/buffer.hpp>

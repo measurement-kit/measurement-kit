@@ -7,7 +7,7 @@
 
 #include <ight/protocols/dns.hpp>
 
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 #include <ight/common/utils.hpp>
 
 #include <event2/dns.h>

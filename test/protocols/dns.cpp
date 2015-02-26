@@ -15,7 +15,7 @@
 #include <ight/protocols/dns.hpp>
 
 #include <ight/common/check_connectivity.hpp>
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 #include <ight/common/utils.hpp>
 
 using namespace ight::protocols::dns;

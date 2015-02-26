@@ -14,7 +14,7 @@
 
 #include <ight/common/check_connectivity.hpp>
 #include <ight/common/poller.h>
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 #include <ight/protocols/http.hpp>
 
 using namespace ight::protocols;

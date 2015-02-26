@@ -3,7 +3,7 @@
 
 #include <ight/ooni/http_invalid_request_line.hpp>
 #include <ight/common/poller.h>
-#include <ight/common/log.h>
+#include <ight/common/log.hpp>
 #include <ight/common/utils.hpp>
 
 using namespace ight::ooni::http_invalid_request_line;
