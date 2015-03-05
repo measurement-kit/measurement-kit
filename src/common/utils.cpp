@@ -90,10 +90,7 @@ struct timeval *ight_timeval_init(struct timeval *tv, double delta) {
 int ight_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
                       const char *family, const char *address,
                       const char *port) {
-    int _family, _port, result;
-    const char *errstr;
-
-    ight_info("utils:ight_storage_init - enter");
+    int _family;
 
     /* TODO: support also AF_INET, AF_INET6, ... */
     if (strcmp(family, "PF_INET") == 0) {
@@ -105,8 +102,33 @@ int ight_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
         return (-1);
     }
 
+    return ight_storage_init(storage, salen, _family, address, port);
+}
+
+int ight_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
+                      int _family, const char *address,
+                      const char *port) {
+    int _port;
+    const char *errstr;
+
+    ight_info("utils:ight_storage_init - enter");
+
     _port = (int)ight_strtonum(port, 0, 65535, &errstr);
     if (errstr != NULL) {
+        ight_warn("utils:ight_storage_init: invalid port");
+        return (-1);
+    }
+
+    return ight_storage_init(storage, salen, _family, address, _port);
+}
+
+int ight_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
+                      int _family, const char *address, int _port) {
+    int result;
+
+    ight_info("utils:ight_storage_init - enter");
+
+    if (_port < 0 || _port > 65535) {
         ight_warn("utils:ight_storage_init: invalid port");
         return (-1);
     }
@@ -118,10 +140,14 @@ int ight_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
         struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)storage;
         sin6->sin6_family = AF_INET6;
         sin6->sin6_port = htons(_port);
-        result = inet_pton(AF_INET6, address, &sin6->sin6_addr);
-        if (result != 1) {
-            ight_warn("utils:ight_storage_init: invalid addr");
-            return (-1);
+        if (address != NULL) {
+            result = inet_pton(AF_INET6, address, &sin6->sin6_addr);
+            if (result != 1) {
+                ight_warn("utils:ight_storage_init: invalid addr");
+                return (-1);
+            }
+        } else {
+            sin6->sin6_addr = in6addr_any;
         }
         *salen = sizeof(struct sockaddr_in6);
         break;
@@ -131,10 +157,14 @@ int ight_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
         struct sockaddr_in *sin = (struct sockaddr_in *)storage;
         sin->sin_family = AF_INET;
         sin->sin_port = htons(_port);
-        result = inet_pton(AF_INET, address, &sin->sin_addr);
-        if (result != 1) {
-            ight_warn("utils:ight_storage_init: invalid addr");
-            return (-1);
+        if (address != NULL) {
+            result = inet_pton(AF_INET, address, &sin->sin_addr);
+            if (result != 1) {
+                ight_warn("utils:ight_storage_init: invalid addr");
+                return (-1);
+            }
+        } else {
+            sin->sin_addr.s_addr = INADDR_ANY;
         }
         *salen = sizeof(struct sockaddr_in);
         break;

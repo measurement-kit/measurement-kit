@@ -1,0 +1,10 @@
+noinst_LTLIBRARIES += src/portolan/libportolan.la
+
+src_portolan_libportolan_la_SOURCES = \
+	src/portolan/traceroute_android.cpp
+
+libight_la_LIBADD += src/portolan/libportolan.la
+
+portolanincludedir = $(includedir)/ight/portolan
+portolaninclude_HEADERS = \
+    include/ight/portolan/traceroute_android.hpp
