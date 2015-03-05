@@ -1,0 +1,12 @@
+noinst_LTLIBRARIES += src/traceroute/libtraceroute.la
+
+src_traceroute_libtraceroute_la_SOURCES = \
+	src/traceroute/android.cpp \
+	src/traceroute/interface.cpp
+
+libight_la_LIBADD += src/traceroute/libtraceroute.la
+
+tracerouteincludedir = $(includedir)/ight/traceroute
+tracerouteinclude_HEADERS = \
+    include/ight/traceroute/android.hpp \
+    include/ight/traceroute/interface.hpp

@@ -119,3 +119,9 @@ test_protocols_http_LDADD = libight.la
 test_protocols_http_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/protocols/http
 TESTS += test/protocols/http
+
+test_traceroute_android_SOURCES = test/traceroute/android.cpp
+test_traceroute_android_LDADD = libight.la
+test_traceroute_android_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/traceroute/android
+TESTS += test/traceroute/android

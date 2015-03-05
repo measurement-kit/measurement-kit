@@ -6,3 +6,4 @@ include src/net/include.am
 include src/ooni/include.am
 include src/protocols/include.am
 include src/report/include.am
+include src/traceroute/include.am
