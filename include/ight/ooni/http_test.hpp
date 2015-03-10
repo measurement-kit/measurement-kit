@@ -1,9 +1,9 @@
 #ifndef LIBIGHT_OONI_HTTP_TEST_HPP
 # define LIBIGHT_OONI_HTTP_TEST_HPP
 
-#include "common/settings.hpp"
-#include "protocols/http.hpp"
-#include "ooni/net_test.hpp"
+#include <ight/common/settings.hpp>
+#include <ight/protocols/http.hpp>
+#include <ight/ooni/net_test.hpp>
 
 namespace ight {
 namespace ooni {

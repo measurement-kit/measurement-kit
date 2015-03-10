@@ -12,9 +12,9 @@
 
 #include <event2/dns.h>
 
-#include "common/log.h"
-#include "common/stringvector.h"
-#include "net/connection.hpp"
+#include <ight/common/log.hpp>
+#include <ight/common/stringvector.h>
+#include <ight/net/connection.hpp>
 
 using namespace ight::net::connection;
 using namespace ight::protocols;
@@ -151,8 +151,9 @@ ConnectionState::ConnectionState(const char *family, const char *address,
 	    this->handle_event, this);
 
 	if (!ight_socket_valid(filenum))
-		this->start_connect = std::make_shared<IghtDelayedCall>(0.0,
-		    std::bind(this->resolve, this));
+		this->start_connect = std::make_shared<IghtDelayedCall>(0.0, [this]() {
+			this->resolve();
+		});
 }
 
 void
@@ -305,84 +306,84 @@ bool ConnectionState::resolve_internal(char type) {
 }
 
 void
-ConnectionState::resolve(ConnectionState *self)
+ConnectionState::resolve()
 {
 	struct sockaddr_storage storage;
 	int result;
 
-	if (!self->connecting)
+	if (!connecting)
 		abort();
 
-	// If self->address is a valid IPv4 address, connect directly
+	// If address is a valid IPv4 address, connect directly
 	memset(&storage, 0, sizeof (storage));
-	result = inet_pton(PF_INET, self->address, &storage);
+	result = inet_pton(PF_INET, address, &storage);
 	if (result == 1) {
-		ight_info("resolve - address %s", self->address);
+		ight_info("resolve - address %s", address);
 		ight_info("resolve - family PF_INET");
-		if (self->addrlist->append(self->address) != 0 ||
-		    self->pflist->append("PF_INET") != 0) {
+		if (addrlist->append(address) != 0 ||
+		    pflist->append("PF_INET") != 0) {
 			ight_warn("resolve - cannot append");
-			self->connecting = 0;
-			self->on_error_fn(IghtError(-4));
+			connecting = 0;
+			on_error_fn(IghtError(-4));
 			return;
 		}
-		self->connect_next();
+		connect_next();
 		return;
 	}
 
-	// If self->address is a valid IPv6 address, connect directly
+	// If address is a valid IPv6 address, connect directly
 	memset(&storage, 0, sizeof (storage));
-	result = inet_pton(PF_INET6, self->address, &storage);
+	result = inet_pton(PF_INET6, address, &storage);
 	if (result == 1) {
-		ight_info("resolve - address %s", self->address);
+		ight_info("resolve - address %s", address);
 		ight_info("resolve - family PF_INET6");
-		if (self->addrlist->append(self->address) != 0 ||
-		    self->pflist->append("PF_INET6") != 0) {
+		if (addrlist->append(address) != 0 ||
+		    pflist->append("PF_INET6") != 0) {
 			ight_warn("resolve - cannot append");
-			self->connecting = 0;
-			self->on_error_fn(IghtError(-4));
+			connecting = 0;
+			on_error_fn(IghtError(-4));
 			return;
 		}
-		self->connect_next();
+		connect_next();
 		return;
 	}
 
 	// Note: PF_UNSPEC6 means that we try with IPv6 first
-	if (strcmp(self->family, "PF_INET") == 0)
-		self->must_resolve_ipv4 = 1;
-	else if (strcmp(self->family, "PF_INET6") == 0)
-		self->must_resolve_ipv6 = 1;
-	else if (strcmp(self->family, "PF_UNSPEC") == 0)
-		self->must_resolve_ipv4 = 1;
-	else if (strcmp(self->family, "PF_UNSPEC6") == 0)
-		self->must_resolve_ipv6 = 1;
+	if (strcmp(family, "PF_INET") == 0)
+		must_resolve_ipv4 = 1;
+	else if (strcmp(family, "PF_INET6") == 0)
+		must_resolve_ipv6 = 1;
+	else if (strcmp(family, "PF_UNSPEC") == 0)
+		must_resolve_ipv4 = 1;
+	else if (strcmp(family, "PF_UNSPEC6") == 0)
+		must_resolve_ipv6 = 1;
 	else {
 		ight_warn("connection::resolve - invalid PF_xxx");
-		self->connecting = 0;
-		self->on_error_fn(IghtError(-5));
+		connecting = 0;
+		on_error_fn(IghtError(-5));
 		return;
 	}
 
 	bool ok = false;
 
-	if (self->must_resolve_ipv4) {
-		self->must_resolve_ipv4 = 0;
-		ok = self->resolve_internal(DNS_IPv4_A);
+	if (must_resolve_ipv4) {
+		must_resolve_ipv4 = 0;
+		ok = resolve_internal(DNS_IPv4_A);
 	} else {
-		self->must_resolve_ipv6 = 0;
-		ok = self->resolve_internal(DNS_IPv6_AAAA);
+		must_resolve_ipv6 = 0;
+		ok = resolve_internal(DNS_IPv6_AAAA);
 	}
 	if (!ok) {
-		self->connecting = 0;
-		self->on_error_fn(IghtError(-6));
+		connecting = 0;
+		on_error_fn(IghtError(-6));
 		return;
 	}
 
 	// Arrange for the next resolve operation that we will need
-	if (strcmp(self->family, "PF_UNSPEC") == 0)
-		self->must_resolve_ipv6 = 1;
-	else if (strcmp(self->family, "PF_UNSPEC6") == 0)
-		self->must_resolve_ipv4 = 1;
+	if (strcmp(family, "PF_UNSPEC") == 0)
+		must_resolve_ipv6 = 1;
+	else if (strcmp(family, "PF_UNSPEC6") == 0)
+		must_resolve_ipv4 = 1;
 }
 
 void

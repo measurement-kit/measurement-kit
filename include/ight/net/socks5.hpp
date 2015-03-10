@@ -8,11 +8,11 @@
 #ifndef LIBIGHT_NET_SOCKS5_HPP
 # define LIBIGHT_NET_SOCKS5_HPP
 
-#include "common/log.h"
+#include <ight/common/log.hpp>
 
-#include "net/buffer.hpp"
-#include "net/connection.hpp"
-#include "net/transport.hpp"
+#include <ight/net/buffer.hpp>
+#include <ight/net/connection.hpp>
+#include <ight/net/transport.hpp>
 
 namespace ight {
 namespace net {
@@ -40,6 +40,23 @@ protected:
     std::string proxy_port;
 
 public:
+
+    virtual void emit_connect() override {
+        conn->emit_connect();
+    }
+
+    virtual void emit_data(SharedPointer<IghtBuffer> data) override {
+        conn->emit_data(data);
+    }
+
+    virtual void emit_flush() override {
+        conn->emit_flush();
+    }
+
+    virtual void emit_error(IghtError err) override {
+        conn->emit_error(err);
+    }
+
     Socks5(Settings);
 
     virtual void on_connect(std::function<void()> fn) override {

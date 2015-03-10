@@ -10,7 +10,7 @@ libight_la_LIBADD += src/net/libnet.la
 
 netincludedir = $(includedir)/ight/net
 netinclude_HEADERS = \
-    src/net/buffer.hpp \
-    src/net/connection.hpp \
-    src/net/socks5.hpp \
-    src/net/transport.hpp
+    include/ight/net/buffer.hpp \
+    include/ight/net/connection.hpp \
+    include/ight/net/socks5.hpp \
+    include/ight/net/transport.hpp

@@ -12,11 +12,11 @@
 // DNS client functionality
 //
 
-#include "common/constraints.hpp"
-#include "common/log.h"
-#include "common/pointer.hpp"
-#include "common/poller.h"
-#include "common/settings.hpp"
+#include <ight/common/constraints.hpp>
+#include <ight/common/log.hpp>
+#include <ight/common/pointer.hpp>
+#include <ight/common/poller.h>
+#include <ight/common/settings.hpp>
 
 #include <functional>
 #include <vector>

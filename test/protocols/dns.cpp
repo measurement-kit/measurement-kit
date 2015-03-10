@@ -12,11 +12,11 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "protocols/dns.hpp"
+#include <ight/protocols/dns.hpp>
 
-#include "common/check_connectivity.hpp"
-#include "common/log.h"
-#include "common/utils.hpp"
+#include <ight/common/check_connectivity.hpp>
+#include <ight/common/log.hpp>
+#include <ight/common/utils.hpp>
 
 using namespace ight::protocols::dns;
 

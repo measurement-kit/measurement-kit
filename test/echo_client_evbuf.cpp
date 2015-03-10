@@ -5,8 +5,8 @@
  * information on the copying conditions.
  */
 
-#include "common/log.h"
-#include "net/connection.hpp"
+#include <ight/common/log.hpp>
+#include <ight/net/connection.hpp>
 
 #include <stdlib.h>
 

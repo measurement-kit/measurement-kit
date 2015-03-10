@@ -8,5 +8,5 @@ libight_la_LIBADD += src/protocols/libprotocols.la
 
 protocolsincludedir = $(includedir)/ight/protocols
 protocolsinclude_HEADERS = \
-    src/protocols/dns.hpp \
-    src/protocols/http.hpp
+    include/ight/protocols/dns.hpp \
+    include/ight/protocols/http.hpp

@@ -14,14 +14,14 @@
 #include <stdexcept>
 #include <string>
 
-#include "common/constraints.hpp"
-#include "common/settings.hpp"
-#include "common/log.h"
-#include "common/error.h"
-#include "common/pointer.hpp"
+#include <ight/common/constraints.hpp>
+#include <ight/common/settings.hpp>
+#include <ight/common/log.hpp>
+#include <ight/common/error.h>
+#include <ight/common/pointer.hpp>
 
-#include "net/buffer.hpp"
-#include "net/transport.hpp"
+#include <ight/net/buffer.hpp>
+#include <ight/net/transport.hpp>
 
 // Internally we use joyent/http-parser
 struct http_parser;
@@ -234,13 +234,13 @@ public:
  */
 class Stream {
     SharedPointer<Transport> connection;
-    ResponseParser parser;
+    SharedPointer<ResponseParser> parser;
     std::function<void(IghtError)> error_handler;
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
         connection->on_data([&](SharedPointer<IghtBuffer> data) {
-            parser.feed(data);
+            parser->feed(data);
         });
         //
         // Intercept EOF error to implement body-ends-at-EOF semantic.
@@ -248,7 +248,7 @@ class Stream {
         //
         connection->on_error([&](IghtError error) {
             if (error.error == 0) {
-                parser.eof();
+                parser->eof();
             }
             if (error_handler) {
                 error_handler(error);
@@ -258,6 +258,18 @@ class Stream {
     }
 
 public:
+
+    /*!
+     * \brief Get response parser.
+     * This is useful for writing tests.
+     */
+    SharedPointer<ResponseParser> get_parser() {
+        return parser;
+    }
+
+    SharedPointer<Transport> get_transport() {
+        return connection;
+    }
 
     /*!
      * \brief Deleted copy constructor.
@@ -301,6 +313,7 @@ public:
      *        it (see transport.cpp for more info).
      */
     Stream(Settings settings) {
+        parser = std::make_shared<ResponseParser>();
         connection = transport::connect(settings);
         //
         // While the connection is in progress, just forward the
@@ -375,7 +388,7 @@ public:
      * \param fn The `begin` event handler.
      */
     void on_begin(std::function<void(void)>&& fn) {
-        parser.on_begin(std::move(fn));
+        parser->on_begin(std::move(fn));
     }
 
     /*!
@@ -388,7 +401,7 @@ public:
      */
     void on_headers_complete(std::function<void(unsigned short,
       unsigned short, unsigned int, std::string&&, Headers&&)>&& fn) {
-        parser.on_headers_complete(std::move(fn));
+        parser->on_headers_complete(std::move(fn));
     }
 
     /*!
@@ -398,7 +411,7 @@ public:
      *         piece of body that was just received.
      */
     void on_body(std::function<void(std::string&&)>&& fn) {
-        parser.on_body(std::move(fn));
+        parser->on_body(std::move(fn));
     }
 
     /*!
@@ -406,7 +419,7 @@ public:
      * \param fn The `end` event handler.
      */
     void on_end(std::function<void(void)>&& fn) {
-        parser.on_end(std::move(fn));
+        parser->on_end(std::move(fn));
     }
 
     /*!
@@ -582,7 +595,12 @@ public:
         }
         stream = std::make_shared<Stream>(settings);
         stream->on_error([this](IghtError err) {
-            emit_end(err, std::move(response));
+            if (err.error != 0) {
+                emit_end(err, std::move(response));
+            } else {
+                // When EOF is received, on_end() is called, therefore we
+                // don't need to call emit_end() again here.
+            }
         });
         stream->on_connect([this](void) {
             // TODO: improve the way in which we serialize the request
@@ -619,6 +637,10 @@ public:
             });
 
         });
+    }
+
+    SharedPointer<Stream> get_stream() {
+        return stream;
     }
 
     void close() {

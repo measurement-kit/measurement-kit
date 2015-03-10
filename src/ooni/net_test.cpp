@@ -1,4 +1,4 @@
-#include "ooni/net_test.hpp"
+#include <ight/ooni/net_test.hpp>
 #include <ctime>
 
 using namespace ight::ooni::net_test;
@@ -128,19 +128,19 @@ NetTest::end(std::function<void()>&& cb)
 
 void
 NetTest::setup(std::string) {
-};
+}
 
 void
 NetTest::setup() {
-};
+}
 
 void
 NetTest::teardown(std::string) {
-};
+}
 
 void
 NetTest::teardown() {
-};
+}
 
 void
 NetTest::main(ight::common::Settings,

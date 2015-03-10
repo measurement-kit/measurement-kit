@@ -2,10 +2,10 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "ooni/tcp_test.hpp"
-#include "common/poller.h"
-#include "common/log.h"
-#include "common/utils.hpp"
+#include <ight/ooni/tcp_test.hpp>
+#include <ight/common/poller.h>
+#include <ight/common/log.hpp>
+#include <ight/common/utils.hpp>
 
 #include <iostream>
 

@@ -2,7 +2,7 @@ noinst_LTLIBRARIES += src/common/libcommon.la
 
 src_common_libcommon_la_SOURCES = \
 	src/common/check_connectivity.cpp \
-	src/common/log.c \
+	src/common/log.cpp \
 	src/common/poller.cpp \
 	src/common/stringvector.cpp \
 	src/common/utils.cpp
@@ -11,14 +11,14 @@ libight_la_LIBADD += src/common/libcommon.la
 
 commonincludedir = $(includedir)/ight/common
 commoninclude_HEADERS = \
-    src/common/check_connectivity.hpp \
-    src/common/constraints.hpp \
-    src/common/emitter.hpp \
-    src/common/pointer.hpp \
-    src/common/settings.hpp \
-    src/common/utils.hpp \
-    src/common/error.h \
-    src/common/libevent.h \
-    src/common/log.h \
-    src/common/poller.h \
-    src/common/stringvector.h
+    include/ight/common/check_connectivity.hpp \
+    include/ight/common/constraints.hpp \
+    include/ight/common/emitter.hpp \
+    include/ight/common/pointer.hpp \
+    include/ight/common/settings.hpp \
+    include/ight/common/utils.hpp \
+    include/ight/common/error.h \
+    include/ight/common/libevent.h \
+    include/ight/common/log.hpp \
+    include/ight/common/poller.h \
+    include/ight/common/stringvector.h

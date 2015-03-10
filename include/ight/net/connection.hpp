@@ -8,16 +8,16 @@
 #ifndef LIBIGHT_NET_CONNECTION_HPP
 # define LIBIGHT_NET_CONNECTION_HPP
 
-#include "common/constraints.hpp"
-#include "common/error.h"
-#include "common/pointer.hpp"
-#include "common/poller.h"
-#include "common/utils.hpp"
+#include <ight/common/constraints.hpp>
+#include <ight/common/error.h>
+#include <ight/common/pointer.hpp>
+#include <ight/common/poller.h>
+#include <ight/common/utils.hpp>
 
-#include "net/buffer.hpp"
-#include "net/transport.hpp"
+#include <ight/net/buffer.hpp>
+#include <ight/net/transport.hpp>
 
-#include "protocols/dns.hpp"
+#include <ight/protocols/dns.hpp>
 
 #include <event2/bufferevent.h>
 #include <event2/event.h>
@@ -60,7 +60,7 @@ class ConnectionState {
 	// Functions used when connecting
 	void connect_next(void);
 	void handle_resolve(int, char, std::vector<std::string>);
-	static void resolve(ConnectionState *);
+	void resolve();
 	bool resolve_internal(char);
 
 	std::function<void(void)> on_connect_fn = [](void) {
@@ -170,6 +170,22 @@ class ConnectionState {
 	}
 
 	void close(void);
+
+	void emit_connect() {
+		on_connect_fn();
+	}
+
+	void emit_data(SharedPointer<IghtBuffer> data) {
+		on_data_fn(data);
+	}
+
+	void emit_flush() {
+		on_flush_fn();
+	}
+
+	void emit_error(IghtError err) {
+		on_error_fn(err);
+	}
 };
 
 class Connection : public Transport {
@@ -177,6 +193,31 @@ class Connection : public Transport {
 	ConnectionState *state = NULL;
 
     public:
+
+	virtual void emit_connect() override {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->emit_connect();
+	}
+
+	virtual void emit_data(SharedPointer<IghtBuffer> data) override {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->emit_data(data);
+	}
+
+	virtual void emit_flush() override {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->emit_flush();
+	}
+
+	virtual void emit_error(IghtError err) override {
+		if (state == NULL)
+			throw std::runtime_error("Invalid state");
+		state->emit_error(err);
+	}
+
 	Connection(void) {
 		/* nothing to do */
 	}

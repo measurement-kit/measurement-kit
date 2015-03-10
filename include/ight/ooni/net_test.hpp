@@ -5,12 +5,12 @@
 #include <iostream>
 #include <fstream>
 
-#include "report/file.hpp"
+#include <ight/report/file.hpp>
 
-#include "common/pointer.hpp"
-#include "common/poller.h"
-#include "common/settings.hpp"
-#include "common/log.h"
+#include <ight/common/pointer.hpp>
+#include <ight/common/poller.h>
+#include <ight/common/settings.hpp>
+#include <ight/common/log.hpp>
 
 namespace ight {
 namespace ooni {

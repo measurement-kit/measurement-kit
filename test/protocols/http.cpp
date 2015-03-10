@@ -12,10 +12,10 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "common/check_connectivity.hpp"
-#include "common/poller.h"
-#include "common/log.h"
-#include "protocols/http.hpp"
+#include <ight/common/check_connectivity.hpp>
+#include <ight/common/poller.h>
+#include <ight/common/log.hpp>
+#include <ight/protocols/http.hpp>
 
 using namespace ight::protocols;
 using namespace ight::common::pointer;
@@ -162,6 +162,39 @@ TEST_CASE("The HTTP response parser works as expected") {
         ight_debug("%c\n", c);
         parser.feed(c);
     }
+}
+
+TEST_CASE("Response parser eof() does not trigger immediate distruction") {
+
+    //
+    // Provide input data by which the end of body is signalled by
+    // the connection being closed, such that invoking the parser's
+    // eof() method is goind to trigger the on_end() callback.
+    //
+    // Then, in the callback delete the parser object, which should
+    // not trigger a crash because the real parser should understand
+    // that it is parsing and should delay its destruction.
+    //
+
+    //ight_set_verbose(1);
+
+    auto parser = new http::ResponseParser();
+    std::string data;
+
+    data = "";
+    data += "HTTP/1.1 200 Ok\r\n";
+    data += "Content-Type: text/plain\r\n";
+    data += "Connection: close\r\n";
+    data += "Server: Antani/1.0.0.0\r\n";
+    data += "\r\n";
+    data += "1234567";
+
+    parser->feed(data);
+
+    parser->on_end([parser]() {
+        delete parser;
+    });
+    parser->eof();
 }
 
 TEST_CASE("HTTP stream works as expected") {
@@ -317,6 +350,45 @@ TEST_CASE("HTTP Request works as expected") {
         ight_break_loop();
     });
     ight_loop();
+}
+
+TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
+    //ight_set_verbose(1);
+
+    auto called = 0;
+
+    //
+    // TODO: find a way to prevent a connection to nexa.polito.it when
+    // this test run, possibly creating a stub for connect() just as
+    // we created stubs for many libevent APIs.
+    //
+
+    http::Request r({
+        {"url", "http://nexa.polito.it/"},
+        {"method", "GET"},
+        {"http_version", "HTTP/1.1"},
+    }, {
+        {"Accept", "*/*"},
+    }, "", [&called](IghtError, http::Response&&) {
+        ++called;
+    });
+
+    auto stream = r.get_stream();
+    auto transport = stream->get_transport();
+
+    transport->emit_connect();
+
+    SharedPointer<IghtBuffer> data = std::make_shared<IghtBuffer>();
+    *data << "HTTP/1.1 200 Ok\r\n";
+    *data << "Content-Type: text/plain\r\n";
+    *data << "Connection: close\r\n";
+    *data << "Server: Antani/1.0.0.0\r\n";
+    *data << "\r\n";
+    *data << "1234567";
+    transport->emit_data(data);
+    transport->emit_error(0);
+
+    REQUIRE(called == 1);
 }
 
 TEST_CASE("HTTP Request correctly receives errors") {

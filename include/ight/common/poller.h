@@ -8,8 +8,8 @@
 #ifndef LIBIGHT_POLLER_H
 # define LIBIGHT_POLLER_H
 
-#include "common/constraints.hpp"
-#include "common/libevent.h"
+#include <ight/common/constraints.hpp>
+#include <ight/common/libevent.h>
 
 #include <functional>
 

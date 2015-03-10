@@ -11,8 +11,8 @@
 #include <event2/event.h>
 #include <event2/dns.h>
 
-#include "common/check_connectivity.hpp"
-#include "common/log.h"
+#include <ight/common/check_connectivity.hpp>
+#include <ight/common/log.hpp>
 
 void
 ight::Network::cleanup(void)  // Idempotent cleanup function

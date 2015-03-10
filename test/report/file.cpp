@@ -2,8 +2,8 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ctime>
-#include "report/file.hpp"
-#include "report/entry.hpp"
+#include <ight/report/file.hpp>
+#include <ight/report/entry.hpp>
 
 TEST_CASE("The constructor for [FileReport] works correctly", "[BaseReport]") {
   REQUIRE_NOTHROW(FileReporter());

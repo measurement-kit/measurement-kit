@@ -9,7 +9,7 @@
 # define LIBIGHT_STRINGVECTOR_H
 # ifdef __cplusplus
 
-#include "common/constraints.hpp"
+#include <ight/common/constraints.hpp>
 
 /*-
  * StringVector

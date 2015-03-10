@@ -12,7 +12,7 @@
 // Helper class to check whether we have connectivity
 //
 
-#include "common/constraints.hpp"
+#include <ight/common/constraints.hpp>
 
 // Forward declarations
 struct event_base;

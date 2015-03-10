@@ -15,12 +15,12 @@
 #include <functional>
 #include <string>
 
-#include "common/constraints.hpp"
-#include "common/error.h"
-#include "common/pointer.hpp"
-#include "common/settings.hpp"
+#include <ight/common/constraints.hpp>
+#include <ight/common/error.h>
+#include <ight/common/pointer.hpp>
+#include <ight/common/settings.hpp>
 
-#include "net/buffer.hpp"
+#include <ight/net/buffer.hpp>
 
 namespace ight {
 namespace net {
@@ -31,6 +31,14 @@ using namespace ight::common::pointer;
 using namespace ight::common;
 
 struct Transport : public NonMovable, public NonCopyable {
+
+    virtual void emit_connect() = 0;
+
+    virtual void emit_data(SharedPointer<IghtBuffer>) = 0;
+
+    virtual void emit_flush() = 0;
+
+    virtual void emit_error(IghtError) = 0;
 
     Transport() {}
 

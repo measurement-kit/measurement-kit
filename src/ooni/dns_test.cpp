@@ -1,4 +1,4 @@
-#include "ooni/dns_test.hpp"
+#include <ight/ooni/dns_test.hpp>
 
 using namespace ight::ooni::dns_test;
 using namespace ight::protocols::dns;

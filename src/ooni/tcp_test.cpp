@@ -1,4 +1,4 @@
-#include "ooni/tcp_test.hpp"
+#include <ight/ooni/tcp_test.hpp>
 
 using namespace ight::common::pointer;
 using namespace ight::ooni::tcp_test;
@@ -33,4 +33,4 @@ TCPTest::connect(ight::common::Settings options, std::function<void()>&& cb)
     });
 
     return connection;
-};
+}

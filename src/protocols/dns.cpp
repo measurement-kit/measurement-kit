@@ -5,10 +5,10 @@
  * information on the copying conditions.
  */
 
-#include "protocols/dns.hpp"
+#include <ight/protocols/dns.hpp>
 
-#include "common/log.h"
-#include "common/utils.hpp"
+#include <ight/common/log.hpp>
+#include <ight/common/utils.hpp>
 
 #include <event2/dns.h>
 

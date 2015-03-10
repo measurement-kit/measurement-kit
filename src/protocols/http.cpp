@@ -5,10 +5,10 @@
  * information on the copying conditions.
  */
 
-#include "common/log.h"
+#include <ight/common/log.hpp>
 
-#include "protocols/http.hpp"
-#include "net/buffer.hpp"
+#include <ight/protocols/http.hpp>
+#include <ight/net/buffer.hpp>
 
 #include "ext/http-parser/http_parser.h"
 
@@ -272,12 +272,18 @@ public:
      *         a class derived from it) on several error conditions.
      */
     void eof() {
+        parsing = true;
         size_t n = http_parser_execute(&parser, &settings, NULL, 0);
+        parsing = false;
         if (parser.upgrade) {
             throw UpgradeError("Unexpected UPGRADE");
         }
         if (n != 0) {
             throw ParserError("Parser error");
+        }
+        if (closing) {
+            delete this;
+            return;
         }
     }
 

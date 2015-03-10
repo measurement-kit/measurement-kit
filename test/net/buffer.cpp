@@ -12,8 +12,8 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "common/libevent.h"
-#include "net/buffer.hpp"
+#include <ight/common/libevent.h>
+#include <ight/net/buffer.hpp>
 
 TEST_CASE("The constructor works correctly", "[IghtBuffer]") {
 	REQUIRE_NOTHROW(IghtBuffer());

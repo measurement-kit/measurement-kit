@@ -12,8 +12,8 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "common/pointer.hpp"
-#include "common/poller.h"
+#include <ight/common/pointer.hpp>
+#include <ight/common/poller.h>
 
 using namespace ight::common::pointer;
 

@@ -1,15 +1,15 @@
 #ifndef LIBIGHT_OONI_TCP_TEST_HPP
 # define LIBIGHT_OONI_TCP_TEST_HPP
 
-#include "net/buffer.hpp"
-#include "net/connection.hpp"
+#include <ight/net/buffer.hpp>
+#include <ight/net/connection.hpp>
 
-#include "common/emitter.hpp"
-#include "common/pointer.hpp"
-#include "common/settings.hpp"
-#include "common/log.h"
+#include <ight/common/emitter.hpp>
+#include <ight/common/pointer.hpp>
+#include <ight/common/settings.hpp>
+#include <ight/common/log.hpp>
 
-#include "ooni/net_test.hpp"
+#include <ight/ooni/net_test.hpp>
 
 namespace ight {
 namespace ooni {
