@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 
+using namespace ight::common::error;
 using namespace ight::common::pointer;
 using namespace ight::net::buffer;
 
@@ -30,7 +31,7 @@ main(void)
 		ight_info("echo - connection flushed");
 	});
 
-	s.on_error([&](IghtError e) {
+	s.on_error([&](Error e) {
 		ight_info("echo - connection error %d", e.error);
 		s.close();
 	});

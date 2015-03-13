@@ -19,6 +19,7 @@
 
 using namespace ight::protocols;
 using namespace ight::net::buffer;
+using namespace ight::common::error;
 using namespace ight::common::pointer;
 using namespace ight::common;
 
@@ -249,7 +250,7 @@ TEST_CASE("HTTP stream works as expected when using Tor") {
         {"socks5_proxy", "127.0.0.1:9050"},
     });
     stream->set_timeout(1.0);
-    stream->on_error([&](IghtError e) {
+    stream->on_error([&](Error e) {
         ight_debug("Connection error: %d", e.error);
         stream->close();
         ight_break_loop();
@@ -295,7 +296,7 @@ TEST_CASE("HTTP stream receives connection errors") {
         {"port", "81"},
     });
     stream->set_timeout(1.0);
-    stream->on_error([&](IghtError e) {
+    stream->on_error([&](Error e) {
         ight_debug("Connection error: %d", e.error);
         stream->close();
         ight_break_loop();
@@ -333,7 +334,7 @@ TEST_CASE("HTTP Request works as expected") {
         {"http_version", "HTTP/1.1"},
     }, {
         {"Accept", "*/*"},
-    }, "", [&](IghtError error, http::Response&& response) {
+    }, "", [&](Error error, http::Response&& response) {
         if (error.error != 0) {
             std::cout << "Error: " << error.error << "\r\n";
             ight_break_loop();
@@ -370,7 +371,7 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
         {"http_version", "HTTP/1.1"},
     }, {
         {"Accept", "*/*"},
-    }, "", [&called](IghtError, http::Response&&) {
+    }, "", [&called](Error, http::Response&&) {
         ++called;
     });
 
@@ -400,7 +401,7 @@ TEST_CASE("HTTP Request correctly receives errors") {
         {"http_version", "HTTP/1.1"},
     }, {
         {"Accept", "*/*"},
-    }, "", [&](IghtError error, http::Response&& response) {
+    }, "", [&](Error error, http::Response&& response) {
         if (error.error) {
             std::cout << "Error: " << error.error << "\r\n";
             ight_break_loop();
@@ -429,7 +430,7 @@ TEST_CASE("HTTP Request works as expected over Tor") {
         {"socks5_proxy", "127.0.0.1:9050"},
     }, {
         {"Accept", "*/*"},
-    }, "", [&](IghtError error, http::Response&& response) {
+    }, "", [&](Error error, http::Response&& response) {
         if (error.error != 0) {
             std::cout << "Error: " << error.error << "\r\n";
             ight_break_loop();
@@ -461,7 +462,7 @@ TEST_CASE("HTTP Client works as expected") {
         {"Connection", "close"},
     }, {
         {"Accept", "*/*"},
-    }, "", [&](IghtError, http::Response&& response) {
+    }, "", [&](Error, http::Response&& response) {
         std::cout << "Google:\r\n";
         std::cout << response.body.read<char>(128) << "\r\n";
         std::cout << "[snip]\r\n";
@@ -476,7 +477,7 @@ TEST_CASE("HTTP Client works as expected") {
         {"http_version", "HTTP/1.1"},
     }, {
         {"Accept", "*/*"},
-    }, "", [&](IghtError, http::Response&& response) {
+    }, "", [&](Error, http::Response&& response) {
         std::cout << response.body.read<char>(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
@@ -490,7 +491,7 @@ TEST_CASE("HTTP Client works as expected") {
         {"http_version", "HTTP/1.1"},
     }, {
         {"Accept", "*/*"},
-    }, "", [&](IghtError, http::Response&& response) {
+    }, "", [&](Error, http::Response&& response) {
         std::cout << response.body.read<char>(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
@@ -514,7 +515,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {"socks5_proxy", "127.0.0.1:9050"},
     }, {
         {"Accept", "*/*"},
-    }, "", [&](IghtError error, http::Response&& response) {
+    }, "", [&](Error error, http::Response&& response) {
         std::cout << "Error: " << error.error << std::endl;
         std::cout << "Google:\r\n";
         std::cout << response.body.read<char>(128) << "\r\n";
@@ -531,7 +532,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {"socks5_proxy", "127.0.0.1:9050"},
     }, {
         {"Accept", "*/*"},
-    }, "", [&](IghtError error, http::Response&& response) {
+    }, "", [&](Error error, http::Response&& response) {
         std::cout << "Error: " << error.error << std::endl;
         std::cout << response.body.read<char>(128) << "\r\n";
         std::cout << "[snip]\r\n";
@@ -547,7 +548,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {"socks5_proxy", "127.0.0.1:9050"},
     }, {
         {"Accept", "*/*"},
-    }, "", [&](IghtError error, http::Response&& response) {
+    }, "", [&](Error error, http::Response&& response) {
         std::cout << "Error: " << error.error << std::endl;
         std::cout << response.body.read<char>(128) << "\r\n";
         std::cout << "[snip]\r\n";
@@ -570,7 +571,7 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
     }, {
         {"Accept", "*/*"},
     }, "{\"test-helpers\": [\"dns\"]}",
-                [](IghtError error, http::Response&& response) {
+                [](Error error, http::Response&& response) {
         std::cout << "Error: " << error.error << std::endl;
         std::cout << response.body.read<char>() << "\r\n";
         std::cout << "[snip]\r\n";
@@ -592,14 +593,14 @@ TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
     http::Request r1{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+    }, "{\"test-helpers\": [\"dns\"]}", [](Error, http::Response&&) {
         /* nothing */
     }};
 
     settings["url"] = "http://ooni.torproject.org/";
     http::Request r2{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+    }, "{\"test-helpers\": [\"dns\"]}", [](Error, http::Response&&) {
         /* nothing */
     }};
 
@@ -622,14 +623,14 @@ TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
     http::Request r1{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+    }, "{\"test-helpers\": [\"dns\"]}", [](Error, http::Response&&) {
         /* nothing */
     }};
 
     settings["url"] = "http://ooni.torproject.org/";
     http::Request r2{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+    }, "{\"test-helpers\": [\"dns\"]}", [](Error, http::Response&&) {
         /* nothing */
     }};
 
@@ -651,14 +652,14 @@ TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
     http::Request r1{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+    }, "{\"test-helpers\": [\"dns\"]}", [](Error, http::Response&&) {
         /* nothing */
     }};
 
     settings["url"] = "http://ooni.torproject.org/";
     http::Request r2{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+    }, "{\"test-helpers\": [\"dns\"]}", [](Error, http::Response&&) {
         /* nothing */
     }};
 
@@ -679,14 +680,14 @@ TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
     http::Request r1{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+    }, "{\"test-helpers\": [\"dns\"]}", [](Error, http::Response&&) {
         /* nothing */
     }};
 
     settings["url"] = "http://ooni.torproject.org/";
     http::Request r2{settings, {
         {"Accept", "*/*"},
-    }, "{\"test-helpers\": [\"dns\"]}", [](IghtError, http::Response&&) {
+    }, "{\"test-helpers\": [\"dns\"]}", [](Error, http::Response&&) {
         /* nothing */
     }};
 
@@ -710,7 +711,7 @@ TEST_CASE("Make sure that settings are not modified") {
     client.request(settings, {
         {"Accept", "*/*"},
     }, "{\"test-helpers\": [\"dns\"]}",
-                [](IghtError error, http::Response&& response) {
+                [](Error error, http::Response&& response) {
         // XXX: assumes that Tor is not running on port 9999
         REQUIRE(error.error != 0);
         std::cout << "Error: " << error.error << std::endl;

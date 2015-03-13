@@ -35,6 +35,7 @@ namespace protocols {
 namespace http {
 
 using namespace ight::common::constraints;
+using namespace ight::common::error;
 using namespace ight::common::pointer;
 
 using namespace ight::net;
@@ -236,7 +237,7 @@ public:
 class Stream {
     SharedPointer<Transport> connection;
     SharedPointer<ResponseParser> parser;
-    std::function<void(IghtError)> error_handler;
+    std::function<void(Error)> error_handler;
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
@@ -247,7 +248,7 @@ class Stream {
         // Intercept EOF error to implement body-ends-at-EOF semantic.
         // TODO: convert error from integer to exception.
         //
-        connection->on_error([&](IghtError error) {
+        connection->on_error([&](Error error) {
             if (error.error == 0) {
                 parser->eof();
             }
@@ -321,7 +322,7 @@ public:
         // error if needed, we'll deal with body-terminated-by-EOF
         // semantic when we know we are actually connected.
         //
-        connection->on_error([&](IghtError error) {
+        connection->on_error([&](Error error) {
             if (error_handler) {
                 error_handler(error);
             }
@@ -427,7 +428,7 @@ public:
      * \brief Register `error` event handler.
      * \param fn The `error event handler.
      */
-    void on_error(std::function<void(IghtError)>&& fn) {
+    void on_error(std::function<void(Error)>&& fn) {
         error_handler = std::move(fn);
     }
 
@@ -529,7 +530,7 @@ struct Response {
 
 class Request;  // Forward declaration
 
-typedef std::function<void(IghtError, Response&&)> RequestCallback;
+typedef std::function<void(Error, Response&&)> RequestCallback;
 
 /*!
  * \brief HTTP request.
@@ -542,7 +543,7 @@ class Request : public NonCopyable, public NonMovable {
     Response response;
     std::set<Request *> *parent = nullptr;
 
-    void emit_end(IghtError error, Response&& response) {
+    void emit_end(Error error, Response&& response) {
         close();
         callback(error, std::move(response));
         //
@@ -595,7 +596,7 @@ public:
             }
         }
         stream = std::make_shared<Stream>(settings);
-        stream->on_error([this](IghtError err) {
+        stream->on_error([this](Error err) {
             if (err.error != 0) {
                 emit_end(err, std::move(response));
             } else {
@@ -634,7 +635,7 @@ public:
 
             stream->on_end([&]() {
                 ight_debug("http: we have reached end of response");
-                emit_end(IghtError(0), std::move(response));
+                emit_end(Error(0), std::move(response));
             });
 
         });

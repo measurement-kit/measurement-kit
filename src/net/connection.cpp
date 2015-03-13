@@ -16,8 +16,9 @@
 #include <ight/common/stringvector.h>
 #include <ight/net/connection.hpp>
 
-using namespace ight::net::connection;
+using namespace ight::common::error;
 using namespace ight::common::poller;
+using namespace ight::net::connection;
 using namespace ight::protocols;
 
 ConnectionState::~ConnectionState(void)
@@ -75,7 +76,7 @@ ConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 	}
 
 	if (what & BEV_EVENT_EOF) {
-		self->on_error_fn(IghtError(0));
+		self->on_error_fn(Error(0));
 		return;
 	}
 
@@ -87,7 +88,7 @@ ConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 
 	// TODO: also handle the timeout
 
-	self->on_error_fn(IghtError(-1));
+	self->on_error_fn(Error(-1));
 }
 
 ConnectionState::ConnectionState(const char *family, const char *address,
@@ -214,7 +215,7 @@ ConnectionState::connect_next(void)
 	}
 
 	this->connecting = 0;
-	this->on_error_fn(IghtError(-2));
+	this->on_error_fn(Error(-2));
 }
 
 void
@@ -258,7 +259,7 @@ ConnectionState::handle_resolve(int result, char type,
 			ight_warn("handle_resolve - cannot append");
 			// Oops the two vectors are not in sync anymore now
 			connecting = 0;
-			on_error_fn(IghtError(-3));
+			on_error_fn(Error(-3));
 			return;
 		}
 	}
@@ -325,7 +326,7 @@ ConnectionState::resolve()
 		    pflist->append("PF_INET") != 0) {
 			ight_warn("resolve - cannot append");
 			connecting = 0;
-			on_error_fn(IghtError(-4));
+			on_error_fn(Error(-4));
 			return;
 		}
 		connect_next();
@@ -342,7 +343,7 @@ ConnectionState::resolve()
 		    pflist->append("PF_INET6") != 0) {
 			ight_warn("resolve - cannot append");
 			connecting = 0;
-			on_error_fn(IghtError(-4));
+			on_error_fn(Error(-4));
 			return;
 		}
 		connect_next();
@@ -361,7 +362,7 @@ ConnectionState::resolve()
 	else {
 		ight_warn("connection::resolve - invalid PF_xxx");
 		connecting = 0;
-		on_error_fn(IghtError(-5));
+		on_error_fn(Error(-5));
 		return;
 	}
 
@@ -376,7 +377,7 @@ ConnectionState::resolve()
 	}
 	if (!ok) {
 		connecting = 0;
-		on_error_fn(IghtError(-6));
+		on_error_fn(Error(-6));
 		return;
 	}
 

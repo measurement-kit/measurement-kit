@@ -9,6 +9,8 @@ namespace ight {
 namespace ooni {
 namespace http_test {
 
+using namespace ight::common::error;
+
 class HTTPTest : public net_test::NetTest {
     using net_test::NetTest::NetTest;
 
@@ -30,7 +32,7 @@ public:
                  protocols::http::RequestCallback&& callback) {
 
         http_client.request(settings, headers, body,
-                            [=](IghtError error, protocols::http::Response&& response) {
+                            [=](Error error, protocols::http::Response&& response) {
 
             YAML::Node rr;
             rr["request"]["headers"] = std::map<std::string, std::string>(headers);

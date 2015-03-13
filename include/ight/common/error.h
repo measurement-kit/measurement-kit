@@ -7,15 +7,18 @@
 
 #ifndef LIBIGHT_COMMON_ERROR_H
 # define LIBIGHT_COMMON_ERROR_H
-# ifdef __cplusplus
 
-struct IghtError {
+namespace ight {
+namespace common {
+namespace error {
+
+struct Error {
 	int error = 0;
 
-	IghtError(int e) {
+	Error(int e) {
 		this->error = e;
 	};
 };
 
-# endif  /* __cplusplus */
+}}}  // namespaces
 #endif  /* LIBIGHT_COMMON_ERROR_H */

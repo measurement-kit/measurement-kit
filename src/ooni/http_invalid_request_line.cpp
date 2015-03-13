@@ -9,7 +9,7 @@ HTTPInvalidRequestLine::main(ight::common::Settings options,
 {
     
     callback = cb;
-    auto handle_response = [this](IghtError,
+    auto handle_response = [this](Error,
                               protocols::http::Response&&) ->  void
     {
         tests_run += 1;

@@ -32,6 +32,7 @@ namespace net {
 namespace connection {
 
 using namespace ight::common::constraints;
+using namespace ight::common::error;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
 
@@ -82,7 +83,7 @@ class ConnectionState {
 		/* nothing */
 	};
 
-	std::function<void(IghtError)> on_error_fn = [](IghtError) {
+	std::function<void(Error)> on_error_fn = [](Error) {
 		/* nothing */
 	};
 
@@ -114,7 +115,7 @@ class ConnectionState {
 		on_flush_fn = fn;
 	};
 
-	void on_error(std::function<void(IghtError)> fn) {
+	void on_error(std::function<void(Error)> fn) {
 		on_error_fn = fn;
 	};
 
@@ -185,7 +186,7 @@ class ConnectionState {
 		on_flush_fn();
 	}
 
-	void emit_error(IghtError err) {
+	void emit_error(Error err) {
 		on_error_fn(err);
 	}
 };
@@ -214,7 +215,7 @@ class Connection : public Transport {
 		state->emit_flush();
 	}
 
-	virtual void emit_error(IghtError err) override {
+	virtual void emit_error(Error err) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->emit_error(err);
@@ -264,7 +265,7 @@ class Connection : public Transport {
 		state->on_flush(fn);
 	};
 
-	virtual void on_error(std::function<void(IghtError)> fn) override {
+	virtual void on_error(std::function<void(Error)> fn) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->on_error(fn);

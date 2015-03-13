@@ -18,6 +18,7 @@ namespace ight {
 namespace net {
 namespace socks5 {
 
+using namespace ight::common::error;
 using namespace ight::common::pointer;
 using namespace ight::common;
 
@@ -54,7 +55,7 @@ public:
         conn->emit_flush();
     }
 
-    virtual void emit_error(IghtError err) override {
+    virtual void emit_error(Error err) override {
         conn->emit_error(err);
     }
 
@@ -77,7 +78,7 @@ public:
         on_flush_fn = fn;
     }
 
-    virtual void on_error(std::function<void(IghtError)> fn) override {
+    virtual void on_error(std::function<void(Error)> fn) override {
         conn->on_error(fn);
     }
 
