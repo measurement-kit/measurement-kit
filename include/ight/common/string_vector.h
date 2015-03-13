@@ -9,7 +9,7 @@
 # define LIBIGHT_STRINGVECTOR_H
 
 #include <ight/common/constraints.hpp>
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 
 /*-
  * StringVector

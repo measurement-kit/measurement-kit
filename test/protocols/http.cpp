@@ -13,7 +13,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ight/common/check_connectivity.hpp>
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 #include <ight/common/log.hpp>
 #include <ight/protocols/http.hpp>
 

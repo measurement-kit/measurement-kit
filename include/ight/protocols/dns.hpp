@@ -15,7 +15,7 @@
 #include <ight/common/constraints.hpp>
 #include <ight/common/log.hpp>
 #include <ight/common/pointer.hpp>
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 #include <ight/common/settings.hpp>
 
 #include <functional>
