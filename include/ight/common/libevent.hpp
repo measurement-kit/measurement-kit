@@ -4,13 +4,12 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
+#ifndef IGHT_COMMON_LIBEVENT_HPP
+# define IGHT_COMMON_LIBEVENT_HPP
 
 //
 // Libevent abstraction layer.
 //
-
-#ifndef LIBIGHT_COMMON_LIBEVENT_HPP
-# define LIBIGHT_COMMON_LIBEVENT_HPP
 
 #include <event2/buffer.h>
 #include <event2/bufferevent.h>
@@ -221,5 +220,5 @@ class BuffereventSocket : public NonCopyable, public NonMovable {
 	}
 };
 
-}}}  // namespaces
-#endif  // LIBIGHT_COMMON_LIBEVENT_HPP
+}}}
+#endif

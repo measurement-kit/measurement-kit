@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_NET_BUFFER_HPP
-# define LIBIGHT_NET_BUFFER_HPP
+#ifndef IGHT_NET_BUFFER_HPP
+# define IGHT_NET_BUFFER_HPP
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/utils.hpp>
@@ -352,5 +351,5 @@ class Buffer : public NonCopyable, public NonMovable  {
 	}
 };
 
-}}}  // namespaces
-#endif  /* LIBIGHT_NET_BUFFER_HPP */
+}}}
+#endif

@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_NET_SOCKS5_HPP
-# define LIBIGHT_NET_SOCKS5_HPP
+#ifndef IGHT_NET_SOCKS5_HPP
+# define IGHT_NET_SOCKS5_HPP
 
 #include <ight/common/log.hpp>
 
@@ -122,4 +121,4 @@ public:
 };
 
 }}}
-#endif  // LIBIGHT_NET_SOCKS5_HPP
+#endif

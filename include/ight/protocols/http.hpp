@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_PROTOCOLS_HTTP_HPP
-# define LIBIGHT_PROTOCOLS_HTTP_HPP
+#ifndef IGHT_PROTOCOLS_HTTP_HPP
+# define IGHT_PROTOCOLS_HTTP_HPP
 
 #include <functional>
 #include <map>
@@ -708,5 +707,5 @@ public:
     //
 };
 
-}}}  // namespaces
-#endif  // LIBIGHT_NET_HTTP_HPP
+}}}
+#endif

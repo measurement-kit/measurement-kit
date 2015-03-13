@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_COMMON_UTILS_H
-# define LIBIGHT_COMMON_UTILS_H
+#ifndef IGHT_COMMON_UTILS_HPP
+# define IGHT_COMMON_UTILS_HPP
 
 struct sockaddr_storage;
 struct timeval;
@@ -141,4 +140,4 @@ std::string randomStr(size_t length);
 
 std::string randomSTR(size_t length);
 
-#endif  /* LIBIGHT_COMMON_UTILS_H */
+#endif

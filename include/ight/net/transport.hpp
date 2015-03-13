@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_NET_TRANSPORT_HPP
-# define LIBIGHT_NET_TRANSPORT_HPP
+#ifndef IGHT_NET_TRANSPORT_HPP
+# define IGHT_NET_TRANSPORT_HPP
 
 //
 // Generic transport (stream socket, SOCKSv5, etc.)
@@ -76,6 +75,5 @@ struct Transport : public NonMovable, public NonCopyable {
 
 SharedPointer<Transport> connect(Settings);
 
-}}}  // namespace
-
-#endif  // LIBIGHT_NET_TRANSPORT_HPP
+}}}
+#endif

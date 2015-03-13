@@ -1,5 +1,11 @@
-#ifndef LIBIGHT_OONI_HTTP_TEST_HPP
-# define LIBIGHT_OONI_HTTP_TEST_HPP
+/*-
+ * This file is part of Libight <https://libight.github.io/>.
+ *
+ * Libight is free software. See AUTHORS and LICENSE for more
+ * information on the copying conditions.
+ */
+#ifndef IGHT_OONI_HTTP_TEST_HPP
+# define IGHT_OONI_HTTP_TEST_HPP
 
 #include <ight/common/settings.hpp>
 #include <ight/protocols/http.hpp>
@@ -65,5 +71,4 @@ public:
 };
 
 }}}
-
 #endif

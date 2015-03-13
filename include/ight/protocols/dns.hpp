@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_PROTOCOLS_DNS_HPP
-# define LIBIGHT_PROTOCOLS_DNS_HPP
+#ifndef IGHT_PROTOCOLS_DNS_HPP
+# define IGHT_PROTOCOLS_DNS_HPP
 
 //
 // DNS client functionality
@@ -335,5 +334,5 @@ public:
     }
 };
 
-}}}  // namespace
-#endif  // LIBIGHT_PROTOCOLS_DNS_HPP
+}}}
+#endif

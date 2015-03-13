@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_NET_CONNECTION_HPP
-# define LIBIGHT_NET_CONNECTION_HPP
+#ifndef IGHT_NET_CONNECTION_HPP
+# define IGHT_NET_CONNECTION_HPP
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/error.hpp>
@@ -341,5 +340,5 @@ class Connection : public Transport {
 	}
 };
 
-}}}  // namespaces
-#endif  /* LIBIGHT_NET_CONNECTION_HPP */
+}}}
+#endif
