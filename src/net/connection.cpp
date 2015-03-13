@@ -13,7 +13,7 @@
 #include <event2/dns.h>
 
 #include <ight/common/log.hpp>
-#include <ight/common/stringvector.h>
+#include <ight/common/string_vector.h>
 #include <ight/net/connection.hpp>
 
 using namespace ight::common::error;
