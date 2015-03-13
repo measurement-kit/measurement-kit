@@ -17,6 +17,7 @@
 #include <ight/common/utils.hpp>
 #include <ight/common/log.hpp>
 
+using namespace ight::common::libevent;
 using namespace ight::common::poller;
 
 /*
@@ -24,7 +25,7 @@ using namespace ight::common::poller;
  */
 
 DelayedCall::DelayedCall(double t, std::function<void(void)> &&f,
-    IghtLibevent *libevent, event_base *evbase)
+    Libevent *libevent, event_base *evbase)
 {
 	timeval timeo;
 
@@ -86,7 +87,7 @@ Poller_sigint(int signo, short event, void *opaque)
 }
 #endif
 
-Poller::Poller(IghtLibevent *libevent)
+Poller::Poller(Libevent *libevent)
 {
 	if (libevent != NULL)
 		this->libevent = libevent;

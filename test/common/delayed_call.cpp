@@ -15,11 +15,12 @@
 #include <ight/common/pointer.hpp>
 #include <ight/common/poller.h>
 
+using namespace ight::common::libevent;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
 
 TEST_CASE("Bad allocations triggers a failure ") {
-	IghtLibevent libevent;
+	Libevent libevent;
 
 	libevent.event_new = [](event_base*, evutil_socket_t, short,
 	    event_callback_fn, void *) {
@@ -31,7 +32,7 @@ TEST_CASE("Bad allocations triggers a failure ") {
 }
 
 TEST_CASE("If event_add returns -1 then an exception should be raised") {
-	IghtLibevent libevent;
+	Libevent libevent;
 	libevent.event_add = [](event*, timeval *) {
 		return (-1);
 	};
@@ -42,7 +43,7 @@ TEST_CASE("If event_add returns -1 then an exception should be raised") {
 }
 
 TEST_CASE("Check that the event callbacks are fired") {
-	IghtLibevent libevent;
+	Libevent libevent;
 
   SECTION("event_free must be called") {
     auto event_free_called = false;

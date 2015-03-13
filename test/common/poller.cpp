@@ -21,12 +21,13 @@
 # include <unistd.h>
 #endif
 
+using namespace ight::common::libevent;
 using namespace ight::common::poller;
 
 TEST_CASE("Constructor") {
 
     SECTION("We deal with event_base_new() failure") {
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	libevent.event_base_new = [](void) {
 		return ((event_base *) NULL);
@@ -43,7 +44,7 @@ TEST_CASE("Constructor") {
     }
 
     SECTION("We deal with evdns_base_new() failure") {
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	auto event_base_free_fired = false;
 
@@ -67,7 +68,7 @@ TEST_CASE("Constructor") {
     }
 
     SECTION("We deal with evsignal failure") {
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	auto event_base_free_fired = false;
 	auto evdns_base_free_fired = false;
@@ -101,7 +102,7 @@ TEST_CASE("Constructor") {
 
 TEST_CASE("The destructor works properly") {
 
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	auto event_base_free_fired = false;
 	auto evdns_base_free_fired = false;
@@ -132,7 +133,7 @@ TEST_CASE("The destructor works properly") {
 
 TEST_CASE("We deal with event_add() failure in break_loop_on_sigint_()") {
 #ifndef WIN32
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	libevent.event_add = [](event *, timeval *) {
 		return (-1);
@@ -153,7 +154,7 @@ TEST_CASE("We deal with event_add() failure in break_loop_on_sigint_()") {
 
 TEST_CASE("We deal with event_del() failure in break_loop_on_sigint_()") {
 #ifndef WIN32
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	libevent.event_del = [](event *) {
 		return (-1);
@@ -206,7 +207,7 @@ TEST_CASE("poller.loop() works properly in corner cases") {
 
 
     SECTION("We deal with event_base_dispatch() returning -1") {
-	IghtLibevent libevent;
+	Libevent libevent;
 
 	libevent.event_base_dispatch = [](event_base *) {
 		return (-1);
@@ -225,7 +226,7 @@ TEST_CASE("poller.loop() works properly in corner cases") {
     }
 
     SECTION("We deal with event_base_dispatch() returning 1") {
-	IghtLibevent libevent;
+	Libevent libevent;
 
 	libevent.event_base_dispatch = [](event_base *) {
 		return (1);
@@ -236,7 +237,7 @@ TEST_CASE("poller.loop() works properly in corner cases") {
 }
 
 TEST_CASE("poller.break_loop() works properly") {
-	IghtLibevent libevent;
+	Libevent libevent;
 
 	libevent.event_base_loopbreak = [](event_base *) {
 		return (-1);

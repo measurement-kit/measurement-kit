@@ -15,6 +15,7 @@
 #include <ight/common/libevent.h>
 #include <ight/net/buffer.hpp>
 
+using namespace ight::common::libevent;
 using namespace ight::net::buffer;
 
 TEST_CASE("The constructor works correctly", "[Buffer]") {
@@ -24,8 +25,8 @@ TEST_CASE("The constructor works correctly", "[Buffer]") {
 TEST_CASE("Insertion/extraction work correctly for evbuffer") {
 
 	Buffer buff;
-	IghtEvbuffer source;
-	IghtEvbuffer dest;
+	Evbuffer source;
+	Evbuffer dest;
 	auto sa = std::string(65536, 'A');
 	auto r = std::string();
 
@@ -106,7 +107,7 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
 	 * Initialize the source evbuffer.
 	 */
 
-	IghtEvbuffer evbuf;
+	Evbuffer evbuf;
 
 	auto sa = std::string(512, 'A');
 	auto sb = std::string(512, 'B');

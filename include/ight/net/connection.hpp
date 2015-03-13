@@ -32,6 +32,7 @@ namespace connection {
 
 using namespace ight::common::constraints;
 using namespace ight::common::error;
+using namespace ight::common::libevent;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
 using namespace ight::common::string_vector;
@@ -43,7 +44,7 @@ using namespace ight::protocols;
 
 class ConnectionState {
 
-	IghtBuffereventSocket bev;
+	BuffereventSocket bev;
 	dns::Request dns_request;
 	unsigned int connecting = 0;
 	char *address = NULL;

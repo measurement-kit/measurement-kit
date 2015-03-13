@@ -29,6 +29,7 @@ namespace protocols {
 namespace dns {
 
 using namespace ight::common::constraints;
+using namespace ight::common::libevent;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
 
@@ -79,7 +80,7 @@ public:
      *        (this is only used for implementing some test cases).
      */
     Response(int code, char type, int count, int ttl, double started,
-             void *addresses, IghtLibevent *libevent = NULL,
+             void *addresses, Libevent *libevent = NULL,
              int start_from = 0);
 
     /*!
@@ -213,7 +214,7 @@ public:
      */
     Request(std::string query, std::string address,
             std::function<void(Response&&)>&& func, evdns_base *dnsb = NULL,
-            IghtLibevent *libevent = NULL);
+            Libevent *libevent = NULL);
 
     Request(Request&) = default;
     Request& operator=(Request&) = default;
@@ -271,7 +272,7 @@ class Resolver : public NonCopyable, public NonMovable {
 
 protected:
     ight::common::Settings settings;
-    IghtLibevent *libevent = IghtGlobalLibevent::get();
+    Libevent *libevent = GlobalLibevent::get();
     Poller *poller = ight_get_global_poller();
     evdns_base *base = NULL;
 
@@ -299,7 +300,7 @@ public:
      *        the case.
      */
     Resolver(ight::common::Settings settings_,
-            IghtLibevent *lev = NULL, Poller *plr = NULL) {
+            Libevent *lev = NULL, Poller *plr = NULL) {
         if (lev != NULL) {
             libevent = lev;
         }

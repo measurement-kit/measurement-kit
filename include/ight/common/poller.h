@@ -18,6 +18,7 @@ namespace common {
 namespace poller {
 
 using namespace ight::common::constraints;
+using namespace ight::common::libevent;
 
 class DelayedCall : public NonCopyable, public NonMovable {
 
@@ -28,14 +29,14 @@ class DelayedCall : public NonCopyable, public NonMovable {
 	 */
 	std::function<void(void)> *func = NULL;
 	event *evp = NULL;
-	IghtLibevent *libevent = IghtGlobalLibevent::get();
+	Libevent *libevent = GlobalLibevent::get();
 
 	// Callback for libevent
 	static void dispatch(evutil_socket_t, short, void *);
 
     public:
 	DelayedCall(double, std::function<void(void)>&&,
-	    IghtLibevent *libevent = NULL, event_base *evbase = NULL);
+	    Libevent *libevent = NULL, event_base *evbase = NULL);
 	~DelayedCall(void);
 };
 
@@ -45,10 +46,10 @@ class Poller : public NonCopyable, public NonMovable {
 	evdns_base *dnsbase;
 	event *evsignal;		/* for SIGINT on UNIX */
 
-	IghtLibevent *libevent = IghtGlobalLibevent::get();
+	Libevent *libevent = GlobalLibevent::get();
 
     public:
-	Poller(IghtLibevent *libevent = NULL);
+	Poller(Libevent *libevent = NULL);
 	~Poller(void);
 
 	event_base *get_event_base(void) {

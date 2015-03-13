@@ -16,6 +16,7 @@ namespace ight {
 namespace ooni {
 namespace net_test {
 
+using namespace ight::common::libevent;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
 
@@ -82,7 +83,7 @@ class NetTest {
   std::string get_report_filename();
 
 protected:
-  IghtLibevent *libevent = IghtGlobalLibevent::get();
+  Libevent *libevent = GlobalLibevent::get();
 
   virtual void setup(std::string input);
   virtual void setup();

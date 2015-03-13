@@ -14,6 +14,7 @@
 
 #include <cassert>
 
+using namespace ight::common::libevent;
 using namespace ight::protocols::dns;
 
 //
@@ -21,13 +22,13 @@ using namespace ight::protocols::dns;
 //
 
 Response::Response(int code_, char type, int count, int ttl_, double started,
-                   void *addresses, IghtLibevent *libevent, int start_from)
+                   void *addresses, Libevent *libevent, int start_from)
     : code(code_), ttl(ttl_)
 {
     assert(start_from >= 0);
 
     if (libevent == NULL) {
-        libevent = IghtGlobalLibevent::get();
+        libevent = GlobalLibevent::get();
     }
 
     // Only compute RTT when we know that the server replied
@@ -216,7 +217,7 @@ class RequestImpl {
 
     std::function<void(Response&&)> callback;
     double ticks = 0.0;  // just to initialize to something
-    IghtLibevent *libevent;  // should not be NULL (this is asserted below)
+    Libevent *libevent;  // should not be NULL (this is asserted below)
     SharedPointer<bool> cancelled;
 
     static void handle_resolve(int code, char type, int count, int ttl,
@@ -265,7 +266,7 @@ class RequestImpl {
     // Private to enforce usage through issue()
     RequestImpl(std::string query, std::string address,
                 std::function<void(Response&&)>&& f, evdns_base *base,
-                IghtLibevent *lev, SharedPointer<bool> cancd)
+                Libevent *lev, SharedPointer<bool> cancd)
             : callback(f), libevent(lev), cancelled(cancd) {
 
         assert(base != NULL && lev != NULL);
@@ -307,7 +308,7 @@ class RequestImpl {
 public:
     static void issue(std::string query, std::string address,
                       std::function<void(Response&&)>&& func, evdns_base *base,
-                      IghtLibevent *lev, SharedPointer<bool> cancd) {
+                      Libevent *lev, SharedPointer<bool> cancd) {
         new RequestImpl(query, address, std::move(func), base, lev, cancd);
     }
 };
@@ -321,13 +322,13 @@ public:
 Request::Request(std::string query, std::string address,
                        std::function<void(Response&&)>&& func,
                        evdns_base *dnsb,
-                       IghtLibevent *libevent)
+                       Libevent *libevent)
 {
     if (dnsb == NULL) {
         dnsb = ight_get_global_evdns_base();
     }
     if (libevent == NULL) {
-        libevent = IghtGlobalLibevent::get();
+        libevent = GlobalLibevent::get();
     }
     cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;

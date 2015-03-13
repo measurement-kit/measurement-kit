@@ -6,7 +6,7 @@
  */
 
 //
-// Tests for src/common/libevent.h's IghtEvbuffer
+// Tests for src/common/libevent.h's Evbuffer
 //
 
 #define CATCH_CONFIG_MAIN
@@ -14,9 +14,11 @@
 
 #include <ight/common/libevent.h>
 
+using namespace ight::common::libevent;
+
 TEST_CASE("The constructor is lazy") {
 
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 	auto calls = 0;
 
 	libevent.evbuffer_new = [&](void) {
@@ -28,7 +30,7 @@ TEST_CASE("The constructor is lazy") {
 	};
 
 	{
-		IghtEvbuffer evbuf(&libevent);
+		Evbuffer evbuf(&libevent);
 	}
 
 	REQUIRE(calls == 0);
@@ -36,7 +38,7 @@ TEST_CASE("The constructor is lazy") {
 
 TEST_CASE("The (evbuffer*) operation allocates the internal evbuffer") {
 
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 	auto calls = 0;
 
 	libevent.evbuffer_new = [&](void) {
@@ -49,7 +51,7 @@ TEST_CASE("The (evbuffer*) operation allocates the internal evbuffer") {
 	};
 
 	{
-		IghtEvbuffer evbuf(&libevent);
+		Evbuffer evbuf(&libevent);
 		auto p = (evbuffer *) evbuf;
 		(void) p;
 	}
@@ -59,7 +61,7 @@ TEST_CASE("The (evbuffer*) operation allocates the internal evbuffer") {
 
 TEST_CASE("The (evbuffer *) operation is idempotent") {
 
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 	auto calls = 0;
 
 	libevent.evbuffer_new = [&](void) {
@@ -67,7 +69,7 @@ TEST_CASE("The (evbuffer *) operation is idempotent") {
 		return (::evbuffer_new());
 	};
 
-	IghtEvbuffer evbuf(&libevent);
+	Evbuffer evbuf(&libevent);
 	auto p1 = (evbuffer *) evbuf;
 	auto p2 = (evbuffer *) evbuf;
 
@@ -77,7 +79,7 @@ TEST_CASE("The (evbuffer *) operation is idempotent") {
 
 TEST_CASE("std::bad_alloc is raised when out of memory") {
 
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	libevent.evbuffer_new = [&](void) {
 		return ((evbuffer *) NULL);
@@ -85,7 +87,7 @@ TEST_CASE("std::bad_alloc is raised when out of memory") {
 
 	REQUIRE_THROWS_AS([&](void) {
 		/* Yes, I really really love inline functions <3 */
-		IghtEvbuffer evbuf(&libevent);
+		Evbuffer evbuf(&libevent);
 		auto p = (evbuffer *) evbuf;
 		(void) p;
 	}(), std::bad_alloc);
