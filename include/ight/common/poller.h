@@ -9,7 +9,7 @@
 # define LIBIGHT_POLLER_H
 
 #include <ight/common/constraints.hpp>
-#include <ight/common/libevent.h>
+#include <ight/common/libevent.hpp>
 
 #include <functional>
 
