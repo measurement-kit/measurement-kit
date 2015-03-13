@@ -1,10 +1,11 @@
 #include <ight/ooni/http_invalid_request_line.hpp>
 #include <sys/stat.h>
 
+using namespace ight::common::settings;
 using namespace ight::ooni::http_invalid_request_line;
 
 void
-HTTPInvalidRequestLine::main(ight::common::Settings options,
+HTTPInvalidRequestLine::main(Settings options,
                              std::function<void(ReportEntry)>&& cb)
 {
     

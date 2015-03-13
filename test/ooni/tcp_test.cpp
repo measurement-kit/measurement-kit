@@ -9,6 +9,7 @@
 
 #include <iostream>
 
+using namespace ight::common::settings;
 using namespace ight::ooni::tcp_test;
 
 TEST_CASE("TCPTest test should run")
@@ -53,7 +54,7 @@ TEST_CASE("TCPTest works as expected in a common case")
     ight_set_verbose(1);
 
     auto count = 0;
-    TCPTest tcp_test("", ight::common::Settings());
+    TCPTest tcp_test("", Settings());
 
     auto client1 = tcp_test.connect({
         {"host", "www.neubot.org"},

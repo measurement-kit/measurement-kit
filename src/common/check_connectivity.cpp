@@ -14,8 +14,10 @@
 #include <ight/common/check_connectivity.hpp>
 #include <ight/common/log.hpp>
 
+using namespace ight::common::check_connectivity;
+
 void
-ight::Network::cleanup(void)  // Idempotent cleanup function
+Network::cleanup(void)  // Idempotent cleanup function
 {
     if (dnsbase != NULL) {
         evdns_base_free(dnsbase, 0);
@@ -28,10 +30,10 @@ ight::Network::cleanup(void)  // Idempotent cleanup function
 }
 
 void
-ight::Network::dns_callback(int result, char type, int count, int ttl,
-                            void *addresses, void *opaque)
+Network::dns_callback(int result, char type, int count, int ttl,
+                      void *addresses, void *opaque)
 {
-    auto that = static_cast<ight::Network *>(opaque);
+    auto that = static_cast<Network *>(opaque);
 
     // Suppress "unused variable" warnings
     (void) type;
@@ -51,7 +53,7 @@ ight::Network::dns_callback(int result, char type, int count, int ttl,
     }
 }
 
-ight::Network::Network(void)
+Network::Network(void)
 {
     if ((evbase = event_base_new()) == NULL) {
         cleanup();

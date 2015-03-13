@@ -19,6 +19,9 @@ namespace ight {
 namespace ooni {
 namespace http_invalid_request_line {
 
+using namespace ight::common::settings;
+using namespace ight::report::entry;
+
 class InputFileDoesNotExist : public std::runtime_error {
   using std::runtime_error::runtime_error;
 };
@@ -31,13 +34,13 @@ class HTTPInvalidRequestLine: public HTTPTest {
     std::function<void(ReportEntry)> callback;
 
 public:
-    HTTPInvalidRequestLine(ight::common::Settings options_) : 
+    HTTPInvalidRequestLine(Settings options_) : 
       HTTPTest(options_) {
         test_name = "http_invalid_request_line";
         test_version = "0.0.1";
     };
     
-    void main(ight::common::Settings options,
+    void main(Settings options,
               std::function<void(ReportEntry)>&& cb);
 };
 

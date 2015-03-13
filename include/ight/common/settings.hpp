@@ -11,8 +11,9 @@
 
 namespace ight {
 namespace common {
+namespace settings {
 
 typedef std::map<std::string, std::string> Settings;
 
-}}
+}}}
 #endif

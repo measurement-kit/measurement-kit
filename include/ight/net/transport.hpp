@@ -26,9 +26,9 @@ namespace net {
 namespace transport {
 
 using namespace ight::common::constraints;
-using namespace ight::common::pointer;
 using namespace ight::common::error;
-using namespace ight::common;
+using namespace ight::common::pointer;
+using namespace ight::common::settings;
 
 using namespace ight::net::buffer;
 

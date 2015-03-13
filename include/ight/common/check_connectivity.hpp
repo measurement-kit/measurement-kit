@@ -18,6 +18,8 @@ struct event_base;
 struct evdns_base;
 
 namespace ight {
+namespace common {
+namespace check_connectivity {
 
 using namespace ight::common::constraints;
 
@@ -30,7 +32,7 @@ using namespace ight::common::constraints;
  *
  * To check whether the network is down, do:
  *
- *     if (ight::Network::is_down()) {
+ *     if (Network::is_down()) {
  *         return;
  *     }
  *
@@ -81,5 +83,5 @@ public:
     }
 };
 
-}
+}}}
 #endif

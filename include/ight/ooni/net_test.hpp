@@ -26,6 +26,9 @@ namespace net_test {
 using namespace ight::common::libevent;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
+using namespace ight::common::settings;
+
+using namespace ight::report::file;
 
 class InputGenerator {
 
@@ -98,16 +101,16 @@ protected:
   virtual void teardown(std::string input);
   virtual void teardown();
 
-  virtual void main(ight::common::Settings options,
+  virtual void main(Settings options,
                     std::function<void(ReportEntry)>&& func);
 
 
-  virtual void main(std::string input, ight::common::Settings options,
+  virtual void main(std::string input, Settings options,
                     std::function<void(ReportEntry)>&& func);
 
 public:
   ReportEntry entry;
-  ight::common::Settings options;
+  Settings options;
   InputGenerator* input = nullptr;
 
   std::string test_name;
@@ -128,7 +131,7 @@ public:
 
   NetTest(std::string input_filepath);
 
-  NetTest(std::string input_filepath, ight::common::Settings options);
+  NetTest(std::string input_filepath, Settings options);
 
   InputGenerator* input_generator();
 

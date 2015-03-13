@@ -12,11 +12,13 @@
 #include <ight/ooni/dns_test.hpp>
 #include <sys/stat.h>
 
-using namespace ight::ooni::dns_test;
-
 namespace ight {
 namespace ooni {
 namespace dns_injection {
+
+using namespace ight::common::settings;
+using namespace ight::ooni::dns_test;
+using namespace ight::report::entry;
 
 class InputFileDoesNotExist : public std::runtime_error {
   using std::runtime_error::runtime_error;
@@ -32,7 +34,7 @@ class DNSInjection : public DNSTest {
     std::function<void(ReportEntry)> have_entry;
 
 public:
-    DNSInjection(std::string input_filepath_, ight::common::Settings options_) : 
+    DNSInjection(std::string input_filepath_, Settings options_) : 
       DNSTest(input_filepath_, options_) {
         test_name = "dns_injection";
         test_version = "0.0.1";
@@ -47,7 +49,7 @@ public:
         }
     };
 
-    void main(std::string input, ight::common::Settings options,
+    void main(std::string input, Settings options,
               std::function<void(ReportEntry)>&& cb);
 };
 
