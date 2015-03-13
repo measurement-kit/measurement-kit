@@ -4,7 +4,6 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
 #ifndef IGHT_COMMON_CHECK_CONNECTIVITY_HPP
 # define IGHT_COMMON_CHECK_CONNECTIVITY_HPP
 
@@ -82,6 +81,5 @@ public:
     }
 };
 
-}  // namespace
-
-#endif  /* IGHT_COMMON_CHECK_CONNECTIVITY_HPP */
+}
+#endif

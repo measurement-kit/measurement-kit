@@ -1,5 +1,11 @@
-#ifndef LIBIGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
-# define LIBIGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
+/*-
+ * This file is part of Libight <https://libight.github.io/>.
+ *
+ * Libight is free software. See AUTHORS and LICENSE for more
+ * information on the copying conditions.
+ */
+#ifndef IGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
+# define IGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
 
 #include <ight/common/utils.hpp>
 #include <ight/protocols/http.hpp>
@@ -36,5 +42,4 @@ public:
 };
 
 }}}
-
-#endif  // LIBIGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
+#endif

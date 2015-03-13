@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_STRINGVECTOR_HPP
-# define LIBIGHT_STRINGVECTOR_HPP
+#ifndef IGHT_COMMON_STRINGVECTOR_HPP
+# define IGHT_COMMON_STRINGVECTOR_HPP
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/poller.hpp>
@@ -38,5 +37,5 @@ struct StringVector : public NonCopyable, public NonMovable {
 	~StringVector(void);
 };
 
-}}}  // namespaces
-#endif  /* LIBIGHT_STRINGVECTOR_HPP */
+}}}
+#endif

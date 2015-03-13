@@ -1,5 +1,11 @@
-#ifndef LIBIGHT_OONI_TCP_CONNECT_HPP
-# define LIBIGHT_OONI_TCP_CONNECT_HPP
+/*-
+ * This file is part of Libight <https://libight.github.io/>.
+ *
+ * Libight is free software. See AUTHORS and LICENSE for more
+ * information on the copying conditions.
+ */
+#ifndef IGHT_OONI_TCP_CONNECT_HPP
+# define IGHT_OONI_TCP_CONNECT_HPP
 
 #include <ight/ooni/tcp_test.hpp>
 #include <sys/stat.h>
@@ -46,5 +52,4 @@ public:
 };
 
 }}}
-
-#endif  // LIBIGHT_OONI_TCP_CONNECT_HPP
+#endif

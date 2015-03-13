@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_COMMON_ERROR_HPP
-# define LIBIGHT_COMMON_ERROR_HPP
+#ifndef IGHT_COMMON_ERROR_HPP
+# define IGHT_COMMON_ERROR_HPP
 
 namespace ight {
 namespace common {
@@ -20,5 +19,5 @@ struct Error {
 	};
 };
 
-}}}  // namespaces
-#endif  /* LIBIGHT_COMMON_ERROR_H */
+}}}
+#endif

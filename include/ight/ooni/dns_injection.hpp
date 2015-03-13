@@ -1,5 +1,11 @@
-#ifndef LIBIGHT_OONI_DNS_INJECTION_HPP
-# define LIBIGHT_OONI_DNS_INJECTION_HPP
+/*-
+ * This file is part of Libight <https://libight.github.io/>.
+ *
+ * Libight is free software. See AUTHORS and LICENSE for more
+ * information on the copying conditions.
+ */
+#ifndef IGHT_OONI_DNS_INJECTION_HPP
+# define IGHT_OONI_DNS_INJECTION_HPP
 
 #include <ight/protocols/dns.hpp>
 #include <ight/ooni/net_test.hpp>
@@ -46,5 +52,4 @@ public:
 };
 
 }}}
-
-#endif  // LIBIGHT_OONI_DNS_INJECTION_HPP
+#endif

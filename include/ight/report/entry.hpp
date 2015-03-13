@@ -1,5 +1,11 @@
-#ifndef LIBIGHT_REPORT_ENTRY_HPP
-#define LIBIGHT_REPORT_ENTRY_HPP
+/*-
+ * This file is part of Libight <https://libight.github.io/>.
+ *
+ * Libight is free software. See AUTHORS and LICENSE for more
+ * information on the copying conditions.
+ */
+#ifndef IGHT_REPORT_ENTRY_HPP
+#define IGHT_REPORT_ENTRY_HPP
 
 #include <ctime>
 #include "yaml-cpp/yaml.h"
@@ -36,4 +42,4 @@ public:
   ~ReportEntry() {};
 };
 
-#endif /* ENTRY_HPP */
+#endif
