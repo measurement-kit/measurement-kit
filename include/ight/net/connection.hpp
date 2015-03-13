@@ -12,7 +12,7 @@
 #include <ight/common/error.hpp>
 #include <ight/common/pointer.hpp>
 #include <ight/common/poller.hpp>
-#include <ight/common/string_vector.h>
+#include <ight/common/string_vector.hpp>
 #include <ight/common/utils.hpp>
 
 #include <ight/net/buffer.hpp>

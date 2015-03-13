@@ -23,4 +23,4 @@ commoninclude_HEADERS = \
     include/ight/common/libevent.hpp \
     include/ight/common/log.hpp \
     include/ight/common/poller.hpp \
-    include/ight/common/string_vector.h
+    include/ight/common/string_vector.hpp

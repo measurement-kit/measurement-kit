@@ -5,8 +5,8 @@
  * information on the copying conditions.
  */
 
-#ifndef LIBIGHT_STRINGVECTOR_H
-# define LIBIGHT_STRINGVECTOR_H
+#ifndef LIBIGHT_STRINGVECTOR_HPP
+# define LIBIGHT_STRINGVECTOR_HPP
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/poller.hpp>
@@ -39,4 +39,4 @@ struct StringVector : public NonCopyable, public NonMovable {
 };
 
 }}}  // namespaces
-#endif  /* LIBIGHT_STRINGVECTOR_H */
+#endif  /* LIBIGHT_STRINGVECTOR_HPP */

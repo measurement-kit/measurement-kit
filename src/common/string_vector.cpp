@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <ight/common/string_vector.h>
+#include <ight/common/string_vector.hpp>
 
 #define IGHT_STRINGVECTOR_MAX 512  // Large enough
 
