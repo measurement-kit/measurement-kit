@@ -19,7 +19,7 @@ commoninclude_HEADERS = \
     include/ight/common/pointer.hpp \
     include/ight/common/settings.hpp \
     include/ight/common/utils.hpp \
-    include/ight/common/error.h \
+    include/ight/common/error.hpp \
     include/ight/common/libevent.h \
     include/ight/common/log.hpp \
     include/ight/common/poller.h \

@@ -9,7 +9,7 @@
 # define LIBIGHT_NET_CONNECTION_HPP
 
 #include <ight/common/constraints.hpp>
-#include <ight/common/error.h>
+#include <ight/common/error.hpp>
 #include <ight/common/pointer.hpp>
 #include <ight/common/poller.h>
 #include <ight/common/string_vector.h>

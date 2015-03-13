@@ -5,8 +5,8 @@
  * information on the copying conditions.
  */
 
-#ifndef LIBIGHT_COMMON_ERROR_H
-# define LIBIGHT_COMMON_ERROR_H
+#ifndef LIBIGHT_COMMON_ERROR_HPP
+# define LIBIGHT_COMMON_ERROR_HPP
 
 namespace ight {
 namespace common {
