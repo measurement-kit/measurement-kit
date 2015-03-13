@@ -9,8 +9,8 @@
 // Libevent abstraction layer.
 //
 
-#ifndef LIBIGHT_COMMON_LIBEVENT_H
-# define LIBIGHT_COMMON_LIBEVENT_H
+#ifndef LIBIGHT_COMMON_LIBEVENT_HPP
+# define LIBIGHT_COMMON_LIBEVENT_HPP
 
 #include <event2/buffer.h>
 #include <event2/bufferevent.h>
@@ -222,4 +222,4 @@ class BuffereventSocket : public NonCopyable, public NonMovable {
 };
 
 }}}  // namespaces
-#endif  // LIBIGHT_COMMON_LIBEVENT_H
+#endif  // LIBIGHT_COMMON_LIBEVENT_HPP
