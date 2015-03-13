@@ -17,6 +17,7 @@
 #include <ight/net/connection.hpp>
 
 using namespace ight::net::connection;
+using namespace ight::common::poller;
 using namespace ight::protocols;
 
 ConnectionState::~ConnectionState(void)
@@ -151,7 +152,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
 	    this->handle_event, this);
 
 	if (!ight_socket_valid(filenum))
-		this->start_connect = std::make_shared<IghtDelayedCall>(0.0, [this]() {
+		this->start_connect = std::make_shared<DelayedCall>(0.0, [this]() {
 			this->resolve();
 		});
 }

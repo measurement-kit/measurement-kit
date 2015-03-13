@@ -30,6 +30,7 @@ namespace dns {
 
 using namespace ight::common::constraints;
 using namespace ight::common::pointer;
+using namespace ight::common::poller;
 
 /*!
  * \brief DNS response.
@@ -271,7 +272,7 @@ class Resolver : public NonCopyable, public NonMovable {
 protected:
     ight::common::Settings settings;
     IghtLibevent *libevent = IghtGlobalLibevent::get();
-    IghtPoller *poller = ight_get_global_poller();
+    Poller *poller = ight_get_global_poller();
     evdns_base *base = NULL;
 
 public:
@@ -298,7 +299,7 @@ public:
      *        the case.
      */
     Resolver(ight::common::Settings settings_,
-            IghtLibevent *lev = NULL, IghtPoller *plr = NULL) {
+            IghtLibevent *lev = NULL, Poller *plr = NULL) {
         if (lev != NULL) {
             libevent = lev;
         }

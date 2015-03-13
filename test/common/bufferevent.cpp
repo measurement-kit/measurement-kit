@@ -14,6 +14,8 @@
 
 #include <ight/common/poller.h>
 
+using namespace ight::common::poller;
+
 TEST_CASE("Constructors") {
   
   SECTION("Create a IghtBuffereventSocket instance with an empty constructor") {
@@ -60,7 +62,7 @@ TEST_CASE("Constructors") {
     };
 
     {
-      auto poller = IghtGlobalPoller::get();
+      auto poller = GlobalPoller::get();
       IghtBuffereventSocket b(poller->get_event_base(),
           -1, 0, &libevent);
     }
@@ -77,7 +79,7 @@ TEST_CASE("Constructors") {
       return ((bufferevent *) NULL);
     };
 
-    auto base = IghtGlobalPoller::get()->get_event_base();
+    auto base = GlobalPoller::get()->get_event_base();
 
     REQUIRE_THROWS_AS(IghtBuffereventSocket(base, 0, 0, &libevent),
                       std::bad_alloc);
@@ -95,7 +97,7 @@ TEST_CASE("IghtBuffereventSocket operations") {
       return (underlying = ::bufferevent_socket_new(b, s, o));
     };
 
-    auto poller = IghtGlobalPoller::get();
+    auto poller = GlobalPoller::get();
     IghtBuffereventSocket b(poller->get_event_base(), -1, 0,
         &libevent);
 

@@ -10,13 +10,12 @@
 # ifdef __cplusplus
 
 #include <ight/common/constraints.hpp>
+#include <ight/common/poller.h>
 
 /*-
  * StringVector
  *   A vector of strings that is used to implement the resolver.
  */
-
-class IghtPoller;
 
 struct IghtStringVector : public ight::common::constraints::NonCopyable,
 		public ight::common::constraints::NonMovable {
@@ -25,11 +24,11 @@ struct IghtStringVector : public ight::common::constraints::NonCopyable,
 	size_t count;
 	size_t iter;
 	size_t pos;
-	IghtPoller *poller;
+	ight::common::poller::Poller *poller;
     public:
-	IghtStringVector(IghtPoller *, size_t);
+	IghtStringVector(ight::common::poller::Poller *, size_t);
 	int append(const char *);
-	IghtPoller *get_poller(void);
+	ight::common::poller::Poller *get_poller(void);
 	const char *get_next(void);
 	~IghtStringVector(void);
 };

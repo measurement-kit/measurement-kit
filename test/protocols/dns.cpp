@@ -19,6 +19,7 @@
 #include <ight/common/utils.hpp>
 
 using namespace ight::protocols::dns;
+using namespace ight::common::poller;
 
 //
 // Response unit tests.
@@ -622,7 +623,7 @@ TEST_CASE("The system resolver works as expected") {
 
     auto failed = false;
 
-    IghtDelayedCall d(10.0, [&](void) {
+    DelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -708,7 +709,7 @@ TEST_CASE("It is safe to clear a request in its own callback") {
     }
     auto d = SafeToDeleteRequestInItsOwnCallback();
     auto called = 0;
-    IghtDelayedCall watchdog(5.0, [&called]() {
+    DelayedCall watchdog(5.0, [&called]() {
         ++called;
         ight_break_loop();
     });
@@ -944,7 +945,7 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto failed = false;
 
-    IghtDelayedCall d(10.0, [&](void) {
+    DelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -1018,7 +1019,7 @@ TEST_CASE("A specific custom resolver works as expected") {
 
     auto failed = false;
 
-    IghtDelayedCall d(10.0, [&](void) {
+    DelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -1107,13 +1108,13 @@ TEST_CASE("If the resolver dies the requests are aborted") {
         ight_break_loop();
     });
 
-    IghtDelayedCall d1(0.1, [&](void) {
+    DelayedCall d1(0.1, [&](void) {
         delete reso;  // Destroy the resolver and see what happens..
                       // in theory the request callback *should* be called
     });
 
     auto failed = false;
-    IghtDelayedCall d2(1.0, [&](void) {
+    DelayedCall d2(1.0, [&](void) {
         // This *should not* be called, since the request callback
         // shold be called before than this one.
         failed = true;
@@ -1155,7 +1156,7 @@ TEST_CASE("A request to a nonexistent server times out") {
     });
 
     auto failed = false;
-    IghtDelayedCall d(10.0, [&](void) {
+    DelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -1218,7 +1219,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
             ight_warn("- break_loop");
             ight_break_loop();
         }, reso.get_evdns_base());
-        IghtDelayedCall d(avgrtt, [&](void) {
+        DelayedCall d(avgrtt, [&](void) {
             ight_warn("- cancel");
             r->cancel();
             ight_break_loop();

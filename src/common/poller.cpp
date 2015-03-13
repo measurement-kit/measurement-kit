@@ -17,11 +17,13 @@
 #include <ight/common/utils.hpp>
 #include <ight/common/log.hpp>
 
+using namespace ight::common::poller;
+
 /*
- * IghtDelayedCall implementation
+ * DelayedCall implementation
  */
 
-IghtDelayedCall::IghtDelayedCall(double t, std::function<void(void)> &&f,
+DelayedCall::DelayedCall(double t, std::function<void(void)> &&f,
     IghtLibevent *libevent, event_base *evbase)
 {
 	timeval timeo;
@@ -50,7 +52,7 @@ IghtDelayedCall::IghtDelayedCall(double t, std::function<void(void)> &&f,
 }
 
 void
-IghtDelayedCall::dispatch(evutil_socket_t socket, short event, void *opaque)
+DelayedCall::dispatch(evutil_socket_t socket, short event, void *opaque)
 {
 	auto funcptr = static_cast<std::function<void(void)> *>(opaque);
 	if (*funcptr)
@@ -61,7 +63,7 @@ IghtDelayedCall::dispatch(evutil_socket_t socket, short event, void *opaque)
 	(void) event;
 }
 
-IghtDelayedCall::~IghtDelayedCall(void)
+DelayedCall::~DelayedCall(void)
 {
 	delete (this->func);  /* delete handles NULL */
 	if (this->evp)
@@ -69,22 +71,22 @@ IghtDelayedCall::~IghtDelayedCall(void)
 }
 
 /*
- * IghtPoller implementation
+ * Poller implementation
  */
 
 #ifndef WIN32
 static void
-IghtPoller_sigint(int signo, short event, void *opaque)
+Poller_sigint(int signo, short event, void *opaque)
 {
 	(void) signo;
 	(void) event;
 
-	auto self = (IghtPoller *) opaque;
+	auto self = (Poller *) opaque;
 	self->break_loop();
 }
 #endif
 
-IghtPoller::IghtPoller(IghtLibevent *libevent)
+Poller::Poller(IghtLibevent *libevent)
 {
 	if (libevent != NULL)
 		this->libevent = libevent;
@@ -105,7 +107,7 @@ IghtPoller::IghtPoller(IghtLibevent *libevent)
 	 * because we pass `this` to `event_new()`.
 	 */
 	if ((this->evsignal = this->libevent->event_new(this->base, SIGINT,
-	    EV_SIGNAL, IghtPoller_sigint, this)) == NULL) {
+	    EV_SIGNAL, Poller_sigint, this)) == NULL) {
 		this->libevent->evdns_base_free(this->dnsbase, 1);
 		this->libevent->event_base_free(this->base);
 		throw std::bad_alloc();
@@ -113,7 +115,7 @@ IghtPoller::IghtPoller(IghtLibevent *libevent)
 #endif
 }
 
-IghtPoller::~IghtPoller(void)
+Poller::~Poller(void)
 {
 	this->libevent->event_free(this->evsignal);
 	this->libevent->evdns_base_free(this->dnsbase, 1);
@@ -121,7 +123,7 @@ IghtPoller::~IghtPoller(void)
 }
 
 void
-IghtPoller::break_loop_on_sigint_(int enable)
+Poller::break_loop_on_sigint_(int enable)
 {
 #ifndef WIN32
 	/*
@@ -144,7 +146,7 @@ IghtPoller::break_loop_on_sigint_(int enable)
 }
 
 void
-IghtPoller::loop(void)
+Poller::loop(void)
 {
 	auto result = this->libevent->event_base_dispatch(this->base);
 	if (result < 0)
@@ -154,7 +156,7 @@ IghtPoller::loop(void)
 }
 
 void
-IghtPoller::break_loop(void)
+Poller::break_loop(void)
 {
 	if (this->libevent->event_base_loopbreak(this->base) != 0)
 		throw std::runtime_error("event_base_loopbreak() failed");

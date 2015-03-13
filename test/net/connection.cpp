@@ -17,6 +17,7 @@
 
 #include <ight/net/connection.hpp>
 
+using namespace ight::common::poller;
 using namespace ight::net::connection;
 using namespace ight::net::buffer;
 
@@ -128,10 +129,10 @@ TEST_CASE("It is safe to close Connection while resolve is in progress") {
     }
     ight_set_verbose(1);
     Connection s("PF_INET", "nexa.polito.it", "80");
-    IghtDelayedCall unsched(0.001, [&s]() {
+    DelayedCall unsched(0.001, [&s]() {
         s.close();
     });
-    IghtDelayedCall bail_out(2.0, []() {
+    DelayedCall bail_out(2.0, []() {
         ight_break_loop();
     });
     ight_loop();

@@ -17,6 +17,7 @@ namespace ooni {
 namespace net_test {
 
 using namespace ight::common::pointer;
+using namespace ight::common::poller;
 
 class InputGenerator {
 
@@ -70,7 +71,7 @@ class NetTest {
   std::string input_filepath;
   FileReporter file_report;
 
-  SharedPointer<IghtDelayedCall> delayed_call;
+  SharedPointer<DelayedCall> delayed_call;
 
   void run_next_measurement(const std::function<void()>&& cb);
 

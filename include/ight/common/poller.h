@@ -13,8 +13,13 @@
 
 #include <functional>
 
-class IghtDelayedCall : public ight::common::constraints::NonCopyable,
-		public ight::common::constraints::NonMovable {
+namespace ight {
+namespace common {
+namespace poller {
+
+using namespace ight::common::constraints;
+
+class DelayedCall : public NonCopyable, public NonMovable {
 
 	/*
 	 * A previous implementation of this class required `func` to
@@ -29,13 +34,12 @@ class IghtDelayedCall : public ight::common::constraints::NonCopyable,
 	static void dispatch(evutil_socket_t, short, void *);
 
     public:
-	IghtDelayedCall(double, std::function<void(void)>&&,
+	DelayedCall(double, std::function<void(void)>&&,
 	    IghtLibevent *libevent = NULL, event_base *evbase = NULL);
-	~IghtDelayedCall(void);
+	~DelayedCall(void);
 };
 
-class IghtPoller : public ight::common::constraints::NonCopyable,
-		public ight::common::constraints::NonMovable {
+class Poller : public NonCopyable, public NonMovable {
 
 	event_base *base;
 	evdns_base *dnsbase;
@@ -44,8 +48,8 @@ class IghtPoller : public ight::common::constraints::NonCopyable,
 	IghtLibevent *libevent = IghtGlobalLibevent::get();
 
     public:
-	IghtPoller(IghtLibevent *libevent = NULL);
-	~IghtPoller(void);
+	Poller(IghtLibevent *libevent = NULL);
+	~Poller(void);
 
 	event_base *get_event_base(void) {
 		return (this->base);
@@ -73,35 +77,36 @@ class IghtPoller : public ight::common::constraints::NonCopyable,
 	void break_loop(void);
 };
 
-struct IghtGlobalPoller {
-	static IghtPoller *get(void) {
-		static IghtPoller singleton;
+struct GlobalPoller {
+	static Poller *get(void) {
+		static Poller singleton;
 		return (&singleton);
 	}
 };
+}}}  // namespaces
 
 /*
  * Syntactic sugar:
  */
 
-inline IghtPoller *ight_get_global_poller(void) {
-	return (IghtGlobalPoller::get());
+inline ight::common::poller::Poller *ight_get_global_poller(void) {
+	return (ight::common::poller::GlobalPoller::get());
 }
 
 inline event_base *ight_get_global_event_base(void) {
-	return (IghtGlobalPoller::get()->get_event_base());
+	return (ight::common::poller::GlobalPoller::get()->get_event_base());
 }
 
 inline evdns_base *ight_get_global_evdns_base(void) {
-	return (IghtGlobalPoller::get()->get_evdns_base());
+	return (ight::common::poller::GlobalPoller::get()->get_evdns_base());
 }
 
 inline void ight_loop(void) {
-	IghtGlobalPoller::get()->loop();
+	ight::common::poller::GlobalPoller::get()->loop();
 }
 
 inline void ight_break_loop(void) {
-	IghtGlobalPoller::get()->break_loop();
+	ight::common::poller::GlobalPoller::get()->break_loop();
 }
 
 #endif  // LIBIGHT_POLLER_H

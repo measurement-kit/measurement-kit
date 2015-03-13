@@ -6,7 +6,7 @@
  */
 
 //
-// Tests for src/common/poller.cpp's IghtDelayedCall()
+// Tests for src/common/poller.cpp's DelayedCall()
 //
 
 #define CATCH_CONFIG_MAIN
@@ -16,6 +16,7 @@
 #include <ight/common/poller.h>
 
 using namespace ight::common::pointer;
+using namespace ight::common::poller;
 
 TEST_CASE("Bad allocations triggers a failure ") {
 	IghtLibevent libevent;
@@ -25,7 +26,7 @@ TEST_CASE("Bad allocations triggers a failure ") {
 		return ((event *) NULL);
 	};
 
-	REQUIRE_THROWS_AS(IghtDelayedCall(0.0, [](void) { }, &libevent),
+	REQUIRE_THROWS_AS(DelayedCall(0.0, [](void) { }, &libevent),
                     std::bad_alloc&);
 }
 
@@ -35,7 +36,7 @@ TEST_CASE("If event_add returns -1 then an exception should be raised") {
 		return (-1);
 	};
 
-	REQUIRE_THROWS_AS(IghtDelayedCall(0.0, [](void) { }, &libevent),
+	REQUIRE_THROWS_AS(DelayedCall(0.0, [](void) { }, &libevent),
                     std::runtime_error&);
 
 }
@@ -51,7 +52,7 @@ TEST_CASE("Check that the event callbacks are fired") {
       ::event_free(evp);
     };
 
-    IghtDelayedCall(0.0, [](void) { }, &libevent);
+    DelayedCall(0.0, [](void) { }, &libevent);
 
     REQUIRE(event_free_called == true);
   }
@@ -59,7 +60,7 @@ TEST_CASE("Check that the event callbacks are fired") {
 
 TEST_CASE("Destructor cancels delayed calls") {
 
-  SECTION("Create a structure referencing an IghtDelayedCall and destroy it") {
+  SECTION("Create a structure referencing an DelayedCall and destroy it") {
     //
     // Make sure that the delayed call is unscheduled when the
     // object X is deleted, which simplifies life when you have
@@ -67,12 +68,12 @@ TEST_CASE("Destructor cancels delayed calls") {
     // at any time by peer.
     //
     struct X {
-      SharedPointer<IghtDelayedCall> d;
+      SharedPointer<DelayedCall> d;
     };
 
     auto called = false;
     auto x = new X();
-    x->d = std::make_shared<IghtDelayedCall>(0.0, [&](void) {
+    x->d = std::make_shared<DelayedCall>(0.0, [&](void) {
       called = true;
     });
     delete (x);
@@ -92,13 +93,13 @@ TEST_CASE("Destructor cancels delayed calls") {
     // matter how close the deadline is.
     //
     auto called = false; 
-    auto d1 = new IghtDelayedCall(0.25, [&](void) {
+    auto d1 = new DelayedCall(0.25, [&](void) {
       called = true;
     });
-    IghtDelayedCall d2(0.249, [&](void) {
+    DelayedCall d2(0.249, [&](void) {
       delete (d1);
     });
-    IghtDelayedCall d3(0.33, []() {
+    DelayedCall d3(0.33, []() {
       ight_break_loop();
     });
     ight_loop();
@@ -114,7 +115,7 @@ TEST_CASE("Delayed call construction") {
     // Make sure that an empty delayed call is successfully
     // destroyed (no segfault) when we leave the scope.
     //
-    IghtDelayedCall d1{0.0, [](){}};
+    DelayedCall d1{0.0, [](){}};
   }
 
   SECTION("Create a delayed call with empty std::function") {
@@ -122,8 +123,8 @@ TEST_CASE("Delayed call construction") {
     // Make sure that we don't raise an exception in the libevent
     // callback, when we're passed an empty std::function.
     //
-    IghtDelayedCall d3(0.0, std::function<void(void)>());
-    IghtDelayedCall d4(0.1, []() {
+    DelayedCall d3(0.0, std::function<void(void)>());
+    DelayedCall d4(0.1, []() {
         ight_break_loop();
     });
     ight_loop();
