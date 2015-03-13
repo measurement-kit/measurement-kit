@@ -8,7 +8,7 @@
 #include <ight/report/file.hpp>
 
 #include <ight/common/pointer.hpp>
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 #include <ight/common/settings.hpp>
 #include <ight/common/log.hpp>
 #include <ight/common/net_test.hpp>

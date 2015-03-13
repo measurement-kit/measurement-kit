@@ -2,7 +2,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ight/ooni/http_invalid_request_line.hpp>
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 #include <ight/common/log.hpp>
 #include <ight/common/utils.hpp>
 

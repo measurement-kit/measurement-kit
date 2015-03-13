@@ -11,7 +11,7 @@
 #include <ight/common/constraints.hpp>
 #include <ight/common/error.hpp>
 #include <ight/common/pointer.hpp>
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 #include <ight/common/string_vector.h>
 #include <ight/common/utils.hpp>
 

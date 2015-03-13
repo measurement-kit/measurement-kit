@@ -5,8 +5,8 @@
  * information on the copying conditions.
  */
 
-#ifndef LIBIGHT_POLLER_H
-# define LIBIGHT_POLLER_H
+#ifndef LIBIGHT_POLLER_HPP
+# define LIBIGHT_POLLER_HPP
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/libevent.hpp>
@@ -116,4 +116,4 @@ inline void ight_break_loop(void) {
 	ight::common::poller::GlobalPoller::get()->break_loop();
 }
 
-#endif  // LIBIGHT_POLLER_H
+#endif  // LIBIGHT_POLLER_HPP
