@@ -27,7 +27,7 @@ HTTPInvalidRequestLine::main(Settings options,
     // randomSTR(4) + " / HTTP/1.1\n\r"
     request({
         {"url", options["backend"]},
-        {"method", randomSTR(4)},
+        {"method", ight_random_str_uppercase(4)},
         {"http_version", "HTTP/1.1"},
     }, headers, "", handle_response);
 
@@ -40,7 +40,7 @@ HTTPInvalidRequestLine::main(Settings options,
     // randomStr(1024) + ' / HTTP/1.1\n\r'
     request({
         {"url", options["backend"]},
-        {"method", randomSTR(1024)},
+        {"method", ight_random_str_uppercase(1024)},
         {"http_version", "HTTP/1.1"},
     }, headers, "", handle_response);
 
@@ -49,6 +49,6 @@ HTTPInvalidRequestLine::main(Settings options,
     request({
         {"url", options["backend"]},
         {"method", "GET"},
-        {"http_version", "HTTP/" + randomStr(3)},
+        {"http_version", "HTTP/" + ight_random_str(3)},
     }, headers, "", handle_response);
 }
