@@ -4,8 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-#ifndef IGHT_COMMON_STRINGVECTOR_HPP
-# define IGHT_COMMON_STRINGVECTOR_HPP
+#ifndef IGHT_COMMON_STRING_VECTOR_HPP
+# define IGHT_COMMON_STRING_VECTOR_HPP
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/poller.hpp>

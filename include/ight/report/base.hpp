@@ -7,8 +7,14 @@
 #ifndef IGHT_REPORT_BASE_HPP
 #define IGHT_REPORT_BASE_HPP
 
-#include "yaml-cpp/yaml.h"
+#include <yaml-cpp/yaml.h>
 #include <ight/report/entry.hpp>
+
+namespace ight {
+namespace report {
+namespace base {
+
+using namespace ight::report::entry;
 
 class ReporterBase {
   bool closed = false;
@@ -43,4 +49,5 @@ public:
   virtual void close();
 };
 
+}}}
 #endif

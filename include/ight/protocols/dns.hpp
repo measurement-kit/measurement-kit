@@ -31,6 +31,7 @@ using namespace ight::common::constraints;
 using namespace ight::common::libevent;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
+using namespace ight::common::settings;
 
 /*!
  * \brief DNS response.
@@ -270,7 +271,7 @@ class Resolver : public NonCopyable, public NonMovable {
     void cleanup(void);
 
 protected:
-    ight::common::Settings settings;
+    Settings settings;
     Libevent *libevent = GlobalLibevent::get();
     Poller *poller = ight_get_global_poller();
     evdns_base *base = NULL;
@@ -298,7 +299,7 @@ public:
      *        3 attempts, to timeout after 5.0 seconds, not to randomize
      *        the case.
      */
-    Resolver(ight::common::Settings settings_,
+    Resolver(Settings settings_,
             Libevent *lev = NULL, Poller *plr = NULL) {
         if (lev != NULL) {
             libevent = lev;

@@ -12,6 +12,12 @@
 
 #include <ight/report/base.hpp>
 
+namespace ight {
+namespace report {
+namespace file {
+
+using namespace ight::report::base;
+
 class FileReporter : public ReporterBase {
   std::ofstream file;
 public:
@@ -21,4 +27,5 @@ public:
   void close();
 };
 
+}}}
 #endif

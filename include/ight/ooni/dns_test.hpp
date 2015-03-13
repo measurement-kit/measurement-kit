@@ -16,6 +16,7 @@ namespace ight {
 namespace ooni {
 namespace dns_test {
 
+using namespace ight::common::settings;
 using namespace ight::common::pointer;
 
 struct UnsupportedQueryType : public std::runtime_error {
@@ -32,7 +33,7 @@ class DNSTest : public net_test::NetTest {
     SharedPointer<protocols::dns::Resolver> resolver;
 
 public:
-    DNSTest(std::string input_filepath_, ight::common::Settings options_) : 
+    DNSTest(std::string input_filepath_, Settings options_) : 
       net_test::NetTest(input_filepath_, options_) {
         test_name = "dns_test";
         test_version = "0.0.1";

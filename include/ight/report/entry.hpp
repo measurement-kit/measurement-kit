@@ -10,6 +10,10 @@
 #include <ctime>
 #include "yaml-cpp/yaml.h"
 
+namespace ight {
+namespace report {
+namespace entry {
+
 class ReportEntry {
 public:
   YAML::Node report;
@@ -42,4 +46,5 @@ public:
   ~ReportEntry() {};
 };
 
+}}}
 #endif

@@ -22,6 +22,7 @@ namespace ooni {
 namespace tcp_test {
 
 using namespace ight::common::pointer;
+using namespace ight::common::settings;
 using namespace ight::net::connection;
 
 #if 0
@@ -83,13 +84,13 @@ class TCPTest : public net_test::NetTest {
     using net_test::NetTest::NetTest;
 
 public:
-    TCPTest(std::string input_filepath_, ight::common::Settings options_) : 
+    TCPTest(std::string input_filepath_, Settings options_) : 
       net_test::NetTest(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";
     };
     
-    TCPClient connect(ight::common::Settings options,
+    TCPClient connect(Settings options,
             std::function<void()>&& cb);
 };
 
