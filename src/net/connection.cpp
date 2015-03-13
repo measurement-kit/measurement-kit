@@ -18,6 +18,7 @@
 
 using namespace ight::common::error;
 using namespace ight::common::poller;
+using namespace ight::common::string_vector;
 using namespace ight::net::connection;
 using namespace ight::protocols;
 
@@ -120,7 +121,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
 		throw std::bad_alloc();
 	}
 
-	if ((this->addrlist = new (std::nothrow) IghtStringVector(poller,
+	if ((this->addrlist = new (std::nothrow) StringVector(poller,
 	    16)) == NULL) {
 		free(this->address);
 		free(this->port);
@@ -134,7 +135,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
 		throw std::bad_alloc();
 	}
 
-	if ((this->pflist = new (std::nothrow) IghtStringVector(poller,
+	if ((this->pflist = new (std::nothrow) StringVector(poller,
 	    16)) == NULL) {
 		free(this->address);
 		free(this->port);

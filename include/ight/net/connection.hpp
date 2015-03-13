@@ -12,6 +12,7 @@
 #include <ight/common/error.h>
 #include <ight/common/pointer.hpp>
 #include <ight/common/poller.h>
+#include <ight/common/stringvector.h>
 #include <ight/common/utils.hpp>
 
 #include <ight/net/buffer.hpp>
@@ -25,8 +26,6 @@
 #include <stdexcept>
 #include <string.h>
 
-struct IghtStringVector;
-
 namespace ight {
 namespace net {
 namespace connection {
@@ -35,6 +34,7 @@ using namespace ight::common::constraints;
 using namespace ight::common::error;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
+using namespace ight::common::string_vector;
 
 using namespace ight::net::buffer;
 using namespace ight::net::transport;
@@ -48,9 +48,9 @@ class ConnectionState {
 	unsigned int connecting = 0;
 	char *address = NULL;
 	char *port = NULL;
-	IghtStringVector *addrlist = NULL;
+	StringVector *addrlist = NULL;
 	char *family = NULL;
-	IghtStringVector *pflist = NULL;
+	StringVector *pflist = NULL;
 	unsigned int must_resolve_ipv4 = 0;
 	unsigned int must_resolve_ipv6 = 0;
 	SharedPointer<DelayedCall> start_connect;

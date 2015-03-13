@@ -7,7 +7,6 @@
 
 #ifndef LIBIGHT_STRINGVECTOR_H
 # define LIBIGHT_STRINGVECTOR_H
-# ifdef __cplusplus
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/poller.h>
@@ -17,21 +16,27 @@
  *   A vector of strings that is used to implement the resolver.
  */
 
-struct IghtStringVector : public ight::common::constraints::NonCopyable,
-		public ight::common::constraints::NonMovable {
+namespace ight {
+namespace common {
+namespace string_vector {
+
+using namespace ight::common::constraints;
+using namespace ight::common::poller;
+
+struct StringVector : public NonCopyable, public NonMovable {
     private: 
 	char **base;
 	size_t count;
 	size_t iter;
 	size_t pos;
-	ight::common::poller::Poller *poller;
+	Poller *poller;
     public:
-	IghtStringVector(ight::common::poller::Poller *, size_t);
+	StringVector(Poller *, size_t);
 	int append(const char *);
-	ight::common::poller::Poller *get_poller(void);
+	Poller *get_poller(void);
 	const char *get_next(void);
-	~IghtStringVector(void);
+	~StringVector(void);
 };
 
-# endif  /* __cplusplus */
+}}}  // namespaces
 #endif  /* LIBIGHT_STRINGVECTOR_H */

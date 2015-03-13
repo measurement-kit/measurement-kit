@@ -13,9 +13,10 @@
 
 #define IGHT_STRINGVECTOR_MAX 512  // Large enough
 
+using namespace ight::common::string_vector;
 using namespace ight::common::poller;
 
-IghtStringVector::IghtStringVector(Poller *p, size_t cnt)
+StringVector::StringVector(Poller *p, size_t cnt)
 {
 	if (p == NULL || cnt == 0 || cnt > IGHT_STRINGVECTOR_MAX)
 		throw new (std::bad_alloc);
@@ -31,7 +32,7 @@ IghtStringVector::IghtStringVector(Poller *p, size_t cnt)
 }
 
 int
-IghtStringVector::append(const char *str)
+StringVector::append(const char *str)
 {
 	if (this->pos > this->count)
 		abort();
@@ -45,13 +46,13 @@ IghtStringVector::append(const char *str)
 }
 
 Poller *
-IghtStringVector::get_poller(void)
+StringVector::get_poller(void)
 {
 	return (this->poller);
 }
 
 const char *
-IghtStringVector::get_next(void)
+StringVector::get_next(void)
 {
 	if (this->iter > this->pos)
 		abort();
@@ -60,7 +61,7 @@ IghtStringVector::get_next(void)
 	return (this->base[this->iter++]);
 }
 
-IghtStringVector::~IghtStringVector(void)
+StringVector::~StringVector(void)
 {
 	size_t i;
 
