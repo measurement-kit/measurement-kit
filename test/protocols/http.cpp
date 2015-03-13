@@ -18,6 +18,7 @@
 #include <ight/protocols/http.hpp>
 
 using namespace ight::protocols;
+using namespace ight::net::buffer;
 using namespace ight::common::pointer;
 using namespace ight::common;
 
@@ -312,7 +313,7 @@ TEST_CASE("HTTP Request serializer works as expected") {
     }, {
         {"User-Agent", "Antani/1.0.0.0"},
     }, "0123456789");
-    IghtBuffer buffer;
+    Buffer buffer;
     serializer.serialize(buffer);
     auto serialized = buffer.read<char>();
     std::string expect = "GET /antani?clacsonato=yes HTTP/1.0\r\n";
@@ -378,7 +379,7 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
 
     transport->emit_connect();
 
-    SharedPointer<IghtBuffer> data = std::make_shared<IghtBuffer>();
+    SharedPointer<Buffer> data = std::make_shared<Buffer>();
     *data << "HTTP/1.1 200 Ok\r\n";
     *data << "Content-Type: text/plain\r\n";
     *data << "Connection: close\r\n";

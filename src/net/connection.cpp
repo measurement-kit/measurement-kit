@@ -48,7 +48,7 @@ ConnectionState::handle_read(bufferevent *bev, void *opaque)
 {
 	auto self = (ConnectionState *) opaque;
 	(void) bev;  // Suppress warning about unused variable
-	self->on_data_fn(std::make_shared<IghtBuffer>(
+	self->on_data_fn(std::make_shared<Buffer>(
 			bufferevent_get_input(self->bev)));
 }
 

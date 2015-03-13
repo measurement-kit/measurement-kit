@@ -38,6 +38,7 @@ using namespace ight::common::constraints;
 using namespace ight::common::pointer;
 
 using namespace ight::net;
+using namespace ight::net::buffer;
 using namespace ight::net::transport;
 
 /*!
@@ -106,7 +107,7 @@ typedef std::map<std::string, std::string> Headers;
  *
  *     auto connection = ight::net::transport::connect(...);
  *
- *     connection.on_data([&](SharedPointer<IghtBuffer> data) {
+ *     connection.on_data([&](SharedPointer<Buffer> data) {
  *         parser.feed(data);
  *     });
  */
@@ -195,7 +196,7 @@ public:
      * \throws std::runtime_error This method throws std::runtime_error (or
      *         a class derived from it) on several error conditions.
      */
-    void feed(SharedPointer<IghtBuffer> data);
+    void feed(SharedPointer<Buffer> data);
 
     /*!
      * \brief Feed the parser.
@@ -239,7 +240,7 @@ class Stream {
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
-        connection->on_data([&](SharedPointer<IghtBuffer> data) {
+        connection->on_data([&](SharedPointer<Buffer> data) {
             parser->feed(data);
         });
         //
@@ -487,7 +488,7 @@ struct RequestSerializer {
      * \brief Serialize request.
      * \param buff Buffer where to serialize request.
      */
-    void serialize(IghtBuffer& buff) {
+    void serialize(Buffer& buff) {
         buff << method << " " << pathquery << " " << protocol << "\r\n";
         for (auto& kv : headers) {
             buff << kv.first << ": " << kv.second << "\r\n";
@@ -523,7 +524,7 @@ struct Response {
     unsigned int status_code;       /*!< HTTP status code */
     std::string reason;             /*!< HTTP reason string */
     Headers headers;                /*!< Response headers */
-    IghtBuffer body;                /*!< Response body */
+    Buffer body;                    /*!< Response body */
 };
 
 class Request;  // Forward declaration
@@ -605,7 +606,7 @@ public:
         stream->on_connect([this](void) {
             // TODO: improve the way in which we serialize the request
             //       to reduce unnecessary copies
-            IghtBuffer buf;
+            Buffer buf;
             serializer.serialize(buf);
             *stream << buf.read<char>();
 

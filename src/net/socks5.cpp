@@ -34,7 +34,7 @@ Socks5::Socks5(Settings s) : settings(s) {
 
         ight_debug("socks5: connected to Tor!");
 
-        IghtBuffer out;
+        Buffer out;
         out.write_uint8(5);           // Version
         out.write_uint8(1);           // Number of methods
         out.write_uint8(0);           // "NO_AUTH" meth.
@@ -46,7 +46,7 @@ Socks5::Socks5(Settings s) : settings(s) {
 
         // Step #2: receive the allowed authentication methods
 
-        conn->on_data([this](SharedPointer<IghtBuffer> d) {
+        conn->on_data([this](SharedPointer<Buffer> d) {
             *buffer << *d;
             auto readbuf = buffer->readn(2);
             if (readbuf == "") {
@@ -63,7 +63,7 @@ Socks5::Socks5(Settings s) : settings(s) {
 
             // Step #3: ask Tor to connect to remote host
 
-            IghtBuffer out;
+            Buffer out;
             out.write_uint8(5);      // Version
             out.write_uint8(1);      // CMD_CONNECT
             out.write_uint8(0);      // Reserved
@@ -98,7 +98,7 @@ Socks5::Socks5(Settings s) : settings(s) {
 
             // Step #4: receive Tor's response
 
-            conn->on_data([this](SharedPointer<IghtBuffer> d) {
+            conn->on_data([this](SharedPointer<Buffer> d) {
 
                 *buffer << *d;
                 if (buffer->length() < 5) {
@@ -148,7 +148,7 @@ Socks5::Socks5(Settings s) : settings(s) {
                 // If more data, pass it up
                 //
 
-                conn->on_data([this](SharedPointer<IghtBuffer> d) {
+                conn->on_data([this](SharedPointer<Buffer> d) {
                     on_data_fn(d);
                 });
                 conn->on_flush([this]() {

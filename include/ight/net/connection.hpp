@@ -34,6 +34,7 @@ namespace connection {
 using namespace ight::common::constraints;
 using namespace ight::common::pointer;
 
+using namespace ight::net::buffer;
 using namespace ight::net::transport;
 
 using namespace ight::protocols;
@@ -71,8 +72,8 @@ class ConnectionState {
 		/* nothing */
 	};
 
-	std::function<void(SharedPointer<IghtBuffer>)> on_data_fn = [](
-			SharedPointer<IghtBuffer>) {
+	std::function<void(SharedPointer<Buffer>)> on_data_fn = [](
+			SharedPointer<Buffer>) {
 		/* nothing */
 	};
 
@@ -103,7 +104,7 @@ class ConnectionState {
 		on_ssl_fn = fn;
 	};
 
-	void on_data(std::function<void(SharedPointer<IghtBuffer>)> fn) {
+	void on_data(std::function<void(SharedPointer<Buffer>)> fn) {
 		on_data_fn = fn;
 		enable_read();
 	};
@@ -149,11 +150,11 @@ class ConnectionState {
 		send(data.c_str(), data.length());
 	}
 
-	void send(SharedPointer<IghtBuffer> data) {
+	void send(SharedPointer<Buffer> data) {
 		send(*data);
 	}
 
-	void send(IghtBuffer& data) {
+	void send(Buffer& data) {
 		data >> bufferevent_get_output(bev);
 	}
 
@@ -175,7 +176,7 @@ class ConnectionState {
 		on_connect_fn();
 	}
 
-	void emit_data(SharedPointer<IghtBuffer> data) {
+	void emit_data(SharedPointer<Buffer> data) {
 		on_data_fn(data);
 	}
 
@@ -200,7 +201,7 @@ class Connection : public Transport {
 		state->emit_connect();
 	}
 
-	virtual void emit_data(SharedPointer<IghtBuffer> data) override {
+	virtual void emit_data(SharedPointer<Buffer> data) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->emit_data(data);
@@ -250,7 +251,7 @@ class Connection : public Transport {
 	};
 
 	virtual void on_data(std::function<void(
-			SharedPointer<IghtBuffer>)> fn) override {
+			SharedPointer<Buffer>)> fn) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->on_data(fn);
@@ -304,13 +305,13 @@ class Connection : public Transport {
 		state->send(str);
 	}
 
-	virtual void send(SharedPointer<IghtBuffer> sourcebuf) override {
+	virtual void send(SharedPointer<Buffer> sourcebuf) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->send(sourcebuf);
 	}
 
-	virtual void send(IghtBuffer& sourcebuf) override {
+	virtual void send(Buffer& sourcebuf) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->send(sourcebuf);

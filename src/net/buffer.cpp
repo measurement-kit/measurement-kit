@@ -9,16 +9,18 @@
 
 #include <ight/net/buffer.hpp>
 
-void IghtBuffer::write_uint8(uint8_t num) {
+using namespace ight::net::buffer;
+
+void Buffer::write_uint8(uint8_t num) {
     write(&num, sizeof (num));
 }
 
-void IghtBuffer::write_uint16(uint16_t num) {
+void Buffer::write_uint16(uint16_t num) {
     num = htons(num);
     write(&num, sizeof (num));
 }
 
-void IghtBuffer::write_uint32(uint32_t num) {
+void Buffer::write_uint32(uint32_t num) {
     num = htonl(num);
     write(&num, sizeof (num));
 }

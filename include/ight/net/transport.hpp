@@ -30,11 +30,13 @@ using namespace ight::common::constraints;
 using namespace ight::common::pointer;
 using namespace ight::common;
 
+using namespace ight::net::buffer;
+
 struct Transport : public NonMovable, public NonCopyable {
 
     virtual void emit_connect() = 0;
 
-    virtual void emit_data(SharedPointer<IghtBuffer>) = 0;
+    virtual void emit_data(SharedPointer<Buffer>) = 0;
 
     virtual void emit_flush() = 0;
 
@@ -46,7 +48,7 @@ struct Transport : public NonMovable, public NonCopyable {
 
     virtual void on_ssl(std::function<void()>) = 0;
 
-    virtual void on_data(std::function<void(SharedPointer<IghtBuffer>)>) = 0;
+    virtual void on_data(std::function<void(SharedPointer<Buffer>)>) = 0;
 
     virtual void on_flush(std::function<void()>) = 0;
 
@@ -60,9 +62,9 @@ struct Transport : public NonMovable, public NonCopyable {
 
     virtual void send(std::string) = 0;
 
-    virtual void send(SharedPointer<IghtBuffer>) = 0;
+    virtual void send(SharedPointer<Buffer>) = 0;
 
-    virtual void send(IghtBuffer&) = 0;
+    virtual void send(Buffer&) = 0;
 
     virtual void close() = 0;
 

@@ -21,6 +21,7 @@ namespace socks5 {
 using namespace ight::common::pointer;
 using namespace ight::common;
 
+using namespace ight::net::buffer;
 using namespace ight::net::connection;
 using namespace ight::net::transport;
 
@@ -29,11 +30,11 @@ class Socks5 : public Transport {
 protected:
     SharedPointer<Connection> conn;
     std::function<void()> on_connect_fn;
-    std::function<void(SharedPointer<IghtBuffer>)> on_data_fn;
+    std::function<void(SharedPointer<Buffer>)> on_data_fn;
     std::function<void()> on_flush_fn;
     Settings settings;
-    SharedPointer<IghtBuffer> buffer{
-        std::make_shared<IghtBuffer>()
+    SharedPointer<Buffer> buffer{
+        std::make_shared<Buffer>()
     };
     bool isclosed = false;
     std::string proxy_address;
@@ -45,7 +46,7 @@ public:
         conn->emit_connect();
     }
 
-    virtual void emit_data(SharedPointer<IghtBuffer> data) override {
+    virtual void emit_data(SharedPointer<Buffer> data) override {
         conn->emit_data(data);
     }
 
@@ -68,7 +69,7 @@ public:
     }
 
     virtual void on_data(std::function<void(SharedPointer<
-            IghtBuffer>)> fn) override {
+            Buffer>)> fn) override {
         on_data_fn = fn;
     }
 
@@ -96,11 +97,11 @@ public:
         conn->send(data);
     }
 
-    virtual void send(IghtBuffer& data) override {
+    virtual void send(Buffer& data) override {
         conn->send(data);
     }
 
-    virtual void send(SharedPointer<IghtBuffer> data) override {
+    virtual void send(SharedPointer<Buffer> data) override {
         conn->send(data);
     }
 
