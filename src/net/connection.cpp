@@ -13,9 +13,12 @@
 #include <event2/dns.h>
 
 #include <ight/common/log.hpp>
-#include <ight/common/stringvector.h>
+#include <ight/common/string_vector.h>
 #include <ight/net/connection.hpp>
 
+using namespace ight::common::error;
+using namespace ight::common::poller;
+using namespace ight::common::string_vector;
 using namespace ight::net::connection;
 using namespace ight::protocols;
 
@@ -48,7 +51,7 @@ ConnectionState::handle_read(bufferevent *bev, void *opaque)
 {
 	auto self = (ConnectionState *) opaque;
 	(void) bev;  // Suppress warning about unused variable
-	self->on_data_fn(std::make_shared<IghtBuffer>(
+	self->on_data_fn(std::make_shared<Buffer>(
 			bufferevent_get_input(self->bev)));
 }
 
@@ -74,7 +77,7 @@ ConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 	}
 
 	if (what & BEV_EVENT_EOF) {
-		self->on_error_fn(IghtError(0));
+		self->on_error_fn(Error(0));
 		return;
 	}
 
@@ -86,7 +89,7 @@ ConnectionState::handle_event(bufferevent *bev, short what, void *opaque)
 
 	// TODO: also handle the timeout
 
-	self->on_error_fn(IghtError(-1));
+	self->on_error_fn(Error(-1));
 }
 
 ConnectionState::ConnectionState(const char *family, const char *address,
@@ -118,7 +121,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
 		throw std::bad_alloc();
 	}
 
-	if ((this->addrlist = new (std::nothrow) IghtStringVector(poller,
+	if ((this->addrlist = new (std::nothrow) StringVector(poller,
 	    16)) == NULL) {
 		free(this->address);
 		free(this->port);
@@ -132,7 +135,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
 		throw std::bad_alloc();
 	}
 
-	if ((this->pflist = new (std::nothrow) IghtStringVector(poller,
+	if ((this->pflist = new (std::nothrow) StringVector(poller,
 	    16)) == NULL) {
 		free(this->address);
 		free(this->port);
@@ -151,7 +154,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
 	    this->handle_event, this);
 
 	if (!ight_socket_valid(filenum))
-		this->start_connect = std::make_shared<IghtDelayedCall>(0.0, [this]() {
+		this->start_connect = std::make_shared<DelayedCall>(0.0, [this]() {
 			this->resolve();
 		});
 }
@@ -213,7 +216,7 @@ ConnectionState::connect_next(void)
 	}
 
 	this->connecting = 0;
-	this->on_error_fn(IghtError(-2));
+	this->on_error_fn(Error(-2));
 }
 
 void
@@ -257,7 +260,7 @@ ConnectionState::handle_resolve(int result, char type,
 			ight_warn("handle_resolve - cannot append");
 			// Oops the two vectors are not in sync anymore now
 			connecting = 0;
-			on_error_fn(IghtError(-3));
+			on_error_fn(Error(-3));
 			return;
 		}
 	}
@@ -324,7 +327,7 @@ ConnectionState::resolve()
 		    pflist->append("PF_INET") != 0) {
 			ight_warn("resolve - cannot append");
 			connecting = 0;
-			on_error_fn(IghtError(-4));
+			on_error_fn(Error(-4));
 			return;
 		}
 		connect_next();
@@ -341,7 +344,7 @@ ConnectionState::resolve()
 		    pflist->append("PF_INET6") != 0) {
 			ight_warn("resolve - cannot append");
 			connecting = 0;
-			on_error_fn(IghtError(-4));
+			on_error_fn(Error(-4));
 			return;
 		}
 		connect_next();
@@ -360,7 +363,7 @@ ConnectionState::resolve()
 	else {
 		ight_warn("connection::resolve - invalid PF_xxx");
 		connecting = 0;
-		on_error_fn(IghtError(-5));
+		on_error_fn(Error(-5));
 		return;
 	}
 
@@ -375,7 +378,7 @@ ConnectionState::resolve()
 	}
 	if (!ok) {
 		connecting = 0;
-		on_error_fn(IghtError(-6));
+		on_error_fn(Error(-6));
 		return;
 	}
 

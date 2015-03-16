@@ -4,7 +4,7 @@ src_common_libcommon_la_SOURCES = \
 	src/common/check_connectivity.cpp \
 	src/common/log.cpp \
 	src/common/poller.cpp \
-	src/common/stringvector.cpp \
+	src/common/string_vector.cpp \
 	src/common/utils.cpp
 
 libight_la_LIBADD += src/common/libcommon.la
@@ -21,4 +21,4 @@ commoninclude_HEADERS = \
     include/ight/common/libevent.h \
     include/ight/common/log.hpp \
     include/ight/common/poller.h \
-    include/ight/common/stringvector.h
+    include/ight/common/string_vector.h

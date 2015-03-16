@@ -10,7 +10,9 @@
 
 #include <stdlib.h>
 
+using namespace ight::common::error;
 using namespace ight::common::pointer;
+using namespace ight::net::buffer;
 
 int
 main(void)
@@ -21,7 +23,7 @@ main(void)
 		/* nothing */
 	});
 
-	s.on_data([&](SharedPointer<IghtBuffer> b) {
+	s.on_data([&](SharedPointer<Buffer> b) {
 		s.send(b);
 	});
 
@@ -29,7 +31,7 @@ main(void)
 		ight_info("echo - connection flushed");
 	});
 
-	s.on_error([&](IghtError e) {
+	s.on_error([&](Error e) {
 		ight_info("echo - connection error %d", e.error);
 		s.close();
 	});

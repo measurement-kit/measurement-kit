@@ -21,7 +21,7 @@ using namespace ight::net::connection;
 #if 0
 class TCPClient : public ight::common::emitter::EmitterVoid,
         public ight::common::emitter::Emitter<std::string>,
-        public ight::common::emitter::Emitter<IghtError> {
+        public ight::common::emitter::Emitter<Error> {
 
     Connection connection;
 
@@ -29,8 +29,8 @@ public:
 
     using ight::common::emitter::Emitter<std::string>::on;
     using ight::common::emitter::Emitter<std::string>::emit;
-    using ight::common::emitter::Emitter<IghtError>::on;
-    using ight::common::emitter::Emitter<IghtError>::emit;
+    using ight::common::emitter::Emitter<Error>::on;
+    using ight::common::emitter::Emitter<Error>::emit;
     using ight::common::emitter::EmitterVoid::on;
     using ight::common::emitter::EmitterVoid::emit;
 
@@ -39,7 +39,7 @@ public:
     TCPClient(std::string hostname, std::string port) {
         connection = Connection("PF_UNSPEC", hostname.c_str(),
                 port.c_str());
-        connection.on_error([this](IghtError error) {
+        connection.on_error([this](Error error) {
             ight_debug("tcpclient: error event");
             emit("error", error);
         });
@@ -56,7 +56,7 @@ public:
         });
         connection.on_data([this](evbuffer *evb) {
             ight_debug("tcpclient: data event");
-            auto buffer = IghtBuffer();
+            auto buffer = Buffer();
             buffer << evb;
             auto string = buffer.read<char>();
             emit("data", std::move(string));

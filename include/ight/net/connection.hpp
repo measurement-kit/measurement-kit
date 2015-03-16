@@ -12,6 +12,7 @@
 #include <ight/common/error.h>
 #include <ight/common/pointer.hpp>
 #include <ight/common/poller.h>
+#include <ight/common/string_vector.h>
 #include <ight/common/utils.hpp>
 
 #include <ight/net/buffer.hpp>
@@ -25,32 +26,35 @@
 #include <stdexcept>
 #include <string.h>
 
-struct IghtStringVector;
-
 namespace ight {
 namespace net {
 namespace connection {
 
 using namespace ight::common::constraints;
+using namespace ight::common::error;
+using namespace ight::common::libevent;
 using namespace ight::common::pointer;
+using namespace ight::common::poller;
+using namespace ight::common::string_vector;
 
+using namespace ight::net::buffer;
 using namespace ight::net::transport;
 
 using namespace ight::protocols;
 
 class ConnectionState {
 
-	IghtBuffereventSocket bev;
+	BuffereventSocket bev;
 	dns::Request dns_request;
 	unsigned int connecting = 0;
 	char *address = NULL;
 	char *port = NULL;
-	IghtStringVector *addrlist = NULL;
+	StringVector *addrlist = NULL;
 	char *family = NULL;
-	IghtStringVector *pflist = NULL;
+	StringVector *pflist = NULL;
 	unsigned int must_resolve_ipv4 = 0;
 	unsigned int must_resolve_ipv6 = 0;
-	SharedPointer<IghtDelayedCall> start_connect;
+	SharedPointer<DelayedCall> start_connect;
 
 	// Libevent callbacks
 	static void handle_read(bufferevent *, void *);
@@ -71,8 +75,8 @@ class ConnectionState {
 		/* nothing */
 	};
 
-	std::function<void(SharedPointer<IghtBuffer>)> on_data_fn = [](
-			SharedPointer<IghtBuffer>) {
+	std::function<void(SharedPointer<Buffer>)> on_data_fn = [](
+			SharedPointer<Buffer>) {
 		/* nothing */
 	};
 
@@ -80,7 +84,7 @@ class ConnectionState {
 		/* nothing */
 	};
 
-	std::function<void(IghtError)> on_error_fn = [](IghtError) {
+	std::function<void(Error)> on_error_fn = [](Error) {
 		/* nothing */
 	};
 
@@ -103,7 +107,7 @@ class ConnectionState {
 		on_ssl_fn = fn;
 	};
 
-	void on_data(std::function<void(SharedPointer<IghtBuffer>)> fn) {
+	void on_data(std::function<void(SharedPointer<Buffer>)> fn) {
 		on_data_fn = fn;
 		enable_read();
 	};
@@ -112,7 +116,7 @@ class ConnectionState {
 		on_flush_fn = fn;
 	};
 
-	void on_error(std::function<void(IghtError)> fn) {
+	void on_error(std::function<void(Error)> fn) {
 		on_error_fn = fn;
 	};
 
@@ -149,11 +153,11 @@ class ConnectionState {
 		send(data.c_str(), data.length());
 	}
 
-	void send(SharedPointer<IghtBuffer> data) {
+	void send(SharedPointer<Buffer> data) {
 		send(*data);
 	}
 
-	void send(IghtBuffer& data) {
+	void send(Buffer& data) {
 		data >> bufferevent_get_output(bev);
 	}
 
@@ -175,7 +179,7 @@ class ConnectionState {
 		on_connect_fn();
 	}
 
-	void emit_data(SharedPointer<IghtBuffer> data) {
+	void emit_data(SharedPointer<Buffer> data) {
 		on_data_fn(data);
 	}
 
@@ -183,7 +187,7 @@ class ConnectionState {
 		on_flush_fn();
 	}
 
-	void emit_error(IghtError err) {
+	void emit_error(Error err) {
 		on_error_fn(err);
 	}
 };
@@ -200,7 +204,7 @@ class Connection : public Transport {
 		state->emit_connect();
 	}
 
-	virtual void emit_data(SharedPointer<IghtBuffer> data) override {
+	virtual void emit_data(SharedPointer<Buffer> data) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->emit_data(data);
@@ -212,7 +216,7 @@ class Connection : public Transport {
 		state->emit_flush();
 	}
 
-	virtual void emit_error(IghtError err) override {
+	virtual void emit_error(Error err) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->emit_error(err);
@@ -250,7 +254,7 @@ class Connection : public Transport {
 	};
 
 	virtual void on_data(std::function<void(
-			SharedPointer<IghtBuffer>)> fn) override {
+			SharedPointer<Buffer>)> fn) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->on_data(fn);
@@ -262,7 +266,7 @@ class Connection : public Transport {
 		state->on_flush(fn);
 	};
 
-	virtual void on_error(std::function<void(IghtError)> fn) override {
+	virtual void on_error(std::function<void(Error)> fn) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->on_error(fn);
@@ -304,13 +308,13 @@ class Connection : public Transport {
 		state->send(str);
 	}
 
-	virtual void send(SharedPointer<IghtBuffer> sourcebuf) override {
+	virtual void send(SharedPointer<Buffer> sourcebuf) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->send(sourcebuf);
 	}
 
-	virtual void send(IghtBuffer& sourcebuf) override {
+	virtual void send(Buffer& sourcebuf) override {
 		if (state == NULL)
 			throw std::runtime_error("Invalid state");
 		state->send(sourcebuf);

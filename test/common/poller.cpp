@@ -21,10 +21,13 @@
 # include <unistd.h>
 #endif
 
+using namespace ight::common::libevent;
+using namespace ight::common::poller;
+
 TEST_CASE("Constructor") {
 
     SECTION("We deal with event_base_new() failure") {
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	libevent.event_base_new = [](void) {
 		return ((event_base *) NULL);
@@ -32,7 +35,7 @@ TEST_CASE("Constructor") {
 
 	auto bad_alloc_fired = false;
 	try {
-		IghtPoller poller(&libevent);
+		Poller poller(&libevent);
 	} catch (std::bad_alloc&) {
 		bad_alloc_fired = true;
 	}
@@ -41,7 +44,7 @@ TEST_CASE("Constructor") {
     }
 
     SECTION("We deal with evdns_base_new() failure") {
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	auto event_base_free_fired = false;
 
@@ -55,7 +58,7 @@ TEST_CASE("Constructor") {
 
 	auto bad_alloc_fired = false;
 	try {
-		IghtPoller poller(&libevent);
+		Poller poller(&libevent);
 	} catch (std::bad_alloc&) {
 		bad_alloc_fired = true;
 	}
@@ -65,7 +68,7 @@ TEST_CASE("Constructor") {
     }
 
     SECTION("We deal with evsignal failure") {
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	auto event_base_free_fired = false;
 	auto evdns_base_free_fired = false;
@@ -86,7 +89,7 @@ TEST_CASE("Constructor") {
 
 	auto bad_alloc_fired = false;
 	try {
-		IghtPoller poller(&libevent);
+		Poller poller(&libevent);
 	} catch (std::bad_alloc&) {
 		bad_alloc_fired = true;
 	}
@@ -99,7 +102,7 @@ TEST_CASE("Constructor") {
 
 TEST_CASE("The destructor works properly") {
 
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	auto event_base_free_fired = false;
 	auto evdns_base_free_fired = false;
@@ -120,7 +123,7 @@ TEST_CASE("The destructor works properly") {
 	};
 
 	{
-		IghtPoller poller(&libevent);
+		Poller poller(&libevent);
 	}
 
 	REQUIRE(event_base_free_fired);
@@ -130,13 +133,13 @@ TEST_CASE("The destructor works properly") {
 
 TEST_CASE("We deal with event_add() failure in break_loop_on_sigint_()") {
 #ifndef WIN32
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	libevent.event_add = [](event *, timeval *) {
 		return (-1);
 	};
 
-	IghtPoller poller(&libevent);
+	Poller poller(&libevent);
 
 	auto runtime_error_fired = false;
 	try {
@@ -151,13 +154,13 @@ TEST_CASE("We deal with event_add() failure in break_loop_on_sigint_()") {
 
 TEST_CASE("We deal with event_del() failure in break_loop_on_sigint_()") {
 #ifndef WIN32
-	auto libevent = IghtLibevent();
+	auto libevent = Libevent();
 
 	libevent.event_del = [](event *) {
 		return (-1);
 	};
 
-	IghtPoller poller(&libevent);
+	Poller poller(&libevent);
 	poller.break_loop_on_sigint_(true);
 
 	auto runtime_error_fired = false;
@@ -180,19 +183,19 @@ TEST_CASE("break_loop_on_sigint_() is idempotent") {
 	//
 
 	{
-		IghtPoller poller;
+		Poller poller;
 		poller.break_loop_on_sigint_(false);
 		poller.break_loop_on_sigint_(false);
 	}
 
 	{
-		IghtPoller poller;
+		Poller poller;
 		poller.break_loop_on_sigint_(true);
 		poller.break_loop_on_sigint_(true);
 	}
 
 	{
-		IghtPoller poller;
+		Poller poller;
 		poller.break_loop_on_sigint_(true);
 		poller.break_loop_on_sigint_(false);
 		poller.break_loop_on_sigint_(false);
@@ -204,13 +207,13 @@ TEST_CASE("poller.loop() works properly in corner cases") {
 
 
     SECTION("We deal with event_base_dispatch() returning -1") {
-	IghtLibevent libevent;
+	Libevent libevent;
 
 	libevent.event_base_dispatch = [](event_base *) {
 		return (-1);
 	};
 
-	IghtPoller poller1(&libevent);
+	Poller poller1(&libevent);
 
 	auto runtime_error_fired = false;
 	try {
@@ -223,24 +226,24 @@ TEST_CASE("poller.loop() works properly in corner cases") {
     }
 
     SECTION("We deal with event_base_dispatch() returning 1") {
-	IghtLibevent libevent;
+	Libevent libevent;
 
 	libevent.event_base_dispatch = [](event_base *) {
 		return (1);
 	};
-	IghtPoller poller2(&libevent);
+	Poller poller2(&libevent);
 	poller2.loop();
     }
 }
 
 TEST_CASE("poller.break_loop() works properly") {
-	IghtLibevent libevent;
+	Libevent libevent;
 
 	libevent.event_base_loopbreak = [](event_base *) {
 		return (-1);
 	};
 
-	IghtPoller poller(&libevent);
+	Poller poller(&libevent);
 
 	auto runtime_error_fired = false;
 	try {
@@ -256,9 +259,9 @@ TEST_CASE("SIGINT is correctly handled on Unix") {
 #ifndef WIN32
 
     SECTION("SIGINT is correctly handled after the handler is set") {
-	IghtPoller poller;
+	Poller poller;
 
-	IghtDelayedCall d(0.01, [](void) {
+	DelayedCall d(0.01, [](void) {
 	    raise(SIGINT);
 	}, NULL, poller.get_event_base());
 
@@ -275,8 +278,8 @@ TEST_CASE("SIGINT is correctly handled on Unix") {
 	REQUIRE(pid >= 0);
 
 	if (pid == 0) {
-		IghtPoller poller;
-		IghtDelayedCall d(0.01, [](void) {
+		Poller poller;
+		DelayedCall d(0.01, [](void) {
 			raise(SIGINT);
 		}, NULL, poller.get_event_base());
 		/*

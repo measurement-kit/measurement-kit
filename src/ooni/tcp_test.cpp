@@ -1,5 +1,6 @@
 #include <ight/ooni/tcp_test.hpp>
 
+using namespace ight::common::error;
 using namespace ight::common::pointer;
 using namespace ight::ooni::tcp_test;
 
@@ -22,7 +23,7 @@ TCPTest::connect(ight::common::Settings options, std::function<void()>&& cb)
     // life cycles, which is &disaster.
     //
 
-    connection->on_error([cb, this](IghtError e) {
+    connection->on_error([cb, this](Error e) {
         entry["error_code"] = e.error;
         entry["connection"] = "failed";
         cb();

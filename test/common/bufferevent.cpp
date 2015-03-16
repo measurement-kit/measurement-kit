@@ -6,7 +6,7 @@
  */
 
 //
-// Tests for src/common/libevent.h's IghtBufferevent
+// Tests for src/common/libevent.h's Bufferevent
 //
 
 #define CATCH_CONFIG_MAIN
@@ -14,10 +14,13 @@
 
 #include <ight/common/poller.h>
 
+using namespace ight::common::libevent;
+using namespace ight::common::poller;
+
 TEST_CASE("Constructors") {
   
-  SECTION("Create a IghtBuffereventSocket instance with an empty constructor") {
-    auto libevent = IghtLibevent();
+  SECTION("Create a BuffereventSocket instance with an empty constructor") {
+    auto libevent = Libevent();
     auto calls = 0;
 
     libevent.bufferevent_socket_new = [&](event_base *,
@@ -30,7 +33,7 @@ TEST_CASE("Constructors") {
     };
 
     {
-      IghtBuffereventSocket b(&libevent);
+      BuffereventSocket b(&libevent);
     }
     
     REQUIRE(calls == 0);
@@ -38,15 +41,15 @@ TEST_CASE("Constructors") {
 
   SECTION("An exception should be raised if bufferevent is NULL") {
     REQUIRE_THROWS_AS([](void) {
-        IghtBuffereventSocket b;
+        BuffereventSocket b;
         auto p = (bufferevent *) b;
         (void) p;
         return;
     }(), std::runtime_error);
   }
 
-  SECTION("Proper construction of IghtBuffereventSocket") {
-    auto libevent = IghtLibevent();
+  SECTION("Proper construction of BuffereventSocket") {
+    auto libevent = Libevent();
     auto calls = 0;
 
     libevent.bufferevent_socket_new = [&](
@@ -60,8 +63,8 @@ TEST_CASE("Constructors") {
     };
 
     {
-      auto poller = IghtGlobalPoller::get();
-      IghtBuffereventSocket b(poller->get_event_base(),
+      auto poller = GlobalPoller::get();
+      BuffereventSocket b(poller->get_event_base(),
           -1, 0, &libevent);
     }
 
@@ -69,7 +72,7 @@ TEST_CASE("Constructors") {
   }
 
   SECTION("bufferevent_socket_new return NULL results in bad_alloc exception") {
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
     auto raised = 0;
 
     libevent.bufferevent_socket_new = [&](event_base *,
@@ -77,17 +80,17 @@ TEST_CASE("Constructors") {
       return ((bufferevent *) NULL);
     };
 
-    auto base = IghtGlobalPoller::get()->get_event_base();
+    auto base = GlobalPoller::get()->get_event_base();
 
-    REQUIRE_THROWS_AS(IghtBuffereventSocket(base, 0, 0, &libevent),
+    REQUIRE_THROWS_AS(BuffereventSocket(base, 0, 0, &libevent),
                       std::bad_alloc);
   }
 }
 
-TEST_CASE("IghtBuffereventSocket operations") {
+TEST_CASE("BuffereventSocket operations") {
 
   SECTION("Accessing underlying bev") {
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
     auto underlying = (bufferevent *) NULL;
 
     libevent.bufferevent_socket_new = [&](event_base *b,
@@ -95,8 +98,8 @@ TEST_CASE("IghtBuffereventSocket operations") {
       return (underlying = ::bufferevent_socket_new(b, s, o));
     };
 
-    auto poller = IghtGlobalPoller::get();
-    IghtBuffereventSocket b(poller->get_event_base(), -1, 0,
+    auto poller = GlobalPoller::get();
+    BuffereventSocket b(poller->get_event_base(), -1, 0,
         &libevent);
 
     REQUIRE(underlying == (bufferevent *) b);
@@ -104,14 +107,14 @@ TEST_CASE("IghtBuffereventSocket operations") {
 
   SECTION("The close() method is safe and idempotent") {
 
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
     auto called = 0;
     libevent.bufferevent_free = [&called](bufferevent *bev) {
       ++called;
       ::bufferevent_free(bev);
     };
 
-    IghtBuffereventSocket b(ight_get_global_event_base(), -1,
+    BuffereventSocket b(ight_get_global_event_base(), -1,
         0, &libevent);
 
     b.close();
@@ -131,14 +134,14 @@ TEST_CASE("IghtBuffereventSocket operations") {
 
   SECTION("The make() method calls close() when a previous bufev exists") {
 
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
     auto called = 0;
     libevent.bufferevent_free = [&called](bufferevent *bev) {
       ++called;
       ::bufferevent_free(bev);
     };
 
-    IghtBuffereventSocket b(ight_get_global_event_base(), -1,
+    BuffereventSocket b(ight_get_global_event_base(), -1,
         0, &libevent);
 
     b.make(ight_get_global_event_base(), -1, 0);
@@ -149,14 +152,14 @@ TEST_CASE("IghtBuffereventSocket operations") {
 
   SECTION("The make() method does not close() when not needed") {
 
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
     auto called = 0;
     libevent.bufferevent_free = [&called](bufferevent *bev) {
       ++called;
       ::bufferevent_free(bev);
     };
 
-    IghtBuffereventSocket b(&libevent);
+    BuffereventSocket b(&libevent);
 
     b.make(ight_get_global_event_base(), -1, 0);
 
@@ -167,7 +170,7 @@ TEST_CASE("IghtBuffereventSocket operations") {
   SECTION("The make() method calls bufferevent_socket_new()") {
 
     bufferevent *bevp = nullptr;
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
     auto called = 0;
     libevent.bufferevent_socket_new = [&bevp, &called](event_base *evb,
         evutil_socket_t fd, int options) {
@@ -176,7 +179,7 @@ TEST_CASE("IghtBuffereventSocket operations") {
       return bevp;
     };
 
-    IghtBuffereventSocket b(ight_get_global_event_base(), -1, 0);
+    BuffereventSocket b(ight_get_global_event_base(), -1, 0);
 
     b.make(ight_get_global_event_base(), -1, 0, &libevent);
 
@@ -186,7 +189,7 @@ TEST_CASE("IghtBuffereventSocket operations") {
 
   SECTION("Many subsequent make() calles behave correctly") {
 
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
     auto free_called = 0;
     auto new_called = 0;
     libevent.bufferevent_free = [&free_called](bufferevent *bev) {
@@ -200,7 +203,7 @@ TEST_CASE("IghtBuffereventSocket operations") {
       return bevp;
     };
 
-    IghtBuffereventSocket b(&libevent);
+    BuffereventSocket b(&libevent);
 
     b.make(ight_get_global_event_base(), -1, 0, &libevent);
     b.make(ight_get_global_event_base(), -1, 0, &libevent);
@@ -211,16 +214,16 @@ TEST_CASE("IghtBuffereventSocket operations") {
   }
 
   SECTION("The make() method allows to change the underlying libevent") {
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
 
-    IghtBuffereventSocket b(&libevent);
+    BuffereventSocket b(&libevent);
 
     b.make(ight_get_global_event_base(), -1, 0);
 
     // Check whether the libevent is changed as it ought to be
-    REQUIRE(b.get_libevent() == IghtGlobalLibevent::get());
+    REQUIRE(b.get_libevent() == GlobalLibevent::get());
 
-    auto libevent2 = IghtLibevent();
+    auto libevent2 = Libevent();
     b.make(ight_get_global_event_base(), -1, 0, &libevent2);
 
     // Check whether the libevent is changed as it ought to be

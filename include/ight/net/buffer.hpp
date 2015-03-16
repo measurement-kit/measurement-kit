@@ -27,14 +27,19 @@
 # define IOV_MAX 32
 #endif
 
-// Helper class for IghtBuffer (see below)
-class IghtIovec : public ight::common::constraints::NonCopyable,
-		public ight::common::constraints::NonMovable  {
+namespace ight {
+namespace net {
+namespace buffer {
+
+using namespace ight::common::constraints;
+
+// Helper class for Buffer (see below)
+class Iovec : public NonCopyable, public NonMovable  {
 	evbuffer_iovec *iov = NULL;
 	size_t count = 0;
 
     public:
-	IghtIovec(size_t n = 0) {
+	Iovec(size_t n = 0) {
 		if (n < 1)
 			return;
 		if ((iov = (evbuffer_iovec *)calloc(n, sizeof (*iov))) == NULL)
@@ -42,7 +47,7 @@ class IghtIovec : public ight::common::constraints::NonCopyable,
 		count = n;
 	}
 
-	~IghtIovec(void) {
+	~Iovec(void) {
 		ight_xfree(iov);
 	}
 
@@ -71,13 +76,12 @@ class IghtIovec : public ight::common::constraints::NonCopyable,
 	}
 };
 
-class IghtBuffer : public ight::common::constraints::NonCopyable,
-		public ight::common::constraints::NonMovable  {
+class Buffer : public NonCopyable, public NonMovable  {
 
 	evbuffer *evbuf;
 
     public:
-	IghtBuffer(evbuffer *b = NULL) {
+	Buffer(evbuffer *b = NULL) {
 		if ((evbuf = evbuffer_new()) == NULL)
 			throw std::bad_alloc();
 		if (b != NULL && evbuffer_add_buffer(evbuf, b) != 0) {
@@ -86,7 +90,7 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		}
 	}
 
-	~IghtBuffer(void) {
+	~Buffer(void) {
 		evbuffer_free(evbuf);	/* Cannot be NULL */
 	}
 
@@ -96,7 +100,7 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 	 * to use the insertion and extraction operators for that.
 	 */
 
-	IghtBuffer& operator<<(evbuffer *source) {
+	Buffer& operator<<(evbuffer *source) {
 		if (source == NULL)
 			throw std::runtime_error("source is NULL");
 		if (evbuffer_add_buffer(evbuf, source) != 0)
@@ -104,7 +108,7 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		return (*this);
 	}
 
-	IghtBuffer& operator>>(evbuffer *dest) {
+	Buffer& operator>>(evbuffer *dest) {
 		if (dest == NULL)
 			throw std::runtime_error("dest is NULL");
 		if (evbuffer_add_buffer(dest, evbuf) != 0)
@@ -112,12 +116,12 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		return (*this);
 	}
 
-	IghtBuffer& operator<<(IghtBuffer& source) {
+	Buffer& operator<<(Buffer& source) {
 		*this << source.evbuf;
 		return (*this);
 	}
 
-	IghtBuffer& operator>>(IghtBuffer& source) {
+	Buffer& operator>>(Buffer& source) {
 		*this >> source.evbuf;
 		return (*this);
 	}
@@ -137,7 +141,7 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		if (required_size == 0)
 			return;
 
-		IghtIovec iov(required_size);
+		Iovec iov(required_size);
 		auto used = evbuffer_peek(evbuf, -1, NULL,
 		    iov.get_base(), iov.get_length());
 		if (used != required_size)
@@ -269,7 +273,7 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		write(in.c_str(), in.length());
 	}
 
-	IghtBuffer& operator<<(std::string in) {
+	Buffer& operator<<(std::string in) {
 		write(in);
 		return (*this);
 	}
@@ -278,7 +282,7 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		write(in.data(), in.size());
 	}
 
-	IghtBuffer& operator<<(std::vector<char> in) {
+	Buffer& operator<<(std::vector<char> in) {
 		write(in);
 		return (*this);
 	}
@@ -289,7 +293,7 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		write(in, strlen(in));
 	}
 
-	IghtBuffer& operator<<(const char *in) {
+	Buffer& operator<<(const char *in) {
 		write(in);
 		return (*this);
 	}
@@ -311,7 +315,7 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 		if (count == 0)
 			return;
 
-		IghtIovec iov(IOV_MAX);
+		Iovec iov(IOV_MAX);
 		int i, n_extents;
 
 		n_extents = evbuffer_reserve_space(evbuf, count,
@@ -348,4 +352,5 @@ class IghtBuffer : public ight::common::constraints::NonCopyable,
 	}
 };
 
+}}}  // namespaces
 #endif  /* LIBIGHT_NET_BUFFER_HPP */

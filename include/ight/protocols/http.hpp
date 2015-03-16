@@ -35,9 +35,11 @@ namespace protocols {
 namespace http {
 
 using namespace ight::common::constraints;
+using namespace ight::common::error;
 using namespace ight::common::pointer;
 
 using namespace ight::net;
+using namespace ight::net::buffer;
 using namespace ight::net::transport;
 
 /*!
@@ -106,7 +108,7 @@ typedef std::map<std::string, std::string> Headers;
  *
  *     auto connection = ight::net::transport::connect(...);
  *
- *     connection.on_data([&](SharedPointer<IghtBuffer> data) {
+ *     connection.on_data([&](SharedPointer<Buffer> data) {
  *         parser.feed(data);
  *     });
  */
@@ -195,7 +197,7 @@ public:
      * \throws std::runtime_error This method throws std::runtime_error (or
      *         a class derived from it) on several error conditions.
      */
-    void feed(SharedPointer<IghtBuffer> data);
+    void feed(SharedPointer<Buffer> data);
 
     /*!
      * \brief Feed the parser.
@@ -235,18 +237,18 @@ public:
 class Stream {
     SharedPointer<Transport> connection;
     SharedPointer<ResponseParser> parser;
-    std::function<void(IghtError)> error_handler;
+    std::function<void(Error)> error_handler;
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
-        connection->on_data([&](SharedPointer<IghtBuffer> data) {
+        connection->on_data([&](SharedPointer<Buffer> data) {
             parser->feed(data);
         });
         //
         // Intercept EOF error to implement body-ends-at-EOF semantic.
         // TODO: convert error from integer to exception.
         //
-        connection->on_error([&](IghtError error) {
+        connection->on_error([&](Error error) {
             if (error.error == 0) {
                 parser->eof();
             }
@@ -320,7 +322,7 @@ public:
         // error if needed, we'll deal with body-terminated-by-EOF
         // semantic when we know we are actually connected.
         //
-        connection->on_error([&](IghtError error) {
+        connection->on_error([&](Error error) {
             if (error_handler) {
                 error_handler(error);
             }
@@ -426,7 +428,7 @@ public:
      * \brief Register `error` event handler.
      * \param fn The `error event handler.
      */
-    void on_error(std::function<void(IghtError)>&& fn) {
+    void on_error(std::function<void(Error)>&& fn) {
         error_handler = std::move(fn);
     }
 
@@ -487,7 +489,7 @@ struct RequestSerializer {
      * \brief Serialize request.
      * \param buff Buffer where to serialize request.
      */
-    void serialize(IghtBuffer& buff) {
+    void serialize(Buffer& buff) {
         buff << method << " " << pathquery << " " << protocol << "\r\n";
         for (auto& kv : headers) {
             buff << kv.first << ": " << kv.second << "\r\n";
@@ -523,12 +525,12 @@ struct Response {
     unsigned int status_code;       /*!< HTTP status code */
     std::string reason;             /*!< HTTP reason string */
     Headers headers;                /*!< Response headers */
-    IghtBuffer body;                /*!< Response body */
+    Buffer body;                    /*!< Response body */
 };
 
 class Request;  // Forward declaration
 
-typedef std::function<void(IghtError, Response&&)> RequestCallback;
+typedef std::function<void(Error, Response&&)> RequestCallback;
 
 /*!
  * \brief HTTP request.
@@ -541,7 +543,7 @@ class Request : public NonCopyable, public NonMovable {
     Response response;
     std::set<Request *> *parent = nullptr;
 
-    void emit_end(IghtError error, Response&& response) {
+    void emit_end(Error error, Response&& response) {
         close();
         callback(error, std::move(response));
         //
@@ -594,7 +596,7 @@ public:
             }
         }
         stream = std::make_shared<Stream>(settings);
-        stream->on_error([this](IghtError err) {
+        stream->on_error([this](Error err) {
             if (err.error != 0) {
                 emit_end(err, std::move(response));
             } else {
@@ -605,7 +607,7 @@ public:
         stream->on_connect([this](void) {
             // TODO: improve the way in which we serialize the request
             //       to reduce unnecessary copies
-            IghtBuffer buf;
+            Buffer buf;
             serializer.serialize(buf);
             *stream << buf.read<char>();
 
@@ -633,7 +635,7 @@ public:
 
             stream->on_end([&]() {
                 ight_debug("http: we have reached end of response");
-                emit_end(IghtError(0), std::move(response));
+                emit_end(Error(0), std::move(response));
             });
 
         });

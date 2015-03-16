@@ -18,7 +18,7 @@ TEST_CASE("TCPTest test should run")
 
     auto client = TCPClient("www.torproject.org", "80");
 
-    client.on("error", [](IghtError error) {
+    client.on("error", [](Error error) {
         std::cout << std::endl;  // Terminate eventual body
         if (error.error == 0) {
             std::cout << "Error: " << error.error << std::endl;

@@ -18,6 +18,8 @@
 #include <ight/common/log.hpp>
 #include <ight/common/utils.hpp>
 
+using namespace ight::common::libevent;
+using namespace ight::common::poller;
 using namespace ight::protocols::dns;
 
 //
@@ -95,7 +97,7 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
     //     https://travis-ci.org/bassosimone/libight/builds/40639940#L634
     //
 
-    IghtLibevent libevent;
+    Libevent libevent;
     libevent.inet_ntop = [](int, const void *, char *s, socklen_t l) {
         if (s == NULL || l <= 0) {
             throw std::runtime_error("You passed me a bad buffer");
@@ -188,7 +190,7 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
 
 TEST_CASE("Response(...) deals with unlikely inet_ntop failures") {
 
-    IghtLibevent libevent;
+    Libevent libevent;
     auto called = false;
 
     libevent.inet_ntop = [&](int, const void *, char *, socklen_t) {
@@ -371,7 +373,7 @@ TEST_CASE("Move semantic works for response") {
 // Now testing RequestImpl()
 
 TEST_CASE("Request deals with failing evdns_base_resolve_ipv4") {
-    IghtLibevent libevent;
+    Libevent libevent;
 
     libevent.evdns_base_resolve_ipv4 = [](evdns_base *, const char *, int,
                                           evdns_callback_type, void *) {
@@ -385,7 +387,7 @@ TEST_CASE("Request deals with failing evdns_base_resolve_ipv4") {
 }
 
 TEST_CASE("Request deals with failing evdns_base_resolve_ipv6") {
-    IghtLibevent libevent;
+    Libevent libevent;
 
     libevent.evdns_base_resolve_ipv6 = [](evdns_base *, const char *, int,
                                           evdns_callback_type, void *) {
@@ -399,7 +401,7 @@ TEST_CASE("Request deals with failing evdns_base_resolve_ipv6") {
 }
 
 TEST_CASE("Request deals with failing evdns_base_resolve_reverse") {
-    IghtLibevent libevent;
+    Libevent libevent;
 
     libevent.evdns_base_resolve_reverse = [](evdns_base *,
                                              const struct in_addr *,
@@ -416,7 +418,7 @@ TEST_CASE("Request deals with failing evdns_base_resolve_reverse") {
 }
 
 TEST_CASE("Request deals with failing evdns_base_resolve_reverse_ipv6") {
-    IghtLibevent libevent;
+    Libevent libevent;
 
     libevent.evdns_base_resolve_reverse_ipv6 = [](evdns_base *,
                                                   const struct in6_addr *,
@@ -433,7 +435,7 @@ TEST_CASE("Request deals with failing evdns_base_resolve_reverse_ipv6") {
 }
 
 TEST_CASE("Request deals with inet_pton returning 0") {
-    IghtLibevent libevent;
+    Libevent libevent;
 
     libevent.inet_pton = [](int, const char *, void *) {
         return 0;
@@ -451,7 +453,7 @@ TEST_CASE("Request deals with inet_pton returning 0") {
 }
 
 TEST_CASE("Request deals with inet_pton returning -1") {
-    IghtLibevent libevent;
+    Libevent libevent;
 
     libevent.inet_pton = [](int, const char *, void *) {
         return -1;
@@ -515,7 +517,7 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
     auto bad_code = false;
     auto called = false;
 
-    IghtLibevent libevent;
+    Libevent libevent;
     libevent.evdns_reply_hook = [&](int code, char, int, int, void *, void *) {
         called = true;
         if (code != DNS_ERR_NONE && code != DNS_ERR_TIMEOUT) {
@@ -622,7 +624,7 @@ TEST_CASE("The system resolver works as expected") {
 
     auto failed = false;
 
-    IghtDelayedCall d(10.0, [&](void) {
+    DelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -708,7 +710,7 @@ TEST_CASE("It is safe to clear a request in its own callback") {
     }
     auto d = SafeToDeleteRequestInItsOwnCallback();
     auto called = 0;
-    IghtDelayedCall watchdog(5.0, [&called]() {
+    DelayedCall watchdog(5.0, [&called]() {
         ++called;
         ight_break_loop();
     });
@@ -723,7 +725,7 @@ TEST_CASE("It is safe to clear a request in its own callback") {
 // Now testing: cleanup()
 
 TEST_CASE("Resolver: cleanup works correctly when we have allocated") {
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
 
     auto called = 0;
     libevent.evdns_base_free = [&](evdns_base *p, int f) {
@@ -741,7 +743,7 @@ TEST_CASE("Resolver: cleanup works correctly when we have allocated") {
 }
 
 TEST_CASE("Resolver: cleanup works correctly when we have not allocated") {
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
 
     auto called = 0;
     libevent.evdns_base_free = [&](evdns_base *p, int f) {
@@ -759,7 +761,7 @@ TEST_CASE("Resolver: cleanup works correctly when we have not allocated") {
 // Now testing Resolver(...)
 
 TEST_CASE("Resolver: ensure that the constructor does not allocate") {
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
 
     libevent.evdns_base_new = [](event_base *, int) {
         return (evdns_base *) NULL;
@@ -775,7 +777,7 @@ TEST_CASE("Resolver: ensure that the constructor does not allocate") {
 }
 
 TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
 
     libevent.evdns_base_new = [](event_base *, int) {
         return (evdns_base *) NULL;
@@ -795,7 +797,7 @@ TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
 
 TEST_CASE(
   "Resolver: evdns_base_nameserver_ip_add failure is correctly handled") {
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
 
     libevent.evdns_base_nameserver_ip_add = [](evdns_base *, const char *) {
         return -1;
@@ -817,7 +819,7 @@ TEST_CASE(
 }
 
 TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
-    auto libevent = IghtLibevent();
+    auto libevent = Libevent();
 
     // Also make sure that the destructor is called
     auto called = 0;
@@ -944,7 +946,7 @@ TEST_CASE("The default custom resolver works as expected") {
 
     auto failed = false;
 
-    IghtDelayedCall d(10.0, [&](void) {
+    DelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -1018,7 +1020,7 @@ TEST_CASE("A specific custom resolver works as expected") {
 
     auto failed = false;
 
-    IghtDelayedCall d(10.0, [&](void) {
+    DelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -1107,13 +1109,13 @@ TEST_CASE("If the resolver dies the requests are aborted") {
         ight_break_loop();
     });
 
-    IghtDelayedCall d1(0.1, [&](void) {
+    DelayedCall d1(0.1, [&](void) {
         delete reso;  // Destroy the resolver and see what happens..
                       // in theory the request callback *should* be called
     });
 
     auto failed = false;
-    IghtDelayedCall d2(1.0, [&](void) {
+    DelayedCall d2(1.0, [&](void) {
         // This *should not* be called, since the request callback
         // shold be called before than this one.
         failed = true;
@@ -1155,7 +1157,7 @@ TEST_CASE("A request to a nonexistent server times out") {
     });
 
     auto failed = false;
-    IghtDelayedCall d(10.0, [&](void) {
+    DelayedCall d(10.0, [&](void) {
         failed = true;
         ight_break_loop();
     });
@@ -1218,7 +1220,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
             ight_warn("- break_loop");
             ight_break_loop();
         }, reso.get_evdns_base());
-        IghtDelayedCall d(avgrtt, [&](void) {
+        DelayedCall d(avgrtt, [&](void) {
             ight_warn("- cancel");
             r->cancel();
             ight_break_loop();

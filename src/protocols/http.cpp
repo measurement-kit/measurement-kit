@@ -18,6 +18,7 @@
 
 #define MAXLINE 4096
 
+using namespace ight::net::buffer;
 using namespace ight::protocols::http;
 
 namespace ight {
@@ -32,7 +33,7 @@ class ResponseParserImpl {
 
     http_parser parser;
     http_parser_settings settings;
-    IghtBuffer buffer;
+    Buffer buffer;
 
     // Header parsing states (see do_header_internal)
 #define S_NOTHING 0
@@ -237,7 +238,7 @@ public:
      * \throws std::runtime_error This method throws std::runtime_error (or
      *         a class derived from it) on several error conditions.
      */
-    void feed(SharedPointer<IghtBuffer> data) {
+    void feed(SharedPointer<Buffer> data) {
         buffer << *data;
         parse();
     }
@@ -355,7 +356,7 @@ ResponseParser::on_end(std::function<void(void)>&& fn)
 }
 
 void
-ResponseParser::feed(SharedPointer<IghtBuffer> data)
+ResponseParser::feed(SharedPointer<Buffer> data)
 {
     get_impl()->feed(data);
 }

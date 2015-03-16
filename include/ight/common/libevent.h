@@ -24,7 +24,13 @@
 
 #include <ight/common/constraints.hpp>
 
-struct IghtLibevent {
+namespace ight {
+namespace common {
+namespace libevent {
+
+using namespace ight::common::constraints;
+
+struct Libevent {
 
 	/*
 	 * bufferevent
@@ -117,36 +123,35 @@ struct IghtLibevent {
 	    inet_ntop = ::inet_ntop;
 };
 
-struct IghtGlobalLibevent {
+struct GlobalLibevent {
 
-	IghtGlobalLibevent(void) {
+	GlobalLibevent(void) {
 		/* nothing */
 	}
 
-	static IghtLibevent *get(void) {
-		static IghtLibevent singleton;
+	static Libevent *get(void) {
+		static Libevent singleton;
 		return (&singleton);
 	}
 
-	IghtGlobalLibevent(IghtGlobalLibevent&) = delete;
-	IghtGlobalLibevent& operator=(IghtGlobalLibevent&) = delete;
-	IghtGlobalLibevent(IghtGlobalLibevent&&) = delete;
-	IghtGlobalLibevent& operator=(IghtGlobalLibevent&&) = delete;
+	GlobalLibevent(GlobalLibevent&) = delete;
+	GlobalLibevent& operator=(GlobalLibevent&) = delete;
+	GlobalLibevent(GlobalLibevent&&) = delete;
+	GlobalLibevent& operator=(GlobalLibevent&&) = delete;
 };
 
-class IghtEvbuffer : public ight::common::constraints::NonCopyable,
-		public ight::common::constraints::NonMovable {
+class Evbuffer : public NonCopyable, public NonMovable {
 
-	IghtLibevent *libevent = IghtGlobalLibevent::get();
+	Libevent *libevent = GlobalLibevent::get();
 	evbuffer *evbuf = NULL;
 
     public:
-	IghtEvbuffer(IghtLibevent *lev = NULL) {
+	Evbuffer(Libevent *lev = NULL) {
 		if (lev != NULL)
 			libevent = lev;
 	}
 
-	~IghtEvbuffer(void) {
+	~Evbuffer(void) {
 		if (evbuf != NULL)
 			libevent->evbuffer_free(evbuf);
 	}
@@ -158,33 +163,32 @@ class IghtEvbuffer : public ight::common::constraints::NonCopyable,
 		return (evbuf);
 	}
 
-	IghtLibevent *get_libevent(void) {
+	Libevent *get_libevent(void) {
 		return (libevent);
 	}
 };
 
-class IghtBuffereventSocket : public ight::common::constraints::NonCopyable,
-		public ight::common::constraints::NonMovable {
+class BuffereventSocket : public NonCopyable, public NonMovable {
 
-	IghtLibevent *libevent = IghtGlobalLibevent::get();
+	Libevent *libevent = GlobalLibevent::get();
 	bufferevent *bev = NULL;
 
     public:
-	IghtBuffereventSocket(IghtLibevent *lev = NULL) {
+	BuffereventSocket(Libevent *lev = NULL) {
 		if (lev != NULL)
 			libevent = lev;
 	}
 
-	IghtBuffereventSocket(event_base *base, evutil_socket_t fd,
-	    int options, IghtLibevent *lev = NULL) {
+	BuffereventSocket(event_base *base, evutil_socket_t fd,
+	    int options, Libevent *lev = NULL) {
 		make(base, fd, options, lev);
 	}
 
 	void make(event_base *base, evutil_socket_t fd,
-	    int options, IghtLibevent *lev = NULL) {
+	    int options, Libevent *lev = NULL) {
 		close();
 		if (lev == NULL)
-			libevent = IghtGlobalLibevent::get();
+			libevent = GlobalLibevent::get();
 		else
 			libevent = lev;
 		if ((bev = libevent->bufferevent_socket_new(base, fd,
@@ -192,7 +196,7 @@ class IghtBuffereventSocket : public ight::common::constraints::NonCopyable,
 			throw std::bad_alloc();
 	}
 
-	~IghtBuffereventSocket(void) {
+	~BuffereventSocket(void) {
 		close();
 	}
 
@@ -209,9 +213,10 @@ class IghtBuffereventSocket : public ight::common::constraints::NonCopyable,
 		return (bev);
 	}
 
-	IghtLibevent *get_libevent(void) {
+	Libevent *get_libevent(void) {
 		return (libevent);
 	}
 };
 
+}}}  // namespaces
 #endif  // LIBIGHT_COMMON_LIBEVENT_H

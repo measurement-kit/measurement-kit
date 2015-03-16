@@ -17,7 +17,9 @@
 
 #include <ight/net/connection.hpp>
 
+using namespace ight::common::poller;
 using namespace ight::net::connection;
+using namespace ight::net::buffer;
 
 TEST_CASE("Ensure that the constructor socket-validity checks work") {
 
@@ -91,7 +93,7 @@ TEST_CASE("Connection::close() is idempotent") {
         s.enable_read();
         s.send("GET / HTTP/1.0\r\n\r\n");
     });
-    s.on_data([&s](SharedPointer<IghtBuffer>) {
+    s.on_data([&s](SharedPointer<Buffer>) {
         s.close();
         // It shall be safe to call close() more than once
         s.close();
@@ -110,7 +112,7 @@ TEST_CASE("It is safe to manipulate Connection after close") {
         s.enable_read();
         s.send("GET / HTTP/1.0\r\n\r\n");
     });
-    s.on_data([&s](SharedPointer<IghtBuffer>) {
+    s.on_data([&s](SharedPointer<Buffer>) {
         s.close();
         // It shall be safe to call any API after close()
 	// where safe means that we don't segfault
@@ -127,10 +129,10 @@ TEST_CASE("It is safe to close Connection while resolve is in progress") {
     }
     ight_set_verbose(1);
     Connection s("PF_INET", "nexa.polito.it", "80");
-    IghtDelayedCall unsched(0.001, [&s]() {
+    DelayedCall unsched(0.001, [&s]() {
         s.close();
     });
-    IghtDelayedCall bail_out(2.0, []() {
+    DelayedCall bail_out(2.0, []() {
         ight_break_loop();
     });
     ight_loop();
