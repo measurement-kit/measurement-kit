@@ -4,15 +4,14 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_NET_CONNECTION_HPP
-# define LIBIGHT_NET_CONNECTION_HPP
+#ifndef IGHT_NET_CONNECTION_HPP
+# define IGHT_NET_CONNECTION_HPP
 
 #include <ight/common/constraints.hpp>
-#include <ight/common/error.h>
+#include <ight/common/error.hpp>
 #include <ight/common/pointer.hpp>
-#include <ight/common/poller.h>
-#include <ight/common/string_vector.h>
+#include <ight/common/poller.hpp>
+#include <ight/common/string_vector.hpp>
 #include <ight/common/utils.hpp>
 
 #include <ight/net/buffer.hpp>
@@ -341,5 +340,5 @@ class Connection : public Transport {
 	}
 };
 
-}}}  // namespaces
-#endif  /* LIBIGHT_NET_CONNECTION_HPP */
+}}}
+#endif

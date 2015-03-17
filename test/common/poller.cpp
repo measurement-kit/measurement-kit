@@ -12,7 +12,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 
 #ifndef WIN32
 # include <sys/types.h>

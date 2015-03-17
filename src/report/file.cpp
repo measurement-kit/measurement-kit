@@ -1,5 +1,7 @@
 #include <ight/report/file.hpp>
 
+using namespace ight::report::file;
+
 void
 FileReporter::open() {
   ReporterBase::open();

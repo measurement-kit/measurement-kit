@@ -13,7 +13,7 @@
 # include <signal.h>
 #endif
 
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 #include <ight/common/utils.hpp>
 #include <ight/common/log.hpp>
 

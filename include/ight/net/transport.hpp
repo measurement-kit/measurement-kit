@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_NET_TRANSPORT_HPP
-# define LIBIGHT_NET_TRANSPORT_HPP
+#ifndef IGHT_NET_TRANSPORT_HPP
+# define IGHT_NET_TRANSPORT_HPP
 
 //
 // Generic transport (stream socket, SOCKSv5, etc.)
@@ -16,7 +15,7 @@
 #include <string>
 
 #include <ight/common/constraints.hpp>
-#include <ight/common/error.h>
+#include <ight/common/error.hpp>
 #include <ight/common/pointer.hpp>
 #include <ight/common/settings.hpp>
 
@@ -27,9 +26,9 @@ namespace net {
 namespace transport {
 
 using namespace ight::common::constraints;
-using namespace ight::common::pointer;
 using namespace ight::common::error;
-using namespace ight::common;
+using namespace ight::common::pointer;
+using namespace ight::common::settings;
 
 using namespace ight::net::buffer;
 
@@ -76,6 +75,5 @@ struct Transport : public NonMovable, public NonCopyable {
 
 SharedPointer<Transport> connect(Settings);
 
-}}}  // namespace
-
-#endif  // LIBIGHT_NET_TRANSPORT_HPP
+}}}
+#endif

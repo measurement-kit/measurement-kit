@@ -1,14 +1,22 @@
-#ifndef LIBIGHT_OONI_TCP_CONNECT_HPP
-# define LIBIGHT_OONI_TCP_CONNECT_HPP
+/*-
+ * This file is part of Libight <https://libight.github.io/>.
+ *
+ * Libight is free software. See AUTHORS and LICENSE for more
+ * information on the copying conditions.
+ */
+#ifndef IGHT_OONI_TCP_CONNECT_HPP
+# define IGHT_OONI_TCP_CONNECT_HPP
 
 #include <ight/ooni/tcp_test.hpp>
 #include <sys/stat.h>
 
-using namespace ight::ooni::tcp_test;
-
 namespace ight {
 namespace ooni {
 namespace tcp_connect {
+
+using namespace ight::common::settings;
+using namespace ight::ooni::tcp_test;
+using namespace ight::report::entry;
 
 class InputFileDoesNotExist : public std::runtime_error {
   using std::runtime_error::runtime_error;
@@ -26,7 +34,7 @@ class TCPConnect : public TCPTest {
     std::function<void(ReportEntry)> have_entry;
 
 public:
-    TCPConnect(std::string input_filepath_, ight::common::Settings options_) : 
+    TCPConnect(std::string input_filepath_, Settings options_) : 
       TCPTest(input_filepath_, options_) {
         test_name = "tcp_connect";
         test_version = "0.0.1";
@@ -41,10 +49,9 @@ public:
         }
     };
 
-    void main(std::string input, ight::common::Settings options,
+    void main(std::string input, Settings options,
               std::function<void(ReportEntry)>&& cb);
 };
 
 }}}
-
-#endif  // LIBIGHT_OONI_TCP_CONNECT_HPP
+#endif
