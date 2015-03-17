@@ -242,7 +242,7 @@ ight_socket_listen(evutil_socket_t filedesc, struct sockaddr_storage *storage,
 
 // Stolen from:
 // http://stackoverflow.com/questions/440133/how-do-i-create-a-random-alpha-numeric-string-in-c
-std::string randomStr(size_t length)
+std::string ight_random_str(size_t length)
 {
     auto randchar = []() -> char
     {
@@ -258,7 +258,7 @@ std::string randomStr(size_t length)
     return str;
 }
 
-std::string randomSTR(size_t length)
+std::string ight_random_str_uppercase(size_t length)
 {
     auto randchar = []() -> char
     {

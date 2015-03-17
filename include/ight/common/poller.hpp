@@ -4,12 +4,11 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_POLLER_H
-# define LIBIGHT_POLLER_H
+#ifndef IGHT_COMMON_POLLER_HPP
+# define IGHT_COMMON_POLLER_HPP
 
 #include <ight/common/constraints.hpp>
-#include <ight/common/libevent.h>
+#include <ight/common/libevent.hpp>
 
 #include <functional>
 
@@ -84,7 +83,7 @@ struct GlobalPoller {
 		return (&singleton);
 	}
 };
-}}}  // namespaces
+}}}
 
 /*
  * Syntactic sugar:
@@ -110,4 +109,4 @@ inline void ight_break_loop(void) {
 	ight::common::poller::GlobalPoller::get()->break_loop();
 }
 
-#endif  // LIBIGHT_POLLER_H
+#endif
