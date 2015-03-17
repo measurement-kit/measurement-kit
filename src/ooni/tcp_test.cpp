@@ -2,10 +2,11 @@
 
 using namespace ight::common::error;
 using namespace ight::common::pointer;
+using namespace ight::common::settings;
 using namespace ight::ooni::tcp_test;
 
 TCPClient
-TCPTest::connect(ight::common::Settings options, std::function<void()>&& cb)
+TCPTest::connect(Settings options, std::function<void()>&& cb)
 {
     if (options["port"] == "") {
         throw std::runtime_error("Port is required");

@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_COMMON_EMITTER_HPP
-# define LIBIGHT_COMMON_EMITTER_HPP
+#ifndef IGHT_COMMON_EMITTER_HPP
+# define IGHT_COMMON_EMITTER_HPP
 
 /*
  * \brief Templates to implement event emitters.
@@ -66,5 +65,5 @@ public:
     }
 };
 
-}}}  // namespaces
-#endif  // LIBIGHT_COMMON_EMITTER_HPP
+}}}
+#endif
