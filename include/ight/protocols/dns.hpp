@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_PROTOCOLS_DNS_HPP
-# define LIBIGHT_PROTOCOLS_DNS_HPP
+#ifndef IGHT_PROTOCOLS_DNS_HPP
+# define IGHT_PROTOCOLS_DNS_HPP
 
 //
 // DNS client functionality
@@ -15,7 +14,7 @@
 #include <ight/common/constraints.hpp>
 #include <ight/common/log.hpp>
 #include <ight/common/pointer.hpp>
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 #include <ight/common/settings.hpp>
 
 #include <functional>
@@ -32,6 +31,7 @@ using namespace ight::common::constraints;
 using namespace ight::common::libevent;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
+using namespace ight::common::settings;
 
 /*!
  * \brief DNS response.
@@ -271,7 +271,7 @@ class Resolver : public NonCopyable, public NonMovable {
     void cleanup(void);
 
 protected:
-    ight::common::Settings settings;
+    Settings settings;
     Libevent *libevent = GlobalLibevent::get();
     Poller *poller = ight_get_global_poller();
     evdns_base *base = NULL;
@@ -299,7 +299,7 @@ public:
      *        3 attempts, to timeout after 5.0 seconds, not to randomize
      *        the case.
      */
-    Resolver(ight::common::Settings settings_,
+    Resolver(Settings settings_,
             Libevent *lev = NULL, Poller *plr = NULL) {
         if (lev != NULL) {
             libevent = lev;
@@ -335,5 +335,5 @@ public:
     }
 };
 
-}}}  // namespace
-#endif  // LIBIGHT_PROTOCOLS_DNS_HPP
+}}}
+#endif

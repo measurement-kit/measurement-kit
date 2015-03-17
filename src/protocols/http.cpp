@@ -18,6 +18,7 @@
 
 #define MAXLINE 4096
 
+using namespace ight::common::settings;
 using namespace ight::net::buffer;
 using namespace ight::protocols::http;
 
@@ -383,7 +384,7 @@ ResponseParser::eof()
 // HTTP Request serializer
 //
 
-RequestSerializer::RequestSerializer(ight::common::Settings settings,
+RequestSerializer::RequestSerializer(Settings settings,
         Headers headers_, std::string body_)
                 : headers(headers_), body(body_)
 {
