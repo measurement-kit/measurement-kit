@@ -50,7 +50,7 @@ public:
      *          the requested pointee field.
      * \throws std::runtime_error if the pointee is nullptr.
      */
-    T *operator->() {
+    T *operator->() const {
         if (this->get() == nullptr) {
             throw std::runtime_error("null pointer");
         }
@@ -62,7 +62,7 @@ public:
      * \returns The value of the pointee.
      * \throws std::runtime_error if the pointee is nullptr.
      */
-    typename std::add_lvalue_reference<T>::type operator*() {
+    typename std::add_lvalue_reference<T>::type operator*() const {
         if (this->get() == nullptr) {
             throw std::runtime_error("null pointer");
         }
