@@ -6,6 +6,7 @@
  */
 
 #include <ight/common/async.hpp>
+#include <ight/common/log.hpp>
 
 #include <mutex>
 #include <set>
@@ -33,21 +34,26 @@ struct AsyncState {
 }}}
 
 // Syntactic sugar
-#define LOCKED(foo) do { \
+#define LOCKED(foo) { \
         std::lock_guard<std::mutex> lck(state->mutex); \
         foo \
-    } while (0)
+    }
 
 void Async::loop_thread(SharedPointer<AsyncState> state) {
+    ight_debug("loop thread entered");
     for (;;) {
 
         LOCKED(
+            ight_debug("loop thread locked");
             if (state->interrupted) {
-                break;
+                ight_debug("interrupted");
+                return;
             }
             if (state->ready.empty() && state->active.empty()) {
-                break;
+                ight_debug("empty");
+                return;
             }
+            ight_debug("not interrupted and not empty");
             for (auto test : state->ready) {
                 state->active.insert(test);
                 test->begin([state, test]() {
@@ -58,17 +64,26 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
                         // to only modify state->active in the current thread
                         //
                         state->active.erase(test);
+                        state->changed = true;
+                        ight_debug("*** test stopped");
                     });
                 });
             }
             state->ready.clear();
-        );
+        )
+
+        ight_debug("loop thread unclocked");
 
         while (!state->changed) {
-            state->poller->loop_once();
+            //state->poller->loop_once();
+            ight_loop_once();
         }
+        state->changed = false;
+
+        ight_debug("bottom of loop thread");
     }
     state->thread_running = false;
+    ight_debug("thread stopped");
 }
 
 Async::Async(SharedPointer<Poller> poller) {
@@ -78,17 +93,20 @@ Async::Async(SharedPointer<Poller> poller) {
 
 void Async::run_test(SharedPointer<NetTest> test) {
     LOCKED(
+        ight_debug("event inserted");
         state->ready.insert(test);
         state->changed = true;
         if (!state->thread_running) {
+            ight_debug("thread started");
             state->thread = std::thread(loop_thread, state);
             state->thread_running = true;
         }
-    );
+    )
 }
 
 void Async::break_loop() {
-    state->poller->break_loop();  // Idempotent
+    //state->poller->break_loop();  // Idempotent
+    ight_break_loop();
     state->interrupted = true;
 }
 

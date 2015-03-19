@@ -34,7 +34,7 @@ TEST_CASE("The async engine works as expected") {
     Async async;
     async.run_test(SharedPointer<HTTPInvalidRequestLine>(
         new HTTPInvalidRequestLine(Settings{
-            {"backend", "http://213.138.109.232/"},
+            {"backend", "http://nexa.polito.it/"},
         })
     ));
     async.run_test(SharedPointer<HTTPInvalidRequestLine>(

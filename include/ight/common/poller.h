@@ -108,6 +108,10 @@ inline void ight_loop(void) {
 	ight::common::poller::GlobalPoller::get()->loop();
 }
 
+inline void ight_loop_once(void) {
+	ight::common::poller::GlobalPoller::get()->loop_once();
+}
+
 inline void ight_break_loop(void) {
 	ight::common::poller::GlobalPoller::get()->break_loop();
 }
