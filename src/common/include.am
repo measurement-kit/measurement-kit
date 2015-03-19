@@ -1,6 +1,7 @@
 noinst_LTLIBRARIES += src/common/libcommon.la
 
 src_common_libcommon_la_SOURCES = \
+	src/common/async.cpp \
 	src/common/check_connectivity.cpp \
 	src/common/log.cpp \
 	src/common/poller.cpp \
@@ -11,6 +12,7 @@ libight_la_LIBADD += src/common/libcommon.la
 
 commonincludedir = $(includedir)/ight/common
 commoninclude_HEADERS = \
+    include/ight/common/async.hpp \
     include/ight/common/check_connectivity.hpp \
     include/ight/common/constraints.hpp \
     include/ight/common/emitter.hpp \

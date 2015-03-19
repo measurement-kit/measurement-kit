@@ -79,7 +79,7 @@ NetTest::run_next_measurement(const std::function<void()>&& cb)
 }
 
 void
-NetTest::begin(std::function<void()>&& cb)
+NetTest::begin(std::function<void()> cb)
 {
   geoip_lookup();
   write_header();
@@ -121,7 +121,7 @@ NetTest::write_header()
 }
 
 void
-NetTest::end(std::function<void()>&& cb)
+NetTest::end(std::function<void()> cb)
 {
   file_report.close();
   cb();

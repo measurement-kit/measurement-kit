@@ -14,6 +14,11 @@ check_PROGRAMS += test/echo_client_evbuf
 # The following tests instead are managed by Catch
 #
 
+test_common_async_SOURCES = test/common/async.cpp
+test_common_async_LDADD = libight.la
+check_PROGRAMS += test/common/async
+TESTS += test/common/async
+
 test_common_delayed_call_SOURCES = test/common/delayed_call.cpp
 test_common_delayed_call_LDADD = libight.la
 test_common_delayed_call_LDFLAGS = -lyaml-cpp
