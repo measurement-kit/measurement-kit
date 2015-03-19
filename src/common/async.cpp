@@ -47,11 +47,11 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
             ight_debug("loop thread locked");
             if (state->interrupted) {
                 ight_debug("interrupted");
-                return;
+                break;
             }
             if (state->ready.empty() && state->active.empty()) {
                 ight_debug("empty");
-                return;
+                break;
             }
             ight_debug("not interrupted and not empty");
             for (auto test : state->ready) {
@@ -112,4 +112,8 @@ void Async::break_loop() {
 
 void Async::restart_loop() {
     state->interrupted = true;
+}
+
+bool Async::empty() {
+    return !state->thread_running;
 }

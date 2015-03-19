@@ -43,7 +43,8 @@ TEST_CASE("The async engine works as expected") {
         })
     ));
 
-    for (;;) {
+    // TODO Design a better sync mechanism
+    while (!async.empty()) {
         sleep(1);
     }
 }
