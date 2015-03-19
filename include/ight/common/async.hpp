@@ -42,6 +42,9 @@ class Async {
 
     /// Restart the background loop
     void restart_loop();
+
+    /// Returns true when no async jobs are running
+    bool empty();
 };
 
 }}}
