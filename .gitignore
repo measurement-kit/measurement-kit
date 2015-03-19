@@ -57,6 +57,7 @@ stamp-h1
 .DS_Store
 
 # Regression tests
+test/common/async
 test/common/bufferevent
 test/common/delayed_call
 test/common/evbuffer

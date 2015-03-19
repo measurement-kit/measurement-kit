@@ -52,6 +52,8 @@ struct Libevent {
 	std::function<int(event_base*)> event_base_dispatch =
 	    ::event_base_dispatch;
 
+	std::function<int(event_base*)> event_base_loop = ::event_base_loop;
+
 	std::function<int(event_base*)> event_base_loopbreak =
 	    ::event_base_loopbreak;
 
