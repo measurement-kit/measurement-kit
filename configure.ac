@@ -46,6 +46,12 @@ if test "$ight_libevent_path"x != "builtin"x; then
     AC_CHECK_LIB(event, event_new, [],
       [ight_libevent_path=builtin])
 
+    AC_CHECK_HEADERS(event2/thread.h, [],
+      [ight_libevent_path=builtin])
+
+    AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [],
+      [ight_libevent_path=builtin])
+
     if test "$ight_libevent_path"x = "builtin"x; then
        AC_MSG_WARN([No libevent found: will use the builtin libevent])
     fi
@@ -54,7 +60,7 @@ fi
 if test "$ight_libevent_path"x = "builtin"x; then
     CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/libevent/include"
     CPPFLAGS="$CPPFLAGS -I \$(top_builddir)/src/ext/libevent/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libevent -levent"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libevent -levent -levent_pthreads"
     AC_CONFIG_SUBDIRS([src/ext/libevent])
 fi
 
