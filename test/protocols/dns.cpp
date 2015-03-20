@@ -18,8 +18,10 @@
 #include <ight/common/log.hpp>
 #include <ight/common/utils.hpp>
 
+using namespace ight::common::check_connectivity;
 using namespace ight::common::libevent;
 using namespace ight::common::poller;
+using namespace ight::common::settings;
 using namespace ight::protocols::dns;
 
 //
@@ -618,7 +620,7 @@ TEST_CASE("The system resolver works as expected") {
     // response fields from the system resolver.
     //
 
-    if (ight::Network::is_down()) {
+    if (Network::is_down()) {
         return;
     }
 
@@ -705,7 +707,7 @@ public:
 };
 
 TEST_CASE("It is safe to clear a request in its own callback") {
-    if (ight::Network::is_down()) {
+    if (Network::is_down()) {
         return;
     }
     auto d = SafeToDeleteRequestInItsOwnCallback();
@@ -735,7 +737,7 @@ TEST_CASE("Resolver: cleanup works correctly when we have allocated") {
 
     {
         // Note: call .get_evdns_base() to trigger lazy allocation
-        Resolver(ight::common::Settings(), &libevent)
+        Resolver(Settings(), &libevent)
             .get_evdns_base();
     }
 
@@ -773,7 +775,7 @@ TEST_CASE("Resolver: ensure that the constructor does not allocate") {
     //
 
     //Resolver();  // How to do this?
-    Resolver(ight::common::Settings(), &libevent);
+    Resolver(Settings(), &libevent);
 }
 
 TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
@@ -791,7 +793,7 @@ TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
     }, &libevent).get_evdns_base());
 
     // Handle the branch using the default nameserver
-    REQUIRE_THROWS(Resolver(ight::common::Settings(),
+    REQUIRE_THROWS(Resolver(Settings(),
         &libevent).get_evdns_base());
 }
 
@@ -940,7 +942,7 @@ TEST_CASE("We can override the default number of tries") {
 
 TEST_CASE("The default custom resolver works as expected") {
 
-    if (ight::Network::is_down()) {
+    if (Network::is_down()) {
         return;
     }
 
@@ -1014,7 +1016,7 @@ TEST_CASE("The default custom resolver works as expected") {
 
 TEST_CASE("A specific custom resolver works as expected") {
 
-    if (ight::Network::is_down()) {
+    if (Network::is_down()) {
         return;
     }
 
@@ -1025,7 +1027,7 @@ TEST_CASE("A specific custom resolver works as expected") {
         ight_break_loop();
     });
 
-    Resolver reso(ight::common::Settings({
+    Resolver reso(Settings({
         {"nameserver", "8.8.4.4"},
     }));
 
@@ -1095,7 +1097,7 @@ TEST_CASE("If the resolver dies the requests are aborted") {
     //
 
     // I need to remember to never run a DNS on that machine :^)
-    auto reso = new Resolver(ight::common::Settings({
+    auto reso = new Resolver(Settings({
         {"nameserver", "130.192.91.231"},
     }));
 
@@ -1136,7 +1138,7 @@ TEST_CASE("A request to a nonexistent server times out") {
     //
     // So, I'm commentin out this check:
     //
-    //if (ight::Network::is_down()) {
+    //if (Network::is_down()) {
     //    return;
     //}
     //
@@ -1169,7 +1171,7 @@ TEST_CASE("A request to a nonexistent server times out") {
 
 TEST_CASE("It is safe to cancel requests in flight") {
 
-    if (ight::Network::is_down()) {
+    if (Network::is_down()) {
         return;
     }
 

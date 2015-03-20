@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_PROTOCOLS_HTTP_HPP
-# define LIBIGHT_PROTOCOLS_HTTP_HPP
+#ifndef IGHT_PROTOCOLS_HTTP_HPP
+# define IGHT_PROTOCOLS_HTTP_HPP
 
 #include <functional>
 #include <map>
@@ -17,7 +16,7 @@
 #include <ight/common/constraints.hpp>
 #include <ight/common/settings.hpp>
 #include <ight/common/log.hpp>
-#include <ight/common/error.h>
+#include <ight/common/error.hpp>
 #include <ight/common/pointer.hpp>
 
 #include <ight/net/buffer.hpp>
@@ -37,6 +36,7 @@ namespace http {
 using namespace ight::common::constraints;
 using namespace ight::common::error;
 using namespace ight::common::pointer;
+using namespace ight::common::settings;
 
 using namespace ight::net;
 using namespace ight::net::buffer;
@@ -249,11 +249,15 @@ class Stream {
         // TODO: convert error from integer to exception.
         //
         connection->on_error([&](Error error) {
+            auto safe_eh = error_handler;
             if (error.error == 0) {
                 parser->eof();
             }
-            if (error_handler) {
-                error_handler(error);
+            // parser->eof() may cause this object to go out of
+            // the scope, therefore we cannot trust `this` to be
+            // valid in the following code.
+            if (safe_eh) {
+                safe_eh(error);
             }
         });
         connect_handler();
@@ -478,7 +482,7 @@ struct RequestSerializer {
      * \param headers HTTP headers (moved for efficiency).
      * \param body Request body (moved for efficiency).
      */
-    RequestSerializer(ight::common::Settings s, Headers headers,
+    RequestSerializer(Settings s, Headers headers,
                       std::string body);
 
     RequestSerializer() {
@@ -575,7 +579,7 @@ public:
      * \param callback Function invoked when request is complete.
      * \param parent Pointer to parent to implement self clean up.
      */
-    Request(const ight::common::Settings settings_, Headers headers,
+    Request(const Settings settings_, Headers headers,
             std::string body, RequestCallback&& callback_,
             std::set<Request *> *parent_ = nullptr)
                 : callback(callback_), parent(parent_) {
@@ -675,7 +679,7 @@ public:
      * \brief Issue HTTP request.
      * \see Request::Request.
      */
-    void request(ight::common::Settings settings, Headers headers,
+    void request(Settings settings, Headers headers,
             std::string body, RequestCallback&& callback) {
         auto r = new Request(settings, headers, body,
                 std::move(callback), &pending);
@@ -704,5 +708,5 @@ public:
     //
 };
 
-}}}  // namespaces
-#endif  // LIBIGHT_NET_HTTP_HPP
+}}}
+#endif

@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_COMMON_POINTER_HPP
-# define LIBIGHT_COMMON_POINTER_HPP
+#ifndef IGHT_COMMON_POINTER_HPP
+# define IGHT_COMMON_POINTER_HPP
 
 #include <memory>
 #include <stdexcept>
@@ -70,5 +69,5 @@ public:
     }
 };
 
-}}}  // namespaces
-#endif  // LIBIGHT_COMMON_POINTER_HPP
+}}}
+#endif

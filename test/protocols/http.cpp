@@ -13,15 +13,16 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ight/common/check_connectivity.hpp>
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 #include <ight/common/log.hpp>
 #include <ight/protocols/http.hpp>
 
-using namespace ight::protocols;
-using namespace ight::net::buffer;
+using namespace ight::common::check_connectivity;
 using namespace ight::common::error;
 using namespace ight::common::pointer;
-using namespace ight::common;
+using namespace ight::common::settings;
+using namespace ight::net::buffer;
+using namespace ight::protocols;
 
 //
 // ResponseParser unit test
@@ -200,7 +201,7 @@ TEST_CASE("Response parser eof() does not trigger immediate distruction") {
 }
 
 TEST_CASE("HTTP stream works as expected") {
-    if (ight::Network::is_down()) {
+    if (Network::is_down()) {
         return;
     }
     //ight_set_verbose(1);
@@ -239,8 +240,46 @@ TEST_CASE("HTTP stream works as expected") {
     ight_loop();
 }
 
+TEST_CASE("HTTP stream is robust to EOF") {
+
+    //ight_set_verbose(1);
+
+    // We simulate the receipt of a message terminated by EOF followed by
+    // an EOF so that stream emits in sequence "end" followed by "error(0)"
+    // to check whether the code is prepared for the case in which the
+    // "end" handler deletes the stream.
+
+    auto stream = new http::Stream(Settings{
+        {"dumb_transport", "1"},
+    });
+    stream->on_error([](Error) {
+        /* nothing */
+    });
+    stream->on_end([stream]() {
+        delete stream;
+    });
+
+    auto transport = stream->get_transport();
+
+    stream->on_connect([stream, &transport]() {
+        auto data = std::make_shared<Buffer>();
+
+        *data << "HTTP/1.1 200 Ok\r\n";
+        *data << "Content-Type: text/plain\r\n";
+        *data << "Connection: close\r\n";
+        *data << "Server: Antani/1.0.0.0\r\n";
+        *data << "\r\n";
+        *data << "1234567";
+
+        transport->emit_data(data);
+        transport->emit_error(0);
+    });
+
+    transport->emit_connect();
+}
+
 TEST_CASE("HTTP stream works as expected when using Tor") {
-    if (ight::Network::is_down()) {
+    if (Network::is_down()) {
         return;
     }
     ight_set_verbose(1);
@@ -287,7 +326,7 @@ TEST_CASE("HTTP stream works as expected when using Tor") {
 }
 
 TEST_CASE("HTTP stream receives connection errors") {
-    if (ight::Network::is_down()) {
+    if (Network::is_down()) {
         return;
     }
     //ight_set_verbose(1);
@@ -584,7 +623,7 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
 TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     //ight_set_verbose(1);
 
-    ight::common::Settings settings{
+    Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
         {"tor_socks_port", "9055"},
@@ -613,7 +652,7 @@ TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
 TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     //ight_set_verbose(1);
 
-    ight::common::Settings settings{
+    Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
         {"tor_socks_port", "9999"},
@@ -643,7 +682,7 @@ TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
 TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
     //ight_set_verbose(1);
 
-    ight::common::Settings settings{
+    Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
         {"socks5_proxy", "127.0.0.1:9055"},
@@ -672,7 +711,7 @@ TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
 TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     //ight_set_verbose(1);
 
-    ight::common::Settings settings{
+    Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
     };
@@ -701,7 +740,7 @@ TEST_CASE("Make sure that settings are not modified") {
     ight_set_verbose(1);
     auto client = http::Client();
 
-    ight::common::Settings settings{
+    Settings settings{
         {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},

@@ -1,10 +1,11 @@
 #include <ight/ooni/dns_injection.hpp>
 #include <sys/stat.h>
 
+using namespace ight::common::settings;
 using namespace ight::ooni::dns_injection;
 
 void
-DNSInjection::main(std::string input, ight::common::Settings options,
+DNSInjection::main(std::string input, Settings options,
                    std::function<void(ReportEntry)>&& cb)
 {
     entry["injected"] = NULL;
