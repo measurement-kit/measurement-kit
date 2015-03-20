@@ -118,8 +118,9 @@ void Async::break_loop() {
     state->interrupted = true;
 }
 
+// TODO: make sure this is enough to restart loop
 void Async::restart_loop() {
-    state->interrupted = true;
+    state->interrupted = false;
 }
 
 bool Async::empty() {
