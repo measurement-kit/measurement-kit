@@ -38,6 +38,17 @@ struct NetTest : public NonCopyable, public NonMovable {
      * \param func Callback called when the report is written.
      */
     virtual void end(std::function<void()> func) = 0;
+
+    /*!
+     * \brief Return the unique identifier of this test.
+     * \return Unique identifier of this test.
+     */
+    virtual unsigned long long identifier() {
+        return (unsigned long long) this;
+    }
+
+    /// Default destructor
+    virtual ~NetTest() {}
 };
 
 }}}
