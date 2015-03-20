@@ -45,6 +45,18 @@ class Async {
 
     /// Returns true when no async jobs are running
     bool empty();
+
+    ///
+    /// Called when a test is completed
+    /// \warn This function is called from a background thread
+    ///
+    void on_complete(std::function<void(SharedPointer<NetTest>)>);
+
+    ///
+    /// Called when the tests queue is empty
+    /// \warn This function is called from a background thread
+    ///
+    void on_empty(std::function<void()>);
 };
 
 }}}

@@ -32,19 +32,40 @@ TEST_CASE("The async engine works as expected") {
     evthread_use_pthreads();
     ight_set_verbose(1);
     Async async;
-    async.run_test(SharedPointer<HTTPInvalidRequestLine>(
-        new HTTPInvalidRequestLine(Settings{
-            {"backend", "http://nexa.polito.it/"},
-        })
-    ));
-    async.run_test(SharedPointer<HTTPInvalidRequestLine>(
-        new HTTPInvalidRequestLine(Settings{
-            {"backend", "http://www.google.com/"},
-        })
-    ));
 
-    // TODO Design a better sync mechanism
-    while (!async.empty()) {
+    // Note: the two following callbacks execute in a background thread
+    volatile bool complete = false;
+    async.on_complete([](SharedPointer<NetTest> test) {
+        ight_debug("test complete: %llu", test->identifier());
+    });
+    async.on_empty([&complete]() {
+        ight_debug("all tests completed");
+        complete = true;
+    });
+
+    // Create tests in temporary stack frames to also check that we can
+    // create them in functions that later return in real apps
+    {
+        auto test = SharedPointer<HTTPInvalidRequestLine>(
+            new HTTPInvalidRequestLine(Settings{
+                {"backend", "http://nexa.polito.it/"},
+            })
+        );
+        ight_debug("test created: %llu", test->identifier());
+        async.run_test(test);
+    }
+    {
+        auto test = SharedPointer<HTTPInvalidRequestLine>(
+            new HTTPInvalidRequestLine(Settings{
+                {"backend", "http://www.google.com/"},
+            })
+        );
+        ight_debug("test created: %llu", test->identifier());
+        async.run_test(test);
+    }
+
+    // TODO Maybe implement a better sync mechanism but for now polling will do
+    while (!complete) {
         sleep(1);
     }
 }
