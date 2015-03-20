@@ -23,6 +23,8 @@ namespace async {
 struct AsyncState {
     std::set<SharedPointer<NetTest>> active;
     volatile bool changed = false;
+    std::function<void(SharedPointer<NetTest>)> hook_complete;
+    std::function<void()> hook_empty;
     volatile bool interrupted = false;
     std::mutex mutex;
     SharedPointer<Poller> poller;
@@ -66,6 +68,9 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
                         state->active.erase(test);
                         state->changed = true;
                         ight_debug("*** test stopped");
+                        if (state->hook_complete) {
+                            state->hook_complete(test);
+                        }
                     });
                 });
             }
@@ -82,8 +87,11 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
 
         ight_debug("bottom of loop thread");
     }
-    state->thread_running = false;
     ight_debug("thread stopped");
+    state->thread_running = false;
+    if (state->hook_empty) {
+        state->hook_empty();
+    }
 }
 
 Async::Async(SharedPointer<Poller> poller) {
@@ -116,4 +124,16 @@ void Async::restart_loop() {
 
 bool Async::empty() {
     return !state->thread_running;
+}
+
+void Async::on_complete(std::function<void(SharedPointer<NetTest>)> fn) {
+    LOCKED(
+        state->hook_complete = fn;
+    )
+}
+
+void Async::on_empty(std::function<void()> fn) {
+    LOCKED(
+        state->hook_empty = fn;
+    )
 }
