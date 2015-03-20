@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_COMMON_LOG_HPP
-# define LIBIGHT_COMMON_LOG_HPP
+#ifndef IGHT_COMMON_LOG_HPP
+# define IGHT_COMMON_LOG_HPP
 
 #include <functional>
 
@@ -23,4 +22,4 @@ void ight_set_verbose(int);
 
 void ight_set_logger(std::function<void(const char *)>);
 
-#endif  // LIBIGHT_COMMON_LOG_HPP
+#endif

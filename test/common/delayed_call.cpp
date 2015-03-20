@@ -13,7 +13,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ight/common/pointer.hpp>
-#include <ight/common/poller.h>
+#include <ight/common/poller.hpp>
 
 using namespace ight::common::libevent;
 using namespace ight::common::pointer;

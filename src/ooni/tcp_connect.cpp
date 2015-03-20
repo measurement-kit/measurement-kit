@@ -1,9 +1,10 @@
 #include <ight/ooni/tcp_connect.hpp>
 
+using namespace ight::common::settings;
 using namespace ight::ooni::tcp_connect;
 
 void
-TCPConnect::main(std::string input, ight::common::Settings options,
+TCPConnect::main(std::string input, Settings options,
                  std::function<void(ReportEntry)>&& cb)
 {
     options["host"] = input;

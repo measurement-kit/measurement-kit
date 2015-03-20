@@ -12,7 +12,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <ight/common/libevent.h>
+#include <ight/common/libevent.hpp>
 
 using namespace ight::common::libevent;
 

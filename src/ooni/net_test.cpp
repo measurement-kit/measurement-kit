@@ -1,21 +1,22 @@
 #include <ight/ooni/net_test.hpp>
 #include <ctime>
 
+using namespace ight::common::settings;
 using namespace ight::ooni::net_test;
 
-NetTest::NetTest(std::string input_filepath_, ight::common::Settings options_)
+NetTest::NetTest(std::string input_filepath_, Settings options_)
   : input_filepath(input_filepath_), options(options_),
     test_name("net_test"), test_version("0.0.1")
 {
 }
 
-NetTest::NetTest(void) : NetTest::NetTest("", ight::common::Settings())
+NetTest::NetTest(void) : NetTest::NetTest("", Settings())
 {
   // nothing
 }
 
 NetTest::NetTest(std::string input_filepath_) : 
-  NetTest::NetTest(input_filepath_, ight::common::Settings())
+  NetTest::NetTest(input_filepath_, Settings())
 {
   // nothing
 }
@@ -78,7 +79,7 @@ NetTest::run_next_measurement(const std::function<void()>&& cb)
 }
 
 void
-NetTest::begin(std::function<void()>&& cb)
+NetTest::begin(std::function<void()> cb)
 {
   geoip_lookup();
   write_header();
@@ -120,7 +121,7 @@ NetTest::write_header()
 }
 
 void
-NetTest::end(std::function<void()>&& cb)
+NetTest::end(std::function<void()> cb)
 {
   file_report.close();
   cb();
@@ -143,7 +144,7 @@ NetTest::teardown() {
 }
 
 void
-NetTest::main(ight::common::Settings,
+NetTest::main(Settings,
               std::function<void(ReportEntry)>&& cb) {
   delayed_call = std::make_shared<DelayedCall>(1.25, [=](void) {
     ReportEntry entry;
@@ -152,7 +153,7 @@ NetTest::main(ight::common::Settings,
 }
 
 void
-NetTest::main(std::string, ight::common::Settings,
+NetTest::main(std::string, Settings,
               std::function<void(ReportEntry)>&& cb) {
   delayed_call = std::make_shared<DelayedCall>(1.25, [=](void) {
     ReportEntry entry;

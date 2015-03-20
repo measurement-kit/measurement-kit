@@ -7,14 +7,21 @@ check_PROGRAMS =  # Empty
 #
 test_echo_client_evbuf_SOURCES = test/echo_client_evbuf.cpp
 test_echo_client_evbuf_LDADD = libight.la
+test_echo_client_evbuf_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/echo_client_evbuf
 
 #
 # The following tests instead are managed by Catch
 #
 
+test_common_async_SOURCES = test/common/async.cpp
+test_common_async_LDADD = libight.la
+check_PROGRAMS += test/common/async
+TESTS += test/common/async
+
 test_common_delayed_call_SOURCES = test/common/delayed_call.cpp
 test_common_delayed_call_LDADD = libight.la
+test_common_delayed_call_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/delayed_call
 TESTS += test/common/delayed_call
 
@@ -25,75 +32,90 @@ TESTS += test/common/log
 
 test_common_evbuffer_SOURCES = test/common/evbuffer.cpp
 test_common_evbuffer_LDADD = libight.la
+test_common_evbuffer_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/evbuffer
 TESTS += test/common/evbuffer
 
 test_common_bufferevent_SOURCES = test/common/bufferevent.cpp
 test_common_bufferevent_LDADD = libight.la
+test_common_bufferevent_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/bufferevent
 TESTS += test/common/bufferevent
 
 test_common_poller_SOURCES = test/common/poller.cpp
 test_common_poller_LDADD = libight.la
+test_common_poller_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/poller
 TESTS += test/common/poller
 
 test_common_pointer_SOURCES = test/common/pointer.cpp
 test_common_pointer_LDADD = libight.la
+test_common_pointer_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/pointer
 TESTS += test/common/pointer
 
 test_common_socket_valid_SOURCES = test/common/socket_valid.cpp
 test_common_socket_valid_LDADD = libight.la
+test_common_socket_valid_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/socket_valid
 TESTS += test/common/socket_valid
 
 test_net_buffer_SOURCES = test/net/buffer.cpp
 test_net_buffer_LDADD = libight.la
+test_net_buffer_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/net/buffer
 TESTS += test/net/buffer
 
 test_net_connection_SOURCES = test/net/connection.cpp
 test_net_connection_LDADD = libight.la
+test_net_connection_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/net/connection
 TESTS += test/net/connection
 
 test_report_file_SOURCES = test/report/file.cpp
 test_report_file_LDADD = libight.la
+test_report_file_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/report/file
 TESTS += test/report/file
 
 test_ooni_dns_injection_SOURCES = test/ooni/dns_injection.cpp
 test_ooni_dns_injection_LDADD = libight.la
+test_ooni_dns_injection_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/dns_injection
 TESTS += test/ooni/dns_injection
 
 test_ooni_http_invalid_request_line_SOURCES = test/ooni/http_invalid_request_line.cpp
 test_ooni_http_invalid_request_line_LDADD = libight.la
+test_ooni_http_invalid_request_line_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/http_invalid_request_line
 TESTS += test/ooni/http_invalid_request_line
 
 test_ooni_tcp_test_SOURCES = test/ooni/tcp_test.cpp
 test_ooni_tcp_test_LDADD = libight.la
+test_ooni_tcp_test_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/tcp_test
 TESTS += test/ooni/tcp_test
 
 test_ooni_tcp_connect_SOURCES = test/ooni/tcp_connect.cpp
 test_ooni_tcp_connect_LDADD = libight.la
+test_ooni_tcp_connect_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/tcp_connect
 TESTS += test/ooni/tcp_connect
 
 test_ooni_net_test_SOURCES = test/ooni/net_test.cpp
 test_ooni_net_test_LDADD = libight.la
+test_ooni_net_test_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/net_test
 TESTS += test/ooni/net_test
 
 test_protocols_dns_SOURCES = test/protocols/dns.cpp
 test_protocols_dns_LDADD = libight.la
+test_protocols_dns_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/protocols/dns
 TESTS += test/protocols/dns
 
 test_protocols_http_SOURCES = test/protocols/http.cpp
 test_protocols_http_LDADD = libight.la
+test_protocols_http_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/protocols/http
 TESTS += test/protocols/http

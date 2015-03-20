@@ -4,7 +4,6 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
 #ifndef IGHT_COMMON_CHECK_CONNECTIVITY_HPP
 # define IGHT_COMMON_CHECK_CONNECTIVITY_HPP
 
@@ -19,6 +18,8 @@ struct event_base;
 struct evdns_base;
 
 namespace ight {
+namespace common {
+namespace check_connectivity {
 
 using namespace ight::common::constraints;
 
@@ -31,7 +32,7 @@ using namespace ight::common::constraints;
  *
  * To check whether the network is down, do:
  *
- *     if (ight::Network::is_down()) {
+ *     if (Network::is_down()) {
  *         return;
  *     }
  *
@@ -82,6 +83,5 @@ public:
     }
 };
 
-}  // namespace
-
-#endif  /* IGHT_COMMON_CHECK_CONNECTIVITY_HPP */
+}}}
+#endif
