@@ -75,6 +75,8 @@ class Poller : public NonCopyable, public NonMovable {
 
 	void loop(void);
 
+	void loop_once(void);
+
 	void break_loop(void);
 };
 
@@ -104,6 +106,10 @@ inline evdns_base *ight_get_global_evdns_base(void) {
 
 inline void ight_loop(void) {
 	ight::common::poller::GlobalPoller::get()->loop();
+}
+
+inline void ight_loop_once(void) {
+	ight::common::poller::GlobalPoller::get()->loop_once();
 }
 
 inline void ight_break_loop(void) {
