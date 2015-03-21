@@ -24,7 +24,7 @@
 
 using namespace ight::common::async;
 using namespace ight::common::pointer;
-using namespace ight::common::settings;
+using namespace ight::common;
 
 using namespace ight::ooni::http_invalid_request_line;
 
