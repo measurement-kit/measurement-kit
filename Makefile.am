@@ -15,11 +15,11 @@ LIBIGHT_I_FLAGS += -I $(top_srcdir)/src
 LIBIGHT_W_FLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic
 
 VERSION_INFO = 4:0:0
-AM_CFLAGS = $(LIBIGHT_W_FLAGS) $(LIBIGHT_I_FLAGS)
-AM_CXXFLAGS = $(LIBIGHT_W_FLAGS) $(LIBIGHT_I_FLAGS)
+AM_CFLAGS = -pthread $(LIBIGHT_W_FLAGS) $(LIBIGHT_I_FLAGS)
+AM_CXXFLAGS = -pthread $(LIBIGHT_W_FLAGS) $(LIBIGHT_I_FLAGS)
 
 lib_LTLIBRARIES =  # Empty
-libight_la_LDFLAGS = -version-info $(VERSION_INFO) -lyaml-cpp
+libight_la_LDFLAGS = -pthread -version-info $(VERSION_INFO) -lyaml-cpp
 libight_la_SOURCES =  # Empty
 
 noinst_LTLIBRARIES =  # Empty
