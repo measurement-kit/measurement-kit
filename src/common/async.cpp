@@ -42,20 +42,20 @@ struct AsyncState {
     }
 
 void Async::loop_thread(SharedPointer<AsyncState> state) {
-    ight_debug("loop thread entered");
+    ight_debug("async: loop thread entered");
     for (;;) {
 
         LOCKED(
-            ight_debug("loop thread locked");
+            ight_debug("async: loop thread locked");
             if (state->interrupted) {
-                ight_debug("interrupted");
+                ight_debug("async: interrupted");
                 break;
             }
             if (state->ready.empty() && state->active.empty()) {
-                ight_debug("empty");
+                ight_debug("async: empty");
                 break;
             }
-            ight_debug("not interrupted and not empty");
+            ight_debug("async: not interrupted and not empty");
             for (auto test : state->ready) {
                 state->active.insert(test);
                 test->begin([state, test]() {
@@ -68,7 +68,7 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
                         //
                         state->active.erase(test);
                         state->changed = true;
-                        ight_debug("*** test stopped");
+                        ight_debug("async: test stopped");
                         if (state->hook_complete) {
                             state->hook_complete(test);
                         }
@@ -78,7 +78,7 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
             state->ready.clear();
         )
 
-        ight_debug("loop thread unclocked");
+        ight_debug("async: loop thread unlocked");
 
         while (!state->changed) {
             //state->poller->loop_once();
@@ -86,9 +86,9 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
         }
         state->changed = false;
 
-        ight_debug("bottom of loop thread");
+        ight_debug("async: bottom of loop thread");
     }
-    ight_debug("thread stopped");
+    ight_debug("async: thread stopped");
     state->thread_running = false;
     if (state->hook_empty) {
         state->hook_empty();
@@ -102,11 +102,11 @@ Async::Async(SharedPointer<Poller> poller) {
 
 void Async::run_test(SharedPointer<NetTest> test) {
     LOCKED(
-        ight_debug("event inserted");
+        ight_debug("async: test inserted");
         state->ready.insert(test);
         state->changed = true;
         if (!state->thread_running) {
-            ight_debug("thread started");
+            ight_debug("async: background thread started");
             state->thread = std::thread(loop_thread, state);
             state->thread_running = true;
         }
