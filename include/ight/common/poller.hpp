@@ -70,6 +70,8 @@ class Poller : public NonCopyable, public NonMovable {
 
     void loop(void);
 
+    void loop_once(void);
+
     void break_loop(void);
 };
 
