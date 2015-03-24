@@ -1,5 +1,11 @@
-#ifndef LIBIGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
-# define LIBIGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
+/*-
+ * This file is part of Libight <https://libight.github.io/>.
+ *
+ * Libight is free software. See AUTHORS and LICENSE for more
+ * information on the copying conditions.
+ */
+#ifndef IGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
+# define IGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
 
 #include <ight/common/utils.hpp>
 #include <ight/protocols/http.hpp>
@@ -13,6 +19,9 @@ namespace ight {
 namespace ooni {
 namespace http_invalid_request_line {
 
+using namespace ight::common::settings;
+using namespace ight::report::entry;
+
 class InputFileDoesNotExist : public std::runtime_error {
   using std::runtime_error::runtime_error;
 };
@@ -25,16 +34,15 @@ class HTTPInvalidRequestLine: public HTTPTest {
     std::function<void(ReportEntry)> callback;
 
 public:
-    HTTPInvalidRequestLine(ight::common::Settings options_) : 
+    HTTPInvalidRequestLine(Settings options_) : 
       HTTPTest(options_) {
         test_name = "http_invalid_request_line";
         test_version = "0.0.1";
     };
     
-    void main(ight::common::Settings options,
+    void main(Settings options,
               std::function<void(ReportEntry)>&& cb);
 };
 
 }}}
-
-#endif  // LIBIGHT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
+#endif

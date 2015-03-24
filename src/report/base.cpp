@@ -1,5 +1,7 @@
 #include <ight/report/base.hpp>
 
+using namespace ight::report::base;
+
 std::string
 ReporterBase::getHeader() {
     std::stringstream output;

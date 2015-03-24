@@ -5,6 +5,8 @@
 #include <ight/report/file.hpp>
 #include <ight/report/entry.hpp>
 
+using namespace ight::report::file;
+
 TEST_CASE("The constructor for [FileReport] works correctly", "[BaseReport]") {
   REQUIRE_NOTHROW(FileReporter());
 }

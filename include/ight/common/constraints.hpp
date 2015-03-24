@@ -4,9 +4,8 @@
  * Libight is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  */
-
-#ifndef LIBIGHT_COMMON_CONSTRAINTS_HPP
-# define LIBIGHT_COMMON_CONSTRAINTS_HPP
+#ifndef IGHT_COMMON_CONSTRAINTS_HPP
+# define IGHT_COMMON_CONSTRAINTS_HPP
 
 namespace ight {
 namespace common {
@@ -24,5 +23,5 @@ struct NonCopyable {
     NonCopyable() {}
 };
 
-}}}  // namespaces
-#endif  // LIBIGHT_COMMON_CONSTRAINTS_HPP
+}}}
+#endif
