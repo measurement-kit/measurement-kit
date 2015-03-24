@@ -12,6 +12,8 @@
 #include <set>
 #include <thread>
 
+#include <event2/thread.h>
+
 using namespace ight::common::async;
 using namespace ight::common::pointer;
 
@@ -38,6 +40,20 @@ struct AsyncState {
     volatile bool thread_running = false;
 };
 
+class EvThreadSingleton {
+
+  private:
+    EvThreadSingleton() {
+        evthread_use_pthreads();
+    }
+
+  public:
+    static void ensure() {
+        static EvThreadSingleton singleton;
+    }
+
+};
+
 }}}
 
 // Syntactic sugar
@@ -47,6 +63,9 @@ struct AsyncState {
     }
 
 void Async::loop_thread(SharedPointer<AsyncState> state) {
+
+    EvThreadSingleton::ensure();
+
     ight_debug("async: loop thread entered");
     for (;;) {
 

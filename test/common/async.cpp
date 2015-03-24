@@ -19,8 +19,7 @@
 
 #include <ight/ooni/http_invalid_request_line.hpp>
 
-#include <event2/thread.h>  // XXX
-#include <unistd.h>  // XXX
+#include <unistd.h>
 
 using namespace ight::common::async;
 using namespace ight::common::pointer;
@@ -29,7 +28,7 @@ using namespace ight::common;
 using namespace ight::ooni::http_invalid_request_line;
 
 TEST_CASE("The async engine works as expected") {
-    evthread_use_pthreads();
+
     ight_set_verbose(1);
     Async async;
 
