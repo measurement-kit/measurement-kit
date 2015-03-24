@@ -46,14 +46,21 @@ if test "$ight_libevent_path"x != "builtin"x; then
     AC_CHECK_LIB(event, event_new, [],
       [ight_libevent_path=builtin])
 
+    AC_CHECK_HEADERS(event2/thread.h, [],
+      [ight_libevent_path=builtin])
+
+    AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [],
+      [ight_libevent_path=builtin])
+
     if test "$ight_libevent_path"x = "builtin"x; then
        AC_MSG_WARN([No libevent found: will use the builtin libevent])
     fi
 fi
 
 if test "$ight_libevent_path"x = "builtin"x; then
-    CPPFLAGS="$CPPFLAGS -Isrc/ext/libevent/include"
-    LDFLAGS="$LDFLAGS -Lsrc/ext/libevent -levent"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/libevent/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_builddir)/src/ext/libevent/include"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libevent -levent -levent_pthreads"
     AC_CONFIG_SUBDIRS([src/ext/libevent])
 fi
 
@@ -110,11 +117,20 @@ fi
 
 # Step 3: if needed, prepare to include our own libboost
 if test "$ight_boost_path"x = "builtin"x; then
-    for dirname in src/ext/boost/*; do
-        if test -d $dirname; then
-            CPPFLAGS="$CPPFLAGS -I ${dirname}/include"
-        fi
-    done
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/assert/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/config/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/core/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/detail/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/iterator/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/mpl/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/predef/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/preprocessor/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/smart_ptr/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/static_assert/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/throw_exception/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/type_traits/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/typeof/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/utility/include"
 fi
 
 
@@ -171,7 +187,8 @@ fi
 
 # Step 3: if needed, prepare to compile our own yaml-cpp
 if test "$ight_yamlcpp_path"x = "builtin"x; then
-    CPPFLAGS="$CPPFLAGS -Isrc/ext/yaml-cpp/include"
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/yaml-cpp/include"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/"
 fi
 AM_CONDITIONAL([USE_BUILTIN_YAMLCPP],
     [test "$ight_yamlcpp_path"x = "builtin"x])

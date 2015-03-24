@@ -11,6 +11,7 @@
 #include <ight/common/poller.h>
 #include <ight/common/settings.hpp>
 #include <ight/common/log.hpp>
+#include <ight/common/net_test.hpp>
 
 namespace ight {
 namespace ooni {
@@ -68,7 +69,7 @@ private:
 
 };
 
-class NetTest {
+class NetTest : public ight::common::net_test::NetTest {
   std::string input_filepath;
   FileReporter file_report;
 
@@ -129,13 +130,13 @@ public:
    * \brief Start iterating over the input.
    * \param cb Callback called when we are done.
    */
-  void begin(std::function<void()>&& cb);
+  virtual void begin(std::function<void()> cb) override;
 
   /*!
    * \brief Make sure that the report is written.
    * \param cb Callback called when the report is written.
    */
-  void end(std::function<void()>&& cb);
+  virtual void end(std::function<void()> cb) override;
 };
 
 }}}

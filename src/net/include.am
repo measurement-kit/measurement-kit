@@ -12,5 +12,6 @@ netincludedir = $(includedir)/ight/net
 netinclude_HEADERS = \
     include/ight/net/buffer.hpp \
     include/ight/net/connection.hpp \
+    include/ight/net/dumb.hpp \
     include/ight/net/socks5.hpp \
     include/ight/net/transport.hpp

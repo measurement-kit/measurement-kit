@@ -156,6 +156,14 @@ Poller::loop(void)
 		ight_warn("loop: no pending and/or active events");
 }
 
+void Poller::loop_once(void) {
+    auto result = this->libevent->event_base_loop(this->base, EVLOOP_ONCE);
+    if (result < 0)
+        throw std::runtime_error("event_base_loop() failed");
+    if (result == 1)
+        ight_warn("loop: no pending and/or active events");
+}
+
 void
 Poller::break_loop(void)
 {

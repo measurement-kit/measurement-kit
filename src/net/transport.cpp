@@ -6,6 +6,7 @@
  */
 
 #include <ight/net/connection.hpp>
+#include <ight/net/dumb.hpp>
 #include <ight/net/socks5.hpp>
 #include <ight/net/transport.hpp>
 
@@ -17,9 +18,14 @@ using namespace ight::common;
 using namespace ight::common::pointer;
 
 using namespace ight::net::connection;
+using namespace ight::net::dumb;
 using namespace ight::net::socks5;
 
 SharedPointer<Transport> connect(Settings settings) {
+
+    if (settings.find("dumb_transport") != settings.end()) {
+        return std::make_shared<Dumb>();
+    }
 
     if (settings.find("family") == settings.end()) {
         settings["family"] = "PF_UNSPEC";
