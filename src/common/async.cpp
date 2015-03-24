@@ -63,7 +63,8 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
                         //
                         // This callback is invoked by loop_once, when we do
                         // not own the lock. For this reason it's important
-                        // to only modify state->active in the current thread
+                        // to only modify state->active in the current thread,
+                        // i.e. in the background thread (i.e this function)
                         //
                         state->active.erase(test);
                         state->changed = true;

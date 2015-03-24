@@ -9,7 +9,7 @@
 
 ///
 /// \file ight/common/net_test.hpp
-/// \brief Net class of all network tests.
+/// \brief Base class of all network tests.
 ///
 
 #include <ight/common/constraints.hpp>
@@ -25,29 +25,23 @@ namespace net_test {
 using namespace ight::common::constraints;
 using namespace ight::common;
 
+/// \brief The generic network test
 struct NetTest : public NonCopyable, public NonMovable {
 
-    /*!
-     * \brief Start iterating over the input.
-     * \param func Callback called when we are done.
-     */
+    /// \brief Start iterating over the input.
+    /// \param func Callback called when we are done.
     virtual void begin(std::function<void()> func) = 0;
 
-    /*!
-     * \brief Make sure that the report is written.
-     * \param func Callback called when the report is written.
-     */
+    /// \brief Make sure that report is written
+    /// \param func Callback invoked when report is written.
     virtual void end(std::function<void()> func) = 0;
 
-    /*!
-     * \brief Return the unique identifier of this test.
-     * \return Unique identifier of this test.
-     */
+    /// \brief Return the unique identifier of this tes.
     virtual unsigned long long identifier() {
         return (unsigned long long) this;
     }
 
-    /// Default destructor
+    /// \brief Default destructor
     virtual ~NetTest() {}
 };
 
