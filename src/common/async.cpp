@@ -15,6 +15,11 @@
 using namespace ight::common::async;
 using namespace ight::common::pointer;
 
+//
+// TODO: modify this code to allow the user to specify a custom
+// poller (commented out code for this already exists)
+//
+
 namespace ight {
 namespace common {
 namespace async {
