@@ -29,7 +29,7 @@ using namespace ight::ooni::http_invalid_request_line;
 
 TEST_CASE("The async engine works as expected") {
 
-    ight_set_verbose(1);
+    //ight_set_verbose(1);
     Async async;
 
     // Note: the two following callbacks execute in a background thread
@@ -50,6 +50,10 @@ TEST_CASE("The async engine works as expected") {
                 {"backend", "http://nexa.polito.it/"},
             })
         );
+        test->set_log_verbose(1);
+        test->set_log_function([](const char *s) {
+            (void) fprintf(stderr, "test #1: %s\n", s);
+        });
         ight_debug("test created: %llu", test->identifier());
         async.run_test(test);
     }
@@ -59,6 +63,10 @@ TEST_CASE("The async engine works as expected") {
                 {"backend", "http://www.google.com/"},
             })
         );
+        test->set_log_verbose(1);
+        test->set_log_function([](const char *s) {
+            (void) fprintf(stderr, "test #2: %s\n", s);
+        });
         ight_debug("test created: %llu", test->identifier());
         async.run_test(test);
     }

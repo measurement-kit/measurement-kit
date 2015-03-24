@@ -30,7 +30,7 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
     resolver->request(
         query, query_name, 
         [=](ight::protocols::dns::Response&& response) {
-            ight_debug("Got a response!");
+            logger->debug("dns_test: got response!");
             YAML::Node query_entry;
             if (query_type == QueryType::A) {
               query_entry["query_type"] = "A";
@@ -59,8 +59,8 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
             // TODO add support for bytes received
             // query_entry["bytes"] = response.get_bytes();
             entry["queries"].push_back(query_entry);
-            ight_debug("Callbacking");
+            logger->debug("dns_test: callbacking");
             cb(std::move(response));
-            ight_debug("called.");
+            logger->debug("dns_test: callback called");
     });
 }

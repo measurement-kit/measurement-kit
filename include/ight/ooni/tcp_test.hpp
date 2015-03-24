@@ -47,22 +47,22 @@ public:
         connection = Connection("PF_UNSPEC", hostname.c_str(),
                 port.c_str());
         connection.on_error([this](Error error) {
-            ight_debug("tcpclient: error event");
+            logger->debug("tcpclient: error event");
             emit("error", error);
         });
         connection.on_connect([this]() {
-            ight_debug("tcpclient: connected event");
+            logger->debug("tcpclient: connected event");
             if (connection.enable_read() != 0) {
                 throw std::runtime_error("Cannot enable read");
             }
             emit("connect");
         });
         connection.on_flush([this]() {
-            ight_debug("tcpclient: flush event");
+            logger->debug("tcpclient: flush event");
             emit("flush");
         });
         connection.on_data([this](evbuffer *evb) {
-            ight_debug("tcpclient: data event");
+            logger->debug("tcpclient: data event");
             auto buffer = Buffer();
             buffer << evb;
             auto string = buffer.read<char>();
