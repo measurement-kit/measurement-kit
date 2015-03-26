@@ -39,6 +39,7 @@ protected:
     bool isclosed = false;
     std::string proxy_address;
     std::string proxy_port;
+    SharedPointer<Logger> logger = DefaultLogger::get();
 
 public:
 
@@ -58,7 +59,7 @@ public:
         conn->emit_error(err);
     }
 
-    Socks5(Settings);
+    Socks5(Settings, SharedPointer<Logger> lp = DefaultLogger::get());
 
     virtual void on_connect(std::function<void()> fn) override {
         on_connect_fn = fn;

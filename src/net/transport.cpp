@@ -21,10 +21,11 @@ using namespace ight::net::connection;
 using namespace ight::net::dumb;
 using namespace ight::net::socks5;
 
-SharedPointer<Transport> connect(Settings settings) {
+SharedPointer<Transport>
+connect(Settings settings, SharedPointer<Logger> logger) {
 
     if (settings.find("dumb_transport") != settings.end()) {
-        return std::make_shared<Dumb>();
+        return std::make_shared<Dumb>(logger);
     }
 
     if (settings.find("family") == settings.end()) {

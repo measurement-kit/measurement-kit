@@ -75,7 +75,7 @@ void ConnectionState::handle_event(bufferevent *bev, short what, void *opaque) {
     }
 
     if (self->connecting) {
-        ight_info("connection::handle_event - try connect next");
+        self->logger->info("connection::handle_event - try connect next");
         self->connect_next();
         return;
     }
@@ -86,9 +86,12 @@ void ConnectionState::handle_event(bufferevent *bev, short what, void *opaque) {
 }
 
 ConnectionState::ConnectionState(const char *family, const char *address,
-                                 const char *port, evutil_socket_t filenum) {
+                                 const char *port, SharedPointer<Logger> lp,
+                                 evutil_socket_t filenum) {
     auto evbase = ight_get_global_event_base();
     auto poller = ight_get_global_poller();
+
+    logger = lp;
 
     filenum = ight_socket_normalize_if_invalid(filenum);
 
@@ -156,19 +159,19 @@ void ConnectionState::connect_next(void) {
     struct sockaddr_storage storage;
     socklen_t total;
 
-    ight_info("connect_next - enter");
+    logger->info("connect_next - enter");
 
     for (;;) {
         address = this->addrlist->get_next();
         if (address == NULL) {
-            ight_warn("connect_next - no more available addrs");
+            logger->warn("connect_next - no more available addrs");
             break;
         }
         family = this->pflist->get_next();
         if (family == NULL)
             abort();
 
-        ight_info("connect_next - %s %s", family, address);
+        logger->info("connect_next - %s %s", family, address);
 
         error =
             ight_storage_init(&storage, &total, family, address, this->port);
@@ -191,13 +194,13 @@ void ConnectionState::connect_next(void) {
             (void)evutil_closesocket(filedesc);
             error = bufferevent_setfd(this->bev, IGHT_SOCKET_INVALID);
             if (error != 0) {
-                ight_warn("connect_next - internal error");
+                logger->warn("connect_next - internal error");
                 break;
             }
             continue;
         }
 
-        ight_info("connect_next - ok");
+        logger->info("connect_next - ok");
         return;
     }
 
@@ -211,7 +214,7 @@ void ConnectionState::handle_resolve(int result, char type,
     const char *_family;
     int error;
 
-    ight_info("handle_resolve - enter");
+    logger->info("handle_resolve - enter");
 
     if (!connecting)
         abort();
@@ -221,11 +224,11 @@ void ConnectionState::handle_resolve(int result, char type,
 
     switch (type) {
     case DNS_IPv4_A:
-        ight_info("handle_resolve - IPv4");
+        logger->info("handle_resolve - IPv4");
         _family = "PF_INET";
         break;
     case DNS_IPv6_AAAA:
-        ight_info("handle_resolve - IPv6");
+        logger->info("handle_resolve - IPv6");
         _family = "PF_INET6";
         break;
     default:
@@ -233,16 +236,16 @@ void ConnectionState::handle_resolve(int result, char type,
     }
 
     for (auto &address : results) {
-        ight_info("handle_resolve - address %s", address.c_str());
+        logger->info("handle_resolve - address %s", address.c_str());
         error = addrlist->append(address.c_str());
         if (error != 0) {
-            ight_warn("handle_resolve - cannot append");
+            logger->warn("handle_resolve - cannot append");
             continue;
         }
-        ight_info("handle_resolve - family %s", _family);
+        logger->info("handle_resolve - family %s", _family);
         error = pflist->append(_family);
         if (error != 0) {
-            ight_warn("handle_resolve - cannot append");
+            logger->warn("handle_resolve - cannot append");
             // Oops the two vectors are not in sync anymore now
             connecting = 0;
             on_error_fn(Error(-3));
@@ -303,10 +306,10 @@ void ConnectionState::resolve() {
     memset(&storage, 0, sizeof(storage));
     result = inet_pton(PF_INET, address, &storage);
     if (result == 1) {
-        ight_info("resolve - address %s", address);
-        ight_info("resolve - family PF_INET");
+        logger->info("resolve - address %s", address);
+        logger->info("resolve - family PF_INET");
         if (addrlist->append(address) != 0 || pflist->append("PF_INET") != 0) {
-            ight_warn("resolve - cannot append");
+            logger->warn("resolve - cannot append");
             connecting = 0;
             on_error_fn(Error(-4));
             return;
@@ -319,10 +322,10 @@ void ConnectionState::resolve() {
     memset(&storage, 0, sizeof(storage));
     result = inet_pton(PF_INET6, address, &storage);
     if (result == 1) {
-        ight_info("resolve - address %s", address);
-        ight_info("resolve - family PF_INET6");
+        logger->info("resolve - address %s", address);
+        logger->info("resolve - family PF_INET6");
         if (addrlist->append(address) != 0 || pflist->append("PF_INET6") != 0) {
-            ight_warn("resolve - cannot append");
+            logger->warn("resolve - cannot append");
             connecting = 0;
             on_error_fn(Error(-4));
             return;
@@ -341,7 +344,7 @@ void ConnectionState::resolve() {
     else if (strcmp(family, "PF_UNSPEC6") == 0)
         must_resolve_ipv6 = 1;
     else {
-        ight_warn("connection::resolve - invalid PF_xxx");
+        logger->warn("connection::resolve - invalid PF_xxx");
         connecting = 0;
         on_error_fn(Error(-5));
         return;

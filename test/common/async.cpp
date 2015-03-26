@@ -19,6 +19,7 @@
 
 #include <ight/ooni/dns_injection.hpp>
 #include <ight/ooni/http_invalid_request_line.hpp>
+#include <ight/ooni/tcp_connect.hpp>
 
 #include <unistd.h>
 
@@ -28,6 +29,7 @@ using namespace ight::common;
 
 using namespace ight::ooni::dns_injection;
 using namespace ight::ooni::http_invalid_request_line;
+using namespace ight::ooni::tcp_connect;
 
 TEST_CASE("The async engine works as expected") {
 
@@ -81,6 +83,19 @@ TEST_CASE("The async engine works as expected") {
         test->set_log_verbose(1);
         test->set_log_function([](const char *s) {
             (void) fprintf(stderr, "test #3: %s\n", s);
+        });
+        ight_debug("test created: %llu", test->identifier());
+        async.run_test(test);
+    }
+    {
+        auto test = SharedPointer<TCPConnect>(
+            new TCPConnect("test/fixtures/hosts.txt", Settings{
+                {"port", "80"},
+            })
+        );
+        test->set_log_verbose(1);
+        test->set_log_function([](const char *s) {
+            (void) fprintf(stderr, "test #4: %s\n", s);
         });
         ight_debug("test created: %llu", test->identifier());
         async.run_test(test);

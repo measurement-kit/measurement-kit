@@ -9,6 +9,7 @@
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/error.hpp>
+#include <ight/common/log.hpp>
 #include <ight/common/pointer.hpp>
 #include <ight/common/poller.hpp>
 #include <ight/common/string_vector.hpp>
@@ -32,6 +33,7 @@ namespace connection {
 using namespace ight::common::constraints;
 using namespace ight::common::error;
 using namespace ight::common::libevent;
+using namespace ight::common::log;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
 using namespace ight::common::string_vector;
@@ -54,6 +56,7 @@ class ConnectionState {
     unsigned int must_resolve_ipv4 = 0;
     unsigned int must_resolve_ipv6 = 0;
     SharedPointer<DelayedCall> start_connect;
+    SharedPointer<Logger> logger = DefaultLogger::get();
 
     // Libevent callbacks
     static void handle_read(bufferevent *, void *);
@@ -89,6 +92,7 @@ class ConnectionState {
 
   public:
     ConnectionState(const char *, const char *, const char *,
+                    SharedPointer<Logger> = DefaultLogger::get(),
                     evutil_socket_t = IGHT_SOCKET_INVALID);
 
     ConnectionState(ConnectionState &) = delete;
@@ -195,11 +199,13 @@ class Connection : public Transport {
     }
 
     Connection(void) { /* nothing to do */ }
-    Connection(evutil_socket_t fd) {
-        state = new ConnectionState("PF_UNSPEC", "0.0.0.0", "0", fd);
+    Connection(evutil_socket_t fd,
+               SharedPointer<Logger> lp = DefaultLogger::get()) {
+        state = new ConnectionState("PF_UNSPEC", "0.0.0.0", "0", lp, fd);
     }
-    Connection(const char *af, const char *a, const char *p) {
-        state = new ConnectionState(af, a, p);
+    Connection(const char *af, const char *a, const char *p,
+               SharedPointer<Logger> lp = DefaultLogger::get()) {
+        state = new ConnectionState(af, a, p, lp);
     }
 
     virtual void close(void) override {
