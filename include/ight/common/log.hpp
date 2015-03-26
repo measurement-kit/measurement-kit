@@ -30,7 +30,7 @@ class Logger : public NonCopyable, public NonMovable {
   public:
     Logger();
 
-    void logv(const char *fmt, va_list ap);
+    void logv(const char *, va_list) __attribute__((format(printf, 2, 0)));
 
     void warn(const char *fmt, ...) __attribute__((format(printf, 2, 3))) {
         va_list ap;
