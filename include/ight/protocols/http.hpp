@@ -317,7 +317,7 @@ public:
      */
     Stream(Settings settings, SharedPointer<Logger> lp = DefaultLogger::get()) {
         parser = std::make_shared<ResponseParser>(lp);
-        connection = transport::connect(settings);
+        connection = transport::connect(settings, lp);
         //
         // While the connection is in progress, just forward the
         // error if needed, we'll deal with body-terminated-by-EOF
