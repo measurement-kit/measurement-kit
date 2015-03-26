@@ -35,6 +35,7 @@ namespace http {
 
 using namespace ight::common::constraints;
 using namespace ight::common::error;
+using namespace ight::common::log;
 using namespace ight::common::pointer;
 using namespace ight::common::settings;
 
@@ -114,8 +115,6 @@ typedef std::map<std::string, std::string> Headers;
  */
 class ResponseParser {
 
-    ResponseParserImpl *get_impl();
-
 protected:
     ResponseParserImpl *impl = nullptr;
 
@@ -123,9 +122,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    ResponseParser() {
-        /* nothing done here */
-    }
+    ResponseParser(SharedPointer<Logger> = DefaultLogger::get());
 
     /*!
      * \brief Deleted copy constructor.
@@ -318,8 +315,8 @@ public:
      * \param settings Settings passed to the transport to initialize
      *        it (see transport.cpp for more info).
      */
-    Stream(Settings settings) {
-        parser = std::make_shared<ResponseParser>();
+    Stream(Settings settings, SharedPointer<Logger> lp = DefaultLogger::get()) {
+        parser = std::make_shared<ResponseParser>(lp);
         connection = transport::connect(settings);
         //
         // While the connection is in progress, just forward the
@@ -546,6 +543,7 @@ class Request : public NonCopyable, public NonMovable {
     SharedPointer<Stream> stream;
     Response response;
     std::set<Request *> *parent = nullptr;
+    SharedPointer<Logger> logger = DefaultLogger::get();
 
     void emit_end(Error error, Response&& response) {
         close();
@@ -577,12 +575,14 @@ public:
      *                     }
      * \param headers Request headers.
      * \param callback Function invoked when request is complete.
+     * \param logger Logger to be used.
      * \param parent Pointer to parent to implement self clean up.
      */
     Request(const Settings settings_, Headers headers,
             std::string body, RequestCallback&& callback_,
+            SharedPointer<Logger> lp = DefaultLogger::get(),
             std::set<Request *> *parent_ = nullptr)
-                : callback(callback_), parent(parent_) {
+                : callback(callback_), parent(parent_), logger(lp) {
         auto settings = settings_;  // Make a copy and work on that
         serializer = RequestSerializer(settings, headers, body);
         // Extend settings with address and port to connect to
@@ -599,7 +599,7 @@ public:
                 settings["socks5_proxy"] = "127.0.0.1:9050";
             }
         }
-        stream = std::make_shared<Stream>(settings);
+        stream = std::make_shared<Stream>(settings, logger);
         stream->on_error([this](Error err) {
             if (err.error != 0) {
                 emit_end(err, std::move(response));
@@ -615,14 +615,14 @@ public:
             serializer.serialize(buf);
             *stream << buf.read<char>();
 
-            stream->on_flush([]() {
-                ight_debug("http: request sent... waiting for response");
+            stream->on_flush([this]() {
+                logger->debug("http: request sent... waiting for response");
             });
 
             stream->on_headers_complete([&](unsigned short major,
                     unsigned short minor, unsigned int status,
                     std::string&& reason, Headers&& headers) {
-                ight_debug("http: headers received...");
+                logger->debug("http: headers received...");
                 response.http_major = major;
                 response.http_minor = minor;
                 response.status_code = status;
@@ -631,14 +631,14 @@ public:
             });
 
             stream->on_body([&](std::string&& chunk) {
-                ight_debug("http: received body chunk...");
+                logger->debug("http: received body chunk...");
                 // FIXME: I am not sure whether the body callback
                 //        is still needed or not...
                 response.body << chunk;
             });
 
             stream->on_end([&]() {
-                ight_debug("http: we have reached end of response");
+                logger->debug("http: we have reached end of response");
                 emit_end(Error(0), std::move(response));
             });
 
@@ -680,9 +680,10 @@ public:
      * \see Request::Request.
      */
     void request(Settings settings, Headers headers,
-            std::string body, RequestCallback&& callback) {
+            std::string body, RequestCallback&& callback,
+            SharedPointer<Logger> lp = DefaultLogger::get()) {
         auto r = new Request(settings, headers, body,
-                std::move(callback), &pending);
+                std::move(callback), lp, &pending);
         pending.insert(r);
     }
 
