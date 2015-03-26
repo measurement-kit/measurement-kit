@@ -49,11 +49,12 @@ connect(Settings settings, SharedPointer<Logger> logger) {
         auto port = proxy.substr(pos + 1);
         settings["socks5_address"] = address;
         settings["socks5_port"] = port;
-        return std::make_shared<Socks5>(settings);
+        return std::make_shared<Socks5>(settings, logger);
     }
 
     return std::make_shared<Connection>(settings["family"].c_str(),
-            settings["address"].c_str(), settings["port"].c_str());
+            settings["address"].c_str(), settings["port"].c_str(),
+            logger);
 }
 
 }}}
