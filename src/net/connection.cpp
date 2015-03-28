@@ -48,29 +48,32 @@ ConnectionState::~ConnectionState(void) {
 void ConnectionState::handle_read(bufferevent *bev, void *opaque) {
     auto self = (ConnectionState *)opaque;
     (void)bev; // Suppress warning about unused variable
-    self->on_data_fn(
-        std::make_shared<Buffer>(bufferevent_get_input(self->bev)));
+    auto fn = self->on_data_fn;
+    fn(std::make_shared<Buffer>(bufferevent_get_input(self->bev)));
 }
 
 void ConnectionState::handle_write(bufferevent *bev, void *opaque) {
     auto self = (ConnectionState *)opaque;
     (void)bev; // Suppress warning about unused variable
-    self->on_flush_fn();
+    auto fn = self->on_flush_fn;
+    fn();
 }
 
 void ConnectionState::handle_event(bufferevent *bev, short what, void *opaque) {
     auto self = (ConnectionState *)opaque;
+    auto on_connect_fn = self->on_connect_fn;
+    auto on_error_fn = self->on_error_fn;
 
     (void)bev; // Suppress warning about unused variable
 
     if (what & BEV_EVENT_CONNECTED) {
         self->connecting = 0;
-        self->on_connect_fn();
+        on_connect_fn();
         return;
     }
 
     if (what & BEV_EVENT_EOF) {
-        self->on_error_fn(Error(0));
+        on_error_fn(Error(0));
         return;
     }
 
@@ -82,7 +85,7 @@ void ConnectionState::handle_event(bufferevent *bev, short what, void *opaque) {
 
     // TODO: also handle the timeout
 
-    self->on_error_fn(Error(-1));
+    on_error_fn(Error(-1));
 }
 
 ConnectionState::ConnectionState(const char *family, const char *address,
