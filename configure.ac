@@ -22,7 +22,7 @@ AC_CANONICAL_HOST
 
 # checks for programs
 AC_PROG_INSTALL
-AC_PROG_CXX([clang++ g++ c++])
+AC_PROG_CXX()
 
 # checks for libraries
 
