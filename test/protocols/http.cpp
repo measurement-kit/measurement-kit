@@ -438,6 +438,7 @@ TEST_CASE("HTTP Request correctly receives errors") {
         {"url", "http://nexa.polito.it:81/robots.txt"},
         {"method", "GET"},
         {"http_version", "HTTP/1.1"},
+        {"timeout", "3.0"},
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error error, http::Response&& response) {
