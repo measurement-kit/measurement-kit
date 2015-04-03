@@ -21,7 +21,7 @@ using namespace ight::net::connection;
 using namespace ight::net::dumb;
 using namespace ight::net::socks5;
 
-SharedPointer<Transport> connect(Settings settings) {
+static SharedPointer<Transport> connect_internal(Settings settings) {
 
     if (settings.find("dumb_transport") != settings.end()) {
         return std::make_shared<Dumb>();
@@ -53,6 +53,22 @@ SharedPointer<Transport> connect(Settings settings) {
 
     return std::make_shared<Connection>(settings["family"].c_str(),
             settings["address"].c_str(), settings["port"].c_str());
+}
+
+SharedPointer<Transport> connect(Settings settings) {
+    double timeo = -1.0;  // No timeout by default
+    if (settings.find("timeout") != settings.end()) {
+        size_t invalid;
+        timeo = std::stod(settings["timeout"], &invalid);
+        if (invalid != settings["timeout"].length()) {
+            throw std::runtime_error("invalid argument");
+        }
+    }
+    auto transport = connect_internal(settings);
+    if (timeo >= 0.0) {
+        transport->set_timeout(timeo);
+    }
+    return transport;
 }
 
 }}}
