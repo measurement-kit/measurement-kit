@@ -21,8 +21,8 @@ using namespace ight::net::connection;
 using namespace ight::net::dumb;
 using namespace ight::net::socks5;
 
-SharedPointer<Transport>
-connect(Settings settings, SharedPointer<Logger> logger) {
+static SharedPointer<Transport>
+connect_internal(Settings settings, SharedPointer<Logger> logger) {
 
     if (settings.find("dumb_transport") != settings.end()) {
         return std::make_shared<Dumb>(logger);
@@ -57,7 +57,7 @@ connect(Settings settings, SharedPointer<Logger> logger) {
             logger);
 }
 
-SharedPointer<Transport> connect(Settings settings) {
+SharedPointer<Transport> connect(Settings settings, SharedPointer<Logger> lp) {
     double timeo = -1.0;  // No timeout by default
     if (settings.find("timeout") != settings.end()) {
         size_t invalid;
@@ -66,7 +66,7 @@ SharedPointer<Transport> connect(Settings settings) {
             throw std::runtime_error("invalid argument");
         }
     }
-    auto transport = connect_internal(settings);
+    auto transport = connect_internal(settings, lp);
     if (timeo >= 0.0) {
         transport->set_timeout(timeo);
     }
