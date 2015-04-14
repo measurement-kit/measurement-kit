@@ -24,6 +24,7 @@ namespace ooni {
 namespace net_test {
 
 using namespace ight::common::libevent;
+using namespace ight::common::log;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
 using namespace ight::common::settings;
@@ -46,7 +47,8 @@ class InputFileGenerator : public InputGenerator
 public:
   InputFileGenerator() {}
 
-  InputFileGenerator(std::string input_filepath) {
+  InputFileGenerator(std::string input_filepath,
+      SharedPointer<Logger> lp = DefaultLogger::get()) : logger(lp) {
     is = new std::ifstream(input_filepath);
   }
 
@@ -62,20 +64,20 @@ public:
   void
   next(std::function<void(std::string)>&& new_line,
        std::function<void()>&& done) override {
-    ight_debug("Getting next line");
+    logger->debug("InputFileGenerator: getting next line");
     std::string line;
     if (*is && !std::getline(*is, line).eof()) {
-      ight_debug("Returning new line");
+      logger->debug("InputFileGenerator: returning new line");
       new_line(line);
     } else {
-      ight_debug("EOF reached.");
+      logger->debug("InputFileGenerator: EOF reached.");
       done(); 
     }
   }
 
 private:
   std::ifstream *is = nullptr;
-
+  SharedPointer<Logger> logger = DefaultLogger::get();
 };
 
 class NetTest : public ight::common::net_test::NetTest {

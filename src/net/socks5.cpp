@@ -10,9 +10,9 @@
 using namespace ight::net::connection;
 using namespace ight::net::socks5;
 
-Socks5::Socks5(Settings s) : settings(s) {
+Socks5::Socks5(Settings s, SharedPointer<Logger> lp) : settings(s), logger(lp) {
 
-    ight_debug("socks5: connecting to Tor at %s:%s",
+    logger->debug("socks5: connecting to Tor at %s:%s",
                settings["socks5_address"].c_str(),
                settings["socks5_port"].c_str());
 
@@ -33,7 +33,7 @@ Socks5::Socks5(Settings s) : settings(s) {
 
         // Step #1: send out preferred authentication methods
 
-        ight_debug("socks5: connected to Tor!");
+        logger->debug("socks5: connected to Tor!");
 
         Buffer out;
         out.write_uint8(5); // Version
@@ -41,9 +41,9 @@ Socks5::Socks5(Settings s) : settings(s) {
         out.write_uint8(0); // "NO_AUTH" meth.
         conn->send(out);
 
-        ight_debug("socks5: >> version=5");
-        ight_debug("socks5: >> number of methods=1");
-        ight_debug("socks5: >> NO_AUTH (0)");
+        logger->debug("socks5: >> version=5");
+        logger->debug("socks5: >> number of methods=1");
+        logger->debug("socks5: >> NO_AUTH (0)");
 
         // Step #2: receive the allowed authentication methods
 
@@ -54,8 +54,8 @@ Socks5::Socks5(Settings s) : settings(s) {
                 return; // Try again after next recv()
             }
 
-            ight_debug("socks5: << version=%d", readbuf[0]);
-            ight_debug("socks5: << auth=%d", readbuf[1]);
+            logger->debug("socks5: << version=%d", readbuf[0]);
+            logger->debug("socks5: << auth=%d", readbuf[1]);
 
             if (readbuf[0] != 5 || // Reply version
                 readbuf[1] != 0) { // Preferred auth method
@@ -70,10 +70,10 @@ Socks5::Socks5(Settings s) : settings(s) {
             out.write_uint8(0); // Reserved
             out.write_uint8(3); // ATYPE_DOMAINNAME
 
-            ight_debug("socks5: >> version=5");
-            ight_debug("socks5: >> CMD_CONNECT (0)");
-            ight_debug("socks5: >> Reserved (0)");
-            ight_debug("socks5: >> ATYPE_DOMAINNAME (3)");
+            logger->debug("socks5: >> version=5");
+            logger->debug("socks5: >> CMD_CONNECT (0)");
+            logger->debug("socks5: >> Reserved (0)");
+            logger->debug("socks5: >> ATYPE_DOMAINNAME (3)");
 
             auto address = settings["address"];
 
@@ -83,8 +83,8 @@ Socks5::Socks5(Settings s) : settings(s) {
             out.write_uint8(address.length());            // Len
             out.write(address.c_str(), address.length()); // String
 
-            ight_debug("socks5: >> domain len=%d", (uint8_t)address.length());
-            ight_debug("socks5: >> domain str=%s", address.c_str());
+            logger->debug("socks5: >> domain len=%d", (uint8_t)address.length());
+            logger->debug("socks5: >> domain str=%s", address.c_str());
 
             auto portnum = std::stoi(settings["port"]);
             if (portnum < 0 || portnum > 65535) {
@@ -92,7 +92,7 @@ Socks5::Socks5(Settings s) : settings(s) {
             }
             out.write_uint16(portnum); // Port
 
-            ight_debug("socks5: >> port=%d", portnum);
+            logger->debug("socks5: >> port=%d", portnum);
 
             conn->send(out);
 
@@ -107,10 +107,10 @@ Socks5::Socks5(Settings s) : settings(s) {
 
                 auto peekbuf = buffer->peek(5);
 
-                ight_debug("socks5: << version=%d", peekbuf[0]);
-                ight_debug("socks5: << reply=%d", peekbuf[1]);
-                ight_debug("socks5: << reserved=%d", peekbuf[2]);
-                ight_debug("socks5: << atype=%d", peekbuf[3]);
+                logger->debug("socks5: << version=%d", peekbuf[0]);
+                logger->debug("socks5: << reply=%d", peekbuf[1]);
+                logger->debug("socks5: << reserved=%d", peekbuf[2]);
+                logger->debug("socks5: << atype=%d", peekbuf[3]);
 
                 // TODO: Here we should process peekbuf[1] more
                 // carefully to map to the error that occurred

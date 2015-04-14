@@ -32,6 +32,7 @@ namespace http {
  */
 class ResponseParserImpl {
 
+    SharedPointer<Logger> logger = DefaultLogger::get();
     http_parser parser;
     http_parser_settings settings;
     Buffer buffer;
@@ -51,8 +52,8 @@ class ResponseParserImpl {
     bool parsing = false;
 
     static int do_message_begin(http_parser *p) {
-        ight_debug("http: BEGIN");
         auto impl = static_cast<ResponseParserImpl *>(p->data);
+        impl->logger->debug("http: BEGIN");
         impl->reason = "";
         impl->prev = S_NOTHING;
         impl->field = "";
@@ -63,8 +64,8 @@ class ResponseParserImpl {
     }
 
     static int do_status(http_parser *p, const char *s, size_t n) {
-        ight_debug("http: STATUS");
         auto impl = static_cast<ResponseParserImpl *>(p->data);
+        impl->logger->debug("http: STATUS");
         impl->reason.append(s, n);
         return 0;
     }
@@ -94,22 +95,22 @@ class ResponseParserImpl {
     }
 
     static int do_header_field(http_parser *p, const char *s, size_t n) {
-        ight_debug("http: FIELD");
         auto impl = static_cast<ResponseParserImpl *>(p->data);
+        impl->logger->debug("http: FIELD");
         impl->do_header_internal(S_FIELD, s, n);
         return 0;
     }
 
     static int do_header_value(http_parser *p, const char *s, size_t n) {
-        ight_debug("http: VALUE");
         auto impl = static_cast<ResponseParserImpl *>(p->data);
+        impl->logger->debug("http: VALUE");
         impl->do_header_internal(S_VALUE, s, n);
         return 0;
     }
 
     static int do_headers_complete(http_parser *p) {
-        ight_debug("http: HEADERS_COMPLETE");
         auto impl = static_cast<ResponseParserImpl *>(p->data);
+        impl->logger->debug("http: HEADERS_COMPLETE");
         if (impl->field != "") {  // Also copy last header
             impl->headers[std::move(impl->field)] = std::move(impl->value);
         }
@@ -120,8 +121,8 @@ class ResponseParserImpl {
     }
 
     static int do_body(http_parser *p, const char *s, size_t n) {
-        ight_debug("http: BODY");
         auto impl = static_cast<ResponseParserImpl *>(p->data);
+        impl->logger->debug("http: BODY");
         //
         // By default the body handler is not set. This is to avoid
         // copying (s, n) into a string when you don't want to see
@@ -134,8 +135,8 @@ class ResponseParserImpl {
     }
 
     static int do_message_complete(http_parser *p) {
-        ight_debug("http: END");
         auto impl = static_cast<ResponseParserImpl *>(p->data);
+        impl->logger->debug("http: END");
         impl->end_fn();
         return 0;
     }
@@ -168,7 +169,8 @@ public:
     /*!
      * \brief Default constructor.
      */
-    ResponseParserImpl(void) {
+    ResponseParserImpl(SharedPointer<Logger> lp = DefaultLogger::get())
+            : logger(lp) {
         memset(&settings, 0, sizeof (settings));
         settings.on_message_begin = do_message_begin;
         settings.on_status = do_status;
@@ -312,14 +314,8 @@ public:
 // ResponseParser
 //
 
-ResponseParserImpl *
-ResponseParser::get_impl()
-{
-    if (impl == nullptr) {
-        impl = new ResponseParserImpl();
-    }
-    return impl;
-}
+ResponseParser::ResponseParser(SharedPointer<Logger> lp) :
+    impl(new ResponseParserImpl(lp)) {}
 
 ResponseParser::~ResponseParser(void)
 {
@@ -333,7 +329,7 @@ ResponseParser::~ResponseParser(void)
 void
 ResponseParser::on_begin(std::function<void(void)>&& fn)
 {
-    get_impl()->begin_fn = std::move(fn);
+    impl->begin_fn = std::move(fn);
 }
 
 void
@@ -341,43 +337,43 @@ ResponseParser::on_headers_complete(std::function<void(
     unsigned short, unsigned short, unsigned int, std::string&&,
     Headers&&)>&& fn)
 {
-    get_impl()->headers_complete_fn = std::move(fn);
+    impl->headers_complete_fn = std::move(fn);
 }
 
 void
 ResponseParser::on_body(std::function<void(std::string&&)>&& fn)
 {
-    get_impl()->body_fn = std::move(fn);
+    impl->body_fn = std::move(fn);
 }
 
 void
 ResponseParser::on_end(std::function<void(void)>&& fn)
 {
-    get_impl()->end_fn = std::move(fn);
+    impl->end_fn = std::move(fn);
 }
 
 void
 ResponseParser::feed(SharedPointer<Buffer> data)
 {
-    get_impl()->feed(data);
+    impl->feed(data);
 }
 
 void
 ResponseParser::feed(std::string data)
 {
-    get_impl()->feed(data);
+    impl->feed(data);
 }
 
 void
 ResponseParser::feed(char c)
 {
-    get_impl()->feed(c);
+    impl->feed(c);
 }
 
 void
 ResponseParser::eof()
 {
-    get_impl()->eof();
+    impl->eof();
 }
 
 //

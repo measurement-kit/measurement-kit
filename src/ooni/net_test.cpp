@@ -30,7 +30,7 @@ NetTest::~NetTest()
 InputGenerator *
 NetTest::input_generator()
 {
-  return new InputFileGenerator(input_filepath);
+  return new InputFileGenerator(input_filepath, logger);
 }
 
 std::string
@@ -57,23 +57,23 @@ NetTest::geoip_lookup()
 void
 NetTest::run_next_measurement(const std::function<void()>&& cb)
 {
-  ight_debug("Running next measurement");
+  logger->debug("net_test: running next measurement");
   input->next([=](std::string next_input) {
-      ight_debug("Creating entry");
+      logger->debug("net_test: creating entry");
       entry = ReportEntry(next_input);
-      ight_debug("Calling setup");
+      logger->debug("net_test: calling setup");
       setup();
-      ight_debug("Running with input %s", next_input.c_str());
+      logger->debug("net_test: running with input %s", next_input.c_str());
       main(next_input, options, [=](ReportEntry entry) {
-          ight_debug("Tearing down");
+          logger->debug("net_test: tearing down");
           teardown();
           file_report.writeEntry(entry);
-          ight_debug("Written entry");
-          ight_debug("Increased");
+          logger->debug("net_test: written entry");
+          logger->debug("net_test: increased");
           run_next_measurement(std::move(cb));
       }); 
   }, [=]() {
-    ight_debug("Reached end of input");
+    logger->debug("net_test: reached end of input");
     cb();
   });
 }
@@ -84,7 +84,7 @@ NetTest::begin(std::function<void()> cb)
   geoip_lookup();
   write_header();
   if (input_filepath != ""){
-    ight_debug("Found input file");
+    logger->debug("net_test: found input file");
     if (input != nullptr) {
       delete input;
       input = nullptr;
@@ -92,12 +92,16 @@ NetTest::begin(std::function<void()> cb)
     input = input_generator();
     run_next_measurement(std::move(cb));
   } else {
-    ight_debug("No input file");
+    logger->debug("net_test: no input file");
     entry = ReportEntry();
+    logger->debug("net_test: calling setup");
     setup();
     main(options, [=](ReportEntry entry) {
+      logger->debug("net_test: tearing down");
       teardown();
       file_report.writeEntry(entry);
+      logger->debug("net_test: written entry");
+      logger->debug("net_test: reached end of input");
       cb();
     });
   }

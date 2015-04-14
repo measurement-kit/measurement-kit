@@ -29,6 +29,7 @@ namespace dns {
 
 using namespace ight::common::constraints;
 using namespace ight::common::libevent;
+using namespace ight::common::log;
 using namespace ight::common::pointer;
 using namespace ight::common::poller;
 using namespace ight::common::settings;
@@ -74,13 +75,16 @@ public:
      * \param ttl the records time to live.
      * \param started time when the DNS request was started.
      * \param addresses data returned by evdns as an opaque pointer.
+     * \param lp pointer to custom logger object.
      * \param libevent optional pointer to igth's libevent wrapper.
      * \param start_from optional parameter to start from the specified
      *        record, rather than from zero, when processing the results
      *        (this is only used for implementing some test cases).
      */
     Response(int code, char type, int count, int ttl, double started,
-             void *addresses, Libevent *libevent = NULL,
+             void *addresses,
+             SharedPointer<Logger> lp = DefaultLogger::get(),
+             Libevent *libevent = NULL,
              int start_from = 0);
 
     /*!
@@ -203,6 +207,7 @@ public:
      * \param func The callback to call when the response is received; the
      *        callback receives a Response object, make sure you check
      *        the Response status code to see whether there was an error.
+     * \param lp Custom logger object.
      * \param dnsb Optional evdns_base structure to use instead of the
      *        default one. This parameter is not meant to be used directly
      *        by the programmer. To issue requests using a specific evdns_base
@@ -213,7 +218,9 @@ public:
      * \throws std::runtime_error if some edvns API fails.
      */
     Request(std::string query, std::string address,
-            std::function<void(Response&&)>&& func, evdns_base *dnsb = NULL,
+            std::function<void(Response&&)>&& func,
+            SharedPointer<Logger> lp = DefaultLogger::get(),
+            evdns_base *dnsb = NULL,
             Libevent *libevent = NULL);
 
     Request(Request&) = default;
@@ -275,6 +282,7 @@ protected:
     Libevent *libevent = GlobalLibevent::get();
     Poller *poller = ight_get_global_poller();
     evdns_base *base = NULL;
+    SharedPointer<Logger> logger = DefaultLogger::get();
 
 public:
     /*!
@@ -300,7 +308,8 @@ public:
      *        the case.
      */
     Resolver(Settings settings_,
-            Libevent *lev = NULL, Poller *plr = NULL) {
+             SharedPointer<Logger> lp = DefaultLogger::get(),
+             Libevent *lev = NULL, Poller *plr = NULL) {
         if (lev != NULL) {
             libevent = lev;
         }
@@ -308,6 +317,7 @@ public:
             poller = plr;
         }
         settings = settings_;
+        logger = lp;
     }
 
     /*!

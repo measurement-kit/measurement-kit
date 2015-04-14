@@ -22,7 +22,8 @@ using namespace ight::protocols::dns;
 //
 
 Response::Response(int code_, char type, int count, int ttl_, double started,
-                   void *addresses, Libevent *libevent, int start_from)
+                   void *addresses, SharedPointer<Logger> logger,
+                   Libevent *libevent, int start_from)
     : code(code_), ttl(ttl_)
 {
     assert(start_from >= 0);
@@ -49,11 +50,11 @@ Response::Response(int code_, char type, int count, int ttl_, double started,
     }
 
     if (code != DNS_ERR_NONE) {
-        ight_info("dns - request failed: %d", code);
+        logger->info("dns - request failed: %d", code);
         // do not process the results if there was an error
 
     } else if (type == DNS_PTR) {
-        ight_info("dns - PTR");
+        logger->info("dns - PTR");
         // Note: cast magic copied from libevent regress tests
         results.push_back(std::string(*(char **) addresses));
 
@@ -66,11 +67,11 @@ Response::Response(int code_, char type, int count, int ttl_, double started,
         if (type == DNS_IPv4_A) {
             family = PF_INET;
             size = 4;
-            ight_info("dns - IPv4");
+            logger->info("dns - IPv4");
         } else {
             family = PF_INET6;
             size = 16;
-            ight_info("dns - IPv6");
+            logger->info("dns - IPv6");
         }
 
         //
@@ -84,21 +85,21 @@ Response::Response(int code_, char type, int count, int ttl_, double started,
                 // Note: address already in network byte order
                 if (libevent->inet_ntop(family, (char *)addresses + i * size,
                             string, sizeof (string)) == NULL) {
-                    ight_warn("dns - unexpected inet_ntop failure");
+                    logger->warn("dns - unexpected inet_ntop failure");
                     code = DNS_ERR_UNKNOWN;
                     break;
                 }
-                ight_info("dns - adding '%s'", string);
+                logger->info("dns - adding '%s'", string);
                 results.push_back(string);
             }
 
         } else {
-            ight_warn("dns - too many addresses");
+            logger->warn("dns - too many addresses");
             code = DNS_ERR_UNKNOWN;
         }
 
     } else {
-        ight_warn("dns - invalid response type");
+        logger->warn("dns - invalid response type");
         code = DNS_ERR_UNKNOWN;
     }
 }
@@ -219,6 +220,7 @@ class RequestImpl {
     double ticks = 0.0;  // just to initialize to something
     Libevent *libevent;  // should not be NULL (this is asserted below)
     SharedPointer<bool> cancelled;
+    SharedPointer<Logger> logger = DefaultLogger::get();
 
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
@@ -239,7 +241,7 @@ class RequestImpl {
         }
 
         impl->callback(Response(code, type, count,
-            ttl, impl->ticks, addresses));
+            ttl, impl->ticks, addresses, impl->logger));
 
         delete impl;
     }
@@ -265,9 +267,10 @@ class RequestImpl {
 
     // Private to enforce usage through issue()
     RequestImpl(std::string query, std::string address,
-                std::function<void(Response&&)>&& f, evdns_base *base,
+                std::function<void(Response&&)>&& f,
+                SharedPointer<Logger> lp, evdns_base *base,
                 Libevent *lev, SharedPointer<bool> cancd)
-            : callback(f), libevent(lev), cancelled(cancd) {
+            : callback(f), libevent(lev), cancelled(cancd), logger(lp) {
 
         assert(base != NULL && lev != NULL);
 
@@ -307,9 +310,12 @@ class RequestImpl {
 
 public:
     static void issue(std::string query, std::string address,
-                      std::function<void(Response&&)>&& func, evdns_base *base,
+                      std::function<void(Response&&)>&& func,
+                      SharedPointer<Logger> logger,
+                      evdns_base *base,
                       Libevent *lev, SharedPointer<bool> cancd) {
-        new RequestImpl(query, address, std::move(func), base, lev, cancd);
+        new RequestImpl(query, address, std::move(func), logger, base,
+                        lev, cancd);
     }
 };
 
@@ -320,9 +326,10 @@ public:
 //
 
 Request::Request(std::string query, std::string address,
-                       std::function<void(Response&&)>&& func,
-                       evdns_base *dnsb,
-                       Libevent *libevent)
+                 std::function<void(Response&&)>&& func,
+                 SharedPointer<Logger> lp,
+                 evdns_base *dnsb,
+                 Libevent *libevent)
 {
     if (dnsb == NULL) {
         dnsb = ight_get_global_evdns_base();
@@ -333,7 +340,7 @@ Request::Request(std::string query, std::string address,
     cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
     RequestImpl::issue(query, address, std::move(func),
-                       dnsb, libevent, cancelled);
+                       lp, dnsb, libevent, cancelled);
 }
 
 void
@@ -432,6 +439,6 @@ Resolver::request(std::string query, std::string address,
     //
     auto cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
-    RequestImpl::issue(query, address, std::move(func),
+    RequestImpl::issue(query, address, std::move(func), logger,
                        get_evdns_base(), libevent, cancelled);
 }
