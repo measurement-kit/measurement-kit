@@ -20,7 +20,7 @@ LOCAL_MODULE:= ight
 LOCAL_CFLAGS := -DIGHT_ANDROID
 
 LOCAL_SRC_FILES := \
-    src/common/log.c \
+    src/common/log.cpp \
     src/common/poller.cpp \
     src/common/stringvector.cpp \
     src/common/utils.cpp \

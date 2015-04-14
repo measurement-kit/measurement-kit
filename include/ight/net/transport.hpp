@@ -16,6 +16,7 @@
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/error.hpp>
+#include <ight/common/log.hpp>
 #include <ight/common/pointer.hpp>
 #include <ight/common/settings.hpp>
 
@@ -27,6 +28,7 @@ namespace transport {
 
 using namespace ight::common::constraints;
 using namespace ight::common::error;
+using namespace ight::common::log;
 using namespace ight::common::pointer;
 using namespace ight::common::settings;
 
@@ -73,7 +75,8 @@ struct Transport : public NonMovable, public NonCopyable {
     virtual std::string socks5_port() = 0;
 };
 
-SharedPointer<Transport> connect(Settings);
+SharedPointer<Transport>
+connect(Settings, SharedPointer<Logger> = DefaultLogger::get());
 
 }}}
 #endif

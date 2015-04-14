@@ -13,7 +13,7 @@ DNSInjection::main(std::string input, Settings options,
     query(QueryType::A, QueryClass::IN,
                    input, options["nameserver"], [this](
                               protocols::dns::Response&& response) {
-        ight_debug("Got response to DNS Injection test");
+        logger->debug("dns_injection: got response");
         if (response.get_evdns_status() == DNS_ERR_NONE) {
             entry["injected"] = true;
         } else {

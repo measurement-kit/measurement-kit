@@ -17,20 +17,23 @@
 #include <ight/common/pointer.hpp>
 #include <ight/common/settings.hpp>
 
+#include <ight/ooni/dns_injection.hpp>
 #include <ight/ooni/http_invalid_request_line.hpp>
+#include <ight/ooni/tcp_connect.hpp>
 
-#include <event2/thread.h>  // XXX
-#include <unistd.h>  // XXX
+#include <unistd.h>
 
 using namespace ight::common::async;
 using namespace ight::common::pointer;
 using namespace ight::common;
 
+using namespace ight::ooni::dns_injection;
 using namespace ight::ooni::http_invalid_request_line;
+using namespace ight::ooni::tcp_connect;
 
 TEST_CASE("The async engine works as expected") {
-    evthread_use_pthreads();
-    ight_set_verbose(1);
+
+    //ight_set_verbose(1);
     Async async;
 
     // Note: the two following callbacks execute in a background thread
@@ -51,6 +54,10 @@ TEST_CASE("The async engine works as expected") {
                 {"backend", "http://nexa.polito.it/"},
             })
         );
+        test->set_log_verbose(1);
+        test->set_log_function([](const char *s) {
+            (void) fprintf(stderr, "test #1: %s\n", s);
+        });
         ight_debug("test created: %llu", test->identifier());
         async.run_test(test);
     }
@@ -60,6 +67,36 @@ TEST_CASE("The async engine works as expected") {
                 {"backend", "http://www.google.com/"},
             })
         );
+        test->set_log_verbose(1);
+        test->set_log_function([](const char *s) {
+            (void) fprintf(stderr, "test #2: %s\n", s);
+        });
+        ight_debug("test created: %llu", test->identifier());
+        async.run_test(test);
+    }
+    {
+        auto test = SharedPointer<DNSInjection>(
+            new DNSInjection("test/fixtures/hosts.txt", Settings{
+                {"nameserver", "8.8.8.8:53"},
+            })
+        );
+        test->set_log_verbose(1);
+        test->set_log_function([](const char *s) {
+            (void) fprintf(stderr, "test #3: %s\n", s);
+        });
+        ight_debug("test created: %llu", test->identifier());
+        async.run_test(test);
+    }
+    {
+        auto test = SharedPointer<TCPConnect>(
+            new TCPConnect("test/fixtures/hosts.txt", Settings{
+                {"port", "80"},
+            })
+        );
+        test->set_log_verbose(1);
+        test->set_log_function([](const char *s) {
+            (void) fprintf(stderr, "test #4: %s\n", s);
+        });
         ight_debug("test created: %llu", test->identifier());
         async.run_test(test);
     }

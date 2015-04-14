@@ -35,7 +35,6 @@ HTTPInvalidRequestLine::main(Settings options,
     // ' '.join(randomStr(5) for x in range(4)) + '\n\r'
     // XXX currently cannot be implemented using HTTP client lib.
 
-
     // test_random_big_request_method
     // randomStr(1024) + ' / HTTP/1.1\n\r'
     request({
