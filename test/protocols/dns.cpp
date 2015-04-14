@@ -672,8 +672,7 @@ TEST_CASE("The system resolver works as expected") {
         REQUIRE(response.get_ttl() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
-            if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
-                address == "2001:858:2:2:aabb::563b:1e28") {
+            if (address == "2001:41b8:202:deb:213:21ff:fe20:1426") {
                 found = true;
             }
         }
@@ -682,13 +681,13 @@ TEST_CASE("The system resolver works as expected") {
     });
     ight_loop();
 
-    auto r4 = Request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+    auto r4 = Request("REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
                                [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
-        REQUIRE(response.get_results()[0] == "nova.torproject.org");
+        REQUIRE(response.get_results()[0] == "listera.torproject.org");
         REQUIRE(response.get_rtt() > 0.0);
         REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
@@ -993,8 +992,7 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.get_ttl() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
-            if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
-                address == "2001:858:2:2:aabb::563b:1e28") {
+            if (address == "2001:41b8:202:deb:213:21ff:fe20:1426") {
                 found = true;
             }
         }
@@ -1003,13 +1001,13 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     ight_loop();
 
-    reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+    reso.request("REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
             [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
-        REQUIRE(response.get_results()[0] == "nova.torproject.org");
+        REQUIRE(response.get_results()[0] == "listera.torproject.org");
         REQUIRE(response.get_rtt() > 0.0);
         REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
@@ -1069,8 +1067,7 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.get_ttl() > 0);
         auto found = false;
         for (auto address : response.get_results()) {
-            if (address == "2001:858:2:2:aabb:0:563b:1e28" ||
-                address == "2001:858:2:2:aabb::563b:1e28") {
+            if (address == "2001:41b8:202:deb:213:21ff:fe20:1426") {
                 found = true;
             }
         }
@@ -1079,13 +1076,13 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     ight_loop();
 
-    reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+    reso.request("REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
             [&](Response&& response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
-        REQUIRE(response.get_results()[0] == "nova.torproject.org");
+        REQUIRE(response.get_results()[0] == "listera.torproject.org");
         REQUIRE(response.get_rtt() > 0.0);
         REQUIRE(response.get_ttl() > 0);
         ight_break_loop();
