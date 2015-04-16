@@ -69,10 +69,10 @@ Network::Network(void)
         throw std::runtime_error("cannot add IP address");
     }
 
-    if (evdns_base_resolve_ipv4(dnsbase, "github.com", DNS_QUERY_NO_SEARCH,
+    if (evdns_base_resolve_ipv4(dnsbase, "nexa.polito.it", DNS_QUERY_NO_SEARCH,
                                 dns_callback, this) == NULL) {
         cleanup();
-        throw std::runtime_error("cannot resolve 'github.com'");
+        throw std::runtime_error("cannot resolve 'nexa.polito.it'");
     }
 
     if (event_base_dispatch(evbase) != 0) {

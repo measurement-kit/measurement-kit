@@ -884,7 +884,7 @@ TEST_CASE("Resolver::get_evdns_base() is idempotent") {
 TEST_CASE("We can override the default timeout") {
 
     // I need to remember to never run a DNS on that machine :^)
-    Resolver reso({
+    Resolver reso(Settings{
         {"nameserver", "130.192.91.231"},
         {"attempts", "1"},
         {"timeout", "0.5"}
@@ -913,7 +913,7 @@ TEST_CASE("We can override the default timeout") {
 TEST_CASE("We can override the default number of tries") {
 
     // I need to remember to never run a DNS on that machine :^)
-    Resolver reso({
+    Resolver reso(Settings{
         {"nameserver", "130.192.91.231"},
         {"attempts", "2"},
         {"timeout", "0.5"},
@@ -1146,7 +1146,7 @@ TEST_CASE("A request to a nonexistent server times out") {
     //
 
     // I need to remember to never run a DNS on that machine :^)
-    Resolver reso({
+    Resolver reso(Settings{
         {"nameserver", "130.192.91.231"},
         {"attempts", "1"},
     });
@@ -1187,7 +1187,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     // privately run this test repeating it for about one minute.
     //
 
-    Resolver reso({
+    Resolver reso(Settings{
         {"nameserver", "8.8.8.8"},
         {"attempts", "1"},
     });
