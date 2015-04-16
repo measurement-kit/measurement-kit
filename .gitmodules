@@ -26,7 +26,7 @@
   ignore = dirty
 [submodule "src/ext/boost/src/core"]
 	path = src/ext/boost/core
-	url = https://github.com/boostorg/core
+	url = https://github.com/bassosimone/libight-boost-core
   ignore = dirty
 [submodule "src/ext/boost/src/mpl"]
 	path = src/ext/boost/mpl
