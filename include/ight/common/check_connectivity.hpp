@@ -36,12 +36,13 @@ using namespace ight::common::constraints;
  *         return;
  *     }
  *
- * \remark This class reports that the network is up if 8.8.4.4 works and
- * returns a valid IPv4 address for nexa.polito.it. To reach 8.8.4.4 we use
- * evdns, which we assume to be working. If evdns is broken, 8.8.4.4 is not
- * reachable or nexa.polito.it is no longer available, this class reports that
- * the network is down even if it is not actually down. All these three
- * conditions are quite unlikely, IMO, so this code should be robust enough.
+ * \remark This class reports that the network is up if the system-wide DNS
+ * resolver works and returns a valid IPv4 address for nexa.polito.it. To reach
+ * the DNS resolver we use evdns, which we assume to be working. If evdns is
+ * broken, the DNS resolver is not reachable or nexa.polito.it is no longer
+ * available, this class reports that the network is down even if it is not
+ * actually down. All these three conditions are quite unlikely, IMO, so this
+ * code should be robust enough.
  *
  * \remark The check on whether the network is down is performed only
  * once when is_down() is called for the first time. Therefore, this

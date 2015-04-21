@@ -60,13 +60,9 @@ Network::Network(void)
         throw std::bad_alloc();
     }
 
-    if ((dnsbase = evdns_base_new(evbase, 0)) == NULL) {
+    if ((dnsbase = evdns_base_new(evbase, 1)) == NULL) {
         cleanup();
         throw std::bad_alloc();
-    }
-    if (evdns_base_nameserver_ip_add(dnsbase, "8.8.4.4") != 0) {
-        cleanup();
-        throw std::runtime_error("cannot add IP address");
     }
 
     if (evdns_base_resolve_ipv4(dnsbase, "nexa.polito.it", DNS_QUERY_NO_SEARCH,
