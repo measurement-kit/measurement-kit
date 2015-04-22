@@ -41,12 +41,20 @@ Network::dns_callback(int result, char type, int count, int ttl,
     (void) ttl;
     (void) addresses;
 
-    //
-    // TODO: The following check is good for the unit test but, to be
-    // precise, there are other error conditions that can indicate that
-    // we have connectivity (e.g., DNS_ERR_NOTEXIST).
-    //
-    that->is_up = (result == DNS_ERR_NONE);
+    switch (result) {
+    case DNS_ERR_NONE:
+    case DNS_ERR_FORMAT:
+    case DNS_ERR_SERVERFAILED:
+    case DNS_ERR_NOTEXIST:
+    case DNS_ERR_NOTIMPL:
+    case DNS_ERR_REFUSED:
+    case DNS_ERR_TRUNCATED:
+    case DNS_ERR_NODATA:
+        that->is_up = true;
+        break;
+    default:
+        that->is_up = false;
+    }
 
     if (event_base_loopbreak(that->evbase) != 0) {
         throw std::runtime_error("Cannot exit from event loop");
