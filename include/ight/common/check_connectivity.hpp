@@ -37,12 +37,12 @@ using namespace ight::common::constraints;
  *     }
  *
  * \remark This class reports that the network is up if the system-wide DNS
- * resolver works and returns a valid IPv4 address for nexa.polito.it. To reach
- * the DNS resolver we use evdns, which we assume to be working. If evdns is
- * broken, the DNS resolver is not reachable or nexa.polito.it is no longer
- * available, this class reports that the network is down even if it is not
- * actually down. All these three conditions are quite unlikely, IMO, so this
- * code should be robust enough.
+ * resolver works and returns a valid IPv4 address for ebay.com. To reach the
+ * DNS resolver we use evdns, which we assume to be working. If evdns is broken,
+ * the DNS resolver is not reachable or ebay.com is no longer available, this
+ * class reports that the network is down even if it is not actually down. All
+ * these three conditions are quite unlikely, IMO, so this code should be robust
+ * enough.
  *
  * \remark The check on whether the network is down is performed only
  * once when is_down() is called for the first time. Therefore, this

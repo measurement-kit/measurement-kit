@@ -65,10 +65,10 @@ Network::Network(void)
         throw std::bad_alloc();
     }
 
-    if (evdns_base_resolve_ipv4(dnsbase, "nexa.polito.it", DNS_QUERY_NO_SEARCH,
+    if (evdns_base_resolve_ipv4(dnsbase, "ebay.com", DNS_QUERY_NO_SEARCH,
                                 dns_callback, this) == NULL) {
         cleanup();
-        throw std::runtime_error("cannot resolve 'nexa.polito.it'");
+        throw std::runtime_error("cannot resolve 'ebay.com'");
     }
 
     if (event_base_dispatch(evbase) != 0) {
