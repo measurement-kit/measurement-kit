@@ -167,7 +167,7 @@ void Prober::close() {
     timeout_cb = nullptr;
 }
 
-Prober::Prober(bool use_ipv4_, int port, event_base *evbase_) {
+Prober::Prober(bool use_ipv4_, int port, double timeout, event_base *evbase_) {
 
     sockaddr_storage ss;
     socklen_t sslen;
@@ -221,8 +221,7 @@ Prober::Prober(bool use_ipv4_, int port, event_base *evbase_) {
             close();
             throw std::runtime_error("event_new() failed");
         }
-        // TODO: allow to configure the timeout
-        if (event_add(evp, ight_timeval_init(&tv, 5.0)) != 0) {
+        if (event_add(evp, ight_timeval_init(&tv, timeout)) != 0) {
             close();
             throw std::runtime_error("event_add() failed");
         }
@@ -259,12 +258,12 @@ void Prober::send_probe(std::string addr, int port, int ttl,
     if (ight_storage_init(&ss, &sslen, family, addr.c_str(), port) != 0)
         throw std::runtime_error("ight_storage_init() failed");
 
-    if (clock_gettime(CLOCK_BOOTTIME, &start_time) != 0)
+    if (clock_gettime(CLOCK_MONOTONIC, &start_time) != 0)
         throw std::runtime_error("clock_gettime() failed");
 
     // Note: cast to ssize_t safe because payload length is bounded
     // We may want however to increase the maximum accepted length
-    if (payload.length() > 128)
+    if (payload.length() > 512)
         throw std::runtime_error("payload too large");
     if (sendto(sockfd, payload.data(), payload.length(), 0, (sockaddr *)&ss,
                sslen) != (ssize_t) payload.length()) {
@@ -292,7 +291,7 @@ ProbeResult Prober::on_socket_readable_() {
     r.is_ipv4 = use_ipv4;
 
     timespec arr_time;
-    if (clock_gettime(CLOCK_BOOTTIME, &arr_time) != 0)
+    if (clock_gettime(CLOCK_MONOTONIC, &arr_time) != 0)
         throw std::runtime_error("clock_gettime() failed");
     r.rtt = calculate_rtt(arr_time, start_time);
 

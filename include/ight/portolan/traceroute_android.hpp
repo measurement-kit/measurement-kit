@@ -92,7 +92,7 @@ class Prober : public NonCopyable, public NonMovable {
   private:
     int sockfd = -1;              ///< socket descr
     bool probe_pending = false;   ///< probe is pending
-    timespec start_time{};        ///< start time
+    timespec start_time{0, 0};    ///< start time
     bool use_ipv4 = true;         ///< using IPv4?
     event_base *evbase = nullptr; ///< event base
     event *evp = nullptr;         ///< event pointer
@@ -127,9 +127,11 @@ class Prober : public NonCopyable, public NonMovable {
     /// Private constructor to enforce using `open()`
     /// \param use_ipv4 Whether to use IPv4
     /// \param port The port to bind
+    /// \param timeout Timeout for each probe (optional)
     /// \param evbase Event base to use (optional)
     /// \throws Exception on error
-    Prober(bool use_ipv4, int port, event_base *evbase = nullptr);
+    Prober(bool use_ipv4, int port, double timeout = 1.0,
+           event_base *evbase = nullptr);
 
   public:
     /// Destroys the prober
@@ -215,11 +217,15 @@ class Prober : public NonCopyable, public NonMovable {
     /// Constructs movable/copiable prober
     /// \param use_ipv4 Whether to use IPv4
     /// \param port The port to bind
+    /// \param timeout Timeout for each probe (use default if not specified)
     /// \param evbase Event base to use (use default if not specified)
     /// \throws Exception on error
     static SharedPointer<Prober> open(bool use_ipv4, int port,
-            event_base *evbase = ight_get_global_event_base()) {
-        return SharedPointer<Prober>{new Prober(use_ipv4, port, evbase)};
+                                      double timeout = 1.0,
+                                      event_base *evbase
+                                          = ight_get_global_event_base()) {
+        return SharedPointer<Prober>{new Prober(use_ipv4, port,
+                                                timeout, evbase)};
     }
 };
 

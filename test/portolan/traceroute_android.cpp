@@ -23,37 +23,38 @@ using namespace ight::portolan::traceroute_android;
 
 TEST_CASE("Typical IPv4 traceroute usage") {
 
-    auto prober = Prober::open(true, 54321);
+    std::string payload(256, '\0');
+    auto prober = Prober::open(true, 11829);
     auto ttl = 1;
 
-    prober->on_result([prober, &ttl](ProbeResult r) {
+    prober->on_result([prober, &ttl, &payload](ProbeResult r) {
         std::cout << ttl << " " << r.interface_ip << " " << r.rtt << " ms\n";
         if (r.get_meaning() != Meaning::TTL_EXCEEDED || ttl >= 64) {
             ight_break_loop();
             return;
         }
-        prober->send_probe("130.192.16.172", 33434, ++ttl, "antani");
+        prober->send_probe("8.8.8.8", 33434, ++ttl, payload);
     });
 
-    prober->on_timeout([prober, &ttl]() {
+    prober->on_timeout([prober, &ttl, &payload]() {
         std::cout << ttl << " *\n";
         if (ttl >= 64) {
             ight_break_loop();
             return;
         }
-        prober->send_probe("130.192.16.172", 33434, ++ttl, "antani");
+        prober->send_probe("8.8.8.8", 33434, ++ttl, payload);
     });
 
-    prober->on_error([prober, &ttl](std::runtime_error err) {
+    prober->on_error([prober, &ttl, &payload](std::runtime_error err) {
         std::cout << ttl << " error: " << err.what() << "\n";
         if (ttl >= 64) {
             ight_break_loop();
             return;
         }
-        prober->send_probe("130.192.16.172", 33434, ++ttl, "antani");
+        prober->send_probe("8.8.8.8", 33434, ++ttl, payload);
     });
 
-    prober->send_probe("130.192.16.172", 33434, ttl, "antani");
+    prober->send_probe("8.8.8.8", 33434, ttl, payload);
     ight_loop();
 
     // Clear self references caused by capture lists to avoid memleaks
