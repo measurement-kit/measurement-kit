@@ -16,7 +16,6 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ight/portolan/traceroute_android.hpp>
-#include <ight/common/poller.hpp>
 
 #include <iostream>
 
@@ -24,7 +23,7 @@ using namespace ight::portolan::traceroute_android;
 
 TEST_CASE("Typical IPv4 traceroute usage") {
 
-    auto prober = Prober::open(true, 54321, ight_get_global_event_base());
+    auto prober = Prober::open(true, 54321);
     auto ttl = 1;
 
     prober->on_result([prober, &ttl](ProbeResult r) {

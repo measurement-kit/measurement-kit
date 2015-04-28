@@ -35,8 +35,8 @@
 // We use this on Android and compile this on all Linuxes
 #ifdef __linux__
 
-#include <ight/common/constraints.hpp>
 #include <ight/common/pointer.hpp>
+#include <ight/common/poller.hpp>
 
 #include <event2/event.h>
 
@@ -201,13 +201,24 @@ class Prober : public NonCopyable, public NonMovable {
     /// Set callback called when there is an error
     void on_error(std::function<void(std::runtime_error)> cb) { error_cb = cb; }
 
+    /// Constructs movable/copiable prober not bound to any event_base
+    /// \param use_ipv4 Whether to use IPv4
+    /// \param port The port to bind
+    /// \throws Exception on error
+    /// \remark This function name finishes with underscore to signal
+    /// that it should not be invoked directly unless you want to
+    /// implement your own poll() based loop
+    static SharedPointer<Prober> open_(bool use_ipv4, int port) {
+        return SharedPointer<Prober>{new Prober(use_ipv4, port)};
+    }
+
     /// Constructs movable/copiable prober
     /// \param use_ipv4 Whether to use IPv4
     /// \param port The port to bind
-    /// \param evbase Event base to use
+    /// \param evbase Event base to use (use default if not specified)
     /// \throws Exception on error
     static SharedPointer<Prober> open(bool use_ipv4, int port,
-                                      event_base *evbase = nullptr) {
+            event_base *evbase = ight_get_global_event_base()) {
         return SharedPointer<Prober>{new Prober(use_ipv4, port, evbase)};
     }
 };
