@@ -79,6 +79,13 @@ struct ProbeResult {
     Meaning get_meaning();
 };
 
+/// Result of send_probe_noexcept()
+struct SendResult {
+    std::runtime_error error{""};
+    bool ok = true;
+    operator bool() { return ok; }
+};
+
 /// Sends UDP pings with specified TTL
 class Prober : public NonCopyable, public NonMovable {
 
@@ -151,6 +158,24 @@ class Prober : public NonCopyable, public NonMovable {
     /// \param payload packet payload
     /// \throws Exception on error
     void send_probe(std::string addr, int port, int ttl, std::string payload);
+
+    /// Send a traceroute probe
+    /// \param addr Destination address
+    /// \param port Destination port
+    /// \param ttl Time to live
+    /// \param payload packet payload
+    /// \returns send result object
+    SendResult send_probe_noexcept(std::string addr, int port, int ttl,
+                                   std::string payload) {
+        SendResult result;
+        try {
+            send_probe(addr, port, ttl, payload);
+        } catch (std::runtime_error err) {
+            result.error = err;
+            result.ok = false;
+        }
+        return result;
+    }
 
     /// Call this when you don't receive a response within timeout
     /// \remark This function name finishes with underscore to signal
