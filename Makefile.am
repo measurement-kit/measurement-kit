@@ -12,7 +12,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 LIBIGHT_I_FLAGS = -I $(top_srcdir)/include
 LIBIGHT_I_FLAGS += -I $(top_srcdir)/src
-LIBIGHT_W_FLAGS = -Wall -Wmissing-prototypes -Wextra -pedantic
+LIBIGHT_W_FLAGS = -Wall -Wextra -pedantic
 
 VERSION_INFO = 4:0:0
 AM_CFLAGS = -pthread $(LIBIGHT_W_FLAGS) $(LIBIGHT_I_FLAGS)
