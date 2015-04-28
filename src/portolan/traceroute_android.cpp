@@ -37,32 +37,26 @@
 #include <ight/common/log.hpp>
 #include <ight/common/utils.hpp>
 
-// TODO: prune non-needed includez
-#include <assert.h>
-#include <stdio.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/select.h>
-#include <string.h>
-#include <netdb.h>
+#include <sys/time.h>
+
 #include <netinet/in.h>
 #include <netinet/ip6.h>
 #include <netinet/icmp6.h>
 #include <netinet/ip_icmp.h>
-#include <linux/errqueue.h>
-#include <stdlib.h>
-#include <time.h>
-#include <sys/time.h>
-#include <errno.h>
-#include <poll.h>
-#include <unistd.h>
-#include <fcntl.h>
 
-// Needed to pull error code definitions on Android
+#include <linux/errqueue.h>
 #ifdef __ANDROID__
-#include <linux/icmp.h>
+#include <linux/icmp.h>  // Needed to pull error code definitions
 #endif
+
+#include <arpa/inet.h>
+
+#include <assert.h>
+#include <time.h>
+#include <unistd.h>
 
 using namespace ight::portolan::traceroute_android;
 
