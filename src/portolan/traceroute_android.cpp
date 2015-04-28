@@ -30,12 +30,12 @@
 // on Android platforms (and other Linux-based platforms).
 //
 
+// We use this on Android but we also compile this for Linux systems
+#ifdef __linux__
+
 #include <ight/portolan/traceroute_android.hpp>
 #include <ight/common/log.hpp>
 #include <ight/common/utils.hpp>
-
-// We use this on Android but we also compile this for Linux systems
-#ifdef __linux__
 
 // TODO: prune non-needed includez
 #include <assert.h>
@@ -101,7 +101,7 @@ Meaning ProbeResult::get_meaning() {
 }
 
 std::string Prober::get_source_addr(bool use_ipv4, sock_extended_err *se) {
-    // TODO: refactor this function
+    // TODO: I'm not annoyed by this function, if you are feel free to refactor
     if (use_ipv4) {
         char ip[INET_ADDRSTRLEN];
         const sockaddr_in *sin = (const sockaddr_in *)SO_EE_OFFENDER(se);
@@ -128,15 +128,13 @@ double Prober::calculate_rtt(struct timespec end, struct timespec start) {
         temp.tv_sec = end.tv_sec - start.tv_sec;
         temp.tv_nsec = end.tv_nsec - start.tv_nsec;
     }
-    long int tmp = NSEC_PER_SEC * temp.tv_sec;
+    long tmp = NSEC_PER_SEC * temp.tv_sec;
     tmp += temp.tv_nsec;
     double rtt_ms = (double)tmp / MICROSEC_PER_SEC;
     if (rtt_ms < 0)
         rtt_ms = -1.0; // XXX
     return rtt_ms;
 }
-
-int Prober::get_ttl(void *data) { return *((int *)data); }
 
 void Prober::event_callback(int, short event, void *opaque) {
     Prober *prober = static_cast<Prober *>(opaque);
@@ -169,6 +167,7 @@ void Prober::close() {
         event_free(evp);
         evp = NULL;
     }
+    // Note: this is to clear possible self references
     result_cb = nullptr;
     error_cb = nullptr;
     timeout_cb = nullptr;
@@ -222,6 +221,7 @@ Prober::Prober(bool use_ipv4_, int port, event_base *evbase_) {
     evbase = evbase_;
     if (evbase != NULL) {
         timeval tv;
+        // Note: since here we use this, object cannot be copied/moved
         if ((evp = event_new(evbase, sockfd, EV_READ | EV_PERSIST,
                              event_callback, this)) == NULL) {
             close();
@@ -241,9 +241,13 @@ void Prober::send_probe(std::string addr, int port, int ttl,
     sockaddr_storage ss;
     socklen_t sslen;
 
-    // XXX: Until we figure out how to better deal with large payloads
-    if (payload.length() > 128)
-        throw std::runtime_error("payload too large");
+    if (sockfd == -1)
+        throw std::runtime_error("Programmer error");  // already close()d
+
+    // Note: until we figure out exactly how to deal with overlapped
+    // probes enforce to traceroute hop by hop only
+    if (probe_pending)
+        throw std::runtime_error("Another probe is pending");
 
     if (use_ipv4) {
         ipproto = IPPROTO_IP;
@@ -264,8 +268,12 @@ void Prober::send_probe(std::string addr, int port, int ttl,
     if (clock_gettime(CLOCK_BOOTTIME, &start_time) != 0)
         throw std::runtime_error("clock_gettime() failed");
 
+    // Note: cast to ssize_t safe because payload length is bounded
+    // We may want however to increase the maximum accepted length
+    if (payload.length() > 128)
+        throw std::runtime_error("payload too large");
     if (sendto(sockfd, payload.data(), payload.length(), 0, (sockaddr *)&ss,
-               sslen) < 0) {
+               sslen) != (ssize_t) payload.length()) {
         throw std::runtime_error("sendto() failed");
     }
 
@@ -283,8 +291,6 @@ ProbeResult Prober::on_socket_readable_() {
     cmsghdr *cmsg;
     iovec iov;
 
-    // XXX We don't know whether the error queue contains more than one
-    // error message, so this code is meant to traceroute hop-by-hop.
     if (!probe_pending)
         throw std::runtime_error("No probe is pending");
     probe_pending = false;
@@ -337,6 +343,7 @@ ProbeResult Prober::on_socket_readable_() {
             continue;
         }
 
+        // Be robust to refactoring
         assert(cmsg->cmsg_type == expected_type_recverr);
 
         socket_error = (sock_extended_err *)CMSG_DATA(cmsg);

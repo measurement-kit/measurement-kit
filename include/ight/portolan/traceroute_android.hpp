@@ -24,13 +24,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef LIBIGHT_PORTOLAN_TRACEROUTE_HPP
-#define LIBIGHT_PORTOLAN_TRACEROUTE_HPP
+#ifndef LIBIGHT_PORTOLAN_TRACEROUTE_ANDROID_HPP
+#define LIBIGHT_PORTOLAN_TRACEROUTE_ANDROID_HPP
 
 //
 // This file contains the primitives needed to run a traceroute
 // on Android platforms (and other Linux-based platforms).
 //
+
+// We use this on Android and compile this on all Linuxes
+#ifdef __linux__
 
 #include <ight/common/constraints.hpp>
 #include <ight/common/pointer.hpp>
@@ -41,9 +44,6 @@
 
 #include <functional>
 #include <string>
-
-// We use this on Android and compile this on all Linuxes
-#ifdef __linux__
 
 struct sock_extended_err; // Forward declaration
 
@@ -94,10 +94,10 @@ class Prober : public NonCopyable, public NonMovable {
     std::function<void()> timeout_cb;                 ///< on timeout callback
     std::function<void(std::runtime_error)> error_cb; ///< on error callback
 
-    /// Returns the source IPv4 address of the error message.
+    /// Returns the source address of the error message.
     /// \param use_ipv4 whether we are using IPv4
     /// \param err socket error structure
-    /// \return ip source address of the error message
+    /// \return source address of the error message
     static std::string get_source_addr(bool use_ipv4, sock_extended_err *err);
 
     /// Returns the Round Trip Time value in milliseconds
@@ -109,31 +109,35 @@ class Prober : public NonCopyable, public NonMovable {
     /// Returns the Time to Live of the error message
     /// \param data CMSG_DATA(cmsg)
     /// \return ttl of the error message
-    static int get_ttl(void *data);
+    static int get_ttl(void *data) { return *((int *)data); }
 
     /// Callback invoked when the socket is readable
     /// \param so Socket descriptor
     /// \param event Event that occurred
     /// \param ptr Opaque pointer to this class
-    static void event_callback(int so, short, void *);
+    static void event_callback(int so, short event, void *ptr);
 
-  public:
-    /// Constructs the prober on the stack
+    /// Private constructor to enforce using `open()`
     /// \param use_ipv4 Whether to use IPv4
     /// \param port The port to bind
-    /// \param evbase Event base to use
+    /// \param evbase Event base to use (optional)
     /// \throws Exception on error
     Prober(bool use_ipv4, int port, event_base *evbase = nullptr);
 
+  public:
     /// Destroys the prober
     ~Prober() { close(); }
 
     /// Idempotent cleanup function
+    /// \warning Not calling this function when you are done with this
+    /// object may cause memory leaks
     void close();
 
     /// Get the underlying UDP socket
     /// \throws Exception on error
-    /// \deprecated
+    /// \remark This function name finishes with underscore to signal
+    /// that it should not be invoked directly unless you want to
+    /// implement your own poll() based loop
     int get_socket_() {
         if (sockfd < 0)
             throw std::runtime_error("Programmer error");
@@ -183,6 +187,6 @@ class Prober : public NonCopyable, public NonMovable {
     }
 };
 
-}}}    // namespaces
-#endif // __linux__
-#endif // LIBIGHT_PORTOLAN_TRACEROUTE_H
+}}}
+#endif
+#endif
