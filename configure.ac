@@ -238,7 +238,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>],
      #
      AC_MSG_CHECKING([whether libc++ is available])
      CXXFLAGS="-std=c++11 -stdlib=libc++"
-     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>],
+     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>]
                                          [std::function<void(void)> f;]])],
         [
          AC_MSG_RESULT([yes])
@@ -260,7 +260,7 @@ CXXFLAGS="-Werror -Wmissing-prototypes"
 ight_cxx_stdlib_flags=""
 AC_MSG_CHECKING([whether the C++ compiler supports -Wmissing-prototypes])
 AC_LANG_PUSH([C++])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <string>],
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <string>]
                                     [std::string s;]])],
     [
      AC_MSG_RESULT([yes])
