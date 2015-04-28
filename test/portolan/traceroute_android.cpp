@@ -6,7 +6,7 @@
  */
 
 //
-// Tests for portolan/traceroute_android.hpp
+// Tests for portolan/traceroute_android.{c,h}pp
 //
 
 // We use this on Android and compile this on all Linuxes
@@ -16,26 +16,21 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ight/portolan/traceroute_android.hpp>
+#include <ight/common/poller.hpp>
 
 #include <iostream>
 
-#include <poll.h>
-
 using namespace ight::portolan::traceroute_android;
 
-TEST_CASE("Basic IPv4 traceroute functionality") {
-    event_base *evbase = event_base_new();
-    if (evbase == NULL)
-        throw std::bad_alloc();
+TEST_CASE("Typical IPv4 traceroute usage") {
 
-    SharedPointer<Prober> prober = Prober::open(true, 54321, evbase);
-    int ttl = 1;
+    auto prober = Prober::open(true, 54321, ight_get_global_event_base());
+    auto ttl = 1;
 
-    prober->on_result([prober, &evbase, &ttl](ProbeResult r) {
-        std::cout << ttl << " " << r.interface_ip <<  " (" << r.interface_ip
-                  << ") " << r.rtt << " ms\n";
+    prober->on_result([prober, &ttl](ProbeResult r) {
+        std::cout << ttl << " " << r.interface_ip << " " << r.rtt << " ms\n";
         if (r.get_meaning() != Meaning::TTL_EXCEEDED || ttl >= 64) {
-            event_base_loopbreak(evbase);
+            ight_break_loop();
             return;
         }
         prober->send_probe("130.192.16.172", 33434, ++ttl, "antani");
@@ -43,22 +38,26 @@ TEST_CASE("Basic IPv4 traceroute functionality") {
 
     prober->on_timeout([prober, &ttl]() {
         std::cout << ttl << " *\n";
+        if (ttl >= 64) {
+            ight_break_loop();
+            return;
+        }
         prober->send_probe("130.192.16.172", 33434, ++ttl, "antani");
     });
 
-    prober->on_error([prober, &evbase, &ttl](std::runtime_error err) {
-        std::cout << "Error occurred: " << err.what() << "\n";
+    prober->on_error([prober, &ttl](std::runtime_error err) {
+        std::cout << ttl << " error: " << err.what() << "\n";
         if (ttl >= 64) {
-            event_base_loopbreak(evbase);
+            ight_break_loop();
+            return;
         }
         prober->send_probe("130.192.16.172", 33434, ++ttl, "antani");
     });
 
     prober->send_probe("130.192.16.172", 33434, ttl, "antani");
-    event_base_dispatch(evbase);
+    ight_loop();
 
+    // Clear self references caused by capture lists to avoid memleaks
     prober->close();
-    event_base_free(evbase);
 }
-
-#endif  // __linux__
+#endif
