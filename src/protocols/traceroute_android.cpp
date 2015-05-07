@@ -124,7 +124,7 @@ void AndroidProber::cleanup() {
     }
 }
 
-AndroidProber::AndroidProber(bool use_ipv4_, int port, double timeout,
+AndroidProber::AndroidProber(bool use_ipv4_, int port,
                              event_base *evbase_) {
 
     sockaddr_storage ss;
@@ -132,8 +132,8 @@ AndroidProber::AndroidProber(bool use_ipv4_, int port, double timeout,
     int level_sock, opt_recverr, level_proto, opt_recvttl, family;
     const int val = 1;
 
-    ight_debug("AndroidProber(%d, %d, %lf, %p) => %p", use_ipv4_, port,
-               timeout, (void *) evbase_, (void *) this);
+    ight_debug("AndroidProber(%d, %d, %p) => %p", use_ipv4_, port,
+               (void *) evbase_, (void *) this);
 
     use_ipv4 = use_ipv4_;
 
@@ -175,25 +175,21 @@ AndroidProber::AndroidProber(bool use_ipv4_, int port, double timeout,
 
     evbase = evbase_;
     if (evbase != NULL) {
-        timeval tv;
         // Note: since here we use `this`, object cannot be copied/moved
-        if ((evp = event_new(evbase, sockfd, EV_READ | EV_PERSIST,
+        if ((evp = event_new(evbase, sockfd, EV_READ,
                              event_callback, this)) == NULL) {
             cleanup();
             throw std::runtime_error("event_new() failed");
-        }
-        if (event_add(evp, ight_timeval_init(&tv, timeout)) != 0) {
-            cleanup();
-            throw std::runtime_error("event_add() failed");
         }
     }
 }
 
 void AndroidProber::send_probe(std::string addr, int port, int ttl,
-                               std::string payload) {
+                               std::string payload, double timeout) {
     int ipproto, ip_ttl, family;
     sockaddr_storage ss;
     socklen_t sslen;
+    timeval tv;
 
     ight_debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port, ttl,
                payload.length());
@@ -233,6 +229,9 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
                sslen) != (ssize_t)payload.length()) {
         throw std::runtime_error("sendto() failed");
     }
+
+    if (event_add(evp, ight_timeval_init(&tv, timeout)) != 0)
+        throw std::runtime_error("event_add() failed");
 
     probe_pending = true;
 }

@@ -83,9 +83,10 @@ class ProberInterface {
     /// \param port Destination port
     /// \param ttl Time to live
     /// \param payload packet payload
+    /// \param timeout Timeout for this probe
     /// \throws Exception on error
     virtual void send_probe(std::string addr, int port, int ttl,
-                            std::string payload) = 0;
+                            std::string payload, double timeout) = 0;
 
     /// Set callback called when result is available
     virtual void on_result(std::function<void(ProbeResult)> cb) = 0;
@@ -107,17 +108,17 @@ template <class Impl> class Prober : public ProberInterface {
     /// Constructor
     /// \param use_ipv4 Whether to use IPv4
     /// \param port The port to bind
-    /// \param timeout Timeout for each probe (optional)
     /// \param evbase Event base to use (optional)
     /// \throws Exception on error
-    Prober(bool use_ipv4, int port, double timeout = 1.0,
+    Prober(bool use_ipv4, int port,
            event_base *evbase = ight_get_global_event_base()) {
-        impl.reset(new Impl(use_ipv4, port, timeout, evbase));
+        impl.reset(new Impl(use_ipv4, port, evbase));
     }
 
     virtual void send_probe(std::string addr, int port, int ttl,
-                            std::string payload) override final {
-        impl->send_probe(addr, port, ttl, payload);
+                            std::string payload, double timeout)
+                            override final {
+        impl->send_probe(addr, port, ttl, payload, timeout);
     }
 
     virtual void on_result(std::function<void(ProbeResult)> cb) override final {

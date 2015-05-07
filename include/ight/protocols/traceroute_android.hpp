@@ -101,11 +101,9 @@ class AndroidProber : public NonCopyable,
     /// Constructor
     /// \param use_ipv4 Whether to use IPv4
     /// \param port The port to bind
-    /// \param timeout Timeout for each probe (optional)
     /// \param evbase Event base to use (optional)
     /// \throws Exception on error
-    AndroidProber(bool use_ipv4, int port, double timeout = 1.0,
-                  event_base *evbase = nullptr);
+    AndroidProber(bool use_ipv4, int port, event_base *evbase = nullptr);
 
     /// Destructor
     ~AndroidProber() { cleanup(); }
@@ -131,7 +129,8 @@ class AndroidProber : public NonCopyable,
     // --- API shared by all probers ---
 
     virtual void send_probe(std::string addr, int port, int ttl,
-                            std::string payload) override final;
+                            std::string payload, double timeout)
+                            override final;
 
     virtual void on_result(std::function<void(ProbeResult)> cb) override final {
         result_cb = cb;

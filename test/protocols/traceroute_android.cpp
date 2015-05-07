@@ -31,7 +31,7 @@ TEST_CASE("Typical IPv4 traceroute usage") {
             ight_break_loop();
             return;
         }
-        prober.send_probe("8.8.8.8", 33434, ++ttl, payload);
+        prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
     });
 
     prober.on_timeout([&prober, &ttl, &payload]() {
@@ -40,7 +40,7 @@ TEST_CASE("Typical IPv4 traceroute usage") {
             ight_break_loop();
             return;
         }
-        prober.send_probe("8.8.8.8", 33434, ++ttl, payload);
+        prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
     });
 
     prober.on_error([&prober, &ttl, &payload](std::runtime_error err) {
@@ -49,10 +49,10 @@ TEST_CASE("Typical IPv4 traceroute usage") {
             ight_break_loop();
             return;
         }
-        prober.send_probe("8.8.8.8", 33434, ++ttl, payload);
+        prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
     });
 
-    prober.send_probe("8.8.8.8", 33434, ttl, payload);
+    prober.send_probe("8.8.8.8", 33434, ttl, payload, 1.0);
     ight_loop();
 }
 #endif
