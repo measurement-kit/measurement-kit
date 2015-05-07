@@ -111,8 +111,6 @@ int ight_storage_init(struct sockaddr_storage *storage, socklen_t *salen,
     int _port;
     const char *errstr;
 
-    ight_info("utils:ight_storage_init - enter");
-
     _port = (int)ight_strtonum(port, 0, 65535, &errstr);
     if (errstr != NULL) {
         ight_warn("utils:ight_storage_init: invalid port");
