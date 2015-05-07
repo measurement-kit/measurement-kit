@@ -1,6 +1,13 @@
 /*-
- * Copyright (c) 2015, Adriano Faggiani, Enrico Gregori, Luciano Lenzini,
- * Valerio Luconi
+ * This file is part of Libight <https://libight.github.io/>.
+ *
+ * Libight is free software. See AUTHORS and LICENSE for more
+ * information on the copying conditions.
+ *
+ * =========================================================================
+ *
+ * Portions Copyright (c) 2015, Adriano Faggiani, Enrico Gregori,
+ * Luciano Lenzini, Valerio Luconi
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,77 +32,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-//
-// This file contains the primitives needed to run a traceroute
-// on Android platforms (and other Linux-based platforms).
-//
+/// Android implementation of prober
 
-// We use this on Android but we also compile this for Linux systems
+// This is meant to run on Android but can run on all Linux systems
 #ifdef __linux__
 
-#include <ight/portolan/traceroute_android.hpp>
 #include <ight/common/log.hpp>
 #include <ight/common/utils.hpp>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <sys/time.h>
-
-#include <netinet/in.h>
-#include <netinet/ip6.h>
-#include <netinet/icmp6.h>
-#include <netinet/ip_icmp.h>
-
-#include <linux/errqueue.h>
-#ifdef __ANDROID__
-#include <linux/icmp.h>  // Needed to pull error code definitions
-#endif
+#include <ight/protocols/traceroute_android.hpp>
 
 #include <arpa/inet.h>
+#include <linux/errqueue.h>
 
 #include <assert.h>
-#include <time.h>
+#include <string.h>
 #include <unistd.h>
 
-using namespace ight::portolan::traceroute_android;
+using namespace ight::protocols::traceroute;
 
-struct ProbeResultMapping {
-    unsigned char type;
-    unsigned char code;
-    Meaning meaning;
-};
-
-ProbeResultMapping MAPPINGv4[] = {
-    {ICMP_TIME_EXCEEDED, ICMP_EXC_TTL, Meaning::TTL_EXCEEDED},
-    {ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, Meaning::DEST_REACHED},
-    {ICMP_DEST_UNREACH, ICMP_PROT_UNREACH, Meaning::PROTO_NOT_IMPL},
-    {ICMP_DEST_UNREACH, ICMP_NET_UNREACH, Meaning::NO_ROUTE_TO_HOST},
-    {ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, Meaning::ADDRESS_UNREACH},
-    {255, 255, Meaning::OTHER},
-};
-
-ProbeResultMapping MAPPINGv6[] = {
-    {ICMP6_TIME_EXCEEDED, ICMP6_TIME_EXCEED_TRANSIT, Meaning::TTL_EXCEEDED},
-    {ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_NOPORT, Meaning::DEST_REACHED},
-    {ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_NOROUTE, Meaning::NO_ROUTE_TO_HOST},
-    {ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_ADDR, Meaning::ADDRESS_UNREACH},
-    {ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_ADMIN, Meaning::ADMIN_FILTER},
-    {255, 255, Meaning::OTHER},
-};
-
-Meaning ProbeResult::get_meaning() {
-    for (auto m = is_ipv4 ? &MAPPINGv4[0] : &MAPPINGv6[0];
-         m->meaning != Meaning::OTHER; ++m) {
-        if (m->type == icmp_type && m->code == icmp_code) {
-            return m->meaning;
-        }
-    }
-    return Meaning::OTHER;
-}
-
-std::string Prober::get_source_addr(bool use_ipv4, sock_extended_err *se) {
-    // TODO: I'm not annoyed by this function, if you are feel free to refactor
+std::string AndroidProber::get_source_addr(bool use_ipv4,
+                                           sock_extended_err *se) {
+    // Note: I'm not annoyed by this function, if you are feel free to refactor
     if (use_ipv4) {
         char ip[INET_ADDRSTRLEN];
         const sockaddr_in *sin = (const sockaddr_in *)SO_EE_OFFENDER(se);
@@ -111,7 +68,8 @@ std::string Prober::get_source_addr(bool use_ipv4, sock_extended_err *se) {
     }
 }
 
-double Prober::calculate_rtt(struct timespec end, struct timespec start) {
+double AndroidProber::calculate_rtt(struct timespec end,
+                                    struct timespec start) {
     const long NSEC_PER_SEC = 1000000000;
     const long MICROSEC_PER_SEC = 1000000;
     timespec temp;
@@ -130,17 +88,19 @@ double Prober::calculate_rtt(struct timespec end, struct timespec start) {
     return rtt_ms;
 }
 
-void Prober::event_callback(int, short event, void *opaque) {
-    Prober *prober = static_cast<Prober *>(opaque);
+void AndroidProber::event_callback(int, short event, void *opaque) {
+    AndroidProber *prober = static_cast<AndroidProber *>(opaque);
+
+    ight_debug("event_callback(_, %d, %p)", event, opaque);
 
     if ((event & EV_TIMEOUT) != 0) {
-        prober->on_timeout_();
+        prober->on_timeout();
         prober->timeout_cb();
 
     } else if ((event & EV_READ) != 0) {
         ProbeResult result;
         try {
-            result = prober->on_socket_readable_();
+            result = prober->on_socket_readable();
         } catch (std::runtime_error error) {
             prober->error_cb(error);
             return;
@@ -151,28 +111,29 @@ void Prober::event_callback(int, short event, void *opaque) {
         prober->error_cb(std::runtime_error("Unexpected event error"));
 }
 
-void Prober::close() {
-    if (sockfd != -1) {
+void AndroidProber::cleanup() {
+    ight_debug("cleanup(): %p", (void *) this);
+    if (sockfd >= 0) {
         ::close(sockfd);
         sockfd = -1;
     }
     // Note: we don't own evbase
-    if (evbase != nullptr && evp != nullptr) {
+    if (evp != nullptr) {
         event_free(evp);
         evp = NULL;
     }
-    // Note: this is to clear possible self references
-    result_cb = nullptr;
-    error_cb = nullptr;
-    timeout_cb = nullptr;
 }
 
-Prober::Prober(bool use_ipv4_, int port, double timeout, event_base *evbase_) {
+AndroidProber::AndroidProber(bool use_ipv4_, int port, double timeout,
+                             event_base *evbase_) {
 
     sockaddr_storage ss;
     socklen_t sslen;
     int level_sock, opt_recverr, level_proto, opt_recvttl, family;
     const int val = 1;
+
+    ight_debug("AndroidProber(%d, %d, %lf, %p) => %p", use_ipv4_, port,
+               timeout, (void *) evbase_, (void *) this);
 
     use_ipv4 = use_ipv4_;
 
@@ -192,50 +153,53 @@ Prober::Prober(bool use_ipv4_, int port, double timeout, event_base *evbase_) {
 
     sockfd = ight_socket_create(family, SOCK_DGRAM, 0);
     if (sockfd == -1) {
-        close();
+        cleanup();
         throw std::runtime_error("Cannot create socket");
     }
 
     if (setsockopt(sockfd, level_sock, opt_recverr, &val, sizeof(val)) != 0 ||
         setsockopt(sockfd, level_proto, opt_recvttl, &val, sizeof(val)) != 0 ||
         setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) != 0) {
-        close();
+        cleanup();
         throw std::runtime_error("Cannot set socket options");
     }
 
     if (ight_storage_init(&ss, &sslen, family, NULL, port) != 0) {
-        close();
+        cleanup();
         throw std::runtime_error("ight_storage_init() failed");
     }
     if (bind(sockfd, (sockaddr *)&ss, sslen) != 0) {
-        close();
+        cleanup();
         throw std::runtime_error("bind() failed");
     }
 
     evbase = evbase_;
     if (evbase != NULL) {
         timeval tv;
-        // Note: since here we use this, object cannot be copied/moved
+        // Note: since here we use `this`, object cannot be copied/moved
         if ((evp = event_new(evbase, sockfd, EV_READ | EV_PERSIST,
                              event_callback, this)) == NULL) {
-            close();
+            cleanup();
             throw std::runtime_error("event_new() failed");
         }
         if (event_add(evp, ight_timeval_init(&tv, timeout)) != 0) {
-            close();
+            cleanup();
             throw std::runtime_error("event_add() failed");
         }
     }
 }
 
-void Prober::send_probe(std::string addr, int port, int ttl,
-                        std::string payload) {
+void AndroidProber::send_probe(std::string addr, int port, int ttl,
+                               std::string payload) {
     int ipproto, ip_ttl, family;
     sockaddr_storage ss;
     socklen_t sslen;
 
-    if (sockfd == -1)
-        throw std::runtime_error("Programmer error");  // already close()d
+    ight_debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port, ttl,
+               payload.length());
+
+    if (sockfd < 0)
+        throw std::runtime_error("Programmer error"); // already close()d
 
     // Note: until we figure out exactly how to deal with overlapped
     // probes enforce to traceroute hop by hop only
@@ -266,14 +230,14 @@ void Prober::send_probe(std::string addr, int port, int ttl,
     if (payload.length() > 512)
         throw std::runtime_error("payload too large");
     if (sendto(sockfd, payload.data(), payload.length(), 0, (sockaddr *)&ss,
-               sslen) != (ssize_t) payload.length()) {
+               sslen) != (ssize_t)payload.length()) {
         throw std::runtime_error("sendto() failed");
     }
 
     probe_pending = true;
 }
 
-ProbeResult Prober::on_socket_readable_() {
+ProbeResult AndroidProber::on_socket_readable() {
     int expected_level, expected_type_recverr, expected_type_ttl;
     uint8_t expected_origin;
     sock_extended_err *socket_error;
@@ -283,6 +247,9 @@ ProbeResult Prober::on_socket_readable_() {
     msghdr msg;
     cmsghdr *cmsg;
     iovec iov;
+    timespec arr_time;
+
+    ight_debug("on_socket_readable()");
 
     if (!probe_pending)
         throw std::runtime_error("No probe is pending");
@@ -290,10 +257,10 @@ ProbeResult Prober::on_socket_readable_() {
 
     r.is_ipv4 = use_ipv4;
 
-    timespec arr_time;
     if (clock_gettime(CLOCK_MONOTONIC, &arr_time) != 0)
         throw std::runtime_error("clock_gettime() failed");
     r.rtt = calculate_rtt(arr_time, start_time);
+    ight_debug("rtt = %lf", r.rtt);
 
     memset(buff, 0, sizeof(buff));
     iov.iov_base = buff;
@@ -308,6 +275,7 @@ ProbeResult Prober::on_socket_readable_() {
     msg.msg_flags = 0;
     if ((r.recv_bytes = recvmsg(sockfd, &msg, MSG_ERRQUEUE)) < 0)
         throw std::runtime_error("recvmsg() failed");
+    ight_debug("recv_bytes = %lu", r.recv_bytes);
 
     if (use_ipv4) {
         expected_level = SOL_IP;
@@ -333,6 +301,7 @@ ProbeResult Prober::on_socket_readable_() {
         }
         if (cmsg->cmsg_type == expected_type_ttl) {
             r.ttl = get_ttl(CMSG_DATA(cmsg));
+            ight_debug("ttl = %d", r.ttl);
             continue;
         }
 
@@ -345,8 +314,11 @@ ProbeResult Prober::on_socket_readable_() {
             continue;
         }
         r.icmp_type = socket_error->ee_type;
+        ight_debug("icmp_type = %d", r.icmp_type);
         r.icmp_code = socket_error->ee_code;
+        ight_debug("icmp_code = %d", r.icmp_code);
         r.interface_ip = get_source_addr(use_ipv4, socket_error);
+        ight_debug("interface_ip = %s", r.interface_ip.c_str());
     }
 
     return r;

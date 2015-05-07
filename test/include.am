@@ -120,8 +120,8 @@ test_protocols_http_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/protocols/http
 TESTS += test/protocols/http
 
-test_portolan_traceroute_android_SOURCES = test/portolan/traceroute_android.cpp
-test_portolan_traceroute_android_LDADD = libight.la
-test_portolan_traceroute_android_LDFLAGS = -lyaml-cpp
-check_PROGRAMS += test/portolan/traceroute_android
-TESTS += test/portolan/traceroute_android
+test_protocols_traceroute_android_SOURCES = test/protocols/traceroute_android.cpp
+test_protocols_traceroute_android_LDADD = libight.la
+test_protocols_traceroute_android_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/protocols/traceroute_android
+TESTS += test/protocols/traceroute_android
