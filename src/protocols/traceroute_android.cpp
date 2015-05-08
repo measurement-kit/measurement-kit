@@ -230,7 +230,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
         throw std::runtime_error("sendto() failed");
     }
 
-    if (event_add(evp, ight_timeval_init(&tv, timeout)) != 0)
+    if (evp != NULL && event_add(evp, ight_timeval_init(&tv, timeout)) != 0)
         throw std::runtime_error("event_add() failed");
 
     probe_pending = true;
