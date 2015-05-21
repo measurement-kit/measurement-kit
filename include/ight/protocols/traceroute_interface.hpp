@@ -61,7 +61,8 @@ enum class ProbeResultMeaning {
 };
 
 /// Result of a traceroute probe
-struct ProbeResult {
+class ProbeResult {
+  public:
     std::string interface_ip;      ///< Host that replied
     int ttl = 0;                   ///< Response TTL
     double rtt = 0.0;              ///< Round trip time
