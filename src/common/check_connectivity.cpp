@@ -41,12 +41,20 @@ Network::dns_callback(int result, char type, int count, int ttl,
     (void) ttl;
     (void) addresses;
 
-    //
-    // TODO: The following check is good for the unit test but, to be
-    // precise, there are other error conditions that can indicate that
-    // we have connectivity (e.g., DNS_ERR_NOTEXIST).
-    //
-    that->is_up = (result == DNS_ERR_NONE);
+    switch (result) {
+    case DNS_ERR_NONE:
+    case DNS_ERR_FORMAT:
+    case DNS_ERR_SERVERFAILED:
+    case DNS_ERR_NOTEXIST:
+    case DNS_ERR_NOTIMPL:
+    case DNS_ERR_REFUSED:
+    case DNS_ERR_TRUNCATED:
+    case DNS_ERR_NODATA:
+        that->is_up = true;
+        break;
+    default:
+        that->is_up = false;
+    }
 
     if (event_base_loopbreak(that->evbase) != 0) {
         throw std::runtime_error("Cannot exit from event loop");
@@ -60,19 +68,15 @@ Network::Network(void)
         throw std::bad_alloc();
     }
 
-    if ((dnsbase = evdns_base_new(evbase, 0)) == NULL) {
+    if ((dnsbase = evdns_base_new(evbase, 1)) == NULL) {
         cleanup();
         throw std::bad_alloc();
     }
-    if (evdns_base_nameserver_ip_add(dnsbase, "8.8.4.4") != 0) {
-        cleanup();
-        throw std::runtime_error("cannot add IP address");
-    }
 
-    if (evdns_base_resolve_ipv4(dnsbase, "nexa.polito.it", DNS_QUERY_NO_SEARCH,
+    if (evdns_base_resolve_ipv4(dnsbase, "ebay.com", DNS_QUERY_NO_SEARCH,
                                 dns_callback, this) == NULL) {
         cleanup();
-        throw std::runtime_error("cannot resolve 'nexa.polito.it'");
+        throw std::runtime_error("cannot resolve 'ebay.com'");
     }
 
     if (event_base_dispatch(evbase) != 0) {
