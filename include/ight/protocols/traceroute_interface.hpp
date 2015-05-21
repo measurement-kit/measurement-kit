@@ -51,87 +51,87 @@ namespace traceroute {
 
 /// Meaning of a probe result
 enum class ProbeResultMeaning {
-  OTHER = 0,            ///< Another meaning
-  NO_ROUTE_TO_HOST = 1, ///< No route to host
-  ADDRESS_UNREACH = 2,  ///< E.g., link down
-  PROTO_NOT_IMPL = 3,   ///< UDP not implemented
-  DEST_REACHED = 4,     ///< Port is closed = dest. reached
-  TTL_EXCEEDED = 5,     ///< TTL is too small
-  ADMIN_FILTER = 6,     ///< E.g., firewall rule
+    OTHER = 0,            ///< Another meaning
+    NO_ROUTE_TO_HOST = 1, ///< No route to host
+    ADDRESS_UNREACH = 2,  ///< E.g., link down
+    PROTO_NOT_IMPL = 3,   ///< UDP not implemented
+    DEST_REACHED = 4,     ///< Port is closed = dest. reached
+    TTL_EXCEEDED = 5,     ///< TTL is too small
+    ADMIN_FILTER = 6,     ///< E.g., firewall rule
 };
 
 /// Result of a traceroute probe
 class ProbeResult {
-public:
-  std::string interface_ip;      ///< Host that replied
-  int ttl = 0;                   ///< Response TTL
-  double rtt = 0.0;              ///< Round trip time
-  bool is_ipv4 = true;           ///< Are we using IPv4?
-  unsigned char icmp_type = 255; ///< Raw ICMP/ICMPv6 type
-  unsigned char icmp_code = 255; ///< Raw ICMP/ICMPv6 code
-  ssize_t recv_bytes = 0;        ///< Bytes recv'd
+  public:
+    std::string interface_ip;      ///< Host that replied
+    int ttl = 0;                   ///< Response TTL
+    double rtt = 0.0;              ///< Round trip time
+    bool is_ipv4 = true;           ///< Are we using IPv4?
+    unsigned char icmp_type = 255; ///< Raw ICMP/ICMPv6 type
+    unsigned char icmp_code = 255; ///< Raw ICMP/ICMPv6 code
+    ssize_t recv_bytes = 0;        ///< Bytes recv'd
 
-  /// Maps ICMP/ICMPv6 type and code to a meaning
-  ProbeResultMeaning get_meaning();
+    /// Maps ICMP/ICMPv6 type and code to a meaning
+    ProbeResultMeaning get_meaning();
 };
 
 /// Interface of a prober
 class ProberInterface {
 
-public:
-  /// Send a traceroute probe
-  /// \param addr Destination address
-  /// \param port Destination port
-  /// \param ttl Time to live
-  /// \param payload packet payload
-  /// \param timeout Timeout for this probe
-  /// \throws Exception on error
-  virtual void send_probe(std::string addr, int port, int ttl,
-                          std::string payload, double timeout) = 0;
+  public:
+    /// Send a traceroute probe
+    /// \param addr Destination address
+    /// \param port Destination port
+    /// \param ttl Time to live
+    /// \param payload packet payload
+    /// \param timeout Timeout for this probe
+    /// \throws Exception on error
+    virtual void send_probe(std::string addr, int port, int ttl,
+                            std::string payload, double timeout) = 0;
 
-  /// Set callback called when result is available
-  virtual void on_result(std::function<void(ProbeResult)> cb) = 0;
+    /// Set callback called when result is available
+    virtual void on_result(std::function<void(ProbeResult)> cb) = 0;
 
-  /// Set callback called on timeout
-  virtual void on_timeout(std::function<void()> cb) = 0;
+    /// Set callback called on timeout
+    virtual void on_timeout(std::function<void()> cb) = 0;
 
-  /// Set callback called when there is an error
-  virtual void on_error(std::function<void(std::runtime_error)> cb) = 0;
+    /// Set callback called when there is an error
+    virtual void on_error(std::function<void(std::runtime_error)> cb) = 0;
 };
 
 /// Proxy for a prober implementation
 template <class Impl> class Prober : public ProberInterface {
 
-private:
-  std::shared_ptr<Impl> impl;
+  private:
+    std::shared_ptr<Impl> impl;
 
-public:
-  /// Constructor
-  /// \param use_ipv4 Whether to use IPv4
-  /// \param port The port to bind
-  /// \param evbase Event base to use (optional)
-  /// \throws Exception on error
-  Prober(bool use_ipv4, int port,
-         event_base *evbase = ight_get_global_event_base()) {
-    impl.reset(new Impl(use_ipv4, port, evbase));
-  }
+  public:
+    /// Constructor
+    /// \param use_ipv4 Whether to use IPv4
+    /// \param port The port to bind
+    /// \param evbase Event base to use (optional)
+    /// \throws Exception on error
+    Prober(bool use_ipv4, int port,
+           event_base *evbase = ight_get_global_event_base()) {
+        impl.reset(new Impl(use_ipv4, port, evbase));
+    }
 
-  virtual void send_probe(std::string addr, int port, int ttl,
-                          std::string payload, double timeout) final {
-    impl->send_probe(addr, port, ttl, payload, timeout);
-  }
+    virtual void send_probe(std::string addr, int port, int ttl,
+                            std::string payload, double timeout) final {
+        impl->send_probe(addr, port, ttl, payload, timeout);
+    }
 
-  virtual void on_result(std::function<void(ProbeResult)> cb) final {
-    impl->on_result(cb);
-  }
+    virtual void on_result(std::function<void(ProbeResult)> cb) final {
+        impl->on_result(cb);
+    }
 
-  virtual void on_timeout(std::function<void()> cb) final {
-    impl->on_timeout(cb);
-  }
+    virtual void on_timeout(std::function<void()> cb) final {
+        impl->on_timeout(cb);
+    }
 
-  virtual void on_error(std::function<void(std::runtime_error)> cb) final {
-    impl->on_error(cb);
-  }
+    virtual void on_error(std::function<void(std::runtime_error)> cb) final {
+        impl->on_error(cb);
+    }
 };
 
 } // namespace traceroute

@@ -59,87 +59,87 @@ class AndroidProber : public NonCopyable,
                       public NonMovable,
                       public ProberInterface {
 
-private:
-  int sockfd = -1;              ///< socket descr
-  bool probe_pending = false;   ///< probe is pending
-  timespec start_time{0, 0};    ///< start time
-  bool use_ipv4 = true;         ///< using IPv4?
-  event_base *evbase = nullptr; ///< event base
-  event *evp = nullptr;         ///< event pointer
+  private:
+    int sockfd = -1;              ///< socket descr
+    bool probe_pending = false;   ///< probe is pending
+    timespec start_time{0, 0};    ///< start time
+    bool use_ipv4 = true;         ///< using IPv4?
+    event_base *evbase = nullptr; ///< event base
+    event *evp = nullptr;         ///< event pointer
 
-  std::function<void(ProbeResult)> result_cb;       ///< on result callback
-  std::function<void()> timeout_cb;                 ///< on timeout callback
-  std::function<void(std::runtime_error)> error_cb; ///< on error callback
+    std::function<void(ProbeResult)> result_cb;       ///< on result callback
+    std::function<void()> timeout_cb;                 ///< on timeout callback
+    std::function<void(std::runtime_error)> error_cb; ///< on error callback
 
-  /// Returns the source address of the error message.
-  /// \param use_ipv4 whether we are using IPv4
-  /// \param err socket error structure
-  /// \return source address of the error message
-  static std::string get_source_addr(bool use_ipv4, sock_extended_err *err);
+    /// Returns the source address of the error message.
+    /// \param use_ipv4 whether we are using IPv4
+    /// \param err socket error structure
+    /// \return source address of the error message
+    static std::string get_source_addr(bool use_ipv4, sock_extended_err *err);
 
-  /// Returns the Round Trip Time value in milliseconds
-  /// \param end ICMP reply arrival time
-  /// \param start UDP probe send time
-  /// \return RTT value in milliseconds
-  static double calculate_rtt(struct timespec end, struct timespec start);
+    /// Returns the Round Trip Time value in milliseconds
+    /// \param end ICMP reply arrival time
+    /// \param start UDP probe send time
+    /// \return RTT value in milliseconds
+    static double calculate_rtt(struct timespec end, struct timespec start);
 
-  /// Returns the Time to Live of the error message
-  /// \param data CMSG_DATA(cmsg)
-  /// \return ttl of the error message
-  static int get_ttl(void *data) { return *((int *)data); }
+    /// Returns the Time to Live of the error message
+    /// \param data CMSG_DATA(cmsg)
+    /// \return ttl of the error message
+    static int get_ttl(void *data) { return *((int *)data); }
 
-  /// Callback invoked when the socket is readable
-  /// \param so Socket descriptor
-  /// \param event Event that occurred
-  /// \param ptr Opaque pointer to this class
-  static void event_callback(int so, short event, void *ptr);
+    /// Callback invoked when the socket is readable
+    /// \param so Socket descriptor
+    /// \param event Event that occurred
+    /// \param ptr Opaque pointer to this class
+    static void event_callback(int so, short event, void *ptr);
 
-  /// Idempotent cleanup function
-  void cleanup();
+    /// Idempotent cleanup function
+    void cleanup();
 
-public:
-  /// Constructor
-  /// \param use_ipv4 Whether to use IPv4
-  /// \param port The port to bind
-  /// \param evbase Event base to use (optional)
-  /// \throws Exception on error
-  AndroidProber(bool use_ipv4, int port, event_base *evbase = nullptr);
+  public:
+    /// Constructor
+    /// \param use_ipv4 Whether to use IPv4
+    /// \param port The port to bind
+    /// \param evbase Event base to use (optional)
+    /// \throws Exception on error
+    AndroidProber(bool use_ipv4, int port, event_base *evbase = nullptr);
 
-  /// Destructor
-  ~AndroidProber() { cleanup(); }
+    /// Destructor
+    ~AndroidProber() { cleanup(); }
 
-  // --- API of the Linux prober only ---
+    // --- API of the Linux prober only ---
 
-  /// Get the underlying UDP socket
-  /// \throws Exception on error
-  int get_socket() {
-    if (sockfd < 0)
-      throw std::runtime_error("Programmer error");
-    return sockfd;
-  }
+    /// Get the underlying UDP socket
+    /// \throws Exception on error
+    int get_socket() {
+        if (sockfd < 0)
+            throw std::runtime_error("Programmer error");
+        return sockfd;
+    }
 
-  /// Call this when you don't receive a response within timeout
-  void on_timeout() { probe_pending = false; }
+    /// Call this when you don't receive a response within timeout
+    void on_timeout() { probe_pending = false; }
 
-  /// Call this as soon as the socket is readable to get
-  /// the result ICMP error received by the socket and to
-  /// calculate *precisely* the RTT.
-  ProbeResult on_socket_readable();
+    /// Call this as soon as the socket is readable to get
+    /// the result ICMP error received by the socket and to
+    /// calculate *precisely* the RTT.
+    ProbeResult on_socket_readable();
 
-  // --- API shared by all probers ---
+    // --- API shared by all probers ---
 
-  virtual void send_probe(std::string addr, int port, int ttl,
-                          std::string payload, double timeout) final;
+    virtual void send_probe(std::string addr, int port, int ttl,
+                            std::string payload, double timeout) final;
 
-  virtual void on_result(std::function<void(ProbeResult)> cb) final {
-    result_cb = cb;
-  }
+    virtual void on_result(std::function<void(ProbeResult)> cb) final {
+        result_cb = cb;
+    }
 
-  virtual void on_timeout(std::function<void()> cb) final { timeout_cb = cb; }
+    virtual void on_timeout(std::function<void()> cb) final { timeout_cb = cb; }
 
-  virtual void on_error(std::function<void(std::runtime_error)> cb) final {
-    error_cb = cb;
-  }
+    virtual void on_error(std::function<void(std::runtime_error)> cb) final {
+        error_cb = cb;
+    }
 };
 
 } // namespace traceroute
