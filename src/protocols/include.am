@@ -2,11 +2,15 @@ noinst_LTLIBRARIES += src/protocols/libprotocols.la
 
 src_protocols_libprotocols_la_SOURCES = \
 	src/protocols/dns.cpp \
-	src/protocols/http.cpp
+	src/protocols/http.cpp \
+	src/protocols/traceroute_android.cpp \
+	src/protocols/traceroute_interface.cpp
 
 libight_la_LIBADD += src/protocols/libprotocols.la
 
 protocolsincludedir = $(includedir)/ight/protocols
 protocolsinclude_HEADERS = \
     include/ight/protocols/dns.hpp \
-    include/ight/protocols/http.hpp
+    include/ight/protocols/http.hpp \
+    include/ight/protocols/traceroute_android.hpp \
+    include/ight/protocols/traceroute_interface.hpp

@@ -118,6 +118,12 @@ struct timeval *ight_timeval_init(struct timeval *, double);
 int ight_storage_init(struct sockaddr_storage *, socklen_t *, const char *,
                       const char *, const char *);
 
+int ight_storage_init(struct sockaddr_storage *, socklen_t *, int,
+                      const char *, const char *);
+
+int ight_storage_init(struct sockaddr_storage *, socklen_t *, int,
+                      const char *, int);
+
 evutil_socket_t ight_socket_create(int, int, int);
 
 int ight_socket_connect(evutil_socket_t, struct sockaddr_storage *, socklen_t);
