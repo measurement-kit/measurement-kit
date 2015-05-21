@@ -130,18 +130,18 @@ class AndroidProber : public NonCopyable,
 
     virtual void send_probe(std::string addr, int port, int ttl,
                             std::string payload, double timeout)
-                            override final;
+                            final;
 
-    virtual void on_result(std::function<void(ProbeResult)> cb) override final {
+    virtual void on_result(std::function<void(ProbeResult)> cb) final {
         result_cb = cb;
     }
 
-    virtual void on_timeout(std::function<void()> cb) override final {
+    virtual void on_timeout(std::function<void()> cb) final {
         timeout_cb = cb;
     }
 
     virtual void
-    on_error(std::function<void(std::runtime_error)> cb) override final {
+    on_error(std::function<void(std::runtime_error)> cb) final {
         error_cb = cb;
     }
 };
