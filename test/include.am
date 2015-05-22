@@ -16,6 +16,7 @@ check_PROGRAMS += test/echo_client_evbuf
 
 test_common_async_SOURCES = test/common/async.cpp
 test_common_async_LDADD = libight.la
+test_common_async_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/async
 TESTS += test/common/async
 
@@ -27,6 +28,7 @@ TESTS += test/common/delayed_call
 
 test_common_log_SOURCES = test/common/log.cpp
 test_common_log_LDADD = libight.la
+test_common_log_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/log
 TESTS += test/common/log
 
