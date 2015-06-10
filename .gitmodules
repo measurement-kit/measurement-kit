@@ -1,5 +1,4 @@
-[core]
-  ignore = dirty
 [submodule "src/ext"]
   path = src/ext
   url = https://github.com/TheTorProject/libight-deps
+  ignore = dirty
