@@ -1,6 +1,6 @@
 # MeasurementKit
 
-[![Build Status](https://travis-ci.org/TheTorProject/libight.svg?branch=master)](https://travis-ci.org/TheTorProject/libight)
+[![Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit)
 
 MeasurementKit is an experimental library that provides common functionalities
 useful to implement open measurement tools on mobile platforms.
