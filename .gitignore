@@ -79,6 +79,7 @@ test/ooni/tcp_test
 test/protocols/dns
 test/protocols/http
 test/report/file
+test/traceroute/android
 test-driver
 *.log
 *.trs
