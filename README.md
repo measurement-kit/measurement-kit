@@ -1,29 +1,19 @@
-Libight
-=======
+# MeasurementKit
 
 [![Build Status](https://travis-ci.org/TheTorProject/libight.svg?branch=master)](https://travis-ci.org/TheTorProject/libight)
 
-Libight is an experimental library that provides common functionalities
+MeasurementKit is an experimental library that provides common functionalities
 useful to implement open measurement tools on mobile platforms.
-
-As of version 3.0.0, we have successfully compiled and run its tests in the
-following systems: MacOS 10.8, OpenBSD 5.5-current, Ubuntu 13.10.
-
-To build the library you need a C90 compiler, a C++11 compiler and
-a Unix environment. The `./configure` script should check whether all
-the dependencies are in place and should configure the compilers
-properly (C++11 must be enabled, otherwise certain C++11 features
-such as `std::function` will not be recognized).
 
 How to clone the repository
 ---------------------------
 
-To clone properly libight repository, make sure that you specify the
+To properly clone MeasurementKit repository, make sure that you specify the
 `--recursive` command line flag, as in:
 
-    git clone --recursive https://github.com/TheTorProject/libight
+    git clone --recursive https://github.com/measurement-kit/measurement-kit
 
-Such flag tells git to clone not only the libight repository, but also
+Such flag tells git to clone not only the MeasurementKit repository, but also
 the [submodules](http://git-scm.com/docs/git-submodule) contained therein.
 
 Alternatively, once you have cloned the repository, you can checkout all
@@ -31,22 +21,63 @@ the submodules using:
 
     git submodule update --init
 
-How to build it
----------------
+How to build MeasurementKit
+---------------------------
+
+To build the library you need a C90 compiler, a C++11 compiler&mdash;C++11 must
+be enabled, otherwise certain C++11 features such as `std::function` will
+not be recognized&mdash;and a Unix environment.
+
+MeasurementKit depends on:
+
+- [libevent](https://github.com/libevent/libevent)
+- [http-parser](https://github.com/joyent/http-parser)
+- [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+- [Catch](https://github.com/philsquared/Catch) (for tests only)
+- selected [boost](https://github.com/boostorg/) libraries (only [the ones required by yaml-cpp](https://github.com/measurement-kit/measurement-kit-deps/tree/master/boost))
+
+The `./configure` script should check whether all
+the dependencies are in place and should configure the compilers
+properly. If a dependency is not found, `./configure` will
+fall back to the copy of the dependency stored under the
+`src/ext` directory.
+
+The vanilla build process is the following:
 
     autoreconf -i
     ./configure
     make
 
-If libevent is not found, the build system will configure and
-compile the built-in libevent (`src/ext/libevent`). To force
-`./configure` to use the libevent at `DIR`, consider using the
-`--with-libevent=DIR` option. To force `./configure` to use
-the bult-in libevent, specify `--with-libevent=builtin`. For
-example, if you want to force `./configure` to use the libevent
-installed at `/opt/local`, run:
+You can also force `./configure` to select dependencies available
+at specific directories using the following flags:
 
+- `--with-libevent=PREFIX` that tells `./configure` to use the
+libevent library and headers installed at PREFIX
+
+- `--with-libyaml-cpp=PREFIX` that tells `./configure` to use the
+yaml-cpp library and headers installed at PREFIX
+
+- `--with-libboost=PREFIX` that tells `./configure` to use the
+boost headers installed at PREFIX
+
+In all the above cases you can also specify PREFIX equal to
+`builtin` to force `./configure` to use builtin sources.
+
+For example,
+
+- if libevent is installed at `/opt/local` (meaning that `event.h`
+is `/opt/local/include/event.h` and that `libevent.a` is
+`/opt/local/lib/libevent.a`), use
+
+```
     ./configure --with-libevent=/opt/local
+```
+
+- to compile the libevent distributed along with MeasurementKit, use
+
+```
+    ./configure --with-libevent=builtin
+```
 
 To compile the unit test programs, run:
 
