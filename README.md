@@ -5,8 +5,7 @@
 MeasurementKit is an experimental library that provides common functionalities
 useful to implement open measurement tools on mobile platforms.
 
-How to clone the repository
----------------------------
+## How to clone the repository
 
 To properly clone MeasurementKit repository, make sure that you specify the
 `--recursive` command line flag, as in:
@@ -21,8 +20,7 @@ the submodules using:
 
     git submodule update --init
 
-How to build MeasurementKit
----------------------------
+## How to build MeasurementKit
 
 To build the library you need a C90 compiler, a C++11 compiler&mdash;C++11 must
 be enabled, otherwise certain C++11 features such as `std::function` will
@@ -87,3 +85,46 @@ To tell make to produce less output (as in the Linux kernel
 build process) run:
 
     make V=0
+
+## How to use MeasurementKit
+
+The following shows how to use MeasurementKit's OONI library.
+
+```C++
+#include <ight/common/async.hpp>
+#include <ight/common/pointer.hpp>
+#include <ight/common/settings.hpp>
+
+#include <ight/ooni/http_invalid_request_line.hpp>
+
+#include <iostream>
+
+using namespace ight::common::async;
+using namespace ight::common::pointer;
+using namespace ight::ooni::http_invalid_request_line;
+
+int main() {
+  volatile bool complete = false;
+  Async async;
+
+  async.on_complete([](SharedPointer<NetTest> test) {
+    std::clog << "Test complete: " << test->identifier() << "\n";
+  });
+  async.on_empty([&complete]() {
+    std::clog << "All tests complete\n";
+    complete = true;
+  });
+
+  auto test = SharedPointer<HTTPInvalidRequestLine>(
+      new HTTPInvalidRequestLine(Settings{
+        {"backend", "http://nexa.polito.it/"}
+    }));
+  test->set_log_verbose(1);
+  test->set_log_function([](const char *s) {
+    std::clog << s << "\n";
+  });
+  async.run_test(test);
+
+  while (!complete) sleep(1);
+}
+```
