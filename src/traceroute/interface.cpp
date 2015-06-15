@@ -37,6 +37,7 @@
 #include <ight/common/log.hpp>
 #include <ight/traceroute/interface.hpp>
 
+#include <netinet/ip.h> // Defines n_short etc on MacOSX
 #include <netinet/icmp6.h>
 #include <netinet/ip_icmp.h>
 
@@ -52,11 +53,11 @@ struct ProbeResultMapping {
 #define PRM_ ProbeResultMeaning // For readability
 
 static ProbeResultMapping MAPPINGv4[] = {
-    {ICMP_TIME_EXCEEDED, ICMP_TIMXCEED_INTRANS, PRM_::TTL_EXCEEDED},
-    {ICMP_DEST_UNREACH, ICMP_UNREACH_PORT, PRM_::DEST_REACHED},
-    {ICMP_DEST_UNREACH, ICMP_UNREACH_PROTOCOL, PRM_::PROTO_NOT_IMPL},
-    {ICMP_DEST_UNREACH, ICMP_UNREACH_NET, PRM_::NO_ROUTE_TO_HOST},
-    {ICMP_DEST_UNREACH, ICMP_UNREACH_HOST, PRM_::ADDRESS_UNREACH},
+    {ICMP_TIMXCEED, ICMP_TIMXCEED_INTRANS, PRM_::TTL_EXCEEDED},
+    {ICMP_UNREACH, ICMP_UNREACH_PORT, PRM_::DEST_REACHED},
+    {ICMP_UNREACH, ICMP_UNREACH_PROTOCOL, PRM_::PROTO_NOT_IMPL},
+    {ICMP_UNREACH, ICMP_UNREACH_NET, PRM_::NO_ROUTE_TO_HOST},
+    {ICMP_UNREACH, ICMP_UNREACH_HOST, PRM_::ADDRESS_UNREACH},
     {255, 255, PRM_::OTHER},
 };
 
