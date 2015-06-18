@@ -104,27 +104,27 @@ using namespace ight::common::pointer;
 using namespace ight::ooni::http_invalid_request_line;
 
 int main() {
-  volatile bool complete = false;
-  Async async;
+    volatile bool complete = false;
+    Async async;
 
-  async.on_complete([](SharedPointer<NetTest> test) {
-    std::clog << "Test complete: " << test->identifier() << "\n";
-  });
-  async.on_empty([&complete]() {
-    std::clog << "All tests complete\n";
-    complete = true;
-  });
+    async.on_complete([](SharedPointer<NetTest> test) {
+        std::clog << "Test complete: " << test->identifier() << "\n";
+    });
+    async.on_empty([&complete]() {
+        std::clog << "All tests complete\n";
+        complete = true;
+    });
 
-  auto test = SharedPointer<HTTPInvalidRequestLine>(
-      new HTTPInvalidRequestLine(Settings{
-        {"backend", "http://nexa.polito.it/"}
-    }));
-  test->set_log_verbose(1);
-  test->set_log_function([](const char *s) {
-    std::clog << s << "\n";
-  });
-  async.run_test(test);
+    auto test = SharedPointer<HTTPInvalidRequestLine>(
+        new HTTPInvalidRequestLine(Settings{
+            {"backend", "http://nexa.polito.it/"}
+        }));
+    test->set_log_verbose(1);
+    test->set_log_function([](const char *s) {
+        std::clog << s << "\n";
+    });
+    async.run_test(test);
 
-  while (!complete) sleep(1);
+    while (!complete) sleep(1);
 }
 ```
