@@ -120,16 +120,15 @@ TEST_CASE("BuffereventSocket operations") {
     b.close();
 
     // Safe:
-    bufferevent *come_fosse_antani;
     REQUIRE(called == 1);
-    REQUIRE_THROWS(come_fosse_antani = (bufferevent *) b);
+    REQUIRE_THROWS((bufferevent *) b);
 
     // Idempotent:
     b.close();
     b.close();
     b.close();
     REQUIRE(called == 1);
-    REQUIRE_THROWS(come_fosse_antani = (bufferevent *) b);
+    REQUIRE_THROWS((bufferevent *) b);
   }
 
   SECTION("The make() method calls close() when a previous bufev exists") {
