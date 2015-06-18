@@ -55,4 +55,6 @@ TEST_CASE("Typical IPv4 traceroute usage") {
   prober.send_probe("8.8.8.8", 33434, ttl, payload, 1.0);
   ight_loop();
 }
+#else
+int main() { return 0; }
 #endif
