@@ -112,11 +112,13 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
 
         ight_debug("async: bottom of loop thread");
     }
-    ight_debug("async: thread stopped");
+    ight_debug("async: thread detached");
+    state->thread.detach();
     state->thread_running = false;
     if (state->hook_empty) {
         state->hook_empty();
     }
+    ight_debug("async: exiting from thread");
 }
 
 Async::Async(SharedPointer<Poller> poller) {
