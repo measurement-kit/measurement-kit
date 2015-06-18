@@ -75,7 +75,7 @@ static void run_tcp_connect(Async& async) {
 
 TEST_CASE("The async engine works as expected") {
 
-    //ight_set_verbose(1);
+    ight_set_verbose(1);
     Async async;
 
     // Note: the two following callbacks execute in a background thread
@@ -88,15 +88,20 @@ TEST_CASE("The async engine works as expected") {
         complete = true;
     });
 
-    // Create tests in temporary void functions to also check that we can
-    // create them in functions that later return in real apps
-    run_dns_injection(async);
-    run_http_invalid_request_line(async);
-    run_http_invalid_request_line(async);
-    run_tcp_connect(async);
+    for (int i = 0; i < 4; ++i) {
+        ight_debug("do another iteration of tests");
+        complete = false;
 
-    // TODO Maybe implement a better sync mechanism but for now polling will do
-    while (!complete) {
-        sleep(1);
+        // Create tests in temporary void functions to also check that we can
+        // create them in functions that later return in real apps
+        run_dns_injection(async);
+        run_http_invalid_request_line(async);
+        run_http_invalid_request_line(async);
+        run_tcp_connect(async);
+
+        // TODO Maybe implement a better sync mechanism but for now polling will do
+        while (!complete) {
+            sleep(1);
+        }
     }
 }
