@@ -31,6 +31,48 @@ using namespace ight::ooni::dns_injection;
 using namespace ight::ooni::http_invalid_request_line;
 using namespace ight::ooni::tcp_connect;
 
+static void run_http_invalid_request_line(Async &async) {
+    auto test = SharedPointer<HTTPInvalidRequestLine>(
+        new HTTPInvalidRequestLine(Settings{
+            {"backend", "http://nexa.polito.it/"},
+        })
+    );
+    test->set_log_verbose(1);
+    test->set_log_function([](const char *s) {
+        (void) fprintf(stderr, "test #1: %s\n", s);
+    });
+    ight_debug("test created: %llu", test->identifier());
+    async.run_test(test);
+}
+
+static void run_dns_injection(Async& async) {
+    auto test = SharedPointer<DNSInjection>(
+        new DNSInjection("test/fixtures/hosts.txt", Settings{
+            {"nameserver", "8.8.8.8:53"},
+        })
+    );
+    test->set_log_verbose(1);
+    test->set_log_function([](const char *s) {
+        (void) fprintf(stderr, "test #3: %s\n", s);
+    });
+    ight_debug("test created: %llu", test->identifier());
+    async.run_test(test);
+}
+
+static void run_tcp_connect(Async& async) {
+    auto test = SharedPointer<TCPConnect>(
+        new TCPConnect("test/fixtures/hosts.txt", Settings{
+            {"port", "80"},
+        })
+    );
+    test->set_log_verbose(1);
+    test->set_log_function([](const char *s) {
+        (void) fprintf(stderr, "test #4: %s\n", s);
+    });
+    ight_debug("test created: %llu", test->identifier());
+    async.run_test(test);
+}
+
 TEST_CASE("The async engine works as expected") {
 
     //ight_set_verbose(1);
@@ -46,60 +88,12 @@ TEST_CASE("The async engine works as expected") {
         complete = true;
     });
 
-    // Create tests in temporary stack frames to also check that we can
+    // Create tests in temporary void functions to also check that we can
     // create them in functions that later return in real apps
-    {
-        auto test = SharedPointer<HTTPInvalidRequestLine>(
-            new HTTPInvalidRequestLine(Settings{
-                {"backend", "http://nexa.polito.it/"},
-            })
-        );
-        test->set_log_verbose(1);
-        test->set_log_function([](const char *s) {
-            (void) fprintf(stderr, "test #1: %s\n", s);
-        });
-        ight_debug("test created: %llu", test->identifier());
-        async.run_test(test);
-    }
-    {
-        auto test = SharedPointer<HTTPInvalidRequestLine>(
-            new HTTPInvalidRequestLine(Settings{
-                {"backend", "http://www.google.com/"},
-            })
-        );
-        test->set_log_verbose(1);
-        test->set_log_function([](const char *s) {
-            (void) fprintf(stderr, "test #2: %s\n", s);
-        });
-        ight_debug("test created: %llu", test->identifier());
-        async.run_test(test);
-    }
-    {
-        auto test = SharedPointer<DNSInjection>(
-            new DNSInjection("test/fixtures/hosts.txt", Settings{
-                {"nameserver", "8.8.8.8:53"},
-            })
-        );
-        test->set_log_verbose(1);
-        test->set_log_function([](const char *s) {
-            (void) fprintf(stderr, "test #3: %s\n", s);
-        });
-        ight_debug("test created: %llu", test->identifier());
-        async.run_test(test);
-    }
-    {
-        auto test = SharedPointer<TCPConnect>(
-            new TCPConnect("test/fixtures/hosts.txt", Settings{
-                {"port", "80"},
-            })
-        );
-        test->set_log_verbose(1);
-        test->set_log_function([](const char *s) {
-            (void) fprintf(stderr, "test #4: %s\n", s);
-        });
-        ight_debug("test created: %llu", test->identifier());
-        async.run_test(test);
-    }
+    run_dns_injection(async);
+    run_http_invalid_request_line(async);
+    run_http_invalid_request_line(async);
+    run_tcp_connect(async);
 
     // TODO Maybe implement a better sync mechanism but for now polling will do
     while (!complete) {
