@@ -34,6 +34,9 @@
 
 /// Implementation of traceroute interface
 
+// Disable for non Linux until we figure out how to build on iOS
+#ifdef __linux__
+
 #include <ight/common/log.hpp>
 #include <ight/traceroute/interface.hpp>
 
@@ -90,3 +93,5 @@ ProberInterface::~ProberInterface() {}
 
 } // namespace traceroute
 } // namespace ight
+
+#endif

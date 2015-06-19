@@ -36,6 +36,9 @@
 
 /// Interface of traceroute module
 
+// Disable for non Linux until we figure out how to build on iOS
+#ifdef __linux__
+
 #include <ight/common/poller.hpp>
 
 #include <memory>
@@ -153,4 +156,5 @@ private:
 
 } // namespace traceroute
 } // namespace ight
+#endif
 #endif
