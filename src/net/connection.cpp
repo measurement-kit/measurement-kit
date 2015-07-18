@@ -89,10 +89,10 @@ void ConnectionState::handle_event(bufferevent *bev, short what, void *opaque) {
 }
 
 ConnectionState::ConnectionState(const char *family, const char *address,
-                                 const char *port, SharedPointer<Logger> lp,
+                                 const char *port, Poller *poller,
+                                 SharedPointer<Logger> lp,
                                  evutil_socket_t filenum) {
-    auto evbase = ight_get_global_event_base();
-    auto poller = ight_get_global_poller();
+    auto evbase = poller->get_event_base();
 
     logger = lp;
 

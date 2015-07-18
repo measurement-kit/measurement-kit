@@ -91,7 +91,7 @@ class ConnectionState {
     };
 
   public:
-    ConnectionState(const char *, const char *, const char *,
+    ConnectionState(const char *, const char *, const char *, Poller *,
                     SharedPointer<Logger> = DefaultLogger::get(),
                     evutil_socket_t = IGHT_SOCKET_INVALID);
 
@@ -200,12 +200,15 @@ class Connection : public Transport {
 
     Connection(void) { /* nothing to do */ }
     Connection(evutil_socket_t fd,
-               SharedPointer<Logger> lp = DefaultLogger::get()) {
-        state = new ConnectionState("PF_UNSPEC", "0.0.0.0", "0", lp, fd);
+               SharedPointer<Logger> lp = DefaultLogger::get(),
+               Poller *poller = ight_get_global_poller()) {
+        state = new ConnectionState("PF_UNSPEC", "0.0.0.0", "0",
+                                    poller, lp, fd);
     }
     Connection(const char *af, const char *a, const char *p,
-               SharedPointer<Logger> lp = DefaultLogger::get()) {
-        state = new ConnectionState(af, a, p, lp);
+               SharedPointer<Logger> lp = DefaultLogger::get(),
+               Poller *poller = ight_get_global_poller()) {
+        state = new ConnectionState(af, a, p, poller, lp);
     }
 
     virtual void close(void) override {
