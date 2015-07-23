@@ -9,7 +9,7 @@
 #include <ight/common/log.hpp>
 
 #include <mutex>
-#include <set>
+#include <map>
 #include <thread>
 
 #include <event2/thread.h>
@@ -28,14 +28,15 @@ namespace async {
 
 // Shared state between foreground and background threads
 struct AsyncState {
-    std::set<SharedPointer<NetTest>> active;
+    std::map<SharedPointer<NetTest>,
+      std::function<void(SharedPointer<NetTest>)>> active;
     volatile bool changed = false;
-    std::function<void(SharedPointer<NetTest>)> hook_complete;
     std::function<void()> hook_empty;
     volatile bool interrupted = false;
     std::mutex mutex;
     SharedPointer<Poller> poller;
-    std::set<SharedPointer<NetTest>> ready;
+    std::map<SharedPointer<NetTest>,
+      std::function<void(SharedPointer<NetTest>)>> ready;
     std::thread thread;
     volatile bool thread_running = false;
 };
@@ -80,21 +81,21 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
                 break;
             }
             ight_debug("async: not interrupted and not empty");
-            for (auto test : state->ready) {
-                state->active.insert(test);
-                test->begin([state, test]() {
-                    test->end([state, test]() {
+            for (auto pair : state->ready) {
+                state->active.insert(pair);
+                pair.first->begin([state, pair]() {
+                    pair.first->end([state, pair]() {
                         //
                         // This callback is invoked by loop_once, when we do
                         // not own the lock. For this reason it's important
                         // to only modify state->active in the current thread,
                         // i.e. in the background thread (i.e this function)
                         //
-                        state->active.erase(test);
+                        state->active.erase(pair.first);
                         state->changed = true;
                         ight_debug("async: test stopped");
-                        if (state->hook_complete) {
-                            state->hook_complete(test);
+                        if (pair.second) {
+                            pair.second(pair.first);
                         }
                     });
                 });
@@ -126,10 +127,14 @@ Async::Async(SharedPointer<Poller> poller) {
     state->poller = poller;
 }
 
-void Async::run_test(SharedPointer<NetTest> test) {
+void Async::run_test(SharedPointer<NetTest> test,
+  std::function<void(SharedPointer<NetTest>)> fn) {
     LOCKED(
         ight_debug("async: test inserted");
-        state->ready.insert(test);
+        auto ret = state->ready.insert(std::make_pair(test, fn));
+        if (!ret.second) {
+            throw std::runtime_error("async: element already inserted");
+        }
         state->changed = true;
         if (!state->thread_running) {
             ight_debug("async: background thread started");
@@ -152,12 +157,6 @@ void Async::restart_loop() {
 
 bool Async::empty() {
     return !state->thread_running;
-}
-
-void Async::on_complete(std::function<void(SharedPointer<NetTest>)> fn) {
-    LOCKED(
-        state->hook_complete = fn;
-    )
 }
 
 void Async::on_empty(std::function<void()> fn) {
