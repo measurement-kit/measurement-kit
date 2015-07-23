@@ -1,23 +1,19 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
-#include <ight/common/log.hpp>
-#include <ight/net/connection.hpp>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 
 #include <stdlib.h>
 
-using namespace ight::common::error;
-using namespace ight::common::pointer;
-using namespace ight::net::buffer;
+using namespace measurement_kit::common;
+using namespace measurement_kit::net;
 
 int
 main(void)
 {
-	ight::net::connection::Connection s("PF_INET", "127.0.0.1", "54321");
+	Connection s("PF_INET", "127.0.0.1", "54321");
 
 	s.on_connect([&](void) {
 		/* nothing */
@@ -28,16 +24,16 @@ main(void)
 	});
 
 	s.on_flush([](void) {
-		ight_info("echo - connection flushed");
+		measurement_kit::info("echo - connection flushed");
 	});
 
 	s.on_error([&](Error e) {
-		ight_info("echo - connection error %d", e.error);
+		measurement_kit::info("echo - connection error %d", e.error);
 		s.close();
 	});
 
 	s.set_timeout(7.0);
 
-	ight_get_global_poller()->break_loop_on_sigint_();
-	ight_loop();
+	measurement_kit::get_global_poller()->break_loop_on_sigint_();
+	measurement_kit::loop();
 }

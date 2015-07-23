@@ -1,15 +1,13 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
-#include <ight/common/log.hpp>
+#include <measurement_kit/common/log.hpp>
 
 #include <stdio.h>
 
-using namespace ight::common::log;
+namespace measurement_kit {
+namespace common {
 
 Logger::Logger() {
     consumer = [](const char *s) {
@@ -29,3 +27,5 @@ void Logger::logv(const char *fmt, va_list ap) {
     }
     consumer(buffer);
 }
+
+}}

@@ -1,8 +1,14 @@
-#include <ight/ooni/net_test.hpp>
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
+
+#include <measurement_kit/ooni/net_test.hpp>
 #include <ctime>
 
-using namespace ight::common::settings;
-using namespace ight::ooni::net_test;
+using namespace measurement_kit::common;
+
+namespace measurement_kit {
+namespace ooni {
 
 NetTest::NetTest(std::string input_filepath_, Settings options_)
   : input_filepath(input_filepath_), options(options_),
@@ -164,3 +170,5 @@ NetTest::main(std::string, Settings,
     cb(entry);
   });
 }
+
+}}

@@ -1,9 +1,6 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 //
 // Tests for src/common/async.cpp's
@@ -12,24 +9,13 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <ight/common/async.hpp>
-#include <ight/common/log.hpp>
-#include <ight/common/pointer.hpp>
-#include <ight/common/settings.hpp>
-
-#include <ight/ooni/dns_injection.hpp>
-#include <ight/ooni/http_invalid_request_line.hpp>
-#include <ight/ooni/tcp_connect.hpp>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/ooni.hpp>
 
 #include <unistd.h>
 
-using namespace ight::common::async;
-using namespace ight::common::pointer;
-using namespace ight::common;
-
-using namespace ight::ooni::dns_injection;
-using namespace ight::ooni::http_invalid_request_line;
-using namespace ight::ooni::tcp_connect;
+using namespace measurement_kit::common;
+using namespace measurement_kit::ooni;
 
 static void run_http_invalid_request_line(Async &async) {
     auto test = SharedPointer<HTTPInvalidRequestLine>(
@@ -41,9 +27,9 @@ static void run_http_invalid_request_line(Async &async) {
     test->set_log_function([](const char *s) {
         (void) fprintf(stderr, "test #1: %s\n", s);
     });
-    ight_debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<NetTest> test) {
-        ight_debug("test complete: %llu", test->identifier());
+    measurement_kit::debug("test created: %llu", test->identifier());
+    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+        measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }
 
@@ -57,9 +43,9 @@ static void run_dns_injection(Async& async) {
     test->set_log_function([](const char *s) {
         (void) fprintf(stderr, "test #3: %s\n", s);
     });
-    ight_debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<NetTest> test) {
-        ight_debug("test complete: %llu", test->identifier());
+    measurement_kit::debug("test created: %llu", test->identifier());
+    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+        measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }
 
@@ -73,26 +59,26 @@ static void run_tcp_connect(Async& async) {
     test->set_log_function([](const char *s) {
         (void) fprintf(stderr, "test #4: %s\n", s);
     });
-    ight_debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<NetTest> test) {
-        ight_debug("test complete: %llu", test->identifier());
+    measurement_kit::debug("test created: %llu", test->identifier());
+    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+        measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }
 
 TEST_CASE("The async engine works as expected") {
 
-    ight_set_verbose(1);
+    measurement_kit::set_verbose(1);
     Async async;
 
     // Note: the two following callbacks execute in a background thread
     volatile bool complete = false;
     async.on_empty([&complete]() {
-        ight_debug("all tests completed");
+        measurement_kit::debug("all tests completed");
         complete = true;
     });
 
     for (int i = 0; i < 4; ++i) {
-        ight_debug("do another iteration of tests");
+        measurement_kit::debug("do another iteration of tests");
         complete = false;
 
         // Create tests in temporary void functions to also check that we can

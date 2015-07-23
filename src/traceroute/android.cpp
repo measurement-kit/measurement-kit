@@ -1,9 +1,7 @@
 /*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
+ * Part of measurement-kit <https://measurement-kit.github.io/>.
+ * Measurement-kit is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
- *
  * =========================================================================
  *
  * Portions Copyright (c) 2015, Adriano Faggiani, Enrico Gregori,
@@ -37,9 +35,9 @@
 // This is meant to run on Android but can run on all Linux systems
 #ifdef __linux__
 
-#include <ight/common/log.hpp>
-#include <ight/common/utils.hpp>
-#include <ight/traceroute/android.hpp>
+#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/utils.hpp>
+#include <measurement_kit/traceroute/android.hpp>
 
 #include <arpa/inet.h>
 #include <linux/errqueue.h>
@@ -48,7 +46,7 @@
 #include <string.h>
 #include <unistd.h>
 
-namespace ight {
+namespace measurement_kit {
 namespace traceroute {
 
 AndroidProber::AndroidProber(bool a, int port, event_base *c)
@@ -59,7 +57,7 @@ AndroidProber::AndroidProber(bool a, int port, event_base *c)
   int level_sock, opt_recverr, level_proto, opt_recvttl, family;
   const int val = 1;
 
-  ight_debug("AndroidProber(%d, %d, %p) => %p", use_ipv4_, port,
+  measurement_kit::debug("AndroidProber(%d, %d, %p) => %p", use_ipv4_, port,
              (void *)evbase_, (void *)this);
 
   if (use_ipv4_) {
@@ -76,7 +74,7 @@ AndroidProber::AndroidProber(bool a, int port, event_base *c)
     family = AF_INET6;
   }
 
-  sockfd_ = ight_socket_create(family, SOCK_DGRAM, 0);
+  sockfd_ = measurement_kit::socket_create(family, SOCK_DGRAM, 0);
   if (sockfd_ == -1) {
     cleanup();
     throw std::runtime_error("Cannot create socket");
@@ -89,9 +87,9 @@ AndroidProber::AndroidProber(bool a, int port, event_base *c)
     throw std::runtime_error("Cannot set socket options");
   }
 
-  if (ight_storage_init(&ss, &sslen, family, NULL, port) != 0) {
+  if (measurement_kit::storage_init(&ss, &sslen, family, NULL, port) != 0) {
     cleanup();
-    throw std::runtime_error("ight_storage_init() failed");
+    throw std::runtime_error("measurement_kit::storage_init() failed");
   }
   if (bind(sockfd_, (sockaddr *)&ss, sslen) != 0) {
     cleanup();
@@ -113,7 +111,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
   socklen_t sslen;
   timeval tv;
 
-  ight_debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port, ttl,
+  measurement_kit::debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port, ttl,
              payload.length());
 
   if (sockfd_ < 0)
@@ -137,8 +135,8 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
   if (setsockopt(sockfd_, ipproto, ip_ttl, &ttl, sizeof(ttl)) != 0)
     throw std::runtime_error("setsockopt() failed");
 
-  if (ight_storage_init(&ss, &sslen, family, addr.c_str(), port) != 0)
-    throw std::runtime_error("ight_storage_init() failed");
+  if (measurement_kit::storage_init(&ss, &sslen, family, addr.c_str(), port) != 0)
+    throw std::runtime_error("measurement_kit::storage_init() failed");
 
   if (clock_gettime(CLOCK_MONOTONIC, &start_time_) != 0)
     throw std::runtime_error("clock_gettime() failed");
@@ -152,7 +150,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
     throw std::runtime_error("sendto() failed");
   }
 
-  if (event_add(evp_, ight_timeval_init(&tv, timeout)) != 0)
+  if (event_add(evp_, measurement_kit::timeval_init(&tv, timeout)) != 0)
     throw std::runtime_error("event_add() failed");
 
   probe_pending_ = true;
@@ -170,7 +168,7 @@ ProbeResult AndroidProber::on_socket_readable() {
   iovec iov;
   timespec arr_time;
 
-  ight_debug("on_socket_readable()");
+  measurement_kit::debug("on_socket_readable()");
 
   if (!probe_pending_)
     throw std::runtime_error("No probe is pending");
@@ -181,7 +179,7 @@ ProbeResult AndroidProber::on_socket_readable() {
   if (clock_gettime(CLOCK_MONOTONIC, &arr_time) != 0)
     throw std::runtime_error("clock_gettime() failed");
   r.rtt = calculate_rtt(arr_time, start_time_);
-  ight_debug("rtt = %lf", r.rtt);
+  measurement_kit::debug("rtt = %lf", r.rtt);
 
   memset(buff, 0, sizeof(buff));
   iov.iov_base = buff;
@@ -196,7 +194,7 @@ ProbeResult AndroidProber::on_socket_readable() {
   msg.msg_flags = 0;
   if ((r.recv_bytes = recvmsg(sockfd_, &msg, MSG_ERRQUEUE)) < 0)
     throw std::runtime_error("recvmsg() failed");
-  ight_debug("recv_bytes = %lu", r.recv_bytes);
+  measurement_kit::debug("recv_bytes = %lu", r.recv_bytes);
 
   if (use_ipv4_) {
     expected_level = SOL_IP;
@@ -217,12 +215,12 @@ ProbeResult AndroidProber::on_socket_readable() {
     }
     if (cmsg->cmsg_type != expected_type_recverr &&
         cmsg->cmsg_type != expected_type_ttl) {
-      ight_warn("Received unexpected cmsg_type: %d", cmsg->cmsg_type);
+      measurement_kit::warn("Received unexpected cmsg_type: %d", cmsg->cmsg_type);
       continue;
     }
     if (cmsg->cmsg_type == expected_type_ttl) {
       r.ttl = get_ttl(CMSG_DATA(cmsg));
-      ight_debug("ttl = %d", r.ttl);
+      measurement_kit::debug("ttl = %d", r.ttl);
       continue;
     }
 
@@ -231,15 +229,15 @@ ProbeResult AndroidProber::on_socket_readable() {
 
     socket_error = (sock_extended_err *)CMSG_DATA(cmsg);
     if (socket_error->ee_origin != expected_origin) {
-      ight_warn("Received unexpected ee_type: %d", cmsg->cmsg_type);
+      measurement_kit::warn("Received unexpected ee_type: %d", cmsg->cmsg_type);
       continue;
     }
     r.icmp_type = socket_error->ee_type;
-    ight_debug("icmp_type = %d", r.icmp_type);
+    measurement_kit::debug("icmp_type = %d", r.icmp_type);
     r.icmp_code = socket_error->ee_code;
-    ight_debug("icmp_code = %d", r.icmp_code);
+    measurement_kit::debug("icmp_code = %d", r.icmp_code);
     r.interface_ip = get_source_addr(use_ipv4_, socket_error);
-    ight_debug("interface_ip = %s", r.interface_ip.c_str());
+    measurement_kit::debug("interface_ip = %s", r.interface_ip.c_str());
   }
 
   return r;
@@ -286,7 +284,7 @@ double AndroidProber::calculate_rtt(struct timespec end,
 void AndroidProber::event_callback(int, short event, void *opaque) {
   AndroidProber *prober = static_cast<AndroidProber *>(opaque);
 
-  ight_debug("event_callback(_, %d, %p)", event, opaque);
+  measurement_kit::debug("event_callback(_, %d, %p)", event, opaque);
 
   if ((event & EV_TIMEOUT) != 0) {
     prober->on_timeout();
@@ -307,7 +305,7 @@ void AndroidProber::event_callback(int, short event, void *opaque) {
 }
 
 void AndroidProber::cleanup() {
-  ight_debug("cleanup(): %p", (void *)this);
+  measurement_kit::debug("cleanup(): %p", (void *)this);
   if (sockfd_ >= 0) {
     ::close(sockfd_);
     sockfd_ = -1;
@@ -320,6 +318,6 @@ void AndroidProber::cleanup() {
 }
 
 } // namespace traceroute
-} // namespace ight
+} // namespace measurement_kit
 
 #endif // __linux__

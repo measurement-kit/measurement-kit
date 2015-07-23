@@ -1,14 +1,11 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
-#include <ight/net/socks5.hpp>
+#include <measurement_kit/net/socks5.hpp>
 
-using namespace ight::net::connection;
-using namespace ight::net::socks5;
+namespace measurement_kit {
+namespace net {
 
 Socks5::Socks5(Settings s, SharedPointer<Logger> lp) : settings(s), logger(lp) {
 
@@ -162,3 +159,5 @@ Socks5::Socks5(Settings s, SharedPointer<Logger> lp) : settings(s), logger(lp) {
         });
     });
 }
+
+}}

@@ -1,9 +1,19 @@
-libight_la_LIBADD =  # Empty
+libmeasurement_kit_la_LIBADD =  # Empty
 
 include src/common/include.am
+include src/dns/include.am
 include src/ext/include.am
+include src/http/include.am
 include src/net/include.am
 include src/ooni/include.am
-include src/protocols/include.am
 include src/report/include.am
 include src/traceroute/include.am
+
+toplevincludedir = $(includedir)/measurement_kit
+toplevinclude_HEADERS = \
+    include/measurement_kit/common.hpp \
+    include/measurement_kit/http.hpp \
+    include/measurement_kit/net.hpp \
+    include/measurement_kit/ooni.hpp \
+    include/measurement_kit/report.hpp \
+    include/measurement_kit/traceroute.hpp

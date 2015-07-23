@@ -4,10 +4,10 @@ src_report_libreport_la_SOURCES = \
 	src/report/base.cpp \
 	src/report/file.cpp
 
-libight_la_LIBADD += src/report/libreport.la
+libmeasurement_kit_la_LIBADD += src/report/libreport.la
 
-reportincludedir = $(includedir)/ight/report
+reportincludedir = $(includedir)/measurement_kit/report
 reportinclude_HEADERS = \
-    include/ight/report/base.hpp \
-    include/ight/report/entry.hpp \
-    include/ight/report/file.hpp
+    include/measurement_kit/report/base.hpp \
+    include/measurement_kit/report/entry.hpp \
+    include/measurement_kit/report/file.hpp

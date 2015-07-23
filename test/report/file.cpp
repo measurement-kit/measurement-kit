@@ -1,11 +1,14 @@
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
+
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ctime>
-#include <ight/report/file.hpp>
-#include <ight/report/entry.hpp>
+#include <measurement_kit/report.hpp>
 
-using namespace ight::report::file;
+using namespace measurement_kit::report;
 
 TEST_CASE("The constructor for [FileReport] works correctly", "[BaseReport]") {
   REQUIRE_NOTHROW(FileReporter());
@@ -39,7 +42,7 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
     REQUIRE(entries[0]["test_version"].as<std::string>() == reporter.test_version);
     REQUIRE(entries[0]["probe_ip"].as<std::string>() == reporter.probe_ip);
 
-    REQUIRE(entries[0]["software_name"].as<std::string>() == "ight");
+    REQUIRE(entries[0]["software_name"].as<std::string>() == "measurement_kit");
     REQUIRE(entries[0]["software_version"].as<std::string>() == "0.0.1");
     REQUIRE(entries[0]["data_format_version"].as<std::string>() == "0.1");
       

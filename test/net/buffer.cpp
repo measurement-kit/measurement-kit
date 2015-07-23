@@ -1,9 +1,6 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 //
 // Tests for net/buffer.hpp buffer.
@@ -12,11 +9,11 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <ight/common/libevent.hpp>
-#include <ight/net/buffer.hpp>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 
-using namespace ight::common::libevent;
-using namespace ight::net::buffer;
+using namespace measurement_kit::common;
+using namespace measurement_kit::net;
 
 TEST_CASE("The constructor works correctly", "[Buffer]") {
 	REQUIRE_NOTHROW(Buffer());

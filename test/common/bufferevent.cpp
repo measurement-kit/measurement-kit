@@ -1,9 +1,6 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 //
 // Tests for src/common/libevent.h's Bufferevent
@@ -12,10 +9,9 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <ight/common/poller.hpp>
+#include <measurement_kit/common.hpp>
 
-using namespace ight::common::libevent;
-using namespace ight::common::poller;
+using namespace measurement_kit::common;
 
 TEST_CASE("Constructors") {
   
@@ -114,7 +110,7 @@ TEST_CASE("BuffereventSocket operations") {
       ::bufferevent_free(bev);
     };
 
-    BuffereventSocket b(ight_get_global_event_base(), -1,
+    BuffereventSocket b(measurement_kit::get_global_event_base(), -1,
         0, &libevent);
 
     b.close();
@@ -140,10 +136,10 @@ TEST_CASE("BuffereventSocket operations") {
       ::bufferevent_free(bev);
     };
 
-    BuffereventSocket b(ight_get_global_event_base(), -1,
+    BuffereventSocket b(measurement_kit::get_global_event_base(), -1,
         0, &libevent);
 
-    b.make(ight_get_global_event_base(), -1, 0);
+    b.make(measurement_kit::get_global_event_base(), -1, 0);
 
     // Ensure that close() was called before creating a new bufferevent
     REQUIRE(called == 1);
@@ -160,7 +156,7 @@ TEST_CASE("BuffereventSocket operations") {
 
     BuffereventSocket b(&libevent);
 
-    b.make(ight_get_global_event_base(), -1, 0);
+    b.make(measurement_kit::get_global_event_base(), -1, 0);
 
     // Ensure that close() was not called in this case
     REQUIRE(called == 0);
@@ -178,9 +174,9 @@ TEST_CASE("BuffereventSocket operations") {
       return bevp;
     };
 
-    BuffereventSocket b(ight_get_global_event_base(), -1, 0);
+    BuffereventSocket b(measurement_kit::get_global_event_base(), -1, 0);
 
-    b.make(ight_get_global_event_base(), -1, 0, &libevent);
+    b.make(measurement_kit::get_global_event_base(), -1, 0, &libevent);
 
     // Ensure that bufferevent_socket_new() was called
     REQUIRE(bevp == (bufferevent *) b);
@@ -204,9 +200,9 @@ TEST_CASE("BuffereventSocket operations") {
 
     BuffereventSocket b(&libevent);
 
-    b.make(ight_get_global_event_base(), -1, 0, &libevent);
-    b.make(ight_get_global_event_base(), -1, 0, &libevent);
-    b.make(ight_get_global_event_base(), -1, 0, &libevent);
+    b.make(measurement_kit::get_global_event_base(), -1, 0, &libevent);
+    b.make(measurement_kit::get_global_event_base(), -1, 0, &libevent);
+    b.make(measurement_kit::get_global_event_base(), -1, 0, &libevent);
 
     REQUIRE(new_called == 3);
     REQUIRE(free_called == 2);
@@ -217,13 +213,13 @@ TEST_CASE("BuffereventSocket operations") {
 
     BuffereventSocket b(&libevent);
 
-    b.make(ight_get_global_event_base(), -1, 0);
+    b.make(measurement_kit::get_global_event_base(), -1, 0);
 
     // Check whether the libevent is changed as it ought to be
     REQUIRE(b.get_libevent() == GlobalLibevent::get());
 
     auto libevent2 = Libevent();
-    b.make(ight_get_global_event_base(), -1, 0, &libevent2);
+    b.make(measurement_kit::get_global_event_base(), -1, 0, &libevent2);
 
     // Check whether the libevent is changed as it ought to be
     REQUIRE(b.get_libevent() == &libevent2);

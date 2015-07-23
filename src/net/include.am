@@ -6,12 +6,12 @@ src_net_libnet_la_SOURCES = \
 	src/net/socks5.cpp \
 	src/net/transport.cpp
 
-libight_la_LIBADD += src/net/libnet.la
+libmeasurement_kit_la_LIBADD += src/net/libnet.la
 
-netincludedir = $(includedir)/ight/net
+netincludedir = $(includedir)/measurement_kit/net
 netinclude_HEADERS = \
-    include/ight/net/buffer.hpp \
-    include/ight/net/connection.hpp \
-    include/ight/net/dumb.hpp \
-    include/ight/net/socks5.hpp \
-    include/ight/net/transport.hpp
+    include/measurement_kit/net/buffer.hpp \
+    include/measurement_kit/net/connection.hpp \
+    include/measurement_kit/net/dumb.hpp \
+    include/measurement_kit/net/socks5.hpp \
+    include/measurement_kit/net/transport.hpp

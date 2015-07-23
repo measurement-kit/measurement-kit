@@ -91,17 +91,13 @@ build process) run:
 The following shows how to use MeasurementKit's OONI library.
 
 ```C++
-#include <ight/common/async.hpp>
-#include <ight/common/pointer.hpp>
-#include <ight/common/settings.hpp>
-
-#include <ight/ooni/http_invalid_request_line.hpp>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/ooni.hpp>
 
 #include <iostream>
 
-using namespace ight::common::async;
-using namespace ight::common::pointer;
-using namespace ight::ooni::http_invalid_request_line;
+using namespace measurement_kit::common;
+using namespace measurement_kit::ooni;
 
 int main() {
     volatile bool complete = false;

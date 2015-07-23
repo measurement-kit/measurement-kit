@@ -1,21 +1,22 @@
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <ight/ooni/tcp_test.hpp>
-#include <ight/common/poller.hpp>
-#include <ight/common/log.hpp>
-#include <ight/common/utils.hpp>
+#include <measurement_kit/ooni.hpp>
+#include <measurement_kit/common.hpp>
 
 #include <iostream>
 
-using namespace ight::common::settings;
-using namespace ight::ooni::tcp_test;
+using namespace measurement_kit::common;
+using namespace measurement_kit::ooni;
 
 TEST_CASE("TCPTest test should run")
 {
 #if 0
-    ight_set_verbose(1);
+    measurement_kit::set_verbose(1);
 
     auto client = TCPClient("www.torproject.org", "80");
 
@@ -24,7 +25,7 @@ TEST_CASE("TCPTest test should run")
         if (error.error == 0) {
             std::cout << "Error: " << error.error << std::endl;
         }
-        ight_break_loop();
+        measurement_kit::break_loop();
     });
 
     client.on("connect", [&]() {
@@ -45,13 +46,13 @@ TEST_CASE("TCPTest test should run")
         });
     });
 
-    ight_loop();
+    measurement_kit::loop();
 #endif
 }
 
 TEST_CASE("TCPTest works as expected in a common case")
 {
-    ight_set_verbose(1);
+    measurement_kit::set_verbose(1);
 
     auto count = 0;
     TCPTest tcp_test("", Settings());
@@ -61,7 +62,7 @@ TEST_CASE("TCPTest works as expected in a common case")
         {"port", "80"},
     }, [&count]() {
         if (++count >= 2) {
-            ight_break_loop();
+            measurement_kit::break_loop();
         }
     });
 
@@ -70,9 +71,9 @@ TEST_CASE("TCPTest works as expected in a common case")
         {"port", "80"},
     }, [&count]() {
         if (++count >= 2) {
-            ight_break_loop();
+            measurement_kit::break_loop();
         }
     });
 
-    ight_loop();
+    measurement_kit::loop();
 }

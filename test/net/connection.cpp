@@ -1,9 +1,6 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 //
 // Tests for src/net/connection.h's Connection{State,}
@@ -12,15 +9,12 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <ight/common/check_connectivity.hpp>
-#include <ight/common/log.hpp>
+#include <measurement_kit/common.hpp>
 
-#include <ight/net/connection.hpp>
+#include <measurement_kit/net.hpp>
 
-using namespace ight::common::check_connectivity;
-using namespace ight::common::poller;
-using namespace ight::net::connection;
-using namespace ight::net::buffer;
+using namespace measurement_kit::common;
+using namespace measurement_kit::net;
 
 TEST_CASE("Ensure that the constructor socket-validity checks work") {
 
@@ -99,9 +93,9 @@ TEST_CASE("Connection::close() is idempotent") {
         // It shall be safe to call close() more than once
         s.close();
         s.close();
-        ight_break_loop();
+        measurement_kit::break_loop();
     });
-    ight_loop();
+    measurement_kit::loop();
 }
 
 TEST_CASE("It is safe to manipulate Connection after close") {
@@ -119,22 +113,22 @@ TEST_CASE("It is safe to manipulate Connection after close") {
 	// where safe means that we don't segfault
         REQUIRE_THROWS(s.enable_read());
         REQUIRE_THROWS(s.disable_read());
-        ight_break_loop();
+        measurement_kit::break_loop();
     });
-    ight_loop();
+    measurement_kit::loop();
 }
 
 TEST_CASE("It is safe to close Connection while resolve is in progress") {
     if (Network::is_down()) {
         return;
     }
-    ight_set_verbose(1);
+    measurement_kit::set_verbose(1);
     Connection s("PF_INET", "nexa.polito.it", "80");
     DelayedCall unsched(0.001, [&s]() {
         s.close();
     });
     DelayedCall bail_out(2.0, []() {
-        ight_break_loop();
+        measurement_kit::break_loop();
     });
-    ight_loop();
+    measurement_kit::loop();
 }

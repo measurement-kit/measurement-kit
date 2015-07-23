@@ -1,25 +1,16 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
-#include <ight/net/connection.hpp>
-#include <ight/net/dumb.hpp>
-#include <ight/net/socks5.hpp>
-#include <ight/net/transport.hpp>
+#include <measurement_kit/net/connection.hpp>
+#include <measurement_kit/net/dumb.hpp>
+#include <measurement_kit/net/socks5.hpp>
+#include <measurement_kit/net/transport.hpp>
 
-namespace ight {
+namespace measurement_kit {
 namespace net {
-namespace transport {
 
-using namespace ight::common;
-using namespace ight::common::pointer;
-
-using namespace ight::net::connection;
-using namespace ight::net::dumb;
-using namespace ight::net::socks5;
+using namespace measurement_kit::common;
 
 static SharedPointer<Transport>
 connect_internal(Settings settings, SharedPointer<Logger> logger) {
@@ -73,4 +64,4 @@ SharedPointer<Transport> connect(Settings settings, SharedPointer<Logger> lp) {
     return transport;
 }
 
-}}}
+}}

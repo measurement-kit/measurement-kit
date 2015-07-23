@@ -8,14 +8,15 @@ src_ooni_libooni_la_SOURCES = \
 	src/ooni/tcp_connect.cpp \
 	src/ooni/dns_injection.cpp
 
-libight_la_LIBADD += src/ooni/libooni.la
+libmeasurement_kit_la_LIBADD += src/ooni/libooni.la
 
-ooniincludedir = $(includedir)/ight/ooni
+ooniincludedir = $(includedir)/measurement_kit/ooni
 ooniinclude_HEADERS = \
-   include/ight/ooni/dns_injection.hpp \
-   include/ight/ooni/dns_test.hpp \
-   include/ight/ooni/http_invalid_request_line.hpp \
-   include/ight/ooni/http_test.hpp \
-   include/ight/ooni/net_test.hpp \
-   include/ight/ooni/tcp_connect.hpp \
-   include/ight/ooni/tcp_test.hpp
+   include/measurement_kit/ooni/dns_injection.hpp \
+   include/measurement_kit/ooni/dns_test.hpp \
+   include/measurement_kit/ooni/errors.hpp \
+   include/measurement_kit/ooni/http_invalid_request_line.hpp \
+   include/measurement_kit/ooni/http_test.hpp \
+   include/measurement_kit/ooni/net_test.hpp \
+   include/measurement_kit/ooni/tcp_connect.hpp \
+   include/measurement_kit/ooni/tcp_test.hpp

@@ -1,9 +1,6 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 //
 // Tests for src/common/poller.cpp's DelayedCall()
@@ -12,12 +9,9 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <ight/common/pointer.hpp>
-#include <ight/common/poller.hpp>
+#include <measurement_kit/common.hpp>
 
-using namespace ight::common::libevent;
-using namespace ight::common::pointer;
-using namespace ight::common::poller;
+using namespace measurement_kit::common;
 
 TEST_CASE("Bad allocations triggers a failure ") {
 	Libevent libevent;
@@ -101,9 +95,9 @@ TEST_CASE("Destructor cancels delayed calls") {
       delete (d1);
     });
     DelayedCall d3(0.33, []() {
-      ight_break_loop();
+      measurement_kit::break_loop();
     });
-    ight_loop();
+    measurement_kit::loop();
     d1 = NULL;  /* Clear the pointer, just in case */
     REQUIRE(called == false);
   }
@@ -126,8 +120,8 @@ TEST_CASE("Delayed call construction") {
     //
     DelayedCall d3(0.0, std::function<void(void)>());
     DelayedCall d4(0.1, []() {
-        ight_break_loop();
+        measurement_kit::break_loop();
     });
-    ight_loop();
+    measurement_kit::loop();
   }
 }

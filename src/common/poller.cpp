@@ -1,9 +1,6 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 #include <string.h>
 #include <stdexcept>
@@ -13,12 +10,12 @@
 #include <signal.h>
 #endif
 
-#include <ight/common/poller.hpp>
-#include <ight/common/utils.hpp>
-#include <ight/common/log.hpp>
+#include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/utils.hpp>
+#include <measurement_kit/common/log.hpp>
 
-using namespace ight::common::libevent;
-using namespace ight::common::poller;
+namespace measurement_kit {
+namespace common {
 
 /*
  * DelayedCall implementation
@@ -31,19 +28,18 @@ DelayedCall::DelayedCall(double t, std::function<void(void)> &&f,
     if (libevent != NULL)
         this->libevent = libevent;
     if (evbase == NULL)
-        evbase = ight_get_global_event_base();
+        evbase = get_global_event_base();
 
     this->func = new std::function<void(void)>();
 
     if ((this->evp =
-             this->libevent->event_new(evbase, IGHT_SOCKET_INVALID, EV_TIMEOUT,
+             this->libevent->event_new(evbase, MEASUREMENT_KIT_SOCKET_INVALID, EV_TIMEOUT,
                                        this->dispatch, this->func)) == NULL) {
         delete (this->func);
         throw std::bad_alloc();
     }
 
-    if (this->libevent->event_add(this->evp, ight_timeval_init(&timeo, t)) !=
-        0) {
+    if (this->libevent->event_add(this->evp, timeval_init(&timeo, t)) != 0) {
         delete (this->func);
         this->libevent->event_free(this->evp);
         throw std::runtime_error("cannot register new event");
@@ -142,7 +138,7 @@ void Poller::loop(void) {
     if (result < 0)
         throw std::runtime_error("event_base_dispatch() failed");
     if (result == 1)
-        ight_warn("loop: no pending and/or active events");
+        warn("loop: no pending and/or active events");
 }
 
 void Poller::break_loop(void) {
@@ -155,5 +151,7 @@ void Poller::loop_once(void) {
     if (result < 0)
         throw std::runtime_error("event_base_loop() failed");
     if (result == 1)
-        ight_warn("loop: no pending and/or active events");
+        warn("loop: no pending and/or active events");
 }
+
+}}

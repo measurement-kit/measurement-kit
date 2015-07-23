@@ -1,9 +1,13 @@
-#include <ight/ooni/tcp_test.hpp>
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
-using namespace ight::common::error;
-using namespace ight::common::pointer;
-using namespace ight::common::settings;
-using namespace ight::ooni::tcp_test;
+#include <measurement_kit/ooni/tcp_test.hpp>
+
+namespace measurement_kit {
+namespace ooni {
+
+using namespace measurement_kit::common;
 
 TCPClient
 TCPTest::connect(Settings options, std::function<void()>&& cb)
@@ -36,3 +40,5 @@ TCPTest::connect(Settings options, std::function<void()>&& cb)
 
     return connection;
 }
+
+}}

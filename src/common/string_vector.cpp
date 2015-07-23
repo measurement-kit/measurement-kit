@@ -1,23 +1,20 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 #include <new>
 #include <string.h>
 #include <stdlib.h>
 
-#include <ight/common/string_vector.hpp>
+#include <measurement_kit/common/string_vector.hpp>
 
-#define IGHT_STRINGVECTOR_MAX 512 // Large enough
+#define STRINGVECTOR_MAX 512 // Large enough
 
-using namespace ight::common::string_vector;
-using namespace ight::common::poller;
+namespace measurement_kit {
+namespace common {
 
 StringVector::StringVector(Poller *p, size_t cnt) {
-    if (p == NULL || cnt == 0 || cnt > IGHT_STRINGVECTOR_MAX)
+    if (p == NULL || cnt == 0 || cnt > STRINGVECTOR_MAX)
         throw new (std::bad_alloc);
 
     this->base = (char **)calloc(cnt, sizeof(char *));
@@ -63,3 +60,5 @@ StringVector::~StringVector(void) {
         free(this->base[i]);
     free(this->base);
 }
+
+}}

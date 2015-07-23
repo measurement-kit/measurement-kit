@@ -4,9 +4,9 @@ src_traceroute_libtraceroute_la_SOURCES = \
 	src/traceroute/android.cpp \
 	src/traceroute/interface.cpp
 
-libight_la_LIBADD += src/traceroute/libtraceroute.la
+libmeasurement_kit_la_LIBADD += src/traceroute/libtraceroute.la
 
-tracerouteincludedir = $(includedir)/ight/traceroute
+tracerouteincludedir = $(includedir)/measurement_kit/traceroute
 tracerouteinclude_HEADERS = \
-    include/ight/traceroute/android.hpp \
-    include/ight/traceroute/interface.hpp
+    include/measurement_kit/traceroute/android.hpp \
+    include/measurement_kit/traceroute/interface.hpp

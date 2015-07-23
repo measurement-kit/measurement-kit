@@ -1,9 +1,6 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 /// Tests Android traceroute prober
 
@@ -13,11 +10,11 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <ight/traceroute/android.hpp>
+#include <measurement_kit/traceroute.hpp>
 
 #include <iostream>
 
-using namespace ight::traceroute;
+using namespace measurement_kit::traceroute;
 
 TEST_CASE("Typical IPv4 traceroute usage") {
 
@@ -28,7 +25,7 @@ TEST_CASE("Typical IPv4 traceroute usage") {
   prober.on_result([&prober, &ttl, &payload](ProbeResult r) {
     std::cout << ttl << " " << r.interface_ip << " " << r.rtt << " ms\n";
     if (r.get_meaning() != ProbeResultMeaning::TTL_EXCEEDED || ttl >= 64) {
-      ight_break_loop();
+      measurement_kit::break_loop();
       return;
     }
     prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
@@ -37,7 +34,7 @@ TEST_CASE("Typical IPv4 traceroute usage") {
   prober.on_timeout([&prober, &ttl, &payload]() {
     std::cout << ttl << " *\n";
     if (ttl >= 64) {
-      ight_break_loop();
+      measurement_kit::break_loop();
       return;
     }
     prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
@@ -46,14 +43,14 @@ TEST_CASE("Typical IPv4 traceroute usage") {
   prober.on_error([&prober, &ttl, &payload](std::runtime_error err) {
     std::cout << ttl << " error: " << err.what() << "\n";
     if (ttl >= 64) {
-      ight_break_loop();
+      measurement_kit::break_loop();
       return;
     }
     prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
   });
 
   prober.send_probe("8.8.8.8", 33434, ttl, payload, 1.0);
-  ight_loop();
+  measurement_kit::loop();
 }
 #else
 int main() { return 0; }

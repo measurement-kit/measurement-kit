@@ -1,8 +1,14 @@
-#include <ight/ooni/http_invalid_request_line.hpp>
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
+
+#include <measurement_kit/ooni/http_invalid_request_line.hpp>
 #include <sys/stat.h>
 
-using namespace ight::common::settings;
-using namespace ight::ooni::http_invalid_request_line;
+namespace measurement_kit {
+namespace ooni {
+
+using namespace measurement_kit::common;
 
 void
 HTTPInvalidRequestLine::main(Settings options,
@@ -10,9 +16,7 @@ HTTPInvalidRequestLine::main(Settings options,
 {
     
     callback = cb;
-    auto handle_response = [this](Error,
-                              protocols::http::Response&&) ->  void
-    {
+    auto handle_response = [this](Error, http::Response&&) {
         tests_run += 1;
         if (tests_run == 3) {
             callback(entry); 
@@ -22,12 +26,12 @@ HTTPInvalidRequestLine::main(Settings options,
         // HTTP.
     };
     
-    protocols::http::Headers headers;
+    http::Headers headers;
     // test_random_invalid_method
     // randomSTR(4) + " / HTTP/1.1\n\r"
     request({
         {"url", options["backend"]},
-        {"method", ight_random_str_uppercase(4)},
+        {"method", measurement_kit::random_str_uppercase(4)},
         {"http_version", "HTTP/1.1"},
     }, headers, "", handle_response);
 
@@ -39,7 +43,7 @@ HTTPInvalidRequestLine::main(Settings options,
     // randomStr(1024) + ' / HTTP/1.1\n\r'
     request({
         {"url", options["backend"]},
-        {"method", ight_random_str_uppercase(1024)},
+        {"method", measurement_kit::random_str_uppercase(1024)},
         {"http_version", "HTTP/1.1"},
     }, headers, "", handle_response);
 
@@ -48,6 +52,8 @@ HTTPInvalidRequestLine::main(Settings options,
     request({
         {"url", options["backend"]},
         {"method", "GET"},
-        {"http_version", "HTTP/" + ight_random_str(3)},
+        {"http_version", "HTTP/" + measurement_kit::random_str(3)},
     }, headers, "", handle_response);
 }
+
+}}

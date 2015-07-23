@@ -1,9 +1,6 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 #include <stdexcept>
 #include <new>
@@ -11,10 +8,11 @@
 #include <event2/event.h>
 #include <event2/dns.h>
 
-#include <ight/common/check_connectivity.hpp>
-#include <ight/common/log.hpp>
+#include <measurement_kit/common/check_connectivity.hpp>
+#include <measurement_kit/common/log.hpp>
 
-using namespace ight::common::check_connectivity;
+namespace measurement_kit {
+namespace common {
 
 void
 Network::cleanup(void)  // Idempotent cleanup function
@@ -87,6 +85,8 @@ Network::Network(void)
     cleanup();
 
     if (!is_up) {
-        ight_warn("network is down");
+        warn("network is down");
     }
 }
+
+}}
