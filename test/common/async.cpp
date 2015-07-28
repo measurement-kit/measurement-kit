@@ -42,7 +42,9 @@ static void run_http_invalid_request_line(Async &async) {
         (void) fprintf(stderr, "test #1: %s\n", s);
     });
     ight_debug("test created: %llu", test->identifier());
-    async.run_test(test);
+    async.run_test(test, [](SharedPointer<NetTest> test) {
+        ight_debug("test complete: %llu", test->identifier());
+    });
 }
 
 static void run_dns_injection(Async& async) {
@@ -56,7 +58,9 @@ static void run_dns_injection(Async& async) {
         (void) fprintf(stderr, "test #3: %s\n", s);
     });
     ight_debug("test created: %llu", test->identifier());
-    async.run_test(test);
+    async.run_test(test, [](SharedPointer<NetTest> test) {
+        ight_debug("test complete: %llu", test->identifier());
+    });
 }
 
 static void run_tcp_connect(Async& async) {
@@ -70,7 +74,9 @@ static void run_tcp_connect(Async& async) {
         (void) fprintf(stderr, "test #4: %s\n", s);
     });
     ight_debug("test created: %llu", test->identifier());
-    async.run_test(test);
+    async.run_test(test, [](SharedPointer<NetTest> test) {
+        ight_debug("test complete: %llu", test->identifier());
+    });
 }
 
 TEST_CASE("The async engine works as expected") {
@@ -80,9 +86,6 @@ TEST_CASE("The async engine works as expected") {
 
     // Note: the two following callbacks execute in a background thread
     volatile bool complete = false;
-    async.on_complete([](SharedPointer<NetTest> test) {
-        ight_debug("test complete: %llu", test->identifier());
-    });
     async.on_empty([&complete]() {
         ight_debug("all tests completed");
         complete = true;

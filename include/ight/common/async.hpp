@@ -34,8 +34,11 @@ class Async {
     /// Constructor with specified poller
     Async(SharedPointer<Poller> p);
 
-    /// Run the specified network test
-    void run_test(SharedPointer<NetTest> test);
+    /// Run the specified network test and call a callback when done
+    /// \param func Callback called when test is done
+    /// \warn The callback is called from a background thread
+    void run_test(SharedPointer<NetTest> test,
+      std::function<void(SharedPointer<NetTest>)> func);
 
     /// Break out of the loop
     void break_loop();
@@ -45,12 +48,6 @@ class Async {
 
     /// Returns true when no async jobs are running
     bool empty();
-
-    ///
-    /// Called when a test is completed
-    /// \warn This function is called from a background thread
-    ///
-    void on_complete(std::function<void(SharedPointer<NetTest>)>);
 
     ///
     /// Called when the tests queue is empty
