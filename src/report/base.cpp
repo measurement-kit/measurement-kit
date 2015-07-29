@@ -1,9 +1,13 @@
-#include <ight/report/base.hpp>
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
-using namespace ight::report::base;
+#include <measurement_kit/report/base.hpp>
 
-std::string
-ReporterBase::getHeader() {
+namespace measurement_kit {
+namespace report {
+
+std::string ReporterBase::getHeader() {
     std::stringstream output;
     YAML::Node header;
     header["test_name"] = test_name;
@@ -22,13 +26,11 @@ ReporterBase::getHeader() {
     return output.str();
 }
 
-void
-ReporterBase::open() {
+void ReporterBase::open() {
   openned = true;
 }
 
-void
-ReporterBase::writeEntry(ReportEntry& entry) {
+void ReporterBase::writeEntry(ReportEntry& entry) {
   if (!openned) {
     throw new std::runtime_error("The report is not open.");
   }
@@ -39,8 +41,9 @@ ReporterBase::writeEntry(ReportEntry& entry) {
   (void) entry;
 }
 
-void
-ReporterBase::close() {
+void ReporterBase::close() {
   openned = false;
   closed = true;
 }
+
+}}

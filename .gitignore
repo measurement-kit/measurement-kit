@@ -76,8 +76,8 @@ test/ooni/net_test
 test/ooni/http_invalid_request_line
 test/ooni/tcp_connect
 test/ooni/tcp_test
-test/protocols/dns
-test/protocols/http
+test/dns/dns
+test/http/http
 test/report/file
 test/traceroute/android
 test-driver

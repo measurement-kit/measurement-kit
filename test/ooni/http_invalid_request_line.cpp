@@ -1,23 +1,25 @@
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
+
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <ight/ooni/http_invalid_request_line.hpp>
-#include <ight/common/poller.hpp>
-#include <ight/common/log.hpp>
-#include <ight/common/utils.hpp>
+#include <measurement_kit/ooni.hpp>
+#include <measurement_kit/common.hpp>
 
-using namespace ight::common::settings;
-using namespace ight::ooni::http_invalid_request_line;
+using namespace measurement_kit::common;
+using namespace measurement_kit::ooni;
 
 TEST_CASE("The HTTP Invalid Request Line test should run") {
-  ight_set_verbose(1);
+  measurement_kit::set_verbose(1);
   Settings options;
   options["backend"] = "http://google.com/";
   HTTPInvalidRequestLine http_invalid_request_line(options);
   http_invalid_request_line.begin([&](){
     http_invalid_request_line.end([](){
-      ight_break_loop();
+      measurement_kit::break_loop();
     });
   });
-  ight_loop();
+  measurement_kit::loop();
 }

@@ -1,13 +1,19 @@
-#include <ight/ooni/dns_test.hpp>
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
-using namespace ight::ooni::dns_test;
-using namespace ight::protocols::dns;
-using namespace ight::common;
+#include <measurement_kit/ooni/dns_test.hpp>
+
+namespace measurement_kit {
+namespace ooni {
+
+using namespace measurement_kit::dns;
+using namespace measurement_kit::common;
 
 void
 DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
                std::string query_name, std::string nameserver,
-               std::function<void(ight::protocols::dns::Response&&)>&& cb)
+               std::function<void(Response&&)>&& cb)
 {
     resolver = std::make_shared<Resolver>(Settings{
         {"nameserver", nameserver},
@@ -29,7 +35,7 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
     }
     resolver->request(
         query, query_name, 
-        [=](ight::protocols::dns::Response&& response) {
+        [=](Response&& response) {
             logger->debug("dns_test: got response!");
             YAML::Node query_entry;
             if (query_type == QueryType::A) {
@@ -64,3 +70,5 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
             logger->debug("dns_test: callback called");
     });
 }
+
+}}

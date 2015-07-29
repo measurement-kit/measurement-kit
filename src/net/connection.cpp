@@ -1,9 +1,6 @@
-/*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
- */
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
 #include <arpa/inet.h>
 
@@ -12,15 +9,14 @@
 
 #include <event2/dns.h>
 
-#include <ight/common/log.hpp>
-#include <ight/common/string_vector.hpp>
-#include <ight/net/connection.hpp>
+#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/string_vector.hpp>
+#include <measurement_kit/net/connection.hpp>
 
-using namespace ight::common::error;
-using namespace ight::common::poller;
-using namespace ight::common::string_vector;
-using namespace ight::net::connection;
-using namespace ight::protocols;
+using namespace measurement_kit::common;
+
+namespace measurement_kit {
+namespace net {
 
 ConnectionState::~ConnectionState(void) {
     /*
@@ -96,7 +92,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
 
     logger = lp;
 
-    filenum = ight_socket_normalize_if_invalid(filenum);
+    filenum = measurement_kit::socket_normalize_if_invalid(filenum);
 
     /*
      * TODO: switch to RAII.
@@ -107,7 +103,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
 
     // closing: nothing to be done
 
-    if (!ight_socket_valid(filenum))
+    if (!measurement_kit::socket_valid(filenum))
         this->connecting = 1;
 
     if ((this->address = strdup(address)) == NULL) {
@@ -150,7 +146,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
     bufferevent_setcb(this->bev, this->handle_read, this->handle_write,
                       this->handle_event, this);
 
-    if (!ight_socket_valid(filenum))
+    if (!measurement_kit::socket_valid(filenum))
         this->start_connect =
             std::make_shared<DelayedCall>(0.0, [this]() { this->resolve(); });
 }
@@ -177,12 +173,12 @@ void ConnectionState::connect_next(void) {
         logger->info("connect_next - %s %s", family, address);
 
         error =
-            ight_storage_init(&storage, &total, family, address, this->port);
+            measurement_kit::storage_init(&storage, &total, family, address, this->port);
         if (error != 0)
             continue;
 
-        auto filedesc = ight_socket_create(storage.ss_family, SOCK_STREAM, 0);
-        if (filedesc == IGHT_SOCKET_INVALID)
+        auto filedesc = measurement_kit::socket_create(storage.ss_family, SOCK_STREAM, 0);
+        if (filedesc == MEASUREMENT_KIT_SOCKET_INVALID)
             continue;
 
         error = bufferevent_setfd(this->bev, filedesc);
@@ -195,7 +191,7 @@ void ConnectionState::connect_next(void) {
             this->bev, (struct sockaddr *)&storage, (int)total);
         if (error != 0) {
             (void)evutil_closesocket(filedesc);
-            error = bufferevent_setfd(this->bev, IGHT_SOCKET_INVALID);
+            error = bufferevent_setfd(this->bev, MEASUREMENT_KIT_SOCKET_INVALID);
             if (error != 0) {
                 logger->warn("connect_next - internal error");
                 break;
@@ -381,3 +377,5 @@ void ConnectionState::close(void) {
 }
 
 Connection::~Connection() { delete state; /* delete handles NULL */ }
+
+}}

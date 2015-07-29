@@ -1,0 +1,10 @@
+noinst_LTLIBRARIES += src/http/libhttp.la
+
+src_http_libhttp_la_SOURCES = \
+	src/http/http.cpp
+
+libmeasurement_kit_la_LIBADD += src/http/libhttp.la
+
+httpincludedir = $(includedir)/measurement_kit/http
+httpinclude_HEADERS = \
+    include/measurement_kit/http/http.hpp

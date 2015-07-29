@@ -1,7 +1,13 @@
-#include <ight/ooni/tcp_connect.hpp>
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
 
-using namespace ight::common::settings;
-using namespace ight::ooni::tcp_connect;
+#include <measurement_kit/ooni/tcp_connect.hpp>
+
+namespace measurement_kit {
+namespace ooni {
+
+using namespace measurement_kit::common;
 
 void
 TCPConnect::main(std::string input, Settings options,
@@ -14,3 +20,5 @@ TCPConnect::main(std::string input, Settings options,
         have_entry(entry);
     });
 }
+
+}}

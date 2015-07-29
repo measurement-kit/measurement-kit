@@ -1,9 +1,7 @@
 /*-
- * This file is part of Libight <https://libight.github.io/>.
- *
- * Libight is free software. See AUTHORS and LICENSE for more
+ * Part of measurement-kit <https://measurement-kit.github.io/>.
+ * Measurement-kit is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
- *
  * =========================================================================
  *
  * Portions Copyright (c) 2015, Adriano Faggiani, Enrico Gregori,
@@ -37,14 +35,14 @@
 // Disable for non Linux until we figure out how to build on iOS
 #ifdef __linux__
 
-#include <ight/common/log.hpp>
-#include <ight/traceroute/interface.hpp>
+#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/traceroute/interface.hpp>
 
 #include <netinet/ip.h> // Defines n_short etc on MacOSX
 #include <netinet/icmp6.h>
 #include <netinet/ip_icmp.h>
 
-namespace ight {
+namespace measurement_kit {
 namespace traceroute {
 
 struct ProbeResultMapping {
@@ -79,12 +77,12 @@ ProbeResultMeaning ProbeResult::get_meaning() {
   for (auto m = is_ipv4 ? &MAPPINGv4[0] : &MAPPINGv6[0];
        m->meaning != ProbeResultMeaning::OTHER; ++m) {
     if (m->type == icmp_type && m->code == icmp_code) {
-      ight_debug("type %d code %d meaning %d", icmp_type, icmp_code,
+      measurement_kit::debug("type %d code %d meaning %d", icmp_type, icmp_code,
                  m->meaning);
       return m->meaning;
     }
   }
-  ight_debug("type %d code %d meaning %d", icmp_type, icmp_code,
+  measurement_kit::debug("type %d code %d meaning %d", icmp_type, icmp_code,
              ProbeResultMeaning::OTHER);
   return ProbeResultMeaning::OTHER;
 }
@@ -92,6 +90,6 @@ ProbeResultMeaning ProbeResult::get_meaning() {
 ProberInterface::~ProberInterface() {}
 
 } // namespace traceroute
-} // namespace ight
+} // namespace measurement_kit
 
 #endif
