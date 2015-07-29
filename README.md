@@ -103,9 +103,6 @@ int main() {
     volatile bool complete = false;
     Async async;
 
-    async.on_complete([](SharedPointer<NetTest> test) {
-        std::clog << "Test complete: " << test->identifier() << "\n";
-    });
     async.on_empty([&complete]() {
         std::clog << "All tests complete\n";
         complete = true;
@@ -119,7 +116,9 @@ int main() {
     test->set_log_function([](const char *s) {
         std::clog << s << "\n";
     });
-    async.run_test(test);
+    async.run_test(test, [](SharedPointer<NetTest> test) {
+        std::clog << "Test complete: " << test->identifier() << "\n";
+    });
 
     while (!complete) sleep(1);
 }
