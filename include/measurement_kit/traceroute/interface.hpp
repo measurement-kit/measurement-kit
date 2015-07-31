@@ -55,9 +55,10 @@ enum class ProbeResultMeaning {
   NO_ROUTE_TO_HOST = 1, ///< No route to host
   ADDRESS_UNREACH = 2,  ///< E.g., link down
   PROTO_NOT_IMPL = 3,   ///< UDP not implemented
-  DEST_REACHED = 4,     ///< Port is closed = dest. reached
+  PORT_IS_CLOSED = 4,   ///< Port is closed
   TTL_EXCEEDED = 5,     ///< TTL is too small
   ADMIN_FILTER = 6,     ///< E.g., firewall rule
+  GOT_REPLY_PACKET = 7, ///< We got a real reply packet
 };
 
 /// Result of a traceroute probe
@@ -70,6 +71,8 @@ public:
   unsigned char icmp_type = 255; ///< Raw ICMP/ICMPv6 type
   unsigned char icmp_code = 255; ///< Raw ICMP/ICMPv6 code
   ssize_t recv_bytes = 0;        ///< Bytes recv'd
+  bool valid_reply = false;      ///< Whether reply is valid
+  std::string reply;             ///< Reply packet data
 
   /// Maps ICMP/ICMPv6 type and code to a meaning
   ProbeResultMeaning get_meaning();

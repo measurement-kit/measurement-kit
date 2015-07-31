@@ -55,7 +55,7 @@ struct ProbeResultMapping {
 
 static ProbeResultMapping MAPPINGv4[] = {
     {ICMP_TIMXCEED, ICMP_TIMXCEED_INTRANS, PRM_::TTL_EXCEEDED},
-    {ICMP_UNREACH, ICMP_UNREACH_PORT, PRM_::DEST_REACHED},
+    {ICMP_UNREACH, ICMP_UNREACH_PORT, PRM_::PORT_IS_CLOSED},
     {ICMP_UNREACH, ICMP_UNREACH_PROTOCOL, PRM_::PROTO_NOT_IMPL},
     {ICMP_UNREACH, ICMP_UNREACH_NET, PRM_::NO_ROUTE_TO_HOST},
     {ICMP_UNREACH, ICMP_UNREACH_HOST, PRM_::ADDRESS_UNREACH},
@@ -64,30 +64,35 @@ static ProbeResultMapping MAPPINGv4[] = {
 
 static ProbeResultMapping MAPPINGv6[] = {
     {ICMP6_TIME_EXCEEDED, ICMP6_TIME_EXCEED_TRANSIT, PRM_::TTL_EXCEEDED},
-    {ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_NOPORT, PRM_::DEST_REACHED},
+    {ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_NOPORT, PRM_::PORT_IS_CLOSED},
     {ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_NOROUTE, PRM_::NO_ROUTE_TO_HOST},
     {ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_ADDR, PRM_::ADDRESS_UNREACH},
     {ICMP6_DST_UNREACH, ICMP6_DST_UNREACH_ADMIN, PRM_::ADMIN_FILTER},
     {255, 255, PRM_::OTHER},
 };
 
-#undef PRM_
-
 ProbeResultMeaning ProbeResult::get_meaning() {
+  if (valid_reply) {
+    measurement_kit::debug("type %d code %d meaning %d (got reply packet)",
+                           icmp_type, icmp_code, PRM_::GOT_REPLY_PACKET);
+    return PRM_::GOT_REPLY_PACKET;
+  }
   for (auto m = is_ipv4 ? &MAPPINGv4[0] : &MAPPINGv6[0];
-       m->meaning != ProbeResultMeaning::OTHER; ++m) {
+       m->meaning != PRM_::OTHER; ++m) {
     if (m->type == icmp_type && m->code == icmp_code) {
       measurement_kit::debug("type %d code %d meaning %d", icmp_type, icmp_code,
-                 m->meaning);
+                             m->meaning);
       return m->meaning;
     }
   }
-  measurement_kit::debug("type %d code %d meaning %d", icmp_type, icmp_code,
-             ProbeResultMeaning::OTHER);
-  return ProbeResultMeaning::OTHER;
+  measurement_kit::debug("type %d code %d meaning %d (other)", icmp_type,
+                         icmp_code, PRM_::OTHER);
+  return PRM_::OTHER;
 }
 
 ProberInterface::~ProberInterface() {}
+
+#undef PRM_
 
 } // namespace traceroute
 } // namespace measurement_kit

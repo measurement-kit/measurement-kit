@@ -42,6 +42,7 @@
 #include <arpa/inet.h>
 #include <linux/errqueue.h>
 
+#include <errno.h>
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
@@ -192,8 +193,21 @@ ProbeResult AndroidProber::on_socket_readable() {
   msg.msg_control = controlbuff;
   msg.msg_controllen = sizeof(controlbuff);
   msg.msg_flags = 0;
-  if ((r.recv_bytes = recvmsg(sockfd_, &msg, MSG_ERRQUEUE)) < 0)
+  if ((r.recv_bytes = recvmsg(sockfd_, &msg, MSG_ERRQUEUE)) < 0) {
+    if (errno == EAGAIN || errno == EWOULDBLOCK) { // Defensive
+      measurement_kit::debug("it seems we received a valid reply packet back");
+      if ((r.recv_bytes = recv(sockfd_, iov.iov_base, iov.iov_len, 0)) < 0) {
+        throw std::runtime_error("recv() failed");
+      }
+      measurement_kit::debug("recv_bytes = %lu", r.recv_bytes);
+      r.valid_reply = true;
+      measurement_kit::debug("valid_reply = %d", r.valid_reply);
+      r.reply = std::string((const char *) iov.iov_base, iov.iov_len);
+      measurement_kit::debug("reply = <%lu bytes>", r.reply.length());
+      return r;
+    }
     throw std::runtime_error("recvmsg() failed");
+  }
   measurement_kit::debug("recv_bytes = %lu", r.recv_bytes);
 
   if (use_ipv4_) {
