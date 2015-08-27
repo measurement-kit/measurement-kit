@@ -70,7 +70,7 @@ TEST_CASE("The async engine works as expected") {
     measurement_kit::set_verbose(1);
     Async async;
 
-    // Note: the two following callbacks execute in a background thread
+    // Note: the following callback executes in a background thread
     volatile bool complete = false;
     async.on_empty([&complete]() {
         measurement_kit::debug("all tests completed");
@@ -90,6 +90,7 @@ TEST_CASE("The async engine works as expected") {
 
         // TODO Maybe implement a better sync mechanism but for now polling will do
         while (!complete) {
+            async.pump();
             sleep(1);
         }
     }

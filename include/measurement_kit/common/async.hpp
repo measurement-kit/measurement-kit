@@ -15,10 +15,6 @@ namespace common {
 struct AsyncState;
 
 class Async {
-    SharedPointer<AsyncState> state;
-
-    static void loop_thread(SharedPointer<AsyncState>);
-
   public:
 
     /// Default constructor
@@ -29,7 +25,6 @@ class Async {
 
     /// Run the specified network test and call a callback when done
     /// \param func Callback called when test is done
-    /// \warn The callback is called from a background thread
     void run_test(SharedPointer<NetTest> test,
       std::function<void(SharedPointer<NetTest>)> func);
 
@@ -42,12 +37,18 @@ class Async {
     /// Returns true when no async jobs are running
     bool empty();
 
-    ///
     /// Called when the tests queue is empty
     /// \warn This function is called from a background thread
-    ///
     void on_empty(std::function<void()>);
+
+    /// Emit test complete events in the current thread
+    void pump();
+
+  private:
+    SharedPointer<AsyncState> state;
+    static void loop_thread(SharedPointer<AsyncState>);
 };
 
-}}
+} // namespace common
+} // namespace measurement_kit
 #endif

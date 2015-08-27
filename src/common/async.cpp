@@ -19,33 +19,28 @@
 namespace measurement_kit {
 namespace common {
 
+typedef SharedPointer<NetTest> NetTestVar;
+
 // Shared state between foreground and background threads
 struct AsyncState {
-    std::map<SharedPointer<NetTest>,
-      std::function<void(SharedPointer<NetTest>)>> active;
+    std::map<NetTest *, NetTestVar> ready;
+    std::map<NetTest *, std::function<void(NetTestVar)>> callbacks;
+    std::map<NetTest *, NetTestVar> active;
+    std::map<NetTest *, NetTestVar> completed;
     volatile bool changed = false;
     std::function<void()> hook_empty;
     volatile bool interrupted = false;
     std::mutex mutex;
     SharedPointer<Poller> poller;
-    std::map<SharedPointer<NetTest>,
-      std::function<void(SharedPointer<NetTest>)>> ready;
     std::thread thread;
     volatile bool thread_running = false;
 };
 
 class EvThreadSingleton {
-
   private:
-    EvThreadSingleton() {
-        evthread_use_pthreads();
-    }
-
+    EvThreadSingleton() { evthread_use_pthreads(); }
   public:
-    static void ensure() {
-        static EvThreadSingleton singleton;
-    }
-
+    static void ensure() { static EvThreadSingleton singleton; }
 };
 
 // Syntactic sugar
@@ -53,6 +48,17 @@ class EvThreadSingleton {
         std::lock_guard<std::mutex> lck(state->mutex); \
         foo \
     }
+
+// Ensure consistency
+#define INSERT(m, k, v) do { \
+        auto ret = m.insert(std::make_pair(k, v)); \
+        if (!ret.second) throw std::runtime_error("Element already there"); \
+    } while (0)
+#define GET(v, m, k) do { \
+        auto there = (m.find(k) != m.end()); \
+        if (!there) throw std::runtime_error("Element not there"); \
+        v = m[k]; \
+    } while (0)
 
 void Async::loop_thread(SharedPointer<AsyncState> state) {
 
@@ -63,6 +69,10 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
 
         LOCKED(
             debug("async: loop thread locked");
+            debug("async: size of ready: %lu", state->ready.size());
+            debug("async: size of callbacks: %lu", state->callbacks.size());
+            debug("async: size of active: %lu", state->active.size());
+            debug("async: size of completed: %lu", state->completed.size());
             if (state->interrupted) {
                 debug("async: interrupted");
                 break;
@@ -73,21 +83,25 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
             }
             debug("async: not interrupted and not empty");
             for (auto pair : state->ready) {
-                state->active.insert(pair);
-                pair.first->begin([state, pair]() {
-                    pair.first->end([state, pair]() {
-                        //
-                        // This callback is invoked by loop_once, when we do
-                        // not own the lock. For this reason it's important
-                        // to only modify state->active in the current thread,
-                        // i.e. in the background thread (i.e this function)
-                        //
-                        state->active.erase(pair.first);
-                        state->changed = true;
-                        debug("async: test stopped");
-                        if (pair.second) {
-                            pair.second(pair.first);
-                        }
+                NetTest *ptr = pair.first;
+                debug("async: active: %lld", ptr->identifier());
+                INSERT(state->active, ptr, pair.second);
+                // Note: it should be safe to capture `state` by reference
+                // here because the destructor should not be able to destroy
+                // the background thread until we detach it and break.
+                ptr->begin([&state, ptr]() {
+                    ptr->end([&state, ptr]() {
+                        // Safe to lock because loop_once() is unlocked
+                        LOCKED(
+                            debug("async: need to lock to move test object");
+                            NetTestVar var;
+                            GET(var, state->active, ptr);
+                            INSERT(state->completed, ptr, var);
+                            state->active.erase(ptr);
+                            state->changed = true;
+                            debug("async: completed: %lld", var->identifier());
+                            debug("async: done with briefly locking");
+                        )
                     });
                 });
             }
@@ -95,16 +109,17 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
         )
 
         debug("async: loop thread unlocked");
-
         while (!state->changed) {
             //state->poller->loop_once();
             loop_once();
         }
         state->changed = false;
-
         debug("async: bottom of loop thread");
     }
-    debug("async: thread detached");
+
+    // TODO: wondering whether the following code should execute
+    // locked in the place where we decide we need to break
+    debug("async: detaching thread...");
     state->thread.detach();
     state->thread_running = false;
     if (state->hook_empty) {
@@ -118,15 +133,13 @@ Async::Async(SharedPointer<Poller> poller) {
     state->poller = poller;
 }
 
-void Async::run_test(SharedPointer<NetTest> test,
-  std::function<void(SharedPointer<NetTest>)> fn) {
+void Async::run_test(NetTestVar test, std::function<void(NetTestVar)> fn) {
     LOCKED(
-        debug("async: test inserted");
-        auto ret = state->ready.insert(std::make_pair(test, fn));
-        if (!ret.second) {
-            throw std::runtime_error("async: element already inserted");
-        }
+        NetTest *ptr = test.operator->(); // get() does not check for NULL
+        INSERT(state->ready, ptr, test);
+        INSERT(state->callbacks, ptr, fn);
         state->changed = true;
+        debug("async: ready: %lld", test->identifier());
         if (!state->thread_running) {
             debug("async: background thread started");
             state->thread = std::thread(loop_thread, state);
@@ -156,4 +169,27 @@ void Async::on_empty(std::function<void()> fn) {
     )
 }
 
-}}
+void Async::pump() {
+    std::map<NetTest *, NetTestVar> context;
+    std::map<NetTest *, std::function<void(NetTestVar)>> funcs;
+    LOCKED(
+        for (auto pair : state->completed) {
+            INSERT(context, pair.first, pair.second);
+            std::function<void(NetTestVar)> func;
+            GET(func, state->callbacks, pair.first);
+            INSERT(funcs, pair.first, func);
+            state->callbacks.erase(pair.first);
+            debug("async: zombie: %lld", pair.first->identifier());
+        }
+        state->completed.clear();
+        state->changed = true;
+    )
+    for (auto pair : funcs) {
+        NetTestVar var;
+        GET(var, context, pair.first);
+        pair.second(var);
+    }
+}
+
+} // namespace common
+} // namespace measurement_kit
