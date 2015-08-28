@@ -72,12 +72,13 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
             debug("async: size of callbacks: %lu", state->callbacks.size());
             debug("async: size of active: %lu", state->active.size());
             debug("async: size of completed: %lu", state->completed.size());
-            if (state->interrupted) {
-                debug("async: interrupted");
-                break;
-            }
-            if (state->ready.empty() && state->active.empty()) {
-                debug("async: empty");
+            auto empty = (state->ready.empty() && state->active.empty());
+            if (state->interrupted || empty) {
+                debug("async: %s", (empty) ? "empty" : "interrupted");
+                // Do this here so it's done while we're locked
+                debug("async: detaching thread...");
+                state->thread.detach();
+                state->thread_running = false;
                 break;
             }
             debug("async: not interrupted and not empty");
@@ -115,12 +116,6 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
         state->changed = false;
         debug("async: bottom of loop thread");
     }
-
-    // TODO: wondering whether the following code should execute
-    // locked in the place where we decide we need to break
-    debug("async: detaching thread...");
-    state->thread.detach();
-    state->thread_running = false;
     debug("async: exiting from thread");
 }
 
