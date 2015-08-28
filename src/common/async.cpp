@@ -37,25 +37,29 @@ struct AsyncState {
 class EvThreadSingleton {
   private:
     EvThreadSingleton() { evthread_use_pthreads(); }
+
   public:
     static void ensure() { static EvThreadSingleton singleton; }
 };
 
 // Syntactic sugar
-#define LOCKED(foo) { \
-        std::lock_guard<std::mutex> lck(state->mutex); \
-        foo \
+#define LOCKED(foo)                                                            \
+    {                                                                          \
+        std::lock_guard<std::mutex> lck(state->mutex);                         \
+        foo                                                                    \
     }
 
 // Ensure consistency
-#define INSERT(m, k, v) do { \
-        auto ret = m.insert(std::make_pair(k, v)); \
-        if (!ret.second) throw std::runtime_error("Element already there"); \
+#define INSERT(m, k, v)                                                        \
+    do {                                                                       \
+        auto ret = m.insert(std::make_pair(k, v));                             \
+        if (!ret.second) throw std::runtime_error("Element already there");    \
     } while (0)
-#define GET(v, m, k) do { \
-        auto there = (m.find(k) != m.end()); \
-        if (!there) throw std::runtime_error("Element not there"); \
-        v = m[k]; \
+#define GET(v, m, k)                                                           \
+    do {                                                                       \
+        auto there = (m.find(k) != m.end());                                   \
+        if (!there) throw std::runtime_error("Element not there");             \
+        v = m[k];                                                              \
     } while (0)
 
 void Async::loop_thread(SharedPointer<AsyncState> state) {
@@ -67,7 +71,7 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
     debug("async: loop thread entered");
     for (;;) {
 
-        LOCKED(
+        LOCKED({
             debug("async: loop thread locked");
             debug("async: size of ready: %lu", state->ready.size());
             debug("async: size of callbacks: %lu", state->callbacks.size());
@@ -93,7 +97,7 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
                 ptr->begin([&state, ptr]() {
                     ptr->end([&state, ptr]() {
                         // Safe to lock because loop_once() is unlocked
-                        LOCKED(
+                        LOCKED({
                             debug("async: need to lock to move test object");
                             NetTestVar var;
                             GET(var, state->active, ptr);
@@ -102,12 +106,12 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
                             state->changed = true;
                             debug("async: completed: %lld", var->identifier());
                             debug("async: done with briefly locking");
-                        )
+                        })
                     });
                 });
             }
             state->ready.clear();
-        )
+        })
 
         debug("async: loop thread unlocked");
         while (!state->changed) {
@@ -122,7 +126,7 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
 Async::Async() { state.reset(new AsyncState()); }
 
 void Async::run_test(NetTestVar test, std::function<void(NetTestVar)> fn) {
-    LOCKED(
+    LOCKED({
         NetTest *ptr = test.operator->(); // get() does not check for NULL
         INSERT(state->ready, ptr, test);
         INSERT(state->callbacks, ptr, fn);
@@ -133,7 +137,7 @@ void Async::run_test(NetTestVar test, std::function<void(NetTestVar)> fn) {
             state->thread = std::thread(loop_thread, state);
             state->thread_running = true;
         }
-    )
+    })
 }
 
 void Async::break_loop() {
@@ -142,14 +146,12 @@ void Async::break_loop() {
     state->changed = true;
 }
 
-bool Async::empty() {
-    return !state->thread_running;
-}
+bool Async::empty() { return !state->thread_running; }
 
 void Async::pump() {
     std::map<NetTest *, NetTestVar> context;
     std::map<NetTest *, std::function<void(NetTestVar)>> funcs;
-    LOCKED(
+    LOCKED({
         if (state->completed.empty()) return; /* shortcut */
         for (auto pair : state->completed) {
             INSERT(context, pair.first, pair.second);
@@ -161,7 +163,7 @@ void Async::pump() {
         }
         state->completed.clear();
         state->changed = true;
-    )
+    })
     for (auto pair : funcs) {
         NetTestVar var;
         GET(var, context, pair.first);
