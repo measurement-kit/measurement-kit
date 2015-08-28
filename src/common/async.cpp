@@ -58,6 +58,8 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
 
     EvThreadSingleton::ensure();
 
+    state->interrupted = false; // Undo previous break_loop() if any
+
     debug("async: loop thread entered");
     for (;;) {
 
@@ -133,11 +135,6 @@ void Async::run_test(NetTestVar test, std::function<void(NetTestVar)> fn) {
 void Async::break_loop() {
     break_loop();
     state->interrupted = true;
-}
-
-// TODO: make sure this is enough to restart loop
-void Async::restart_loop() {
-    state->interrupted = false;
 }
 
 bool Async::empty() {

@@ -25,10 +25,9 @@ class Async {
       std::function<void(SharedPointer<NetTest>)> func);
 
     /// Break out of the loop
+    /// \remark This returns immediately, poll empty() to know when
+    /// the background thread has terminated.
     void break_loop();
-
-    /// Restart the background loop
-    void restart_loop();
 
     /// Returns true when no async jobs are running
     bool empty();
