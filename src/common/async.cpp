@@ -139,6 +139,7 @@ void Async::run_test(NetTestVar test, std::function<void(NetTestVar)> fn) {
 void Async::break_loop() {
     break_loop();
     state->interrupted = true;
+    state->changed = true;
 }
 
 bool Async::empty() {
