@@ -7,7 +7,6 @@
 
 #include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/pointer.hpp>
-#include <measurement_kit/common/poller.hpp>
 
 namespace measurement_kit {
 namespace common {
@@ -18,10 +17,7 @@ class Async {
   public:
 
     /// Default constructor
-    Async() : Async(SharedPointer<Poller>(new Poller())) {}
-
-    /// Constructor with specified poller
-    Async(SharedPointer<Poller> p);
+    Async();
 
     /// Run the specified network test and call a callback when done
     /// \param func Callback called when test is done

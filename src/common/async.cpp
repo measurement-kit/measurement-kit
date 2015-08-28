@@ -4,17 +4,13 @@
 
 #include <measurement_kit/common/async.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/poller.hpp>
 
 #include <mutex>
 #include <map>
 #include <thread>
 
 #include <event2/thread.h>
-
-//
-// TODO: modify this code to allow the user to specify a custom
-// poller (commented out code for this already exists)
-//
 
 namespace measurement_kit {
 namespace common {
@@ -30,7 +26,6 @@ struct AsyncState {
     volatile bool changed = false;
     volatile bool interrupted = false;
     std::mutex mutex;
-    SharedPointer<Poller> poller;
     std::thread thread;
     volatile bool thread_running = false;
 };
@@ -110,7 +105,6 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
 
         debug("async: loop thread unlocked");
         while (!state->changed) {
-            //state->poller->loop_once();
             loop_once();
         }
         state->changed = false;
@@ -119,10 +113,7 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
     debug("async: exiting from thread");
 }
 
-Async::Async(SharedPointer<Poller> poller) {
-    state.reset(new AsyncState());
-    state->poller = poller;
-}
+Async::Async() { state.reset(new AsyncState()); }
 
 void Async::run_test(NetTestVar test, std::function<void(NetTestVar)> fn) {
     LOCKED(
@@ -140,7 +131,6 @@ void Async::run_test(NetTestVar test, std::function<void(NetTestVar)> fn) {
 }
 
 void Async::break_loop() {
-    //state->poller->break_loop();  // Idempotent
     break_loop();
     state->interrupted = true;
 }
