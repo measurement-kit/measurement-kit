@@ -23,15 +23,15 @@ using namespace measurement_kit::common;
 TEST_CASE("Constructor") {
 
     SECTION("We deal with event_base_new() failure") {
-	auto libevent = Libevent();
+	auto libs = Libs();
 
-	libevent.event_base_new = [](void) {
+	libs.event_base_new = [](void) {
 		return ((event_base *) NULL);
 	};
 
 	auto bad_alloc_fired = false;
 	try {
-		Poller poller(&libevent);
+		Poller poller(&libs);
 	} catch (std::bad_alloc&) {
 		bad_alloc_fired = true;
 	}
@@ -40,21 +40,21 @@ TEST_CASE("Constructor") {
     }
 
     SECTION("We deal with evdns_base_new() failure") {
-	auto libevent = Libevent();
+	auto libs = Libs();
 
 	auto event_base_free_fired = false;
 
-	libevent.event_base_free = [&event_base_free_fired](event_base *b) {
+	libs.event_base_free = [&event_base_free_fired](event_base *b) {
 		event_base_free_fired = true;
 		::event_base_free(b);
 	};
-	libevent.evdns_base_new = [](event_base *, int) {
+	libs.evdns_base_new = [](event_base *, int) {
 		return ((evdns_base *) NULL);
 	};
 
 	auto bad_alloc_fired = false;
 	try {
-		Poller poller(&libevent);
+		Poller poller(&libs);
 	} catch (std::bad_alloc&) {
 		bad_alloc_fired = true;
 	}
@@ -64,28 +64,28 @@ TEST_CASE("Constructor") {
     }
 
     SECTION("We deal with evsignal failure") {
-	auto libevent = Libevent();
+	auto libs = Libs();
 
 	auto event_base_free_fired = false;
 	auto evdns_base_free_fired = false;
 
-	libevent.event_base_free = [&event_base_free_fired](event_base *b) {
+	libs.event_base_free = [&event_base_free_fired](event_base *b) {
 		event_base_free_fired = true;
 		::event_base_free(b);
 	};
-	libevent.evdns_base_free = [&evdns_base_free_fired](evdns_base *b,
+	libs.evdns_base_free = [&evdns_base_free_fired](evdns_base *b,
 	    int opt) {
 		evdns_base_free_fired = true;
 		::evdns_base_free(b, opt);
 	};
-	libevent.event_new = [](event_base *, evutil_socket_t, short,
+	libs.event_new = [](event_base *, evutil_socket_t, short,
 	    event_callback_fn, void *) {
 		return ((event *) NULL);
 	};
 
 	auto bad_alloc_fired = false;
 	try {
-		Poller poller(&libevent);
+		Poller poller(&libs);
 	} catch (std::bad_alloc&) {
 		bad_alloc_fired = true;
 	}
@@ -98,28 +98,28 @@ TEST_CASE("Constructor") {
 
 TEST_CASE("The destructor works properly") {
 
-	auto libevent = Libevent();
+	auto libs = Libs();
 
 	auto event_base_free_fired = false;
 	auto evdns_base_free_fired = false;
 	auto event_free_fired = false;
 
-	libevent.event_base_free = [&event_base_free_fired](event_base *b) {
+	libs.event_base_free = [&event_base_free_fired](event_base *b) {
 		event_base_free_fired = true;
 		::event_base_free(b);
 	};
-	libevent.evdns_base_free = [&evdns_base_free_fired](evdns_base *b,
+	libs.evdns_base_free = [&evdns_base_free_fired](evdns_base *b,
 	    int opt) {
 		evdns_base_free_fired = true;
 		::evdns_base_free(b, opt);
 	};
-	libevent.event_free = [&event_free_fired](event *e) {
+	libs.event_free = [&event_free_fired](event *e) {
 		event_free_fired = true;
 		::event_free(e);
 	};
 
 	{
-		Poller poller(&libevent);
+		Poller poller(&libs);
 	}
 
 	REQUIRE(event_base_free_fired);
@@ -129,13 +129,13 @@ TEST_CASE("The destructor works properly") {
 
 TEST_CASE("We deal with event_add() failure in break_loop_on_sigint_()") {
 #ifndef WIN32
-	auto libevent = Libevent();
+	auto libs = Libs();
 
-	libevent.event_add = [](event *, timeval *) {
+	libs.event_add = [](event *, timeval *) {
 		return (-1);
 	};
 
-	Poller poller(&libevent);
+	Poller poller(&libs);
 
 	auto runtime_error_fired = false;
 	try {
@@ -150,13 +150,13 @@ TEST_CASE("We deal with event_add() failure in break_loop_on_sigint_()") {
 
 TEST_CASE("We deal with event_del() failure in break_loop_on_sigint_()") {
 #ifndef WIN32
-	auto libevent = Libevent();
+	auto libs = Libs();
 
-	libevent.event_del = [](event *) {
+	libs.event_del = [](event *) {
 		return (-1);
 	};
 
-	Poller poller(&libevent);
+	Poller poller(&libs);
 	poller.break_loop_on_sigint_(true);
 
 	auto runtime_error_fired = false;
@@ -203,13 +203,13 @@ TEST_CASE("poller.loop() works properly in corner cases") {
 
 
     SECTION("We deal with event_base_dispatch() returning -1") {
-	Libevent libevent;
+	Libs libs;
 
-	libevent.event_base_dispatch = [](event_base *) {
+	libs.event_base_dispatch = [](event_base *) {
 		return (-1);
 	};
 
-	Poller poller1(&libevent);
+	Poller poller1(&libs);
 
 	auto runtime_error_fired = false;
 	try {
@@ -222,24 +222,24 @@ TEST_CASE("poller.loop() works properly in corner cases") {
     }
 
     SECTION("We deal with event_base_dispatch() returning 1") {
-	Libevent libevent;
+	Libs libs;
 
-	libevent.event_base_dispatch = [](event_base *) {
+	libs.event_base_dispatch = [](event_base *) {
 		return (1);
 	};
-	Poller poller2(&libevent);
+	Poller poller2(&libs);
 	poller2.loop();
     }
 }
 
 TEST_CASE("poller.break_loop() works properly") {
-	Libevent libevent;
+	Libs libs;
 
-	libevent.event_base_loopbreak = [](event_base *) {
+	libs.event_base_loopbreak = [](event_base *) {
 		return (-1);
 	};
 
-	Poller poller(&libevent);
+	Poller poller(&libs);
 
 	auto runtime_error_fired = false;
 	try {

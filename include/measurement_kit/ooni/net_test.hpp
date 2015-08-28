@@ -87,7 +87,7 @@ class NetTest : public measurement_kit::common::NetTest {
   std::string get_report_filename();
 
 protected:
-  Libevent *libevent = GlobalLibevent::get();
+  Libs *libs = Libs::global();
 
   virtual void setup(std::string input);
   virtual void setup();

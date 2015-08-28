@@ -22,13 +22,13 @@ namespace dns {
 
 Response::Response(int code_, char type, int count, int ttl_, double started,
                    void *addresses, SharedPointer<Logger> logger,
-                   Libevent *libevent, int start_from)
+                   Libs *libs, int start_from)
     : code(code_), ttl(ttl_)
 {
     assert(start_from >= 0);
 
-    if (libevent == NULL) {
-        libevent = GlobalLibevent::get();
+    if (libs == NULL) {
+        libs = Libs::global();
     }
 
     // Only compute RTT when we know that the server replied
@@ -82,7 +82,7 @@ Response::Response(int code_, char type, int count, int ttl_, double started,
             // Note: `start_from`, required by the unit test, defaults to 0
             for (auto i = start_from; i < count; ++i) {
                 // Note: address already in network byte order
-                if (libevent->inet_ntop(family, (char *)addresses + i * size,
+                if (libs->inet_ntop(family, (char *)addresses + i * size,
                             string, sizeof (string)) == NULL) {
                     logger->warn("dns - unexpected inet_ntop failure");
                     code = DNS_ERR_UNKNOWN;
@@ -213,7 +213,7 @@ class RequestImpl {
 
     std::function<void(Response&&)> callback;
     double ticks = 0.0;  // just to initialize to something
-    Libevent *libevent;  // should not be NULL (this is asserted below)
+    Libs *libs;  // should not be NULL (this is asserted below)
     SharedPointer<bool> cancelled;
     SharedPointer<Logger> logger = DefaultLogger::get();
 
@@ -223,8 +223,8 @@ class RequestImpl {
         auto impl = static_cast<RequestImpl *>(opaque);
 
         // Tell the libevent layer we received a DNS response
-        if (impl->libevent->evdns_reply_hook) {
-            impl->libevent->evdns_reply_hook(code, type, count, ttl,
+        if (impl->libs->evdns_reply_hook) {
+            impl->libs->evdns_reply_hook(code, type, count, ttl,
                                              addresses, opaque);
         }
 
@@ -242,14 +242,14 @@ class RequestImpl {
     }
 
     in_addr *ipv4_pton(std::string address, in_addr *netaddr) {
-        if (libevent->inet_pton(AF_INET, address.c_str(), netaddr) != 1) {
+        if (libs->inet_pton(AF_INET, address.c_str(), netaddr) != 1) {
             throw std::runtime_error("Invalid IPv4 address");
         }
         return (netaddr);
     }
 
     in6_addr *ipv6_pton(std::string address, in6_addr *netaddr) {
-        if (libevent->inet_pton(AF_INET6, address.c_str(), netaddr) != 1) {
+        if (libs->inet_pton(AF_INET6, address.c_str(), netaddr) != 1) {
             throw std::runtime_error("Invalid IPv6 address");
         }
         return (netaddr);
@@ -264,8 +264,8 @@ class RequestImpl {
     RequestImpl(std::string query, std::string address,
                 std::function<void(Response&&)>&& f,
                 SharedPointer<Logger> lp, evdns_base *base,
-                Libevent *lev, SharedPointer<bool> cancd)
-            : callback(f), libevent(lev), cancelled(cancd), logger(lp) {
+                Libs *lev, SharedPointer<bool> cancd)
+            : callback(f), libs(lev), cancelled(cancd), logger(lp) {
 
         assert(base != NULL && lev != NULL);
 
@@ -274,24 +274,24 @@ class RequestImpl {
         // of the evdns_base_resolve_xxx() functions below
         //
         if (query == "A") {
-            if (libevent->evdns_base_resolve_ipv4(base, address.c_str(),
+            if (libs->evdns_base_resolve_ipv4(base, address.c_str(),
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
         } else if (query == "AAAA") {
-            if (libevent->evdns_base_resolve_ipv6(base, address.c_str(),
+            if (libs->evdns_base_resolve_ipv6(base, address.c_str(),
                 DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
         } else if (query == "REVERSE_A") {
             in_addr na;
-            if (libevent->evdns_base_resolve_reverse(base, ipv4_pton(address,
+            if (libs->evdns_base_resolve_reverse(base, ipv4_pton(address,
                 &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == NULL) {
                 throw std::runtime_error("Resolver error");
             }
         } else if (query == "REVERSE_AAAA") {
             in6_addr na;
-            if (libevent->evdns_base_resolve_reverse_ipv6(base, ipv6_pton(
+            if (libs->evdns_base_resolve_reverse_ipv6(base, ipv6_pton(
                 address, &na), DNS_QUERY_NO_SEARCH, handle_resolve, this)
                 == NULL) {
                 throw std::runtime_error("Resolver error");
@@ -308,7 +308,7 @@ public:
                       std::function<void(Response&&)>&& func,
                       SharedPointer<Logger> logger,
                       evdns_base *base,
-                      Libevent *lev, SharedPointer<bool> cancd) {
+                      Libs *lev, SharedPointer<bool> cancd) {
         new RequestImpl(query, address, std::move(func), logger, base,
                         lev, cancd);
     }
@@ -322,18 +322,18 @@ Request::Request(std::string query, std::string address,
                  std::function<void(Response&&)>&& func,
                  SharedPointer<Logger> lp,
                  evdns_base *dnsb,
-                 Libevent *libevent)
+                 Libs *libs)
 {
     if (dnsb == NULL) {
         dnsb = measurement_kit::get_global_evdns_base();
     }
-    if (libevent == NULL) {
-        libevent = GlobalLibevent::get();
+    if (libs == NULL) {
+        libs = Libs::global();
     }
     cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
     RequestImpl::issue(query, address, std::move(func),
-                       lp, dnsb, libevent, cancelled);
+                       lp, dnsb, libs, cancelled);
 }
 
 void
@@ -361,7 +361,7 @@ Resolver::cleanup(void)
         // this guarantees that request's callback is always invoked
         // so RequestImpl:s are always freed (see request()).
         //
-        libevent->evdns_base_free(base, 1);
+        libs->evdns_base_free(base, 1);
         base = NULL;  // Idempotent
     }
 }
@@ -380,26 +380,26 @@ Resolver::get_evdns_base(void)
 
     auto evb = poller->get_event_base();
     if (settings.find("nameserver") != settings.end()) {
-        if ((base = libevent->evdns_base_new(evb, 0)) == NULL) {
+        if ((base = libs->evdns_base_new(evb, 0)) == NULL) {
             throw std::bad_alloc();
         }
-        if (libevent->evdns_base_nameserver_ip_add(base,
+        if (libs->evdns_base_nameserver_ip_add(base,
                 settings["nameserver"].c_str()) != 0) {
             cleanup();
             throw std::runtime_error("Cannot set server address");
         }
-    } else if ((base = libevent->evdns_base_new(evb, 1)) == NULL) {
+    } else if ((base = libs->evdns_base_new(evb, 1)) == NULL) {
         throw std::bad_alloc();
     }
 
     if (settings.find("attempts") != settings.end() &&
-            libevent->evdns_base_set_option(base,
+            libs->evdns_base_set_option(base,
             "attempts", settings["attempts"].c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'attempts' option");
     }
     if (settings.find("timeout") != settings.end() &&
-            libevent->evdns_base_set_option(
+            libs->evdns_base_set_option(
             base, "timeout", settings["timeout"].c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'timeout' option");
@@ -410,7 +410,7 @@ Resolver::get_evdns_base(void)
     if (settings.find("randomize_case") != settings.end()) {
         randomiz = settings["randomize_case"];
     }
-    if (libevent->evdns_base_set_option(base, "randomize-case",
+    if (libs->evdns_base_set_option(base, "randomize-case",
             randomiz.c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'randomize-case' option");
@@ -433,7 +433,7 @@ Resolver::request(std::string query, std::string address,
     auto cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
     RequestImpl::issue(query, address, std::move(func), logger,
-                       get_evdns_base(), libevent, cancelled);
+                       get_evdns_base(), libs, cancelled);
 }
 
 }}

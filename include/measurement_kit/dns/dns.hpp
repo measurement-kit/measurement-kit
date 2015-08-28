@@ -68,7 +68,7 @@ public:
      * \param started time when the DNS request was started.
      * \param addresses data returned by evdns as an opaque pointer.
      * \param lp pointer to custom logger object.
-     * \param libevent optional pointer to igth's libevent wrapper.
+     * \param libs optional pointer to igth's libs wrapper.
      * \param start_from optional parameter to start from the specified
      *        record, rather than from zero, when processing the results
      *        (this is only used for implementing some test cases).
@@ -76,7 +76,7 @@ public:
     Response(int code, char type, int count, int ttl, double started,
              void *addresses,
              SharedPointer<Logger> lp = DefaultLogger::get(),
-             Libevent *libevent = NULL,
+             Libs *libs = NULL,
              int start_from = 0);
 
     /*!
@@ -204,8 +204,8 @@ public:
      *        default one. This parameter is not meant to be used directly
      *        by the programmer. To issue requests using a specific evdns_base
      *        with specific options, you should instead use a Resolver.
-     * \param libevent Optional pointer to a mocked implementation of
-     *        the libevent object (mainly useful to write unit tests).
+     * \param libs Optional pointer to a mocked implementation of
+     *        the libs object (mainly useful to write unit tests).
      * \throws std::bad_alloc if some allocation fails.
      * \throws std::runtime_error if some edvns API fails.
      */
@@ -213,7 +213,7 @@ public:
             std::function<void(Response&&)>&& func,
             SharedPointer<Logger> lp = DefaultLogger::get(),
             evdns_base *dnsb = NULL,
-            Libevent *libevent = NULL);
+            Libs *libs = NULL);
 
     Request(Request&) = default;
     Request& operator=(Request&) = default;
@@ -271,7 +271,7 @@ class Resolver : public NonCopyable, public NonMovable {
 
 protected:
     Settings settings;
-    Libevent *libevent = GlobalLibevent::get();
+    Libs *libs = Libs::global();
     Poller *poller = measurement_kit::get_global_poller();
     evdns_base *base = NULL;
     SharedPointer<Logger> logger = DefaultLogger::get();
@@ -301,9 +301,9 @@ public:
      */
     Resolver(Settings settings_,
              SharedPointer<Logger> lp = DefaultLogger::get(),
-             Libevent *lev = NULL, Poller *plr = NULL) {
+             Libs *lev = NULL, Poller *plr = NULL) {
         if (lev != NULL) {
-            libevent = lev;
+            libs = lev;
         }
         if (plr != NULL) {
             poller = plr;

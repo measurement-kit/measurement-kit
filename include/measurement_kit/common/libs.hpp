@@ -2,29 +2,31 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_COMMON_LIBEVENT_HPP
-#define MEASUREMENT_KIT_COMMON_LIBEVENT_HPP
-
-//
-// Libevent abstraction layer.
-//
+#ifndef MEASUREMENT_KIT_COMMON_LIBS_HPP
+#define MEASUREMENT_KIT_COMMON_LIBS_HPP
 
 #include <event2/buffer.h>
 #include <event2/bufferevent.h>
 #include <event2/dns.h>
 #include <event2/event.h>
+#include <event2/util.h>
 
 #include <arpa/inet.h>
 
 #include <functional>
-#include <stdexcept>
 
-#include <measurement_kit/common/constraints.hpp>
+struct bufferevent;
+struct evbuffer;
+struct evdns_base;
+struct evdns_request;
+struct event;
+struct event_base;
+struct timeval;
 
 namespace measurement_kit {
 namespace common {
 
-struct Libevent {
+struct Libs {
 
     /*
      * bufferevent
@@ -113,92 +115,14 @@ struct Libevent {
 
     std::function<const char *(int, const void *, char *, socklen_t)>
         inet_ntop = ::inet_ntop;
+
+    // Get global libs object
+    static Libs *global() {
+        static Libs singleton;
+        return &singleton;
+    }
 };
 
-struct GlobalLibevent {
-
-    GlobalLibevent(void) { /* nothing */ }
-
-    static Libevent *get(void) {
-        static Libevent singleton;
-        return (&singleton);
-    }
-
-    GlobalLibevent(GlobalLibevent &) = delete;
-    GlobalLibevent &operator=(GlobalLibevent &) = delete;
-    GlobalLibevent(GlobalLibevent &&) = delete;
-    GlobalLibevent &operator=(GlobalLibevent &&) = delete;
-};
-
-class Evbuffer : public NonCopyable, public NonMovable {
-
-    Libevent *libevent = GlobalLibevent::get();
-    evbuffer *evbuf = NULL;
-
-  public:
-    Evbuffer(Libevent *lev = NULL) {
-        if (lev != NULL)
-            libevent = lev;
-    }
-
-    ~Evbuffer(void) {
-        if (evbuf != NULL)
-            libevent->evbuffer_free(evbuf);
-    }
-
-    operator evbuffer *(void) {
-        if (evbuf == NULL && (evbuf = libevent->evbuffer_new()) == NULL)
-            throw std::bad_alloc();
-        return (evbuf);
-    }
-
-    Libevent *get_libevent(void) { return (libevent); }
-};
-
-class BuffereventSocket : public NonCopyable, public NonMovable {
-
-    Libevent *libevent = GlobalLibevent::get();
-    bufferevent *bev = NULL;
-
-  public:
-    BuffereventSocket(Libevent *lev = NULL) {
-        if (lev != NULL)
-            libevent = lev;
-    }
-
-    BuffereventSocket(event_base *base, evutil_socket_t fd, int options,
-                      Libevent *lev = NULL) {
-        make(base, fd, options, lev);
-    }
-
-    void make(event_base *base, evutil_socket_t fd, int options,
-              Libevent *lev = NULL) {
-        close();
-        if (lev == NULL)
-            libevent = GlobalLibevent::get();
-        else
-            libevent = lev;
-        if ((bev = libevent->bufferevent_socket_new(base, fd, options)) == NULL)
-            throw std::bad_alloc();
-    }
-
-    ~BuffereventSocket(void) { close(); }
-
-    void close() {
-        if (bev != NULL) {
-            libevent->bufferevent_free(bev);
-            bev = NULL;
-        }
-    }
-
-    operator bufferevent *(void) {
-        if (bev == NULL)
-            throw std::runtime_error("Accessing NULL bufferevent");
-        return (bev);
-    }
-
-    Libevent *get_libevent(void) { return (libevent); }
-};
-
-}}
+} // namespace common
+} // namespace measurement_kit
 #endif

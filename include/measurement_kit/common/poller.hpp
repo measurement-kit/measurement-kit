@@ -6,7 +6,7 @@
 #define MEASUREMENT_KIT_COMMON_POLLER_HPP
 
 #include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/libevent.hpp>
+#include <measurement_kit/common/libs.hpp>
 
 #include <functional>
 
@@ -22,13 +22,13 @@ class DelayedCall : public NonCopyable, public NonMovable {
      */
     std::function<void(void)> *func = NULL;
     event *evp = NULL;
-    Libevent *libevent = GlobalLibevent::get();
+    Libs *libs = Libs::global();
 
     // Callback for libevent
     static void dispatch(evutil_socket_t, short, void *);
 
   public:
-    DelayedCall(double, std::function<void(void)> &&, Libevent *libevent = NULL,
+    DelayedCall(double, std::function<void(void)> &&, Libs *libs = NULL,
                 event_base *evbase = NULL);
     ~DelayedCall(void);
 };
@@ -39,10 +39,10 @@ class Poller : public NonCopyable, public NonMovable {
     evdns_base *dnsbase;
     event *evsignal; /* for SIGINT on UNIX */
 
-    Libevent *libevent = GlobalLibevent::get();
+    Libs *libs = Libs::global();
 
   public:
-    Poller(Libevent *libevent = NULL);
+    Poller(Libs *libs = NULL);
     ~Poller(void);
 
     event_base *get_event_base(void) { return (this->base); }

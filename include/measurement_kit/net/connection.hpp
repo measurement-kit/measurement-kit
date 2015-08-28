@@ -5,6 +5,7 @@
 #ifndef MEASUREMENT_KIT_NET_CONNECTION_HPP
 #define MEASUREMENT_KIT_NET_CONNECTION_HPP
 
+#include <measurement_kit/common/bufferevent.hpp>
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/log.hpp>
@@ -32,7 +33,7 @@ using namespace measurement_kit::dns;
 
 class ConnectionState {
 
-    BuffereventSocket bev;
+    Bufferevent bev;
     dns::Request dns_request;
     unsigned int connecting = 0;
     char *address = NULL;

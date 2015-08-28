@@ -22,26 +22,26 @@ namespace common {
  */
 
 DelayedCall::DelayedCall(double t, std::function<void(void)> &&f,
-                         Libevent *libevent, event_base *evbase) {
+                         Libs *libs, event_base *evbase) {
     timeval timeo;
 
-    if (libevent != NULL)
-        this->libevent = libevent;
+    if (libs != NULL)
+        this->libs = libs;
     if (evbase == NULL)
         evbase = get_global_event_base();
 
     this->func = new std::function<void(void)>();
 
     if ((this->evp =
-             this->libevent->event_new(evbase, MEASUREMENT_KIT_SOCKET_INVALID, EV_TIMEOUT,
+             this->libs->event_new(evbase, MEASUREMENT_KIT_SOCKET_INVALID, EV_TIMEOUT,
                                        this->dispatch, this->func)) == NULL) {
         delete (this->func);
         throw std::bad_alloc();
     }
 
-    if (this->libevent->event_add(this->evp, timeval_init(&timeo, t)) != 0) {
+    if (this->libs->event_add(this->evp, timeval_init(&timeo, t)) != 0) {
         delete (this->func);
-        this->libevent->event_free(this->evp);
+        this->libs->event_free(this->evp);
         throw std::runtime_error("cannot register new event");
     }
 
@@ -61,7 +61,7 @@ void DelayedCall::dispatch(evutil_socket_t socket, short event, void *opaque) {
 DelayedCall::~DelayedCall(void) {
     delete (this->func); /* delete handles NULL */
     if (this->evp)
-        this->libevent->event_free(this->evp);
+        this->libs->event_free(this->evp);
 }
 
 /*
@@ -78,17 +78,17 @@ static void Poller_sigint(int signo, short event, void *opaque) {
 }
 #endif
 
-Poller::Poller(Libevent *libevent) {
-    if (libevent != NULL)
-        this->libevent = libevent;
+Poller::Poller(Libs *libs) {
+    if (libs != NULL)
+        this->libs = libs;
 
-    if ((this->base = this->libevent->event_base_new()) == NULL) {
+    if ((this->base = this->libs->event_base_new()) == NULL) {
         throw std::bad_alloc();
     }
 
-    if ((this->dnsbase = this->libevent->evdns_base_new(this->base, 1)) ==
+    if ((this->dnsbase = this->libs->evdns_base_new(this->base, 1)) ==
         NULL) {
-        this->libevent->event_base_free(this->base);
+        this->libs->event_base_free(this->base);
         throw std::bad_alloc();
     }
 
@@ -97,19 +97,19 @@ Poller::Poller(Libevent *libevent) {
      * Note: The move semantic is incompatible with this object
      * because we pass `this` to `event_new()`.
      */
-    if ((this->evsignal = this->libevent->event_new(
+    if ((this->evsignal = this->libs->event_new(
              this->base, SIGINT, EV_SIGNAL, Poller_sigint, this)) == NULL) {
-        this->libevent->evdns_base_free(this->dnsbase, 1);
-        this->libevent->event_base_free(this->base);
+        this->libs->evdns_base_free(this->dnsbase, 1);
+        this->libs->event_base_free(this->base);
         throw std::bad_alloc();
     }
 #endif
 }
 
 Poller::~Poller(void) {
-    this->libevent->event_free(this->evsignal);
-    this->libevent->evdns_base_free(this->dnsbase, 1);
-    this->libevent->event_base_free(this->base);
+    this->libs->event_free(this->evsignal);
+    this->libs->evdns_base_free(this->dnsbase, 1);
+    this->libs->event_base_free(this->base);
 }
 
 void Poller::break_loop_on_sigint_(int enable) {
@@ -124,17 +124,17 @@ void Poller::break_loop_on_sigint_(int enable) {
      * good to remember that this limitation exists.
      */
     if (enable) {
-        if (this->libevent->event_add(this->evsignal, NULL) != 0)
+        if (this->libs->event_add(this->evsignal, NULL) != 0)
             throw std::runtime_error("cannot add SIGINT event");
     } else {
-        if (this->libevent->event_del(this->evsignal) != 0)
+        if (this->libs->event_del(this->evsignal) != 0)
             throw std::runtime_error("cannot del SIGINT event");
     }
 #endif
 }
 
 void Poller::loop(void) {
-    auto result = this->libevent->event_base_dispatch(this->base);
+    auto result = this->libs->event_base_dispatch(this->base);
     if (result < 0)
         throw std::runtime_error("event_base_dispatch() failed");
     if (result == 1)
@@ -142,12 +142,12 @@ void Poller::loop(void) {
 }
 
 void Poller::break_loop(void) {
-    if (this->libevent->event_base_loopbreak(this->base) != 0)
+    if (this->libs->event_base_loopbreak(this->base) != 0)
         throw std::runtime_error("event_base_loopbreak() failed");
 }
 
 void Poller::loop_once(void) {
-    auto result = this->libevent->event_base_loop(this->base, EVLOOP_ONCE);
+    auto result = this->libs->event_base_loop(this->base, EVLOOP_ONCE);
     if (result < 0)
         throw std::runtime_error("event_base_loop() failed");
     if (result == 1)

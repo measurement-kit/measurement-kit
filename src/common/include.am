@@ -13,14 +13,16 @@ libmeasurement_kit_la_LIBADD += src/common/libcommon.la
 commonincludedir = $(includedir)/measurement_kit/common
 commoninclude_HEADERS = \
     include/measurement_kit/common/async.hpp \
+    include/measurement_kit/common/bufferevent.hpp \
     include/measurement_kit/common/check_connectivity.hpp \
     include/measurement_kit/common/constraints.hpp \
+    include/measurement_kit/common/evbuffer.hpp \
     include/measurement_kit/common/net_test.hpp \
     include/measurement_kit/common/pointer.hpp \
     include/measurement_kit/common/settings.hpp \
     include/measurement_kit/common/utils.hpp \
     include/measurement_kit/common/error.hpp \
-    include/measurement_kit/common/libevent.hpp \
+    include/measurement_kit/common/libs.hpp \
     include/measurement_kit/common/log.hpp \
     include/measurement_kit/common/poller.hpp \
     include/measurement_kit/common/string_vector.hpp
