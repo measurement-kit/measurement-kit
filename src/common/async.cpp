@@ -4,11 +4,15 @@
 
 #include <measurement_kit/common/async.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/pointer.hpp>
 
 #include <mutex>
 #include <map>
+#include <stdexcept>
 #include <thread>
+#include <utility>
 
 #include <event2/thread.h>
 

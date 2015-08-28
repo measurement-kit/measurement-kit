@@ -5,11 +5,14 @@
 #ifndef MEASUREMENT_KIT_COMMON_ASYNC_HPP
 #define MEASUREMENT_KIT_COMMON_ASYNC_HPP
 
-#include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/pointer.hpp>
+
+#include <functional>
 
 namespace measurement_kit {
 namespace common {
+
+class NetTest;
 
 struct AsyncState;
 
