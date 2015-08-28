@@ -8,11 +8,29 @@
 namespace measurement_kit {
 namespace common {
 
-struct Error {
-    int error = 0;
+/// An error that occurred
+class Error {
+  public:
+    Error() : Error(0) {}                   ///< Default constructor (no error)
+    Error(int e) { error_ = e; }            ///< Constructor with error code
+    operator int() const { return error_; } ///< Cast to integer
 
-    Error(int e) { this->error = e; };
+    /// Equality operator
+    bool operator==(int n) const { return error_ == n; }
+
+    /// Unequality operator
+    bool operator!=(int n) const { return error_ != n; }
+
+  private:
+    int error_ = 0;
 };
 
-}}
+/// A generic error
+class GenericError : public Error {
+  public:
+    GenericError() : Error(1) {} ///< Default constructor
+};
+
+} // namespace common
+} // namespace measurement_kit
 #endif
