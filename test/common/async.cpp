@@ -70,16 +70,8 @@ TEST_CASE("The async engine works as expected") {
     measurement_kit::set_verbose(1);
     Async async;
 
-    // Note: the following callback executes in a background thread
-    volatile bool complete = false;
-    async.on_empty([&complete]() {
-        measurement_kit::debug("all tests completed");
-        complete = true;
-    });
-
     for (int i = 0; i < 4; ++i) {
         measurement_kit::debug("do another iteration of tests");
-        complete = false;
 
         // Create tests in temporary void functions to also check that we can
         // create them in functions that later return in real apps
@@ -88,8 +80,8 @@ TEST_CASE("The async engine works as expected") {
         run_http_invalid_request_line(async);
         run_tcp_connect(async);
 
-        // TODO Maybe implement a better sync mechanism but for now polling will do
-        while (!complete) {
+        // TODO Need to implement a better sync mechanism?
+        while (!async.empty()) {
             async.pump();
             sleep(1);
         }

@@ -37,10 +37,6 @@ class Async {
     /// Returns true when no async jobs are running
     bool empty();
 
-    /// Called when the tests queue is empty
-    /// \warn This function is called from a background thread
-    void on_empty(std::function<void()>);
-
     /// Emit test complete events in the current thread
     void pump();
 

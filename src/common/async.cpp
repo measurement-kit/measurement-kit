@@ -28,7 +28,6 @@ struct AsyncState {
     std::map<NetTest *, NetTestVar> active;
     std::map<NetTest *, NetTestVar> completed;
     volatile bool changed = false;
-    std::function<void()> hook_empty;
     volatile bool interrupted = false;
     std::mutex mutex;
     SharedPointer<Poller> poller;
@@ -122,9 +121,6 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
     debug("async: detaching thread...");
     state->thread.detach();
     state->thread_running = false;
-    if (state->hook_empty) {
-        state->hook_empty();
-    }
     debug("async: exiting from thread");
 }
 
@@ -161,12 +157,6 @@ void Async::restart_loop() {
 
 bool Async::empty() {
     return !state->thread_running;
-}
-
-void Async::on_empty(std::function<void()> fn) {
-    LOCKED(
-        state->hook_empty = fn;
-    )
 }
 
 void Async::pump() {
