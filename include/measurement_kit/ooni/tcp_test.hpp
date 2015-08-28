@@ -8,7 +8,6 @@
 #include <measurement_kit/net/buffer.hpp>
 #include <measurement_kit/net/connection.hpp>
 
-#include <measurement_kit/common/emitter.hpp>
 #include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/log.hpp>
@@ -20,59 +19,6 @@ namespace ooni {
 
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;
-
-#if 0
-class TCPClient : public measurement_kit::common::EmitterVoid,
-        public measurement_kit::common::Emitter<std::string>,
-        public measurement_kit::common::Emitter<Error> {
-
-    Connection connection;
-
-public:
-
-    using measurement_kit::common::Emitter<std::string>::on;
-    using measurement_kit::common::Emitter<std::string>::emit;
-    using measurement_kit::common::Emitter<Error>::on;
-    using measurement_kit::common::Emitter<Error>::emit;
-    using measurement_kit::common::EmitterVoid::on;
-    using measurement_kit::common::EmitterVoid::emit;
-
-    TCPClient() {}
-
-    TCPClient(std::string hostname, std::string port) {
-        connection = Connection("PF_UNSPEC", hostname.c_str(),
-                port.c_str());
-        connection.on_error([this](Error error) {
-            logger->debug("tcpclient: error event");
-            emit("error", error);
-        });
-        connection.on_connect([this]() {
-            logger->debug("tcpclient: connected event");
-            if (connection.enable_read() != 0) {
-                throw std::runtime_error("Cannot enable read");
-            }
-            emit("connect");
-        });
-        connection.on_flush([this]() {
-            logger->debug("tcpclient: flush event");
-            emit("flush");
-        });
-        connection.on_data([this](evbuffer *evb) {
-            logger->debug("tcpclient: data event");
-            auto buffer = Buffer();
-            buffer << evb;
-            auto string = buffer.read<char>();
-            emit("data", std::move(string));
-        });
-    }
-
-    void write(std::string data) {
-        if (connection.puts(data.c_str()) != 0) {
-            throw std::runtime_error("Write failed");
-        }
-    }
-};
-#endif
 
 typedef SharedPointer<Connection> TCPClient;           /* XXX */
 
