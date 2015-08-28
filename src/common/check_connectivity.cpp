@@ -14,30 +14,21 @@
 namespace measurement_kit {
 namespace common {
 
-void
-Network::cleanup(void)  // Idempotent cleanup function
+void CheckConnectivity::cleanup() // Idempotent cleanup function
 {
-    if (dnsbase != NULL) {
+    if (dnsbase != nullptr) {
         evdns_base_free(dnsbase, 0);
-        dnsbase = NULL;
+        dnsbase = nullptr;
     }
-    if (evbase != NULL) {
+    if (evbase != nullptr) {
         event_base_free(evbase);
-        evbase = NULL;
+        evbase = nullptr;
     }
 }
 
-void
-Network::dns_callback(int result, char type, int count, int ttl,
-                      void *addresses, void *opaque)
-{
-    auto that = static_cast<Network *>(opaque);
-
-    // Suppress "unused variable" warnings
-    (void) type;
-    (void) count;
-    (void) ttl;
-    (void) addresses;
+void CheckConnectivity::dns_callback(int result, char, int, int,
+                                     void *, void *opaque) {
+    auto that = static_cast<CheckConnectivity *>(opaque);
 
     switch (result) {
     case DNS_ERR_NONE:
@@ -59,20 +50,19 @@ Network::dns_callback(int result, char type, int count, int ttl,
     }
 }
 
-Network::Network(void)
-{
-    if ((evbase = event_base_new()) == NULL) {
+CheckConnectivity::CheckConnectivity() {
+    if ((evbase = event_base_new()) == nullptr) {
         cleanup();
         throw std::bad_alloc();
     }
 
-    if ((dnsbase = evdns_base_new(evbase, 1)) == NULL) {
+    if ((dnsbase = evdns_base_new(evbase, 1)) == nullptr) {
         cleanup();
         throw std::bad_alloc();
     }
 
     if (evdns_base_resolve_ipv4(dnsbase, "ebay.com", DNS_QUERY_NO_SEARCH,
-                                dns_callback, this) == NULL) {
+                                dns_callback, this) == nullptr) {
         cleanup();
         throw std::runtime_error("cannot resolve 'ebay.com'");
     }
@@ -89,4 +79,5 @@ Network::Network(void)
     }
 }
 
-}}
+} // namespace common
+} // namespace measurement_kit

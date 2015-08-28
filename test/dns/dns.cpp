@@ -615,7 +615,7 @@ TEST_CASE("The system resolver works as expected") {
     // response fields from the system resolver.
     //
 
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
 
@@ -701,7 +701,7 @@ public:
 };
 
 TEST_CASE("It is safe to clear a request in its own callback") {
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
     auto d = SafeToDeleteRequestInItsOwnCallback();
@@ -936,7 +936,7 @@ TEST_CASE("We can override the default number of tries") {
 
 TEST_CASE("The default custom resolver works as expected") {
 
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
 
@@ -1009,7 +1009,7 @@ TEST_CASE("The default custom resolver works as expected") {
 
 TEST_CASE("A specific custom resolver works as expected") {
 
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
 
@@ -1130,7 +1130,7 @@ TEST_CASE("A request to a nonexistent server times out") {
     //
     // So, I'm commentin out this check:
     //
-    //if (Network::is_down()) {
+    //if (CheckConnectivity::is_down()) {
     //    return;
     //}
     //
@@ -1163,7 +1163,7 @@ TEST_CASE("A request to a nonexistent server times out") {
 
 TEST_CASE("It is safe to cancel requests in flight") {
 
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
 
