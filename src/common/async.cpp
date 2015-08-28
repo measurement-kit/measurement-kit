@@ -150,6 +150,7 @@ void Async::pump() {
     std::map<NetTest *, NetTestVar> context;
     std::map<NetTest *, std::function<void(NetTestVar)>> funcs;
     LOCKED(
+        if (state->completed.empty()) return; /* shortcut */
         for (auto pair : state->completed) {
             INSERT(context, pair.first, pair.second);
             std::function<void(NetTestVar)> func;
