@@ -9,7 +9,7 @@
 
 #include <event2/dns.h>
 
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/string_vector.hpp>
 #include <measurement_kit/net/connection.hpp>
 
@@ -86,8 +86,7 @@ void ConnectionState::handle_event(bufferevent *bev, short what, void *opaque) {
 
 ConnectionState::ConnectionState(const char *family, const char *address,
                                  const char *port, Poller *poller,
-                                 SharedPointer<Logger> lp,
-                                 evutil_socket_t filenum) {
+                                 Logger *lp, evutil_socket_t filenum) {
     auto evbase = poller->get_event_base();
 
     logger = lp;

@@ -14,7 +14,7 @@
 
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/settings.hpp>
 
@@ -66,8 +66,7 @@ struct Transport : public NonMovable, public NonCopyable {
     virtual std::string socks5_port() = 0;
 };
 
-SharedPointer<Transport>
-connect(Settings, SharedPointer<Logger> = DefaultLogger::get());
+SharedPointer<Transport> connect(Settings, Logger * = Logger::global());
 
 }}
 #endif

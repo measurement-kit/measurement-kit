@@ -16,7 +16,7 @@ TCPConnect::main(std::string input, Settings options,
     options["host"] = input;
     have_entry = cb;
     client = connect(options, [this]() {
-        logger->debug("tcp_connect: Got response to TCP connect test");
+        logger.debug("tcp_connect: Got response to TCP connect test");
         have_entry(entry);
     });
 }

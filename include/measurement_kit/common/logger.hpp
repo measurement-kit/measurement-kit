@@ -2,11 +2,10 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_COMMON_LOG_HPP
-#define MEASUREMENT_KIT_COMMON_LOG_HPP
+#ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
+#define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
 #include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/pointer.hpp>
 
 #include <functional>
 #include <stdarg.h>
@@ -14,27 +13,27 @@
 namespace measurement_kit {
 namespace common {
 
+/// Object used to log messages
 class Logger : public NonCopyable, public NonMovable {
-
-  private:
-    std::function<void(const char *)> consumer;
-    int verbose = 0;
-    char buffer[32768];
-
   public:
-    Logger();
+    Logger();  ///< Default constructor
 
+    /// Variadic log function
     void logv(const char *, va_list) __attribute__((format(printf, 2, 0)));
 
+    /// Log warning message
     void warn(const char *fmt, ...) __attribute__((format(printf, 2, 3))) {
-        va_list ap;
-        va_start(ap, fmt);
-        logv(fmt, ap);
-        va_end(ap);
+        if (verbose_ >= 0) {
+            va_list ap;
+            va_start(ap, fmt);
+            logv(fmt, ap);
+            va_end(ap);
+        }
     }
 
+    /// Log info message
     void info(const char *fmt, ...) __attribute__((format(printf, 2, 3))) {
-        if (verbose) {
+        if (verbose_ > 0) {
             va_list ap;
             va_start(ap, fmt);
             logv(fmt, ap);
@@ -42,8 +41,9 @@ class Logger : public NonCopyable, public NonMovable {
         }
     }
 
+    /// Log debug message
     void debug(const char *fmt, ...) __attribute__((format(printf, 2, 3))) {
-        if (verbose) {
+        if (verbose_ > 0) {
             va_list ap;
             va_start(ap, fmt);
             logv(fmt, ap);
@@ -51,28 +51,23 @@ class Logger : public NonCopyable, public NonMovable {
         }
     }
 
-    void set_verbose(int v) {
-        verbose = v;
+    void set_verbose(int v) { verbose_ = v; } ///< Set logger verbose
+
+    int get_verbose() { return verbose_; } ///< Get logger verbosity
+
+    /// Set logging function
+    void on_log(std::function<void(const char *)> fn) { consumer_ = fn; }
+
+    /// Get global logger
+    static Logger *global() {
+        static Logger singleton;
+        return &singleton;
     }
 
-    int is_verbose() {
-        return verbose;
-    }
-
-    void set_logger(std::function<void(const char *)> fn) {
-        consumer = fn;
-    }
-};
-
-inline SharedPointer<Logger> make_logger() {
-    return SharedPointer<Logger>{new Logger};
-}
-
-struct DefaultLogger {
-    static SharedPointer<Logger> get() {
-        static SharedPointer<Logger> singleton = make_logger();
-        return singleton;
-    }
+  private:
+    std::function<void(const char *)> consumer_;
+    int verbose_ = 0;
+    char buffer_[32768];
 };
 
 } // namespace common
@@ -82,16 +77,18 @@ inline void debug(const char *, ...) __attribute__((format(printf, 1, 2)));
 inline void info(const char *, ...) __attribute__((format(printf, 1, 2)));
 
 inline void warn(const char *fmt, ...) {
-    auto logger = common::DefaultLogger::get();
-    va_list ap;
-    va_start(ap, fmt);
-    logger->logv(fmt, ap);
-    va_end(ap);
+    auto logger = common::Logger::global();
+    if (logger->get_verbose() >= 0) {
+        va_list ap;
+        va_start(ap, fmt);
+        logger->logv(fmt, ap);
+        va_end(ap);
+    }
 }
 
 inline void info(const char *fmt, ...) {
-    auto logger = common::DefaultLogger::get();
-    if (logger->is_verbose()) {
+    auto logger = common::Logger::global();
+    if (logger->get_verbose() > 0) {
         va_list ap;
         va_start(ap, fmt);
         logger->logv(fmt, ap);
@@ -100,8 +97,8 @@ inline void info(const char *fmt, ...) {
 }
 
 inline void debug(const char *fmt, ...) {
-    auto logger = common::DefaultLogger::get();
-    if (logger->is_verbose()) {
+    auto logger = common::Logger::global();
+    if (logger->get_verbose() > 0) {
         va_list ap;
         va_start(ap, fmt);
         logger->logv(fmt, ap);
@@ -109,12 +106,10 @@ inline void debug(const char *fmt, ...) {
     }
 }
 
-inline void set_verbose(int v) {
-    common::DefaultLogger::get()->set_verbose(v);
-}
+inline void set_verbose(int v) { common::Logger::global()->set_verbose(v); }
 
-inline void set_logger(std::function<void(const char *)> fn) {
-    common::DefaultLogger::get()->set_logger(fn);
+inline void on_log(std::function<void(const char *)> fn) {
+    common::Logger::global()->on_log(fn);
 }
 
 } // namespace measurement_kit

@@ -9,7 +9,7 @@
 #include <event2/dns.h>
 
 #include <measurement_kit/common/check_connectivity.hpp>
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 
 namespace measurement_kit {
 namespace common {

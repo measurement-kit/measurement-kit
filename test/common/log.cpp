@@ -16,7 +16,7 @@
 TEST_CASE("By default the logger is quiet") {
     std::string buffer;
 
-    measurement_kit::set_logger([&buffer](const char *s) {
+    measurement_kit::on_log([&buffer](const char *s) {
         buffer += s;
         buffer += "\n";
     });
@@ -30,7 +30,7 @@ TEST_CASE("By default the logger is quiet") {
 TEST_CASE("It is possible to make the logger verbose") {
     std::string buffer;
 
-    measurement_kit::set_logger([&buffer](const char *s) {
+    measurement_kit::on_log([&buffer](const char *s) {
         buffer += s;
         buffer += "\n";
     });

@@ -10,7 +10,7 @@
 
 #include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 
 #include <measurement_kit/ooni/net_test.hpp>
 

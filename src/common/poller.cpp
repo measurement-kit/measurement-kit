@@ -12,7 +12,7 @@
 
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/utils.hpp>
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 
 namespace measurement_kit {
 namespace common {

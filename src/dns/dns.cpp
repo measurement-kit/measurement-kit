@@ -4,7 +4,7 @@
 
 #include <measurement_kit/dns/dns.hpp>
 
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/utils.hpp>
 
 #include <event2/dns.h>
@@ -21,7 +21,7 @@ namespace dns {
 //
 
 Response::Response(int code_, char type, int count, int ttl_, double started,
-                   void *addresses, SharedPointer<Logger> logger,
+                   void *addresses, Logger *logger,
                    Libs *libs, int start_from)
     : code(code_), ttl(ttl_)
 {
@@ -215,7 +215,7 @@ class RequestImpl {
     double ticks = 0.0;  // just to initialize to something
     Libs *libs;  // should not be NULL (this is asserted below)
     SharedPointer<bool> cancelled;
-    SharedPointer<Logger> logger = DefaultLogger::get();
+    Logger *logger = Logger::global();
 
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
@@ -263,7 +263,7 @@ class RequestImpl {
     // Private to enforce usage through issue()
     RequestImpl(std::string query, std::string address,
                 std::function<void(Response&&)>&& f,
-                SharedPointer<Logger> lp, evdns_base *base,
+                Logger *lp, evdns_base *base,
                 Libs *lev, SharedPointer<bool> cancd)
             : callback(f), libs(lev), cancelled(cancd), logger(lp) {
 
@@ -306,8 +306,7 @@ class RequestImpl {
 public:
     static void issue(std::string query, std::string address,
                       std::function<void(Response&&)>&& func,
-                      SharedPointer<Logger> logger,
-                      evdns_base *base,
+                      Logger *logger, evdns_base *base,
                       Libs *lev, SharedPointer<bool> cancd) {
         new RequestImpl(query, address, std::move(func), logger, base,
                         lev, cancd);
@@ -320,9 +319,7 @@ public:
 
 Request::Request(std::string query, std::string address,
                  std::function<void(Response&&)>&& func,
-                 SharedPointer<Logger> lp,
-                 evdns_base *dnsb,
-                 Libs *libs)
+                 Logger *lp, evdns_base *dnsb, Libs *libs)
 {
     if (dnsb == NULL) {
         dnsb = measurement_kit::get_global_evdns_base();

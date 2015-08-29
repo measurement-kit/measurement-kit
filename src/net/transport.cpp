@@ -13,7 +13,7 @@ namespace net {
 using namespace measurement_kit::common;
 
 static SharedPointer<Transport>
-connect_internal(Settings settings, SharedPointer<Logger> logger) {
+connect_internal(Settings settings, Logger *logger) {
 
     if (settings.find("dumb_transport") != settings.end()) {
         return std::make_shared<Dumb>(logger);
@@ -48,7 +48,7 @@ connect_internal(Settings settings, SharedPointer<Logger> logger) {
             logger);
 }
 
-SharedPointer<Transport> connect(Settings settings, SharedPointer<Logger> lp) {
+SharedPointer<Transport> connect(Settings settings, Logger *lp) {
     double timeo = -1.0;  // No timeout by default
     if (settings.find("timeout") != settings.end()) {
         size_t invalid;

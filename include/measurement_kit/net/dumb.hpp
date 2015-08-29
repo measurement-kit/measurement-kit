@@ -9,7 +9,7 @@
 // Dumb transport
 //
 
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/net/transport.hpp>
 
 namespace measurement_kit {
@@ -24,7 +24,7 @@ class Dumb : public Transport {
     std::function<void()> do_flush;
     std::function<void(Error)> do_error;
 
-    SharedPointer<Logger> logger = DefaultLogger::get();
+    Logger *logger = Logger::global();
 
 public:
 
@@ -48,7 +48,7 @@ public:
         do_error(err);
     }
 
-    Dumb(SharedPointer<Logger> lp = DefaultLogger::get()) : logger(lp) {}
+    Dumb(Logger *lp = Logger::global()) : logger(lp) {}
 
     virtual void on_connect(std::function<void()> fn) override {
         logger->debug("dumb: register 'connect' handler");
