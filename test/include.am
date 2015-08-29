@@ -1,19 +1,6 @@
 TESTS =  # Empty
 check_PROGRAMS =  # Empty
 
-#
-# This is not managed by Catch and we cannot add this to TESTS because
-# it is an interactive test.
-#
-test_echo_client_evbuf_SOURCES = test/echo_client_evbuf.cpp
-test_echo_client_evbuf_LDADD = libmeasurement_kit.la
-test_echo_client_evbuf_LDFLAGS = -lyaml-cpp
-check_PROGRAMS += test/echo_client_evbuf
-
-#
-# The following tests instead are managed by Catch
-#
-
 test_common_async_SOURCES = test/common/async.cpp
 test_common_async_LDADD = libmeasurement_kit.la
 test_common_async_LDFLAGS = -lyaml-cpp
