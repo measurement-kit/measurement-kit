@@ -5,21 +5,25 @@
 #ifndef MEASUREMENT_KIT_COMMON_UTILS_HPP
 #define MEASUREMENT_KIT_COMMON_UTILS_HPP
 
-struct sockaddr_storage;
-struct timeval;
-
-#include <string>
 #include <event2/util.h>
 
 #include <limits.h>
+#include <stddef.h>
+#include <unistd.h>
+
+#include <string>
+#include <iosfwd>
+
+struct sockaddr_storage;
+struct timeval;
+
+namespace measurement_kit {
 
 /*
  * Macros and functions useful to check whether sockets are valid. We
  * use the same definition of sockets as libevent, i.e., a `int` on Unix
  * and a `intptr_t` on Win32.
  */
-
-namespace measurement_kit {
 
 /*
  * To mark sockets as invalid. Strictly speaking on Windows it should
@@ -105,35 +109,34 @@ socket_normalize_if_invalid(evutil_socket_t filenum) {
  * Other utility functions:
  */
 
-void timeval_now(struct timeval *);
+void timeval_now(timeval *);
 
-double time_now(void);
+double time_now();
 
 evutil_socket_t listen(int, const char *, const char *);
 
 void xfree(void *);
 
-struct timeval *timeval_init(struct timeval *, double);
+timeval *timeval_init(timeval *, double);
 
-int storage_init(struct sockaddr_storage *, socklen_t *, const char *,
-                      const char *, const char *);
+int storage_init(sockaddr_storage *, socklen_t *, const char *,
+                 const char *, const char *);
 
-int storage_init(struct sockaddr_storage *, socklen_t *, int,
-                      const char *, const char *);
+int storage_init(sockaddr_storage *, socklen_t *, int,
+                 const char *, const char *);
 
-int storage_init(struct sockaddr_storage *, socklen_t *, int,
-                      const char *, int);
+int storage_init(sockaddr_storage *, socklen_t *, int,
+                 const char *, int);
 
 evutil_socket_t socket_create(int, int, int);
 
-int socket_connect(evutil_socket_t, struct sockaddr_storage *, socklen_t);
+int socket_connect(evutil_socket_t, sockaddr_storage *, socklen_t);
 
-int socket_listen(evutil_socket_t, struct sockaddr_storage *, socklen_t);
+int socket_listen(evutil_socket_t, sockaddr_storage *, socklen_t);
 
 std::string random_str(size_t length);
 
 std::string random_str_uppercase(size_t length);
 
-}
-
+} // namespace measurement_kit
 #endif
