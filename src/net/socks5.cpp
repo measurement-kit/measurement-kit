@@ -7,7 +7,7 @@
 namespace measurement_kit {
 namespace net {
 
-Socks5::Socks5(Settings s, SharedPointer<Logger> lp) : settings(s), logger(lp) {
+Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
 
     logger->debug("socks5: connecting to Tor at %s:%s",
                settings["socks5_address"].c_str(),

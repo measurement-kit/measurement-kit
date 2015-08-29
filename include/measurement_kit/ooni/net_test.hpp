@@ -14,7 +14,7 @@
 #include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/net_test.hpp>
 
 namespace measurement_kit {
@@ -40,7 +40,7 @@ public:
   InputFileGenerator() {}
 
   InputFileGenerator(std::string input_filepath,
-      SharedPointer<Logger> lp = DefaultLogger::get()) : logger(lp) {
+      Logger *lp = Logger::global()) : logger(lp) {
     is = new std::ifstream(input_filepath);
   }
 
@@ -69,7 +69,7 @@ public:
 
 private:
   std::ifstream *is = nullptr;
-  SharedPointer<Logger> logger = DefaultLogger::get();
+  Logger *logger = Logger::global();
 };
 
 class NetTest : public measurement_kit::common::NetTest {

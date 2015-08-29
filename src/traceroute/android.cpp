@@ -35,7 +35,7 @@
 // This is meant to run on Android but can run on all Linux systems
 #ifdef __linux__
 
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/utils.hpp>
 #include <measurement_kit/traceroute/android.hpp>
 

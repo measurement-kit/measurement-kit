@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include <measurement_kit/common/async.hpp>
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 
 #include <mutex>
 #include <map>

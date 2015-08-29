@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 
 #include <measurement_kit/http/http.hpp>
 #include <measurement_kit/net/buffer.hpp>
@@ -27,7 +27,7 @@ namespace http {
  */
 class ResponseParserImpl {
 
-    SharedPointer<Logger> logger = DefaultLogger::get();
+    Logger *logger = Logger::global();
     http_parser parser;
     http_parser_settings settings;
     Buffer buffer;
@@ -164,8 +164,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    ResponseParserImpl(SharedPointer<Logger> lp = DefaultLogger::get())
-            : logger(lp) {
+    ResponseParserImpl(Logger *lp = Logger::global()) : logger(lp) {
         memset(&settings, 0, sizeof (settings));
         settings.on_message_begin = do_message_begin;
         settings.on_status = do_status;
@@ -307,7 +306,7 @@ public:
 // ResponseParser
 //
 
-ResponseParser::ResponseParser(SharedPointer<Logger> lp) :
+ResponseParser::ResponseParser(Logger *lp) :
     impl(new ResponseParserImpl(lp)) {}
 
 ResponseParser::~ResponseParser(void)

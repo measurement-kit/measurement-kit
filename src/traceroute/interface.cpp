@@ -35,7 +35,7 @@
 // Disable for non Linux until we figure out how to build on iOS
 #ifdef __linux__
 
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/traceroute/interface.hpp>
 
 #include <netinet/ip.h> // Defines n_short etc on MacOSX

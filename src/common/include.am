@@ -3,7 +3,7 @@ noinst_LTLIBRARIES += src/common/libcommon.la
 src_common_libcommon_la_SOURCES = \
 	src/common/async.cpp \
 	src/common/check_connectivity.cpp \
-	src/common/log.cpp \
+	src/common/logger.cpp \
 	src/common/poller.cpp \
 	src/common/string_vector.cpp \
 	src/common/utils.cpp
@@ -23,6 +23,6 @@ commoninclude_HEADERS = \
     include/measurement_kit/common/utils.hpp \
     include/measurement_kit/common/error.hpp \
     include/measurement_kit/common/libs.hpp \
-    include/measurement_kit/common/log.hpp \
+    include/measurement_kit/common/logger.hpp \
     include/measurement_kit/common/poller.hpp \
     include/measurement_kit/common/string_vector.hpp

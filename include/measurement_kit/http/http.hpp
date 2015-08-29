@@ -13,7 +13,7 @@
 
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/pointer.hpp>
 
@@ -112,7 +112,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    ResponseParser(SharedPointer<Logger> = DefaultLogger::get());
+    ResponseParser(Logger * = Logger::global());
 
     /*!
      * \brief Deleted copy constructor.
@@ -305,7 +305,7 @@ public:
      * \param settings Settings passed to the transport to initialize
      *        it (see transport.cpp for more info).
      */
-    Stream(Settings settings, SharedPointer<Logger> lp = DefaultLogger::get()) {
+    Stream(Settings settings, Logger *lp = Logger::global()) {
         parser = std::make_shared<ResponseParser>(lp);
         connection = connect(settings, lp);
         //
@@ -533,7 +533,7 @@ class Request : public NonCopyable, public NonMovable {
     SharedPointer<Stream> stream;
     Response response;
     std::set<Request *> *parent = nullptr;
-    SharedPointer<Logger> logger = DefaultLogger::get();
+    Logger *logger = Logger::global();
 
     void emit_end(Error error, Response&& response) {
         close();
@@ -570,7 +570,7 @@ public:
      */
     Request(const Settings settings_, Headers headers,
             std::string body, RequestCallback&& callback_,
-            SharedPointer<Logger> lp = DefaultLogger::get(),
+            Logger *lp = Logger::global(),
             std::set<Request *> *parent_ = nullptr)
                 : callback(callback_), parent(parent_), logger(lp) {
         auto settings = settings_;  // Make a copy and work on that
@@ -671,7 +671,7 @@ public:
      */
     void request(Settings settings, Headers headers,
             std::string body, RequestCallback&& callback,
-            SharedPointer<Logger> lp = DefaultLogger::get()) {
+            Logger *lp = Logger::global()) {
         auto r = new Request(settings, headers, body,
                 std::move(callback), lp, &pending);
         pending.insert(r);

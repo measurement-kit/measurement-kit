@@ -12,7 +12,7 @@
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/evbuffer.hpp>
 #include <measurement_kit/common/libs.hpp>
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/poller.hpp>

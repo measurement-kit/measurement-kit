@@ -5,7 +5,7 @@
 #ifndef MEASUREMENT_KIT_NET_SOCKS5_HPP
 #define MEASUREMENT_KIT_NET_SOCKS5_HPP
 
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 
 #include <measurement_kit/net/buffer.hpp>
 #include <measurement_kit/net/connection.hpp>
@@ -30,7 +30,7 @@ protected:
     bool isclosed = false;
     std::string proxy_address;
     std::string proxy_port;
-    SharedPointer<Logger> logger = DefaultLogger::get();
+    Logger *logger = Logger::global();
 
 public:
 
@@ -50,7 +50,7 @@ public:
         conn->emit_error(err);
     }
 
-    Socks5(Settings, SharedPointer<Logger> lp = DefaultLogger::get());
+    Socks5(Settings, Logger *lp = Logger::global());
 
     virtual void on_connect(std::function<void()> fn) override {
         on_connect_fn = fn;

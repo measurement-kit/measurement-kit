@@ -9,7 +9,7 @@
 /// \brief Base class of all network tests.
 ///
 
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/settings.hpp>
 
 #include <functional>
@@ -22,17 +22,17 @@ namespace common {
 struct NetTest : public NonCopyable, public NonMovable {
 
   protected:
-    SharedPointer<Logger> logger = make_logger();
+    Logger logger;
 
   public:
     /// \brief Set log function used by this test.
     virtual void set_log_function(std::function<void(const char *)> func) {
-        logger->set_logger(func);
+        logger.on_log(func);
     }
 
     /// \brief Make this test log verbose.
     virtual void set_log_verbose(int verbose) {
-        logger->set_verbose(verbose);
+        logger.set_verbose(verbose);
     }
 
     /// \brief Start iterating over the input.

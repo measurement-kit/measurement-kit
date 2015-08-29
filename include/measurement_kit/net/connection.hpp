@@ -8,7 +8,7 @@
 #include <measurement_kit/common/bufferevent.hpp>
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/string_vector.hpp>
@@ -44,7 +44,7 @@ class ConnectionState {
     unsigned int must_resolve_ipv4 = 0;
     unsigned int must_resolve_ipv6 = 0;
     SharedPointer<DelayedCall> start_connect;
-    SharedPointer<Logger> logger = DefaultLogger::get();
+    Logger *logger = Logger::global();
 
     // Libevent callbacks
     static void handle_read(bufferevent *, void *);
@@ -80,7 +80,7 @@ class ConnectionState {
 
   public:
     ConnectionState(const char *, const char *, const char *, Poller *,
-                    SharedPointer<Logger> = DefaultLogger::get(),
+                    Logger * = Logger::global(),
                     evutil_socket_t = MEASUREMENT_KIT_SOCKET_INVALID);
 
     ConnectionState(ConnectionState &) = delete;
@@ -188,13 +188,13 @@ class Connection : public Transport {
 
     Connection(void) { /* nothing to do */ }
     Connection(evutil_socket_t fd,
-               SharedPointer<Logger> lp = DefaultLogger::get(),
+               Logger *lp = Logger::global(),
                Poller *poller = measurement_kit::get_global_poller()) {
         state = new ConnectionState("PF_UNSPEC", "0.0.0.0", "0",
                                     poller, lp, fd);
     }
     Connection(const char *af, const char *a, const char *p,
-               SharedPointer<Logger> lp = DefaultLogger::get(),
+               Logger *lp = Logger::global(),
                Poller *poller = measurement_kit::get_global_poller()) {
         state = new ConnectionState(af, a, p, poller, lp);
     }

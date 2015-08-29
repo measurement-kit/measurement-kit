@@ -10,7 +10,7 @@
 //
 
 #include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
@@ -75,7 +75,7 @@ public:
      */
     Response(int code, char type, int count, int ttl, double started,
              void *addresses,
-             SharedPointer<Logger> lp = DefaultLogger::get(),
+             Logger *lp = Logger::global(),
              Libs *libs = NULL,
              int start_from = 0);
 
@@ -211,7 +211,7 @@ public:
      */
     Request(std::string query, std::string address,
             std::function<void(Response&&)>&& func,
-            SharedPointer<Logger> lp = DefaultLogger::get(),
+            Logger *lp = Logger::global(),
             evdns_base *dnsb = NULL,
             Libs *libs = NULL);
 
@@ -274,7 +274,7 @@ protected:
     Libs *libs = Libs::global();
     Poller *poller = measurement_kit::get_global_poller();
     evdns_base *base = NULL;
-    SharedPointer<Logger> logger = DefaultLogger::get();
+    Logger *logger = Logger::global();
 
 public:
     /*!
@@ -300,7 +300,7 @@ public:
      *        the case.
      */
     Resolver(Settings settings_,
-             SharedPointer<Logger> lp = DefaultLogger::get(),
+             Logger *lp = Logger::global(),
              Libs *lev = NULL, Poller *plr = NULL) {
         if (lev != NULL) {
             libs = lev;

@@ -16,7 +16,7 @@
 #include <event2/event.h>
 
 #include "ext/strtonum.h"
-#include <measurement_kit/common/log.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/utils.hpp>
 
 namespace measurement_kit {
