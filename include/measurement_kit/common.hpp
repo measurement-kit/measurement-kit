@@ -8,7 +8,6 @@
 #include <measurement_kit/common/async.hpp>
 #include <measurement_kit/common/check_connectivity.hpp>
 #include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/emitter.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/libevent.hpp>
 #include <measurement_kit/common/log.hpp>
