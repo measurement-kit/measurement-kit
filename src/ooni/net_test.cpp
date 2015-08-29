@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <measurement_kit/common/delayed_call.hpp>
 #include <measurement_kit/ooni/net_test.hpp>
 #include <ctime>
 

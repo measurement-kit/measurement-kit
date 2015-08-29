@@ -55,7 +55,7 @@ TEST_CASE("Constructors") {
     };
 
     {
-      auto poller = GlobalPoller::get();
+      auto poller = Poller::global();
       Bufferevent b(poller->get_event_base(),
           -1, 0, &libs);
     }
@@ -72,7 +72,7 @@ TEST_CASE("Constructors") {
       return ((bufferevent *) NULL);
     };
 
-    auto base = GlobalPoller::get()->get_event_base();
+    auto base = Poller::global()->get_event_base();
 
     REQUIRE_THROWS_AS(Bufferevent(base, 0, 0, &libs),
                       std::bad_alloc);
@@ -90,7 +90,7 @@ TEST_CASE("Bufferevent operations") {
       return (underlying = ::bufferevent_socket_new(b, s, o));
     };
 
-    auto poller = GlobalPoller::get();
+    auto poller = Poller::global();
     Bufferevent b(poller->get_event_base(), -1, 0,
         &libs);
 

@@ -3,6 +3,7 @@ noinst_LTLIBRARIES += src/common/libcommon.la
 src_common_libcommon_la_SOURCES = \
 	src/common/async.cpp \
 	src/common/check_connectivity.cpp \
+	src/common/delayed_call.cpp \
 	src/common/logger.cpp \
 	src/common/net_test.cpp \
 	src/common/poller.cpp \
@@ -17,6 +18,7 @@ commoninclude_HEADERS = \
     include/measurement_kit/common/bufferevent.hpp \
     include/measurement_kit/common/check_connectivity.hpp \
     include/measurement_kit/common/constraints.hpp \
+    include/measurement_kit/common/delayed_call.hpp \
     include/measurement_kit/common/evbuffer.hpp \
     include/measurement_kit/common/net_test.hpp \
     include/measurement_kit/common/pointer.hpp \
