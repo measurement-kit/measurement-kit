@@ -6,6 +6,7 @@
 #define MEASUREMENT_KIT_NET_BUFFER_HPP
 
 #include <measurement_kit/common/constraints.hpp>
+#include <measurement_kit/common/evbuffer.hpp>
 #include <measurement_kit/common/utils.hpp>
 
 #include <event2/bufferevent.h>
@@ -72,19 +73,15 @@ class Iovec : public NonCopyable, public NonMovable {
 
 class Buffer : public NonCopyable, public NonMovable {
 
-    evbuffer *evbuf;
+    Evbuffer evbuf;
 
   public:
     Buffer(evbuffer *b = NULL) {
-        if ((evbuf = evbuffer_new()) == NULL)
-            throw std::bad_alloc();
-        if (b != NULL && evbuffer_add_buffer(evbuf, b) != 0) {
-            evbuffer_free(evbuf);
+        if (b != NULL && evbuffer_add_buffer(evbuf, b) != 0)
             throw std::runtime_error("evbuffer_add_buffer failed");
-        }
     }
 
-    ~Buffer(void) { evbuffer_free(evbuf); /* Cannot be NULL */ }
+    ~Buffer(void) {}
 
     /*
      * I expect to read (write) from (into) the input (output)
