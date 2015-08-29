@@ -193,7 +193,7 @@ TEST_CASE("Response parser eof() does not trigger immediate distruction") {
 }
 
 TEST_CASE("HTTP stream works as expected") {
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
     //measurement_kit::set_verbose(1);
@@ -271,7 +271,7 @@ TEST_CASE("HTTP stream is robust to EOF") {
 }
 
 TEST_CASE("HTTP stream works as expected when using Tor") {
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
     measurement_kit::set_verbose(1);
@@ -318,7 +318,7 @@ TEST_CASE("HTTP stream works as expected when using Tor") {
 }
 
 TEST_CASE("HTTP stream receives connection errors") {
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
     //measurement_kit::set_verbose(1);

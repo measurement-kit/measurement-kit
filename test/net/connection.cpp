@@ -80,7 +80,7 @@ TEST_CASE("Ensure that the constructor socket-validity checks work") {
 }
 
 TEST_CASE("Connection::close() is idempotent") {
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
     Connection s("PF_INET", "nexa.polito.it", "80");
@@ -99,7 +99,7 @@ TEST_CASE("Connection::close() is idempotent") {
 }
 
 TEST_CASE("It is safe to manipulate Connection after close") {
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
     Connection s("PF_INET", "nexa.polito.it", "80");
@@ -119,7 +119,7 @@ TEST_CASE("It is safe to manipulate Connection after close") {
 }
 
 TEST_CASE("It is safe to close Connection while resolve is in progress") {
-    if (Network::is_down()) {
+    if (CheckConnectivity::is_down()) {
         return;
     }
     measurement_kit::set_verbose(1);
