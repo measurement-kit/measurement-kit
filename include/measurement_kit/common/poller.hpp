@@ -8,72 +8,36 @@
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/libs.hpp>
 
-#include <functional>
+struct evdns_base;
+struct event_base;
 
 namespace measurement_kit {
 namespace common {
 
-class DelayedCall : public NonCopyable, public NonMovable {
-
-    /*
-     * A previous implementation of this class required `func` to
-     * be a pointer. The current implementation does not. So we can
-     * rewrite the code to use an object rather than a pointer.
-     */
-    std::function<void(void)> *func = NULL;
-    event *evp = NULL;
-    Libs *libs = Libs::global();
-
-    // Callback for libevent
-    static void dispatch(evutil_socket_t, short, void *);
-
-  public:
-    DelayedCall(double, std::function<void(void)> &&, Libs *libs = NULL,
-                event_base *evbase = NULL);
-    ~DelayedCall(void);
-};
-
 class Poller : public NonCopyable, public NonMovable {
-
-    event_base *base;
-    evdns_base *dnsbase;
-    event *evsignal; /* for SIGINT on UNIX */
-
-    Libs *libs = Libs::global();
-
   public:
-    Poller(Libs *libs = NULL);
-    ~Poller(void);
+    Poller(Libs *libs = nullptr);
+    ~Poller();
 
-    event_base *get_event_base(void) { return (this->base); }
+    event_base *get_event_base() { return base_; }
 
-    evdns_base *get_evdns_base(void) { return (this->dnsbase); }
+    evdns_base *get_evdns_base() { return dnsbase_; }
 
-    /*
-     * Register a SIGINT handler that breaks the poller loop when
-     * the SIGINT signal is received. Generally speaking, a library
-     * should provide mechanism, not policy. However, this method
-     * is meant to be used in test programs only.
-     *
-     * The use case for which this functionality exists, in particular,
-     * is the following: I want ^C to break the poller loop and lead
-     * to a clean exit, so Valgrind can check whether there are leaks
-     * for long running test programs (i.e., servers).
-     */
-    void break_loop_on_sigint_(int enable = 1);
+    void loop();
 
-    void loop(void);
+    void loop_once();
 
-    void loop_once(void);
+    void break_loop();
 
-    void break_loop(void);
-};
-
-struct GlobalPoller {
-    static Poller *get(void) {
+    static Poller *global() {
         static Poller singleton;
-        return (&singleton);
+        return &singleton;
     }
+
+  private:
+    event_base *base_;
+    evdns_base *dnsbase_;
+    Libs *libs_ = Libs::global();
 };
 
 } // namespace common
@@ -83,28 +47,22 @@ struct GlobalPoller {
  */
 
 inline common::Poller *get_global_poller(void) {
-    return (common::GlobalPoller::get());
+    return (common::Poller::global());
 }
 
 inline event_base *get_global_event_base(void) {
-    return (common::GlobalPoller::get()->get_event_base());
+    return (common::Poller::global()->get_event_base());
 }
 
 inline evdns_base *get_global_evdns_base(void) {
-    return (common::GlobalPoller::get()->get_evdns_base());
+    return (common::Poller::global()->get_evdns_base());
 }
 
-inline void loop(void) {
-    common::GlobalPoller::get()->loop();
-}
+inline void loop(void) { common::Poller::global()->loop(); }
 
-inline void loop_once(void) {
-    common::GlobalPoller::get()->loop_once();
-}
+inline void loop_once(void) { common::Poller::global()->loop_once(); }
 
-inline void break_loop(void) {
-    common::GlobalPoller::get()->break_loop();
-}
+inline void break_loop(void) { common::Poller::global()->break_loop(); }
 
 } // namespace measurement_kit
 #endif

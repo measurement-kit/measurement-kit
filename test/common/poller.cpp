@@ -11,12 +11,9 @@
 
 #include <measurement_kit/common.hpp>
 
-#ifndef WIN32
-# include <sys/types.h>
-# include <sys/wait.h>
-# include <signal.h>
-# include <unistd.h>
-#endif
+#include <functional>
+#include <new>
+#include <stdexcept>
 
 using namespace measurement_kit::common;
 
@@ -26,7 +23,7 @@ TEST_CASE("Constructor") {
 	auto libs = Libs();
 
 	libs.event_base_new = [](void) {
-		return ((event_base *) NULL);
+		return ((event_base *) nullptr);
 	};
 
 	auto bad_alloc_fired = false;
@@ -49,7 +46,7 @@ TEST_CASE("Constructor") {
 		::event_base_free(b);
 	};
 	libs.evdns_base_new = [](event_base *, int) {
-		return ((evdns_base *) NULL);
+		return ((evdns_base *) nullptr);
 	};
 
 	auto bad_alloc_fired = false;
@@ -61,38 +58,6 @@ TEST_CASE("Constructor") {
 
 	REQUIRE(bad_alloc_fired);
 	REQUIRE(event_base_free_fired);
-    }
-
-    SECTION("We deal with evsignal failure") {
-	auto libs = Libs();
-
-	auto event_base_free_fired = false;
-	auto evdns_base_free_fired = false;
-
-	libs.event_base_free = [&event_base_free_fired](event_base *b) {
-		event_base_free_fired = true;
-		::event_base_free(b);
-	};
-	libs.evdns_base_free = [&evdns_base_free_fired](evdns_base *b,
-	    int opt) {
-		evdns_base_free_fired = true;
-		::evdns_base_free(b, opt);
-	};
-	libs.event_new = [](event_base *, evutil_socket_t, short,
-	    event_callback_fn, void *) {
-		return ((event *) NULL);
-	};
-
-	auto bad_alloc_fired = false;
-	try {
-		Poller poller(&libs);
-	} catch (std::bad_alloc&) {
-		bad_alloc_fired = true;
-	}
-
-	REQUIRE(bad_alloc_fired);
-	REQUIRE(event_base_free_fired);
-	REQUIRE(evdns_base_free_fired);
     }
 }
 
@@ -102,7 +67,6 @@ TEST_CASE("The destructor works properly") {
 
 	auto event_base_free_fired = false;
 	auto evdns_base_free_fired = false;
-	auto event_free_fired = false;
 
 	libs.event_base_free = [&event_base_free_fired](event_base *b) {
 		event_base_free_fired = true;
@@ -113,10 +77,6 @@ TEST_CASE("The destructor works properly") {
 		evdns_base_free_fired = true;
 		::evdns_base_free(b, opt);
 	};
-	libs.event_free = [&event_free_fired](event *e) {
-		event_free_fired = true;
-		::event_free(e);
-	};
 
 	{
 		Poller poller(&libs);
@@ -124,80 +84,8 @@ TEST_CASE("The destructor works properly") {
 
 	REQUIRE(event_base_free_fired);
 	REQUIRE(evdns_base_free_fired);
-	REQUIRE(event_free_fired);
 }
 
-TEST_CASE("We deal with event_add() failure in break_loop_on_sigint_()") {
-#ifndef WIN32
-	auto libs = Libs();
-
-	libs.event_add = [](event *, timeval *) {
-		return (-1);
-	};
-
-	Poller poller(&libs);
-
-	auto runtime_error_fired = false;
-	try {
-		poller.break_loop_on_sigint_(true);
-	} catch (std::runtime_error&) {
-		runtime_error_fired = true;
-	}
-
-	REQUIRE(runtime_error_fired);
-#endif
-}
-
-TEST_CASE("We deal with event_del() failure in break_loop_on_sigint_()") {
-#ifndef WIN32
-	auto libs = Libs();
-
-	libs.event_del = [](event *) {
-		return (-1);
-	};
-
-	Poller poller(&libs);
-	poller.break_loop_on_sigint_(true);
-
-	auto runtime_error_fired = false;
-	try {
-		poller.break_loop_on_sigint_(false);
-	} catch (std::runtime_error&) {
-		runtime_error_fired = true;
-	}
-
-	REQUIRE(runtime_error_fired);
-#endif
-}
-
-TEST_CASE("break_loop_on_sigint_() is idempotent") {
-#ifndef WIN32
-
-	//
-	// Make sure it's OK (as it ought to be) to add() or del()
-	// multiple times the evsignal event.
-	//
-
-	{
-		Poller poller;
-		poller.break_loop_on_sigint_(false);
-		poller.break_loop_on_sigint_(false);
-	}
-
-	{
-		Poller poller;
-		poller.break_loop_on_sigint_(true);
-		poller.break_loop_on_sigint_(true);
-	}
-
-	{
-		Poller poller;
-		poller.break_loop_on_sigint_(true);
-		poller.break_loop_on_sigint_(false);
-		poller.break_loop_on_sigint_(false);
-	}
-#endif
-}
 
 TEST_CASE("poller.loop() works properly in corner cases") {
 
@@ -249,50 +137,4 @@ TEST_CASE("poller.break_loop() works properly") {
 	}
 
 	REQUIRE(runtime_error_fired);
-}
-
-TEST_CASE("SIGINT is correctly handled on Unix") {
-#ifndef WIN32
-
-    SECTION("SIGINT is correctly handled after the handler is set") {
-	Poller poller;
-
-	DelayedCall d(0.01, [](void) {
-	    raise(SIGINT);
-	}, NULL, poller.get_event_base());
-
-	poller.break_loop_on_sigint_();
-	poller.loop();
-    }
-
-    SECTION("SIGINT is correctly handled after the handler is removed") {
-
-	int status;
-	pid_t pid;
-
-	pid = fork();
-	REQUIRE(pid >= 0);
-
-	if (pid == 0) {
-		Poller poller;
-		DelayedCall d(0.01, [](void) {
-			raise(SIGINT);
-		}, NULL, poller.get_event_base());
-		/*
-		 * Note: I want to make sure that the behavior is as expected
-		 * after the signal handler is removed.
-		 */
-		poller.break_loop_on_sigint_();
-		poller.break_loop_on_sigint_(false);
-		poller.loop();
-		exit(EXIT_FAILURE);	/* Should not happen */
-	}
-
-	pid = waitpid(pid, &status, 0);
-	REQUIRE(pid >= 0);
-
-	REQUIRE(WIFSIGNALED(status));
-	REQUIRE(WTERMSIG(status) == SIGINT);
-    }
-#endif
 }

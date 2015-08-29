@@ -9,6 +9,7 @@
 #include <measurement_kit/common/bufferevent.hpp>
 #include <measurement_kit/common/check_connectivity.hpp>
 #include <measurement_kit/common/constraints.hpp>
+#include <measurement_kit/common/delayed_call.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/evbuffer.hpp>
 #include <measurement_kit/common/libs.hpp>
