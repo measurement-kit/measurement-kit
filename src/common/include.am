@@ -4,6 +4,7 @@ src_common_libcommon_la_SOURCES = \
 	src/common/async.cpp \
 	src/common/check_connectivity.cpp \
 	src/common/logger.cpp \
+	src/common/net_test.cpp \
 	src/common/poller.cpp \
 	src/common/string_vector.cpp \
 	src/common/utils.cpp

@@ -23,8 +23,8 @@ static void run_http_invalid_request_line(Async &async) {
             {"backend", "http://nexa.polito.it/"},
         })
     );
-    test->set_log_verbose(1);
-    test->set_log_function([](const char *s) {
+    test->set_verbose(1);
+    test->on_log([](const char *s) {
         (void) fprintf(stderr, "test #1: %s\n", s);
     });
     measurement_kit::debug("test created: %llu", test->identifier());
@@ -39,8 +39,8 @@ static void run_dns_injection(Async& async) {
             {"nameserver", "8.8.8.8:53"},
         })
     );
-    test->set_log_verbose(1);
-    test->set_log_function([](const char *s) {
+    test->set_verbose(1);
+    test->on_log([](const char *s) {
         (void) fprintf(stderr, "test #3: %s\n", s);
     });
     measurement_kit::debug("test created: %llu", test->identifier());
@@ -55,8 +55,8 @@ static void run_tcp_connect(Async& async) {
             {"port", "80"},
         })
     );
-    test->set_log_verbose(1);
-    test->set_log_function([](const char *s) {
+    test->set_verbose(1);
+    test->on_log([](const char *s) {
         (void) fprintf(stderr, "test #4: %s\n", s);
     });
     measurement_kit::debug("test created: %llu", test->identifier());
