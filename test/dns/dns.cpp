@@ -34,7 +34,7 @@ TEST_CASE("The default Response() constructor sets sensible values") {
 }
 
 //
-// TODO: test that Response(...) correctly handles the `libevent` param.
+// TODO: test that Response(...) correctly handles the `libs` param.
 //
 // Not urgent because this is implicitly tested by other tests.
 //
@@ -90,8 +90,8 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
     //     https://travis-ci.org/measurement-kit/measurement-kit/builds/40639940#L634
     //
 
-    Libevent libevent;
-    libevent.inet_ntop = [](int, const void *, char *s, socklen_t l) {
+    Libs libs;
+    libs.inet_ntop = [](int, const void *, char *s, socklen_t l) {
         if (s == NULL || l <= 0) {
             throw std::runtime_error("You passed me a bad buffer");
         }
@@ -141,7 +141,7 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
                 x,                            // value of count
                 123, 0.11, NULL,
                 DefaultLogger::get(),
-                &libevent,
+                &libs,
                 last_good - 10);              // value of start_from
             if (x <= last_good) {
                 REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
@@ -166,7 +166,7 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
                 x,                            // value of count
                 123, 0.11, NULL,
                 DefaultLogger::get(),
-                &libevent,
+                &libs,
                 last_good - 10);              // value of start_from
             if (x <= last_good) {
                 REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
@@ -187,16 +187,16 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
 
 TEST_CASE("Response(...) deals with unlikely inet_ntop failures") {
 
-    Libevent libevent;
+    Libs libs;
     auto called = false;
 
-    libevent.inet_ntop = [&](int, const void *, char *, socklen_t) {
+    libs.inet_ntop = [&](int, const void *, char *, socklen_t) {
         called = true;  // Make sure this function was called
         return (const char *) NULL;
     };
 
     auto r = Response(DNS_ERR_NONE, DNS_IPv6_AAAA, 16, 123, 0.11, NULL,
-                      DefaultLogger::get(), &libevent);
+                      DefaultLogger::get(), &libs);
     REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
     REQUIRE(r.get_results().size() == 0);
 
@@ -362,7 +362,7 @@ TEST_CASE("Move semantic works for response") {
 //
 
 //
-// TODO: make sure that Request() correctly handle `dnsb` and `libevent`.
+// TODO: make sure that Request() correctly handle `dnsb` and `libs`.
 //
 // Not urgent because already guaranteed by other tests.
 //
@@ -370,9 +370,9 @@ TEST_CASE("Move semantic works for response") {
 // Now testing RequestImpl()
 
 TEST_CASE("Request deals with failing evdns_base_resolve_ipv4") {
-    Libevent libevent;
+    Libs libs;
 
-    libevent.evdns_base_resolve_ipv4 = [](evdns_base *, const char *, int,
+    libs.evdns_base_resolve_ipv4 = [](evdns_base *, const char *, int,
                                           evdns_callback_type, void *) {
         return (evdns_request *) NULL;
     };
@@ -380,13 +380,13 @@ TEST_CASE("Request deals with failing evdns_base_resolve_ipv4") {
     REQUIRE_THROWS(Request("A", "www.google.com", [](
                                     Response&&) {
         /* nothing */
-    }, DefaultLogger::get(), NULL, &libevent));
+    }, DefaultLogger::get(), NULL, &libs));
 }
 
 TEST_CASE("Request deals with failing evdns_base_resolve_ipv6") {
-    Libevent libevent;
+    Libs libs;
 
-    libevent.evdns_base_resolve_ipv6 = [](evdns_base *, const char *, int,
+    libs.evdns_base_resolve_ipv6 = [](evdns_base *, const char *, int,
                                           evdns_callback_type, void *) {
         return (evdns_request *) NULL;
     };
@@ -394,13 +394,13 @@ TEST_CASE("Request deals with failing evdns_base_resolve_ipv6") {
     REQUIRE_THROWS(Request("AAAA", "github.com", [](
                                     Response&&) {
         /* nothing */
-    }, DefaultLogger::get(), NULL, &libevent));
+    }, DefaultLogger::get(), NULL, &libs));
 }
 
 TEST_CASE("Request deals with failing evdns_base_resolve_reverse") {
-    Libevent libevent;
+    Libs libs;
 
-    libevent.evdns_base_resolve_reverse = [](evdns_base *,
+    libs.evdns_base_resolve_reverse = [](evdns_base *,
                                              const struct in_addr *,
                                              int,
                                              evdns_callback_type,
@@ -411,13 +411,13 @@ TEST_CASE("Request deals with failing evdns_base_resolve_reverse") {
     REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
                                     Response&&) {
         /* nothing */
-    }, DefaultLogger::get(), NULL, &libevent));
+    }, DefaultLogger::get(), NULL, &libs));
 }
 
 TEST_CASE("Request deals with failing evdns_base_resolve_reverse_ipv6") {
-    Libevent libevent;
+    Libs libs;
 
-    libevent.evdns_base_resolve_reverse_ipv6 = [](evdns_base *,
+    libs.evdns_base_resolve_reverse_ipv6 = [](evdns_base *,
                                                   const struct in6_addr *,
                                                   int,
                                                   evdns_callback_type,
@@ -428,43 +428,43 @@ TEST_CASE("Request deals with failing evdns_base_resolve_reverse_ipv6") {
     REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
                                     Response&&) {
         /* nothing */
-    }, DefaultLogger::get(), NULL, &libevent));
+    }, DefaultLogger::get(), NULL, &libs));
 }
 
 TEST_CASE("Request deals with inet_pton returning 0") {
-    Libevent libevent;
+    Libs libs;
 
-    libevent.inet_pton = [](int, const char *, void *) {
+    libs.inet_pton = [](int, const char *, void *) {
         return 0;
     };
 
     REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
                                     Response&&) {
         /* nothing */
-    }, DefaultLogger::get(), NULL, &libevent));
+    }, DefaultLogger::get(), NULL, &libs));
 
     REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
                                     Response&&) {
         /* nothing */
-    }, DefaultLogger::get(), NULL, &libevent));
+    }, DefaultLogger::get(), NULL, &libs));
 }
 
 TEST_CASE("Request deals with inet_pton returning -1") {
-    Libevent libevent;
+    Libs libs;
 
-    libevent.inet_pton = [](int, const char *, void *) {
+    libs.inet_pton = [](int, const char *, void *) {
         return -1;
     };
 
     REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
                                     Response&&) {
         /* nothing */
-    }, DefaultLogger::get(), NULL, &libevent));
+    }, DefaultLogger::get(), NULL, &libs));
 
     REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
                                     Response&&) {
         /* nothing */
-    }, DefaultLogger::get(), NULL, &libevent));
+    }, DefaultLogger::get(), NULL, &libs));
 }
 
 TEST_CASE("Request raises if the query is unsupported") {
@@ -514,8 +514,8 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
     auto bad_code = false;
     auto called = false;
 
-    Libevent libevent;
-    libevent.evdns_reply_hook = [&](int code, char, int, int, void *, void *) {
+    Libs libs;
+    libs.evdns_reply_hook = [&](int code, char, int, int, void *, void *) {
         called = true;
         if (code != DNS_ERR_NONE && code != DNS_ERR_TIMEOUT) {
             bad_code = true;
@@ -539,7 +539,7 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
             //
             failed = true;
             measurement_kit::break_loop();
-        }, DefaultLogger::get(), NULL, &libevent);
+        }, DefaultLogger::get(), NULL, &libs);
 
     }  // This kills Request, but not the underlying RequestImpl
 
@@ -721,17 +721,17 @@ TEST_CASE("It is safe to clear a request in its own callback") {
 // Now testing: cleanup()
 
 TEST_CASE("Resolver: cleanup works correctly when we have allocated") {
-    auto libevent = Libevent();
+    auto libs = Libs();
 
     auto called = 0;
-    libevent.evdns_base_free = [&](evdns_base *p, int f) {
+    libs.evdns_base_free = [&](evdns_base *p, int f) {
         ::evdns_base_free(p, f);
         called++;
     };
 
     {
         // Note: call .get_evdns_base() to trigger lazy allocation
-        Resolver(Settings(), DefaultLogger::get(), &libevent)
+        Resolver(Settings(), DefaultLogger::get(), &libs)
             .get_evdns_base();
     }
 
@@ -739,10 +739,10 @@ TEST_CASE("Resolver: cleanup works correctly when we have allocated") {
 }
 
 TEST_CASE("Resolver: cleanup works correctly when we have not allocated") {
-    auto libevent = Libevent();
+    auto libs = Libs();
 
     auto called = 0;
-    libevent.evdns_base_free = [&](evdns_base *p, int f) {
+    libs.evdns_base_free = [&](evdns_base *p, int f) {
         ::evdns_base_free(p, f);
         called++;
     };
@@ -757,9 +757,9 @@ TEST_CASE("Resolver: cleanup works correctly when we have not allocated") {
 // Now testing Resolver(...)
 
 TEST_CASE("Resolver: ensure that the constructor does not allocate") {
-    auto libevent = Libevent();
+    auto libs = Libs();
 
-    libevent.evdns_base_new = [](event_base *, int) {
+    libs.evdns_base_new = [](event_base *, int) {
         return (evdns_base *) NULL;
     };
 
@@ -769,13 +769,13 @@ TEST_CASE("Resolver: ensure that the constructor does not allocate") {
     //
 
     //Resolver();  // How to do this?
-    Resolver(Settings(), DefaultLogger::get(), &libevent);
+    Resolver(Settings(), DefaultLogger::get(), &libs);
 }
 
 TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
-    auto libevent = Libevent();
+    auto libs = Libs();
 
-    libevent.evdns_base_new = [](event_base *, int) {
+    libs.evdns_base_new = [](event_base *, int) {
         return (evdns_base *) NULL;
     };
 
@@ -784,24 +784,24 @@ TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
     // Handle the branch where nameserver is set
     REQUIRE_THROWS(Resolver({
         {"nameserver", "8.8.8.8"}
-    }, DefaultLogger::get(), &libevent).get_evdns_base());
+    }, DefaultLogger::get(), &libs).get_evdns_base());
 
     // Handle the branch using the default nameserver
     REQUIRE_THROWS(Resolver(Settings(),
-        DefaultLogger::get(), &libevent).get_evdns_base());
+        DefaultLogger::get(), &libs).get_evdns_base());
 }
 
 TEST_CASE(
   "Resolver: evdns_base_nameserver_ip_add failure is correctly handled") {
-    auto libevent = Libevent();
+    auto libs = Libs();
 
-    libevent.evdns_base_nameserver_ip_add = [](evdns_base *, const char *) {
+    libs.evdns_base_nameserver_ip_add = [](evdns_base *, const char *) {
         return -1;
     };
 
     // Also make sure that the destructor is called
     auto called = false;
-    libevent.evdns_base_free = [&](evdns_base *p, int f) {
+    libs.evdns_base_free = [&](evdns_base *p, int f) {
         ::evdns_base_free(p, f);
         called = true;
     };
@@ -809,24 +809,24 @@ TEST_CASE(
     // Note: call .get_evdns_base() to trigger lazy allocation
     REQUIRE_THROWS(Resolver({
         {"nameserver", "8.8.8.8"}
-    }, DefaultLogger::get(), &libevent).get_evdns_base());
+    }, DefaultLogger::get(), &libs).get_evdns_base());
 
     REQUIRE(called);
 }
 
 TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
-    auto libevent = Libevent();
+    auto libs = Libs();
 
     // Also make sure that the destructor is called
     auto called = 0;
-    libevent.evdns_base_free = [&](evdns_base *p, int f) {
+    libs.evdns_base_free = [&](evdns_base *p, int f) {
         ::evdns_base_free(p, f);
         called += 1;
     };
 
     // Note: call .get_evdns_base() to trigger lazy allocation
 
-    libevent.evdns_base_set_option = [](evdns_base *, const char *opt,
+    libs.evdns_base_set_option = [](evdns_base *, const char *opt,
       const char *) {
         if (strcmp(opt, "attempts") == 0) {
             return -1;
@@ -835,9 +835,9 @@ TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
     };
     REQUIRE_THROWS(Resolver({
         {"attempts", "1"},
-    }, DefaultLogger::get(), &libevent).get_evdns_base());
+    }, DefaultLogger::get(), &libs).get_evdns_base());
 
-    libevent.evdns_base_set_option = [](evdns_base *, const char *opt,
+    libs.evdns_base_set_option = [](evdns_base *, const char *opt,
       const char *) {
         if (strcmp(opt, "timeout") == 0) {
             return -1;
@@ -846,9 +846,9 @@ TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
     };
     REQUIRE_THROWS(Resolver({
         {"timeout", "1.0"},
-    }, DefaultLogger::get(), &libevent).get_evdns_base());
+    }, DefaultLogger::get(), &libs).get_evdns_base());
 
-    libevent.evdns_base_set_option = [](evdns_base *, const char *opt,
+    libs.evdns_base_set_option = [](evdns_base *, const char *opt,
       const char *) {
         if (strcmp(opt, "randomize-case") == 0) {
             return -1;
@@ -858,10 +858,10 @@ TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
     // Make sure that randomize-case is called in both true and false cases
     REQUIRE_THROWS(Resolver({
         {"randomize_case", "1"},
-    }, DefaultLogger::get(), &libevent).get_evdns_base());
+    }, DefaultLogger::get(), &libs).get_evdns_base());
     REQUIRE_THROWS(Resolver({
         {"randomize_case", "0"},
-    }, DefaultLogger::get(), &libevent).get_evdns_base());
+    }, DefaultLogger::get(), &libs).get_evdns_base());
 
     REQUIRE(called == 4);  // twice for randomize-case
 }

@@ -15,19 +15,19 @@ using namespace measurement_kit::common;
 
 TEST_CASE("The constructor is lazy") {
 
-	auto libevent = Libevent();
+	auto libs = Libs();
 	auto calls = 0;
 
-	libevent.evbuffer_new = [&](void) {
+	libs.evbuffer_new = [&](void) {
 		++calls;
 		return ((evbuffer *) NULL);
 	};
-	libevent.evbuffer_free = [&](evbuffer *) {
+	libs.evbuffer_free = [&](evbuffer *) {
 		++calls;
 	};
 
 	{
-		Evbuffer evbuf(&libevent);
+		Evbuffer evbuf(&libs);
 	}
 
 	REQUIRE(calls == 0);
@@ -35,20 +35,20 @@ TEST_CASE("The constructor is lazy") {
 
 TEST_CASE("The (evbuffer*) operation allocates the internal evbuffer") {
 
-	auto libevent = Libevent();
+	auto libs = Libs();
 	auto calls = 0;
 
-	libevent.evbuffer_new = [&](void) {
+	libs.evbuffer_new = [&](void) {
 		++calls;
 		return (::evbuffer_new());
 	};
-	libevent.evbuffer_free = [&](evbuffer *e) {
+	libs.evbuffer_free = [&](evbuffer *e) {
 		++calls;
 		evbuffer_free(e);
 	};
 
 	{
-		Evbuffer evbuf(&libevent);
+		Evbuffer evbuf(&libs);
 		auto p = (evbuffer *) evbuf;
 		(void) p;
 	}
@@ -58,15 +58,15 @@ TEST_CASE("The (evbuffer*) operation allocates the internal evbuffer") {
 
 TEST_CASE("The (evbuffer *) operation is idempotent") {
 
-	auto libevent = Libevent();
+	auto libs = Libs();
 	auto calls = 0;
 
-	libevent.evbuffer_new = [&](void) {
+	libs.evbuffer_new = [&](void) {
 		++calls;
 		return (::evbuffer_new());
 	};
 
-	Evbuffer evbuf(&libevent);
+	Evbuffer evbuf(&libs);
 	auto p1 = (evbuffer *) evbuf;
 	auto p2 = (evbuffer *) evbuf;
 
@@ -76,15 +76,15 @@ TEST_CASE("The (evbuffer *) operation is idempotent") {
 
 TEST_CASE("std::bad_alloc is raised when out of memory") {
 
-	auto libevent = Libevent();
+	auto libs = Libs();
 
-	libevent.evbuffer_new = [&](void) {
+	libs.evbuffer_new = [&](void) {
 		return ((evbuffer *) NULL);
 	};
 
 	REQUIRE_THROWS_AS([&](void) {
 		/* Yes, I really really love inline functions <3 */
-		Evbuffer evbuf(&libevent);
+		Evbuffer evbuf(&libs);
 		auto p = (evbuffer *) evbuf;
 		(void) p;
 	}(), std::bad_alloc);

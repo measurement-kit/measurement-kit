@@ -14,40 +14,40 @@
 using namespace measurement_kit::common;
 
 TEST_CASE("Bad allocations triggers a failure ") {
-	Libevent libevent;
+	Libs libs;
 
-	libevent.event_new = [](event_base*, evutil_socket_t, short,
+	libs.event_new = [](event_base*, evutil_socket_t, short,
 	    event_callback_fn, void *) {
 		return ((event *) NULL);
 	};
 
-	REQUIRE_THROWS_AS(DelayedCall(0.0, [](void) { }, &libevent),
+	REQUIRE_THROWS_AS(DelayedCall(0.0, [](void) { }, &libs),
                     std::bad_alloc&);
 }
 
 TEST_CASE("If event_add returns -1 then an exception should be raised") {
-	Libevent libevent;
-	libevent.event_add = [](event*, timeval *) {
+	Libs libs;
+	libs.event_add = [](event*, timeval *) {
 		return (-1);
 	};
 
-	REQUIRE_THROWS_AS(DelayedCall(0.0, [](void) { }, &libevent),
+	REQUIRE_THROWS_AS(DelayedCall(0.0, [](void) { }, &libs),
                     std::runtime_error&);
 
 }
 
 TEST_CASE("Check that the event callbacks are fired") {
-	Libevent libevent;
+	Libs libs;
 
   SECTION("event_free must be called") {
     auto event_free_called = false;
 
-    libevent.event_free = [&event_free_called](event *evp) {
+    libs.event_free = [&event_free_called](event *evp) {
       event_free_called = true;
       ::event_free(evp);
     };
 
-    DelayedCall(0.0, [](void) { }, &libevent);
+    DelayedCall(0.0, [](void) { }, &libs);
 
     REQUIRE(event_free_called == true);
   }

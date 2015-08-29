@@ -18,7 +18,7 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
     resolver = std::make_shared<Resolver>(Settings{
         {"nameserver", nameserver},
         {"attempts", "1"},
-    }, logger, libevent);
+    }, logger, libs);
 
     std::string nameserver_part;
     std::stringstream nameserver_ss(nameserver);
