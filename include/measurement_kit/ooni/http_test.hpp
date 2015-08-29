@@ -49,14 +49,14 @@ public:
             // this.
             rr["method"] = settings.at("method");
 
-            if (error.error == 0) {
+            if (error == 0) {
                 rr["response"]["headers"] = std::map<std::string, std::string>(response.headers);
                 rr["response"]["body"] = response.body.read<char>();
                 rr["response"]["response_line"] = response.response_line;
                 rr["response"]["code"] = response.status_code;
             } else {
                 rr["failure"] = "unknown_failure measurement_kit_error";
-                rr["error_code"] = error.error;
+                rr["error_code"] = (int) error;
             }
 
             entry["requests"].push_back(rr);

@@ -282,7 +282,7 @@ TEST_CASE("HTTP stream works as expected when using Tor") {
     });
     stream->set_timeout(1.0);
     stream->on_error([&](Error e) {
-        measurement_kit::debug("Connection error: %d", e.error);
+        measurement_kit::debug("Connection error: %d", (int) e);
         stream->close();
         measurement_kit::break_loop();
     });
@@ -328,7 +328,7 @@ TEST_CASE("HTTP stream receives connection errors") {
     });
     stream->set_timeout(1.0);
     stream->on_error([&](Error e) {
-        measurement_kit::debug("Connection error: %d", e.error);
+        measurement_kit::debug("Connection error: %d", (int) e);
         stream->close();
         measurement_kit::break_loop();
     });
@@ -366,8 +366,8 @@ TEST_CASE("HTTP Request works as expected") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error error, Response&& response) {
-        if (error.error != 0) {
-            std::cout << "Error: " << error.error << "\r\n";
+        if (error != 0) {
+            std::cout << "Error: " << (int) error << "\r\n";
             measurement_kit::break_loop();
             return;
         }
@@ -434,8 +434,8 @@ TEST_CASE("HTTP Request correctly receives errors") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error error, Response&& response) {
-        if (error.error) {
-            std::cout << "Error: " << error.error << "\r\n";
+        if (error != 0) {
+            std::cout << "Error: " << (int) error << "\r\n";
             measurement_kit::break_loop();
             return;
         }
@@ -463,8 +463,8 @@ TEST_CASE("HTTP Request works as expected over Tor") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error error, Response&& response) {
-        if (error.error != 0) {
-            std::cout << "Error: " << error.error << "\r\n";
+        if (error != 0) {
+            std::cout << "Error: " << (int) error << "\r\n";
             measurement_kit::break_loop();
             return;
         }
@@ -548,7 +548,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error error, Response&& response) {
-        std::cout << "Error: " << error.error << std::endl;
+        std::cout << "Error: " << (int) error << std::endl;
         std::cout << "Google:\r\n";
         std::cout << response.body.read<char>(128) << "\r\n";
         std::cout << "[snip]\r\n";
@@ -565,7 +565,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error error, Response&& response) {
-        std::cout << "Error: " << error.error << std::endl;
+        std::cout << "Error: " << (int) error << std::endl;
         std::cout << response.body.read<char>(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
@@ -581,7 +581,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error error, Response&& response) {
-        std::cout << "Error: " << error.error << std::endl;
+        std::cout << "Error: " << (int) error << std::endl;
         std::cout << response.body.read<char>(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
@@ -604,7 +604,7 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
         {"Accept", "*/*"},
     }, "{\"test-helpers\": [\"dns\"]}",
                 [](Error error, Response&& response) {
-        std::cout << "Error: " << error.error << std::endl;
+        std::cout << "Error: " << (int) error << std::endl;
         std::cout << response.body.read<char>() << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
@@ -745,8 +745,8 @@ TEST_CASE("Make sure that settings are not modified") {
     }, "{\"test-helpers\": [\"dns\"]}",
                 [](Error error, Response&& response) {
         // XXX: assumes that Tor is not running on port 9999
-        REQUIRE(error.error != 0);
-        std::cout << "Error: " << error.error << std::endl;
+        REQUIRE(error != 0);
+        std::cout << "Error: " << (int) error << std::endl;
         std::cout << response.body.read<char>() << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();

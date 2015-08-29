@@ -237,7 +237,7 @@ class Stream {
         //
         connection->on_error([&](Error error) {
             auto safe_eh = error_handler;
-            if (error.error == 0) {
+            if (error == 0) {
                 parser->eof();
             }
             // parser->eof() may cause this object to go out of
@@ -591,7 +591,7 @@ public:
         }
         stream = std::make_shared<Stream>(settings, logger);
         stream->on_error([this](Error err) {
-            if (err.error != 0) {
+            if (err != 0) {
                 emit_end(err, std::move(response));
             } else {
                 // When EOF is received, on_end() is called, therefore we

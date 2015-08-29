@@ -29,7 +29,7 @@ TCPTest::connect(Settings options, std::function<void()>&& cb)
     //
 
     connection->on_error([cb, this](Error e) {
-        entry["error_code"] = e.error;
+        entry["error_code"] = (int) e;
         entry["connection"] = "failed";
         cb();
     });

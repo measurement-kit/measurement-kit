@@ -28,7 +28,7 @@ main(void)
 	});
 
 	s.on_error([&](Error e) {
-		measurement_kit::info("echo - connection error %d", e.error);
+		measurement_kit::info("echo - connection error %d", (int) e);
 		s.close();
 	});
 
