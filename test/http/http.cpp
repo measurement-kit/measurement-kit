@@ -254,14 +254,14 @@ TEST_CASE("HTTP stream is robust to EOF") {
     auto transport = stream->get_transport();
 
     stream->on_connect([stream, &transport]() {
-        auto data = std::make_shared<Buffer>();
+        Buffer data;
 
-        *data << "HTTP/1.1 200 Ok\r\n";
-        *data << "Content-Type: text/plain\r\n";
-        *data << "Connection: close\r\n";
-        *data << "Server: Antani/1.0.0.0\r\n";
-        *data << "\r\n";
-        *data << "1234567";
+        data << "HTTP/1.1 200 Ok\r\n";
+        data << "Content-Type: text/plain\r\n";
+        data << "Connection: close\r\n";
+        data << "Server: Antani/1.0.0.0\r\n";
+        data << "\r\n";
+        data << "1234567";
 
         transport->emit_data(data);
         transport->emit_error(0);
@@ -411,13 +411,13 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
 
     transport->emit_connect();
 
-    SharedPointer<Buffer> data = std::make_shared<Buffer>();
-    *data << "HTTP/1.1 200 Ok\r\n";
-    *data << "Content-Type: text/plain\r\n";
-    *data << "Connection: close\r\n";
-    *data << "Server: Antani/1.0.0.0\r\n";
-    *data << "\r\n";
-    *data << "1234567";
+    Buffer data;
+    data << "HTTP/1.1 200 Ok\r\n";
+    data << "Content-Type: text/plain\r\n";
+    data << "Connection: close\r\n";
+    data << "Server: Antani/1.0.0.0\r\n";
+    data << "\r\n";
+    data << "1234567";
     transport->emit_data(data);
     transport->emit_error(0);
 

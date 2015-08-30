@@ -20,7 +20,7 @@ using namespace measurement_kit::common;
 class Dumb : public Transport {
 
     std::function<void()> do_connect;
-    std::function<void(SharedPointer<Buffer>)> do_data;
+    std::function<void(Buffer &)> do_data;
     std::function<void()> do_flush;
     std::function<void(Error)> do_error;
 
@@ -33,7 +33,7 @@ public:
         do_connect();
     }
 
-    virtual void emit_data(SharedPointer<Buffer> data) override {
+    virtual void emit_data(Buffer &data) override {
         logger->debug("dumb: emit 'data' event");
         do_data(data);
     }
@@ -62,8 +62,7 @@ public:
         // currently not implemented
     }
 
-    virtual void
-    on_data(std::function<void(SharedPointer<Buffer>)> fn) override {
+    virtual void on_data(std::function<void(Buffer &)> fn) override {
         logger->debug("dumb: register 'data' handler");
         do_data = fn;
     }
@@ -92,10 +91,6 @@ public:
 
     virtual void send(std::string) override {
         logger->debug("dumb: send string");
-    }
-
-    virtual void send(SharedPointer<Buffer>) override {
-        logger->debug("dumb: send pointer to buffer");
     }
 
     virtual void send(Buffer&) override {

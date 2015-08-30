@@ -184,7 +184,7 @@ public:
      * \throws std::runtime_error This method throws std::runtime_error (or
      *         a class derived from it) on several error conditions.
      */
-    void feed(SharedPointer<Buffer> data);
+    void feed(Buffer &data);
 
     /*!
      * \brief Feed the parser.
@@ -228,7 +228,7 @@ class Stream {
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
-        connection->on_data([&](SharedPointer<Buffer> data) {
+        connection->on_data([&](Buffer &data) {
             parser->feed(data);
         });
         //

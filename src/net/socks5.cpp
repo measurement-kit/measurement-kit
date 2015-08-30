@@ -44,8 +44,8 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
 
         // Step #2: receive the allowed authentication methods
 
-        conn->on_data([this](SharedPointer<Buffer> d) {
-            *buffer << *d;
+        conn->on_data([this](Buffer &d) {
+            *buffer << d;
             auto readbuf = buffer->readn(2);
             if (readbuf == "") {
                 return; // Try again after next recv()
@@ -95,9 +95,9 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
 
             // Step #4: receive Tor's response
 
-            conn->on_data([this](SharedPointer<Buffer> d) {
+            conn->on_data([this](Buffer &d) {
 
-                *buffer << *d;
+                *buffer << d;
                 if (buffer->length() < 5) {
                     return; // Try again after next recv()
                 }
@@ -145,15 +145,14 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
                 // If more data, pass it up
                 //
 
-                conn->on_data(
-                    [this](SharedPointer<Buffer> d) { on_data_fn(d); });
+                conn->on_data([this](Buffer &d) { on_data_fn(d); });
                 conn->on_flush([this]() { on_flush_fn(); });
 
                 on_connect_fn();
 
                 // Note that on_connect_fn() may have called close()
                 if (!isclosed && buffer->length() > 0) {
-                    on_data_fn(buffer);
+                    on_data_fn(*buffer);
                 }
             });
         });

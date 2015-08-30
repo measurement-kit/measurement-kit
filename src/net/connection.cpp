@@ -45,7 +45,8 @@ void Connection::handle_read(bufferevent *bev, void *opaque) {
     auto self = (Connection *)opaque;
     (void)bev; // Suppress warning about unused variable
     auto fn = self->on_data_fn;
-    fn(std::make_shared<Buffer>(bufferevent_get_input(self->bev)));
+    Buffer buff(bufferevent_get_input(self->bev));
+    fn(buff);
 }
 
 void Connection::handle_write(bufferevent *bev, void *opaque) {

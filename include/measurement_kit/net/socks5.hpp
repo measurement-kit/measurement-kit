@@ -21,7 +21,7 @@ class Socks5 : public Transport {
 protected:
     SharedPointer<Connection> conn;
     std::function<void()> on_connect_fn;
-    std::function<void(SharedPointer<Buffer>)> on_data_fn;
+    std::function<void(Buffer &)> on_data_fn;
     std::function<void()> on_flush_fn;
     Settings settings;
     SharedPointer<Buffer> buffer{
@@ -38,7 +38,7 @@ public:
         conn->emit_connect();
     }
 
-    virtual void emit_data(SharedPointer<Buffer> data) override {
+    virtual void emit_data(Buffer &data) override {
         conn->emit_data(data);
     }
 
@@ -60,8 +60,7 @@ public:
         conn->on_ssl(fn);
     }
 
-    virtual void on_data(std::function<void(SharedPointer<
-            Buffer>)> fn) override {
+    virtual void on_data(std::function<void(Buffer &)> fn) override {
         on_data_fn = fn;
     }
 
@@ -90,10 +89,6 @@ public:
     }
 
     virtual void send(Buffer& data) override {
-        conn->send(data);
-    }
-
-    virtual void send(SharedPointer<Buffer> data) override {
         conn->send(data);
     }
 

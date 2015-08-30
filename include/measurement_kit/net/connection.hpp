@@ -66,8 +66,7 @@ class Connection : public Transport {
         /* nothing */
     };
 
-    std::function<void(SharedPointer<Buffer>)> on_data_fn =
-        [](SharedPointer<Buffer>) {
+    std::function<void(Buffer &)> on_data_fn = [](Buffer &) {
         /* nothing */
     };
 
@@ -98,7 +97,7 @@ class Connection : public Transport {
 
     void on_ssl(std::function<void()> fn) override { on_ssl_fn = fn; };
 
-    void on_data(std::function<void(SharedPointer<Buffer>)> fn) override {
+    void on_data(std::function<void(Buffer &)> fn) override {
         on_data_fn = fn;
         enable_read();
     };
@@ -134,8 +133,6 @@ class Connection : public Transport {
 
     void send(std::string data) override { send(data.c_str(), data.length()); }
 
-    void send(SharedPointer<Buffer> data) override { send(*data); }
-
     void send(Buffer &data) override { data >> bufferevent_get_output(bev); }
 
     void enable_read() {
@@ -154,7 +151,7 @@ class Connection : public Transport {
 
     void emit_connect() override { on_connect_fn(); }
 
-    void emit_data(SharedPointer<Buffer> data) override { on_data_fn(data); }
+    void emit_data(Buffer &data) override { on_data_fn(data); }
 
     void emit_flush() override { on_flush_fn(); }
 
