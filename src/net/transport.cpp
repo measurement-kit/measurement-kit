@@ -48,7 +48,7 @@ static Transport connect_internal(Settings settings, Logger *logger) {
 }
 
 Transport connect(Settings settings, Logger *lp) {
-    double timeo = -1.0;  // No timeout by default
+    double timeo = 30.0;
     if (settings.find("timeout") != settings.end()) {
         size_t invalid;
         timeo = std::stod(settings["timeout"], &invalid);
