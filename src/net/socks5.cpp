@@ -13,7 +13,7 @@ Socks5::Socks5(Settings s, Logger *lp)
                settings["socks5_address"].c_str(),
                settings["socks5_port"].c_str()),
           proxy_address(settings["socks5_address"]),
-          proxy_port(settings["socks5_address"]) {
+          proxy_port(settings["socks5_port"]) {
 
     logger->debug("socks5: connecting to Tor at %s:%s",
                settings["socks5_address"].c_str(),
