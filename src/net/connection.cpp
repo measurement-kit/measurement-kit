@@ -18,28 +18,7 @@ using namespace measurement_kit::common;
 namespace measurement_kit {
 namespace net {
 
-Connection::~Connection() {
-    /*
-     * TODO: switch to RAII.
-     */
-
-    // connecting: nothing to be done
-
-    if (this->address != NULL)
-        free(this->address);
-    if (this->port != NULL)
-        free(this->port);
-    if (this->addrlist != NULL)
-        delete (this->addrlist);
-
-    if (this->family != NULL)
-        free(this->family);
-    if (this->pflist != NULL)
-        delete (this->pflist);
-
-    // must_resolve_ipv4: nothing to be done
-    // must_resolve_ipv6: nothing to be done
-}
+Connection::~Connection() {}
 
 void Connection::handle_read(bufferevent *bev, void *opaque) {
     auto self = (Connection *)opaque;
@@ -88,10 +67,6 @@ Connection::Connection(const char *family, const char *address,
 
     filenum = measurement_kit::socket_normalize_if_invalid(filenum);
 
-    /*
-     * TODO: switch to RAII.
-     */
-
     this->bev.make(evbase, filenum,
                    BEV_OPT_DEFER_CALLBACKS | BEV_OPT_CLOSE_ON_FREE);
 
@@ -100,36 +75,11 @@ Connection::Connection(const char *family, const char *address,
     if (!measurement_kit::socket_valid(filenum))
         this->connecting = 1;
 
-    if ((this->address = strdup(address)) == NULL) {
-        throw std::bad_alloc();
-    }
+    this->address = address;
 
-    if ((this->port = strdup(port)) == NULL) {
-        free(this->address);
-        throw std::bad_alloc();
-    }
+    this->port = port;
 
-    if ((this->addrlist = new (std::nothrow) StringVector(poller, 16)) ==
-        NULL) {
-        free(this->address);
-        free(this->port);
-        throw std::bad_alloc();
-    }
-
-    if ((this->family = strdup(family)) == NULL) {
-        free(this->address);
-        free(this->port);
-        delete (this->addrlist);
-        throw std::bad_alloc();
-    }
-
-    if ((this->pflist = new (std::nothrow) StringVector(poller, 16)) == NULL) {
-        free(this->address);
-        free(this->port);
-        delete (this->addrlist);
-        free(this->family);
-        throw std::bad_alloc();
-    }
+    this->family = family;
 
     // must_resolve_ipv4: if connecting, set later by this->resolve()
     // must_resolve_ipv6: if connecting, set later by this->resolve()
@@ -155,19 +105,19 @@ void Connection::connect_next() {
     logger->info("connect_next - enter");
 
     for (;;) {
-        address = this->addrlist->get_next();
-        if (address == NULL) {
+        if (addrlist.empty()) {
             logger->warn("connect_next - no more available addrs");
             break;
         }
-        family = this->pflist->get_next();
-        if (family == NULL)
-            abort();
+        auto pair = addrlist.front();
+        addrlist.pop_front();
+        family = pair.first.c_str();
+        address = pair.second.c_str();
 
         logger->info("connect_next - %s %s", family, address);
 
         error =
-            measurement_kit::storage_init(&storage, &total, family, address, this->port);
+            measurement_kit::storage_init(&storage, &total, family, address, this->port.c_str());
         if (error != 0)
             continue;
 
@@ -205,7 +155,6 @@ void Connection::handle_resolve(int result, char type,
                                      std::vector<std::string> results) {
 
     const char *_family;
-    int error;
 
     logger->info("handle_resolve - enter");
 
@@ -230,20 +179,8 @@ void Connection::handle_resolve(int result, char type,
 
     for (auto &address : results) {
         logger->info("handle_resolve - address %s", address.c_str());
-        error = addrlist->append(address.c_str());
-        if (error != 0) {
-            logger->warn("handle_resolve - cannot append");
-            continue;
-        }
         logger->info("handle_resolve - family %s", _family);
-        error = pflist->append(_family);
-        if (error != 0) {
-            logger->warn("handle_resolve - cannot append");
-            // Oops the two vectors are not in sync anymore now
-            connecting = 0;
-            emit_error(Error(-3));
-            return;
-        }
+        addrlist.push_back(std::make_pair(_family, address));
     }
 
 finally:
@@ -297,44 +234,34 @@ void Connection::resolve() {
 
     // If address is a valid IPv4 address, connect directly
     memset(&storage, 0, sizeof(storage));
-    result = inet_pton(PF_INET, address, &storage);
+    result = inet_pton(PF_INET, address.c_str(), &storage);
     if (result == 1) {
-        logger->info("resolve - address %s", address);
+        logger->info("resolve - address %s", address.c_str());
         logger->info("resolve - family PF_INET");
-        if (addrlist->append(address) != 0 || pflist->append("PF_INET") != 0) {
-            logger->warn("resolve - cannot append");
-            connecting = 0;
-            emit_error(Error(-4));
-            return;
-        }
+        addrlist.push_back(std::make_pair("PF_INET", address));
         connect_next();
         return;
     }
 
     // If address is a valid IPv6 address, connect directly
     memset(&storage, 0, sizeof(storage));
-    result = inet_pton(PF_INET6, address, &storage);
+    result = inet_pton(PF_INET6, address.c_str(), &storage);
     if (result == 1) {
-        logger->info("resolve - address %s", address);
+        logger->info("resolve - address %s", address.c_str());
         logger->info("resolve - family PF_INET6");
-        if (addrlist->append(address) != 0 || pflist->append("PF_INET6") != 0) {
-            logger->warn("resolve - cannot append");
-            connecting = 0;
-            emit_error(Error(-4));
-            return;
-        }
+        addrlist.push_back(std::make_pair("PF_INET6", address));
         connect_next();
         return;
     }
 
     // Note: PF_UNSPEC6 means that we try with IPv6 first
-    if (strcmp(family, "PF_INET") == 0)
+    if (family == "PF_INET")
         must_resolve_ipv4 = 1;
-    else if (strcmp(family, "PF_INET6") == 0)
+    else if (family == "PF_INET6")
         must_resolve_ipv6 = 1;
-    else if (strcmp(family, "PF_UNSPEC") == 0)
+    else if (family == "PF_UNSPEC")
         must_resolve_ipv4 = 1;
-    else if (strcmp(family, "PF_UNSPEC6") == 0)
+    else if (family == "PF_UNSPEC6")
         must_resolve_ipv6 = 1;
     else {
         logger->warn("connection::resolve - invalid PF_xxx");
@@ -359,9 +286,9 @@ void Connection::resolve() {
     }
 
     // Arrange for the next resolve operation that we will need
-    if (strcmp(family, "PF_UNSPEC") == 0)
+    if (family == "PF_UNSPEC")
         must_resolve_ipv6 = 1;
-    else if (strcmp(family, "PF_UNSPEC6") == 0)
+    else if (family == "PF_UNSPEC6")
         must_resolve_ipv4 = 1;
 }
 

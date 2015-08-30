@@ -25,6 +25,8 @@
 #include <event2/event.h>
 
 #include <stdexcept>
+#include <list>
+
 #include <string.h>
 
 namespace measurement_kit {
@@ -38,11 +40,10 @@ class Connection : public Dumb {
     Bufferevent bev;
     dns::Request dns_request;
     unsigned int connecting = 0;
-    char *address = NULL;
-    char *port = NULL;
-    StringVector *addrlist = NULL;
-    char *family = NULL;
-    StringVector *pflist = NULL;
+    std::string address;
+    std::string port;
+    std::list<std::pair<std::string, std::string>> addrlist;
+    std::string family;
     unsigned int must_resolve_ipv4 = 0;
     unsigned int must_resolve_ipv6 = 0;
     SharedPointer<DelayedCall> start_connect;
