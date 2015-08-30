@@ -19,11 +19,9 @@ using namespace measurement_kit::common;
 
 class Socks5 : public Dumb {
 protected:
-    SharedPointer<Connection> conn;
     Settings settings;
-    SharedPointer<Buffer> buffer{
-        std::make_shared<Buffer>()
-    };
+    Connection conn;
+    Buffer buffer;
     bool isclosed = false;
     std::string proxy_address;
     std::string proxy_port;
@@ -32,28 +30,28 @@ public:
     Socks5(Settings, Logger *lp = Logger::global());
 
     void set_timeout(double timeout) override {
-        conn->set_timeout(timeout);
+        conn.set_timeout(timeout);
     }
 
     void clear_timeout() override {
-        conn->clear_timeout();
+        conn.clear_timeout();
     }
 
     void send(const void* data, size_t count) override {
-        conn->send(data, count);
+        conn.send(data, count);
     }
 
     void send(std::string data) override {
-        conn->send(data);
+        conn.send(data);
     }
 
     void send(Buffer& data) override {
-        conn->send(data);
+        conn.send(data);
     }
 
     void close() override {
         isclosed = true;
-        conn->close();
+        conn.close();
     }
 
     std::string socks5_address() override {

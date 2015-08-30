@@ -7,24 +7,22 @@
 namespace measurement_kit {
 namespace net {
 
-Socks5::Socks5(Settings s, Logger *lp) : Dumb(lp), settings(s) {
+Socks5::Socks5(Settings s, Logger *lp)
+        : Dumb(lp), settings(s),
+          conn(settings["family"].c_str(),
+               settings["socks5_address"].c_str(),
+               settings["socks5_port"].c_str()),
+          proxy_address(settings["socks5_address"]),
+          proxy_port(settings["socks5_address"]) {
 
     logger->debug("socks5: connecting to Tor at %s:%s",
                settings["socks5_address"].c_str(),
                settings["socks5_port"].c_str());
 
-    // Save address and port so they can be accessed later
-    proxy_address = settings["socks5_address"];
-    proxy_port = settings["socks5_port"];
-
-    conn = std::make_shared<Connection>(settings["family"].c_str(),
-                                        settings["socks5_address"].c_str(),
-                                        settings["socks5_port"].c_str());
-
     // Step #0: Steal "connect" and "flush" handlers
 
-    conn->on_connect([this]() {
-        conn->on_flush([]() {
+    conn.on_connect([this]() {
+        conn.on_flush([]() {
             // Nothing
         });
 
@@ -36,7 +34,7 @@ Socks5::Socks5(Settings s, Logger *lp) : Dumb(lp), settings(s) {
         out.write_uint8(5); // Version
         out.write_uint8(1); // Number of methods
         out.write_uint8(0); // "NO_AUTH" meth.
-        conn->send(out);
+        conn.send(out);
 
         logger->debug("socks5: >> version=5");
         logger->debug("socks5: >> number of methods=1");
@@ -44,9 +42,9 @@ Socks5::Socks5(Settings s, Logger *lp) : Dumb(lp), settings(s) {
 
         // Step #2: receive the allowed authentication methods
 
-        conn->on_data([this](Buffer &d) {
-            *buffer << d;
-            auto readbuf = buffer->readn(2);
+        conn.on_data([this](Buffer &d) {
+            buffer << d;
+            auto readbuf = buffer.readn(2);
             if (readbuf == "") {
                 return; // Try again after next recv()
             }
@@ -91,18 +89,18 @@ Socks5::Socks5(Settings s, Logger *lp) : Dumb(lp), settings(s) {
 
             logger->debug("socks5: >> port=%d", portnum);
 
-            conn->send(out);
+            conn.send(out);
 
             // Step #4: receive Tor's response
 
-            conn->on_data([this](Buffer &d) {
+            conn.on_data([this](Buffer &d) {
 
-                *buffer << d;
-                if (buffer->length() < 5) {
+                buffer << d;
+                if (buffer.length() < 5) {
                     return; // Try again after next recv()
                 }
 
-                auto peekbuf = buffer->peek(5);
+                auto peekbuf = buffer.peek(5);
 
                 logger->debug("socks5: << version=%d", peekbuf[0]);
                 logger->debug("socks5: << reply=%d", peekbuf[1]);
@@ -132,11 +130,11 @@ Socks5::Socks5(Settings s, Logger *lp) : Dumb(lp), settings(s) {
                     throw std::runtime_error("generic error");
                 }
                 total += 2; // Port size
-                if (buffer->length() < total) {
+                if (buffer.length() < total) {
                     return; // Try again after next recv()
                 }
 
-                buffer->discard(total);
+                buffer.discard(total);
 
                 //
                 // Step #5: we are now connected
@@ -145,14 +143,14 @@ Socks5::Socks5(Settings s, Logger *lp) : Dumb(lp), settings(s) {
                 // If more data, pass it up
                 //
 
-                conn->on_data([this](Buffer &d) { emit_data(d); });
-                conn->on_flush([this]() { emit_flush(); });
+                conn.on_data([this](Buffer &d) { emit_data(d); });
+                conn.on_flush([this]() { emit_flush(); });
 
                 emit_connect();
 
                 // Note that emit_connect() may have called close()
-                if (!isclosed && buffer->length() > 0) {
-                    emit_data(*buffer);
+                if (!isclosed && buffer.length() > 0) {
+                    emit_data(buffer);
                 }
             });
         });
