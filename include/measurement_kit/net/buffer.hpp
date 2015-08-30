@@ -18,58 +18,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdexcept>
+#include <memory>
 #include <vector>
-
-/* Apparently not defined on MacOSX */
-#ifndef IOV_MAX
-#define IOV_MAX 32
-#endif
 
 namespace measurement_kit {
 namespace net {
 
 using namespace measurement_kit::common;
-
-// Helper class for Buffer (see below)
-class Iovec : public NonCopyable, public NonMovable {
-    evbuffer_iovec *iov = nullptr;
-    size_t count = 0;
-
-  public:
-    Iovec(size_t n = 0) {
-        if (n < 1)
-            return;
-        if ((iov = (evbuffer_iovec *)calloc(n, sizeof(*iov))) == nullptr)
-            throw std::bad_alloc();
-        count = n;
-    }
-
-    ~Iovec() { measurement_kit::xfree(iov); }
-
-    evbuffer_iovec *operator[](int i) {
-        if (iov == nullptr)
-            throw std::runtime_error("Iovec is null");
-        /*
-         * It is safe to cast i to size_t, because we exclude
-         * the case in which i is negative first.
-         */
-        if (i < 0 || (size_t)i >= count)
-            throw std::runtime_error("Invalid index");
-        return &iov[i];
-    }
-
-    evbuffer_iovec *get_base() {
-        if (iov == nullptr)
-            throw std::runtime_error("Iovec is null");
-        return iov;
-    }
-
-    size_t get_length() {
-        if (iov == nullptr)
-            throw std::runtime_error("Iovec is null");
-        return count;
-    }
-};
 
 class Buffer : public NonCopyable, public NonMovable {
   private:
@@ -127,14 +82,14 @@ class Buffer : public NonCopyable, public NonMovable {
             throw std::runtime_error("unexpected error");
         if (required_size == 0)
             return;
-
-        Iovec iov(required_size);
-        auto used =
-            evbuffer_peek(evbuf, -1, nullptr, iov.get_base(), iov.get_length());
+        std::unique_ptr<evbuffer_iovec> raii;
+        raii.reset(new evbuffer_iovec[required_size]); // Guarantee cleanup
+        auto iov = raii.get();
+        auto used = evbuffer_peek(evbuf, -1, nullptr, iov, required_size);
         if (used != required_size)
             throw std::runtime_error("unexpected error");
 
-        for (auto i = 0; i < required_size && fn(iov[i]); ++i)
+        for (auto i = 0; i < required_size && fn(&iov[i]); ++i)
             /* nothing */;
     }
 
@@ -252,40 +207,14 @@ class Buffer : public NonCopyable, public NonMovable {
     void write_uint32(uint32_t);
 
     void write_rand(size_t count) {
-        if (count == 0)
-            return;
-
-        Iovec iov(IOV_MAX);
-        int i, n_extents;
-
-        n_extents = evbuffer_reserve_space(evbuf, count, iov.get_base(),
-                                           iov.get_length());
-        if (n_extents < 0)
-            throw std::runtime_error("evbuffer_reserve_space failed");
-
-        for (i = 0; i < n_extents && count > 0; i++) {
-            /*
-             * Note: `iov[i]` throws if `i` is out of bounds.
-             */
-            if (count < iov[i]->iov_len)
-                iov[i]->iov_len = count;
-            /*
-             * Implementation note: I'm not sure this is fast
-             * enough for Neubot needs; I'll check...
-             */
-            evutil_secure_rng_get_bytes(iov[i]->iov_base, iov[i]->iov_len);
-            count -= iov[i]->iov_len;
-        }
-
-        /*
-         * Used to be an assert. I'd rather have a statement that
-         * throws on failure, so that it can be tested.
-         */
-        if (!(count == 0 && i >= 0 && (size_t)i <= iov.get_length()))
-            throw std::runtime_error("unexpected error");
-
-        if (evbuffer_commit_space(evbuf, iov.get_base(), i) != 0)
-            throw std::runtime_error("evbuffer_commit_space failed");
+        if (count == 0) return;
+        char *p = new char[count];
+        evutil_secure_rng_get_bytes(p, count);
+        auto ctrl = evbuffer_add_reference(evbuf, p, count,
+            [](const void *, size_t, void *p) {
+                delete[] static_cast<char *>(p);
+            }, p);
+        if (ctrl != 0) throw std::runtime_error("evbuffer_add_reference");
     }
 };
 
