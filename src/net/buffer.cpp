@@ -2,9 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <arpa/inet.h>
-
 #include <measurement_kit/net/buffer.hpp>
+
+#include <arpa/inet.h>
 
 namespace measurement_kit {
 namespace net {
@@ -23,4 +23,5 @@ void Buffer::write_uint32(uint32_t num) {
     write(&num, sizeof (num));
 }
 
-}}
+} // namespace net
+} // namespace measurement_kit

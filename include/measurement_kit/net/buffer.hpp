@@ -32,22 +32,22 @@ using namespace measurement_kit::common;
 
 // Helper class for Buffer (see below)
 class Iovec : public NonCopyable, public NonMovable {
-    evbuffer_iovec *iov = NULL;
+    evbuffer_iovec *iov = nullptr;
     size_t count = 0;
 
   public:
     Iovec(size_t n = 0) {
         if (n < 1)
             return;
-        if ((iov = (evbuffer_iovec *)calloc(n, sizeof(*iov))) == NULL)
+        if ((iov = (evbuffer_iovec *)calloc(n, sizeof(*iov))) == nullptr)
             throw std::bad_alloc();
         count = n;
     }
 
-    ~Iovec(void) { measurement_kit::xfree(iov); }
+    ~Iovec() { measurement_kit::xfree(iov); }
 
     evbuffer_iovec *operator[](int i) {
-        if (iov == NULL)
+        if (iov == nullptr)
             throw std::runtime_error("Iovec is null");
         /*
          * It is safe to cast i to size_t, because we exclude
@@ -55,33 +55,33 @@ class Iovec : public NonCopyable, public NonMovable {
          */
         if (i < 0 || (size_t)i >= count)
             throw std::runtime_error("Invalid index");
-        return (&iov[i]);
+        return &iov[i];
     }
 
-    evbuffer_iovec *get_base(void) {
-        if (iov == NULL)
+    evbuffer_iovec *get_base() {
+        if (iov == nullptr)
             throw std::runtime_error("Iovec is null");
-        return (iov);
+        return iov;
     }
 
-    size_t get_length(void) {
-        if (iov == NULL)
+    size_t get_length() {
+        if (iov == nullptr)
             throw std::runtime_error("Iovec is null");
-        return (count);
+        return count;
     }
 };
 
 class Buffer : public NonCopyable, public NonMovable {
-
+  private:
     Evbuffer evbuf;
 
   public:
-    Buffer(evbuffer *b = NULL) {
-        if (b != NULL && evbuffer_add_buffer(evbuf, b) != 0)
+    Buffer(evbuffer *b = nullptr) {
+        if (b != nullptr && evbuffer_add_buffer(evbuf, b) != 0)
             throw std::runtime_error("evbuffer_add_buffer failed");
     }
 
-    ~Buffer(void) {}
+    ~Buffer() {}
 
     /*
      * I expect to read (write) from (into) the input (output)
@@ -90,39 +90,39 @@ class Buffer : public NonCopyable, public NonMovable {
      */
 
     Buffer &operator<<(evbuffer *source) {
-        if (source == NULL)
-            throw std::runtime_error("source is NULL");
+        if (source == nullptr)
+            throw std::runtime_error("source is nullptr");
         if (evbuffer_add_buffer(evbuf, source) != 0)
             throw std::runtime_error("evbuffer_add_buffer failed");
-        return (*this);
+        return *this;
     }
 
     Buffer &operator>>(evbuffer *dest) {
-        if (dest == NULL)
-            throw std::runtime_error("dest is NULL");
+        if (dest == nullptr)
+            throw std::runtime_error("dest is nullptr");
         if (evbuffer_add_buffer(dest, evbuf) != 0)
             throw std::runtime_error("evbuffer_add_buffer failed");
-        return (*this);
+        return *this;
     }
 
     Buffer &operator<<(Buffer &source) {
         *this << source.evbuf;
-        return (*this);
+        return *this;
     }
 
     Buffer &operator>>(Buffer &source) {
         *this >> source.evbuf;
-        return (*this);
+        return *this;
     }
 
-    size_t length(void) { return (evbuffer_get_length(evbuf)); }
+    size_t length() { return evbuffer_get_length(evbuf); }
 
     /*
      * The following is useful to feed a parser (e.g., the http-parser)
      * with all (or part of) the content of `this`.
      */
     void foreach (std::function<bool(evbuffer_iovec *)> fn) {
-        auto required_size = evbuffer_peek(evbuf, -1, NULL, NULL, 0);
+        auto required_size = evbuffer_peek(evbuf, -1, nullptr, nullptr, 0);
         if (required_size < 0)
             throw std::runtime_error("unexpected error");
         if (required_size == 0)
@@ -130,7 +130,7 @@ class Buffer : public NonCopyable, public NonMovable {
 
         Iovec iov(required_size);
         auto used =
-            evbuffer_peek(evbuf, -1, NULL, iov.get_base(), iov.get_length());
+            evbuffer_peek(evbuf, -1, nullptr, iov.get_base(), iov.get_length());
         if (used != required_size)
             throw std::runtime_error("unexpected error");
 
@@ -147,7 +147,7 @@ class Buffer : public NonCopyable, public NonMovable {
         if (evbuffer_drain(evbuf, count) != 0)
             throw std::runtime_error("evbuffer_drain failed");
     }
-    void discard(void) { discard(length()); }
+    void discard() { discard(length()); }
 
     /*
      * This function is a template because sometimes we want to read
@@ -183,15 +183,15 @@ class Buffer : public NonCopyable, public NonMovable {
         if (!ispeek)
             discard(nbytes);
 
-        return (out);
+        return out;
     }
 
     template <typename T> std::basic_string<T> read(size_t upto) {
         return readpeek<T>(false, upto);
     }
 
-    template <typename T> std::basic_string<T> read(void) {
-        return (read<T>(length()));
+    template <typename T> std::basic_string<T> read() {
+        return read<T>(length());
     }
 
     std::string read(size_t upto) { return read<char>(upto); }
@@ -208,8 +208,8 @@ class Buffer : public NonCopyable, public NonMovable {
      */
     template <typename T> std::basic_string<T> readn(size_t n) {
         if (n > length())
-            return (std::basic_string<T>()); /* Empty str */
-        return (read<T>(n));
+            return std::basic_string<T>(); /* Empty str */
+        return read<T>(n);
     }
 
     std::string readn(size_t n) { return readn<char>(n); }
@@ -218,11 +218,11 @@ class Buffer : public NonCopyable, public NonMovable {
 
         size_t eol_length = 0;
         auto search_result =
-            evbuffer_search_eol(evbuf, NULL, &eol_length, EVBUFFER_EOL_CRLF);
+            evbuffer_search_eol(evbuf, nullptr, &eol_length, EVBUFFER_EOL_CRLF);
         if (search_result.pos < 0) {
             if (length() > maxline)
-                return (std::make_tuple(-1, ""));
-            return (std::make_tuple(0, ""));
+                return std::make_tuple(-1, "");
+            return std::make_tuple(0, "");
         }
 
         /*
@@ -233,9 +233,9 @@ class Buffer : public NonCopyable, public NonMovable {
             throw std::runtime_error("unexpected error");
         auto len = (size_t)search_result.pos + eol_length;
         if (len > maxline)
-            return (std::make_tuple(-2, ""));
+            return std::make_tuple(-2, "");
 
-        return (std::make_tuple(0, read<char>(len)));
+        return std::make_tuple(0, read<char>(len));
     }
 
     /*
@@ -247,30 +247,30 @@ class Buffer : public NonCopyable, public NonMovable {
 
     Buffer &operator<<(std::string in) {
         write(in);
-        return (*this);
+        return *this;
     }
 
     void write(std::vector<char> in) { write(in.data(), in.size()); }
 
     Buffer &operator<<(std::vector<char> in) {
         write(in);
-        return (*this);
+        return *this;
     }
 
     void write(const char *in) {
-        if (in == NULL)
-            throw std::runtime_error("in is NULL");
+        if (in == nullptr)
+            throw std::runtime_error("in is nullptr");
         write(in, strlen(in));
     }
 
     Buffer &operator<<(const char *in) {
         write(in);
-        return (*this);
+        return *this;
     }
 
     void write(const void *buf, size_t count) {
-        if (buf == NULL)
-            throw std::runtime_error("buf is NULL");
+        if (buf == nullptr)
+            throw std::runtime_error("buf is nullptr");
         if (evbuffer_add(evbuf, buf, count) != 0)
             throw std::runtime_error("evbuffer_add failed");
     }
@@ -319,5 +319,6 @@ class Buffer : public NonCopyable, public NonMovable {
     }
 };
 
-}}
+} // namespace net
+} // namespace measurement_kit
 #endif
