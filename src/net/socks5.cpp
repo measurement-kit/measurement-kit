@@ -19,8 +19,9 @@ Socks5::Socks5(Settings s, Logger *lp)
                settings["socks5_address"].c_str(),
                settings["socks5_port"].c_str());
 
-    // Step #0: Steal "connect" and "flush" handlers
+    // Step #0: Steal "error", "connect", and "flush" handlers
 
+    conn.on_error([this](Error err) { emit_error(err); });
     conn.on_connect([this]() {
         conn.on_flush([]() {
             // Nothing
