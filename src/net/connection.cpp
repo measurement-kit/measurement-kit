@@ -18,7 +18,7 @@ using namespace measurement_kit::common;
 namespace measurement_kit {
 namespace net {
 
-ConnectionState::~ConnectionState(void) {
+Connection::~Connection() {
     /*
      * TODO: switch to RAII.
      */
@@ -41,22 +41,22 @@ ConnectionState::~ConnectionState(void) {
     // must_resolve_ipv6: nothing to be done
 }
 
-void ConnectionState::handle_read(bufferevent *bev, void *opaque) {
-    auto self = (ConnectionState *)opaque;
+void Connection::handle_read(bufferevent *bev, void *opaque) {
+    auto self = (Connection *)opaque;
     (void)bev; // Suppress warning about unused variable
     auto fn = self->on_data_fn;
     fn(std::make_shared<Buffer>(bufferevent_get_input(self->bev)));
 }
 
-void ConnectionState::handle_write(bufferevent *bev, void *opaque) {
-    auto self = (ConnectionState *)opaque;
+void Connection::handle_write(bufferevent *bev, void *opaque) {
+    auto self = (Connection *)opaque;
     (void)bev; // Suppress warning about unused variable
     auto fn = self->on_flush_fn;
     fn();
 }
 
-void ConnectionState::handle_event(bufferevent *bev, short what, void *opaque) {
-    auto self = (ConnectionState *)opaque;
+void Connection::handle_event(bufferevent *bev, short what, void *opaque) {
+    auto self = (Connection *)opaque;
     auto on_connect_fn = self->on_connect_fn;
     auto on_error_fn = self->on_error_fn;
 
@@ -84,7 +84,7 @@ void ConnectionState::handle_event(bufferevent *bev, short what, void *opaque) {
     on_error_fn(Error(-1));
 }
 
-ConnectionState::ConnectionState(const char *family, const char *address,
+Connection::Connection(const char *family, const char *address,
                                  const char *port, Poller *poller,
                                  Logger *lp, evutil_socket_t filenum) {
     auto evbase = poller->get_event_base();
@@ -150,7 +150,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
             std::make_shared<DelayedCall>(0.0, [this]() { this->resolve(); });
 }
 
-void ConnectionState::connect_next(void) {
+void Connection::connect_next() {
     const char *address;
     int error;
     const char *family;
@@ -206,7 +206,7 @@ void ConnectionState::connect_next(void) {
     this->on_error_fn(Error(-2));
 }
 
-void ConnectionState::handle_resolve(int result, char type,
+void Connection::handle_resolve(int result, char type,
                                      std::vector<std::string> results) {
 
     const char *_family;
@@ -269,7 +269,7 @@ finally:
     connect_next();
 }
 
-bool ConnectionState::resolve_internal(char type) {
+bool Connection::resolve_internal(char type) {
 
     std::string query;
 
@@ -293,7 +293,7 @@ bool ConnectionState::resolve_internal(char type) {
     return true;
 }
 
-void ConnectionState::resolve() {
+void Connection::resolve() {
     struct sockaddr_storage storage;
     int result;
 
@@ -370,11 +370,9 @@ void ConnectionState::resolve() {
         must_resolve_ipv4 = 1;
 }
 
-void ConnectionState::close(void) {
+void Connection::close() {
     this->bev.close();
     this->dns_request.cancel();
 }
-
-Connection::~Connection() { delete state; /* delete handles NULL */ }
 
 }}
