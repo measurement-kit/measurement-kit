@@ -7,7 +7,7 @@
 namespace measurement_kit {
 namespace net {
 
-Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
+Socks5::Socks5(Settings s, Logger *lp) : Dumb(lp), settings(s) {
 
     logger->debug("socks5: connecting to Tor at %s:%s",
                settings["socks5_address"].c_str(),
@@ -145,14 +145,14 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
                 // If more data, pass it up
                 //
 
-                conn->on_data([this](Buffer &d) { on_data_fn(d); });
-                conn->on_flush([this]() { on_flush_fn(); });
+                conn->on_data([this](Buffer &d) { emit_data(d); });
+                conn->on_flush([this]() { emit_flush(); });
 
-                on_connect_fn();
+                emit_connect();
 
-                // Note that on_connect_fn() may have called close()
+                // Note that emit_connect() may have called close()
                 if (!isclosed && buffer->length() > 0) {
-                    on_data_fn(*buffer);
+                    emit_data(*buffer);
                 }
             });
         });

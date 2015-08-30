@@ -16,6 +16,7 @@
 #include <measurement_kit/common/utils.hpp>
 
 #include <measurement_kit/net/buffer.hpp>
+#include <measurement_kit/net/dumb.hpp>
 #include <measurement_kit/net/transport.hpp>
 
 #include <measurement_kit/dns/dns.hpp>
@@ -32,7 +33,7 @@ namespace net {
 using namespace measurement_kit::common;
 using namespace measurement_kit::dns;
 
-class Connection : public Transport {
+class Connection : public Dumb {
   private:
     Bufferevent bev;
     dns::Request dns_request;
@@ -45,7 +46,6 @@ class Connection : public Transport {
     unsigned int must_resolve_ipv4 = 0;
     unsigned int must_resolve_ipv6 = 0;
     SharedPointer<DelayedCall> start_connect;
-    Logger *logger = Logger::global();
 
     // Libevent callbacks
     static void handle_read(bufferevent *, void *);
@@ -57,26 +57,6 @@ class Connection : public Transport {
     void handle_resolve(int, char, std::vector<std::string>);
     void resolve();
     bool resolve_internal(char);
-
-    std::function<void()> on_connect_fn = []() {
-        /* nothing */
-    };
-
-    std::function<void()> on_ssl_fn = []() {
-        /* nothing */
-    };
-
-    std::function<void(Buffer &)> on_data_fn = [](Buffer &) {
-        /* nothing */
-    };
-
-    std::function<void()> on_flush_fn = []() {
-        /* nothing */
-    };
-
-    std::function<void(Error)> on_error_fn = [](Error) {
-        /* nothing */
-    };
 
   public:
     Connection(evutil_socket_t fd, Logger *lp = Logger::global(),
@@ -93,18 +73,10 @@ class Connection : public Transport {
 
     ~Connection() override;
 
-    void on_connect(std::function<void()> fn) override { on_connect_fn = fn; };
-
-    void on_ssl(std::function<void()> fn) override { on_ssl_fn = fn; };
-
     void on_data(std::function<void(Buffer &)> fn) override {
-        on_data_fn = fn;
+        Dumb::on_data(fn);
         enable_read();
     };
-
-    void on_flush(std::function<void()> fn) override { on_flush_fn = fn; };
-
-    void on_error(std::function<void(Error)> fn) override { on_error_fn = fn; };
 
     evutil_socket_t get_fileno() { return (bufferevent_getfd(this->bev)); }
 
@@ -148,14 +120,6 @@ class Connection : public Transport {
     }
 
     void close() override;
-
-    void emit_connect() override { on_connect_fn(); }
-
-    void emit_data(Buffer &data) override { on_data_fn(data); }
-
-    void emit_flush() override { on_flush_fn(); }
-
-    void emit_error(Error err) override { on_error_fn(err); }
 
     std::string socks5_address() override { return ""; /* not proxy */ }
 

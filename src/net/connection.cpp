@@ -44,33 +44,29 @@ Connection::~Connection() {
 void Connection::handle_read(bufferevent *bev, void *opaque) {
     auto self = (Connection *)opaque;
     (void)bev; // Suppress warning about unused variable
-    auto fn = self->on_data_fn;
     Buffer buff(bufferevent_get_input(self->bev));
-    fn(buff);
+    self->emit_data(buff);
 }
 
 void Connection::handle_write(bufferevent *bev, void *opaque) {
     auto self = (Connection *)opaque;
     (void)bev; // Suppress warning about unused variable
-    auto fn = self->on_flush_fn;
-    fn();
+    self->emit_flush();
 }
 
 void Connection::handle_event(bufferevent *bev, short what, void *opaque) {
     auto self = (Connection *)opaque;
-    auto on_connect_fn = self->on_connect_fn;
-    auto on_error_fn = self->on_error_fn;
 
     (void)bev; // Suppress warning about unused variable
 
     if (what & BEV_EVENT_CONNECTED) {
         self->connecting = 0;
-        on_connect_fn();
+        self->emit_connect();
         return;
     }
 
     if (what & BEV_EVENT_EOF) {
-        on_error_fn(Error(0));
+        self->emit_error(Error(0));
         return;
     }
 
@@ -82,15 +78,13 @@ void Connection::handle_event(bufferevent *bev, short what, void *opaque) {
 
     // TODO: also handle the timeout
 
-    on_error_fn(Error(-1));
+    self->emit_error(Error(-1));
 }
 
 Connection::Connection(const char *family, const char *address,
-                                 const char *port, Poller *poller,
-                                 Logger *lp, evutil_socket_t filenum) {
+                       const char *port, Poller *poller,
+                       Logger *lp, evutil_socket_t filenum) : Dumb(lp) {
     auto evbase = poller->get_event_base();
-
-    logger = lp;
 
     filenum = measurement_kit::socket_normalize_if_invalid(filenum);
 
@@ -204,7 +198,7 @@ void Connection::connect_next() {
     }
 
     this->connecting = 0;
-    this->on_error_fn(Error(-2));
+    this->emit_error(Error(-2));
 }
 
 void Connection::handle_resolve(int result, char type,
@@ -247,7 +241,7 @@ void Connection::handle_resolve(int result, char type,
             logger->warn("handle_resolve - cannot append");
             // Oops the two vectors are not in sync anymore now
             connecting = 0;
-            on_error_fn(Error(-3));
+            emit_error(Error(-3));
             return;
         }
     }
@@ -310,7 +304,7 @@ void Connection::resolve() {
         if (addrlist->append(address) != 0 || pflist->append("PF_INET") != 0) {
             logger->warn("resolve - cannot append");
             connecting = 0;
-            on_error_fn(Error(-4));
+            emit_error(Error(-4));
             return;
         }
         connect_next();
@@ -326,7 +320,7 @@ void Connection::resolve() {
         if (addrlist->append(address) != 0 || pflist->append("PF_INET6") != 0) {
             logger->warn("resolve - cannot append");
             connecting = 0;
-            on_error_fn(Error(-4));
+            emit_error(Error(-4));
             return;
         }
         connect_next();
@@ -345,7 +339,7 @@ void Connection::resolve() {
     else {
         logger->warn("connection::resolve - invalid PF_xxx");
         connecting = 0;
-        on_error_fn(Error(-5));
+        emit_error(Error(-5));
         return;
     }
 
@@ -360,7 +354,7 @@ void Connection::resolve() {
     }
     if (!ok) {
         connecting = 0;
-        on_error_fn(Error(-6));
+        emit_error(Error(-6));
         return;
     }
 
