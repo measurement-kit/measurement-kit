@@ -92,11 +92,6 @@ class Connection : public Transport {
     Connection(const char *, const char *, const char *, Poller *,
                Logger *, evutil_socket_t);
 
-    Connection(Connection &) = delete;
-    Connection &operator=(Connection &) = delete;
-    Connection(Connection &&) = delete;
-    Connection &operator=(Connection &&) = delete;
-
     ~Connection() override;
 
     void on_connect(std::function<void()> fn) override { on_connect_fn = fn; };
