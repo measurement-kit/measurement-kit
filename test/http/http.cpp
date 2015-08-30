@@ -263,11 +263,11 @@ TEST_CASE("HTTP stream is robust to EOF") {
         data << "\r\n";
         data << "1234567";
 
-        transport->emit_data(data);
-        transport->emit_error(0);
+        transport.emit_data(data);
+        transport.emit_error(0);
     });
 
-    transport->emit_connect();
+    transport.emit_connect();
 }
 
 TEST_CASE("HTTP stream works as expected when using Tor") {
@@ -409,7 +409,7 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
     auto stream = r.get_stream();
     auto transport = stream->get_transport();
 
-    transport->emit_connect();
+    transport.emit_connect();
 
     Buffer data;
     data << "HTTP/1.1 200 Ok\r\n";
@@ -418,8 +418,8 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
     data << "Server: Antani/1.0.0.0\r\n";
     data << "\r\n";
     data << "1234567";
-    transport->emit_data(data);
-    transport->emit_error(0);
+    transport.emit_data(data);
+    transport.emit_error(0);
 
     REQUIRE(called == 1);
 }
