@@ -5,7 +5,6 @@
 #ifndef MEASUREMENT_KIT_NET_BUFFER_HPP
 #define MEASUREMENT_KIT_NET_BUFFER_HPP
 
-#include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/evbuffer.hpp>
 
 #include <event2/buffer.h>
@@ -28,11 +27,9 @@ struct evbuffer;
 namespace measurement_kit {
 namespace net {
 
-using namespace measurement_kit::common;
-
-class Buffer : public NonCopyable, public NonMovable {
+class Buffer {
   private:
-    Evbuffer evbuf;
+    common::Evbuffer evbuf;
 
   public:
     Buffer(evbuffer *b = nullptr) {
