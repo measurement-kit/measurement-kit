@@ -37,6 +37,8 @@ struct Transport : public NonMovable, public NonCopyable {
 
     Transport() {}
 
+    virtual ~Transport() {}
+
     virtual void on_connect(std::function<void()>) = 0;
 
     virtual void on_ssl(std::function<void()>) = 0;

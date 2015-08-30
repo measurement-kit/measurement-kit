@@ -50,6 +50,8 @@ public:
 
     Dumb(Logger *lp = Logger::global()) : logger(lp) {}
 
+    ~Dumb() override {}
+
     virtual void on_connect(std::function<void()> fn) override {
         logger->debug("dumb: register 'connect' handler");
         do_connect = fn;

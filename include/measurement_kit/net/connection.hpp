@@ -97,7 +97,7 @@ class Connection : public Transport {
     Connection(Connection &&) = delete;
     Connection &operator=(Connection &&) = delete;
 
-    ~Connection();
+    ~Connection() override;
 
     void on_connect(std::function<void()> fn) override { on_connect_fn = fn; };
 
