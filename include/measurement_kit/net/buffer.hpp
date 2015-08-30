@@ -7,19 +7,23 @@
 
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/evbuffer.hpp>
-#include <measurement_kit/common/utils.hpp>
 
-#include <event2/bufferevent.h>
 #include <event2/buffer.h>
-
-#include <sys/uio.h>
+#include <event2/util.h>
 
 #include <functional>
-#include <stdlib.h>
-#include <string.h>
-#include <stdexcept>
+#include <iosfwd>
 #include <memory>
-#include <vector>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <stddef.h>
+#include <string.h>
+
+struct evbuffer;
 
 namespace measurement_kit {
 namespace net {
@@ -45,16 +49,14 @@ class Buffer : public NonCopyable, public NonMovable {
      */
 
     Buffer &operator<<(evbuffer *source) {
-        if (source == nullptr)
-            throw std::runtime_error("source is nullptr");
+        if (source == nullptr) throw std::runtime_error("source is nullptr");
         if (evbuffer_add_buffer(evbuf, source) != 0)
             throw std::runtime_error("evbuffer_add_buffer failed");
         return *this;
     }
 
     Buffer &operator>>(evbuffer *dest) {
-        if (dest == nullptr)
-            throw std::runtime_error("dest is nullptr");
+        if (dest == nullptr) throw std::runtime_error("dest is nullptr");
         if (evbuffer_add_buffer(dest, evbuf) != 0)
             throw std::runtime_error("evbuffer_add_buffer failed");
         return *this;
@@ -78,19 +80,14 @@ class Buffer : public NonCopyable, public NonMovable {
      */
     void foreach (std::function<bool(evbuffer_iovec *)> fn) {
         auto required_size = evbuffer_peek(evbuf, -1, nullptr, nullptr, 0);
-        if (required_size < 0)
-            throw std::runtime_error("unexpected error");
-        if (required_size == 0)
-            return;
+        if (required_size < 0) throw std::runtime_error("unexpected error");
+        if (required_size == 0) return;
         std::unique_ptr<evbuffer_iovec> raii;
         raii.reset(new evbuffer_iovec[required_size]); // Guarantee cleanup
         auto iov = raii.get();
         auto used = evbuffer_peek(evbuf, -1, nullptr, iov, required_size);
-        if (used != required_size)
-            throw std::runtime_error("unexpected error");
-
-        for (auto i = 0; i < required_size && fn(&iov[i]); ++i)
-            /* nothing */;
+        if (used != required_size) throw std::runtime_error("unexpected error");
+        for (auto i = 0; i < required_size && fn(&iov[i]); ++i) /* nothing */;
     }
 
     /*
@@ -108,9 +105,8 @@ class Buffer : public NonCopyable, public NonMovable {
         size_t nbytes = 0;
         std::string out;
 
-        foreach([&](evbuffer_iovec *iov) {
-            if (upto < iov->iov_len)
-                iov->iov_len = upto;
+        foreach ([&](evbuffer_iovec *iov) {
+            if (upto < iov->iov_len) iov->iov_len = upto;
 
             out.append((const char *)iov->iov_base, iov->iov_len);
 
@@ -123,8 +119,7 @@ class Buffer : public NonCopyable, public NonMovable {
          * We do this after foreach() because we are not supposed
          * to modify the underlying `evbuf` during foreach().
          */
-        if (!ispeek)
-            discard(nbytes);
+        if (!ispeek) discard(nbytes);
 
         return out;
     }
@@ -152,8 +147,7 @@ class Buffer : public NonCopyable, public NonMovable {
         auto search_result =
             evbuffer_search_eol(evbuf, nullptr, &eol_length, EVBUFFER_EOL_CRLF);
         if (search_result.pos < 0) {
-            if (length() > maxline)
-                return std::make_tuple(-1, "");
+            if (length() > maxline) return std::make_tuple(-1, "");
             return std::make_tuple(0, "");
         }
 
@@ -164,8 +158,7 @@ class Buffer : public NonCopyable, public NonMovable {
         if (eol_length != 1 && eol_length != 2)
             throw std::runtime_error("unexpected error");
         auto len = (size_t)search_result.pos + eol_length;
-        if (len > maxline)
-            return std::make_tuple(-2, "");
+        if (len > maxline) return std::make_tuple(-2, "");
 
         return std::make_tuple(0, read(len));
     }
@@ -183,8 +176,7 @@ class Buffer : public NonCopyable, public NonMovable {
     }
 
     void write(const char *in) {
-        if (in == nullptr)
-            throw std::runtime_error("in is nullptr");
+        if (in == nullptr) throw std::runtime_error("in is nullptr");
         write(in, strlen(in));
     }
 
@@ -194,8 +186,7 @@ class Buffer : public NonCopyable, public NonMovable {
     }
 
     void write(const void *buf, size_t count) {
-        if (buf == nullptr)
-            throw std::runtime_error("buf is nullptr");
+        if (buf == nullptr) throw std::runtime_error("buf is nullptr");
         if (evbuffer_add(evbuf, buf, count) != 0)
             throw std::runtime_error("evbuffer_add failed");
     }
@@ -210,8 +201,8 @@ class Buffer : public NonCopyable, public NonMovable {
         if (count == 0) return;
         char *p = new char[count];
         evutil_secure_rng_get_bytes(p, count);
-        auto ctrl = evbuffer_add_reference(evbuf, p, count,
-            [](const void *, size_t, void *p) {
+        auto ctrl = evbuffer_add_reference(
+            evbuf, p, count, [](const void *, size_t, void *p) {
                 delete[] static_cast<char *>(p);
             }, p);
         if (ctrl != 0) throw std::runtime_error("evbuffer_add_reference");
