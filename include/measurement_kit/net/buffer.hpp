@@ -149,27 +149,15 @@ class Buffer : public NonCopyable, public NonMovable {
     }
     void discard() { discard(length()); }
 
-    /*
-     * This function is a template because sometimes we want to read
-     * text (in which case, std::basic_string<char> aka std::string is
-     * the appropriate type) and sometimes we want instead to read
-     * binary data (in which case std::basic_string<uint8_t> is more
-     * appropriate, because it is surprising to store binary data into
-     * an std::string, which is designed to hold text).
-     */
-    template <typename T>
-    std::basic_string<T> readpeek(bool ispeek, size_t upto) {
+    std::string readpeek(bool ispeek, size_t upto) {
         size_t nbytes = 0;
-        std::basic_string<T> out;
-
-        if (sizeof(T) != 1)
-            throw std::runtime_error("Wide chars not supported");
+        std::string out;
 
         foreach([&](evbuffer_iovec *iov) {
             if (upto < iov->iov_len)
                 iov->iov_len = upto;
 
-            out.append((const T *)iov->iov_base, iov->iov_len);
+            out.append((const char *)iov->iov_base, iov->iov_len);
 
             upto -= iov->iov_len;
             nbytes += iov->iov_len;
@@ -186,19 +174,11 @@ class Buffer : public NonCopyable, public NonMovable {
         return out;
     }
 
-    template <typename T> std::basic_string<T> read(size_t upto) {
-        return readpeek<T>(false, upto);
-    }
+    std::string read(size_t upto) { return readpeek(false, upto); }
 
-    template <typename T> std::basic_string<T> read() {
-        return read<T>(length());
-    }
+    std::string read() { return read(length()); }
 
-    std::string read(size_t upto) { return read<char>(upto); }
-
-    std::string read() { return read<char>(); }
-
-    std::string peek(size_t upto) { return readpeek<char>(true, upto); }
+    std::string peek(size_t upto) { return readpeek(true, upto); }
 
     std::string peek() { return peek(length()); }
 
@@ -206,13 +186,10 @@ class Buffer : public NonCopyable, public NonMovable {
      * The semantic of readn() is that we return a string only
      * when we have exactly N bytes available.
      */
-    template <typename T> std::basic_string<T> readn(size_t n) {
-        if (n > length())
-            return std::basic_string<T>(); /* Empty str */
-        return read<T>(n);
+    std::string readn(size_t n) {
+        if (n > length()) return "";
+        return read(n);
     }
-
-    std::string readn(size_t n) { return readn<char>(n); }
 
     std::tuple<int, std::string> readline(size_t maxline) {
 
@@ -235,7 +212,7 @@ class Buffer : public NonCopyable, public NonMovable {
         if (len > maxline)
             return std::make_tuple(-2, "");
 
-        return std::make_tuple(0, read<char>(len));
+        return std::make_tuple(0, read(len));
     }
 
     /*
@@ -246,13 +223,6 @@ class Buffer : public NonCopyable, public NonMovable {
     void write(std::string in) { write(in.c_str(), in.length()); }
 
     Buffer &operator<<(std::string in) {
-        write(in);
-        return *this;
-    }
-
-    void write(std::vector<char> in) { write(in.data(), in.size()); }
-
-    Buffer &operator<<(std::vector<char> in) {
         write(in);
         return *this;
     }

@@ -51,7 +51,7 @@ public:
 
             if (error == 0) {
                 rr["response"]["headers"] = std::map<std::string, std::string>(response.headers);
-                rr["response"]["body"] = response.body.read<char>();
+                rr["response"]["body"] = response.body.read();
                 rr["response"]["response_line"] = response.response_line;
                 rr["response"]["code"] = response.status_code;
             } else {
