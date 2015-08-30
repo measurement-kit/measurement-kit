@@ -121,10 +121,6 @@ class Connection : public Dumb {
     }
 
     void close() override;
-
-    std::string socks5_address() override { return ""; /* not proxy */ }
-
-    std::string socks5_port() override { return ""; /* not proxy */ }
 };
 
 }}
