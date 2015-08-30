@@ -6,6 +6,8 @@
 #include <measurement_kit/common/libs.hpp>
 #include <measurement_kit/common/logger.hpp>
 
+#include <stdexcept>
+
 namespace measurement_kit {
 namespace common {
 
