@@ -30,22 +30,34 @@ protected:
 public:
     void emit_connect() override {
         logger->debug("dumb: emit 'connect' event");
-        do_connect();
+        // With GNU C++ library, if a std::function sets itself, the
+        // associated context is free() leading to segfault
+        auto fn = do_connect;
+        fn();
     }
 
     virtual void emit_data(Buffer &data) override {
         logger->debug("dumb: emit 'data' event");
-        do_data(data);
+        // With GNU C++ library, if a std::function sets itself, the
+        // associated context is free() leading to segfault
+        auto fn = do_data;
+        fn(data);
     }
 
     void emit_flush() override {
         logger->debug("dumb: emit 'flush' event");
-        do_flush();
+        // With GNU C++ library, if a std::function sets itself, the
+        // associated context is free() leading to segfault
+        auto fn = do_flush;
+        fn();
     }
 
     void emit_error(Error err) override {
         logger->debug("dumb: emit 'error' event");
-        do_error(err);
+        // With GNU C++ library, if a std::function sets itself, the
+        // associated context is free() leading to segfault
+        auto fn = do_error;
+        fn(err);
     }
 
     Dumb(Logger *lp = Logger::global()) : logger(lp) {}
