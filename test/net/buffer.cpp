@@ -321,6 +321,19 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
 		REQUIRE(s == "");
 	}
 
+	SECTION("EOL-not-found error is correctly reported") {
+		buff << "HTTP/1.1 200 Ok";
+		std::tie(error, s) = buff.readline(3);
+		REQUIRE(error == EOLNotFoundError());
+		REQUIRE(s == "");
+	}
+
+	SECTION("Line-too-long error is correctly reported") {
+		buff << "HTTP/1.1 200 Ok\n";
+		std::tie(error, s) = buff.readline(3);
+		REQUIRE(error == LineTooLongError());
+		REQUIRE(s == "");
+	}
 }
 
 TEST_CASE("Write works correctly", "[Buffer]") {
@@ -394,4 +407,35 @@ TEST_CASE("Write works correctly", "[Buffer]") {
 		REQUIRE(freq > 0.49);
 		REQUIRE(freq < 0.51);
 	}
+}
+
+TEST_CASE("Write into works correctly", "[Buffer]") {
+    Buffer buff;
+
+    SECTION("Typical usage") {
+        buff.write(1024, [](char *buf, size_t cnt) {
+            REQUIRE(buf != nullptr);
+            REQUIRE(cnt == 1024);
+            memset(buf, 0, cnt);
+            return cnt;
+        });
+    }
+
+    SECTION("Should throw if we use more than needed") {
+        REQUIRE_THROWS(buff.write(1024, [](char *buf, size_t cnt) {
+            REQUIRE(buf != nullptr);
+            REQUIRE(cnt == 1024);
+            memset(buf, 0, cnt);
+            return cnt + 1;
+        }));
+    }
+
+    SECTION("Should work OK if we use zero bytes") {
+        buff.write(1024, [](char *buf, size_t cnt) {
+            REQUIRE(buf != nullptr);
+            REQUIRE(cnt == 1024);
+            return 0;
+        });
+    }
+
 }
