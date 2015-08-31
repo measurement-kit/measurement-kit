@@ -76,17 +76,17 @@ class Buffer {
      * The following is useful to feed a parser (e.g., the http-parser)
      * with all (or part of) the content of `this`.
      */
-    void foreach(std::function<bool(const char *, size_t)> fn) {
+    void foreach(std::function<bool(const void *, size_t)> fn) {
         auto required_size = evbuffer_peek(evbuf, -1, nullptr, nullptr, 0);
         if (required_size < 0) throw std::runtime_error("unexpected error");
         if (required_size == 0) return;
-        std::unique_ptr<evbuffer_iovec> raii;
+        std::unique_ptr<evbuffer_iovec[]> raii;
         raii.reset(new evbuffer_iovec[required_size]); // Guarantee cleanup
         auto iov = raii.get();
         auto used = evbuffer_peek(evbuf, -1, nullptr, iov, required_size);
         if (used != required_size) throw std::runtime_error("unexpected error");
         for (auto i = 0; i < required_size &&
-                fn((const char *) iov[i].iov_base, iov[i].iov_len); ++i) {
+                fn(iov[i].iov_base, iov[i].iov_len); ++i) {
             /* nothing */ ;
         }
     }
@@ -105,9 +105,9 @@ class Buffer {
     std::string readpeek(bool ispeek, size_t upto) {
         size_t nbytes = 0;
         std::string out;
-        foreach([&nbytes, &out, &upto](const char *p, size_t n) {
+        foreach([&nbytes, &out, &upto](const void *p, size_t n) {
             if (upto < n) n = upto;
-            out.append(p, n);
+            out.append((const char *) p, n);
             upto -= n;
             nbytes += n;
             return (upto > 0);
@@ -206,11 +206,14 @@ class Buffer {
         if (ctrl != 0) throw std::runtime_error("evbuffer_add_reference");
     }
 
-    void write(size_t count, std::function<size_t(char *, size_t)> func) {
+    void write(size_t count, std::function<size_t(void *, size_t)> func) {
         if (count == 0) return;
         char *p = new char[count];
         size_t used = func(p, count);
-        if (used > count) throw std::runtime_error("internal error");
+        if (used > count) {
+            delete[] p;
+            throw std::runtime_error("internal error");
+        }
         if (used == 0) {
             delete[] p;
             return;

@@ -138,9 +138,10 @@ class ResponseParserImpl {
 
     void parse(void) {
         auto total = (size_t) 0;
-        buffer.foreach([&](const char *base, size_t count) {
+        buffer.foreach([&](const void *base, size_t count) {
             parsing = true;
-            size_t n = http_parser_execute(&parser, &settings, base, count);
+            size_t n = http_parser_execute(&parser, &settings,
+                    (const char *) base, count);
             parsing = false;
             if (parser.upgrade) {
                 throw UpgradeError("Unexpected UPGRADE");
