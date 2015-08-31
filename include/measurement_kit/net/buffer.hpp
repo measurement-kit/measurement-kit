@@ -205,6 +205,23 @@ class Buffer {
             }, p);
         if (ctrl != 0) throw std::runtime_error("evbuffer_add_reference");
     }
+
+    void write(size_t count, std::function<size_t(char *, size_t)> func) {
+        if (count == 0) return;
+        char *p = new char[count];
+        size_t used = func(p, count);
+        if (used > count) throw std::runtime_error("internal error");
+        if (used == 0) {
+            delete[] p;
+            return;
+        }
+        auto ctrl = evbuffer_add_reference(
+            evbuf, p, used, [](const void *, size_t, void *p) {
+                delete[] static_cast<char *>(p);
+            }, p);
+        if (ctrl != 0) throw std::runtime_error("evbuffer_add_reference");
+    }
+
 };
 
 } // namespace net
