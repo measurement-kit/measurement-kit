@@ -103,7 +103,7 @@ class Buffer {
         size_t nbytes = 0;
         std::string out;
 
-        foreach ([&](evbuffer_iovec *iov) {
+        foreach ([&nbytes, &out, &upto](evbuffer_iovec *iov) {
             if (upto < iov->iov_len) iov->iov_len = upto;
 
             out.append((const char *)iov->iov_base, iov->iov_len);
