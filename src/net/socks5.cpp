@@ -55,7 +55,8 @@ Socks5::Socks5(Settings s, Logger *lp)
 
             if (readbuf[0] != 5 || // Reply version
                 readbuf[1] != 0) { // Preferred auth method
-                throw std::runtime_error("generic error");
+                emit_error(BadSocksVersionError());
+                return;
             }
 
             // Step #3: ask Tor to connect to remote host
@@ -74,7 +75,8 @@ Socks5::Socks5(Settings s, Logger *lp)
             auto address = settings["address"];
 
             if (address.length() > 255) {
-                throw std::runtime_error("generic error");
+                emit_error(SocksAddressTooLongError());
+                return;
             }
             out.write_uint8(address.length());            // Len
             out.write(address.c_str(), address.length()); // String
@@ -84,7 +86,8 @@ Socks5::Socks5(Settings s, Logger *lp)
 
             auto portnum = std::stoi(settings["port"]);
             if (portnum < 0 || portnum > 65535) {
-                throw std::runtime_error("generic error");
+                emit_error(SocksInvalidPortError());
+                return;
             }
             out.write_uint16(portnum); // Port
 
@@ -115,7 +118,8 @@ Socks5::Socks5(Settings s, Logger *lp)
                 if (peekbuf[0] != 5 || // Version
                     peekbuf[1] != 0 || // Reply
                     peekbuf[2] != 0) { // Reserved
-                    throw std::runtime_error("generic error");
+                    emit_error(SocksGenericError());
+                    return;
                 }
                 auto atype = peekbuf[3]; // Atype
 
@@ -128,7 +132,8 @@ Socks5::Socks5(Settings s, Logger *lp)
                 } else if (atype == 4) {
                     total += 16; // IPv6 addr size
                 } else {
-                    throw std::runtime_error("generic error");
+                    emit_error(SocksGenericError());
+                    return;
                 }
                 total += 2; // Port size
                 if (buffer.length() < total) {

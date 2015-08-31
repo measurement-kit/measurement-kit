@@ -45,7 +45,7 @@ void Connection::handle_event(bufferevent *bev, short what, void *opaque) {
     }
 
     if (what & BEV_EVENT_EOF) {
-        self->emit_error(Error(0));
+        self->emit_error(EOFError());
         return;
     }
 
@@ -55,9 +55,12 @@ void Connection::handle_event(bufferevent *bev, short what, void *opaque) {
         return;
     }
 
-    // TODO: also handle the timeout
+    if (what & BEV_EVENT_TIMEOUT) {
+        self->emit_error(TimeoutError());
+        return;
+    }
 
-    self->emit_error(Error(-1));
+    self->emit_error(SocketError());
 }
 
 Connection::Connection(const char *family, const char *address,
@@ -148,7 +151,7 @@ void Connection::connect_next() {
     }
 
     this->connecting = 0;
-    this->emit_error(Error(-2));
+    this->emit_error(ConnectFailedError());
 }
 
 void Connection::handle_resolve(int result, char type,
@@ -263,12 +266,8 @@ void Connection::resolve() {
         must_resolve_ipv4 = 1;
     else if (family == "PF_UNSPEC6")
         must_resolve_ipv6 = 1;
-    else {
-        logger->warn("connection::resolve - invalid PF_xxx");
-        connecting = 0;
-        emit_error(Error(-5));
-        return;
-    }
+    else
+        throw std::runtime_error("invalid PF_xxx");
 
     bool ok = false;
 
@@ -281,7 +280,7 @@ void Connection::resolve() {
     }
     if (!ok) {
         connecting = 0;
-        emit_error(Error(-6));
+        emit_error(DNSGenericError());
         return;
     }
 
