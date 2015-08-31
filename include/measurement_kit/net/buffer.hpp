@@ -76,7 +76,7 @@ class Buffer {
      * The following is useful to feed a parser (e.g., the http-parser)
      * with all (or part of) the content of `this`.
      */
-    void foreach (std::function<bool(evbuffer_iovec *)> fn) {
+    void foreach(std::function<bool(const char *, size_t)> fn) {
         auto required_size = evbuffer_peek(evbuf, -1, nullptr, nullptr, 0);
         if (required_size < 0) throw std::runtime_error("unexpected error");
         if (required_size == 0) return;
@@ -85,7 +85,10 @@ class Buffer {
         auto iov = raii.get();
         auto used = evbuffer_peek(evbuf, -1, nullptr, iov, required_size);
         if (used != required_size) throw std::runtime_error("unexpected error");
-        for (auto i = 0; i < required_size && fn(&iov[i]); ++i) /* nothing */;
+        for (auto i = 0; i < required_size &&
+                fn((const char *) iov[i].iov_base, iov[i].iov_len); ++i) {
+            /* nothing */ ;
+        }
     }
 
     /*
@@ -102,23 +105,18 @@ class Buffer {
     std::string readpeek(bool ispeek, size_t upto) {
         size_t nbytes = 0;
         std::string out;
-
-        foreach ([&nbytes, &out, &upto](evbuffer_iovec *iov) {
-            if (upto < iov->iov_len) iov->iov_len = upto;
-
-            out.append((const char *)iov->iov_base, iov->iov_len);
-
-            upto -= iov->iov_len;
-            nbytes += iov->iov_len;
+        foreach([&nbytes, &out, &upto](const char *p, size_t n) {
+            if (upto < n) n = upto;
+            out.append(p, n);
+            upto -= n;
+            nbytes += n;
             return (upto > 0);
         });
-
         /*
          * We do this after foreach() because we are not supposed
          * to modify the underlying `evbuf` during foreach().
          */
         if (!ispeek) discard(nbytes);
-
         return out;
     }
 

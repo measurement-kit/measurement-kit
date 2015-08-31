@@ -82,7 +82,7 @@ TEST_CASE("Foreach is robust to corner cases and errors", "[Buffer]") {
 	Buffer buff;
 
 	SECTION("No function is invoked when the buffer is empty") {
-		buff.foreach([](evbuffer_iovec *) {
+		buff.foreach([](const char *, size_t) {
 			throw std::runtime_error("should not happen");
 			return (false);
 		});
@@ -126,8 +126,8 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
 	SECTION("Make sure that we walk through all the extents") {
 
 		buff << evbuf;
-		buff.foreach([&](evbuffer_iovec *iov) {
-			r.append((char *) iov->iov_base, iov->iov_len);
+		buff.foreach([&](const char *p, size_t n) {
+			r.append(p, n);
 			++counter;
 			return (true);
 		});
@@ -141,8 +141,8 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
 	SECTION("Make sure that stopping early works as expected") {
 
 		buff << evbuf;
-		buff.foreach([&](evbuffer_iovec *iov) {
-			r.append((char *) iov->iov_base, iov->iov_len);
+		buff.foreach([&](const char *p, size_t n) {
+			r.append(p, n);
 			++counter;
 			return (false);
 		});
@@ -375,9 +375,8 @@ TEST_CASE("Write works correctly", "[Buffer]") {
 		REQUIRE(buff.length() == 1048576);
 
 		auto zeroes = 0, total = 0;
-		buff.foreach([&](evbuffer_iovec *iov) {
-			auto p = (char *) iov->iov_base;
-			for (size_t i = 0; i < iov->iov_len; ++i) {
+		buff.foreach([&](const char *p, size_t n) {
+			for (size_t i = 0; i < n; ++i) {
 				for (auto j = 0; j < 8; ++j) {
 					if ((p[i] & (1 << j)) == 0)
 						++zeroes;
