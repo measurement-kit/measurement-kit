@@ -5,6 +5,7 @@
 #ifndef MEASUREMENT_KIT_NET_BUFFER_HPP
 #define MEASUREMENT_KIT_NET_BUFFER_HPP
 
+#include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/evbuffer.hpp>
 
 #include <event2/buffer.h>
@@ -138,13 +139,14 @@ class Buffer {
         return read(n);
     }
 
-    std::tuple<int, std::string> readline(size_t maxline) {
+    std::tuple<common::Error, std::string> readline(size_t maxline) {
 
         size_t eol_length = 0;
         auto search_result =
             evbuffer_search_eol(evbuf, nullptr, &eol_length, EVBUFFER_EOL_CRLF);
         if (search_result.pos < 0) {
-            if (length() > maxline) return std::make_tuple(-1, "");
+            if (length() > maxline)
+                return std::make_tuple(common::EOLNotFoundError(), "");
             return std::make_tuple(0, "");
         }
 
@@ -155,7 +157,8 @@ class Buffer {
         if (eol_length != 1 && eol_length != 2)
             throw std::runtime_error("unexpected error");
         auto len = (size_t)search_result.pos + eol_length;
-        if (len > maxline) return std::make_tuple(-2, "");
+        if (len > maxline)
+            return std::make_tuple(common::LineTooLongError(), "");
 
         return std::make_tuple(0, read(len));
     }

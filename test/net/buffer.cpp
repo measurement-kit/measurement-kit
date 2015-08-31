@@ -257,7 +257,7 @@ TEST_CASE("Readn works correctly") {
 TEST_CASE("Readline works correctly", "[Buffer]") {
 	Buffer buff;
 	auto s = std::string();
-	int error = 0;
+	Error error;
 
 	SECTION("We can read LF terminated lines") {
 		buff << "HTTP/1.1 200 Ok\n"
