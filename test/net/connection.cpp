@@ -132,3 +132,18 @@ TEST_CASE("It is safe to close Connection while resolve is in progress") {
     });
     measurement_kit::loop();
 }
+
+TEST_CASE("connect() iterates over all the available addresses") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    measurement_kit::set_verbose(1);
+    Connection s("PF_UNSPEC", "www.youtube.com", "81");
+    s.set_timeout(5);
+    s.on_error([](Error error) {
+        auto ok = (error == SocketError() || error == ConnectFailedError());
+        REQUIRE(ok);
+        measurement_kit::break_loop();
+    });
+    measurement_kit::loop();
+}
