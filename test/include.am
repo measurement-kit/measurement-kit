@@ -61,6 +61,12 @@ test_net_connection_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/net/connection
 TESTS += test/net/connection
 
+test_net_connection_check_fds_SOURCES = test/net/connection_check_fds.cpp
+test_net_connection_check_fds_LDADD = libmeasurement_kit.la
+test_net_connection_check_fds_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/net/connection_check_fds
+TESTS += test/net/connection_check_fds
+
 test_report_file_SOURCES = test/report/file.cpp
 test_report_file_LDADD = libmeasurement_kit.la
 test_report_file_LDFLAGS = -lyaml-cpp
