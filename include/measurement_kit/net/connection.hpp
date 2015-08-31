@@ -12,7 +12,6 @@
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/poller.hpp>
-#include <measurement_kit/common/string_vector.hpp>
 #include <measurement_kit/common/utils.hpp>
 
 #include <measurement_kit/net/buffer.hpp>
