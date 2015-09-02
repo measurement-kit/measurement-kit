@@ -2,8 +2,50 @@
 
 [![Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit)
 
-MeasurementKit is an experimental library that provides common functionalities
-useful to implement open measurement tools on mobile platforms.
+MeasurementKit is a library that implements open measurement methodologies
+and targets mobile platforms (Android and iOS). Currently it implements the
+following high-level tests:
+
+- [OONI](https://ooni.torproject.org/)'s [DNS Injection](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-012-dns-injection.md) test
+
+- [OONI](https://ooni.torproject.org/)'s [HTTP Invalid Request Line](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-007-http-invalid-request-line.md) test
+
+- [OONI](https://ooni.torproject.org/)'s [TCP Connect](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-008-tcpconnect.md) test
+
+It contains building-block functionalities useful to implement your own
+tests. More in detail it currently implements:
+
+- [TCP connection](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/net/transport.hpp) (with which you can create a TCP connection towards and
+  endpoint, receive and send data)
+
+- [DNS client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/dns/dns.hpp) (with which you can resolve and reverse-resolve A and AAAA
+  records using arbitrary name servers)
+
+- [HTTP client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/http/http.hpp) (with which you can send HTTP/1.1 requests and receive
+  and parse the corresponding responses)
+
+- [traceroute for Android](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/traceroute/android.hpp) (with which you can send individual traceroute
+  probes with a specified payload and TTL)
+
+Future short-term plans include implementing all possible OONI tests, adding
+network performance tests (such as [NDT](https://github.com/ndt-project/ndt)), adding building-blocks functionalities
+such as [uTP](https://github.com/bittorrent/libutp), implementing facilities to communitate with the [OONI backend](https://github.com/TheTorProject/ooni-backend),
+implementing traceroute for iOS.
+
+To compile MeasurementKit for Android, see:
+
+- the [repository for cross-compiling MeasurementKit for Android](https://github.com/measurement-kit/measurement-kit-build-android)
+
+- the [example application for Android](https://github.com/measurement-kit/measurement-kit-app-android)
+
+To compile and use MeasurementKit for iOS, see:
+
+- the [repository for cross-compiling MeasurementKit for iOS](https://github.com/measurement-kit/measurement-kit-build-ios)
+
+- the [example application for iOS](https://github.com/measurement-kit/measurement-kit-app-ios)
+
+This README.md files continues by explaining you how to compile MeasurementKit
+on a UNIX or UNIX-like platform (e.g. Linux, MacOS).
 
 ## How to clone the repository
 
