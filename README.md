@@ -2,9 +2,13 @@
 
 [![Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit)
 
-MeasurementKit is a library that implements open measurement methodologies
-and targets mobile platforms (Android and iOS). Currently it implements the
-following high-level tests:
+MeasurementKit is a library that implements open network measurement methodologies
+(performance, censorship, etc.) and targets mobile platforms (Android and iOS).
+
+It is meant to be embedeed by third party applications with specific network measurement
+needs and/or to be used by researchers as a basis to implement novel tools.
+
+Currently it implements the following high-level tests:
 
 - [OONI](https://ooni.torproject.org/)'s [DNS Injection](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-012-dns-injection.md) test
 
