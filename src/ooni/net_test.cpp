@@ -157,7 +157,7 @@ NetTest::teardown() {
 void
 NetTest::main(Settings,
               std::function<void(ReportEntry)>&& cb) {
-  delayed_call = std::make_shared<DelayedCall>(1.25, [=](void) {
+  delayed_call = DelayedCall(1.25, [=](void) {
     ReportEntry entry;
     cb(entry);
   });
@@ -166,7 +166,7 @@ NetTest::main(Settings,
 void
 NetTest::main(std::string, Settings,
               std::function<void(ReportEntry)>&& cb) {
-  delayed_call = std::make_shared<DelayedCall>(1.25, [=](void) {
+  delayed_call = DelayedCall(1.25, [=](void) {
     ReportEntry entry;
     cb(entry);
   });

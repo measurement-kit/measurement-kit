@@ -18,8 +18,8 @@
 namespace measurement_kit {
 namespace common {
 
-DelayedCall::DelayedCall(double t, std::function<void()> &&f,
-                         Libs *libs, event_base *evbase) {
+DelayedCallState::DelayedCallState(double t, std::function<void()> f,
+                                   Libs *libs, event_base *evbase) {
     timeval timeo;
 
     if (libs != nullptr) libs_ = libs;
@@ -42,12 +42,12 @@ DelayedCall::DelayedCall(double t, std::function<void()> &&f,
     std::swap(*func_, f);
 }
 
-void DelayedCall::dispatch(evutil_socket_t, short, void *opaque) {
+void DelayedCallState::dispatch(evutil_socket_t, short, void *opaque) {
     auto funcptr = static_cast<std::function<void()> *>(opaque);
     if (*funcptr) (*funcptr)();
 }
 
-DelayedCall::~DelayedCall(void) {
+DelayedCallState::~DelayedCallState(void) {
     delete (func_); /* delete handles nullptr */
     if (evp_) libs_->event_free(evp_);
 }

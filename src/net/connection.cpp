@@ -93,8 +93,7 @@ Connection::Connection(const char *family, const char *address,
                       this->handle_event, this);
 
     if (!measurement_kit::socket_valid(filenum))
-        this->start_connect =
-            std::make_shared<DelayedCall>(0.0, [this]() { this->resolve(); });
+        start_connect = DelayedCall(0.0, [this]() { this->resolve(); });
 }
 
 void Connection::connect_next() {
