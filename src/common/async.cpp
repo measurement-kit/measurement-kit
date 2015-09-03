@@ -114,10 +114,10 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
         })
 
         debug("async: loop thread unlocked");
+        state->changed = false;
         while (!state->changed) {
             loop_once();
         }
-        state->changed = false;
         debug("async: bottom of loop thread");
     }
     debug("async: exiting from thread");
