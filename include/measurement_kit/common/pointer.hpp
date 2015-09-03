@@ -11,60 +11,35 @@
 namespace measurement_kit {
 namespace common {
 
-/*!
- * \brief Improved std::shared_ptr<T> with null pointer checks.
- *
- * This template class is a drop-in replacemente for the standard library's
- * shared_ptr<>. It extends shared_ptr<>'s ->() and *() operators to check
- * whether the pointee is a nullptr. In such case, unlike shared_ptr<>, the
- * pointee is not accessed and a runtime exception is raised.
- *
- * Use this class as follows:
- *
- *     using namespace measurement_kit::common;
- *     ...
- *     SharedPointer<Foo> ptr;
- *     ...
- *     ptr = std::make_shared<Foo>(...);
- *
- * That is, declare ptr as SharedPointer<Foo> and the behave like ptr was
- * a shared_ptr<> variable instead.
- *
- * It is safe to assign the return value of std::make_shared<Foo> to
- * SharedPointer<Foo> because SharedPointer have exactly the same fields
- * as std::shared_pointer and because it inherits the copy and move
- * constructors from std::shared_pointer.
- */
-template<typename T> class SharedPointer : public std::shared_ptr<T> {
+/// Improved std::shared_ptr<T> with null pointer checks
+template <typename T> class SharedPointer : public std::shared_ptr<T> {
     using std::shared_ptr<T>::shared_ptr;
 
-public:
+  public:
+    T *get() const { return operator->(); } ///< Get the raw pointer
 
-    /*!
-     * \brief Access the pointee to get one of its fields.
-     * \returns A pointer to the pointee that allows one to access
-     *          the requested pointee field.
-     * \throws std::runtime_error if the pointee is nullptr.
-     */
+    /// Syntactic sugar to get the raw pointer
     T *operator->() const {
-        if (this->get() == nullptr) {
+        if (std::shared_ptr<T>::get() == nullptr) {
             throw std::runtime_error("null pointer");
         }
         return std::shared_ptr<T>::operator->();
     }
 
-    /*!
-     * \brief Get the value of the pointee.
-     * \returns The value of the pointee.
-     * \throws std::runtime_error if the pointee is nullptr.
-     */
+    /// Dereference the raw pointer
     typename std::add_lvalue_reference<T>::type operator*() const {
-        if (this->get() == nullptr) {
+        if (std::shared_ptr<T>::get() == nullptr) {
             throw std::runtime_error("null pointer");
         }
         return std::shared_ptr<T>::operator*();
     }
+
+  protected:
+  private:
+    // NO ATTRIBUTES HERE BY DESIGN. DO NOT ADD ATTRIBUTES HERE BECAUSE
+    // DOING THAT CREATES THE RISK OF OBJECT SLICING.
 };
 
-}}
+} // namespace common
+} // namespace measurement_kit
 #endif
