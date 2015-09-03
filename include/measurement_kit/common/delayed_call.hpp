@@ -25,12 +25,7 @@ class DelayedCallState : public NonCopyable, public NonMovable {
     ~DelayedCallState();
 
   private:
-    /*
-     * A previous implementation of this class required `func` to
-     * be a pointer. The current implementation does not. So we can
-     * rewrite the code to use an object rather than a pointer.
-     */
-    std::function<void()> *func_ = nullptr;
+    std::function<void()> func_;
     event *evp_ = nullptr;
     Libs *libs_ = Libs::global();
 
