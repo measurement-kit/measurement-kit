@@ -215,7 +215,7 @@ bool Connection::resolve_internal(char type) {
     }
 
     try {
-        dns_request = dns::Request(query, address,
+        dns_request = dns::Query(query, address,
                                    [this, type](dns::Response &&resp) {
             handle_resolve(resp.get_evdns_status(), type, resp.get_results());
         });

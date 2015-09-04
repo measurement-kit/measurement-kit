@@ -23,10 +23,8 @@ namespace dns {
 using namespace measurement_kit::common;
 
 Response::Response(int code_, char type, int count, int ttl_, double started,
-                   void *addresses, Logger *logger,
-                   Libs *libs, int start_from)
-    : code(code_), ttl(ttl_)
-{
+                   void *addresses, Logger *logger, Libs *libs, int start_from)
+    : code(code_), ttl(ttl_) {
     assert(start_from >= 0);
 
     if (libs == NULL) {
@@ -57,13 +55,13 @@ Response::Response(int code_, char type, int count, int ttl_, double started,
     } else if (type == DNS_PTR) {
         logger->info("dns - PTR");
         // Note: cast magic copied from libevent regress tests
-        results.push_back(std::string(*(char **) addresses));
+        results.push_back(std::string(*(char **)addresses));
 
     } else if (type == DNS_IPv4_A || type == DNS_IPv6_AAAA) {
 
         int family;
         int size;
-        char string[128];  // Is wide enough (max. IPv6 length is 45 chars)
+        char string[128]; // Is wide enough (max. IPv6 length is 45 chars)
 
         if (type == DNS_IPv4_A) {
             family = PF_INET;
@@ -85,7 +83,7 @@ Response::Response(int code_, char type, int count, int ttl_, double started,
             for (auto i = start_from; i < count; ++i) {
                 // Note: address already in network byte order
                 if (libs->inet_ntop(family, (char *)addresses + i * size,
-                            string, sizeof (string)) == NULL) {
+                                    string, sizeof(string)) == NULL) {
                     logger->warn("dns - unexpected inet_ntop failure");
                     code = DNS_ERR_UNKNOWN;
                     break;
@@ -105,9 +103,7 @@ Response::Response(int code_, char type, int count, int ttl_, double started,
     }
 }
 
-std::string
-Response::map_failure_(int code)
-{
+std::string Response::map_failure_(int code) {
     std::string s;
 
     //
@@ -145,9 +141,9 @@ Response::map_failure_(int code)
         // for policy reasons
         s += "dns_lookup_error";
 
-    //
-    // The following are evdns specific errors
-    //
+        //
+        // The following are evdns specific errors
+        //
 
     } else if (code == DNS_ERR_TRUNCATED) {
         // The reply was truncated or ill-formatted
@@ -187,4 +183,5 @@ Response::map_failure_(int code)
     return s;
 }
 
-}}
+} // namespace dns
+} // namespace measurement_kit

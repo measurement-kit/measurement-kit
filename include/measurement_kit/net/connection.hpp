@@ -38,7 +38,7 @@ using namespace measurement_kit::dns;
 class Connection : public Dumb {
   private:
     Bufferevent bev;
-    dns::Request dns_request;
+    dns::Query dns_request;
     unsigned int connecting = 0;
     std::string address;
     std::string port;

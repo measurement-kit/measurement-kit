@@ -18,15 +18,16 @@
 struct evdns_base;
 
 namespace measurement_kit {
-namespace common { class Logger; }
+namespace common {
+class Logger;
+}
 namespace dns {
 
 using namespace measurement_kit::common;
 
-Request::Request(std::string query, std::string address,
-                 std::function<void(Response&&)>&& func,
-                 Logger *lp, evdns_base *dnsb, Libs *libs)
-{
+Query::Query(std::string query, std::string address,
+             std::function<void(Response &&)> &&func, Logger *lp,
+             evdns_base *dnsb, Libs *libs) {
     if (dnsb == nullptr) {
         dnsb = measurement_kit::get_global_evdns_base();
     }
@@ -35,16 +36,15 @@ Request::Request(std::string query, std::string address,
     }
     cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
-    RequestImpl::issue(query, address, std::move(func),
-                       lp, dnsb, libs, cancelled);
+    QueryImpl::issue(query, address, std::move(func), lp, dnsb, libs,
+                     cancelled);
 }
 
-void
-Request::cancel(void)
-{
-    if (cancelled) {  // May not be set when we used the default constructor
+void Query::cancel(void) {
+    if (cancelled) { // May not be set when we used the default constructor
         *cancelled = true;
     }
 }
 
-}}
+} // namespace dns
+} // namespace measurement_kit

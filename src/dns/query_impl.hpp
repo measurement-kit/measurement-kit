@@ -32,13 +32,13 @@ namespace dns {
 using namespace measurement_kit::common;
 
 /*!
- * \brief Implementation of Request.
+ * \brief Implementation of Query.
  *
- * This is the internal object thanks to which Request is movable. Of
- * course, RequestImpl is not movable, since its address is passed to
+ * This is the internal object thanks to which Query is movable. Of
+ * course, QueryImpl is not movable, since its address is passed to
  * one of the many evnds delayed requests functions.
  */
-class RequestImpl {
+class QueryImpl {
 
     //
     // Note: evdns_base_resolve_xxx() return a evdns_request
@@ -57,32 +57,32 @@ class RequestImpl {
     // variable to keep track of cancelled requests.
     //
 
-    std::function<void(Response&&)> callback;
-    double ticks = 0.0;  // just to initialize to something
-    Libs *libs;  // should not be nullptr (this is asserted below)
+    std::function<void(Response &&)> callback;
+    double ticks = 0.0; // just to initialize to something
+    Libs *libs;         // should not be nullptr (this is asserted below)
     SharedPointer<bool> cancelled;
     Logger *logger = Logger::global();
 
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
 
-        auto impl = static_cast<RequestImpl *>(opaque);
+        auto impl = static_cast<QueryImpl *>(opaque);
 
         // Tell the libevent layer we received a DNS response
         if (impl->libs->evdns_reply_hook) {
-            impl->libs->evdns_reply_hook(code, type, count, ttl,
-                                             addresses, opaque);
+            impl->libs->evdns_reply_hook(code, type, count, ttl, addresses,
+                                         opaque);
         }
 
         // Note: the case of `impl->cancelled` is the case in which this
-        // impl is owned by a Request object that exited from the scope
+        // impl is owned by a Query object that exited from the scope
         if (*impl->cancelled) {
             delete impl;
             return;
         }
 
-        impl->callback(Response(code, type, count,
-            ttl, impl->ticks, addresses, impl->logger));
+        impl->callback(Response(code, type, count, ttl, impl->ticks, addresses,
+                                impl->logger));
 
         delete impl;
     }
@@ -102,16 +102,15 @@ class RequestImpl {
     }
 
     // Declared explicitly as private so one cannot delete this object
-    ~RequestImpl() {
+    ~QueryImpl() {
         // Nothing to see here, move along :)
     }
 
     // Private to enforce usage through issue()
-    RequestImpl(std::string query, std::string address,
-                std::function<void(Response&&)>&& f,
-                Logger *lp, evdns_base *base,
-                Libs *lev, SharedPointer<bool> cancd)
-            : callback(f), libs(lev), cancelled(cancd), logger(lp) {
+    QueryImpl(std::string query, std::string address,
+              std::function<void(Response &&)> &&f, Logger *lp,
+              evdns_base *base, Libs *lev, SharedPointer<bool> cancd)
+        : callback(f), libs(lev), cancelled(cancd), logger(lp) {
 
         assert(base != nullptr && lev != nullptr);
 
@@ -120,26 +119,29 @@ class RequestImpl {
         // of the evdns_base_resolve_xxx() functions below
         //
         if (query == "A") {
-            if (libs->evdns_base_resolve_ipv4(base, address.c_str(),
-                DNS_QUERY_NO_SEARCH, handle_resolve, this) == nullptr) {
+            if (libs->evdns_base_resolve_ipv4(
+                    base, address.c_str(), DNS_QUERY_NO_SEARCH, handle_resolve,
+                    this) == nullptr) {
                 throw std::runtime_error("Resolver error");
             }
         } else if (query == "AAAA") {
-            if (libs->evdns_base_resolve_ipv6(base, address.c_str(),
-                DNS_QUERY_NO_SEARCH, handle_resolve, this) == nullptr) {
+            if (libs->evdns_base_resolve_ipv6(
+                    base, address.c_str(), DNS_QUERY_NO_SEARCH, handle_resolve,
+                    this) == nullptr) {
                 throw std::runtime_error("Resolver error");
             }
         } else if (query == "REVERSE_A") {
             in_addr na;
-            if (libs->evdns_base_resolve_reverse(base, ipv4_pton(address,
-                &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == nullptr) {
+            if (libs->evdns_base_resolve_reverse(
+                    base, ipv4_pton(address, &na), DNS_QUERY_NO_SEARCH,
+                    handle_resolve, this) == nullptr) {
                 throw std::runtime_error("Resolver error");
             }
         } else if (query == "REVERSE_AAAA") {
             in6_addr na;
-            if (libs->evdns_base_resolve_reverse_ipv6(base, ipv6_pton(
-                address, &na), DNS_QUERY_NO_SEARCH, handle_resolve, this)
-                == nullptr) {
+            if (libs->evdns_base_resolve_reverse_ipv6(
+                    base, ipv6_pton(address, &na), DNS_QUERY_NO_SEARCH,
+                    handle_resolve, this) == nullptr) {
                 throw std::runtime_error("Resolver error");
             }
         } else {
@@ -149,16 +151,15 @@ class RequestImpl {
         ticks = measurement_kit::time_now();
     }
 
-public:
+  public:
     static void issue(std::string query, std::string address,
-                      std::function<void(Response&&)>&& func,
-                      Logger *logger, evdns_base *base,
-                      Libs *lev, SharedPointer<bool> cancd) {
-        new RequestImpl(query, address, std::move(func), logger, base,
-                        lev, cancd);
+                      std::function<void(Response &&)> &&func, Logger *logger,
+                      evdns_base *base, Libs *lev, SharedPointer<bool> cancd) {
+        new QueryImpl(query, address, std::move(func), logger, base, lev,
+                      cancd);
     }
 };
 
-}}
-
+} // namespace dns
+} // namespace measurement_kit
 #endif

@@ -39,8 +39,7 @@ TEST_CASE("The default Response() constructor sets sensible values") {
 // Not urgent because this is implicitly tested by other tests.
 //
 
-TEST_CASE(
-  "Response(...) only computes RTT when the server actually replied") {
+TEST_CASE("Response(...) only computes RTT when the server actually replied") {
     auto ticks = measurement_kit::time_now() - 3.0;
 
     for (auto code = 0; code < 128; ++code) {
@@ -95,7 +94,7 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
         if (s == NULL || l <= 0) {
             throw std::runtime_error("You passed me a bad buffer");
         }
-        s[0] = '\0';  // Because it will be converted to std::string
+        s[0] = '\0'; // Because it will be converted to std::string
         return s;
     };
 
@@ -138,11 +137,9 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
         auto last_good = INT_MAX / 4 + 1;
         for (auto x = last_good - 5; x <= last_good + 5; x += 1) {
             auto r = Response(DNS_ERR_NONE, DNS_IPv4_A,
-                x,                            // value of count
-                123, 0.11, NULL,
-                Logger::global(),
-                &libs,
-                last_good - 10);              // value of start_from
+                              x, // value of count
+                              123, 0.11, NULL, Logger::global(), &libs,
+                              last_good - 10); // value of start_from
             if (x <= last_good) {
                 REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
                 REQUIRE(r.get_results().size() > 0);
@@ -163,11 +160,9 @@ TEST_CASE("Response(...) constructor is robust against overflow") {
         auto last_good = INT_MAX / 16 + 1;
         for (auto x = last_good - 5; x <= last_good + 5; x += 1) {
             auto r = Response(DNS_ERR_NONE, DNS_IPv6_AAAA,
-                x,                            // value of count
-                123, 0.11, NULL,
-                Logger::global(),
-                &libs,
-                last_good - 10);              // value of start_from
+                              x, // value of count
+                              123, 0.11, NULL, Logger::global(), &libs,
+                              last_good - 10); // value of start_from
             if (x <= last_good) {
                 REQUIRE(r.get_evdns_status() == DNS_ERR_NONE);
                 REQUIRE(r.get_results().size() > 0);
@@ -191,8 +186,8 @@ TEST_CASE("Response(...) deals with unlikely inet_ntop failures") {
     auto called = false;
 
     libs.inet_ntop = [&](int, const void *, char *, socklen_t) {
-        called = true;  // Make sure this function was called
-        return (const char *) NULL;
+        called = true; // Make sure this function was called
+        return (const char *)NULL;
     };
 
     auto r = Response(DNS_ERR_NONE, DNS_IPv6_AAAA, 16, 123, 0.11, NULL,
@@ -209,7 +204,7 @@ TEST_CASE("If the response type is invalid Response sets an error") {
         case DNS_IPv4_A:
         case DNS_IPv6_AAAA:
         case DNS_PTR:
-            continue;  // Skip the known-good cases
+            continue; // Skip the known-good cases
         }
         auto r = Response(DNS_ERR_NONE, type, 0, 123, 0.0, NULL);
         REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
@@ -218,72 +213,41 @@ TEST_CASE("If the response type is invalid Response sets an error") {
 
 TEST_CASE("Evdns errors are correctly mapped to OONI failures") {
 
-    REQUIRE(Response::map_failure_(DNS_ERR_NONE)
-            == "");
-    REQUIRE(Response::map_failure_(DNS_ERR_FORMAT)
-            == "dns_lookup_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_SERVERFAILED)
-            == "dns_lookup_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_NOTEXIST)
-            == "dns_lookup_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_NOTIMPL)
-            == "dns_lookup_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_REFUSED)
-            == "dns_lookup_error");
+    REQUIRE(Response::map_failure_(DNS_ERR_NONE) == "");
+    REQUIRE(Response::map_failure_(DNS_ERR_FORMAT) == "dns_lookup_error");
+    REQUIRE(Response::map_failure_(DNS_ERR_SERVERFAILED) == "dns_lookup_error");
+    REQUIRE(Response::map_failure_(DNS_ERR_NOTEXIST) == "dns_lookup_error");
+    REQUIRE(Response::map_failure_(DNS_ERR_NOTIMPL) == "dns_lookup_error");
+    REQUIRE(Response::map_failure_(DNS_ERR_REFUSED) == "dns_lookup_error");
 
-    REQUIRE(Response::map_failure_(DNS_ERR_TRUNCATED)
-            == "dns_lookup_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_UNKNOWN)
-            == "unknown failure 66");
-    REQUIRE(Response::map_failure_(DNS_ERR_TIMEOUT)
-            == "deferred_timeout_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_SHUTDOWN)
-            == "unknown failure 68");
-    REQUIRE(Response::map_failure_(DNS_ERR_CANCEL)
-            == "unknown failure 69");
-    REQUIRE(Response::map_failure_(DNS_ERR_NODATA)
-            == "dns_lookup_error");
+    REQUIRE(Response::map_failure_(DNS_ERR_TRUNCATED) == "dns_lookup_error");
+    REQUIRE(Response::map_failure_(DNS_ERR_UNKNOWN) == "unknown failure 66");
+    REQUIRE(Response::map_failure_(DNS_ERR_TIMEOUT) ==
+            "deferred_timeout_error");
+    REQUIRE(Response::map_failure_(DNS_ERR_SHUTDOWN) == "unknown failure 68");
+    REQUIRE(Response::map_failure_(DNS_ERR_CANCEL) == "unknown failure 69");
+    REQUIRE(Response::map_failure_(DNS_ERR_NODATA) == "dns_lookup_error");
 
     // Just three random numbers to increase confidence...
-    REQUIRE(Response::map_failure_(1024)
-            == "unknown failure 1024");
-    REQUIRE(Response::map_failure_(1025)
-            == "unknown failure 1025");
-    REQUIRE(Response::map_failure_(1026)
-            == "unknown failure 1026");
+    REQUIRE(Response::map_failure_(1024) == "unknown failure 1024");
+    REQUIRE(Response::map_failure_(1025) == "unknown failure 1025");
+    REQUIRE(Response::map_failure_(1026) == "unknown failure 1026");
 }
 
 struct TransparentResponse : public Response {
     using Response::Response;
 
-    int get_code_() {
-        return code;
-    }
-    void set_code_(int v) {
-        code = v;
-    }
+    int get_code_() { return code; }
+    void set_code_(int v) { code = v; }
 
-    double get_rtt_() {
-        return rtt;
-    }
-    void set_rtt_(double v) {
-        rtt = v;
-    }
+    double get_rtt_() { return rtt; }
+    void set_rtt_(double v) { rtt = v; }
 
-    int get_ttl_() {
-        return ttl;
-    }
-    void set_ttl_(int v) {
-        ttl = v;
-    }
+    int get_ttl_() { return ttl; }
+    void set_ttl_(int v) { ttl = v; }
 
-    std::vector<std::string> get_results_() {
-        return results;
-    }
-    void set_results_(std::vector<std::string> v) {
-        results = v;
-    }
-
+    std::vector<std::string> get_results_() { return results; }
+    void set_results_(std::vector<std::string> v) { results = v; }
 };
 
 TEST_CASE("Move semantic works for response") {
@@ -308,7 +272,7 @@ TEST_CASE("Move semantic works for response") {
         r2.set_ttl_(32764);
         r2.set_results_(vector);
 
-        r1 = std::move(r2);  /* Move assignment */
+        r1 = std::move(r2); /* Move assignment */
 
         REQUIRE(r1.get_code_() == DNS_ERR_NONE);
         REQUIRE(r1.get_rtt_() == 1.0);
@@ -321,10 +285,10 @@ TEST_CASE("Move semantic works for response") {
         // Note: move semantic is *copy* for integers and the like, which
         // explains why everything but results is copied below.
         //
-        REQUIRE(r2.get_code_() == DNS_ERR_NONE);  // copied
-        REQUIRE(r2.get_rtt_() == 1.0);            // copied
-        REQUIRE(r2.get_ttl_() == 32764);          // copied
-        REQUIRE(r2.get_results_().size() == 0);   // move
+        REQUIRE(r2.get_code_() == DNS_ERR_NONE); // copied
+        REQUIRE(r2.get_rtt_() == 1.0);           // copied
+        REQUIRE(r2.get_ttl_() == 32764);         // copied
+        REQUIRE(r2.get_results_().size() == 0);  // move
     }
 
     SECTION("Move constructor") {
@@ -343,16 +307,15 @@ TEST_CASE("Move semantic works for response") {
             REQUIRE(r1.get_results_()[0] == "antani");
             REQUIRE(r1.get_results_()[1] == "blinda");
 
-        }(std::move(r2));  /* Move constructor */
+        }(std::move(r2)); /* Move constructor */
 
         //
         // Note: move semantic is *copy* for integers and the like, which
         // explains why everything but results is copied below.
         //
-        REQUIRE(r2.get_code_() == DNS_ERR_NONE);  // copied
-        REQUIRE(r2.get_rtt_() == 1.0);            // copied
-        REQUIRE(r2.get_ttl_() == 32764);          // copied
-        REQUIRE(r2.get_results_().size() == 0);   // moved
+        REQUIRE(r2.get_code_() == DNS_ERR_NONE); // copied
+        REQUIRE(r2.get_rtt_() == 1.0);           // copied
+        REQUIRE(r2.get_ttl_() == 32764);         // copied
+        REQUIRE(r2.get_results_().size() == 0);  // moved
     }
-
 }

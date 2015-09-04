@@ -16,116 +16,95 @@ using namespace measurement_kit::common;
 using namespace measurement_kit::dns;
 
 //
-// TODO: make sure that Request() correctly handle `dnsb` and `libs`.
+// TODO: make sure that Query() correctly handle `dnsb` and `libs`.
 //
 // Not urgent because already guaranteed by other tests.
 //
 
-// Now testing RequestImpl()
+// Now testing QueryImpl()
 
-TEST_CASE("Request deals with failing evdns_base_resolve_ipv4") {
+TEST_CASE("Query deals with failing evdns_base_resolve_ipv4") {
     Libs libs;
 
     libs.evdns_base_resolve_ipv4 = [](evdns_base *, const char *, int,
-                                          evdns_callback_type, void *) {
-        return (evdns_request *) NULL;
-    };
+                                      evdns_callback_type,
+                                      void *) { return (evdns_request *)NULL; };
 
-    REQUIRE_THROWS(Request("A", "www.google.com", [](
-                                    Response&&) {
+    REQUIRE_THROWS(Query("A", "www.google.com", [](Response &&) {
         /* nothing */
     }, Logger::global(), NULL, &libs));
 }
 
-TEST_CASE("Request deals with failing evdns_base_resolve_ipv6") {
+TEST_CASE("Query deals with failing evdns_base_resolve_ipv6") {
     Libs libs;
 
     libs.evdns_base_resolve_ipv6 = [](evdns_base *, const char *, int,
-                                          evdns_callback_type, void *) {
-        return (evdns_request *) NULL;
-    };
+                                      evdns_callback_type,
+                                      void *) { return (evdns_request *)NULL; };
 
-    REQUIRE_THROWS(Request("AAAA", "github.com", [](
-                                    Response&&) {
+    REQUIRE_THROWS(Query("AAAA", "github.com", [](Response &&) {
         /* nothing */
     }, Logger::global(), NULL, &libs));
 }
 
-TEST_CASE("Request deals with failing evdns_base_resolve_reverse") {
+TEST_CASE("Query deals with failing evdns_base_resolve_reverse") {
     Libs libs;
 
-    libs.evdns_base_resolve_reverse = [](evdns_base *,
-                                             const struct in_addr *,
-                                             int,
-                                             evdns_callback_type,
-                                             void *) {
-        return (evdns_request *) NULL;
+    libs.evdns_base_resolve_reverse = [](evdns_base *, const struct in_addr *,
+                                         int, evdns_callback_type, void *) {
+        return (evdns_request *)NULL;
     };
 
-    REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
-                                    Response&&) {
+    REQUIRE_THROWS(Query("REVERSE_A", "8.8.8.8", [](Response &&) {
         /* nothing */
     }, Logger::global(), NULL, &libs));
 }
 
-TEST_CASE("Request deals with failing evdns_base_resolve_reverse_ipv6") {
+TEST_CASE("Query deals with failing evdns_base_resolve_reverse_ipv6") {
     Libs libs;
 
-    libs.evdns_base_resolve_reverse_ipv6 = [](evdns_base *,
-                                                  const struct in6_addr *,
-                                                  int,
-                                                  evdns_callback_type,
-                                                  void *) {
-        return (evdns_request *) NULL;
-    };
+    libs.evdns_base_resolve_reverse_ipv6 = [](
+        evdns_base *, const struct in6_addr *, int, evdns_callback_type,
+        void *) { return (evdns_request *)NULL; };
 
-    REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
-                                    Response&&) {
+    REQUIRE_THROWS(Query("REVERSE_AAAA", "::1", [](Response &&) {
         /* nothing */
     }, Logger::global(), NULL, &libs));
 }
 
-TEST_CASE("Request deals with inet_pton returning 0") {
+TEST_CASE("Query deals with inet_pton returning 0") {
     Libs libs;
 
-    libs.inet_pton = [](int, const char *, void *) {
-        return 0;
-    };
+    libs.inet_pton = [](int, const char *, void *) { return 0; };
 
-    REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
-                                    Response&&) {
+    REQUIRE_THROWS(Query("REVERSE_A", "8.8.8.8", [](Response &&) {
         /* nothing */
     }, Logger::global(), NULL, &libs));
 
-    REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
-                                    Response&&) {
+    REQUIRE_THROWS(Query("REVERSE_AAAA", "::1", [](Response &&) {
         /* nothing */
     }, Logger::global(), NULL, &libs));
 }
 
-TEST_CASE("Request deals with inet_pton returning -1") {
+TEST_CASE("Query deals with inet_pton returning -1") {
     Libs libs;
 
-    libs.inet_pton = [](int, const char *, void *) {
-        return -1;
-    };
+    libs.inet_pton = [](int, const char *, void *) { return -1; };
 
-    REQUIRE_THROWS(Request("REVERSE_A", "8.8.8.8", [](
-                                    Response&&) {
+    REQUIRE_THROWS(Query("REVERSE_A", "8.8.8.8", [](Response &&) {
         /* nothing */
     }, Logger::global(), NULL, &libs));
 
-    REQUIRE_THROWS(Request("REVERSE_AAAA", "::1", [](
-                                    Response&&) {
+    REQUIRE_THROWS(Query("REVERSE_AAAA", "::1", [](Response &&) {
         /* nothing */
     }, Logger::global(), NULL, &libs));
 }
 
-TEST_CASE("Request raises if the query is unsupported") {
-    REQUIRE_THROWS(Request("PTR", "www.neubot.org",
-                   [&](Response&& /*response*/) {
-        // nothing
-    }));
+TEST_CASE("Query raises if the query is unsupported") {
+    REQUIRE_THROWS(
+        Query("PTR", "www.neubot.org", [&](Response && /*response*/) {
+            // nothing
+        }));
 }
 
 //
@@ -135,7 +114,7 @@ TEST_CASE("Request raises if the query is unsupported") {
 // has already returned a value.
 //
 
-TEST_CASE("Request::cancel() is idempotent") {
+TEST_CASE("Query::cancel() is idempotent") {
 
     //
     // Here we only want to see that multiple cancel()s followed
@@ -145,8 +124,7 @@ TEST_CASE("Request::cancel() is idempotent") {
     // we check that we can get rid of a pending request.
     //
 
-    auto r1 = Request("A", "www.neubot.org", [&](
-                               Response&& /*response*/) {
+    auto r1 = Query("A", "www.neubot.org", [&](Response && /*response*/) {
         // nothing
     });
 
@@ -155,12 +133,12 @@ TEST_CASE("Request::cancel() is idempotent") {
     r1.cancel();
 }
 
-TEST_CASE("Request::cancel() is safe when a request is pending") {
+TEST_CASE("Query::cancel() is safe when a request is pending") {
 
     //
     // Note: this test can be run both when the network is down and when
-    // the network is up. In both cases, the external Request is deleted
-    // before any event happens, and the RequestImpl waits for some
+    // the network is up. In both cases, the external Query is deleted
+    // before any event happens, and the QueryImpl waits for some
     // event to happen. When the network is down, the event is the timeout
     // of evdns; when the network is up, the event is the DNS reply.
     //
@@ -176,7 +154,7 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
         }
         //
         // We need to unblock the loop here, because this test deletes
-        // the Request immediately, so we don't have a callback where
+        // the Query immediately, so we don't have a callback where
         // to report that we are done and we need to break the loop.
         //
         measurement_kit::break_loop();
@@ -184,10 +162,9 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
 
     auto failed = false;
     {
-        auto r1 = Request("A", "www.neubot.org", [&](
-                                   Response&& /*response*/) {
+        auto r1 = Query("A", "www.neubot.org", [&](Response && /*response*/) {
             //
-            // This callback should not be invoked, because RequestImpl
+            // This callback should not be invoked, because QueryImpl
             // should honor its `cancelled` field and therefore should delete
             // itself rather than calling the callback.
             //
@@ -195,7 +172,7 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
             measurement_kit::break_loop();
         }, Logger::global(), NULL, &libs);
 
-    }  // This kills Request, but not the underlying RequestImpl
+    } // This kills Query, but not the underlying QueryImpl
 
     measurement_kit::loop();
     REQUIRE(!failed);
@@ -209,29 +186,26 @@ TEST_CASE("Request::cancel() is safe when a request is pending") {
 // Not urgent, because it's tested by lots of other tests.
 //
 
-struct TransparentRequest : public Request {
-    using Request::Request;
+struct TransparentQuery : public Query {
+    using Query::Query;
 
-    SharedPointer<bool> get_cancelled_() {
-        return cancelled;
-    }
+    SharedPointer<bool> get_cancelled_() { return cancelled; }
 };
 
 TEST_CASE("Move semantic works for request") {
 
     SECTION("Move assignment") {
 
-        TransparentRequest r1;
+        TransparentQuery r1;
 
         REQUIRE_THROWS(*r1.get_cancelled_());
 
-        TransparentRequest r2{"A", "www.neubot.org",
-                [](Response&&) {
-            /* nothing */
-        }};
+        TransparentQuery r2{"A", "www.neubot.org", [](Response &&) {
+                                /* nothing */
+                            }};
         REQUIRE(*r2.get_cancelled_() == false);
 
-        r1 = std::move(r2);  /* Move assignment */
+        r1 = std::move(r2); /* Move assignment */
 
         REQUIRE(*r1.get_cancelled_() == false);
 
@@ -239,24 +213,22 @@ TEST_CASE("Move semantic works for request") {
     }
 
     SECTION("Move constructor") {
-        TransparentRequest r2{"A", "www.neubot.org",
-                [](Response&&) {
-            /* nothing */
-        }};
+        TransparentQuery r2{"A", "www.neubot.org", [](Response &&) {
+                                /* nothing */
+                            }};
         REQUIRE(*r2.get_cancelled_() == false);
 
-        [](TransparentRequest r1) {
+        [](TransparentQuery r1) {
             REQUIRE(*r1.get_cancelled_() == false);
 
-        }(std::move(r2));  /* Move constructor */
+        }(std::move(r2)); /* Move constructor */
 
         REQUIRE_THROWS(*r2.get_cancelled_());
     }
-
 }
 
 //
-// Integration (or regress?) tests for Request.
+// Integration (or regress?) tests for Query.
 //
 // They generally need connectivity and are automatically skipped if
 // we are not connected to the 'Net.
@@ -280,8 +252,7 @@ TEST_CASE("The system resolver works as expected") {
         measurement_kit::break_loop();
     });
 
-    auto r1 = Request("A", "www.neubot.org", [&](
-                               Response&& response) {
+    auto r1 = Query("A", "www.neubot.org", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -293,8 +264,7 @@ TEST_CASE("The system resolver works as expected") {
     });
     measurement_kit::loop();
 
-    auto r2 = Request("REVERSE_A", "130.192.16.172", [&](
-                               Response&& response) {
+    auto r2 = Query("REVERSE_A", "130.192.16.172", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -306,8 +276,7 @@ TEST_CASE("The system resolver works as expected") {
     });
     measurement_kit::loop();
 
-    auto r3 = Request("AAAA", "ooni.torproject.org", [&](
-                               Response&& response) {
+    auto r3 = Query("AAAA", "ooni.torproject.org", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -325,29 +294,31 @@ TEST_CASE("The system resolver works as expected") {
     });
     measurement_kit::loop();
 
-    auto r4 = Request("REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
-                               [&](Response&& response) {
-        REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_failure() == "");
-        REQUIRE(response.get_results().size() == 1);
-        REQUIRE(response.get_results()[0] == "listera.torproject.org");
-        REQUIRE(response.get_rtt() > 0.0);
-        REQUIRE(response.get_ttl() > 0);
-        measurement_kit::break_loop();
-    });
+    auto r4 = Query(
+        "REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
+        [&](Response &&response) {
+            REQUIRE(response.get_reply_authoritative() == "unknown");
+            REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+            REQUIRE(response.get_failure() == "");
+            REQUIRE(response.get_results().size() == 1);
+            REQUIRE(response.get_results()[0] == "listera.torproject.org");
+            REQUIRE(response.get_rtt() > 0.0);
+            REQUIRE(response.get_ttl() > 0);
+            measurement_kit::break_loop();
+        });
     measurement_kit::loop();
 
     REQUIRE(!failed);
 }
 
-class SafeToDeleteRequestInItsOwnCallback {
-    Request request;
-public:
-    SafeToDeleteRequestInItsOwnCallback() {
-        request = Request("A", "nexa.polito.it", [this](Response&&) {
+class SafeToDeleteQueryInItsOwnCallback {
+    Query request;
+
+  public:
+    SafeToDeleteQueryInItsOwnCallback() {
+        request = Query("A", "nexa.polito.it", [this](Response &&) {
             // This assignment should trigger the original request's destructor
-            request = Request("AAAA", "nexa.polito.it", [this](Response&&) {
+            request = Query("AAAA", "nexa.polito.it", [this](Response &&) {
                 measurement_kit::break_loop();
             });
         });
@@ -358,7 +329,7 @@ TEST_CASE("It is safe to clear a request in its own callback") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    auto d = SafeToDeleteRequestInItsOwnCallback();
+    auto d = SafeToDeleteQueryInItsOwnCallback();
     auto called = 0;
     DelayedCall watchdog(5.0, [&called]() {
         ++called;
