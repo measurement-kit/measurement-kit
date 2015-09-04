@@ -21,9 +21,9 @@ using namespace measurement_kit::common;
  * \brief DNS response.
  *
  * You should not construct this class directly. Instead, this is the
- * object that Request's callback provides you.
+ * object that Query's callback provides you.
  *
- * \see Request for example usage.
+ * \see Query for example usage.
  */
 class Response {
 

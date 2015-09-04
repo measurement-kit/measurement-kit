@@ -33,7 +33,7 @@ using namespace measurement_kit::common;
  * In other words, to use the default DNS resolver, one does not need
  * to create an instance of this object.
  *
- * Once a custom resolver is created, one can use it to issue DNS requests.
+ * Once a custom resolver is created, one can use it to issue DNS query.
  *
  * For example:
  *
@@ -46,12 +46,12 @@ using namespace measurement_kit::common;
  *         {"randomize_case", "1"},
  *     });
  *
- *     reso.request("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
+ *     reso.query("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
  *             [](dns::Response&& response) {
  *         // Process the response
  *     });
  *
- * The request created this way is bound to the resolver object and is
+ * The query created this way is bound to the resolver object and is
  * destroyed when the resolver is destroyed (in particular, the callback
  * will be invoked with evdns code equal to DNS_ERR_SHUTDOWN).
  */
@@ -81,7 +81,7 @@ public:
      *        are accepted:
      *
      *            "nameserver": IP address of nameserver
-     *            "attempts": number of request attempts on error
+     *            "attempts": number of query attempts on error
      *            "timeout": timeout in seconds (as a float)
      *            "randomize_case": randomize query's case (0x20 hack)
      *
@@ -112,11 +112,11 @@ public:
     evdns_base *get_evdns_base(void);
 
     /*!
-     * \brief Issue a Request using this resolver.
-     * \see Request::Request().
+     * \brief Issue a Query using this resolver.
+     * \see Query::Query().
      */
-    void request(std::string query, std::string address,
-                 std::function<void(Response&&)>&& func);
+    void query(std::string query, std::string address,
+               std::function<void(Response&&)>&& func);
 
     /*!
      * \brief Default destructor.

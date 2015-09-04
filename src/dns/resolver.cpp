@@ -47,7 +47,7 @@ Resolver::cleanup(void)
         //
         // We need to call evdns_base_free() like this because
         // this guarantees that request's callback is always invoked
-        // so RequestImpl:s are always freed (see request()).
+        // so QueryImpl:s are always freed (see request()).
         //
         libs->evdns_base_free(base, 1);
         base = nullptr;  // Idempotent
@@ -108,11 +108,11 @@ Resolver::get_evdns_base(void)
 }
 
 void
-Resolver::request(std::string query, std::string address,
+Resolver::query(std::string query, std::string address,
         std::function<void(Response&&)>&& func)
 {
     //
-    // Note: RequestImpl implements the autodelete behavior, meaning that
+    // Note: QueryImpl implements the autodelete behavior, meaning that
     // it shall delete itself once its callback is called. The callback
     // should always be called, either because of a successful response,
     // or because of an error, or because the resolver is destroyed (this
@@ -120,7 +120,7 @@ Resolver::request(std::string query, std::string address,
     //
     auto cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
-    RequestImpl::issue(query, address, std::move(func), logger,
+    QueryImpl::issue(query, address, std::move(func), logger,
                        get_evdns_base(), libs, cancelled);
 }
 

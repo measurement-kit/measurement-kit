@@ -32,13 +32,13 @@ namespace dns {
 using namespace measurement_kit::common;
 
 /*!
- * \brief Implementation of Request.
+ * \brief Implementation of Query.
  *
- * This is the internal object thanks to which Request is movable. Of
- * course, RequestImpl is not movable, since its address is passed to
+ * This is the internal object thanks to which Query is movable. Of
+ * course, QueryImpl is not movable, since its address is passed to
  * one of the many evnds delayed requests functions.
  */
-class RequestImpl {
+class QueryImpl {
 
     //
     // Note: evdns_base_resolve_xxx() return a evdns_request
@@ -66,7 +66,7 @@ class RequestImpl {
     static void handle_resolve(int code, char type, int count, int ttl,
                                void *addresses, void *opaque) {
 
-        auto impl = static_cast<RequestImpl *>(opaque);
+        auto impl = static_cast<QueryImpl *>(opaque);
 
         // Tell the libevent layer we received a DNS response
         if (impl->libs->evdns_reply_hook) {
@@ -75,7 +75,7 @@ class RequestImpl {
         }
 
         // Note: the case of `impl->cancelled` is the case in which this
-        // impl is owned by a Request object that exited from the scope
+        // impl is owned by a Query object that exited from the scope
         if (*impl->cancelled) {
             delete impl;
             return;
@@ -102,12 +102,12 @@ class RequestImpl {
     }
 
     // Declared explicitly as private so one cannot delete this object
-    ~RequestImpl() {
+    ~QueryImpl() {
         // Nothing to see here, move along :)
     }
 
     // Private to enforce usage through issue()
-    RequestImpl(std::string query, std::string address,
+    QueryImpl(std::string query, std::string address,
                 std::function<void(Response&&)>&& f,
                 Logger *lp, evdns_base *base,
                 Libs *lev, SharedPointer<bool> cancd)
@@ -154,7 +154,7 @@ public:
                       std::function<void(Response&&)>&& func,
                       Logger *logger, evdns_base *base,
                       Libs *lev, SharedPointer<bool> cancd) {
-        new RequestImpl(query, address, std::move(func), logger, base,
+        new QueryImpl(query, address, std::move(func), logger, base,
                         lev, cancd);
     }
 };

@@ -23,7 +23,7 @@ namespace dns {
 
 using namespace measurement_kit::common;
 
-Request::Request(std::string query, std::string address,
+Query::Query(std::string query, std::string address,
                  std::function<void(Response&&)>&& func,
                  Logger *lp, evdns_base *dnsb, Libs *libs)
 {
@@ -35,12 +35,12 @@ Request::Request(std::string query, std::string address,
     }
     cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
-    RequestImpl::issue(query, address, std::move(func),
+    QueryImpl::issue(query, address, std::move(func),
                        lp, dnsb, libs, cancelled);
 }
 
 void
-Request::cancel(void)
+Query::cancel(void)
 {
     if (cancelled) {  // May not be set when we used the default constructor
         *cancelled = true;

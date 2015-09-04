@@ -33,7 +33,7 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
     } else {
         throw UnsupportedQueryType("Currently we only support A");
     }
-    resolver->request(
+    resolver->query(
         query, query_name, 
         [=](Response&& response) {
             logger.debug("dns_test: got response!");

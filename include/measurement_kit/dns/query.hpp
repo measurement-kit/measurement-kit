@@ -35,7 +35,7 @@ using namespace measurement_kit::common;
  *
  *     using namespace measurement-kit;
  *
- *     auto r1 = dns::Request("A", "ooni.torproject.org",
+ *     auto r1 = dns::Query("A", "ooni.torproject.org",
  *             [](dns::Response&& response) {
  *         if (response.get_evdns_code() != DNS_ERR_NONE) {
  *             return;
@@ -45,7 +45,7 @@ using namespace measurement_kit::common;
  *         }
  *     });
  *
- *     auto r2 = dns::Request("REVERSE_AAAA",
+ *     auto r2 = dns::Query("REVERSE_AAAA",
  *             "2001:858:2:2:aabb:0:563b:1e28", [](
  *             dns::Response&& response) {
  *         // Process the response
@@ -56,7 +56,7 @@ using namespace measurement_kit::common;
  * class the IPv{4,6} address and the string "REVERSE_FOO" where FOO
  * is "A" for IPv4 and is "AAAA" for IPv6.
  */
-class Request {
+class Query {
 
 protected:
     SharedPointer<bool> cancelled;
@@ -66,7 +66,7 @@ public:
     /*!
      * \brief Default constructor.
      */
-    Request() {
+    Query() {
         // nothing to do
     }
 
@@ -89,19 +89,19 @@ public:
      * \throws std::bad_alloc if some allocation fails.
      * \throws std::runtime_error if some edvns API fails.
      */
-    Request(std::string query, std::string address,
+    Query(std::string query, std::string address,
             std::function<void(Response&&)>&& func,
             Logger *lp = Logger::global(),
             evdns_base *dnsb = nullptr,
             Libs *libs = nullptr);
 
-    Request(Request&) = default;
-    Request& operator=(Request&) = default;
-    Request(Request&&) = default;
-    Request& operator=(Request&&) = default;
+    Query(Query&) = default;
+    Query& operator=(Query&) = default;
+    Query(Query&&) = default;
+    Query& operator=(Query&&) = default;
 
     /*!
-     * \brief Cancel the pending Request.
+     * \brief Cancel the pending Query.
      * \remark This method is idempotent.
      */
     void cancel(void);
@@ -109,7 +109,7 @@ public:
     /*!
      * \brief Destructor.
      */
-    ~Request(void) {
+    ~Query(void) {
         cancel();
     }
 };
