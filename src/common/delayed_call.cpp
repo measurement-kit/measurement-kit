@@ -18,38 +18,31 @@
 namespace measurement_kit {
 namespace common {
 
-DelayedCall::DelayedCall(double t, std::function<void()> &&f,
-                         Libs *libs, event_base *evbase) {
+DelayedCallState::DelayedCallState(double t, std::function<void()> f,
+                                   Libs *libs, event_base *evbase) {
     timeval timeo;
-
     if (libs != nullptr) libs_ = libs;
     if (evbase == nullptr) evbase = get_global_event_base();
-
-    func_ = new std::function<void()>();
-
-    if ((evp_ = libs_->event_new(evbase, MEASUREMENT_KIT_SOCKET_INVALID, EV_TIMEOUT,
-                                       dispatch, func_)) == nullptr) {
-        delete func_;
+    if ((evp_ = libs_->event_new(evbase, MEASUREMENT_KIT_SOCKET_INVALID,
+                                 EV_TIMEOUT, dispatch, this)) == nullptr) {
         throw std::bad_alloc();
     }
-
     if (libs_->event_add(evp_, timeval_init(&timeo, t)) != 0) {
-        delete func_;
         libs_->event_free(evp_);
         throw std::runtime_error("cannot register new event");
     }
-
-    std::swap(*func_, f);
+    func_ = f;
 }
 
-void DelayedCall::dispatch(evutil_socket_t, short, void *opaque) {
-    auto funcptr = static_cast<std::function<void()> *>(opaque);
-    if (*funcptr) (*funcptr)();
+void DelayedCallState::dispatch(evutil_socket_t, short, void *opaque) {
+    auto state = static_cast<DelayedCallState *>(opaque);
+    if (state->func_) state->func_();
 }
 
-DelayedCall::~DelayedCall(void) {
-    delete (func_); /* delete handles nullptr */
-    if (evp_) libs_->event_free(evp_);
+DelayedCallState::~DelayedCallState() {
+    if (evp_ == nullptr) return;
+    libs_->event_free(evp_);
+    evp_ = nullptr;
 }
 
 } // namespace common

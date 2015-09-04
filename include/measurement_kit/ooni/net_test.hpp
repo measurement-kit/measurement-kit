@@ -77,7 +77,7 @@ class NetTest : public measurement_kit::common::NetTest {
   std::string input_filepath;
   FileReporter file_report;
 
-  SharedPointer<DelayedCall> delayed_call;
+  DelayedCall delayed_call;
 
   void run_next_measurement(const std::function<void()>&& cb);
 
