@@ -103,11 +103,23 @@ test_ooni_net_test_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/net_test
 TESTS += test/ooni/net_test
 
-test_dns_dns_SOURCES = test/dns/dns.cpp
-test_dns_dns_LDADD = libmeasurement_kit.la
-test_dns_dns_LDFLAGS = -lyaml-cpp
-check_PROGRAMS += test/dns/dns
-TESTS += test/dns/dns
+test_dns_query_SOURCES = test/dns/query.cpp
+test_dns_query_LDADD = libmeasurement_kit.la
+test_dns_query_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/dns/query
+TESTS += test/dns/query
+
+test_dns_resolver_SOURCES = test/dns/resolver.cpp
+test_dns_resolver_LDADD = libmeasurement_kit.la
+test_dns_resolver_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/dns/resolver
+TESTS += test/dns/resolver
+
+test_dns_response_SOURCES = test/dns/response.cpp
+test_dns_response_LDADD = libmeasurement_kit.la
+test_dns_response_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/dns/response
+TESTS += test/dns/response
 
 test_http_http_SOURCES = test/http/http.cpp
 test_http_http_LDADD = libmeasurement_kit.la

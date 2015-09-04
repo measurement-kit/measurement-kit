@@ -7,7 +7,7 @@
 
 #include <measurement_kit/common/pointer.hpp>
 
-#include <measurement_kit/dns/dns.hpp>
+#include <measurement_kit/dns.hpp>
 #include <measurement_kit/ooni/net_test.hpp>
 
 namespace measurement_kit {

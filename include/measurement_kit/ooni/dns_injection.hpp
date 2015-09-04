@@ -5,7 +5,7 @@
 #ifndef MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
 #define MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
 
-#include <measurement_kit/dns/dns.hpp>
+#include <measurement_kit/dns.hpp>
 #include <measurement_kit/ooni/errors.hpp>
 #include <measurement_kit/ooni/net_test.hpp>
 #include <measurement_kit/ooni/dns_test.hpp>
