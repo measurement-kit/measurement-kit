@@ -603,7 +603,7 @@ public:
             //       to reduce unnecessary copies
             Buffer buf;
             serializer.serialize(buf);
-            *stream << buf.read<char>();
+            *stream << buf.read();
 
             stream->on_flush([this]() {
                 logger->debug("http: request sent... waiting for response");

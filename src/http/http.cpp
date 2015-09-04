@@ -138,18 +138,18 @@ class ResponseParserImpl {
 
     void parse(void) {
         auto total = (size_t) 0;
-        buffer.foreach([&](evbuffer_iovec *iov) {
+        buffer.foreach([&](const void *base, size_t count) {
             parsing = true;
             size_t n = http_parser_execute(&parser, &settings,
-                (const char *) iov->iov_base, iov->iov_len);
+                    (const char *) base, count);
             parsing = false;
             if (parser.upgrade) {
                 throw UpgradeError("Unexpected UPGRADE");
             }
-            if (n != iov->iov_len) {
+            if (n != count) {
                 throw ParserError("Parser error");
             }
-            total += iov->iov_len;
+            total += count;
             return true;
         });
         if (closing) {

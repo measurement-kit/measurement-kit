@@ -35,7 +35,7 @@ TEST_CASE("Insertion/extraction work correctly for evbuffer") {
 	SECTION("Insertion works correctly") {
 		buff << source;
 		REQUIRE(buff.length() == 65536);
-		r = buff.read<char>();
+		r = buff.read();
 		REQUIRE(r == sa);
 	}
 
@@ -82,7 +82,7 @@ TEST_CASE("Foreach is robust to corner cases and errors", "[Buffer]") {
 	Buffer buff;
 
 	SECTION("No function is invoked when the buffer is empty") {
-		buff.foreach([](evbuffer_iovec *) {
+		buff.foreach([](const void *, size_t) {
 			throw std::runtime_error("should not happen");
 			return (false);
 		});
@@ -126,8 +126,8 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
 	SECTION("Make sure that we walk through all the extents") {
 
 		buff << evbuf;
-		buff.foreach([&](evbuffer_iovec *iov) {
-			r.append((char *) iov->iov_base, iov->iov_len);
+		buff.foreach([&](const void *p, size_t n) {
+			r.append((const char *) p, n);
 			++counter;
 			return (true);
 		});
@@ -141,8 +141,8 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
 	SECTION("Make sure that stopping early works as expected") {
 
 		buff << evbuf;
-		buff.foreach([&](evbuffer_iovec *iov) {
-			r.append((char *) iov->iov_base, iov->iov_len);
+		buff.foreach([&](const void *p, size_t n) {
+			r.append((const char *) p, n);
 			++counter;
 			return (false);
 		});
@@ -191,41 +191,36 @@ TEST_CASE("Read works correctly") {
 	Buffer buff;
 
 	SECTION("Read does not misbehave when the buffer is empty") {
-		auto s = buff.read<char>(65535);
+		auto s = buff.read(65535);
 		REQUIRE(s.length() == 0);
 	}
 
 	SECTION("We can read less bytes than the total size") {
 		buff.write_rand(32768);
-		auto s = buff.read<char>(1024);
+		auto s = buff.read(1024);
 		REQUIRE(buff.length() == 32768 - 1024);
 		REQUIRE(s.length() == 1024);
 	}
 
 	SECTION("We can read exactly the total size") {
 		buff.write_rand(32768);
-		auto s = buff.read<char>(32768);
+		auto s = buff.read(32768);
 		REQUIRE(buff.length() == 0);
 		REQUIRE(s.length() == 32768);
 	}
 
 	SECTION("Read with no args reads all") {
 		buff.write_rand(32768);
-		auto s = buff.read<char>();
+		auto s = buff.read();
 		REQUIRE(buff.length() == 0);
 		REQUIRE(s.length() == 32768);
 	}
 
 	SECTION("No harm if we ask more than the total size") {
 		buff.write_rand(32768);
-		auto s = buff.read<char>(65535);
+		auto s = buff.read(65535);
 		REQUIRE(buff.length() == 0);
 		REQUIRE(s.length() == 32768);
-	}
-
-	SECTION("Reading wide chars is not supported") {
-		buff.write_rand(32768);
-		REQUIRE_THROWS(buff.read<wchar_t>(1024));
 	}
 }
 
@@ -233,41 +228,36 @@ TEST_CASE("Readn works correctly") {
 	Buffer buff;
 
 	SECTION("Readn does not misbehave when the buffer is empty") {
-		auto s = buff.readn<char>(65535);
+		auto s = buff.readn(65535);
 		REQUIRE(s.length() == 0);
 	}
 
 	SECTION("We can readn less bytes than the total size") {
 		buff.write_rand(32768);
-		auto s = buff.readn<char>(1024);
+		auto s = buff.readn(1024);
 		REQUIRE(buff.length() == 32768 - 1024);
 		REQUIRE(s.length() == 1024);
 	}
 
 	SECTION("We can readn exactly the total size") {
 		buff.write_rand(32768);
-		auto s = buff.readn<char>(32768);
+		auto s = buff.readn(32768);
 		REQUIRE(buff.length() == 0);
 		REQUIRE(s.length() == 32768);
 	}
 
 	SECTION("Empty string returned if we ask more than the total size") {
 		buff.write_rand(32768);
-		auto s = buff.readn<char>(65535);
+		auto s = buff.readn(65535);
 		REQUIRE(buff.length() == 32768);
 		REQUIRE(s.length() == 0);
-	}
-
-	SECTION("Readn-ing wide chars is not supported") {
-		buff.write_rand(32768);
-		REQUIRE_THROWS(buff.readn<wchar_t>(1024));
 	}
 }
 
 TEST_CASE("Readline works correctly", "[Buffer]") {
 	Buffer buff;
 	auto s = std::string();
-	int error = 0;
+	Error error;
 
 	SECTION("We can read LF terminated lines") {
 		buff << "HTTP/1.1 200 Ok\n"
@@ -331,42 +321,42 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
 		REQUIRE(s == "");
 	}
 
+	SECTION("EOL-not-found error is correctly reported") {
+		buff << "HTTP/1.1 200 Ok";
+		std::tie(error, s) = buff.readline(3);
+		REQUIRE(error == EOLNotFoundError());
+		REQUIRE(s == "");
+	}
+
+	SECTION("Line-too-long error is correctly reported") {
+		buff << "HTTP/1.1 200 Ok\n";
+		std::tie(error, s) = buff.readline(3);
+		REQUIRE(error == LineTooLongError());
+		REQUIRE(s == "");
+	}
 }
 
 TEST_CASE("Write works correctly", "[Buffer]") {
 	Buffer buff;
 	auto pc = "0123456789";
 	auto str = std::string(pc);
-	auto vect = std::vector<char>(str.begin(), str.end());
 
 	SECTION("Writing a C++ string works") {
 		buff.write(str);
 		REQUIRE(buff.length() == 10);
-		REQUIRE(buff.read<char>() == str);
+		REQUIRE(buff.read() == str);
 	}
 
 	SECTION("Inserting a C++ string works") {
 		buff << str;
 		REQUIRE(buff.length() == 10);
-		REQUIRE(buff.read<char>() == str);
-	}
-
-	SECTION("Writing a C++ vector<char> works") {
-		buff.write(vect);
-		REQUIRE(buff.length() == 10);
-		REQUIRE(buff.read<char>() == str);
-	}
-
-	SECTION("Inserting a C++ vector<char> works") {
-		buff << vect;
-		REQUIRE(buff.length() == 10);
-		REQUIRE(buff.read<char>() == str);
+		REQUIRE(buff.read() == str);
 	}
 
 	SECTION("Writing a C string works") {
 		buff.write(pc);
 		REQUIRE(buff.length() == 10);
-		REQUIRE(buff.read<char>() == str);
+		REQUIRE(buff.read() == str);
 	}
 
 	SECTION("Writing a NULL C string throws") {
@@ -376,7 +366,7 @@ TEST_CASE("Write works correctly", "[Buffer]") {
 	SECTION("Inserting a C string works") {
 		buff << pc;
 		REQUIRE(buff.length() == 10);
-		REQUIRE(buff.read<char>() == str);
+		REQUIRE(buff.read() == str);
 	}
 
 	SECTION("Inserting a NULL C string throws") {
@@ -386,7 +376,7 @@ TEST_CASE("Write works correctly", "[Buffer]") {
 	SECTION("Writing pointer-and-size works") {
 		buff.write((void *) pc, 10);
 		REQUIRE(buff.length() == 10);
-		REQUIRE(buff.read<char>() == str);
+		REQUIRE(buff.read() == str);
 	}
 
 	SECTION("Writing NULL pointer and size throws") {
@@ -398,9 +388,9 @@ TEST_CASE("Write works correctly", "[Buffer]") {
 		REQUIRE(buff.length() == 1048576);
 
 		auto zeroes = 0, total = 0;
-		buff.foreach([&](evbuffer_iovec *iov) {
-			auto p = (char *) iov->iov_base;
-			for (size_t i = 0; i < iov->iov_len; ++i) {
+		buff.foreach([&](const void *pp, size_t n) {
+            const char *p = (const char *) pp;
+			for (size_t i = 0; i < n; ++i) {
 				for (auto j = 0; j < 8; ++j) {
 					if ((p[i] & (1 << j)) == 0)
 						++zeroes;
@@ -418,4 +408,35 @@ TEST_CASE("Write works correctly", "[Buffer]") {
 		REQUIRE(freq > 0.49);
 		REQUIRE(freq < 0.51);
 	}
+}
+
+TEST_CASE("Write into works correctly", "[Buffer]") {
+    Buffer buff;
+
+    SECTION("Typical usage") {
+        buff.write(1024, [](void *buf, size_t cnt) {
+            REQUIRE(buf != nullptr);
+            REQUIRE(cnt == 1024);
+            memset(buf, 0, cnt);
+            return cnt;
+        });
+    }
+
+    SECTION("Should throw if we use more than needed") {
+        REQUIRE_THROWS(buff.write(1024, [](void *buf, size_t cnt) {
+            REQUIRE(buf != nullptr);
+            REQUIRE(cnt == 1024);
+            memset(buf, 0, cnt);
+            return cnt + 1;
+        }));
+    }
+
+    SECTION("Should work OK if we use zero bytes") {
+        buff.write(1024, [](void *buf, size_t cnt) {
+            REQUIRE(buf != nullptr);
+            REQUIRE(cnt == 1024);
+            return 0;
+        });
+    }
+
 }

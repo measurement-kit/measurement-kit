@@ -347,7 +347,7 @@ TEST_CASE("HTTP Request serializer works as expected") {
     }, "0123456789");
     Buffer buffer;
     serializer.serialize(buffer);
-    auto serialized = buffer.read<char>();
+    auto serialized = buffer.read();
     std::string expect = "GET /antani?clacsonato=yes HTTP/1.0\r\n";
     expect += "User-Agent: Antani/1.0.0.0\r\n";
     expect += "Host: www.example.com\r\n";
@@ -378,7 +378,7 @@ TEST_CASE("HTTP Request works as expected") {
             std::cout << kv.first << ": " << kv.second << "\r\n";
         }
         std::cout << "\r\n";
-        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << response.body.read(128) << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });
@@ -446,7 +446,7 @@ TEST_CASE("HTTP Request correctly receives errors") {
             std::cout << kv.first << ": " << kv.second << "\r\n";
         }
         std::cout << "\r\n";
-        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << response.body.read(128) << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });
@@ -475,7 +475,7 @@ TEST_CASE("HTTP Request works as expected over Tor") {
             std::cout << kv.first << ": " << kv.second << "\r\n";
         }
         std::cout << "\r\n";
-        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << response.body.read(128) << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });
@@ -496,7 +496,7 @@ TEST_CASE("HTTP Client works as expected") {
         {"Accept", "*/*"},
     }, "", [&](Error, Response&& response) {
         std::cout << "Google:\r\n";
-        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << response.body.read(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -510,7 +510,7 @@ TEST_CASE("HTTP Client works as expected") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error, Response&& response) {
-        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << response.body.read(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -524,7 +524,7 @@ TEST_CASE("HTTP Client works as expected") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error, Response&& response) {
-        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << response.body.read(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -550,7 +550,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
     }, "", [&](Error error, Response&& response) {
         std::cout << "Error: " << (int) error << std::endl;
         std::cout << "Google:\r\n";
-        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << response.body.read(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -566,7 +566,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {"Accept", "*/*"},
     }, "", [&](Error error, Response&& response) {
         std::cout << "Error: " << (int) error << std::endl;
-        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << response.body.read(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -582,7 +582,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {"Accept", "*/*"},
     }, "", [&](Error error, Response&& response) {
         std::cout << "Error: " << (int) error << std::endl;
-        std::cout << response.body.read<char>(128) << "\r\n";
+        std::cout << response.body.read(128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -605,7 +605,7 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
     }, "{\"test-helpers\": [\"dns\"]}",
                 [](Error error, Response&& response) {
         std::cout << "Error: " << (int) error << std::endl;
-        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << response.body.read() << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });
@@ -747,7 +747,7 @@ TEST_CASE("Make sure that settings are not modified") {
         // XXX: assumes that Tor is not running on port 9999
         REQUIRE(error != 0);
         std::cout << "Error: " << (int) error << std::endl;
-        std::cout << response.body.read<char>() << "\r\n";
+        std::cout << response.body.read() << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });

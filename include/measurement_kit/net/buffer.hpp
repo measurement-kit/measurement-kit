@@ -5,86 +5,40 @@
 #ifndef MEASUREMENT_KIT_NET_BUFFER_HPP
 #define MEASUREMENT_KIT_NET_BUFFER_HPP
 
-#include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/utils.hpp>
+#include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/evbuffer.hpp>
 
-#include <event2/bufferevent.h>
 #include <event2/buffer.h>
-
-#include <sys/uio.h>
+#include <event2/util.h>
 
 #include <functional>
-#include <stdlib.h>
-#include <string.h>
+#include <iosfwd>
+#include <memory>
 #include <stdexcept>
-#include <vector>
+#include <string>
+#include <tuple>
 
-/* Apparently not defined on MacOSX */
-#ifndef IOV_MAX
-#define IOV_MAX 32
-#endif
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <stddef.h>
+#include <string.h>
+
+struct evbuffer;
 
 namespace measurement_kit {
 namespace net {
 
-using namespace measurement_kit::common;
-
-// Helper class for Buffer (see below)
-class Iovec : public NonCopyable, public NonMovable {
-    evbuffer_iovec *iov = NULL;
-    size_t count = 0;
+class Buffer {
+  private:
+    common::Evbuffer evbuf;
 
   public:
-    Iovec(size_t n = 0) {
-        if (n < 1)
-            return;
-        if ((iov = (evbuffer_iovec *)calloc(n, sizeof(*iov))) == NULL)
-            throw std::bad_alloc();
-        count = n;
-    }
-
-    ~Iovec(void) { measurement_kit::xfree(iov); }
-
-    evbuffer_iovec *operator[](int i) {
-        if (iov == NULL)
-            throw std::runtime_error("Iovec is null");
-        /*
-         * It is safe to cast i to size_t, because we exclude
-         * the case in which i is negative first.
-         */
-        if (i < 0 || (size_t)i >= count)
-            throw std::runtime_error("Invalid index");
-        return (&iov[i]);
-    }
-
-    evbuffer_iovec *get_base(void) {
-        if (iov == NULL)
-            throw std::runtime_error("Iovec is null");
-        return (iov);
-    }
-
-    size_t get_length(void) {
-        if (iov == NULL)
-            throw std::runtime_error("Iovec is null");
-        return (count);
-    }
-};
-
-class Buffer : public NonCopyable, public NonMovable {
-
-    evbuffer *evbuf;
-
-  public:
-    Buffer(evbuffer *b = NULL) {
-        if ((evbuf = evbuffer_new()) == NULL)
-            throw std::bad_alloc();
-        if (b != NULL && evbuffer_add_buffer(evbuf, b) != 0) {
-            evbuffer_free(evbuf);
+    Buffer(evbuffer *b = nullptr) {
+        if (b != nullptr && evbuffer_add_buffer(evbuf, b) != 0)
             throw std::runtime_error("evbuffer_add_buffer failed");
-        }
     }
 
-    ~Buffer(void) { evbuffer_free(evbuf); /* Cannot be NULL */ }
+    ~Buffer() {}
 
     /*
      * I expect to read (write) from (into) the input (output)
@@ -93,52 +47,48 @@ class Buffer : public NonCopyable, public NonMovable {
      */
 
     Buffer &operator<<(evbuffer *source) {
-        if (source == NULL)
-            throw std::runtime_error("source is NULL");
+        if (source == nullptr) throw std::runtime_error("source is nullptr");
         if (evbuffer_add_buffer(evbuf, source) != 0)
             throw std::runtime_error("evbuffer_add_buffer failed");
-        return (*this);
+        return *this;
     }
 
     Buffer &operator>>(evbuffer *dest) {
-        if (dest == NULL)
-            throw std::runtime_error("dest is NULL");
+        if (dest == nullptr) throw std::runtime_error("dest is nullptr");
         if (evbuffer_add_buffer(dest, evbuf) != 0)
             throw std::runtime_error("evbuffer_add_buffer failed");
-        return (*this);
+        return *this;
     }
 
     Buffer &operator<<(Buffer &source) {
         *this << source.evbuf;
-        return (*this);
+        return *this;
     }
 
     Buffer &operator>>(Buffer &source) {
         *this >> source.evbuf;
-        return (*this);
+        return *this;
     }
 
-    size_t length(void) { return (evbuffer_get_length(evbuf)); }
+    size_t length() { return evbuffer_get_length(evbuf); }
 
     /*
      * The following is useful to feed a parser (e.g., the http-parser)
      * with all (or part of) the content of `this`.
      */
-    void foreach (std::function<bool(evbuffer_iovec *)> fn) {
-        auto required_size = evbuffer_peek(evbuf, -1, NULL, NULL, 0);
-        if (required_size < 0)
-            throw std::runtime_error("unexpected error");
-        if (required_size == 0)
-            return;
-
-        Iovec iov(required_size);
-        auto used =
-            evbuffer_peek(evbuf, -1, NULL, iov.get_base(), iov.get_length());
-        if (used != required_size)
-            throw std::runtime_error("unexpected error");
-
-        for (auto i = 0; i < required_size && fn(iov[i]); ++i)
-            /* nothing */;
+    void foreach(std::function<bool(const void *, size_t)> fn) {
+        auto required_size = evbuffer_peek(evbuf, -1, nullptr, nullptr, 0);
+        if (required_size < 0) throw std::runtime_error("unexpected error");
+        if (required_size == 0) return;
+        std::unique_ptr<evbuffer_iovec[]> raii;
+        raii.reset(new evbuffer_iovec[required_size]); // Guarantee cleanup
+        auto iov = raii.get();
+        auto used = evbuffer_peek(evbuf, -1, nullptr, iov, required_size);
+        if (used != required_size) throw std::runtime_error("unexpected error");
+        for (auto i = 0; i < required_size &&
+                fn(iov[i].iov_base, iov[i].iov_len); ++i) {
+            /* nothing */ ;
+        }
     }
 
     /*
@@ -150,58 +100,31 @@ class Buffer : public NonCopyable, public NonMovable {
         if (evbuffer_drain(evbuf, count) != 0)
             throw std::runtime_error("evbuffer_drain failed");
     }
-    void discard(void) { discard(length()); }
+    void discard() { discard(length()); }
 
-    /*
-     * This function is a template because sometimes we want to read
-     * text (in which case, std::basic_string<char> aka std::string is
-     * the appropriate type) and sometimes we want instead to read
-     * binary data (in which case std::basic_string<uint8_t> is more
-     * appropriate, because it is surprising to store binary data into
-     * an std::string, which is designed to hold text).
-     */
-    template <typename T>
-    std::basic_string<T> readpeek(bool ispeek, size_t upto) {
+    std::string readpeek(bool ispeek, size_t upto) {
         size_t nbytes = 0;
-        std::basic_string<T> out;
-
-        if (sizeof(T) != 1)
-            throw std::runtime_error("Wide chars not supported");
-
-        foreach([&](evbuffer_iovec *iov) {
-            if (upto < iov->iov_len)
-                iov->iov_len = upto;
-
-            out.append((const T *)iov->iov_base, iov->iov_len);
-
-            upto -= iov->iov_len;
-            nbytes += iov->iov_len;
+        std::string out;
+        foreach([&nbytes, &out, &upto](const void *p, size_t n) {
+            if (upto < n) n = upto;
+            out.append((const char *) p, n);
+            upto -= n;
+            nbytes += n;
             return (upto > 0);
         });
-
         /*
          * We do this after foreach() because we are not supposed
          * to modify the underlying `evbuf` during foreach().
          */
-        if (!ispeek)
-            discard(nbytes);
-
-        return (out);
+        if (!ispeek) discard(nbytes);
+        return out;
     }
 
-    template <typename T> std::basic_string<T> read(size_t upto) {
-        return readpeek<T>(false, upto);
-    }
+    std::string read(size_t upto) { return readpeek(false, upto); }
 
-    template <typename T> std::basic_string<T> read(void) {
-        return (read<T>(length()));
-    }
+    std::string read() { return read(length()); }
 
-    std::string read(size_t upto) { return read<char>(upto); }
-
-    std::string read() { return read<char>(); }
-
-    std::string peek(size_t upto) { return readpeek<char>(true, upto); }
+    std::string peek(size_t upto) { return readpeek(true, upto); }
 
     std::string peek() { return peek(length()); }
 
@@ -209,23 +132,20 @@ class Buffer : public NonCopyable, public NonMovable {
      * The semantic of readn() is that we return a string only
      * when we have exactly N bytes available.
      */
-    template <typename T> std::basic_string<T> readn(size_t n) {
-        if (n > length())
-            return (std::basic_string<T>()); /* Empty str */
-        return (read<T>(n));
+    std::string readn(size_t n) {
+        if (n > length()) return "";
+        return read(n);
     }
 
-    std::string readn(size_t n) { return readn<char>(n); }
-
-    std::tuple<int, std::string> readline(size_t maxline) {
+    std::tuple<common::Error, std::string> readline(size_t maxline) {
 
         size_t eol_length = 0;
         auto search_result =
-            evbuffer_search_eol(evbuf, NULL, &eol_length, EVBUFFER_EOL_CRLF);
+            evbuffer_search_eol(evbuf, nullptr, &eol_length, EVBUFFER_EOL_CRLF);
         if (search_result.pos < 0) {
             if (length() > maxline)
-                return (std::make_tuple(-1, ""));
-            return (std::make_tuple(0, ""));
+                return std::make_tuple(common::EOLNotFoundError(), "");
+            return std::make_tuple(0, "");
         }
 
         /*
@@ -236,9 +156,9 @@ class Buffer : public NonCopyable, public NonMovable {
             throw std::runtime_error("unexpected error");
         auto len = (size_t)search_result.pos + eol_length;
         if (len > maxline)
-            return (std::make_tuple(-2, ""));
+            return std::make_tuple(common::LineTooLongError(), "");
 
-        return (std::make_tuple(0, read<char>(len)));
+        return std::make_tuple(0, read(len));
     }
 
     /*
@@ -250,30 +170,21 @@ class Buffer : public NonCopyable, public NonMovable {
 
     Buffer &operator<<(std::string in) {
         write(in);
-        return (*this);
-    }
-
-    void write(std::vector<char> in) { write(in.data(), in.size()); }
-
-    Buffer &operator<<(std::vector<char> in) {
-        write(in);
-        return (*this);
+        return *this;
     }
 
     void write(const char *in) {
-        if (in == NULL)
-            throw std::runtime_error("in is NULL");
+        if (in == nullptr) throw std::runtime_error("in is nullptr");
         write(in, strlen(in));
     }
 
     Buffer &operator<<(const char *in) {
         write(in);
-        return (*this);
+        return *this;
     }
 
     void write(const void *buf, size_t count) {
-        if (buf == NULL)
-            throw std::runtime_error("buf is NULL");
+        if (buf == nullptr) throw std::runtime_error("buf is nullptr");
         if (evbuffer_add(evbuf, buf, count) != 0)
             throw std::runtime_error("evbuffer_add failed");
     }
@@ -285,42 +196,37 @@ class Buffer : public NonCopyable, public NonMovable {
     void write_uint32(uint32_t);
 
     void write_rand(size_t count) {
-        if (count == 0)
-            return;
-
-        Iovec iov(IOV_MAX);
-        int i, n_extents;
-
-        n_extents = evbuffer_reserve_space(evbuf, count, iov.get_base(),
-                                           iov.get_length());
-        if (n_extents < 0)
-            throw std::runtime_error("evbuffer_reserve_space failed");
-
-        for (i = 0; i < n_extents && count > 0; i++) {
-            /*
-             * Note: `iov[i]` throws if `i` is out of bounds.
-             */
-            if (count < iov[i]->iov_len)
-                iov[i]->iov_len = count;
-            /*
-             * Implementation note: I'm not sure this is fast
-             * enough for Neubot needs; I'll check...
-             */
-            evutil_secure_rng_get_bytes(iov[i]->iov_base, iov[i]->iov_len);
-            count -= iov[i]->iov_len;
-        }
-
-        /*
-         * Used to be an assert. I'd rather have a statement that
-         * throws on failure, so that it can be tested.
-         */
-        if (!(count == 0 && i >= 0 && (size_t)i <= iov.get_length()))
-            throw std::runtime_error("unexpected error");
-
-        if (evbuffer_commit_space(evbuf, iov.get_base(), i) != 0)
-            throw std::runtime_error("evbuffer_commit_space failed");
+        if (count == 0) return;
+        char *p = new char[count];
+        evutil_secure_rng_get_bytes(p, count);
+        auto ctrl = evbuffer_add_reference(
+            evbuf, p, count, [](const void *, size_t, void *p) {
+                delete[] static_cast<char *>(p);
+            }, p);
+        if (ctrl != 0) throw std::runtime_error("evbuffer_add_reference");
     }
+
+    void write(size_t count, std::function<size_t(void *, size_t)> func) {
+        if (count == 0) return;
+        char *p = new char[count];
+        size_t used = func(p, count);
+        if (used > count) {
+            delete[] p;
+            throw std::runtime_error("internal error");
+        }
+        if (used == 0) {
+            delete[] p;
+            return;
+        }
+        auto ctrl = evbuffer_add_reference(
+            evbuf, p, used, [](const void *, size_t, void *p) {
+                delete[] static_cast<char *>(p);
+            }, p);
+        if (ctrl != 0) throw std::runtime_error("evbuffer_add_reference");
+    }
+
 };
 
-}}
+} // namespace net
+} // namespace measurement_kit
 #endif
