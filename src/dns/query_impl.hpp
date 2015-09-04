@@ -57,9 +57,9 @@ class QueryImpl {
     // variable to keep track of cancelled requests.
     //
 
-    std::function<void(Response&&)> callback;
-    double ticks = 0.0;  // just to initialize to something
-    Libs *libs;  // should not be nullptr (this is asserted below)
+    std::function<void(Response &&)> callback;
+    double ticks = 0.0; // just to initialize to something
+    Libs *libs;         // should not be nullptr (this is asserted below)
     SharedPointer<bool> cancelled;
     Logger *logger = Logger::global();
 
@@ -70,8 +70,8 @@ class QueryImpl {
 
         // Tell the libevent layer we received a DNS response
         if (impl->libs->evdns_reply_hook) {
-            impl->libs->evdns_reply_hook(code, type, count, ttl,
-                                             addresses, opaque);
+            impl->libs->evdns_reply_hook(code, type, count, ttl, addresses,
+                                         opaque);
         }
 
         // Note: the case of `impl->cancelled` is the case in which this
@@ -81,8 +81,8 @@ class QueryImpl {
             return;
         }
 
-        impl->callback(Response(code, type, count,
-            ttl, impl->ticks, addresses, impl->logger));
+        impl->callback(Response(code, type, count, ttl, impl->ticks, addresses,
+                                impl->logger));
 
         delete impl;
     }
@@ -108,10 +108,9 @@ class QueryImpl {
 
     // Private to enforce usage through issue()
     QueryImpl(std::string query, std::string address,
-                std::function<void(Response&&)>&& f,
-                Logger *lp, evdns_base *base,
-                Libs *lev, SharedPointer<bool> cancd)
-            : callback(f), libs(lev), cancelled(cancd), logger(lp) {
+              std::function<void(Response &&)> &&f, Logger *lp,
+              evdns_base *base, Libs *lev, SharedPointer<bool> cancd)
+        : callback(f), libs(lev), cancelled(cancd), logger(lp) {
 
         assert(base != nullptr && lev != nullptr);
 
@@ -120,26 +119,29 @@ class QueryImpl {
         // of the evdns_base_resolve_xxx() functions below
         //
         if (query == "A") {
-            if (libs->evdns_base_resolve_ipv4(base, address.c_str(),
-                DNS_QUERY_NO_SEARCH, handle_resolve, this) == nullptr) {
+            if (libs->evdns_base_resolve_ipv4(
+                    base, address.c_str(), DNS_QUERY_NO_SEARCH, handle_resolve,
+                    this) == nullptr) {
                 throw std::runtime_error("Resolver error");
             }
         } else if (query == "AAAA") {
-            if (libs->evdns_base_resolve_ipv6(base, address.c_str(),
-                DNS_QUERY_NO_SEARCH, handle_resolve, this) == nullptr) {
+            if (libs->evdns_base_resolve_ipv6(
+                    base, address.c_str(), DNS_QUERY_NO_SEARCH, handle_resolve,
+                    this) == nullptr) {
                 throw std::runtime_error("Resolver error");
             }
         } else if (query == "REVERSE_A") {
             in_addr na;
-            if (libs->evdns_base_resolve_reverse(base, ipv4_pton(address,
-                &na), DNS_QUERY_NO_SEARCH, handle_resolve, this) == nullptr) {
+            if (libs->evdns_base_resolve_reverse(
+                    base, ipv4_pton(address, &na), DNS_QUERY_NO_SEARCH,
+                    handle_resolve, this) == nullptr) {
                 throw std::runtime_error("Resolver error");
             }
         } else if (query == "REVERSE_AAAA") {
             in6_addr na;
-            if (libs->evdns_base_resolve_reverse_ipv6(base, ipv6_pton(
-                address, &na), DNS_QUERY_NO_SEARCH, handle_resolve, this)
-                == nullptr) {
+            if (libs->evdns_base_resolve_reverse_ipv6(
+                    base, ipv6_pton(address, &na), DNS_QUERY_NO_SEARCH,
+                    handle_resolve, this) == nullptr) {
                 throw std::runtime_error("Resolver error");
             }
         } else {
@@ -149,16 +151,15 @@ class QueryImpl {
         ticks = measurement_kit::time_now();
     }
 
-public:
+  public:
     static void issue(std::string query, std::string address,
-                      std::function<void(Response&&)>&& func,
-                      Logger *logger, evdns_base *base,
-                      Libs *lev, SharedPointer<bool> cancd) {
-        new QueryImpl(query, address, std::move(func), logger, base,
-                        lev, cancd);
+                      std::function<void(Response &&)> &&func, Logger *logger,
+                      evdns_base *base, Libs *lev, SharedPointer<bool> cancd) {
+        new QueryImpl(query, address, std::move(func), logger, base, lev,
+                      cancd);
     }
 };
 
-}}
-
+} // namespace dns
+} // namespace measurement_kit
 #endif

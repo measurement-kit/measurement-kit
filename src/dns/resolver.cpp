@@ -36,9 +36,7 @@ namespace dns {
 
 using namespace measurement_kit::common;
 
-void
-Resolver::cleanup(void)
-{
+void Resolver::cleanup(void) {
     if (base != nullptr) {
         //
         // Note: `1` means that pending requests are notified that
@@ -50,14 +48,12 @@ Resolver::cleanup(void)
         // so QueryImpl:s are always freed (see request()).
         //
         libs->evdns_base_free(base, 1);
-        base = nullptr;  // Idempotent
+        base = nullptr; // Idempotent
     }
 }
 
-evdns_base *
-Resolver::get_evdns_base(void)
-{
-    if (base != nullptr) {  // Idempotent
+evdns_base *Resolver::get_evdns_base(void) {
+    if (base != nullptr) { // Idempotent
         return base;
     }
 
@@ -71,8 +67,8 @@ Resolver::get_evdns_base(void)
         if ((base = libs->evdns_base_new(evb, 0)) == nullptr) {
             throw std::bad_alloc();
         }
-        if (libs->evdns_base_nameserver_ip_add(base,
-                settings["nameserver"].c_str()) != 0) {
+        if (libs->evdns_base_nameserver_ip_add(
+                base, settings["nameserver"].c_str()) != 0) {
             cleanup();
             throw std::runtime_error("Cannot set server address");
         }
@@ -81,14 +77,14 @@ Resolver::get_evdns_base(void)
     }
 
     if (settings.find("attempts") != settings.end() &&
-            libs->evdns_base_set_option(base,
-            "attempts", settings["attempts"].c_str()) != 0) {
+        libs->evdns_base_set_option(base, "attempts",
+                                    settings["attempts"].c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'attempts' option");
     }
     if (settings.find("timeout") != settings.end() &&
-            libs->evdns_base_set_option(
-            base, "timeout", settings["timeout"].c_str()) != 0) {
+        libs->evdns_base_set_option(base, "timeout",
+                                    settings["timeout"].c_str()) != 0) {
         cleanup();
         throw std::runtime_error("Cannot set 'timeout' option");
     }
@@ -98,8 +94,8 @@ Resolver::get_evdns_base(void)
     if (settings.find("randomize_case") != settings.end()) {
         randomiz = settings["randomize_case"];
     }
-    if (libs->evdns_base_set_option(base, "randomize-case",
-            randomiz.c_str()) != 0) {
+    if (libs->evdns_base_set_option(base, "randomize-case", randomiz.c_str()) !=
+        0) {
         cleanup();
         throw std::runtime_error("Cannot set 'randomize-case' option");
     }
@@ -107,10 +103,8 @@ Resolver::get_evdns_base(void)
     return base;
 }
 
-void
-Resolver::query(std::string query, std::string address,
-        std::function<void(Response&&)>&& func)
-{
+void Resolver::query(std::string query, std::string address,
+                     std::function<void(Response &&)> &&func) {
     //
     // Note: QueryImpl implements the autodelete behavior, meaning that
     // it shall delete itself once its callback is called. The callback
@@ -120,8 +114,9 @@ Resolver::query(std::string query, std::string address,
     //
     auto cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
-    QueryImpl::issue(query, address, std::move(func), logger,
-                       get_evdns_base(), libs, cancelled);
+    QueryImpl::issue(query, address, std::move(func), logger, get_evdns_base(),
+                     libs, cancelled);
 }
 
-}}
+} // namespace dns
+} // namespace measurement_kit

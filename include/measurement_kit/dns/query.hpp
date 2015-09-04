@@ -11,10 +11,12 @@
 #include <functional>
 #include <iosfwd>
 
-struct evdns_base;  // Internally we use evdns
+struct evdns_base; // Internally we use evdns
 
 namespace measurement_kit {
-namespace common { struct Libs; }
+namespace common {
+struct Libs;
+}
 namespace dns {
 
 class Response;
@@ -58,11 +60,10 @@ using namespace measurement_kit::common;
  */
 class Query {
 
-protected:
+  protected:
     SharedPointer<bool> cancelled;
 
-public:
-
+  public:
     /*!
      * \brief Default constructor.
      */
@@ -90,15 +91,14 @@ public:
      * \throws std::runtime_error if some edvns API fails.
      */
     Query(std::string query, std::string address,
-            std::function<void(Response&&)>&& func,
-            Logger *lp = Logger::global(),
-            evdns_base *dnsb = nullptr,
-            Libs *libs = nullptr);
+          std::function<void(Response &&)> &&func,
+          Logger *lp = Logger::global(), evdns_base *dnsb = nullptr,
+          Libs *libs = nullptr);
 
-    Query(Query&) = default;
-    Query& operator=(Query&) = default;
-    Query(Query&&) = default;
-    Query& operator=(Query&&) = default;
+    Query(Query &) = default;
+    Query &operator=(Query &) = default;
+    Query(Query &&) = default;
+    Query &operator=(Query &&) = default;
 
     /*!
      * \brief Cancel the pending Query.
@@ -109,10 +109,9 @@ public:
     /*!
      * \brief Destructor.
      */
-    ~Query(void) {
-        cancel();
-    }
+    ~Query(void) { cancel(); }
 };
 
-}}
+} // namespace dns
+} // namespace measurement_kit
 #endif

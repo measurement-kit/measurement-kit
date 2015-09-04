@@ -15,7 +15,7 @@
 #include <iosfwd>
 #include <string>
 
-struct evdns_base;  // Internally we use evdns
+struct evdns_base; // Internally we use evdns
 
 namespace measurement_kit {
 namespace dns {
@@ -59,20 +59,18 @@ class Resolver : public NonCopyable, public NonMovable {
 
     void cleanup(void);
 
-protected:
+  protected:
     Settings settings;
     Libs *libs = Libs::global();
     Poller *poller = measurement_kit::get_global_poller();
     evdns_base *base = nullptr;
     Logger *logger = Logger::global();
 
-public:
+  public:
     /*!
      * \brief Default constructor.
      */
-    Resolver(void) {
-        /* nothing to do */
-    }
+    Resolver(void) { /* nothing to do */ }
 
     /*!
      * \brief Constructor with specific settings.
@@ -116,15 +114,14 @@ public:
      * \see Query::Query().
      */
     void query(std::string query, std::string address,
-               std::function<void(Response&&)>&& func);
+               std::function<void(Response &&)> &&func);
 
     /*!
      * \brief Default destructor.
      */
-    ~Resolver(void) {
-        cleanup();
-    }
+    ~Resolver(void) { cleanup(); }
 };
 
-}}
+} // namespace dns
+} // namespace measurement_kit
 #endif

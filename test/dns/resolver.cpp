@@ -32,8 +32,7 @@ TEST_CASE("Resolver: cleanup works correctly when we have allocated") {
 
     {
         // Note: call .get_evdns_base() to trigger lazy allocation
-        Resolver(Settings(), Logger::global(), &libs)
-            .get_evdns_base();
+        Resolver(Settings(), Logger::global(), &libs).get_evdns_base();
     }
 
     REQUIRE(called == 1);
@@ -48,9 +47,7 @@ TEST_CASE("Resolver: cleanup works correctly when we have not allocated") {
         called++;
     };
 
-    {
-        Resolver();
-    }
+    { Resolver(); }
 
     REQUIRE(called == 0);
 }
@@ -60,40 +57,36 @@ TEST_CASE("Resolver: cleanup works correctly when we have not allocated") {
 TEST_CASE("Resolver: ensure that the constructor does not allocate") {
     auto libs = Libs();
 
-    libs.evdns_base_new = [](event_base *, int) {
-        return (evdns_base *) NULL;
-    };
+    libs.evdns_base_new = [](event_base *, int) { return (evdns_base *)NULL; };
 
     //
     // Basically: if we go through the end we have not allocated because
     // if we try to allocate we fail and the code will raise
     //
 
-    //Resolver();  // How to do this?
+    // Resolver();  // How to do this?
     Resolver(Settings(), Logger::global(), &libs);
 }
 
 TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
     auto libs = Libs();
 
-    libs.evdns_base_new = [](event_base *, int) {
-        return (evdns_base *) NULL;
-    };
+    libs.evdns_base_new = [](event_base *, int) { return (evdns_base *)NULL; };
 
     // Note: call .get_evdns_base() to trigger lazy allocation
 
     // Handle the branch where nameserver is set
-    REQUIRE_THROWS(Resolver({
-        {"nameserver", "8.8.8.8"}
-    }, Logger::global(), &libs).get_evdns_base());
+    REQUIRE_THROWS(
+        Resolver({{"nameserver", "8.8.8.8"}}, Logger::global(), &libs)
+            .get_evdns_base());
 
     // Handle the branch using the default nameserver
-    REQUIRE_THROWS(Resolver(Settings(),
-        Logger::global(), &libs).get_evdns_base());
+    REQUIRE_THROWS(
+        Resolver(Settings(), Logger::global(), &libs).get_evdns_base());
 }
 
 TEST_CASE(
-  "Resolver: evdns_base_nameserver_ip_add failure is correctly handled") {
+    "Resolver: evdns_base_nameserver_ip_add failure is correctly handled") {
     auto libs = Libs();
 
     libs.evdns_base_nameserver_ip_add = [](evdns_base *, const char *) {
@@ -108,9 +101,9 @@ TEST_CASE(
     };
 
     // Note: call .get_evdns_base() to trigger lazy allocation
-    REQUIRE_THROWS(Resolver({
-        {"nameserver", "8.8.8.8"}
-    }, Logger::global(), &libs).get_evdns_base());
+    REQUIRE_THROWS(
+        Resolver({{"nameserver", "8.8.8.8"}}, Logger::global(), &libs)
+            .get_evdns_base());
 
     REQUIRE(called);
 }
@@ -128,43 +121,55 @@ TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
     // Note: call .get_evdns_base() to trigger lazy allocation
 
     libs.evdns_base_set_option = [](evdns_base *, const char *opt,
-      const char *) {
+                                    const char *) {
         if (strcmp(opt, "attempts") == 0) {
             return -1;
         }
         return 0;
     };
-    REQUIRE_THROWS(Resolver({
-        {"attempts", "1"},
-    }, Logger::global(), &libs).get_evdns_base());
+    REQUIRE_THROWS(Resolver(
+                       {
+                           {"attempts", "1"},
+                       },
+                       Logger::global(), &libs)
+                       .get_evdns_base());
 
     libs.evdns_base_set_option = [](evdns_base *, const char *opt,
-      const char *) {
+                                    const char *) {
         if (strcmp(opt, "timeout") == 0) {
             return -1;
         }
         return 0;
     };
-    REQUIRE_THROWS(Resolver({
-        {"timeout", "1.0"},
-    }, Logger::global(), &libs).get_evdns_base());
+    REQUIRE_THROWS(Resolver(
+                       {
+                           {"timeout", "1.0"},
+                       },
+                       Logger::global(), &libs)
+                       .get_evdns_base());
 
     libs.evdns_base_set_option = [](evdns_base *, const char *opt,
-      const char *) {
+                                    const char *) {
         if (strcmp(opt, "randomize-case") == 0) {
             return -1;
         }
         return 0;
     };
     // Make sure that randomize-case is called in both true and false cases
-    REQUIRE_THROWS(Resolver({
-        {"randomize_case", "1"},
-    }, Logger::global(), &libs).get_evdns_base());
-    REQUIRE_THROWS(Resolver({
-        {"randomize_case", "0"},
-    }, Logger::global(), &libs).get_evdns_base());
+    REQUIRE_THROWS(Resolver(
+                       {
+                           {"randomize_case", "1"},
+                       },
+                       Logger::global(), &libs)
+                       .get_evdns_base());
+    REQUIRE_THROWS(Resolver(
+                       {
+                           {"randomize_case", "0"},
+                       },
+                       Logger::global(), &libs)
+                       .get_evdns_base());
 
-    REQUIRE(called == 4);  // twice for randomize-case
+    REQUIRE(called == 4); // twice for randomize-case
 }
 
 TEST_CASE("Resolver::get_evdns_base() is idempotent") {
@@ -175,14 +180,12 @@ TEST_CASE("Resolver::get_evdns_base() is idempotent") {
 TEST_CASE("We can override the default timeout") {
 
     // I need to remember to never run a DNS on that machine :^)
-    Resolver reso(Settings{
-        {"nameserver", "130.192.91.231"},
-        {"attempts", "1"},
-        {"timeout", "0.5"}
-    });
+    Resolver reso(Settings{{"nameserver", "130.192.91.231"},
+                           {"attempts", "1"},
+                           {"timeout", "0.5"}});
 
     auto ticks = measurement_kit::time_now();
-    reso.query("A", "www.neubot.org", [&](Response&& response) {
+    reso.query("A", "www.neubot.org", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
@@ -205,13 +208,11 @@ TEST_CASE("We can override the default number of tries") {
 
     // I need to remember to never run a DNS on that machine :^)
     Resolver reso(Settings{
-        {"nameserver", "130.192.91.231"},
-        {"attempts", "2"},
-        {"timeout", "0.5"},
+        {"nameserver", "130.192.91.231"}, {"attempts", "2"}, {"timeout", "0.5"},
     });
 
     auto ticks = measurement_kit::time_now();
-    reso.query("A", "www.neubot.org", [&](Response&& response) {
+    reso.query("A", "www.neubot.org", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
@@ -250,7 +251,7 @@ TEST_CASE("The default custom resolver works as expected") {
 
     Resolver reso;
 
-    reso.query("A", "www.neubot.org", [&](Response&& response) {
+    reso.query("A", "www.neubot.org", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -262,7 +263,7 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     measurement_kit::loop();
 
-    reso.query("REVERSE_A", "130.192.16.172", [&](Response&& response) {
+    reso.query("REVERSE_A", "130.192.16.172", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -274,7 +275,7 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     measurement_kit::loop();
 
-    reso.query("AAAA", "ooni.torproject.org", [&](Response&& response) {
+    reso.query("AAAA", "ooni.torproject.org", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -293,16 +294,17 @@ TEST_CASE("The default custom resolver works as expected") {
     measurement_kit::loop();
 
     reso.query("REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
-            [&](Response&& response) {
-        REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_failure() == "");
-        REQUIRE(response.get_results().size() == 1);
-        REQUIRE(response.get_results()[0] == "listera.torproject.org");
-        REQUIRE(response.get_rtt() > 0.0);
-        REQUIRE(response.get_ttl() > 0);
-        measurement_kit::break_loop();
-    });
+               [&](Response &&response) {
+                   REQUIRE(response.get_reply_authoritative() == "unknown");
+                   REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+                   REQUIRE(response.get_failure() == "");
+                   REQUIRE(response.get_results().size() == 1);
+                   REQUIRE(response.get_results()[0] ==
+                           "listera.torproject.org");
+                   REQUIRE(response.get_rtt() > 0.0);
+                   REQUIRE(response.get_ttl() > 0);
+                   measurement_kit::break_loop();
+               });
     measurement_kit::loop();
 
     REQUIRE(!failed);
@@ -325,7 +327,7 @@ TEST_CASE("A specific custom resolver works as expected") {
         {"nameserver", "8.8.4.4"},
     }));
 
-    reso.query("A", "www.neubot.org", [&](Response&& response) {
+    reso.query("A", "www.neubot.org", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -337,7 +339,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     measurement_kit::loop();
 
-    reso.query("REVERSE_A", "130.192.16.172", [&](Response&& response) {
+    reso.query("REVERSE_A", "130.192.16.172", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -349,7 +351,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     measurement_kit::loop();
 
-    reso.query("AAAA", "ooni.torproject.org", [&](Response&& response) {
+    reso.query("AAAA", "ooni.torproject.org", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -368,16 +370,17 @@ TEST_CASE("A specific custom resolver works as expected") {
     measurement_kit::loop();
 
     reso.query("REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
-            [&](Response&& response) {
-        REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_failure() == "");
-        REQUIRE(response.get_results().size() == 1);
-        REQUIRE(response.get_results()[0] == "listera.torproject.org");
-        REQUIRE(response.get_rtt() > 0.0);
-        REQUIRE(response.get_ttl() > 0);
-        measurement_kit::break_loop();
-    });
+               [&](Response &&response) {
+                   REQUIRE(response.get_reply_authoritative() == "unknown");
+                   REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+                   REQUIRE(response.get_failure() == "");
+                   REQUIRE(response.get_results().size() == 1);
+                   REQUIRE(response.get_results()[0] ==
+                           "listera.torproject.org");
+                   REQUIRE(response.get_rtt() > 0.0);
+                   REQUIRE(response.get_ttl() > 0);
+                   measurement_kit::break_loop();
+               });
     measurement_kit::loop();
 
     REQUIRE(!failed);
@@ -394,7 +397,7 @@ TEST_CASE("If the resolver dies the requests are aborted") {
         {"nameserver", "130.192.91.231"},
     }));
 
-    reso->query("A", "www.neubot.org", [&](Response&& response) {
+    reso->query("A", "www.neubot.org", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_SHUTDOWN);
@@ -405,8 +408,8 @@ TEST_CASE("If the resolver dies the requests are aborted") {
     });
 
     DelayedCall d1(0.1, [&](void) {
-        delete reso;  // Destroy the resolver and see what happens..
-                      // in theory the request callback *should* be called
+        delete reso; // Destroy the resolver and see what happens..
+                     // in theory the request callback *should* be called
     });
 
     auto failed = false;
@@ -431,17 +434,16 @@ TEST_CASE("A request to a nonexistent server times out") {
     //
     // So, I'm commentin out this check:
     //
-    //if (CheckConnectivity::is_down()) {
+    // if (CheckConnectivity::is_down()) {
     //    return;
     //}
     //
 
     // I need to remember to never run a DNS on that machine :^)
     Resolver reso(Settings{
-        {"nameserver", "130.192.91.231"},
-        {"attempts", "1"},
+        {"nameserver", "130.192.91.231"}, {"attempts", "1"},
     });
-    reso.query("A", "www.neubot.org", [&](Response&& response) {
+    reso.query("A", "www.neubot.org", [&](Response &&response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
@@ -479,8 +481,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     //
 
     Resolver reso(Settings{
-        {"nameserver", "8.8.8.8"},
-        {"attempts", "1"},
+        {"nameserver", "8.8.8.8"}, {"attempts", "1"},
     });
 
     // Step #1: estimate the average RTT
@@ -488,7 +489,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     auto total = 0.0;
     auto count = 0;
     for (auto i = 0; i < 16; ++i) {
-        reso.query("A", "www.neubot.org", [&](Response&& response) {
+        reso.query("A", "www.neubot.org", [&](Response &&response) {
             if (response.get_evdns_status() == DNS_ERR_NONE) {
                 total += response.get_rtt();
                 count += 1;
@@ -504,12 +505,11 @@ TEST_CASE("It is safe to cancel requests in flight") {
 
     // Step #2: attempt to unschedule responses when they are due
 
-    //for (;;) {  // only try this at home
+    // for (;;) {  // only try this at home
     for (auto i = 0; i < 16; ++i) {
-        auto r = new Query("A", "www.neubot.org", [&](
-                                      Response&& response) {
-            auto status_ok = (response.get_evdns_status() == DNS_ERR_CANCEL
-                    || response.get_evdns_status() == DNS_ERR_NONE);
+        auto r = new Query("A", "www.neubot.org", [&](Response &&response) {
+            auto status_ok = (response.get_evdns_status() == DNS_ERR_CANCEL ||
+                              response.get_evdns_status() == DNS_ERR_NONE);
             REQUIRE(status_ok);
             // Ignoring all the other fields here
             measurement_kit::warn("- break_loop");
