@@ -18,7 +18,6 @@
 #include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/string_vector.hpp>
 #include <measurement_kit/common/utils.hpp>
 
 #endif

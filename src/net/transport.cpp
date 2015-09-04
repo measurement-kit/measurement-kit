@@ -12,11 +12,10 @@ namespace net {
 
 using namespace measurement_kit::common;
 
-static SharedPointer<Transport>
-connect_internal(Settings settings, Logger *logger) {
+static Transport connect_internal(Settings settings, Logger *logger) {
 
     if (settings.find("dumb_transport") != settings.end()) {
-        return std::make_shared<Dumb>(logger);
+        return Transport(new Dumb(logger));
     }
 
     if (settings.find("family") == settings.end()) {
@@ -40,16 +39,16 @@ connect_internal(Settings settings, Logger *logger) {
         auto port = proxy.substr(pos + 1);
         settings["socks5_address"] = address;
         settings["socks5_port"] = port;
-        return std::make_shared<Socks5>(settings, logger);
+        return Transport(new Socks5(settings, logger));
     }
 
-    return std::make_shared<Connection>(settings["family"].c_str(),
-            settings["address"].c_str(), settings["port"].c_str(),
-            logger);
+    return Transport(new Connection(settings["family"].c_str(),
+                     settings["address"].c_str(), settings["port"].c_str(),
+                     logger));
 }
 
-SharedPointer<Transport> connect(Settings settings, Logger *lp) {
-    double timeo = -1.0;  // No timeout by default
+Transport connect(Settings settings, Logger *lp) {
+    double timeo = 30.0;
     if (settings.find("timeout") != settings.end()) {
         size_t invalid;
         timeo = std::stod(settings["timeout"], &invalid);
@@ -59,7 +58,7 @@ SharedPointer<Transport> connect(Settings settings, Logger *lp) {
     }
     auto transport = connect_internal(settings, lp);
     if (timeo >= 0.0) {
-        transport->set_timeout(timeo);
+        transport.set_timeout(timeo);
     }
     return transport;
 }

@@ -7,24 +7,23 @@
 namespace measurement_kit {
 namespace net {
 
-Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
+Socks5::Socks5(Settings s, Logger *lp)
+        : Dumb(lp), settings(s),
+          conn(settings["family"].c_str(),
+               settings["socks5_address"].c_str(),
+               settings["socks5_port"].c_str()),
+          proxy_address(settings["socks5_address"]),
+          proxy_port(settings["socks5_port"]) {
 
     logger->debug("socks5: connecting to Tor at %s:%s",
                settings["socks5_address"].c_str(),
                settings["socks5_port"].c_str());
 
-    // Save address and port so they can be accessed later
-    proxy_address = settings["socks5_address"];
-    proxy_port = settings["socks5_port"];
+    // Step #0: Steal "error", "connect", and "flush" handlers
 
-    conn = std::make_shared<Connection>(settings["family"].c_str(),
-                                        settings["socks5_address"].c_str(),
-                                        settings["socks5_port"].c_str());
-
-    // Step #0: Steal "connect" and "flush" handlers
-
-    conn->on_connect([this]() {
-        conn->on_flush([]() {
+    conn.on_error([this](Error err) { emit_error(err); });
+    conn.on_connect([this]() {
+        conn.on_flush([]() {
             // Nothing
         });
 
@@ -36,7 +35,7 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
         out.write_uint8(5); // Version
         out.write_uint8(1); // Number of methods
         out.write_uint8(0); // "NO_AUTH" meth.
-        conn->send(out);
+        conn.send(out);
 
         logger->debug("socks5: >> version=5");
         logger->debug("socks5: >> number of methods=1");
@@ -44,9 +43,9 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
 
         // Step #2: receive the allowed authentication methods
 
-        conn->on_data([this](SharedPointer<Buffer> d) {
-            *buffer << *d;
-            auto readbuf = buffer->readn(2);
+        conn.on_data([this](Buffer &d) {
+            buffer << d;
+            auto readbuf = buffer.readn(2);
             if (readbuf == "") {
                 return; // Try again after next recv()
             }
@@ -56,7 +55,8 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
 
             if (readbuf[0] != 5 || // Reply version
                 readbuf[1] != 0) { // Preferred auth method
-                throw std::runtime_error("generic error");
+                emit_error(BadSocksVersionError());
+                return;
             }
 
             // Step #3: ask Tor to connect to remote host
@@ -75,7 +75,8 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
             auto address = settings["address"];
 
             if (address.length() > 255) {
-                throw std::runtime_error("generic error");
+                emit_error(SocksAddressTooLongError());
+                return;
             }
             out.write_uint8(address.length());            // Len
             out.write(address.c_str(), address.length()); // String
@@ -85,24 +86,25 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
 
             auto portnum = std::stoi(settings["port"]);
             if (portnum < 0 || portnum > 65535) {
-                throw std::runtime_error("generic error");
+                emit_error(SocksInvalidPortError());
+                return;
             }
             out.write_uint16(portnum); // Port
 
             logger->debug("socks5: >> port=%d", portnum);
 
-            conn->send(out);
+            conn.send(out);
 
             // Step #4: receive Tor's response
 
-            conn->on_data([this](SharedPointer<Buffer> d) {
+            conn.on_data([this](Buffer &d) {
 
-                *buffer << *d;
-                if (buffer->length() < 5) {
+                buffer << d;
+                if (buffer.length() < 5) {
                     return; // Try again after next recv()
                 }
 
-                auto peekbuf = buffer->peek(5);
+                auto peekbuf = buffer.peek(5);
 
                 logger->debug("socks5: << version=%d", peekbuf[0]);
                 logger->debug("socks5: << reply=%d", peekbuf[1]);
@@ -116,7 +118,8 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
                 if (peekbuf[0] != 5 || // Version
                     peekbuf[1] != 0 || // Reply
                     peekbuf[2] != 0) { // Reserved
-                    throw std::runtime_error("generic error");
+                    emit_error(SocksGenericError());
+                    return;
                 }
                 auto atype = peekbuf[3]; // Atype
 
@@ -129,14 +132,15 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
                 } else if (atype == 4) {
                     total += 16; // IPv6 addr size
                 } else {
-                    throw std::runtime_error("generic error");
+                    emit_error(SocksGenericError());
+                    return;
                 }
                 total += 2; // Port size
-                if (buffer->length() < total) {
+                if (buffer.length() < total) {
                     return; // Try again after next recv()
                 }
 
-                buffer->discard(total);
+                buffer.discard(total);
 
                 //
                 // Step #5: we are now connected
@@ -145,15 +149,14 @@ Socks5::Socks5(Settings s, Logger *lp) : settings(s), logger(lp) {
                 // If more data, pass it up
                 //
 
-                conn->on_data(
-                    [this](SharedPointer<Buffer> d) { on_data_fn(d); });
-                conn->on_flush([this]() { on_flush_fn(); });
+                conn.on_data([this](Buffer &d) { emit_data(d); });
+                conn.on_flush([this]() { emit_flush(); });
 
-                on_connect_fn();
+                emit_connect();
 
-                // Note that on_connect_fn() may have called close()
-                if (!isclosed && buffer->length() > 0) {
-                    on_data_fn(buffer);
+                // Note that emit_connect() may have called close()
+                if (!isclosed && buffer.length() > 0) {
+                    emit_data(buffer);
                 }
             });
         });

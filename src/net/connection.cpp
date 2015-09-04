@@ -10,7 +10,6 @@
 #include <event2/dns.h>
 
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/string_vector.hpp>
 #include <measurement_kit/net/connection.hpp>
 
 using namespace measurement_kit::common;
@@ -18,58 +17,34 @@ using namespace measurement_kit::common;
 namespace measurement_kit {
 namespace net {
 
-ConnectionState::~ConnectionState(void) {
-    /*
-     * TODO: switch to RAII.
-     */
+Connection::~Connection() {}
 
-    // connecting: nothing to be done
-
-    if (this->address != NULL)
-        free(this->address);
-    if (this->port != NULL)
-        free(this->port);
-    if (this->addrlist != NULL)
-        delete (this->addrlist);
-
-    if (this->family != NULL)
-        free(this->family);
-    if (this->pflist != NULL)
-        delete (this->pflist);
-
-    // must_resolve_ipv4: nothing to be done
-    // must_resolve_ipv6: nothing to be done
-}
-
-void ConnectionState::handle_read(bufferevent *bev, void *opaque) {
-    auto self = (ConnectionState *)opaque;
+void Connection::handle_read(bufferevent *bev, void *opaque) {
+    auto self = (Connection *)opaque;
     (void)bev; // Suppress warning about unused variable
-    auto fn = self->on_data_fn;
-    fn(std::make_shared<Buffer>(bufferevent_get_input(self->bev)));
+    Buffer buff(bufferevent_get_input(self->bev));
+    self->emit_data(buff);
 }
 
-void ConnectionState::handle_write(bufferevent *bev, void *opaque) {
-    auto self = (ConnectionState *)opaque;
+void Connection::handle_write(bufferevent *bev, void *opaque) {
+    auto self = (Connection *)opaque;
     (void)bev; // Suppress warning about unused variable
-    auto fn = self->on_flush_fn;
-    fn();
+    self->emit_flush();
 }
 
-void ConnectionState::handle_event(bufferevent *bev, short what, void *opaque) {
-    auto self = (ConnectionState *)opaque;
-    auto on_connect_fn = self->on_connect_fn;
-    auto on_error_fn = self->on_error_fn;
+void Connection::handle_event(bufferevent *bev, short what, void *opaque) {
+    auto self = (Connection *)opaque;
 
     (void)bev; // Suppress warning about unused variable
 
     if (what & BEV_EVENT_CONNECTED) {
         self->connecting = 0;
-        on_connect_fn();
+        self->emit_connect();
         return;
     }
 
     if (what & BEV_EVENT_EOF) {
-        on_error_fn(Error(0));
+        self->emit_error(EOFError());
         return;
     }
 
@@ -79,23 +54,20 @@ void ConnectionState::handle_event(bufferevent *bev, short what, void *opaque) {
         return;
     }
 
-    // TODO: also handle the timeout
+    if (what & BEV_EVENT_TIMEOUT) {
+        self->emit_error(TimeoutError());
+        return;
+    }
 
-    on_error_fn(Error(-1));
+    self->emit_error(SocketError());
 }
 
-ConnectionState::ConnectionState(const char *family, const char *address,
-                                 const char *port, Poller *poller,
-                                 Logger *lp, evutil_socket_t filenum) {
+Connection::Connection(const char *family, const char *address,
+                       const char *port, Poller *poller,
+                       Logger *lp, evutil_socket_t filenum) : Dumb(lp) {
     auto evbase = poller->get_event_base();
 
-    logger = lp;
-
     filenum = measurement_kit::socket_normalize_if_invalid(filenum);
-
-    /*
-     * TODO: switch to RAII.
-     */
 
     this->bev.make(evbase, filenum,
                    BEV_OPT_DEFER_CALLBACKS | BEV_OPT_CLOSE_ON_FREE);
@@ -105,36 +77,11 @@ ConnectionState::ConnectionState(const char *family, const char *address,
     if (!measurement_kit::socket_valid(filenum))
         this->connecting = 1;
 
-    if ((this->address = strdup(address)) == NULL) {
-        throw std::bad_alloc();
-    }
+    this->address = address;
 
-    if ((this->port = strdup(port)) == NULL) {
-        free(this->address);
-        throw std::bad_alloc();
-    }
+    this->port = port;
 
-    if ((this->addrlist = new (std::nothrow) StringVector(poller, 16)) ==
-        NULL) {
-        free(this->address);
-        free(this->port);
-        throw std::bad_alloc();
-    }
-
-    if ((this->family = strdup(family)) == NULL) {
-        free(this->address);
-        free(this->port);
-        delete (this->addrlist);
-        throw std::bad_alloc();
-    }
-
-    if ((this->pflist = new (std::nothrow) StringVector(poller, 16)) == NULL) {
-        free(this->address);
-        free(this->port);
-        delete (this->addrlist);
-        free(this->family);
-        throw std::bad_alloc();
-    }
+    this->family = family;
 
     // must_resolve_ipv4: if connecting, set later by this->resolve()
     // must_resolve_ipv6: if connecting, set later by this->resolve()
@@ -150,7 +97,7 @@ ConnectionState::ConnectionState(const char *family, const char *address,
             std::make_shared<DelayedCall>(0.0, [this]() { this->resolve(); });
 }
 
-void ConnectionState::connect_next(void) {
+void Connection::connect_next() {
     const char *address;
     int error;
     const char *family;
@@ -160,19 +107,19 @@ void ConnectionState::connect_next(void) {
     logger->info("connect_next - enter");
 
     for (;;) {
-        address = this->addrlist->get_next();
-        if (address == NULL) {
+        if (addrlist.empty()) {
             logger->warn("connect_next - no more available addrs");
             break;
         }
-        family = this->pflist->get_next();
-        if (family == NULL)
-            abort();
+        auto pair = addrlist.front();
+        addrlist.pop_front();
+        family = pair.first.c_str();
+        address = pair.second.c_str();
 
         logger->info("connect_next - %s %s", family, address);
 
         error =
-            measurement_kit::storage_init(&storage, &total, family, address, this->port);
+            measurement_kit::storage_init(&storage, &total, family, address, this->port.c_str());
         if (error != 0)
             continue;
 
@@ -203,14 +150,13 @@ void ConnectionState::connect_next(void) {
     }
 
     this->connecting = 0;
-    this->on_error_fn(Error(-2));
+    this->emit_error(ConnectFailedError());
 }
 
-void ConnectionState::handle_resolve(int result, char type,
+void Connection::handle_resolve(int result, char type,
                                      std::vector<std::string> results) {
 
     const char *_family;
-    int error;
 
     logger->info("handle_resolve - enter");
 
@@ -235,20 +181,8 @@ void ConnectionState::handle_resolve(int result, char type,
 
     for (auto &address : results) {
         logger->info("handle_resolve - address %s", address.c_str());
-        error = addrlist->append(address.c_str());
-        if (error != 0) {
-            logger->warn("handle_resolve - cannot append");
-            continue;
-        }
         logger->info("handle_resolve - family %s", _family);
-        error = pflist->append(_family);
-        if (error != 0) {
-            logger->warn("handle_resolve - cannot append");
-            // Oops the two vectors are not in sync anymore now
-            connecting = 0;
-            on_error_fn(Error(-3));
-            return;
-        }
+        addrlist.push_back(std::make_pair(_family, address));
     }
 
 finally:
@@ -269,7 +203,7 @@ finally:
     connect_next();
 }
 
-bool ConnectionState::resolve_internal(char type) {
+bool Connection::resolve_internal(char type) {
 
     std::string query;
 
@@ -293,7 +227,7 @@ bool ConnectionState::resolve_internal(char type) {
     return true;
 }
 
-void ConnectionState::resolve() {
+void Connection::resolve() {
     struct sockaddr_storage storage;
     int result;
 
@@ -302,51 +236,37 @@ void ConnectionState::resolve() {
 
     // If address is a valid IPv4 address, connect directly
     memset(&storage, 0, sizeof(storage));
-    result = inet_pton(PF_INET, address, &storage);
+    result = inet_pton(PF_INET, address.c_str(), &storage);
     if (result == 1) {
-        logger->info("resolve - address %s", address);
+        logger->info("resolve - address %s", address.c_str());
         logger->info("resolve - family PF_INET");
-        if (addrlist->append(address) != 0 || pflist->append("PF_INET") != 0) {
-            logger->warn("resolve - cannot append");
-            connecting = 0;
-            on_error_fn(Error(-4));
-            return;
-        }
+        addrlist.push_back(std::make_pair("PF_INET", address));
         connect_next();
         return;
     }
 
     // If address is a valid IPv6 address, connect directly
     memset(&storage, 0, sizeof(storage));
-    result = inet_pton(PF_INET6, address, &storage);
+    result = inet_pton(PF_INET6, address.c_str(), &storage);
     if (result == 1) {
-        logger->info("resolve - address %s", address);
+        logger->info("resolve - address %s", address.c_str());
         logger->info("resolve - family PF_INET6");
-        if (addrlist->append(address) != 0 || pflist->append("PF_INET6") != 0) {
-            logger->warn("resolve - cannot append");
-            connecting = 0;
-            on_error_fn(Error(-4));
-            return;
-        }
+        addrlist.push_back(std::make_pair("PF_INET6", address));
         connect_next();
         return;
     }
 
     // Note: PF_UNSPEC6 means that we try with IPv6 first
-    if (strcmp(family, "PF_INET") == 0)
+    if (family == "PF_INET")
         must_resolve_ipv4 = 1;
-    else if (strcmp(family, "PF_INET6") == 0)
+    else if (family == "PF_INET6")
         must_resolve_ipv6 = 1;
-    else if (strcmp(family, "PF_UNSPEC") == 0)
+    else if (family == "PF_UNSPEC")
         must_resolve_ipv4 = 1;
-    else if (strcmp(family, "PF_UNSPEC6") == 0)
+    else if (family == "PF_UNSPEC6")
         must_resolve_ipv6 = 1;
-    else {
-        logger->warn("connection::resolve - invalid PF_xxx");
-        connecting = 0;
-        on_error_fn(Error(-5));
-        return;
-    }
+    else
+        throw std::runtime_error("invalid PF_xxx");
 
     bool ok = false;
 
@@ -359,22 +279,20 @@ void ConnectionState::resolve() {
     }
     if (!ok) {
         connecting = 0;
-        on_error_fn(Error(-6));
+        emit_error(DNSGenericError());
         return;
     }
 
     // Arrange for the next resolve operation that we will need
-    if (strcmp(family, "PF_UNSPEC") == 0)
+    if (family == "PF_UNSPEC")
         must_resolve_ipv6 = 1;
-    else if (strcmp(family, "PF_UNSPEC6") == 0)
+    else if (family == "PF_UNSPEC6")
         must_resolve_ipv4 = 1;
 }
 
-void ConnectionState::close(void) {
+void Connection::close() {
     this->bev.close();
     this->dns_request.cancel();
 }
-
-Connection::~Connection() { delete state; /* delete handles NULL */ }
 
 }}

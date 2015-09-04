@@ -17,98 +17,107 @@ namespace net {
 
 using namespace measurement_kit::common;
 
-class Dumb : public Transport {
+class Dumb : public TransportInterface {
+private:
+    std::function<void()> do_connect = []() {};
+    std::function<void(Buffer &)> do_data = [](Buffer &) {};
+    std::function<void()> do_flush = []() {};
+    std::function<void(Error)> do_error = [](Error) {};
 
-    std::function<void()> do_connect;
-    std::function<void(SharedPointer<Buffer>)> do_data;
-    std::function<void()> do_flush;
-    std::function<void(Error)> do_error;
-
+protected:
     Logger *logger = Logger::global();
 
 public:
-
-    virtual void emit_connect() override {
+    void emit_connect() override {
         logger->debug("dumb: emit 'connect' event");
-        do_connect();
+        // With GNU C++ library, if a std::function sets itself, the
+        // associated context is free() leading to segfault
+        auto fn = do_connect;
+        fn();
     }
 
-    virtual void emit_data(SharedPointer<Buffer> data) override {
+    virtual void emit_data(Buffer &data) override {
         logger->debug("dumb: emit 'data' event");
-        do_data(data);
+        // With GNU C++ library, if a std::function sets itself, the
+        // associated context is free() leading to segfault
+        auto fn = do_data;
+        fn(data);
     }
 
-    virtual void emit_flush() override {
+    void emit_flush() override {
         logger->debug("dumb: emit 'flush' event");
-        do_flush();
+        // With GNU C++ library, if a std::function sets itself, the
+        // associated context is free() leading to segfault
+        auto fn = do_flush;
+        fn();
     }
 
-    virtual void emit_error(Error err) override {
+    void emit_error(Error err) override {
         logger->debug("dumb: emit 'error' event");
-        do_error(err);
+        // With GNU C++ library, if a std::function sets itself, the
+        // associated context is free() leading to segfault
+        auto fn = do_error;
+        fn(err);
     }
 
     Dumb(Logger *lp = Logger::global()) : logger(lp) {}
 
-    virtual void on_connect(std::function<void()> fn) override {
+    ~Dumb() override {}
+
+    void on_connect(std::function<void()> fn) override {
         logger->debug("dumb: register 'connect' handler");
         do_connect = fn;
     }
 
-    virtual void on_ssl(std::function<void()>) override {
+    void on_ssl(std::function<void()>) override {
         logger->debug("dumb: register 'ssl' handler");
         // currently not implemented
     }
 
-    virtual void
-    on_data(std::function<void(SharedPointer<Buffer>)> fn) override {
+    virtual void on_data(std::function<void(Buffer &)> fn) override {
         logger->debug("dumb: register 'data' handler");
         do_data = fn;
     }
 
-    virtual void on_flush(std::function<void()> fn) override {
+    void on_flush(std::function<void()> fn) override {
         logger->debug("dumb: register 'flush' handler");
         do_flush = fn;
     }
 
-    virtual void on_error(std::function<void(Error)> fn) override {
+    void on_error(std::function<void(Error)> fn) override {
         logger->debug("dumb: register 'error' handler");
         do_error = fn;
     }
 
-    virtual void set_timeout(double timeo) override {
+    void set_timeout(double timeo) override {
         logger->debug("dumb: set_timeout %f", timeo);
     }
 
-    virtual void clear_timeout() override {
+    void clear_timeout() override {
         logger->debug("dumb: clear_timeout");
     }
 
-    virtual void send(const void*, size_t) override {
+    void send(const void*, size_t) override {
         logger->debug("dumb: send opaque data");
     }
 
-    virtual void send(std::string) override {
+    void send(std::string) override {
         logger->debug("dumb: send string");
     }
 
-    virtual void send(SharedPointer<Buffer>) override {
-        logger->debug("dumb: send pointer to buffer");
-    }
-
-    virtual void send(Buffer&) override {
+    void send(Buffer &) override {
         logger->debug("dumb: send buffer");
     }
 
-    virtual void close() override {
+    void close() override {
         logger->debug("dumb: close");
     }
 
-    virtual std::string socks5_address() override {
+    std::string socks5_address() override {
         return "";
     }
 
-    virtual std::string socks5_port() override {
+    std::string socks5_port() override {
         return "";
     }
 };

@@ -7,7 +7,6 @@ src_common_libcommon_la_SOURCES = \
 	src/common/logger.cpp \
 	src/common/net_test.cpp \
 	src/common/poller.cpp \
-	src/common/string_vector.cpp \
 	src/common/utils.cpp
 
 libmeasurement_kit_la_LIBADD += src/common/libcommon.la
@@ -27,5 +26,4 @@ commoninclude_HEADERS = \
     include/measurement_kit/common/error.hpp \
     include/measurement_kit/common/libs.hpp \
     include/measurement_kit/common/logger.hpp \
-    include/measurement_kit/common/poller.hpp \
-    include/measurement_kit/common/string_vector.hpp
+    include/measurement_kit/common/poller.hpp

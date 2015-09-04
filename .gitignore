@@ -70,6 +70,7 @@ test/echo_client2
 test/echo_client_evbuf
 test/net/buffer
 test/net/connection
+test/net/connection_check_fds
 test/net/dns
 test/ooni/dns_injection
 test/ooni/net_test
