@@ -8,6 +8,7 @@
 #include <measurement_kit/net/buffer.hpp>
 #include <measurement_kit/net/connection.hpp>
 #include <measurement_kit/net/dumb.hpp>
+#include <measurement_kit/net/error.hpp>
 #include <measurement_kit/net/socks5.hpp>
 #include <measurement_kit/net/transport.hpp>
 

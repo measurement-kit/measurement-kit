@@ -22,9 +22,6 @@ bool y = (error == 17);     // Also here
 In general MeasurementKit code reports errors using the `Error` class
 and uses exceptions only to report unrecoverable errors.
 
-It should be possible to pull all possible errors by including
-the `common.hpp` header of MeasurementKit.
-
 # HISTORY
 
 The `Error` class appeared in MeasurementKit 0.1.
