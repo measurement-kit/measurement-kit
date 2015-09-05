@@ -24,40 +24,11 @@ class Response;
 
 using namespace measurement_kit::common;
 
-/*!
- * \brief DNS Resolver object.
- *
- * This object can be used to construct specific DNS resolvers that
- * differ from the default DNS resolver of measurement-kit.
- *
- * In other words, to use the default DNS resolver, one does not need
- * to create an instance of this object.
- *
- * Once a custom resolver is created, one can use it to issue DNS query.
- *
- * For example:
- *
- *     using namespace measurement-kit;
- *
- *     auto reso = dns::Resolver({
- *         {"nameserver", "8.8.8.8"},
- *         {"timeout", "1.0"},
- *         {"attempts", "4"},
- *         {"randomize_case", "1"},
- *     });
- *
- *     reso.query("REVERSE_AAAA", "2001:858:2:2:aabb:0:563b:1e28",
- *             [](dns::Response&& response) {
- *         // Process the response
- *     });
- *
- * The query created this way is bound to the resolver object and is
- * destroyed when the resolver is destroyed (in particular, the callback
- * will be invoked with evdns code equal to DNS_ERR_SHUTDOWN).
- */
+/// DNS Resolver object.
 class Resolver : public NonCopyable, public NonMovable {
 
-    void cleanup(void);
+  private:
+    void cleanup();
 
   protected:
     Settings settings;
@@ -67,26 +38,10 @@ class Resolver : public NonCopyable, public NonMovable {
     Logger *logger = Logger::global();
 
   public:
-    /*!
-     * \brief Default constructor.
-     */
-    Resolver(void) { /* nothing to do */ }
+    /// Default constructor.
+    Resolver() {}
 
-    /*!
-     * \brief Constructor with specific settings.
-     * \param settings_ Specific settings. In practice this is a map
-     *        from string to string in which the following settings
-     *        are accepted:
-     *
-     *            "nameserver": IP address of nameserver
-     *            "attempts": number of query attempts on error
-     *            "timeout": timeout in seconds (as a float)
-     *            "randomize_case": randomize query's case (0x20 hack)
-     *
-     *        The default is to use the system's nameserver, to make
-     *        3 attempts, to timeout after 5.0 seconds, not to randomize
-     *        the case.
-     */
+    /// Constructor with specific settings.
     Resolver(Settings settings_, Logger *lp = Logger::global(),
              Libs *lev = nullptr, Poller *plr = nullptr) {
         if (lev != nullptr) {
@@ -99,27 +54,15 @@ class Resolver : public NonCopyable, public NonMovable {
         logger = lp;
     }
 
-    /*!
-     * \brief Get the evdns_base bound to the settings.
-     * \returns An evdns_base instance.
-     * \remark This class uses lazy allocation and the allocation of
-     *         the evdns_base occurs the first time you call this method.
-     * \throws std::bad_alloc if some allocation fails.
-     * \throws std::runtime_error if some edvns API fails.
-     */
-    evdns_base *get_evdns_base(void);
+    /// Get the evdns_base bound to the settings.
+    evdns_base *get_evdns_base();
 
-    /*!
-     * \brief Issue a Query using this resolver.
-     * \see Query::Query().
-     */
+    /// Issue a Query using this resolver.
     void query(std::string query, std::string address,
                std::function<void(Response &&)> &&func);
 
-    /*!
-     * \brief Default destructor.
-     */
-    ~Resolver(void) { cleanup(); }
+    /// Default destructor.
+    ~Resolver() { cleanup(); }
 };
 
 } // namespace dns
