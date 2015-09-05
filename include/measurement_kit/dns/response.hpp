@@ -26,7 +26,7 @@ class Response {
     int code = 66 /* = DNS_ERR_UNKNOWN */;
     double rtt = 0.0;
     int ttl = 0;
-
+    char type = 0;
     std::vector<std::string> results;
 
   public:
@@ -61,6 +61,9 @@ class Response {
     /// Get the time elapsed since the request was sent until
     /// the response was received.
     double get_rtt() { return rtt; }
+
+    /// Return the evdns type (e.g. DNS_IPv4_A)
+    char get_type() { return type; }
 
     /// Static function to map evdns status codes to OONI failures.
     static std::string map_failure_(int code);
