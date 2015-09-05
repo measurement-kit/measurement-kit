@@ -104,7 +104,7 @@ evdns_base *Resolver::get_evdns_base(void) {
 }
 
 void Resolver::query(std::string query, std::string address,
-                     std::function<void(Response &&)> &&func) {
+                     std::function<void(Response)> func) {
     //
     // Note: QueryImpl implements the autodelete behavior, meaning that
     // it shall delete itself once its callback is called. The callback
@@ -114,7 +114,7 @@ void Resolver::query(std::string query, std::string address,
     //
     auto cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
-    QueryImpl::issue(query, address, std::move(func), logger, get_evdns_base(),
+    QueryImpl::issue(query, address, func, logger, get_evdns_base(),
                      libs, cancelled);
 }
 

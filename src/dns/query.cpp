@@ -26,7 +26,7 @@ namespace dns {
 using namespace measurement_kit::common;
 
 Query::Query(std::string query, std::string address,
-             std::function<void(Response &&)> &&func, Logger *lp,
+             std::function<void(Response)> func, Logger *lp,
              evdns_base *dnsb, Libs *libs) {
     if (dnsb == nullptr) {
         dnsb = measurement_kit::get_global_evdns_base();
@@ -36,8 +36,7 @@ Query::Query(std::string query, std::string address,
     }
     cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
-    QueryImpl::issue(query, address, std::move(func), lp, dnsb, libs,
-                     cancelled);
+    QueryImpl::issue(query, address, func, lp, dnsb, libs, cancelled);
 }
 
 void Query::cancel(void) {

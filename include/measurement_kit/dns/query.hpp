@@ -35,7 +35,7 @@ class Query {
 
     /// Start an async DNS request.
     Query(std::string query, std::string address,
-          std::function<void(Response &&)> &&func,
+          std::function<void(Response)> func,
           Logger *lp = Logger::global(), evdns_base *dnsb = nullptr,
           Libs *libs = nullptr);
 

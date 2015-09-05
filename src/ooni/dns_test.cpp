@@ -13,7 +13,7 @@ using namespace measurement_kit::common;
 void
 DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
                std::string query_name, std::string nameserver,
-               std::function<void(Response&&)>&& cb)
+               std::function<void(Response)> cb)
 {
     resolver = std::make_shared<Resolver>(Settings{
         {"nameserver", nameserver},
@@ -35,7 +35,7 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
     }
     resolver->query(
         query, query_name, 
-        [=](Response&& response) {
+        [=](Response response) {
             logger.debug("dns_test: got response!");
             YAML::Node query_entry;
             if (query_type == QueryType::A) {
@@ -66,7 +66,7 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
             // query_entry["bytes"] = response.get_bytes();
             entry["queries"].push_back(query_entry);
             logger.debug("dns_test: callbacking");
-            cb(std::move(response));
+            cb(response);
             logger.debug("dns_test: callback called");
     });
 }

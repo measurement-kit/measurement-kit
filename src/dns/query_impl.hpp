@@ -51,7 +51,7 @@ class QueryImpl {
     // variable to keep track of cancelled requests.
     //
 
-    std::function<void(Response &&)> callback;
+    std::function<void(Response)> callback;
     double ticks = 0.0; // just to initialize to something
     Libs *libs;         // should not be nullptr (this is asserted below)
     SharedPointer<bool> cancelled;
@@ -100,7 +100,7 @@ class QueryImpl {
 
     // Private to enforce usage through issue()
     QueryImpl(std::string query, std::string address,
-              std::function<void(Response &&)> &&f, Logger *lp,
+              std::function<void(Response)> f, Logger *lp,
               evdns_base *base, Libs *lev, SharedPointer<bool> cancd)
         : callback(f), libs(lev), cancelled(cancd), logger(lp) {
 
@@ -145,10 +145,9 @@ class QueryImpl {
 
   public:
     static void issue(std::string query, std::string address,
-                      std::function<void(Response &&)> &&func, Logger *logger,
+                      std::function<void(Response)> func, Logger *logger,
                       evdns_base *base, Libs *lev, SharedPointer<bool> cancd) {
-        new QueryImpl(query, address, std::move(func), logger, base, lev,
-                      cancd);
+        new QueryImpl(query, address, func, logger, base, lev, cancd);
     }
 };
 

@@ -185,7 +185,7 @@ TEST_CASE("We can override the default timeout") {
                            {"timeout", "0.5"}});
 
     auto ticks = measurement_kit::time_now();
-    reso.query("A", "www.neubot.org", [&](Response &&response) {
+    reso.query("A", "www.neubot.org", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
@@ -212,7 +212,7 @@ TEST_CASE("We can override the default number of tries") {
     });
 
     auto ticks = measurement_kit::time_now();
-    reso.query("A", "www.neubot.org", [&](Response &&response) {
+    reso.query("A", "www.neubot.org", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
@@ -251,7 +251,7 @@ TEST_CASE("The default custom resolver works as expected") {
 
     Resolver reso;
 
-    reso.query("A", "www.neubot.org", [&](Response &&response) {
+    reso.query("A", "www.neubot.org", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -263,7 +263,7 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     measurement_kit::loop();
 
-    reso.query("REVERSE_A", "130.192.16.172", [&](Response &&response) {
+    reso.query("REVERSE_A", "130.192.16.172", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -275,7 +275,7 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     measurement_kit::loop();
 
-    reso.query("AAAA", "ooni.torproject.org", [&](Response &&response) {
+    reso.query("AAAA", "ooni.torproject.org", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -294,7 +294,7 @@ TEST_CASE("The default custom resolver works as expected") {
     measurement_kit::loop();
 
     reso.query("REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
-               [&](Response &&response) {
+               [&](Response response) {
                    REQUIRE(response.get_reply_authoritative() == "unknown");
                    REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
                    REQUIRE(response.get_failure() == "");
@@ -327,7 +327,7 @@ TEST_CASE("A specific custom resolver works as expected") {
         {"nameserver", "8.8.4.4"},
     }));
 
-    reso.query("A", "www.neubot.org", [&](Response &&response) {
+    reso.query("A", "www.neubot.org", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -339,7 +339,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     measurement_kit::loop();
 
-    reso.query("REVERSE_A", "130.192.16.172", [&](Response &&response) {
+    reso.query("REVERSE_A", "130.192.16.172", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -351,7 +351,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     measurement_kit::loop();
 
-    reso.query("AAAA", "ooni.torproject.org", [&](Response &&response) {
+    reso.query("AAAA", "ooni.torproject.org", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -370,7 +370,7 @@ TEST_CASE("A specific custom resolver works as expected") {
     measurement_kit::loop();
 
     reso.query("REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
-               [&](Response &&response) {
+               [&](Response response) {
                    REQUIRE(response.get_reply_authoritative() == "unknown");
                    REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
                    REQUIRE(response.get_failure() == "");
@@ -397,7 +397,7 @@ TEST_CASE("If the resolver dies the requests are aborted") {
         {"nameserver", "130.192.91.231"},
     }));
 
-    reso->query("A", "www.neubot.org", [&](Response &&response) {
+    reso->query("A", "www.neubot.org", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_SHUTDOWN);
@@ -443,7 +443,7 @@ TEST_CASE("A request to a nonexistent server times out") {
     Resolver reso(Settings{
         {"nameserver", "130.192.91.231"}, {"attempts", "1"},
     });
-    reso.query("A", "www.neubot.org", [&](Response &&response) {
+    reso.query("A", "www.neubot.org", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
@@ -489,7 +489,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     auto total = 0.0;
     auto count = 0;
     for (auto i = 0; i < 16; ++i) {
-        reso.query("A", "www.neubot.org", [&](Response &&response) {
+        reso.query("A", "www.neubot.org", [&](Response response) {
             if (response.get_evdns_status() == DNS_ERR_NONE) {
                 total += response.get_rtt();
                 count += 1;
@@ -507,7 +507,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
 
     // for (;;) {  // only try this at home
     for (auto i = 0; i < 16; ++i) {
-        auto r = new Query("A", "www.neubot.org", [&](Response &&response) {
+        auto r = new Query("A", "www.neubot.org", [&](Response response) {
             auto status_ok = (response.get_evdns_status() == DNS_ERR_CANCEL ||
                               response.get_evdns_status() == DNS_ERR_NONE);
             REQUIRE(status_ok);
