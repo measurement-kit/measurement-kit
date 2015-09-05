@@ -5,7 +5,7 @@
 #ifndef MEASUREMENT_KIT_NET_BUFFER_HPP
 #define MEASUREMENT_KIT_NET_BUFFER_HPP
 
-#include <measurement_kit/common/error.hpp>
+#include <measurement_kit/net/error.hpp>
 #include <measurement_kit/common/evbuffer.hpp>
 
 #include <event2/buffer.h>
@@ -144,7 +144,7 @@ class Buffer {
             evbuffer_search_eol(evbuf, nullptr, &eol_length, EVBUFFER_EOL_CRLF);
         if (search_result.pos < 0) {
             if (length() > maxline)
-                return std::make_tuple(common::EOLNotFoundError(), "");
+                return std::make_tuple(EOLNotFoundError(), "");
             return std::make_tuple(0, "");
         }
 
@@ -156,7 +156,7 @@ class Buffer {
             throw std::runtime_error("unexpected error");
         auto len = (size_t)search_result.pos + eol_length;
         if (len > maxline)
-            return std::make_tuple(common::LineTooLongError(), "");
+            return std::make_tuple(LineTooLongError(), "");
 
         return std::make_tuple(0, read(len));
     }
