@@ -31,13 +31,7 @@ namespace dns {
 
 using namespace measurement_kit::common;
 
-/*!
- * \brief Implementation of Query.
- *
- * This is the internal object thanks to which Query is movable. Of
- * course, QueryImpl is not movable, since its address is passed to
- * one of the many evnds delayed requests functions.
- */
+/// Implementation of Query.
 class QueryImpl {
 
     //
@@ -102,9 +96,7 @@ class QueryImpl {
     }
 
     // Declared explicitly as private so one cannot delete this object
-    ~QueryImpl() {
-        // Nothing to see here, move along :)
-    }
+    ~QueryImpl() {}
 
     // Private to enforce usage through issue()
     QueryImpl(std::string query, std::string address,
