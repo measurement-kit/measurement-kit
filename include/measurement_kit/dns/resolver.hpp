@@ -59,7 +59,7 @@ class Resolver : public NonCopyable, public NonMovable {
 
     /// Issue a Query using this resolver.
     void query(std::string query, std::string address,
-               std::function<void(Response &&)> &&func);
+               std::function<void(Response)> func);
 
     /// Default destructor.
     ~Resolver() { cleanup(); }

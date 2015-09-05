@@ -124,7 +124,7 @@ TEST_CASE("Query::cancel() is idempotent") {
     // we check that we can get rid of a pending request.
     //
 
-    auto r1 = Query("A", "www.neubot.org", [&](Response && /*response*/) {
+    auto r1 = Query("A", "www.neubot.org", [&](Response /*response*/) {
         // nothing
     });
 
@@ -162,7 +162,7 @@ TEST_CASE("Query::cancel() is safe when a request is pending") {
 
     auto failed = false;
     {
-        auto r1 = Query("A", "www.neubot.org", [&](Response && /*response*/) {
+        auto r1 = Query("A", "www.neubot.org", [&](Response /*response*/) {
             //
             // This callback should not be invoked, because QueryImpl
             // should honor its `cancelled` field and therefore should delete
@@ -200,7 +200,7 @@ TEST_CASE("Move semantic works for request") {
 
         REQUIRE_THROWS(*r1.get_cancelled_());
 
-        TransparentQuery r2{"A", "www.neubot.org", [](Response &&) {
+        TransparentQuery r2{"A", "www.neubot.org", [](Response) {
                                 /* nothing */
                             }};
         REQUIRE(*r2.get_cancelled_() == false);
@@ -213,7 +213,7 @@ TEST_CASE("Move semantic works for request") {
     }
 
     SECTION("Move constructor") {
-        TransparentQuery r2{"A", "www.neubot.org", [](Response &&) {
+        TransparentQuery r2{"A", "www.neubot.org", [](Response) {
                                 /* nothing */
                             }};
         REQUIRE(*r2.get_cancelled_() == false);
@@ -252,7 +252,7 @@ TEST_CASE("The system resolver works as expected") {
         measurement_kit::break_loop();
     });
 
-    auto r1 = Query("A", "www.neubot.org", [&](Response &&response) {
+    auto r1 = Query("A", "www.neubot.org", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -264,7 +264,7 @@ TEST_CASE("The system resolver works as expected") {
     });
     measurement_kit::loop();
 
-    auto r2 = Query("REVERSE_A", "130.192.16.172", [&](Response &&response) {
+    auto r2 = Query("REVERSE_A", "130.192.16.172", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -276,7 +276,7 @@ TEST_CASE("The system resolver works as expected") {
     });
     measurement_kit::loop();
 
-    auto r3 = Query("AAAA", "ooni.torproject.org", [&](Response &&response) {
+    auto r3 = Query("AAAA", "ooni.torproject.org", [&](Response response) {
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_failure() == "");
@@ -296,7 +296,7 @@ TEST_CASE("The system resolver works as expected") {
 
     auto r4 = Query(
         "REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
-        [&](Response &&response) {
+        [&](Response response) {
             REQUIRE(response.get_reply_authoritative() == "unknown");
             REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
             REQUIRE(response.get_failure() == "");
@@ -316,9 +316,9 @@ class SafeToDeleteQueryInItsOwnCallback {
 
   public:
     SafeToDeleteQueryInItsOwnCallback() {
-        request = Query("A", "nexa.polito.it", [this](Response &&) {
+        request = Query("A", "nexa.polito.it", [this](Response) {
             // This assignment should trigger the original request's destructor
-            request = Query("AAAA", "nexa.polito.it", [this](Response &&) {
+            request = Query("AAAA", "nexa.polito.it", [this](Response) {
                 measurement_kit::break_loop();
             });
         });

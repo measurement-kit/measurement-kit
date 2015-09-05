@@ -38,7 +38,7 @@ public:
 
     void query(QueryType query_type, QueryClass query_class,
         std::string query_name, std::string nameserver,
-        std::function<void(Response&&)>&& cb);
+        std::function<void(Response)> cb);
 
 };
 

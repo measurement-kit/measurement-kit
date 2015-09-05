@@ -22,9 +22,9 @@ namespace dns {
 
 using namespace measurement_kit::common;
 
-Response::Response(int code_, char type, int count, int ttl_, double started,
+Response::Response(int code_, char type_, int count, int ttl_, double started,
                    void *addresses, Logger *logger, Libs *libs, int start_from)
-    : code(code_), ttl(ttl_) {
+    : code(code_), ttl(ttl_), type(type_) {
     assert(start_from >= 0);
 
     if (libs == NULL) {
