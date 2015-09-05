@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <measurement_kit/dns/error.hpp>
 #include <measurement_kit/ooni/dns_test.hpp>
 
 namespace measurement_kit {
@@ -11,7 +12,7 @@ using namespace measurement_kit::dns;
 using namespace measurement_kit::common;
 
 void
-DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
+DNSTest::query(QueryType query_type, QueryClass query_class,
                std::string query_name, std::string nameserver,
                std::function<void(Response)> cb)
 {
@@ -27,25 +28,19 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
     std::getline(nameserver_ss, nameserver_part, ':');
     entry["resolver"].push_back(nameserver_part);
 
-    std::string query;
-    if (query_type == QueryType::A) {
-        query = "A";
-    } else {
-        throw UnsupportedQueryType("Currently we only support A");
-    }
     resolver->query(
-        query, query_name, 
-        [=](Response response) {
+        query_class, query_type, query_name,
+        [=](Error error, Response response) {
             logger.debug("dns_test: got response!");
             YAML::Node query_entry;
-            if (query_type == QueryType::A) {
+            if (query_type == QueryTypeId::A) {
               query_entry["query_type"] = "A";
               query_entry["query"] = "[Query('" + query_name +  ", 1, 1')]";
             }
-            if (response.get_evdns_status() == DNS_ERR_NONE) {
+            if (!error) {
                 int idx = 0;
                 for (auto result: response.get_results()) {
-                    if (query_type == QueryType::A) {
+                    if (query_type == QueryTypeId::A) {
                         std::string rr;
                         rr = "<RR name=" + query_name + " ";
                         rr += "type=A class=IN ";
@@ -59,7 +54,7 @@ DNSTest::query(QueryType query_type, QueryClass /*query_class*/,
                 }
             } else {
                 query_entry["answers"][0] = NULL;
-                query_entry["failure"] = response.get_failure();
+                query_entry["failure"] = error.as_ooni_error();
             }
             query_entry["rtt"] = response.get_rtt();
             // TODO add support for bytes received

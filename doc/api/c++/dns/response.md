@@ -11,7 +11,7 @@ MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
 
 using namespace measurement_kit::dns;
 
-Response respose;         // by default evdns status is DNS_ERR_UNKNOWN
+Response response;        // by default evdns status is DNS_ERR_UNKNOWN
 
 Response resp(
         DNS_ERR_NONE,     // evdns status code
@@ -29,15 +29,8 @@ for (std::string s : resp.get_results()) {
 // Returns whether the response is authoritative
 std::string authoritative = resp.is_authoritative();
 
-// Return evdns status
+// Return evdns status (this is mainly used internally)
 int code = resp.get_evdns_status();
-if (code != DNS_ERR_NONE) {
-    /* TODO: handle the error */
-    return;
-}
-
-// Get OONI failure string corresponding to evdns status
-std::string failure = resp.get_failure();
 
 // Get time to live
 int ttl = resp.get_ttl();

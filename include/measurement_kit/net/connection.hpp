@@ -56,7 +56,7 @@ class Connection : public Dumb {
 
     // Functions used when connecting
     void connect_next();
-    void handle_resolve(int, char, std::vector<std::string>);
+    void handle_resolve(common::Error, char, std::vector<std::string>);
     void resolve();
     bool resolve_internal(char);
 

@@ -152,8 +152,8 @@ void Connection::connect_next() {
     this->emit_error(ConnectFailedError());
 }
 
-void Connection::handle_resolve(int result, char type,
-                                     std::vector<std::string> results) {
+void Connection::handle_resolve(common::Error error, char type,
+                                std::vector<std::string> results) {
 
     const char *_family;
 
@@ -162,7 +162,7 @@ void Connection::handle_resolve(int result, char type,
     if (!connecting)
         abort();
 
-    if (result != DNS_ERR_NONE)
+    if (error)
         goto finally;
 
     switch (type) {
@@ -204,24 +204,21 @@ finally:
 
 bool Connection::resolve_internal(char type) {
 
-    std::string query;
+    dns::QueryTypeId query;
 
     if (type == DNS_IPv6_AAAA) {
-        query = "AAAA";
+        query = dns::QueryTypeId::AAAA;
     } else if (type == DNS_IPv4_A) {
-        query = "A";
+        query = dns::QueryTypeId::A;
     } else {
         return false;
     }
 
-    try {
-        dns_request = dns::Query(query, address, [this](dns::Response resp) {
-            handle_resolve(resp.get_evdns_status(), resp.get_type(),
-                           resp.get_results());
-        }, logger, poller->get_evdns_base());
-    } catch (...) {
-        return false; /* TODO: save the error */
-    }
+    dns_request = dns::Query(dns::QueryClassId::IN, query, address,
+            [this](common::Error error, dns::Response resp) {
+        handle_resolve(error, resp.get_type(), resp.get_results(),
+            logger, poller->get_evdns_base());
+    });
 
     return true;
 }

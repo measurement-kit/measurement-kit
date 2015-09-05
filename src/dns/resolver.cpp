@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <measurement_kit/dns/defines.hpp>
 #include <measurement_kit/dns/query.hpp>
 #include <measurement_kit/dns/response.hpp>
 #include <measurement_kit/dns/resolver.hpp>
@@ -103,8 +104,8 @@ evdns_base *Resolver::get_evdns_base(void) {
     return base;
 }
 
-void Resolver::query(std::string query, std::string address,
-                     std::function<void(Response)> func) {
+void Resolver::query(QueryClass dns_class, QueryType dns_type,
+                     std::string name, std::function<void(Error, Response)> f) {
     //
     // Note: QueryImpl implements the autodelete behavior, meaning that
     // it shall delete itself once its callback is called. The callback
@@ -114,8 +115,8 @@ void Resolver::query(std::string query, std::string address,
     //
     auto cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
-    QueryImpl::issue(query, address, func, logger, get_evdns_base(),
-                     libs, cancelled);
+    QueryImpl::issue(dns_class, dns_type, name, f, logger,
+                     get_evdns_base(), libs, cancelled);
 }
 
 } // namespace dns

@@ -52,9 +52,6 @@ class Response {
     /// Get the integer status code returned by evdns.
     int get_evdns_status() { return code; }
 
-    /// Map the status code returned by evdns to a OONI failure string.
-    std::string get_failure() { return map_failure_(code); }
-
     /// Get the time to live of the response.
     int get_ttl() { return ttl; }
 
@@ -64,9 +61,6 @@ class Response {
 
     /// Return the evdns type (e.g. DNS_IPv4_A)
     char get_type() { return type; }
-
-    /// Static function to map evdns status codes to OONI failures.
-    static std::string map_failure_(int code);
 };
 
 } // namespace dns

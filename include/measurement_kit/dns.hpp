@@ -5,6 +5,8 @@
 #ifndef MEASUREMENT_KIT_DNS_HPP
 #define MEASUREMENT_KIT_DNS_HPP
 
+#include <measurement_kit/dns/defines.hpp>
+#include <measurement_kit/dns/error.hpp>
 #include <measurement_kit/dns/query.hpp>
 #include <measurement_kit/dns/response.hpp>
 #include <measurement_kit/dns/resolver.hpp>

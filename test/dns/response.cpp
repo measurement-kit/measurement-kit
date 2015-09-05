@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Regression tests for `net/dns.hpp` and `net/dns.cpp`.
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
@@ -27,7 +23,6 @@ TEST_CASE("The default Response() constructor sets sensible values") {
     //
     REQUIRE(response.get_reply_authoritative() == "unknown");
     REQUIRE(response.get_evdns_status() == DNS_ERR_UNKNOWN);
-    REQUIRE(response.get_failure() == "unknown failure 66");
     REQUIRE(response.get_results().size() == 0);
     REQUIRE(response.get_rtt() == 0.0);
     REQUIRE(response.get_ttl() == 0);
@@ -209,29 +204,6 @@ TEST_CASE("If the response type is invalid Response sets an error") {
         auto r = Response(DNS_ERR_NONE, type, 0, 123, 0.0, NULL);
         REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
     }
-}
-
-TEST_CASE("Evdns errors are correctly mapped to OONI failures") {
-
-    REQUIRE(Response::map_failure_(DNS_ERR_NONE) == "");
-    REQUIRE(Response::map_failure_(DNS_ERR_FORMAT) == "dns_lookup_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_SERVERFAILED) == "dns_lookup_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_NOTEXIST) == "dns_lookup_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_NOTIMPL) == "dns_lookup_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_REFUSED) == "dns_lookup_error");
-
-    REQUIRE(Response::map_failure_(DNS_ERR_TRUNCATED) == "dns_lookup_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_UNKNOWN) == "unknown failure 66");
-    REQUIRE(Response::map_failure_(DNS_ERR_TIMEOUT) ==
-            "deferred_timeout_error");
-    REQUIRE(Response::map_failure_(DNS_ERR_SHUTDOWN) == "unknown failure 68");
-    REQUIRE(Response::map_failure_(DNS_ERR_CANCEL) == "unknown failure 69");
-    REQUIRE(Response::map_failure_(DNS_ERR_NODATA) == "dns_lookup_error");
-
-    // Just three random numbers to increase confidence...
-    REQUIRE(Response::map_failure_(1024) == "unknown failure 1024");
-    REQUIRE(Response::map_failure_(1025) == "unknown failure 1025");
-    REQUIRE(Response::map_failure_(1026) == "unknown failure 1026");
 }
 
 struct TransparentResponse : public Response {

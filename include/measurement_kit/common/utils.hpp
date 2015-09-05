@@ -138,5 +138,9 @@ std::string random_str(size_t length);
 
 std::string random_str_uppercase(size_t length);
 
+std::string unreverse_ipv6(std::string s);
+
+std::string unreverse_ipv4(std::string s);
+
 } // namespace measurement_kit
 #endif

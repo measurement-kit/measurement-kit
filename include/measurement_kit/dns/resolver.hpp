@@ -11,6 +11,8 @@
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
 
+#include <measurement_kit/dns/defines.hpp>
+
 #include <functional>
 #include <iosfwd>
 #include <string>
@@ -58,8 +60,8 @@ class Resolver : public NonCopyable, public NonMovable {
     evdns_base *get_evdns_base();
 
     /// Issue a Query using this resolver.
-    void query(std::string query, std::string address,
-               std::function<void(Response)> func);
+    void query(QueryClass dns_class, QueryType dns_type, std::string name,
+               std::function<void(Error, Response)> func);
 
     /// Default destructor.
     ~Resolver() { cleanup(); }

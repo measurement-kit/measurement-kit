@@ -5,8 +5,11 @@
 #ifndef MEASUREMENT_KIT_DNS_QUERY_HPP
 #define MEASUREMENT_KIT_DNS_QUERY_HPP
 
+#include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/pointer.hpp>
+
+#include <measurement_kit/dns/defines.hpp>
 
 #include <functional>
 #include <iosfwd>
@@ -34,8 +37,8 @@ class Query {
     Query() {}
 
     /// Start an async DNS request.
-    Query(std::string query, std::string address,
-          std::function<void(Response)> func,
+    Query(QueryClass dns_class, QueryType dns_type, std::string name,
+          std::function<void(Error, Response)> func,
           Logger *lp = Logger::global(), evdns_base *dnsb = nullptr,
           Libs *libs = nullptr);
 
