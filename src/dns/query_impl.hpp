@@ -147,7 +147,11 @@ class QueryImpl {
     static void issue(std::string query, std::string address,
                       std::function<void(Response)> func, Logger *logger,
                       evdns_base *base, Libs *lev, SharedPointer<bool> cancd) {
-        new QueryImpl(query, address, func, logger, base, lev, cancd);
+        try {
+            new QueryImpl(query, address, func, logger, base, lev, cancd);
+        } catch (...) {
+            func(Response());
+        }
     }
 };
 

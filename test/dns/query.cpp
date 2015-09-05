@@ -30,9 +30,9 @@ TEST_CASE("Query deals with failing evdns_base_resolve_ipv4") {
                                       evdns_callback_type,
                                       void *) { return (evdns_request *)NULL; };
 
-    REQUIRE_THROWS(Query("A", "www.google.com", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("A", "www.google.com", [](Response r) {
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query deals with failing evdns_base_resolve_ipv6") {
@@ -42,9 +42,9 @@ TEST_CASE("Query deals with failing evdns_base_resolve_ipv6") {
                                       evdns_callback_type,
                                       void *) { return (evdns_request *)NULL; };
 
-    REQUIRE_THROWS(Query("AAAA", "github.com", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("AAAA", "github.com", [](Response r) {
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query deals with failing evdns_base_resolve_reverse") {
@@ -55,9 +55,9 @@ TEST_CASE("Query deals with failing evdns_base_resolve_reverse") {
         return (evdns_request *)NULL;
     };
 
-    REQUIRE_THROWS(Query("REVERSE_A", "8.8.8.8", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("REVERSE_A", "8.8.8.8", [](Response r) {
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query deals with failing evdns_base_resolve_reverse_ipv6") {
@@ -67,9 +67,9 @@ TEST_CASE("Query deals with failing evdns_base_resolve_reverse_ipv6") {
         evdns_base *, const struct in6_addr *, int, evdns_callback_type,
         void *) { return (evdns_request *)NULL; };
 
-    REQUIRE_THROWS(Query("REVERSE_AAAA", "::1", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("REVERSE_AAAA", "::1", [](Response r) {
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query deals with inet_pton returning 0") {
@@ -77,13 +77,13 @@ TEST_CASE("Query deals with inet_pton returning 0") {
 
     libs.inet_pton = [](int, const char *, void *) { return 0; };
 
-    REQUIRE_THROWS(Query("REVERSE_A", "8.8.8.8", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("REVERSE_A", "8.8.8.8", [](Response r) {
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    }, Logger::global(), NULL, &libs);
 
-    REQUIRE_THROWS(Query("REVERSE_AAAA", "::1", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("REVERSE_AAAA", "::1", [](Response r) {
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query deals with inet_pton returning -1") {
@@ -91,20 +91,19 @@ TEST_CASE("Query deals with inet_pton returning -1") {
 
     libs.inet_pton = [](int, const char *, void *) { return -1; };
 
-    REQUIRE_THROWS(Query("REVERSE_A", "8.8.8.8", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("REVERSE_A", "8.8.8.8", [](Response r) {
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    }, Logger::global(), NULL, &libs);
 
-    REQUIRE_THROWS(Query("REVERSE_AAAA", "::1", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("REVERSE_AAAA", "::1", [](Response r) {
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query raises if the query is unsupported") {
-    REQUIRE_THROWS(
-        Query("PTR", "www.neubot.org", [&](Response && /*response*/) {
-            // nothing
-        }));
+    Query("PTR", "www.neubot.org", [](Response r) {
+        REQUIRE(r.get_evdns_status() == DNS_ERR_UNKNOWN);
+    });
 }
 
 //

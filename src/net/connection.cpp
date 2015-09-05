@@ -214,15 +214,10 @@ bool Connection::resolve_internal(char type) {
         return false;
     }
 
-    try {
-        dns_request = dns::Query(query, address,
-                                   [this](dns::Response resp) {
-            handle_resolve(resp.get_evdns_status(), resp.get_type(),
-                           resp.get_results());
-        });
-    } catch (...) {
-        return false; /* TODO: save the error */
-    }
+    dns_request = dns::Query(query, address, [this](dns::Response resp) {
+        handle_resolve(resp.get_evdns_status(), resp.get_type(),
+                       resp.get_results());
+    });
 
     return true;
 }
