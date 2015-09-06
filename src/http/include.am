@@ -1,7 +1,8 @@
 noinst_LTLIBRARIES += src/http/libhttp.la
 
 src_http_libhttp_la_SOURCES = \
-	src/http/http.cpp
+	src/http/request_serializer.cpp \
+	src/http/response_parser.cpp
 
 libmeasurement_kit_la_LIBADD += src/http/libhttp.la
 
