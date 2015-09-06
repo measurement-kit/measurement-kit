@@ -142,7 +142,7 @@ public:
 
             stream->on_end([&]() {
                 logger->debug("http: we have reached end of response");
-                emit_end(Error(0), std::move(response));
+                emit_end(NoError(), std::move(response));
             });
 
         });

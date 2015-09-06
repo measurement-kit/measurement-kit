@@ -78,7 +78,7 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
     data << "\r\n";
     data << "1234567";
     transport.emit_data(data);
-    transport.emit_error(0);
+    transport.emit_error(NoError());
 
     REQUIRE(called == 1);
 }

@@ -145,7 +145,7 @@ class Buffer {
         if (search_result.pos < 0) {
             if (length() > maxline)
                 return std::make_tuple(EOLNotFoundError(), "");
-            return std::make_tuple(0, "");
+            return std::make_tuple(common::NoError(), "");
         }
 
         /*
@@ -158,7 +158,7 @@ class Buffer {
         if (len > maxline)
             return std::make_tuple(LineTooLongError(), "");
 
-        return std::make_tuple(0, read(len));
+        return std::make_tuple(common::NoError(), read(len));
     }
 
     /*
