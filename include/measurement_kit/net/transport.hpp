@@ -102,7 +102,17 @@ class Transport : public TransportInterface {
 
     void send(std::string s) override { t->send(s); }
 
+    Transport &operator<<(std::string s) {
+        send(s);
+        return *this;
+    }
+
     void send(Buffer &d) override { t->send(d); }
+
+    Transport &operator<<(Buffer &d) {
+        send(d);
+        return *this;
+    }
 
     void close() override { t->close(); }
 
@@ -116,5 +126,6 @@ class Transport : public TransportInterface {
 
 Transport connect(Settings, Logger * = Logger::global());
 
-}}
+} // namespace net
+} // namespace measurement_kit
 #endif
