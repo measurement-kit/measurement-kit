@@ -6,7 +6,7 @@
 #define MEASUREMENT_KIT_OONI_HTTP_TEST_HPP
 
 #include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/http/http.hpp>
+#include <measurement_kit/http/client.hpp>
 #include <measurement_kit/ooni/net_test.hpp>
 
 namespace measurement_kit {
