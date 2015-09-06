@@ -121,11 +121,35 @@ test_dns_response_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/dns/response
 TESTS += test/dns/response
 
-test_http_http_SOURCES = test/http/http.cpp
-test_http_http_LDADD = libmeasurement_kit.la
-test_http_http_LDFLAGS = -lyaml-cpp
-check_PROGRAMS += test/http/http
-TESTS += test/http/http
+test_http_client_SOURCES = test/http/client.cpp
+test_http_client_LDADD = libmeasurement_kit.la
+test_http_client_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/http/client
+TESTS += test/http/client
+
+test_http_request_SOURCES = test/http/request.cpp
+test_http_request_LDADD = libmeasurement_kit.la
+test_http_request_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/http/request
+TESTS += test/http/request
+
+test_http_request_serializer_SOURCES = test/http/request_serializer.cpp
+test_http_request_serializer_LDADD = libmeasurement_kit.la
+test_http_request_serializer_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/http/request_serializer
+TESTS += test/http/request_serializer
+
+test_http_response_parser_SOURCES = test/http/response_parser.cpp
+test_http_response_parser_LDADD = libmeasurement_kit.la
+test_http_response_parser_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/http/response_parser
+TESTS += test/http/response_parser
+
+test_http_stream_SOURCES = test/http/stream.cpp
+test_http_stream_LDADD = libmeasurement_kit.la
+test_http_stream_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/http/stream
+TESTS += test/http/stream
 
 test_traceroute_android_SOURCES = test/traceroute/android.cpp
 test_traceroute_android_LDADD = libmeasurement_kit.la
