@@ -127,7 +127,7 @@ Async::Async() { state.reset(new AsyncState()); }
 
 void Async::run_test(NetTestVar test, std::function<void(NetTestVar)> fn) {
     LOCKED({
-        NetTest *ptr = test.operator->(); // get() does not check for NULL
+        NetTest *ptr = test.get();
         INSERT(state->ready, ptr, test);
         INSERT(state->callbacks, ptr, fn);
         state->changed = true;
