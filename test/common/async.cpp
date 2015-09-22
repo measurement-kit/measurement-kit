@@ -24,10 +24,10 @@ static void run_http_invalid_request_line(Async &async) {
         })
     );
     test->set_verbose(1);
-    test->on_log(
-        [](const char *s) { (void)fprintf(stderr, "test #1: %s\n", s); });
     measurement_kit::debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+    async.run_test(test, [](std::list<std::string> &logs) {
+        for (auto s : logs) (void)fprintf(stderr, "test #1: %s\n", s.c_str());
+    }, [](SharedPointer<common::NetTest> test) {
         measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }
@@ -39,10 +39,10 @@ static void run_dns_injection(Async& async) {
         })
     );
     test->set_verbose(1);
-    test->on_log(
-        [](const char *s) { (void)fprintf(stderr, "test #3: %s\n", s); });
     measurement_kit::debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+    async.run_test(test, [](std::list<std::string> &logs) {
+        for (auto s : logs) (void)fprintf(stderr, "test #2: %s\n", s.c_str());
+    }, [](SharedPointer<common::NetTest> test) {
         measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }
@@ -54,10 +54,10 @@ static void run_tcp_connect(Async& async) {
         })
     );
     test->set_verbose(1);
-    test->on_log(
-        [](const char *s) { (void)fprintf(stderr, "test #4: %s\n", s); });
     measurement_kit::debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+    async.run_test(test, [](std::list<std::string> &logs) {
+        for (auto s : logs) (void)fprintf(stderr, "test #3: %s\n", s.c_str());
+    }, [](SharedPointer<common::NetTest> test) {
         measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }

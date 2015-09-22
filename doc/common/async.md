@@ -16,7 +16,9 @@ Async *async = new Async;
 
 void on_run_test() {
     SharedPointer<FooTest> test = std::make_shared<FooTest>( /* params */ );
-    async->run_test(test, [](NetTestPtr test) {
+    async->run_test(test, [](std::list<std::string> &log_lines) {
+        // Do something with log_lines...
+    }, [](NetTestPtr test) {
         // Do something with test...
     });
 }
@@ -31,7 +33,7 @@ the same lifecycle of your application. To schedule a test allocate
 and configure it using a shared pointer, then pass such pointer to
 `run_test()`. This will cause the test to run in a background thread
 dedicated to running the event loop. Periodically call `pump()` so
-that pending events (i.e. test-complete) are processed and the
+that pending events (i.e. log-line, test-complete) are processed and the
 corresponding callbacks passed to `run_test()` are called.
 
 # HISTORY

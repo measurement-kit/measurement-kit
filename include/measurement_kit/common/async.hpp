@@ -7,7 +7,9 @@
 
 #include <measurement_kit/common/pointer.hpp>
 
+#include <list>
 #include <functional>
+#include <string>
 
 namespace measurement_kit {
 namespace common {
@@ -23,9 +25,11 @@ class Async {
     Async();
 
     /// Run the specified network test and call a callback when done
-    /// \param func Callback called when test is done
+    /// \param on_log Callback called when logs from the test are available
+    /// \param on_complete Callback called when test is done
     void run_test(SharedPointer<NetTest> test,
-      std::function<void(SharedPointer<NetTest>)> func);
+      std::function<void(std::list<std::string> &)> on_log,
+      std::function<void(SharedPointer<NetTest>)> on_complete);
 
     /// Break out of the loop
     /// \remark This returns immediately, poll empty() to know when

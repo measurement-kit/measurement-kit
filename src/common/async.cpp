@@ -24,12 +24,16 @@ typedef SharedPointer<NetTest> NetTestVar;
 // Shared state between foreground and background threads
 struct AsyncState {
     std::map<NetTest *, NetTestVar> ready;
-    std::map<NetTest *, std::function<void(NetTestVar)>> callbacks;
+    std::map<NetTest *, std::function<void(NetTestVar)>> done_callbacks;
+    std::map<NetTest *, std::function<void(
+            std::list<std::string> &)>> log_callbacks;
     std::map<NetTest *, NetTestVar> active;
     std::map<NetTest *, NetTestVar> completed;
+    std::map<NetTest *, std::list<std::string>> logs;
     volatile bool changed = false;
     volatile bool interrupted = false;
-    std::mutex mutex;
+    std::mutex mutex_gen;
+    std::mutex mutex_logs;
     std::thread thread;
     volatile bool thread_running = false;
 };
@@ -45,7 +49,14 @@ class EvThreadSingleton {
 // Syntactic sugar
 #define LOCKED(foo)                                                            \
     {                                                                          \
-        std::lock_guard<std::mutex> lck(state->mutex);                         \
+        std::lock_guard<std::mutex> lck(state->mutex_gen);                     \
+        foo                                                                    \
+    }
+
+// Syntactic sugar
+#define LOCKED_LOGS(foo)                                                       \
+    {                                                                          \
+        std::lock_guard<std::mutex> lck(state->mutex_logs);                    \
         foo                                                                    \
     }
 
@@ -74,9 +85,13 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
         LOCKED({
             debug("async: loop thread locked");
             debug("async: size of ready: %lu", state->ready.size());
-            debug("async: size of callbacks: %lu", state->callbacks.size());
+            debug("async: size of done_callbacks: %lu",
+                    state->done_callbacks.size());
+            debug("async: size of log_callbacks: %lu",
+                    state->log_callbacks.size());
             debug("async: size of active: %lu", state->active.size());
             debug("async: size of completed: %lu", state->completed.size());
+            debug("async: size of logs: %lu", state->logs.size());
             auto empty = (state->ready.empty() && state->active.empty());
             if (state->interrupted || empty) {
                 debug("async: %s", (empty) ? "empty" : "interrupted");
@@ -94,6 +109,12 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
                 // Note: it should be safe to capture `state` by reference
                 // here because the destructor should not be able to destroy
                 // the background thread until we detach it and break.
+                ptr->on_log([&state, ptr](const char *log_line) {
+                    // We use a second mutex to protect logs because we
+                    // would otherwise deadlock on the first mutex if the
+                    // test immediately generates logs
+                    LOCKED_LOGS({ state->logs[ptr].push_back(log_line); })
+                });
                 ptr->begin([&state, ptr]() {
                     ptr->end([&state, ptr]() {
                         // Safe to lock because loop_once() is unlocked
@@ -125,11 +146,14 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
 
 Async::Async() { state.reset(new AsyncState()); }
 
-void Async::run_test(NetTestVar test, std::function<void(NetTestVar)> fn) {
+void Async::run_test(NetTestVar test,
+        std::function<void(std::list<std::string> &)> log_fn,
+        std::function<void(NetTestVar)> done_fn) {
     LOCKED({
         NetTest *ptr = test.get();
         INSERT(state->ready, ptr, test);
-        INSERT(state->callbacks, ptr, fn);
+        INSERT(state->done_callbacks, ptr, done_fn);
+        INSERT(state->log_callbacks, ptr, log_fn);
         state->changed = true;
         debug("async: ready: %lld", test->identifier());
         if (!state->thread_running) {
@@ -152,13 +176,27 @@ void Async::pump() {
     std::map<NetTest *, NetTestVar> context;
     std::map<NetTest *, std::function<void(NetTestVar)>> funcs;
     LOCKED({
+        // We lock both the general and the logs mutex because both the
+        // logs and the log_callbacks objects must be stable
+        LOCKED_LOGS({
+            for (auto pair : state->logs) {
+                std::function<void(std::list<std::string> &)> fn;
+                debug("async: process logs of %lld...",
+                        pair.first->identifier());
+                GET(fn, state->log_callbacks, pair.first);
+                fn(pair.second);
+            }
+            state->logs.clear();
+        })
         if (state->completed.empty()) return; /* shortcut */
         for (auto pair : state->completed) {
             INSERT(context, pair.first, pair.second);
             std::function<void(NetTestVar)> func;
-            GET(func, state->callbacks, pair.first);
+            GET(func, state->done_callbacks, pair.first);
             INSERT(funcs, pair.first, func);
-            state->callbacks.erase(pair.first);
+            state->done_callbacks.erase(pair.first);
+            state->log_callbacks.erase(pair.first);
+            state->logs.erase(pair.first);
             debug("async: zombie: %lld", pair.first->identifier());
         }
         state->completed.clear();
