@@ -24,11 +24,10 @@ static void run_http_invalid_request_line(Async &async) {
         })
     );
     test->set_verbose(1);
-    test->on_log([](const char *s) {
-        (void) fprintf(stderr, "test #1: %s\n", s);
-    });
     measurement_kit::debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+    async.run_test(test, [](std::list<std::string> &logs) {
+        for (auto s : logs) (void)fprintf(stderr, "test #1: %s\n", s.c_str());
+    }, [](SharedPointer<common::NetTest> test) {
         measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }
@@ -40,11 +39,10 @@ static void run_dns_injection(Async& async) {
         })
     );
     test->set_verbose(1);
-    test->on_log([](const char *s) {
-        (void) fprintf(stderr, "test #3: %s\n", s);
-    });
     measurement_kit::debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+    async.run_test(test, [](std::list<std::string> &logs) {
+        for (auto s : logs) (void)fprintf(stderr, "test #2: %s\n", s.c_str());
+    }, [](SharedPointer<common::NetTest> test) {
         measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }
@@ -56,11 +54,10 @@ static void run_tcp_connect(Async& async) {
         })
     );
     test->set_verbose(1);
-    test->on_log([](const char *s) {
-        (void) fprintf(stderr, "test #4: %s\n", s);
-    });
     measurement_kit::debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+    async.run_test(test, [](std::list<std::string> &logs) {
+        for (auto s : logs) (void)fprintf(stderr, "test #3: %s\n", s.c_str());
+    }, [](SharedPointer<common::NetTest> test) {
         measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }
@@ -70,16 +67,8 @@ TEST_CASE("The async engine works as expected") {
     measurement_kit::set_verbose(1);
     Async async;
 
-    // Note: the two following callbacks execute in a background thread
-    volatile bool complete = false;
-    async.on_empty([&complete]() {
-        measurement_kit::debug("all tests completed");
-        complete = true;
-    });
-
     for (int i = 0; i < 4; ++i) {
         measurement_kit::debug("do another iteration of tests");
-        complete = false;
 
         // Create tests in temporary void functions to also check that we can
         // create them in functions that later return in real apps
@@ -88,8 +77,9 @@ TEST_CASE("The async engine works as expected") {
         run_http_invalid_request_line(async);
         run_tcp_connect(async);
 
-        // TODO Maybe implement a better sync mechanism but for now polling will do
-        while (!complete) {
+        // TODO Need to implement a better sync mechanism?
+        while (!async.empty()) {
+            async.pump();
             sleep(1);
         }
     }

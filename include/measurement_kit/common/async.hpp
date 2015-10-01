@@ -5,49 +5,48 @@
 #ifndef MEASUREMENT_KIT_COMMON_ASYNC_HPP
 #define MEASUREMENT_KIT_COMMON_ASYNC_HPP
 
-#include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/pointer.hpp>
-#include <measurement_kit/common/poller.hpp>
+
+#include <list>
+#include <functional>
+#include <string>
 
 namespace measurement_kit {
 namespace common {
 
+class NetTest;
+
 struct AsyncState;
 
 class Async {
-    SharedPointer<AsyncState> state;
-
-    static void loop_thread(SharedPointer<AsyncState>);
-
   public:
 
     /// Default constructor
-    Async() : Async(SharedPointer<Poller>(new Poller())) {}
-
-    /// Constructor with specified poller
-    Async(SharedPointer<Poller> p);
+    Async();
 
     /// Run the specified network test and call a callback when done
-    /// \param func Callback called when test is done
-    /// \warn The callback is called from a background thread
+    /// \param on_log Callback called when logs from the test are available
+    /// \param on_complete Callback called when test is done
     void run_test(SharedPointer<NetTest> test,
-      std::function<void(SharedPointer<NetTest>)> func);
+      std::function<void(std::list<std::string> &)> on_log,
+      std::function<void(SharedPointer<NetTest>)> on_complete);
 
     /// Break out of the loop
+    /// \remark This returns immediately, poll empty() to know when
+    /// the background thread has terminated.
     void break_loop();
-
-    /// Restart the background loop
-    void restart_loop();
 
     /// Returns true when no async jobs are running
     bool empty();
 
-    ///
-    /// Called when the tests queue is empty
-    /// \warn This function is called from a background thread
-    ///
-    void on_empty(std::function<void()>);
+    /// Emit test complete events in the current thread
+    void pump();
+
+  private:
+    SharedPointer<AsyncState> state;
+    static void loop_thread(SharedPointer<AsyncState>);
 };
 
-}}
+} // namespace common
+} // namespace measurement_kit
 #endif
