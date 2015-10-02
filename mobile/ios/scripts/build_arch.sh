@@ -27,7 +27,7 @@ export CFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/S
 export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
 
 (
-    cd measurement-kit
+    cd ../../
     test -x ./configure || autoreconf -i
     ./configure --disable-shared \
                 --with-libevent=builtin \
