@@ -42,11 +42,12 @@ To compile MeasurementKit for Android, see:
 
 - the [example application for Android](https://github.com/measurement-kit/measurement-kit-app-android)
 
-To compile and use MeasurementKit for iOS, see:
+To compile and use MeasurementKit for iOS, do the following:
 
-- the [repository for cross-compiling MeasurementKit for iOS](https://github.com/measurement-kit/measurement-kit-build-ios)
-
-- the [example application for iOS](https://github.com/measurement-kit/measurement-kit-app-ios)
+```
+cd mobile/ios
+./scripts/build.sh
+```
 
 This README.md files continues by explaining you how to compile MeasurementKit
 on a UNIX or UNIX-like platform (e.g. Linux, MacOS).
