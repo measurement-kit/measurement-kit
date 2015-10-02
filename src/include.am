@@ -12,6 +12,7 @@ include src/traceroute/include.am
 toplevincludedir = $(includedir)/measurement_kit
 toplevinclude_HEADERS = \
     include/measurement_kit/common.hpp \
+    include/measurement_kit/dns.hpp \
     include/measurement_kit/http.hpp \
     include/measurement_kit/net.hpp \
     include/measurement_kit/ooni.hpp \
