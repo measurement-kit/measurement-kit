@@ -46,3 +46,8 @@ lipo -create -output Frameworks/yaml-cpp.framework/yaml-cpp \
   build/iPhoneOS/armv7/lib/libyaml-cpp.a \
   build/iPhoneSimulator/i386/lib/libyaml-cpp.a \
   build/iPhoneSimulator/x86_64/lib/libyaml-cpp.a
+
+# Create fake header for event2_pthreads
+install -d Frameworks/event2_pthreads.framework/Headers
+echo "/* Make CocoaPod happy */" > \
+  Frameworks/event2_pthreads.framework/Headers/event2_pthreads_dummy.h
