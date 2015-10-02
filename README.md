@@ -124,6 +124,21 @@ build process) run:
 
     make V=0
 
+## Installation with Cocoapod
+
+The Cocoapods podspec hasn't been submitted yet, but you can still use
+it in your project adding this line in your Podfile:
+
+    pod 'measurement_kit', :git => 'https://github.com/measurement-kit/measurement-kit.git'
+
+You can include another branch with: 
+
+    pod 'measurement_kit', 
+      :git => 'https://github.com/measurement-kit/measurement-kit.git'
+      :branch => 'branch_name'
+
+Then type `pod install` 
+
 ## How to use MeasurementKit
 
 The following shows how to use MeasurementKit's OONI library.
