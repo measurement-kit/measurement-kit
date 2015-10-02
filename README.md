@@ -54,18 +54,9 @@ on a UNIX or UNIX-like platform (e.g. Linux, MacOS).
 
 ## How to clone the repository
 
-To properly clone MeasurementKit repository, make sure that you specify the
-`--recursive` command line flag, as in:
+To clone MeasurementKit repository, do:
 
-    git clone --recursive https://github.com/measurement-kit/measurement-kit
-
-Such flag tells git to clone not only the MeasurementKit repository, but also
-the [submodules](http://git-scm.com/docs/git-submodule) contained therein.
-
-Alternatively, once you have cloned the repository, you can checkout all
-the submodules using:
-
-    git submodule update --init
+    git clone https://github.com/measurement-kit/measurement-kit
 
 ## How to build MeasurementKit
 

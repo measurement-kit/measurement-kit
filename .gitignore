@@ -87,3 +87,4 @@ test-driver
 *.trs
 example_test_report.yaml
 *.yamloo
+/tmp
