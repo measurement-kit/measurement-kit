@@ -1,4 +1,0 @@
-[submodule "src/ext"]
-  path = src/ext
-  url = https://github.com/measurement-kit/measurement-kit-deps
-  ignore = dirty
