@@ -70,12 +70,8 @@ TEST_CASE("The async engine works as expected") {
     measurement_kit::set_verbose(1);
     Async async;
 
-    // Note: the two following callbacks execute in a background thread
-    volatile bool complete = false;
-
     for (int i = 0; i < 4; ++i) {
         measurement_kit::debug("do another iteration of tests");
-        complete = false;
 
         // Create tests in temporary void functions to also check that we can
         // create them in functions that later return in real apps
