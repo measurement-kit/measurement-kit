@@ -124,7 +124,7 @@ build process) run:
 
     make V=0
 
-## Installation with Cocoapod
+## How to add measurement-kit to an Xcode project.
 
 The Cocoapods podspec hasn't been submitted yet, but you can still use
 it in your project adding this line in your Podfile:
