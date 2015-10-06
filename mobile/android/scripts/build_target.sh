@@ -14,21 +14,45 @@ fi
 ARCH=$1
 API=$2
 
+# XXX shortcut for armeabi-v7a
+# According https://developer.android.com/ndk/guides/standalone_toolchain.html
+# the proper solution is to override CFLAGS
+if [ $ARCH = "arm-linux-androideabi-v7a" ]; then
+    echo "WARNING: converting $ARCH to arm-linux-androideabi" 1>&2
+    ARCH="arm-linux-androideabi"
+    V7A="-v7a"
+else
+    V7A=""
+fi
+
 export ANDROID_TOOLCHAIN=${ROOTDIR}/toolchain/${ARCH}-${API}
 export SYSROOT=${ANDROID_TOOLCHAIN}/sysroot
 
 # Note: the bin prefix (i686-linux-android) is different from the parameter
 # that shall be passed to `make-standalone-toolchain.sh` (x86).
-if [ $ARCH = x86 ]; then
-    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/i686-linux-android
-elif [ $ARCH = x86_64 ]; then
-    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/x86_64-linux-android
-    LIB_SUFFIX=64
+if [ $ARCH = aarch64-linux-android ]; then
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
+    DESTDIR_NAME=arm64-v8a
+elif [ $ARCH = arm-linux-androideabi ]; then
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
+    DESTDIR_NAME=armeabi${V7A}
+elif [ $ARCH = mipsel-linux-android ]; then
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
+    DESTDIR_NAME=mips
 elif [ $ARCH = "mips64el-linux-android" ]; then
     export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
     LIB_SUFFIX=64
+    DESTDIR_NAME=mips64
+elif [ $ARCH = x86 ]; then
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/i686-linux-android
+    DESTDIR_NAME=x86
+elif [ $ARCH = x86_64 ]; then
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/x86_64-linux-android
+    LIB_SUFFIX=64
+    DESTDIR_NAME=x86_64
 else
-    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
+    echo "$0: invalid $ARCH" 1>&2
+    exit 1
 fi
 
 export CPP=${TOOL_PATH}-cpp
@@ -46,16 +70,16 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
 
 (
     cd $ROOTDIR
-    git submodule update --init --recursive  # Just in case
     install -d ${ROOTDIR}/build/${ARCH}-${API}
     cd ${ROOTDIR}/build/${ARCH}-${API}
     test -f Makefile && make clean
     echo "Configure with --host=${ARCH} and toolchain ${ANDROID_TOOLCHAIN}"
-    test -x ${ROOTDIR}/measurement-kit/configure || (cd ${ROOTDIR}/measurement-kit/ && autoreconf -i)
-    ${ROOTDIR}/measurement-kit/configure --host=${ARCH} --with-sysroot=${SYSROOT} \
-      --with-libevent=builtin --with-libyaml-cpp=builtin --with-libboost=builtin \
-      --disable-shared
+    test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && autoreconf -i)
+    ${ROOTDIR}/../../configure --host=${ARCH} --with-sysroot=${SYSROOT} \
+      --with-libevent=builtin --with-libyaml-cpp=builtin \
+      --with-libboost=builtin --disable-shared --libdir=/ \
+      --includedir=/include
     make V=0
     echo "Installing library in ${BASEDIR}/build/${ANDROID_TOOLCHAIN}"
-    make install DESTDIR=${ROOTDIR}/dist/${ARCH}-${API}
+    make install DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
 )

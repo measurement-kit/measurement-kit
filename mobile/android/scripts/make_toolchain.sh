@@ -15,6 +15,14 @@ ARCH=$2
 API=$3
 BASEDIR=./toolchain
 
+# XXX shortcut for armeabi-v7a
+# According https://developer.android.com/ndk/guides/standalone_toolchain.html
+# the proper solution is to override CFLAGS
+if [ $ARCH = "arm-linux-androideabi-v7a" ]; then
+    echo "WARNING: converting $ARCH to arm-linux-androideabi" 1>&2
+    ARCH="arm-linux-androideabi"
+fi
+
 MAKE_TOOLCHAIN=${NDK_DIR}/build/tools/make-standalone-toolchain.sh
 
 INSTALL_DIR=$BASEDIR/${ARCH}-${API}

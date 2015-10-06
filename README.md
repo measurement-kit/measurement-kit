@@ -36,11 +36,8 @@ network performance tests (such as [NDT](https://github.com/ndt-project/ndt)), a
 such as [uTP](https://github.com/bittorrent/libutp), implementing facilities to communitate with the [OONI backend](https://github.com/TheTorProject/ooni-backend),
 implementing traceroute for iOS.
 
-To compile MeasurementKit for Android, see:
-
-- the [repository for cross-compiling MeasurementKit for Android](https://github.com/measurement-kit/measurement-kit-build-android)
-
-- the [example application for Android](https://github.com/measurement-kit/measurement-kit-app-android)
+To compile MeasurementKit for Android, see the README.md file contained in
+the `mobile/android` directory of this repository.
 
 To compile and use MeasurementKit for iOS, do the following:
 

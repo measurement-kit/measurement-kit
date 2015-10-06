@@ -1,6 +1,6 @@
 # Build measurement-kit for Android
 
-This repository contains the scripts needed to cross compile
+This directory contains the scripts needed to cross compile
 measurement-kit for Android platforms.
 
 ## Installing the NDK
@@ -69,9 +69,9 @@ the compiled libraries and haders under `./dist`.
 ## Putting all together
 
 You can execute both steps (creating a cross compiler and cross compiling) in
-a single command using the `./build.sh` script. For example,
+a single command using the `./scripts/build.sh` script. For example,
 
-    $ ./build.sh /usr/local/Cellar/android-ndk/r10e/ arm-linux-androideabi 9
+    $ ./scripts/build.sh /usr/local/Cellar/android-ndk/r10e/ arm-linux-androideabi 9
 
 ## TODO next
 
