@@ -165,6 +165,16 @@ ev_arc4random_buf(void *buf, size_t n)
 	arc4random_buf(buf, n);
 }
 
+/*
+ * The arc4random included in libevent implements arc4random_addrandom().
+ *
+ * OpenBSD libc/crypt/arc4random.c migrated to ChaCha20 since 1.25 and
+ * have removed arc4random_addrandom() since 1.26. Since then, other libcs
+ * followed suit (e.g. Android's own libc). But libevent's arc4random.c
+ * copy still implement arc4random_addrandom().
+ */
+#define _EVENT_HAVE_ARC4RANDOM_ADDRANDOM 1
+
 #endif /* } !_EVENT_HAVE_ARC4RANDOM */
 
 void
@@ -176,7 +186,8 @@ evutil_secure_rng_get_bytes(void *buf, size_t n)
 void
 evutil_secure_rng_add_bytes(const char *buf, size_t n)
 {
+#if defined _EVENT_HAVE_ARC4RANDOM_ADDRANDOM
 	arc4random_addrandom((unsigned char*)buf,
 	    n>(size_t)INT_MAX ? INT_MAX : (int)n);
+#endif
 }
-
