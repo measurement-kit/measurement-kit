@@ -148,6 +148,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
     throw std::runtime_error("payload too large");
   if (sendto(sockfd_, payload.data(), payload.length(), 0, (sockaddr *)&ss,
              sslen) != (ssize_t)payload.length()) {
+    measurement_kit::warn("sendto() failed: errno %d", errno);
     throw std::runtime_error("sendto() failed");
   }
 
