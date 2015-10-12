@@ -200,14 +200,15 @@ ProbeResult AndroidProber::on_socket_readable() {
     if (errno == EAGAIN || errno == EWOULDBLOCK) { // Defensive
       measurement_kit::debug("it seems we received a valid reply packet back");
       memset(&storage, 0, sizeof (storage));
-      if ((r.recv_bytes = recvfrom(sockfd_, iov.iov_base, iov.iov_len, 0,
+      solen = sizeof (storage);
+      if ((r.recv_bytes = recvfrom(sockfd_, buff, sizeof (buff), 0,
                                    (sockaddr *) &storage, &solen)) < 0) {
         throw std::runtime_error("recv() failed");
       }
       measurement_kit::debug("recv_bytes = %lu", r.recv_bytes);
       r.valid_reply = true;
       measurement_kit::debug("valid_reply = %d", r.valid_reply);
-      r.reply = std::string((const char *) iov.iov_base, iov.iov_len);
+      r.reply = std::string((const char *) buff, r.recv_bytes);
       measurement_kit::debug("reply = <%lu bytes>", r.reply.length());
       r.interface_ip = get_source_addr(use_ipv4_, &storage);
       measurement_kit::debug("interface_ip = %s", r.interface_ip.c_str());
