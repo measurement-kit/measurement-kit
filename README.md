@@ -72,9 +72,15 @@ Then proceed with the instruction to build and test MeasurementKit.
 
 ## How to build MeasurementKit
 
-To build the library you need a C90 compiler, a C++11 compiler&mdash;C++11 must
-be enabled, otherwise certain C++11 features such as `std::function` will
-not be recognized&mdash;and a Unix environment.
+To build, MeasurementKit needs:
+
+- a C90 compiler (such as gcc or clang)
+- a C++11 compiler (such as g++ or clang++)
+- autoconf, automake, and libtool
+- a Unix environment (such as Linux or MacOS)
+
+C++11 must be enabled, otherwise certain C++11 features such as
+`std::function` will not be recognized.
 
 MeasurementKit depends on:
 
@@ -82,7 +88,7 @@ MeasurementKit depends on:
 - [http-parser](https://github.com/joyent/http-parser)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 - [Catch](https://github.com/philsquared/Catch) (for tests only)
-- selected [boost](https://github.com/boostorg/) libraries (only [the ones required by yaml-cpp](https://github.com/measurement-kit/measurement-kit-deps/tree/master/boost))
+- selected [boost](https://github.com/boostorg/) libraries (only [the ones required by yaml-cpp](https://github.com/measurement-kit/measurement-kit/tree/master/src/ext/boost))
 
 The `./configure` script should check whether all
 the dependencies are in place and should configure the compilers
