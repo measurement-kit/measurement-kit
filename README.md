@@ -58,6 +58,18 @@ To clone MeasurementKit repository, do:
 
     git clone https://github.com/measurement-kit/measurement-kit
 
+## How to test a specific branch
+
+If you need to checkout a specific branch (say `feature/foo`) for testing
+it, clone the repository and then type:
+
+```
+git fetch origin
+git checkout feature/foo
+```
+
+Then proceed with the instruction to build and test MeasurementKit.
+
 ## How to build MeasurementKit
 
 To build the library you need a C90 compiler, a C++11 compiler&mdash;C++11 must
@@ -115,7 +127,10 @@ is `/opt/local/include/event.h` and that `libevent.a` is
     ./configure --with-libevent=builtin
 ```
 
-To compile the unit test programs, run:
+## How to test MeasurementKit
+
+Once you have built MeasurementKit, to compile and run the unit
+test programs, run:
 
     make check
 
