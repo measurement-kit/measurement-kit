@@ -100,6 +100,22 @@ private:
   ProbeResult on_socket_readable();
 
   /// Returns the source address of the error message.
+  /// \param s IPv4 socket address
+  /// \return source address of the error message
+  static std::string get_source_addr(const sockaddr_in *s);
+
+  /// Returns the source address of the error message.
+  /// \param s IPv6 socket address
+  /// \return source address of the error message
+  static std::string get_source_addr(const sockaddr_in6 *s);
+
+  /// Returns the source address of the error message.
+  /// \param use_ipv4 whether we are using IPv4
+  /// \param ss Pointer to sockaddr_storage struct
+  /// \return source address of the error message
+  static std::string get_source_addr(bool use_ipv4, const sockaddr_storage *ss);
+
+  /// Returns the source address of the error message.
   /// \param use_ipv4 whether we are using IPv4
   /// \param err socket error structure
   /// \return source address of the error message

@@ -42,6 +42,7 @@
 #include <arpa/inet.h>
 #include <linux/errqueue.h>
 
+#include <errno.h>
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
@@ -147,6 +148,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
     throw std::runtime_error("payload too large");
   if (sendto(sockfd_, payload.data(), payload.length(), 0, (sockaddr *)&ss,
              sslen) != (ssize_t)payload.length()) {
+    measurement_kit::warn("sendto() failed: errno %d", errno);
     throw std::runtime_error("sendto() failed");
   }
 
@@ -167,6 +169,8 @@ ProbeResult AndroidProber::on_socket_readable() {
   cmsghdr *cmsg;
   iovec iov;
   timespec arr_time;
+  sockaddr_storage storage;
+  socklen_t solen;
 
   measurement_kit::debug("on_socket_readable()");
 
@@ -192,8 +196,26 @@ ProbeResult AndroidProber::on_socket_readable() {
   msg.msg_control = controlbuff;
   msg.msg_controllen = sizeof(controlbuff);
   msg.msg_flags = 0;
-  if ((r.recv_bytes = recvmsg(sockfd_, &msg, MSG_ERRQUEUE)) < 0)
+  if ((r.recv_bytes = recvmsg(sockfd_, &msg, MSG_ERRQUEUE)) < 0) {
+    if (errno == EAGAIN || errno == EWOULDBLOCK) { // Defensive
+      measurement_kit::debug("it seems we received a valid reply packet back");
+      memset(&storage, 0, sizeof (storage));
+      solen = sizeof (storage);
+      if ((r.recv_bytes = recvfrom(sockfd_, buff, sizeof (buff), 0,
+                                   (sockaddr *) &storage, &solen)) < 0) {
+        throw std::runtime_error("recv() failed");
+      }
+      measurement_kit::debug("recv_bytes = %lu", r.recv_bytes);
+      r.valid_reply = true;
+      measurement_kit::debug("valid_reply = %d", r.valid_reply);
+      r.reply = std::string((const char *) buff, r.recv_bytes);
+      measurement_kit::debug("reply = <%lu bytes>", r.reply.length());
+      r.interface_ip = get_source_addr(use_ipv4_, &storage);
+      measurement_kit::debug("interface_ip = %s", r.interface_ip.c_str());
+      return r;
+    }
     throw std::runtime_error("recvmsg() failed");
+  }
   measurement_kit::debug("recv_bytes = %lu", r.recv_bytes);
 
   if (use_ipv4_) {
@@ -243,21 +265,36 @@ ProbeResult AndroidProber::on_socket_readable() {
   return r;
 }
 
+std::string AndroidProber::get_source_addr(const sockaddr_in *sin) {
+  char ip[INET_ADDRSTRLEN];
+  if (inet_ntop(AF_INET, &sin->sin_addr, ip, INET_ADDRSTRLEN) == NULL)
+    throw std::runtime_error("inet_ntop failed");
+  return std::string(ip);
+}
+
+std::string AndroidProber::get_source_addr(const sockaddr_in6 *sin6) {
+  char ip[INET6_ADDRSTRLEN];
+  if (inet_ntop(AF_INET6, &sin6->sin6_addr, ip, INET6_ADDRSTRLEN) == NULL)
+    throw std::runtime_error("inet_ntop failed");
+  return std::string(ip);
+}
+
+std::string AndroidProber::get_source_addr(bool use_ipv4,
+                                           const sockaddr_storage *ss) {
+  if (use_ipv4) {
+    return get_source_addr((sockaddr_in *) ss);
+  }
+  return get_source_addr((sockaddr_in6 *) ss);
+}
+
 std::string AndroidProber::get_source_addr(bool use_ipv4,
                                            sock_extended_err *se) {
-  // Note: I'm not annoyed by this function, if you are feel free to refactor
   if (use_ipv4) {
-    char ip[INET_ADDRSTRLEN];
     const sockaddr_in *sin = (const sockaddr_in *)SO_EE_OFFENDER(se);
-    if (inet_ntop(AF_INET, &sin->sin_addr, ip, INET_ADDRSTRLEN) == NULL)
-      throw std::runtime_error("inet_ntop failed");
-    return std::string(ip);
+    return get_source_addr(sin);
   } else {
-    char ip[INET6_ADDRSTRLEN];
     const sockaddr_in6 *sin6 = (const sockaddr_in6 *)SO_EE_OFFENDER(se);
-    if (inet_ntop(AF_INET6, &sin6->sin6_addr, ip, INET6_ADDRSTRLEN) == NULL)
-      throw std::runtime_error("inet_ntop failed");
-    return std::string(ip);
+    return get_source_addr(sin6);
   }
 }
 
