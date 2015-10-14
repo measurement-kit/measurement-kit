@@ -89,6 +89,8 @@ MeasurementKit depends on:
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 - [Catch](https://github.com/philsquared/Catch) (for tests only)
 - selected [boost](https://github.com/boostorg/) libraries (only [the ones required by yaml-cpp](https://github.com/measurement-kit/measurement-kit/tree/master/src/ext/boost))
+- [jansson](https://github.com/akheron/jansson)
+- [libmaxminddb](https://github.com/maxmind/libmaxminddb)
 
 The `./configure` script should check whether all
 the dependencies are in place and should configure the compilers
@@ -113,6 +115,12 @@ yaml-cpp library and headers installed at PREFIX
 
 - `--with-libboost=PREFIX` that tells `./configure` to use the
 boost headers installed at PREFIX
+
+- `--with-jansson=PREFIX` that tells `./configure` to use the
+jansson library and headers installed at PREFIX
+
+- `--with-libmaxminddb=PREFIX` that tells `./configure` to use the
+libmaxminddb library and headers installed at PREFIX
 
 In all the above cases you can also specify PREFIX equal to
 `builtin` to force `./configure` to use builtin sources.
