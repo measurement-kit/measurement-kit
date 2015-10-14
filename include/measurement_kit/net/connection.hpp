@@ -47,6 +47,7 @@ class Connection : public Dumb {
     unsigned int must_resolve_ipv4 = 0;
     unsigned int must_resolve_ipv6 = 0;
     DelayedCall start_connect;
+    Poller *poller = Poller::global();
 
     // Libevent callbacks
     static void handle_read(bufferevent *, void *);

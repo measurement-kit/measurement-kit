@@ -84,3 +84,25 @@ TEST_CASE("connect() iterates over all the available addresses") {
     });
     measurement_kit::loop();
 }
+
+TEST_CASE("It is possible to use Connection with a custom poller") {
+    // Note: this is how Portolan uses measurement-kit
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    measurement_kit::set_verbose(1);
+    Poller poller;
+    Connection s("PF_UNSPEC", "nexa.polito.it", "22",
+                 Logger::global(), &poller);
+    s.set_timeout(5);
+    auto ok = false;
+    s.on_error([&poller](Error) {
+        poller.break_loop();
+    });
+    s.on_connect([&poller, &ok]() {
+        poller.break_loop();
+        ok = true;
+    });
+    poller.loop();
+    REQUIRE(ok);
+}

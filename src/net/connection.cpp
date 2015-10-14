@@ -63,13 +63,12 @@ void Connection::handle_event(bufferevent *bev, short what, void *opaque) {
 }
 
 Connection::Connection(const char *family, const char *address,
-                       const char *port, Poller *poller,
-                       Logger *lp, evutil_socket_t filenum) : Dumb(lp) {
-    auto evbase = poller->get_event_base();
-
+                       const char *port, Poller *plr,
+                       Logger *lp, evutil_socket_t filenum)
+        : Dumb(lp), poller(plr) {
     filenum = measurement_kit::socket_normalize_if_invalid(filenum);
 
-    this->bev.make(evbase, filenum,
+    this->bev.make(poller->get_event_base(), filenum,
                    BEV_OPT_DEFER_CALLBACKS | BEV_OPT_CLOSE_ON_FREE);
 
     // closing: nothing to be done
@@ -93,7 +92,8 @@ Connection::Connection(const char *family, const char *address,
                       this->handle_event, this);
 
     if (!measurement_kit::socket_valid(filenum))
-        start_connect = DelayedCall(0.0, [this]() { this->resolve(); });
+        start_connect = DelayedCall(0.0, [this]() { this->resolve(); },
+            Libs::global(), poller->get_event_base());
 }
 
 void Connection::connect_next() {
@@ -215,11 +215,10 @@ bool Connection::resolve_internal(char type) {
     }
 
     try {
-        dns_request = dns::Query(query, address,
-                                   [this](dns::Response resp) {
+        dns_request = dns::Query(query, address, [this](dns::Response resp) {
             handle_resolve(resp.get_evdns_status(), resp.get_type(),
                            resp.get_results());
-        });
+        }, logger, poller->get_evdns_base());
     } catch (...) {
         return false; /* TODO: save the error */
     }
