@@ -78,7 +78,8 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
     ${ROOTDIR}/../../configure --host=${ARCH} --with-sysroot=${SYSROOT} \
       --with-libevent=builtin --with-libyaml-cpp=builtin \
       --with-libboost=builtin --disable-shared --libdir=/ \
-      --includedir=/include
+      --includedir=/include --with-libmaxminddb=builtin \
+      --with-jansson=builtin
     make V=0
     echo "Installing library in ${BASEDIR}/build/${ANDROID_TOOLCHAIN}"
     make install DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
