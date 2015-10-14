@@ -1,8 +1,11 @@
 noinst_LTLIBRARIES += src/ext/libext.la
 
+DIST_SUBDIRS =
+SUBDIRS =
+
 if USE_BUILTIN_LIBEVENT
-    DIST_SUBDIRS = src/ext/libevent
-    SUBDIRS = src/ext/libevent
+    DIST_SUBDIRS += src/ext/libevent
+    SUBDIRS += src/ext/libevent
 endif
 
 src_ext_libext_la_SOURCES = \
@@ -10,6 +13,16 @@ src_ext_libext_la_SOURCES = \
     src/ext/http-parser/http_parser.c
 
 libmeasurement_kit_la_LIBADD += src/ext/libext.la
+
+if USE_BUILTIN_JANSSON
+    DIST_SUBDIRS += src/ext/jansson
+    SUBDIRS += src/ext/jansson
+endif
+
+if USE_BUILTIN_LIBMAXMINDDB
+    DIST_SUBDIRS += src/ext/libmaxminddb
+    SUBDIRS += src/ext/libmaxminddb
+endif
 
 #
 # YAML-CPP

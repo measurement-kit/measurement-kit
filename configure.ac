@@ -23,6 +23,8 @@ AC_PROG_CXX()
 
 # checks for libraries
 
+# LIBEVENT
+
 measurement_kit_libevent_path=
 
 AC_ARG_WITH([libevent],
@@ -64,7 +66,77 @@ fi
 AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
     [test "$measurement_kit_libevent_path"x = "builtin"x])
 
+# JANSSON
 
+measurement_kit_jansson_path=
+
+AC_ARG_WITH([jansson],
+            [AS_HELP_STRING([--with-jansson],
+             [JSON library @<:@default=check@:>@]) ], [
+              measurement_kit_jansson_path=$withval
+              if test "$withval"x != "builtin"x; then
+                  CPPFLAGS="$CPPFLAGS -I$withval/include"
+                  LDFLAGS="$LDFLAGS -L$withval/lib"
+              fi
+            ], [])
+
+if test "$measurement_kit_jansson_path"x != "builtin"x; then
+    AC_CHECK_HEADERS(jansson.h, [],
+      [measurement_kit_jansson_path=builtin])
+
+    AC_CHECK_LIB(jansson, json_null, [],
+      [measurement_kit_jansson_path=builtin])
+
+    if test "$measurement_kit_jansson_path"x = "builtin"x; then
+       AC_MSG_WARN([No jansson found: will use the builtin jansson])
+    fi
+fi
+
+if test "$measurement_kit_jansson_path"x = "builtin"x; then
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/jansson/src"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/jansson/src -ljansson"
+    AC_CONFIG_SUBDIRS([src/ext/jansson])
+fi
+
+AM_CONDITIONAL([USE_BUILTIN_JANSSON],
+    [test "$measurement_kit_jansson_path"x = "builtin"x])
+
+# LIBMAXMINDDB
+
+measurement_kit_libmaxminddb_path=
+
+AC_ARG_WITH([libmaxminddb],
+            [AS_HELP_STRING([--with-libmaxminddb],
+             [GeoIP library @<:@default=check@:>@]) ], [
+              measurement_kit_libmaxminddb_path=$withval
+              if test "$withval"x != "builtin"x; then
+                  CPPFLAGS="$CPPFLAGS -I$withval/include"
+                  LDFLAGS="$LDFLAGS -L$withval/lib"
+              fi
+            ], [])
+
+if test "$measurement_kit_libmaxminddb_path"x != "builtin"x; then
+    AC_CHECK_HEADERS(maxminddb.h, [],
+      [measurement_kit_libmaxminddb_path=builtin])
+
+    AC_CHECK_LIB(maxminddb, MMDB_open, [],
+      [measurement_kit_libmaxminddb_path=builtin])
+
+    if test "$measurement_kit_libmaxminddb_path"x = "builtin"x; then
+       AC_MSG_WARN([No libmaxminddb found: will use the builtin libmaxminddb])
+    fi
+fi
+
+if test "$measurement_kit_libmaxminddb_path"x = "builtin"x; then
+    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/libmaxminddb/include"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libmaxminddb/src -lmaxminddb"
+    AC_CONFIG_SUBDIRS([src/ext/libmaxminddb])
+fi
+
+AM_CONDITIONAL([USE_BUILTIN_LIBMAXMINDDB],
+    [test "$measurement_kit_libmaxminddb_path"x = "builtin"x])
+
+# YAML-CPP
 
 # Step 1: process --with-libboost and set measurement_kit_boost_path accordingly
 measurement_kit_boost_path=
