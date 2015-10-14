@@ -9,9 +9,7 @@ if [ $# -eq 3 ]; then
 elif [ $# -eq 2 ]; then
     NDK_DIR=$1
     API=$2
-    for arch in aarch64-linux-android arm-linux-androideabi \
-      arm-linux-androideabi-v7a mipsel-linux-android mips64el-linux-android  \
-      x86 x86_64; do
+    for arch in arm-linux-androideabi mipsel-linux-android x86; do
         $0 $NDK_DIR $arch $API
     done
     exit 0
