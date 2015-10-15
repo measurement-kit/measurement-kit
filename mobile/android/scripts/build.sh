@@ -1,6 +1,10 @@
 #!/bin/sh -e
 
-ROOTDIR=$(cd $(dirname $(dirname $0)); pwd)
+ROOTDIR=$(cd $(dirname $(dirname $0)) && pwd -P)
+if [ $? -ne 0 ]; then
+    echo "$0: cannot determine root directory" 1>&2
+    exit 1
+fi
 
 if [ $# -eq 3 ]; then
     NDK_DIR=$1
