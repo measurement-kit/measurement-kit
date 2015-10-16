@@ -96,3 +96,6 @@ libevent_openssl.pc
 /test/test-weof
 /test/test-changelist
 
+.travis.yml
+.DS_Store
+test-driver
