@@ -73,6 +73,14 @@ a single command using the `./scripts/build.sh` script. For example,
 
     $ ./scripts/build.sh /usr/local/Cellar/android-ndk/r10e/ arm-linux-androideabi 9
 
+To build for all supported architectures, just omit the architecture:
+
+    $ ./scripts/build.sh /usr/local/Cellar/android-ndk/r10e/ 9
+
+If you omit API, 21 is used by default:
+
+    $ ./scripts/build.sh /usr/local/Cellar/android-ndk/r10e/
+
 ## TODO next
 
 What is missing to continue this work is to compile and link
