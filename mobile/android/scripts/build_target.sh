@@ -1,6 +1,11 @@
 #!/bin/sh -e
 
-ROOTDIR=$(cd $(dirname $(dirname $0)); pwd)
+ROOTDIR=$(cd $(dirname $(dirname $0)) && pwd -P)
+if [ $? -ne 0 ]; then
+    echo "$0: cannot determine root directory" 1>&2
+    exit 1
+fi
+
 
 if [ $# -ne 2 ]; then
     echo "Usage: $0 ARCH API" 1>&2
