@@ -87,5 +87,5 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
       --with-jansson=builtin
     make V=0
     echo "Installing library in ${BASEDIR}/build/${ANDROID_TOOLCHAIN}"
-    make install DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
+    make install-strip DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
 )
