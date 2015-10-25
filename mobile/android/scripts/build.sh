@@ -6,7 +6,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-ALL_ARCHS="aarch64-linux-android arm-linux-androideabi arm-linux-androideabi-v7a mipsel-linux-android mips64el-linux-android x86 x86_64"
+ALL_ARCHS="arm-linux-androideabi x86"
 
 if [ $# -eq 3 ]; then
     NDK_DIR=$1
@@ -45,4 +45,5 @@ fi
         ${ROOTDIR}/scripts/make_toolchain.sh ${NDK_DIR} ${ARCH} ${API}
     fi
     ${ROOTDIR}/scripts/build_target.sh ${ARCH} ${API}
+    ${ROOTDIR}/scripts/make_devkit.sh ${NDK_DIR}
 )
