@@ -107,6 +107,7 @@ AndroidProber::AndroidProber(bool a, int port, event_base *c)
 
 void AndroidProber::send_probe(std::string addr, int port, int ttl,
                                std::string payload, double timeout) {
+
   int ipproto, ip_ttl, family;
   sockaddr_storage ss;
   socklen_t sslen;
@@ -115,13 +116,16 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
   measurement_kit::debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port, ttl,
              payload.length());
 
-  if (sockfd_ < 0)
-    throw std::runtime_error("Programmer error"); // already close()d
-
+  if (sockfd_ < 0) {
+    error_cb_(std::runtime_error("Programmer error")); // already close()d
+    return;
+  }
   // Note: until we figure out exactly how to deal with overlapped
   // probes enforce to traceroute hop by hop only
-  if (probe_pending_)
-    throw std::runtime_error("Another probe is pending");
+  if (probe_pending_) {
+    error_cb_(std::runtime_error("Another probe is pending"));
+    return;
+  }
 
   if (use_ipv4_) {
     ipproto = IPPROTO_IP;
@@ -133,27 +137,39 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
     family = PF_INET6;
   }
 
-  if (setsockopt(sockfd_, ipproto, ip_ttl, &ttl, sizeof(ttl)) != 0)
-    throw std::runtime_error("setsockopt() failed");
+  if (setsockopt(sockfd_, ipproto, ip_ttl, &ttl, sizeof(ttl)) != 0) {
+    error_cb_(std::runtime_error("setsockopt() failed"));
+    return;
+  }
 
-  if (measurement_kit::storage_init(&ss, &sslen, family, addr.c_str(), port) != 0)
-    throw std::runtime_error("measurement_kit::storage_init() failed");
+  if (measurement_kit::storage_init(&ss, &sslen, family, addr.c_str(), port) != 0) {
+    error_cb_(std::runtime_error("measurement_kit::storage_init() failed"));
+    return;
+  }
 
-  if (clock_gettime(CLOCK_MONOTONIC, &start_time_) != 0)
-    throw std::runtime_error("clock_gettime() failed");
+  if (clock_gettime(CLOCK_MONOTONIC, &start_time_) != 0) {
+    error_cb_(std::runtime_error("clock_gettime() failed"));
+    return;
+  }
 
   // Note: cast to ssize_t safe because payload length is bounded
   // We may want however to increase the maximum accepted length
-  if (payload.length() > 512)
-    throw std::runtime_error("payload too large");
+  if (payload.length() > 512) {
+    error_cb_(std::runtime_error("payload too large"));
+    return;
+  }
+
   if (sendto(sockfd_, payload.data(), payload.length(), 0, (sockaddr *)&ss,
              sslen) != (ssize_t)payload.length()) {
     measurement_kit::warn("sendto() failed: errno %d", errno);
-    throw std::runtime_error("sendto() failed");
+    error_cb_(std::runtime_error("sendto() failed"));
+    return;
   }
 
-  if (event_add(evp_, measurement_kit::timeval_init(&tv, timeout)) != 0)
-    throw std::runtime_error("event_add() failed");
+  if (event_add(evp_, measurement_kit::timeval_init(&tv, timeout)) != 0) {
+    error_cb_(std::runtime_error("event_add() failed"));
+    return;
+  }
 
   probe_pending_ = true;
 }

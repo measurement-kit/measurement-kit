@@ -86,12 +86,12 @@ public:
   ProberInterface() {}
 
   /// Send a traceroute probe
+  /// In case of error this function emits error-event
   /// \param addr Destination address
   /// \param port Destination port
   /// \param ttl Time to live
   /// \param payload packet payload
   /// \param timeout Timeout for this probe
-  /// \throws Exception on error
   virtual void send_probe(std::string addr, int port, int ttl,
                           std::string payload, double timeout) = 0;
 
