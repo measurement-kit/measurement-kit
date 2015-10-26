@@ -59,7 +59,6 @@ public:
   /// \param use_ipv4 Whether to use IPv4
   /// \param port The port to bind
   /// \param evbase Event base to use (optional)
-  /// \throws Exception on error
   AndroidProber(bool use_ipv4, int port,
                 event_base *evbase = measurement_kit::get_global_event_base());
 
@@ -86,6 +85,7 @@ private:
   bool use_ipv4_ = true;         ///< using IPv4?
   event_base *evbase_ = nullptr; ///< event base
   event *evp_ = nullptr;         ///< event pointer
+  int port_ = 0;                 ///< socket port
 
   std::function<void(ProbeResult)> result_cb_;       ///< on result callback
   std::function<void()> timeout_cb_;                 ///< on timeout callback
@@ -93,6 +93,9 @@ private:
 
   /// Call this when you don't receive a response within timeout
   void on_timeout() { probe_pending_ = false; }
+
+  /// Initialize socket
+  void init();
 
   /// Call this as soon as the socket is readable to get
   /// the result ICMP error received by the socket and to
