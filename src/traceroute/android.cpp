@@ -51,14 +51,21 @@ namespace measurement_kit {
 namespace traceroute {
 
 AndroidProber::AndroidProber(bool a, int port, event_base *c)
-    : use_ipv4_(a), evbase_(c) {
+    : use_ipv4_(a), evbase_(c), port_(port) {}
+
+void  AndroidProber::init() {
+
+  if (sockfd_ >= 0 && evp_ != nullptr)
+    return;
+  else if (sockfd_ >= 0 || evp_ != nullptr)
+    throw std::runtime_error("Objects not properly initialized.");
 
   sockaddr_storage ss;
   socklen_t sslen;
   int level_sock, opt_recverr, level_proto, opt_recvttl, family;
   const int val = 1;
 
-  measurement_kit::debug("AndroidProber(%d, %d, %p) => %p", use_ipv4_, port,
+  measurement_kit::debug("AndroidProber(%d, %d, %p) => %p", use_ipv4_, port_,
              (void *)evbase_, (void *)this);
 
   if (use_ipv4_) {
@@ -78,30 +85,35 @@ AndroidProber::AndroidProber(bool a, int port, event_base *c)
   sockfd_ = measurement_kit::socket_create(family, SOCK_DGRAM, 0);
   if (sockfd_ == -1) {
     cleanup();
-    throw std::runtime_error("Cannot create socket");
+    error_cb_(std::runtime_error("Cannot create socket"));
+    return;
   }
 
   if (setsockopt(sockfd_, level_sock, opt_recverr, &val, sizeof(val)) != 0 ||
       setsockopt(sockfd_, level_proto, opt_recvttl, &val, sizeof(val)) != 0 ||
       setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) != 0) {
     cleanup();
-    throw std::runtime_error("Cannot set socket options");
+    error_cb_(std::runtime_error("Cannot set socket options"));
+    return;
   }
 
-  if (measurement_kit::storage_init(&ss, &sslen, family, NULL, port) != 0) {
+  if (measurement_kit::storage_init(&ss, &sslen, family, NULL, port_) != 0) {
     cleanup();
-    throw std::runtime_error("measurement_kit::storage_init() failed");
+    error_cb_(std::runtime_error("measurement_kit::storage_init() failed"));
+    return;
   }
   if (bind(sockfd_, (sockaddr *)&ss, sslen) != 0) {
     cleanup();
-    throw std::runtime_error("bind() failed");
+    error_cb_(std::runtime_error("bind() failed"));
+    return;
   }
 
   // Note: since here we use `this`, object cannot be copied/moved
   if ((evp_ = event_new(evbase_, sockfd_, EV_READ, event_callback, this)) ==
       NULL) {
     cleanup();
-    throw std::runtime_error("event_new() failed");
+    error_cb_(std::runtime_error("event_new() failed"));
+    return;
   }
 }
 
@@ -112,6 +124,8 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
   sockaddr_storage ss;
   socklen_t sslen;
   timeval tv;
+
+  init();
 
   measurement_kit::debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port, ttl,
              payload.length());
