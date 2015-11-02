@@ -16,7 +16,7 @@ fi
 DEVELOPER=$(xcode-select -print-path)
 REPOROOT=$(pwd)
 MINIOSVERSION="7.1"
-SDKVERSION="9.0"
+SDKVERSION="9.1"
 
 export PATH="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin/:${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/usr/bin/:${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin:${DEVELOPER}/usr/bin:${PATH}"
 
