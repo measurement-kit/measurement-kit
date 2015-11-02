@@ -29,3 +29,4 @@ get measurement-kit/libevent release-2.0.22-stable-18-gf1feb10 libevent
 get bassosimone/yaml-cpp master yaml-cpp
 get akheron/jansson master jansson
 get measurement-kit/libmaxminddb master libmaxminddb
+rm -rf tmp
