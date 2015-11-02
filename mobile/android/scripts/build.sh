@@ -45,5 +45,4 @@ fi
         ${ROOTDIR}/scripts/make_toolchain.sh ${NDK_DIR} ${ARCH} ${API}
     fi
     ${ROOTDIR}/scripts/build_target.sh ${ARCH} ${API}
-    ${ROOTDIR}/scripts/make_devkit.sh ${NDK_DIR}
 )

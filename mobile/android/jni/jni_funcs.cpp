@@ -30,7 +30,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
     // XXX not clear what is the best way to get the DNS server
     // address on Android. My research shows that one could:
     //
-    // 1. call getRuntime.exec() that can hand the app
+    // 1. call getRuntime.exec() that can hang the app
     // 2. use reflection to use an hidden class
     //
     // source: http://stackoverflow.com/a/11362271

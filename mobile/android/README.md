@@ -73,7 +73,8 @@ a single command using the `./scripts/build.sh` script. For example,
 
     $ ./scripts/build.sh /usr/local/Cellar/android-ndk/r10e/ arm-linux-androideabi 9
 
-To build for all supported architectures, just omit the architecture:
+If you omit the architecture, the two most common architectures (`x86` used
+by the emulator and `armeabi`) are compiled:
 
     $ ./scripts/build.sh /usr/local/Cellar/android-ndk/r10e/ 9
 
@@ -81,8 +82,26 @@ If you omit API, 21 is used by default:
 
     $ ./scripts/build.sh /usr/local/Cellar/android-ndk/r10e/
 
-## TODO next
+## Final step: creating Android developer's pack
 
-What is missing to continue this work is to compile and link
-with measurement-kit and all its dependencies JNI code that can be
-accessed from Java to use measurement-kit.
+Once you have compiled everything (either by running `build.sh` or by
+running all the individual steps), run:
+
+```
+./script/make_devpack.sh /usr/local/Cellar/android-ndk/r10e
+```
+
+(Of course replace the first parameter with the location where you
+have installed the Android NDK.)
+
+This `make_devpack.sh` script will create a `.tar.gz` archive
+containing both the dynamic libraries that can be loaded from Java
+code (in the `jniLibs` folder) and the corresponding Java source
+files (in the `java/io/github/measurement_kit` folder).
+
+The folder names are such that you can decompress the content of
+this archive inside the `app/src/main/java` folder of your application.
+
+For an example application see:
+
+- https://github.com/measurement-kit/measurement-kit-app-android
