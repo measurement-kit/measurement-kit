@@ -163,7 +163,7 @@ You can include another branch with:
       :git => 'https://github.com/measurement-kit/measurement-kit.git'
       :branch => 'branch_name'
 
-Then type `pod install` 
+Then type `pod install` and open `Libight_iOS.xcworkspace` (and not `Libight_iOS.xcodeproj`)
 
 ## How to use MeasurementKit
 
