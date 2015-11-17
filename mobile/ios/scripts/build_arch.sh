@@ -33,6 +33,8 @@ export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer
                 --with-libevent=builtin \
                 --with-libyaml-cpp=builtin \
                 --with-libboost=builtin \
+                --with-jansson=builtin \
+                --with-libmaxminddb=builtin \
                 --prefix=/ \
                 $EXTRA_CONFIG
     make -j4 V=0
