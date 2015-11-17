@@ -31,10 +31,16 @@ tests. More in detail it currently implements:
 - [traceroute for Android](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/traceroute/android.hpp) (with which you can send individual traceroute
   probes with a specified payload and TTL)
 
-Future short-term plans include implementing all possible OONI tests, adding
-network performance tests (such as [NDT](https://github.com/ndt-project/ndt)), adding building-blocks functionalities
-such as [uTP](https://github.com/bittorrent/libutp), implementing facilities to communitate with the [OONI backend](https://github.com/TheTorProject/ooni-backend),
-implementing traceroute for iOS.
+In the short term we plan to add to MeasurementKit:
+
+- the [network diagnostic tool](https://github.com/ndt-project/ndt/wiki/NDTTestMethodology) network performance test
+
+- the functionality to communicate with the [OONI backend](https://github.com/TheTorProject/ooni-backend)
+
+- more OONI tests
+
+Other functionalities that we would like to add are building-blocks functionalities
+such as [uTP](https://github.com/bittorrent/libutp), and traceroute for iOS.
 
 To compile MeasurementKit for Android, see the README.md file contained in
 the `mobile/android` directory of this repository.
