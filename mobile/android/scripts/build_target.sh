@@ -81,8 +81,8 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
     echo "Configure with --host=${ARCH} and toolchain ${ANDROID_TOOLCHAIN}"
     test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && autoreconf -i)
     ${ROOTDIR}/../../configure --host=${ARCH} --with-sysroot=${SYSROOT} \
-      --with-libevent=builtin --with-libyaml-cpp=builtin \
-      --with-libboost=builtin --disable-shared --libdir=/ \
+      --with-libevent=builtin --with-yaml-cpp=builtin \
+      --with-boost=builtin --disable-shared --libdir=/ \
       --includedir=/include --with-libmaxminddb=builtin \
       --with-jansson=builtin
     make V=0

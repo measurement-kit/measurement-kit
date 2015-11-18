@@ -138,10 +138,10 @@ AM_CONDITIONAL([USE_BUILTIN_LIBMAXMINDDB],
 
 # YAML-CPP
 
-# Step 1: process --with-libboost and set measurement_kit_boost_path accordingly
+# Step 1: process --with-boost and set measurement_kit_boost_path accordingly
 measurement_kit_boost_path=
-AC_ARG_WITH([libboost],
-            [AS_HELP_STRING([--with-libboost],
+AC_ARG_WITH([boost],
+            [AS_HELP_STRING([--with-boost],
              [Quasi-standard C++ libraries @<:@default=check@:>@])
             ], [
               measurement_kit_boost_path=$withval
@@ -184,7 +184,7 @@ if test "$measurement_kit_boost_path"x != "builtin"x; then
     fi
 fi
 
-# Step 3: if needed, prepare to include our own libboost
+# Step 3: if needed, prepare to include our own boost
 if test "$measurement_kit_boost_path"x = "builtin"x; then
     CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/assert/include"
     CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/config/include"
@@ -204,10 +204,10 @@ fi
 
 
 
-# Step 1: process --with-libyaml-cpp and set measurement_kit_yamlcpp_path accordingly
+# Step 1: process --with-yaml-cpp and set measurement_kit_yamlcpp_path accordingly
 measurement_kit_yamlcpp_path=
-AC_ARG_WITH([libyaml-cpp],
-            [AS_HELP_STRING([--with-libyaml-cpp],
+AC_ARG_WITH([yaml-cpp],
+            [AS_HELP_STRING([--with-yaml-cpp],
              [Library for managing YAML @<:@default=check@:>@])
             ], [
               measurement_kit_yamlcpp_path=$withval
