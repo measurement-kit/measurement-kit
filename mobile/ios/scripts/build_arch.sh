@@ -31,8 +31,8 @@ export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer
     test -x ./configure || autoreconf -i
     ./configure --disable-shared \
                 --with-libevent=builtin \
-                --with-libyaml-cpp=builtin \
-                --with-libboost=builtin \
+                --with-yaml-cpp=builtin \
+                --with-boost=builtin \
                 --with-jansson=builtin \
                 --with-libmaxminddb=builtin \
                 --prefix=/ \

@@ -113,10 +113,10 @@ at specific directories using the following flags:
 - `--with-libevent=PREFIX` that tells `./configure` to use the
 libevent library and headers installed at PREFIX
 
-- `--with-libyaml-cpp=PREFIX` that tells `./configure` to use the
+- `--with-yaml-cpp=PREFIX` that tells `./configure` to use the
 yaml-cpp library and headers installed at PREFIX
 
-- `--with-libboost=PREFIX` that tells `./configure` to use the
+- `--with-boost=PREFIX` that tells `./configure` to use the
 boost headers installed at PREFIX
 
 - `--with-jansson=PREFIX` that tells `./configure` to use the
