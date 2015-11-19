@@ -6,8 +6,8 @@
 #include <measurement_kit/dns/query.hpp>
 
 #include <measurement_kit/common/libs.hpp>
-#include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <functional>
 #include <iosfwd>
@@ -35,7 +35,7 @@ Query::Query(QueryClass dns_class, QueryType dns_type, std::string name,
     if (libs == nullptr) {
         libs = Libs::global();
     }
-    cancelled = SharedPointer<bool>(new bool());
+    cancelled = Var<bool>(new bool());
     *cancelled = false;
     QueryImpl::issue(dns_class, dns_type, name, func, lp,
                      dnsb, libs, cancelled);

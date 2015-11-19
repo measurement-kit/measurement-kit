@@ -198,13 +198,13 @@ using namespace measurement_kit::common;
 using namespace measurement_kit;
 
 int main() {
-    SharedPointer<Async> async(new Async);
-    SharedPointer<NetTest> test(new ooni::HTTPInvalidRequestLine(Settings{
+    Var<Async> async(new Async);
+    Var<NetTest> test(new ooni::HTTPInvalidRequestLine(Settings{
         {"backend", "http://nexa.polito.it/"}
     }));
     test->set_verbose(1);
     test->on_log([](const char *s) { std::clog << s << "\n"; });
-    async->run_test(test, [async](SharedPointer<NetTest> test) {
+    async->run_test(test, [async](Var<NetTest> test) {
         std::clog << "Test complete: " << test->identifier() << "\n";
         async->break_loop();
     });

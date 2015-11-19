@@ -63,9 +63,9 @@ test/common/delayed_call
 test/common/evbuffer
 test/common/log
 test/common/poller
-test/common/pointer
 test/common/socket_valid
 test/common/utils
+test/common/var
 test/echo_client
 test/echo_client2
 test/echo_client_evbuf

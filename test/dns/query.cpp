@@ -198,7 +198,7 @@ TEST_CASE("Query::cancel() is safe when a request is pending") {
 struct TransparentQuery : public Query {
     using Query::Query;
 
-    SharedPointer<bool> get_cancelled_() { return cancelled; }
+    Var<bool> get_cancelled_() { return cancelled; }
 };
 
 TEST_CASE("Move semantic works for request") {

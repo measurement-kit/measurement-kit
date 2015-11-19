@@ -12,7 +12,6 @@
 #include <measurement_kit/report/file.hpp>
 
 #include <measurement_kit/common/delayed_call.hpp>
-#include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/logger.hpp>

@@ -18,7 +18,7 @@ using namespace measurement_kit::common;
 using namespace measurement_kit::ooni;
 
 static void run_http_invalid_request_line(Async &async) {
-    auto test = SharedPointer<HTTPInvalidRequestLine>(
+    auto test = Var<HTTPInvalidRequestLine>(
         new HTTPInvalidRequestLine(Settings{
             {"backend", "http://nexa.polito.it/"},
         })
@@ -28,13 +28,13 @@ static void run_http_invalid_request_line(Async &async) {
         (void) fprintf(stderr, "test #1: %s\n", s);
     });
     measurement_kit::debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+    async.run_test(test, [](Var<common::NetTest> test) {
         measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }
 
 static void run_dns_injection(Async& async) {
-    auto test = SharedPointer<DNSInjection>(
+    auto test = Var<DNSInjection>(
         new DNSInjection("test/fixtures/hosts.txt", Settings{
             {"nameserver", "8.8.8.8:53"},
         })
@@ -44,13 +44,13 @@ static void run_dns_injection(Async& async) {
         (void) fprintf(stderr, "test #3: %s\n", s);
     });
     measurement_kit::debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+    async.run_test(test, [](Var<common::NetTest> test) {
         measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }
 
 static void run_tcp_connect(Async& async) {
-    auto test = SharedPointer<TCPConnect>(
+    auto test = Var<TCPConnect>(
         new TCPConnect("test/fixtures/hosts.txt", Settings{
             {"port", "80"},
         })
@@ -60,7 +60,7 @@ static void run_tcp_connect(Async& async) {
         (void) fprintf(stderr, "test #4: %s\n", s);
     });
     measurement_kit::debug("test created: %llu", test->identifier());
-    async.run_test(test, [](SharedPointer<common::NetTest> test) {
+    async.run_test(test, [](Var<common::NetTest> test) {
         measurement_kit::debug("test complete: %llu", test->identifier());
     });
 }

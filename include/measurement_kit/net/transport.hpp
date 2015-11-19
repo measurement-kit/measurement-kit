@@ -15,8 +15,8 @@
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/settings.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <measurement_kit/net/buffer.hpp>
 
@@ -121,7 +121,7 @@ class Transport : public TransportInterface {
     std::string socks5_port() override { return t->socks5_port(); }
 
   private:
-    SharedPointer<TransportInterface> t;
+    Var<TransportInterface> t;
 };
 
 Transport connect(Settings, Logger * = Logger::global());

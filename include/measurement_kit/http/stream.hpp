@@ -8,7 +8,7 @@
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/pointer.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <measurement_kit/net/error.hpp>
 #include <measurement_kit/net/transport.hpp>
@@ -41,7 +41,7 @@ using namespace measurement_kit::net;
  */
 class Stream {
     Transport connection;
-    SharedPointer<ResponseParser> parser;
+    Var<ResponseParser> parser;
     std::function<void(Error)> error_handler;
     std::function<void()> connect_handler;
 
@@ -73,7 +73,7 @@ public:
      * \brief Get response parser.
      * This is useful for writing tests.
      */
-    SharedPointer<ResponseParser> get_parser() {
+    Var<ResponseParser> get_parser() {
         return parser;
     }
 

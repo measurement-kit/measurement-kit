@@ -5,7 +5,7 @@
 #ifndef MEASUREMENT_KIT_COMMON_ASYNC_HPP
 #define MEASUREMENT_KIT_COMMON_ASYNC_HPP
 
-#include <measurement_kit/common/pointer.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <functional>
 #include <string>
@@ -24,8 +24,7 @@ class Async {
     /// Run the specified network test and call a callback when done
     /// \param func Callback called when test is done
     /// \warn The callback is called from a background thread
-    void run_test(SharedPointer<NetTest> test,
-      std::function<void(SharedPointer<NetTest>)> func);
+    void run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> func);
 
     /// Break out of the loop
     /// \remark This returns immediately, poll empty() to know when
@@ -36,8 +35,8 @@ class Async {
     bool empty();
 
   private:
-    SharedPointer<AsyncState> state;
-    static void loop_thread(SharedPointer<AsyncState>);
+    Var<AsyncState> state;
+    static void loop_thread(Var<AsyncState>);
 };
 
 } // namespace net

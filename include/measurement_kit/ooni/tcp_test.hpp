@@ -8,9 +8,9 @@
 #include <measurement_kit/net/buffer.hpp>
 #include <measurement_kit/net/connection.hpp>
 
-#include <measurement_kit/common/pointer.hpp>
-#include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/settings.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <measurement_kit/ooni/net_test.hpp>
 
@@ -20,7 +20,7 @@ namespace ooni {
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;
 
-typedef SharedPointer<Connection> TCPClient;           /* XXX */
+typedef Var<Connection> TCPClient;           /* XXX */
 
 class TCPTest : public ooni::NetTest {
     using ooni::NetTest::NetTest;

@@ -16,14 +16,12 @@
 namespace measurement_kit {
 namespace common {
 
-typedef SharedPointer<NetTest> NetTestVar;
-
 // Shared state between foreground and background threads
 struct AsyncState {
-    std::map<NetTest *, std::function<void(NetTestVar)>> callbacks;
-    std::map<NetTest *, NetTestVar> ready;
-    std::map<NetTest *, NetTestVar> active;
-    std::map<NetTest *, NetTestVar> complete;
+    std::map<NetTest *, std::function<void(Var<NetTest>)>> callbacks;
+    std::map<NetTest *, Var<NetTest>> ready;
+    std::map<NetTest *, Var<NetTest>> active;
+    std::map<NetTest *, Var<NetTest>> complete;
     volatile bool interrupted = false;
     std::mutex mutex;
     std::thread thread;
@@ -56,7 +54,7 @@ class EvThreadSingleton {
         v = m[k];                                                              \
     } while (0)
 
-void Async::loop_thread(SharedPointer<AsyncState> state) {
+void Async::loop_thread(Var<AsyncState> state) {
     EvThreadSingleton::ensure();
     state->interrupted = false; // Undo previous break_loop() if any
 
@@ -92,8 +90,8 @@ void Async::loop_thread(SharedPointer<AsyncState> state) {
                         // i.e. in the background thread (i.e this function)
                         //
                         debug("async: test stopped");
-                        NetTestVar test;
-                        std::function<void(NetTestVar)> callback;
+                        Var<NetTest> test;
+                        std::function<void(Var<NetTest>)> callback;
                         LOCKED({
                             GET(test, state->active, ptr);
                             GET(callback, state->callbacks, ptr);
@@ -128,8 +126,8 @@ Async::Async() {
     state.reset(new AsyncState());
 }
 
-void Async::run_test(SharedPointer<NetTest> test,
-  std::function<void(SharedPointer<NetTest>)> fn) {
+void Async::run_test(Var<NetTest> test,
+  std::function<void(Var<NetTest>)> fn) {
     LOCKED({
         debug("async: test inserted");
         INSERT(state->ready, test.get(), test);

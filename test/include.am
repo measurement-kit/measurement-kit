@@ -37,11 +37,11 @@ test_common_poller_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/poller
 TESTS += test/common/poller
 
-test_common_pointer_SOURCES = test/common/pointer.cpp
-test_common_pointer_LDADD = libmeasurement_kit.la
-test_common_pointer_LDFLAGS = -lyaml-cpp
-check_PROGRAMS += test/common/pointer
-TESTS += test/common/pointer
+test_common_var_SOURCES = test/common/var.cpp
+test_common_var_LDADD = libmeasurement_kit.la
+test_common_var_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/common/var
+TESTS += test/common/var
 
 test_common_socket_valid_SOURCES = test/common/socket_valid.cpp
 test_common_socket_valid_LDADD = libmeasurement_kit.la

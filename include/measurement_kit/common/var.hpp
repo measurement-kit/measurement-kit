@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_COMMON_POINTER_HPP
-#define MEASUREMENT_KIT_COMMON_POINTER_HPP
+#ifndef MEASUREMENT_KIT_COMMON_VAR_HPP
+#define MEASUREMENT_KIT_COMMON_VAR_HPP
 
 #include <memory>
 #include <stdexcept>
@@ -12,7 +12,7 @@ namespace measurement_kit {
 namespace common {
 
 /// Improved std::shared_ptr<T> with null pointer checks
-template <typename T> class SharedPointer : public std::shared_ptr<T> {
+template <typename T> class Var : public std::shared_ptr<T> {
     using std::shared_ptr<T>::shared_ptr;
 
   public:
