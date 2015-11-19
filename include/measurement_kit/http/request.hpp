@@ -9,7 +9,7 @@
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/pointer.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <measurement_kit/net/buffer.hpp>
 #include <measurement_kit/net/error.hpp>
@@ -43,7 +43,7 @@ class Request : public NonCopyable, public NonMovable {
 
     RequestCallback callback;
     RequestSerializer serializer;
-    SharedPointer<Stream> stream;
+    Var<Stream> stream;
     Response response;
     std::set<Request *> *parent = nullptr;
     Logger *logger = Logger::global();
@@ -148,7 +148,7 @@ public:
         });
     }
 
-    SharedPointer<Stream> get_stream() {
+    Var<Stream> get_stream() {
         return stream;
     }
 

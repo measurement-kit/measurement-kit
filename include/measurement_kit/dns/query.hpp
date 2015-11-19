@@ -7,7 +7,7 @@
 
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/pointer.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <measurement_kit/dns/defines.hpp>
 
@@ -30,7 +30,7 @@ using namespace measurement_kit::common;
 class Query {
 
   protected:
-    SharedPointer<bool> cancelled;
+    Var<bool> cancelled;
 
   public:
      /// Default constructor.
@@ -58,7 +58,7 @@ class Query {
      * i.e. when at least a Query object is alive.
      *
      * Apparently asking for default move constructor is needed to enforce
-     * the move constructor of the SharedPointer as opposed to a constructor
+     * the move constructor of the Var<T> as opposed to a constructor
      * that only trivially copies. This was noticed removing the four lines
      * and acknowledging that DNS code was not working anymore.
      */

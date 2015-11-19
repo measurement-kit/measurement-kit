@@ -9,10 +9,10 @@
 
 #include <measurement_kit/common/libs.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/pointer.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/utils.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <event2/dns.h>
 
@@ -113,7 +113,7 @@ void Resolver::query(QueryClass dns_class, QueryType dns_type,
     // or because of an error, or because the resolver is destroyed (this
     // is guaranteed by the destructor's impl).
     //
-    auto cancelled = SharedPointer<bool>(new bool());
+    auto cancelled = Var<bool>(new bool());
     *cancelled = false;
     QueryImpl::issue(dns_class, dns_type, name, f, logger,
                      get_evdns_base(), libs, cancelled);

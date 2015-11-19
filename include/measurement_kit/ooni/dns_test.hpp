@@ -5,7 +5,7 @@
 #ifndef MEASUREMENT_KIT_OONI_DNS_TEST_HPP
 #define MEASUREMENT_KIT_OONI_DNS_TEST_HPP
 
-#include <measurement_kit/common/pointer.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/ooni/net_test.hpp>
@@ -19,7 +19,7 @@ using namespace measurement_kit::dns;
 class DNSTest : public ooni::NetTest {
     using ooni::NetTest::NetTest;
 
-    SharedPointer<Resolver> resolver;
+    Var<Resolver> resolver;
 
 public:
     DNSTest(std::string input_filepath_, Settings options_) :

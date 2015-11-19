@@ -63,7 +63,7 @@ TEST_CASE("Destructor cancels delayed calls") {
     // at any time by peer.
     //
     struct X {
-      SharedPointer<DelayedCall> d;
+      Var<DelayedCall> d;
     };
 
     auto called = false;

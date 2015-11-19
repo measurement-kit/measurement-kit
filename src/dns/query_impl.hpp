@@ -11,7 +11,7 @@
 
 #include <measurement_kit/common/libs.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/pointer.hpp>
+#include <measurement_kit/common/var.hpp>
 #include <measurement_kit/common/utils.hpp>
 
 #include <event2/dns.h>
@@ -56,7 +56,7 @@ class QueryImpl {
     std::function<void(Error, Response)> callback;
     double ticks = 0.0; // just to initialize to something
     Libs *libs;         // should not be nullptr (this is asserted below)
-    SharedPointer<bool> cancelled;
+    Var<bool> cancelled;
     Logger *logger = Logger::global();
 
     static void handle_resolve(int code, char type, int count, int ttl,
@@ -112,7 +112,7 @@ class QueryImpl {
     // Private to enforce usage through issue()
     QueryImpl(QueryClass dns_class, QueryType dns_type, std::string name,
               std::function<void(Error, Response)> f, Logger *lp,
-              evdns_base *base, Libs *lev, SharedPointer<bool> cancd)
+              evdns_base *base, Libs *lev, Var<bool> cancd)
         : callback(f), libs(lev), cancelled(cancd), logger(lp) {
 
         assert(base != nullptr && lev != nullptr);
@@ -172,7 +172,7 @@ class QueryImpl {
     static void issue(QueryClass dns_class, QueryType dns_type,
                       std::string name, std::function<void(Error, Response)> f,
                       Logger *logger, evdns_base *base, Libs *lev,
-                      SharedPointer<bool> cancd) {
+                      Var<bool> cancd) {
         try {
             new QueryImpl(dns_class, dns_type, name, f, logger,
                           base, lev, cancd);

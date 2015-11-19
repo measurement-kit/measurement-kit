@@ -7,7 +7,7 @@
 
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/libs.hpp>
-#include <measurement_kit/common/pointer.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <functional>
 
@@ -41,7 +41,7 @@ class DelayedCall {
         state_.reset(new DelayedCallState(delay, func, libs, evbase));
     }
   private:
-    SharedPointer<DelayedCallState> state_;
+    Var<DelayedCallState> state_;
 };
 
 } // namespace common
