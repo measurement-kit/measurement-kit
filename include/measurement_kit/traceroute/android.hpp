@@ -38,15 +38,24 @@
 #ifdef __linux__
 
 #include <measurement_kit/common/constraints.hpp>
+#include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/traceroute/interface.hpp>
 
-#include <event2/event.h>
+#include <functional>
+#include <string>
 
 #include <time.h>
 
-struct sock_extended_err; // Forward declaration
+struct event;
+struct event_base;
+struct sock_extended_err;
+struct sockaddr_in6;
+struct sockaddr_in;
+struct sockaddr_storage;
 
 namespace measurement_kit {
+namespace common { class Error; }
+
 namespace traceroute {
 
 /// Traceroute prober for Android
@@ -74,7 +83,7 @@ public:
 
   virtual void on_timeout(std::function<void()> cb) final { timeout_cb_ = cb; }
 
-  virtual void on_error(std::function<void(std::runtime_error)> cb) final {
+  virtual void on_error(std::function<void(common::Error)> cb) final {
     error_cb_ = cb;
   }
 
@@ -89,7 +98,7 @@ private:
 
   std::function<void(ProbeResult)> result_cb_;       ///< on result callback
   std::function<void()> timeout_cb_;                 ///< on timeout callback
-  std::function<void(std::runtime_error)> error_cb_; ///< on error callback
+  std::function<void(common::Error)> error_cb_;      ///< on error callback
 
   /// Call this when you don't receive a response within timeout
   void on_timeout() { probe_pending_ = false; }

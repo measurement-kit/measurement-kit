@@ -35,17 +35,32 @@
 // This is meant to run on Android but can run on all Linux systems
 #ifdef __linux__
 
+#include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/utils.hpp>
 #include <measurement_kit/traceroute/android.hpp>
+#include <measurement_kit/traceroute/error.hpp>
+#include <measurement_kit/traceroute/interface.hpp>
+
+#include <event2/event.h>
 
 #include <arpa/inet.h>
 #include <linux/errqueue.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/uio.h>
 
-#include <errno.h>
-#include <assert.h>
+#include <functional>
+#include <stdexcept>
+#include <string>
+
+#include <stdint.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
+
+struct event_base;
 
 namespace measurement_kit {
 namespace traceroute {
@@ -85,7 +100,7 @@ void  AndroidProber::init() {
   sockfd_ = measurement_kit::socket_create(family, SOCK_DGRAM, 0);
   if (sockfd_ == -1) {
     cleanup();
-    error_cb_(std::runtime_error("Cannot create socket"));
+    error_cb_(SocketCreateError());
     return;
   }
 
@@ -93,18 +108,18 @@ void  AndroidProber::init() {
       setsockopt(sockfd_, level_proto, opt_recvttl, &val, sizeof(val)) != 0 ||
       setsockopt(sockfd_, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) != 0) {
     cleanup();
-    error_cb_(std::runtime_error("Cannot set socket options"));
+    error_cb_(SetsockoptError());
     return;
   }
 
   if (measurement_kit::storage_init(&ss, &sslen, family, NULL, port_) != 0) {
     cleanup();
-    error_cb_(std::runtime_error("measurement_kit::storage_init() failed"));
+    error_cb_(StorageInitError());
     return;
   }
   if (bind(sockfd_, (sockaddr *)&ss, sslen) != 0) {
     cleanup();
-    error_cb_(std::runtime_error("bind() failed"));
+    error_cb_(BindError());
     return;
   }
 
@@ -112,7 +127,7 @@ void  AndroidProber::init() {
   if ((evp_ = event_new(evbase_, sockfd_, EV_READ, event_callback, this)) ==
       NULL) {
     cleanup();
-    error_cb_(std::runtime_error("event_new() failed"));
+    error_cb_(EventNewError());
     return;
   }
 }
@@ -131,13 +146,13 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
              payload.length());
 
   if (sockfd_ < 0) {
-    error_cb_(std::runtime_error("Programmer error")); // already close()d
+    error_cb_(SocketAlreadyClosedError()); // already close()d
     return;
   }
   // Note: until we figure out exactly how to deal with overlapped
   // probes enforce to traceroute hop by hop only
   if (probe_pending_) {
-    error_cb_(std::runtime_error("Another probe is pending"));
+    error_cb_(ProbeAlreadyPendingError());
     return;
   }
 
@@ -152,36 +167,36 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
   }
 
   if (setsockopt(sockfd_, ipproto, ip_ttl, &ttl, sizeof(ttl)) != 0) {
-    error_cb_(std::runtime_error("setsockopt() failed"));
+    error_cb_(SetsockoptError());
     return;
   }
 
   if (measurement_kit::storage_init(&ss, &sslen, family, addr.c_str(), port) != 0) {
-    error_cb_(std::runtime_error("measurement_kit::storage_init() failed"));
+    error_cb_(StorageInitError());
     return;
   }
 
   if (clock_gettime(CLOCK_MONOTONIC, &start_time_) != 0) {
-    error_cb_(std::runtime_error("clock_gettime() failed"));
+    error_cb_(ClockGettimeError());
     return;
   }
 
   // Note: cast to ssize_t safe because payload length is bounded
   // We may want however to increase the maximum accepted length
   if (payload.length() > 512) {
-    error_cb_(std::runtime_error("payload too large"));
+    error_cb_(PayloadTooLongError());
     return;
   }
 
   if (sendto(sockfd_, payload.data(), payload.length(), 0, (sockaddr *)&ss,
              sslen) != (ssize_t)payload.length()) {
     measurement_kit::warn("sendto() failed: errno %d", errno);
-    error_cb_(std::runtime_error("sendto() failed"));
+    error_cb_(SendtoError());
     return;
   }
 
   if (event_add(evp_, measurement_kit::timeval_init(&tv, timeout)) != 0) {
-    error_cb_(std::runtime_error("event_add() failed"));
+    error_cb_(EventAddError());
     return;
   }
 
@@ -205,13 +220,13 @@ ProbeResult AndroidProber::on_socket_readable() {
   measurement_kit::debug("on_socket_readable()");
 
   if (!probe_pending_)
-    throw std::runtime_error("No probe is pending");
+    throw NoProbePendingError();
   probe_pending_ = false;
 
   r.is_ipv4 = use_ipv4_;
 
   if (clock_gettime(CLOCK_MONOTONIC, &arr_time) != 0)
-    throw std::runtime_error("clock_gettime() failed");
+    throw ClockGettimeError();
   r.rtt = calculate_rtt(arr_time, start_time_);
   measurement_kit::debug("rtt = %lf", r.rtt);
 
@@ -277,7 +292,8 @@ ProbeResult AndroidProber::on_socket_readable() {
     }
 
     // Be robust to refactoring
-    assert(cmsg->cmsg_type == expected_type_recverr);
+    if (cmsg->cmsg_type != expected_type_recverr)
+      throw std::runtime_error("Assertion Failed.");
 
     socket_error = (sock_extended_err *)CMSG_DATA(cmsg);
     if (socket_error->ee_origin != expected_origin) {
@@ -361,14 +377,14 @@ void AndroidProber::event_callback(int, short event, void *opaque) {
     ProbeResult result;
     try {
       result = prober->on_socket_readable();
-    } catch (std::runtime_error error) {
+    } catch (common::Error &error) {
       prober->error_cb_(error);
       return;
     }
     prober->result_cb_(result);
 
   } else
-    prober->error_cb_(std::runtime_error("Unexpected event error"));
+    throw std::runtime_error("Unexpected event error");
 }
 
 void AndroidProber::cleanup() {
