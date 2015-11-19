@@ -176,7 +176,7 @@ class QueryImpl {
         try {
             new QueryImpl(dns_class, dns_type, name, f, logger,
                           base, lev, cancd);
-        } catch (common::Error error) {
+        } catch (common::Error &error) {
             f(error, Response());
         } catch (...) {
             f(common::GenericError(), Response());
