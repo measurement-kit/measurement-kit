@@ -54,7 +54,9 @@ struct sockaddr_in;
 struct sockaddr_storage;
 
 namespace measurement_kit {
-namespace common { class Error; }
+namespace common {
+class Error;
+}
 
 namespace traceroute {
 
@@ -63,95 +65,97 @@ class AndroidProber : public measurement_kit::common::NonCopyable,
                       public measurement_kit::common::NonMovable,
                       public ProberInterface {
 
-public:
-  /// Constructor
-  /// \param use_ipv4 Whether to use IPv4
-  /// \param port The port to bind
-  /// \param evbase Event base to use (optional)
-  AndroidProber(bool use_ipv4, int port,
-                event_base *evbase = measurement_kit::get_global_event_base());
+  public:
+    /// Constructor
+    /// \param use_ipv4 Whether to use IPv4
+    /// \param port The port to bind
+    /// \param evbase Event base to use (optional)
+    AndroidProber(
+        bool use_ipv4, int port,
+        event_base *evbase = measurement_kit::get_global_event_base());
 
-  /// Destructor
-  ~AndroidProber() { cleanup(); }
+    /// Destructor
+    ~AndroidProber() { cleanup(); }
 
-  void send_probe(std::string addr, int port, int ttl,
-                          std::string payload, double timeout) override;
+    void send_probe(std::string addr, int port, int ttl, std::string payload,
+                    double timeout) override;
 
-  void on_result(std::function<void(ProbeResult)> cb) override {
-    result_cb_ = cb;
-  }
+    void on_result(std::function<void(ProbeResult)> cb) override {
+        result_cb_ = cb;
+    }
 
-  void on_timeout(std::function<void()> cb) override { timeout_cb_ = cb; }
+    void on_timeout(std::function<void()> cb) override { timeout_cb_ = cb; }
 
-  void on_error(std::function<void(common::Error)> cb) override {
-    error_cb_ = cb;
-  }
+    void on_error(std::function<void(common::Error)> cb) override {
+        error_cb_ = cb;
+    }
 
-private:
-  int sockfd_ = -1;              ///< socket descr
-  bool probe_pending_ = false;   ///< probe is pending
-  timespec start_time_{0, 0};    ///< start time
-  bool use_ipv4_ = true;         ///< using IPv4?
-  event_base *evbase_ = nullptr; ///< event base
-  event *evp_ = nullptr;         ///< event pointer
-  int port_ = 0;                 ///< socket port
+  private:
+    int sockfd_ = -1;              ///< socket descr
+    bool probe_pending_ = false;   ///< probe is pending
+    timespec start_time_{0, 0};    ///< start time
+    bool use_ipv4_ = true;         ///< using IPv4?
+    event_base *evbase_ = nullptr; ///< event base
+    event *evp_ = nullptr;         ///< event pointer
+    int port_ = 0;                 ///< socket port
 
-  std::function<void(ProbeResult)> result_cb_;       ///< on result callback
-  std::function<void()> timeout_cb_;                 ///< on timeout callback
-  std::function<void(common::Error)> error_cb_;      ///< on error callback
+    std::function<void(ProbeResult)> result_cb_;  ///< on result callback
+    std::function<void()> timeout_cb_;            ///< on timeout callback
+    std::function<void(common::Error)> error_cb_; ///< on error callback
 
-  /// Call this when you don't receive a response within timeout
-  void on_timeout() { probe_pending_ = false; }
+    /// Call this when you don't receive a response within timeout
+    void on_timeout() { probe_pending_ = false; }
 
-  /// Initialize socket
-  void init();
+    /// Initialize socket
+    void init();
 
-  /// Call this as soon as the socket is readable to get
-  /// the result ICMP error received by the socket and to
-  /// calculate *precisely* the RTT.
-  ProbeResult on_socket_readable();
+    /// Call this as soon as the socket is readable to get
+    /// the result ICMP error received by the socket and to
+    /// calculate *precisely* the RTT.
+    ProbeResult on_socket_readable();
 
-  /// Returns the source address of the error message.
-  /// \param s IPv4 socket address
-  /// \return source address of the error message
-  static std::string get_source_addr(const sockaddr_in *s);
+    /// Returns the source address of the error message.
+    /// \param s IPv4 socket address
+    /// \return source address of the error message
+    static std::string get_source_addr(const sockaddr_in *s);
 
-  /// Returns the source address of the error message.
-  /// \param s IPv6 socket address
-  /// \return source address of the error message
-  static std::string get_source_addr(const sockaddr_in6 *s);
+    /// Returns the source address of the error message.
+    /// \param s IPv6 socket address
+    /// \return source address of the error message
+    static std::string get_source_addr(const sockaddr_in6 *s);
 
-  /// Returns the source address of the error message.
-  /// \param use_ipv4 whether we are using IPv4
-  /// \param ss Pointer to sockaddr_storage struct
-  /// \return source address of the error message
-  static std::string get_source_addr(bool use_ipv4, const sockaddr_storage *ss);
+    /// Returns the source address of the error message.
+    /// \param use_ipv4 whether we are using IPv4
+    /// \param ss Pointer to sockaddr_storage struct
+    /// \return source address of the error message
+    static std::string get_source_addr(bool use_ipv4,
+                                       const sockaddr_storage *ss);
 
-  /// Returns the source address of the error message.
-  /// \param use_ipv4 whether we are using IPv4
-  /// \param err socket error structure
-  /// \return source address of the error message
-  static std::string get_source_addr(bool use_ipv4, sock_extended_err *err);
+    /// Returns the source address of the error message.
+    /// \param use_ipv4 whether we are using IPv4
+    /// \param err socket error structure
+    /// \return source address of the error message
+    static std::string get_source_addr(bool use_ipv4, sock_extended_err *err);
 
-  /// Returns the Round Trip Time value in milliseconds
-  /// \param end ICMP reply arrival time
-  /// \param start UDP probe send time
-  /// \return RTT value in milliseconds
-  static double calculate_rtt(timespec end, timespec start);
+    /// Returns the Round Trip Time value in milliseconds
+    /// \param end ICMP reply arrival time
+    /// \param start UDP probe send time
+    /// \return RTT value in milliseconds
+    static double calculate_rtt(timespec end, timespec start);
 
-  /// Returns the Time to Live of the error message
-  /// \param data CMSG_DATA(cmsg)
-  /// \return ttl of the error message
-  static int get_ttl(void *data) { return *((int *)data); }
+    /// Returns the Time to Live of the error message
+    /// \param data CMSG_DATA(cmsg)
+    /// \return ttl of the error message
+    static int get_ttl(void *data) { return *((int *)data); }
 
-  /// Callback invoked when the socket is readable
-  /// \param so Socket descriptor
-  /// \param event Event that occurred
-  /// \param ptr Opaque pointer to this class
-  static void event_callback(int so, short event, void *ptr);
+    /// Callback invoked when the socket is readable
+    /// \param so Socket descriptor
+    /// \param event Event that occurred
+    /// \param ptr Opaque pointer to this class
+    static void event_callback(int so, short event, void *ptr);
 
-  /// Idempotent cleanup function
-  void cleanup();
+    /// Idempotent cleanup function
+    void cleanup();
 };
 
 } // namespace traceroute
