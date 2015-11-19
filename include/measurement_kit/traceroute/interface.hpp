@@ -39,14 +39,19 @@
 
 #include <measurement_kit/common/poller.hpp>
 
+#include <functional> 
 #include <memory>
 #include <stdexcept>
 #include <string>
+
+#include <sys/types.h>
 
 // Forward declarations
 struct event_base;
 
 namespace measurement_kit {
+namespace common { class Error; }
+
 namespace traceroute {
 
 /// Meaning of a probe result
@@ -102,7 +107,7 @@ public:
   virtual void on_timeout(std::function<void()> cb) = 0;
 
   /// Set callback called when there is an error
-  virtual void on_error(std::function<void(std::runtime_error)> cb) = 0;
+  virtual void on_error(std::function<void(common::Error)> cb) = 0;
 
   /// Default copy constructor
   ProberInterface(ProberInterface&) = default;
@@ -147,7 +152,7 @@ public:
     impl_->on_timeout(cb);
   }
 
-  virtual void on_error(std::function<void(std::runtime_error)> cb) final {
+  virtual void on_error(std::function<void(common::Error)> cb) final {
     impl_->on_error(cb);
   }
 

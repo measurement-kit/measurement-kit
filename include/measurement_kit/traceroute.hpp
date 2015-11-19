@@ -7,5 +7,6 @@
 
 #include <measurement_kit/traceroute/android.hpp>
 #include <measurement_kit/traceroute/interface.hpp>
+#include <measurement_kit/traceroute/error.hpp>
 
 #endif

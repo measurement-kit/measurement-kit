@@ -11,10 +11,12 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/traceroute.hpp>
+#include <measurement_kit/common.hpp>
 
 #include <iostream>
 
 using namespace measurement_kit::traceroute;
+using namespace measurement_kit;
 
 TEST_CASE("Typical IPv4 traceroute usage") {
 
@@ -40,7 +42,7 @@ TEST_CASE("Typical IPv4 traceroute usage") {
     prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
   });
 
-  prober.on_error([&prober, &ttl, &payload](std::runtime_error err) {
+  prober.on_error([&prober, &ttl, &payload](common::Error err) {
     std::cout << ttl << " error: " << err.what() << "\n";
     if (ttl >= 64) {
       measurement_kit::break_loop();
@@ -77,7 +79,7 @@ TEST_CASE("Check whether it works when destination sends reply") {
     prober.send_probe("208.67.222.222", 53, ++ttl, payload, 1.0);
   });
 
-  prober.on_error([&prober, &ttl, &payload](std::runtime_error err) {
+  prober.on_error([&prober, &ttl, &payload](common::Error err) {
     std::cout << ttl << " error: " << err.what() << "\n";
     if (ttl >= 64) {
       measurement_kit::break_loop();

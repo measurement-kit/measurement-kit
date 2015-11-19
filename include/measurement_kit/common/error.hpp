@@ -5,6 +5,7 @@
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
+#include <exception>
 #include <iosfwd>
 #include <string>
 
@@ -12,7 +13,7 @@ namespace measurement_kit {
 namespace common {
 
 /// An error that occurred
-class Error {
+class Error : public std::exception {
   public:
     /// Constructor with error code and OONI error
     Error(int e, std::string ooe) : error_(e), ooni_error_(ooe) {}
