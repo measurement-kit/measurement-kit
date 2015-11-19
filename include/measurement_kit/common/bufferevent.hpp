@@ -36,7 +36,8 @@ class Bufferevent : public NonCopyable, public NonMovable {
               Libs *libs = Libs::global()) {
         close();
         libs_ = libs;
-        bev_ = libs_->bufferevent_socket_new(base, fd, options);
+        //bev_ = libs_->bufferevent_socket_new(base, fd, options);
+        bev_ = bufferevent_socket_new(base, fd, options);
         if (bev_ == nullptr) throw std::bad_alloc();
     }
 
