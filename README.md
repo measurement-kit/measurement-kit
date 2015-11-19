@@ -42,18 +42,9 @@ In the short term we plan to add to MeasurementKit:
 Other functionalities that we would like to add are building-blocks functionalities
 such as [uTP](https://github.com/bittorrent/libutp), and traceroute for iOS.
 
-To compile MeasurementKit for Android, see the README.md file contained in
-the `mobile/android` directory of this repository.
-
-To compile and use MeasurementKit for iOS, do the following:
-
-```
-cd mobile/ios
-./scripts/build.sh
-```
-
 This README.md files continues by explaining you how to compile MeasurementKit
-on a UNIX or UNIX-like platform (e.g. Linux, MacOS).
+on a Unix-like platform (e.g. Linux, MacOS), on Android, and on iOS. Finally it
+provides an example of usage of MeasurementKit.
 
 ## How to clone the repository
 
@@ -73,7 +64,7 @@ git checkout feature/foo
 
 Then proceed with the instruction to build and test MeasurementKit.
 
-## How to build MeasurementKit
+## How to build MeasurementKit on a Unix-like system
 
 To build, MeasurementKit needs:
 
@@ -85,12 +76,18 @@ To build, MeasurementKit needs:
 C++11 must be enabled, otherwise certain C++11 features such as
 `std::function` will not be recognized.
 
-MeasurementKit depends on:
+MeasurementKit includes and unconditionally compiles the
+sources of the following projects:
+
+- [http-parser](https://github.com/joyent/http-parser)
+- [Catch](https://github.com/philsquared/Catch) (for tests only)
+- OpenBSD's [strtonum.c](http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/lib/libc/stdlib/strtonum.c)
+
+MeasurementKit also depends on the following projects (which
+are only conditionally compiled as explained below):
 
 - [libevent](https://github.com/libevent/libevent)
-- [http-parser](https://github.com/joyent/http-parser)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
-- [Catch](https://github.com/philsquared/Catch) (for tests only)
 - selected [boost](https://github.com/boostorg/) libraries (only [the ones required by yaml-cpp](https://github.com/measurement-kit/measurement-kit/tree/master/src/ext/boost))
 - [jansson](https://github.com/akheron/jansson)
 - [libmaxminddb](https://github.com/maxmind/libmaxminddb)
@@ -138,13 +135,13 @@ is `/opt/local/include/event.h` and that `libevent.a` is
     ./configure --with-libevent=/opt/local
 ```
 
-- to compile the libevent distributed along with MeasurementKit, use
+- to force-compile the libevent distributed along with MeasurementKit, use
 
 ```
     ./configure --with-libevent=builtin
 ```
 
-## How to test MeasurementKit
+## How to test MeasurementKit on a Unix-like system
 
 Once you have built MeasurementKit, to compile and run the unit
 test programs, run:
@@ -156,9 +153,23 @@ build process) run:
 
     make V=0
 
-## How to add measurement-kit to an Xcode project.
+## How to build MeasurementKit on Android
 
-The Cocoapods podspec hasn't been submitted yet, but you can still use
+To compile MeasurementKit for Android, see the README.md file contained in
+the `mobile/android` directory of this repository.
+
+## How to build MeasurementKit on iOS
+
+To compile and use MeasurementKit for iOS, do the following on a MacOSX
+system where XCode and its command line tools have been installed:
+
+```
+./mobile/ios/scripts/build.sh
+```
+
+## How to add MeasurementKit to an Xcode project.
+
+The Cocoapods podspec hasn't been submitted yet, but you can already use
 it in your project adding this line in your Podfile:
 
     pod 'measurement_kit', :git => 'https://github.com/measurement-kit/measurement-kit.git'
@@ -169,7 +180,8 @@ You can include another branch with:
       :git => 'https://github.com/measurement-kit/measurement-kit.git'
       :branch => 'branch_name'
 
-Then type `pod install` and open `Libight_iOS.xcworkspace` (and not `Libight_iOS.xcodeproj`)
+Then type `pod install` and open `.xcworkspace` file (beware not to open the
+`.xcodeproj` file instead, because that alone won't compile).
 
 ## How to use MeasurementKit
 
@@ -180,31 +192,27 @@ The following shows how to use MeasurementKit's OONI library.
 #include <measurement_kit/ooni.hpp>
 
 #include <iostream>
+#include <thread>
 
 using namespace measurement_kit::common;
-using namespace measurement_kit::ooni;
+using namespace measurement_kit;
 
 int main() {
-    volatile bool complete = false;
-    Async async;
-
-    async.on_empty([&complete]() {
-        std::clog << "All tests complete\n";
-        complete = true;
-    });
-
-    auto test = SharedPointer<HTTPInvalidRequestLine>(
-        new HTTPInvalidRequestLine(Settings{
-            {"backend", "http://nexa.polito.it/"}
-        }));
-    test->set_log_verbose(1);
-    test->set_log_function([](const char *s) {
-        std::clog << s << "\n";
-    });
-    async.run_test(test, [](SharedPointer<NetTest> test) {
+    SharedPointer<Async> async(new Async);
+    SharedPointer<NetTest> test(new ooni::HTTPInvalidRequestLine(Settings{
+        {"backend", "http://nexa.polito.it/"}
+    }));
+    test->set_verbose(1);
+    test->on_log([](const char *s) { std::clog << s << "\n"; });
+    async->run_test(test, [async](SharedPointer<NetTest> test) {
         std::clog << "Test complete: " << test->identifier() << "\n";
+        async->break_loop();
     });
-
-    while (!complete) sleep(1);
+    while (!async->empty()) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
 }
 ```
+
+You can find documentation of MeasurementKit C++ API in the
+`doc/api/c++` folder of the repository.
