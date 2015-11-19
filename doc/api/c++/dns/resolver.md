@@ -24,10 +24,11 @@ Resolver reso({
 
 // Issue an async DNS query
 reso.query(
-        "AAAA",                    // Type of query
-        "nexa.polito.it",          // Name to resolve
-        [](Response response) {    // Callback
-            if (response.get_evdns_status() != DNS_ERR_NONE) {
+        "IN",                                   // Domain of the query
+        "AAAA",                                 // Type of query
+        "nexa.polito.it",                       // Name to resolve
+        [](Error error, Response response) {    // Callback
+            if (error) {
                 return;
             }
             /* handle successful response */

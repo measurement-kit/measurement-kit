@@ -16,14 +16,6 @@ namespace ooni {
 using namespace measurement_kit::common;
 using namespace measurement_kit::dns;
 
-struct UnsupportedQueryType : public std::runtime_error {
-  using std::runtime_error::runtime_error;
-};
-
-enum class QueryType {A, NS, MD, MF, CNAME, SOA, MB, MG, MR, NUL, WKS, PTR,
-                      HINFO, MINFO, MX, TXT};
-enum class QueryClass {IN, CS, CH, HS};
-
 class DNSTest : public ooni::NetTest {
     using ooni::NetTest::NetTest;
 
@@ -39,7 +31,6 @@ public:
     void query(QueryType query_type, QueryClass query_class,
         std::string query_name, std::string nameserver,
         std::function<void(Response)> cb);
-
 };
 
 }}

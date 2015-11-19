@@ -49,6 +49,12 @@ test_common_socket_valid_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/socket_valid
 TESTS += test/common/socket_valid
 
+test_common_utils_SOURCES = test/common/utils.cpp
+test_common_utils_LDADD = libmeasurement_kit.la
+test_common_utils_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/common/utils
+TESTS += test/common/utils
+
 test_net_buffer_SOURCES = test/net/buffer.cpp
 test_net_buffer_LDADD = libmeasurement_kit.la
 test_net_buffer_LDFLAGS = -lyaml-cpp
@@ -102,6 +108,18 @@ test_ooni_net_test_LDADD = libmeasurement_kit.la
 test_ooni_net_test_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/net_test
 TESTS += test/ooni/net_test
+
+test_dns_defines_SOURCES = test/dns/defines.cpp
+test_dns_defines_LDADD = libmeasurement_kit.la
+test_dns_defines_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/dns/defines
+TESTS += test/dns/defines
+
+test_dns_error_SOURCES = test/dns/error.cpp
+test_dns_error_LDADD = libmeasurement_kit.la
+test_dns_error_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/dns/error
+TESTS += test/dns/error
 
 test_dns_query_SOURCES = test/dns/query.cpp
 test_dns_query_LDADD = libmeasurement_kit.la

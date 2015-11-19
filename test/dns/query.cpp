@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Regression tests for `net/dns.hpp` and `net/dns.cpp`.
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
@@ -30,9 +26,9 @@ TEST_CASE("Query deals with failing evdns_base_resolve_ipv4") {
                                       evdns_callback_type,
                                       void *) { return (evdns_request *)NULL; };
 
-    REQUIRE_THROWS(Query("A", "www.google.com", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("IN", "A", "www.google.com", [](Error e, Response) {
+        REQUIRE(e == ResolverError());
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query deals with failing evdns_base_resolve_ipv6") {
@@ -42,9 +38,9 @@ TEST_CASE("Query deals with failing evdns_base_resolve_ipv6") {
                                       evdns_callback_type,
                                       void *) { return (evdns_request *)NULL; };
 
-    REQUIRE_THROWS(Query("AAAA", "github.com", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("IN", "AAAA", "github.com", [](Error e, Response) {
+        REQUIRE(e == ResolverError());
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query deals with failing evdns_base_resolve_reverse") {
@@ -55,9 +51,9 @@ TEST_CASE("Query deals with failing evdns_base_resolve_reverse") {
         return (evdns_request *)NULL;
     };
 
-    REQUIRE_THROWS(Query("REVERSE_A", "8.8.8.8", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("IN", "REVERSE_A", "8.8.8.8", [](Error e, Response) {
+        REQUIRE(e == ResolverError());
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query deals with failing evdns_base_resolve_reverse_ipv6") {
@@ -67,9 +63,9 @@ TEST_CASE("Query deals with failing evdns_base_resolve_reverse_ipv6") {
         evdns_base *, const struct in6_addr *, int, evdns_callback_type,
         void *) { return (evdns_request *)NULL; };
 
-    REQUIRE_THROWS(Query("REVERSE_AAAA", "::1", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("IN", "REVERSE_AAAA", "::1", [](Error e, Response) {
+        REQUIRE(e == ResolverError());
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query deals with inet_pton returning 0") {
@@ -77,13 +73,13 @@ TEST_CASE("Query deals with inet_pton returning 0") {
 
     libs.inet_pton = [](int, const char *, void *) { return 0; };
 
-    REQUIRE_THROWS(Query("REVERSE_A", "8.8.8.8", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("IN", "REVERSE_A", "8.8.8.8", [](Error e, Response) {
+        REQUIRE(e == InvalidIPv4AddressError());
+    }, Logger::global(), NULL, &libs);
 
-    REQUIRE_THROWS(Query("REVERSE_AAAA", "::1", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("IN", "REVERSE_AAAA", "::1", [](Error e, Response) {
+        REQUIRE(e == InvalidIPv6AddressError());
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query deals with inet_pton returning -1") {
@@ -91,20 +87,33 @@ TEST_CASE("Query deals with inet_pton returning -1") {
 
     libs.inet_pton = [](int, const char *, void *) { return -1; };
 
-    REQUIRE_THROWS(Query("REVERSE_A", "8.8.8.8", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("IN", "REVERSE_A", "8.8.8.8", [](Error e, Response) {
+        REQUIRE(e == InvalidIPv4AddressError());
+    }, Logger::global(), NULL, &libs);
 
-    REQUIRE_THROWS(Query("REVERSE_AAAA", "::1", [](Response &&) {
-        /* nothing */
-    }, Logger::global(), NULL, &libs));
+    Query("IN", "REVERSE_AAAA", "::1", [](Error e, Response) {
+        REQUIRE(e == InvalidIPv6AddressError());
+    }, Logger::global(), NULL, &libs);
 }
 
 TEST_CASE("Query raises if the query is unsupported") {
-    REQUIRE_THROWS(
-        Query("PTR", "www.neubot.org", [&](Response && /*response*/) {
-            // nothing
-        }));
+    Query("IN", "MX", "www.neubot.org", [](Error e, Response) {
+        REQUIRE(e == UnsupportedTypeError());
+    });
+}
+
+TEST_CASE("Query raises if the class is unsupported") {
+    Query("CS", "A", "www.neubot.org", [](Error e, Response) {
+        REQUIRE(e == UnsupportedClassError());
+    });
+}
+
+TEST_CASE("Query deals with invalid PTR name") {
+    // This should be enough to see the failure, more tests for the
+    // parser for PTR addresses are in test/common/utils.cpp
+    Query("IN", "PTR", "xx", [](Error e, Response) {
+        REQUIRE(e == InvalidNameForPTRError());
+    });
 }
 
 //
@@ -124,7 +133,7 @@ TEST_CASE("Query::cancel() is idempotent") {
     // we check that we can get rid of a pending request.
     //
 
-    auto r1 = Query("A", "www.neubot.org", [&](Response /*response*/) {
+    auto r1 = Query("IN", "A", "www.neubot.org", [&](Error, Response) {
         // nothing
     });
 
@@ -162,7 +171,7 @@ TEST_CASE("Query::cancel() is safe when a request is pending") {
 
     auto failed = false;
     {
-        auto r1 = Query("A", "www.neubot.org", [&](Response /*response*/) {
+        auto r1 = Query("IN", "A", "www.neubot.org", [&](Error, Response) {
             //
             // This callback should not be invoked, because QueryImpl
             // should honor its `cancelled` field and therefore should delete
@@ -200,7 +209,7 @@ TEST_CASE("Move semantic works for request") {
 
         REQUIRE_THROWS(*r1.get_cancelled_());
 
-        TransparentQuery r2{"A", "www.neubot.org", [](Response) {
+        TransparentQuery r2{"IN", "A", "www.neubot.org", [](Error, Response) {
                                 /* nothing */
                             }};
         REQUIRE(*r2.get_cancelled_() == false);
@@ -213,7 +222,7 @@ TEST_CASE("Move semantic works for request") {
     }
 
     SECTION("Move constructor") {
-        TransparentQuery r2{"A", "www.neubot.org", [](Response) {
+        TransparentQuery r2{"IN", "A", "www.neubot.org", [](Error, Response) {
                                 /* nothing */
                             }};
         REQUIRE(*r2.get_cancelled_() == false);
@@ -252,10 +261,11 @@ TEST_CASE("The system resolver works as expected") {
         measurement_kit::break_loop();
     });
 
-    auto r1 = Query("A", "www.neubot.org", [&](Response response) {
+    auto r1 = Query("IN", "A", "www.neubot.org",
+            [&](Error e, Response response) {
+        REQUIRE(!e);
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "130.192.16.172");
         REQUIRE(response.get_rtt() > 0.0);
@@ -264,10 +274,11 @@ TEST_CASE("The system resolver works as expected") {
     });
     measurement_kit::loop();
 
-    auto r2 = Query("REVERSE_A", "130.192.16.172", [&](Response response) {
+    auto r2 = Query("IN", "REVERSE_A", "130.192.16.172",
+            [&](Error e, Response response) {
+        REQUIRE(!e);
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_failure() == "");
         REQUIRE(response.get_results().size() == 1);
         REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
         REQUIRE(response.get_rtt() > 0.0);
@@ -276,10 +287,24 @@ TEST_CASE("The system resolver works as expected") {
     });
     measurement_kit::loop();
 
-    auto r3 = Query("AAAA", "ooni.torproject.org", [&](Response response) {
+    auto r2bis = Query("IN", "PTR", "172.16.192.130.in-addr.arpa.",
+            [&](Error e, Response response) {
+        REQUIRE(!e);
         REQUIRE(response.get_reply_authoritative() == "unknown");
         REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_failure() == "");
+        REQUIRE(response.get_results().size() == 1);
+        REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
+        REQUIRE(response.get_rtt() > 0.0);
+        REQUIRE(response.get_ttl() > 0);
+        measurement_kit::break_loop();
+    });
+    measurement_kit::loop();
+
+    auto r3 = Query("IN", "AAAA", "ooni.torproject.org",
+            [&](Error e, Response response) {
+        REQUIRE(!e);
+        REQUIRE(response.get_reply_authoritative() == "unknown");
+        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
         REQUIRE(response.get_results().size() > 0);
         REQUIRE(response.get_rtt() > 0.0);
         REQUIRE(response.get_ttl() > 0);
@@ -295,11 +320,26 @@ TEST_CASE("The system resolver works as expected") {
     measurement_kit::loop();
 
     auto r4 = Query(
-        "REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
-        [&](Response response) {
+        "IN", "REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
+        [&](Error e, Response response) {
+            REQUIRE(!e);
             REQUIRE(response.get_reply_authoritative() == "unknown");
             REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-            REQUIRE(response.get_failure() == "");
+            REQUIRE(response.get_results().size() == 1);
+            REQUIRE(response.get_results()[0] == "listera.torproject.org");
+            REQUIRE(response.get_rtt() > 0.0);
+            REQUIRE(response.get_ttl() > 0);
+            measurement_kit::break_loop();
+        });
+    measurement_kit::loop();
+
+    auto r4bis = Query(
+        "IN", "PTR",
+ "6.2.4.1.0.2.e.f.f.f.1.2.3.1.2.0.b.e.d.0.2.0.2.0.8.b.1.4.1.0.0.2.ip6.arpa.",
+        [&](Error e, Response response) {
+            REQUIRE(!e);
+            REQUIRE(response.get_reply_authoritative() == "unknown");
+            REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
             REQUIRE(response.get_results().size() == 1);
             REQUIRE(response.get_results()[0] == "listera.torproject.org");
             REQUIRE(response.get_rtt() > 0.0);
@@ -316,11 +356,12 @@ class SafeToDeleteQueryInItsOwnCallback {
 
   public:
     SafeToDeleteQueryInItsOwnCallback() {
-        request = Query("A", "nexa.polito.it", [this](Response) {
+        request = Query("IN", "A", "nexa.polito.it", [this](Error, Response) {
             // This assignment should trigger the original request's destructor
-            request = Query("AAAA", "nexa.polito.it", [this](Response) {
-                measurement_kit::break_loop();
-            });
+            request = Query("IN", "AAAA", "nexa.polito.it",
+                [this](Error, Response) {
+                    measurement_kit::break_loop();
+                });
         });
     }
 };

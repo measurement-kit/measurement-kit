@@ -54,6 +54,16 @@ if (ctrl != 0) {
 std::string measurement_kit::random_str(512);
 
 std::string measurement_kit::random_str_uppercase(512);
+
+std::string s = measurement_kit::unreverse_ipv4(
+    "211.91.192.130.in-addr.arpa"
+);
+// s = "139.192.91.211"
+
+std::string s = measurement_kit::unreverse_ipv6(
+    "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa"
+);
+// s = "2001:0db8:0000:0000:0000:0000:0567:89ab"
 ```
 
 # DESCRIPTION

@@ -65,6 +65,7 @@ test/common/log
 test/common/poller
 test/common/pointer
 test/common/socket_valid
+test/common/utils
 test/echo_client
 test/echo_client2
 test/echo_client_evbuf
@@ -76,6 +77,8 @@ test/ooni/net_test
 test/ooni/http_invalid_request_line
 test/ooni/tcp_connect
 test/ooni/tcp_test
+test/dns/defines
+test/dns/error
 test/dns/query
 test/dns/resolver
 test/dns/response

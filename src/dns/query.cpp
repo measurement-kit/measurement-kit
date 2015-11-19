@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <measurement_kit/dns/defines.hpp>
 #include <measurement_kit/dns/query.hpp>
 
 #include <measurement_kit/common/libs.hpp>
@@ -25,8 +26,8 @@ namespace dns {
 
 using namespace measurement_kit::common;
 
-Query::Query(std::string query, std::string address,
-             std::function<void(Response)> func, Logger *lp,
+Query::Query(QueryClass dns_class, QueryType dns_type, std::string name,
+             std::function<void(Error, Response)> func, Logger *lp,
              evdns_base *dnsb, Libs *libs) {
     if (dnsb == nullptr) {
         dnsb = measurement_kit::get_global_evdns_base();
@@ -36,7 +37,8 @@ Query::Query(std::string query, std::string address,
     }
     cancelled = SharedPointer<bool>(new bool());
     *cancelled = false;
-    QueryImpl::issue(query, address, func, lp, dnsb, libs, cancelled);
+    QueryImpl::issue(dns_class, dns_type, name, func, lp,
+                     dnsb, libs, cancelled);
 }
 
 void Query::cancel(void) {

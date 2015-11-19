@@ -7,6 +7,7 @@
 #include "ext/strtonum.h"
 
 #include <algorithm>
+#include <deque>
 #include <cstddef>
 #include <iosfwd>
 #include <string>
@@ -266,6 +267,45 @@ std::string random_str_uppercase(size_t length) {
     std::string str(length, 0);
     std::generate_n(str.begin(), length, randchar);
     return str;
+}
+
+std::string unreverse_ipv6(std::string s) {
+    size_t i = 0, added = 0;
+    std::deque<char> r;
+    for (; i < s.size(); ++i) {
+        if ((i % 2) == 0) {
+            if (!isxdigit(s[i])) break;
+            r.push_front(s[i]);
+            if ((++added % 4) == 0 && added <= 28) r.push_front(':');
+        } else {
+            if (s[i] != '.') return "";
+        }
+    }
+    if (s.substr(i) != "ip6.arpa" && s.substr(i) != "ip6.arpa.") return "";
+    return std::string(r.begin(), r.end());
+}
+
+std::string unreverse_ipv4(std::string s) {
+    std::deque<char> r, t;
+    size_t i = 0, seen = 0;
+    unsigned cur = 0;
+    for (; i < s.size(); ++i) {
+        if (s[i] == '.') {
+            if (cur > 255) return "";
+            if (seen++ > 0) r.push_front('.');
+            r.insert(r.begin(), t.begin(), t.end());
+            t.clear();
+            cur = 0;
+        } else if (isdigit(s[i])) {
+            t.push_back(s[i]);
+            char tmpstr[] = { s[i], '\0' };
+            cur = cur * 10 + atoi(tmpstr);
+        } else
+            break;
+    }
+    if (s.substr(i) != "in-addr.arpa" && s.substr(i) != "in-addr.arpa.")
+        return "";
+    return std::string(r.begin(), r.end());
 }
 
 } // namespace measurement_kit

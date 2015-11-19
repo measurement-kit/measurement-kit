@@ -17,9 +17,7 @@ DNSInjection::main(std::string input, Settings options,
 {
     entry["injected"] = NULL;
     have_entry = cb;
-    query(QueryType::A, QueryClass::IN,
-                   input, options["nameserver"], [this](
-                              Response response) {
+    query("A", "IN", input, options["nameserver"], [this](Response response) {
         logger.debug("dns_injection: got response");
         if (response.get_evdns_status() == DNS_ERR_NONE) {
             entry["injected"] = true;
