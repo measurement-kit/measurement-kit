@@ -215,4 +215,5 @@ int main() {
 ```
 
 You can find documentation of MeasurementKit C++ API in the
-`doc/api/c++` folder of the repository.
+[doc/api](https://github.com/measurement-kit/measurement-kit/tree/master/doc/api)
+folder of the repository.
