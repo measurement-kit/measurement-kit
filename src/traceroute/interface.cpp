@@ -46,9 +46,9 @@ namespace measurement_kit {
 namespace traceroute {
 
 struct ProbeResultMapping {
-  unsigned char type;
-  unsigned char code;
-  ProbeResultMeaning meaning;
+    unsigned char type;
+    unsigned char code;
+    ProbeResultMeaning meaning;
 };
 
 #define PRM_ ProbeResultMeaning // For readability
@@ -72,22 +72,22 @@ static ProbeResultMapping MAPPINGv6[] = {
 };
 
 ProbeResultMeaning ProbeResult::get_meaning() {
-  if (valid_reply) {
-    measurement_kit::debug("type %d code %d meaning %d (got reply packet)",
-                           icmp_type, icmp_code, PRM_::GOT_REPLY_PACKET);
-    return PRM_::GOT_REPLY_PACKET;
-  }
-  for (auto m = is_ipv4 ? &MAPPINGv4[0] : &MAPPINGv6[0];
-       m->meaning != PRM_::OTHER; ++m) {
-    if (m->type == icmp_type && m->code == icmp_code) {
-      measurement_kit::debug("type %d code %d meaning %d", icmp_type, icmp_code,
-                             m->meaning);
-      return m->meaning;
+    if (valid_reply) {
+        measurement_kit::debug("type %d code %d meaning %d (got reply packet)",
+                               icmp_type, icmp_code, PRM_::GOT_REPLY_PACKET);
+        return PRM_::GOT_REPLY_PACKET;
     }
-  }
-  measurement_kit::debug("type %d code %d meaning %d (other)", icmp_type,
-                         icmp_code, PRM_::OTHER);
-  return PRM_::OTHER;
+    for (auto m = is_ipv4 ? &MAPPINGv4[0] : &MAPPINGv6[0];
+         m->meaning != PRM_::OTHER; ++m) {
+        if (m->type == icmp_type && m->code == icmp_code) {
+            measurement_kit::debug("type %d code %d meaning %d", icmp_type,
+                                   icmp_code, m->meaning);
+            return m->meaning;
+        }
+    }
+    measurement_kit::debug("type %d code %d meaning %d (other)", icmp_type,
+                           icmp_code, PRM_::OTHER);
+    return PRM_::OTHER;
 }
 
 ProberInterface::~ProberInterface() {}

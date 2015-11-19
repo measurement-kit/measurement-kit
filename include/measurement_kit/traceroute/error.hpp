@@ -34,7 +34,7 @@ class ProbeAlreadyPendingError : public common::Error {
 /// Payload too long error
 class PayloadTooLongError : public common::Error {
   public:
-    /// Default constructor 
+    /// Default constructor
     PayloadTooLongError() : Error(2003, "unknown_failure 2003") {}
 };
 
