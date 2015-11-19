@@ -74,16 +74,16 @@ public:
   /// Destructor
   ~AndroidProber() { cleanup(); }
 
-  virtual void send_probe(std::string addr, int port, int ttl,
-                          std::string payload, double timeout) final;
+  void send_probe(std::string addr, int port, int ttl,
+                          std::string payload, double timeout) override;
 
-  virtual void on_result(std::function<void(ProbeResult)> cb) final {
+  void on_result(std::function<void(ProbeResult)> cb) override {
     result_cb_ = cb;
   }
 
-  virtual void on_timeout(std::function<void()> cb) final { timeout_cb_ = cb; }
+  void on_timeout(std::function<void()> cb) override { timeout_cb_ = cb; }
 
-  virtual void on_error(std::function<void(common::Error)> cb) final {
+  void on_error(std::function<void(common::Error)> cb) override {
     error_cb_ = cb;
   }
 

@@ -112,7 +112,7 @@ public:
   /// Default copy constructor
   ProberInterface(ProberInterface&) = default;
 
-  /// Default assingment operator
+  /// Default assignment operator
   ProberInterface& operator=(ProberInterface&) = default;
 
   /// Default move constructor
@@ -139,20 +139,20 @@ public:
     impl_.reset(new Impl(use_ipv4, port, evbase));
   }
 
-  virtual void send_probe(std::string addr, int port, int ttl,
-                          std::string payload, double timeout) final {
+  void send_probe(std::string addr, int port, int ttl,
+                          std::string payload, double timeout) override {
     impl_->send_probe(addr, port, ttl, payload, timeout);
   }
 
-  virtual void on_result(std::function<void(ProbeResult)> cb) final {
+  void on_result(std::function<void(ProbeResult)> cb) override {
     impl_->on_result(cb);
   }
 
-  virtual void on_timeout(std::function<void()> cb) final {
+  void on_timeout(std::function<void()> cb) override {
     impl_->on_timeout(cb);
   }
 
-  virtual void on_error(std::function<void(common::Error)> cb) final {
+  void on_error(std::function<void(common::Error)> cb) override {
     impl_->on_error(cb);
   }
 
