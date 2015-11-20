@@ -1,6 +1,7 @@
 noinst_LTLIBRARIES += src/http/libhttp.la
 
 src_http_libhttp_la_SOURCES = \
+	src/http/client.cpp \
 	src/http/request_serializer.cpp \
 	src/http/response_parser.cpp
 
@@ -10,8 +11,4 @@ httpincludedir = $(includedir)/measurement_kit/http
 httpinclude_HEADERS = \
     include/measurement_kit/http/client.hpp \
     include/measurement_kit/http/headers.hpp \
-    include/measurement_kit/http/request.hpp \
-    include/measurement_kit/http/request_serializer.hpp \
-    include/measurement_kit/http/response.hpp \
-    include/measurement_kit/http/response_parser.hpp \
-    include/measurement_kit/http/stream.hpp
+    include/measurement_kit/http/response.hpp

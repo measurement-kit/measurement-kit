@@ -15,10 +15,10 @@
 #include <measurement_kit/net/error.hpp>
 
 #include <measurement_kit/http/headers.hpp>
-#include <measurement_kit/http/request_serializer.hpp>
+#include "src/http/request_serializer.hpp"
 #include <measurement_kit/http/response.hpp>
-#include <measurement_kit/http/response_parser.hpp>
-#include <measurement_kit/http/stream.hpp>
+#include "src/http/response_parser.hpp"
+#include "src/http/stream.hpp"
 
 #include <functional>
 #include <iosfwd>
@@ -33,8 +33,6 @@ namespace http {
 
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;
-
-typedef std::function<void(Error, Response&&)> RequestCallback;
 
 /*!
  * \brief HTTP request.

@@ -13,7 +13,7 @@
 #include <measurement_kit/net/error.hpp>
 #include <measurement_kit/net/transport.hpp>
 
-#include <measurement_kit/http/response_parser.hpp>
+#include "src/http/response_parser.hpp"
 
 #include <functional>
 #include <iosfwd>

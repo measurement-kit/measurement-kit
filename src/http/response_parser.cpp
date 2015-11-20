@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/http/response_parser.hpp>
+#include "src/http/response_parser.hpp"
 #include <measurement_kit/net/buffer.hpp>
 
 #include "ext/http-parser/http_parser.h"
