@@ -22,7 +22,7 @@ using namespace measurement_kit::common;
 
 class Request;
 
-typedef std::function<void(Error, Response&&)> RequestCallback;
+typedef std::function<void(Error, Response)> RequestCallback;
 
 class Client {
 
@@ -35,7 +35,7 @@ public:
      * \see Request::Request.
      */
     void request(Settings settings, Headers headers,
-            std::string body, RequestCallback&& callback,
+            std::string body, RequestCallback callback,
             Logger *lp = Logger::global());
 
     Client() {
