@@ -8,6 +8,8 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
 
+#include "src/http/response_parser.hpp"
+
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;
 using namespace measurement_kit::http;

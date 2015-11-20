@@ -30,7 +30,7 @@ TEST_CASE("HTTP Client works as expected") {
         {"Accept", "*/*"},
     }, "", [&](Error, Response&& response) {
         std::cout << "Google:\r\n";
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -44,7 +44,7 @@ TEST_CASE("HTTP Client works as expected") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error, Response&& response) {
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -58,7 +58,7 @@ TEST_CASE("HTTP Client works as expected") {
     }, {
         {"Accept", "*/*"},
     }, "", [&](Error, Response&& response) {
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -84,7 +84,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
     }, "", [&](Error error, Response&& response) {
         std::cout << "Error: " << (int) error << std::endl;
         std::cout << "Google:\r\n";
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -100,7 +100,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {"Accept", "*/*"},
     }, "", [&](Error error, Response&& response) {
         std::cout << "Error: " << (int) error << std::endl;
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -116,7 +116,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {"Accept", "*/*"},
     }, "", [&](Error error, Response&& response) {
         std::cout << "Error: " << (int) error << std::endl;
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         if (++count >= 3) {
             measurement_kit::break_loop();
@@ -139,7 +139,7 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
     }, "{\"test-helpers\": [\"dns\"]}",
                 [](Error error, Response&& response) {
         std::cout << "Error: " << (int) error << std::endl;
-        std::cout << response.body.read() << "\r\n";
+        std::cout << response.body << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });
@@ -165,7 +165,7 @@ TEST_CASE("Make sure that settings are not modified") {
         // XXX: assumes that Tor is not running on port 9999
         REQUIRE(error != 0);
         std::cout << "Error: " << (int) error << std::endl;
-        std::cout << response.body.read() << "\r\n";
+        std::cout << response.body << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });

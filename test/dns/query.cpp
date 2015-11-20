@@ -8,6 +8,8 @@
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/common.hpp>
 
+#include "src/dns/query.hpp"
+
 using namespace measurement_kit::common;
 using namespace measurement_kit::dns;
 

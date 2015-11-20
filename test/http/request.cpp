@@ -12,6 +12,8 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
 
+#include "src/http/request.hpp"
+
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;
 using namespace measurement_kit::http;
@@ -37,7 +39,7 @@ TEST_CASE("HTTP Request works as expected") {
             std::cout << kv.first << ": " << kv.second << "\r\n";
         }
         std::cout << "\r\n";
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });
@@ -105,7 +107,7 @@ TEST_CASE("HTTP Request correctly receives errors") {
             std::cout << kv.first << ": " << kv.second << "\r\n";
         }
         std::cout << "\r\n";
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });
@@ -134,7 +136,7 @@ TEST_CASE("HTTP Request works as expected over Tor") {
             std::cout << kv.first << ": " << kv.second << "\r\n";
         }
         std::cout << "\r\n";
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });
@@ -255,4 +257,13 @@ TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     REQUIRE(r1.socks5_port() == "9050");
     REQUIRE(r2.socks5_address() == "");
     REQUIRE(r2.socks5_port() == "");
+}
+
+TEST_CASE("The callback is called if input URL parsing fails") {
+    bool called = false;
+    Request r1({}, {}, "", [&called](Error err, Response) {
+        called = true;
+        REQUIRE(err == GenericError());
+    });
+    REQUIRE(called);
 }

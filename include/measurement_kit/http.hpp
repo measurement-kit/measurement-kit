@@ -7,10 +7,6 @@
 
 #include <measurement_kit/http/client.hpp>
 #include <measurement_kit/http/headers.hpp>
-#include <measurement_kit/http/request.hpp>
-#include <measurement_kit/http/request_serializer.hpp>
 #include <measurement_kit/http/response.hpp>
-#include <measurement_kit/http/response_parser.hpp>
-#include <measurement_kit/http/stream.hpp>
 
 #endif

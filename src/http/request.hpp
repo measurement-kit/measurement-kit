@@ -15,10 +15,10 @@
 #include <measurement_kit/net/error.hpp>
 
 #include <measurement_kit/http/headers.hpp>
-#include <measurement_kit/http/request_serializer.hpp>
+#include "src/http/request_serializer.hpp"
 #include <measurement_kit/http/response.hpp>
-#include <measurement_kit/http/response_parser.hpp>
-#include <measurement_kit/http/stream.hpp>
+#include "src/http/response_parser.hpp"
+#include "src/http/stream.hpp"
 
 #include <functional>
 #include <iosfwd>
@@ -33,8 +33,6 @@ namespace http {
 
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;
-
-typedef std::function<void(Error, Response&&)> RequestCallback;
 
 /*!
  * \brief HTTP request.
@@ -87,7 +85,12 @@ public:
             std::set<Request *> *parent_ = nullptr)
                 : callback(callback_), parent(parent_), logger(lp) {
         auto settings = settings_;  // Make a copy and work on that
-        serializer = RequestSerializer(settings, headers, body);
+        try {
+            serializer = RequestSerializer(settings, headers, body);
+        } catch (std::exception &) {
+            callback(GenericError(), response);
+            return;
+        }
         // Extend settings with address and port to connect to
         settings["port"] = serializer.port;
         settings["address"] = serializer.address;
@@ -137,7 +140,7 @@ public:
                 logger->debug("http: received body chunk...");
                 // FIXME: I am not sure whether the body callback
                 //        is still needed or not...
-                response.body << chunk;
+                response.body += chunk;
             });
 
             stream->on_end([&]() {
@@ -153,7 +156,7 @@ public:
     }
 
     void close() {
-        stream->close();
+        if (stream) stream->close();
     }
 
     ~Request() {

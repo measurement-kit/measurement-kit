@@ -7,9 +7,8 @@
 
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/logger.hpp>
-
-#include <measurement_kit/http/request.hpp>
-#include <measurement_kit/http/response_parser.hpp>
+#include <measurement_kit/http/headers.hpp>
+#include <measurement_kit/http/response.hpp>
 
 #include <iosfwd>
 #include <set>
@@ -20,7 +19,10 @@ namespace measurement_kit {
 namespace http {
 
 using namespace measurement_kit::common;
-using namespace measurement_kit::net;
+
+class Request;
+
+typedef std::function<void(Error, Response)> RequestCallback;
 
 class Client {
 
@@ -33,29 +35,14 @@ public:
      * \see Request::Request.
      */
     void request(Settings settings, Headers headers,
-            std::string body, RequestCallback&& callback,
-            Logger *lp = Logger::global()) {
-        auto r = new Request(settings, headers, body,
-                std::move(callback), lp, &pending);
-        pending.insert(r);
-    }
+            std::string body, RequestCallback callback,
+            Logger *lp = Logger::global());
 
     Client() {
         // nothing to do
     }
 
-    ~Client() {
-        for (auto& r: pending) {
-            //
-            // This calls the stream destructor which deletes every
-            // proxy object and possibly delayes the deletion of the
-            // real parser and connection, just to avoid running
-            // code over already deleted structures.
-            //
-            delete r;
-        }
-        pending.clear();
-    }
+    ~Client();
 
     //
     // TODO: implement all the fancy methods
