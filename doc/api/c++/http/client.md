@@ -64,6 +64,15 @@ receives the following arguments:
 Beware that, in case of early error, the callback MAY be called
 immediately by the `request()` method.
 
+# BUGS
+
+In the current implementation, the parser throws an exception that
+is not catched if there is a parse error. Ideally that exception has
+to be properly routed, but the parser code is messy and I think
+the best thing to do is to rewrite the parser. This is to be fixed
+in a successive point release, as the objective of this first release
+was to have a good API.
+
 # HISTORY
 
 The `Response` class appeared in MeasurementKit 1.0.0.
