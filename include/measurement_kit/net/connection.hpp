@@ -17,7 +17,7 @@
 #include <measurement_kit/net/dumb.hpp>
 #include <measurement_kit/net/transport.hpp>
 
-#include <measurement_kit/dns/query.hpp>
+#include "src/dns/query.hpp"
 #include <measurement_kit/dns/response.hpp>
 
 #include <event2/bufferevent.h>

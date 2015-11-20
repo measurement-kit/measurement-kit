@@ -12,6 +12,8 @@
 #include <measurement_kit/common/settings.hpp>
 
 #include <measurement_kit/dns/defines.hpp>
+#include <measurement_kit/dns/defines.hpp>
+#include <measurement_kit/dns/error.hpp>
 
 #include <functional>
 #include <iosfwd>
