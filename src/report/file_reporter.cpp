@@ -9,18 +9,30 @@ namespace report {
 
 void FileReporter::open() {
     BaseReporter::open();
-    file.open(filename);
-    file << getHeader();
+    try {
+        file.open(filename);
+        file << getHeader();
+    } catch (...) {
+        emit_error(common::GenericError());
+    }
 }
 
 void FileReporter::writeEntry(ReportEntry &entry) {
     BaseReporter::writeEntry(entry);
-    file << entry.str();
+    try {
+        file << entry.str();
+    } catch (...) {
+        emit_error(common::GenericError());
+    }
 }
 
 void FileReporter::close() {
     BaseReporter::close();
-    file.close();
+    try {
+        file.close();
+    } catch (...) {
+        emit_error(common::GenericError());
+    }
 }
 
 } // namespace report

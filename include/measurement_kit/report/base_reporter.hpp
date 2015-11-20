@@ -5,6 +5,7 @@
 #ifndef MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 #define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
+#include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/version.hpp>
 #include <measurement_kit/report/report_entry.hpp>
@@ -37,7 +38,17 @@ class BaseReporter {
 
     virtual void close();
 
+    void on_error(std::function<void(common::Error)> func) {
+        error_fn_ = func;
+    }
+
+    void emit_error(common::Error err) {
+        if (!error_fn_) throw err;
+        error_fn_(err);
+    }
+
   private:
+    std::function<void(common::Error)> error_fn_;
     bool closed = false;
     bool openned = false;
 
