@@ -258,3 +258,12 @@ TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     REQUIRE(r2.socks5_address() == "");
     REQUIRE(r2.socks5_port() == "");
 }
+
+TEST_CASE("The callback is called if input URL parsing fails") {
+    bool called = false;
+    Request r1({}, {}, "", [&called](Error err, Response) {
+        called = true;
+        REQUIRE(err == GenericError());
+    });
+    REQUIRE(called);
+}

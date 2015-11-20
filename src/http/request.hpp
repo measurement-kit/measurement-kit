@@ -85,7 +85,12 @@ public:
             std::set<Request *> *parent_ = nullptr)
                 : callback(callback_), parent(parent_), logger(lp) {
         auto settings = settings_;  // Make a copy and work on that
-        serializer = RequestSerializer(settings, headers, body);
+        try {
+            serializer = RequestSerializer(settings, headers, body);
+        } catch (std::exception &) {
+            callback(GenericError(), response);
+            return;
+        }
         // Extend settings with address and port to connect to
         settings["port"] = serializer.port;
         settings["address"] = serializer.address;
@@ -151,7 +156,7 @@ public:
     }
 
     void close() {
-        stream->close();
+        if (stream) stream->close();
     }
 
     ~Request() {
