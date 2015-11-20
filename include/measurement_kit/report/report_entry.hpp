@@ -12,33 +12,29 @@ namespace measurement_kit {
 namespace report {
 
 class ReportEntry {
-public:
-  YAML::Node report;
+  public:
+    YAML::Node report;
 
-  ReportEntry() {
-    report["input"] = "";
-  }
+    ReportEntry() { report["input"] = ""; }
 
-  ReportEntry(std::string input) {
-    report["input"] = input;
-  }
+    ReportEntry(std::string input) { report["input"] = input; }
 
-  template <typename Key> const YAML::Node operator[](const Key& key) const {
-    return report[key];
-  }
-  template <typename Key> YAML::Node operator[](const Key& key) {
-    return report[key];
-  }
+    template <typename Key> const YAML::Node operator[](const Key &key) const {
+        return report[key];
+    }
+    template <typename Key> YAML::Node operator[](const Key &key) {
+        return report[key];
+    }
 
-  std::string str() {
-    std::stringstream output;
-    output << "---" << std::endl;
-    output << report << std::endl;
-    output << "..." << std::endl;
-    return output.str();
-  }
+    std::string str() {
+        std::stringstream output;
+        output << "---" << std::endl;
+        output << report << std::endl;
+        output << "..." << std::endl;
+        return output.str();
+    }
 
-  ~ReportEntry() {}
+    ~ReportEntry() {}
 };
 
 } // namespace report

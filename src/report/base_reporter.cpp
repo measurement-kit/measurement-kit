@@ -26,24 +26,22 @@ std::string BaseReporter::getHeader() {
     return output.str();
 }
 
-void BaseReporter::open() {
-  openned = true;
-}
+void BaseReporter::open() { openned = true; }
 
-void BaseReporter::writeEntry(ReportEntry& entry) {
-  if (!openned) {
-    throw new std::runtime_error("The report is not open.");
-  }
-  if (closed) {
-    throw new std::runtime_error("The report has already been closed.");
-  }
-  // This is here to silence compiler warnings
-  (void) entry;
+void BaseReporter::writeEntry(ReportEntry &entry) {
+    if (!openned) {
+        throw new std::runtime_error("The report is not open.");
+    }
+    if (closed) {
+        throw new std::runtime_error("The report has already been closed.");
+    }
+    // This is here to silence compiler warnings
+    (void)entry;
 }
 
 void BaseReporter::close() {
-  openned = false;
-  closed = true;
+    openned = false;
+    closed = true;
 }
-
-}}
+}
+}

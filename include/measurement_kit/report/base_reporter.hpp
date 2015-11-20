@@ -11,37 +11,37 @@ namespace measurement_kit {
 namespace report {
 
 class BaseReporter {
-public:
-  std::string test_name;
-  std::string test_version;
-  std::string probe_ip;
+  public:
+    std::string test_name;
+    std::string test_version;
+    std::string probe_ip;
 
-  std::string probe_asn;
-  std::string probe_cc;
+    std::string probe_asn;
+    std::string probe_cc;
 
-  time_t start_time;
+    time_t start_time;
 
-  std::map<std::string, std::string> options;
+    std::map<std::string, std::string> options;
 
-  BaseReporter(void) {};
+    BaseReporter(void){};
 
-  ~BaseReporter() {};
+    ~BaseReporter(){};
 
-  std::string getHeader();
+    std::string getHeader();
 
-  virtual void open();
+    virtual void open();
 
-  virtual void writeEntry(ReportEntry& entry);
+    virtual void writeEntry(ReportEntry &entry);
 
-  virtual void close();
+    virtual void close();
 
-private:
-  bool closed = false;
-  bool openned = false;
+  private:
+    bool closed = false;
+    bool openned = false;
 
-  const std::string software_name = "measurement_kit";
-  const std::string software_version = "0.0.1";
-  const std::string data_format_version = "0.1";
+    const std::string software_name = "measurement_kit";
+    const std::string software_version = "0.0.1";
+    const std::string data_format_version = "0.1";
 };
 
 } // namespace report

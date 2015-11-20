@@ -8,19 +8,19 @@ namespace measurement_kit {
 namespace report {
 
 void FileReporter::open() {
-  BaseReporter::open();
-  file.open(filename);
-  file << getHeader();
+    BaseReporter::open();
+    file.open(filename);
+    file << getHeader();
 }
 
-void FileReporter::writeEntry(ReportEntry& entry) {
-  BaseReporter::writeEntry(entry);
-  file << entry.str();
+void FileReporter::writeEntry(ReportEntry &entry) {
+    BaseReporter::writeEntry(entry);
+    file << entry.str();
 }
 
 void FileReporter::close() {
-  BaseReporter::close();
-  file.close();
+    BaseReporter::close();
+    file.close();
 }
 
 } // namespace report

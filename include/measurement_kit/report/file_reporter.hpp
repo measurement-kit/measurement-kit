@@ -14,13 +14,14 @@ namespace measurement_kit {
 namespace report {
 
 class FileReporter : public BaseReporter {
-public:
-  std::string filename;
-  void open();
-  void writeEntry(ReportEntry& entry);
-  void close();
-private:
-  std::ofstream file;
+  public:
+    std::string filename;
+    void open();
+    void writeEntry(ReportEntry &entry);
+    void close();
+
+  private:
+    std::ofstream file;
 };
 
 } // namespace report
