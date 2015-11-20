@@ -6,6 +6,7 @@
 #define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
 #include <measurement_kit/common/settings.hpp>
+#include <measurement_kit/common/version.hpp>
 #include <measurement_kit/report/report_entry.hpp>
 
 namespace measurement_kit {
@@ -41,7 +42,7 @@ class BaseReporter {
     bool openned = false;
 
     const std::string software_name = "measurement_kit";
-    const std::string software_version = "0.0.1";
+    const std::string software_version = MEASUREMENT_KIT_VERSION;
     const std::string data_format_version = "0.1";
 };
 
