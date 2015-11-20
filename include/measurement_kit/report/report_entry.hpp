@@ -41,5 +41,6 @@ public:
   ~ReportEntry() {}
 };
 
-}}
+} // namespace report
+} // namespace measurement_kit
 #endif

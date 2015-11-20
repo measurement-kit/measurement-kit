@@ -2,15 +2,15 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_REPORT_BASE_HPP
-#define MEASUREMENT_KIT_REPORT_BASE_HPP
+#ifndef MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
+#define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
-#include <measurement_kit/report/entry.hpp>
+#include <measurement_kit/report/report_entry.hpp>
 
 namespace measurement_kit {
 namespace report {
 
-class ReporterBase {
+class BaseReporter {
   bool closed = false;
   bool openned = false;
 
@@ -30,9 +30,9 @@ public:
 
   std::map<std::string, std::string> options;
 
-  ReporterBase(void) {};
+  BaseReporter(void) {};
 
-  ~ReporterBase() {};
+  ~BaseReporter() {};
 
   std::string getHeader();
 
@@ -43,5 +43,6 @@ public:
   virtual void close();
 };
 
-}}
+} // namespace report
+} // namespace measurement_kit
 #endif

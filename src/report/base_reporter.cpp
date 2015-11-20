@@ -2,12 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/report/base.hpp>
+#include <measurement_kit/report/base_reporter.hpp>
 
 namespace measurement_kit {
 namespace report {
 
-std::string ReporterBase::getHeader() {
+std::string BaseReporter::getHeader() {
     std::stringstream output;
     YAML::Node header;
     header["test_name"] = test_name;
@@ -26,11 +26,11 @@ std::string ReporterBase::getHeader() {
     return output.str();
 }
 
-void ReporterBase::open() {
+void BaseReporter::open() {
   openned = true;
 }
 
-void ReporterBase::writeEntry(ReportEntry& entry) {
+void BaseReporter::writeEntry(ReportEntry& entry) {
   if (!openned) {
     throw new std::runtime_error("The report is not open.");
   }
@@ -41,7 +41,7 @@ void ReporterBase::writeEntry(ReportEntry& entry) {
   (void) entry;
 }
 
-void ReporterBase::close() {
+void BaseReporter::close() {
   openned = false;
   closed = true;
 }

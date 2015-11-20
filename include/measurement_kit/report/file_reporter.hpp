@@ -2,18 +2,18 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_REPORT_FILE_HPP
-#define MEASUREMENT_KIT_REPORT_FILE_HPP
+#ifndef MEASUREMENT_KIT_REPORT_FILE_REPORTER_HPP
+#define MEASUREMENT_KIT_REPORT_FILE_REPORTER_HPP
 
 #include <iostream>
 #include <fstream>
 
-#include <measurement_kit/report/base.hpp>
+#include <measurement_kit/report/base_reporter.hpp>
 
 namespace measurement_kit {
 namespace report {
 
-class FileReporter : public ReporterBase {
+class FileReporter : public BaseReporter {
   std::ofstream file;
 public:
   std::string filename;
@@ -22,5 +22,6 @@ public:
   void close();
 };
 
-}}
+} // namespace report
+} // namespace measurement_kit
 #endif
