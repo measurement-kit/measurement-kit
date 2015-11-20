@@ -11,13 +11,6 @@ namespace measurement_kit {
 namespace report {
 
 class BaseReporter {
-  bool closed = false;
-  bool openned = false;
-
-  const std::string software_name = "measurement_kit";
-  const std::string software_version = "0.0.1";
-  const std::string data_format_version = "0.1";
-
 public:
   std::string test_name;
   std::string test_version;
@@ -41,6 +34,14 @@ public:
   virtual void writeEntry(ReportEntry& entry);
 
   virtual void close();
+
+private:
+  bool closed = false;
+  bool openned = false;
+
+  const std::string software_name = "measurement_kit";
+  const std::string software_version = "0.0.1";
+  const std::string data_format_version = "0.1";
 };
 
 } // namespace report
