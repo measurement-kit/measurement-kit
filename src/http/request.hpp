@@ -135,7 +135,7 @@ public:
                 logger->debug("http: received body chunk...");
                 // FIXME: I am not sure whether the body callback
                 //        is still needed or not...
-                response.body << chunk;
+                response.body += chunk;
             });
 
             stream->on_end([&]() {

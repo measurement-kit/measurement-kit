@@ -39,7 +39,7 @@ TEST_CASE("HTTP Request works as expected") {
             std::cout << kv.first << ": " << kv.second << "\r\n";
         }
         std::cout << "\r\n";
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });
@@ -107,7 +107,7 @@ TEST_CASE("HTTP Request correctly receives errors") {
             std::cout << kv.first << ": " << kv.second << "\r\n";
         }
         std::cout << "\r\n";
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });
@@ -136,7 +136,7 @@ TEST_CASE("HTTP Request works as expected over Tor") {
             std::cout << kv.first << ": " << kv.second << "\r\n";
         }
         std::cout << "\r\n";
-        std::cout << response.body.read(128) << "\r\n";
+        std::cout << response.body.substr(0, 128) << "\r\n";
         std::cout << "[snip]\r\n";
         measurement_kit::break_loop();
     });

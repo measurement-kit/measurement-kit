@@ -28,7 +28,7 @@ struct Response {
     unsigned int status_code;       /*!< HTTP status code */
     std::string reason;             /*!< HTTP reason string */
     Headers headers;                /*!< Response headers */
-    Buffer body;                    /*!< Response body */
+    std::string body;               /*!< Response body */
 };
 
 } // namespace http
