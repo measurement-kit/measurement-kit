@@ -13,10 +13,10 @@ std::string BaseReporter::getHeader() {
     header["test_name"] = test_name;
     header["test_version"] = test_version;
     header["start_time"] = start_time;
-    // this->header["options"] = options;
+    // header["options"] = options;
     header["probe_ip"] = probe_ip;
-    // this->header["probe_asn"] = probe_ip;
-    // this->header["probe_cc"] = probe_ip;
+    // header["probe_asn"] = probe_ip;
+    // header["probe_cc"] = probe_ip;
     header["software_name"] = software_name;
     header["software_version"] = software_version;
     header["data_format_version"] = data_format_version;
@@ -28,20 +28,19 @@ std::string BaseReporter::getHeader() {
 
 void BaseReporter::open() { openned = true; }
 
-void BaseReporter::writeEntry(ReportEntry &entry) {
+void BaseReporter::writeEntry(ReportEntry &) {
     if (!openned) {
         throw new std::runtime_error("The report is not open.");
     }
     if (closed) {
         throw new std::runtime_error("The report has already been closed.");
     }
-    // This is here to silence compiler warnings
-    (void)entry;
 }
 
 void BaseReporter::close() {
     openned = false;
     closed = true;
 }
-}
-}
+
+} // namespace report
+} // namespace measurement_kit

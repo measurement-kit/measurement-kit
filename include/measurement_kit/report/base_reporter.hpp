@@ -5,6 +5,7 @@
 #ifndef MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 #define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
+#include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/report/report_entry.hpp>
 
 namespace measurement_kit {
@@ -21,11 +22,11 @@ class BaseReporter {
 
     time_t start_time;
 
-    std::map<std::string, std::string> options;
+    common::Settings options;
 
-    BaseReporter(void){};
+    BaseReporter(){};
 
-    ~BaseReporter(){};
+    virtual ~BaseReporter(){};
 
     std::string getHeader();
 

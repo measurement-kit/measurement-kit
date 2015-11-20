@@ -16,9 +16,9 @@ namespace report {
 class FileReporter : public BaseReporter {
   public:
     std::string filename;
-    void open();
-    void writeEntry(ReportEntry &entry);
-    void close();
+    void open() override;
+    void writeEntry(ReportEntry &entry) override;
+    void close() override;
 
   private:
     std::ofstream file;
