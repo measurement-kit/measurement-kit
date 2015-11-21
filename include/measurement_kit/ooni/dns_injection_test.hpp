@@ -16,15 +16,41 @@ namespace ooni {
 /// Parameters of dns-injection test
 class DnsInjectionTest {
   public:
-    /// Constructor with settings and input-path
-    DnsInjectionTest(common::Settings s, std::string f)
-            : settings(s), input_file_path(f) {}
+
+    /// Default constructor
+    DnsInjectionTest() {}
+
+    /// Set backend used to perform the test
+    DnsInjectionTest &set_nameserver(std::string nameserver) {
+        settings["nameserver"] = nameserver;
+        return *this;
+    }
+
+    /// Set input file path
+    DnsInjectionTest &set_input_file_path(std::string ifp) {
+        input_path = ifp;
+        return *this;
+    }
+
+    /// Set verbose
+    DnsInjectionTest &set_verbose() {
+        is_verbose = true;
+        return *this;
+    }
+
+    /// Set log-message handler
+    DnsInjectionTest &on_log(std::function<void(const char *)> func) {
+        log_handler = func;
+        return *this;
+    }
 
     /// Create instance of the test
     common::Var<common::NetTest> create_test();
 
-    common::Settings settings;       ///< Test settings
-    std::string input_file_path;     ///< Input-file path
+    common::Settings settings;
+    bool is_verbose = false;
+    std::function<void(const char *)> log_handler;
+    std::string input_path;
 };
 
 } // namespace ooni

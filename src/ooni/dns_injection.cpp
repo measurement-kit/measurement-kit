@@ -31,7 +31,10 @@ DNSInjection::main(std::string input, Settings options,
 }
 
 Var<common::NetTest> DnsInjectionTest::create_test() {
-    return Var<common::NetTest>(new DNSInjection(input_file_path, settings));
+    common::NetTest *test = new DNSInjection(input_path, settings);
+    if (is_verbose) test->set_verbose(1);
+    if (log_handler) test->on_log(log_handler);
+    return Var<common::NetTest>(test);
 }
 
 }}

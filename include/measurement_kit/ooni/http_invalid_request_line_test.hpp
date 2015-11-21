@@ -16,13 +16,33 @@ namespace ooni {
 /// Parameters of http-invalid-request-line test
 class HttpInvalidRequestLineTest {
   public:
-    /// Constructor with settings
-    HttpInvalidRequestLineTest(common::Settings s) : settings(s) {}
+    /// Default constructor
+    HttpInvalidRequestLineTest() {}
+
+    /// Set backend used to perform the test
+    HttpInvalidRequestLineTest &set_backend(std::string backend) {
+        settings["backend"] = backend;
+        return *this;
+    }
+
+    /// Set verbose
+    HttpInvalidRequestLineTest &set_verbose() {
+        is_verbose = true;
+        return *this;
+    }
+
+    /// Set log-message handler
+    HttpInvalidRequestLineTest &on_log(std::function<void(const char *)> func) {
+        log_handler = func;
+        return *this;
+    }
 
     /// Create instance of the test
     common::Var<common::NetTest> create_test();
 
-    common::Settings settings;       ///< Test settings
+    common::Settings settings;
+    bool is_verbose = false;
+    std::function<void(const char *)> log_handler;
 };
 
 } // namespace ooni

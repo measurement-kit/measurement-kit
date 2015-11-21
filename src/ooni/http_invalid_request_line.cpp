@@ -59,7 +59,10 @@ HTTPInvalidRequestLine::main(Settings options,
 }
 
 Var<common::NetTest> HttpInvalidRequestLineTest::create_test() {
-    return Var<common::NetTest>(new HTTPInvalidRequestLine(settings));
+    common::NetTest *test = new HTTPInvalidRequestLine(settings);
+    if (is_verbose) test->set_verbose(1);
+    if (log_handler) test->on_log(log_handler);
+    return Var<common::NetTest>(test);
 }
 
 }}

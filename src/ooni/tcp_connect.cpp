@@ -24,7 +24,10 @@ TCPConnect::main(std::string input, Settings options,
 }
 
 Var<common::NetTest> TcpConnectTest::create_test() {
-    return Var<common::NetTest>(new TCPConnect(input_file_path, settings));
+    common::NetTest *test = new TCPConnect(input_path, settings);
+    if (is_verbose) test->set_verbose(1);
+    if (log_handler) test->on_log(log_handler);
+    return Var<common::NetTest>(test);
 }
 
 }}
