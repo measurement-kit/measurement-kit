@@ -11,6 +11,7 @@
 #include <measurement_kit/common/evbuffer.hpp>
 #include <measurement_kit/common/libs.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/maybe.hpp>
 #include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>

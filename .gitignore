@@ -67,6 +67,7 @@ test/common/bufferevent
 test/common/delayed_call
 test/common/evbuffer
 test/common/log
+test/common/maybe
 test/common/poller
 test/common/socket_valid
 test/common/utils
