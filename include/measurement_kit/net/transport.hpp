@@ -27,7 +27,6 @@ using namespace measurement_kit::common;
 
 class Transport {
   public:
-
     virtual void emit_connect() = 0;
 
     virtual void emit_data(Buffer &) = 0;
@@ -54,7 +53,7 @@ class Transport {
 
     virtual void clear_timeout() = 0;
 
-    virtual void send(const void*, size_t) = 0;
+    virtual void send(const void *, size_t) = 0;
 
     virtual void send(std::string) = 0;
 

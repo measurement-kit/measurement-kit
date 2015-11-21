@@ -36,10 +36,11 @@ class DelayedCallState : public NonCopyable, public NonMovable {
 class DelayedCall {
   public:
     DelayedCall() {}
-    DelayedCall(double delay, std::function<void()> func,
-                Libs *libs = nullptr, event_base *evbase = nullptr) {
+    DelayedCall(double delay, std::function<void()> func, Libs *libs = nullptr,
+                event_base *evbase = nullptr) {
         state_.reset(new DelayedCallState(delay, func, libs, evbase));
     }
+
   private:
     Var<DelayedCallState> state_;
 };

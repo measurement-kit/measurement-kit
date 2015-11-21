@@ -45,7 +45,7 @@ struct ParserError : public std::runtime_error {
     using std::runtime_error::runtime_error;
 };
 
-class ResponseParserImpl;  // See http.cpp
+class ResponseParserImpl; // See http.cpp
 
 typedef std::map<std::string, std::string> Headers;
 
@@ -95,10 +95,10 @@ typedef std::map<std::string, std::string> Headers;
  */
 class ResponseParser {
 
-protected:
+  protected:
     ResponseParserImpl *impl = nullptr;
 
-public:
+  public:
     /*!
      * \brief Default constructor.
      */
@@ -107,24 +107,22 @@ public:
     /*!
      * \brief Deleted copy constructor.
      */
-    ResponseParser(ResponseParser& other) = delete;
+    ResponseParser(ResponseParser &other) = delete;
 
     /*!
      * \brief Deleted copy assignment.
      */
-    ResponseParser& operator=(ResponseParser& other) = delete;
+    ResponseParser &operator=(ResponseParser &other) = delete;
 
     /*!
      * \brief Move constructor.
      */
-    ResponseParser(ResponseParser&& other) {
-        std::swap(impl, other.impl);
-    }
+    ResponseParser(ResponseParser &&other) { std::swap(impl, other.impl); }
 
     /*!
      * \brief Move assignment.
      */
-    ResponseParser& operator=(ResponseParser&& other) {
+    ResponseParser &operator=(ResponseParser &&other) {
         std::swap(impl, other.impl);
         return *this;
     }
@@ -138,7 +136,7 @@ public:
      * \brief Register `begin` event handler.
      * \param fn The `begin` event handler.
      */
-    void on_begin(std::function<void(void)>&& fn);
+    void on_begin(std::function<void(void)> &&fn);
 
     /*!
      * \brief Register `headers_complete` event handler.
@@ -148,9 +146,10 @@ public:
      *         the status code, the reason string, and a map containing the
      *         HTTP headers.
      */
-    void on_headers_complete(std::function<void(unsigned short http_major,
-      unsigned short http_minor, unsigned int status_code, std::string&& reason,
-      Headers&& headers)>&& fn);
+    void on_headers_complete(
+        std::function<void(unsigned short http_major, unsigned short http_minor,
+                           unsigned int status_code, std::string &&reason,
+                           Headers &&headers)> &&fn);
 
     /*!
      * \brief Register `body` event handler.
@@ -160,13 +159,13 @@ public:
      * \remark By default this event handler is unset, meaning that the
      *         received body is ignored.
      */
-    void on_body(std::function<void(std::string&&)>&& fn);
+    void on_body(std::function<void(std::string &&)> &&fn);
 
     /*!
      * \brief Register `end` event handler.
      * \param fn The `end` event handler.
      */
-    void on_end(std::function<void(void)>&& fn);
+    void on_end(std::function<void(void)> &&fn);
 
     /*!
      * \brief Feed the parser.

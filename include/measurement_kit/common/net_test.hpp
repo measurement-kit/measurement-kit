@@ -22,9 +22,7 @@ class NetTest : public NonCopyable, public NonMovable {
     }
 
     /// Make this test log verbose.
-    virtual void set_verbose(int verbose) {
-        logger.set_verbose(verbose);
-    }
+    virtual void set_verbose(int verbose) { logger.set_verbose(verbose); }
 
     /// Start iterating over the input.
     /// \param func Callback called when we are done.
@@ -35,9 +33,7 @@ class NetTest : public NonCopyable, public NonMovable {
     virtual void end(std::function<void()> func) = 0;
 
     /// Return the unique identifier of this test.
-    virtual unsigned long long identifier() {
-        return (unsigned long long) this;
-    }
+    virtual unsigned long long identifier() { return (unsigned long long)this; }
 
     /// Default destructor.
     virtual ~NetTest();

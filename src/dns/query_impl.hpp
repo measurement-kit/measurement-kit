@@ -81,11 +81,11 @@ class QueryImpl {
         // override the original code on ill-formed responses.
         // For this reason below we check `get_evdns_code()` rather
         // than just checking the value of `code`.
-        Response resp(code, type, count, ttl, impl->ticks,
-                      addresses, impl->logger);
+        Response resp(code, type, count, ttl, impl->ticks, addresses,
+                      impl->logger);
         if (resp.get_evdns_status() != DNS_ERR_NONE) {
-            impl->callback(measurement_kit::dns::dns_error(
-                resp.get_evdns_status()), resp);
+            impl->callback(
+                measurement_kit::dns::dns_error(resp.get_evdns_status()), resp);
         } else
             impl->callback(common::NoError(), resp);
 
@@ -174,8 +174,8 @@ class QueryImpl {
                       Logger *logger, evdns_base *base, Libs *lev,
                       Var<bool> cancd) {
         try {
-            new QueryImpl(dns_class, dns_type, name, f, logger,
-                          base, lev, cancd);
+            new QueryImpl(dns_class, dns_type, name, f, logger, base, lev,
+                          cancd);
         } catch (common::Error &error) {
             f(error, Response());
         } catch (...) {

@@ -16,7 +16,6 @@ namespace ooni {
 /// Parameters of dns-injection test
 class DnsInjectionTest {
   public:
-
     /// Default constructor
     DnsInjectionTest() {}
 

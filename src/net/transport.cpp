@@ -43,8 +43,8 @@ static Var<Transport> connect_internal(Settings settings, Logger *logger) {
     }
 
     return Var<Transport>(new Connection(settings["family"].c_str(),
-                     settings["address"].c_str(), settings["port"].c_str(),
-                     logger));
+                                         settings["address"].c_str(),
+                                         settings["port"].c_str(), logger));
 }
 
 Var<Transport> connect(Settings settings, Logger *lp) {
@@ -62,5 +62,5 @@ Var<Transport> connect(Settings settings, Logger *lp) {
     }
     return transport;
 }
-
-}}
+}
+}

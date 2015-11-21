@@ -18,7 +18,7 @@ namespace net {
 using namespace measurement_kit::common;
 
 class Socks5 : public Dumb {
-protected:
+  protected:
     Settings settings;
     Connection conn;
     Buffer buffer;
@@ -26,42 +26,30 @@ protected:
     std::string proxy_address;
     std::string proxy_port;
 
-public:
+  public:
     Socks5(Settings, Logger *lp = Logger::global());
 
-    void set_timeout(double timeout) override {
-        conn.set_timeout(timeout);
-    }
+    void set_timeout(double timeout) override { conn.set_timeout(timeout); }
 
-    void clear_timeout() override {
-        conn.clear_timeout();
-    }
+    void clear_timeout() override { conn.clear_timeout(); }
 
-    void send(const void* data, size_t count) override {
+    void send(const void *data, size_t count) override {
         conn.send(data, count);
     }
 
-    void send(std::string data) override {
-        conn.send(data);
-    }
+    void send(std::string data) override { conn.send(data); }
 
-    void send(Buffer& data) override {
-        conn.send(data);
-    }
+    void send(Buffer &data) override { conn.send(data); }
 
     void close() override {
         isclosed = true;
         conn.close();
     }
 
-    std::string socks5_address() override {
-        return proxy_address;
-    }
+    std::string socks5_address() override { return proxy_address; }
 
-    std::string socks5_port() override {
-        return proxy_port;
-    }
+    std::string socks5_port() override { return proxy_port; }
 };
-
-}}
+}
+}
 #endif

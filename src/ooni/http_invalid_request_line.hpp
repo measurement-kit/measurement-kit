@@ -17,23 +17,21 @@ namespace ooni {
 using namespace measurement_kit::common;
 using namespace measurement_kit::report;
 
-class HTTPInvalidRequestLine: public HTTPTest {
+class HTTPInvalidRequestLine : public HTTPTest {
     using HTTPTest::HTTPTest;
 
     int tests_run = 0;
 
     std::function<void(report::Entry)> callback;
 
-public:
-    HTTPInvalidRequestLine(Settings options_) :
-      HTTPTest(options_) {
+  public:
+    HTTPInvalidRequestLine(Settings options_) : HTTPTest(options_) {
         test_name = "http_invalid_request_line";
         test_version = "0.0.1";
     };
 
-    void main(Settings options,
-              std::function<void(report::Entry)>&& cb);
+    void main(Settings options, std::function<void(report::Entry)> &&cb);
 };
-
-}}
+}
+}
 #endif

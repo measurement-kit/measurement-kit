@@ -13,10 +13,8 @@ namespace ooni {
 using namespace measurement_kit::common;
 using namespace measurement_kit::dns;
 
-void
-DNSInjection::main(std::string input, Settings options,
-                   std::function<void(report::Entry)>&& cb)
-{
+void DNSInjection::main(std::string input, Settings options,
+                        std::function<void(report::Entry)> &&cb) {
     entry["injected"] = NULL;
     have_entry = cb;
     query("A", "IN", input, options["nameserver"], [this](Response response) {
@@ -36,5 +34,5 @@ Var<common::NetTest> DnsInjectionTest::create_test() {
     if (log_handler) test->on_log(log_handler);
     return Var<common::NetTest>(test);
 }
-
-}}
+}
+}

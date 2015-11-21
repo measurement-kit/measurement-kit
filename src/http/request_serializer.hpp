@@ -26,14 +26,14 @@ using namespace measurement_kit::net;
  */
 struct RequestSerializer {
 
-    std::string method;         /*!< Request method */
-    std::string schema;         /*!< URL schema */
-    std::string address;        /*!< URL address */
-    std::string port;           /*!< URL port */
-    std::string pathquery;      /*!< URL path followed by optional query */
-    std::string protocol;       /*!< Request protocol */
-    Headers headers;            /*!< Request headers */
-    std::string body;           /*!< Request body */
+    std::string method;    /*!< Request method */
+    std::string schema;    /*!< URL schema */
+    std::string address;   /*!< URL address */
+    std::string port;      /*!< URL port */
+    std::string pathquery; /*!< URL path followed by optional query */
+    std::string protocol;  /*!< Request protocol */
+    Headers headers;       /*!< Request headers */
+    std::string body;      /*!< Request body */
 
     /*!
      * \brief Constructor.
@@ -50,8 +50,7 @@ struct RequestSerializer {
      * \param headers HTTP headers (moved for efficiency).
      * \param body Request body (moved for efficiency).
      */
-    RequestSerializer(Settings s, Headers headers,
-                      std::string body);
+    RequestSerializer(Settings s, Headers headers, std::string body);
 
     RequestSerializer() {
         // nothing
@@ -61,9 +60,9 @@ struct RequestSerializer {
      * \brief Serialize request.
      * \param buff Buffer where to serialize request.
      */
-    void serialize(Buffer& buff) {
+    void serialize(Buffer &buff) {
         buff << method << " " << pathquery << " " << protocol << "\r\n";
-        for (auto& kv : headers) {
+        for (auto &kv : headers) {
             buff << kv.first << ": " << kv.second << "\r\n";
         }
 
@@ -76,7 +75,7 @@ struct RequestSerializer {
 
         if (body != "") {
             buff << "Content-Length: " << std::to_string(body.length())
-                   << "\r\n";
+                 << "\r\n";
         }
 
         buff << "\r\n";

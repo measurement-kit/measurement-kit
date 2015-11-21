@@ -26,8 +26,8 @@ void CheckConnectivity::cleanup() // Idempotent cleanup function
     }
 }
 
-void CheckConnectivity::dns_callback(int result, char, int, int,
-                                     void *, void *opaque) {
+void CheckConnectivity::dns_callback(int result, char, int, int, void *,
+                                     void *opaque) {
     auto that = static_cast<CheckConnectivity *>(opaque);
 
     switch (result) {

@@ -21,17 +21,17 @@ class DNSTest : public ooni::NetTest {
 
     Var<Resolver> resolver;
 
-public:
-    DNSTest(std::string input_filepath_, Settings options_) :
-      ooni::NetTest(input_filepath_, options_) {
+  public:
+    DNSTest(std::string input_filepath_, Settings options_)
+        : ooni::NetTest(input_filepath_, options_) {
         test_name = "dns_test";
         test_version = "0.0.1";
     };
 
     void query(QueryType query_type, QueryClass query_class,
-        std::string query_name, std::string nameserver,
-        std::function<void(Response)> cb);
+               std::string query_name, std::string nameserver,
+               std::function<void(Response)> cb);
 };
-
-}}
+}
+}
 #endif

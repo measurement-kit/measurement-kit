@@ -46,7 +46,7 @@ class Request : public NonCopyable, public NonMovable {
     std::set<Request *> *parent = nullptr;
     Logger *logger = Logger::global();
 
-    void emit_end(Error error, Response&& response) {
+    void emit_end(Error error, Response &&response) {
         close();
         callback(error, std::move(response));
         //
@@ -62,7 +62,7 @@ class Request : public NonCopyable, public NonMovable {
         }
     }
 
-public:
+  public:
     /*!
      * \brief Constructor.
      * \param settings_ A std::map with key values of the options supported:
@@ -79,12 +79,11 @@ public:
      * \param logger Logger to be used.
      * \param parent Pointer to parent to implement self clean up.
      */
-    Request(const Settings settings_, Headers headers,
-            std::string body, RequestCallback&& callback_,
-            Logger *lp = Logger::global(),
+    Request(const Settings settings_, Headers headers, std::string body,
+            RequestCallback &&callback_, Logger *lp = Logger::global(),
             std::set<Request *> *parent_ = nullptr)
-                : callback(callback_), parent(parent_), logger(lp) {
-        auto settings = settings_;  // Make a copy and work on that
+        : callback(callback_), parent(parent_), logger(lp) {
+        auto settings = settings_; // Make a copy and work on that
         try {
             serializer = RequestSerializer(settings, headers, body);
         } catch (std::exception &) {
@@ -125,9 +124,9 @@ public:
                 logger->debug("http: request sent... waiting for response");
             });
 
-            stream->on_headers_complete([&](unsigned short major,
-                    unsigned short minor, unsigned int status,
-                    std::string&& reason, Headers&& headers) {
+            stream->on_headers_complete([&](
+                unsigned short major, unsigned short minor, unsigned int status,
+                std::string &&reason, Headers &&headers) {
                 logger->debug("http: headers received...");
                 response.http_major = major;
                 response.http_minor = minor;
@@ -136,7 +135,7 @@ public:
                 response.headers = std::move(headers);
             });
 
-            stream->on_body([&](std::string&& chunk) {
+            stream->on_body([&](std::string &&chunk) {
                 logger->debug("http: received body chunk...");
                 // FIXME: I am not sure whether the body callback
                 //        is still needed or not...
@@ -151,27 +150,19 @@ public:
         });
     }
 
-    Var<Stream> get_stream() {
-        return stream;
-    }
+    Var<Stream> get_stream() { return stream; }
 
     void close() {
         if (stream) stream->close();
     }
 
-    ~Request() {
-        close();
-    }
+    ~Request() { close(); }
 
-    std::string socks5_address() {
-        return stream->socks5_address();
-    }
+    std::string socks5_address() { return stream->socks5_address(); }
 
-    std::string socks5_port() {
-        return stream->socks5_port();
-    }
+    std::string socks5_port() { return stream->socks5_port(); }
 };
 
-} // namespace http 
+} // namespace http
 } // namespace measurement_kit
 #endif

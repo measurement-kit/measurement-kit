@@ -11,6 +11,6 @@ namespace measurement_kit {
 namespace common {
 
 typedef std::map<std::string, std::string> Settings;
-
-}}
+}
+}
 #endif

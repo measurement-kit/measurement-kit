@@ -8,16 +8,15 @@
 namespace measurement_kit {
 namespace http {
 
-void Client::request(Settings settings, Headers headers,
-        std::string body, RequestCallback callback,
-        Logger *lp) {
-    auto r = new Request(settings, headers, body,
-            std::move(callback), lp, &pending);
+void Client::request(Settings settings, Headers headers, std::string body,
+                     RequestCallback callback, Logger *lp) {
+    auto r =
+        new Request(settings, headers, body, std::move(callback), lp, &pending);
     pending.insert(r);
 }
 
 Client::~Client() {
-    for (auto& r: pending) {
+    for (auto &r : pending) {
         //
         // This calls the stream destructor which deletes every
         // proxy object and possibly delayes the deletion of the

@@ -13,8 +13,7 @@
 using namespace measurement_kit::common;
 using namespace measurement_kit::ooni;
 
-TEST_CASE("TCPTest test should run")
-{
+TEST_CASE("TCPTest test should run") {
 #if 0
     measurement_kit::set_verbose(1);
 
@@ -50,30 +49,31 @@ TEST_CASE("TCPTest test should run")
 #endif
 }
 
-TEST_CASE("TCPTest works as expected in a common case")
-{
+TEST_CASE("TCPTest works as expected in a common case") {
     measurement_kit::set_verbose(1);
 
     auto count = 0;
     TCPTest tcp_test("", Settings());
 
-    auto client1 = tcp_test.connect({
-        {"host", "www.neubot.org"},
-        {"port", "80"},
-    }, [&count]() {
-        if (++count >= 2) {
-            measurement_kit::break_loop();
-        }
-    });
+    auto client1 = tcp_test.connect(
+        {
+         {"host", "www.neubot.org"}, {"port", "80"},
+        },
+        [&count]() {
+            if (++count >= 2) {
+                measurement_kit::break_loop();
+            }
+        });
 
-    auto client2 = tcp_test.connect({
-        {"host", "ooni.nu"},
-        {"port", "80"},
-    }, [&count]() {
-        if (++count >= 2) {
-            measurement_kit::break_loop();
-        }
-    });
+    auto client2 = tcp_test.connect(
+        {
+         {"host", "ooni.nu"}, {"port", "80"},
+        },
+        [&count]() {
+            if (++count >= 2) {
+                measurement_kit::break_loop();
+            }
+        });
 
     measurement_kit::loop();
 }

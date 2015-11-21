@@ -9,16 +9,16 @@ namespace measurement_kit {
 namespace common {
 
 struct NonMovable {
-    NonMovable(NonMovable&&) = delete;
-    NonMovable& operator=(NonMovable&&) = delete;
+    NonMovable(NonMovable &&) = delete;
+    NonMovable &operator=(NonMovable &&) = delete;
     NonMovable() {}
 };
 
 struct NonCopyable {
-    NonCopyable(NonCopyable&) = delete;
-    NonCopyable& operator=(NonCopyable&) = delete;
+    NonCopyable(NonCopyable &) = delete;
+    NonCopyable &operator=(NonCopyable &) = delete;
     NonCopyable() {}
 };
-
-}}
+}
+}
 #endif

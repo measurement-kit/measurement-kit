@@ -63,9 +63,9 @@ void Connection::handle_event(bufferevent *bev, short what, void *opaque) {
 }
 
 Connection::Connection(const char *family, const char *address,
-                       const char *port, Poller *plr,
-                       Logger *lp, evutil_socket_t filenum)
-        : Dumb(lp), poller(plr) {
+                       const char *port, Poller *plr, Logger *lp,
+                       evutil_socket_t filenum)
+    : Dumb(lp), poller(plr) {
     filenum = measurement_kit::socket_normalize_if_invalid(filenum);
 
     this->bev.make(poller->get_event_base(), filenum,
@@ -73,8 +73,7 @@ Connection::Connection(const char *family, const char *address,
 
     // closing: nothing to be done
 
-    if (!measurement_kit::socket_valid(filenum))
-        this->connecting = 1;
+    if (!measurement_kit::socket_valid(filenum)) this->connecting = 1;
 
     this->address = address;
 
@@ -93,7 +92,7 @@ Connection::Connection(const char *family, const char *address,
 
     if (!measurement_kit::socket_valid(filenum))
         start_connect = DelayedCall(0.0, [this]() { this->resolve(); },
-            Libs::global(), poller->get_event_base());
+                                    Libs::global(), poller->get_event_base());
 }
 
 void Connection::connect_next() {
@@ -117,14 +116,13 @@ void Connection::connect_next() {
 
         logger->info("connect_next - %s %s", family, address);
 
-        error =
-            measurement_kit::storage_init(&storage, &total, family, address, this->port.c_str());
-        if (error != 0)
-            continue;
+        error = measurement_kit::storage_init(&storage, &total, family, address,
+                                              this->port.c_str());
+        if (error != 0) continue;
 
-        auto filedesc = measurement_kit::socket_create(storage.ss_family, SOCK_STREAM, 0);
-        if (filedesc == MEASUREMENT_KIT_SOCKET_INVALID)
-            continue;
+        auto filedesc =
+            measurement_kit::socket_create(storage.ss_family, SOCK_STREAM, 0);
+        if (filedesc == MEASUREMENT_KIT_SOCKET_INVALID) continue;
 
         error = bufferevent_setfd(this->bev, filedesc);
         if (error != 0) {
@@ -136,7 +134,8 @@ void Connection::connect_next() {
             this->bev, (struct sockaddr *)&storage, (int)total);
         if (error != 0) {
             (void)evutil_closesocket(filedesc);
-            error = bufferevent_setfd(this->bev, MEASUREMENT_KIT_SOCKET_INVALID);
+            error =
+                bufferevent_setfd(this->bev, MEASUREMENT_KIT_SOCKET_INVALID);
             if (error != 0) {
                 logger->warn("connect_next - internal error");
                 break;
@@ -159,11 +158,9 @@ void Connection::handle_resolve(common::Error error, char type,
 
     logger->info("handle_resolve - enter");
 
-    if (!connecting)
-        abort();
+    if (!connecting) abort();
 
-    if (error)
-        goto finally;
+    if (error) goto finally;
 
     switch (type) {
     case DNS_IPv4_A:
@@ -188,15 +185,13 @@ finally:
     if (must_resolve_ipv6) {
         must_resolve_ipv6 = 0;
         bool ok = resolve_internal(DNS_IPv6_AAAA);
-        if (ok)
-            return;
+        if (ok) return;
         /* FALLTHROUGH */
     }
     if (must_resolve_ipv4) {
         must_resolve_ipv4 = 0;
         bool ok = resolve_internal(DNS_IPv4_A);
-        if (ok)
-            return;
+        if (ok) return;
         /* FALLTHROUGH */
     }
     connect_next();
@@ -214,10 +209,11 @@ bool Connection::resolve_internal(char type) {
         return false;
     }
 
-    dns_request = dns::Query(dns::QueryClassId::IN, query, address,
-            [this](common::Error error, dns::Response resp) {
-        handle_resolve(error, resp.get_type(), resp.get_results());
-    }, logger, poller->get_evdns_base());
+    dns_request = dns::Query(
+        dns::QueryClassId::IN, query,
+        address, [this](common::Error error, dns::Response resp) {
+            handle_resolve(error, resp.get_type(), resp.get_results());
+        }, logger, poller->get_evdns_base());
 
     return true;
 }
@@ -226,8 +222,7 @@ void Connection::resolve() {
     struct sockaddr_storage storage;
     int result;
 
-    if (!connecting)
-        abort();
+    if (!connecting) abort();
 
     // If address is a valid IPv4 address, connect directly
     memset(&storage, 0, sizeof(storage));
@@ -289,5 +284,5 @@ void Connection::close() {
     this->bev.close();
     this->dns_request.cancel();
 }
-
-}}
+}
+}

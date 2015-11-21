@@ -37,8 +37,8 @@ Query::Query(QueryClass dns_class, QueryType dns_type, std::string name,
     }
     cancelled = Var<bool>(new bool());
     *cancelled = false;
-    QueryImpl::issue(dns_class, dns_type, name, func, lp,
-                     dnsb, libs, cancelled);
+    QueryImpl::issue(dns_class, dns_type, name, func, lp, dnsb, libs,
+                     cancelled);
 }
 
 void Query::cancel(void) {

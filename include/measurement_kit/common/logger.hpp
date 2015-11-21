@@ -16,7 +16,7 @@ namespace common {
 /// Object used to log messages
 class Logger : public NonCopyable, public NonMovable {
   public:
-    Logger();  ///< Default constructor
+    Logger(); ///< Default constructor
 
     /// Variadic log function
     void logv(const char *, va_list) __attribute__((format(printf, 2, 0)));

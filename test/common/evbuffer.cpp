@@ -15,77 +15,71 @@ using namespace measurement_kit::common;
 
 TEST_CASE("The constructor is lazy") {
 
-	auto libs = Libs();
-	auto calls = 0;
+    auto libs = Libs();
+    auto calls = 0;
 
-	libs.evbuffer_new = [&](void) {
-		++calls;
-		return ((evbuffer *) NULL);
-	};
-	libs.evbuffer_free = [&](evbuffer *) {
-		++calls;
-	};
+    libs.evbuffer_new = [&](void) {
+        ++calls;
+        return ((evbuffer *)NULL);
+    };
+    libs.evbuffer_free = [&](evbuffer *) { ++calls; };
 
-	{
-		Evbuffer evbuf(&libs);
-	}
+    { Evbuffer evbuf(&libs); }
 
-	REQUIRE(calls == 0);
+    REQUIRE(calls == 0);
 }
 
 TEST_CASE("The (evbuffer*) operation allocates the internal evbuffer") {
 
-	auto libs = Libs();
-	auto calls = 0;
+    auto libs = Libs();
+    auto calls = 0;
 
-	libs.evbuffer_new = [&](void) {
-		++calls;
-		return (::evbuffer_new());
-	};
-	libs.evbuffer_free = [&](evbuffer *e) {
-		++calls;
-		evbuffer_free(e);
-	};
+    libs.evbuffer_new = [&](void) {
+        ++calls;
+        return (::evbuffer_new());
+    };
+    libs.evbuffer_free = [&](evbuffer *e) {
+        ++calls;
+        evbuffer_free(e);
+    };
 
-	{
-		Evbuffer evbuf(&libs);
-		auto p = (evbuffer *) evbuf;
-		(void) p;
-	}
+    {
+        Evbuffer evbuf(&libs);
+        auto p = (evbuffer *)evbuf;
+        (void)p;
+    }
 
-	REQUIRE(calls == 2);
+    REQUIRE(calls == 2);
 }
 
 TEST_CASE("The (evbuffer *) operation is idempotent") {
 
-	auto libs = Libs();
-	auto calls = 0;
+    auto libs = Libs();
+    auto calls = 0;
 
-	libs.evbuffer_new = [&](void) {
-		++calls;
-		return (::evbuffer_new());
-	};
+    libs.evbuffer_new = [&](void) {
+        ++calls;
+        return (::evbuffer_new());
+    };
 
-	Evbuffer evbuf(&libs);
-	auto p1 = (evbuffer *) evbuf;
-	auto p2 = (evbuffer *) evbuf;
+    Evbuffer evbuf(&libs);
+    auto p1 = (evbuffer *)evbuf;
+    auto p2 = (evbuffer *)evbuf;
 
-	REQUIRE(p1 == p2);
-	REQUIRE(calls == 1);
+    REQUIRE(p1 == p2);
+    REQUIRE(calls == 1);
 }
 
 TEST_CASE("std::bad_alloc is raised when out of memory") {
 
-	auto libs = Libs();
+    auto libs = Libs();
 
-	libs.evbuffer_new = [&](void) {
-		return ((evbuffer *) NULL);
-	};
+    libs.evbuffer_new = [&](void) { return ((evbuffer *)NULL); };
 
-	REQUIRE_THROWS_AS([&](void) {
-		/* Yes, I really really love inline functions <3 */
-		Evbuffer evbuf(&libs);
-		auto p = (evbuffer *) evbuf;
-		(void) p;
-	}(), std::bad_alloc);
+    REQUIRE_THROWS_AS([&](void) {
+        /* Yes, I really really love inline functions <3 */
+        Evbuffer evbuf(&libs);
+        auto p = (evbuffer *)evbuf;
+        (void)p;
+    }(), std::bad_alloc);
 }

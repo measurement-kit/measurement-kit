@@ -69,8 +69,8 @@ class Connection : public Dumb {
                Poller *poller = measurement_kit::get_global_poller())
         : Connection(af, a, p, poller, lp, -1) {}
 
-    Connection(const char *, const char *, const char *, Poller *,
-               Logger *, evutil_socket_t);
+    Connection(const char *, const char *, const char *, Poller *, Logger *,
+               evutil_socket_t);
 
     ~Connection() override;
 
@@ -122,6 +122,6 @@ class Connection : public Dumb {
 
     void close() override;
 };
-
-}}
+}
+}
 #endif

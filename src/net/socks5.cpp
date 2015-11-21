@@ -8,16 +8,15 @@ namespace measurement_kit {
 namespace net {
 
 Socks5::Socks5(Settings s, Logger *lp)
-        : Dumb(lp), settings(s),
-          conn(settings["family"].c_str(),
-               settings["socks5_address"].c_str(),
-               settings["socks5_port"].c_str()),
-          proxy_address(settings["socks5_address"]),
-          proxy_port(settings["socks5_port"]) {
+    : Dumb(lp), settings(s),
+      conn(settings["family"].c_str(), settings["socks5_address"].c_str(),
+           settings["socks5_port"].c_str()),
+      proxy_address(settings["socks5_address"]),
+      proxy_port(settings["socks5_port"]) {
 
     logger->debug("socks5: connecting to Tor at %s:%s",
-               settings["socks5_address"].c_str(),
-               settings["socks5_port"].c_str());
+                  settings["socks5_address"].c_str(),
+                  settings["socks5_port"].c_str());
 
     // Step #0: Steal "error", "connect", and "flush" handlers
 
@@ -81,7 +80,8 @@ Socks5::Socks5(Settings s, Logger *lp)
             out.write_uint8(address.length());            // Len
             out.write(address.c_str(), address.length()); // String
 
-            logger->debug("socks5: >> domain len=%d", (uint8_t)address.length());
+            logger->debug("socks5: >> domain len=%d",
+                          (uint8_t)address.length());
             logger->debug("socks5: >> domain str=%s", address.c_str());
 
             auto portnum = std::stoi(settings["port"]);
@@ -162,5 +162,5 @@ Socks5::Socks5(Settings s, Logger *lp)
         });
     });
 }
-
-}}
+}
+}
