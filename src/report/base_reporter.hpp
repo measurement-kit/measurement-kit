@@ -38,9 +38,7 @@ class BaseReporter {
 
     virtual void close();
 
-    void on_error(std::function<void(common::Error)> func) {
-        error_fn_ = func;
-    }
+    void on_error(std::function<void(common::Error)> func) { error_fn_ = func; }
 
     void emit_error(common::Error err) {
         if (!error_fn_) throw err;

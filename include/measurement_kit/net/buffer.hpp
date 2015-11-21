@@ -76,7 +76,7 @@ class Buffer {
      * The following is useful to feed a parser (e.g., the http-parser)
      * with all (or part of) the content of `this`.
      */
-    void foreach(std::function<bool(const void *, size_t)> fn) {
+    void foreach (std::function<bool(const void *, size_t)> fn) {
         auto required_size = evbuffer_peek(evbuf, -1, nullptr, nullptr, 0);
         if (required_size < 0) throw std::runtime_error("unexpected error");
         if (required_size == 0) return;
@@ -85,9 +85,9 @@ class Buffer {
         auto iov = raii.get();
         auto used = evbuffer_peek(evbuf, -1, nullptr, iov, required_size);
         if (used != required_size) throw std::runtime_error("unexpected error");
-        for (auto i = 0; i < required_size &&
-                fn(iov[i].iov_base, iov[i].iov_len); ++i) {
-            /* nothing */ ;
+        for (auto i = 0;
+             i < required_size && fn(iov[i].iov_base, iov[i].iov_len); ++i) {
+            /* nothing */;
         }
     }
 
@@ -105,9 +105,9 @@ class Buffer {
     std::string readpeek(bool ispeek, size_t upto) {
         size_t nbytes = 0;
         std::string out;
-        foreach([&nbytes, &out, &upto](const void *p, size_t n) {
+        foreach ([&nbytes, &out, &upto](const void *p, size_t n) {
             if (upto < n) n = upto;
-            out.append((const char *) p, n);
+            out.append((const char *)p, n);
             upto -= n;
             nbytes += n;
             return (upto > 0);
@@ -155,8 +155,7 @@ class Buffer {
         if (eol_length != 1 && eol_length != 2)
             throw std::runtime_error("unexpected error");
         auto len = (size_t)search_result.pos + eol_length;
-        if (len > maxline)
-            return std::make_tuple(LineTooLongError(), "");
+        if (len > maxline) return std::make_tuple(LineTooLongError(), "");
 
         return std::make_tuple(common::NoError(), read(len));
     }
@@ -224,7 +223,6 @@ class Buffer {
             }, p);
         if (ctrl != 0) throw std::runtime_error("evbuffer_add_reference");
     }
-
 };
 
 } // namespace net

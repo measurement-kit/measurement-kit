@@ -26,17 +26,16 @@ typedef std::function<void(Error, Response)> RequestCallback;
 
 class Client {
 
-protected:
+  protected:
     std::set<Request *> pending;
 
-public:
+  public:
     /*!
      * \brief Issue HTTP request.
      * \see Request::Request.
      */
-    void request(Settings settings, Headers headers,
-            std::string body, RequestCallback callback,
-            Logger *lp = Logger::global());
+    void request(Settings settings, Headers headers, std::string body,
+                 RequestCallback callback, Logger *lp = Logger::global());
 
     Client() {
         // nothing to do

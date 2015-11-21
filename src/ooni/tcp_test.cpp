@@ -10,9 +10,7 @@ namespace ooni {
 
 using namespace measurement_kit::common;
 
-TCPClient
-TCPTest::connect(Settings options, std::function<void()>&& cb)
-{
+TCPClient TCPTest::connect(Settings options, std::function<void()> &&cb) {
     if (options["port"] == "") {
         throw std::runtime_error("Port is required");
     }
@@ -20,8 +18,8 @@ TCPTest::connect(Settings options, std::function<void()>&& cb)
         options["host"] = "localhost";
     }
 
-    auto connection = std::make_shared<Connection>("PF_UNSPEC",
-            options["host"].c_str(), options["port"].c_str());
+    auto connection = std::make_shared<Connection>(
+        "PF_UNSPEC", options["host"].c_str(), options["port"].c_str());
 
     //
     // FIXME The connection and this are bound in the
@@ -30,7 +28,7 @@ TCPTest::connect(Settings options, std::function<void()>&& cb)
     //
 
     connection->on_error([cb, this](Error e) {
-        entry["error_code"] = (int) e;
+        entry["error_code"] = (int)e;
         entry["connection"] = "failed";
         cb();
     });
@@ -41,5 +39,5 @@ TCPTest::connect(Settings options, std::function<void()>&& cb)
 
     return connection;
 }
-
-}}
+}
+}

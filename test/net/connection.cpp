@@ -49,7 +49,7 @@ TEST_CASE("It is safe to manipulate Connection after close") {
     s.on_data([&s](Buffer &) {
         s.close();
         // It shall be safe to call any API after close()
-	    // where safe means that we don't segfault
+        // where safe means that we don't segfault
         REQUIRE_THROWS(s.enable_read());
         REQUIRE_THROWS(s.disable_read());
         measurement_kit::break_loop();
@@ -63,12 +63,8 @@ TEST_CASE("It is safe to close Connection while resolve is in progress") {
     }
     measurement_kit::set_verbose(1);
     Connection s("PF_INET", "nexa.polito.it", "80");
-    DelayedCall unsched(0.001, [&s]() {
-        s.close();
-    });
-    DelayedCall bail_out(2.0, []() {
-        measurement_kit::break_loop();
-    });
+    DelayedCall unsched(0.001, [&s]() { s.close(); });
+    DelayedCall bail_out(2.0, []() { measurement_kit::break_loop(); });
     measurement_kit::loop();
 }
 
@@ -94,13 +90,11 @@ TEST_CASE("It is possible to use Connection with a custom poller") {
     }
     measurement_kit::set_verbose(1);
     Poller poller;
-    Connection s("PF_UNSPEC", "nexa.polito.it", "22",
-                 Logger::global(), &poller);
+    Connection s("PF_UNSPEC", "nexa.polito.it", "22", Logger::global(),
+                 &poller);
     s.set_timeout(5);
     auto ok = false;
-    s.on_error([&poller](Error) {
-        poller.break_loop();
-    });
+    s.on_error([&poller](Error) { poller.break_loop(); });
     s.on_connect([&poller, &ok]() {
         poller.break_loop();
         ok = true;

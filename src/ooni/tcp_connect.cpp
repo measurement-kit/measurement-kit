@@ -11,10 +11,8 @@ namespace ooni {
 
 using namespace measurement_kit::common;
 
-void
-TCPConnect::main(std::string input, Settings options,
-                 std::function<void(report::Entry)>&& cb)
-{
+void TCPConnect::main(std::string input, Settings options,
+                      std::function<void(report::Entry)> &&cb) {
     options["host"] = input;
     have_entry = cb;
     client = connect(options, [this]() {
@@ -29,5 +27,5 @@ Var<common::NetTest> TcpConnectTest::create_test() {
     if (log_handler) test->on_log(log_handler);
     return Var<common::NetTest>(test);
 }
-
-}}
+}
+}

@@ -18,47 +18,47 @@ using namespace measurement_kit::common;
 using namespace measurement_kit::ooni;
 
 static void run_http_invalid_request_line(Async &async) {
-    async.run_test(
-        HttpInvalidRequestLineTest()
-            .set_backend("http://nexa.polito.it/")
-            .set_verbose()
-            .on_log([](const char *s) {
-                (void) fprintf(stderr, "test #1: %s\n", s);
-            })
-            .create_test(),
-        [](Var<NetTest> test) {
-            measurement_kit::debug("test complete: %llu", test->identifier());
-        });
+    async.run_test(HttpInvalidRequestLineTest()
+                       .set_backend("http://nexa.polito.it/")
+                       .set_verbose()
+                       .on_log([](const char *s) {
+                           (void)fprintf(stderr, "test #1: %s\n", s);
+                       })
+                       .create_test(),
+                   [](Var<NetTest> test) {
+                       measurement_kit::debug("test complete: %llu",
+                                              test->identifier());
+                   });
 }
 
-static void run_dns_injection(Async& async) {
-    async.run_test(
-        DnsInjectionTest()
-            .set_nameserver("8.8.8.8:53")
-            .set_input_file_path("test/fixtures/hosts.txt")
-            .set_verbose()
-            .on_log([](const char *s) {
-                (void) fprintf(stderr, "test #3: %s\n", s);
-            })
-            .create_test(),
-        [](Var<NetTest> test) {
-            measurement_kit::debug("test complete: %llu", test->identifier());
-        });
+static void run_dns_injection(Async &async) {
+    async.run_test(DnsInjectionTest()
+                       .set_nameserver("8.8.8.8:53")
+                       .set_input_file_path("test/fixtures/hosts.txt")
+                       .set_verbose()
+                       .on_log([](const char *s) {
+                           (void)fprintf(stderr, "test #3: %s\n", s);
+                       })
+                       .create_test(),
+                   [](Var<NetTest> test) {
+                       measurement_kit::debug("test complete: %llu",
+                                              test->identifier());
+                   });
 }
 
-static void run_tcp_connect(Async& async) {
-    async.run_test(
-        TcpConnectTest()
-            .set_port("80")
-            .set_input_file_path("test/fixtures/hosts.txt")
-            .set_verbose()
-            .on_log([](const char *s) {
-                (void) fprintf(stderr, "test #4: %s\n", s);
-            })
-            .create_test(),
-        [](Var<NetTest> test) {
-            measurement_kit::debug("test complete: %llu", test->identifier());
-        });
+static void run_tcp_connect(Async &async) {
+    async.run_test(TcpConnectTest()
+                       .set_port("80")
+                       .set_input_file_path("test/fixtures/hosts.txt")
+                       .set_verbose()
+                       .on_log([](const char *s) {
+                           (void)fprintf(stderr, "test #4: %s\n", s);
+                       })
+                       .create_test(),
+                   [](Var<NetTest> test) {
+                       measurement_kit::debug("test complete: %llu",
+                                              test->identifier());
+                   });
 }
 
 TEST_CASE("The async engine works as expected") {

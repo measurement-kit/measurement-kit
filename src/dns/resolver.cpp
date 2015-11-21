@@ -103,8 +103,8 @@ evdns_base *Resolver::get_evdns_base(void) {
     return base;
 }
 
-void Resolver::query(QueryClass dns_class, QueryType dns_type,
-                     std::string name, std::function<void(Error, Response)> f) {
+void Resolver::query(QueryClass dns_class, QueryType dns_type, std::string name,
+                     std::function<void(Error, Response)> f) {
     //
     // Note: QueryImpl implements the autodelete behavior, meaning that
     // it shall delete itself once its callback is called. The callback
@@ -114,8 +114,8 @@ void Resolver::query(QueryClass dns_class, QueryType dns_type,
     //
     auto cancelled = Var<bool>(new bool());
     *cancelled = false;
-    QueryImpl::issue(dns_class, dns_type, name, f, logger,
-                     get_evdns_base(), libs, cancelled);
+    QueryImpl::issue(dns_class, dns_type, name, f, logger, get_evdns_base(),
+                     libs, cancelled);
 }
 
 } // namespace dns

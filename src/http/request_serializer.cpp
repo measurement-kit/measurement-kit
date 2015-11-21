@@ -21,15 +21,13 @@ using namespace measurement_kit::net;
 namespace measurement_kit {
 namespace http {
 
-RequestSerializer::RequestSerializer(Settings settings,
-        Headers headers_, std::string body_)
-                : headers(headers_), body(body_)
-{
+RequestSerializer::RequestSerializer(Settings settings, Headers headers_,
+                                     std::string body_)
+    : headers(headers_), body(body_) {
     auto url = settings["url"];
     http_parser_url url_parser;
-    memset(&url_parser, 0, sizeof (url_parser));
-    if (http_parser_parse_url(url.c_str(), url.length(), 0,
-                &url_parser) != 0) {
+    memset(&url_parser, 0, sizeof(url_parser));
+    if (http_parser_parse_url(url.c_str(), url.length(), 0, &url_parser) != 0) {
         throw std::runtime_error("Cannot parse input URL");
     }
     if ((url_parser.field_set & (1 << UF_SCHEMA)) == 0) {
@@ -39,23 +37,23 @@ RequestSerializer::RequestSerializer(Settings settings,
         throw std::runtime_error("Missing URL host");
     }
     schema = url.substr(url_parser.field_data[UF_SCHEMA].off,
-            url_parser.field_data[UF_SCHEMA].len);
+                        url_parser.field_data[UF_SCHEMA].len);
     address = url.substr(url_parser.field_data[UF_HOST].off,
-            url_parser.field_data[UF_HOST].len);
+                         url_parser.field_data[UF_HOST].len);
     if ((url_parser.field_set & (1 << UF_PATH)) != 0) {
         pathquery += url.substr(url_parser.field_data[UF_PATH].off,
-                url_parser.field_data[UF_PATH].len);
+                                url_parser.field_data[UF_PATH].len);
     } else {
         pathquery += "/";
     }
     if ((url_parser.field_set & (1 << UF_QUERY)) != 0) {
         pathquery += "?";
         pathquery += url.substr(url_parser.field_data[UF_QUERY].off,
-                url_parser.field_data[UF_QUERY].len);
+                                url_parser.field_data[UF_QUERY].len);
     }
     if ((url_parser.field_set & (1 << UF_PORT)) != 0) {
         port += url.substr(url_parser.field_data[UF_PORT].off,
-                url_parser.field_data[UF_PORT].len);
+                           url_parser.field_data[UF_PORT].len);
     } else {
         port += "80";
     }

@@ -20,76 +20,76 @@ using namespace measurement_kit;
 
 TEST_CASE("Typical IPv4 traceroute usage") {
 
-  std::string payload(256, '\0');
-  auto prober = Prober<AndroidProber>(true, 11829);
-  auto ttl = 1;
+    std::string payload(256, '\0');
+    auto prober = Prober<AndroidProber>(true, 11829);
+    auto ttl = 1;
 
-  prober.on_result([&prober, &ttl, &payload](ProbeResult r) {
-    std::cout << ttl << " " << r.interface_ip << " " << r.rtt << " ms\n";
-    if (r.get_meaning() != ProbeResultMeaning::TTL_EXCEEDED || ttl >= 64) {
-      measurement_kit::break_loop();
-      return;
-    }
-    prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
-  });
+    prober.on_result([&prober, &ttl, &payload](ProbeResult r) {
+        std::cout << ttl << " " << r.interface_ip << " " << r.rtt << " ms\n";
+        if (r.get_meaning() != ProbeResultMeaning::TTL_EXCEEDED || ttl >= 64) {
+            measurement_kit::break_loop();
+            return;
+        }
+        prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
+    });
 
-  prober.on_timeout([&prober, &ttl, &payload]() {
-    std::cout << ttl << " *\n";
-    if (ttl >= 64) {
-      measurement_kit::break_loop();
-      return;
-    }
-    prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
-  });
+    prober.on_timeout([&prober, &ttl, &payload]() {
+        std::cout << ttl << " *\n";
+        if (ttl >= 64) {
+            measurement_kit::break_loop();
+            return;
+        }
+        prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
+    });
 
-  prober.on_error([&prober, &ttl, &payload](common::Error err) {
-    std::cout << ttl << " error: " << err.what() << "\n";
-    if (ttl >= 64) {
-      measurement_kit::break_loop();
-      return;
-    }
-    prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
-  });
+    prober.on_error([&prober, &ttl, &payload](common::Error err) {
+        std::cout << ttl << " error: " << err.what() << "\n";
+        if (ttl >= 64) {
+            measurement_kit::break_loop();
+            return;
+        }
+        prober.send_probe("8.8.8.8", 33434, ++ttl, payload, 1.0);
+    });
 
-  prober.send_probe("8.8.8.8", 33434, ttl, payload, 1.0);
-  measurement_kit::loop();
+    prober.send_probe("8.8.8.8", 33434, ttl, payload, 1.0);
+    measurement_kit::loop();
 }
 
 TEST_CASE("Check whether it works when destination sends reply") {
 
-  std::string payload(256, '\0');
-  auto prober = Prober<AndroidProber>(true, 11829);
-  auto ttl = 1;
+    std::string payload(256, '\0');
+    auto prober = Prober<AndroidProber>(true, 11829);
+    auto ttl = 1;
 
-  prober.on_result([&prober, &ttl, &payload](ProbeResult r) {
-    std::cout << ttl << " " << r.interface_ip << " " << r.rtt << " ms\n";
-    if (r.get_meaning() != ProbeResultMeaning::TTL_EXCEEDED || ttl >= 64) {
-      measurement_kit::break_loop();
-      return;
-    }
-    prober.send_probe("208.67.222.222", 53, ++ttl, payload, 1.0);
-  });
+    prober.on_result([&prober, &ttl, &payload](ProbeResult r) {
+        std::cout << ttl << " " << r.interface_ip << " " << r.rtt << " ms\n";
+        if (r.get_meaning() != ProbeResultMeaning::TTL_EXCEEDED || ttl >= 64) {
+            measurement_kit::break_loop();
+            return;
+        }
+        prober.send_probe("208.67.222.222", 53, ++ttl, payload, 1.0);
+    });
 
-  prober.on_timeout([&prober, &ttl, &payload]() {
-    std::cout << ttl << " *\n";
-    if (ttl >= 64) {
-      measurement_kit::break_loop();
-      return;
-    }
-    prober.send_probe("208.67.222.222", 53, ++ttl, payload, 1.0);
-  });
+    prober.on_timeout([&prober, &ttl, &payload]() {
+        std::cout << ttl << " *\n";
+        if (ttl >= 64) {
+            measurement_kit::break_loop();
+            return;
+        }
+        prober.send_probe("208.67.222.222", 53, ++ttl, payload, 1.0);
+    });
 
-  prober.on_error([&prober, &ttl, &payload](common::Error err) {
-    std::cout << ttl << " error: " << err.what() << "\n";
-    if (ttl >= 64) {
-      measurement_kit::break_loop();
-      return;
-    }
-    prober.send_probe("208.67.222.222", 53, ++ttl, payload, 1.0);
-  });
+    prober.on_error([&prober, &ttl, &payload](common::Error err) {
+        std::cout << ttl << " error: " << err.what() << "\n";
+        if (ttl >= 64) {
+            measurement_kit::break_loop();
+            return;
+        }
+        prober.send_probe("208.67.222.222", 53, ++ttl, payload, 1.0);
+    });
 
-  prober.send_probe("208.67.222.222", 53, ttl, payload, 1.0);
-  measurement_kit::loop();
+    prober.send_probe("208.67.222.222", 53, ttl, payload, 1.0);
+    measurement_kit::loop();
 }
 
 #else

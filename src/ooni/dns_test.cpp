@@ -11,15 +11,14 @@ namespace ooni {
 using namespace measurement_kit::dns;
 using namespace measurement_kit::common;
 
-void
-DNSTest::query(QueryType query_type, QueryClass query_class,
-               std::string query_name, std::string nameserver,
-               std::function<void(Response)> cb)
-{
-    resolver = std::make_shared<Resolver>(Settings{
-        {"nameserver", nameserver},
-        {"attempts", "1"},
-    }, &logger, libs);
+void DNSTest::query(QueryType query_type, QueryClass query_class,
+                    std::string query_name, std::string nameserver,
+                    std::function<void(Response)> cb) {
+    resolver = std::make_shared<Resolver>(
+        Settings{
+            {"nameserver", nameserver}, {"attempts", "1"},
+        },
+        &logger, libs);
 
     std::string nameserver_part;
     std::stringstream nameserver_ss(nameserver);
@@ -34,12 +33,12 @@ DNSTest::query(QueryType query_type, QueryClass query_class,
             logger.debug("dns_test: got response!");
             YAML::Node query_entry;
             if (query_type == QueryTypeId::A) {
-              query_entry["query_type"] = "A";
-              query_entry["query"] = "[Query('" + query_name +  ", 1, 1')]";
+                query_entry["query_type"] = "A";
+                query_entry["query"] = "[Query('" + query_name + ", 1, 1')]";
             }
             if (!error) {
                 int idx = 0;
-                for (auto result: response.get_results()) {
+                for (auto result : response.get_results()) {
                     if (query_type == QueryTypeId::A) {
                         std::string rr;
                         rr = "<RR name=" + query_name + " ";
@@ -63,7 +62,7 @@ DNSTest::query(QueryType query_type, QueryClass query_class,
             logger.debug("dns_test: callbacking");
             cb(response);
             logger.debug("dns_test: callback called");
-    });
+        });
 }
-
-}}
+}
+}

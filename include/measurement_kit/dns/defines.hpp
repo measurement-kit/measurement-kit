@@ -13,11 +13,30 @@ namespace measurement_kit {
 namespace dns {
 
 /// Available query classes id
-enum class QueryClassId {IN, CS, CH, HS};
+enum class QueryClassId { IN, CS, CH, HS };
 
 /// Available query types id (REVERSE_A and REVERSE_AAAA are non standard)
-enum class QueryTypeId {A, NS, MD, MF, CNAME, SOA, MB, MG, MR, NUL, WKS, PTR,
-                        HINFO, MINFO, MX, TXT, AAAA, REVERSE_A, REVERSE_AAAA};
+enum class QueryTypeId {
+    A,
+    NS,
+    MD,
+    MF,
+    CNAME,
+    SOA,
+    MB,
+    MG,
+    MR,
+    NUL,
+    WKS,
+    PTR,
+    HINFO,
+    MINFO,
+    MX,
+    TXT,
+    AAAA,
+    REVERSE_A,
+    REVERSE_AAAA
+};
 
 /// Query class
 class QueryClass {

@@ -37,7 +37,7 @@ class ResponseParserImpl {
     http_parser_settings settings;
     Buffer buffer;
 
-    // Header parsing states (see do_header_internal)
+// Header parsing states (see do_header_internal)
 #define S_NOTHING 0
 #define S_FIELD 1
 #define S_VALUE 2
@@ -111,12 +111,13 @@ class ResponseParserImpl {
     static int do_headers_complete(http_parser *p) {
         auto impl = static_cast<ResponseParserImpl *>(p->data);
         impl->logger->debug("http: HEADERS_COMPLETE");
-        if (impl->field != "") {  // Also copy last header
+        if (impl->field != "") { // Also copy last header
             impl->headers[std::move(impl->field)] = std::move(impl->value);
         }
-        impl->headers_complete_fn(impl->parser.http_major,
-            impl->parser.http_minor, impl->parser.status_code,
-            std::move(impl->reason), std::move(impl->headers));
+        impl->headers_complete_fn(
+            impl->parser.http_major, impl->parser.http_minor,
+            impl->parser.status_code, std::move(impl->reason),
+            std::move(impl->headers));
         return 0;
     }
 
@@ -142,11 +143,11 @@ class ResponseParserImpl {
     }
 
     void parse(void) {
-        auto total = (size_t) 0;
-        buffer.foreach([&](const void *base, size_t count) {
+        auto total = (size_t)0;
+        buffer.foreach ([&](const void *base, size_t count) {
             parsing = true;
             size_t n = http_parser_execute(&parser, &settings,
-                    (const char *) base, count);
+                                           (const char *)base, count);
             parsing = false;
             if (parser.upgrade) {
                 throw UpgradeError("Unexpected UPGRADE");
@@ -164,13 +165,12 @@ class ResponseParserImpl {
         buffer.discard(total);
     }
 
-public:
-
+  public:
     /*!
      * \brief Default constructor.
      */
     ResponseParserImpl(Logger *lp = Logger::global()) : logger(lp) {
-        memset(&settings, 0, sizeof (settings));
+        memset(&settings, 0, sizeof(settings));
         settings.on_message_begin = do_message_begin;
         settings.on_status = do_status;
         settings.on_header_field = do_header_field;
@@ -178,30 +178,30 @@ public:
         settings.on_headers_complete = do_headers_complete;
         settings.on_body = do_body;
         settings.on_message_complete = do_message_complete;
-        memset(&parser, 0, sizeof (parser));
+        memset(&parser, 0, sizeof(parser));
         http_parser_init(&parser, HTTP_RESPONSE);
-        parser.data = this;  /* Which makes this object non-movable */
+        parser.data = this; /* Which makes this object non-movable */
     }
 
     /*!
      * \brief Deleted copy constructor.
      */
-    ResponseParserImpl(ResponseParserImpl& other) = delete;
+    ResponseParserImpl(ResponseParserImpl &other) = delete;
 
     /*!
      * \brief Deleted copy assignment operator.
      */
-    ResponseParserImpl& operator=(ResponseParserImpl& other) = delete;
+    ResponseParserImpl &operator=(ResponseParserImpl &other) = delete;
 
     /*!
      * \brief Deleted move operator.
      */
-    ResponseParserImpl(ResponseParserImpl&& other) = delete;
+    ResponseParserImpl(ResponseParserImpl &&other) = delete;
 
     /*!
      * \brief Deleted move assignment operator.
      */
-    ResponseParserImpl& operator=(ResponseParserImpl&& other) = delete;
+    ResponseParserImpl &operator=(ResponseParserImpl &&other) = delete;
 
     /*!
      * \brief Handler for the `begin` event.
@@ -215,17 +215,17 @@ public:
      * \see RequestParser::on_headers_complete.
      */
     std::function<void(unsigned short, unsigned short, unsigned int,
-        std::string&&, Headers&&)>
-        headers_complete_fn = [](unsigned short, unsigned short,
-        unsigned int, std::string&&, Headers&&) {
-        // nothing
-    };
+                       std::string &&, Headers &&)> headers_complete_fn =
+        [](unsigned short, unsigned short, unsigned int, std::string &&,
+           Headers &&) {
+            // nothing
+        };
 
     /*!
      * \brief Handler for the `body` event.
      * \see RequestParser::on_body.
      */
-    std::function<void(std::string&&)> body_fn;
+    std::function<void(std::string &&)> body_fn;
 
     /*!
      * \brief Handler for the `end` event.
@@ -264,7 +264,7 @@ public:
      *         a class derived from it) on several error conditions.
      */
     void feed(char c) {
-        buffer.write((const void *) &c, 1);
+        buffer.write((const void *)&c, 1);
         parse();
     }
 
@@ -311,67 +311,41 @@ public:
 // ResponseParser
 //
 
-ResponseParser::ResponseParser(Logger *lp) :
-    impl(new ResponseParserImpl(lp)) {}
+ResponseParser::ResponseParser(Logger *lp) : impl(new ResponseParserImpl(lp)) {}
 
-ResponseParser::~ResponseParser(void)
-{
+ResponseParser::~ResponseParser(void) {
     if (impl == nullptr) {
         return;
     }
     impl->destroy();
-    impl = nullptr;  // Idempotent
+    impl = nullptr; // Idempotent
 }
 
-void
-ResponseParser::on_begin(std::function<void(void)>&& fn)
-{
+void ResponseParser::on_begin(std::function<void(void)> &&fn) {
     impl->begin_fn = std::move(fn);
 }
 
-void
-ResponseParser::on_headers_complete(std::function<void(
-    unsigned short, unsigned short, unsigned int, std::string&&,
-    Headers&&)>&& fn)
-{
+void ResponseParser::on_headers_complete(
+    std::function<void(unsigned short, unsigned short, unsigned int,
+                       std::string &&, Headers &&)> &&fn) {
     impl->headers_complete_fn = std::move(fn);
 }
 
-void
-ResponseParser::on_body(std::function<void(std::string&&)>&& fn)
-{
+void ResponseParser::on_body(std::function<void(std::string &&)> &&fn) {
     impl->body_fn = std::move(fn);
 }
 
-void
-ResponseParser::on_end(std::function<void(void)>&& fn)
-{
+void ResponseParser::on_end(std::function<void(void)> &&fn) {
     impl->end_fn = std::move(fn);
 }
 
-void
-ResponseParser::feed(Buffer &data)
-{
-    impl->feed(data);
-}
+void ResponseParser::feed(Buffer &data) { impl->feed(data); }
 
-void
-ResponseParser::feed(std::string data)
-{
-    impl->feed(data);
-}
+void ResponseParser::feed(std::string data) { impl->feed(data); }
 
-void
-ResponseParser::feed(char c)
-{
-    impl->feed(c);
-}
+void ResponseParser::feed(char c) { impl->feed(c); }
 
-void
-ResponseParser::eof()
-{
-    impl->eof();
-}
+void ResponseParser::eof() { impl->eof(); }
 
 } // namespace http
 } // namespace measurement_kit

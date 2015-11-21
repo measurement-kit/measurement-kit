@@ -76,8 +76,7 @@ static inline int socket_valid(evutil_socket_t filenum) {
 #endif
 }
 
-static inline intptr_t
-socket_normalize_if_invalid_win32_(intptr_t filenum) {
+static inline intptr_t socket_normalize_if_invalid_win32_(intptr_t filenum) {
     /*
      * Nothing do to; on Windows there is a single, canonical
      * representation of the invalid socket: ~0.
@@ -91,8 +90,7 @@ static inline int socket_normalize_if_invalid_unix_(int filenum) {
      * integers different from -1 are non-canonical representations of
      * the invalid socket descriptor.
      */
-    if (!socket_valid(filenum))
-        filenum = MEASUREMENT_KIT_SOCKET_INVALID;
+    if (!socket_valid(filenum)) filenum = MEASUREMENT_KIT_SOCKET_INVALID;
     return (filenum);
 }
 
@@ -119,14 +117,13 @@ void xfree(void *);
 
 timeval *timeval_init(timeval *, double);
 
-int storage_init(sockaddr_storage *, socklen_t *, const char *,
-                 const char *, const char *);
+int storage_init(sockaddr_storage *, socklen_t *, const char *, const char *,
+                 const char *);
 
-int storage_init(sockaddr_storage *, socklen_t *, int,
-                 const char *, const char *);
+int storage_init(sockaddr_storage *, socklen_t *, int, const char *,
+                 const char *);
 
-int storage_init(sockaddr_storage *, socklen_t *, int,
-                 const char *, int);
+int storage_init(sockaddr_storage *, socklen_t *, int, const char *, int);
 
 evutil_socket_t socket_create(int, int, int);
 

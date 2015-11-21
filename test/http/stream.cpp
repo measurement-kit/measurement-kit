@@ -22,45 +22,44 @@ TEST_CASE("HTTP stream works as expected") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    //measurement_kit::set_verbose(1);
+    // measurement_kit::set_verbose(1);
     auto stream = std::make_shared<Stream>(Settings{
-        {"address", "www.google.com"},
-        {"port", "80"},
+        {"address", "www.google.com"}, {"port", "80"},
     });
     stream->on_connect([&]() {
         measurement_kit::debug("Connection made... sending request");
         *stream << "GET /robots.txt HTTP/1.1\r\n"
-               << "Host: www.google.com\r\n"
-               << "Connection: close\r\n"
-               << "\r\n";
+                << "Host: www.google.com\r\n"
+                << "Connection: close\r\n"
+                << "\r\n";
         stream->on_flush([]() {
             measurement_kit::debug("Request sent... waiting for response");
         });
-        stream->on_headers_complete([&](unsigned short major,
-                unsigned short minor, unsigned int status,
-                std::string&& reason, Headers&& headers) {
-            std::cout << "HTTP/" << major << "." << minor << " " <<
-                        status << " " << reason << "\r\n";
-            for (auto& kv : headers) {
-                std::cout << kv.first << ": " << kv.second << "\r\n";
-            }
-            std::cout << "\r\n";
-            stream->on_end([&](void) {
+        stream->on_headers_complete(
+            [&](unsigned short major, unsigned short minor, unsigned int status,
+                std::string &&reason, Headers &&headers) {
+                std::cout << "HTTP/" << major << "." << minor << " " << status
+                          << " " << reason << "\r\n";
+                for (auto &kv : headers) {
+                    std::cout << kv.first << ": " << kv.second << "\r\n";
+                }
                 std::cout << "\r\n";
-                stream->close();
-                measurement_kit::break_loop();
+                stream->on_end([&](void) {
+                    std::cout << "\r\n";
+                    stream->close();
+                    measurement_kit::break_loop();
+                });
+                stream->on_body([&](std::string && /*chunk*/) {
+                    // std::cout << chunk;
+                });
             });
-            stream->on_body([&](std::string&& /*chunk*/) {
-                //std::cout << chunk;
-            });
-        });
     });
     measurement_kit::loop();
 }
 
 TEST_CASE("HTTP stream is robust to EOF") {
 
-    //measurement_kit::set_verbose(1);
+    // measurement_kit::set_verbose(1);
 
     // We simulate the receipt of a message terminated by EOF followed by
     // an EOF so that stream emits in sequence "end" followed by "error(0)"
@@ -73,9 +72,7 @@ TEST_CASE("HTTP stream is robust to EOF") {
     stream->on_error([](Error) {
         /* nothing */
     });
-    stream->on_end([stream]() {
-        delete stream;
-    });
+    stream->on_end([stream]() { delete stream; });
 
     auto transport = stream->get_transport();
 
@@ -108,37 +105,37 @@ TEST_CASE("HTTP stream works as expected when using Tor") {
     });
     stream->set_timeout(1.0);
     stream->on_error([&](Error e) {
-        measurement_kit::debug("Connection error: %d", (int) e);
+        measurement_kit::debug("Connection error: %d", (int)e);
         stream->close();
         measurement_kit::break_loop();
     });
     stream->on_connect([&]() {
         measurement_kit::debug("Connection made... sending request");
         *stream << "GET /robots.txt HTTP/1.1\r\n"
-               << "Host: www.google.com\r\n"
-               << "Connection: close\r\n"
-               << "\r\n";
+                << "Host: www.google.com\r\n"
+                << "Connection: close\r\n"
+                << "\r\n";
         stream->on_flush([]() {
             measurement_kit::debug("Request sent... waiting for response");
         });
-        stream->on_headers_complete([&](unsigned short major,
-                unsigned short minor, unsigned int status,
-                std::string&& reason, Headers&& headers) {
-            std::cout << "HTTP/" << major << "." << minor << " " <<
-                        status << " " << reason << "\r\n";
-            for (auto& kv : headers) {
-                std::cout << kv.first << ": " << kv.second << "\r\n";
-            }
-            std::cout << "\r\n";
-            stream->on_end([&](void) {
+        stream->on_headers_complete(
+            [&](unsigned short major, unsigned short minor, unsigned int status,
+                std::string &&reason, Headers &&headers) {
+                std::cout << "HTTP/" << major << "." << minor << " " << status
+                          << " " << reason << "\r\n";
+                for (auto &kv : headers) {
+                    std::cout << kv.first << ": " << kv.second << "\r\n";
+                }
                 std::cout << "\r\n";
-                stream->close();
-                measurement_kit::break_loop();
+                stream->on_end([&](void) {
+                    std::cout << "\r\n";
+                    stream->close();
+                    measurement_kit::break_loop();
+                });
+                stream->on_body([&](std::string && /*chunk*/) {
+                    // std::cout << chunk;
+                });
             });
-            stream->on_body([&](std::string&& /*chunk*/) {
-                //std::cout << chunk;
-            });
-        });
     });
     measurement_kit::loop();
 }
@@ -147,14 +144,13 @@ TEST_CASE("HTTP stream receives connection errors") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    //measurement_kit::set_verbose(1);
+    // measurement_kit::set_verbose(1);
     auto stream = std::make_shared<Stream>(Settings{
-        {"address", "nexa.polito.it"},
-        {"port", "81"},
+        {"address", "nexa.polito.it"}, {"port", "81"},
     });
     stream->set_timeout(1.0);
     stream->on_error([&](Error e) {
-        measurement_kit::debug("Connection error: %d", (int) e);
+        measurement_kit::debug("Connection error: %d", (int)e);
         stream->close();
         measurement_kit::break_loop();
     });

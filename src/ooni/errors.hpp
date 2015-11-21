@@ -11,12 +11,12 @@ namespace measurement_kit {
 namespace ooni {
 
 class InputFileDoesNotExist : public std::runtime_error {
-  using std::runtime_error::runtime_error;
+    using std::runtime_error::runtime_error;
 };
 
 class InputFileRequired : public std::runtime_error {
-  using std::runtime_error::runtime_error;
+    using std::runtime_error::runtime_error;
 };
-
-}}
+}
+}
 #endif

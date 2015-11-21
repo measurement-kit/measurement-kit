@@ -298,7 +298,7 @@ std::string unreverse_ipv4(std::string s) {
             cur = 0;
         } else if (isdigit(s[i])) {
             t.push_back(s[i]);
-            char tmpstr[] = { s[i], '\0' };
+            char tmpstr[] = {s[i], '\0'};
             cur = cur * 10 + atoi(tmpstr);
         } else
             break;

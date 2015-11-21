@@ -33,7 +33,7 @@ class Query {
     Var<bool> cancelled;
 
   public:
-     /// Default constructor.
+    /// Default constructor.
     Query() {}
 
     /// Start an async DNS request.

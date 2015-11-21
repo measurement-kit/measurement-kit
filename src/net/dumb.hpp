@@ -18,16 +18,16 @@ namespace net {
 using namespace measurement_kit::common;
 
 class Dumb : public Transport {
-private:
+  private:
     std::function<void()> do_connect = []() {};
     std::function<void(Buffer &)> do_data = [](Buffer &) {};
     std::function<void()> do_flush = []() {};
     std::function<void(Error)> do_error = [](Error) {};
 
-protected:
+  protected:
     Logger *logger = Logger::global();
 
-public:
+  public:
     void emit_connect() override {
         logger->debug("dumb: emit 'connect' event");
         // With GNU C++ library, if a std::function sets itself, the
@@ -93,34 +93,22 @@ public:
         logger->debug("dumb: set_timeout %f", timeo);
     }
 
-    void clear_timeout() override {
-        logger->debug("dumb: clear_timeout");
-    }
+    void clear_timeout() override { logger->debug("dumb: clear_timeout"); }
 
-    void send(const void*, size_t) override {
+    void send(const void *, size_t) override {
         logger->debug("dumb: send opaque data");
     }
 
-    void send(std::string) override {
-        logger->debug("dumb: send string");
-    }
+    void send(std::string) override { logger->debug("dumb: send string"); }
 
-    void send(Buffer &) override {
-        logger->debug("dumb: send buffer");
-    }
+    void send(Buffer &) override { logger->debug("dumb: send buffer"); }
 
-    void close() override {
-        logger->debug("dumb: close");
-    }
+    void close() override { logger->debug("dumb: close"); }
 
-    std::string socks5_address() override {
-        return "";
-    }
+    std::string socks5_address() override { return ""; }
 
-    std::string socks5_port() override {
-        return "";
-    }
+    std::string socks5_port() override { return ""; }
 };
-
-}}
+}
+}
 #endif

@@ -22,25 +22,25 @@ class TCPConnect : public TCPTest {
 
     std::function<void(report::Entry)> have_entry;
 
-public:
-    TCPConnect(std::string input_filepath_, Settings options_) :
-      TCPTest(input_filepath_, options_) {
+  public:
+    TCPConnect(std::string input_filepath_, Settings options_)
+        : TCPTest(input_filepath_, options_) {
         test_name = "tcp_connect";
         test_version = "0.0.1";
 
         if (input_filepath_ == "") {
-          throw InputFileRequired("An input file is required!");
+            throw InputFileRequired("An input file is required!");
         }
 
         struct stat buffer;
         if (stat(input_filepath_.c_str(), &buffer) != 0) {
-          throw InputFileDoesNotExist(input_filepath_+" does not exist");
+            throw InputFileDoesNotExist(input_filepath_ + " does not exist");
         }
     };
 
     void main(std::string input, Settings options,
-              std::function<void(report::Entry)>&& cb);
+              std::function<void(report::Entry)> &&cb);
 };
-
-}}
+}
+}
 #endif

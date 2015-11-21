@@ -74,9 +74,8 @@ TEST_CASE("Resolver: evdns_base_new failure is correctly handled") {
     // Note: call .get_evdns_base() to trigger lazy allocation
 
     // Handle the branch where nameserver is set
-    REQUIRE_THROWS(
-        Resolver({{"nameserver", "8.8.8.8"}}, Logger::global(), &libs)
-            .get_evdns_base());
+    REQUIRE_THROWS(Resolver({{"nameserver", "8.8.8.8"}}, Logger::global(),
+                            &libs).get_evdns_base());
 
     // Handle the branch using the default nameserver
     REQUIRE_THROWS(
@@ -87,9 +86,8 @@ TEST_CASE(
     "Resolver: evdns_base_nameserver_ip_add failure is correctly handled") {
     auto libs = Libs();
 
-    libs.evdns_base_nameserver_ip_add = [](evdns_base *, const char *) {
-        return -1;
-    };
+    libs.evdns_base_nameserver_ip_add =
+        [](evdns_base *, const char *) { return -1; };
 
     // Also make sure that the destructor is called
     auto called = false;
@@ -99,9 +97,8 @@ TEST_CASE(
     };
 
     // Note: call .get_evdns_base() to trigger lazy allocation
-    REQUIRE_THROWS(
-        Resolver({{"nameserver", "8.8.8.8"}}, Logger::global(), &libs)
-            .get_evdns_base());
+    REQUIRE_THROWS(Resolver({{"nameserver", "8.8.8.8"}}, Logger::global(),
+                            &libs).get_evdns_base());
 
     REQUIRE(called);
 }
@@ -118,54 +115,50 @@ TEST_CASE("Resolver: evdns_base_set_option failure is correctly handled") {
 
     // Note: call .get_evdns_base() to trigger lazy allocation
 
-    libs.evdns_base_set_option = [](evdns_base *, const char *opt,
-                                    const char *) {
-        if (strcmp(opt, "attempts") == 0) {
-            return -1;
-        }
-        return 0;
-    };
+    libs.evdns_base_set_option =
+        [](evdns_base *, const char *opt, const char *) {
+            if (strcmp(opt, "attempts") == 0) {
+                return -1;
+            }
+            return 0;
+        };
     REQUIRE_THROWS(Resolver(
                        {
-                           {"attempts", "1"},
+                        {"attempts", "1"},
                        },
-                       Logger::global(), &libs)
-                       .get_evdns_base());
+                       Logger::global(), &libs).get_evdns_base());
 
-    libs.evdns_base_set_option = [](evdns_base *, const char *opt,
-                                    const char *) {
-        if (strcmp(opt, "timeout") == 0) {
-            return -1;
-        }
-        return 0;
-    };
+    libs.evdns_base_set_option =
+        [](evdns_base *, const char *opt, const char *) {
+            if (strcmp(opt, "timeout") == 0) {
+                return -1;
+            }
+            return 0;
+        };
     REQUIRE_THROWS(Resolver(
                        {
-                           {"timeout", "1.0"},
+                        {"timeout", "1.0"},
                        },
-                       Logger::global(), &libs)
-                       .get_evdns_base());
+                       Logger::global(), &libs).get_evdns_base());
 
-    libs.evdns_base_set_option = [](evdns_base *, const char *opt,
-                                    const char *) {
-        if (strcmp(opt, "randomize-case") == 0) {
-            return -1;
-        }
-        return 0;
-    };
+    libs.evdns_base_set_option =
+        [](evdns_base *, const char *opt, const char *) {
+            if (strcmp(opt, "randomize-case") == 0) {
+                return -1;
+            }
+            return 0;
+        };
     // Make sure that randomize-case is called in both true and false cases
     REQUIRE_THROWS(Resolver(
                        {
-                           {"randomize_case", "1"},
+                        {"randomize_case", "1"},
                        },
-                       Logger::global(), &libs)
-                       .get_evdns_base());
+                       Logger::global(), &libs).get_evdns_base());
     REQUIRE_THROWS(Resolver(
                        {
-                           {"randomize_case", "0"},
+                        {"randomize_case", "0"},
                        },
-                       Logger::global(), &libs)
-                       .get_evdns_base());
+                       Logger::global(), &libs).get_evdns_base());
 
     REQUIRE(called == 4); // twice for randomize-case
 }
@@ -261,49 +254,50 @@ TEST_CASE("The default custom resolver works as expected") {
     });
     measurement_kit::loop();
 
-    reso.query("IN", "REVERSE_A", "130.192.16.172",
-            [&](Error e, Response response) {
-        REQUIRE(!e);
-        REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_results().size() == 1);
-        REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
-        REQUIRE(response.get_rtt() > 0.0);
-        REQUIRE(response.get_ttl() > 0);
-        measurement_kit::break_loop();
-    });
+    reso.query(
+        "IN", "REVERSE_A", "130.192.16.172", [&](Error e, Response response) {
+            REQUIRE(!e);
+            REQUIRE(response.get_reply_authoritative() == "unknown");
+            REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+            REQUIRE(response.get_results().size() == 1);
+            REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
+            REQUIRE(response.get_rtt() > 0.0);
+            REQUIRE(response.get_ttl() > 0);
+            measurement_kit::break_loop();
+        });
     measurement_kit::loop();
 
     reso.query("IN", "PTR", "172.16.192.130.in-addr.arpa.",
-            [&](Error e, Response response) {
-        REQUIRE(!e);
-        REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_results().size() == 1);
-        REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
-        REQUIRE(response.get_rtt() > 0.0);
-        REQUIRE(response.get_ttl() > 0);
-        measurement_kit::break_loop();
-    });
+               [&](Error e, Response response) {
+                   REQUIRE(!e);
+                   REQUIRE(response.get_reply_authoritative() == "unknown");
+                   REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+                   REQUIRE(response.get_results().size() == 1);
+                   REQUIRE(response.get_results()[0] ==
+                           "server-nexa.polito.it");
+                   REQUIRE(response.get_rtt() > 0.0);
+                   REQUIRE(response.get_ttl() > 0);
+                   measurement_kit::break_loop();
+               });
     measurement_kit::loop();
 
     reso.query("IN", "AAAA", "ooni.torproject.org",
-            [&](Error e, Response response) {
-        REQUIRE(!e);
-        REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_results().size() > 0);
-        REQUIRE(response.get_rtt() > 0.0);
-        REQUIRE(response.get_ttl() > 0);
-        auto found = false;
-        for (auto address : response.get_results()) {
-            if (address == "2001:41b8:202:deb:213:21ff:fe20:1426") {
-                found = true;
-            }
-        }
-        REQUIRE(found);
-        measurement_kit::break_loop();
-    });
+               [&](Error e, Response response) {
+                   REQUIRE(!e);
+                   REQUIRE(response.get_reply_authoritative() == "unknown");
+                   REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+                   REQUIRE(response.get_results().size() > 0);
+                   REQUIRE(response.get_rtt() > 0.0);
+                   REQUIRE(response.get_ttl() > 0);
+                   auto found = false;
+                   for (auto address : response.get_results()) {
+                       if (address == "2001:41b8:202:deb:213:21ff:fe20:1426") {
+                           found = true;
+                       }
+                   }
+                   REQUIRE(found);
+                   measurement_kit::break_loop();
+               });
     measurement_kit::loop();
 
     reso.query("IN", "REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
@@ -320,19 +314,19 @@ TEST_CASE("The default custom resolver works as expected") {
                });
     measurement_kit::loop();
 
-    reso.query(
-        "IN", "PTR",
- "6.2.4.1.0.2.e.f.f.f.1.2.3.1.2.0.b.e.d.0.2.0.2.0.8.b.1.4.1.0.0.2.ip6.arpa.",
-        [&](Error e, Response response) {
-            REQUIRE(!e);
-            REQUIRE(response.get_reply_authoritative() == "unknown");
-            REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-            REQUIRE(response.get_results().size() == 1);
-            REQUIRE(response.get_results()[0] == "listera.torproject.org");
-            REQUIRE(response.get_rtt() > 0.0);
-            REQUIRE(response.get_ttl() > 0);
-            measurement_kit::break_loop();
-        });
+    reso.query("IN", "PTR", "6.2.4.1.0.2.e.f.f.f.1.2.3.1.2.0.b.e.d.0.2.0.2.0.8."
+                            "b.1.4.1.0.0.2.ip6.arpa.",
+               [&](Error e, Response response) {
+                   REQUIRE(!e);
+                   REQUIRE(response.get_reply_authoritative() == "unknown");
+                   REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+                   REQUIRE(response.get_results().size() == 1);
+                   REQUIRE(response.get_results()[0] ==
+                           "listera.torproject.org");
+                   REQUIRE(response.get_rtt() > 0.0);
+                   REQUIRE(response.get_ttl() > 0);
+                   measurement_kit::break_loop();
+               });
     measurement_kit::loop();
 
     REQUIRE(!failed);
@@ -367,49 +361,50 @@ TEST_CASE("A specific custom resolver works as expected") {
     });
     measurement_kit::loop();
 
-    reso.query("IN", "REVERSE_A", "130.192.16.172",
-            [&](Error e, Response response) {
-        REQUIRE(!e);
-        REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_results().size() == 1);
-        REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
-        REQUIRE(response.get_rtt() > 0.0);
-        REQUIRE(response.get_ttl() > 0);
-        measurement_kit::break_loop();
-    });
+    reso.query(
+        "IN", "REVERSE_A", "130.192.16.172", [&](Error e, Response response) {
+            REQUIRE(!e);
+            REQUIRE(response.get_reply_authoritative() == "unknown");
+            REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+            REQUIRE(response.get_results().size() == 1);
+            REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
+            REQUIRE(response.get_rtt() > 0.0);
+            REQUIRE(response.get_ttl() > 0);
+            measurement_kit::break_loop();
+        });
     measurement_kit::loop();
 
     reso.query("IN", "PTR", "172.16.192.130.in-addr.arpa.",
-            [&](Error e, Response response) {
-        REQUIRE(!e);
-        REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_results().size() == 1);
-        REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
-        REQUIRE(response.get_rtt() > 0.0);
-        REQUIRE(response.get_ttl() > 0);
-        measurement_kit::break_loop();
-    });
+               [&](Error e, Response response) {
+                   REQUIRE(!e);
+                   REQUIRE(response.get_reply_authoritative() == "unknown");
+                   REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+                   REQUIRE(response.get_results().size() == 1);
+                   REQUIRE(response.get_results()[0] ==
+                           "server-nexa.polito.it");
+                   REQUIRE(response.get_rtt() > 0.0);
+                   REQUIRE(response.get_ttl() > 0);
+                   measurement_kit::break_loop();
+               });
     measurement_kit::loop();
 
     reso.query("IN", "AAAA", "ooni.torproject.org",
-            [&](Error e, Response response) {
-        REQUIRE(!e);
-        REQUIRE(response.get_reply_authoritative() == "unknown");
-        REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-        REQUIRE(response.get_results().size() > 0);
-        REQUIRE(response.get_rtt() > 0.0);
-        REQUIRE(response.get_ttl() > 0);
-        auto found = false;
-        for (auto address : response.get_results()) {
-            if (address == "2001:41b8:202:deb:213:21ff:fe20:1426") {
-                found = true;
-            }
-        }
-        REQUIRE(found);
-        measurement_kit::break_loop();
-    });
+               [&](Error e, Response response) {
+                   REQUIRE(!e);
+                   REQUIRE(response.get_reply_authoritative() == "unknown");
+                   REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+                   REQUIRE(response.get_results().size() > 0);
+                   REQUIRE(response.get_rtt() > 0.0);
+                   REQUIRE(response.get_ttl() > 0);
+                   auto found = false;
+                   for (auto address : response.get_results()) {
+                       if (address == "2001:41b8:202:deb:213:21ff:fe20:1426") {
+                           found = true;
+                       }
+                   }
+                   REQUIRE(found);
+                   measurement_kit::break_loop();
+               });
     measurement_kit::loop();
 
     reso.query("IN", "REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
@@ -426,19 +421,19 @@ TEST_CASE("A specific custom resolver works as expected") {
                });
     measurement_kit::loop();
 
-    reso.query(
-        "IN", "PTR",
- "6.2.4.1.0.2.e.f.f.f.1.2.3.1.2.0.b.e.d.0.2.0.2.0.8.b.1.4.1.0.0.2.ip6.arpa.",
-        [&](Error e, Response response) {
-            REQUIRE(!e);
-            REQUIRE(response.get_reply_authoritative() == "unknown");
-            REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
-            REQUIRE(response.get_results().size() == 1);
-            REQUIRE(response.get_results()[0] == "listera.torproject.org");
-            REQUIRE(response.get_rtt() > 0.0);
-            REQUIRE(response.get_ttl() > 0);
-            measurement_kit::break_loop();
-        });
+    reso.query("IN", "PTR", "6.2.4.1.0.2.e.f.f.f.1.2.3.1.2.0.b.e.d.0.2.0.2.0.8."
+                            "b.1.4.1.0.0.2.ip6.arpa.",
+               [&](Error e, Response response) {
+                   REQUIRE(!e);
+                   REQUIRE(response.get_reply_authoritative() == "unknown");
+                   REQUIRE(response.get_evdns_status() == DNS_ERR_NONE);
+                   REQUIRE(response.get_results().size() == 1);
+                   REQUIRE(response.get_results()[0] ==
+                           "listera.torproject.org");
+                   REQUIRE(response.get_rtt() > 0.0);
+                   REQUIRE(response.get_ttl() > 0);
+                   measurement_kit::break_loop();
+               });
     measurement_kit::loop();
 
     REQUIRE(!failed);
@@ -548,13 +543,13 @@ TEST_CASE("It is safe to cancel requests in flight") {
     auto count = 0;
     for (auto i = 0; i < 16; ++i) {
         reso.query("IN", "A", "www.neubot.org",
-                [&](Error e, Response response) {
-            if (!e) {
-                total += response.get_rtt();
-                count += 1;
-            }
-            measurement_kit::break_loop();
-        });
+                   [&](Error e, Response response) {
+                       if (!e) {
+                           total += response.get_rtt();
+                           count += 1;
+                       }
+                       measurement_kit::break_loop();
+                   });
         measurement_kit::loop();
     }
     // We need at lest 8 good responses to compute the average
@@ -566,8 +561,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
 
     // for (;;) {  // only try this at home
     for (auto i = 0; i < 16; ++i) {
-        auto r = new Query("IN", "A", "www.neubot.org",
-                [&](Error e, Response) {
+        auto r = new Query("IN", "A", "www.neubot.org", [&](Error e, Response) {
             auto status_ok = (e == CancelError() || e == NoError());
             REQUIRE(status_ok);
             // Ignoring all the other fields here

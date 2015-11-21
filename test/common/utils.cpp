@@ -53,10 +53,12 @@ TEST_CASE("Verify that invalid input is rejected") {
         // We encounter a character that is not hex in position N
         REQUIRE(measurement_kit::unreverse_ipv6("d.e.a.d.r.e.e.f") == "");
         // We deal correctly with good address with missing suffix
-        REQUIRE(measurement_kit::unreverse_ipv6(
+        REQUIRE(
+            measurement_kit::unreverse_ipv6(
                 "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0."
                 "2") == "");
-        REQUIRE(measurement_kit::unreverse_ipv6(
+        REQUIRE(
+            measurement_kit::unreverse_ipv6(
                 "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0."
                 "2.") == "");
     }

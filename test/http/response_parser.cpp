@@ -16,7 +16,7 @@ using namespace measurement_kit::http;
 
 TEST_CASE("We don't leak when we receive an invalid message") {
 
-    //measurement_kit::set_verbose(1);
+    // measurement_kit::set_verbose(1);
 
     ResponseParser parser;
     std::string data;
@@ -41,7 +41,7 @@ TEST_CASE("We don't leak when we receive an invalid message") {
 
 TEST_CASE("We don't leak when we receive a UPGRADE") {
 
-    //measurement_kit::set_verbose(1);
+    // measurement_kit::set_verbose(1);
 
     ResponseParser parser;
     std::string data;
@@ -83,27 +83,23 @@ TEST_CASE("The HTTP response parser works as expected") {
     data += "\r\n";
     data += "1234567";
 
-    parser.on_headers_complete([](unsigned short major, unsigned short minor,
-            unsigned int code, std::string&& reason, std::map<std::string,
-            std::string>&& headers) {
-        REQUIRE(major == 1);
-        REQUIRE(minor == 1);
-        REQUIRE(code == 200);
-        REQUIRE(reason == "Ok");
-        REQUIRE(headers.size() == 3);
-        REQUIRE(headers.at("Content-Type") == "text/plain");
-        REQUIRE(headers.at("Content-Length") == "7");
-        REQUIRE(headers.at("Server") == "Antani/1.0.0.0");
-    });
+    parser.on_headers_complete(
+        [](unsigned short major, unsigned short minor, unsigned int code,
+           std::string &&reason, std::map<std::string, std::string> &&headers) {
+            REQUIRE(major == 1);
+            REQUIRE(minor == 1);
+            REQUIRE(code == 200);
+            REQUIRE(reason == "Ok");
+            REQUIRE(headers.size() == 3);
+            REQUIRE(headers.at("Content-Type") == "text/plain");
+            REQUIRE(headers.at("Content-Length") == "7");
+            REQUIRE(headers.at("Server") == "Antani/1.0.0.0");
+        });
 
     body = "";
-    parser.on_body([&](std::string s) {
-        body += s;
-    });
+    parser.on_body([&](std::string s) { body += s; });
 
-    parser.on_end([&](void) {
-        REQUIRE(body == "1234567");
-    });
+    parser.on_end([&](void) { REQUIRE(body == "1234567"); });
 
     for (auto c : data) {
         measurement_kit::debug("%c\n", c);
@@ -125,27 +121,23 @@ TEST_CASE("The HTTP response parser works as expected") {
     data += "3\r\nabc\r\n";
     data += "0\r\nX-Trailer: trailer\r\n\r\n";
 
-    parser.on_headers_complete([](unsigned short major, unsigned short minor,
-            unsigned int code, std::string&& reason, std::map<std::string,
-            std::string>&& headers) {
-        REQUIRE(major == 1);
-        REQUIRE(minor == 1);
-        REQUIRE(code == 202);
-        REQUIRE(reason == "Accepted");
-        REQUIRE(headers.size() == 3);
-        REQUIRE(headers.at("Content-Type") == "text/html");
-        REQUIRE(headers.at("Transfer-Encoding") == "chunked");
-        REQUIRE(headers.at("Server") == "Antani/2.0.0.0");
-    });
+    parser.on_headers_complete(
+        [](unsigned short major, unsigned short minor, unsigned int code,
+           std::string &&reason, std::map<std::string, std::string> &&headers) {
+            REQUIRE(major == 1);
+            REQUIRE(minor == 1);
+            REQUIRE(code == 202);
+            REQUIRE(reason == "Accepted");
+            REQUIRE(headers.size() == 3);
+            REQUIRE(headers.at("Content-Type") == "text/html");
+            REQUIRE(headers.at("Transfer-Encoding") == "chunked");
+            REQUIRE(headers.at("Server") == "Antani/2.0.0.0");
+        });
 
     body = "";
-    parser.on_body([&](std::string s) {
-        body += s;
-    });
+    parser.on_body([&](std::string s) { body += s; });
 
-    parser.on_end([&](void) {
-        REQUIRE(body == "abcabcabc");
-    });
+    parser.on_end([&](void) { REQUIRE(body == "abcabcabc"); });
 
     for (auto c : data) {
         measurement_kit::debug("%c\n", c);
@@ -165,7 +157,7 @@ TEST_CASE("Response parser eof() does not trigger immediate distruction") {
     // that it is parsing and should delay its destruction.
     //
 
-    //measurement_kit::set_verbose(1);
+    // measurement_kit::set_verbose(1);
 
     auto parser = new ResponseParser();
     std::string data;
@@ -180,8 +172,6 @@ TEST_CASE("Response parser eof() does not trigger immediate distruction") {
 
     parser->feed(data);
 
-    parser->on_end([parser]() {
-        delete parser;
-    });
+    parser->on_end([parser]() { delete parser; });
     parser->eof();
 }

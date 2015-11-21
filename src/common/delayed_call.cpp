@@ -13,7 +13,7 @@
 #include <new>
 #include <stdexcept>
 
-#include <sys/select.h>  // for struct timeval
+#include <sys/select.h> // for struct timeval
 
 namespace measurement_kit {
 namespace common {

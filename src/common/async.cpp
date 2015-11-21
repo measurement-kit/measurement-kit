@@ -31,12 +31,14 @@ struct AsyncState {
 class EvThreadSingleton {
   private:
     EvThreadSingleton() { evthread_use_pthreads(); }
+
   public:
     static void ensure() { static EvThreadSingleton singleton; }
 };
 
 // Syntactic sugar
-#define LOCKED(foo) {                                                          \
+#define LOCKED(foo)                                                            \
+    {                                                                          \
         std::lock_guard<std::mutex> lck(state->mutex);                         \
         foo                                                                    \
     }
@@ -122,12 +124,9 @@ void Async::loop_thread(Var<AsyncState> state) {
     debug("async: exiting from thread");
 }
 
-Async::Async() {
-    state.reset(new AsyncState());
-}
+Async::Async() { state.reset(new AsyncState()); }
 
-void Async::run_test(Var<NetTest> test,
-  std::function<void(Var<NetTest>)> fn) {
+void Async::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
     LOCKED({
         debug("async: test inserted");
         INSERT(state->ready, test.get(), test);
@@ -145,9 +144,7 @@ void Async::break_loop() {
     state->interrupted = true;
 }
 
-bool Async::empty() {
-    return !state->thread_running;
-}
+bool Async::empty() { return !state->thread_running; }
 
 } // namespace common
 } // namespace measurement_kit
