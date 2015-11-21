@@ -25,7 +25,7 @@ namespace net {
 
 using namespace measurement_kit::common;
 
-class TransportInterface {
+class Transport {
   public:
 
     virtual void emit_connect() = 0;
@@ -36,9 +36,9 @@ class TransportInterface {
 
     virtual void emit_error(Error) = 0;
 
-    TransportInterface() {}
+    Transport() {}
 
-    virtual ~TransportInterface() {}
+    virtual ~Transport() {}
 
     virtual void on_connect(std::function<void()>) = 0;
 
@@ -67,64 +67,7 @@ class TransportInterface {
     virtual std::string socks5_port() = 0;
 };
 
-class Transport : public TransportInterface {
-  public:
-
-    void emit_connect() override { t->emit_connect(); }
-
-    virtual void emit_data(Buffer &d) override { t->emit_data(d); }
-
-    virtual void emit_flush() override { t->emit_flush(); }
-
-    virtual void emit_error(Error e) override { t->emit_error(e); }
-
-    Transport() {}
-
-    Transport(TransportInterface *p) { t.reset(p); }
-
-    ~Transport() override {}
-
-    void on_connect(std::function<void()> f) override { t->on_connect(f); }
-
-    void on_ssl(std::function<void()> f) override { t->on_ssl(f); }
-
-    void on_data(std::function<void(Buffer &)> f) override { t->on_data(f); }
-
-    void on_flush(std::function<void()> f) override { t->on_flush(f); }
-
-    void on_error(std::function<void(Error)> f) override { t->on_error(f); }
-
-    void set_timeout(double d) override { t->set_timeout(d); }
-
-    void clear_timeout() override { t->clear_timeout(); }
-
-    void send(const void *p, size_t n) override { t->send(p, n); }
-
-    void send(std::string s) override { t->send(s); }
-
-    Transport &operator<<(std::string s) {
-        send(s);
-        return *this;
-    }
-
-    void send(Buffer &d) override { t->send(d); }
-
-    Transport &operator<<(Buffer &d) {
-        send(d);
-        return *this;
-    }
-
-    void close() override { t->close(); }
-
-    std::string socks5_address() override { return t->socks5_address(); }
-
-    std::string socks5_port() override { return t->socks5_port(); }
-
-  private:
-    Var<TransportInterface> t;
-};
-
-Transport connect(Settings, Logger * = Logger::global());
+Var<Transport> connect(Settings, Logger * = Logger::global());
 
 } // namespace net
 } // namespace measurement_kit

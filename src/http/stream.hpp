@@ -40,19 +40,19 @@ using namespace measurement_kit::net;
  * degree of control is needed over the HTTP protocol.
  */
 class Stream {
-    Transport connection;
+    Var<Transport> connection;
     Var<ResponseParser> parser;
     std::function<void(Error)> error_handler;
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
-        connection.on_data([&](Buffer &data) {
+        connection->on_data([&](Buffer &data) {
             parser->feed(data);
         });
         //
         // Intercept EOF error to implement body-ends-at-EOF semantic.
         //
-        connection.on_error([&](Error error) {
+        connection->on_error([&](Error error) {
             auto safe_eh = error_handler;
             if (error == EOFError()) {
                 parser->eof();
@@ -77,7 +77,7 @@ public:
         return parser;
     }
 
-    Transport get_transport() {
+    Var<Transport> get_transport() {
         return connection;
     }
 
@@ -130,7 +130,7 @@ public:
         // error if needed, we'll deal with body-terminated-by-EOF
         // semantic when we know we are actually connected.
         //
-        connection.on_error([&](Error error) {
+        connection->on_error([&](Error error) {
             if (error_handler) {
                 error_handler(error);
             }
@@ -145,7 +145,7 @@ public:
      */
     void on_connect(std::function<void(void)>&& fn) {
         connect_handler = fn;
-        connection.on_connect([this]() {
+        connection->on_connect([this]() {
             connection_ready();
         });
     }
@@ -154,7 +154,7 @@ public:
      * \brief Close this stream.
      */
     void close() {
-        connection.close();
+        connection->close();
     }
 
     /*!
@@ -175,7 +175,7 @@ public:
      * \returns A reference to this stream for chaining operations.
      */
     Stream& operator<<(std::string data) {
-        connection.send(data);
+        connection->send(data);
         return *this;
     }
 
@@ -186,7 +186,7 @@ public:
      *         after some data was already passed to the kernel.
      */
     void on_flush(std::function<void(void)>&& fn) {
-        connection.on_flush(std::move(fn));
+        connection->on_flush(std::move(fn));
     }
 
     //
@@ -245,15 +245,15 @@ public:
      * \param time The timeout in seconds.
      */
     void set_timeout(double timeo) {
-        connection.set_timeout(timeo);
+        connection->set_timeout(timeo);
     }
 
     std::string socks5_address() {
-        return connection.socks5_address();
+        return connection->socks5_address();
     }
 
     std::string socks5_port() {
-        return connection.socks5_port();
+        return connection->socks5_port();
     }
 };
 

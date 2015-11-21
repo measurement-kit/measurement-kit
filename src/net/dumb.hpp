@@ -17,7 +17,7 @@ namespace net {
 
 using namespace measurement_kit::common;
 
-class Dumb : public TransportInterface {
+class Dumb : public Transport {
 private:
     std::function<void()> do_connect = []() {};
     std::function<void(Buffer &)> do_data = [](Buffer &) {};

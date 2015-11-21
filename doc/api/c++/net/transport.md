@@ -8,45 +8,46 @@ MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
 ```C++
 #include <measurement_kit/net.hpp>
 
-using namespace measurement_kit::net;
+using namespace measurement_kit::common;
+using namespace measurement_kit;
 
-Transport transport = measurement_kit::net::connect({
+Var<net::Transport> transport = net::connect({
     {"address", "www.google.com"},
     {"port", "80"}
 });
 
-transport.on_connect([]() {
+transport->on_connect([]() {
     /* connection established */
 });
-transport.on_data([](Buffer &buff) {
+transport->on_data([](net::Buffer &buff) {
     /* data received */
 });
-transport.on_flush([]() {
+transport->on_flush([]() {
     /* all queued data was sent */
 });
-transport.on_error([](common::Error error) {
+transport->on_error([](Error error) {
     /* handle error that occurred */
 });
 
-transport.set_timeout(7.14);
-transport.clear_timeout();
+transport->set_timeout(7.14);
+transport->clear_timeout();
 
-Buffer buff;
-transport.send("sassaroli", 5);
-transport.send(std::string("sassaroli"));
-transport.send(buff);
+net::Buffer buff;
+transport->send("sassaroli", 5);
+transport->send(std::string("sassaroli"));
+transport->send(buff);
 
-transport.close();
+transport->close();
 
-std::string s = transport.socks5_address();  // empty string if no proxy
-std::string s = transport.socks5_port();     // ditto
+std::string s = transport->socks5_address();  // empty string if no proxy
+std::string s = transport->socks5_port();     // ditto
 
 /* event emitters: */
-Buffer buffer;
-transport.emit_connect();
-transport.emit_data(buffer);
-transport.emit_flush();
-transport.emit_error(EOFError());
+net::Buffer buffer;
+transport->emit_connect();
+transport->emit_data(buffer);
+transport->emit_flush();
+transport->emit_error(net::EOFError());
 ```
 
 # DESCRIPTION
