@@ -13,6 +13,8 @@
 
 #include <measurement_kit/net.hpp>
 
+#include "src/net/connection.hpp"
+
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;
 

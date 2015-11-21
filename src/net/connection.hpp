@@ -14,7 +14,7 @@
 #include <measurement_kit/common/utils.hpp>
 
 #include <measurement_kit/net/buffer.hpp>
-#include <measurement_kit/net/dumb.hpp>
+#include "src/net/dumb.hpp"
 #include <measurement_kit/net/transport.hpp>
 
 #include "src/dns/query.hpp"

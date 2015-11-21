@@ -2,9 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/net/connection.hpp>
-#include <measurement_kit/net/dumb.hpp>
-#include <measurement_kit/net/socks5.hpp>
+#include "src/net/connection.hpp"
+#include "src/net/dumb.hpp"
+#include "src/net/socks5.hpp"
 #include <measurement_kit/net/transport.hpp>
 
 namespace measurement_kit {

@@ -8,8 +8,8 @@
 #include <measurement_kit/common/logger.hpp>
 
 #include <measurement_kit/net/buffer.hpp>
-#include <measurement_kit/net/connection.hpp>
-#include <measurement_kit/net/dumb.hpp>
+#include "src/net/connection.hpp"
+#include "src/net/dumb.hpp"
 #include <measurement_kit/net/transport.hpp>
 
 namespace measurement_kit {
