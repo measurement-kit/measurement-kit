@@ -8,7 +8,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <measurement_kit/report/base_reporter.hpp>
+#include "src/report/base_reporter.hpp"
 
 namespace measurement_kit {
 namespace report {

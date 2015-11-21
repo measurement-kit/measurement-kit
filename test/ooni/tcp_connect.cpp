@@ -6,7 +6,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ooni.hpp>
+#include "src/ooni/tcp_connect.hpp"
 
 using namespace measurement_kit::common;
 using namespace measurement_kit::ooni;

@@ -7,7 +7,7 @@
 
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/http/client.hpp>
-#include <measurement_kit/ooni/net_test.hpp>
+#include "src/ooni/net_test.hpp"
 
 namespace measurement_kit {
 namespace ooni {

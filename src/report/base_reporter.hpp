@@ -8,7 +8,7 @@
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/version.hpp>
-#include <measurement_kit/report/entry.hpp>
+#include "src/report/entry.hpp"
 
 namespace measurement_kit {
 namespace report {

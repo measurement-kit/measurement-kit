@@ -6,12 +6,12 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ooni.hpp>
+#include "src/ooni/net_test.hpp"
 
 using namespace measurement_kit::ooni;
 
 TEST_CASE("The NetTest should callback when it has finished running") {
-  ooni::NetTest test("");
+  measurement_kit::ooni::NetTest test("");
   test.begin([&](){
     test.end([](){
       measurement_kit::break_loop();

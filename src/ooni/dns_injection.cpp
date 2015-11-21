@@ -2,7 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/ooni/dns_injection.hpp>
+#include <measurement_kit/ooni/dns_injection_test.hpp>
+
+#include "src/ooni/dns_injection.hpp"
 #include <sys/stat.h>
 
 namespace measurement_kit {
@@ -26,6 +28,13 @@ DNSInjection::main(std::string input, Settings options,
         }
         have_entry(entry);
     });
+}
+
+Var<common::NetTest> DnsInjectionTest::create_test() {
+    common::NetTest *test = new DNSInjection(input_path, settings);
+    if (is_verbose) test->set_verbose(1);
+    if (log_handler) test->on_log(log_handler);
+    return Var<common::NetTest>(test);
 }
 
 }}

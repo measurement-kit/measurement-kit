@@ -6,7 +6,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ctime>
-#include <measurement_kit/report.hpp>
+#include "src/report/file_reporter.hpp"
 
 using namespace measurement_kit::report;
 

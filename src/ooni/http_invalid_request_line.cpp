@@ -2,7 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/ooni/http_invalid_request_line.hpp>
+#include <measurement_kit/ooni/http_invalid_request_line_test.hpp>
+
+#include "src/ooni/http_invalid_request_line.hpp"
 #include <sys/stat.h>
 
 namespace measurement_kit {
@@ -54,6 +56,13 @@ HTTPInvalidRequestLine::main(Settings options,
         {"method", "GET"},
         {"http_version", "HTTP/" + measurement_kit::random_str(3)},
     }, headers, "", handle_response);
+}
+
+Var<common::NetTest> HttpInvalidRequestLineTest::create_test() {
+    common::NetTest *test = new HTTPInvalidRequestLine(settings);
+    if (is_verbose) test->set_verbose(1);
+    if (log_handler) test->on_log(log_handler);
+    return Var<common::NetTest>(test);
 }
 
 }}

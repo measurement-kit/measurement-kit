@@ -5,8 +5,9 @@
 #ifndef MEASUREMENT_KIT_REPORT_HPP
 #define MEASUREMENT_KIT_REPORT_HPP
 
-#include <measurement_kit/report/base_reporter.hpp>
-#include <measurement_kit/report/entry.hpp>
-#include <measurement_kit/report/file_reporter.hpp>
+//
+// For now this header is empty, but installed. From here we will pull
+// other headers composing our report library, when it will be ready
+//
 
 #endif

@@ -6,9 +6,9 @@
 #define MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
 
 #include <measurement_kit/dns.hpp>
-#include <measurement_kit/ooni/errors.hpp>
-#include <measurement_kit/ooni/net_test.hpp>
-#include <measurement_kit/ooni/dns_test.hpp>
+#include "src/ooni/errors.hpp"
+#include "src/ooni/net_test.hpp"
+#include "src/ooni/dns_test.hpp"
 #include <sys/stat.h>
 
 namespace measurement_kit {
