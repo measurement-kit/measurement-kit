@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/report/file_reporter.hpp>
+#include "src/report/file_reporter.hpp"
 
 namespace measurement_kit {
 namespace report {
