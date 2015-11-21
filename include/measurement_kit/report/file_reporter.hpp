@@ -17,7 +17,7 @@ class FileReporter : public BaseReporter {
   public:
     std::string filename;
     void open() override;
-    void writeEntry(ReportEntry &entry) override;
+    void writeEntry(Entry &entry) override;
     void close() override;
 
   private:

@@ -6,7 +6,7 @@
 #define MEASUREMENT_KIT_REPORT_HPP
 
 #include <measurement_kit/report/base_reporter.hpp>
-#include <measurement_kit/report/report_entry.hpp>
+#include <measurement_kit/report/entry.hpp>
 #include <measurement_kit/report/file_reporter.hpp>
 
 #endif

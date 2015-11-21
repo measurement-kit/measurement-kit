@@ -24,12 +24,12 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
 
     FileReporter reporter;
     reporter.test_name = "example_test";
-    reporter.test_version = "0.0.1";
+    reporter.test_version = MEASUREMENT_KIT_VERSION;
     reporter.filename = "example_test_report.yaml";
     reporter.options = options;
     reporter.start_time = time(0);
 
-    auto entry = ReportEntry(input);
+    auto entry = Entry(input);
     entry["antani"] = "fuffa";
     reporter.open();
     reporter.writeEntry(entry);
@@ -43,7 +43,7 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
     REQUIRE(entries[0]["probe_ip"].as<std::string>() == reporter.probe_ip);
 
     REQUIRE(entries[0]["software_name"].as<std::string>() == "measurement_kit");
-    REQUIRE(entries[0]["software_version"].as<std::string>() == "0.0.1");
+    REQUIRE(entries[0]["software_version"].as<std::string>() == MEASUREMENT_KIT_VERSION);
     REQUIRE(entries[0]["data_format_version"].as<std::string>() == "0.1");
       
     // Check that the first report entry is correct.

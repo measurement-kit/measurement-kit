@@ -20,7 +20,7 @@ class TCPConnect : public TCPTest {
 
     TCPClient client;
 
-    std::function<void(ReportEntry)> have_entry;
+    std::function<void(report::Entry)> have_entry;
 
 public:
     TCPConnect(std::string input_filepath_, Settings options_) :
@@ -39,7 +39,7 @@ public:
     };
 
     void main(std::string input, Settings options,
-              std::function<void(ReportEntry)>&& cb);
+              std::function<void(report::Entry)>&& cb);
 };
 
 }}

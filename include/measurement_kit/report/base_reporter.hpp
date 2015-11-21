@@ -8,7 +8,7 @@
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/version.hpp>
-#include <measurement_kit/report/report_entry.hpp>
+#include <measurement_kit/report/entry.hpp>
 
 namespace measurement_kit {
 namespace report {
@@ -34,7 +34,7 @@ class BaseReporter {
 
     virtual void open();
 
-    virtual void writeEntry(ReportEntry &entry);
+    virtual void writeEntry(Entry &entry);
 
     virtual void close();
 

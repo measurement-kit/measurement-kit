@@ -9,5 +9,5 @@ libmeasurement_kit_la_LIBADD += src/report/libreport.la
 reportincludedir = $(includedir)/measurement_kit/report
 reportinclude_HEADERS = \
     include/measurement_kit/report/base_reporter.hpp \
-    include/measurement_kit/report/report_entry.hpp \
+    include/measurement_kit/report/entry.hpp \
     include/measurement_kit/report/file_reporter.hpp

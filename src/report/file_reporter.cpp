@@ -17,7 +17,7 @@ void FileReporter::open() {
     }
 }
 
-void FileReporter::writeEntry(ReportEntry &entry) {
+void FileReporter::writeEntry(Entry &entry) {
     BaseReporter::writeEntry(entry);
     try {
         file << entry.str();

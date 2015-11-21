@@ -96,14 +96,14 @@ protected:
   virtual void teardown();
 
   virtual void main(Settings options,
-                    std::function<void(ReportEntry)>&& func);
+                    std::function<void(report::Entry)>&& func);
 
 
   virtual void main(std::string input, Settings options,
-                    std::function<void(ReportEntry)>&& func);
+                    std::function<void(report::Entry)>&& func);
 
 public:
-  ReportEntry entry;
+  report::Entry entry;
   Settings options;
   InputGenerator* input = nullptr;
 

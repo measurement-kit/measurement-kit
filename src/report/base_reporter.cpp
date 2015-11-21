@@ -28,7 +28,7 @@ std::string BaseReporter::getHeader() {
 
 void BaseReporter::open() { openned = true; }
 
-void BaseReporter::writeEntry(ReportEntry &) {
+void BaseReporter::writeEntry(Entry &) {
     if (!openned) {
         throw new std::runtime_error("The report is not open.");
     }
