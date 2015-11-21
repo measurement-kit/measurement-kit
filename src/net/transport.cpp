@@ -2,9 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/net/connection.hpp>
-#include <measurement_kit/net/dumb.hpp>
-#include <measurement_kit/net/socks5.hpp>
+#include "src/net/connection.hpp"
+#include "src/net/dumb.hpp"
+#include "src/net/socks5.hpp"
 #include <measurement_kit/net/transport.hpp>
 
 namespace measurement_kit {
@@ -12,10 +12,10 @@ namespace net {
 
 using namespace measurement_kit::common;
 
-static Transport connect_internal(Settings settings, Logger *logger) {
+static Var<Transport> connect_internal(Settings settings, Logger *logger) {
 
     if (settings.find("dumb_transport") != settings.end()) {
-        return Transport(new Dumb(logger));
+        return Var<Transport>(new Dumb(logger));
     }
 
     if (settings.find("family") == settings.end()) {
@@ -39,15 +39,15 @@ static Transport connect_internal(Settings settings, Logger *logger) {
         auto port = proxy.substr(pos + 1);
         settings["socks5_address"] = address;
         settings["socks5_port"] = port;
-        return Transport(new Socks5(settings, logger));
+        return Var<Transport>(new Socks5(settings, logger));
     }
 
-    return Transport(new Connection(settings["family"].c_str(),
+    return Var<Transport>(new Connection(settings["family"].c_str(),
                      settings["address"].c_str(), settings["port"].c_str(),
                      logger));
 }
 
-Transport connect(Settings settings, Logger *lp) {
+Var<Transport> connect(Settings settings, Logger *lp) {
     double timeo = 30.0;
     if (settings.find("timeout") != settings.end()) {
         size_t invalid;
@@ -58,7 +58,7 @@ Transport connect(Settings settings, Logger *lp) {
     }
     auto transport = connect_internal(settings, lp);
     if (timeo >= 0.0) {
-        transport.set_timeout(timeo);
+        transport->set_timeout(timeo);
     }
     return transport;
 }

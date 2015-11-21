@@ -6,7 +6,6 @@
 #define MEASUREMENT_KIT_OONI_TCP_TEST_HPP
 
 #include <measurement_kit/net/buffer.hpp>
-#include <measurement_kit/net/connection.hpp>
 
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/settings.hpp>
@@ -15,6 +14,7 @@
 #include <measurement_kit/ooni/net_test.hpp>
 
 namespace measurement_kit {
+namespace net { class Connection; }
 namespace ooni {
 
 using namespace measurement_kit::common;
