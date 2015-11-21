@@ -67,11 +67,11 @@ NetTest::run_next_measurement(const std::function<void()>&& cb)
   logger.debug("net_test: running next measurement");
   input->next([=](std::string next_input) {
       logger.debug("net_test: creating entry");
-      entry = ReportEntry(next_input);
+      entry = report::Entry(next_input);
       logger.debug("net_test: calling setup");
       setup();
       logger.debug("net_test: running with input %s", next_input.c_str());
-      main(next_input, options, [=](ReportEntry entry) {
+      main(next_input, options, [=](report::Entry entry) {
           logger.debug("net_test: tearing down");
           teardown();
           file_report.writeEntry(entry);
@@ -100,10 +100,10 @@ NetTest::begin(std::function<void()> cb)
     run_next_measurement(std::move(cb));
   } else {
     logger.debug("net_test: no input file");
-    entry = ReportEntry();
+    entry = report::Entry();
     logger.debug("net_test: calling setup");
     setup();
-    main(options, [=](ReportEntry entry) {
+    main(options, [=](report::Entry entry) {
       logger.debug("net_test: tearing down");
       teardown();
       file_report.writeEntry(entry);
@@ -156,18 +156,18 @@ NetTest::teardown() {
 
 void
 NetTest::main(Settings,
-              std::function<void(ReportEntry)>&& cb) {
+              std::function<void(report::Entry)>&& cb) {
   delayed_call = DelayedCall(1.25, [=](void) {
-    ReportEntry entry;
+    report::Entry entry;
     cb(entry);
   });
 }
 
 void
 NetTest::main(std::string, Settings,
-              std::function<void(ReportEntry)>&& cb) {
+              std::function<void(report::Entry)>&& cb) {
   delayed_call = DelayedCall(1.25, [=](void) {
-    ReportEntry entry;
+    report::Entry entry;
     cb(entry);
   });
 }

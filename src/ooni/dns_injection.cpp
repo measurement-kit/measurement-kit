@@ -13,7 +13,7 @@ using namespace measurement_kit::dns;
 
 void
 DNSInjection::main(std::string input, Settings options,
-                   std::function<void(ReportEntry)>&& cb)
+                   std::function<void(report::Entry)>&& cb)
 {
     entry["injected"] = NULL;
     have_entry = cb;

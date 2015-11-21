@@ -19,5 +19,6 @@
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/utils.hpp>
 #include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common/version.hpp>
 
 #endif

@@ -2,21 +2,21 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/report/base.hpp>
+#include <measurement_kit/report/base_reporter.hpp>
 
 namespace measurement_kit {
 namespace report {
 
-std::string ReporterBase::getHeader() {
+std::string BaseReporter::getHeader() {
     std::stringstream output;
     YAML::Node header;
     header["test_name"] = test_name;
     header["test_version"] = test_version;
     header["start_time"] = start_time;
-    // this->header["options"] = options;
+    // header["options"] = options;
     header["probe_ip"] = probe_ip;
-    // this->header["probe_asn"] = probe_ip;
-    // this->header["probe_cc"] = probe_ip;
+    // header["probe_asn"] = probe_ip;
+    // header["probe_cc"] = probe_ip;
     header["software_name"] = software_name;
     header["software_version"] = software_version;
     header["data_format_version"] = data_format_version;
@@ -26,24 +26,21 @@ std::string ReporterBase::getHeader() {
     return output.str();
 }
 
-void ReporterBase::open() {
-  openned = true;
+void BaseReporter::open() { openned = true; }
+
+void BaseReporter::writeEntry(Entry &) {
+    if (!openned) {
+        throw new std::runtime_error("The report is not open.");
+    }
+    if (closed) {
+        throw new std::runtime_error("The report has already been closed.");
+    }
 }
 
-void ReporterBase::writeEntry(ReportEntry& entry) {
-  if (!openned) {
-    throw new std::runtime_error("The report is not open.");
-  }
-  if (closed) {
-    throw new std::runtime_error("The report has already been closed.");
-  }
-  // This is here to silence compiler warnings
-  (void) entry;
+void BaseReporter::close() {
+    openned = false;
+    closed = true;
 }
 
-void ReporterBase::close() {
-  openned = false;
-  closed = true;
-}
-
-}}
+} // namespace report
+} // namespace measurement_kit

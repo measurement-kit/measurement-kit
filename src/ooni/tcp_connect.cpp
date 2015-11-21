@@ -11,7 +11,7 @@ using namespace measurement_kit::common;
 
 void
 TCPConnect::main(std::string input, Settings options,
-                 std::function<void(ReportEntry)>&& cb)
+                 std::function<void(report::Entry)>&& cb)
 {
     options["host"] = input;
     have_entry = cb;

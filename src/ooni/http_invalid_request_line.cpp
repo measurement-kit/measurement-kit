@@ -12,7 +12,7 @@ using namespace measurement_kit::common;
 
 void
 HTTPInvalidRequestLine::main(Settings options,
-                             std::function<void(ReportEntry)>&& cb)
+                             std::function<void(report::Entry)>&& cb)
 {
     
     callback = cb;

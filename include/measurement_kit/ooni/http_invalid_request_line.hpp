@@ -22,7 +22,7 @@ class HTTPInvalidRequestLine: public HTTPTest {
 
     int tests_run = 0;
 
-    std::function<void(ReportEntry)> callback;
+    std::function<void(report::Entry)> callback;
 
 public:
     HTTPInvalidRequestLine(Settings options_) :
@@ -32,7 +32,7 @@ public:
     };
 
     void main(Settings options,
-              std::function<void(ReportEntry)>&& cb);
+              std::function<void(report::Entry)>&& cb);
 };
 
 }}

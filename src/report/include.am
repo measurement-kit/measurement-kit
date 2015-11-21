@@ -1,13 +1,13 @@
 noinst_LTLIBRARIES += src/report/libreport.la
 
 src_report_libreport_la_SOURCES = \
-	src/report/base.cpp \
-	src/report/file.cpp
+	src/report/base_reporter.cpp \
+	src/report/file_reporter.cpp
 
 libmeasurement_kit_la_LIBADD += src/report/libreport.la
 
 reportincludedir = $(includedir)/measurement_kit/report
 reportinclude_HEADERS = \
-    include/measurement_kit/report/base.hpp \
+    include/measurement_kit/report/base_reporter.hpp \
     include/measurement_kit/report/entry.hpp \
-    include/measurement_kit/report/file.hpp
+    include/measurement_kit/report/file_reporter.hpp

@@ -20,7 +20,7 @@ using namespace measurement_kit::report;
 class DNSInjection : public DNSTest {
     using DNSTest::DNSTest;
 
-    std::function<void(ReportEntry)> have_entry;
+    std::function<void(report::Entry)> have_entry;
 
 public:
     DNSInjection(std::string input_filepath_, Settings options_) :
@@ -39,7 +39,7 @@ public:
     };
 
     void main(std::string input, Settings options,
-              std::function<void(ReportEntry)>&& cb);
+              std::function<void(report::Entry)>&& cb);
 };
 
 }}
