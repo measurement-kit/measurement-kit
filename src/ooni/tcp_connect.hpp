@@ -5,8 +5,8 @@
 #ifndef MEASUREMENT_KIT_OONI_TCP_CONNECT_HPP
 #define MEASUREMENT_KIT_OONI_TCP_CONNECT_HPP
 
-#include <measurement_kit/ooni/errors.hpp>
-#include <measurement_kit/ooni/tcp_test.hpp>
+#include "src/ooni/errors.hpp"
+#include "src/ooni/tcp_test.hpp"
 #include <sys/stat.h>
 
 namespace measurement_kit {

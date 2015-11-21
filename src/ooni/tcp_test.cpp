@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/ooni/tcp_test.hpp>
+#include "src/ooni/tcp_test.hpp"
 #include "src/net/connection.hpp"
 
 namespace measurement_kit {

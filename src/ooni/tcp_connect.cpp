@@ -2,7 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/ooni/tcp_connect.hpp>
+#include <measurement_kit/ooni/tcp_connect_test.hpp>
+
+#include "src/ooni/tcp_connect.hpp"
 
 namespace measurement_kit {
 namespace ooni {
@@ -19,6 +21,10 @@ TCPConnect::main(std::string input, Settings options,
         logger.debug("tcp_connect: Got response to TCP connect test");
         have_entry(entry);
     });
+}
+
+Var<common::NetTest> TcpConnectTest::create_test() {
+    return Var<common::NetTest>(new TCPConnect(input_file_path, settings));
 }
 
 }}

@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include <measurement_kit/dns/error.hpp>
-#include <measurement_kit/ooni/dns_test.hpp>
+#include "src/ooni/dns_test.hpp"
 
 namespace measurement_kit {
 namespace ooni {

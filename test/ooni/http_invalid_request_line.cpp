@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <measurement_kit/ooni.hpp>
+#include "src/ooni/http_invalid_request_line.hpp"
 #include <measurement_kit/common.hpp>
 
 using namespace measurement_kit::common;
