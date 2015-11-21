@@ -1,3 +1,21 @@
+# MeasurementKit 0.1.0-alpha.1 [2015-11-21]
+* Project name changed to MeasurementKit
+* Most code has been rewritten using C++11
+* Cleanup the API in:
+    * common
+    * dns
+    * http
+    * net
+    * ooni
+    * report
+    * traceroute
+* Implemented OONI tests:
+    * dns injection
+    * http invalid request line
+    * tcp connect
+* Many more changes with respect to LibNeubot (compared to that
+  project, MeasurementKit is basically another project)
+
 # LibNeubot 3.0.0 [2014-05-04]
 * Rewrite NeubotPollable now that I know that, in C++, a structure can
   inherit from a class. As a result, the FooState structure is now gone
@@ -63,5 +81,5 @@
 * Add easier-to-use libneubot1.py wrappers
 * Add neubot.hh, wrappers for C++
 
-LibNeubot 0.1.0 [2013-12-12]
+# LibNeubot 0.1.0 [2013-12-12]
 * Initial release
