@@ -42,8 +42,6 @@ class Transport {
 
     virtual void on_connect(std::function<void()>) = 0;
 
-    virtual void on_ssl(std::function<void()>) = 0;
-
     virtual void on_data(std::function<void(Buffer)>) = 0;
 
     virtual void on_flush(std::function<void()>) = 0;

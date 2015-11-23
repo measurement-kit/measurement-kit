@@ -69,11 +69,6 @@ class Dumb : public Transport {
         do_connect = fn;
     }
 
-    void on_ssl(std::function<void()>) override {
-        logger->debug("dumb: register 'ssl' handler");
-        // currently not implemented
-    }
-
     virtual void on_data(std::function<void(Buffer)> fn) override {
         logger->debug("dumb: register 'data' handler");
         do_data = fn;
