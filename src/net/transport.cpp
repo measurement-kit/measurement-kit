@@ -47,7 +47,7 @@ static Var<Transport> connect_internal(Settings settings, Logger *logger) {
                                          settings["port"].c_str(), logger));
 }
 
-Var<Transport> connect(Settings settings, Logger *lp) {
+Maybe<Var<Transport>> connect(Settings settings, Logger *lp) {
     double timeo = 30.0;
     if (settings.find("timeout") != settings.end()) {
         size_t invalid;
@@ -56,11 +56,12 @@ Var<Transport> connect(Settings settings, Logger *lp) {
             throw std::runtime_error("invalid argument");
         }
     }
-    auto transport = connect_internal(settings, lp);
+    Var<Transport> transport = connect_internal(settings, lp);
     if (timeo >= 0.0) {
         transport->set_timeout(timeo);
     }
-    return transport;
+    return Maybe<Var<Transport>>(transport);
 }
-}
-}
+
+} // namespace net
+} // namespace measurement_kit

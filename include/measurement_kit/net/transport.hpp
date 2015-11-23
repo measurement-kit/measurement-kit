@@ -15,6 +15,7 @@
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/maybe.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/var.hpp>
 
@@ -66,7 +67,7 @@ class Transport {
     virtual std::string socks5_port() = 0;
 };
 
-Var<Transport> connect(Settings, Logger * = Logger::global());
+Maybe<Var<Transport>> connect(Settings, Logger * = Logger::global());
 
 } // namespace net
 } // namespace measurement_kit
