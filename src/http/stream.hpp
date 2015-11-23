@@ -46,7 +46,7 @@ class Stream {
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
-        connection->on_data([&](Buffer &data) { parser->feed(data); });
+        connection->on_data([&](Buffer data) { parser->feed(data); });
         //
         // Intercept EOF error to implement body-ends-at-EOF semantic.
         //

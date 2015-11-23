@@ -74,7 +74,7 @@ class Connection : public Dumb {
 
     ~Connection() override;
 
-    void on_data(std::function<void(Buffer &)> fn) override {
+    void on_data(std::function<void(Buffer)> fn) override {
         Dumb::on_data(fn);
         enable_read();
     };
@@ -106,7 +106,7 @@ class Connection : public Dumb {
 
     void send(std::string data) override { send(data.c_str(), data.length()); }
 
-    void send(Buffer &data) override { data >> bufferevent_get_output(bev); }
+    void send(Buffer data) override { data >> bufferevent_get_output(bev); }
 
     void enable_read() {
         if (bufferevent_enable(this->bev, EV_READ) != 0) {

@@ -20,7 +20,7 @@ using namespace measurement_kit::common;
 class Dumb : public Transport {
   private:
     std::function<void()> do_connect = []() {};
-    std::function<void(Buffer &)> do_data = [](Buffer &) {};
+    std::function<void(Buffer)> do_data = [](Buffer) {};
     std::function<void()> do_flush = []() {};
     std::function<void(Error)> do_error = [](Error) {};
 
@@ -36,7 +36,7 @@ class Dumb : public Transport {
         fn();
     }
 
-    virtual void emit_data(Buffer &data) override {
+    virtual void emit_data(Buffer data) override {
         logger->debug("dumb: emit 'data' event");
         // With GNU C++ library, if a std::function sets itself, the
         // associated context is free() leading to segfault
@@ -74,7 +74,7 @@ class Dumb : public Transport {
         // currently not implemented
     }
 
-    virtual void on_data(std::function<void(Buffer &)> fn) override {
+    virtual void on_data(std::function<void(Buffer)> fn) override {
         logger->debug("dumb: register 'data' handler");
         do_data = fn;
     }
@@ -101,7 +101,7 @@ class Dumb : public Transport {
 
     void send(std::string) override { logger->debug("dumb: send string"); }
 
-    void send(Buffer &) override { logger->debug("dumb: send buffer"); }
+    void send(Buffer) override { logger->debug("dumb: send buffer"); }
 
     void close() override { logger->debug("dumb: close"); }
 
@@ -109,6 +109,7 @@ class Dumb : public Transport {
 
     std::string socks5_port() override { return ""; }
 };
-}
-}
+
+} // namespace net
+} // namespace measurement_kit
 #endif

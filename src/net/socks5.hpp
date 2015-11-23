@@ -39,7 +39,7 @@ class Socks5 : public Dumb {
 
     void send(std::string data) override { conn.send(data); }
 
-    void send(Buffer &data) override { conn.send(data); }
+    void send(Buffer data) override { conn.send(data); }
 
     void close() override {
         isclosed = true;

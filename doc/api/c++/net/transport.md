@@ -19,7 +19,7 @@ Var<net::Transport> transport = net::connect({
 transport->on_connect([]() {
     /* connection established */
 });
-transport->on_data([](net::Buffer &buff) {
+transport->on_data([](net::Buffer buff) {
     /* data received */
 });
 transport->on_flush([]() {

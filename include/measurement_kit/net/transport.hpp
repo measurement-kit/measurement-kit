@@ -30,7 +30,7 @@ class Transport {
   public:
     virtual void emit_connect() = 0;
 
-    virtual void emit_data(Buffer &) = 0;
+    virtual void emit_data(Buffer) = 0;
 
     virtual void emit_flush() = 0;
 
@@ -44,7 +44,7 @@ class Transport {
 
     virtual void on_ssl(std::function<void()>) = 0;
 
-    virtual void on_data(std::function<void(Buffer &)>) = 0;
+    virtual void on_data(std::function<void(Buffer)>) = 0;
 
     virtual void on_flush(std::function<void()>) = 0;
 
@@ -58,7 +58,7 @@ class Transport {
 
     virtual void send(std::string) = 0;
 
-    virtual void send(Buffer &) = 0;
+    virtual void send(Buffer) = 0;
 
     virtual void close() = 0;
 

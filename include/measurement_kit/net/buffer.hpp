@@ -10,6 +10,7 @@
 #include <string.h>                             // for strlen
 #include <functional>                           // for function
 #include <measurement_kit/common/evbuffer.hpp>  // for Evbuffer
+#include <measurement_kit/common/var.hpp>       // for Evbuffer
 #include <stdexcept>                            // for runtime_error
 #include <string>                               // for string
 #include <tuple>                                // for tuple
@@ -21,7 +22,7 @@ namespace net {
 
 class Buffer {
   private:
-    common::Evbuffer evbuf;
+    common::Var<common::Evbuffer> evbuf{new common::Evbuffer};
 
   public:
     Buffer(evbuffer *b = nullptr);
@@ -39,12 +40,11 @@ class Buffer {
     Buffer &operator>>(evbuffer *dest);
 
     Buffer &operator<<(Buffer &source) {
-        *this << source.evbuf;
+        *this << *source.evbuf;
         return *this;
     }
-
     Buffer &operator>>(Buffer &source) {
-        *this >> source.evbuf;
+        *this >> *source.evbuf;
         return *this;
     }
 
