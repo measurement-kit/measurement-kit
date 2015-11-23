@@ -7,10 +7,6 @@
 
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/libs.hpp>
-
-#include <functional>
-#include <new>
-
 struct evbuffer;
 
 namespace measurement_kit {
@@ -19,23 +15,17 @@ namespace common {
 /// RAII wrapper for evbuffer
 class Evbuffer : public NonCopyable, public NonMovable {
   public:
-    /// Constructor with optional libevent pointer
+    /// Constructor with optional libs pointer
     Evbuffer(Libs *libs = Libs::global()) : libs_(libs) {}
 
     /// Destructor
-    ~Evbuffer() {
-        if (evbuf_ != nullptr) libs_->evbuffer_free(evbuf_);
-    }
+    ~Evbuffer();
 
     /// Cast to evbuffer-* operator
-    operator evbuffer *() {
-        if (evbuf_ == nullptr && (evbuf_ = libs_->evbuffer_new()) == nullptr)
-            throw std::bad_alloc();
-        return (evbuf_);
-    }
+    operator evbuffer *();
 
     /// Access the underlying libevent
-    Libs *get_libevent() { return (libs_); }
+    Libs *get_libs() { return (libs_); }
 
   private:
     Libs *libs_ = Libs::global();
