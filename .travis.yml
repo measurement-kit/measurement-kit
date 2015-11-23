@@ -5,8 +5,11 @@ before_install:
   - sudo apt-get install -qq -y --force-yes gcc-4.8 g++-4.8
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
   - sudo apt-get install tor
+  - pip install --user cpp-coveralls
 install: autoreconf -i
-script: ./configure && make -j2 V=0 && make -j2 check-am V=0
+script: ./configure CFLAGS=--coverage CPPFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage && make -j2 V=0 && make -j2 check-am V=0
+after_success:
+  - coveralls --exclude src/ext
 compiler:
   - clang
   - g++
