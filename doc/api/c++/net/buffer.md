@@ -33,7 +33,7 @@ buf >> another;  // The other way round
 size_t n = buf.length();
 
 // Walk over data and decide when to stop by returning false
-buf.foreach([](const char *p, size_t n) -> bool {
+buf.for_each([](const char *p, size_t n) -> bool {
     /* Do something with `p` and `n` */
     return true;
 });

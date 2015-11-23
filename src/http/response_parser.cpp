@@ -144,7 +144,7 @@ class ResponseParserImpl {
 
     void parse(void) {
         auto total = (size_t)0;
-        buffer.foreach ([&](const void *base, size_t count) {
+        buffer.for_each([&](const void *base, size_t count) {
             parsing = true;
             size_t n = http_parser_execute(&parser, &settings,
                                            (const char *)base, count);
