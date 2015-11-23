@@ -16,7 +16,7 @@ namespace common {
 class Evbuffer : public NonCopyable, public NonMovable {
   public:
     /// Constructor with optional libs pointer
-    Evbuffer(Libs *libs = Libs::global()) : libs_(libs) {}
+    Evbuffer(Libs *libs = get_global_libs()) : libs_(libs) {}
 
     /// Destructor
     ~Evbuffer();
@@ -28,7 +28,7 @@ class Evbuffer : public NonCopyable, public NonMovable {
     Libs *get_libs() { return (libs_); }
 
   private:
-    Libs *libs_ = Libs::global();
+    Libs *libs_ = get_global_libs();
     evbuffer *evbuf_ = nullptr;
 };
 

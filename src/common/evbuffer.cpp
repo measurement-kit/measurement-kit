@@ -6,7 +6,7 @@
 #include <measurement_kit/common/libs.hpp>  // for Libs
 #include <functional>                       // for function
 #include <new>                              // for bad_alloc
-
+#include "src/common/libs_impl.hpp"
 
 namespace measurement_kit {
 namespace common {

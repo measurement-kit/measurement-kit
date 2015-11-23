@@ -6,8 +6,9 @@
 #define MEASUREMENT_KIT_COMMON_DELAYED_CALL_HPP
 
 #include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/libs.hpp>
 #include <measurement_kit/common/var.hpp>
+
+#include "src/common/libs_impl.hpp"
 
 #include <functional>
 

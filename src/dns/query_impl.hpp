@@ -9,7 +9,7 @@
 #include <measurement_kit/dns/error.hpp>
 #include <measurement_kit/dns/response.hpp>
 
-#include <measurement_kit/common/libs.hpp>
+#include "src/common/libs_impl.hpp"
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/var.hpp>
 #include <measurement_kit/common/utils.hpp>

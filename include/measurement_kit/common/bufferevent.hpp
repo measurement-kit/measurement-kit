@@ -6,7 +6,7 @@
 #define MEASUREMENT_KIT_COMMON_BUFFEREVENT_HPP
 
 #include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/libs.hpp>
+#include "src/common/libs_impl.hpp"
 
 #include <event2/util.h> // for evutil_socket_t
 #include <functional>    // for function

@@ -36,7 +36,7 @@ class Resolver : public NonCopyable, public NonMovable {
 
   protected:
     Settings settings;
-    Libs *libs = Libs::global();
+    Libs *libs = get_global_libs();
     Poller *poller = measurement_kit::get_global_poller();
     evdns_base *base = nullptr;
     Logger *logger = Logger::global();
