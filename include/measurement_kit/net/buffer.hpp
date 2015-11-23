@@ -54,7 +54,7 @@ class Buffer {
      * The following is useful to feed a parser (e.g., the http-parser)
      * with all (or part of) the content of `this`.
      */
-    void foreach (std::function<bool(const void *, size_t)> fn);
+    void for_each(std::function<bool(const void *, size_t)> fn);
 
     /*
      * Discard(), read(), readline() and readn() are the common operations

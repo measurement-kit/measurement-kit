@@ -82,7 +82,7 @@ TEST_CASE("Foreach is robust to corner cases and errors", "[Buffer]") {
     Buffer buff;
 
     SECTION("No function is invoked when the buffer is empty") {
-        buff.foreach ([](const void *, size_t) {
+        buff.for_each([](const void *, size_t) {
             throw std::runtime_error("should not happen");
             return (false);
         });
@@ -126,7 +126,7 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
     SECTION("Make sure that we walk through all the extents") {
 
         buff << evbuf;
-        buff.foreach ([&](const void *p, size_t n) {
+        buff.for_each([&](const void *p, size_t n) {
             r.append((const char *)p, n);
             ++counter;
             return (true);
@@ -141,7 +141,7 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
     SECTION("Make sure that stopping early works as expected") {
 
         buff << evbuf;
-        buff.foreach ([&](const void *p, size_t n) {
+        buff.for_each([&](const void *p, size_t n) {
             r.append((const char *)p, n);
             ++counter;
             return (false);
@@ -388,7 +388,7 @@ TEST_CASE("Write works correctly", "[Buffer]") {
         REQUIRE(buff.length() == 1048576);
 
         auto zeroes = 0, total = 0;
-        buff.foreach ([&](const void *pp, size_t n) {
+        buff.for_each([&](const void *pp, size_t n) {
             const char *p = (const char *)pp;
             for (size_t i = 0; i < n; ++i) {
                 for (auto j = 0; j < 8; ++j) {

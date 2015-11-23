@@ -3,17 +3,17 @@
 // information on the copying conditions.
 
 #include <event2/buffer.h>
-#include <netinet/in.h>                         // for htonl, htons
-#include <stdint.h>                             // for uint16_t, uint32_t, etc
-#include <functional>                           // for function
-#include <measurement_kit/common/error.hpp>     // for NoError, Error
-#include <measurement_kit/common/evbuffer.hpp>  // for Evbuffer
-#include <measurement_kit/net/buffer.hpp>       // for Buffer
-#include <measurement_kit/net/error.hpp>        // for net specific errors
-#include <memory>                               // for unique_ptr
-#include <stdexcept>                            // for runtime_error
-#include <string>                               // for string, basic_string
-#include <tuple>                                // for make_tuple, tuple
+#include <netinet/in.h>                        // for htonl, htons
+#include <stdint.h>                            // for uint16_t, uint32_t, etc
+#include <functional>                          // for function
+#include <measurement_kit/common/error.hpp>    // for NoError, Error
+#include <measurement_kit/common/evbuffer.hpp> // for Evbuffer
+#include <measurement_kit/net/buffer.hpp>      // for Buffer
+#include <measurement_kit/net/error.hpp>       // for net specific errors
+#include <memory>                              // for unique_ptr
+#include <stdexcept>                           // for runtime_error
+#include <string>                              // for string, basic_string
+#include <tuple>                               // for make_tuple, tuple
 
 namespace measurement_kit {
 namespace net {
@@ -39,17 +39,16 @@ Buffer &Buffer::operator>>(evbuffer *dest) {
 
 size_t Buffer::length() { return evbuffer_get_length(evbuf); }
 
-void Buffer::foreach(std::function<bool(const void *, size_t)> fn) {
-    auto required_size = evbuffer_peek(evbuf, -1, nullptr, nullptr, 0);
-    if (required_size < 0) throw std::runtime_error("unexpected error");
-    if (required_size == 0) return;
+void Buffer::for_each(std::function<bool(const void *, size_t)> fn) {
+    auto required = evbuffer_peek(evbuf, -1, nullptr, nullptr, 0);
+    if (required < 0) throw std::runtime_error("unexpected error");
+    if (required == 0) return;
     std::unique_ptr<evbuffer_iovec[]> raii;
-    raii.reset(new evbuffer_iovec[required_size]); // Guarantee cleanup
+    raii.reset(new evbuffer_iovec[required]); // Guarantee cleanup
     auto iov = raii.get();
-    auto used = evbuffer_peek(evbuf, -1, nullptr, iov, required_size);
-    if (used != required_size) throw std::runtime_error("unexpected error");
-    for (auto i = 0; i < required_size &&
-                     fn(iov[i].iov_base, iov[i].iov_len); ++i) {
+    auto used = evbuffer_peek(evbuf, -1, nullptr, iov, required);
+    if (used != required) throw std::runtime_error("unexpected error");
+    for (auto i = 0; i < required && fn(iov[i].iov_base, iov[i].iov_len); ++i) {
         /* nothing */;
     }
 }
@@ -62,7 +61,7 @@ void Buffer::discard(size_t count) {
 std::string Buffer::readpeek(bool ispeek, size_t upto) {
     size_t nbytes = 0;
     std::string out;
-    foreach([&nbytes, &out, &upto](const void *p, size_t n) {
+    for_each([&nbytes, &out, &upto](const void *p, size_t n) {
         if (upto < n) n = upto;
         out.append((const char *)p, n);
         upto -= n;
@@ -70,8 +69,8 @@ std::string Buffer::readpeek(bool ispeek, size_t upto) {
         return (upto > 0);
     });
     /*
-     * We do this after foreach() because we are not supposed
-     * to modify the underlying `evbuf` during foreach().
+     * We do this after for_each() because we are not supposed
+     * to modify the underlying `evbuf` during for_each().
      */
     if (!ispeek) discard(nbytes);
     return out;
