@@ -5,13 +5,13 @@
 #ifndef MEASUREMENT_KIT_NET_CONNECTION_HPP
 #define MEASUREMENT_KIT_NET_CONNECTION_HPP
 
-#include <measurement_kit/common/bufferevent.hpp>
+#include "src/common/bufferevent.hpp"
 #include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/delayed_call.hpp>
+#include "src/common/delayed_call.hpp"
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/poller.hpp>
-#include <measurement_kit/common/utils.hpp>
+#include "src/common/utils.hpp"
 
 #include <measurement_kit/net/buffer.hpp>
 #include "src/net/dumb.hpp"

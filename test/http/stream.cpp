@@ -13,6 +13,7 @@
 #include <measurement_kit/http.hpp>
 
 #include "src/http/stream.hpp"
+#include "src/common/check_connectivity.hpp"
 
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;

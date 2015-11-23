@@ -3,10 +3,9 @@
 // information on the copying conditions.
 
 #include <measurement_kit/common/poller.hpp>
-#include <measurement_kit/common/libs.hpp>
 #include <measurement_kit/common/logger.hpp>
-
 #include <stdexcept>
+#include "src/common/libs_impl.hpp"
 
 namespace measurement_kit {
 namespace common {

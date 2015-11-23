@@ -2,11 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_COMMON_BUFFEREVENT_HPP
-#define MEASUREMENT_KIT_COMMON_BUFFEREVENT_HPP
+#ifndef SRC_COMMON_BUFFEREVENT_HPP
+#define SRC_COMMON_BUFFEREVENT_HPP
 
 #include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/libs.hpp>
+#include "src/common/libs_impl.hpp"
 
 #include <event2/util.h> // for evutil_socket_t
 #include <functional>    // for function

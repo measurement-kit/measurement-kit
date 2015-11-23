@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <measurement_kit/net/error.hpp>
 #include "src/net/socks5.hpp"
 
 namespace measurement_kit {

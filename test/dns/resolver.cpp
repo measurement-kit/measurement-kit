@@ -8,7 +8,10 @@
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/common.hpp>
 
+#include "src/common/delayed_call.hpp"
+#include "src/common/utils.hpp"
 #include "src/dns/query.hpp"
+#include "src/common/check_connectivity.hpp"
 
 using namespace measurement_kit::common;
 using namespace measurement_kit::dns;

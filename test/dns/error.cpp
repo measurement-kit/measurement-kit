@@ -8,6 +8,8 @@
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/common.hpp>
 
+#include <event2/dns.h>
+
 using namespace measurement_kit::common;
 using namespace measurement_kit::dns;
 

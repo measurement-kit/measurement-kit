@@ -2,17 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_COMMON_LIBS_HPP
-#define MEASUREMENT_KIT_COMMON_LIBS_HPP
+#include <measurement_kit/common/libs.hpp>
+#include "src/common/libs_impl.hpp"
 
 namespace measurement_kit {
-namespace common {
 
-struct Libs;
-
-} // namespace common
-
-common::Libs *get_global_libs();  /// Access global libs object
+common::Libs *get_global_libs() { return common::Libs::global(); }
 
 } // namespace measurement_kit
-#endif

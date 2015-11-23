@@ -10,7 +10,7 @@
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/utils.hpp>
+#include "src/common/utils.hpp"
 #include <measurement_kit/common/var.hpp>
 
 #include <event2/dns.h>

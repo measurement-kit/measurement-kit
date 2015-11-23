@@ -37,7 +37,7 @@ class Poller : public NonCopyable, public NonMovable {
   private:
     event_base *base_;
     evdns_base *dnsbase_;
-    Libs *libs_ = Libs::global();
+    Libs *libs_ = get_global_libs();
 };
 
 } // namespace common

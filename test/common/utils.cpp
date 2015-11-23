@@ -6,6 +6,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common.hpp>
+#include "src/common/utils.hpp"
 
 TEST_CASE("IPv4 addresses are correctly reversed") {
     REQUIRE(measurement_kit::unreverse_ipv4("211.91.192.130.in-addr.arpa") ==

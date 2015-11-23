@@ -12,6 +12,8 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
 
+#include <event2/buffer.h>
+
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;
 

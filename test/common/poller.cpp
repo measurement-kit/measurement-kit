@@ -10,6 +10,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common.hpp>
+#include "src/common/delayed_call.hpp"
 
 #include <functional>
 #include <new>

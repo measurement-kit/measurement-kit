@@ -6,6 +6,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common.hpp>
+#include "src/common/bufferevent.hpp"
 
 using namespace measurement_kit::common;
 
