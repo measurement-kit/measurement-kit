@@ -5,7 +5,7 @@
 #ifndef MEASUREMENT_KIT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
 #define MEASUREMENT_KIT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
 
-#include <measurement_kit/common/utils.hpp>
+#include "src/common/utils.hpp"
 #include "src/ooni/errors.hpp"
 #include "src/ooni/net_test.hpp"
 #include "src/ooni/http_test.hpp"

@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_COMMON_UTILS_HPP
-#define MEASUREMENT_KIT_COMMON_UTILS_HPP
+#ifndef SRC_COMMON_UTILS_HPP
+#define SRC_COMMON_UTILS_HPP
 
 #include <event2/util.h>
 

@@ -14,6 +14,7 @@
 #include <measurement_kit/net.hpp>
 
 #include "src/net/connection.hpp"
+#include "src/common/check_connectivity.hpp"
 
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;

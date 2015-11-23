@@ -2,10 +2,10 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common/delayed_call.hpp>
+#include "src/common/delayed_call.hpp"
 #include <measurement_kit/common/libs.hpp>
 #include <measurement_kit/common/poller.hpp>
-#include <measurement_kit/common/utils.hpp>
+#include "src/common/utils.hpp"
 
 #include <event2/event.h>
 #include <event2/util.h>
