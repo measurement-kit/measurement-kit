@@ -10,6 +10,7 @@
 #include <event2/dns.h>
 
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/net/error.hpp>
 #include "src/net/connection.hpp"
 
 using namespace measurement_kit::common;
