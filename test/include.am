@@ -19,6 +19,12 @@ test_common_log_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/log
 TESTS += test/common/log
 
+test_common_maybe_SOURCES = test/common/maybe.cpp
+test_common_maybe_LDADD = libmeasurement_kit.la
+test_common_maybe_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/common/maybe
+TESTS += test/common/maybe
+
 test_common_evbuffer_SOURCES = test/common/evbuffer.cpp
 test_common_evbuffer_LDADD = libmeasurement_kit.la
 test_common_evbuffer_LDFLAGS = -lyaml-cpp

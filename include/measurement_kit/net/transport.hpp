@@ -15,6 +15,7 @@
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/maybe.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/var.hpp>
 
@@ -29,7 +30,7 @@ class Transport {
   public:
     virtual void emit_connect() = 0;
 
-    virtual void emit_data(Buffer &) = 0;
+    virtual void emit_data(Buffer) = 0;
 
     virtual void emit_flush() = 0;
 
@@ -41,9 +42,7 @@ class Transport {
 
     virtual void on_connect(std::function<void()>) = 0;
 
-    virtual void on_ssl(std::function<void()>) = 0;
-
-    virtual void on_data(std::function<void(Buffer &)>) = 0;
+    virtual void on_data(std::function<void(Buffer)>) = 0;
 
     virtual void on_flush(std::function<void()>) = 0;
 
@@ -57,7 +56,7 @@ class Transport {
 
     virtual void send(std::string) = 0;
 
-    virtual void send(Buffer &) = 0;
+    virtual void send(Buffer) = 0;
 
     virtual void close() = 0;
 
@@ -66,7 +65,7 @@ class Transport {
     virtual std::string socks5_port() = 0;
 };
 
-Var<Transport> connect(Settings, Logger * = Logger::global());
+Maybe<Var<Transport>> connect(Settings, Logger * = Logger::global());
 
 } // namespace net
 } // namespace measurement_kit

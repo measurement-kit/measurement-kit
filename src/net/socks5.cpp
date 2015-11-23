@@ -43,7 +43,7 @@ Socks5::Socks5(Settings s, Logger *lp)
 
         // Step #2: receive the allowed authentication methods
 
-        conn.on_data([this](Buffer &d) {
+        conn.on_data([this](Buffer d) {
             buffer << d;
             auto readbuf = buffer.readn(2);
             if (readbuf == "") {
@@ -98,7 +98,7 @@ Socks5::Socks5(Settings s, Logger *lp)
 
             // Step #4: receive Tor's response
 
-            conn.on_data([this](Buffer &d) {
+            conn.on_data([this](Buffer d) {
 
                 buffer << d;
                 if (buffer.length() < 5) {
@@ -150,7 +150,7 @@ Socks5::Socks5(Settings s, Logger *lp)
                 // If more data, pass it up
                 //
 
-                conn.on_data([this](Buffer &d) { emit_data(d); });
+                conn.on_data([this](Buffer d) { emit_data(d); });
                 conn.on_flush([this]() { emit_flush(); });
 
                 emit_connect();

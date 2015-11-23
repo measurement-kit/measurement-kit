@@ -46,7 +46,7 @@ class Stream {
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
-        connection->on_data([&](Buffer &data) { parser->feed(data); });
+        connection->on_data([&](Buffer data) { parser->feed(data); });
         //
         // Intercept EOF error to implement body-ends-at-EOF semantic.
         //
@@ -117,7 +117,11 @@ class Stream {
      */
     Stream(Settings settings, Logger *lp = Logger::global()) {
         parser = std::make_shared<ResponseParser>(lp);
-        connection = connect(settings, lp);
+        // XXX Taking .as_value() here causes an exception to be thrown if
+        // the connect() function failed in some way. This is to be fixed once
+        // release v0.1.0 is rolled out, when we'll deal with all the errors
+        // that can happen in the implementation of HTTP.
+        connection = connect(settings, lp).as_value();
         //
         // While the connection is in progress, just forward the
         // error if needed, we'll deal with body-terminated-by-EOF

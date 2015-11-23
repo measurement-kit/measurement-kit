@@ -19,34 +19,34 @@ namespace measurement_kit {
 namespace net {
 
 Buffer::Buffer(evbuffer *b) {
-    if (b != nullptr && evbuffer_add_buffer(evbuf, b) != 0)
+    if (b != nullptr && evbuffer_add_buffer(*evbuf, b) != 0)
         throw std::runtime_error("evbuffer_add_buffer failed");
 }
 
 Buffer &Buffer::operator<<(evbuffer *source) {
     if (source == nullptr) throw std::runtime_error("source is nullptr");
-    if (evbuffer_add_buffer(evbuf, source) != 0)
+    if (evbuffer_add_buffer(*evbuf, source) != 0)
         throw std::runtime_error("evbuffer_add_buffer failed");
     return *this;
 }
 
 Buffer &Buffer::operator>>(evbuffer *dest) {
     if (dest == nullptr) throw std::runtime_error("dest is nullptr");
-    if (evbuffer_add_buffer(dest, evbuf) != 0)
+    if (evbuffer_add_buffer(dest, *evbuf) != 0)
         throw std::runtime_error("evbuffer_add_buffer failed");
     return *this;
 }
 
-size_t Buffer::length() { return evbuffer_get_length(evbuf); }
+size_t Buffer::length() { return evbuffer_get_length(*evbuf); }
 
 void Buffer::for_each(std::function<bool(const void *, size_t)> fn) {
-    auto required = evbuffer_peek(evbuf, -1, nullptr, nullptr, 0);
+    auto required = evbuffer_peek(*evbuf, -1, nullptr, nullptr, 0);
     if (required < 0) throw std::runtime_error("unexpected error");
     if (required == 0) return;
     std::unique_ptr<evbuffer_iovec[]> raii;
     raii.reset(new evbuffer_iovec[required]); // Guarantee cleanup
     auto iov = raii.get();
-    auto used = evbuffer_peek(evbuf, -1, nullptr, iov, required);
+    auto used = evbuffer_peek(*evbuf, -1, nullptr, iov, required);
     if (used != required) throw std::runtime_error("unexpected error");
     for (auto i = 0; i < required && fn(iov[i].iov_base, iov[i].iov_len); ++i) {
         /* nothing */;
@@ -54,7 +54,7 @@ void Buffer::for_each(std::function<bool(const void *, size_t)> fn) {
 }
 
 void Buffer::discard(size_t count) {
-    if (evbuffer_drain(evbuf, count) != 0)
+    if (evbuffer_drain(*evbuf, count) != 0)
         throw std::runtime_error("evbuffer_drain failed");
 }
 
@@ -80,7 +80,7 @@ std::tuple<common::Error, std::string> Buffer::readline(size_t maxline) {
 
     size_t eol_length = 0;
     auto search_result =
-        evbuffer_search_eol(evbuf, nullptr, &eol_length, EVBUFFER_EOL_CRLF);
+        evbuffer_search_eol(*evbuf, nullptr, &eol_length, EVBUFFER_EOL_CRLF);
     if (search_result.pos < 0) {
         if (length() > maxline) return std::make_tuple(EOLNotFoundError(), "");
         return std::make_tuple(common::NoError(), "");
@@ -100,7 +100,7 @@ std::tuple<common::Error, std::string> Buffer::readline(size_t maxline) {
 
 void Buffer::write(const void *buf, size_t count) {
     if (buf == nullptr) throw std::runtime_error("buf is nullptr");
-    if (evbuffer_add(evbuf, buf, count) != 0)
+    if (evbuffer_add(*evbuf, buf, count) != 0)
         throw std::runtime_error("evbuffer_add failed");
 }
 
@@ -121,7 +121,7 @@ void Buffer::write_rand(size_t count) {
     char *p = new char[count];
     evutil_secure_rng_get_bytes(p, count);
     auto ctrl = evbuffer_add_reference(
-        evbuf, p, count, [](const void *, size_t, void *p) {
+        *evbuf, p, count, [](const void *, size_t, void *p) {
             delete[] static_cast<char *>(p);
         }, p);
     if (ctrl != 0) throw std::runtime_error("evbuffer_add_reference");
@@ -139,7 +139,7 @@ void Buffer::write(size_t count, std::function<size_t(void *, size_t)> func) {
         delete[] p;
         return;
     }
-    auto ctrl = evbuffer_add_reference(evbuf, p,
+    auto ctrl = evbuffer_add_reference(*evbuf, p,
                                        used, [](const void *, size_t, void *p) {
                                            delete[] static_cast<char *>(p);
                                        }, p);
