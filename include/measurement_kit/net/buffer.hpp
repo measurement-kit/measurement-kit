@@ -10,6 +10,7 @@
 #include <string.h>                             // for strlen
 #include <functional>                           // for function
 #include <measurement_kit/common/evbuffer.hpp>  // for Evbuffer
+#include <measurement_kit/common/maybe.hpp>     // for Maybe
 #include <measurement_kit/common/var.hpp>       // for Evbuffer
 #include <stdexcept>                            // for runtime_error
 #include <string>                               // for string
@@ -83,7 +84,7 @@ class Buffer {
         return read(n);
     }
 
-    std::tuple<common::Error, std::string> readline(size_t maxline);
+    common::Maybe<std::string> readline(size_t maxline);
 
     /*
      * Wrappers for write, including a handy wrapper for sending

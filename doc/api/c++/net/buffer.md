@@ -54,12 +54,19 @@ if (s == "") {
     return;
 }
 
-Error error;
-std::string s;
-std::tie<error, s> res = buf.readline(1024);
-if (error != 0) {
+Maybe<std::string> res = buf.readline(1024);
+if (!res) {
     /* readline failed, check error */
+    auto error = res.as_error();
     return;
+}
+std::string s = res.as_value();
+
+// Alternative way of reading lines (the "let it crash" way)
+try {
+    auto s = buf.readline(1024).as_value();
+} catch (Error &error) {
+    // TODO: process the error
 }
 
 // Write stuff
