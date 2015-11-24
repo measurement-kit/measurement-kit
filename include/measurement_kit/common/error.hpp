@@ -53,6 +53,12 @@ class GenericError : public Error {
     GenericError() : Error(1, "unknown_failure 1") {} ///< Default constructor
 };
 
+/// Maybe not initialized error
+class MaybeNotInitializedError : public Error {
+  public:
+    MaybeNotInitializedError() : Error(2, "unknown_failure 2") {}
+};
+
 } // namespace common
 } // namespace measurement_kit
 #endif
