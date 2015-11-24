@@ -13,6 +13,9 @@ namespace common {
 /// Maybe contains a value of type T
 template <typename T> class Maybe {
   public:
+    /// Empty constructor
+    Maybe() :  error_(MaybeNotInitializedError()) {}
+
     /// Constructor with value
     Maybe(T value) : Maybe(NoError(), value) {}
 

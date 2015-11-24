@@ -22,3 +22,10 @@ TEST_CASE("The maybe template works as expected when there is an error") {
     REQUIRE(maybe.as_error() == GenericError());
     REQUIRE_THROWS_AS(maybe.as_value(), Error);
 }
+
+TEST_CASE("The maybe template works as expected when the empty constructor is called") {
+    Maybe<int> maybe;
+    REQUIRE(static_cast<bool>(maybe) == false);
+    REQUIRE(maybe.as_error() == MaybeNotInitializedError());
+    REQUIRE_THROWS_AS(maybe.as_value(), Error);
+}
