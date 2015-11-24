@@ -24,7 +24,7 @@ static void run_http_invalid_request_line(Async &async) {
                        .on_log([](const char *s) {
                            (void)fprintf(stderr, "test #1: %s\n", s);
                        })
-                       .create_test(),
+                       .create_test_(),
                    [](Var<NetTest> test) {
                        measurement_kit::debug("test complete: %llu",
                                               test->identifier());
@@ -33,13 +33,13 @@ static void run_http_invalid_request_line(Async &async) {
 
 static void run_dns_injection(Async &async) {
     async.run_test(DnsInjectionTest()
-                       .set_nameserver("8.8.8.8:53")
+                       .set_backend("8.8.8.8:53")
                        .set_input_file_path("test/fixtures/hosts.txt")
                        .set_verbose()
                        .on_log([](const char *s) {
                            (void)fprintf(stderr, "test #3: %s\n", s);
                        })
-                       .create_test(),
+                       .create_test_(),
                    [](Var<NetTest> test) {
                        measurement_kit::debug("test complete: %llu",
                                               test->identifier());
@@ -54,7 +54,7 @@ static void run_tcp_connect(Async &async) {
                        .on_log([](const char *s) {
                            (void)fprintf(stderr, "test #4: %s\n", s);
                        })
-                       .create_test(),
+                       .create_test_(),
                    [](Var<NetTest> test) {
                        measurement_kit::debug("test complete: %llu",
                                               test->identifier());

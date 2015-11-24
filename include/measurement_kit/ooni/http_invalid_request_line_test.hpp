@@ -8,13 +8,14 @@
 #include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/var.hpp>
+#include <measurement_kit/ooni/base_test.hpp>
 #include <string>
 
 namespace measurement_kit {
 namespace ooni {
 
 /// Parameters of http-invalid-request-line test
-class HttpInvalidRequestLineTest {
+class HttpInvalidRequestLineTest : public BaseTest {
   public:
     /// Default constructor
     HttpInvalidRequestLineTest() {}
@@ -38,7 +39,7 @@ class HttpInvalidRequestLineTest {
     }
 
     /// Create instance of the test
-    common::Var<common::NetTest> create_test();
+    common::Var<common::NetTest> create_test_() override;
 
     common::Settings settings;
     bool is_verbose = false;

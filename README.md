@@ -186,34 +186,53 @@ Then type `pod install` and open `.xcworkspace` file (beware not to open the
 
 ## How to use MeasurementKit
 
-The following shows how to use MeasurementKit's OONI library.
+The following examples show how to use OONI library.
+
+This first example show how to run a synchronous test. That is, in the
+following example, the *run* call is going to block until the test is
+complete. (Note that in this case the test may or may not run in the context
+of the same thread that called *run*).
 
 ```C++
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni.hpp>
-
-#include <iostream>
-#include <thread>
-
-using namespace measurement_kit::common;
 using namespace measurement_kit;
 
-int main() {
-    Var<Async> async(new Async);
-    Var<NetTest> test(new ooni::HTTPInvalidRequestLine(Settings{
-        {"backend", "http://nexa.polito.it/"}
-    }));
-    test->set_verbose(1);
-    test->on_log([](const char *s) { std::clog << s << "\n"; });
-    async->run_test(test, [async](Var<NetTest> test) {
-        std::clog << "Test complete: " << test->identifier() << "\n";
-        async->break_loop();
-    });
-    while (!async->empty()) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
+// Run sync test
+ooni::HttpInvalidRequestLineTest()
+    .set_backend("http://127.0.0.1/")
+    .set_verbose()
+    .on_log([](const char *s) {
+        // If needed, acquire the proper locks
+        // Process incoming log line
+    })
+    .run();
+
+// Note: run() returns when test is complete
 ```
+
+In this second example, instead, we show how to run an asynchronous test. In
+this case, *run* returns immediately, the test runs in a background thread, and
+the callback passed as argument to *run* is invoked when the test completed.
+
+```C++
+// Run async test
+ooni::HttpInvalidRequestLineTest()
+    .set_backend("http://127.0.0.1/")
+    .set_verbose()
+    .on_log([](const char *s) {
+        // If needed, acquire the proper locks
+        // Process incoming log line
+    })
+    .run([]() {
+        // If needed, acquire the proper locks
+        // Handle test completion
+    });
+
+// Note: run() returns immediately, callback called when done
+```
+
+In both cases, you need to be careful inside the callbacks, because in general
+they may be called from background threads.
 
 You can find documentation of MeasurementKit C++ API in the
 [doc/api](https://github.com/measurement-kit/measurement-kit/tree/master/doc/api)

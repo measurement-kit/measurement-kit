@@ -79,9 +79,12 @@ test/net/buffer
 test/net/connection
 test/net/connection_check_fds
 test/ooni/dns_injection
+test/ooni/dns_injection_test
 test/ooni/net_test
 test/ooni/http_invalid_request_line
+test/ooni/http_invalid_request_line_test
 test/ooni/tcp_connect
+test/ooni/tcp_connect_test
 test/ooni/tcp_test
 test/dns/defines
 test/dns/error

@@ -146,5 +146,10 @@ void Async::break_loop() {
 
 bool Async::empty() { return !state->thread_running; }
 
+Async *Async::global() {
+    static Async singleton;
+    return &singleton;
+}
+
 } // namespace common
 } // namespace measurement_kit

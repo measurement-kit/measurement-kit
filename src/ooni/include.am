@@ -1,6 +1,7 @@
 noinst_LTLIBRARIES += src/ooni/libooni.la
 
 src_ooni_libooni_la_SOURCES = \
+	src/ooni/base_test.cpp \
 	src/ooni/net_test.cpp \
 	src/ooni/dns_test.cpp \
 	src/ooni/http_invalid_request_line.cpp \
@@ -12,6 +13,7 @@ libmeasurement_kit_la_LIBADD += src/ooni/libooni.la
 
 ooniincludedir = $(includedir)/measurement_kit/ooni
 ooniinclude_HEADERS = \
+   include/measurement_kit/ooni/base_test.hpp \
    include/measurement_kit/ooni/dns_injection_test.hpp \
    include/measurement_kit/ooni/http_invalid_request_line_test.hpp \
    include/measurement_kit/ooni/tcp_connect_test.hpp

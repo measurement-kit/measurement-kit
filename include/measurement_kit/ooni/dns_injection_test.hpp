@@ -8,20 +8,21 @@
 #include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/var.hpp>
+#include <measurement_kit/ooni/base_test.hpp>
 #include <string>
 
 namespace measurement_kit {
 namespace ooni {
 
 /// Parameters of dns-injection test
-class DnsInjectionTest {
+class DnsInjectionTest : public BaseTest {
   public:
     /// Default constructor
     DnsInjectionTest() {}
 
     /// Set backend used to perform the test
-    DnsInjectionTest &set_nameserver(std::string nameserver) {
-        settings["nameserver"] = nameserver;
+    DnsInjectionTest &set_backend(std::string backend) {
+        settings["nameserver"] = backend;
         return *this;
     }
 
@@ -44,7 +45,7 @@ class DnsInjectionTest {
     }
 
     /// Create instance of the test
-    common::Var<common::NetTest> create_test();
+    common::Var<common::NetTest> create_test_() override;
 
     common::Settings settings;
     bool is_verbose = false;
