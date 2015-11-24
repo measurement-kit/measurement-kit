@@ -8,12 +8,12 @@
 #include <functional>                          // for function
 #include <measurement_kit/common/error.hpp>    // for NoError, Error
 #include <measurement_kit/common/evbuffer.hpp> // for Evbuffer
+#include <measurement_kit/common/maybe.hpp>    // for Maybe
 #include <measurement_kit/net/buffer.hpp>      // for Buffer
 #include <measurement_kit/net/error.hpp>       // for net specific errors
 #include <memory>                              // for unique_ptr
 #include <stdexcept>                           // for runtime_error
 #include <string>                              // for string, basic_string
-#include <tuple>                               // for make_tuple, tuple
 
 namespace measurement_kit {
 namespace net {
@@ -76,14 +76,16 @@ std::string Buffer::readpeek(bool ispeek, size_t upto) {
     return out;
 }
 
-std::tuple<common::Error, std::string> Buffer::readline(size_t maxline) {
+common::Maybe<std::string> Buffer::readline(size_t maxline) {
 
     size_t eol_length = 0;
     auto search_result =
         evbuffer_search_eol(*evbuf, nullptr, &eol_length, EVBUFFER_EOL_CRLF);
     if (search_result.pos < 0) {
-        if (length() > maxline) return std::make_tuple(EOLNotFoundError(), "");
-        return std::make_tuple(common::NoError(), "");
+        if (length() > maxline) {
+            return common::Maybe<std::string>(EOLNotFoundError(), "");
+        }
+        return common::Maybe<std::string>("");
     }
 
     /*
@@ -93,9 +95,10 @@ std::tuple<common::Error, std::string> Buffer::readline(size_t maxline) {
     if (eol_length != 1 && eol_length != 2)
         throw std::runtime_error("unexpected error");
     auto len = (size_t)search_result.pos + eol_length;
-    if (len > maxline) return std::make_tuple(LineTooLongError(), "");
-
-    return std::make_tuple(common::NoError(), read(len));
+    if (len > maxline) {
+        return common::Maybe<std::string>(LineTooLongError(), "");
+    }
+    return common::Maybe<std::string>(read(len));
 }
 
 void Buffer::write(const void *buf, size_t count) {

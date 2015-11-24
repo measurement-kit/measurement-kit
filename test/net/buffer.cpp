@@ -256,8 +256,7 @@ TEST_CASE("Readn works correctly") {
 
 TEST_CASE("Readline works correctly", "[Buffer]") {
     Buffer buff;
-    auto s = std::string();
-    Error error;
+    Maybe<std::string> line("");
 
     SECTION("We can read LF terminated lines") {
         buff << "HTTP/1.1 200 Ok\n"
@@ -266,28 +265,27 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
              << "\n"
              << "1234567";
 
-        std::tie(error, s) = buff.readline(1024);
-        REQUIRE(error == 0);
-        REQUIRE(s == "HTTP/1.1 200 Ok\n");
+        line = buff.readline(1024);
+        REQUIRE(static_cast<bool>(line));
+        REQUIRE(line.as_value() == "HTTP/1.1 200 Ok\n");
 
-        std::tie(error, s) = buff.readline(1024);
-        REQUIRE(error == 0);
-        REQUIRE(s == "Content-Type: text/html\n");
+        line = buff.readline(1024);
+        REQUIRE(static_cast<bool>(line));
+        REQUIRE(line.as_value() == "Content-Type: text/html\n");
 
-        std::tie(error, s) = buff.readline(1024);
-        REQUIRE(error == 0);
-        REQUIRE(s == "Content-Length: 7\n");
+        line = buff.readline(1024);
+        REQUIRE(static_cast<bool>(line));
+        REQUIRE(line.as_value() == "Content-Length: 7\n");
 
-        std::tie(error, s) = buff.readline(1024);
-        REQUIRE(error == 0);
-        REQUIRE(s == "\n");
+        line = buff.readline(1024);
+        REQUIRE(static_cast<bool>(line));
+        REQUIRE(line.as_value() == "\n");
 
-        /*
-         * Here `s` must be empty because there is no ending LF.
-         */
-        std::tie(error, s) = buff.readline(1024);
-        REQUIRE(error == 0);
-        REQUIRE(s == "");
+        // Here `line.as_value()` must be empty because
+        // there is no ending LF.
+        line = buff.readline(1024);
+        REQUIRE(static_cast<bool>(line));
+        REQUIRE(line.as_value() == "");
     }
 
     SECTION("We can read [CR]LF terminated lines") {
@@ -297,42 +295,43 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
              << "\r\n"
              << "1234567";
 
-        std::tie(error, s) = buff.readline(1024);
-        REQUIRE(error == 0);
-        REQUIRE(s == "HTTP/1.1 200 Ok\n");
+        line = buff.readline(1024);
+        REQUIRE(static_cast<bool>(line));
+        REQUIRE(line.as_value() == "HTTP/1.1 200 Ok\n");
 
-        std::tie(error, s) = buff.readline(1024);
-        REQUIRE(error == 0);
-        REQUIRE(s == "Content-Type: text/html\r\n");
+        line = buff.readline(1024);
+        REQUIRE(static_cast<bool>(line));
+        REQUIRE(line.as_value() == "Content-Type: text/html\r\n");
 
-        std::tie(error, s) = buff.readline(1024);
-        REQUIRE(error == 0);
-        REQUIRE(s == "Content-Length: 7\n");
+        line = buff.readline(1024);
+        REQUIRE(static_cast<bool>(line));
+        REQUIRE(line.as_value() == "Content-Length: 7\n");
 
-        std::tie(error, s) = buff.readline(1024);
-        REQUIRE(error == 0);
-        REQUIRE(s == "\r\n");
+        line = buff.readline(1024);
+        REQUIRE(static_cast<bool>(line));
+        REQUIRE(line.as_value() == "\r\n");
 
-        /*
-         * Here `s` must be empty because there is no ending LF.
-         */
-        std::tie(error, s) = buff.readline(1024);
-        REQUIRE(error == 0);
-        REQUIRE(s == "");
+        // Here `line.as_value()` must be empty because
+        // there is no ending LF.
+        line = buff.readline(1024);
+        REQUIRE(static_cast<bool>(line));
+        REQUIRE(line.as_value() == "");
     }
 
     SECTION("EOL-not-found error is correctly reported") {
         buff << "HTTP/1.1 200 Ok";
-        std::tie(error, s) = buff.readline(3);
-        REQUIRE(error == EOLNotFoundError());
-        REQUIRE(s == "");
+        line = buff.readline(3);
+        REQUIRE(!line);
+        REQUIRE(line.as_error() == EOLNotFoundError());
+        REQUIRE_THROWS_AS(line.as_value(), Error);
     }
 
     SECTION("Line-too-long error is correctly reported") {
         buff << "HTTP/1.1 200 Ok\n";
-        std::tie(error, s) = buff.readline(3);
-        REQUIRE(error == LineTooLongError());
-        REQUIRE(s == "");
+        line = buff.readline(3);
+        REQUIRE(!line);
+        REQUIRE(line.as_error() == LineTooLongError());
+        REQUIRE_THROWS_AS(line.as_value(), Error);
     }
 }
 
