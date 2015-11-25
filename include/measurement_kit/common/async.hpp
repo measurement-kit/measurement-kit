@@ -34,6 +34,8 @@ class Async {
     /// Returns true when no async jobs are running
     bool empty();
 
+    static Async *global(); ///< Returns global async
+
   private:
     Var<AsyncState> state;
     static void loop_thread(Var<AsyncState>);

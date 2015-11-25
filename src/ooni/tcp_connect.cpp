@@ -21,7 +21,7 @@ void TCPConnect::main(std::string input, Settings options,
     });
 }
 
-Var<common::NetTest> TcpConnectTest::create_test() {
+Var<common::NetTest> TcpConnectTest::create_test_() {
     common::NetTest *test = new TCPConnect(input_path, settings);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);

@@ -91,11 +91,23 @@ test_ooni_dns_injection_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/dns_injection
 TESTS += test/ooni/dns_injection
 
+test_ooni_dns_injection_test_SOURCES = test/ooni/dns_injection_test.cpp
+test_ooni_dns_injection_test_LDADD = libmeasurement_kit.la
+test_ooni_dns_injection_test_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/ooni/dns_injection_test
+TESTS += test/ooni/dns_injection_test
+
 test_ooni_http_invalid_request_line_SOURCES = test/ooni/http_invalid_request_line.cpp
 test_ooni_http_invalid_request_line_LDADD = libmeasurement_kit.la
 test_ooni_http_invalid_request_line_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/http_invalid_request_line
 TESTS += test/ooni/http_invalid_request_line
+
+test_ooni_http_invalid_request_line_test_SOURCES = test/ooni/http_invalid_request_line_test.cpp
+test_ooni_http_invalid_request_line_test_LDADD = libmeasurement_kit.la
+test_ooni_http_invalid_request_line_test_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/ooni/http_invalid_request_line_test
+TESTS += test/ooni/http_invalid_request_line_test
 
 test_ooni_tcp_test_SOURCES = test/ooni/tcp_test.cpp
 test_ooni_tcp_test_LDADD = libmeasurement_kit.la
@@ -108,6 +120,12 @@ test_ooni_tcp_connect_LDADD = libmeasurement_kit.la
 test_ooni_tcp_connect_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/tcp_connect
 TESTS += test/ooni/tcp_connect
+
+test_ooni_tcp_connect_test_SOURCES = test/ooni/tcp_connect_test.cpp
+test_ooni_tcp_connect_test_LDADD = libmeasurement_kit.la
+test_ooni_tcp_connect_test_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/ooni/tcp_connect_test
+TESTS += test/ooni/tcp_connect_test
 
 test_ooni_net_test_SOURCES = test/ooni/net_test.cpp
 test_ooni_net_test_LDADD = libmeasurement_kit.la
