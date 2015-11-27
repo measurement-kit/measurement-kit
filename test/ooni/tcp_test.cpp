@@ -15,7 +15,6 @@ using namespace measurement_kit::ooni;
 
 TEST_CASE("TCPTest test should run") {
 #if 0
-    measurement_kit::set_verbose(1);
 
     auto client = TCPClient("www.torproject.org", "80");
 
@@ -50,7 +49,6 @@ TEST_CASE("TCPTest test should run") {
 }
 
 TEST_CASE("TCPTest works as expected in a common case") {
-    measurement_kit::set_verbose(1);
 
     auto count = 0;
     TCPTest tcp_test("", Settings());

@@ -23,7 +23,6 @@ TEST_CASE("HTTP stream works as expected") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    // measurement_kit::set_verbose(1);
     auto stream = std::make_shared<Stream>(Settings{
         {"address", "www.google.com"}, {"port", "80"},
     });
@@ -59,8 +58,6 @@ TEST_CASE("HTTP stream works as expected") {
 }
 
 TEST_CASE("HTTP stream is robust to EOF") {
-
-    // measurement_kit::set_verbose(1);
 
     // We simulate the receipt of a message terminated by EOF followed by
     // an EOF so that stream emits in sequence "end" followed by "error(0)"
@@ -98,7 +95,6 @@ TEST_CASE("HTTP stream works as expected when using Tor") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    measurement_kit::set_verbose(1);
     auto stream = std::make_shared<Stream>(Settings{
         {"address", "www.google.com"},
         {"port", "80"},
@@ -145,7 +141,6 @@ TEST_CASE("HTTP stream receives connection errors") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    // measurement_kit::set_verbose(1);
     auto stream = std::make_shared<Stream>(Settings{
         {"address", "nexa.polito.it"}, {"port", "81"},
     });

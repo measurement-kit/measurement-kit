@@ -20,7 +20,6 @@ TEST_CASE("Synchronous tcp-connect test") {
     ooni::TcpConnectTest()
         .set_port("80")
         .set_input_file_path("test/fixtures/hosts.txt")
-        .set_verbose()
         .on_log([=](const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs) std::cout << s << "\n";
@@ -32,7 +31,6 @@ TEST_CASE("Asynchronous tcp-connect test") {
     ooni::TcpConnectTest()
         .set_port("80")
         .set_input_file_path("test/fixtures/hosts.txt")
-        .set_verbose()
         .on_log([=](const char *s) { logs->push_back(s); })
         .run([&done]() { done = true; });
     do {

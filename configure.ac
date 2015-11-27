@@ -202,8 +202,6 @@ if test "$measurement_kit_boost_path"x = "builtin"x; then
     CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/utility/include"
 fi
 
-
-
 # Step 1: process --with-yaml-cpp and set measurement_kit_yamlcpp_path accordingly
 measurement_kit_yamlcpp_path=
 AC_ARG_WITH([yaml-cpp],
@@ -261,8 +259,6 @@ if test "$measurement_kit_yamlcpp_path"x = "builtin"x; then
 fi
 AM_CONDITIONAL([USE_BUILTIN_YAMLCPP],
     [test "$measurement_kit_yamlcpp_path"x = "builtin"x])
-
-
 
 # checks for header files
 # checks for types
@@ -324,24 +320,13 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>],
 CXXFLAGS="$measurement_kit_saved_cxxflags $measurement_kit_cxx_stdlib_flags"
 AC_LANG_POP([C++])
 
-measurement_kit_saved_cxxflags="$CXXFLAGS"
-CXXFLAGS="-Werror -Wmissing-prototypes"
-measurement_kit_cxx_stdlib_flags=""
-AC_MSG_CHECKING([whether the C++ compiler supports -Wmissing-prototypes])
-AC_LANG_PUSH([C++])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <string>]
-                                    [std::string s;]])],
-    [
-     AC_MSG_RESULT([yes])
-     measurement_kit_cxx_missing_prototypes="-Wmissing-prototypes"
-    ]
-    [],
-    [
-     AC_MSG_RESULT([no])
-    ]
-)
-CXXFLAGS="$measurement_kit_saved_cxxflags $measurement_kit_cxx_missing_prototypes"
-AC_LANG_POP([C++])
+AC_MSG_CHECKING([whether the C++ compiler is clang++])
+if test echo | $CXX -dM -E - | grep __clang__ > /dev/null; then
+    AC_MSG_RESULT([yes])
+    CXXFLAGS="$CXXFLAGS -Wmissing-prototypes"
+else
+    AC_MSG_RESULT([yes])
+fi
 
 # checks for library functions
 # checks for system services
@@ -349,3 +334,11 @@ AC_LANG_POP([C++])
 AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT
+
+echo "==== configured variables ==="
+echo "CC       : $CC"
+echo "CXX      : $CXX"
+echo "CFLAGS   : $CFLAGS"
+echo "CPPFLAGS : $CPPFLAGS"
+echo "CXXFLAGS : $CXXFLAGS"
+echo "LDFLAGS  : $LDFLAGS"

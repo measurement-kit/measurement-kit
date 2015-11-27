@@ -7,9 +7,12 @@ before_install:
   - sudo apt-get install tor
   - pip install --user cpp-coveralls
 install: autoreconf -i
-script: ./configure CFLAGS=--coverage CPPFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage && make -j2 V=0 && make -j2 check-am V=0
+script:
+  - ./configure -q CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage
+  - make -j2 V=0
+  - make -j2 check-am V=0
 after_success:
-  - if [ "$CXX" == "g++" ]; then coveralls --exclude src/ext; fi
+  - coveralls --exclude src/ext
 compiler:
   - clang
   - g++
