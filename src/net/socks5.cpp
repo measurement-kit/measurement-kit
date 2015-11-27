@@ -8,10 +8,10 @@
 namespace measurement_kit {
 namespace net {
 
-Socks5::Socks5(Settings s, Logger *lp)
+Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
     : Dumb(lp), settings(s),
       conn(settings["family"].c_str(), settings["socks5_address"].c_str(),
-           settings["socks5_port"].c_str()),
+           settings["socks5_port"].c_str(), lp, poller),
       proxy_address(settings["socks5_address"]),
       proxy_port(settings["socks5_port"]) {
 
@@ -163,5 +163,6 @@ Socks5::Socks5(Settings s, Logger *lp)
         });
     });
 }
-}
-}
+
+} // namespace net
+} // namespace measurement_kit

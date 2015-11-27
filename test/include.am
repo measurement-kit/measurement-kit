@@ -73,6 +73,12 @@ test_net_connection_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/net/connection
 TESTS += test/net/connection
 
+test_net_transport_SOURCES = test/net/transport.cpp
+test_net_transport_LDADD = libmeasurement_kit.la
+test_net_transport_LDFLAGS = -lyaml-cpp
+check_PROGRAMS += test/net/transport
+TESTS += test/net/transport
+
 test_net_connection_check_fds_SOURCES = test/net/connection_check_fds.cpp
 test_net_connection_check_fds_LDADD = libmeasurement_kit.la
 test_net_connection_check_fds_LDFLAGS = -lyaml-cpp

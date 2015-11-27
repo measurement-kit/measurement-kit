@@ -12,7 +12,8 @@ namespace net {
 
 using namespace measurement_kit::common;
 
-static Var<Transport> connect_internal(Settings settings, Logger *logger) {
+static Var<Transport> connect_internal(Settings settings, Logger *logger,
+                                       Poller *poller) {
 
     if (settings.find("dumb_transport") != settings.end()) {
         return Var<Transport>(new Dumb(logger));
@@ -39,15 +40,16 @@ static Var<Transport> connect_internal(Settings settings, Logger *logger) {
         auto port = proxy.substr(pos + 1);
         settings["socks5_address"] = address;
         settings["socks5_port"] = port;
-        return Var<Transport>(new Socks5(settings, logger));
+        return Var<Transport>(new Socks5(settings, logger, poller));
     }
 
     return Var<Transport>(new Connection(settings["family"].c_str(),
                                          settings["address"].c_str(),
-                                         settings["port"].c_str(), logger));
+                                         settings["port"].c_str(),
+                                         logger, poller));
 }
 
-Maybe<Var<Transport>> connect(Settings settings, Logger *lp) {
+Maybe<Var<Transport>> connect(Settings settings, Logger *lp, Poller *poller) {
     double timeo = 30.0;
     if (settings.find("timeout") != settings.end()) {
         size_t invalid;
@@ -56,7 +58,7 @@ Maybe<Var<Transport>> connect(Settings settings, Logger *lp) {
             throw std::runtime_error("invalid argument");
         }
     }
-    Var<Transport> transport = connect_internal(settings, lp);
+    Var<Transport> transport = connect_internal(settings, lp, poller);
     if (timeo >= 0.0) {
         transport->set_timeout(timeo);
     }
