@@ -1,3 +1,10 @@
 torproject.org
 ooni.nu
 neubot.org
+archive.org
+creativecommons.org
+cyber.law.harvard.edu
+duckduckgo.com
+netflix.com
+nmap.org
+www.emule.com
