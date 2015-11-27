@@ -9,7 +9,7 @@ before_install:
 install: autoreconf -i
 script: ./configure CFLAGS=--coverage CPPFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage && make -j2 V=0 && make -j2 check-am V=0
 after_success:
-  - coveralls --exclude src/ext
+  - if [ "$CXX" == "g++" ]; then coveralls --exclude src/ext; fi
 compiler:
   - clang
   - g++
