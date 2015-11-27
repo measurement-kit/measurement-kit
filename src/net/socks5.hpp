@@ -6,6 +6,7 @@
 #define MEASUREMENT_KIT_NET_SOCKS5_HPP
 
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/poller.hpp>
 
 #include <measurement_kit/net/buffer.hpp>
 #include "src/net/connection.hpp"
@@ -27,7 +28,7 @@ class Socks5 : public Dumb {
     std::string proxy_port;
 
   public:
-    Socks5(Settings, Logger *lp = Logger::global());
+    Socks5(Settings, Logger *lp = Logger::global(), Poller * = Poller::global());
 
     void set_timeout(double timeout) override { conn.set_timeout(timeout); }
 
@@ -50,6 +51,7 @@ class Socks5 : public Dumb {
 
     std::string socks5_port() override { return proxy_port; }
 };
-}
-}
+
+} // namespace net
+} // namespace measurement_kit
 #endif
