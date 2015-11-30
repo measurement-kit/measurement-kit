@@ -28,8 +28,6 @@ void Connection::handle_read(bufferevent *bev, void *opaque) {
         self->emit_data(buff);
     } catch (Error &error) {
         self->emit_error(error);
-    } catch (std::runtime_error &) {
-        self->emit_error(GenericError());  // XXX
     }
 }
 
@@ -40,8 +38,6 @@ void Connection::handle_write(bufferevent *bev, void *opaque) {
         self->emit_flush();
     } catch (Error &error) {
         self->emit_error(error);
-    } catch (std::runtime_error &) {
-        self->emit_error(GenericError()); // XXX
     }
 }
 

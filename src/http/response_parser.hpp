@@ -6,6 +6,7 @@
 #define MEASUREMENT_KIT_HTTP_RESPONSE_PARSER_HPP
 
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/http/error.hpp>
 
 #include <functional>
 #include <iosfwd>
@@ -22,28 +23,6 @@ namespace http {
 
 using namespace measurement_kit::common;
 using namespace measurement_kit::net;
-
-/*!
- * \brief Raised when the parser receives the UPGRADE method.
- * \remark This should not happen.
- */
-struct UpgradeError : public std::runtime_error {
-    using std::runtime_error::runtime_error;
-};
-
-/*!
- * \brief Raised when readline() fails because the line is too long.
- */
-struct ReadlineError : public std::runtime_error {
-    using std::runtime_error::runtime_error;
-};
-
-/*!
- * \brief Raised when a parse error is detected.
- */
-struct ParserError : public std::runtime_error {
-    using std::runtime_error::runtime_error;
-};
 
 class ResponseParserImpl; // See http.cpp
 
