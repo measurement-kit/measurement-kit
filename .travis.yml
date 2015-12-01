@@ -4,12 +4,17 @@ before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get update -qq
   - sudo apt-get install -qq -y --force-yes gcc-4.8 g++-4.8
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
+  - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 90
   - sudo apt-get install tor
   - pip install --user cpp-coveralls
 
 install: autoreconf -i
 
+# Only measure coverage with clang for now because I cannot manage to
+# convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
+# (For more context see measurement-kit/measurement-kit#255)
 script:
   - if [ "$CXX" = "clang++" ]; then
       ./configure -q CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;
@@ -21,7 +26,7 @@ script:
 
 after_success:
   - if [ "$CXX" = "clang++" ]; then
-      coveralls --exclude src/ext;
+      coveralls --gcov /usr/bin/gcov-4.6 --exclude src/ext;
     fi
 
 compiler:
