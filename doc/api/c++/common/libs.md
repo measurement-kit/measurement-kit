@@ -10,33 +10,23 @@ MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
 
 using namespace measurement_kit::common;
 
-// Suppose you want to check whether the Poller constructor deals
-// well with `event_base_new()` returning `nullptr`, then:
+class Foo {
+  public:
+    // ...
 
-Libs libs;
-libs.event_base_new = []() { return nullptr; };
-bool exc = false;
-try {
-    Poller poller(&libs);
-} catch (std::bad_alloc &) {
-    exc = true;
+  private:
+    Libs *libs_ = get_global_libs();
 }
-if (!exc) { /* test failed, do something */ }
+
 ```
+
 
 # DESCRIPTION
 
-The `Libs` object contains C++11 lambdas mocking the APIs of many
-low-level APIs used by MeasurementKit. For example, `Libs` contains
-a C++11 lambda mocking `event_base_new()`.
-
-By default, those lambdas are initialized to the corresponding APIs
-such that, when you call `libs.event_base_new()` what is
-actually called is `::event_base_new()`.
-
-Many MeasurementKit objects take an optional constructor argument
-that is a pointer to a `Libs` object. This allows the programmer to
-simulate API failure in regress tests as shown above.
+The `get_global_libs()` function allows to access the global `Libs`
+objects.  This object is used internally to implement the regress
+tests. But the implementation is opaque. We export only this function the
+allow to access the default implementation.
 
 # HISTORY
 
