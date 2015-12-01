@@ -24,9 +24,10 @@ script:
   - make -j2 V=0
   - make -j2 check-am V=0
 
+# Silence gcov standard output since it produces way too much output
 after_success:
   - if [ "$CXX" = "clang++" ]; then
-      coveralls --gcov /usr/bin/gcov-4.6 --exclude src/ext;
+      coveralls --gcov /usr/bin/gcov-4.6 --exclude src/ext > /dev/null;
     fi
 
 compiler:
