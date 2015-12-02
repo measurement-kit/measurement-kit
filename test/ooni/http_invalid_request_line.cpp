@@ -13,7 +13,7 @@ using namespace measurement_kit::ooni;
 
 TEST_CASE("The HTTP Invalid Request Line test should run") {
     Settings options;
-    options["backend"] = "http://google.com/";
+    options["backend"] = "http://213.138.109.232/";
     HTTPInvalidRequestLine http_invalid_request_line(options);
     http_invalid_request_line.begin([&]() {
         http_invalid_request_line.end([]() { measurement_kit::break_loop(); });

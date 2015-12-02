@@ -5,7 +5,7 @@
 #include <measurement_kit/common/logger.hpp>
 #include "src/http/response_parser.hpp"
 #include <measurement_kit/net/buffer.hpp>
-
+#include <measurement_kit/http/error.hpp>
 #include "ext/http-parser/http_parser.h"
 
 #include <functional>
@@ -150,10 +150,10 @@ class ResponseParserImpl {
                                            (const char *)base, count);
             parsing = false;
             if (parser.upgrade) {
-                throw UpgradeError("Unexpected UPGRADE");
+                throw UpgradeError();
             }
             if (n != count) {
-                throw ParserError("Parser error");
+                throw ParserError();
             }
             total += count;
             return true;
@@ -279,10 +279,10 @@ class ResponseParserImpl {
         size_t n = http_parser_execute(&parser, &settings, NULL, 0);
         parsing = false;
         if (parser.upgrade) {
-            throw UpgradeError("Unexpected UPGRADE");
+            throw UpgradeError();
         }
         if (n != 0) {
-            throw ParserError("Parser error");
+            throw ParserError();
         }
         if (closing) {
             delete this;
