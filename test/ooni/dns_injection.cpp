@@ -13,7 +13,6 @@ using namespace measurement_kit::ooni;
 
 TEST_CASE(
     "The DNS Injection test should run with an input file of DNS hostnames") {
-    measurement_kit::set_verbose(1);
     Settings options;
     options["nameserver"] = "8.8.8.1:53";
     DNSInjection dns_injection("test/fixtures/hosts.txt", options);
@@ -24,7 +23,6 @@ TEST_CASE(
 
 TEST_CASE("The DNS Injection test should throw an exception if an invalid file "
           "path is given") {
-    measurement_kit::set_verbose(1);
     Settings options;
     options["nameserver"] = "8.8.8.1:53";
     REQUIRE_THROWS_AS(DNSInjection dns_injection(
@@ -34,7 +32,6 @@ TEST_CASE("The DNS Injection test should throw an exception if an invalid file "
 
 TEST_CASE("The DNS Injection test should throw an exception if no file path is "
           "given") {
-    measurement_kit::set_verbose(1);
     Settings options;
     options["nameserver"] = "8.8.8.1:53";
     REQUIRE_THROWS_AS(DNSInjection dns_injection("", options),

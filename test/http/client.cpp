@@ -17,7 +17,6 @@ using namespace measurement_kit::net;
 using namespace measurement_kit::http;
 
 TEST_CASE("HTTP Client works as expected") {
-    // measurement_kit::set_verbose(1);
     auto client = Client();
     auto count = 0;
 
@@ -78,7 +77,6 @@ TEST_CASE("HTTP Client works as expected") {
 }
 
 TEST_CASE("HTTP Client works as expected over Tor") {
-    measurement_kit::set_verbose(1);
     auto client = Client();
     auto count = 0;
 
@@ -145,7 +143,6 @@ TEST_CASE("HTTP Client works as expected over Tor") {
 }
 
 TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
-    measurement_kit::set_verbose(1);
     auto client = Client();
 
     client.request(
@@ -168,7 +165,6 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
 }
 
 TEST_CASE("Make sure that settings are not modified") {
-    measurement_kit::set_verbose(1);
     auto client = Client();
 
     Settings settings{

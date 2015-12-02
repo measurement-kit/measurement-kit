@@ -13,7 +13,6 @@ using namespace measurement_kit::ooni;
 
 TEST_CASE(
     "The TCP connect test should run with an input file of DNS hostnames") {
-    measurement_kit::set_verbose(1);
     TCPConnect tcp_connect("test/fixtures/hosts.txt", {
                                                        {"port", "80"},
                                                       });
@@ -31,6 +30,5 @@ TEST_CASE("The TCP connect test should throw an exception if an invalid file "
 
 TEST_CASE(
     "The TCP connect test should throw an exception if no file path is given") {
-    measurement_kit::set_verbose(1);
     REQUIRE_THROWS_AS(TCPConnect("", Settings()), InputFileRequired);
 }

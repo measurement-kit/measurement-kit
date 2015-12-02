@@ -20,7 +20,6 @@ using namespace measurement_kit::ooni;
 static void run_http_invalid_request_line(Async &async) {
     async.run_test(HttpInvalidRequestLineTest()
                        .set_backend("http://nexa.polito.it/")
-                       .set_verbose()
                        .on_log([](const char *s) {
                            (void)fprintf(stderr, "test #1: %s\n", s);
                        })
@@ -35,7 +34,6 @@ static void run_dns_injection(Async &async) {
     async.run_test(DnsInjectionTest()
                        .set_backend("8.8.8.8:53")
                        .set_input_file_path("test/fixtures/hosts.txt")
-                       .set_verbose()
                        .on_log([](const char *s) {
                            (void)fprintf(stderr, "test #3: %s\n", s);
                        })
@@ -50,7 +48,6 @@ static void run_tcp_connect(Async &async) {
     async.run_test(TcpConnectTest()
                        .set_port("80")
                        .set_input_file_path("test/fixtures/hosts.txt")
-                       .set_verbose()
                        .on_log([](const char *s) {
                            (void)fprintf(stderr, "test #4: %s\n", s);
                        })
@@ -63,7 +60,6 @@ static void run_tcp_connect(Async &async) {
 
 TEST_CASE("The async engine works as expected") {
 
-    measurement_kit::set_verbose(1);
     Async async;
 
     for (int i = 0; i < 4; ++i) {

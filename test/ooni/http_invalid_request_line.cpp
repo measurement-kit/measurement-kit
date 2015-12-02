@@ -12,7 +12,6 @@ using namespace measurement_kit::common;
 using namespace measurement_kit::ooni;
 
 TEST_CASE("The HTTP Invalid Request Line test should run") {
-    measurement_kit::set_verbose(1);
     Settings options;
     options["backend"] = "http://google.com/";
     HTTPInvalidRequestLine http_invalid_request_line(options);

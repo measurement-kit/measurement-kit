@@ -16,8 +16,6 @@ using namespace measurement_kit::http;
 
 TEST_CASE("We don't leak when we receive an invalid message") {
 
-    // measurement_kit::set_verbose(1);
-
     ResponseParser parser;
     std::string data;
 
@@ -40,8 +38,6 @@ TEST_CASE("We don't leak when we receive an invalid message") {
 }
 
 TEST_CASE("We don't leak when we receive a UPGRADE") {
-
-    // measurement_kit::set_verbose(1);
 
     ResponseParser parser;
     std::string data;
@@ -68,8 +64,6 @@ TEST_CASE("The HTTP response parser works as expected") {
     auto data = std::string();
     auto parser = ResponseParser();
     auto body = std::string();
-
-    /*measurement_kit::set_verbose(1);*/
 
     //
     // Request #1
@@ -156,8 +150,6 @@ TEST_CASE("Response parser eof() does not trigger immediate distruction") {
     // not trigger a crash because the real parser should understand
     // that it is parsing and should delay its destruction.
     //
-
-    // measurement_kit::set_verbose(1);
 
     auto parser = new ResponseParser();
     std::string data;

@@ -62,7 +62,6 @@ TEST_CASE("It is safe to close Connection while resolve is in progress") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    measurement_kit::set_verbose(1);
     Connection s("PF_INET", "nexa.polito.it", "80");
     DelayedCall unsched(0.001, [&s]() { s.close(); });
     DelayedCall bail_out(2.0, []() { measurement_kit::break_loop(); });
@@ -73,7 +72,6 @@ TEST_CASE("connect() iterates over all the available addresses") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    measurement_kit::set_verbose(1);
     Connection s("PF_UNSPEC", "www.youtube.com", "81");
     s.set_timeout(5);
     s.on_error([](Error error) {
@@ -89,7 +87,6 @@ TEST_CASE("It is possible to use Connection with a custom poller") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    measurement_kit::set_verbose(1);
     Poller poller;
     Connection s("PF_UNSPEC", "nexa.polito.it", "22", Logger::global(),
                  &poller);

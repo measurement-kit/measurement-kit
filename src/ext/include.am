@@ -33,7 +33,7 @@ if USE_BUILTIN_YAMLCPP
     lib_LTLIBRARIES += src/ext/libyaml-cpp.la
 
     # Adapt CXXFLAGS to yaml-cpp:
-    src_ext_libyaml_cpp_la_CXXFLAGS = $(AM_CXXFLAGS) -Wno-deprecated-declarations -Wno-missing-prototypes
+    src_ext_libyaml_cpp_la_CXXFLAGS = $(AM_CXXFLAGS) -Wno-deprecated-declarations
 
     src_ext_libyaml_cpp_la_SOURCES = \
 	src/ext/yaml-cpp/src/stream.cpp \

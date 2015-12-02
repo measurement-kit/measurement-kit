@@ -19,7 +19,6 @@ using namespace measurement_kit::net;
 using namespace measurement_kit::http;
 
 TEST_CASE("HTTP Request works as expected") {
-    // measurement_kit::set_verbose(1);
     Request r(
         {
          {"url", "http://www.google.com/robots.txt"},
@@ -50,7 +49,6 @@ TEST_CASE("HTTP Request works as expected") {
 }
 
 TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
-    // measurement_kit::set_verbose(1);
 
     auto called = 0;
 
@@ -90,7 +88,6 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
 }
 
 TEST_CASE("HTTP Request correctly receives errors") {
-    measurement_kit::set_verbose(1);
     Request r(
         {
          {"url", "http://nexa.polito.it:81/robots.txt"},
@@ -122,7 +119,6 @@ TEST_CASE("HTTP Request correctly receives errors") {
 }
 
 TEST_CASE("HTTP Request works as expected over Tor") {
-    measurement_kit::set_verbose(1);
     Request r(
         {
          {"url", "http://www.google.com/robots.txt"},
@@ -154,7 +150,6 @@ TEST_CASE("HTTP Request works as expected over Tor") {
 }
 
 TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
-    // measurement_kit::set_verbose(1);
 
     Settings settings{
         {"method", "POST"},
@@ -189,7 +184,6 @@ TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
 }
 
 TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
-    // measurement_kit::set_verbose(1);
 
     Settings settings{
         {"method", "POST"},
@@ -225,7 +219,6 @@ TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
 }
 
 TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
-    // measurement_kit::set_verbose(1);
 
     Settings settings{
         {"method", "POST"},
@@ -260,7 +253,6 @@ TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
 }
 
 TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
-    // measurement_kit::set_verbose(1);
 
     Settings settings{
         {"method", "POST"}, {"http_version", "HTTP/1.1"},

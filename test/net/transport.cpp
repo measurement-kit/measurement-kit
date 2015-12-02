@@ -18,7 +18,6 @@ TEST_CASE("It is possible to use Transport with a custom poller") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    //measurement_kit::set_verbose(1);
     Poller poller;
     Maybe<Var<Transport>> maybe_s = measurement_kit::net::connect({
         {"family", "PF_UNSPEC"},

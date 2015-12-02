@@ -20,7 +20,6 @@ TEST_CASE("Synchronous dns-injection test") {
     ooni::DnsInjectionTest()
         .set_backend("8.8.8.1:53")
         .set_input_file_path("test/fixtures/hosts.txt")
-        .set_verbose()
         .on_log([=](const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs) std::cout << s << "\n";
@@ -32,7 +31,6 @@ TEST_CASE("Asynchronous dns-injection test") {
     ooni::DnsInjectionTest()
         .set_backend("8.8.8.1:53")
         .set_input_file_path("test/fixtures/hosts.txt")
-        .set_verbose()
         .on_log([=](const char *s) { logs->push_back(s); })
         .run([&]() { done = true; });
     do {
