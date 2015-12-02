@@ -1,0 +1,10 @@
+*.class
+jni/arm64-v8a/
+jni/armeabi/
+jni/armeabi-v7a/
+jni/mips/
+jni/mips64/
+jni/x86/
+jni/x86_64/
+obj
+measurement-kit-android-*.tar.gz
