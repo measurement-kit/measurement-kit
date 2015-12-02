@@ -24,6 +24,15 @@ TEST_CASE("Synchronous http-invalid-request-line test") {
     for (auto &s : *logs) std::cout << s << "\n";
 }
 
+TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
+    Var<std::list<std::string>> logs(new std::list<std::string>);
+    ooni::HttpInvalidRequestLineTest()
+        .set_backend("http://data.neubot.org/") // Let's troll Davide!
+        .on_log([=](const char *s) { logs->push_back(s); })
+        .run();
+    for (auto &s : *logs) std::cout << s << "\n";
+}
+
 TEST_CASE("Asynchronous http-invalid-request-line test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
     bool done = false;
