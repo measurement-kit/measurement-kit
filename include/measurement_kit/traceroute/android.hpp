@@ -37,9 +37,7 @@
 // This is meant to run on Android but can run on all Linux systems
 #ifdef __linux__
 
-#include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common.hpp>
 #include <measurement_kit/traceroute/interface.hpp>
 
 #include <functional>
@@ -101,9 +99,9 @@ class AndroidProber : public NonCopyable,
     int port_ = 0;                 ///< socket port
     Logger *logger = Logger::global();///< logger
 
-    std::function<void(ProbeResult)> result_cb_;  ///< on result callback
-    std::function<void()> timeout_cb_;            ///< on timeout callback
-    std::function<void(Error)> error_cb_; ///< on error callback
+    SafelyOverridableFunc<void(ProbeResult)> result_cb_;  ///< on result callback
+    SafelyOverridableFunc<void()> timeout_cb_;            ///< on timeout callback
+    SafelyOverridableFunc<void(Error)> error_cb_;         ///< on error callback
 
     /// Call this when you don't receive a response within timeout
     void on_timeout() { probe_pending_ = false; }

@@ -6,6 +6,7 @@
 #define MEASUREMENT_KIT_COMMON_POLLER_HPP
 
 #include <measurement_kit/common/constraints.hpp>
+#include <measurement_kit/common/funcs.hpp>
 #include <measurement_kit/common/libs.hpp>
 
 #include <functional>
@@ -76,7 +77,7 @@ class Poller : public NonCopyable, public NonMovable {
     event_base *base_;
     evdns_base *dnsbase_;
     Libs *libs_ = get_global_libs();
-    std::function<void(Poller *)> periodic_cb_;
+    SafelyOverridableFunc<void(Poller *)> periodic_cb_;
 };
 
 /*
