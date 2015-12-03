@@ -25,51 +25,11 @@ Just type the following:
 
     $ brew install android-ndk
 
-## Creating a custom toolchain
+## Cross compiling MeasurementKit for Android
 
-Next, you need to [create a custom toolchain](
-http://www.kandroid.org/ndk/docs/STANDALONE-TOOLCHAIN.html)
-for the platform and API level that you want to target
-using the `./scripts/make_toolchain.sh` command.
-
-### On Linux
-
-The following command creates a standalone
-toolchain in `./toolchain/` for ARM-based Android devices
-using API level 9 (i.e., Android 2.3).
-
-    $ ./scripts/make_toolchain.sh $HOME/Android/android-ndk-r10e/ arm-linux-androideabi 9
-
-The first argument is the path where NDK r10e is installed, the second
-argument is the cross compiler type, the third argument is the API level.
-
-### On MacOS using brew
-
-The following command creates a standalone
-toolchain in `./toolchain/` for ARM-based Android devices
-using API level 9 (i.e., Android 2.3).
-
-    $ ./scripts/make_toolchain.sh /usr/local/Cellar/android-ndk/r10e/ arm-linux-androideabi 9
-
-The first argument is the path where NDK r10e is installed, the second
-argument is the cross compiler type, the third argument is the API level.
-
-## Cross-compiling
-
-Once you created a custom toolchain, you can cross compile
-measurement-kit using that toolchain using the `./scripts/build_target.sh`
-script, which accepts as command line parameters the cross compiler
-type and the API level. For example,
-
-    $ ./scripts/build_target.sh arm-linux-androideabi 9
-
-this script cross compiles measurement-kit under `./build` and puts
-the compiled libraries and haders under `./dist`.
-
-## Putting all together
-
-You can execute both steps (creating a cross compiler and cross compiling) in
-a single command using the `./scripts/build.sh` script. For example,
+The `./scripts/build.sh` script allows to create the required custom
+toolchains and to cross-compile MeasurementKit for all the architectures
+available for Android. For example,
 
     $ ./scripts/build.sh /usr/local/Cellar/android-ndk/r10e/ arm-linux-androideabi 9
 
@@ -81,8 +41,28 @@ If you omit API, 21 is used by default:
 
     $ ./scripts/build.sh /usr/local/Cellar/android-ndk/r10e/
 
-## TODO next
+Currently, you cannot omit the path to the Android NDK. In the above examples
+we have shown the path to the Android NDK on MacOS. If you followed the
+instructions for Linux, you should have written instead:
 
-What is missing to continue this work is to compile and link
-with measurement-kit and all its dependencies JNI code that can be
-accessed from Java to use measurement-kit.
+    $ ./scripts/build.sh $HOME/Android/android-ndk-r10e/ [options...]
+
+If you omit the architecture, the script prints an help message in which
+all the available architecture names are printed.
+
+This script is implemented by two helper scripts respectively called
+`./scripts/make_toolchain.sh` and `./scripts/build_arch.sh`. The former
+[creates a standalone cross-toolchain](
+http://www.kandroid.org/ndk/docs/STANDALONE-TOOLCHAIN.html)
+for a specific Android arch. The
+latter cross-compiles MeasurementKit for the selected arch.
+
+## Create the final archive
+
+Run this command to create the final archive:
+
+    $ ./scripts/make_archive.sh
+
+Then use GPG to sign the release and publish it on GitHub:
+
+    $ gpg --sign --armor -b $tarball
