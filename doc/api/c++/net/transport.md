@@ -71,7 +71,7 @@ unspecified)
     - *PF_UNSPEC*: try with IPv4 first and if it fails then try with IPv6
       (this is the default)
 
-    - *PF_UNSPEC*: try with IPv6 first and if it fails then try with IPv4
+    - *PF_UNSPEC6*: try with IPv6 first and if it fails then try with IPv4
 
 - *port*: port to connect to
 
