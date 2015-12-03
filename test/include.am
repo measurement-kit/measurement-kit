@@ -2,205 +2,205 @@ TESTS =  # Empty
 check_PROGRAMS =  # Empty
 
 test_common_async_SOURCES = test/common/async.cpp
-test_common_async_LDADD = libmeasurement_kit.la
+test_common_async_LDADD = libmeasurement-kit.la
 test_common_async_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/async
 TESTS += test/common/async
 
 test_common_delayed_call_SOURCES = test/common/delayed_call.cpp
-test_common_delayed_call_LDADD = libmeasurement_kit.la
+test_common_delayed_call_LDADD = libmeasurement-kit.la
 test_common_delayed_call_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/delayed_call
 TESTS += test/common/delayed_call
 
 test_common_log_SOURCES = test/common/log.cpp
-test_common_log_LDADD = libmeasurement_kit.la
+test_common_log_LDADD = libmeasurement-kit.la
 test_common_log_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/log
 TESTS += test/common/log
 
 test_common_maybe_SOURCES = test/common/maybe.cpp
-test_common_maybe_LDADD = libmeasurement_kit.la
+test_common_maybe_LDADD = libmeasurement-kit.la
 test_common_maybe_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/maybe
 TESTS += test/common/maybe
 
 test_common_evbuffer_SOURCES = test/common/evbuffer.cpp
-test_common_evbuffer_LDADD = libmeasurement_kit.la
+test_common_evbuffer_LDADD = libmeasurement-kit.la
 test_common_evbuffer_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/evbuffer
 TESTS += test/common/evbuffer
 
 test_common_bufferevent_SOURCES = test/common/bufferevent.cpp
-test_common_bufferevent_LDADD = libmeasurement_kit.la
+test_common_bufferevent_LDADD = libmeasurement-kit.la
 test_common_bufferevent_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/bufferevent
 TESTS += test/common/bufferevent
 
 test_common_poller_SOURCES = test/common/poller.cpp
-test_common_poller_LDADD = libmeasurement_kit.la
+test_common_poller_LDADD = libmeasurement-kit.la
 test_common_poller_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/poller
 TESTS += test/common/poller
 
 test_common_var_SOURCES = test/common/var.cpp
-test_common_var_LDADD = libmeasurement_kit.la
+test_common_var_LDADD = libmeasurement-kit.la
 test_common_var_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/var
 TESTS += test/common/var
 
 test_common_socket_valid_SOURCES = test/common/socket_valid.cpp
-test_common_socket_valid_LDADD = libmeasurement_kit.la
+test_common_socket_valid_LDADD = libmeasurement-kit.la
 test_common_socket_valid_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/socket_valid
 TESTS += test/common/socket_valid
 
 test_common_utils_SOURCES = test/common/utils.cpp
-test_common_utils_LDADD = libmeasurement_kit.la
+test_common_utils_LDADD = libmeasurement-kit.la
 test_common_utils_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/common/utils
 TESTS += test/common/utils
 
 test_net_buffer_SOURCES = test/net/buffer.cpp
-test_net_buffer_LDADD = libmeasurement_kit.la
+test_net_buffer_LDADD = libmeasurement-kit.la
 test_net_buffer_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/net/buffer
 TESTS += test/net/buffer
 
 test_net_connection_SOURCES = test/net/connection.cpp
-test_net_connection_LDADD = libmeasurement_kit.la
+test_net_connection_LDADD = libmeasurement-kit.la
 test_net_connection_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/net/connection
 TESTS += test/net/connection
 
 test_net_transport_SOURCES = test/net/transport.cpp
-test_net_transport_LDADD = libmeasurement_kit.la
+test_net_transport_LDADD = libmeasurement-kit.la
 test_net_transport_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/net/transport
 TESTS += test/net/transport
 
 test_net_connection_check_fds_SOURCES = test/net/connection_check_fds.cpp
-test_net_connection_check_fds_LDADD = libmeasurement_kit.la
+test_net_connection_check_fds_LDADD = libmeasurement-kit.la
 test_net_connection_check_fds_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/net/connection_check_fds
 TESTS += test/net/connection_check_fds
 
 test_report_file_SOURCES = test/report/file.cpp
-test_report_file_LDADD = libmeasurement_kit.la
+test_report_file_LDADD = libmeasurement-kit.la
 test_report_file_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/report/file
 TESTS += test/report/file
 
 test_ooni_dns_injection_SOURCES = test/ooni/dns_injection.cpp
-test_ooni_dns_injection_LDADD = libmeasurement_kit.la
+test_ooni_dns_injection_LDADD = libmeasurement-kit.la
 test_ooni_dns_injection_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/dns_injection
 TESTS += test/ooni/dns_injection
 
 test_ooni_dns_injection_test_SOURCES = test/ooni/dns_injection_test.cpp
-test_ooni_dns_injection_test_LDADD = libmeasurement_kit.la
+test_ooni_dns_injection_test_LDADD = libmeasurement-kit.la
 test_ooni_dns_injection_test_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/dns_injection_test
 TESTS += test/ooni/dns_injection_test
 
 test_ooni_http_invalid_request_line_SOURCES = test/ooni/http_invalid_request_line.cpp
-test_ooni_http_invalid_request_line_LDADD = libmeasurement_kit.la
+test_ooni_http_invalid_request_line_LDADD = libmeasurement-kit.la
 test_ooni_http_invalid_request_line_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/http_invalid_request_line
 TESTS += test/ooni/http_invalid_request_line
 
 test_ooni_http_invalid_request_line_test_SOURCES = test/ooni/http_invalid_request_line_test.cpp
-test_ooni_http_invalid_request_line_test_LDADD = libmeasurement_kit.la
+test_ooni_http_invalid_request_line_test_LDADD = libmeasurement-kit.la
 test_ooni_http_invalid_request_line_test_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/http_invalid_request_line_test
 TESTS += test/ooni/http_invalid_request_line_test
 
 test_ooni_tcp_test_SOURCES = test/ooni/tcp_test.cpp
-test_ooni_tcp_test_LDADD = libmeasurement_kit.la
+test_ooni_tcp_test_LDADD = libmeasurement-kit.la
 test_ooni_tcp_test_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/tcp_test
 TESTS += test/ooni/tcp_test
 
 test_ooni_tcp_connect_SOURCES = test/ooni/tcp_connect.cpp
-test_ooni_tcp_connect_LDADD = libmeasurement_kit.la
+test_ooni_tcp_connect_LDADD = libmeasurement-kit.la
 test_ooni_tcp_connect_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/tcp_connect
 TESTS += test/ooni/tcp_connect
 
 test_ooni_tcp_connect_test_SOURCES = test/ooni/tcp_connect_test.cpp
-test_ooni_tcp_connect_test_LDADD = libmeasurement_kit.la
+test_ooni_tcp_connect_test_LDADD = libmeasurement-kit.la
 test_ooni_tcp_connect_test_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/tcp_connect_test
 TESTS += test/ooni/tcp_connect_test
 
 test_ooni_net_test_SOURCES = test/ooni/net_test.cpp
-test_ooni_net_test_LDADD = libmeasurement_kit.la
+test_ooni_net_test_LDADD = libmeasurement-kit.la
 test_ooni_net_test_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/ooni/net_test
 TESTS += test/ooni/net_test
 
 test_dns_defines_SOURCES = test/dns/defines.cpp
-test_dns_defines_LDADD = libmeasurement_kit.la
+test_dns_defines_LDADD = libmeasurement-kit.la
 test_dns_defines_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/dns/defines
 TESTS += test/dns/defines
 
 test_dns_error_SOURCES = test/dns/error.cpp
-test_dns_error_LDADD = libmeasurement_kit.la
+test_dns_error_LDADD = libmeasurement-kit.la
 test_dns_error_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/dns/error
 TESTS += test/dns/error
 
 test_dns_query_SOURCES = test/dns/query.cpp
-test_dns_query_LDADD = libmeasurement_kit.la
+test_dns_query_LDADD = libmeasurement-kit.la
 test_dns_query_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/dns/query
 TESTS += test/dns/query
 
 test_dns_resolver_SOURCES = test/dns/resolver.cpp
-test_dns_resolver_LDADD = libmeasurement_kit.la
+test_dns_resolver_LDADD = libmeasurement-kit.la
 test_dns_resolver_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/dns/resolver
 TESTS += test/dns/resolver
 
 test_dns_response_SOURCES = test/dns/response.cpp
-test_dns_response_LDADD = libmeasurement_kit.la
+test_dns_response_LDADD = libmeasurement-kit.la
 test_dns_response_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/dns/response
 TESTS += test/dns/response
 
 test_http_client_SOURCES = test/http/client.cpp
-test_http_client_LDADD = libmeasurement_kit.la
+test_http_client_LDADD = libmeasurement-kit.la
 test_http_client_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/http/client
 TESTS += test/http/client
 
 test_http_request_SOURCES = test/http/request.cpp
-test_http_request_LDADD = libmeasurement_kit.la
+test_http_request_LDADD = libmeasurement-kit.la
 test_http_request_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/http/request
 TESTS += test/http/request
 
 test_http_request_serializer_SOURCES = test/http/request_serializer.cpp
-test_http_request_serializer_LDADD = libmeasurement_kit.la
+test_http_request_serializer_LDADD = libmeasurement-kit.la
 test_http_request_serializer_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/http/request_serializer
 TESTS += test/http/request_serializer
 
 test_http_response_parser_SOURCES = test/http/response_parser.cpp
-test_http_response_parser_LDADD = libmeasurement_kit.la
+test_http_response_parser_LDADD = libmeasurement-kit.la
 test_http_response_parser_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/http/response_parser
 TESTS += test/http/response_parser
 
 test_http_stream_SOURCES = test/http/stream.cpp
-test_http_stream_LDADD = libmeasurement_kit.la
+test_http_stream_LDADD = libmeasurement-kit.la
 test_http_stream_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/http/stream
 TESTS += test/http/stream
 
 test_traceroute_android_SOURCES = test/traceroute/android.cpp
-test_traceroute_android_LDADD = libmeasurement_kit.la
+test_traceroute_android_LDADD = libmeasurement-kit.la
 test_traceroute_android_LDFLAGS = -lyaml-cpp
 check_PROGRAMS += test/traceroute/android
 TESTS += test/traceroute/android
