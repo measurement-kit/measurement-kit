@@ -80,13 +80,22 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
     test -f Makefile && make clean
     echo "Configure with --host=${ARCH} and toolchain ${ANDROID_TOOLCHAIN}"
     test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && autoreconf -i)
-    ${ROOTDIR}/../../configure --host=${ARCH} --with-sysroot=${SYSROOT} \
+    ${ROOTDIR}/../../configure -q --host=${ARCH} --with-sysroot=${SYSROOT} \
       --with-libevent=builtin --with-yaml-cpp=builtin \
       --with-boost=builtin --disable-shared --libdir=/ \
       --includedir=/include --with-libmaxminddb=builtin \
       --with-jansson=builtin
     make V=0
     echo "Installing library in ${BASEDIR}/build/${ANDROID_TOOLCHAIN}"
+    # The rationale of the following algorithm is to install-strip and do
+    # only install headers we want and do not install extra stuff.
+    # See: https://github.com/measurement-kit/measurement-kit/pull/274/files
+    make install-strip DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
+    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/include
     make install-data-am DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
-    make install-exec DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
+    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/pkgconfig
+    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/usr
+    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/*.la
+    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/libevent_core.a
+    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/libevent_extra.a
 )
