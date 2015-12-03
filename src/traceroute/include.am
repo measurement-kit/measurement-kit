@@ -9,4 +9,5 @@ libmeasurement_kit_la_LIBADD += src/traceroute/libtraceroute.la
 tracerouteincludedir = $(includedir)/measurement_kit/traceroute
 tracerouteinclude_HEADERS = \
     include/measurement_kit/traceroute/android.hpp \
+    include/measurement_kit/traceroute/error.hpp \
     include/measurement_kit/traceroute/interface.hpp
