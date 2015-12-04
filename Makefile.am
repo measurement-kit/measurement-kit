@@ -24,4 +24,4 @@ noinst_LTLIBRARIES =  # Empty
 include src/include.am
 include test/include.am
 
-lib_LTLIBRARIES += libmeasurement_kit.la
+lib_LTLIBRARIES += libmeasurement-kit.la

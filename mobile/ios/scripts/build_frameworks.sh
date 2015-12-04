@@ -4,7 +4,7 @@ rm -rf Frameworks/*.framework
 mkdir Frameworks/boost.framework
 mkdir Frameworks/event2.framework
 mkdir Frameworks/event2_pthreads.framework
-mkdir Frameworks/measurement_kit.framework
+mkdir Frameworks/measurement-kit.framework
 mkdir Frameworks/yaml-cpp.framework
 
 # XXX Copying x86 headers -- has this implications (e.g., config.h)?
@@ -33,12 +33,12 @@ lipo -create -output Frameworks/event2_pthreads.framework/event2_pthreads \
   build/iPhoneSimulator/i386/lib/libevent_pthreads.a \
   build/iPhoneSimulator/x86_64/lib/libevent_pthreads.a
 
-lipo -create -output Frameworks/measurement_kit.framework/measurement_kit \
-  build/iPhoneOS/arm64/lib/libmeasurement_kit.a \
-  build/iPhoneOS/armv7s/lib/libmeasurement_kit.a \
-  build/iPhoneOS/armv7/lib/libmeasurement_kit.a \
-  build/iPhoneSimulator/i386/lib/libmeasurement_kit.a \
-  build/iPhoneSimulator/x86_64/lib/libmeasurement_kit.a
+lipo -create -output Frameworks/measurement-kit.framework/measurement-kit \
+  build/iPhoneOS/arm64/lib/libmeasurement-kit.a \
+  build/iPhoneOS/armv7s/lib/libmeasurement-kit.a \
+  build/iPhoneOS/armv7/lib/libmeasurement-kit.a \
+  build/iPhoneSimulator/i386/lib/libmeasurement-kit.a \
+  build/iPhoneSimulator/x86_64/lib/libmeasurement-kit.a
 
 lipo -create -output Frameworks/yaml-cpp.framework/yaml-cpp \
   build/iPhoneOS/arm64/lib/libyaml-cpp.a \
