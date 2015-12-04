@@ -37,7 +37,7 @@ namespace Catch {
 
             Totals totals;
 
-            context.testGroupStarting( "", 1, 1 ); // deprecated?
+            context.testGroupStarting( "all tests", 1, 1 ); // deprecated?
 
             TestSpec testSpec = m_config->testSpec();
             if( !testSpec.hasFilters() )
@@ -60,7 +60,15 @@ namespace Catch {
                     m_testsAlreadyRun.insert( *it );
                 }
             }
-            context.testGroupEnded( "", totals, 1, 1 );
+            std::vector<TestCase> skippedTestCases;
+            getRegistryHub().getTestCaseRegistry().getFilteredTests( testSpec, *m_config, skippedTestCases, true );
+            
+            for( std::vector<TestCase>::const_iterator it = skippedTestCases.begin(), itEnd = skippedTestCases.end();
+                    it != itEnd;
+                    ++it )
+                m_reporter->skipTest( *it );
+
+            context.testGroupEnded( "all tests", totals, 1, 1 );
             return totals;
         }
 
@@ -97,7 +105,7 @@ namespace Catch {
         std::set<TestCase> m_testsAlreadyRun;
     };
 
-    class Session {
+    class Session : NonCopyable {
         static bool alreadyInstantiated;
 
     public:
@@ -108,7 +116,7 @@ namespace Catch {
         : m_cli( makeCommandLineParser() ) {
             if( alreadyInstantiated ) {
                 std::string msg = "Only one instance of Catch::Session can ever be used";
-                std::cerr << msg << std::endl;
+                Catch::cerr() << msg << std::endl;
                 throw std::logic_error( msg );
             }
             alreadyInstantiated = true;
@@ -118,15 +126,10 @@ namespace Catch {
         }
 
         void showHelp( std::string const& processName ) {
-            std::cout << "\nCatch v"    << libraryVersion.majorVersion << "."
-                                        << libraryVersion.minorVersion << " build "
-                                        << libraryVersion.buildNumber;
-            if( libraryVersion.branchName != std::string( "master" ) )
-                std::cout << " (" << libraryVersion.branchName << " branch)";
-            std::cout << "\n";
+            Catch::cout() << "\nCatch v" << libraryVersion << "\n";
 
-            m_cli.usage( std::cout, processName );
-            std::cout << "For more detail usage please see the project docs\n" << std::endl;
+            m_cli.usage( Catch::cout(), processName );
+            Catch::cout() << "For more detail usage please see the project docs\n" << std::endl;
         }
 
         int applyCommandLine( int argc, char* const argv[], OnUnusedOptions::DoWhat unusedOptionBehaviour = OnUnusedOptions::Fail ) {
@@ -140,11 +143,12 @@ namespace Catch {
             catch( std::exception& ex ) {
                 {
                     Colour colourGuard( Colour::Red );
-                    std::cerr   << "\nError(s) in input:\n"
-                                << Text( ex.what(), TextAttributes().setIndent(2) )
-                                << "\n\n";
+                    Catch::cerr()
+                        << "\nError(s) in input:\n"
+                        << Text( ex.what(), TextAttributes().setIndent(2) )
+                        << "\n\n";
                 }
-                m_cli.usage( std::cout, m_configData.processName );
+                m_cli.usage( Catch::cout(), m_configData.processName );
                 return (std::numeric_limits<int>::max)();
             }
             return 0;
@@ -170,6 +174,9 @@ namespace Catch {
             try
             {
                 config(); // Force config to be constructed
+
+                std::srand( m_configData.rngSeed );
+
                 Runner runner( m_config );
 
                 // Handle list request
@@ -179,7 +186,7 @@ namespace Catch {
                 return static_cast<int>( runner.runTests().assertions.failed );
             }
             catch( std::exception& ex ) {
-                std::cerr << ex.what() << std::endl;
+                Catch::cerr() << ex.what() << std::endl;
                 return (std::numeric_limits<int>::max)();
             }
         }

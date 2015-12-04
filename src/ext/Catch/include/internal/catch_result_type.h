@@ -25,7 +25,9 @@ namespace Catch {
         Exception = 0x100 | FailureBit,
 
         ThrewException = Exception | 1,
-        DidntThrowException = Exception | 2
+        DidntThrowException = Exception | 2,
+
+        FatalErrorCondition = 0x200 | FailureBit
 
     }; };
 
@@ -39,11 +41,11 @@ namespace Catch {
 
     // ResultDisposition::Flags enum
     struct ResultDisposition { enum Flags {
-        Normal = 0x00,
+        Normal = 0x01,
 
-        ContinueOnFailure = 0x01,   // Failures fail test, but execution continues
-        FalseTest = 0x02,           // Prefix expression with !
-        SuppressFail = 0x04         // Failures are reported but do not fail the test
+        ContinueOnFailure = 0x02,   // Failures fail test, but execution continues
+        FalseTest = 0x04,           // Prefix expression with !
+        SuppressFail = 0x08         // Failures are reported but do not fail the test
     }; };
 
     inline ResultDisposition::Flags operator | ( ResultDisposition::Flags lhs, ResultDisposition::Flags rhs ) {
