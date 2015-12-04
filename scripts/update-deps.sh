@@ -2,7 +2,9 @@
 # Clone specific tags from github and update local copy
 
 get() {
-  git clone https://github.com/$1 tmp/$1
+  branch=$4
+  [ -z "$branch" ] && branch=master
+  git clone --depth 50 -b $branch https://github.com/$1 tmp/$1
   (cd tmp/$1 && git checkout $2)
   (cd tmp/$1 && git archive --prefix=$3/ HEAD) | \
     (cd src/ext/ && tar -xf-)
