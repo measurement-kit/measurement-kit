@@ -12,20 +12,20 @@ get() {
 
 rm -rf tmp/*
 get philsquared/Catch v1.2.1 Catch
-get boostorg/assert boost-1.56.0 boost/assert
-get boostorg/config boost-1.56.0 boost/config
+get boostorg/assert boost-1.59.0 boost/assert
+get boostorg/config boost-1.59.0 boost/config
 get boostorg/core boost-1.59.0-8-g3add966 boost/core
-get boostorg/detail boost-1.56.0 boost/detail
-get boostorg/iterator boost-1.56.0 boost/iterator
-get boostorg/mpl boost-1.56.0 boost/mpl
-get boostorg/predef boost-1.58.0~3^2~2 boost/predef
-get boostorg/preprocessor boost-1.56.0 boost/preprocessor
-get boostorg/smart_ptr boost-1.56.0-18-g8afd3be boost/smart_ptr
-get boostorg/static_assert boost-1.56.0 boost/static_assert
-get boostorg/throw_exception boost-1.56.0 boost/throw_exception
-get boostorg/type_traits boost-1.56.0 boost/type_traits
-get boostorg/typeof boost-1.56.0 boost/typeof
-get boostorg/utility boost-1.56.0 boost/utility
+get boostorg/detail boost-1.59.0 boost/detail
+get boostorg/iterator boost-1.59.0 boost/iterator
+get boostorg/mpl boost-1.59.0 boost/mpl
+get boostorg/predef boost-1.59.0 boost/predef
+get boostorg/preprocessor boost-1.59.0 boost/preprocessor
+get boostorg/smart_ptr boost-1.59.0 boost/smart_ptr
+get boostorg/static_assert boost-1.59.0 boost/static_assert
+get boostorg/throw_exception boost-1.59.0 boost/throw_exception
+get boostorg/type_traits boost-1.59.0 boost/type_traits
+get boostorg/typeof boost-1.59.0 boost/typeof
+get boostorg/utility boost-1.59.0 boost/utility
 get joyent/http-parser v2.1-47-g1b31580 http-parser
 get measurement-kit/libevent release-2.0.22-stable-18-gf1feb10 libevent
 get bassosimone/yaml-cpp master yaml-cpp
