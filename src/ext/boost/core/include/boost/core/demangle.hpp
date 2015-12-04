@@ -17,8 +17,6 @@
 # pragma once
 #endif
 
-// Fix building on Android with libcxx and gabi++
-#if 0
 #if defined( __clang__ ) && defined( __has_include )
 # if __has_include(<cxxabi.h>)
 #  define BOOST_CORE_HAS_CXXABI_H
@@ -26,12 +24,18 @@
 #elif defined( __GLIBCXX__ ) || defined( __GLIBCPP__ )
 # define BOOST_CORE_HAS_CXXABI_H
 #endif
-#endif
 
 #if defined( BOOST_CORE_HAS_CXXABI_H )
 # include <cxxabi.h>
-# include <cstdlib>
-# include <cstddef>
+// For some archtectures (mips, mips64, x86, x86_64) cxxabi.h in Android NDK is implemented by gabi++ library
+// (https://android.googlesource.com/platform/ndk/+/master/sources/cxx-stl/gabi++/), which does not implement
+// abi::__cxa_demangle(). We detect this implementation by checking the include guard here.
+# if defined( __GABIXX_CXXABI_H__ )
+#  undef BOOST_CORE_HAS_CXXABI_H
+# else
+#  include <cstdlib>
+#  include <cstddef>
+# endif
 #endif
 
 namespace boost

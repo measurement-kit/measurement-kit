@@ -14,7 +14,7 @@ rm -rf tmp/*
 get philsquared/Catch v1.2.1 Catch
 get boostorg/assert boost-1.56.0 boost/assert
 get boostorg/config boost-1.56.0 boost/config
-get bassosimone/libight-boost-core boost-1.56.0-5-g348f24b boost/core
+get boostorg/core boost-1.59.0-8-g3add966 boost/core
 get boostorg/detail boost-1.56.0 boost/detail
 get boostorg/iterator boost-1.56.0 boost/iterator
 get boostorg/mpl boost-1.56.0 boost/mpl
