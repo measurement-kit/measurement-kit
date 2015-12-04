@@ -8,7 +8,7 @@
 #include <measurement_kit/common.hpp>
 #include "src/common/bufferevent.hpp"
 
-using namespace measurement_kit::common;
+using namespace mk;
 
 TEST_CASE("Constructors") {
 
@@ -99,7 +99,7 @@ TEST_CASE("Bufferevent operations") {
             ::bufferevent_free(bev);
         };
 
-        Bufferevent b(measurement_kit::get_global_event_base(), -1, 0, &libs);
+        Bufferevent b(mk::get_global_event_base(), -1, 0, &libs);
 
         b.close();
 
@@ -124,9 +124,9 @@ TEST_CASE("Bufferevent operations") {
             ::bufferevent_free(bev);
         };
 
-        Bufferevent b(measurement_kit::get_global_event_base(), -1, 0, &libs);
+        Bufferevent b(mk::get_global_event_base(), -1, 0, &libs);
 
-        b.make(measurement_kit::get_global_event_base(), -1, 0);
+        b.make(mk::get_global_event_base(), -1, 0);
 
         // Ensure that close() was called before creating a new bufferevent
         REQUIRE(called == 1);
@@ -143,7 +143,7 @@ TEST_CASE("Bufferevent operations") {
 
         Bufferevent b(&libs);
 
-        b.make(measurement_kit::get_global_event_base(), -1, 0);
+        b.make(mk::get_global_event_base(), -1, 0);
 
         // Ensure that close() was not called in this case
         REQUIRE(called == 0);
@@ -161,9 +161,9 @@ TEST_CASE("Bufferevent operations") {
                 return bevp;
             };
 
-        Bufferevent b(measurement_kit::get_global_event_base(), -1, 0);
+        Bufferevent b(mk::get_global_event_base(), -1, 0);
 
-        b.make(measurement_kit::get_global_event_base(), -1, 0, &libs);
+        b.make(mk::get_global_event_base(), -1, 0, &libs);
 
         // Ensure that bufferevent_socket_new() was called
         REQUIRE(bevp == (bufferevent *)b);
@@ -187,9 +187,9 @@ TEST_CASE("Bufferevent operations") {
 
         Bufferevent b(&libs);
 
-        b.make(measurement_kit::get_global_event_base(), -1, 0, &libs);
-        b.make(measurement_kit::get_global_event_base(), -1, 0, &libs);
-        b.make(measurement_kit::get_global_event_base(), -1, 0, &libs);
+        b.make(mk::get_global_event_base(), -1, 0, &libs);
+        b.make(mk::get_global_event_base(), -1, 0, &libs);
+        b.make(mk::get_global_event_base(), -1, 0, &libs);
 
         REQUIRE(new_called == 3);
         REQUIRE(free_called == 2);
@@ -200,13 +200,13 @@ TEST_CASE("Bufferevent operations") {
 
         Bufferevent b(&libs);
 
-        b.make(measurement_kit::get_global_event_base(), -1, 0);
+        b.make(mk::get_global_event_base(), -1, 0);
 
         // Check whether the libs is changed as it ought to be
         REQUIRE(b.get_libs() == Libs::global());
 
         auto libs2 = Libs();
-        b.make(measurement_kit::get_global_event_base(), -1, 0, &libs2);
+        b.make(mk::get_global_event_base(), -1, 0, &libs2);
 
         // Check whether the libs is changed as it ought to be
         REQUIRE(b.get_libs() == &libs2);

@@ -15,11 +15,8 @@
 #include <string>
 #include <utility>
 
-namespace measurement_kit {
+namespace mk {
 namespace http {
-
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
 
 /*!
  * \brief HTTP request serializer.
@@ -60,7 +57,7 @@ struct RequestSerializer {
      * \brief Serialize request.
      * \param buff Buffer where to serialize request.
      */
-    void serialize(Buffer &buff) {
+    void serialize(net::Buffer &buff) {
         buff << method << " " << pathquery << " " << protocol << "\r\n";
         for (auto &kv : headers) {
             buff << kv.first << ": " << kv.second << "\r\n";
@@ -87,5 +84,5 @@ struct RequestSerializer {
 };
 
 } // namespace http
-} // namespace measurement_kit
+} // namespace mk
 #endif

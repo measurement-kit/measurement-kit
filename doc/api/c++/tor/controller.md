@@ -2,13 +2,13 @@
 Controller -- Tor controller.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/tor.hpp>
 
-using namespace measurement_kit::tor;
+using namespace mk::tor;
 
 // Default constructor using 127.0.0.1:9050
 Controller controller([]() {

@@ -8,8 +8,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 /// Improved std::shared_ptr<T> with null pointer checks
 template <typename T> class Var : public std::shared_ptr<T> {
@@ -40,6 +39,5 @@ template <typename T> class Var : public std::shared_ptr<T> {
     // DOING THAT CREATES THE RISK OF OBJECT SLICING.
 };
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk
 #endif

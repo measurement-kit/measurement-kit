@@ -15,8 +15,7 @@
 struct event;
 struct event_base;
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 // TODO: after MeasurementKit 0.1 move this class inside the .cpp file
 class DelayedCallState : public NonCopyable, public NonMovable {
@@ -46,6 +45,5 @@ class DelayedCall {
     Var<DelayedCallState> state_;
 };
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk
 #endif

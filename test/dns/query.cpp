@@ -13,8 +13,8 @@
 #include "src/common/libs_impl.hpp"
 #include "src/common/check_connectivity.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::dns;
+using namespace mk;
+using namespace mk::dns;
 
 //
 // TODO: make sure that Query() correctly handle `dnsb` and `libs`.
@@ -169,7 +169,7 @@ TEST_CASE("Query::cancel() is safe when a request is pending") {
         // the Query immediately, so we don't have a callback where
         // to report that we are done and we need to break the loop.
         //
-        measurement_kit::break_loop();
+        mk::break_loop();
     };
 
     auto failed = false;
@@ -181,12 +181,12 @@ TEST_CASE("Query::cancel() is safe when a request is pending") {
             // itself rather than calling the callback.
             //
             failed = true;
-            measurement_kit::break_loop();
+            mk::break_loop();
         }, Logger::global(), NULL, &libs);
 
     } // This kills Query, but not the underlying QueryImpl
 
-    measurement_kit::loop();
+    mk::loop();
     REQUIRE(!failed);
     REQUIRE(!bad_code);
     REQUIRE(called);
@@ -261,7 +261,7 @@ TEST_CASE("The system resolver works as expected") {
 
     DelayedCall d(10.0, [&](void) {
         failed = true;
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
 
     auto r1 =
@@ -273,9 +273,9 @@ TEST_CASE("The system resolver works as expected") {
             REQUIRE(response.get_results()[0] == "130.192.16.172");
             REQUIRE(response.get_rtt() > 0.0);
             REQUIRE(response.get_ttl() > 0);
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-    measurement_kit::loop();
+    mk::loop();
 
     auto r2 = Query(
         "IN", "REVERSE_A", "130.192.16.172", [&](Error e, Response response) {
@@ -286,9 +286,9 @@ TEST_CASE("The system resolver works as expected") {
             REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
             REQUIRE(response.get_rtt() > 0.0);
             REQUIRE(response.get_ttl() > 0);
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-    measurement_kit::loop();
+    mk::loop();
 
     auto r2bis =
         Query("IN", "PTR", "172.16.192.130.in-addr.arpa.",
@@ -300,9 +300,9 @@ TEST_CASE("The system resolver works as expected") {
                   REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
                   REQUIRE(response.get_rtt() > 0.0);
                   REQUIRE(response.get_ttl() > 0);
-                  measurement_kit::break_loop();
+                  mk::break_loop();
               });
-    measurement_kit::loop();
+    mk::loop();
 
     auto r3 = Query(
         "IN", "AAAA", "ooni.torproject.org", [&](Error e, Response response) {
@@ -319,9 +319,9 @@ TEST_CASE("The system resolver works as expected") {
                 }
             }
             REQUIRE(found);
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-    measurement_kit::loop();
+    mk::loop();
 
     auto r4 = Query(
         "IN", "REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
@@ -333,9 +333,9 @@ TEST_CASE("The system resolver works as expected") {
             REQUIRE(response.get_results()[0] == "listera.torproject.org");
             REQUIRE(response.get_rtt() > 0.0);
             REQUIRE(response.get_ttl() > 0);
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-    measurement_kit::loop();
+    mk::loop();
 
     auto r4bis = Query(
         "IN", "PTR", "6.2.4.1.0.2.e.f.f.f.1.2.3.1.2.0.b.e.d.0.2.0.2.0.8.b.1.4."
@@ -348,9 +348,9 @@ TEST_CASE("The system resolver works as expected") {
             REQUIRE(response.get_results()[0] == "listera.torproject.org");
             REQUIRE(response.get_rtt() > 0.0);
             REQUIRE(response.get_ttl() > 0);
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-    measurement_kit::loop();
+    mk::loop();
 
     REQUIRE(!failed);
 }
@@ -364,7 +364,7 @@ class SafeToDeleteQueryInItsOwnCallback {
             // This assignment should trigger the original request's destructor
             request =
                 Query("IN", "AAAA", "nexa.polito.it", [this](Error, Response) {
-                    measurement_kit::break_loop();
+                    mk::break_loop();
                 });
         });
     }
@@ -378,8 +378,8 @@ TEST_CASE("It is safe to clear a request in its own callback") {
     auto called = 0;
     DelayedCall watchdog(5.0, [&called]() {
         ++called;
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
-    measurement_kit::loop();
+    mk::loop();
     REQUIRE(called == 0);
 }

@@ -53,16 +53,15 @@ struct sockaddr_in6;
 struct sockaddr_in;
 struct sockaddr_storage;
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
+
 class Error;
-}
 
 namespace traceroute {
 
 /// Traceroute prober for Android
-class AndroidProber : public measurement_kit::common::NonCopyable,
-                      public measurement_kit::common::NonMovable,
+class AndroidProber : public NonCopyable,
+                      public NonMovable,
                       public ProberInterface {
 
   public:
@@ -72,7 +71,7 @@ class AndroidProber : public measurement_kit::common::NonCopyable,
     /// \param evbase Event base to use (optional)
     AndroidProber(
         bool use_ipv4, int port,
-        event_base *evbase = measurement_kit::get_global_event_base());
+        event_base *evbase = mk::get_global_event_base());
 
     /// Destructor
     ~AndroidProber() { cleanup(); }
@@ -86,7 +85,7 @@ class AndroidProber : public measurement_kit::common::NonCopyable,
 
     void on_timeout(std::function<void()> cb) override { timeout_cb_ = cb; }
 
-    void on_error(std::function<void(common::Error)> cb) override {
+    void on_error(std::function<void(Error)> cb) override {
         error_cb_ = cb;
     }
 
@@ -101,7 +100,7 @@ class AndroidProber : public measurement_kit::common::NonCopyable,
 
     std::function<void(ProbeResult)> result_cb_;  ///< on result callback
     std::function<void()> timeout_cb_;            ///< on timeout callback
-    std::function<void(common::Error)> error_cb_; ///< on error callback
+    std::function<void(Error)> error_cb_; ///< on error callback
 
     /// Call this when you don't receive a response within timeout
     void on_timeout() { probe_pending_ = false; }
@@ -159,6 +158,6 @@ class AndroidProber : public measurement_kit::common::NonCopyable,
 };
 
 } // namespace traceroute
-} // namespace measurement_kit
+} // namespace mk
 #endif
 #endif

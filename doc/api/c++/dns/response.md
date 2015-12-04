@@ -2,14 +2,14 @@
 Response -- DNS response message
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <event2/dns.h>
 #include <measurement_kit/dns.hpp>
 
-using namespace measurement_kit::dns;
+using namespace mk::dns;
 
 Response response;        // by default evdns status is DNS_ERR_UNKNOWN
 

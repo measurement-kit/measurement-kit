@@ -10,8 +10,7 @@
 
 #include <functional>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 /// The generic network test
 class NetTest : public NonCopyable, public NonMovable {
@@ -42,6 +41,5 @@ class NetTest : public NonCopyable, public NonMovable {
     Logger logger;
 };
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk
 #endif

@@ -17,11 +17,8 @@
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/net_test.hpp>
 
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
-
-using namespace measurement_kit::common;
-using namespace measurement_kit::report;
 
 class InputGenerator {
 
@@ -67,9 +64,9 @@ class InputFileGenerator : public InputGenerator {
     Logger *logger = Logger::global();
 };
 
-class NetTest : public measurement_kit::common::NetTest {
+class NetTest : public mk::NetTest {
     std::string input_filepath;
-    FileReporter file_report;
+    report::FileReporter file_report;
 
     DelayedCall delayed_call;
 
@@ -135,6 +132,7 @@ class NetTest : public measurement_kit::common::NetTest {
      */
     virtual void end(std::function<void()> cb) override;
 };
-}
-}
+
+} // namespace ooni
+} // namespace mk
 #endif

@@ -8,8 +8,8 @@
 #include <measurement_kit/common.hpp>
 #include "src/ooni/tcp_connect.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::ooni;
+using namespace mk;
+using namespace mk::ooni;
 
 TEST_CASE(
     "The TCP connect test should run with an input file of DNS hostnames") {
@@ -17,8 +17,8 @@ TEST_CASE(
                                                        {"port", "80"},
                                                       });
     tcp_connect.begin(
-        [&]() { tcp_connect.end([]() { measurement_kit::break_loop(); }); });
-    measurement_kit::loop();
+        [&]() { tcp_connect.end([]() { mk::break_loop(); }); });
+    mk::loop();
 }
 
 TEST_CASE("The TCP connect test should throw an exception if an invalid file "

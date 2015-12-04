@@ -14,9 +14,9 @@
 
 #include "src/http/request.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
-using namespace measurement_kit::http;
+using namespace mk;
+using namespace mk::net;
+using namespace mk::http;
 
 TEST_CASE("HTTP Request works as expected") {
     Request r(
@@ -31,7 +31,7 @@ TEST_CASE("HTTP Request works as expected") {
         "", [&](Error error, Response &&response) {
             if (error != 0) {
                 std::cout << "Error: " << (int)error << "\r\n";
-                measurement_kit::break_loop();
+                mk::break_loop();
                 return;
             }
             std::cout << "HTTP/" << response.http_major << "."
@@ -43,9 +43,9 @@ TEST_CASE("HTTP Request works as expected") {
             std::cout << "\r\n";
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
@@ -101,7 +101,7 @@ TEST_CASE("HTTP Request correctly receives errors") {
         "", [&](Error error, Response &&response) {
             if (error != 0) {
                 std::cout << "Error: " << (int)error << "\r\n";
-                measurement_kit::break_loop();
+                mk::break_loop();
                 return;
             }
             std::cout << "HTTP/" << response.http_major << "."
@@ -113,9 +113,9 @@ TEST_CASE("HTTP Request correctly receives errors") {
             std::cout << "\r\n";
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("HTTP Request works as expected over Tor") {
@@ -132,7 +132,7 @@ TEST_CASE("HTTP Request works as expected over Tor") {
         "", [&](Error error, Response &&response) {
             if (error != 0) {
                 std::cout << "Error: " << (int)error << "\r\n";
-                measurement_kit::break_loop();
+                mk::break_loop();
                 return;
             }
             std::cout << "HTTP/" << response.http_major << "."
@@ -144,9 +144,9 @@ TEST_CASE("HTTP Request works as expected over Tor") {
             std::cout << "\r\n";
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("Behavior is correct when only tor_socks_port is specified") {

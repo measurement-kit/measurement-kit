@@ -18,19 +18,17 @@
 
 struct evdns_base;
 
-namespace measurement_kit {
-namespace common {
-class Logger;
-}
-namespace dns {
+namespace mk {
 
-using namespace measurement_kit::common;
+class Logger;
+
+namespace dns {
 
 Query::Query(QueryClass dns_class, QueryType dns_type, std::string name,
              std::function<void(Error, Response)> func, Logger *lp,
              evdns_base *dnsb, Libs *libs) {
     if (dnsb == nullptr) {
-        dnsb = measurement_kit::get_global_evdns_base();
+        dnsb = mk::get_global_evdns_base();
     }
     if (libs == nullptr) {
         libs = Libs::global();
@@ -48,4 +46,4 @@ void Query::cancel(void) {
 }
 
 } // namespace dns
-} // namespace measurement_kit
+} // namespace mk

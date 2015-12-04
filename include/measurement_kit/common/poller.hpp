@@ -11,8 +11,7 @@
 struct evdns_base;
 struct event_base;
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 class Poller : public NonCopyable, public NonMovable {
   public:
@@ -40,29 +39,27 @@ class Poller : public NonCopyable, public NonMovable {
     Libs *libs_ = get_global_libs();
 };
 
-} // namespace common
-
 /*
  * Syntactic sugar:
  */
 
-inline common::Poller *get_global_poller(void) {
-    return (common::Poller::global());
+inline Poller *get_global_poller(void) {
+    return (Poller::global());
 }
 
 inline event_base *get_global_event_base(void) {
-    return (common::Poller::global()->get_event_base());
+    return (Poller::global()->get_event_base());
 }
 
 inline evdns_base *get_global_evdns_base(void) {
-    return (common::Poller::global()->get_evdns_base());
+    return (Poller::global()->get_evdns_base());
 }
 
-inline void loop(void) { common::Poller::global()->loop(); }
+inline void loop(void) { Poller::global()->loop(); }
 
-inline void loop_once(void) { common::Poller::global()->loop_once(); }
+inline void loop_once(void) { Poller::global()->loop_once(); }
 
-inline void break_loop(void) { common::Poller::global()->break_loop(); }
+inline void break_loop(void) { Poller::global()->break_loop(); }
 
-} // namespace measurement_kit
+} // namespace mk
 #endif

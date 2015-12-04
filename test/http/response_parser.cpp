@@ -10,9 +10,9 @@
 
 #include "src/http/response_parser.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
-using namespace measurement_kit::http;
+using namespace mk;
+using namespace mk::net;
+using namespace mk::http;
 
 TEST_CASE("We don't leak when we receive an invalid message") {
 
@@ -96,7 +96,7 @@ TEST_CASE("The HTTP response parser works as expected") {
     parser.on_end([&](void) { REQUIRE(body == "1234567"); });
 
     for (auto c : data) {
-        measurement_kit::debug("%c\n", c);
+        mk::debug("%c\n", c);
         parser.feed(c);
     }
 
@@ -134,7 +134,7 @@ TEST_CASE("The HTTP response parser works as expected") {
     parser.on_end([&](void) { REQUIRE(body == "abcabcabc"); });
 
     for (auto c : data) {
-        measurement_kit::debug("%c\n", c);
+        mk::debug("%c\n", c);
         parser.feed(c);
     }
 }

@@ -62,7 +62,7 @@
 
 struct event_base;
 
-namespace measurement_kit {
+namespace mk {
 namespace traceroute {
 
 AndroidProber::AndroidProber(bool a, int port, event_base *c)
@@ -80,8 +80,8 @@ void AndroidProber::init() {
     int level_sock, opt_recverr, level_proto, opt_recvttl, family;
     const int val = 1;
 
-    measurement_kit::debug("AndroidProber(%d, %d, %p) => %p", use_ipv4_, port_,
-                           (void *)evbase_, (void *)this);
+    mk::debug("AndroidProber(%d, %d, %p) => %p", use_ipv4_, port_,
+              (void *)evbase_, (void *)this);
 
     if (use_ipv4_) {
         level_sock = SOL_IP;
@@ -97,7 +97,7 @@ void AndroidProber::init() {
         family = AF_INET6;
     }
 
-    sockfd_ = measurement_kit::socket_create(family, SOCK_DGRAM, 0);
+    sockfd_ = mk::socket_create(family, SOCK_DGRAM, 0);
     if (sockfd_ == -1) {
         cleanup();
         error_cb_(SocketCreateError());
@@ -112,7 +112,7 @@ void AndroidProber::init() {
         return;
     }
 
-    if (measurement_kit::storage_init(&ss, &sslen, family, NULL, port_) != 0) {
+    if (mk::storage_init(&ss, &sslen, family, NULL, port_) != 0) {
         cleanup();
         error_cb_(StorageInitError());
         return;
@@ -142,8 +142,8 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
 
     init();
 
-    measurement_kit::debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port,
-                           ttl, payload.length());
+    mk::debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port,
+              ttl, payload.length());
 
     if (sockfd_ < 0) {
         error_cb_(SocketAlreadyClosedError()); // already close()d
@@ -171,8 +171,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
         return;
     }
 
-    if (measurement_kit::storage_init(&ss, &sslen, family, addr.c_str(),
-                                      port) != 0) {
+    if (mk::storage_init(&ss, &sslen, family, addr.c_str(), port) != 0) {
         error_cb_(StorageInitError());
         return;
     }
@@ -191,12 +190,12 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
 
     if (sendto(sockfd_, payload.data(), payload.length(), 0, (sockaddr *)&ss,
                sslen) != (ssize_t)payload.length()) {
-        measurement_kit::warn("sendto() failed: errno %d", errno);
+        mk::warn("sendto() failed: errno %d", errno);
         error_cb_(SendtoError());
         return;
     }
 
-    if (event_add(evp_, measurement_kit::timeval_init(&tv, timeout)) != 0) {
+    if (event_add(evp_, mk::timeval_init(&tv, timeout)) != 0) {
         error_cb_(EventAddError());
         return;
     }
@@ -218,7 +217,7 @@ ProbeResult AndroidProber::on_socket_readable() {
     sockaddr_storage storage;
     socklen_t solen;
 
-    measurement_kit::debug("on_socket_readable()");
+    mk::debug("on_socket_readable()");
 
     if (!probe_pending_) throw NoProbePendingError();
     probe_pending_ = false;
@@ -228,7 +227,7 @@ ProbeResult AndroidProber::on_socket_readable() {
     if (clock_gettime(CLOCK_MONOTONIC, &arr_time) != 0)
         throw ClockGettimeError();
     r.rtt = calculate_rtt(arr_time, start_time_);
-    measurement_kit::debug("rtt = %lf", r.rtt);
+    mk::debug("rtt = %lf", r.rtt);
 
     memset(buff, 0, sizeof(buff));
     iov.iov_base = buff;
@@ -243,26 +242,25 @@ ProbeResult AndroidProber::on_socket_readable() {
     msg.msg_flags = 0;
     if ((r.recv_bytes = recvmsg(sockfd_, &msg, MSG_ERRQUEUE)) < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) { // Defensive
-            measurement_kit::debug(
-                "it seems we received a valid reply packet back");
+            mk::debug("it seems we received a valid reply packet back");
             memset(&storage, 0, sizeof(storage));
             solen = sizeof(storage);
             if ((r.recv_bytes = recvfrom(sockfd_, buff, sizeof(buff), 0,
                                          (sockaddr *)&storage, &solen)) < 0) {
                 throw std::runtime_error("recv() failed");
             }
-            measurement_kit::debug("recv_bytes = %lu", r.recv_bytes);
+            mk::debug("recv_bytes = %lu", r.recv_bytes);
             r.valid_reply = true;
-            measurement_kit::debug("valid_reply = %d", r.valid_reply);
+            mk::debug("valid_reply = %d", r.valid_reply);
             r.reply = std::string((const char *)buff, r.recv_bytes);
-            measurement_kit::debug("reply = <%lu bytes>", r.reply.length());
+            mk::debug("reply = <%lu bytes>", r.reply.length());
             r.interface_ip = get_source_addr(use_ipv4_, &storage);
-            measurement_kit::debug("interface_ip = %s", r.interface_ip.c_str());
+            mk::debug("interface_ip = %s", r.interface_ip.c_str());
             return r;
         }
         throw std::runtime_error("recvmsg() failed");
     }
-    measurement_kit::debug("recv_bytes = %lu", r.recv_bytes);
+    mk::debug("recv_bytes = %lu", r.recv_bytes);
 
     if (use_ipv4_) {
         expected_level = SOL_IP;
@@ -283,13 +281,12 @@ ProbeResult AndroidProber::on_socket_readable() {
         }
         if (cmsg->cmsg_type != expected_type_recverr &&
             cmsg->cmsg_type != expected_type_ttl) {
-            measurement_kit::warn("Received unexpected cmsg_type: %d",
-                                  cmsg->cmsg_type);
+            mk::warn("Received unexpected cmsg_type: %d", cmsg->cmsg_type);
             continue;
         }
         if (cmsg->cmsg_type == expected_type_ttl) {
             r.ttl = get_ttl(CMSG_DATA(cmsg));
-            measurement_kit::debug("ttl = %d", r.ttl);
+            mk::debug("ttl = %d", r.ttl);
             continue;
         }
 
@@ -299,16 +296,15 @@ ProbeResult AndroidProber::on_socket_readable() {
 
         socket_error = (sock_extended_err *)CMSG_DATA(cmsg);
         if (socket_error->ee_origin != expected_origin) {
-            measurement_kit::warn("Received unexpected ee_type: %d",
-                                  cmsg->cmsg_type);
+            mk::warn("Received unexpected ee_type: %d", cmsg->cmsg_type);
             continue;
         }
         r.icmp_type = socket_error->ee_type;
-        measurement_kit::debug("icmp_type = %d", r.icmp_type);
+        mk::debug("icmp_type = %d", r.icmp_type);
         r.icmp_code = socket_error->ee_code;
-        measurement_kit::debug("icmp_code = %d", r.icmp_code);
+        mk::debug("icmp_code = %d", r.icmp_code);
         r.interface_ip = get_source_addr(use_ipv4_, socket_error);
-        measurement_kit::debug("interface_ip = %s", r.interface_ip.c_str());
+        mk::debug("interface_ip = %s", r.interface_ip.c_str());
     }
 
     return r;
@@ -369,7 +365,7 @@ double AndroidProber::calculate_rtt(struct timespec end,
 void AndroidProber::event_callback(int, short event, void *opaque) {
     AndroidProber *prober = static_cast<AndroidProber *>(opaque);
 
-    measurement_kit::debug("event_callback(_, %d, %p)", event, opaque);
+    mk::debug("event_callback(_, %d, %p)", event, opaque);
 
     if ((event & EV_TIMEOUT) != 0) {
         prober->on_timeout();
@@ -379,7 +375,7 @@ void AndroidProber::event_callback(int, short event, void *opaque) {
         ProbeResult result;
         try {
             result = prober->on_socket_readable();
-        } catch (common::Error &error) {
+        } catch (Error &error) {
             prober->error_cb_(error);
             return;
         }
@@ -390,7 +386,7 @@ void AndroidProber::event_callback(int, short event, void *opaque) {
 }
 
 void AndroidProber::cleanup() {
-    measurement_kit::debug("cleanup(): %p", (void *)this);
+    mk::debug("cleanup(): %p", (void *)this);
     if (sockfd_ >= 0) {
         ::close(sockfd_);
         sockfd_ = -1;
@@ -403,6 +399,6 @@ void AndroidProber::cleanup() {
 }
 
 } // namespace traceroute
-} // namespace measurement_kit
+} // namespace mk
 
 #endif // __linux__

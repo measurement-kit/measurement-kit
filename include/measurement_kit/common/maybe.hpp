@@ -7,8 +7,7 @@
 
 #include <measurement_kit/common/error.hpp>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 /// Maybe contains a value of type T
 template <typename T> class Maybe {
@@ -39,6 +38,5 @@ template <typename T> class Maybe {
     T value_;
 };
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk
 #endif

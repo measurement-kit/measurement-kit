@@ -16,13 +16,13 @@
 TEST_CASE("By default the logger is quiet") {
     std::string buffer;
 
-    measurement_kit::on_log([&buffer](const char *s) {
+    mk::on_log([&buffer](const char *s) {
         buffer += s;
         buffer += "\n";
     });
 
-    measurement_kit::debug("Antani");
-    measurement_kit::info("Foo");
+    mk::debug("Antani");
+    mk::info("Foo");
 
     REQUIRE(buffer == "");
 }
@@ -30,15 +30,15 @@ TEST_CASE("By default the logger is quiet") {
 TEST_CASE("It is possible to make the logger verbose") {
     std::string buffer;
 
-    measurement_kit::on_log([&buffer](const char *s) {
+    mk::on_log([&buffer](const char *s) {
         buffer += s;
         buffer += "\n";
     });
 
-    measurement_kit::set_verbose(1);
+    mk::set_verbose(1);
 
-    measurement_kit::debug("Antani");
-    measurement_kit::info("Foo");
+    mk::debug("Antani");
+    mk::info("Foo");
 
     REQUIRE(buffer == "Antani\nFoo\n");
 }

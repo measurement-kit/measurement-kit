@@ -49,10 +49,9 @@
 // Forward declarations
 struct event_base;
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
+
 class Error;
-}
 
 namespace traceroute {
 
@@ -109,7 +108,7 @@ class ProberInterface {
     virtual void on_timeout(std::function<void()> cb) = 0;
 
     /// Set callback called when there is an error
-    virtual void on_error(std::function<void(common::Error)> cb) = 0;
+    virtual void on_error(std::function<void(Error)> cb) = 0;
 
     /// Default copy constructor
     ProberInterface(ProberInterface &) = default;
@@ -137,7 +136,7 @@ template <class Impl> class Prober : public ProberInterface {
     /// \param evbase Event base to use (optional)
     /// \throws Exception on error
     Prober(bool use_ipv4, int port,
-           event_base *evbase = measurement_kit::get_global_event_base()) {
+           event_base *evbase = mk::get_global_event_base()) {
         impl_.reset(new Impl(use_ipv4, port, evbase));
     }
 
@@ -154,7 +153,7 @@ template <class Impl> class Prober : public ProberInterface {
         impl_->on_timeout(cb);
     }
 
-    void on_error(std::function<void(common::Error)> cb) override {
+    void on_error(std::function<void(Error)> cb) override {
         impl_->on_error(cb);
     }
 
@@ -163,6 +162,6 @@ template <class Impl> class Prober : public ProberInterface {
 };
 
 } // namespace traceroute
-} // namespace measurement_kit
+} // namespace mk
 #endif
 #endif

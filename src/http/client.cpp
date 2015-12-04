@@ -5,7 +5,7 @@
 #include <measurement_kit/http/client.hpp>
 #include "src/http/request.hpp"
 
-namespace measurement_kit {
+namespace mk {
 namespace http {
 
 void Client::request(Settings settings, Headers headers, std::string body,
@@ -29,4 +29,4 @@ Client::~Client() {
 }
 
 } // namespace http
-} // namespace measurement_kit
+} // namespace mk

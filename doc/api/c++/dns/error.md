@@ -2,13 +2,13 @@
 Error -- DNS library specific errors
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/dns.hpp>
 
-using namespace measurement_kit::dns;
+using namespace mk::dns;
 
 FormatError;               // invalid response format
 ServerFailedError;         // server failure
@@ -23,7 +23,7 @@ CancelError;               // user cancelled query
 NoDataError;               // no data in the response
 
 // Map evdns error code to a DNS error
-common::Error dns_error(int code);
+Error mk::dns::dns_error(int code);
 ```
 
 # DESCRIPTION

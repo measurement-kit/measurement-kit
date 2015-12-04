@@ -10,7 +10,7 @@
 #include <measurement_kit/common/version.hpp>
 #include "src/report/entry.hpp"
 
-namespace measurement_kit {
+namespace mk {
 namespace report {
 
 class BaseReporter {
@@ -24,7 +24,7 @@ class BaseReporter {
 
     time_t start_time;
 
-    common::Settings options;
+    Settings options;
 
     BaseReporter(){};
 
@@ -38,15 +38,15 @@ class BaseReporter {
 
     virtual void close();
 
-    void on_error(std::function<void(common::Error)> func) { error_fn_ = func; }
+    void on_error(std::function<void(Error)> func) { error_fn_ = func; }
 
-    void emit_error(common::Error err) {
+    void emit_error(Error err) {
         if (!error_fn_) throw err;
         error_fn_(err);
     }
 
   private:
-    std::function<void(common::Error)> error_fn_;
+    std::function<void(Error)> error_fn_;
     bool closed = false;
     bool openned = false;
 
@@ -56,5 +56,5 @@ class BaseReporter {
 };
 
 } // namespace report
-} // namespace measurement_kit
+} // namespace mk
 #endif

@@ -5,7 +5,7 @@
 #include <measurement_kit/net/error.hpp>
 #include "src/net/socks5.hpp"
 
-namespace measurement_kit {
+namespace mk {
 namespace net {
 
 Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
@@ -165,4 +165,4 @@ Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
 }
 
 } // namespace net
-} // namespace measurement_kit
+} // namespace mk

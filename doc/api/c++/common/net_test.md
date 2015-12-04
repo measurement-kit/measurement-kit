@@ -2,15 +2,13 @@
 NetTest -- Base network test class
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/common.hpp>
 
-using namespace measurement_kit::common;
-
-NetTest *test = new SomeNetTest();  // NetTest is abstract
+mk::NetTest *test = new foo::SomeNetTest();  // NetTest is abstract
 
 // Configure the logger contained by NetTest
 test->on_log([](const char *s) {

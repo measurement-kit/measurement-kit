@@ -12,9 +12,8 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
-using namespace measurement_kit::http;
+using namespace mk;
+using namespace mk::http;
 
 TEST_CASE("HTTP Client works as expected") {
     auto client = Client();
@@ -35,7 +34,7 @@ TEST_CASE("HTTP Client works as expected") {
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
             if (++count >= 3) {
-                measurement_kit::break_loop();
+                mk::break_loop();
             }
         });
 
@@ -52,7 +51,7 @@ TEST_CASE("HTTP Client works as expected") {
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
             if (++count >= 3) {
-                measurement_kit::break_loop();
+                mk::break_loop();
             }
         });
 
@@ -69,11 +68,11 @@ TEST_CASE("HTTP Client works as expected") {
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
             if (++count >= 3) {
-                measurement_kit::break_loop();
+                mk::break_loop();
             }
         });
 
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("HTTP Client works as expected over Tor") {
@@ -97,7 +96,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
             if (++count >= 3) {
-                measurement_kit::break_loop();
+                mk::break_loop();
             }
         });
 
@@ -116,7 +115,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
             if (++count >= 3) {
-                measurement_kit::break_loop();
+                mk::break_loop();
             }
         });
 
@@ -135,11 +134,11 @@ TEST_CASE("HTTP Client works as expected over Tor") {
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
             if (++count >= 3) {
-                measurement_kit::break_loop();
+                mk::break_loop();
             }
         });
 
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
@@ -158,10 +157,10 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
             std::cout << "Error: " << (int)error << std::endl;
             std::cout << response.body << "\r\n";
             std::cout << "[snip]\r\n";
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
 
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("Make sure that settings are not modified") {
@@ -185,10 +184,10 @@ TEST_CASE("Make sure that settings are not modified") {
                        std::cout << "Error: " << (int)error << std::endl;
                        std::cout << response.body << "\r\n";
                        std::cout << "[snip]\r\n";
-                       measurement_kit::break_loop();
+                       mk::break_loop();
                    });
 
-    measurement_kit::loop();
+    mk::loop();
 
     // Make sure that no changes were made
     for (auto &iter : settings) {

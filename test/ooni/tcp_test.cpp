@@ -10,43 +10,8 @@
 
 #include <iostream>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::ooni;
-
-TEST_CASE("TCPTest test should run") {
-#if 0
-
-    auto client = TCPClient("www.torproject.org", "80");
-
-    client.on("error", [](Error error) {
-        std::cout << std::endl;  // Terminate eventual body
-        if (error.error == 0) {
-            std::cout << "Error: " << error.error << std::endl;
-        }
-        measurement_kit::break_loop();
-    });
-
-    client.on("connect", [&]() {
-        std::cout << "Connection established..." << std::endl;
-
-        client.write("GET /robots.txt HTTP/1.1\r\n"
-                     "Connection: close\r\n"
-                     "Host: www.neubot.org\r\n"
-                     "Accept: */*\r\n"
-                     "\r\n");
-
-        client.on("flush", []() {
-            std::cout << "Request sent... waiting for response" << std::endl;
-        });
-
-        client.on("data", [](std::string&& data) {
-            std::cout << data;
-        });
-    });
-
-    measurement_kit::loop();
-#endif
-}
+using namespace mk;
+using namespace mk::ooni;
 
 TEST_CASE("TCPTest works as expected in a common case") {
 
@@ -59,7 +24,7 @@ TEST_CASE("TCPTest works as expected in a common case") {
         },
         [&count]() {
             if (++count >= 2) {
-                measurement_kit::break_loop();
+                mk::break_loop();
             }
         });
 
@@ -69,9 +34,9 @@ TEST_CASE("TCPTest works as expected in a common case") {
         },
         [&count]() {
             if (++count >= 2) {
-                measurement_kit::break_loop();
+                mk::break_loop();
             }
         });
 
-    measurement_kit::loop();
+    mk::loop();
 }

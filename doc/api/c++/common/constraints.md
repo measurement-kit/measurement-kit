@@ -2,21 +2,20 @@
 Constraints -- Constraints on copyability and movability
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/common.hpp>
 
-namespace measurement_kit {
+namespace mk {
 namespace foobar {
 
-class Foo : public common::NonCopyable {};
+class Foo : public NonCopyable {};
 
-class Bar : public common::NonMovable {};
+class Bar : public NonMovable {};
 
-class FooBar : public common::NonCopyable,
-               public common::NonMovable {};
+class FooBar : public NonCopyable, public NonMovable {};
 
 }}
 ```

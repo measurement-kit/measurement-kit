@@ -42,7 +42,7 @@
 #include <netinet/icmp6.h>
 #include <netinet/ip_icmp.h>
 
-namespace measurement_kit {
+namespace mk {
 namespace traceroute {
 
 struct ProbeResultMapping {
@@ -73,20 +73,20 @@ static ProbeResultMapping MAPPINGv6[] = {
 
 ProbeResultMeaning ProbeResult::get_meaning() {
     if (valid_reply) {
-        measurement_kit::debug("type %d code %d meaning %d (got reply packet)",
-                               icmp_type, icmp_code, PRM_::GOT_REPLY_PACKET);
+        mk::debug("type %d code %d meaning %d (got reply packet)",
+                  icmp_type, icmp_code, PRM_::GOT_REPLY_PACKET);
         return PRM_::GOT_REPLY_PACKET;
     }
     for (auto m = is_ipv4 ? &MAPPINGv4[0] : &MAPPINGv6[0];
          m->meaning != PRM_::OTHER; ++m) {
         if (m->type == icmp_type && m->code == icmp_code) {
-            measurement_kit::debug("type %d code %d meaning %d", icmp_type,
-                                   icmp_code, m->meaning);
+            mk::debug("type %d code %d meaning %d", icmp_type,
+                      icmp_code, m->meaning);
             return m->meaning;
         }
     }
-    measurement_kit::debug("type %d code %d meaning %d (other)", icmp_type,
-                           icmp_code, PRM_::OTHER);
+    mk::debug("type %d code %d meaning %d (other)", icmp_type,
+              icmp_code, PRM_::OTHER);
     return PRM_::OTHER;
 }
 
@@ -95,6 +95,6 @@ ProberInterface::~ProberInterface() {}
 #undef PRM_
 
 } // namespace traceroute
-} // namespace measurement_kit
+} // namespace mk
 
 #endif

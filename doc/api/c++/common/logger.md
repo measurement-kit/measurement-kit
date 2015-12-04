@@ -2,15 +2,13 @@
 Logger -- Log messages processor
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/common.hpp>
 
-using namespace measurement_kit::common;
-
-Logger logger;              // Log on stderr warn messages only
+mk::Logger logger;          // Log on stderr warn messages only
 
 logger.set_verbose(-1);     // Same as above
 logger.set_verbose(0);      // Only log warning messages
@@ -26,7 +24,7 @@ logger.debug("Format string: %s", "but also arguments");
 logger.info("Just like printf");
 logger.warn("Use this for important messages");
 
-Logger *root = Logger::default();
+mk::Logger *root = mk::Logger::default();
 ```
 
 # DESCRIPTION

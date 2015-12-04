@@ -8,7 +8,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/ooni.hpp>
 
-using namespace measurement_kit;
+using namespace mk;
 
 // Run sync test
 ooni::TcpConnectTest()

@@ -17,7 +17,7 @@
 struct sockaddr_storage;
 struct timeval;
 
-namespace measurement_kit {
+namespace mk {
 
 /*
  * Macros and functions useful to check whether sockets are valid. We
@@ -139,5 +139,5 @@ std::string unreverse_ipv6(std::string s);
 
 std::string unreverse_ipv4(std::string s);
 
-} // namespace measurement_kit
+} // namespace mk
 #endif

@@ -5,10 +5,8 @@
 #include "src/ooni/tcp_test.hpp"
 #include "src/net/connection.hpp"
 
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
-
-using namespace measurement_kit::common;
 
 TCPClient TCPTest::connect(Settings options, std::function<void()> &&cb) {
     if (options["port"] == "") {
@@ -18,7 +16,7 @@ TCPClient TCPTest::connect(Settings options, std::function<void()> &&cb) {
         options["host"] = "localhost";
     }
 
-    auto connection = std::make_shared<Connection>(
+    auto connection = std::make_shared<net::Connection>(
         "PF_UNSPEC", options["host"].c_str(), options["port"].c_str());
 
     //
@@ -39,5 +37,6 @@ TCPClient TCPTest::connect(Settings options, std::function<void()> &&cb) {
 
     return connection;
 }
-}
-}
+
+} // namespace ooni
+} // namespace mk

@@ -25,7 +25,7 @@
 
 #include <event2/util.h>
 
-namespace measurement_kit {
+namespace mk {
 
 void timeval_now(timeval *tv) {
     if (gettimeofday(tv, nullptr) != 0) {
@@ -308,4 +308,4 @@ std::string unreverse_ipv4(std::string s) {
     return std::string(r.begin(), r.end());
 }
 
-} // namespace measurement_kit
+} // namespace mk

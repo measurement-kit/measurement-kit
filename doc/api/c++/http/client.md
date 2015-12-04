@@ -2,14 +2,13 @@
 Client -- HTTP client.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/http.hpp>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit;
+using namespace mk;
 
 http::Client client;
 

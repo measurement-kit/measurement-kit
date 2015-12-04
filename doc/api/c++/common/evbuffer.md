@@ -2,15 +2,13 @@
 Evbuffer -- RAII wrapper for libevent evbuffer
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/common.hpp>
 
-using namespace measurement_kit::common;
-
-Evbuffer evbuf;
+mk::Evbuffer evbuf;
 evbuffer *p = evbuf; // Conversion done automatically
 ```
 

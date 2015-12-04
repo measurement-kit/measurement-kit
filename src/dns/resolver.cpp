@@ -31,10 +31,8 @@
 
 struct evdns_base;
 
-namespace measurement_kit {
+namespace mk {
 namespace dns {
-
-using namespace measurement_kit::common;
 
 void Resolver::cleanup(void) {
     if (base != nullptr) {
@@ -119,4 +117,4 @@ void Resolver::query(QueryClass dns_class, QueryType dns_type, std::string name,
 }
 
 } // namespace dns
-} // namespace measurement_kit
+} // namespace mk

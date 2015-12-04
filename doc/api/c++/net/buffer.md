@@ -2,15 +2,14 @@
 Buffer - Buffer containing data.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 
 ```C++
 #include <measurement_kit/net.hpp>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
+using namespace mk::net;
 
 // Constructor
 

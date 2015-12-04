@@ -16,15 +16,13 @@
 
 struct evdns_base; // Internally we use evdns
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
+
 struct Libs;
-}
+
 namespace dns {
 
 class Response;
-
-using namespace measurement_kit::common;
 
 /// Async DNS request.
 class Query {
@@ -75,5 +73,5 @@ class Query {
 };
 
 } // namespace dns
-} // namespace measurement_kit
+} // namespace mk
 #endif

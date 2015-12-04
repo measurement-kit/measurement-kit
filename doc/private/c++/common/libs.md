@@ -2,13 +2,13 @@
 Libs -- Wrappers for C libraries functions.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include "src/measurement_kit/common/libs_impl.hpp"
 
-using namespace measurement_kit::common;
+using namespace mk;
 
 // Suppose you want to check whether the Poller constructor deals
 // well with `event_base_new()` returning `nullptr`, then:

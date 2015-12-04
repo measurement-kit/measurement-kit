@@ -15,10 +15,7 @@
 #include <stdexcept>
 #include <string>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
-
-namespace measurement_kit {
+namespace mk {
 namespace http {
 
 RequestSerializer::RequestSerializer(Settings settings, Headers headers_,
@@ -68,4 +65,4 @@ RequestSerializer::RequestSerializer(Settings settings, Headers headers_,
 }
 
 } // namespace http
-} // namespace measurement_kit
+} // namespace mk

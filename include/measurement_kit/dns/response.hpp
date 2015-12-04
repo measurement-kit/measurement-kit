@@ -11,13 +11,11 @@
 #include <string>
 #include <vector>
 
-namespace measurement_kit {
-namespace common {
-struct Libs;
-}
-namespace dns {
+namespace mk {
 
-using namespace measurement_kit::common;
+struct Libs;
+
+namespace dns {
 
 /// DNS response.
 class Response {
@@ -64,5 +62,5 @@ class Response {
 };
 
 } // namespace dns
-} // namespace measurement_kit
+} // namespace mk
 #endif

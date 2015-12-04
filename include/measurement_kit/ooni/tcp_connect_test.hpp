@@ -11,7 +11,7 @@
 #include <measurement_kit/ooni/base_test.hpp>
 #include <string>
 
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
 
 /// Parameters of tcp-connect test
@@ -45,14 +45,14 @@ class TcpConnectTest : public BaseTest {
     }
 
     /// Create instance of the test
-    common::Var<common::NetTest> create_test_() override;
+    Var<NetTest> create_test_() override;
 
-    common::Settings settings;
+    Settings settings;
     bool is_verbose = false;
     std::function<void(const char *)> log_handler;
     std::string input_path;
 };
 
 } // namespace ooni
-} // namespace measurement_kit
+} // namespace mk
 #endif

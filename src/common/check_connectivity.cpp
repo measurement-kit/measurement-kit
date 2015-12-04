@@ -11,8 +11,7 @@
 #include "src/common/check_connectivity.hpp"
 #include <measurement_kit/common/logger.hpp>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 void CheckConnectivity::cleanup() // Idempotent cleanup function
 {
@@ -79,5 +78,4 @@ CheckConnectivity::CheckConnectivity() {
     }
 }
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk

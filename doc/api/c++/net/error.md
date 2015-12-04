@@ -2,15 +2,15 @@
 Error -- A network error.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/net.hpp>
 
-using namespace measurement_kit;
+using namespace mk;
 
-common::Error error = net::EOFError();
+Error error = net::EOFError();
 ```
 
 # DESCRIPTION

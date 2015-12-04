@@ -15,9 +15,9 @@
 #include "src/http/stream.hpp"
 #include "src/common/check_connectivity.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
-using namespace measurement_kit::http;
+using namespace mk;
+using namespace mk::net;
+using namespace mk::http;
 
 TEST_CASE("HTTP stream works as expected") {
     if (CheckConnectivity::is_down()) {
@@ -27,13 +27,13 @@ TEST_CASE("HTTP stream works as expected") {
         {"address", "www.google.com"}, {"port", "80"},
     });
     stream->on_connect([&]() {
-        measurement_kit::debug("Connection made... sending request");
+        mk::debug("Connection made... sending request");
         *stream << "GET /robots.txt HTTP/1.1\r\n"
                 << "Host: www.google.com\r\n"
                 << "Connection: close\r\n"
                 << "\r\n";
         stream->on_flush([]() {
-            measurement_kit::debug("Request sent... waiting for response");
+            mk::debug("Request sent... waiting for response");
         });
         stream->on_headers_complete(
             [&](unsigned short major, unsigned short minor, unsigned int status,
@@ -47,14 +47,14 @@ TEST_CASE("HTTP stream works as expected") {
                 stream->on_end([&](void) {
                     std::cout << "\r\n";
                     stream->close();
-                    measurement_kit::break_loop();
+                    mk::break_loop();
                 });
                 stream->on_body([&](std::string && /*chunk*/) {
                     // std::cout << chunk;
                 });
             });
     });
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("HTTP stream is robust to EOF") {
@@ -102,18 +102,18 @@ TEST_CASE("HTTP stream works as expected when using Tor") {
     });
     stream->set_timeout(1.0);
     stream->on_error([&](Error e) {
-        measurement_kit::debug("Connection error: %d", (int)e);
+        mk::debug("Connection error: %d", (int)e);
         stream->close();
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
     stream->on_connect([&]() {
-        measurement_kit::debug("Connection made... sending request");
+        mk::debug("Connection made... sending request");
         *stream << "GET /robots.txt HTTP/1.1\r\n"
                 << "Host: www.google.com\r\n"
                 << "Connection: close\r\n"
                 << "\r\n";
         stream->on_flush([]() {
-            measurement_kit::debug("Request sent... waiting for response");
+            mk::debug("Request sent... waiting for response");
         });
         stream->on_headers_complete(
             [&](unsigned short major, unsigned short minor, unsigned int status,
@@ -127,14 +127,14 @@ TEST_CASE("HTTP stream works as expected when using Tor") {
                 stream->on_end([&](void) {
                     std::cout << "\r\n";
                     stream->close();
-                    measurement_kit::break_loop();
+                    mk::break_loop();
                 });
                 stream->on_body([&](std::string && /*chunk*/) {
                     // std::cout << chunk;
                 });
             });
     });
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("HTTP stream receives connection errors") {
@@ -146,9 +146,9 @@ TEST_CASE("HTTP stream receives connection errors") {
     });
     stream->set_timeout(1.0);
     stream->on_error([&](Error e) {
-        measurement_kit::debug("Connection error: %d", (int)e);
+        mk::debug("Connection error: %d", (int)e);
         stream->close();
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
-    measurement_kit::loop();
+    mk::loop();
 }

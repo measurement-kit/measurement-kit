@@ -7,21 +7,21 @@
 
 #include <measurement_kit/common/error.hpp>
 
-namespace measurement_kit {
+namespace mk {
 namespace http {
 
 /// Received UPGRADE request error
-class UpgradeError : public common::Error {
+class UpgradeError : public Error {
   public:
     UpgradeError (): Error(3000, "unknown_error 3000") {};
 };
 
 /// Parse error occurred
-class ParserError : public common::Error {
+class ParserError : public Error {
   public:
     ParserError() : Error(3001, "unknown_error 3001") {};
 };
 
 } // namespace http
-} // namespace measurement_kit
+} // namespace mk
 #endif

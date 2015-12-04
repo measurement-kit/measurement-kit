@@ -10,7 +10,7 @@
 
 #include "src/report/base_reporter.hpp"
 
-namespace measurement_kit {
+namespace mk {
 namespace report {
 
 class FileReporter : public BaseReporter {
@@ -25,5 +25,5 @@ class FileReporter : public BaseReporter {
 };
 
 } // namespace report
-} // namespace measurement_kit
+} // namespace mk
 #endif

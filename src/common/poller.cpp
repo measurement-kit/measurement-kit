@@ -7,8 +7,7 @@
 #include <stdexcept>
 #include "src/common/libs_impl.hpp"
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 Poller::Poller(Libs *libs) {
     if (libs != nullptr) libs_ = libs;
@@ -41,5 +40,4 @@ void Poller::loop_once() {
     if (result == 1) warn("loop: no pending and/or active events");
 }
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk

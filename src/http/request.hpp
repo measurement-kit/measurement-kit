@@ -28,11 +28,8 @@
 #include <string>
 #include <type_traits>
 
-namespace measurement_kit {
+namespace mk {
 namespace http {
-
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
 
 /*!
  * \brief HTTP request.
@@ -106,7 +103,7 @@ class Request : public NonCopyable, public NonMovable {
         }
         stream = std::make_shared<Stream>(settings, logger);
         stream->on_error([this](Error err) {
-            if (err != EOFError()) {
+            if (err != net::EOFError()) {
                 emit_end(err, std::move(response));
             } else {
                 // When EOF is received, on_end() is called, therefore we
@@ -116,7 +113,7 @@ class Request : public NonCopyable, public NonMovable {
         stream->on_connect([this](void) {
             // TODO: improve the way in which we serialize the request
             //       to reduce unnecessary copies
-            Buffer buf;
+            net::Buffer buf;
             serializer.serialize(buf);
             *stream << buf.read();
 
@@ -164,5 +161,5 @@ class Request : public NonCopyable, public NonMovable {
 };
 
 } // namespace http
-} // namespace measurement_kit
+} // namespace mk
 #endif

@@ -5,8 +5,8 @@
 #include <measurement_kit/common/libs.hpp>
 #include "src/common/libs_impl.hpp"
 
-namespace measurement_kit {
+namespace mk {
 
-common::Libs *get_global_libs() { return common::Libs::global(); }
+Libs *get_global_libs() { return Libs::global(); }
 
-} // namespace measurement_kit
+} // namespace mk

@@ -2,13 +2,13 @@
 Response -- HTTP reponse.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/http.hpp>
 
-using namespace measurement_kit;
+using namespace mk;
 
 http::Response response;
 
@@ -27,4 +27,4 @@ including response line, headers, and body.
 
 # HISTORY
 
-The `Response` class appeared in MeasurementKit 1.0.0.
+The `Response` class appeared in MeasurementKit 0.1.

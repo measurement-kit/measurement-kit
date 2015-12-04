@@ -14,9 +14,9 @@
 
 #include "src/http/request_serializer.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
-using namespace measurement_kit::http;
+using namespace mk;
+using namespace mk::net;
+using namespace mk::http;
 
 TEST_CASE("HTTP Request serializer works as expected") {
     auto serializer = RequestSerializer(

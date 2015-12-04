@@ -6,8 +6,7 @@
 
 #include <stdio.h>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 Logger::Logger() {
     consumer_ = [](const char *s) { fprintf(stderr, "%s\n", s); };
@@ -23,5 +22,4 @@ void Logger::logv(const char *fmt, va_list ap) {
     consumer_(buffer_);
 }
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk

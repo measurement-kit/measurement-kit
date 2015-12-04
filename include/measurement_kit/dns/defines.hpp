@@ -9,7 +9,7 @@
 #ifndef MEASUREMENT_KIT_DNS_DEFINES_HPP
 #define MEASUREMENT_KIT_DNS_DEFINES_HPP
 
-namespace measurement_kit {
+namespace mk {
 namespace dns {
 
 /// Available query classes id
@@ -137,5 +137,5 @@ class QueryType {
 };
 
 } // namespace dns
-} // namespace measurement_kit
+} // namespace mk
 #endif

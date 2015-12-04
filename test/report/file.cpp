@@ -8,7 +8,7 @@
 #include <ctime>
 #include "src/report/file_reporter.hpp"
 
-using namespace measurement_kit::report;
+using namespace mk::report;
 
 TEST_CASE("The constructor for [FileReport] works correctly", "[BaseReport]") {
     REQUIRE_NOTHROW(FileReporter());

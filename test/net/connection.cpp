@@ -16,8 +16,8 @@
 #include "src/net/connection.hpp"
 #include "src/common/check_connectivity.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
+using namespace mk;
+using namespace mk::net;
 
 TEST_CASE("Connection::close() is idempotent") {
     if (CheckConnectivity::is_down()) {
@@ -33,9 +33,9 @@ TEST_CASE("Connection::close() is idempotent") {
         // It shall be safe to call close() more than once
         s.close();
         s.close();
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("It is safe to manipulate Connection after close") {
@@ -53,9 +53,9 @@ TEST_CASE("It is safe to manipulate Connection after close") {
         // where safe means that we don't segfault
         REQUIRE_THROWS(s.enable_read());
         REQUIRE_THROWS(s.disable_read());
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("It is safe to close Connection while resolve is in progress") {
@@ -64,8 +64,8 @@ TEST_CASE("It is safe to close Connection while resolve is in progress") {
     }
     Connection s("PF_INET", "nexa.polito.it", "80");
     DelayedCall unsched(0.001, [&s]() { s.close(); });
-    DelayedCall bail_out(2.0, []() { measurement_kit::break_loop(); });
-    measurement_kit::loop();
+    DelayedCall bail_out(2.0, []() { mk::break_loop(); });
+    mk::loop();
 }
 
 TEST_CASE("connect() iterates over all the available addresses") {
@@ -77,9 +77,9 @@ TEST_CASE("connect() iterates over all the available addresses") {
     s.on_error([](Error error) {
         auto ok = (error == SocketError() || error == ConnectFailedError());
         REQUIRE(ok);
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("It is possible to use Connection with a custom poller") {

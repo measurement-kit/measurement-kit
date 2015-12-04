@@ -15,8 +15,7 @@
 
 #include <sys/select.h> // for struct timeval
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 DelayedCallState::DelayedCallState(double t, std::function<void()> f,
                                    Libs *libs, event_base *evbase) {
@@ -45,5 +44,4 @@ DelayedCallState::~DelayedCallState() {
     evp_ = nullptr;
 }
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk

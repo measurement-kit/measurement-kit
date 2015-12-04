@@ -13,8 +13,7 @@
 
 #include <event2/thread.h>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 // Shared state between foreground and background threads
 struct AsyncState {
@@ -151,5 +150,4 @@ Async *Async::global() {
     return &singleton;
 }
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk

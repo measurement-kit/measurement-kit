@@ -20,10 +20,7 @@
 
 #define MAXLINE 4096
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
-
-namespace measurement_kit {
+namespace mk {
 namespace http {
 
 /*!
@@ -35,7 +32,7 @@ class ResponseParserImpl {
     Logger *logger = Logger::global();
     http_parser parser;
     http_parser_settings settings;
-    Buffer buffer;
+    net::Buffer buffer;
 
 // Header parsing states (see do_header_internal)
 #define S_NOTHING 0
@@ -240,7 +237,7 @@ class ResponseParserImpl {
      * \throws std::runtime_error This method throws std::runtime_error (or
      *         a class derived from it) on several error conditions.
      */
-    void feed(Buffer &data) {
+    void feed(net::Buffer &data) {
         buffer << data;
         parse();
     }
@@ -339,7 +336,7 @@ void ResponseParser::on_end(std::function<void(void)> &&fn) {
     impl->end_fn = std::move(fn);
 }
 
-void ResponseParser::feed(Buffer &data) { impl->feed(data); }
+void ResponseParser::feed(net::Buffer &data) { impl->feed(data); }
 
 void ResponseParser::feed(std::string data) { impl->feed(data); }
 
@@ -348,4 +345,4 @@ void ResponseParser::feed(char c) { impl->feed(c); }
 void ResponseParser::eof() { impl->eof(); }
 
 } // namespace http
-} // namespace measurement_kit
+} // namespace mk

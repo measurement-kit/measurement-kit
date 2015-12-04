@@ -2,14 +2,13 @@
 Resolver -- DNS resolver
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
-#include <event2/event.h>
 #include <measurement_kit/dns.hpp>
 
-using namespace measurement_kit;
+using namespace mk;
 
 // Constructs resolver with default settings
 dns::Resolver resolver;
@@ -28,9 +27,7 @@ reso.query(
         "AAAA",                                 // Type of query
         "nexa.polito.it",                       // Name to resolve
         [](Error error, Response response) {    // Callback
-            if (error) {
-                return;
-            }
+            if (error) throw error;
             /* handle successful response */
         });
 ```

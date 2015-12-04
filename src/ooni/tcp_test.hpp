@@ -13,16 +13,13 @@
 
 #include "src/ooni/net_test.hpp"
 
-namespace measurement_kit {
-namespace net {
-class Connection;
-}
+namespace mk {
+
+namespace net { class Connection; }
+
 namespace ooni {
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
-
-typedef Var<Connection> TCPClient; /* XXX */
+typedef Var<net::Connection> TCPClient; /* XXX */
 
 class TCPTest : public ooni::NetTest {
     using ooni::NetTest::NetTest;
@@ -36,6 +33,7 @@ class TCPTest : public ooni::NetTest {
 
     TCPClient connect(Settings options, std::function<void()> &&cb);
 };
-}
-}
+
+} // namespace ooni
+} // namespace mk
 #endif

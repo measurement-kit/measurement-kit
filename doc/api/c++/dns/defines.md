@@ -2,13 +2,13 @@
 Defines -- Define DNS query classes and types
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/dns.hpp>
 
-using namespace measurement_kit::dns;
+using namespace mk::dns;
 
 QueryClassId::IN;           // internet class
 

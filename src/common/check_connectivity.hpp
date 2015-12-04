@@ -11,8 +11,7 @@
 struct event_base;
 struct evdns_base;
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 /// Check whether the network is up
 class CheckConnectivity : public NonCopyable, public NonMovable {
@@ -42,6 +41,5 @@ class CheckConnectivity : public NonCopyable, public NonMovable {
     ~CheckConnectivity() { cleanup(); }
 };
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk
 #endif
