@@ -11,7 +11,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 mk::http::Client client;
 
 client.request(
-    { 
+    {
       "follow_redirects" : "yes",       // default is no
       "url" : "http://nexa.polito.it/", // must be specified
       "method" : "PUT",                 // default is GET
