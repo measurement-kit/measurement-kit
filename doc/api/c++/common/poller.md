@@ -34,4 +34,4 @@ thread (which is what you typically want for apps).
 
 # HISTORY
 
-The `Poller` class appeared in MeasurementKit 0.1.
+The `Poller` class appeared in MeasurementKit 0.1.0.

@@ -9,14 +9,12 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/net.hpp>
 
-using namespace mk::net;
-
 // Constructor
 
-Buffer buf;
+mk::net::Buffer buf;
 
 evbuffer *evbuf = /* something */ ;
-Buffer buf(evbuf);  // Move content from (evbuffer *) evbuf
+mk::net::Buffer buf(evbuf);  // Move content from (evbuffer *) evbuf
 
 // Move data from/to other buffers (this does not entail copies)
 
@@ -33,7 +31,7 @@ size_t n = buf.length();
 
 // Walk over data and decide when to stop by returning false
 buf.for_each([](const char *p, size_t n) -> bool {
-    /* Do something with `p` and `n` */
+    // Do something with `p` and `n`
     return true;
 });
 
@@ -49,13 +47,13 @@ std::string s = buf.peek();
 
 std::string s = buf.readn(1024);
 if (s == "") {
-    /* less than 1024 bytes buffered */
+    // less than 1024 bytes buffered
     return;
 }
 
-Maybe<std::string> res = buf.readline(1024);
+mk::Maybe<std::string> res = buf.readline(1024);
 if (!res) {
-    /* readline failed, check error */
+    // readline failed, check error
     auto error = res.as_error();
     return;
 }
@@ -102,4 +100,4 @@ that is internally used to implement a `Buffer`).
 
 # HISTORY
 
-The `Buffer` class appeared in MeasurementKit 0.1.
+The `Buffer` class appeared in MeasurementKit 0.1.0.

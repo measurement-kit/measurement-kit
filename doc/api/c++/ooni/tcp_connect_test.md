@@ -8,10 +8,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/ooni.hpp>
 
-using namespace mk;
-
 // Run sync test
-ooni::TcpConnectTest()
+mk::ooni::TcpConnectTest()
     .set_port("80")
     .set_input_file_path("test/fixtures/hosts.txt")
     .set_verbose()
@@ -22,7 +20,7 @@ ooni::TcpConnectTest()
     .run();
 
 // Run async test
-ooni::TcpConnectTest()
+mk::ooni::TcpConnectTest()
     .set_port("80")
     .set_input_file_path("test/fixtures/hosts.txt")
     .set_verbose()

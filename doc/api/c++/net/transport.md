@@ -8,30 +8,31 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/net.hpp>
 
-using namespace mk;
-
-Var<net::Transport> transport = net::connect({
+mk::Maybe<mk::Var<mk::net::Transport>> mt = net::connect({
     {"address", "www.google.com"},
     {"port", "80"}
 });
+if (!mt) throw mt.as_error();
+mk::Var<mk::net::Transport> transport = mt.as_value();
+// Use transport...
 
 transport->on_connect([]() {
     /* connection established */
 });
-transport->on_data([](net::Buffer buff) {
+transport->on_data([](mk::net::Buffer buff) {
     /* data received */
 });
 transport->on_flush([]() {
     /* all queued data was sent */
 });
-transport->on_error([](Error error) {
+transport->on_error([](mk::Error error) {
     /* handle error that occurred */
 });
 
 transport->set_timeout(7.14);
 transport->clear_timeout();
 
-net::Buffer buff;
+mk::net::Buffer buff;
 transport->send("sassaroli", 5);
 transport->send(std::string("sassaroli"));
 transport->send(buff);
@@ -42,11 +43,11 @@ std::string s = transport->socks5_address();  // empty string if no proxy
 std::string s = transport->socks5_port();     // ditto
 
 /* event emitters: */
-net::Buffer buffer;
+mk::net::Buffer buffer;
 transport->emit_connect();
 transport->emit_data(buffer);
 transport->emit_flush();
-transport->emit_error(net::EOFError());
+transport->emit_error(mk::net::EOFError());
 ```
 
 # DESCRIPTION
@@ -84,6 +85,11 @@ address and port separated by a colon (default: unspecified)
 Options can only be specified as strings. It would be nice to allow for them
 to be either string or numbers, depending on their semantic.
 
+The return value of `connect()` is ugly because it is made of two templates,
+i.e. `Maybe<>` and `Var<>`. It is possible that for this and other reasons we
+will consider making `Transport` movable and copyable such that `connect()`
+will return just the more readable and manageable `Maybe<Transport`>.
+
 # HISTORY
 
-The `Transport` class appeared in MeasurementKit 0.1.
+The `Transport` class appeared in MeasurementKit 0.1.0.

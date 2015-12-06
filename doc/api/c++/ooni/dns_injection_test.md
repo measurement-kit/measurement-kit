@@ -8,10 +8,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/ooni.hpp>
 
-using namespace mk;
-
 // Run sync test
-ooni::DnsInjectionTest()
+mk::ooni::DnsInjectionTest()
     .set_backend("127.0.0.1")
     .set_input_file_path("test/fixtures/hosts.txt")
     .set_verbose()
@@ -22,7 +20,7 @@ ooni::DnsInjectionTest()
     .run();
 
 // Run async test
-ooni::DnsInjectionTest()
+mk::ooni::DnsInjectionTest()
     .set_backend("127.0.0.1")
     .set_input_file_path("test/fixtures/hosts.txt")
     .set_verbose()

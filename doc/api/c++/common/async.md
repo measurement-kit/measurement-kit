@@ -12,7 +12,7 @@ MeasurementKit (libmeasurement\_kit, -lmeasurement\_kit).
 mk::Async *async = new mk::Async;
 
 void on_run_test() {
-    SharedPointer<mk::FooTest> test = std::make_shared<mk::FooTest>(
+    SharedPointer<mk::Foo::Test> test = std::make_shared<mk::Foo::Test>(
         // Test configuration params
     );
     test->set_verbose(1);
@@ -70,4 +70,4 @@ hence the moment in which the background thread is stopped).
 
 # HISTORY
 
-The `Async` class appeared in MeasurementKit 0.1.
+The `Async` class appeared in MeasurementKit 0.1.0.

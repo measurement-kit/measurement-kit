@@ -8,9 +8,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/net.hpp>
 
-using namespace mk;
-
-Error error = net::EOFError();
+mk::Error error = mk::net::EOFError();
 ```
 
 # DESCRIPTION
@@ -19,4 +17,4 @@ Errors that occurr in the `net` library of MeasurementKit.
 
 # HISTORY
 
-Net specific errors appeared in MeasurementKit 0.1.
+Net specific errors appeared in MeasurementKit 0.1.0.

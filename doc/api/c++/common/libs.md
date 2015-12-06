@@ -28,4 +28,4 @@ allow to access the default implementation.
 
 # HISTORY
 
-The `Libs` class appeared in MeasurementKit 0.1.
+The `Libs` class appeared in MeasurementKit 0.1.0.

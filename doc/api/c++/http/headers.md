@@ -8,9 +8,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/http.hpp>
 
-using namespace mk;
-
-http::Headers headers;
+mk::http::Headers headers;
 ```
 
 # DESCRIPTION
@@ -20,4 +18,4 @@ actually a typedef for `std::map<std::string, std::string>`.
 
 # HISTORY
 
-The `Headers` class appeared in MeasurementKit 0.1.
+The `Headers` class appeared in MeasurementKit 0.1.0.

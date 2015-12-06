@@ -8,29 +8,27 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/dns.hpp>
 
-using namespace mk::dns;
+mk::dns::QueryClassId::IN;           // internet class
 
-QueryClassId::IN;           // internet class
+mk::dns::QueryTypeId:A;              // name to IPv4 addresses
+mk::dns::QueryTypeId:REVERSE_A;      // IPv4 address to one or more names
+mk::dns::QueryTypeId:AAAA;           // name to IPv6 addresses
+mk::dns::QueryTypeId:REVERSE_AAAA;   // IPv6 address to one or more names
+mk::dns::QueryTypeId:PTR;            // `.arpa` name to name
 
-QueryTypeId:A;              // name to IPv4 addresses
-QueryTypeId:REVERSE_A;      // IPv4 address to one or more names
-QueryTypeId:AAAA;           // name to IPv6 addresses
-QueryTypeId:REVERSE_AAAA;   // IPv6 address to one or more names
-QueryTypeId:PTR;            // `.arpa` name to name
-
-QueryClass c(queryClassId::IN);  // construct from id
-QueryClass cc("IN");             // construct from string
+mk::dns::QueryClass c(mk::dns::queryClassId::IN);  // construct from id
+mk::dns::QueryClass cc("IN");             // construct from string
 assert(c == cc);
-c == QueryClassId::IN;           // equality
-c != QueryClassId::CH;           // unequality
-QueryClassId x = cc;             // automatic cast
+c == mk::dns::QueryClassId::IN;           // equality
+c != mk::dns::QueryClassId::CH;           // unequality
+mk::dns::QueryClassId x = cc;             // automatic cast
 
-QueryType q(QueryTypeId::A);     // construct from id
-QueryType qq("A");               // construct from string
+mk::dns::QueryType q(mk::dns::QueryTypeId::A);     // construct from id
+mk::dns::QueryType qq("A");               // construct from string
 assert(q == qq);
-q == QueryTypeId:A;              // equality
-q != QueryTypeId:MX;             // unequality
-QueryTypeId x = cc;              // automatic cast
+q == mk::dns::QueryTypeId:A;              // equality
+q != mk::dns::QueryTypeId:MX;             // unequality
+mk::dns::QueryTypeId x = cc;              // automatic cast
 
 ```
 
@@ -55,4 +53,4 @@ in the `.in-addr.arpa` or `ip6.arpa` namespaces.
 # HISTORY
 
 The `QueryTypeId`, `QueryType`, `QueryClassId`, and `QueryClass` classes
-appeared in MeasurementKit 0.1.
+appeared in MeasurementKit 0.1.0.

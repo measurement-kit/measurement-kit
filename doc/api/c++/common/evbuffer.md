@@ -22,4 +22,4 @@ automatically frees the underlying evbuffer when it goes out of scope.
 
 # HISTORY
 
-The `Evbuffer` class appeared in MeasurementKit 0.1.
+The `Evbuffer` class appeared in MeasurementKit 0.1.0.

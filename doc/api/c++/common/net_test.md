@@ -8,7 +8,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
-mk::NetTest *test = new foo::SomeNetTest();  // NetTest is abstract
+mk::NetTest *test = new mk::foo::Test();  // NetTest is abstract
 
 // Configure the logger contained by NetTest
 test->on_log([](const char *s) {
@@ -45,4 +45,4 @@ but mentioning it here to warn people using this interface.)
 
 # HISTORY
 
-The `NetTest` class appeared in MeasurementKit 0.1.
+The `NetTest` class appeared in MeasurementKit 0.1.0.

@@ -52,4 +52,4 @@ does not result in object slicing (i.e. in the construction of a
 
 # HISTORY
 
-The `Var` class appeared in MeasurementKit 0.1.
+The `Var` class appeared in MeasurementKit 0.1.0.

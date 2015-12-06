@@ -17,7 +17,8 @@ class Bar : public NonMovable {};
 
 class FooBar : public NonCopyable, public NonMovable {};
 
-}}
+}
+}
 ```
 
 # DESCRIPTION
@@ -31,4 +32,4 @@ the specific value of `this` to the registered low-level callback.
 
 # HISTORY
 
-`NonCopyable` and `NonMovable` appeared in MeasurementKit 0.1.
+`NonCopyable` and `NonMovable` appeared in MeasurementKit 0.1.0.

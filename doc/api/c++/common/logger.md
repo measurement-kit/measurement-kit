@@ -37,4 +37,4 @@ a logger specific of each network test.
 
 # HISTORY
 
-The `Logger` class appeared in MeasurementKit 0.1.
+The `Logger` class appeared in MeasurementKit 0.1.0.

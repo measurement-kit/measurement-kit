@@ -8,19 +8,17 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/tor.hpp>
 
-using namespace mk::tor;
-
 // Default constructor using 127.0.0.1:9050
-Controller controller([]() {
+mk::tor::Controller controller([]() {
     // Here you must actually start Tor using CPAProxy
 });
 
 // Constructor with custom address and port
-Controller controller("127.0.0.1", 9051, []() {
+mk::tor::Controller controller("127.0.0.1", 9051, []() {
     // Here you must actually start Tor using CPAProxy
 });
 
-controller.on_complete([](common::Error error) {
+controller.on_complete([](mk::Error error) {
     // Check error to see whether Tor started successfully or not
 });
 
@@ -50,4 +48,4 @@ lifecycle of a measurement-kit App.
 
 # HISTORY
 
-The `Contoller` class appeared in MeasurementKit 0.1.
+The `Contoller` class appeared in MeasurementKit 0.1.0.

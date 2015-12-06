@@ -22,4 +22,4 @@ and uses exceptions only to report unrecoverable errors.
 
 # HISTORY
 
-The `Error` class appeared in MeasurementKit 0.1.
+The `Error` class appeared in MeasurementKit 0.1.0.

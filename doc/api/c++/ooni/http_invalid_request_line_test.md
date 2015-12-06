@@ -8,10 +8,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/ooni.hpp>
 
-using namespace mk;
-
 // Run sync test
-ooni::HttpInvalidRequestLineTest()
+mk::ooni::HttpInvalidRequestLineTest()
     .set_backend("http://127.0.0.1/")
     .set_verbose()
     .on_log([](const char *s) {
@@ -21,7 +19,7 @@ ooni::HttpInvalidRequestLineTest()
     .run();
 
 // Run async test
-ooni::HttpInvalidRequestLineTest()
+mk::ooni::HttpInvalidRequestLineTest()
     .set_backend("http://127.0.0.1/")
     .set_verbose()
     .on_log([](const char *s) {

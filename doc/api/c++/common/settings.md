@@ -17,4 +17,4 @@ typedef std::map<std::string, std::string> Settings;
 
 # HISTORY
 
-The `Settings` class appeared in MeasurementKit 0.1.
+The `Settings` class appeared in MeasurementKit 0.1.0.
