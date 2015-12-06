@@ -98,7 +98,4 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
     rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/*.la
     rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/libevent_core.a
     rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/libevent_extra.a
-    echo "Creating tarball of ${BASEDIR}/jni/${DESTDIR_NAME}"
-    cd ${ROOTDIR} && ./scripts/make_archive.sh jni-${DESTDIR_NAME} \
-            jni/${DESTDIR_NAME}
 )
