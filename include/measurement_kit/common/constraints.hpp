@@ -5,8 +5,7 @@
 #ifndef MEASUREMENT_KIT_COMMON_CONSTRAINTS_HPP
 #define MEASUREMENT_KIT_COMMON_CONSTRAINTS_HPP
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 struct NonMovable {
     NonMovable(NonMovable &&) = delete;
@@ -19,6 +18,6 @@ struct NonCopyable {
     NonCopyable &operator=(NonCopyable &) = delete;
     NonCopyable() {}
 };
-}
-}
+
+} // namespace mk
 #endif

@@ -13,9 +13,7 @@
 #include <measurement_kit/net/error.hpp>
 #include "src/net/connection.hpp"
 
-using namespace measurement_kit::common;
-
-namespace measurement_kit {
+namespace mk {
 namespace net {
 
 Connection::~Connection() {}
@@ -75,14 +73,14 @@ Connection::Connection(const char *family, const char *address,
                        const char *port, Poller *plr, Logger *lp,
                        evutil_socket_t filenum)
     : Dumb(lp), poller(plr) {
-    filenum = measurement_kit::socket_normalize_if_invalid(filenum);
+    filenum = mk::socket_normalize_if_invalid(filenum);
 
     this->bev.make(poller->get_event_base(), filenum,
                    BEV_OPT_DEFER_CALLBACKS | BEV_OPT_CLOSE_ON_FREE);
 
     // closing: nothing to be done
 
-    if (!measurement_kit::socket_valid(filenum)) this->connecting = 1;
+    if (!mk::socket_valid(filenum)) this->connecting = 1;
 
     this->address = address;
 
@@ -99,7 +97,7 @@ Connection::Connection(const char *family, const char *address,
     bufferevent_setcb(this->bev, this->handle_read, this->handle_write,
                       this->handle_event, this);
 
-    if (!measurement_kit::socket_valid(filenum))
+    if (!mk::socket_valid(filenum))
         start_connect = DelayedCall(0.0, [this]() { this->resolve(); },
                                     Libs::global(), poller->get_event_base());
 }
@@ -125,12 +123,12 @@ void Connection::connect_next() {
 
         logger->info("connect_next - %s %s", family, address);
 
-        error = measurement_kit::storage_init(&storage, &total, family, address,
+        error = mk::storage_init(&storage, &total, family, address,
                                               this->port.c_str());
         if (error != 0) continue;
 
         auto filedesc =
-            measurement_kit::socket_create(storage.ss_family, SOCK_STREAM, 0);
+            mk::socket_create(storage.ss_family, SOCK_STREAM, 0);
         if (filedesc == MEASUREMENT_KIT_SOCKET_INVALID) continue;
 
         error = bufferevent_setfd(this->bev, filedesc);
@@ -160,7 +158,7 @@ void Connection::connect_next() {
     this->emit_error(ConnectFailedError());
 }
 
-void Connection::handle_resolve(common::Error error, char type,
+void Connection::handle_resolve(Error error, char type,
                                 std::vector<std::string> results) {
 
     const char *_family;
@@ -220,7 +218,7 @@ bool Connection::resolve_internal(char type) {
 
     dns_request = dns::Query(
         dns::QueryClassId::IN, query,
-        address, [this](common::Error error, dns::Response resp) {
+        address, [this](Error error, dns::Response resp) {
             handle_resolve(error, resp.get_type(), resp.get_results());
         }, logger, poller->get_evdns_base());
 
@@ -293,5 +291,6 @@ void Connection::close() {
     this->bev.close();
     this->dns_request.cancel();
 }
-}
-}
+
+} // namespace net
+} // namespace mk

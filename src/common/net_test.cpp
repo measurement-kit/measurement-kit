@@ -4,10 +4,8 @@
 
 #include <measurement_kit/common/net_test.hpp>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 NetTest::~NetTest() {}
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk

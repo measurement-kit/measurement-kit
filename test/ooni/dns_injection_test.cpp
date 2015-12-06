@@ -12,8 +12,7 @@
 #include <string>
 #include <thread>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit;
+using namespace mk;
 
 TEST_CASE("Synchronous dns-injection test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);

@@ -195,10 +195,9 @@ of the same thread that called *run*).
 
 ```C++
 #include <measurement_kit/ooni.hpp>
-using namespace measurement_kit;
 
 // Run sync test
-ooni::HttpInvalidRequestLineTest()
+mk::ooni::HttpInvalidRequestLineTest()
     .set_backend("http://127.0.0.1/")
     .set_verbose()
     .on_log([](const char *s) {
@@ -216,7 +215,7 @@ the callback passed as argument to *run* is invoked when the test completed.
 
 ```C++
 // Run async test
-ooni::HttpInvalidRequestLineTest()
+mk::ooni::HttpInvalidRequestLineTest()
     .set_backend("http://127.0.0.1/")
     .set_verbose()
     .on_log([](const char *s) {

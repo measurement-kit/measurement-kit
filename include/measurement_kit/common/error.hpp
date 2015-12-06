@@ -9,8 +9,7 @@
 #include <iosfwd>
 #include <string>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 /// An error that occurred
 class Error : public std::exception {
@@ -59,6 +58,5 @@ class MaybeNotInitializedError : public Error {
     MaybeNotInitializedError() : Error(2, "unknown_failure 2") {}
 };
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk
 #endif

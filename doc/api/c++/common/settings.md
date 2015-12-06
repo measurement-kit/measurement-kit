@@ -2,14 +2,13 @@
 Settings -- Map from string to string
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
-namespace measurement_kit {
-namespace common {
+namespace mk {
 typedef std::map<std::string, std::string> Settings;
-}}
+}
 ```
 
 # DESCRIPTION
@@ -18,4 +17,4 @@ typedef std::map<std::string, std::string> Settings;
 
 # HISTORY
 
-The `Settings` class appeared in MeasurementKit 0.1.
+The `Settings` class appeared in MeasurementKit 0.1.0.

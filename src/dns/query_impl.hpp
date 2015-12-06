@@ -28,10 +28,8 @@
 
 struct evdns_base;
 
-namespace measurement_kit {
+namespace mk {
 namespace dns {
-
-using namespace measurement_kit::common;
 
 /// Implementation of Query.
 class QueryImpl {
@@ -84,10 +82,9 @@ class QueryImpl {
         Response resp(code, type, count, ttl, impl->ticks, addresses,
                       impl->logger);
         if (resp.get_evdns_status() != DNS_ERR_NONE) {
-            impl->callback(
-                measurement_kit::dns::dns_error(resp.get_evdns_status()), resp);
+            impl->callback(mk::dns::dns_error(resp.get_evdns_status()), resp);
         } else
-            impl->callback(common::NoError(), resp);
+            impl->callback(NoError(), resp);
 
         delete impl;
     }
@@ -121,10 +118,10 @@ class QueryImpl {
         // Allow PTR queries
         if (dns_type == QueryTypeId::PTR) {
             std::string s;
-            if ((s = measurement_kit::unreverse_ipv4(name)) != "") {
+            if ((s = mk::unreverse_ipv4(name)) != "") {
                 dns_type = QueryTypeId::REVERSE_A;
                 name = s;
-            } else if ((s = measurement_kit::unreverse_ipv6(name)) != "") {
+            } else if ((s = mk::unreverse_ipv6(name)) != "") {
                 dns_type = QueryTypeId::REVERSE_AAAA;
                 name = s;
             } else
@@ -165,7 +162,7 @@ class QueryImpl {
             throw UnsupportedTypeError();
         }
 
-        ticks = measurement_kit::time_now();
+        ticks = mk::time_now();
     }
 
   public:
@@ -176,14 +173,14 @@ class QueryImpl {
         try {
             new QueryImpl(dns_class, dns_type, name, f, logger, base, lev,
                           cancd);
-        } catch (common::Error &error) {
+        } catch (Error &error) {
             f(error, Response());
         } catch (...) {
-            f(common::GenericError(), Response());
+            f(GenericError(), Response());
         }
     }
 };
 
 } // namespace dns
-} // namespace measurement_kit
+} // namespace mk
 #endif

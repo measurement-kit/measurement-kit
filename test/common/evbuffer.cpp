@@ -12,7 +12,7 @@
 #include <measurement_kit/common.hpp>
 #include "src/common/delayed_call.hpp"
 
-using namespace measurement_kit::common;
+using namespace mk;
 
 TEST_CASE("The constructor is lazy") {
 

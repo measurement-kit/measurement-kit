@@ -12,10 +12,8 @@
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/net/transport.hpp>
 
-namespace measurement_kit {
+namespace mk {
 namespace net {
-
-using namespace measurement_kit::common;
 
 class Dumb : public Transport {
   private:
@@ -106,5 +104,5 @@ class Dumb : public Transport {
 };
 
 } // namespace net
-} // namespace measurement_kit
+} // namespace mk
 #endif

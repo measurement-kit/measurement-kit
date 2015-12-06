@@ -15,14 +15,11 @@
 #include <string>
 #include <type_traits>
 
-namespace measurement_kit {
-namespace net {
-class Buffer;
-}
-namespace http {
+namespace mk {
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
+namespace net { class Buffer; }
+
+namespace http {
 
 class ResponseParserImpl; // See http.cpp
 
@@ -152,7 +149,7 @@ class ResponseParser {
      * \throws std::runtime_error This method throws std::runtime_error (or
      *         a class derived from it) on several error conditions.
      */
-    void feed(Buffer &data);
+    void feed(net::Buffer &data);
 
     /*!
      * \brief Feed the parser.
@@ -181,5 +178,5 @@ class ResponseParser {
 };
 
 } // namespace http
-} // namespace measurement_kit
+} // namespace mk
 #endif

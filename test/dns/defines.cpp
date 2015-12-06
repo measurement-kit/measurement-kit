@@ -8,8 +8,8 @@
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/common.hpp>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::dns;
+using namespace mk;
+using namespace mk::dns;
 
 TEST_CASE("QueryClass works as expected") {
     QueryClass qclass(QueryClassId::IN);

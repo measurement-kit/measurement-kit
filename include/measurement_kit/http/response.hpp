@@ -5,18 +5,13 @@
 #ifndef MEASUREMENT_KIT_HTTP_RESPONSE_HPP
 #define MEASUREMENT_KIT_HTTP_RESPONSE_HPP
 
-#include <measurement_kit/net/buffer.hpp>
-
 #include <measurement_kit/http/headers.hpp>
 
 #include <iosfwd>
 #include <string>
 
-namespace measurement_kit {
+namespace mk {
 namespace http {
-
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
 
 /*!
  * \brief HTTP response.
@@ -32,5 +27,5 @@ struct Response {
 };
 
 } // namespace http
-} // namespace measurement_kit
+} // namespace mk
 #endif

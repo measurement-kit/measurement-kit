@@ -28,11 +28,8 @@
 
 #include <string.h>
 
-namespace measurement_kit {
+namespace mk {
 namespace net {
-
-using namespace measurement_kit::common;
-using namespace measurement_kit::dns;
 
 class Connection : public Dumb {
   private:
@@ -55,18 +52,18 @@ class Connection : public Dumb {
 
     // Functions used when connecting
     void connect_next();
-    void handle_resolve(common::Error, char, std::vector<std::string>);
+    void handle_resolve(Error, char, std::vector<std::string>);
     void resolve();
     bool resolve_internal(char);
 
   public:
     Connection(evutil_socket_t fd, Logger *lp = Logger::global(),
-               Poller *poller = measurement_kit::get_global_poller())
+               Poller *poller = mk::get_global_poller())
         : Connection("PF_UNSPEC", "0.0.0.0", "0", poller, lp, fd) {}
 
     Connection(const char *af, const char *a, const char *p,
                Logger *lp = Logger::global(),
-               Poller *poller = measurement_kit::get_global_poller())
+               Poller *poller = mk::get_global_poller())
         : Connection(af, a, p, poller, lp, -1) {}
 
     Connection(const char *, const char *, const char *, Poller *, Logger *,
@@ -83,7 +80,7 @@ class Connection : public Dumb {
 
     void set_timeout(double timeout) override {
         struct timeval tv, *tvp;
-        tvp = measurement_kit::timeval_init(&tv, timeout);
+        tvp = mk::timeval_init(&tv, timeout);
         if (bufferevent_set_timeouts(this->bev, tvp, tvp) != 0) {
             throw std::runtime_error("cannot set timeout");
         }
@@ -122,6 +119,7 @@ class Connection : public Dumb {
 
     void close() override;
 };
-}
-}
+
+} // namespace net
+} // namespace mk
 #endif

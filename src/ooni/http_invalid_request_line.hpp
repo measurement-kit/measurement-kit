@@ -11,11 +11,8 @@
 #include "src/ooni/http_test.hpp"
 #include <sys/stat.h>
 
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
-
-using namespace measurement_kit::common;
-using namespace measurement_kit::report;
 
 class HTTPInvalidRequestLine : public HTTPTest {
     using HTTPTest::HTTPTest;
@@ -32,6 +29,7 @@ class HTTPInvalidRequestLine : public HTTPTest {
 
     void main(Settings options, std::function<void(report::Entry)> &&cb);
 };
-}
-}
+
+} // namespace ooni
+} // namespace mk
 #endif

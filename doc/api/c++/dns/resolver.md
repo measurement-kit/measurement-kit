@@ -2,20 +2,17 @@
 Resolver -- DNS resolver
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
-#include <event2/event.h>
 #include <measurement_kit/dns.hpp>
 
-using namespace measurement_kit;
-
 // Constructs resolver with default settings
-dns::Resolver resolver;
+mk::dns::Resolver resolver;
 
 // Constructs resolver with specific settings
-dns::Resolver reso({
+mk::dns::Resolver reso({
     {"nameserver", "8.8.8.8:53"},  // Set the name server IP
     {"attempts", "1"},             // How many attempts before erroring out
     {"timeout", "3.1415"},         // How many seconds before timeout
@@ -24,14 +21,12 @@ dns::Resolver reso({
 
 // Issue an async DNS query
 reso.query(
-        "IN",                                   // Domain of the query
-        "AAAA",                                 // Type of query
-        "nexa.polito.it",                       // Name to resolve
-        [](Error error, Response response) {    // Callback
-            if (error) {
-                return;
-            }
-            /* handle successful response */
+        "IN",                                             // Domain of the query
+        "AAAA",                                           // Type of query
+        "nexa.polito.it",                                 // Name to resolve
+        [](mk::Error error, mk::dns::Response response) { // Callback
+            if (error) throw error;
+            // handle successful response
         });
 ```
 
@@ -88,4 +83,4 @@ to be either string or numbers, depending on their semantic.
 
 # HISTORY
 
-The `Resolver` class appeared in MeasurementKit 1.0.0.
+The `Resolver` class appeared in MeasurementKit 0.1.0.

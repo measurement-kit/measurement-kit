@@ -21,14 +21,11 @@
 #include <string>
 #include <type_traits>
 
-namespace measurement_kit {
-namespace net {
-class Buffer;
-}
-namespace http {
+namespace mk {
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
+namespace net { class Buffer; }
+
+namespace http {
 
 /*!
  * \brief HTTP stream. This class implements a HTTP stream, i.e., a
@@ -40,19 +37,19 @@ using namespace measurement_kit::net;
  * degree of control is needed over the HTTP protocol.
  */
 class Stream {
-    Var<Transport> connection;
+    Var<net::Transport> connection;
     Var<ResponseParser> parser;
     std::function<void(Error)> error_handler;
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
-        connection->on_data([&](Buffer data) { parser->feed(data); });
+        connection->on_data([&](net::Buffer data) { parser->feed(data); });
         //
         // Intercept EOF error to implement body-ends-at-EOF semantic.
         //
         connection->on_error([&](Error error) {
             auto safe_eh = error_handler;
-            if (error == EOFError()) {
+            if (error == net::EOFError()) {
                 parser->eof();
             }
             // parser->eof() may cause this object to go out of
@@ -72,7 +69,7 @@ class Stream {
      */
     Var<ResponseParser> get_parser() { return parser; }
 
-    Var<Transport> get_transport() { return connection; }
+    Var<net::Transport> get_transport() { return connection; }
 
     /*!
      * \brief Deleted copy constructor.
@@ -121,7 +118,7 @@ class Stream {
         // the connect() function failed in some way. This is to be fixed once
         // release v0.1.0 is rolled out, when we'll deal with all the errors
         // that can happen in the implementation of HTTP.
-        connection = connect(settings, lp).as_value();
+        connection = net::connect(settings, lp).as_value();
         //
         // While the connection is in progress, just forward the
         // error if needed, we'll deal with body-terminated-by-EOF
@@ -244,6 +241,7 @@ class Stream {
 
     std::string socks5_port() { return connection->socks5_port(); }
 };
-}
-}
+
+} // namespace http
+} // namespace mk
 #endif

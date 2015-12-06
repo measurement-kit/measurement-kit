@@ -6,10 +6,8 @@
 
 #include "src/ooni/tcp_connect.hpp"
 
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
-
-using namespace measurement_kit::common;
 
 void TCPConnect::main(std::string input, Settings options,
                       std::function<void(report::Entry)> &&cb) {
@@ -21,11 +19,12 @@ void TCPConnect::main(std::string input, Settings options,
     });
 }
 
-Var<common::NetTest> TcpConnectTest::create_test_() {
-    common::NetTest *test = new TCPConnect(input_path, settings);
+Var<mk::NetTest> TcpConnectTest::create_test_() {
+    mk::NetTest *test = new TCPConnect(input_path, settings);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
-    return Var<common::NetTest>(test);
+    return Var<mk::NetTest>(test);
 }
-}
-}
+
+} // namespace ooni
+} // namespace mk

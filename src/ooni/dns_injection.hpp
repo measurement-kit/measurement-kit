@@ -11,11 +11,8 @@
 #include "src/ooni/dns_test.hpp"
 #include <sys/stat.h>
 
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
-
-using namespace measurement_kit::common;
-using namespace measurement_kit::report;
 
 class DNSInjection : public DNSTest {
     using DNSTest::DNSTest;
@@ -41,6 +38,7 @@ class DNSInjection : public DNSTest {
     void main(std::string input, Settings options,
               std::function<void(report::Entry)> &&cb);
 };
-}
-}
+
+} // namespace ooni
+} // namespace mk
 #endif

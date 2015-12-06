@@ -9,11 +9,8 @@
 #include <measurement_kit/http/client.hpp>
 #include "src/ooni/net_test.hpp"
 
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
-
-using namespace measurement_kit::common;
-using namespace measurement_kit;
 
 class HTTPTest : public ooni::NetTest {
     using ooni::NetTest::NetTest;
@@ -66,6 +63,7 @@ class HTTPTest : public ooni::NetTest {
             }, &logger);
     };
 };
-}
-}
+
+} // namespace ooni
+} // namespace mk
 #endif

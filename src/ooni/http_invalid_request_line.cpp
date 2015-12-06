@@ -7,10 +7,8 @@
 #include "src/ooni/http_invalid_request_line.hpp"
 #include <sys/stat.h>
 
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
-
-using namespace measurement_kit::common;
 
 void HTTPInvalidRequestLine::main(Settings options,
                                   std::function<void(report::Entry)> &&cb) {
@@ -32,7 +30,7 @@ void HTTPInvalidRequestLine::main(Settings options,
     request(
         {
          {"url", options["backend"]},
-         {"method", measurement_kit::random_str_uppercase(4)},
+         {"method", mk::random_str_uppercase(4)},
          {"http_version", "HTTP/1.1"},
         },
         headers, "", handle_response);
@@ -46,7 +44,7 @@ void HTTPInvalidRequestLine::main(Settings options,
     request(
         {
          {"url", options["backend"]},
-         {"method", measurement_kit::random_str_uppercase(1024)},
+         {"method", mk::random_str_uppercase(1024)},
          {"http_version", "HTTP/1.1"},
         },
         headers, "", handle_response);
@@ -57,16 +55,17 @@ void HTTPInvalidRequestLine::main(Settings options,
         {
          {"url", options["backend"]},
          {"method", "GET"},
-         {"http_version", "HTTP/" + measurement_kit::random_str(3)},
+         {"http_version", "HTTP/" + mk::random_str(3)},
         },
         headers, "", handle_response);
 }
 
-Var<common::NetTest> HttpInvalidRequestLineTest::create_test_() {
-    common::NetTest *test = new HTTPInvalidRequestLine(settings);
+Var<mk::NetTest> HttpInvalidRequestLineTest::create_test_() {
+    mk::NetTest *test = new HTTPInvalidRequestLine(settings);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
-    return Var<common::NetTest>(test);
+    return Var<mk::NetTest>(test);
 }
-}
-}
+
+} // namespace ooni
+} // namespace mk

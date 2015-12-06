@@ -9,11 +9,8 @@
 #include "src/ooni/tcp_test.hpp"
 #include <sys/stat.h>
 
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
-
-using namespace measurement_kit::common;
-using namespace measurement_kit::report;
 
 class TCPConnect : public TCPTest {
     using TCPTest::TCPTest;
@@ -41,6 +38,7 @@ class TCPConnect : public TCPTest {
     void main(std::string input, Settings options,
               std::function<void(report::Entry)> &&cb);
 };
-}
-}
+
+} // namespace ooni
+} // namespace mk
 #endif

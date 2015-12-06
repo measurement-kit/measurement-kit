@@ -2,15 +2,13 @@
 Poller -- Dispatcher of I/O events
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/common.hpp>
 
-using namespace measurement_kit::common;
-
-Poller poller;
+mk::Poller poller;
 event_base *p = poller.get_event_base();
 evdns_base *dp = poller.get_evdns_base();
 
@@ -18,7 +16,7 @@ poller.loop();                    // Blocking method to run the event loop
 poller.break_loop();              // Break out of event loop
 poller.loop_once();               // Just one iteration of event loop
 
-Poller *root = Poller::global();
+mk::Poller *root = mk::Poller::global();
 ```
 
 # DESCRIPTION
@@ -36,4 +34,4 @@ thread (which is what you typically want for apps).
 
 # HISTORY
 
-The `Poller` class appeared in MeasurementKit 0.1.
+The `Poller` class appeared in MeasurementKit 0.1.0.

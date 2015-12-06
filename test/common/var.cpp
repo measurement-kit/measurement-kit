@@ -11,7 +11,7 @@
 
 #include <measurement_kit/common.hpp>
 
-using namespace measurement_kit::common;
+using namespace mk;
 
 struct Foo {
     double elem = 3.14;

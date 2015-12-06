@@ -13,10 +13,8 @@
 #include "src/net/dumb.hpp"
 #include <measurement_kit/net/transport.hpp>
 
-namespace measurement_kit {
+namespace mk {
 namespace net {
-
-using namespace measurement_kit::common;
 
 class Socks5 : public Dumb {
   protected:
@@ -53,5 +51,5 @@ class Socks5 : public Dumb {
 };
 
 } // namespace net
-} // namespace measurement_kit
+} // namespace mk
 #endif

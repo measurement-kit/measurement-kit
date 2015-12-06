@@ -5,14 +5,11 @@
 #ifndef MEASUREMENT_KIT_COMMON_LIBS_HPP
 #define MEASUREMENT_KIT_COMMON_LIBS_HPP
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 struct Libs;
 
-} // namespace common
+Libs *get_global_libs();  /// Access global libs object
 
-common::Libs *get_global_libs();  /// Access global libs object
-
-} // namespace measurement_kit
+} // namespace mk
 #endif

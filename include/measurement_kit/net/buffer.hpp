@@ -15,15 +15,17 @@
 #include <stdexcept>                            // for runtime_error
 #include <string>                               // for string
 #include <tuple>                                // for tuple
-namespace measurement_kit { namespace common { class Error; } }
 struct evbuffer;
 
-namespace measurement_kit {
+namespace mk {
+
+class Error;
+
 namespace net {
 
 class Buffer {
   private:
-    common::Var<common::Evbuffer> evbuf{new common::Evbuffer};
+    Var<Evbuffer> evbuf{new Evbuffer};
 
   public:
     Buffer(evbuffer *b = nullptr);
@@ -84,7 +86,7 @@ class Buffer {
         return read(n);
     }
 
-    common::Maybe<std::string> readline(size_t maxline);
+    Maybe<std::string> readline(size_t maxline);
 
     /*
      * Wrappers for write, including a handy wrapper for sending
@@ -122,5 +124,5 @@ class Buffer {
 };
 
 } // namespace net
-} // namespace measurement_kit
+} // namespace mk
 #endif

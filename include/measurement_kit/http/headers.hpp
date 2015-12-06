@@ -9,11 +9,11 @@
 #include <map>
 #include <string>
 
-namespace measurement_kit {
+namespace mk {
 namespace http {
 
 typedef std::map<std::string, std::string> Headers;
 
 } // namespace http
-} // namespace measurement_kit
+} // namespace mk
 #endif

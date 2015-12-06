@@ -11,8 +11,8 @@
 #include "src/common/utils.hpp"
 #include "src/common/delayed_call.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::dns;
+using namespace mk;
+using namespace mk::dns;
 
 //
 // Response unit tests.
@@ -38,7 +38,7 @@ TEST_CASE("The default Response() constructor sets sensible values") {
 //
 
 TEST_CASE("Response(...) only computes RTT when the server actually replied") {
-    auto ticks = measurement_kit::time_now() - 3.0;
+    auto ticks = mk::time_now() - 3.0;
 
     for (auto code = 0; code < 128; ++code) {
         auto r = Response(code, DNS_IPv4_A, 0, 123, ticks, NULL);

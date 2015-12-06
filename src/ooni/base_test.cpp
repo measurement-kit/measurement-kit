@@ -10,14 +10,11 @@
 #include <ratio>                               // for ratio
 #include <thread>                              // for sleep_for
 
-namespace measurement_kit {
+namespace mk {
 
-namespace common {
 class NetTest;
-}
 
 namespace ooni {
-using namespace measurement_kit::common;
 
 void BaseTest::run() {
     // XXX Ideally it would be best to run this in the current thread with
@@ -35,4 +32,4 @@ void BaseTest::run(std::function<void()> callback) {
 }
 
 } // namespace ooni
-} // namespace measurement_kit
+} // namespace mk

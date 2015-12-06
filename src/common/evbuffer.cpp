@@ -8,8 +8,7 @@
 #include <new>                              // for bad_alloc
 #include "src/common/libs_impl.hpp"
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 Evbuffer::~Evbuffer() {
     if (evbuf_ != nullptr) libs_->evbuffer_free(evbuf_);
@@ -21,5 +20,4 @@ Evbuffer::operator evbuffer *() {
     return (evbuf_);
 }
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk

@@ -13,8 +13,8 @@
 #include "src/dns/query.hpp"
 #include "src/common/check_connectivity.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::dns;
+using namespace mk;
+using namespace mk::dns;
 
 //
 // Resolver unit tests.
@@ -178,7 +178,7 @@ TEST_CASE("We can override the default timeout") {
                            {"attempts", "1"},
                            {"timeout", "0.5"}});
 
-    auto ticks = measurement_kit::time_now();
+    auto ticks = mk::time_now();
     reso.query("IN", "A", "www.neubot.org", [&](Error e, Response response) {
         REQUIRE(e == TimeoutError());
         REQUIRE(response.get_reply_authoritative() == "unknown");
@@ -187,15 +187,15 @@ TEST_CASE("We can override the default timeout") {
         REQUIRE(response.get_ttl() == 0);
         REQUIRE(response.get_rtt() == 0.0);
 
-        auto elapsed = measurement_kit::time_now() - ticks;
+        auto elapsed = mk::time_now() - ticks;
         // This interval is wide so the unit tests does not fail when
         // we run it using valgrind on slow machines
         REQUIRE(elapsed > 0.3);
         REQUIRE(elapsed < 0.7);
 
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
-    measurement_kit::loop();
+    mk::loop();
 }
 
 TEST_CASE("We can override the default number of tries") {
@@ -205,7 +205,7 @@ TEST_CASE("We can override the default number of tries") {
         {"nameserver", "130.192.91.231"}, {"attempts", "2"}, {"timeout", "0.5"},
     });
 
-    auto ticks = measurement_kit::time_now();
+    auto ticks = mk::time_now();
     reso.query("IN", "A", "www.neubot.org", [&](Error e, Response response) {
         REQUIRE(e == TimeoutError());
         REQUIRE(response.get_reply_authoritative() == "unknown");
@@ -214,13 +214,13 @@ TEST_CASE("We can override the default number of tries") {
         REQUIRE(response.get_ttl() == 0);
         REQUIRE(response.get_rtt() == 0.0);
 
-        auto elapsed = measurement_kit::time_now() - ticks;
+        auto elapsed = mk::time_now() - ticks;
         REQUIRE(elapsed > 0.8);
         REQUIRE(elapsed < 1.2);
 
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
-    measurement_kit::loop();
+    mk::loop();
 }
 
 //
@@ -240,7 +240,7 @@ TEST_CASE("The default custom resolver works as expected") {
 
     DelayedCall d(10.0, [&](void) {
         failed = true;
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
 
     Resolver reso;
@@ -253,9 +253,9 @@ TEST_CASE("The default custom resolver works as expected") {
         REQUIRE(response.get_results()[0] == "130.192.16.172");
         REQUIRE(response.get_rtt() > 0.0);
         REQUIRE(response.get_ttl() > 0);
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
-    measurement_kit::loop();
+    mk::loop();
 
     reso.query(
         "IN", "REVERSE_A", "130.192.16.172", [&](Error e, Response response) {
@@ -266,9 +266,9 @@ TEST_CASE("The default custom resolver works as expected") {
             REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
             REQUIRE(response.get_rtt() > 0.0);
             REQUIRE(response.get_ttl() > 0);
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-    measurement_kit::loop();
+    mk::loop();
 
     reso.query("IN", "PTR", "172.16.192.130.in-addr.arpa.",
                [&](Error e, Response response) {
@@ -280,9 +280,9 @@ TEST_CASE("The default custom resolver works as expected") {
                            "server-nexa.polito.it");
                    REQUIRE(response.get_rtt() > 0.0);
                    REQUIRE(response.get_ttl() > 0);
-                   measurement_kit::break_loop();
+                   mk::break_loop();
                });
-    measurement_kit::loop();
+    mk::loop();
 
     reso.query("IN", "AAAA", "ooni.torproject.org",
                [&](Error e, Response response) {
@@ -299,9 +299,9 @@ TEST_CASE("The default custom resolver works as expected") {
                        }
                    }
                    REQUIRE(found);
-                   measurement_kit::break_loop();
+                   mk::break_loop();
                });
-    measurement_kit::loop();
+    mk::loop();
 
     reso.query("IN", "REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
                [&](Error e, Response response) {
@@ -313,9 +313,9 @@ TEST_CASE("The default custom resolver works as expected") {
                            "listera.torproject.org");
                    REQUIRE(response.get_rtt() > 0.0);
                    REQUIRE(response.get_ttl() > 0);
-                   measurement_kit::break_loop();
+                   mk::break_loop();
                });
-    measurement_kit::loop();
+    mk::loop();
 
     reso.query("IN", "PTR", "6.2.4.1.0.2.e.f.f.f.1.2.3.1.2.0.b.e.d.0.2.0.2.0.8."
                             "b.1.4.1.0.0.2.ip6.arpa.",
@@ -328,9 +328,9 @@ TEST_CASE("The default custom resolver works as expected") {
                            "listera.torproject.org");
                    REQUIRE(response.get_rtt() > 0.0);
                    REQUIRE(response.get_ttl() > 0);
-                   measurement_kit::break_loop();
+                   mk::break_loop();
                });
-    measurement_kit::loop();
+    mk::loop();
 
     REQUIRE(!failed);
 }
@@ -345,7 +345,7 @@ TEST_CASE("A specific custom resolver works as expected") {
 
     DelayedCall d(10.0, [&](void) {
         failed = true;
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
 
     Resolver reso(Settings({
@@ -360,9 +360,9 @@ TEST_CASE("A specific custom resolver works as expected") {
         REQUIRE(response.get_results()[0] == "130.192.16.172");
         REQUIRE(response.get_rtt() > 0.0);
         REQUIRE(response.get_ttl() > 0);
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
-    measurement_kit::loop();
+    mk::loop();
 
     reso.query(
         "IN", "REVERSE_A", "130.192.16.172", [&](Error e, Response response) {
@@ -373,9 +373,9 @@ TEST_CASE("A specific custom resolver works as expected") {
             REQUIRE(response.get_results()[0] == "server-nexa.polito.it");
             REQUIRE(response.get_rtt() > 0.0);
             REQUIRE(response.get_ttl() > 0);
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-    measurement_kit::loop();
+    mk::loop();
 
     reso.query("IN", "PTR", "172.16.192.130.in-addr.arpa.",
                [&](Error e, Response response) {
@@ -387,9 +387,9 @@ TEST_CASE("A specific custom resolver works as expected") {
                            "server-nexa.polito.it");
                    REQUIRE(response.get_rtt() > 0.0);
                    REQUIRE(response.get_ttl() > 0);
-                   measurement_kit::break_loop();
+                   mk::break_loop();
                });
-    measurement_kit::loop();
+    mk::loop();
 
     reso.query("IN", "AAAA", "ooni.torproject.org",
                [&](Error e, Response response) {
@@ -406,9 +406,9 @@ TEST_CASE("A specific custom resolver works as expected") {
                        }
                    }
                    REQUIRE(found);
-                   measurement_kit::break_loop();
+                   mk::break_loop();
                });
-    measurement_kit::loop();
+    mk::loop();
 
     reso.query("IN", "REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
                [&](Error e, Response response) {
@@ -420,9 +420,9 @@ TEST_CASE("A specific custom resolver works as expected") {
                            "listera.torproject.org");
                    REQUIRE(response.get_rtt() > 0.0);
                    REQUIRE(response.get_ttl() > 0);
-                   measurement_kit::break_loop();
+                   mk::break_loop();
                });
-    measurement_kit::loop();
+    mk::loop();
 
     reso.query("IN", "PTR", "6.2.4.1.0.2.e.f.f.f.1.2.3.1.2.0.b.e.d.0.2.0.2.0.8."
                             "b.1.4.1.0.0.2.ip6.arpa.",
@@ -435,9 +435,9 @@ TEST_CASE("A specific custom resolver works as expected") {
                            "listera.torproject.org");
                    REQUIRE(response.get_rtt() > 0.0);
                    REQUIRE(response.get_ttl() > 0);
-                   measurement_kit::break_loop();
+                   mk::break_loop();
                });
-    measurement_kit::loop();
+    mk::loop();
 
     REQUIRE(!failed);
 }
@@ -460,7 +460,7 @@ TEST_CASE("If the resolver dies the requests are aborted") {
         REQUIRE(response.get_evdns_status() == DNS_ERR_SHUTDOWN);
         REQUIRE(response.get_ttl() == 0);
         REQUIRE(response.get_rtt() == 0.0);
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
 
     DelayedCall d1(0.1, [&](void) {
@@ -473,10 +473,10 @@ TEST_CASE("If the resolver dies the requests are aborted") {
         // This *should not* be called, since the request callback
         // shold be called before than this one.
         failed = true;
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
 
-    measurement_kit::loop();
+    mk::loop();
 
     REQUIRE(!failed);
 }
@@ -506,16 +506,16 @@ TEST_CASE("A request to a nonexistent server times out") {
         REQUIRE(response.get_evdns_status() == DNS_ERR_TIMEOUT);
         REQUIRE(response.get_ttl() == 0);
         REQUIRE(response.get_rtt() == 0.0);
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
 
     auto failed = false;
     DelayedCall d(10.0, [&](void) {
         failed = true;
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
 
-    measurement_kit::loop();
+    mk::loop();
 
     REQUIRE(!failed);
 }
@@ -551,9 +551,9 @@ TEST_CASE("It is safe to cancel requests in flight") {
                            total += response.get_rtt();
                            count += 1;
                        }
-                       measurement_kit::break_loop();
+                       mk::break_loop();
                    });
-        measurement_kit::loop();
+        mk::loop();
     }
     // We need at lest 8 good responses to compute the average
     // We do not require 16 to tolerate a few losses
@@ -568,15 +568,15 @@ TEST_CASE("It is safe to cancel requests in flight") {
             auto status_ok = (e == CancelError() || e == NoError());
             REQUIRE(status_ok);
             // Ignoring all the other fields here
-            measurement_kit::warn("- break_loop");
-            measurement_kit::break_loop();
+            mk::warn("- break_loop");
+            mk::break_loop();
         }, Logger::global(), reso.get_evdns_base());
         DelayedCall d(avgrtt, [&](void) {
-            measurement_kit::warn("- cancel");
+            mk::warn("- cancel");
             r->cancel();
-            measurement_kit::break_loop();
+            mk::break_loop();
         });
-        measurement_kit::loop();
+        mk::loop();
         delete r;
     }
 }
@@ -602,8 +602,8 @@ TEST_CASE("Make sure we can override host and number of tries") {
         REQUIRE(response.get_results().size() == 0);
         REQUIRE(e == TimeoutError());
         // Assuming all the other fields are OK
-        measurement_kit::break_loop();
+        mk::break_loop();
     });
-    measurement_kit::loop();
+    mk::loop();
 }
 */

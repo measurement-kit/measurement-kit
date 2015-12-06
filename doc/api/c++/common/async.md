@@ -9,13 +9,10 @@ MeasurementKit (libmeasurement\_kit, -lmeasurement\_kit).
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/foo.hpp>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::foo;
-
-Async *async = new Async;
+mk::Async *async = new mk::Async;
 
 void on_run_test() {
-    SharedPointer<FooTest> test = std::make_shared<FooTest>(
+    SharedPointer<mk::Foo::Test> test = std::make_shared<mk::Foo::Test>(
         // Test configuration params
     );
     test->set_verbose(1);
@@ -24,7 +21,7 @@ void on_run_test() {
         // its content if you plan to use it at a later time
         // Caution: this callback is called from a background thread
     });
-    async->run_test(test, [](SharedPointer<NetTest> test) {
+    async->run_test(test, [](SharedPointer<mk::NetTest> test) {
         // Do something with the terminated test
         // Caution: this callback is called from a background thread
     });
@@ -73,4 +70,4 @@ hence the moment in which the background thread is stopped).
 
 # HISTORY
 
-The `Async` class appeared in MeasurementKit 0.1.
+The `Async` class appeared in MeasurementKit 0.1.0.

@@ -17,10 +17,8 @@
 #include <limits.h>
 #include <stddef.h>
 
-namespace measurement_kit {
+namespace mk {
 namespace dns {
-
-using namespace measurement_kit::common;
 
 Response::Response(int code_, char type_, int count, int ttl_, double started,
                    void *addresses, Logger *logger, Libs *libs, int start_from)
@@ -41,7 +39,7 @@ Response::Response(int code_, char type_, int count, int ttl_, double started,
     case DNS_ERR_REFUSED:
     case DNS_ERR_TRUNCATED:
     case DNS_ERR_NODATA:
-        rtt = measurement_kit::time_now() - started;
+        rtt = mk::time_now() - started;
         break;
     default:
         rtt = 0.0;
@@ -104,4 +102,4 @@ Response::Response(int code_, char type_, int count, int ttl_, double started,
 }
 
 } // namespace dns
-} // namespace measurement_kit
+} // namespace mk

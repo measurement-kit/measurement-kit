@@ -7,11 +7,11 @@
 
 #include <event2/dns.h>
 
-namespace measurement_kit {
+namespace mk {
 namespace dns {
 
-common::Error dns_error(int code) {
-    common::Error err;
+Error dns_error(int code) {
+    Error err;
 
     //
     // Here we map evdns error codes to specific Errors.
@@ -20,7 +20,7 @@ common::Error dns_error(int code) {
     //
 
     if (code == DNS_ERR_NONE) {
-        err = common::NoError();
+        err = NoError();
 
     } else if (code == DNS_ERR_FORMAT) {
         // The name server was unable to interpret the query
@@ -76,11 +76,11 @@ common::Error dns_error(int code) {
 
     } else {
         // Safery net - should really not happen
-        err = common::GenericError();
+        err = GenericError();
     }
 
     return err;
 }
 
 } // namespace dns
-} // namespace measurement_kit
+} // namespace mk

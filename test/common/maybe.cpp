@@ -7,7 +7,7 @@
 
 #include <measurement_kit/common.hpp>
 
-using namespace measurement_kit::common;
+using namespace mk;
 
 TEST_CASE("The maybe template works as expected when there is no error") {
     Maybe<int> maybe(0xdeadbeef);

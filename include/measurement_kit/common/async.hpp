@@ -10,8 +10,7 @@
 #include <functional>
 #include <string>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 class NetTest;
 struct AsyncState;
@@ -41,6 +40,5 @@ class Async {
     static void loop_thread(Var<AsyncState>);
 };
 
-} // namespace net
-} // namespace measurement_kit
+} // namespace mk
 #endif

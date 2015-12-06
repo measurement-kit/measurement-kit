@@ -4,7 +4,7 @@
 
 #include "src/report/file_reporter.hpp"
 
-namespace measurement_kit {
+namespace mk {
 namespace report {
 
 void FileReporter::open() {
@@ -13,7 +13,7 @@ void FileReporter::open() {
         file.open(filename);
         file << getHeader();
     } catch (...) {
-        emit_error(common::GenericError());
+        emit_error(GenericError());
     }
 }
 
@@ -22,7 +22,7 @@ void FileReporter::writeEntry(Entry &entry) {
     try {
         file << entry.str();
     } catch (...) {
-        emit_error(common::GenericError());
+        emit_error(GenericError());
     }
 }
 
@@ -31,9 +31,9 @@ void FileReporter::close() {
     try {
         file.close();
     } catch (...) {
-        emit_error(common::GenericError());
+        emit_error(GenericError());
     }
 }
 
 } // namespace report
-} // namespace measurement_kit
+} // namespace mk

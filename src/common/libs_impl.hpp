@@ -23,8 +23,7 @@ struct event;
 struct event_base;
 struct timeval;
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 struct Libs {
 
@@ -123,6 +122,5 @@ struct Libs {
     }
 };
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk
 #endif

@@ -15,8 +15,8 @@
 
 #include "src/net/connection.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
+using namespace mk;
+using namespace mk::net;
 
 TEST_CASE("Ensure that the constructor socket-validity checks work") {
 

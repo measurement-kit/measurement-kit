@@ -8,11 +8,9 @@
 #include <measurement_kit/common/var.hpp>
 #include <functional>
 
-namespace measurement_kit {
+namespace mk {
 
-namespace common {
 class NetTest;
-}
 
 namespace ooni {
 
@@ -23,8 +21,8 @@ class BaseTest {
     virtual ~BaseTest() {} ///< Default destructor
 
     /// Create instance of the test
-    virtual common::Var<common::NetTest> create_test_() {
-        return common::Var<common::NetTest>();
+    virtual Var<NetTest> create_test_() {
+        return Var<NetTest>();
     }
 
     /// Run synchronous test
@@ -35,5 +33,5 @@ class BaseTest {
 };
 
 } // namespace ooni
-} // namespace measurement_kit
+} // namespace mk
 #endif

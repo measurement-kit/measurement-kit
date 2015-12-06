@@ -8,10 +8,10 @@
 #include <measurement_kit/common.hpp>
 #include "src/ooni/net_test.hpp"
 
-using namespace measurement_kit::ooni;
+using namespace mk::ooni;
 
 TEST_CASE("The NetTest should callback when it has finished running") {
-    measurement_kit::ooni::NetTest test("");
-    test.begin([&]() { test.end([]() { measurement_kit::break_loop(); }); });
-    measurement_kit::loop();
+    mk::ooni::NetTest test("");
+    test.begin([&]() { test.end([]() { mk::break_loop(); }); });
+    mk::loop();
 }

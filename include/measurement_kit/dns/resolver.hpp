@@ -21,12 +21,10 @@
 
 struct evdns_base; // Internally we use evdns
 
-namespace measurement_kit {
+namespace mk {
 namespace dns {
 
 class Response;
-
-using namespace measurement_kit::common;
 
 /// DNS Resolver object.
 class Resolver : public NonCopyable, public NonMovable {
@@ -37,7 +35,7 @@ class Resolver : public NonCopyable, public NonMovable {
   protected:
     Settings settings;
     Libs *libs = get_global_libs();
-    Poller *poller = measurement_kit::get_global_poller();
+    Poller *poller = mk::get_global_poller();
     evdns_base *base = nullptr;
     Logger *logger = Logger::global();
 
@@ -70,5 +68,5 @@ class Resolver : public NonCopyable, public NonMovable {
 };
 
 } // namespace dns
-} // namespace measurement_kit
+} // namespace mk
 #endif

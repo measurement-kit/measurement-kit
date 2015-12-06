@@ -16,8 +16,7 @@
 struct bufferevent;
 struct event_base;
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 /// RAII wrapper for bufferevent socket
 class Bufferevent : public NonCopyable, public NonMovable {
@@ -65,6 +64,5 @@ class Bufferevent : public NonCopyable, public NonMovable {
     bufferevent *bev_ = nullptr;
 };
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk
 #endif

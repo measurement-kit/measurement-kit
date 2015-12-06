@@ -7,10 +7,8 @@
 #include "src/net/socks5.hpp"
 #include <measurement_kit/net/transport.hpp>
 
-namespace measurement_kit {
+namespace mk {
 namespace net {
-
-using namespace measurement_kit::common;
 
 static Var<Transport> connect_internal(Settings settings, Logger *logger,
                                        Poller *poller) {
@@ -66,4 +64,4 @@ Maybe<Var<Transport>> connect(Settings settings, Logger *lp, Poller *poller) {
 }
 
 } // namespace net
-} // namespace measurement_kit
+} // namespace mk

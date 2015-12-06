@@ -10,8 +10,8 @@
 
 #include "src/common/check_connectivity.hpp"
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
+using namespace mk;
+using namespace mk::net;
 
 TEST_CASE("It is possible to use Transport with a custom poller") {
     // Note: this is how Portolan uses measurement-kit
@@ -19,7 +19,7 @@ TEST_CASE("It is possible to use Transport with a custom poller") {
         return;
     }
     Poller poller;
-    Maybe<Var<Transport>> maybe_s = measurement_kit::net::connect({
+    Maybe<Var<Transport>> maybe_s = mk::net::connect({
         {"family", "PF_UNSPEC"},
         {"address", "nexa.polito.it"},
         {"port", "22"},

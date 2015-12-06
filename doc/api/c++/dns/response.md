@@ -2,18 +2,15 @@
 Response -- DNS response message
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
-#include <event2/dns.h>
 #include <measurement_kit/dns.hpp>
 
-using namespace measurement_kit::dns;
+mk::dns::Response response; // by default evdns status is DNS_ERR_UNKNOWN
 
-Response response;        // by default evdns status is DNS_ERR_UNKNOWN
-
-Response resp(
+mk::dns::Response resp(
         DNS_ERR_NONE,     // evdns status code
         DNS_TYPE_IPv4,    // evdns type
         n_records,        // number of returned records
@@ -38,10 +35,12 @@ int ttl = resp.get_ttl();
 // Get round trip time
 double rtt = resp.get_rtt();
 
+#include <event2/dns.h> // for DNS_IPv4_A
+
 // Get evdns type
 char type = resp.get_type();
 if (type == DNS_IPv4_A) {
-    /* do something if request was for IPv4 */
+    // do something if request was for IPv4
 }
 ```
 
@@ -63,4 +62,4 @@ to the [evdns implementation](https://github.com/libevent/libevent/blob/master/i
 
 # HISTORY
 
-The `Response` class appeared in MeasurementKit 0.1.
+The `Response` class appeared in MeasurementKit 0.1.0.

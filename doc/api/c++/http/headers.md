@@ -2,15 +2,13 @@
 Headers -- HTTP headers.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/http.hpp>
 
-using namespace measurement_kit;
-
-http::Headers headers;
+mk::http::Headers headers;
 ```
 
 # DESCRIPTION
@@ -20,4 +18,4 @@ actually a typedef for `std::map<std::string, std::string>`.
 
 # HISTORY
 
-The `Headers` class appeared in MeasurementKit 1.0.0.
+The `Headers` class appeared in MeasurementKit 0.1.0.

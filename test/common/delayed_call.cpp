@@ -12,7 +12,7 @@
 #include <measurement_kit/common.hpp>
 #include "src/common/delayed_call.hpp"
 
-using namespace measurement_kit::common;
+using namespace mk;
 
 TEST_CASE("Bad allocations triggers a failure ") {
     Libs libs;
@@ -83,8 +83,8 @@ TEST_CASE("Destructor cancels delayed calls") {
         auto called = false;
         auto d1 = new DelayedCall(0.25, [&](void) { called = true; });
         DelayedCall d2(0.249, [&](void) { delete (d1); });
-        DelayedCall d3(0.33, []() { measurement_kit::break_loop(); });
-        measurement_kit::loop();
+        DelayedCall d3(0.33, []() { mk::break_loop(); });
+        mk::loop();
         d1 = NULL; /* Clear the pointer, just in case */
         REQUIRE(called == false);
     }
@@ -106,7 +106,7 @@ TEST_CASE("Delayed call construction") {
         // callback, when we're passed an empty std::function.
         //
         DelayedCall d3(0.0, std::function<void(void)>());
-        DelayedCall d4(0.1, []() { measurement_kit::break_loop(); });
-        measurement_kit::loop();
+        DelayedCall d4(0.1, []() { mk::break_loop(); });
+        mk::loop();
     }
 }

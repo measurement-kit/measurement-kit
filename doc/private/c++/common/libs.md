@@ -2,22 +2,20 @@
 Libs -- Wrappers for C libraries functions.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include "src/measurement_kit/common/libs_impl.hpp"
 
-using namespace measurement_kit::common;
-
 // Suppose you want to check whether the Poller constructor deals
 // well with `event_base_new()` returning `nullptr`, then:
 
-Libs libs;
+mk::Libs libs;
 libs.event_base_new = []() { return nullptr; };
 bool exc = false;
 try {
-    Poller poller(&libs);
+    mk::Poller poller(&libs);
 } catch (std::bad_alloc &) {
     exc = true;
 }
@@ -40,4 +38,4 @@ simulate API failure in regress tests as shown above.
 
 # HISTORY
 
-The `Libs` class appeared in MeasurementKit 0.1.
+The `Libs` class appeared in MeasurementKit 0.1.0.

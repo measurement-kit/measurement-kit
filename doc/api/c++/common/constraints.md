@@ -2,23 +2,23 @@
 Constraints -- Constraints on copyability and movability
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/common.hpp>
 
-namespace measurement_kit {
+namespace mk {
 namespace foobar {
 
-class Foo : public common::NonCopyable {};
+class Foo : public NonCopyable {};
 
-class Bar : public common::NonMovable {};
+class Bar : public NonMovable {};
 
-class FooBar : public common::NonCopyable,
-               public common::NonMovable {};
+class FooBar : public NonCopyable, public NonMovable {};
 
-}}
+}
+}
 ```
 
 # DESCRIPTION
@@ -32,4 +32,4 @@ the specific value of `this` to the registered low-level callback.
 
 # HISTORY
 
-`NonCopyable` and `NonMovable` appeared in MeasurementKit 0.1.
+`NonCopyable` and `NonMovable` appeared in MeasurementKit 0.1.0.

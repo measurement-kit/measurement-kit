@@ -9,8 +9,7 @@
 #include <measurement_kit/common/libs.hpp>
 struct evbuffer;
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 /// RAII wrapper for evbuffer
 class Evbuffer : public NonCopyable, public NonMovable {
@@ -32,6 +31,5 @@ class Evbuffer : public NonCopyable, public NonMovable {
     evbuffer *evbuf_ = nullptr;
 };
 
-} // namespace common
-} // namespace measurement_kit
+} // namespace mk
 #endif

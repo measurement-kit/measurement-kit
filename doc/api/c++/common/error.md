@@ -2,19 +2,17 @@
 Error -- Represents an error.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/common.hpp>
 
-using namespace measurement_kit::common;
-
-Error err = GenericError(); // Assign to error class
-Error err = 17;             // Assign error code
-int code = (int) err;       // Convert error to int
-bool x = (error != 17);     // Implicit conversion here
-bool y = (error == 17);     // Also here
+mk::Error err = mk::GenericError(); // Assign to error class
+mk::Error err = 17;                 // Assign error code
+int code = (int) err;               // Convert error to int
+bool x = (error != 17);             // Implicit conversion here
+bool y = (error == 17);             // Also here
 ```
 
 # DESCRIPTION
@@ -24,4 +22,4 @@ and uses exceptions only to report unrecoverable errors.
 
 # HISTORY
 
-The `Error` class appeared in MeasurementKit 0.1.
+The `Error` class appeared in MeasurementKit 0.1.0.

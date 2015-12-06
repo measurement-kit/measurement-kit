@@ -15,10 +15,11 @@
 #include <string>
 #include <type_traits>
 
-namespace measurement_kit {
-namespace http {
+namespace mk {
 
-using namespace measurement_kit::common;
+class Error;
+
+namespace http {
 
 class Request;
 
@@ -49,5 +50,5 @@ class Client {
 };
 
 } // namespace http
-} // namespace measurement_kit
+} // namespace mk
 #endif

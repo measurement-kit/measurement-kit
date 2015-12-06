@@ -4,7 +4,7 @@
 
 #include "src/report/base_reporter.hpp"
 
-namespace measurement_kit {
+namespace mk {
 namespace report {
 
 std::string BaseReporter::getHeader() {
@@ -43,4 +43,4 @@ void BaseReporter::close() {
 }
 
 } // namespace report
-} // namespace measurement_kit
+} // namespace mk

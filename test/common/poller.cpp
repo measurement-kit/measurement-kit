@@ -16,7 +16,7 @@
 #include <new>
 #include <stdexcept>
 
-using namespace measurement_kit::common;
+using namespace mk;
 
 TEST_CASE("Constructor") {
 

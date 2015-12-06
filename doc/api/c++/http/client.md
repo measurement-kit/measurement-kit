@@ -2,27 +2,24 @@
 Client -- HTTP client.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/http.hpp>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit;
-
-http::Client client;
+mk::http::Client client;
 
 client.request(
     { 
       "follow_redirects" : "yes",       // default is no
-      "url" : "http://nexa.polito.it/",
+      "url" : "http://nexa.polito.it/", // must be specified
       "method" : "PUT",                 // default is GET
       "path" : "/robots.txt",           // default is to use URL
       "http_version" : "HTTP/1.0"       // default is HTTP/1.1
     },
     {{"Content-Type", "text/plain"}, {"User-Agent", "Antani/1.0"}},
-    "THIS IS THE BODY", [](Error err, http::Response resp) {
+    "THIS IS THE BODY", [](mk::Error err, mk::http::Response resp) {
         if (err) throw err;
         // Process the response
     });
@@ -64,15 +61,6 @@ receives the following arguments:
 Beware that, in case of early error, the callback MAY be called
 immediately by the `request()` method.
 
-# BUGS
-
-In the current implementation, the parser throws an exception that
-is not catched if there is a parse error. Ideally that exception has
-to be properly routed, but the parser code is messy and I think
-the best thing to do is to rewrite the parser. This is to be fixed
-in a successive point release, as the objective of this first release
-was to have a good API.
-
 # HISTORY
 
-The `Response` class appeared in MeasurementKit 1.0.0.
+The `Response` class appeared in MeasurementKit 0.1.0.

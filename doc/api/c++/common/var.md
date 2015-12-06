@@ -2,18 +2,16 @@
 Var -- Shared-pointer with JavaScript-var-like semantic
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/common.hpp>
 
-using namespace measurement_kit::common;
-
 // Construct as a shared_ptr<T>
 
-Var<T> p;                         // pointer is nullptr
-Var<T> p(new T());                // construct from raw pointer
+mk::Var<T> p;                         // pointer is nullptr
+mk::Var<T> p(new T());                // construct from raw pointer
 
 // The three overriden operations
 
@@ -46,7 +44,7 @@ remember not to add attributes to `Var<T>` implementation. This
 guarantees that the following:
 
 ```C++
-Var<T> p = std::make_shared<T>();
+mk::Var<T> p = std::make_shared<T>();
 ```
 
 does not result in object slicing (i.e. in the construction of a
@@ -54,4 +52,4 @@ does not result in object slicing (i.e. in the construction of a
 
 # HISTORY
 
-The `Var` class appeared in MeasurementKit 0.1.
+The `Var` class appeared in MeasurementKit 0.1.0.

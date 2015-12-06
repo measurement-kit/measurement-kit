@@ -10,16 +10,13 @@
 #include <measurement_kit/dns.hpp>
 #include "src/ooni/net_test.hpp"
 
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
-
-using namespace measurement_kit::common;
-using namespace measurement_kit::dns;
 
 class DNSTest : public ooni::NetTest {
     using ooni::NetTest::NetTest;
 
-    Var<Resolver> resolver;
+    Var<dns::Resolver> resolver;
 
   public:
     DNSTest(std::string input_filepath_, Settings options_)
@@ -28,10 +25,11 @@ class DNSTest : public ooni::NetTest {
         test_version = "0.0.1";
     };
 
-    void query(QueryType query_type, QueryClass query_class,
+    void query(dns::QueryType query_type, dns::QueryClass query_class,
                std::string query_name, std::string nameserver,
-               std::function<void(Response)> cb);
+               std::function<void(dns::Response)> cb);
 };
-}
-}
+
+} // namespace ooni
+} // namespace mk
 #endif

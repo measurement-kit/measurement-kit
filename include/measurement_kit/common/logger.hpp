@@ -10,8 +10,7 @@
 #include <functional>
 #include <stdarg.h>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 /// Object used to log messages
 class Logger : public NonCopyable, public NonMovable {
@@ -70,14 +69,12 @@ class Logger : public NonCopyable, public NonMovable {
     char buffer_[32768];
 };
 
-} // namespace common
-
 inline void warn(const char *, ...) __attribute__((format(printf, 1, 2)));
 inline void debug(const char *, ...) __attribute__((format(printf, 1, 2)));
 inline void info(const char *, ...) __attribute__((format(printf, 1, 2)));
 
 inline void warn(const char *fmt, ...) {
-    auto logger = common::Logger::global();
+    auto logger = Logger::global();
     if (logger->get_verbose() >= 0) {
         va_list ap;
         va_start(ap, fmt);
@@ -87,7 +84,7 @@ inline void warn(const char *fmt, ...) {
 }
 
 inline void info(const char *fmt, ...) {
-    auto logger = common::Logger::global();
+    auto logger = Logger::global();
     if (logger->get_verbose() > 0) {
         va_list ap;
         va_start(ap, fmt);
@@ -97,7 +94,7 @@ inline void info(const char *fmt, ...) {
 }
 
 inline void debug(const char *fmt, ...) {
-    auto logger = common::Logger::global();
+    auto logger = Logger::global();
     if (logger->get_verbose() > 0) {
         va_list ap;
         va_start(ap, fmt);
@@ -106,11 +103,11 @@ inline void debug(const char *fmt, ...) {
     }
 }
 
-inline void set_verbose(int v) { common::Logger::global()->set_verbose(v); }
+inline void set_verbose(int v) { Logger::global()->set_verbose(v); }
 
 inline void on_log(std::function<void(const char *)> fn) {
-    common::Logger::global()->on_log(fn);
+    Logger::global()->on_log(fn);
 }
 
-} // namespace measurement_kit
+} // namespace mk
 #endif

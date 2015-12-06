@@ -14,24 +14,22 @@
 
 #include <unistd.h>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::ooni;
+using namespace mk;
 
 static void run_http_invalid_request_line(Async &async) {
-    async.run_test(HttpInvalidRequestLineTest()
+    async.run_test(ooni::HttpInvalidRequestLineTest()
                        .set_backend("http://nexa.polito.it/")
                        .on_log([](const char *s) {
                            (void)fprintf(stderr, "test #1: %s\n", s);
                        })
                        .create_test_(),
                    [](Var<NetTest> test) {
-                       measurement_kit::debug("test complete: %llu",
-                                              test->identifier());
+                       mk::debug("test complete: %llu", test->identifier());
                    });
 }
 
 static void run_dns_injection(Async &async) {
-    async.run_test(DnsInjectionTest()
+    async.run_test(ooni::DnsInjectionTest()
                        .set_backend("8.8.8.8:53")
                        .set_input_file_path("test/fixtures/hosts.txt")
                        .on_log([](const char *s) {
@@ -39,13 +37,12 @@ static void run_dns_injection(Async &async) {
                        })
                        .create_test_(),
                    [](Var<NetTest> test) {
-                       measurement_kit::debug("test complete: %llu",
-                                              test->identifier());
+                       mk::debug("test complete: %llu", test->identifier());
                    });
 }
 
 static void run_tcp_connect(Async &async) {
-    async.run_test(TcpConnectTest()
+    async.run_test(ooni::TcpConnectTest()
                        .set_port("80")
                        .set_input_file_path("test/fixtures/hosts.txt")
                        .on_log([](const char *s) {
@@ -53,8 +50,7 @@ static void run_tcp_connect(Async &async) {
                        })
                        .create_test_(),
                    [](Var<NetTest> test) {
-                       measurement_kit::debug("test complete: %llu",
-                                              test->identifier());
+                       mk::debug("test complete: %llu", test->identifier());
                    });
 }
 
@@ -63,7 +59,7 @@ TEST_CASE("The async engine works as expected") {
     Async async;
 
     for (int i = 0; i < 4; ++i) {
-        measurement_kit::debug("do another iteration of tests");
+        mk::debug("do another iteration of tests");
 
         // Create tests in temporary void functions to also check that we can
         // create them in functions that later return in real apps

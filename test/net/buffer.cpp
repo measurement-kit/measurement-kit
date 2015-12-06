@@ -14,8 +14,8 @@
 
 #include <event2/buffer.h>
 
-using namespace measurement_kit::common;
-using namespace measurement_kit::net;
+using namespace mk;
+using namespace mk::net;
 
 TEST_CASE("The constructor works correctly", "[Buffer]") {
     REQUIRE_NOTHROW(Buffer());

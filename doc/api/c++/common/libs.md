@@ -2,20 +2,18 @@
 Libs -- Wrappers for C libraries functions.
 
 # LIBRARY
-MeasurementKit (libmeasurement-kit, -lmeasurement-kit).
+MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
 #include <measurement_kit/common.hpp>
-
-using namespace measurement_kit::common;
 
 class Foo {
   public:
     // ...
 
   private:
-    Libs *libs_ = get_global_libs();
+    Libs *libs_ = mk::get_global_libs();
 }
 
 ```
@@ -30,4 +28,4 @@ allow to access the default implementation.
 
 # HISTORY
 
-The `Libs` class appeared in MeasurementKit 0.1.
+The `Libs` class appeared in MeasurementKit 0.1.0.

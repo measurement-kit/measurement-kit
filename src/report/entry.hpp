@@ -8,7 +8,7 @@
 #include <yaml-cpp/yaml.h>
 #include <ctime>
 
-namespace measurement_kit {
+namespace mk {
 namespace report {
 
 class Entry {
@@ -38,5 +38,5 @@ class Entry {
 };
 
 } // namespace report
-} // namespace measurement_kit
+} // namespace mk
 #endif

@@ -15,7 +15,7 @@
 #include <stdexcept>                           // for runtime_error
 #include <string>                              // for string, basic_string
 
-namespace measurement_kit {
+namespace mk {
 namespace net {
 
 Buffer::Buffer(evbuffer *b) {
@@ -76,16 +76,16 @@ std::string Buffer::readpeek(bool ispeek, size_t upto) {
     return out;
 }
 
-common::Maybe<std::string> Buffer::readline(size_t maxline) {
+Maybe<std::string> Buffer::readline(size_t maxline) {
 
     size_t eol_length = 0;
     auto search_result =
         evbuffer_search_eol(*evbuf, nullptr, &eol_length, EVBUFFER_EOL_CRLF);
     if (search_result.pos < 0) {
         if (length() > maxline) {
-            return common::Maybe<std::string>(EOLNotFoundError(), "");
+            return Maybe<std::string>(EOLNotFoundError(), "");
         }
-        return common::Maybe<std::string>("");
+        return Maybe<std::string>("");
     }
 
     /*
@@ -96,9 +96,9 @@ common::Maybe<std::string> Buffer::readline(size_t maxline) {
         throw std::runtime_error("unexpected error");
     auto len = (size_t)search_result.pos + eol_length;
     if (len > maxline) {
-        return common::Maybe<std::string>(LineTooLongError(), "");
+        return Maybe<std::string>(LineTooLongError(), "");
     }
-    return common::Maybe<std::string>(read(len));
+    return Maybe<std::string>(read(len));
 }
 
 void Buffer::write(const void *buf, size_t count) {
@@ -150,4 +150,4 @@ void Buffer::write(size_t count, std::function<size_t(void *, size_t)> func) {
 }
 
 } // namespace net
-} // namespace measurement_kit
+} // namespace mk

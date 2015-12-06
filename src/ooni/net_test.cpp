@@ -6,9 +6,7 @@
 #include "src/ooni/net_test.hpp"
 #include <ctime>
 
-using namespace measurement_kit::common;
-
-namespace measurement_kit {
+namespace mk {
 namespace ooni {
 
 NetTest::NetTest(std::string input_filepath_, Settings options_)
@@ -143,5 +141,6 @@ void NetTest::main(std::string, Settings,
         cb(entry);
     });
 }
-}
-}
+
+} // namespace ooni
+} // namespace mk

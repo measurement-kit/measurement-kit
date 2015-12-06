@@ -7,10 +7,9 @@
 
 #include <map>
 
-namespace measurement_kit {
-namespace common {
+namespace mk {
 
 typedef std::map<std::string, std::string> Settings;
-}
+
 }
 #endif

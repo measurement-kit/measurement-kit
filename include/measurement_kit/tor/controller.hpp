@@ -11,7 +11,7 @@
 
 #include <measurement_kit/common/error.hpp>
 
-namespace measurement_kit {
+namespace mk {
 namespace tor {
 
 /// Tor controller class
@@ -27,7 +27,7 @@ class Controller {
         : Controller("127.0.0.1", 9050, start_tor) {}
 
     /// Set callback called on completion
-    void on_complete(std::function<void(common::Error)> func) {
+    void on_complete(std::function<void(Error)> func) {
         complete_fn_ = func;
     }
 
@@ -40,7 +40,7 @@ class Controller {
     void start_tor() { start_tor_(); }
 
   private:
-    std::function<void(common::Error)> complete_fn_;
+    std::function<void(Error)> complete_fn_;
     std::function<void(int, std::string)> progress_fn_;
     std::string host_;
     std::function<void()> start_tor_;
@@ -48,5 +48,5 @@ class Controller {
 };
 
 } // namespace tor
-} // namespace measurement_kit
+} // namespace mk
 #endif

@@ -22,10 +22,8 @@
 
 #include <measurement_kit/net/buffer.hpp>
 
-namespace measurement_kit {
+namespace mk {
 namespace net {
-
-using namespace measurement_kit::common;
 
 class Transport {
   public:
@@ -70,5 +68,5 @@ Maybe<Var<Transport>> connect(Settings, Logger * = Logger::global(),
                               Poller * = Poller::global());
 
 } // namespace net
-} // namespace measurement_kit
+} // namespace mk
 #endif
