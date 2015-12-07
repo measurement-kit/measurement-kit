@@ -56,30 +56,44 @@ struct get_idx<Key, typename boost::enable_if<boost::is_signed<Key> >::type> {
   }
 };
 
+template <typename T>
+inline bool node::equals(const T& rhs, shared_memory_holder pMemory) {
+  T lhs;
+  if (convert<T>::decode(Node(*this, pMemory), lhs)) {
+    return lhs == rhs;
+  }
+  return false;
+}
+
+inline bool node::equals(const char* rhs, shared_memory_holder pMemory) {
+  return equals<std::string>(rhs, pMemory);
+}
+
 // indexing
 template <typename Key>
-inline node& node_data::get(const Key& key,
+inline node* node_data::get(const Key& key,
                             shared_memory_holder pMemory) const {
   switch (m_type) {
     case NodeType::Map:
       break;
     case NodeType::Undefined:
     case NodeType::Null:
-      return pMemory->create_node();
+      return NULL;
     case NodeType::Sequence:
       if (node* pNode = get_idx<Key>::get(m_sequence, key, pMemory))
-        return *pNode;
-      return pMemory->create_node();
+        return pNode;
+      return NULL;
     case NodeType::Scalar:
       throw BadSubscript();
   }
 
   for (node_map::const_iterator it = m_map.begin(); it != m_map.end(); ++it) {
-    if (equals(*it->first, key, pMemory))
-      return *it->second;
+    if (it->first->equals(key, pMemory)) {
+      return it->second;
+    }
   }
 
-  return pMemory->create_node();
+  return NULL;
 }
 
 template <typename Key>
@@ -102,8 +116,9 @@ inline node& node_data::get(const Key& key, shared_memory_holder pMemory) {
   }
 
   for (node_map::const_iterator it = m_map.begin(); it != m_map.end(); ++it) {
-    if (equals(*it->first, key, pMemory))
+    if (it->first->equals(key, pMemory)) {
       return *it->second;
+    }
   }
 
   node& k = convert_to_node(key, pMemory);
@@ -118,7 +133,7 @@ inline bool node_data::remove(const Key& key, shared_memory_holder pMemory) {
     return false;
 
   for (node_map::iterator it = m_map.begin(); it != m_map.end(); ++it) {
-    if (equals(*it->first, key, pMemory)) {
+    if (it->first->equals(key, pMemory)) {
       m_map.erase(it);
       return true;
     }
@@ -146,20 +161,6 @@ inline void node_data::force_insert(const Key& key, const Value& value,
   node& k = convert_to_node(key, pMemory);
   node& v = convert_to_node(value, pMemory);
   insert_map_pair(k, v);
-}
-
-template <typename T>
-inline bool node_data::equals(node& node, const T& rhs,
-                              shared_memory_holder pMemory) {
-  T lhs;
-  if (convert<T>::decode(Node(node, pMemory), lhs))
-    return lhs == rhs;
-  return false;
-}
-
-inline bool node_data::equals(node& node, const char* rhs,
-                              shared_memory_holder pMemory) {
-  return equals<std::string>(node, rhs, pMemory);
 }
 
 template <typename T>

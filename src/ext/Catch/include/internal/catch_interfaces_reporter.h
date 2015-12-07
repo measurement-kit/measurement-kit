@@ -101,7 +101,7 @@ namespace Catch
         }
         virtual ~AssertionStats();
 
-#  ifdef CATCH_CPP11_OR_GREATER
+#  ifdef CATCH_CONFIG_CPP11_GENERATED_METHODS
         AssertionStats( AssertionStats const& )              = default;
         AssertionStats( AssertionStats && )                  = default;
         AssertionStats& operator = ( AssertionStats const& ) = default;
@@ -124,7 +124,7 @@ namespace Catch
             missingAssertions( _missingAssertions )
         {}
         virtual ~SectionStats();
-#  ifdef CATCH_CPP11_OR_GREATER
+#  ifdef CATCH_CONFIG_CPP11_GENERATED_METHODS
         SectionStats( SectionStats const& )              = default;
         SectionStats( SectionStats && )                  = default;
         SectionStats& operator = ( SectionStats const& ) = default;
@@ -151,7 +151,7 @@ namespace Catch
         {}
         virtual ~TestCaseStats();
 
-#  ifdef CATCH_CPP11_OR_GREATER
+#  ifdef CATCH_CONFIG_CPP11_GENERATED_METHODS
         TestCaseStats( TestCaseStats const& )              = default;
         TestCaseStats( TestCaseStats && )                  = default;
         TestCaseStats& operator = ( TestCaseStats const& ) = default;
@@ -179,7 +179,7 @@ namespace Catch
         {}
         virtual ~TestGroupStats();
 
-#  ifdef CATCH_CPP11_OR_GREATER
+#  ifdef CATCH_CONFIG_CPP11_GENERATED_METHODS
         TestGroupStats( TestGroupStats const& )              = default;
         TestGroupStats( TestGroupStats && )                  = default;
         TestGroupStats& operator = ( TestGroupStats const& ) = default;
@@ -201,7 +201,7 @@ namespace Catch
         {}
         virtual ~TestRunStats();
 
-#  ifndef CATCH_CPP11_OR_GREATER
+#  ifndef CATCH_CONFIG_CPP11_GENERATED_METHODS
         TestRunStats( TestRunStats const& _other )
         :   runInfo( _other.runInfo ),
             totals( _other.totals ),
@@ -238,11 +238,14 @@ namespace Catch
 
         virtual void assertionStarting( AssertionInfo const& assertionInfo ) = 0;
 
+        // The return value indicates if the messages buffer should be cleared:
         virtual bool assertionEnded( AssertionStats const& assertionStats ) = 0;
         virtual void sectionEnded( SectionStats const& sectionStats ) = 0;
         virtual void testCaseEnded( TestCaseStats const& testCaseStats ) = 0;
         virtual void testGroupEnded( TestGroupStats const& testGroupStats ) = 0;
         virtual void testRunEnded( TestRunStats const& testRunStats ) = 0;
+        
+        virtual void skipTest( TestCaseInfo const& testInfo ) = 0;
     };
 
 

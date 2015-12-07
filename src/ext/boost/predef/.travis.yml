@@ -1,0 +1,43 @@
+language: cpp
+
+notifications:
+  email:
+    recipients:
+      - grafikrobot@gmail.com
+    on_success: change
+    on_failure: change
+  irc:
+    channels:
+      - "chat.freenode.net#boost"
+    template:
+      - "%{repository}/%{branch} (%{commit} - %{author}): %{build_url}: %{message}"
+    on_success: change
+    on_failure: change
+
+os:
+  - linux
+
+matrix:
+  include:
+    - compiler: clang
+      env: TOOLSET=clang-3.4
+    - compiler: clang
+      env: TOOLSET=clang-3.5
+    - compiler: clang
+      env: TOOLSET=clang-3.6
+    - compiler: gcc
+      env: TOOLSET=gcc-4.7
+    - compiler: gcc
+      env: TOOLSET=gcc-4.8
+    - compiler: gcc
+      env: TOOLSET=gcc-4.9
+    - compiler: gcc
+      env: TOOLSET=gcc-5.1
+
+before_install: wget "https://raw.githubusercontent.com/boostorg/regression/develop/ci/src/script.py"
+install: python script.py install
+before_script: python script.py before_script
+script: python script.py script
+after_success: python script.py after_success
+after_failure: python script.py after_failure
+after_script: python script.py after_script

@@ -12,6 +12,21 @@
 #  include <boost/type_traits/has_nothrow_constructor.hpp>
 #endif
 
+class bug11324_base
+{
+public:
+   bug11324_base & operator=(const bug11324_base&){ throw int(); }
+   virtual ~bug11324_base() {}
+};
+
+class bug11324_derived : public bug11324_base
+{
+public:
+   char data;
+   explicit bug11324_derived(char arg) : data(arg) {}
+};
+
+
 TT_TEST_BEGIN(has_nothrow_constructor)
 
 BOOST_CHECK_INTEGRAL_CONSTANT(::tt::has_nothrow_constructor<bool>::value, true);
@@ -162,6 +177,7 @@ BOOST_CHECK_INTEGRAL_CONSTANT(::tt::has_nothrow_constructor<nothrow_assign_UDT>:
 BOOST_CHECK_INTEGRAL_CONSTANT(::tt::has_nothrow_constructor<nothrow_copy_UDT>::value, false);
 
 BOOST_CHECK_INTEGRAL_CONSTANT(::tt::has_nothrow_constructor<test_abc1>::value, false);
+BOOST_CHECK_INTEGRAL_CONSTANT(::tt::has_nothrow_constructor<bug11324_derived>::value, false);
 
 TT_TEST_END
 

@@ -10,6 +10,8 @@
 #include <stdexcept>
 
 #include "yaml-cpp/dll.h"
+#include "yaml-cpp/emitterstyle.h"
+#include "yaml-cpp/mark.h"
 #include "yaml-cpp/node/detail/bool_type.h"
 #include "yaml-cpp/node/detail/iterator_fwd.h"
 #include "yaml-cpp/node/ptr.h"
@@ -29,6 +31,7 @@ class YAML_CPP_API Node {
   friend class NodeBuilder;
   friend class NodeEvents;
   friend struct detail::iterator_value;
+  friend class detail::node;
   friend class detail::node_data;
   template <typename>
   friend class detail::iterator_base;
@@ -46,6 +49,7 @@ class YAML_CPP_API Node {
   Node(const Node& rhs);
   ~Node();
 
+  YAML::Mark Mark() const;
   NodeType::value Type() const;
   bool IsDefined() const;
   bool IsNull() const { return Type() == NodeType::Null; }
@@ -59,12 +63,18 @@ class YAML_CPP_API Node {
 
   // access
   template <typename T>
-  const T as() const;
+  T as() const;
   template <typename T, typename S>
-  const T as(const S& fallback) const;
+  T as(const S& fallback) const;
   const std::string& Scalar() const;
+
   const std::string& Tag() const;
   void SetTag(const std::string& tag);
+
+  // style
+  // WARNING: This API might change in future releases.
+  EmitterStyle::value Style() const;
+  void SetStyle(EmitterStyle::value style);
 
   // assignment
   bool is(const Node& rhs) const;

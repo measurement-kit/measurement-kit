@@ -9,7 +9,6 @@
 #define TWOBLUECUBES_CATCH_TOSTRING_H_INCLUDED
 
 #include "catch_common.h"
-#include "catch_sfinae.hpp"
 
 #include <sstream>
 #include <iomanip>
@@ -21,35 +20,60 @@
 #include "catch_objc_arc.hpp"
 #endif
 
+#ifdef CATCH_CONFIG_CPP11_TUPLE
+#include <tuple>
+#endif
+
+#ifdef CATCH_CONFIG_CPP11_IS_ENUM
+#include <type_traits>
+#endif
+
 namespace Catch {
+
+// Why we're here.
+template<typename T>
+std::string toString( T const& value );
+
+// Built in overloads
+
+std::string toString( std::string const& value );
+std::string toString( std::wstring const& value );
+std::string toString( const char* const value );
+std::string toString( char* const value );
+std::string toString( const wchar_t* const value );
+std::string toString( wchar_t* const value );
+std::string toString( int value );
+std::string toString( unsigned long value );
+std::string toString( unsigned int value );
+std::string toString( const double value );
+std::string toString( const float value );
+std::string toString( bool value );
+std::string toString( char value );
+std::string toString( signed char value );
+std::string toString( unsigned char value );
+
+#ifdef CATCH_CONFIG_CPP11_NULLPTR
+std::string toString( std::nullptr_t );
+#endif
+
+#ifdef __OBJC__
+    std::string toString( NSString const * const& nsstring );
+    std::string toString( NSString * CATCH_ARC_STRONG const& nsstring );
+    std::string toString( NSObject* const& nsObject );
+#endif
+
+  
 namespace Detail {
 
-// SFINAE is currently disabled by default for all compilers.
-// If the non SFINAE version of IsStreamInsertable is ambiguous for you
-// and your compiler supports SFINAE, try #defining CATCH_CONFIG_SFINAE
-#ifdef CATCH_CONFIG_SFINAE
-
-    template<typename T>
-    class IsStreamInsertableHelper {
-        template<int N> struct TrueIfSizeable : TrueType {};
-
-        template<typename T2>
-        static TrueIfSizeable<sizeof((*(std::ostream*)0) << *((T2 const*)0))> dummy(T2*);
-        static FalseType dummy(...);
-
-    public:
-        typedef SizedIf<sizeof(dummy((T*)0))> type;
-    };
-
-    template<typename T>
-    struct IsStreamInsertable : IsStreamInsertableHelper<T>::type {};
-
-#else
+    extern std::string unprintableString;
 
     struct BorgType {
         template<typename T> BorgType( T const& );
     };
 
+    struct TrueType { char sizer[1]; };
+    struct FalseType { char sizer[2]; };
+    
     TrueType& testStreamable( std::ostream& );
     FalseType testStreamable( FalseType );
 
@@ -62,12 +86,38 @@ namespace Detail {
         enum { value = sizeof( testStreamable(s << t) ) == sizeof( TrueType ) };
     };
 
-#endif
+#if defined(CATCH_CONFIG_CPP11_IS_ENUM)
+    template<typename T,
+             bool IsEnum = std::is_enum<T>::value
+             >
+    struct EnumStringMaker
+    {
+        static std::string convert( T const& ) { return unprintableString; }
+    };
 
+    template<typename T>
+    struct EnumStringMaker<T,true>
+    {
+        static std::string convert( T const& v )
+        {
+            return ::Catch::toString(
+                static_cast<typename std::underlying_type<T>::type>(v)
+                );
+        }
+    };
+#endif
     template<bool C>
     struct StringMakerBase {
+#if defined(CATCH_CONFIG_CPP11_IS_ENUM)
         template<typename T>
-        static std::string convert( T const& ) { return "{?}"; }
+        static std::string convert( T const& v )
+        {
+            return EnumStringMaker<T>::convert( v );
+        }
+#else
+        template<typename T>
+        static std::string convert( T const& ) { return unprintableString; }
+#endif
     };
 
     template<>
@@ -88,9 +138,6 @@ namespace Detail {
     }
 
 } // end namespace Detail
-
-template<typename T>
-std::string toString( T const& value );
 
 template<typename T>
 struct StringMaker :
@@ -122,12 +169,60 @@ namespace Detail {
     std::string rangeToString( InputIterator first, InputIterator last );
 }
 
+//template<typename T, typename Allocator>
+//struct StringMaker<std::vector<T, Allocator> > {
+//    static std::string convert( std::vector<T,Allocator> const& v ) {
+//        return Detail::rangeToString( v.begin(), v.end() );
+//    }
+//};
+
 template<typename T, typename Allocator>
-struct StringMaker<std::vector<T, Allocator> > {
-    static std::string convert( std::vector<T,Allocator> const& v ) {
-        return Detail::rangeToString( v.begin(), v.end() );
+std::string toString( std::vector<T,Allocator> const& v ) {
+    return Detail::rangeToString( v.begin(), v.end() );
+}
+
+
+#ifdef CATCH_CONFIG_CPP11_TUPLE
+
+// toString for tuples
+namespace TupleDetail {
+  template<
+      typename Tuple,
+      std::size_t N = 0,
+      bool = (N < std::tuple_size<Tuple>::value)
+      >
+  struct ElementPrinter {
+      static void print( const Tuple& tuple, std::ostream& os )
+      {
+          os << ( N ? ", " : " " )
+             << Catch::toString(std::get<N>(tuple));
+          ElementPrinter<Tuple,N+1>::print(tuple,os);
+      }
+  };
+
+  template<
+      typename Tuple,
+      std::size_t N
+      >
+  struct ElementPrinter<Tuple,N,false> {
+      static void print( const Tuple&, std::ostream& ) {}
+  };
+
+}
+
+template<typename ...Types>
+struct StringMaker<std::tuple<Types...>> {
+
+    static std::string convert( const std::tuple<Types...>& tuple )
+    {
+        std::ostringstream os;
+        os << '{';
+        TupleDetail::ElementPrinter<std::tuple<Types...>>::print( tuple, os );
+        os << " }";
+        return os.str();
     }
 };
+#endif // CATCH_CONFIG_CPP11_TUPLE
 
 namespace Detail {
     template<typename T>
@@ -148,33 +243,6 @@ std::string toString( T const& value ) {
     return StringMaker<T>::convert( value );
 }
 
-// Built in overloads
-
-std::string toString( std::string const& value );
-std::string toString( std::wstring const& value );
-std::string toString( const char* const value );
-std::string toString( char* const value );
-std::string toString( const wchar_t* const value );
-std::string toString( wchar_t* const value );
-std::string toString( int value );
-std::string toString( unsigned long value );
-std::string toString( unsigned int value );
-std::string toString( const double value );
-std::string toString( const float value );
-std::string toString( bool value );
-std::string toString( char value );
-std::string toString( signed char value );
-std::string toString( unsigned char value );
-
-#ifdef CATCH_CONFIG_CPP11_NULLPTR
-std::string toString( std::nullptr_t );
-#endif
-
-#ifdef __OBJC__
-    std::string toString( NSString const * const& nsstring );
-    std::string toString( NSString * CATCH_ARC_STRONG const& nsstring );
-    std::string toString( NSObject* const& nsObject );
-#endif
 
     namespace Detail {
     template<typename InputIterator>
@@ -182,10 +250,9 @@ std::string toString( std::nullptr_t );
         std::ostringstream oss;
         oss << "{ ";
         if( first != last ) {
-            oss << toString( *first );
-            for( ++first ; first != last ; ++first ) {
-                oss << ", " << toString( *first );
-            }
+            oss << Catch::toString( *first );
+            for( ++first ; first != last ; ++first )
+                oss << ", " << Catch::toString( *first );
         }
         oss << " }";
         return oss.str();

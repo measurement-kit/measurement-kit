@@ -23,7 +23,7 @@ project(YAML_CPP)
 
 set(YAML_CPP_VERSION_MAJOR "0")
 set(YAML_CPP_VERSION_MINOR "5")
-set(YAML_CPP_VERSION_PATCH "1")
+set(YAML_CPP_VERSION_PATCH "2")
 set(YAML_CPP_VERSION "${YAML_CPP_VERSION_MAJOR}.${YAML_CPP_VERSION_MINOR}.${YAML_CPP_VERSION_PATCH}")
 
 enable_testing()
@@ -241,7 +241,7 @@ if(MSVC)
 	# /W3 = set warning level; see http://msdn.microsoft.com/en-us/library/thxezb7y.aspx
 	# /wd4127 = disable warning C4127 "conditional expression is constant"; see http://msdn.microsoft.com/en-us/library/6t66728h.aspx
 	# /wd4355 = disable warning C4355 "'this' : used in base member initializer list"; http://msdn.microsoft.com/en-us/library/3c594ae3.aspx
-	set(yaml_cxx_flags "/W3 /wd4127 /wd4355 /D_SCL_SECURE_NO_WARNINGS ${yaml_cxx_flags}")
+	set(yaml_cxx_flags "/W3 /wd4127 /wd4355 ${yaml_cxx_flags}")
 endif()
 
 
@@ -304,6 +304,18 @@ install(
 	DESTINATION ${INCLUDE_INSTALL_DIR}
 	FILES_MATCHING PATTERN "*.h"
 )
+
+export(
+    TARGETS yaml-cpp
+    FILE "${PROJECT_BINARY_DIR}/yaml-cpp-targets.cmake")
+export(PACKAGE yaml-cpp)
+set(EXPORT_TARGETS yaml-cpp CACHE INTERNAL "export targets")
+
+set(CONFIG_INCLUDE_DIRS "${YAML_CPP_SOURCE_DIR}/include")
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp-config.cmake.in
+	"${PROJECT_BINARY_DIR}/yaml-cpp-config.cmake" @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/yaml-cpp-config-version.cmake.in
+	"${PROJECT_BINARY_DIR}/yaml-cpp-config-version.cmake" @ONLY)
 
 if(UNIX)
 	set(PC_FILE ${CMAKE_BINARY_DIR}/yaml-cpp.pc)

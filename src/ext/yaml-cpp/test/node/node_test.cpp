@@ -1,27 +1,33 @@
+#include "yaml-cpp/emitter.h"
+#include "yaml-cpp/node/emit.h"
 #include "yaml-cpp/node/node.h"
 #include "yaml-cpp/node/impl.h"
 #include "yaml-cpp/node/convert.h"
 #include "yaml-cpp/node/iterator.h"
 #include "yaml-cpp/node/detail/impl.h"
 
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
+
+using ::testing::AnyOf;
+using ::testing::Eq;
 
 namespace YAML {
 namespace {
 TEST(NodeTest, SimpleScalar) {
-  YAML::Node node = YAML::Node("Hello, World!");
+  Node node = Node("Hello, World!");
   EXPECT_TRUE(node.IsScalar());
   EXPECT_EQ("Hello, World!", node.as<std::string>());
 }
 
 TEST(NodeTest, IntScalar) {
-  YAML::Node node = YAML::Node(15);
+  Node node = Node(15);
   EXPECT_TRUE(node.IsScalar());
   EXPECT_EQ(15, node.as<int>());
 }
 
 TEST(NodeTest, SimpleAppendSequence) {
-  YAML::Node node;
+  Node node;
   node.push_back(10);
   node.push_back("foo");
   node.push_back("monkey");
@@ -33,8 +39,15 @@ TEST(NodeTest, SimpleAppendSequence) {
   EXPECT_TRUE(node.IsSequence());
 }
 
+TEST(NodeTest, MapElementRemoval) {
+  Node node;
+  node["foo"] = "bar";
+  node.remove("foo");
+  EXPECT_TRUE(!node["foo"]);
+}
+
 TEST(NodeTest, SimpleAssignSequence) {
-  YAML::Node node;
+  Node node;
   node[0] = 10;
   node[1] = "foo";
   node[2] = "monkey";
@@ -47,7 +60,7 @@ TEST(NodeTest, SimpleAssignSequence) {
 }
 
 TEST(NodeTest, SimpleMap) {
-  YAML::Node node;
+  Node node;
   node["key"] = "value";
   EXPECT_TRUE(node.IsMap());
   EXPECT_EQ("value", node["key"].as<std::string>());
@@ -55,7 +68,7 @@ TEST(NodeTest, SimpleMap) {
 }
 
 TEST(NodeTest, MapWithUndefinedValues) {
-  YAML::Node node;
+  Node node;
   node["key"] = "value";
   node["undefined"];
   EXPECT_TRUE(node.IsMap());
@@ -67,8 +80,33 @@ TEST(NodeTest, MapWithUndefinedValues) {
   EXPECT_EQ(2, node.size());
 }
 
+TEST(NodeTest, MapForceInsert) {
+  Node node;
+  Node k1("k1");
+  Node k2("k2");
+  Node v1("v1");
+  Node v2("v2");
+  node[k1] = v1;
+  node[k2] = v1;
+  EXPECT_TRUE(node.IsMap());
+  EXPECT_EQ("v1", node["k1"].as<std::string>());
+  EXPECT_EQ("v1", node["k2"].as<std::string>());
+  EXPECT_EQ(2, node.size());
+
+  node.force_insert(k2, v2);
+  EXPECT_EQ("v1", node["k1"].as<std::string>());
+  EXPECT_EQ("v2", node["k2"].as<std::string>());
+  EXPECT_EQ(2, node.size());
+}
+
+TEST(NodeTest, UndefinedConstNodeWithFallback) {
+  Node node;
+  const Node& cn = node;
+  EXPECT_EQ(cn["undefined"].as<int>(3), 3);
+}
+
 TEST(NodeTest, MapIteratorWithUndefinedValues) {
-  YAML::Node node;
+  Node node;
   node["key"] = "value";
   node["undefined"];
 
@@ -78,8 +116,34 @@ TEST(NodeTest, MapIteratorWithUndefinedValues) {
   EXPECT_EQ(1, count);
 }
 
+TEST(NodeTest, ConstIteratorOnConstUndefinedNode) {
+  Node node;
+  const Node& cn = node;
+  const Node& undefinedCn = cn["undefined"];
+
+  std::size_t count = 0;
+  for (const_iterator it = undefinedCn.begin(); it != undefinedCn.end(); ++it) {
+    count++;
+ }
+  EXPECT_EQ(0, count);
+}
+
+TEST(NodeTest, IteratorOnConstUndefinedNode) {
+  Node node;
+  const Node& cn = node;
+  const Node& undefinedCn = cn["undefined"];
+
+  Node& nonConstUndefinedNode = const_cast<Node&>(undefinedCn);
+
+  std::size_t count = 0;
+  for (iterator it = nonConstUndefinedNode.begin(); it != nonConstUndefinedNode.end(); ++it) {
+    count++;
+  }
+  EXPECT_EQ(0, count);
+}
+
 TEST(NodeTest, SimpleSubkeys) {
-  YAML::Node node;
+  Node node;
   node["device"]["udid"] = "12345";
   node["device"]["name"] = "iPhone";
   node["device"]["os"] = "4.0";
@@ -99,7 +163,7 @@ TEST(NodeTest, StdVector) {
   primes.push_back(11);
   primes.push_back(13);
 
-  YAML::Node node;
+  Node node;
   node["primes"] = primes;
   EXPECT_EQ(primes, node["primes"].as<std::vector<int> >());
 }
@@ -113,7 +177,7 @@ TEST(NodeTest, StdList) {
   primes.push_back(11);
   primes.push_back(13);
 
-  YAML::Node node;
+  Node node;
   node["primes"] = primes;
   EXPECT_EQ(primes, node["primes"].as<std::list<int> >());
 }
@@ -126,7 +190,7 @@ TEST(NodeTest, StdMap) {
   squares[3] = 9;
   squares[4] = 16;
 
-  YAML::Node node;
+  Node node;
   node["squares"] = squares;
   std::map<int, int> actualSquares = node["squares"].as<std::map<int, int> >();
   EXPECT_EQ(squares, actualSquares);
@@ -137,7 +201,7 @@ TEST(NodeTest, StdPair) {
   p.first = 5;
   p.second = "five";
 
-  YAML::Node node;
+  Node node;
   node["pair"] = p;
   std::pair<int, std::string> actualP =
       node["pair"].as<std::pair<int, std::string> >();
@@ -145,7 +209,7 @@ TEST(NodeTest, StdPair) {
 }
 
 TEST(NodeTest, SimpleAlias) {
-  YAML::Node node;
+  Node node;
   node["foo"] = "value";
   node["bar"] = node["foo"];
   EXPECT_EQ("value", node["foo"].as<std::string>());
@@ -155,9 +219,9 @@ TEST(NodeTest, SimpleAlias) {
 }
 
 TEST(NodeTest, AliasAsKey) {
-  YAML::Node node;
+  Node node;
   node["foo"] = "value";
-  YAML::Node value = node["foo"];
+  Node value = node["foo"];
   node[value] = "foo";
   EXPECT_EQ("value", node["foo"].as<std::string>());
   EXPECT_EQ("foo", node[value].as<std::string>());
@@ -166,7 +230,7 @@ TEST(NodeTest, AliasAsKey) {
 }
 
 TEST(NodeTest, SelfReferenceSequence) {
-  YAML::Node node;
+  Node node;
   node[0] = node;
   EXPECT_TRUE(node.IsSequence());
   EXPECT_EQ(1, node.size());
@@ -176,7 +240,7 @@ TEST(NodeTest, SelfReferenceSequence) {
 }
 
 TEST(NodeTest, ValueSelfReferenceMap) {
-  YAML::Node node;
+  Node node;
   node["key"] = node;
   EXPECT_TRUE(node.IsMap());
   EXPECT_EQ(1, node.size());
@@ -186,7 +250,7 @@ TEST(NodeTest, ValueSelfReferenceMap) {
 }
 
 TEST(NodeTest, KeySelfReferenceMap) {
-  YAML::Node node;
+  Node node;
   node[node] = "value";
   EXPECT_TRUE(node.IsMap());
   EXPECT_EQ(1, node.size());
@@ -194,7 +258,7 @@ TEST(NodeTest, KeySelfReferenceMap) {
 }
 
 TEST(NodeTest, SelfReferenceMap) {
-  YAML::Node node;
+  Node node;
   node[node] = node;
   EXPECT_TRUE(node.IsMap());
   EXPECT_EQ(1, node.size());
@@ -204,8 +268,8 @@ TEST(NodeTest, SelfReferenceMap) {
 }
 
 TEST(NodeTest, TempMapVariable) {
-  YAML::Node node;
-  YAML::Node tmp = node["key"];
+  Node node;
+  Node tmp = node["key"];
   tmp = "value";
   EXPECT_TRUE(node.IsMap());
   EXPECT_EQ(1, node.size());
@@ -213,8 +277,8 @@ TEST(NodeTest, TempMapVariable) {
 }
 
 TEST(NodeTest, TempMapVariableAlias) {
-  YAML::Node node;
-  YAML::Node tmp = node["key"];
+  Node node;
+  Node tmp = node["key"];
   tmp = node["other"];
   node["other"] = "value";
   EXPECT_TRUE(node.IsMap());
@@ -225,7 +289,7 @@ TEST(NodeTest, TempMapVariableAlias) {
 }
 
 TEST(NodeTest, Bool) {
-  YAML::Node node;
+  Node node;
   node[true] = false;
   EXPECT_TRUE(node.IsMap());
   EXPECT_EQ(false, node[true].as<bool>());
@@ -235,7 +299,7 @@ TEST(NodeTest, AutoBoolConversion) {
 #ifdef _MSC_VER
 #pragma warning(disable : 4800)
 #endif
-  YAML::Node node;
+  Node node;
   node["foo"] = "bar";
   EXPECT_TRUE(static_cast<bool>(node["foo"]));
   EXPECT_TRUE(!node["monkey"]);
@@ -244,12 +308,12 @@ TEST(NodeTest, AutoBoolConversion) {
 
 TEST(NodeTest, FloatingPrecision) {
   const double x = 0.123456789;
-  YAML::Node node = YAML::Node(x);
+  Node node = Node(x);
   EXPECT_EQ(x, node.as<double>());
 }
 
 TEST(NodeTest, SpaceChar) {
-  YAML::Node node = YAML::Node(' ');
+  Node node = Node(' ');
   EXPECT_EQ(' ', node.as<char>());
 }
 
@@ -265,9 +329,146 @@ TEST(NodeTest, KeyNodeExitsScope) {
     Node temp("Hello, world");
     node[temp] = 0;
   }
-  for (const auto &kv : node) {
-    (void)kv;
+  for (Node::const_iterator it = node.begin(); it != node.end(); ++it) {
+    (void)it;
   }
+}
+
+TEST(NodeTest, DefaultNodeStyle) {
+  Node node;
+  EXPECT_EQ(EmitterStyle::Default, node.Style());
+}
+
+TEST(NodeTest, AccessNonexistentKeyOnConstNode) {
+  YAML::Node node;
+  node["3"] = "4";
+  const YAML::Node& other = node;
+  ASSERT_FALSE(other["5"]);
+}
+
+class NodeEmitterTest : public ::testing::Test {
+ protected:
+  void ExpectOutput(const std::string& output, const Node& node) {
+    Emitter emitter;
+    emitter << node;
+    ASSERT_TRUE(emitter.good());
+    EXPECT_EQ(output, emitter.c_str());
+  }
+
+  void ExpectAnyOutput(const Node& node, const std::string& output1,
+                       const std::string& output2) {
+    Emitter emitter;
+    emitter << node;
+    ASSERT_TRUE(emitter.good());
+    EXPECT_THAT(emitter.c_str(), AnyOf(Eq(output1), Eq(output2)));
+  }
+};
+
+TEST_F(NodeEmitterTest, SimpleFlowSeqNode) {
+  Node node;
+  node.SetStyle(EmitterStyle::Flow);
+  node.push_back(1.01);
+  node.push_back(2.01);
+  node.push_back(3.01);
+
+  ExpectOutput("[1.01, 2.01, 3.01]", node);
+}
+
+TEST_F(NodeEmitterTest, NestFlowSeqNode) {
+  Node node, cell0, cell1;
+
+  cell0.push_back(1.01);
+  cell0.push_back(2.01);
+  cell0.push_back(3.01);
+
+  cell1.push_back(4.01);
+  cell1.push_back(5.01);
+  cell1.push_back(6.01);
+
+  node.SetStyle(EmitterStyle::Flow);
+  node.push_back(cell0);
+  node.push_back(cell1);
+
+  ExpectOutput("[[1.01, 2.01, 3.01], [4.01, 5.01, 6.01]]", node);
+}
+
+TEST_F(NodeEmitterTest, MixBlockFlowSeqNode) {
+  Node node, cell0, cell1;
+
+  cell0.SetStyle(EmitterStyle::Flow);
+  cell0.push_back(1.01);
+  cell0.push_back(2.01);
+  cell0.push_back(3.01);
+
+  cell1.push_back(4.01);
+  cell1.push_back(5.01);
+  cell1.push_back(6.01);
+
+  node.SetStyle(EmitterStyle::Block);
+  node.push_back(cell0);
+  node.push_back(cell1);
+
+  ExpectOutput("- [1.01, 2.01, 3.01]\n-\n  - 4.01\n  - 5.01\n  - 6.01", node);
+}
+
+TEST_F(NodeEmitterTest, NestBlockFlowMapListNode) {
+  Node node, mapNode, blockNode;
+
+  node.push_back(1.01);
+  node.push_back(2.01);
+  node.push_back(3.01);
+
+  mapNode.SetStyle(EmitterStyle::Flow);
+  mapNode["position"] = node;
+
+  blockNode.push_back(1.01);
+  blockNode.push_back(mapNode);
+
+  ExpectOutput("- 1.01\n- {position: [1.01, 2.01, 3.01]}", blockNode);
+}
+
+TEST_F(NodeEmitterTest, NestBlockMixMapListNode) {
+  Node node, mapNode, blockNode;
+
+  node.push_back(1.01);
+  node.push_back(2.01);
+  node.push_back(3.01);
+
+  mapNode.SetStyle(EmitterStyle::Flow);
+  mapNode["position"] = node;
+
+  blockNode["scalar"] = 1.01;
+  blockNode["object"] = mapNode;
+
+  ExpectAnyOutput(blockNode,
+                  "scalar: 1.01\nobject: {position: [1.01, 2.01, 3.01]}",
+                  "object: {position: [1.01, 2.01, 3.01]}\nscalar: 1.01");
+}
+
+TEST_F(NodeEmitterTest, NestBlockMapListNode) {
+  Node node, mapNode;
+
+  node.push_back(1.01);
+  node.push_back(2.01);
+  node.push_back(3.01);
+
+  mapNode.SetStyle(EmitterStyle::Block);
+  mapNode["position"] = node;
+
+  ExpectOutput("position:\n  - 1.01\n  - 2.01\n  - 3.01", mapNode);
+}
+
+TEST_F(NodeEmitterTest, NestFlowMapListNode) {
+  Node node, mapNode;
+
+  node.push_back(1.01);
+  node.push_back(2.01);
+  node.push_back(3.01);
+
+  mapNode.SetStyle(EmitterStyle::Flow);
+  mapNode["position"] = node;
+
+  ExpectOutput("{position: [1.01, 2.01, 3.01]}", mapNode);
 }
 }
 }
