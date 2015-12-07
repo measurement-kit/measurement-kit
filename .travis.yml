@@ -17,9 +17,15 @@ install: autoreconf -i
 # (For more context see measurement-kit/measurement-kit#255)
 script:
   - if [ "$CXX" = "clang++" ]; then
-      ./configure -q CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;
+      ./configure -q --with-libevent=builtin --with-yaml-cpp=builtin
+                     --with-boost=builtin --with-jansson=builtin
+                     --with-libmaxminddb=builtin
+                     CFLAGS=--coverage CXXFLAGS=--coverage
+                     LDFLAGS=--coverage;
     else
-      ./configure -q;
+      ./configure -q --with-libevent=builtin --with-yaml-cpp=builtin
+                     --with-boost=builtin --with-jansson=builtin
+                     --with-libmaxminddb=builtin;
     fi
   - make -j2 V=0
   - make -j2 check-am V=0
