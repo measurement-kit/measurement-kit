@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "yaml-cpp/emitterstyle.h"
 #include "yaml-cpp/eventhandler.h"
 #include "yaml-cpp/yaml.h"  // IWYU pragma: keep
 
@@ -16,17 +17,20 @@ class NullEventHandler : public YAML::EventHandler {
   virtual void OnAlias(const Mark&, anchor_t) {}
   virtual void OnScalar(const Mark&, const std::string&, anchor_t,
                         const std::string&) {}
-  virtual void OnSequenceStart(const Mark&, const std::string&, anchor_t) {}
+  virtual void OnSequenceStart(const Mark&, const std::string&, anchor_t,
+                               YAML::EmitterStyle::value style) {}
   virtual void OnSequenceEnd() {}
-  virtual void OnMapStart(const Mark&, const std::string&, anchor_t) {}
+  virtual void OnMapStart(const Mark&, const std::string&, anchor_t,
+                          YAML::EmitterStyle::value style) {}
   virtual void OnMapEnd() {}
 };
 
 int main() {
-  std::stringstream stream("---{header: {id: 1");
-  YAML::Parser parser(stream);
-  //    parser.PrintTokens(std::cout);
-  NullEventHandler handler;
-  parser.HandleNextDocument(handler);
+  YAML::Node root;
+
+  for (;;) {
+    YAML::Node node;
+    root = node;
+  }
   return 0;
 }

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "yaml-cpp/anchor.h"
+#include "yaml-cpp/emitterstyle.h"
 #include "yaml-cpp/eventhandler.h"
 #include "yaml-cpp/node/ptr.h"
 
@@ -39,15 +40,15 @@ class NodeBuilder : public EventHandler {
                         anchor_t anchor, const std::string& value);
 
   virtual void OnSequenceStart(const Mark& mark, const std::string& tag,
-                               anchor_t anchor);
+                               anchor_t anchor, EmitterStyle::value style);
   virtual void OnSequenceEnd();
 
   virtual void OnMapStart(const Mark& mark, const std::string& tag,
-                          anchor_t anchor);
+                          anchor_t anchor, EmitterStyle::value style);
   virtual void OnMapEnd();
 
  private:
-  detail::node& Push(anchor_t anchor);
+  detail::node& Push(const Mark& mark, anchor_t anchor);
   void Push(detail::node& node);
   void Pop();
   void RegisterAnchor(anchor_t anchor, detail::node& node);

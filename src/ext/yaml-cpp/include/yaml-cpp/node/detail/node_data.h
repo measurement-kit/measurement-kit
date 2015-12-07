@@ -34,17 +34,21 @@ class YAML_CPP_API node_data : private boost::noncopyable {
   node_data();
 
   void mark_defined();
+  void set_mark(const Mark& mark);
   void set_type(NodeType::value type);
   void set_tag(const std::string& tag);
   void set_null();
   void set_scalar(const std::string& scalar);
+  void set_style(EmitterStyle::value style);
 
   bool is_defined() const { return m_isDefined; }
+  const Mark& mark() const { return m_mark; }
   NodeType::value type() const {
     return m_isDefined ? m_type : NodeType::Undefined;
   }
   const std::string& scalar() const { return m_scalar; }
   const std::string& tag() const { return m_tag; }
+  EmitterStyle::value style() const { return m_style; }
 
   // size/iterator
   std::size_t size() const;
@@ -61,13 +65,13 @@ class YAML_CPP_API node_data : private boost::noncopyable {
 
   // indexing
   template <typename Key>
-  node& get(const Key& key, shared_memory_holder pMemory) const;
+  node* get(const Key& key, shared_memory_holder pMemory) const;
   template <typename Key>
   node& get(const Key& key, shared_memory_holder pMemory);
   template <typename Key>
   bool remove(const Key& key, shared_memory_holder pMemory);
 
-  node& get(node& key, shared_memory_holder pMemory) const;
+  node* get(node& key, shared_memory_holder pMemory) const;
   node& get(node& key, shared_memory_holder pMemory);
   bool remove(node& key, shared_memory_holder pMemory);
 
@@ -91,16 +95,14 @@ class YAML_CPP_API node_data : private boost::noncopyable {
   void convert_sequence_to_map(shared_memory_holder pMemory);
 
   template <typename T>
-  static bool equals(node& node, const T& rhs, shared_memory_holder pMemory);
-  static bool equals(node& node, const char* rhs, shared_memory_holder pMemory);
-
-  template <typename T>
   static node& convert_to_node(const T& rhs, shared_memory_holder pMemory);
 
  private:
   bool m_isDefined;
+  Mark m_mark;
   NodeType::value m_type;
   std::string m_tag;
+  EmitterStyle::value m_style;
 
   // scalar
   std::string m_scalar;

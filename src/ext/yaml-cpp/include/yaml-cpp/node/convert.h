@@ -43,6 +43,17 @@ inline bool IsNaN(const std::string& input) {
 }
 }
 
+// Node
+template <>
+struct convert<Node> {
+  static Node encode(const Node& rhs) { return rhs; }
+
+  static bool decode(const Node& node, Node& rhs) {
+    rhs.reset(node);
+    return true;
+  }
+};
+
 // std::string
 template <>
 struct convert<std::string> {
@@ -64,7 +75,7 @@ struct convert<const char*> {
 
 template <std::size_t N>
 struct convert<const char[N]> {
-  static Node encode(const char (&rhs)[N]) { return Node(rhs); }
+  static Node encode(const char(&rhs)[N]) { return Node(rhs); }
 };
 
 template <>
@@ -130,6 +141,7 @@ YAML_DEFINE_CONVERT_STREAMABLE_UNSIGNED(unsigned long);
 YAML_DEFINE_CONVERT_STREAMABLE_UNSIGNED(unsigned long long);
 
 YAML_DEFINE_CONVERT_STREAMABLE_SIGNED(char);
+YAML_DEFINE_CONVERT_STREAMABLE_SIGNED(signed char);
 YAML_DEFINE_CONVERT_STREAMABLE_UNSIGNED(unsigned char);
 
 YAML_DEFINE_CONVERT_STREAMABLE_SIGNED(float);

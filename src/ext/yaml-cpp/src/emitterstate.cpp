@@ -98,7 +98,7 @@ EmitterNodeType::value EmitterState::NextGroupType(
 
   // can't happen
   assert(false);
-  return EmitterNodeType::None;
+  return EmitterNodeType::NoType;
 }
 
 void EmitterState::StartedDoc() {
@@ -155,7 +155,7 @@ void EmitterState::EndedGroup(GroupType::value type) {
   }
 
   // reset old settings
-  unsigned lastIndent = (m_groups.empty() ? 0 : m_groups.top().indent);
+  std::size_t lastIndent = (m_groups.empty() ? 0 : m_groups.top().indent);
   assert(m_curIndent >= lastIndent);
   m_curIndent -= lastIndent;
 
@@ -168,17 +168,17 @@ void EmitterState::EndedGroup(GroupType::value type) {
 
 EmitterNodeType::value EmitterState::CurGroupNodeType() const {
   if (m_groups.empty())
-    return EmitterNodeType::None;
+    return EmitterNodeType::NoType;
 
   return m_groups.top().NodeType();
 }
 
 GroupType::value EmitterState::CurGroupType() const {
-  return m_groups.empty() ? GroupType::None : m_groups.top().type;
+  return m_groups.empty() ? GroupType::NoType : m_groups.top().type;
 }
 
 FlowType::value EmitterState::CurGroupFlowType() const {
-  return m_groups.empty() ? FlowType::None : m_groups.top().flowType;
+  return m_groups.empty() ? FlowType::NoType : m_groups.top().flowType;
 }
 
 int EmitterState::CurGroupIndent() const {
@@ -276,7 +276,7 @@ bool EmitterState::SetIntFormat(EMITTER_MANIP value, FmtScope::value scope) {
   }
 }
 
-bool EmitterState::SetIndent(unsigned value, FmtScope::value scope) {
+bool EmitterState::SetIndent(std::size_t value, FmtScope::value scope) {
   if (value <= 1)
     return false;
 
@@ -284,7 +284,8 @@ bool EmitterState::SetIndent(unsigned value, FmtScope::value scope) {
   return true;
 }
 
-bool EmitterState::SetPreCommentIndent(unsigned value, FmtScope::value scope) {
+bool EmitterState::SetPreCommentIndent(std::size_t value,
+                                       FmtScope::value scope) {
   if (value == 0)
     return false;
 
@@ -292,7 +293,8 @@ bool EmitterState::SetPreCommentIndent(unsigned value, FmtScope::value scope) {
   return true;
 }
 
-bool EmitterState::SetPostCommentIndent(unsigned value, FmtScope::value scope) {
+bool EmitterState::SetPostCommentIndent(std::size_t value,
+                                        FmtScope::value scope) {
   if (value == 0)
     return false;
 

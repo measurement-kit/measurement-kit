@@ -60,9 +60,17 @@ inline void Node::EnsureNodeExists() const {
 }
 
 inline bool Node::IsDefined() const {
-  if (!m_isValid)
-    throw InvalidNode();
+  if (!m_isValid) {
+    return false;
+  }
   return m_pNode ? m_pNode->is_defined() : true;
+}
+
+inline Mark Node::Mark() const {
+  if (!m_isValid) {
+    throw InvalidNode();
+  }
+  return m_pNode ? m_pNode->mark() : Mark::null_mark();
 }
 
 inline NodeType::value Node::Type() const {
@@ -79,7 +87,7 @@ struct as_if {
   explicit as_if(const Node& node_) : node(node_) {}
   const Node& node;
 
-  const T operator()(const S& fallback) const {
+  T operator()(const S& fallback) const {
     if (!node.m_pNode)
       return fallback;
 
@@ -109,12 +117,12 @@ struct as_if<T, void> {
 
   const T operator()() const {
     if (!node.m_pNode)
-      throw TypedBadConversion<T>();
+      throw TypedBadConversion<T>(node.Mark());
 
     T t;
     if (convert<T>::decode(node, t))
       return t;
-    throw TypedBadConversion<T>();
+    throw TypedBadConversion<T>(node.Mark());
   }
 };
 
@@ -125,23 +133,23 @@ struct as_if<std::string, void> {
 
   const std::string operator()() const {
     if (node.Type() != NodeType::Scalar)
-      throw TypedBadConversion<std::string>();
+      throw TypedBadConversion<std::string>(node.Mark());
     return node.Scalar();
   }
 };
 
 // access functions
 template <typename T>
-inline const T Node::as() const {
+inline T Node::as() const {
   if (!m_isValid)
     throw InvalidNode();
   return as_if<T, void>(*this)();
 }
 
 template <typename T, typename S>
-inline const T Node::as(const S& fallback) const {
+inline T Node::as(const S& fallback) const {
   if (!m_isValid)
-    throw InvalidNode();
+    return fallback;
   return as_if<T, S>(*this)(fallback);
 }
 
@@ -162,6 +170,19 @@ inline void Node::SetTag(const std::string& tag) {
     throw InvalidNode();
   EnsureNodeExists();
   m_pNode->set_tag(tag);
+}
+
+inline EmitterStyle::value Node::Style() const {
+  if (!m_isValid)
+    throw InvalidNode();
+  return m_pNode ? m_pNode->style() : EmitterStyle::Default;
+}
+
+inline void Node::SetStyle(EmitterStyle::value style) {
+  if (!m_isValid)
+    throw InvalidNode();
+  EnsureNodeExists();
+  m_pNode->set_style(style);
 }
 
 // assignment
@@ -261,26 +282,26 @@ inline std::size_t Node::size() const {
 
 inline const_iterator Node::begin() const {
   if (!m_isValid)
-    throw InvalidNode();
+    return const_iterator();
   return m_pNode ? const_iterator(m_pNode->begin(), m_pMemory)
                  : const_iterator();
 }
 
 inline iterator Node::begin() {
   if (!m_isValid)
-    throw InvalidNode();
+    return iterator();
   return m_pNode ? iterator(m_pNode->begin(), m_pMemory) : iterator();
 }
 
 inline const_iterator Node::end() const {
   if (!m_isValid)
-    throw InvalidNode();
+    return const_iterator();
   return m_pNode ? const_iterator(m_pNode->end(), m_pMemory) : const_iterator();
 }
 
 inline iterator Node::end() {
   if (!m_isValid)
-    throw InvalidNode();
+    return iterator();
   return m_pNode ? iterator(m_pNode->end(), m_pMemory) : iterator();
 }
 
@@ -353,9 +374,12 @@ inline const Node Node::operator[](const Key& key) const {
   if (!m_isValid)
     throw InvalidNode();
   EnsureNodeExists();
-  detail::node& value = static_cast<const detail::node&>(*m_pNode)
+  detail::node* value = static_cast<const detail::node&>(*m_pNode)
                             .get(detail::to_value(key), m_pMemory);
-  return Node(value, m_pMemory);
+  if (!value) {
+    return Node(ZombieNode);
+  }
+  return Node(*value, m_pMemory);
 }
 
 template <typename Key>
@@ -381,9 +405,12 @@ inline const Node Node::operator[](const Node& key) const {
   EnsureNodeExists();
   key.EnsureNodeExists();
   m_pMemory->merge(*key.m_pMemory);
-  detail::node& value =
+  detail::node* value =
       static_cast<const detail::node&>(*m_pNode).get(*key.m_pNode, m_pMemory);
-  return Node(value, m_pMemory);
+  if (!value) {
+    return Node(ZombieNode);
+  }
+  return Node(*value, m_pMemory);
 }
 
 inline Node Node::operator[](const Node& key) {
