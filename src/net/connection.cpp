@@ -72,7 +72,7 @@ void Connection::handle_event(bufferevent *bev, short what, void *opaque) {
 Connection::Connection(const char *family, const char *address,
                        const char *port, Poller *plr, Logger *lp,
                        evutil_socket_t filenum)
-    : Dumb(lp), poller(plr) {
+    : Emitter(lp), poller(plr) {
     filenum = mk::socket_normalize_if_invalid(filenum);
 
     this->bev.make(poller->get_event_base(), filenum,

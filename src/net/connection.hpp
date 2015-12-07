@@ -14,7 +14,7 @@
 #include "src/common/utils.hpp"
 
 #include <measurement_kit/net/buffer.hpp>
-#include "src/net/dumb.hpp"
+#include "src/net/emitter.hpp"
 #include <measurement_kit/net/transport.hpp>
 
 #include "src/dns/query.hpp"
@@ -31,7 +31,7 @@
 namespace mk {
 namespace net {
 
-class Connection : public Dumb {
+class Connection : public Emitter {
   private:
     Bufferevent bev;
     dns::Query dns_request;
@@ -72,7 +72,7 @@ class Connection : public Dumb {
     ~Connection() override;
 
     void on_data(std::function<void(Buffer)> fn) override {
-        Dumb::on_data(fn);
+        Emitter::on_data(fn);
         enable_read();
     };
 

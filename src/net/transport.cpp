@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include "src/net/connection.hpp"
-#include "src/net/dumb.hpp"
+#include "src/net/emitter.hpp"
 #include "src/net/socks5.hpp"
 #include <measurement_kit/net/transport.hpp>
 
@@ -14,7 +14,7 @@ static Var<Transport> connect_internal(Settings settings, Logger *logger,
                                        Poller *poller) {
 
     if (settings.find("dumb_transport") != settings.end()) {
-        return Var<Transport>(new Dumb(logger));
+        return Var<Transport>(new Emitter(logger));
     }
 
     if (settings.find("family") == settings.end()) {
