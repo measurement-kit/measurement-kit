@@ -3,14 +3,12 @@
 // information on the copying conditions.
 
 #include <measurement_kit/common/settings.hpp>
-
+#include <measurement_kit/http/error.hpp>
 #include <measurement_kit/http/headers.hpp>
 #include "src/http/request_serializer.hpp"
-
 #include "ext/http-parser/http_parser.h"
 
 #include <string.h>
-
 #include <iosfwd>
 #include <stdexcept>
 #include <string>
@@ -25,13 +23,13 @@ RequestSerializer::RequestSerializer(Settings settings, Headers headers_,
     http_parser_url url_parser;
     memset(&url_parser, 0, sizeof(url_parser));
     if (http_parser_parse_url(url.c_str(), url.length(), 0, &url_parser) != 0) {
-        throw std::runtime_error("Cannot parse input URL");
+        throw UrlParserError();
     }
     if ((url_parser.field_set & (1 << UF_SCHEMA)) == 0) {
-        throw std::runtime_error("Missing URL schema");
+        throw MissingUrlSchemaError();
     }
     if ((url_parser.field_set & (1 << UF_HOST)) == 0) {
-        throw std::runtime_error("Missing URL host");
+        throw MissingUrlHostError();
     }
     schema = url.substr(url_parser.field_data[UF_SCHEMA].off,
                         url_parser.field_data[UF_SCHEMA].len);

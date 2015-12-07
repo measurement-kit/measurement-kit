@@ -22,6 +22,25 @@ class ParserError : public Error {
     ParserError() : Error(3001, "unknown_error 3001") {};
 };
 
+
+/// Url Parse error occurred
+class UrlParserError : public Error {
+  public:
+    UrlParserError() : Error(3002, "unknown_error 3002") {};
+};
+
+/// Missing Url Schema error occurred
+class MissingUrlSchemaError : public Error {
+  public:
+    MissingUrlSchemaError() : Error(3003, "unknown_error 3003") {};
+};
+
+/// Missing Url Host error occurred
+class MissingUrlHostError : public Error {
+  public:
+    MissingUrlHostError() : Error(3004, "unknown_error 3004") {};
+};
+
 } // namespace http
 } // namespace mk
 #endif
