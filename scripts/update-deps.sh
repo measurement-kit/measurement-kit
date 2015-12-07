@@ -27,7 +27,7 @@ get boostorg/type_traits boost-1.59.0 boost/type_traits
 get boostorg/typeof boost-1.59.0 boost/typeof
 get boostorg/utility boost-1.59.0 boost/utility
 get joyent/http-parser v2.6.0 http-parser
-get measurement-kit/libevent release-2.0.22-stable-18-gf1feb10 libevent
+get measurement-kit/libevent patches-2.0 libevent patches-2.0
 get jbeder/yaml-cpp release-0.5.2-16-g97d56c3 yaml-cpp
 get akheron/jansson v2.7-52-ge44b223 jansson
 get measurement-kit/libmaxminddb master libmaxminddb
