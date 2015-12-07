@@ -25,7 +25,7 @@
 namespace mk {
 namespace net {
 
-class Transport {
+class TransportInterface {
   public:
     virtual void emit_connect() = 0;
 
@@ -35,9 +35,9 @@ class Transport {
 
     virtual void emit_error(Error) = 0;
 
-    Transport() {}
+    TransportInterface() {}
 
-    virtual ~Transport() {}
+    virtual ~TransportInterface() {}
 
     virtual void on_connect(std::function<void()>) = 0;
 
@@ -64,8 +64,70 @@ class Transport {
     virtual std::string socks5_port() = 0;
 };
 
-Maybe<Var<Transport>> connect(Settings, Logger * = Logger::global(),
-                              Poller * = Poller::global());
+/// A connection with TCP-like properties
+class Transport {
+  public:
+
+    /// Emit the CONNECT event
+    void emit_connect() const { impl->emit_connect(); };
+
+    /// Emit the DATA event
+    void emit_data(Buffer buf) const { impl->emit_data(buf); };
+
+    /// Emit the FLUSH event
+    void emit_flush() const { impl->emit_flush(); };
+
+    /// Emit the ERROR event
+    void emit_error(Error err) const { impl->emit_error(err); };
+
+    /// Construct from pointer to interface
+    Transport(TransportInterface *ptr = nullptr) : impl(ptr) {}
+
+    ~Transport() {}; ///< Destructor
+
+    /// Set CONNECT handler
+    void on_connect(std::function<void()> f) const { impl->on_connect(f); }
+
+    /// Set DATA handler
+    void on_data(std::function<void(Buffer)> f) const { impl->on_data(f); }
+
+    /// Set FLUSH handler
+    void on_flush(std::function<void()> f) const { impl->on_flush(f); }
+
+    /// Set ERROR handler
+    void on_error(std::function<void(Error)> f) const { impl->on_error(f); }
+
+    /// Set I/O timeout
+    void set_timeout(double t) const { impl->set_timeout(t); }
+
+    /// Clear I/O timeout
+    void clear_timeout() const { impl->clear_timeout(); }
+
+    /// Send N bytes of data starting from P
+    void send(const void *p, size_t n) const { impl->send(p, n); }
+
+    /// Send data contained by string
+    void send(std::string d) const { impl->send(d); }
+
+    /// Send data contained by buffer (this method is zero copy)
+    void send(Buffer d) const { impl->send(d); }
+
+    /// Close the underlying socket
+    void close() const { impl->close(); }
+
+    /// Get SOCKS5 proxy address (if any)
+    std::string socks5_address() const { return impl->socks5_address(); }
+
+    /// Get SOCKS5 proxy port (if any)
+    std::string socks5_port() const { return impl->socks5_port(); }
+
+  private:
+    Var<TransportInterface> impl;
+};
+
+/// Connects a transport
+Maybe<Transport> connect(Settings, Logger * = Logger::global(),
+                         Poller * = Poller::global());
 
 } // namespace net
 } // namespace mk

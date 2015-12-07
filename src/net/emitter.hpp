@@ -15,7 +15,7 @@
 namespace mk {
 namespace net {
 
-class Emitter : public Transport {
+class Emitter : public TransportInterface {
   private:
     std::function<void()> do_connect = []() {};
     std::function<void(Buffer)> do_data = [](Buffer) {};
