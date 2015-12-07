@@ -37,17 +37,17 @@ namespace http {
  * degree of control is needed over the HTTP protocol.
  */
 class Stream {
-    Var<net::Transport> connection;
+    net::Transport connection;
     Var<ResponseParser> parser;
     std::function<void(Error)> error_handler;
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
-        connection->on_data([&](net::Buffer data) { parser->feed(data); });
+        connection.on_data([&](net::Buffer data) { parser->feed(data); });
         //
         // Intercept EOF error to implement body-ends-at-EOF semantic.
         //
-        connection->on_error([&](Error error) {
+        connection.on_error([&](Error error) {
             auto safe_eh = error_handler;
             if (error == net::EOFError()) {
                 parser->eof();
@@ -69,7 +69,7 @@ class Stream {
      */
     Var<ResponseParser> get_parser() { return parser; }
 
-    Var<net::Transport> get_transport() { return connection; }
+    net::Transport get_transport() { return connection; }
 
     /*!
      * \brief Deleted copy constructor.
@@ -124,7 +124,7 @@ class Stream {
         // error if needed, we'll deal with body-terminated-by-EOF
         // semantic when we know we are actually connected.
         //
-        connection->on_error([&](Error error) {
+        connection.on_error([&](Error error) {
             if (error_handler) {
                 error_handler(error);
             }
@@ -139,13 +139,13 @@ class Stream {
      */
     void on_connect(std::function<void(void)> &&fn) {
         connect_handler = fn;
-        connection->on_connect([this]() { connection_ready(); });
+        connection.on_connect([this]() { connection_ready(); });
     }
 
     /*!
      * \brief Close this stream.
      */
-    void close() { connection->close(); }
+    void close() { connection.close(); }
 
     /*!
      * \brief Destructor.
@@ -165,7 +165,7 @@ class Stream {
      * \returns A reference to this stream for chaining operations.
      */
     Stream &operator<<(std::string data) {
-        connection->send(data);
+        connection.send(data);
         return *this;
     }
 
@@ -176,7 +176,7 @@ class Stream {
      *         after some data was already passed to the kernel.
      */
     void on_flush(std::function<void(void)> &&fn) {
-        connection->on_flush(std::move(fn));
+        connection.on_flush(std::move(fn));
     }
 
     //
@@ -235,11 +235,11 @@ class Stream {
      * \brief Set timeout.
      * \param time The timeout in seconds.
      */
-    void set_timeout(double timeo) { connection->set_timeout(timeo); }
+    void set_timeout(double timeo) { connection.set_timeout(timeo); }
 
-    std::string socks5_address() { return connection->socks5_address(); }
+    std::string socks5_address() { return connection.socks5_address(); }
 
-    std::string socks5_port() { return connection->socks5_port(); }
+    std::string socks5_port() { return connection.socks5_port(); }
 };
 
 } // namespace http

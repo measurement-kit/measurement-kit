@@ -84,11 +84,11 @@ TEST_CASE("HTTP stream is robust to EOF") {
         data << "\r\n";
         data << "1234567";
 
-        transport->emit_data(data);
-        transport->emit_error(NoError());
+        transport.emit_data(data);
+        transport.emit_error(NoError());
     });
 
-    transport->emit_connect();
+    transport.emit_connect();
 }
 
 TEST_CASE("HTTP stream works as expected when using Tor") {

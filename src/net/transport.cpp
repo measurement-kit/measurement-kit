@@ -10,11 +10,11 @@
 namespace mk {
 namespace net {
 
-static Var<Transport> connect_internal(Settings settings, Logger *logger,
+static Transport connect_internal(Settings settings, Logger *logger,
                                        Poller *poller) {
 
     if (settings.find("dumb_transport") != settings.end()) {
-        return Var<Transport>(new Emitter(logger));
+        return Transport(new Emitter(logger));
     }
 
     if (settings.find("family") == settings.end()) {
@@ -38,16 +38,16 @@ static Var<Transport> connect_internal(Settings settings, Logger *logger,
         auto port = proxy.substr(pos + 1);
         settings["socks5_address"] = address;
         settings["socks5_port"] = port;
-        return Var<Transport>(new Socks5(settings, logger, poller));
+        return Transport(new Socks5(settings, logger, poller));
     }
 
-    return Var<Transport>(new Connection(settings["family"].c_str(),
+    return Transport(new Connection(settings["family"].c_str(),
                                          settings["address"].c_str(),
                                          settings["port"].c_str(),
                                          logger, poller));
 }
 
-Maybe<Var<Transport>> connect(Settings settings, Logger *lp, Poller *poller) {
+Maybe<Transport> connect(Settings settings, Logger *lp, Poller *poller) {
     double timeo = 30.0;
     if (settings.find("timeout") != settings.end()) {
         size_t invalid;
@@ -56,11 +56,11 @@ Maybe<Var<Transport>> connect(Settings settings, Logger *lp, Poller *poller) {
             throw std::runtime_error("invalid argument");
         }
     }
-    Var<Transport> transport = connect_internal(settings, lp, poller);
+    Transport transport = connect_internal(settings, lp, poller);
     if (timeo >= 0.0) {
-        transport->set_timeout(timeo);
+        transport.set_timeout(timeo);
     }
-    return Maybe<Var<Transport>>(transport);
+    return Maybe<Transport>(transport);
 }
 
 } // namespace net

@@ -8,46 +8,46 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/net.hpp>
 
-mk::Maybe<mk::Var<mk::net::Transport>> mt = net::connect({
+auto maybe_transport = net::connect({
     {"address", "www.google.com"},
     {"port", "80"}
 });
-if (!mt) throw mt.as_error();
-mk::Var<mk::net::Transport> transport = mt.as_value();
+if (!maybe_transport) throw maybe_transport.as_error();
+auto transport = maybe_transport.as_value();
 // Use transport...
 
-transport->on_connect([]() {
+transport.on_connect([]() {
     /* connection established */
 });
-transport->on_data([](mk::net::Buffer buff) {
+transport.on_data([](mk::net::Buffer buff) {
     /* data received */
 });
-transport->on_flush([]() {
+transport.on_flush([]() {
     /* all queued data was sent */
 });
-transport->on_error([](mk::Error error) {
+transport.on_error([](mk::Error error) {
     /* handle error that occurred */
 });
 
-transport->set_timeout(7.14);
-transport->clear_timeout();
+transport.set_timeout(7.14);
+transport.clear_timeout();
 
 mk::net::Buffer buff;
-transport->send("sassaroli", 5);
-transport->send(std::string("sassaroli"));
-transport->send(buff);
+transport.send("sassaroli", 5);
+transport.send(std::string("sassaroli"));
+transport.send(buff);
 
-transport->close();
+transport.close();
 
-std::string s = transport->socks5_address();  // empty string if no proxy
-std::string s = transport->socks5_port();     // ditto
+std::string s = transport.socks5_address();  // empty string if no proxy
+std::string s = transport.socks5_port();     // ditto
 
 /* event emitters: */
 mk::net::Buffer buffer;
-transport->emit_connect();
-transport->emit_data(buffer);
-transport->emit_flush();
-transport->emit_error(mk::net::EOFError());
+transport.emit_connect();
+transport.emit_data(buffer);
+transport.emit_flush();
+transport.emit_error(mk::net::EOFError());
 ```
 
 # DESCRIPTION
@@ -84,11 +84,6 @@ address and port separated by a colon (default: unspecified)
 
 Options can only be specified as strings. It would be nice to allow for them
 to be either string or numbers, depending on their semantic.
-
-The return value of `connect()` is ugly because it is made of two templates,
-i.e. `Maybe<>` and `Var<>`. It is possible that for this and other reasons we
-will consider making `Transport` movable and copyable such that `connect()`
-will return just the more readable and manageable `Maybe<Transport`>.
 
 # HISTORY
 
