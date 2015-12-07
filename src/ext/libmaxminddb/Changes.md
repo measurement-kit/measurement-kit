@@ -1,12 +1,29 @@
-## 1.1.2
+## 1.1.2 - 2015-11-16
 
+* IMPORTANT: This release includes a number of important security fixes. Among
+  these fixes is improved validation of the database metadata. Unfortunately,
+  MaxMind GeoIP2 and GeoLite2 databases created earlier than January 28, 2014,
+  had an invalid data type for the `record_size` in the metadata. Previously
+  these databases worked on little endian machines with libmaxminddb but did
+  not work on big endian machines. Due to increased safety checks when reading
+  the file, these databases will no longer work on any platform. If you are
+  using one of these databases, we recommend that you upgrade to the latest
+  GeoLite2 or GeoIP2 database
 * Added pkg-config support. If your system supports it, then running `make
   install` now installs a `libmaxminddb.pc` file for pkgconfig. Implemented by
   Jan Vcelak.
+* Several segmentation faults found with afl-fuzz were fixed. These were
+  caused by missing bounds checking and missing verification of data type.
+* `MMDB_get_entry_data_list` will now fail on data structures with a depth
+  greater than 512 and data structures that are cyclic. This should not
+  affect any known MaxMind DB in production. All databases produced by
+  MaxMind have a depth of less than five.
+
 
 ## 1.1.1 - 2015-07-22
 
 * Added `maxminddb-compat-util.h` as a source file to dist.
+
 
 ## 1.1.0 - 2015-07-21
 
@@ -27,6 +44,7 @@
 * All headers are now installed in `$(includedir)`. GitHub #89.
 * We no longer install `maxminddb-compat-util.h`. This header was intended for
   internal use only.
+
 
 ## 1.0.4 - 2015-01-02
 
