@@ -10,13 +10,13 @@
 
 #include <measurement_kit/net/buffer.hpp>
 #include "src/net/connection.hpp"
-#include "src/net/dumb.hpp"
+#include "src/net/emitter.hpp"
 #include <measurement_kit/net/transport.hpp>
 
 namespace mk {
 namespace net {
 
-class Socks5 : public Dumb {
+class Socks5 : public Emitter {
   protected:
     Settings settings;
     Connection conn;
