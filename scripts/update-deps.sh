@@ -29,6 +29,6 @@ get boostorg/utility boost-1.59.0 boost/utility
 get joyent/http-parser v2.6.0 http-parser
 get measurement-kit/libevent release-2.0.22-stable-18-gf1feb10 libevent
 get jbeder/yaml-cpp release-0.5.2-16-g97d56c3 yaml-cpp
-get akheron/jansson master jansson
+get akheron/jansson v2.7-52-ge44b223 jansson
 get measurement-kit/libmaxminddb master libmaxminddb
 rm -rf tmp
