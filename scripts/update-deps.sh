@@ -26,7 +26,7 @@ get boostorg/throw_exception boost-1.59.0 boost/throw_exception
 get boostorg/type_traits boost-1.59.0 boost/type_traits
 get boostorg/typeof boost-1.59.0 boost/typeof
 get boostorg/utility boost-1.59.0 boost/utility
-get joyent/http-parser v2.1-47-g1b31580 http-parser
+get joyent/http-parser v2.6.0 http-parser
 get measurement-kit/libevent release-2.0.22-stable-18-gf1feb10 libevent
 get bassosimone/yaml-cpp master yaml-cpp
 get akheron/jansson master jansson
