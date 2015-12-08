@@ -105,3 +105,7 @@ test-driver
 example_test_report.yaml
 *.yamloo
 /tmp
+
+# mkdocs
+site
+__venv__
