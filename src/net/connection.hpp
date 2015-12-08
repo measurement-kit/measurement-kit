@@ -31,7 +31,7 @@
 namespace mk {
 namespace net {
 
-class Connection : public Emitter {
+class Connection : public Emitter, public NonMovable, public NonCopyable {
   private:
     Bufferevent bev;
     dns::Query dns_request;
