@@ -13,10 +13,18 @@ if [ "$PLATFORM" = "iPhoneOS" ]; then
     EXTRA_CONFIG="--host=arm-apple-darwin14 --target=arm-apple-darwin14"
 fi
 
+ROOTDIR=$(cd $(dirname $0) && pwd -P)
+SOURCEDIR="$ROOTDIR/../../../"
+BUILDDIR="$ROOTDIR/../"
+
+# XXX We assume that the user has the iphoneos sdk installed
+AVAIL_SDKS=`xcodebuild -showsdks | grep "iphoneos"`
+FIRST_SDK=`echo "$AVAIL_SDKS" | head -n1`
+SDKVERSION=`echo "$FIRST_SDK" | cut -d\  -f2`
+echo "Using this SDK version: $SDKVERSION"
+
 DEVELOPER=$(xcode-select -print-path)
-REPOROOT=$(pwd)
 MINIOSVERSION="7.1"
-SDKVERSION="9.1"
 
 export PATH="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin/:${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/usr/bin/:${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin:${DEVELOPER}/usr/bin:${PATH}"
 
@@ -27,9 +35,9 @@ export CFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/S
 export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
 
 (
-    cd ../../
+    cd $SOURCEDIR
     test -x ./configure || autoreconf -i
-    ./configure --disable-shared \
+    ./configure -q --disable-shared \
                 --with-libevent=builtin \
                 --with-yaml-cpp=builtin \
                 --with-boost=builtin \
@@ -38,15 +46,8 @@ export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer
                 --prefix=/ \
                 $EXTRA_CONFIG
     make -j4 V=0
-    make install V=0 DESTDIR=$REPOROOT/build/${PLATFORM}/${ARCH}
+    make install-strip V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}
+    rm -rf $BUILDDIR/build/${PLATFORM}/${ARCH}/include
+    make install-data-am V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}
     make distclean
 )
-
-# Build libboost.a stub necessary to create boost.framework
-install -d $REPOROOT/build/${PLATFORM}/${ARCH}/lib
-$CXX $CPPFLAGS $CXXFLAGS -c boost/boost.cpp \
-  -o $REPOROOT/build/${PLATFORM}/${ARCH}/lib/boost.o
-ar rv $REPOROOT/build/${PLATFORM}/${ARCH}/lib/libboost.a \
-  $REPOROOT/build/${PLATFORM}/${ARCH}/lib/boost.o
-rm $REPOROOT/build/${PLATFORM}/${ARCH}/lib/boost.o
-ranlib $REPOROOT/build/${PLATFORM}/${ARCH}/lib/libboost.a
