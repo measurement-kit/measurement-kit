@@ -15,8 +15,10 @@ EXTLIBRARIES="libevent libevent_pthreads libyaml-cpp libjansson libmaxminddb"
         mkdir Frameworks/$lib.framework
     done
 
-    # XXX Copying x86 headers -- has this implications (e.g., config.h)    
-    cp -Rp build/iPhoneSimulator/i386/include/measurement_kit Frameworks/measurement_kit.framework/Headers
+    # Copying x86 headers. This has no implications because measurement-kit
+    # uses no machine-dependent headers.
+    cp -Rp build/iPhoneSimulator/i386/include/measurement_kit \
+        Frameworks/measurement_kit.framework/Headers
 
     # Lipo external libraries
     for lib in $EXTLIBRARIES; do 
@@ -40,6 +42,6 @@ EXTLIBRARIES="libevent libevent_pthreads libyaml-cpp libjansson libmaxminddb"
     for lib in $EXTLIBRARIES; do
         install -d Frameworks/$lib.framework/Headers
         echo "/* Make CocoaPod happy */" > \
-         Frameworks/$lib.framework/Headers/dummy_header.h
+            Frameworks/$lib.framework/Headers/dummy_header.h
     done
 )
