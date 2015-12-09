@@ -20,8 +20,10 @@ libmeasurement_kit_la_LDFLAGS = -pthread -version-info $(VERSION_INFO) -lyaml-cp
 libmeasurement_kit_la_SOURCES =  # Empty
 
 noinst_LTLIBRARIES =  # Empty
+noinst_PROGRAMS =  # Empty
 
 include src/include.am
+include example/include.am
 include test/include.am
 
 lib_LTLIBRARIES += libmeasurement_kit.la

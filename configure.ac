@@ -21,6 +21,11 @@ AC_CANONICAL_HOST
 AC_PROG_INSTALL
 AC_PROG_CXX()
 
+AC_ARG_ENABLE([examples],
+    AS_HELP_STRING([--disable-examples, skip building of examples programs]),
+        [], [enable_examples=yes])
+AM_CONDITIONAL([BUILD_EXAMPLES], [test "$enable_examples" = "yes"])
+
 # checks for libraries
 
 # LIBEVENT
@@ -329,6 +334,7 @@ else
 fi
 
 # checks for library functions
+
 # checks for system services
 
 AC_CONFIG_FILES([Makefile])
