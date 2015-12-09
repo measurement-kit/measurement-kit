@@ -43,9 +43,18 @@ In the short term we plan to add to MeasurementKit:
 Other functionalities that we would like to add are building-blocks functionalities
 such as [uTP](https://github.com/bittorrent/libutp), and traceroute for iOS.
 
-This README.md files continues by explaining you how to compile MeasurementKit
-on a Unix-like platform (e.g. Linux, MacOS), on Android, and on iOS. Finally it
-provides an example of usage of MeasurementKit.
+The following index illustrates the content of the remainder of this file:
+
+- [How to clone the repositorty](#how-to-clone-the-repository)
+- [How to test a specific branch](#how-to-test-a-specific-branch)
+- [How to build MeasurementKit](#how-to-build-measurementkit)
+  - [How to build MeasurementKit on a Unix-like system](#how-to-build-measurementkit-on-a-unix-like-system)
+  - [How to test MeasurementKit on a Unix-like system](#how-to-test-measurementkit-on-a-unix-like-system)
+  - [How to build MeasurementKit on Android](#how-to-build-measurementkit-on-android)
+  - [How to build MeasurementKit on iOS](#how-to-build-measurementkit-on-ios)
+  - [How to add MeasurementKit to an Xcode project](#how-to-add-measurementkit-to-an-xcode-project)
+- [How to use MeasurementKit](#how-to-use-measurementkit)
+
 
 ## How to clone the repository
 
@@ -65,7 +74,9 @@ git checkout feature/foo
 
 Then proceed with the instruction to build and test MeasurementKit.
 
-## How to build MeasurementKit on a Unix-like system
+## How to build MeasurementKit
+
+### How to build MeasurementKit on a Unix-like system
 
 To build, MeasurementKit needs:
 
@@ -142,7 +153,7 @@ is `/opt/local/include/event.h` and that `libevent.a` is
     ./configure --with-libevent=builtin
 ```
 
-## How to test MeasurementKit on a Unix-like system
+### How to test MeasurementKit on a Unix-like system
 
 Once you have built MeasurementKit, to compile and run the unit
 test programs, run:
@@ -154,12 +165,12 @@ build process) run:
 
     make V=0
 
-## How to build MeasurementKit on Android
+### How to build MeasurementKit on Android
 
 To compile MeasurementKit for Android, see the README.md file contained in
 the `mobile/android` directory of this repository.
 
-## How to build MeasurementKit on iOS
+### How to build MeasurementKit on iOS
 
 To compile and use MeasurementKit for iOS, do the following on a MacOSX
 system where XCode and its command line tools have been installed:
@@ -168,7 +179,7 @@ system where XCode and its command line tools have been installed:
 ./mobile/ios/scripts/build.sh
 ```
 
-## How to add MeasurementKit to an Xcode project.
+### How to add MeasurementKit to an Xcode project.
 
 The Cocoapods podspec hasn't been submitted yet, but you can already use
 it in your project adding this line in your Podfile:
