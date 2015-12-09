@@ -33,8 +33,8 @@ class TcpConnectTest : public BaseTest {
     }
 
     /// Set verbose
-    TcpConnectTest &set_verbose() {
-        is_verbose = true;
+    TcpConnectTest &set_verbose(bool verbose = true) {
+        is_verbose = verbose;
         return *this;
     }
 

@@ -33,8 +33,8 @@ class DnsInjectionTest : public BaseTest {
     }
 
     /// Set verbose
-    DnsInjectionTest &set_verbose() {
-        is_verbose = true;
+    DnsInjectionTest &set_verbose(bool verbose = true) {
+        is_verbose = verbose;
         return *this;
     }
 
