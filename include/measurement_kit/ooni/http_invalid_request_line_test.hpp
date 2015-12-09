@@ -27,8 +27,8 @@ class HttpInvalidRequestLineTest : public BaseTest {
     }
 
     /// Set verbose
-    HttpInvalidRequestLineTest &set_verbose() {
-        is_verbose = true;
+    HttpInvalidRequestLineTest &set_verbose(bool verbose = true) {
+        is_verbose = verbose;
         return *this;
     }
 
