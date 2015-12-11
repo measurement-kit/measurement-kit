@@ -16,6 +16,15 @@ poller.loop();                    // Blocking method to run the event loop
 poller.break_loop();              // Break out of event loop
 poller.loop_once();               // Just one iteration of event loop
 
+// Functions to work with the DNS server addresses
+// They are especially useful in mobile applications where typically
+// we do not have /etc/resolv.conf and hence by default no name-server
+// is configured and name resolution does not work at all
+if (poller.count_nameservers() <= 0) {
+    poller.add_nameserver("8.8.8.8");        // Leaving the port implied
+    poller.add_nameserver("8.8.4.4:53");     // Also with port
+}
+
 mk::Poller *root = mk::Poller::global();
 ```
 

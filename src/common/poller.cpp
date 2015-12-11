@@ -4,6 +4,7 @@
 
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/error.hpp>
 #include <stdexcept>
 #include "src/common/libs_impl.hpp"
 
@@ -38,6 +39,16 @@ void Poller::loop_once() {
     auto result = libs_->event_base_loop(base_, EVLOOP_ONCE);
     if (result < 0) throw std::runtime_error("event_base_loop() failed");
     if (result == 1) warn("loop: no pending and/or active events");
+}
+
+int Poller::count_nameservers() {
+    return evdns_base_count_nameservers(dnsbase_);
+}
+
+void Poller::add_nameserver(std::string address) {
+    if (evdns_base_nameserver_ip_add(dnsbase_, address.c_str()) != 0) {
+        throw GenericError();
+    }
 }
 
 } // namespace mk
