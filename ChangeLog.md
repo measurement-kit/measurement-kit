@@ -1,3 +1,47 @@
+# MeasurementKit 0.1.0-beta.4 [2015-12-12]
+- http: avoid throwing runtime-error
+- poller: add functions to manipulate default's evdns-base
+- updated changelog file
+
+# MeasurementKit 0.1.0-beta.3 [2015-12-09]
+- readd documentation of private classes
+- add support for mkdocs
+- bugfix: make the Connection class non-copyable and non-movable
+- fixes to simplify using cross-compiled android libraries
+- make OONI tests set_verbose() accept a boolean value (true by default)
+- improve iOS build system
+
+# MeasurementKit 0.1.0-beta.2 [2015-12-07]
+- install missing traceroute header
+- shrink android build in size and create tarballs
+- rename and simplify namespaces
+    - rename measurement_kit to mk
+    - remove namespace common
+- update dependencies to latest version
+- simplify transport usage
+    - rename Transport to TransportInterface
+    - reintroduce Transport as a proxy for Var<TransportInterface>
+    - teach connect() to return Maybe<Transport>
+- other minor changes
+
+# MeasurementKit 0.1.0-beta.1 [2015-12-02]
+- implemented code coverage using clang
+- misc build system improvements
+- make sure that dependencies headers do not appear in measurement-kit public headers
+- fix build process to avoid installing dependencies headers for android
+- ooni.hpp: more abstract api for running ooni tests (this changed the api of the ooni sublibrary)
+- net.hpp: rename Buffer::foreach() to Buffer::for_each()
+- net.hpp: modify Buffer::readline() to return Maybestd::string
+- net.hpp: modify signature of Transport::on_data()
+- net.hpp: modify signature of net::connect()
+- common.hpp: add Async::global()
+- common.hpp: implement the Maybe template
+- moved many headers from include to src to make sure they are not part of the public api
+- fix http-parser to throw common::Error subclasses on error
+- net/stream.cpp: route common::Error exceptions received when reading/writing
+- improve regress tests
+- add more documentation
+
 # MeasurementKit 0.1.0-alpha.1 [2015-11-21]
 * Project name changed to MeasurementKit
 * Most code has been rewritten using C++11
