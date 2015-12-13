@@ -41,6 +41,13 @@ void Poller::loop_once() {
     if (result == 1) warn("loop: no pending and/or active events");
 }
 
+void Poller::clear_nameservers() {
+    if (evdns_base_clear_nameservers_and_suspend(dnsbase_) != 0 ||
+        evdns_base_resume(dnsbase_) != 0) {
+        throw std::runtime_error("unexpected evdns failure");
+    }
+}
+
 int Poller::count_nameservers() {
     return evdns_base_count_nameservers(dnsbase_);
 }

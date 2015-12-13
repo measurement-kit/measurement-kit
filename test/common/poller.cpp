@@ -11,6 +11,9 @@
 
 #include <measurement_kit/common.hpp>
 #include "src/common/delayed_call.hpp"
+#include "src/common/check_connectivity.hpp"
+
+#include <event2/dns.h>
 
 #include <functional>
 #include <new>
@@ -124,4 +127,23 @@ TEST_CASE("poller.break_loop() works properly") {
     }
 
     REQUIRE(runtime_error_fired);
+}
+
+TEST_CASE("We can clear all name servers and then issue a query") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    mk::clear_nameservers();
+    REQUIRE(mk::count_nameservers() == 0);
+    mk::add_nameserver("8.8.8.8");
+    REQUIRE(evdns_base_resolve_ipv4(
+        get_global_evdns_base(), "www.polito.it", DNS_QUERY_NO_SEARCH,
+        [](int result, char type, int count, int ttl, void *, void *) {
+            REQUIRE(result == DNS_ERR_NONE);
+            REQUIRE(type == DNS_IPv4_A);
+            REQUIRE(count > 0);
+            REQUIRE(ttl > 0);
+            mk::break_loop();
+        }, nullptr) != nullptr);
+    mk::loop();
 }

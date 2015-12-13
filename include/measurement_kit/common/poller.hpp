@@ -30,12 +30,22 @@ class Poller : public NonCopyable, public NonMovable {
 
     void break_loop();
 
+    // When /etc/resolv.conf is not found, libevent configures as
+    // resolver 127.0.0.1:53, which unfortunately is not working on
+    // Android. Hence we need the following methods to force the
+    // App to clear existing resolver and use another one:
+
+    /// Clear previosuly configured nameservers
+    void clear_nameservers();
+
     /// Get number of configured nameservers in default resolver
     int count_nameservers();
 
     /// Add nameserver to the list of name-servers of the default resolver
     /// \param address Address and optionally port (e.g. "8.8.8.8:53")
     void add_nameserver(std::string address);
+
+    // End methods to set a different resolver on Android
 
     static Poller *global() {
         static Poller singleton;
@@ -69,6 +79,8 @@ inline void loop(void) { Poller::global()->loop(); }
 inline void loop_once(void) { Poller::global()->loop_once(); }
 
 inline void break_loop(void) { Poller::global()->break_loop(); }
+
+inline void clear_nameservers() { Poller::global()->clear_nameservers(); }
 
 inline int count_nameservers() { return Poller::global()->count_nameservers(); }
 
