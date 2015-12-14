@@ -1,16 +1,21 @@
 Pod::Spec.new do |s|
   s.name = "measurement_kit"
-  s.version = "0.0.1"
+  s.version = "0.1.0-beta.4"
   s.summary = "Portable network measurement library"
-  s.author = "Simone Basso <bassosimone@gmail.com>"
+  s.author = "Davide Allavena",
+             "Simone Basso",
+             "Arturo Filasto'",
+             "Antonio Langiu",
+             "Lorenzo Primiterra",
+             "Alessandro Quaranta"
   s.homepage = "https://github.com/measurement-kit"
-  s.license = { :type => "BSD", :file => "LICENSE" }
+  s.license = { :type => "BSD" }
   s.source = {
     :git => "https://github.com/measurement-kit/measurement-kit.git",
-    :branch => "master"
+    :tag => "v#{s.version}"
   }
   s.prepare_command = <<-CMD
-    cd mobile/ios/ && ./scripts/build.sh
+    ./mobile/ios/scripts/build.sh
   CMD
   s.platform = :ios, "9.0"
   s.vendored_framework = "mobile/ios/Frameworks/*.framework"
