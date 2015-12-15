@@ -1,0 +1,20 @@
+EXAMPLES = \
+    example/dns_injection \
+    example/http_invalid_request_line \
+    example/tcp_connect 
+
+example_dns_injection_SOURCES = example/dns_injection.cpp
+example_dns_injection_LDADD = libmeasurement_kit.la
+example_dns_injection_LDFLAGS = -lyaml-cpp
+
+example_http_invalid_request_line_SOURCES = example/http_invalid_request_line.cpp
+example_http_invalid_request_line_LDADD = libmeasurement_kit.la
+example_http_invalid_request_line_LDFLAGS = -lyaml-cpp
+
+example_tcp_connect_SOURCES = example/tcp_connect.cpp
+example_tcp_connect_LDADD = libmeasurement_kit.la
+example_tcp_connect_LDFLAGS = -lyaml-cpp
+
+if BUILD_EXAMPLES
+    noinst_PROGRAMS += $(EXAMPLES)
+endif
