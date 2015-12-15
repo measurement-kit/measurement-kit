@@ -49,7 +49,8 @@ git repository, write the following inside the `Podfile`:
 
 ```
 pod 'measurement_kit',
-  :git => 'https://github.com/measurement-kit/measurement-kit.git'
+  :git => 'https://github.com/measurement-kit/measurement-kit.git',
+  :branch => 'master'
 ```
 )
 
