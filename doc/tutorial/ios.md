@@ -41,7 +41,7 @@ the `.xcodeproj` file. There, create a file called `Podfile` and write
 inside it the following content:
 
 ```
-pod 'measurement_kit', '>= 0.1.0-beta.5'
+pod 'measurement_kit'
 ```
 
 (Instead, if you want to install measurement_kit directly from its
@@ -101,6 +101,7 @@ your `AppDelegate.mm` file such that it looks like this:
 
 ```Objective-C
 #import "AppDelegate.h"
+#include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni.hpp>
 
 @interface AppDelegate ()
@@ -121,7 +122,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 We have basically just added `measurement_kit/ooni.hpp` header to the
 auto-generated file. Such header contains all MeasurementKit definitions
 useful to run OONI tests. Then, try to build the project to ensure that
-everything works.
+everything works. We have also added `measurement_kit/common.hpp` that
+contains functionality that we will need later.
 
 To implement the test, we need to add more code to the currently-empty
 implementation of `didFinishLaunchingWithOptions`. To do that, we need to
@@ -310,6 +312,7 @@ The final example code is the following:
 
 ```Objective-C
 #import "AppDelegate.h"
+#include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni.hpp>
 
 #include <arpa/inet.h>

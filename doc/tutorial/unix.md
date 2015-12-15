@@ -100,6 +100,11 @@ This will install Measurement Kit headers under `/usr/local/include` and
 Measurement Kit libraries under `/usr/local/lib`. If bundled dependencies
 were compiled, they would be installed under `/usr/local` as well.
 
+On Linux you may need to update the dynamic linker after you have installed
+to `/usr/local`, running the following command as root:
+
+    ldconfig
+
 ## Using Measurement Kit
 
 Now that Measurement Kit is installed, we can use it. To this end, we
@@ -252,14 +257,6 @@ int main(int argc, char **argv) {
 We can now compile (and link) the code using the following command:
 
     c++ -Wall -std=c++11 -o main main.cpp -lmeasurement_kit
-
-On Linux you may need to update the dynamic linker after you have installed
-to `/usr/local`, running the following command as root:
-
-    /sbin/ldconfig
-
-(There are distributions, e.g. Fedora, that unified / and /usr where the above
-shall be written as `/usr/sbin/ldconfig` instead.)
 
 Then create a file named INPUT and paste inside it this content:
 
