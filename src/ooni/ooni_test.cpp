@@ -31,7 +31,7 @@ InputGenerator *OoniTest::input_generator() {
     return new InputFileGenerator(input_filepath, &logger);
 }
 
-std::string OoniTest::get_report_filename() {
+std::string OoniTest::generate_report_filename() {
     std::string filename;
     char buffer[100];
     strftime(buffer, sizeof(buffer), "%FT%H%M%SZ",

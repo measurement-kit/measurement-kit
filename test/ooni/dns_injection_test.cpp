@@ -37,3 +37,16 @@ TEST_CASE("Asynchronous dns-injection test") {
     } while (!done);
     for (auto &s : *logs) std::cout << s << "\n";
 }
+
+TEST_CASE("Make sure that set_output_path() works") {
+    auto instance = ooni::DnsInjectionTest()
+        .set_output_file_path("foo.txt")
+        .create_test_();
+    REQUIRE(instance->get_report_filename() == "foo.txt");
+}
+
+TEST_CASE("Make sure that default get_output_path() is nonempty") {
+    auto instance = ooni::DnsInjectionTest()
+        .create_test_();
+    REQUIRE(instance->get_report_filename() != "");
+}

@@ -67,6 +67,7 @@ class InputFileGenerator : public InputGenerator {
 class OoniTest : public mk::NetTest {
     std::string input_filepath;
     report::FileReporter file_report;
+    std::string report_filename;
 
     DelayedCall delayed_call;
 
@@ -76,7 +77,7 @@ class OoniTest : public mk::NetTest {
 
     void write_header();
 
-    std::string get_report_filename();
+    std::string generate_report_filename();
 
   protected:
     Libs *libs = Libs::global();
@@ -117,6 +118,17 @@ class OoniTest : public mk::NetTest {
     OoniTest(std::string input_filepath);
 
     OoniTest(std::string input_filepath, Settings options);
+
+    void set_report_filename(std::string s) {
+        report_filename = s;
+    }
+
+    std::string get_report_filename() {
+        if (report_filename == "") {
+            report_filename = generate_report_filename();
+        }
+        return report_filename;
+    }
 
     InputGenerator *input_generator();
 

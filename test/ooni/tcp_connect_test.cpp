@@ -37,3 +37,16 @@ TEST_CASE("Asynchronous tcp-connect test") {
     } while (!done);
     for (auto &s : *logs) std::cout << s << "\n";
 }
+
+TEST_CASE("Make sure that set_output_path() works") {
+    auto instance = ooni::TcpConnectTest()
+        .set_output_file_path("foo.txt")
+        .create_test_();
+    REQUIRE(instance->get_report_filename() == "foo.txt");
+}
+
+TEST_CASE("Make sure that default get_output_path() is nonempty") {
+    auto instance = ooni::TcpConnectTest()
+        .create_test_();
+    REQUIRE(instance->get_report_filename() != "");
+}
