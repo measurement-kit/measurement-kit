@@ -1,3 +1,8 @@
+# MeasurementKit 0.1.0 [2015-12-16]
+- allow to clear DNS servers on Android and iOS
+- doc: add examples and tutorials
+- a few more small fixes here and there
+
 # MeasurementKit 0.1.0-beta.4 [2015-12-12]
 - http: avoid throwing runtime-error
 - poller: add functions to manipulate default's evdns-base
