@@ -38,6 +38,7 @@ export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer
     cd $SOURCEDIR
     test -x ./configure || autoreconf -i
     ./configure -q --disable-shared \
+                --disable-examples \
                 --with-libevent=builtin \
                 --with-yaml-cpp=builtin \
                 --with-boost=builtin \

@@ -84,7 +84,7 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
       --with-libevent=builtin --with-yaml-cpp=builtin \
       --with-boost=builtin --disable-shared --libdir=/ \
       --includedir=/include --with-libmaxminddb=builtin \
-      --with-jansson=builtin
+      --with-jansson=builtin --disable-examples
     make V=0
     echo "Installing library in ${BASEDIR}/build/${ANDROID_TOOLCHAIN}"
     # The rationale of the following algorithm is to install-strip and do
