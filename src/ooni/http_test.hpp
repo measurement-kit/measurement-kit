@@ -7,19 +7,19 @@
 
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/http/client.hpp>
-#include "src/ooni/net_test.hpp"
+#include "src/ooni/ooni_test.hpp"
 
 namespace mk {
 namespace ooni {
 
-class HTTPTest : public ooni::NetTest {
-    using ooni::NetTest::NetTest;
+class HTTPTest : public ooni::OoniTest {
+    using ooni::OoniTest::OoniTest;
 
     http::Client http_client;
 
   public:
     HTTPTest(std::string input_filepath_, Settings options_)
-        : ooni::NetTest(input_filepath_, options_) {
+        : ooni::OoniTest(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";
     };

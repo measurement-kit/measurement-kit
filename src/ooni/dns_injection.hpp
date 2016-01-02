@@ -7,7 +7,7 @@
 
 #include <measurement_kit/dns.hpp>
 #include "src/ooni/errors.hpp"
-#include "src/ooni/net_test.hpp"
+#include "src/ooni/ooni_test.hpp"
 #include "src/ooni/dns_test.hpp"
 #include <sys/stat.h>
 

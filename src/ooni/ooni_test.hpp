@@ -64,7 +64,7 @@ class InputFileGenerator : public InputGenerator {
     Logger *logger = Logger::global();
 };
 
-class NetTest : public mk::NetTest {
+class OoniTest : public mk::NetTest {
     std::string input_filepath;
     report::FileReporter file_report;
 
@@ -105,18 +105,18 @@ class NetTest : public mk::NetTest {
     std::string probe_asn = "AS0";
     std::string probe_cc = "ZZ";
 
-    NetTest(void);
+    OoniTest(void);
 
-    virtual ~NetTest(void);
+    virtual ~OoniTest(void);
 
-    NetTest(NetTest &) = delete;
-    NetTest &operator=(NetTest &) = delete;
-    NetTest(NetTest &&) = default;
-    NetTest &operator=(NetTest &&) = default;
+    OoniTest(OoniTest &) = delete;
+    OoniTest &operator=(OoniTest &) = delete;
+    OoniTest(OoniTest &&) = default;
+    OoniTest &operator=(OoniTest &&) = default;
 
-    NetTest(std::string input_filepath);
+    OoniTest(std::string input_filepath);
 
-    NetTest(std::string input_filepath, Settings options);
+    OoniTest(std::string input_filepath, Settings options);
 
     InputGenerator *input_generator();
 

@@ -7,7 +7,7 @@
 
 #include "src/common/utils.hpp"
 #include "src/ooni/errors.hpp"
-#include "src/ooni/net_test.hpp"
+#include "src/ooni/ooni_test.hpp"
 #include "src/ooni/http_test.hpp"
 #include <sys/stat.h>
 
