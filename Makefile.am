@@ -27,3 +27,11 @@ include example/include.am
 include test/include.am
 
 lib_LTLIBRARIES += libmeasurement_kit.la
+
+VALGRIND = valgrind --trace-children=yes --error-exitcode=1 \
+                    --dsymutil=yes --leak-check=yes
+
+run-valgrind: $(check_PROGRAMS)
+	for test_name in $(TESTS); do                                          \
+	  $(VALGRIND) $$test_name || exit 1;                                   \
+	done
