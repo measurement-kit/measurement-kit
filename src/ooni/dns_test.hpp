@@ -8,19 +8,19 @@
 #include <measurement_kit/common/var.hpp>
 
 #include <measurement_kit/dns.hpp>
-#include "src/ooni/net_test.hpp"
+#include "src/ooni/ooni_test.hpp"
 
 namespace mk {
 namespace ooni {
 
-class DNSTest : public ooni::NetTest {
-    using ooni::NetTest::NetTest;
+class DNSTest : public ooni::OoniTest {
+    using ooni::OoniTest::OoniTest;
 
     Var<dns::Resolver> resolver;
 
   public:
     DNSTest(std::string input_filepath_, Settings options_)
-        : ooni::NetTest(input_filepath_, options_) {
+        : ooni::OoniTest(input_filepath_, options_) {
         test_name = "dns_test";
         test_version = "0.0.1";
     };

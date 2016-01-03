@@ -3,35 +3,35 @@
 // information on the copying conditions.
 
 #include "src/common/delayed_call.hpp"
-#include "src/ooni/net_test.hpp"
+#include "src/ooni/ooni_test.hpp"
 #include <ctime>
 
 namespace mk {
 namespace ooni {
 
-NetTest::NetTest(std::string input_filepath_, Settings options_)
+OoniTest::OoniTest(std::string input_filepath_, Settings options_)
     : input_filepath(input_filepath_), options(options_), test_name("net_test"),
       test_version("0.0.1") {}
 
-NetTest::NetTest(void) : NetTest::NetTest("", Settings()) {
+OoniTest::OoniTest(void) : OoniTest::OoniTest("", Settings()) {
     // nothing
 }
 
-NetTest::NetTest(std::string input_filepath_)
-    : NetTest::NetTest(input_filepath_, Settings()) {
+OoniTest::OoniTest(std::string input_filepath_)
+    : OoniTest::OoniTest(input_filepath_, Settings()) {
     // nothing
 }
 
-NetTest::~NetTest() {
+OoniTest::~OoniTest() {
     delete input;
     input = nullptr;
 }
 
-InputGenerator *NetTest::input_generator() {
+InputGenerator *OoniTest::input_generator() {
     return new InputFileGenerator(input_filepath, &logger);
 }
 
-std::string NetTest::get_report_filename() {
+std::string OoniTest::get_report_filename() {
     std::string filename;
     char buffer[100];
     strftime(buffer, sizeof(buffer), "%FT%H%M%SZ",
@@ -42,13 +42,13 @@ std::string NetTest::get_report_filename() {
     return filename;
 }
 
-void NetTest::geoip_lookup() {
+void OoniTest::geoip_lookup() {
     probe_ip = "127.0.0.1";
     probe_asn = "AS0";
     probe_cc = "ZZ";
 }
 
-void NetTest::run_next_measurement(const std::function<void()> &&cb) {
+void OoniTest::run_next_measurement(const std::function<void()> &&cb) {
     logger.debug("net_test: running next measurement");
     input->next(
         [=](std::string next_input) {
@@ -72,7 +72,7 @@ void NetTest::run_next_measurement(const std::function<void()> &&cb) {
         });
 }
 
-void NetTest::begin(std::function<void()> cb) {
+void OoniTest::begin(std::function<void()> cb) {
     geoip_lookup();
     write_header();
     if (input_filepath != "") {
@@ -99,7 +99,7 @@ void NetTest::begin(std::function<void()> cb) {
     }
 }
 
-void NetTest::write_header() {
+void OoniTest::write_header() {
     file_report.test_name = test_name;
     file_report.test_version = test_version;
     time(&file_report.start_time);
@@ -114,27 +114,27 @@ void NetTest::write_header() {
     file_report.open();
 }
 
-void NetTest::end(std::function<void()> cb) {
+void OoniTest::end(std::function<void()> cb) {
     file_report.close();
     cb();
 }
 
-void NetTest::setup(std::string) {}
+void OoniTest::setup(std::string) {}
 
-void NetTest::setup() {}
+void OoniTest::setup() {}
 
-void NetTest::teardown(std::string) {}
+void OoniTest::teardown(std::string) {}
 
-void NetTest::teardown() {}
+void OoniTest::teardown() {}
 
-void NetTest::main(Settings, std::function<void(report::Entry)> &&cb) {
+void OoniTest::main(Settings, std::function<void(report::Entry)> &&cb) {
     delayed_call = DelayedCall(1.25, [=](void) {
         report::Entry entry;
         cb(entry);
     });
 }
 
-void NetTest::main(std::string, Settings,
+void OoniTest::main(std::string, Settings,
                    std::function<void(report::Entry)> &&cb) {
     delayed_call = DelayedCall(1.25, [=](void) {
         report::Entry entry;
