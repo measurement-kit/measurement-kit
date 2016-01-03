@@ -114,3 +114,6 @@ __venv__
 example/dns_injection
 example/http_invalid_request_line
 example/tcp_connect
+
+# files being edited
+*.swp
