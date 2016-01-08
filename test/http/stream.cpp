@@ -85,7 +85,7 @@ TEST_CASE("HTTP stream is robust to EOF") {
         data << "1234567";
 
         transport.emit_data(data);
-        transport.emit_error(NoError());
+        transport.emit_error(EOFError());
     });
 
     transport.emit_connect();
