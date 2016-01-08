@@ -11,6 +11,7 @@
 #include <measurement_kit/ooni.hpp>
 #include <string>
 #include <thread>
+#include "src/ooni/ooni_test.hpp"
 
 using namespace mk;
 
@@ -49,11 +50,13 @@ TEST_CASE("Make sure that set_output_path() works") {
     auto instance = ooni::HttpInvalidRequestLineTest()
         .set_output_file_path("foo.txt")
         .create_test_();
-    REQUIRE(instance->get_report_filename() == "foo.txt");
+    auto ptr = static_cast<ooni::OoniTest *>(instance.get());
+    REQUIRE(ptr->get_report_filename() == "foo.txt");
 }
 
 TEST_CASE("Make sure that default get_output_path() is nonempty") {
     auto instance = ooni::HttpInvalidRequestLineTest()
         .create_test_();
-    REQUIRE(instance->get_report_filename() != "");
+    auto ptr = static_cast<ooni::OoniTest *>(instance.get());
+    REQUIRE(ptr->get_report_filename() != "");
 }
