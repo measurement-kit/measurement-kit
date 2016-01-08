@@ -26,6 +26,12 @@ class HttpInvalidRequestLineTest : public BaseTest {
         return *this;
     }
 
+    /// Set output file path
+    HttpInvalidRequestLineTest &set_output_file_path(std::string ofp) {
+        output_path = ofp;
+        return *this;
+    }
+
     /// Set verbose
     HttpInvalidRequestLineTest &set_verbose(bool verbose = true) {
         is_verbose = verbose;
@@ -44,6 +50,7 @@ class HttpInvalidRequestLineTest : public BaseTest {
     Settings settings;
     bool is_verbose = false;
     std::function<void(const char *)> log_handler;
+    std::string output_path;
 };
 
 } // namespace ooni

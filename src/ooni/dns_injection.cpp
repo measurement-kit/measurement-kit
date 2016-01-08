@@ -27,7 +27,8 @@ void DNSInjection::main(std::string input, Settings options,
 }
 
 Var<mk::NetTest> DnsInjectionTest::create_test_() {
-    mk::NetTest *test = new DNSInjection(input_path, settings);
+    OoniTest *test = new DNSInjection(input_path, settings);
+    if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
     return Var<mk::NetTest>(test);
