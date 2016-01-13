@@ -12,6 +12,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 mk::ooni::DnsInjectionTest()
     .set_backend("127.0.0.1")
     .set_input_file_path("test/fixtures/hosts.txt")
+    .set_output_file_path("results.yml")
     .set_verbose()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
@@ -23,6 +24,7 @@ mk::ooni::DnsInjectionTest()
 mk::ooni::DnsInjectionTest()
     .set_backend("127.0.0.1")
     .set_input_file_path("test/fixtures/hosts.txt")
+    .set_output_file_path("results.yml")
     .set_verbose()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
@@ -47,6 +49,10 @@ instantiating the class, you can configure it using these methods:
 
 - *set_input_file_path*: set the path to the input file, i.e., a file
   that contains the domain names to be tested, one for each line.
+
+- *set_output_file_path*: optional method to set output file path, otherwise
+  a file named "report-dns_injection-DATE.yamloo" is written into the current
+  working directory.
 
 - *set_verbose*: if called, this method tells the test to run in verbose
   mode, i.e., to produce more detailed logs of its operations. The default
