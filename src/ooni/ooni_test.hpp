@@ -2,68 +2,27 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_OONI_NET_TEST_HPP
-#define MEASUREMENT_KIT_OONI_NET_TEST_HPP
+#ifndef SRC_OONI_OONI_TEST_HPP
+#define SRC_OONI_OONI_TEST_HPP
 
-#include <ctime>
-#include <iterator>
-#include <iostream>
-#include <fstream>
-
-#include "src/report/file_reporter.hpp"
-
-#include "src/common/delayed_call.hpp"
-#include <measurement_kit/common/poller.hpp>
-#include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/net_test.hpp>
+#include <yaml-cpp/node/impl.h>                 // for Node::Node
+#include <ctime>                                // for gmtime, strftime, time
+#include <fstream>                              // for string, char_traits
+#include <functional>                           // for function, __base
+#include <measurement_kit/common/logger.hpp>    // for Logger
+#include <measurement_kit/common/net_test.hpp>  // for NetTest
+#include <measurement_kit/common/settings.hpp>  // for Settings
+#include <string>                               // for allocator, operator+
+#include <type_traits>                          // for move
+#include "src/common/delayed_call.hpp"          // for DelayedCall
+#include "src/common/libs_impl.hpp"             // for Libs
+#include "src/ooni/input_file_generator.hpp"    // for InputFileGenerator
+#include "src/ooni/input_generator.hpp"         // for InputGenerator
+#include "src/report/entry.hpp"                 // for Entry
+#include "src/report/file_reporter.hpp"         // for FileReporter
 
 namespace mk {
 namespace ooni {
-
-class InputGenerator {
-
-  public:
-    virtual void next(std::function<void(std::string)> &&new_line,
-                      std::function<void()> &&done) = 0;
-
-    virtual ~InputGenerator() {}
-};
-
-class InputFileGenerator : public InputGenerator {
-  public:
-    InputFileGenerator() {}
-
-    InputFileGenerator(std::string input_filepath,
-                       Logger *lp = Logger::global())
-        : logger(lp) {
-        is = new std::ifstream(input_filepath);
-    }
-
-    virtual ~InputFileGenerator() { delete is; /* delete handles nullptr */ }
-
-    InputFileGenerator(InputFileGenerator &) = delete;
-    InputFileGenerator &operator=(InputFileGenerator &) = delete;
-    InputFileGenerator(InputFileGenerator &&) = default;
-    InputFileGenerator &operator=(InputFileGenerator &&) = default;
-
-    void next(std::function<void(std::string)> &&new_line,
-              std::function<void()> &&done) override {
-        logger->debug("InputFileGenerator: getting next line");
-        std::string line;
-        if (*is && !std::getline(*is, line).eof()) {
-            logger->debug("InputFileGenerator: returning new line");
-            new_line(line);
-        } else {
-            logger->debug("InputFileGenerator: EOF reached.");
-            done();
-        }
-    }
-
-  private:
-    std::ifstream *is = nullptr;
-    Logger *logger = Logger::global();
-};
 
 class OoniTest : public mk::NetTest {
     std::string input_filepath;
@@ -73,7 +32,6 @@ class OoniTest : public mk::NetTest {
     DelayedCall delayed_call;
 
     void run_next_measurement(const std::function<void()> &&cb) {
-
         logger.debug("net_test: running next measurement");
         input->next(
             [=](std::string next_input) {
@@ -105,7 +63,6 @@ class OoniTest : public mk::NetTest {
     }
 
     void write_header() {
-
         file_report.test_name = test_name;
         file_report.test_version = test_version;
         time(&file_report.start_time);
