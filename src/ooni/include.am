@@ -1,10 +1,6 @@
 noinst_LTLIBRARIES += src/ooni/libooni.la
 
-src_ooni_libooni_la_SOURCES = \
-	src/ooni/base_test.cpp \
-	src/ooni/http_invalid_request_line.cpp \
-	src/ooni/tcp_connect.cpp \
-	src/ooni/dns_injection.cpp
+src_ooni_libooni_la_SOURCES = src/ooni/libooni.cpp
 
 libmeasurement_kit_la_LIBADD += src/ooni/libooni.la
 
