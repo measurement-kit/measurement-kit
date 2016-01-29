@@ -10,22 +10,6 @@
 namespace mk {
 namespace ooni {
 
-void DNSInjection::main(std::string input, Settings options,
-                        std::function<void(report::Entry)> &&cb) {
-    entry["injected"] = NULL;
-    have_entry = cb;
-    query("A", "IN", input, options["nameserver"],
-            [this](dns::Response response) {
-        logger.debug("dns_injection: got response");
-        if (response.get_evdns_status() == DNS_ERR_NONE) {
-            entry["injected"] = true;
-        } else {
-            entry["injected"] = false;
-        }
-        have_entry(entry);
-    });
-}
-
 Var<mk::NetTest> DnsInjectionTest::create_test_() {
     OoniTest *test = new DNSInjection(input_path, settings);
     if (output_path != "") test->set_report_filename(output_path);

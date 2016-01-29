@@ -36,7 +36,14 @@ class TCPConnect : public TCPTest {
     };
 
     void main(std::string input, Settings options,
-              std::function<void(report::Entry)> &&cb);
+              std::function<void(report::Entry)> &&cb) {
+        options["host"] = input;
+        have_entry = cb;
+        client = connect(options, [this]() {
+            logger.debug("tcp_connect: Got response to TCP connect test");
+            have_entry(entry);
+        });
+    }
 };
 
 } // namespace ooni

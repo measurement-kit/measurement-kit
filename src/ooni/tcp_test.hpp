@@ -12,10 +12,13 @@
 #include <measurement_kit/common/var.hpp>
 
 #include "src/ooni/ooni_test.hpp"
+#include "src/net/connection.hpp"
 
 namespace mk {
 
-namespace net { class Connection; }
+namespace net {
+class Connection;
+}
 
 namespace ooni {
 
@@ -31,7 +34,36 @@ class TCPTest : public ooni::OoniTest {
         test_version = "0.0.1";
     };
 
-    TCPClient connect(Settings options, std::function<void()> &&cb);
+    TCPClient connect(Settings options, std::function<void()> &&cb) {
+
+        if (options["port"] == "") {
+            throw std::runtime_error("Port is required");
+        }
+        if (options["host"] == "") {
+            options["host"] = "localhost";
+        }
+
+        auto connection = std::make_shared<net::Connection>(
+            "PF_UNSPEC", options["host"].c_str(), options["port"].c_str());
+
+        //
+        // FIXME The connection and this are bound in the
+        // callbacks below, but they have possibly different
+        // life cycles, which is &disaster.
+        //
+
+        connection->on_error([cb, this](Error e) {
+            entry["error_code"] = (int)e;
+            entry["connection"] = "failed";
+            cb();
+        });
+        connection->on_connect([this, cb]() {
+            entry["connection"] = "success";
+            cb();
+        });
+
+        return connection;
+    }
 };
 
 } // namespace ooni

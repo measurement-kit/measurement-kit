@@ -22,9 +22,9 @@ class HTTPTest : public ooni::OoniTest {
         : ooni::OoniTest(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";
-    };
+    }
 
-    HTTPTest(Settings options_) : HTTPTest("", options_){};
+    HTTPTest(Settings options_) : HTTPTest("", options_) {}
 
     void request(Settings settings, http::Headers headers, std::string body,
                  http::RequestCallback &&callback) {
@@ -61,7 +61,7 @@ class HTTPTest : public ooni::OoniTest {
                 entry["socksproxy"] = "";
                 callback(error, std::move(response));
             }, &logger);
-    };
+    }
 };
 
 } // namespace ooni

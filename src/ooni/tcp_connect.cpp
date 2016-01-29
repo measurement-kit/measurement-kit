@@ -9,16 +9,6 @@
 namespace mk {
 namespace ooni {
 
-void TCPConnect::main(std::string input, Settings options,
-                      std::function<void(report::Entry)> &&cb) {
-    options["host"] = input;
-    have_entry = cb;
-    client = connect(options, [this]() {
-        logger.debug("tcp_connect: Got response to TCP connect test");
-        have_entry(entry);
-    });
-}
-
 Var<mk::NetTest> TcpConnectTest::create_test_() {
     OoniTest *test = new TCPConnect(input_path, settings);
     if (output_path != "") test->set_report_filename(output_path);
