@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
-#define MEASUREMENT_KIT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
+#ifndef SRC_OONI_HTTP_INVALID_REQUEST_LINE_HPP
+#define SRC_OONI_HTTP_INVALID_REQUEST_LINE_HPP
 
 #include "src/common/utils.hpp"
 #include "src/ooni/errors.hpp"

@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_OONI_TCP_CONNECT_HPP
-#define MEASUREMENT_KIT_OONI_TCP_CONNECT_HPP
+#ifndef SRC_OONI_TCP_CONNECT_HPP
+#define SRC_OONI_TCP_CONNECT_HPP
 
 #include "src/ooni/errors.hpp"
 #include "src/ooni/tcp_test.hpp"

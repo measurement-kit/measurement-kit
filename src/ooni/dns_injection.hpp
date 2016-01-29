@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
-#define MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
+#ifndef SRC_OONI_DNS_INJECTION_HPP
+#define SRC_OONI_DNS_INJECTION_HPP
 
 #include <measurement_kit/dns.hpp>
 #include "src/ooni/errors.hpp"
