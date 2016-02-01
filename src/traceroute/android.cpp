@@ -65,7 +65,7 @@ struct event_base;
 namespace mk {
 namespace traceroute {
 
-AndroidProber::AndroidProber(bool a, int port, event_base *c)
+AndroidProber::AndroidProber(bool a, int port, event_base *c, Logger *logger)
     : use_ipv4_(a), evbase_(c), port_(port) {}
 
 void AndroidProber::init() {
@@ -80,7 +80,7 @@ void AndroidProber::init() {
     int level_sock, opt_recverr, level_proto, opt_recvttl, family;
     const int val = 1;
 
-    mk::debug("AndroidProber(%d, %d, %p) => %p", use_ipv4_, port_,
+    logger->debug("AndroidProber(%d, %d, %p) => %p", use_ipv4_, port_,
               (void *)evbase_, (void *)this);
 
     if (use_ipv4_) {
@@ -142,7 +142,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
 
     init();
 
-    mk::debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port,
+    logger->debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port,
               ttl, payload.length());
 
     if (sockfd_ < 0) {
@@ -217,7 +217,7 @@ ProbeResult AndroidProber::on_socket_readable() {
     sockaddr_storage storage;
     socklen_t solen;
 
-    mk::debug("on_socket_readable()");
+    logger->debug("on_socket_readable()");
 
     if (!probe_pending_) throw NoProbePendingError();
     probe_pending_ = false;
@@ -227,7 +227,7 @@ ProbeResult AndroidProber::on_socket_readable() {
     if (clock_gettime(CLOCK_MONOTONIC, &arr_time) != 0)
         throw ClockGettimeError();
     r.rtt = calculate_rtt(arr_time, start_time_);
-    mk::debug("rtt = %lf", r.rtt);
+    logger->debug("rtt = %lf", r.rtt);
 
     memset(buff, 0, sizeof(buff));
     iov.iov_base = buff;
@@ -242,25 +242,25 @@ ProbeResult AndroidProber::on_socket_readable() {
     msg.msg_flags = 0;
     if ((r.recv_bytes = recvmsg(sockfd_, &msg, MSG_ERRQUEUE)) < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) { // Defensive
-            mk::debug("it seems we received a valid reply packet back");
+            logger->debug("it seems we received a valid reply packet back");
             memset(&storage, 0, sizeof(storage));
             solen = sizeof(storage);
             if ((r.recv_bytes = recvfrom(sockfd_, buff, sizeof(buff), 0,
                                          (sockaddr *)&storage, &solen)) < 0) {
                 throw std::runtime_error("recv() failed");
             }
-            mk::debug("recv_bytes = %lu", r.recv_bytes);
+            logger->debug("recv_bytes = %lu", r.recv_bytes);
             r.valid_reply = true;
-            mk::debug("valid_reply = %d", r.valid_reply);
+            logger->debug("valid_reply = %d", r.valid_reply);
             r.reply = std::string((const char *)buff, r.recv_bytes);
-            mk::debug("reply = <%lu bytes>", r.reply.length());
+            logger->debug("reply = <%lu bytes>", r.reply.length());
             r.interface_ip = get_source_addr(use_ipv4_, &storage);
-            mk::debug("interface_ip = %s", r.interface_ip.c_str());
+            logger->debug("interface_ip = %s", r.interface_ip.c_str());
             return r;
         }
         throw std::runtime_error("recvmsg() failed");
     }
-    mk::debug("recv_bytes = %lu", r.recv_bytes);
+    logger->debug("recv_bytes = %lu", r.recv_bytes);
 
     if (use_ipv4_) {
         expected_level = SOL_IP;
@@ -286,7 +286,7 @@ ProbeResult AndroidProber::on_socket_readable() {
         }
         if (cmsg->cmsg_type == expected_type_ttl) {
             r.ttl = get_ttl(CMSG_DATA(cmsg));
-            mk::debug("ttl = %d", r.ttl);
+            logger->debug("ttl = %d", r.ttl);
             continue;
         }
 
@@ -300,11 +300,11 @@ ProbeResult AndroidProber::on_socket_readable() {
             continue;
         }
         r.icmp_type = socket_error->ee_type;
-        mk::debug("icmp_type = %d", r.icmp_type);
+        logger->debug("icmp_type = %d", r.icmp_type);
         r.icmp_code = socket_error->ee_code;
-        mk::debug("icmp_code = %d", r.icmp_code);
+        logger->debug("icmp_code = %d", r.icmp_code);
         r.interface_ip = get_source_addr(use_ipv4_, socket_error);
-        mk::debug("interface_ip = %s", r.interface_ip.c_str());
+        logger->debug("interface_ip = %s", r.interface_ip.c_str());
     }
 
     return r;
@@ -365,7 +365,7 @@ double AndroidProber::calculate_rtt(struct timespec end,
 void AndroidProber::event_callback(int, short event, void *opaque) {
     AndroidProber *prober = static_cast<AndroidProber *>(opaque);
 
-    mk::debug("event_callback(_, %d, %p)", event, opaque);
+    prober->logger->debug("event_callback(_, %d, %p)", event, opaque);
 
     if ((event & EV_TIMEOUT) != 0) {
         prober->on_timeout();
@@ -386,7 +386,7 @@ void AndroidProber::event_callback(int, short event, void *opaque) {
 }
 
 void AndroidProber::cleanup() {
-    mk::debug("cleanup(): %p", (void *)this);
+    logger->debug("cleanup(): %p", (void *)this);
     if (sockfd_ >= 0) {
         ::close(sockfd_);
         sockfd_ = -1;

@@ -38,6 +38,7 @@
 #ifdef __linux__
 
 #include <measurement_kit/common/constraints.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/traceroute/interface.hpp>
 
@@ -71,7 +72,8 @@ class AndroidProber : public NonCopyable,
     /// \param evbase Event base to use (optional)
     AndroidProber(
         bool use_ipv4, int port,
-        event_base *evbase = mk::get_global_event_base());
+        event_base *evbase = mk::get_global_event_base(),
+        Logger *logger = Logger::global());
 
     /// Destructor
     ~AndroidProber() { cleanup(); }
@@ -97,6 +99,7 @@ class AndroidProber : public NonCopyable,
     event_base *evbase_ = nullptr; ///< event base
     event *evp_ = nullptr;         ///< event pointer
     int port_ = 0;                 ///< socket port
+    Logger *logger = Logger::global();///< logger
 
     std::function<void(ProbeResult)> result_cb_;  ///< on result callback
     std::function<void()> timeout_cb_;            ///< on timeout callback
