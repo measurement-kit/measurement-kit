@@ -167,7 +167,7 @@ class ResponseParserImpl {
      * \brief Default constructor.
      */
     ResponseParserImpl(Logger *lp = Logger::global()) : logger(lp) {
-        memset(&settings, 0, sizeof(settings));
+        http_parser_settings_init(&settings);
         settings.on_message_begin = do_message_begin;
         settings.on_status = do_status;
         settings.on_header_field = do_header_field;
@@ -175,7 +175,6 @@ class ResponseParserImpl {
         settings.on_headers_complete = do_headers_complete;
         settings.on_body = do_body;
         settings.on_message_complete = do_message_complete;
-        memset(&parser, 0, sizeof(parser));
         http_parser_init(&parser, HTTP_RESPONSE);
         parser.data = this; /* Which makes this object non-movable */
     }
