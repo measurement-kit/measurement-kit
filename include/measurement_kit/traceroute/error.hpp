@@ -14,82 +14,82 @@ namespace traceroute {
 class SocketCreateError : public Error {
   public:
     /// Default constructor
-    SocketCreateError() : Error(2000, "unknown_failure 2000") {}
+    SocketCreateError() : Error(4000, "unknown_failure 4000") {}
 };
 
 /// Setsockopt error
 class SetsockoptError : public Error {
   public:
     /// Default constructor
-    SetsockoptError() : Error(2001, "unknown_failure 2001") {}
+    SetsockoptError() : Error(4001, "unknown_failure 4001") {}
 };
 
 /// Probe already pending error
 class ProbeAlreadyPendingError : public Error {
   public:
     /// Default constructor
-    ProbeAlreadyPendingError() : Error(2002, "unknown_failure 2002") {}
+    ProbeAlreadyPendingError() : Error(4002, "unknown_failure 4002") {}
 };
 
 /// Payload too long error
 class PayloadTooLongError : public Error {
   public:
     /// Default constructor
-    PayloadTooLongError() : Error(2003, "unknown_failure 2003") {}
+    PayloadTooLongError() : Error(4003, "unknown_failure 4003") {}
 };
 
 /// Storage init error
 class StorageInitError : public Error {
   public:
     /// Default constructor
-    StorageInitError() : Error(2004, "unknown_failure 2004") {}
+    StorageInitError() : Error(4004, "unknown_failure 4004") {}
 };
 
 /// Bind error
 class BindError : public Error {
   public:
     /// Default constructor
-    BindError() : Error(2005, "unknown_failure 2005") {}
+    BindError() : Error(4005, "unknown_failure 4005") {}
 };
 
 /// Event new error
 class EventNewError : public Error {
   public:
     /// Default constructor
-    EventNewError() : Error(2006, "unknown_failure 2006") {}
+    EventNewError() : Error(4006, "unknown_failure 4006") {}
 };
 
 /// Sendto error
 class SendtoError : public Error {
   public:
     /// Default constructor
-    SendtoError() : Error(2007, "unknown_failure 2007") {}
+    SendtoError() : Error(4007, "unknown_failure 4007") {}
 };
 
 /// No probe pending error
 class NoProbePendingError : public Error {
   public:
     /// Default constructor
-    NoProbePendingError() : Error(2008, "unknown_failure 2008") {}
+    NoProbePendingError() : Error(4008, "unknown_failure 4008") {}
 };
 
 /// Clock gettime error
 class ClockGettimeError : public Error {
   public:
     /// Default constructor
-    ClockGettimeError() : Error(2009, "unknown_failure 2009") {}
+    ClockGettimeError() : Error(4009, "unknown_failure 4009") {}
 };
 
 class EventAddError : public Error {
   public:
     /// Default constructor
-    EventAddError() : Error(2010, "unknown_failure 2010") {}
+    EventAddError() : Error(4010, "unknown_failure 4010") {}
 };
 
 class SocketAlreadyClosedError : public Error {
   public:
     /// Default constructor
-    SocketAlreadyClosedError() : Error(2011, "unknown_failure 2011") {}
+    SocketAlreadyClosedError() : Error(4011, "unknown_failure 4011") {}
 };
 
 } // namespace net
