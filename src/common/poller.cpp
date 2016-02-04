@@ -8,6 +8,18 @@
 #include <stdexcept>
 #include "src/common/libs_impl.hpp"
 
+// Using `extern "C"` for C callbacks is recommended by C++ FAQs.
+// See <https://isocpp.org/wiki/faq/pointers-to-members#memfnptr-vs-fnptr>.
+extern "C" {
+
+static void mk_call_soon_cb(evutil_socket_t, short, void *p) {
+    auto cbp = static_cast<std::function<void()> *>(p);
+    (*cbp)();
+    delete cbp;
+}
+
+} // extern "C"
+
 namespace mk {
 
 Poller::Poller(Libs *libs) {
@@ -22,6 +34,15 @@ Poller::Poller(Libs *libs) {
 Poller::~Poller() {
     libs_->evdns_base_free(dnsbase_, 1);
     libs_->event_base_free(base_);
+}
+
+void Poller::call_soon(std::function<void()> cb) {
+    auto cbp = new std::function<void()>(cb);
+    if (event_base_once(base_, -1, EV_TIMEOUT, mk_call_soon_cb,
+                        cbp, nullptr) != 0) {
+        delete cbp;
+        throw std::runtime_error("event_base_once() failed");
+    }
 }
 
 void Poller::loop() {

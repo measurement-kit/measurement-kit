@@ -8,6 +8,7 @@
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/libs.hpp>
 
+#include <functional>
 #include <string>
 
 struct evdns_base;
@@ -23,6 +24,11 @@ class Poller : public NonCopyable, public NonMovable {
     event_base *get_event_base() { return base_; }
 
     evdns_base *get_evdns_base() { return dnsbase_; }
+
+    /// Call the function at the beginning of next I/O loop.
+    /// \param cb The function to be called soon.
+    /// \throw Error if the underlying libevent call fails.
+    void call_soon(std::function<void()> cb);
 
     void loop();
 
