@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_OONI_TCP_CONNECT_HPP
-#define MEASUREMENT_KIT_OONI_TCP_CONNECT_HPP
+#ifndef SRC_OONI_TCP_CONNECT_HPP
+#define SRC_OONI_TCP_CONNECT_HPP
 
 #include "src/ooni/errors.hpp"
 #include "src/ooni/tcp_test.hpp"
@@ -36,7 +36,14 @@ class TCPConnect : public TCPTest {
     };
 
     void main(std::string input, Settings options,
-              std::function<void(report::Entry)> &&cb);
+              std::function<void(report::Entry)> &&cb) {
+        options["host"] = input;
+        have_entry = cb;
+        client = connect(options, [this]() {
+            logger.debug("tcp_connect: Got response to TCP connect test");
+            have_entry(entry);
+        });
+    }
 };
 
 } // namespace ooni

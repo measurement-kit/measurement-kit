@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
-#define MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
+#ifndef SRC_OONI_DNS_INJECTION_HPP
+#define SRC_OONI_DNS_INJECTION_HPP
 
 #include <measurement_kit/dns.hpp>
 #include "src/ooni/errors.hpp"
@@ -36,7 +36,20 @@ class DNSInjection : public DNSTest {
     };
 
     void main(std::string input, Settings options,
-              std::function<void(report::Entry)> &&cb);
+              std::function<void(report::Entry)> &&cb) {
+        entry["injected"] = NULL;
+        have_entry = cb;
+        query("A", "IN", input, options["nameserver"],
+              [this](dns::Response response) {
+                  logger.debug("dns_injection: got response");
+                  if (response.get_evdns_status() == DNS_ERR_NONE) {
+                      entry["injected"] = true;
+                  } else {
+                      entry["injected"] = false;
+                  }
+                  have_entry(entry);
+              });
+    }
 };
 
 } // namespace ooni

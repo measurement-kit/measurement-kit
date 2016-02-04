@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_OONI_HTTP_TEST_HPP
-#define MEASUREMENT_KIT_OONI_HTTP_TEST_HPP
+#ifndef SRC_OONI_HTTP_TEST_HPP
+#define SRC_OONI_HTTP_TEST_HPP
 
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/http/client.hpp>
@@ -22,9 +22,9 @@ class HTTPTest : public ooni::OoniTest {
         : ooni::OoniTest(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";
-    };
+    }
 
-    HTTPTest(Settings options_) : HTTPTest("", options_){};
+    HTTPTest(Settings options_) : HTTPTest("", options_) {}
 
     void request(Settings settings, http::Headers headers, std::string body,
                  http::RequestCallback &&callback) {
@@ -61,7 +61,7 @@ class HTTPTest : public ooni::OoniTest {
                 entry["socksproxy"] = "";
                 callback(error, std::move(response));
             }, &logger);
-    };
+    }
 };
 
 } // namespace ooni
