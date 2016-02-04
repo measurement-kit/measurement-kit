@@ -1,3 +1,6 @@
+# MeasurementKit 0.1.2 [2016-02-04]
+- cleanups and bug fixes
+
 # MeasurementKit 0.1.1 [2016-01-13]
 - allow to specify report file path for OONI tests
 - add missing documentation 
