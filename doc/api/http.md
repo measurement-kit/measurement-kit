@@ -1,5 +1,5 @@
 # NAME
-Client -- HTTP client.
+mk::http -- MeasurementKit HTTP library
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -61,6 +61,35 @@ receives the following arguments:
 Beware that, in case of early error, the callback MAY be called
 immediately by the `request()` method.
 
+In case of success, the error argument of the callback is passed an
+instance of `mk::NoError()`. Otherwise, the error that occurred is
+reported. Among all the possible errors, the following are defined by
+MeasurementKit HTTP implementation:
+
+- `UpgradeError`: received unexpected UPGRADE message
+- `ParserError`: error in HTTP parser
+- `UrlParserError`: error in URL parser
+- `MissingUrlSchemaError`: missing schema in parsed URL
+- `MissingUrlHostError`: missing host in parsed URL
+
+HTTP headers are represented by the `http::Headers` typedef that
+is alias for `std::map<std::string, std::string>`.
+
+The HTTP response object returned by the callback contains the
+following fields:
+
+```C++
+struct Response {
+    std::string response_line;
+    unsigned short http_major;
+    unsigned short http_minor;
+    unsigned int status_code;
+    std::string reason;
+    Headers headers;
+    std::string body;
+};
+```
+
 # HISTORY
 
-The `Response` class appeared in MeasurementKit 0.1.0.
+The `mk::http` library appeared in MeasurementKit 0.1.0.
