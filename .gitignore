@@ -111,9 +111,9 @@ site
 __venv__
 
 # example
-example/dns_injection
-example/http_invalid_request_line
-example/tcp_connect
+example/ooni/dns_injection
+example/ooni/http_invalid_request_line
+example/ooni/tcp_connect
 
 # files being edited
 *.swp
