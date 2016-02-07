@@ -111,6 +111,7 @@ site
 __venv__
 
 # example
+example/mlabns/query
 example/ooni/dns_injection
 example/ooni/http_invalid_request_line
 example/ooni/tcp_connect
