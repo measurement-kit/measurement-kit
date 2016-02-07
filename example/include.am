@@ -1,1 +1,7 @@
+EXAMPLES = # Empty
+
 include example/ooni/include.am
+
+if BUILD_EXAMPLES
+    noinst_PROGRAMS += $(EXAMPLES)
+endif

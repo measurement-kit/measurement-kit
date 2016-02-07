@@ -1,4 +1,4 @@
-EXAMPLES =                                                                     \
+EXAMPLES +=                                                                    \
     example/ooni/dns_injection                                                 \
     example/ooni/http_invalid_request_line                                     \
     example/ooni/tcp_connect
@@ -15,7 +15,3 @@ example_ooni_http_invalid_request_line_LDFLAGS = -lyaml-cpp
 example_ooni_tcp_connect_SOURCES = example/ooni/tcp_connect.cpp
 example_ooni_tcp_connect_LDADD = libmeasurement_kit.la
 example_ooni_tcp_connect_LDFLAGS = -lyaml-cpp
-
-if BUILD_EXAMPLES
-    noinst_PROGRAMS += $(EXAMPLES)
-endif
