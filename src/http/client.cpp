@@ -28,5 +28,10 @@ Client::~Client() {
     pending.clear();
 }
 
+void request(Settings settings, RequestCallback cb, Headers headers,
+             std::string body, Logger *lp, Var<Client> client) {
+    client->request(settings, headers, body, cb, lp);
+}
+
 } // namespace http
 } // namespace mk

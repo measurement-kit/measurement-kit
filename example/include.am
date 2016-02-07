@@ -1,5 +1,6 @@
 EXAMPLES = # Empty
 
+include example/http/include.am
 include example/ooni/include.am
 
 if BUILD_EXAMPLES

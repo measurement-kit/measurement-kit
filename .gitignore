@@ -114,6 +114,7 @@ __venv__
 example/ooni/dns_injection
 example/ooni/http_invalid_request_line
 example/ooni/tcp_connect
+example/http/request
 
 # files being edited
 *.swp
