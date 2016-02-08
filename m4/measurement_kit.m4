@@ -97,10 +97,12 @@ AC_DEFUN([MKIT_AM_JANSSON], [
   fi
   if test "$MKIT_WHICH_JANSSON" = "builtin"; then
     AC_MSG_WARN([Using builtin jansson])
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/jansson/src"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/jansson/src"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/jansson/jansson/src"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/third_party/jansson/jansson/src"
     LIBS="$LIBS -ljansson"
-    AC_CONFIG_SUBDIRS([src/ext/jansson])
+    AC_CONFIG_FILES([third_party/jansson/Makefile
+                     third_party/jansson/configure])
+    AC_CONFIG_SUBDIRS([third_party/jansson])
   fi
   AM_CONDITIONAL([USE_BUILTIN_JANSSON],
                  [test "$MKIT_WHICH_JANSSON" = "builtin"])
@@ -131,11 +133,13 @@ AC_DEFUN([MKIT_AM_LIBEVENT], [
   fi
   if test "$MKIT_WHICH_LIBEVENT" = "builtin"; then
     AC_MSG_WARN([Using builtin libevent])
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/libevent/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_builddir)/src/ext/libevent/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libevent"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/libevent/libevent/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_builddir)/third_party/libevent/libevent/include"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/third_party/libevent/libevent"
     LIBS="$LIBS -levent -levent_pthreads"
-    AC_CONFIG_SUBDIRS([src/ext/libevent])
+    AC_CONFIG_FILES([third_party/libevent/Makefile
+                     third_party/libevent/configure])
+    AC_CONFIG_SUBDIRS([third_party/libevent])
   fi
   AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
                  [test "$MKIT_WHICH_LIBEVENT" = "builtin"])
@@ -164,10 +168,12 @@ AC_DEFUN([MKIT_AM_LIBMAXMINDDB], [
   fi
   if test $MKIT_WHICH_LIBMAXMINDDB = "builtin"; then
     AC_MSG_WARN([Using builtin libmaxminddb])
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/libmaxminddb/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libmaxminddb/src"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/libmaxminddb/libmaxminddb/include"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/third_party/libmaxminddb/libmaxminddb/src"
     LIBS="$LIBS -lmaxminddb"
-    AC_CONFIG_SUBDIRS([src/ext/libmaxminddb])
+    AC_CONFIG_FILES([third_party/libmaxminddb/Makefile
+                     third_party/libmaxminddb/configure])
+    AC_CONFIG_SUBDIRS([third_party/libmaxminddb])
   fi
   AM_CONDITIONAL([USE_BUILTIN_LIBMAXMINDDB],
                  [test "$MKIT_WHICH_LIBMAXMINDDB" = "builtin"])

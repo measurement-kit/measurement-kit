@@ -1,0 +1,104 @@
+real_dir = @abs_top_builddir@/third_party/jansson/jansson
+PHONIES = # Empty
+
+PHONIES += all
+all:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) all
+
+PHONIES += distdir
+distdir:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) distdir
+
+PHONIES += install
+install:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) install
+
+PHONIES += install-data
+install-data:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) install-data
+
+PHONIES += install-exec
+install-exec:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) install-exec
+
+PHONIES += uninstall
+uninstall:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) uninstall
+
+PHONIES += install-dvi
+install-dvi:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) install-dvi
+
+PHONIES += install-html
+install-html:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) install-html
+
+PHONIES += install-info
+install-info:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) install-info
+
+PHONIES += install-ps
+install-ps:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) install-ps
+
+PHONIES += install-pdf
+install-pdf:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) install-pdf
+
+PHONIES += installdirs
+installdirs:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) installdirs
+
+PHONIES += check
+check:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) check
+
+PHONIES += installcheck
+installcheck:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) installcheck
+
+PHONIES += mostlyclean
+mostlyclean:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) mostlyclean
+
+PHONIES += clean
+clean:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) clean
+
+PHONIES += distclean
+distclean:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) distclean
+
+PHONIES += maintainer-clean
+maintainer-clean:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) maintainer-clean
+
+PHONIES += dvi
+dvi:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) dvi
+
+PHONIES += pdf
+pdf:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) pdf
+
+PHONIES += ps
+ps:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) ps
+
+PHONIES += info
+info:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) info
+
+PHONIES += html
+html:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) html
+
+PHONIES += tags
+tags:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) tags
+
+PHONIES += ctags
+ctags:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) ctags
+
+.PHONY: $(PHONIES)

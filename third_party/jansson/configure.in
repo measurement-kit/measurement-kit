@@ -1,0 +1,8 @@
+#!/bin/sh -e
+cd @abs_top_builddir@/third_party/jansson
+rm -rf jansson
+git clone --depth=128 https://github.com/akheron/jansson
+cd jansson
+git checkout v2.7-52-ge44b223
+autoreconf -i
+./configure "$@"
