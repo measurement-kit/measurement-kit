@@ -25,60 +25,11 @@ MKIT_ARG_DISABLE_EXAMPLES
 
 # checks for libraries and for header files
 
-MKIT_FIND_LIBEVENT
-if test "$MKIT_LIBEVENT" = "no"; then
-    AC_MSG_WARN([No libevent found: will use the builtin libevent])
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/libevent/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_builddir)/src/ext/libevent/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libevent -levent -levent_pthreads"
-    AC_CONFIG_SUBDIRS([src/ext/libevent])
-fi
-AM_CONDITIONAL([USE_BUILTIN_LIBEVENT], [test "$MKIT_LIBEVENT" = "no"])
-
-MKIT_FIND_JANSSON
-if test "$MKIT_JANSSON" = "no"; then
-    AC_MSG_WARN([No jansson found: will use the builtin jansson])
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/jansson/src"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/jansson/src -ljansson"
-    AC_CONFIG_SUBDIRS([src/ext/jansson])
-fi
-AM_CONDITIONAL([USE_BUILTIN_JANSSON], [test "$MKIT_JANSSON" = "no"])
-
-MKIT_FIND_LIBMAXMINDDB
-if test "$MKIT_LIBMAXMINDDB" = "no"; then
-    AC_MSG_WARN([No libmaxminddb found: will use the builtin libmaxminddb])
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/libmaxminddb/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libmaxminddb/src -lmaxminddb"
-    AC_CONFIG_SUBDIRS([src/ext/libmaxminddb])
-fi
-AM_CONDITIONAL([USE_BUILTIN_LIBMAXMINDDB], [test "$MKIT_LIBMAXMINDDB" = "no"])
-
-MKIT_FIND_BOOST
-if test "$MKIT_BOOST" = "no"; then
-    AC_MSG_WARN([No boost found: will use the builtin boost])
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/assert/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/config/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/core/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/detail/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/iterator/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/mpl/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/predef/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/preprocessor/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/smart_ptr/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/static_assert/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/throw_exception/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/type_traits/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/typeof/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/utility/include"
-fi
-
-MKIT_FIND_YAML_CPP
-if test "$MKIT_YAML_CPP" = "no"; then
-    AC_MSG_WARN([No yaml-cpp found: will use the builtin yaml-cpp])
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/yaml-cpp/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/"
-fi
-AM_CONDITIONAL([USE_BUILTIN_YAMLCPP], [test "$MKIT_YAML_CPP" = "no"])
+MKIT_AM_LIBEVENT
+MKIT_AM_JANSSON
+MKIT_AM_LIBMAXMINDDB
+MKIT_AM_BOOST
+MKIT_AM_YAML_CPP
 
 # checks for types
 # checks for structures

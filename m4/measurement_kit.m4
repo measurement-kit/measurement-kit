@@ -28,171 +28,195 @@ AC_DEFUN([MKIT_ARG_ENABLE_COVERAGE], [
 ])
 
 dnl Find boost and add --with-boost flag
-AC_DEFUN([MKIT_FIND_BOOST], [
-  MKIT_BOOST=yes
+AC_DEFUN([MKIT_AM_BOOST], [
+  MKIT_WHICH_BOOST=system
   AC_ARG_WITH([boost],
     AS_HELP_STRING([--with-boost, Boost C++ library]), [
-      if test "$withval" != "builtin"; then
-        CPPFLAGS="$CPPFLAGS -I$withval/include"
-        LDFLAGS="$LDFLAGS -L$withval/lib"
-      fi], [])
-  AC_LANG_PUSH([C++])
-  AC_CHECK_HEADERS(boost/iterator/iterator_adaptor.hpp, [], [MKIT_BOOST=no])
-  AC_CHECK_HEADERS(boost/iterator/iterator_facade.hpp, [], [MKIT_BOOST=no])
-  AC_CHECK_HEADERS(boost/noncopyable.hpp, [], [MKIT_BOOST=no])
-  AC_CHECK_HEADERS(boost/shared_ptr.hpp, [], [MKIT_BOOST=no])
-  AC_CHECK_HEADERS(boost/smart_ptr/shared_ptr.hpp, [], [MKIT_BOOST=no])
-  AC_CHECK_HEADERS(boost/type_traits.hpp, [], [MKIT_BOOST=no])
-  AC_CHECK_HEADERS(boost/utility/enable_if.hpp, [], [MKIT_BOOST=no])
-  AC_CHECK_HEADERS(boost/utility.hpp, [], [MKIT_BOOST=no])
-  AC_LANG_POP([C++])
-])
-
-dnl Find http-parser and add --with-http-parser flag
-AC_DEFUN([MKIT_FIND_HTTP_PARSER], [
-  MKIT_HTTP_PARSER=yes
-  AC_ARG_WITH([http-parser],
-    AS_HELP_STRING([--with-http-parser, Node.js HTTP parser library]), [
-      if test "$withval" != "builtin"; then
-        CPPFLAGS="$CPPFLAGS -I$withval/include"
-        LDFLAGS="$LDFLAGS -L$withval/lib"
-      fi], [])
-  AC_CHECK_HEADERS(http_parser.h, [], [MKIT_HTTP_PARSER=no])
-  AC_CHECK_LIB(http_parser, http_parser_init, [], [MKIT_HTTP_PARSER=no])
+      MKIT_WHICH_BOOST=$withval], [])
+  if test "$MKIT_WHICH_BOOST" != "builtin"; then
+    saved_CPPFLAGS=$CPPFLAGS
+    if test "$MKIT_WHICH_BOOST" != "system"; then
+      CPPFLAGS="-I$MKIT_WHICH_BOOST/include $CPPFLAGS"
+    fi
+    AC_LANG_PUSH([C++])
+    AC_CHECK_HEADERS(boost/iterator/iterator_adaptor.hpp, [],
+                     [MKIT_WHICH_BOOST=no])
+    AC_CHECK_HEADERS(boost/iterator/iterator_facade.hpp, [],
+                     [MKIT_WHICH_BOOST=no])
+    AC_CHECK_HEADERS(boost/noncopyable.hpp, [], [MKIT_WHICH_BOOST=no])
+    AC_CHECK_HEADERS(boost/shared_ptr.hpp, [], [MKIT_WHICH_BOOST=no])
+    AC_CHECK_HEADERS(boost/smart_ptr/shared_ptr.hpp, [], [MKIT_WHICH_BOOST=no])
+    AC_CHECK_HEADERS(boost/type_traits.hpp, [], [MKIT_WHICH_BOOST=no])
+    AC_CHECK_HEADERS(boost/utility/enable_if.hpp, [], [MKIT_WHICH_BOOST=no])
+    AC_CHECK_HEADERS(boost/utility.hpp, [], [MKIT_WHICH_BOOST=no])
+    AC_LANG_POP([C++])
+    if test "$MKIT_WHICH_BOOST" = "no"; then
+      CPPFLAGS=$saved_CPPFLAGS
+      MKIT_WHICH_BOOST=builtin
+    fi
+  fi
+  if test "$MKIT_WHICH_BOOST" = "builtin"; then
+    AC_MSG_WARN([Using builtin boost])
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/assert/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/config/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/core/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/detail/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/iterator/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/mpl/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/predef/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/preprocessor/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/smart_ptr/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/static_assert/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/throw_exception/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/type_traits/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/typeof/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/utility/include"
+  fi
 ])
 
 dnl Find jansson and add --with-jansson flag
-AC_DEFUN([MKIT_FIND_JANSSON], [
-  MKIT_JANSSON=yes
+AC_DEFUN([MKIT_AM_JANSSON], [
+  MKIT_WHICH_JANSSON=system
   AC_ARG_WITH([jansson],
     AS_HELP_STRING([--with-jansson, JSON parse/emit library]), [
-      if test "$withval" != "builtin"; then
-        CPPFLAGS="$CPPFLAGS -I$withval/include"
-        LDFLAGS="$LDFLAGS -L$withval/lib"
-      fi], [])
-  AC_CHECK_HEADERS(jansson.h, [], [MKIT_JANSSON=no])
-  AC_CHECK_LIB(jansson, json_null, [], [MKIT_JANSSON=no])
+      MKIT_WHICH_JANSSON=$withval])
+  if test "$MKIT_WHICH_JANSSON" != "builtin"; then
+    saved_CPPFLAGS=$CPPFLAGS
+    saved_LDFLAGS=$LDFLAGS
+    if test "$MKIT_WHICH_JANSSON" != "system"; then
+      CPPFLAGS="-I$MKIT_WHICH_JANSSON/include $CPPFLAGS"
+      LDFLAGS="-L$MKIT_WHICH_JANSSON/lib $LDFLAGS"
+    fi
+    AC_CHECK_HEADERS(jansson.h, [], [MKIT_WHICH_JANSSON=no])
+    AC_CHECK_LIB(jansson, json_null, [], [MKIT_WHICH_JANSSON=no])
+    if test "$MKIT_WHICH_JANSSON" = "no"; then
+      CPPFLAGS=$saved_CPPFLAGS
+      LDFLAGS=$saved_LDFLAGS
+      MKIT_WHICH_JANSSON=builtin
+    fi
+  fi
+  if test "$MKIT_WHICH_JANSSON" = "builtin"; then
+    AC_MSG_WARN([Using builtin jansson])
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/jansson/src"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/jansson/src"
+    LIBS="$LIBS -ljansson"
+    AC_CONFIG_SUBDIRS([src/ext/jansson])
+  fi
+  AM_CONDITIONAL([USE_BUILTIN_JANSSON],
+                 [test "$MKIT_WHICH_JANSSON" = "builtin"])
 ])
 
 dnl Find libevent and add --with-libevent flag
-AC_DEFUN([MKIT_FIND_LIBEVENT], [
-  MKIT_LIBEVENT=yes
+AC_DEFUN([MKIT_AM_LIBEVENT], [
+  MKIT_WHICH_LIBEVENT=system
   AC_ARG_WITH([libevent],
     AS_HELP_STRING([--with-libevent, asynchronous I/O library]), [
-      if test "$withval" != "builtin"; then
-        CPPFLAGS="$CPPFLAGS -I$withval/include"
-        LDFLAGS="$LDFLAGS -L$withval/lib"
-      fi], [])
-  AC_CHECK_HEADERS(event2/event.h, [], [MKIT_LIBEVENT=no])
-  AC_CHECK_LIB(event, event_new, [], [MKIT_LIBEVENT=no])
-  AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [], [MKIT_LIBEVENT=no])
-  dnl Disable the following because for now we are not using it:
-  dnl AC_CHECK_LIB(event_openssl, bufferevent_openssl_filter_new, [],
-  dnl   [MKIT_LIBEVENT=no])
+      MKIT_WHICH_LIBEVENT=$withval])
+  if test "$MKIT_WHICH_LIBEVENT" != "builtin"; then
+    saved_CPPFLAGS=$CPPFLAGS
+    saved_LDFLAGS=$LDFLAGS
+    if test "$MKIT_WHICH_LIBEVENT" != "system"; then
+      CPPFLAGS="-I$MKIT_WHICH_LIBEVENT/include $CPPFLAGS"
+      LDFLAGS="-L$MKIT_WHICH_LIBEVENT/lib $LDFLAGS"
+    fi
+    AC_CHECK_HEADERS(event2/event.h, [], [MKIT_WHICH_LIBEVENT=no])
+    AC_CHECK_LIB(event, event_new, [], [MKIT_WHICH_LIBEVENT=no])
+    AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [],
+                 [MKIT_WHICH_LIBEVENT=no])
+    if test "$MKIT_WHICH_LIBEVENT" = "no"; then
+      CPPFLAGS=$saved_CPPFLAGS
+      LDFLAGS=$saved_LDFLAGS
+      MKIT_WHICH_LIBEVENT=builtin
+    fi
+  fi
+  if test "$MKIT_WHICH_LIBEVENT" = "builtin"; then
+    AC_MSG_WARN([Using builtin libevent])
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/libevent/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_builddir)/src/ext/libevent/include"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libevent"
+    LIBS="$LIBS -levent -levent_pthreads"
+    AC_CONFIG_SUBDIRS([src/ext/libevent])
+  fi
+  AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
+                 [test "$MKIT_WHICH_LIBEVENT" = "builtin"])
 ])
 
 dnl Find libmaxminddb and add --with-libmaxminddb flag
-AC_DEFUN([MKIT_FIND_LIBMAXMINDDB], [
-  MKIT_LIBMAXMINDDB=yes
+AC_DEFUN([MKIT_AM_LIBMAXMINDDB], [
+  MKIT_WHICH_LIBMAXMINDDB=system
   AC_ARG_WITH([libmaxminddb],
     AS_HELP_STRING([--with-libmaxminddb, MaxMind DB library]), [
-      if test "$withval" != "builtin"; then
-        CPPFLAGS="$CPPFLAGS -I$withval/include"
-        LDFLAGS="$LDFLAGS -L$withval/lib"
-      fi], [])
-  AC_CHECK_HEADERS(maxminddb.h, [], [MKIT_LIBMAXMINDDB=no])
-  AC_CHECK_LIB(maxminddb, MMDB_open, [], [MKIT_LIBMAXMINDDB=no])
-])
-
-dnl Find OpenSSL (or LibReSSL) and add --with-openssl flag
-AC_DEFUN([MKIT_FIND_OPENSSL], [
-  MKIT_OPENSSL=yes
-  AC_ARG_WITH([openssl],
-    AS_HELP_STRING([--with-openssl, OpenSSL-compatible library]), [
-      if test "$withval" != "builtin"; then
-        CPPFLAGS="$CPPFLAGS -I$withval/include"
-        LDFLAGS="$LDFLAGS -L$withval/lib"
-      fi], [])
-  AC_CHECK_HEADERS(openssl/ssl.h, [], [MKIT_OPENSSL=no])
-  AC_CHECK_LIB(crypto, RSA_new, [], [MKIT_OPENSSL=no])
-  AC_CHECK_LIB(ssl, SSL_new, [], [MKIT_OPENSSL=no])
-])
-
-dnl Find tor-libs and add --with-tor-libs flag
-AC_DEFUN([MKIT_FIND_TOR_LIBS], [
-  MKIT_TOR_LIBS=yes
-  AC_ARG_WITH([tor-libs],
-    AS_HELP_STRING([--with-tor-libs, Libraries containing all Tor sources]), [
-      if test "$withval" != "builtin"; then
-        CPPFLAGS="$CPPFLAGS -I$withval/include"
-        LDFLAGS="$LDFLAGS -L$withval/lib"
-      fi], [])
-  AC_CHECK_HEADERS(libtor.h, [], [MKIT_TOR_LIBS=no])
-  saved_LIBS=$LIBS
-  TOR_LIBS_="-ltor -lor-crypto -lkeccak-tiny -led25519_ref10 -led25519_donna"
-  TOR_LIBS_="${TOR_LIBS_} -lcurve25519_donna -lor-trunnel -lor-event -lor"
-  LIBS="${TOR_LIBS_} $LIBS"
-  AC_MSG_CHECKING([whether we can link with Tor])
-  AC_LANG_PUSH([C])
-  AC_COMPILE_IFELSE(
-    [AC_LANG_PROGRAM([
-#include <libtor.h>
-    ], [
-const char *args[] = {
-  "tor",
-  "-h",
-  0
-};
-tor_main(3, (char **)args);
-    ])], [AC_MSG_RESULT([yes])],
-    [AC_MSG_RESULT([no])
-     MKIT_TOR_LIBS=no])
-  AC_LANG_POP([C])
-  if test "$MKIT_TOR_LIBS" != "yes"; then
-    LIBS=$saved_LIBS
+      MKIT_WHICH_LIBMAXMINDDB=$withval])
+  if test "$MKIT_WHICH_LIBMAXMINDDB" != "builtin"; then
+    saved_CPPFLAGS=$CPPFLAGS
+    saved_LDFLAGS=$LDFLAGS
+    if test "$MKIT_WHICH_LIBMAXMINDDB" != "system"; then
+      CPPFLAGS="-I$MKIT_WHICH_LIBMAXMINDDB/include $CPPFLAGS"
+      LDFLAGS="-L$MKIT_WHICH_LIBMAXMINDDB/lib $LDFLAGS"
+    fi
+    AC_CHECK_HEADERS(maxminddb.h, [], [MKIT_WHICH_LIBMAXMINDDB=no])
+    AC_CHECK_LIB(maxminddb, MMDB_open, [], [MKIT_WHICH_LIBMAXMINDDB=no])
+    if test "$MKIT_WHICH_LIBMAXMINDDB" = "no"; then
+      CPPFLAGS=$saved_CPPFLAGS
+      LDFLAGS=$saved_LDFLAGS
+      MKIT_WHICH_LIBMAXMINDDB=builtin
+    fi
   fi
+  if test $MKIT_WHICH_LIBMAXMINDDB = "builtin"; then
+    AC_MSG_WARN([Using builtin libmaxminddb])
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/libmaxminddb/include"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libmaxminddb/src"
+    LIBS="$LIBS -lmaxminddb"
+    AC_CONFIG_SUBDIRS([src/ext/libmaxminddb])
+  fi
+  AM_CONDITIONAL([USE_BUILTIN_LIBMAXMINDDB],
+                 [test "$MKIT_WHICH_LIBMAXMINDDB" = "builtin"])
 ])
 
 dnl Find yaml-cpp and add --with-yaml-cpp flag
-AC_DEFUN([MKIT_FIND_YAML_CPP], [
-  MKIT_YAML_CPP=yes
+AC_DEFUN([MKIT_AM_YAML_CPP], [
+  MKIT_WHICH_YAML_CPP=system
   AC_ARG_WITH([yaml-cpp],
     AS_HELP_STRING([--with-yaml-cpp, YAML parser/emitter library]), [
-      if test "$withval" != "builtin"; then
-        CPPFLAGS="$CPPFLAGS -I$withval/include"
-        LDFLAGS="$LDFLAGS -L$withval/lib"
-      fi], [])
-  AC_LANG_PUSH([C++])
-  AC_CHECK_HEADERS(yaml-cpp/yaml.h, [], [MKIT_YAML_CPP=no])
-  saved_LIBS=$LIBS
-  LIBS="-lyaml-cpp $LIBS"
-  AC_MSG_CHECKING([whether we can link with yaml-cpp])
-  AC_COMPILE_IFELSE(
-    [AC_LANG_PROGRAM([
+      MKIT_WHICH_YAML_CPP=$withval])
+  if test "$MKIT_WHICH_YAML_CPP" != "builtin"; then
+    saved_CPPFLAGS=$CPPFLAGS
+    saved_LDFLAGS=$LDFLAGS
+    if test "$MKIT_WHICH_YAML_CPP" != "system"; then
+      CPPFLAGS="-I$MKIT_WHICH_YAML_CPP/include $CPPFLAGS"
+      LDFLAGS="-L$MKIT_WHICH_YAML_CPP/lib $LDFLAGS"
+    fi
+    saved_LIBS=$LIBS
+    LIBS="-lyaml-cpp $LIBS"
+    AC_LANG_PUSH([C++])
+    AC_CHECK_HEADERS(yaml-cpp/yaml.h, [], [MKIT_WHICH_YAML_CPP=no])
+    AC_MSG_CHECKING([whether we can link with yaml-cpp])
+    dnl XXX link
+    AC_COMPILE_IFELSE(
+      [AC_LANG_PROGRAM([
 #include <yaml-cpp/yaml.h>
-    ], [
+      ], [
 YAML::Node node;
 node = 3.14;
-    ])], [AC_MSG_RESULT([yes])],
-    [AC_MSG_RESULT([no])
-     MKIT_YAML_CPP=no])
-  AC_LANG_POP([C++])
-  if test "$MKIT_YAML_CPP" != "yes"; then
-    LIBS=$saved_LIBS
+      ])], [AC_MSG_RESULT([yes])],
+      [AC_MSG_RESULT([no])
+      MKIT_WHICH_YAML_CPP=no])
+    AC_LANG_POP([C++])
+    if test "$MKIT_WHICH_YAML_CPP" = "no"; then
+      CPPFLAGS=$saved_CPPFLAGS
+      LDFLAGS=$saved_LDFLAGS
+      LIBS=$saved_LIBS
+      MKIT_WHICH_YAML_CPP=builtin
+    fi
   fi
-])
-
-dnl Find zlib and add --with-zlib flag
-AC_DEFUN([MKIT_FIND_ZLIB], [
-  MKIT_ZLIB=yes
-  AC_ARG_WITH([zlib],
-    AS_HELP_STRING([--with-zlib, The zlib library]), [
-      if test "$withval" != "builtin"; then
-        CPPFLAGS="$CPPFLAGS -I$withval/include"
-        LDFLAGS="$LDFLAGS -L$withval/lib"
-      fi], [])
-  AC_CHECK_HEADERS(zlib.h, [], [MKIT_ZLIB=no])
-  AC_CHECK_LIB(z, inflate, [], [MKIT_ZLIB=no])
+  if test "$MKIT_WHICH_YAML_CPP" = "builtin"; then
+    AC_MSG_WARN([Using builtin yaml-cpp])
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/yaml-cpp/include"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/"
+    dnl XXX here we should also link when we will use cmake
+  fi
+  AM_CONDITIONAL([USE_BUILTIN_YAMLCPP],
+                 [test "$MKIT_WHICH_YAML_CPP" = "builtin"])
 ])
 
 dnl Make sure that the compiler supports C++11
@@ -239,15 +263,11 @@ AC_DEFUN([MKIT_ADD_COVERAGE_FLAGS_IF_NEEDED], [
 dnl Print what has been configured by ./configure
 AC_DEFUN([MKIT_PRINT_SUMMARY], [
   echo "==== dependencies found ===="
-  echo "boost         : $MKIT_BOOST"
-  echo "http_parser   : $MKIT_HTTP_PARSER"
-  echo "jansson       : $MKIT_JANSSON"
-  echo "libevent      : $MKIT_LIBEVENT"
-  echo "libmaxminddb  : $MKIT_LIBMAXMINDDB"
-  echo "openssl       : $MKIT_OPENSSL"
-  echo "tor_libs      : $MKIT_TOR_LIBS"
-  echo "yaml-cpp      : $MKIT_YAML_CPP"
-  echo "zlib          : $MKIT_ZLIB"
+  echo "boost         : $MKIT_WHICH_BOOST"
+  echo "jansson       : $MKIT_WHICH_JANSSON"
+  echo "libevent      : $MKIT_WHICH_LIBEVENT"
+  echo "libmaxminddb  : $MKIT_WHICH_LIBMAXMINDDB"
+  echo "yaml-cpp      : $MKIT_WHICH_YAML_CPP"
   echo ""
   echo "==== configured flags ===="
   echo "CPPFLAGS      : $CPPFLAGS"
