@@ -1,0 +1,55 @@
+diff --git a/Makefile b/Makefile
+index 33c8ba0..407bc46 100644
+--- a/Makefile
++++ b/Makefile
+@@ -62,6 +62,8 @@ INCLUDEDIR = $(PREFIX)/include
+ ifneq (darwin,$(PLATFORM))
+ # TODO(bnoordhuis) The native SunOS linker expects -h rather than -soname...
+ LDFLAGS_LIB += -Wl,-soname=$(SONAME)
++else
++LDFLAGS_LIB += -install_name $(LIBDIR)/$(SONAME)
+ endif
+ 
+ test: test_g test_fast
+@@ -101,9 +103,14 @@ test-valgrind: test_g
+ libhttp_parser.o: http_parser.c http_parser.h Makefile
+ 	$(CC) $(CPPFLAGS_FAST) $(CFLAGS_LIB) -c http_parser.c -o libhttp_parser.o
+ 
+-library: libhttp_parser.o
++$(SONAME): libhttp_parser.o
+ 	$(CC) $(LDFLAGS_LIB) -o $(SONAME) $<
+ 
++libhttp_parser.a: http_parser.o
++	$(AR) $(ARFLAGS) libhttp_parser.a $<
++
++library: $(SONAME) libhttp_parser.a
++
+ package: http_parser.o
+ 	$(AR) rcs libhttp_parser.a http_parser.o
+ 
+@@ -123,14 +130,19 @@ tags: http_parser.c http_parser.h test.c
+ 	ctags $^
+ 
+ install: library
+-	$(INSTALL) -D  http_parser.h $(INCLUDEDIR)/http_parser.h
+-	$(INSTALL) -D $(SONAME) $(LIBDIR)/$(SONAME)
+-	ln -s $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
++	$(INSTALL) -d $(INCLUDEDIR)
++	$(INSTALL) http_parser.h $(INCLUDEDIR)/http_parser.h
++	$(INSTALL) -d $(LIBDIR)
++	$(INSTALL) $(SONAME) $(LIBDIR)/$(SONAME)
++	$(INSTALL) libhttp_parser.a $(LIBDIR)/libhttp_parser.a
++	ln -sf $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
+ 
+ install-strip: library
+-	$(INSTALL) -D  http_parser.h $(INCLUDEDIR)/http_parser.h
+-	$(INSTALL) -D -s $(SONAME) $(LIBDIR)/$(SONAME)
+-	ln -s $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
++	$(INSTALL) -d $(INCLUDEDIR)
++	$(INSTALL) http_parser.h $(INCLUDEDIR)/http_parser.h
++	$(INSTALL) -d $(LIBDIR)
++	$(INSTALL) -s $(SONAME) $(LIBDIR)/$(SONAME)
++	ln -sf $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
+ 
+ uninstall:
+ 	rm $(INCLUDEDIR)/http_parser.h

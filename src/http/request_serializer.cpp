@@ -5,7 +5,7 @@
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/http.hpp>
 #include "src/http/request_serializer.hpp"
-#include "ext/http-parser/http_parser.h"
+#include <http_parser.h>
 
 #include <string.h>
 #include <iosfwd>

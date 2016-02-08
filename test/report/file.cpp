@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/ext/Catch/single_include/catch.hpp"
+#include <catch.hpp>
 
 #include <ctime>
 #include "src/report/file_reporter.hpp"
