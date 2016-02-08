@@ -57,20 +57,22 @@ AC_DEFUN([MKIT_AM_BOOST], [
   fi
   if test "$MKIT_WHICH_BOOST" = "builtin"; then
     AC_MSG_WARN([Using builtin boost])
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/assert/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/config/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/core/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/detail/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/iterator/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/mpl/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/predef/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/preprocessor/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/smart_ptr/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/static_assert/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/throw_exception/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/type_traits/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/typeof/include"
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/boost/utility/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/assert/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/config/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/core/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/detail/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/iterator/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/mpl/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/predef/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/preprocessor/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/smart_ptr/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/static_assert/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/throw_exception/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/type_traits/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/typeof/include"
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/boost/utility/include"
+    AC_CONFIG_FILES([third_party/boost/configure])
+    AC_CONFIG_SUBDIRS([third_party/boost])
   fi
 ])
 

@@ -1,4 +1,5 @@
-#!/bin/sh -e
+#!/bin/sh
+set -e  # because parent `./configure` calls us using `$SHELL script-name`
 cd @abs_top_builddir@/third_party/jansson
 rm -rf jansson
 git clone --depth=128 https://github.com/akheron/jansson

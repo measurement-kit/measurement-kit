@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e  # because parent `./configure` calls us using `$SHELL script-name`
+
+cd @abs_top_builddir@/third_party/boost
+
+clone() {
+  rm -rf $1
+  git clone --depth 50 -b master https://github.com/boostorg/$1
+  (cd $1 && git checkout $2)
+}
+
+clone assert boost-1.59.0
+clone config boost-1.59.0
+clone core boost-1.59.0-8-g3add966
+clone detail boost-1.59.0
+clone iterator boost-1.59.0
+clone mpl boost-1.59.0
+clone predef boost-1.59.0
+clone preprocessor boost-1.59.0
+clone smart_ptr boost-1.59.0
+clone static_assert boost-1.59.0
+clone throw_exception boost-1.59.0
+clone type_traits boost-1.59.0
+clone typeof boost-1.59.0
+clone utility boost-1.59.0
