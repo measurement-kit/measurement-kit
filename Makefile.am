@@ -9,14 +9,13 @@ ACLOCAL_AMFLAGS = -I m4
 
 LIBMEASUREMENT_KIT_I_FLAGS = -I $(top_srcdir)/include
 LIBMEASUREMENT_KIT_I_FLAGS += -I $(top_srcdir)/src
-LIBMEASUREMENT_KIT_W_FLAGS = -Wall -Wextra -pedantic
 
 VERSION_INFO = 0:1:0
-AM_CFLAGS = -pthread $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
-AM_CXXFLAGS = -pthread $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
+AM_CFLAGS = -Wall -Wextra -pedantic $(LIBMEASUREMENT_KIT_I_FLAGS)
+AM_CXXFLAGS = $(LIBMEASUREMENT_KIT_I_FLAGS)
 
 lib_LTLIBRARIES =  # Empty
-libmeasurement_kit_la_LDFLAGS = -pthread -version-info $(VERSION_INFO) -lyaml-cpp
+libmeasurement_kit_la_LDFLAGS = -version-info $(VERSION_INFO)
 libmeasurement_kit_la_SOURCES =  # Empty
 
 noinst_LTLIBRARIES =  # Empty

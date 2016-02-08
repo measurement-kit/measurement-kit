@@ -10,7 +10,9 @@ before_install:
   - sudo apt-get install tor
   - pip install --user cpp-coveralls
 
-install: autoreconf -i
+install:
+  - autoreconf -i
+  - ./build/dependency all
 
 # Only measure coverage with clang for now because I cannot manage to
 # convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
@@ -19,13 +21,15 @@ script:
   - if [ "$CXX" = "clang++" ]; then
       ./configure -q --with-libevent=builtin --with-yaml-cpp=builtin
                      --with-boost=builtin --with-jansson=builtin
-                     --with-libmaxminddb=builtin
+                     --with-libmaxminddb=builtin --with-Catch=builtin
+                     --with-http-parser=builtin
                      CFLAGS=--coverage CXXFLAGS=--coverage
                      LDFLAGS=--coverage;
     else
       ./configure -q --with-libevent=builtin --with-yaml-cpp=builtin
                      --with-boost=builtin --with-jansson=builtin
-                     --with-libmaxminddb=builtin;
+                     --with-libmaxminddb=builtin --with-Catch=builtin
+                     --with-http-parser=builtin;
     fi
   - make -j2 V=0
   - make -j2 check-am V=0

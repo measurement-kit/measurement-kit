@@ -1,0 +1,7 @@
+pkg_name=libmaxminddb
+pkg_repository=https://github.com/measurement-kit/$pkg_name
+pkg_clone_flags="--recursive $pkg_clone_flags"
+
+# Fix for the "missing _rpl_malloc() symbol" issue when cross-linking
+# See <http://wiki.buici.com/xwiki/bin/view/Programing+C+and+C%2B%2B/Autoconf+and+RPL_MALLOC>
+export ac_cv_func_malloc_0_nonnull=yes
