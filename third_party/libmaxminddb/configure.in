@@ -1,7 +1,7 @@
 #!/bin/sh -e
 cd @abs_top_builddir@/third_party/libmaxminddb
 rm -rf libmaxminddb
-git clone --recursive --depth=8 https://github.com/maxmind/libmaxminddb
+git clone --recursive --depth=8 https://github.com/measurement-kit/libmaxminddb
 cd libmaxminddb
 autoreconf -i
 ./configure "$@"

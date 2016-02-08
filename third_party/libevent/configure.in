@@ -1,7 +1,8 @@
 #!/bin/sh -e
 cd @abs_top_builddir@/third_party/libevent
 rm -rf libevent
-git clone --branch=patches-2.0 --depth=8 https://github.com/libevent/libevent
+git clone --branch=patches-2.0 --depth=8                                       \
+  https://github.com/measurement-kit/libevent
 cd libevent
 ./autogen.sh
 ./configure "$@"
