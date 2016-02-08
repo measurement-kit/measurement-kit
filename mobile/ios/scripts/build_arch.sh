@@ -33,22 +33,25 @@ export CXX="/usr/bin/g++ -arch ${ARCH} -miphoneos-version-min=${MINIOSVERSION}"
 export CPPFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
 export CFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
 export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
+export LDFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
 
 (
     cd $SOURCEDIR
+    export pkg_prefix=$BUILDDIR/build/${PLATFORM}/${ARCH}
+    export pkg_configure_flags=$EXTRA_CONFIG
+    ./build/dependency all
     test -x ./configure || autoreconf -i
     ./configure -q --disable-shared \
                 --disable-examples \
-                --with-libevent=builtin \
-                --with-yaml-cpp=builtin \
-                --with-boost=builtin \
-                --with-jansson=builtin \
-                --with-libmaxminddb=builtin \
-                --prefix=/ \
+                --with-libevent=${pkg_prefix} \
+                --with-yaml-cpp=${pkg_prefix} \
+                --with-boost=${pkg_prefix} \
+                --with-jansson=${pkg_prefix} \
+                --with-libmaxminddb=${pkg_prefix} \
+                --with-Catch=${pkg_prefix} \
+                --with-http-parser=${pkg_prefix} \
+                --prefix=$BUILDDIR/build/${PLATFORM}/${ARCH} \
                 $EXTRA_CONFIG
     make -j4 V=0
-    make install-strip V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}
-    rm -rf $BUILDDIR/build/${PLATFORM}/${ARCH}/include
-    make install-data-am V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}
-    make distclean
+    make install
 )
