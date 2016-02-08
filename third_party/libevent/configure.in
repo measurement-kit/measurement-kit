@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e  # because parent `./configure` calls us using `$SHELL script-name`
+cd @abs_top_builddir@/third_party/libevent
+rm -rf libevent
+git clone --branch=patches-2.0 --depth=8                                       \
+  https://github.com/measurement-kit/libevent
+cd libevent
+./autogen.sh
+./configure "$@"
