@@ -1,5 +1,3 @@
-# Makefile.am
-
 # Part of measurement-kit <https://measurement-kit.github.io/>.
 # Measurement-kit is free software. See AUTHORS and LICENSE for more
 # information on the copying conditions.
@@ -51,4 +49,9 @@ endif
 if USE_BUILTIN_LIBEVENT
     DIST_SUBDIRS += third_party/libevent
     SUBDIRS += third_party/libevent
+endif
+
+if USE_BUILTIN_YAML_CPP
+    DIST_SUBDIRS += third_party/yaml-cpp
+    SUBDIRS += third_party/yaml-cpp
 endif

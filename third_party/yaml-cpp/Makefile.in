@@ -1,0 +1,82 @@
+real_dir = @abs_top_builddir@/third_party/yaml-cpp/yaml-cpp
+PHONIES = # Empty
+
+PHONIES += all
+all:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) all
+
+PHONIES += distdir
+distdir:
+
+PHONIES += install
+install:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) install
+
+PHONIES += install-data
+install-data:
+
+PHONIES += install-exec
+install-exec:
+
+PHONIES += uninstall
+uninstall:
+
+PHONIES += install-dvi
+install-dvi:
+
+PHONIES += install-html
+install-html:
+
+PHONIES += install-info
+install-info:
+
+PHONIES += install-ps
+install-ps:
+
+PHONIES += install-pdf
+install-pdf:
+
+PHONIES += installdirs
+installdirs:
+
+PHONIES += check
+check:
+
+PHONIES += installcheck
+installcheck:
+
+PHONIES += mostlyclean
+mostlyclean:
+
+PHONIES += clean
+clean:
+	cd $(real_dir) && $(MAKE) $(AM_MAKEFLAGS) clean
+
+PHONIES += distclean
+distclean:
+
+PHONIES += maintainer-clean
+maintainer-clean:
+
+PHONIES += dvi
+dvi:
+
+PHONIES += pdf
+pdf:
+
+PHONIES += ps
+ps:
+
+PHONIES += info
+info:
+
+PHONIES += html
+html:
+
+PHONIES += tags
+tags:
+
+PHONIES += ctags
+ctags:
+
+.PHONY: $(PHONIES)

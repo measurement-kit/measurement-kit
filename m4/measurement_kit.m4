@@ -199,8 +199,7 @@ AC_DEFUN([MKIT_AM_YAML_CPP], [
     AC_LANG_PUSH([C++])
     AC_CHECK_HEADERS(yaml-cpp/yaml.h, [], [MKIT_WHICH_YAML_CPP=no])
     AC_MSG_CHECKING([whether we can link with yaml-cpp])
-    dnl XXX link
-    AC_COMPILE_IFELSE(
+    AC_LINK_IFELSE(
       [AC_LANG_PROGRAM([
 #include <yaml-cpp/yaml.h>
       ], [
@@ -219,11 +218,14 @@ node = 3.14;
   fi
   if test "$MKIT_WHICH_YAML_CPP" = "builtin"; then
     AC_MSG_WARN([Using builtin yaml-cpp])
-    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/src/ext/yaml-cpp/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/"
-    dnl XXX here we should also link when we will use cmake
+    CPPFLAGS="$CPPFLAGS -I\$(top_srcdir)/third_party/yaml-cpp/yaml-cpp/include"
+    LDFLAGS="$LDFLAGS -L\$(top_builddir)/third_party/yaml-cpp/yaml-cpp/"
+    LIBS="$LIBS -lyaml-cpp"
+    AC_CONFIG_FILES([third_party/yaml-cpp/Makefile
+                     third_party/yaml-cpp/configure])
+    AC_CONFIG_SUBDIRS([third_party/yaml-cpp])
   fi
-  AM_CONDITIONAL([USE_BUILTIN_YAMLCPP],
+  AM_CONDITIONAL([USE_BUILTIN_YAML_CPP],
                  [test "$MKIT_WHICH_YAML_CPP" = "builtin"])
 ])
 

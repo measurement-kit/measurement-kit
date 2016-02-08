@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e  # because parent `./configure` calls us using `$SHELL script-name`
+cd @abs_top_builddir@/third_party/yaml-cpp
+rm -rf yaml-cpp
+git clone --depth=128 https://github.com/jbeder/yaml-cpp
+cd yaml-cpp
+git checkout release-0.5.2-16-g97d56c3
+BOOST_INCLUDE_DIR=""
+PREFIX=""
+while [ $# -gt 0 ]; do
+    argument=$1; shift
+    if [ "$argument" = "--with-boost=builtin" ]; then
+        BOOST_INCLUDE_DIR="@abs_top_builddir@/third_party/boost/include"
+        continue
+    fi
+    if echo "$argument" | grep -q '^--prefix='; then
+        PREFIX=`echo $argument | sed 's/^--prefix=//g'`
+        continue
+    fi
+done
+if [ ! -z "$BOOST_INCLUDE_DIR" ]; then
+    CMAKE_BOOST="'-D Boost_INCLUDE_DIR=$BOOST_INCLUDE_DIR'"
+fi
+if [ ! -z "$PREFIX" ]; then
+    CMAKE_PREFIX="'-D CMAKE_INSTALL_PREFIX=$PREFIX'"
+fi
+cmake $CMAKE_BOOST $CMAKE_PREFIX .
