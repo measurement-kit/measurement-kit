@@ -16,19 +16,22 @@ AC_CONFIG_HEADERS([config.h])
 AM_CONDITIONAL([BUILD_TESTS], [test "yes" = "yes"])  # for now, build always
 
 AC_CANONICAL_HOST
-
-# checks for programs
 AC_PROG_INSTALL
-AC_PROG_CXX
 
-MK_AM_ENABLE_EXAMPLES
-
-# checks for libraries
+# Must be before AC_PROG_CXX (see http://stackoverflow.com/questions/11703709)
+MK_AM_ENABLE_COVERAGE
+MK_AM_ADD_COVERAGE_FLAGS_IF_NEEDED
+MK_AM_DISABLE_EXAMPLES
+MK_AM_DISABLE_TESTS
 
 # Must set -pthread before testing for -levent_pthreads
 CFLAGS="$CFLAGS -pthread"
 CXXFLAGS="$CXXFLAGS -pthread"
 LDFLAGS="$LDFLAGS -pthread"
+
+# checks for programs
+AC_PROG_CC
+AC_PROG_CXX
 
 echo ""
 MK_AM_OPENSSL

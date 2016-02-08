@@ -39,6 +39,10 @@ toplevel directory:
 
     ./autogen.sh
 
+In addition to generating `configure`, this script also generates the
+`include.am` file that contains the rules to build measurement-kit,
+the example programs, and the test programs.
+
 At this point you are ready to *configure* Measurement Kit to build
 on your system. The bare minimum requirements to built it are a C++11
 compiler, a C90 compiler, make (not necessarily GNU make), a C++ standard
@@ -48,26 +52,12 @@ of [libc++](http://libcxx.llvm.org/) and [libstdc++](
 https://gcc.gnu.org/libstdc++/). At the moment of writing this tutorial
 we tested Measurement Kit with clang 3.6 and gcc 5.2.
 
-Measurement Kit depends at build time on other pieces of software. At the
-moment of writing this tutorial, it depends on:
-
-- [libevent](https://github.com/libevent/libevent)
-- [jansson](https://github.com/akheron/jansson)
-- [json](https://github.com/nlohmann/json)
-- [libmaxminddb](https://github.com/maxmind/libmaxminddb)
-
-You may want to check the most recent version of [README.md](
-https://github.com/measurement-kit/measurement-kit/blob/master/README.md)
-to check whether the dependencies changed since this tutorial was
-written. If so, please let us know.
-
-By default, if dependencies are not found in the host system, Measurement
-Kit will use a bundled copy of such dependencies. Instead, if they are
-available on host host system, they are used. In the latter case the build
-process is much faster, because less code needs to be compiled.
-
-The `configure` script will warn you if a dependency is missing on the
-host system and a bundled dependency is being used instead.
+Measurement Kit depends at build time on other pieces of software. The
+configure script should check whether each piece of software is installed
+and usable. In case anything is missing, it shall fail providing an
+explanatory message telling you how you could install the missing dependency
+using `apt-get` or `brew` as well as how to use the `./build/dependency`
+script to automatically download, compile, and use this dependency.
 
 To start the `configure` script run:
 
@@ -84,11 +74,9 @@ the standard super-verbose build process.
 If also this step succeeds, you may want to run Measurement Kit tests
 to make sure that everything was compiled correctly. To do so, run:
 
-    make check-am V=0
+    make check V=0
 
-(We prefer `check-am` over `check` because we do not want to also run the
-dependencies tests, in case builtin dependencies were used. Also note that
-some tests requiring network connectivity may fail due to transient
+(Note that some tests requiring network connectivity may fail due to transient
 network errors, even though that is not so common.)
 
 As a final step, to install Measurement Kit under `/usr/local`, you need
@@ -97,8 +85,12 @@ to become *root* and type:
     make install
 
 This will install Measurement Kit headers under `/usr/local/include` and
-Measurement Kit libraries under `/usr/local/lib`. If bundled dependencies
-were compiled, they would be installed under `/usr/local` as well.
+Measurement Kit libraries under `/usr/local/lib`. If you compiled a dependency
+using the `./build/dependency` script, this dependency would not be installed
+and Measurement Kit is not going to work. Of course, it is quite easy to go
+inside the dependency sources (look inside the `third_party` folder created by
+`./build/dependency`) and adjust the configuration such that it installs
+inside `/usr/local`. But, at least for now, this step shall be done manually.
 
 On Linux you may need to update the dynamic linker after you have installed
 to `/usr/local`, running the following command as root:

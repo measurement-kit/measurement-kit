@@ -85,7 +85,7 @@ export pkg_cmake_flags="-DBUILD_SHARED_LIBS=OFF -DCMAKE_AR=${AR} -DCMAKE_RANLIB=
     cd ${ROOTDIR}/build/${ARCH}-${API}
     test -f Makefile && make clean
     echo "Configure with --host=${ARCH} and toolchain ${ANDROID_TOOLCHAIN}"
-    test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && autoreconf -i)
+    test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && ./autogen.sh)
     ${ROOTDIR}/../../configure --host=${ARCH} --with-sysroot=${SYSROOT} \
       --with-libevent=${pkg_prefix} --with-yaml-cpp=${pkg_prefix} \
       --with-boost=${pkg_prefix} --disable-shared \
