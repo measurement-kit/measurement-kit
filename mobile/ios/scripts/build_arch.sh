@@ -12,6 +12,8 @@ ARCH=$2
 if [ "$PLATFORM" = "iPhoneOS" ]; then
     EXTRA_CONFIG="--host=arm-apple-darwin14 --target=arm-apple-darwin14"
 fi
+EXTRA_CONFIG="$EXTRA_CONFIG --disable-shared"
+export pkg_cmake_flags="-DBUILD_SHARED_LIBS=OFF"
 
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
 SOURCEDIR="$ROOTDIR/../../../"
@@ -54,4 +56,5 @@ export LDFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/
                 $EXTRA_CONFIG
     make -j4 V=0
     make install
+    make distclean  # necessary since we build in place
 )
