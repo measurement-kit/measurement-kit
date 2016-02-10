@@ -71,7 +71,7 @@ export RANLIB=${TOOL_PATH}-ranlib
 export STRIP=${TOOL_PATH}-strip
 
 export CPPFLAGS="${CPPFLAGS} --sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_TOOLCHAIN}/include"
-export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib"
+export LDFLAGS="${LDFLAGS} --sysroot=${SYSROOT} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib"
 export LIBS="${LIBS} -lc++_static -latomic -lm"
 
 export pkg_configure_flags="--host=${ARCH} --with-sysroot=${SYSROOT} --disable-shared"
