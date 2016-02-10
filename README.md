@@ -91,24 +91,25 @@ C++11 must be enabled, otherwise certain C++11 features such as
 MeasurementKit includes and unconditionally compiles the
 sources of the following projects:
 
-- [http-parser](https://github.com/joyent/http-parser)
-- [Catch](https://github.com/philsquared/Catch) (for tests only)
 - OpenBSD's [strtonum.c](http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/lib/libc/stdlib/strtonum.c)
 
-MeasurementKit also depends on the following projects (which
-are only conditionally compiled as explained below):
+MeasurementKit also depends on the following projects:
 
+- [http-parser](https://github.com/joyent/http-parser)
+- [Catch](https://github.com/philsquared/Catch) (for tests only)
 - [libevent](https://github.com/libevent/libevent)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
-- selected [boost](https://github.com/boostorg/) libraries (only [the ones required by yaml-cpp](https://github.com/measurement-kit/measurement-kit/tree/master/src/ext/boost))
+- selected [boost](https://github.com/boostorg/) libraries (only the ones
+  required by yaml-cpp)
 - [jansson](https://github.com/akheron/jansson)
 - [libmaxminddb](https://github.com/maxmind/libmaxminddb)
 
 The `./configure` script should check whether all
 the dependencies are in place and should configure the compilers
 properly. If a dependency is not found, `./configure` will
-fall back to the copy of the dependency stored under the
-`src/ext` directory.
+explain you how you could obtain such dependency using `apt-get` or
+`brew` (if applicable) and (in any case) how to build the dependency
+using the `./build/dependency` script.
 
 The vanilla build process is the following:
 
@@ -117,40 +118,46 @@ The vanilla build process is the following:
     make
 
 You can also force `./configure` to select dependencies available
-at specific directories using the following flags:
+at specific directories. Run `./configure --help=short` to see all the
+available `--with-foo` and `--enable-foo` options.
 
-- `--with-libevent=PREFIX` that tells `./configure` to use the
-libevent library and headers installed at PREFIX
+In general, there should be the possibly to specify `--with-foo` for
+every `foo` dependency listed above (e.g., libevent, Catch).
 
-- `--with-yaml-cpp=PREFIX` that tells `./configure` to use the
-yaml-cpp library and headers installed at PREFIX
+The `--with-foo` options accept, in general, one of the following values:
 
-- `--with-boost=PREFIX` that tells `./configure` to use the
-boost headers installed at PREFIX
+- `system`, meaning "use the system-wide dependency"
 
-- `--with-jansson=PREFIX` that tells `./configure` to use the
-jansson library and headers installed at PREFIX
+- `builtin`, meaning "use the builtin dependency" (in this case you
+  should use `./build/dependency foo` to build the `foo` dependency
+  before running `./configure --with-foo=builtin`, of course)
 
-- `--with-libmaxminddb=PREFIX` that tells `./configure` to use the
-libmaxminddb library and headers installed at PREFIX
+- a path, meaning "use that specific path"
 
-In all the above cases you can also specify PREFIX equal to
-`builtin` to force `./configure` to use builtin sources.
-
-For example,
-
-- if libevent is installed at `/opt/local` (meaning that `event.h`
-is `/opt/local/include/event.h` and that `libevent.a` is
-`/opt/local/lib/libevent.a`), use
+For example, to use the system-wide libevent you should run:
 
 ```
-    ./configure --with-libevent=/opt/local
+./configure --with-libevent=system
 ```
 
-- to force-compile the libevent distributed along with MeasurementKit, use
+or, since `system` is the default, just:
 
 ```
-    ./configure --with-libevent=builtin
+./configure
+```
+
+To use the builtin libevent you should run:
+
+```
+./build/dependency libevent          # Build the builtin libevent
+./configure --with-libevent=builtin  # Use the builtin libevent
+```
+
+To use the libevent installed at `/opt/local` (meaning that libevent headers
+are at `/opt/local/include` and libraries at `/opt/local/lib`) run:
+
+```
+./configure --with-libevent=/opt/local
 ```
 
 ### How to test MeasurementKit on a Unix-like system

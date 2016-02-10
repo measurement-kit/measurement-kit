@@ -6,7 +6,7 @@
 #include <measurement_kit/http/error.hpp>
 #include <measurement_kit/http/headers.hpp>
 #include "src/http/request_serializer.hpp"
-#include "ext/http-parser/http_parser.h"
+#include <http_parser.h>
 
 #include <string.h>
 #include <iosfwd>
