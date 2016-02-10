@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
-EXTLIBRARIES="libevent libevent_pthreads libyaml-cpp libjansson libmaxminddb"
+EXTLIBRARIES="libevent libevent_pthreads libhttp_parser libyaml-cpp libjansson libmaxminddb"
 
 
 (
