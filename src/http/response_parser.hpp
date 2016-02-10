@@ -6,7 +6,7 @@
 #define MEASUREMENT_KIT_HTTP_RESPONSE_PARSER_HPP
 
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/http/error.hpp>
+#include <measurement_kit/http.hpp>
 
 #include <functional>
 #include <iosfwd>

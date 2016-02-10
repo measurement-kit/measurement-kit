@@ -9,7 +9,7 @@
 
 #include <measurement_kit/net/buffer.hpp>
 
-#include <measurement_kit/http/headers.hpp>
+#include <measurement_kit/http.hpp>
 
 #include <iosfwd>
 #include <string>

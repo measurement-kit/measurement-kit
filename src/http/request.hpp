@@ -14,9 +14,8 @@
 #include <measurement_kit/net/buffer.hpp>
 #include <measurement_kit/net/error.hpp>
 
-#include <measurement_kit/http/headers.hpp>
+#include <measurement_kit/http.hpp>
 #include "src/http/request_serializer.hpp"
-#include <measurement_kit/http/response.hpp>
 #include "src/http/response_parser.hpp"
 #include "src/http/stream.hpp"
 
