@@ -26,11 +26,13 @@ tests. More in detail it currently implements:
 - [DNS client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/dns/dns.hpp) (with which you can resolve and reverse-resolve A and AAAA
   records using arbitrary name servers)
 
-- [HTTP client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/http/http.hpp) (with which you can send HTTP/1.1 requests and receive
+- [HTTP client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/http.hpp) (with which you can send HTTP/1.1 requests and receive
   and parse the corresponding responses)
 
 - [traceroute for Android](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/traceroute/android.hpp) (with which you can send individual traceroute
   probes with a specified payload and TTL)
+
+- [mlab-ns client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/mlabns.hpp) (with which you can interact with Measurement Lab backend to know the server with which to run tests)
 
 In the short term we plan to add to MeasurementKit:
 
