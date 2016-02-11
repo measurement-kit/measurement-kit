@@ -260,15 +260,17 @@ AC_DEFUN([MKIT_REQUIRE_CXX11], [
   AC_LANG_POP([C++])
 ])
 
-dnl Add as much warnings as possible to CXXFLAGS
-AC_DEFUN([MKIT_ADD_WARNINGS_TO_CXXFLAGS], [
-  BASE_CXXFLAGS="-Wall -Wextra -pedantic"
+dnl Add as much warnings as possible to FLAGS
+AC_DEFUN([MKIT_ADD_WARNINGS_TO_FLAGS], [
+  BASE_FLAGS="-Wall -Wextra -pedantic"
   AC_MSG_CHECKING([whether the C++ compiler is clang++])
   if test echo | $CXX -dM -E - | grep __clang__ > /dev/null; then
     AC_MSG_RESULT([yes])
-    CXXFLAGS="$CXXFLAGS $BASE_CXXFLAGS -Wmissing-prototypes"
+    CXXFLAGS="$CXXFLAGS $BASE_FLAGS -Wmissing-prototypes"
+    CFLAGS="$CFLAGS $BASE_FLAGS -Wmissing-prototypes"
   else
-    CXXFLAGS="$CXXFLAGS $BASE_CXXFLAGS"
+    CXXFLAGS="$CXXFLAGS $BASE_FLAGS"
+    CFLAGS="$CFLAGS $BASE_FLAGS"
     AC_MSG_RESULT([no])
   fi
 ])
@@ -281,9 +283,9 @@ AC_DEFUN([MKIT_ADD_INCLUDE_TO_CPPFLAGS], [
 dnl If needed, add flags required to enable coverage
 AC_DEFUN([MKIT_ADD_COVERAGE_FLAGS_IF_NEEDED], [
   if test "$enable_coverage" = "yes"; then
-    CFLAGS="$CFLAGS --coverage"
-    CXXFLAGS="$CXXFLAGS --coverage"
-    LDFLAGS="$LDFLAGS --coverage"
+    CFLAGS="--coverage $CFLAGS"
+    CXXFLAGS="--coverage $CXXFLAGS"
+    LDFLAGS="--coverage $LDFLAGS"
   fi
 ])
 
@@ -299,6 +301,8 @@ AC_DEFUN([MKIT_PRINT_SUMMARY], [
   echo "yaml-cpp      : $MKIT_WHICH_YAML_CPP"
   echo ""
   echo "==== configured flags ===="
+  echo "CC            : $CC"
+  echo "CFLAGS        : $CFLAGS"
   echo "CPPFLAGS      : $CPPFLAGS"
   echo "CXX           : $CXX"
   echo "CXXFLAGS      : $CXXFLAGS"

@@ -14,20 +14,22 @@ LT_INIT
 AC_CONFIG_HEADERS([config.h])
 
 AC_CANONICAL_HOST
-
-# checks for programs
 AC_PROG_INSTALL
-AC_PROG_CXX
 
+# Must be before AC_PROG_CXX (see http://stackoverflow.com/questions/11703709)
+MKIT_ARG_ENABLE_COVERAGE
+MKIT_ADD_COVERAGE_FLAGS_IF_NEEDED
 MKIT_ARG_DISABLE_EXAMPLES
 MKIT_ARG_DISABLE_TESTS
-
-# checks for libraries and for header files
 
 # Must set -pthread before testing for -levent_pthreads
 CFLAGS="$CFLAGS -pthread"
 CXXFLAGS="$CXXFLAGS -pthread"
 LDFLAGS="$LDFLAGS -pthread"
+
+# checks for programs
+AC_PROG_CC
+AC_PROG_CXX
 
 # Must set -std=c++11 because Catch is C++11
 MKIT_REQUIRE_CXX11
@@ -86,7 +88,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>],
 CXXFLAGS="$measurement_kit_saved_cxxflags $measurement_kit_cxx_stdlib_flags"
 AC_LANG_POP([C++])
 
-MKIT_ADD_WARNINGS_TO_CXXFLAGS
+MKIT_ADD_WARNINGS_TO_FLAGS
 
 # checks for library functions
 

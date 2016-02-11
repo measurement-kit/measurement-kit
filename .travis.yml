@@ -1,45 +1,61 @@
 language: cpp
+sudo: required
+dist: trusty
 
-before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq -y --force-yes gcc-4.8 g++-4.8
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
-  - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 90
-  - sudo apt-get install tor
-  - pip install --user cpp-coveralls
+matrix:
+  fast_finish: true
+  include:
+    - os: linux
+      compiler: g++-5
+      env: MKOK_CXX=g++-5
+#   - os: linux
+#     compiler: g++-5
+#     env: MKOK_CXX=g++-5
+#          VALGRIND=--disable-shared
+    - os: linux
+      compiler: clang-3.6
+      env: MKOK_CXX=clang++-3.6
+#   - os: linux
+#     compiler: clang-3.6
+#     env: MKOK_CXX=clang++-3.6
+#          VALGRIND=--disable-shared
+    - os: linux
+      compiler: g++-5
+      env: COVERAGE=--enable-coverage
+           GCOV=gcov-5
+           MKOK_CXX=g++-5
+           CXXFLAGS=-g
+#   - os: osx
+#     compiler: clang++
+
+addons:
+  apt:
+    sources:
+      - llvm-toolchain-precise-3.6
+      - ubuntu-toolchain-r-test
+    packages:
+      - clang-3.6
+      - g++-5
+      - valgrind
 
 install:
-  - autoreconf -i
-  - ./build/dependency all
+  - if [ "$MKOK_CXX" != "" ]; then export CXX=$MKOK_CXX; fi
 
-# Only measure coverage with clang for now because I cannot manage to
-# convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
-# (For more context see measurement-kit/measurement-kit#255)
+before_script:
+  - if [ "$GCOV" != "" ]; then pip install --user --upgrade cpp-coveralls; fi
+
 script:
-  - if [ "$CXX" = "clang++" ]; then
-      ./configure -q --with-libevent=builtin --with-yaml-cpp=builtin
-                     --with-boost=builtin --with-jansson=builtin
-                     --with-libmaxminddb=builtin --with-Catch=builtin
-                     --with-http-parser=builtin
-                     CFLAGS=--coverage CXXFLAGS=--coverage
-                     LDFLAGS=--coverage;
+  - ./autogen.sh
+  - ./build/dependency all
+  - ./configure -q $COVERAGE $VALGRIND --with-libevent=builtin --with-yaml-cpp=builtin --with-boost=builtin --with-jansson=builtin --with-libmaxminddb=builtin --with-Catch=builtin --with-http-parser=builtin;
+  - if [ "$VALGRIND" != "" ]; then
+      make run-valgrind V=0;
     else
-      ./configure -q --with-libevent=builtin --with-yaml-cpp=builtin
-                     --with-boost=builtin --with-jansson=builtin
-                     --with-libmaxminddb=builtin --with-Catch=builtin
-                     --with-http-parser=builtin;
-    fi
-  - make -j2 V=0
-  - make -j2 check-am V=0
-
-# Silence gcov standard output since it produces way too much output
-after_success:
-  - if [ "$CXX" = "clang++" ]; then
-      coveralls --gcov /usr/bin/gcov-4.6 --exclude src/ext > /dev/null;
+      make check V=0;
     fi
 
-compiler:
-  - clang
-  - g++
+after_script:
+  - if [ "$GCOV" != "" ]; then
+      coveralls --gcov $(which $GCOV) --gcov-options '\-lp'
+                --exclude mkpm_modules --exclude config.h;
+    fi
