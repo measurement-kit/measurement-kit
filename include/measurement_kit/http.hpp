@@ -10,6 +10,7 @@
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/settings.hpp>
+#include <measurement_kit/common/var.hpp>
 #include <set>
 #include <string>
 
@@ -78,6 +79,12 @@ class Client {
     void request(Settings settings, Headers headers, std::string body,
                  RequestCallback callback, Logger *lp = Logger::global());
 
+    /// Get the global HTTP client instance
+    static Var<Client> global() {
+        static Var<Client> singleton(new Client);
+        return singleton;
+    }
+
     Client() {} ///< Default constructor
     ~Client();  ///< Destructor
 
@@ -85,6 +92,17 @@ class Client {
     // TODO: implement all the fancy methods
     //
 };
+
+/// Send HTTP request and receive response.
+/// \param settings Settings for HTTP request.
+/// \param cb Callback called when complete or on error.
+/// \param headers Optional HTTP request headers.
+/// \param body Optional HTTP request body.
+/// \param lp Optional logger.
+/// \param client Optional HTTP client.
+void request(Settings settings, RequestCallback cb, Headers headers = {},
+             std::string body = "", Logger *lp = Logger::global(),
+             Var<Client> client = Client::global());
 
 } // namespace http
 } // namespace mk
