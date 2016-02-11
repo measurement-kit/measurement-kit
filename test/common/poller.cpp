@@ -147,3 +147,9 @@ TEST_CASE("We can clear all name servers and then issue a query") {
         }, nullptr) != nullptr);
     mk::loop();
 }
+
+TEST_CASE("poller.call_soon() works") {
+    mk::Poller poller;
+    poller.call_soon([&poller]() { poller.break_loop(); });
+    poller.loop();
+}
