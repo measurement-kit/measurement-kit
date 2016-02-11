@@ -6,7 +6,7 @@
 #define SRC_OONI_HTTP_TEST_HPP
 
 #include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/http/client.hpp>
+#include <measurement_kit/http.hpp>
 #include "src/ooni/ooni_test.hpp"
 
 namespace mk {

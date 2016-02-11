@@ -5,7 +5,7 @@
 #include <measurement_kit/common/logger.hpp>
 #include "src/http/response_parser.hpp"
 #include <measurement_kit/net/buffer.hpp>
-#include <measurement_kit/http/error.hpp>
+#include <measurement_kit/http.hpp>
 #include "ext/http-parser/http_parser.h"
 
 #include <functional>

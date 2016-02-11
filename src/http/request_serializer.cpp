@@ -3,8 +3,7 @@
 // information on the copying conditions.
 
 #include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/http/error.hpp>
-#include <measurement_kit/http/headers.hpp>
+#include <measurement_kit/http.hpp>
 #include "src/http/request_serializer.hpp"
 #include "ext/http-parser/http_parser.h"
 
