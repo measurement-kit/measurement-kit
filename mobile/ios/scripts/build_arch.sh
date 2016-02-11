@@ -42,7 +42,7 @@ export LDFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/
     export pkg_prefix=$BUILDDIR/build/${PLATFORM}/${ARCH}
     export pkg_configure_flags=$EXTRA_CONFIG
     ./build/dependency all
-    test -x ./configure || autoreconf -i
+    test -x ./configure || ./autogen.sh
     ./configure -q --disable-shared \
                 --disable-examples \
                 --with-libevent=${pkg_prefix} \

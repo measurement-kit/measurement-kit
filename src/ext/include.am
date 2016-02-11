@@ -1,5 +1,0 @@
-noinst_LTLIBRARIES += src/ext/libext.la
-
-src_ext_libext_la_SOURCES = src/ext/strtonum.c
-
-libmeasurement_kit_la_LIBADD += src/ext/libext.la

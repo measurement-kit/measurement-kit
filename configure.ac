@@ -1,5 +1,3 @@
-# configure.ac
-
 # Part of measurement-kit <https://measurement-kit.github.io/>.
 # Measurement-kit is free software. See AUTHORS and LICENSE for more
 # information on the copying conditions.
@@ -22,6 +20,7 @@ AC_PROG_INSTALL
 AC_PROG_CXX
 
 MKIT_ARG_DISABLE_EXAMPLES
+MKIT_ARG_DISABLE_TESTS
 
 # checks for libraries and for header files
 

@@ -1,31 +1,26 @@
-# Makefile.am
-
 # Part of measurement-kit <https://measurement-kit.github.io/>.
 # Measurement-kit is free software. See AUTHORS and LICENSE for more
 # information on the copying conditions.
 
 AUTOMAKE_OPTIONS = foreign 1.9 subdir-objects
-ACLOCAL_AMFLAGS = -I m4
-
-LIBMEASUREMENT_KIT_I_FLAGS = -I $(top_srcdir)/include
-LIBMEASUREMENT_KIT_I_FLAGS += -I $(top_srcdir)/src
+ACLOCAL_AMFLAGS  = -I m4
 
 VERSION_INFO = 0:1:0
-AM_CFLAGS = -Wall -Wextra -pedantic $(LIBMEASUREMENT_KIT_I_FLAGS)
-AM_CXXFLAGS = $(LIBMEASUREMENT_KIT_I_FLAGS)
 
-lib_LTLIBRARIES =  # Empty
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src
+AM_CFLAGS   = -Wall -Wextra -pedantic
+
+lib_LTLIBRARIES               = libmeasurement_kit.la
 libmeasurement_kit_la_LDFLAGS = -version-info $(VERSION_INFO)
-libmeasurement_kit_la_SOURCES =  # Empty
+libmeasurement_kit_la_SOURCES = # Empty
 
-noinst_LTLIBRARIES =  # Empty
-noinst_PROGRAMS =  # Empty
+noinst_PROGRAMS    = # Empty
+ALL_TESTS          = # Empty
 
-include src/include.am
-include example/include.am
-include test/include.am
+include Makefile-gen.am
 
-lib_LTLIBRARIES += libmeasurement_kit.la
+TESTS = $(ALL_TESTS)
+check_PROGRAMS = $(ALL_TESTS)
 
 VALGRIND = valgrind --trace-children=yes --error-exitcode=1 \
                     --dsymutil=yes --leak-check=yes
