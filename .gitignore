@@ -128,3 +128,11 @@ example/http/request
 # sources and compiled binaries
 third_party
 builtin
+
+# TODO: move this above
+example/common/evhelpers-bufferevent-echo
+example/common/evhelpers-bufferevent-get
+example/common/evhelpers-bufferevent-get-ssl
+example/common/evhelpers-event-echo
+test/common/libevent-integration
+test/common/libevent-unit

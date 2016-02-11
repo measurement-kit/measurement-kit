@@ -32,6 +32,8 @@ class Buffer {
 
     ~Buffer() {}
 
+    Evbuffer *as_evbuffer() { return evbuf.get(); }
+
     /*
      * I expect to read (write) from (into) the input (output)
      * evbuffer of a certain bufferevent. It seems to me natural

@@ -39,10 +39,8 @@ addons:
       - valgrind
 
 install:
-  - if [ "$MKOK_CXX" != "" ]; then export CXX=$MKOK_CXX; fi
-
-before_script:
-  - if [ "$GCOV" != "" ]; then pip install --user --upgrade cpp-coveralls; fi
+  - ./autogen.sh
+  - ./build/dependency all
 
 script:
   - ./autogen.sh

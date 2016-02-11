@@ -189,6 +189,8 @@ AC_DEFUN([MKIT_AM_LIBEVENT], [
   AC_CHECK_LIB(event, event_new, [], [MKIT_WHICH_LIBEVENT=no])
   AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [],
                [MKIT_WHICH_LIBEVENT=no])
+  AC_CHECK_LIB(event_openssl, bufferevent_openssl_filter_new, [],
+               [MKIT_WHICH_LIBEVENT=no])
   if test "$MKIT_WHICH_LIBEVENT" = "no"; then
     CPPFLAGS=$saved_CPPFLAGS
     LDFLAGS=$saved_LDFLAGS
@@ -343,13 +345,6 @@ AC_DEFUN([MKIT_ADD_COVERAGE_FLAGS_IF_NEEDED], [
 dnl Print what has been configured by ./configure
 AC_DEFUN([MKIT_PRINT_SUMMARY], [
   echo "==== dependencies ===="
-  echo "boost         : $MKIT_WHICH_BOOST"
-  echo "Catch         : $MKIT_WHICH_CATCH"
-  echo "jansson       : $MKIT_WHICH_JANSSON"
-  echo "http-parser   : $MKIT_WHICH_HTTP_PARSER"
-  echo "libevent      : $MKIT_WHICH_LIBEVENT"
-  echo "libmaxminddb  : $MKIT_WHICH_LIBMAXMINDDB"
-  echo "yaml-cpp      : $MKIT_WHICH_YAML_CPP"
   echo "boost               : $MKIT_WHICH_BOOST"
   echo "Catch               : $MKIT_WHICH_CATCH"
   echo "jansson             : $MKIT_WHICH_JANSSON"

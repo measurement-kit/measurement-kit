@@ -20,14 +20,13 @@ namespace dns {
 /// DNS response.
 class Response {
 
-  protected:
+  public:
     int code = 66 /* = DNS_ERR_UNKNOWN */;
     double rtt = 0.0;
     int ttl = 0;
     char type = 0;
     std::vector<std::string> results;
 
-  public:
     Response(Response &) = default;
     Response &operator=(Response &) = default;
     Response(Response &&) = default;

@@ -9,6 +9,7 @@
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/evbuffer.hpp>
+#include <measurement_kit/common/func.hpp>
 #include <measurement_kit/common/libs.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/maybe.hpp>
