@@ -1,9 +1,15 @@
-libmeasurement_kit_la_LIBADD =  # Empty
+noinst_LTLIBRARIES += src/libsrc.la
+src_libsrc_la_SOURCES =  # Empty
+
+libmeasurement_kit_la_LIBADD = src/libsrc.la
 
 include src/common/include.am
 include src/dns/include.am
 include src/ext/include.am
 include src/http/include.am
+
+src_libsrc_la_SOURCES += src/mlabns.cpp
+
 include src/net/include.am
 include src/ooni/include.am
 include src/report/include.am
@@ -14,6 +20,7 @@ toplevinclude_HEADERS = \
     include/measurement_kit/common.hpp \
     include/measurement_kit/dns.hpp \
     include/measurement_kit/http.hpp \
+    include/measurement_kit/mlabns.hpp \
     include/measurement_kit/net.hpp \
     include/measurement_kit/ooni.hpp \
     include/measurement_kit/report.hpp \
