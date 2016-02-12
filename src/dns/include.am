@@ -7,10 +7,3 @@ src_dns_libdns_la_SOURCES = \
 	src/dns/response.cpp
 
 libmeasurement_kit_la_LIBADD += src/dns/libdns.la
-
-dnsincludedir = $(includedir)/measurement_kit/dns
-dnsinclude_HEADERS = \
-    include/measurement_kit/dns/defines.hpp \
-    include/measurement_kit/dns/error.hpp \
-    include/measurement_kit/dns/resolver.hpp \
-    include/measurement_kit/dns/response.hpp

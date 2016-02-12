@@ -9,7 +9,7 @@
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/var.hpp>
 
-#include <measurement_kit/dns/defines.hpp>
+#include <measurement_kit/dns.hpp>
 
 #include <functional>
 #include <iosfwd>

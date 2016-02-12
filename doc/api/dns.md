@@ -1,5 +1,5 @@
 # NAME
-Resolver -- DNS resolver
+mk::dns -- MeasurementKit DNS library
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -31,6 +31,9 @@ reso.query(
 ```
 
 # DESCRIPTION
+
+The DNS library allows you to issue DNS query and
+to receive the corresponding responses.
 
 The `Resolver` class represents a DNS resolver. When you construct
 a resolver you can specify the following settings:
@@ -73,14 +76,59 @@ The difference between `REVERSE_A`, `REVERSE_AAAA` and `PTR` is that
 an IPv6 address, while for `PTR` you need to construct yourself the
 reversed IP address name to query.
 
-The callback could be called immediately if an error occurs while
-sending the query to the server.
+In case of success, the error argument of the callback is passed an
+instance of `mk::NoError()`. Otherwise, the error that occurred is
+reported. Among all the possible errors, the following are defined by
+MeasurementKit DNS implementation:
 
-# BUGS
 
-Options can only be specified as strings. It would be nice to allow for them
-to be either string or numbers, depending on their semantic.
+- `FormatError`: invalid response format
+- `ServerFailedError`:  server failure
+- `NotExistError`:  the name does not exist
+- `NotImplementedError`:  query not implemented
+- `RefusedError`:  the server refuses to reply
+- `TruncatedError`:  response truncated
+- `UknownError`:  internal evnds error
+- `TimeoutError`:  query timed out
+- `ShutdownError`:  evdns library was shut down
+- `CancelError`:  user cancelled query
+- `NoDataError`:  no data in the response
+
+
+The `Response` class holds the result of an async DNS `Query`. You do not
+typically instantiate a `Response` yourself, rather you receive an instance
+of `Response` in response to a DNS query.
+
+Given a DNS response data can be retrived as it follows:
+
+```C++
+// Get resolved records list
+for (std::string s : resp.get_results()) {
+    std::cout << s << "\n";
+}
+
+// Returns whether the response is authoritative
+std::string authoritative = resp.is_authoritative();
+
+// Return evdns status (this is mainly used internally)
+int code = resp.get_evdns_status();
+
+// Get time to live
+int ttl = resp.get_ttl();
+
+// Get round trip time
+double rtt = resp.get_rtt();
+
+#include <event2/dns.h> // for DNS_IPv4_A
+
+// Get evdns type
+char type = resp.get_type();
+if (type == DNS_IPv4_A) {
+    // do something if request was for IPv4
+}
+
+```
 
 # HISTORY
 
-The `Resolver` class appeared in MeasurementKit 0.1.0.
+The `mk::dns` library appeared in MeasurementKit 0.1.0.
