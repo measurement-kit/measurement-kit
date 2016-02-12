@@ -131,6 +131,11 @@ AC_DEFUN([MKIT_AM_HTTP_PARSER], [
   if test "$MKIT_WHICH_HTTP_PARSER" != "system"; then
     CPPFLAGS="-I$MKIT_WHICH_HTTP_PARSER/include $CPPFLAGS"
     LDFLAGS="-L$MKIT_WHICH_HTTP_PARSER/lib $LDFLAGS"
+    # since http-parser does not use libtool, on Linux we need to tell the
+    # linker its prefix when linking libmeasurement_kit.la
+    if test "$(uname)" = "Linux"; then
+        LDFLAGS="$LDFLAGS -Wl,-rpath=$MKIT_WHICH_HTTP_PARSER/lib"
+    fi
   fi
   AC_CHECK_HEADERS(http_parser.h, [], [MKIT_WHICH_HTTP_PARSER=no])
   AC_CHECK_LIB(http_parser, http_parser_init, [], [MKIT_WHICH_HTTP_PARSER=no])
@@ -213,6 +218,11 @@ AC_DEFUN([MKIT_AM_YAML_CPP], [
   if test "$MKIT_WHICH_YAML_CPP" != "system"; then
     CPPFLAGS="-I$MKIT_WHICH_YAML_CPP/include $CPPFLAGS"
     LDFLAGS="-L$MKIT_WHICH_YAML_CPP/lib $LDFLAGS"
+    # since yaml-cpp does not use libtool, on Linux we need to tell the
+    # linker its prefix when linking libmeasurement_kit.la
+    if test "$(uname)" = "Linux"; then
+        LDFLAGS="$LDFLAGS -Wl,-rpath=$MKIT_WHICH_YAML_CPP/lib"
+    fi
   fi
   saved_LIBS=$LIBS
   LIBS="-lyaml-cpp $LIBS"
