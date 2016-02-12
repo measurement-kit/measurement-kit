@@ -30,6 +30,9 @@ CFLAGS="$CFLAGS -pthread"
 CXXFLAGS="$CXXFLAGS -pthread"
 LDFLAGS="$LDFLAGS -pthread"
 
+# Must set -std=c++11 because Catch is C++11
+MKIT_REQUIRE_CXX11
+
 MKIT_AM_CATCH
 MKIT_AM_LIBEVENT
 MKIT_AM_HTTP_PARSER
@@ -49,8 +52,6 @@ AC_PROG_CC_C99
 if test x"$ac_cv_prog_cc_c99" = xno; then
     AC_MSG_ERROR([a C99 compiler is required])
 fi
-
-MKIT_REQUIRE_CXX11
 
 measurement_kit_saved_cxxflags="$CXXFLAGS"
 CXXFLAGS="-std=c++11"
