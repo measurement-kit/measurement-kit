@@ -183,7 +183,7 @@ system where Xcode and its command line tools have been installed:
 
 ### How to add MeasurementKit to an Xcode project.
 
-The Cocoapods podspec hasn't been submitted yet, but you can already use
+The CocoaPods podspec hasn't been submitted yet, but you can already use
 it in your project adding this line in your Podfile:
 
     pod 'measurement_kit', :git => 'https://github.com/measurement-kit/measurement-kit.git'
