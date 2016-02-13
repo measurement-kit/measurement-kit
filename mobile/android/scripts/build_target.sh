@@ -95,7 +95,12 @@ export pkg_cmake_flags="-DBUILD_SHARED_LIBS=OFF -DCMAKE_AR=${AR} -DCMAKE_RANLIB=
       --prefix=${ROOTDIR}/jni/${DESTDIR_NAME}
     make V=0
     echo "Installing library in ${BASEDIR}/build/${ANDROID_TOOLCHAIN}"
-    make install
+    # The rationale of the following algorithm is to install-strip and do
+    # only install headers we want and do not install extra stuff.
+    # See: https://github.com/measurement-kit/measurement-kit/pull/274/files
+    make install-strip
+    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/include
+    make install-data-am
     cd ${ROOTDIR}/jni/${DESTDIR_NAME}
     rm -rf share
     find lib -type f -name \*.a -exec mv {} . \;
