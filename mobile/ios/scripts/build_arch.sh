@@ -55,6 +55,8 @@ export LDFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/
                 --prefix=$BUILDDIR/build/${PLATFORM}/${ARCH} \
                 $EXTRA_CONFIG
     make -j4 V=0
-    make install
+    make install-strip
+    rm -rf $BUILDDIR/build/${PLATFORM}/${ARCH}/include
+    make install-data-am
     make distclean  # necessary since we build in place
 )
