@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
+test "$pkg_rootdir" != ""
 . $pkg_rootdir/build/spec/$1
-test "$pkg_rootdir" != "" -a "$pkg_name" != ""
+test "$pkg_name" != ""
 cd $pkg_rootdir/third_party/$pkg_name
 if [ -f Makefile ]; then
     $pkg_sudo make $pkg_make_install_flags install

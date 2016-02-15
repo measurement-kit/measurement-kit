@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
+test "$pkg_rootdir" != ""
 . $pkg_rootdir/build/spec/$1
-test "$pkg_rootdir" != "" -a "$pkg_name" != "" -a "$pkg_repository" != ""
+test "$pkg_name" != "" -a "$pkg_repository" != ""
 cd $pkg_rootdir
 if [ ! -d third_party/.cache/$pkg_name ]; then
     git clone $pkg_clone_flags $pkg_repository third_party/.cache/$pkg_name

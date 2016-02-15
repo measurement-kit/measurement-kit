@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
+test "$pkg_rootdir" != ""
 . $pkg_rootdir/build/spec/$1
-test "$pkg_rootdir" != "" -a "$pkg_name" != "" -a "$pkg_prefix" != ""
+test "$pkg_name" != "" -a "$pkg_prefix" != ""
 cd $pkg_rootdir/third_party/$pkg_name
 if [ -x ./autogen.sh ]; then
     ./autogen.sh
