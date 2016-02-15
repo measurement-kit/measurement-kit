@@ -39,8 +39,10 @@ if [ -x build/spec/$1 ]; then
     exec build/spec/$1  # If the spec is executable, pass control to it
 fi
 # Note that the spec has access to $pkg_rootdir
-./build/dependency.d/clone $1
-./build/dependency.d/patch $1
-./build/dependency.d/configure $1
-./build/dependency.d/make $1
-./build/dependency.d/make-install $1
+for step in clone patch configure make install; do
+    if [ -x ./build/spec/$1-$step ]; then
+        ./build/spec/$1-$step $1
+    else
+        ./build/dependency.d/$step $1
+    fi
+done
