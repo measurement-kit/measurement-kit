@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+. $pkg_rootdir/build/spec/$1
+test "$pkg_rootdir" != "" -a "$pkg_name" != "" -a "$pkg_prefix" != ""
+cd $pkg_rootdir/third_party/$pkg_name
+if [ -x ./autogen.sh ]; then
+    ./autogen.sh
+elif [ -f ./configure.ac ]; then
+    autoreconf -i
+fi
+if [ -x ./configure ]; then
+    ./configure --prefix=$pkg_prefix $pkg_configure_flags
+elif [ -f ./CMakeLists.txt ]; then
+    cmake -D CMAKE_INSTALL_PREFIX=$pkg_prefix $pkg_cmake_flags .
+fi
