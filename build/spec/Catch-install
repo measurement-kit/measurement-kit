@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+. $pkg_rootdir/build/spec/$1
+test "$pkg_rootdir" != "" -a "$pkg_name" != "" -a "$pkg_prefix" != ""
+cd $pkg_rootdir/third_party/$pkg_name
+install -dv $pkg_prefix/include
+install -v single_include/catch.hpp $pkg_prefix/include
