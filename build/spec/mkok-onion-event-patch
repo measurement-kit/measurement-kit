@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+test "$pkg_rootdir" != ""
+. $pkg_rootdir/build/spec/$1
+cd $pkg_rootdir/third_party/tor
+
+if [ "$mkpm_cross" = "ios" ]; then
+    git apply -v $pkg_rootdir/build/patch/mkok-onion-event/001.diff
+fi

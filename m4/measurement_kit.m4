@@ -65,6 +65,14 @@ AC_DEFUN([MKIT_REQUIRE_DEPENDENCIES], [
 	MKIT_HOWTO_INSTALL([libmaxminddb], [libmaxminddb-dev], [libmaxminddb])
         SHOULD_EXIT=yes
     fi
+    if test "$MKIT_WHICH_MKOK_ONION_EVENT" = "no"; then
+	MKIT_HOWTO_INSTALL([], [], [mkok-onion-event])
+        SHOULD_EXIT=yes
+    fi
+    if test "$MKIT_WHICH_OPENSSL" = "no"; then
+        MKIT_HOWTO_INSTALL([openssl], [libssl-dev], [])
+        SHOULD_EXIT=yes
+    fi
     if test "$MKIT_WHICH_YAML_CPP" = "no"; then
 	MKIT_HOWTO_INSTALL([yaml-cpp], [libyaml-cpp-dev], [yaml-cpp])
         SHOULD_EXIT=yes
@@ -207,6 +215,49 @@ AC_DEFUN([MKIT_AM_LIBMAXMINDDB], [
   fi
 ])
 
+dnl Find libmkok-onion-event and add --with-libmkok-onion-event flag
+AC_DEFUN([MKIT_AM_MKOK_ONION_EVENT], [
+  MKIT_WHICH_MKOK_ONION_EVENT=system
+  AC_ARG_WITH([mkok-onion-event],
+    AS_HELP_STRING([--with-mkok-onion-event, MeasurementKit's fork of Tor]), [
+      MKIT_WHICH_MKOK_ONION_EVENT=$withval])
+  saved_CPPFLAGS=$CPPFLAGS
+  saved_LDFLAGS=$LDFLAGS
+  if test "$MKIT_WHICH_MKOK_ONION_EVENT" != "system"; then
+    CPPFLAGS="-I$MKIT_WHICH_MKOK_ONION_EVENT/include $CPPFLAGS"
+    LDFLAGS="-L$MKIT_WHICH_MKOK_ONION_EVENT/lib $LDFLAGS"
+  fi
+  AC_CHECK_HEADERS(mkok-onion-event.h, [], [MKIT_WHICH_MKOK_ONION_EVENT=no])
+  AC_CHECK_LIB(mkok-onion-event, tor_main, [], [MKIT_WHICH_MKOK_ONION_EVENT=no])
+  if test "$MKIT_WHICH_MKOK_ONION_EVENT" = "no"; then
+    CPPFLAGS=$saved_CPPFLAGS
+    LDFLAGS=$saved_LDFLAGS
+  fi
+])
+
+dnl Find OpenSSL (or LibReSSL) and add --with-openssl flag
+dnl FIXME This macro fails to avoid linking with OpenSSL 0.9.8 on macosx
+dnl by default, which is too old and leads to crashes
+AC_DEFUN([MKIT_AM_OPENSSL], [
+  MKIT_WHICH_OPENSSL=system
+  AC_ARG_WITH([openssl],
+    AS_HELP_STRING([--with-openssl, OpenSSL-compatible library]), [
+      MKIT_WHICH_OPENSSL=$withval])
+  saved_CPPFLAGS=$CPPFLAGS
+  saved_LDFLAGS=$LDFLAGS
+  if test "$MKIT_WHICH_OPENSSL" != "system"; then
+    CPPFLAGS="-I$MKIT_WHICH_OPENSSL/include $CPPFLAGS"
+    LDFLAGS="-L$MKIT_WHICH_OPENSSL/lib $LDFLAGS"
+  fi
+  AC_CHECK_HEADERS(openssl/ssl.h, [], [AC_MSG_ERROR([OpenSSL not found])])
+  AC_CHECK_LIB(crypto, RSA_new, [], [AC_MSG_ERROR([OpenSSL not found])])
+  AC_CHECK_LIB(ssl, SSL_new, [], [AC_MSG_ERROR([OpenSSL not found])])
+  if test "$MKIT_WHICH_OPENSSL" = "no"; then
+    CPPFLAGS=$saved_CPPFLAGS
+    LDFLAGS=$saved_LDFLAGS
+  fi
+])
+
 dnl Find yaml-cpp and add --with-yaml-cpp flag
 AC_DEFUN([MKIT_AM_YAML_CPP], [
   MKIT_WHICH_YAML_CPP=system
@@ -299,16 +350,23 @@ AC_DEFUN([MKIT_PRINT_SUMMARY], [
   echo "libevent      : $MKIT_WHICH_LIBEVENT"
   echo "libmaxminddb  : $MKIT_WHICH_LIBMAXMINDDB"
   echo "yaml-cpp      : $MKIT_WHICH_YAML_CPP"
+  echo "boost               : $MKIT_WHICH_BOOST"
+  echo "Catch               : $MKIT_WHICH_CATCH"
+  echo "jansson             : $MKIT_WHICH_JANSSON"
+  echo "http-parser         : $MKIT_WHICH_HTTP_PARSER"
+  echo "libevent            : $MKIT_WHICH_LIBEVENT"
+  echo "libmaxminddb        : $MKIT_WHICH_LIBMAXMINDDB"
+  echo "libmkok-onion-event : $MKIT_WHICH_MKOK_ONION_EVENT"
+  echo "openssl             : $MKIT_WHICH_OPENSSL"
+  echo "yaml-cpp            : $MKIT_WHICH_YAML_CPP"
   echo ""
   echo "==== configured flags ===="
-  echo "CC            : $CC"
-  echo "CFLAGS        : $CFLAGS"
-  echo "CPPFLAGS      : $CPPFLAGS"
-  echo "CXX           : $CXX"
-  echo "CXXFLAGS      : $CXXFLAGS"
-  echo "LDFLAGS       : $LDFLAGS"
-  echo "LIBS          : $LIBS"
-  echo "coverage      : $enable_coverage"
-  echo "examples      : $enable_examples"
-  echo "tests         : $enable_tests"
+  echo "CPPFLAGS            : $CPPFLAGS"
+  echo "CXX                 : $CXX"
+  echo "CXXFLAGS            : $CXXFLAGS"
+  echo "LDFLAGS             : $LDFLAGS"
+  echo "LIBS                : $LIBS"
+  echo "coverage            : $enable_coverage"
+  echo "examples            : $enable_examples"
+  echo "tests               : $enable_tests"
 ])

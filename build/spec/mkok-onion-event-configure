@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+test "$pkg_rootdir" != "" -a "$pkg_prefix" != ""
+
+if [ "$pkg_cross_compile" = "" -a "$(uname)" = "Darwin" ]; then
+    if [ -d $pkg_prefix/lib/libssl.dylib ]; then
+        flag_openssl="$pkg_prefix"
+    elif [ -d /usr/local/Cellar/openssl/1.0.2f/ ]; then
+        flag_openssl="/usr/local/Cellar/openssl/1.0.2f/"
+    else
+        echo "WARNING: cannot find a good openssl" 1>&2
+        echo "WARNING: most likely that Tor will pick up the default one" 1>&2
+        echo "WARNING: expect the linking phase to fail" 1>&2
+    fi
+fi
+
+export pkg_configure_flags="--disable-asciidoc --disable-system-torrc --disable-unittests --disable-tool-name-check --with-openssl-dir=$flag_openssl --with-zlib-dir=$pkg_rootdir --with-libevent-dir=$pkg_rootdir $pkg_configure_flags"
+
+$pkg_rootdir/build/dependency.d/configure mkok-onion-event
