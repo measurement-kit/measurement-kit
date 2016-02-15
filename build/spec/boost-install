@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+test "$pkg_rootdir" != ""
+. $pkg_rootdir/build/spec/$1
+cd $pkg_rootdir
+
+$pkg_sudo install -d $pkg_prefix/include
+for dir in third_party/boost/*; do
+    $pkg_sudo cp -R $dir/include/* $pkg_prefix/include
+done
