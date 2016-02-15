@@ -40,6 +40,7 @@ if [ -x build/spec/$1 ]; then
 fi
 # Note that the spec has access to $pkg_rootdir
 for step in clone patch configure make install; do
+    echo "$1: $step"
     if [ -x ./build/spec/$1-$step ]; then
         ./build/spec/$1-$step $1
     else
