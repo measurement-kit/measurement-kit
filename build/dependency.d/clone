@@ -12,10 +12,3 @@ cd third_party/$pkg_name
 if [ ! -z "$pkg_branch" ]; then
     git checkout $pkg_branch
 fi
-if [ -d ../../build/patch/$pkg_name ]; then
-    for diff in `ls ../../build/patch/$pkg_name`; do
-        cp ../../build/patch/$pkg_name/$diff .
-        git apply -v $diff
-        rm $diff
-    done
-fi

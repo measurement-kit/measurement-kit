@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+. $pkg_rootdir/build/spec/$1
+test "$pkg_rootdir" != "" -a "$pkg_name" != "" -a "$pkg_repository" != ""
+cd $pkg_rootdir/third_party/$pkg_name
+if [ -d ../../build/patch/$pkg_name ]; then
+    for diff in `ls ../../build/patch/$pkg_name`; do
+        cp ../../build/patch/$pkg_name/$diff .
+        git apply -v $diff
+        rm $diff
+    done
+fi
