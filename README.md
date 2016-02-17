@@ -175,7 +175,7 @@ the `mobile/android` directory of this repository.
 ### How to build MeasurementKit on iOS
 
 To compile and use MeasurementKit for iOS, do the following on a MacOSX
-system where XCode and its command line tools have been installed:
+system where Xcode and its command line tools have been installed:
 
 ```
 ./mobile/ios/scripts/build.sh
