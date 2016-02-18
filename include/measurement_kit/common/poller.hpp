@@ -5,36 +5,37 @@
 #ifndef MEASUREMENT_KIT_COMMON_POLLER_HPP
 #define MEASUREMENT_KIT_COMMON_POLLER_HPP
 
-#include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/libs.hpp>
-
 #include <functional>
+#include <measurement_kit/common/var.hpp>
 #include <string>
 
-struct evdns_base;
+// Forward declarations
 struct event_base;
+struct evdns_base;
 
 namespace mk {
 
-class Poller : public NonCopyable, public NonMovable {
+class PollerInterface; // Forward decl.
+
+class Poller {
   public:
-    Poller(Libs *libs = nullptr);
+    Poller();
     ~Poller();
 
-    event_base *get_event_base() { return base_; }
+    event_base *get_event_base() const;
 
-    evdns_base *get_evdns_base() { return dnsbase_; }
+    evdns_base *get_evdns_base() const;
 
     /// Call the function at the beginning of next I/O loop.
     /// \param cb The function to be called soon.
     /// \throw Error if the underlying libevent call fails.
-    void call_soon(std::function<void()> cb);
+    void call_soon(std::function<void()> cb) const;
 
-    void loop();
+    void loop() const;
 
-    void loop_once();
+    void loop_once() const;
 
-    void break_loop();
+    void break_loop() const;
 
     // When /etc/resolv.conf is not found, libevent configures as
     // resolver 127.0.0.1:53, which unfortunately is not working on
@@ -42,49 +43,44 @@ class Poller : public NonCopyable, public NonMovable {
     // App to clear existing resolver and use another one:
 
     /// Clear previosuly configured nameservers
-    void clear_nameservers();
+    void clear_nameservers() const;
 
     /// Get number of configured nameservers in default resolver
-    int count_nameservers();
+    int count_nameservers() const;
 
     /// Add nameserver to the list of name-servers of the default resolver
     /// \param address Address and optionally port (e.g. "8.8.8.8:53")
-    void add_nameserver(std::string address);
+    void add_nameserver(std::string address) const;
 
     // End methods to set a different resolver on Android
 
-    static Poller *global() {
-        static Poller singleton;
-        return &singleton;
-    }
+    static Poller *global();
 
   private:
-    event_base *base_;
-    evdns_base *dnsbase_;
-    Libs *libs_ = get_global_libs();
+    Var<PollerInterface> impl;
 };
 
 /*
  * Syntactic sugar:
  */
 
-inline Poller *get_global_poller(void) {
-    return (Poller::global());
+inline Poller *get_global_poller() {
+    return Poller::global();
 }
 
-inline event_base *get_global_event_base(void) {
-    return (Poller::global()->get_event_base());
+inline event_base *get_global_event_base() {
+    return Poller::global()->get_event_base();
 }
 
-inline evdns_base *get_global_evdns_base(void) {
-    return (Poller::global()->get_evdns_base());
+inline evdns_base *get_global_evdns_base() {
+    return Poller::global()->get_evdns_base();
 }
 
-inline void loop(void) { Poller::global()->loop(); }
+inline void loop() { Poller::global()->loop(); }
 
-inline void loop_once(void) { Poller::global()->loop_once(); }
+inline void loop_once() { Poller::global()->loop_once(); }
 
-inline void break_loop(void) { Poller::global()->break_loop(); }
+inline void break_loop() { Poller::global()->break_loop(); }
 
 inline void clear_nameservers() { Poller::global()->clear_nameservers(); }
 

@@ -12,6 +12,7 @@
 #include <measurement_kit/common.hpp>
 #include "src/common/delayed_call.hpp"
 #include "src/common/check_connectivity.hpp"
+#include "src/common/poller-libevent.hpp"
 
 #include <event2/dns.h>
 
@@ -30,7 +31,7 @@ TEST_CASE("Constructor") {
 
         auto bad_alloc_fired = false;
         try {
-            Poller poller(&libs);
+            PollerLibevent poller(&libs);
         } catch (std::bad_alloc &) {
             bad_alloc_fired = true;
         }
@@ -52,7 +53,7 @@ TEST_CASE("Constructor") {
 
         auto bad_alloc_fired = false;
         try {
-            Poller poller(&libs);
+            PollerLibevent poller(&libs);
         } catch (std::bad_alloc &) {
             bad_alloc_fired = true;
         }
@@ -78,7 +79,7 @@ TEST_CASE("The destructor works properly") {
         ::evdns_base_free(b, opt);
     };
 
-    { Poller poller(&libs); }
+    { PollerLibevent poller(&libs); }
 
     REQUIRE(event_base_free_fired);
     REQUIRE(evdns_base_free_fired);
@@ -91,7 +92,7 @@ TEST_CASE("poller.loop() works properly in corner cases") {
 
         libs.event_base_dispatch = [](event_base *) { return (-1); };
 
-        Poller poller1(&libs);
+        PollerLibevent poller1(&libs);
 
         auto runtime_error_fired = false;
         try {
@@ -107,7 +108,7 @@ TEST_CASE("poller.loop() works properly in corner cases") {
         Libs libs;
 
         libs.event_base_dispatch = [](event_base *) { return (1); };
-        Poller poller2(&libs);
+        PollerLibevent poller2(&libs);
         poller2.loop();
     }
 }
@@ -117,7 +118,7 @@ TEST_CASE("poller.break_loop() works properly") {
 
     libs.event_base_loopbreak = [](event_base *) { return (-1); };
 
-    Poller poller(&libs);
+    PollerLibevent poller(&libs);
 
     auto runtime_error_fired = false;
     try {
@@ -149,7 +150,7 @@ TEST_CASE("We can clear all name servers and then issue a query") {
 }
 
 TEST_CASE("poller.call_soon() works") {
-    mk::Poller poller;
+    mk::PollerLibevent poller;
     poller.call_soon([&poller]() { poller.break_loop(); });
     poller.loop();
 }
