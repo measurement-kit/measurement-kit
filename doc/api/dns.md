@@ -28,6 +28,42 @@ reso.query(
             if (error) throw error;
             // handle successful response
         });
+
+// Construct response with default parameter
+mk::dns::Response response; // by default evdns status is DNS_ERR_UNKNOWN
+
+mk::dns::Response resp(
+        DNS_ERR_NONE,     // evdns status code
+        DNS_TYPE_IPv4,    // evdns type
+        n_records,        // number of returned records
+        ttl,              // records TTL
+        started,          // time when request was started (double)
+        addresses);       // opaque response body
+
+// Get resolved records list
+for (std::string s : resp.get_results()) {
+    std::cout << s << "\n";
+}
+
+// Returns whether the response is authoritative
+std::string authoritative = resp.is_authoritative();
+
+// Return evdns status (this is mainly used internally)
+int code = resp.get_evdns_status();
+
+// Get time to live
+int ttl = resp.get_ttl();
+
+// Get round trip time
+double rtt = resp.get_rtt();
+
+#include <event2/dns.h> // for DNS_IPv4_A
+
+// Get evdns type
+char type = resp.get_type();
+if (type == DNS_IPv4_A) {
+    // do something if request was for IPv4
+}
 ```
 
 # DESCRIPTION
@@ -68,8 +104,8 @@ by `evdns`. You can choose among the following:
 - `REVERSE_AAAA`: resolve domain of IPv6 address
 - `PTR`: perform reverse DNS resolution
 
-(Of course, instead of specifying the types as strings, e.g. `"A"`, you
-can specify the corresponding query type, e.g. `QueryTypeId::A`.)
+(Of course, instead of specifying the types as strings, e.g. `"A"` or `AAAA`, you
+can specify the corresponding query type, e.g. `QueryTypeId::A` or `QueryTypeId::AAAA`.)
 
 The difference between `REVERSE_A`, `REVERSE_AAAA` and `PTR` is that
 `REVERSE_A` and `REVERSE_AAAA` take in input respectively an IPv4 and
@@ -99,35 +135,16 @@ The `Response` class holds the result of an async DNS `Query`. You do not
 typically instantiate a `Response` yourself, rather you receive an instance
 of `Response` in response to a DNS query.
 
-Given a DNS response data can be retrived as it follows:
 
-```C++
-// Get resolved records list
-for (std::string s : resp.get_results()) {
-    std::cout << s << "\n";
-}
+# BUGS
 
-// Returns whether the response is authoritative
-std::string authoritative = resp.is_authoritative();
+Since `evnds` does not report whether the response was authoritative, the
+`is_authoritative()` method of `Response` class always returns `"unknown"`.
 
-// Return evdns status (this is mainly used internally)
-int code = resp.get_evdns_status();
+# SEE ALSO
 
-// Get time to live
-int ttl = resp.get_ttl();
-
-// Get round trip time
-double rtt = resp.get_rtt();
-
-#include <event2/dns.h> // for DNS_IPv4_A
-
-// Get evdns type
-char type = resp.get_type();
-if (type == DNS_IPv4_A) {
-    // do something if request was for IPv4
-}
-
-```
+For a list of `evdns` status codes and a list of evdns types, please refer
+to the [evdns implementation](https://github.com/libevent/libevent/blob/master/include/event2/dns.h).
 
 # HISTORY
 
