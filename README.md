@@ -175,7 +175,7 @@ the `mobile/android` directory of this repository.
 ### How to build MeasurementKit on iOS
 
 To compile and use MeasurementKit for iOS, do the following on a MacOSX
-system where XCode and its command line tools have been installed:
+system where Xcode and its command line tools have been installed:
 
 ```
 ./mobile/ios/scripts/build.sh
@@ -183,16 +183,23 @@ system where XCode and its command line tools have been installed:
 
 ### How to add MeasurementKit to an Xcode project.
 
-The Cocoapods podspec hasn't been submitted yet, but you can already use
+The CocoaPods podspec has not been submitted yet, but you can already use
 it in your project adding this line in your Podfile:
 
-    pod 'measurement_kit', :git => 'https://github.com/measurement-kit/measurement-kit.git'
+    pod 'measurement_kit',
+      :git => 'https://github.com/measurement-kit/measurement-kit.git'
 
-You can include another branch with: 
+You can use a specific branch, e.g.:
+
+    pod 'measurement_kit',
+      :git => 'https://github.com/measurement-kit/measurement-kit.git'
+      :branch => 'branch-name'
+
+Similarly, you can use a specific tag, e.g.:
 
     pod 'measurement_kit', 
       :git => 'https://github.com/measurement-kit/measurement-kit.git'
-      :branch => 'branch_name'
+      :tag => 'v0.x.y'
 
 Then type `pod install` and open `.xcworkspace` file (beware not to open the
 `.xcodeproj` file instead, because that alone won't compile).
