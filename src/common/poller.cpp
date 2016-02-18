@@ -6,6 +6,7 @@
 #include <measurement_kit/common/poller.hpp>
 #include <string>
 #include "src/common/poller-libevent.hpp"
+#include "src/common/poller-tor.hpp"
 
 namespace mk {
 
@@ -39,6 +40,11 @@ void Poller::add_nameserver(std::string addr) const {
 
 /*static*/ Poller *Poller::global() {
     static Poller singleton;
+    return &singleton;
+}
+
+/*static*/ Poller *Poller::tor() {
+    static Poller singleton(PollerTor::global());
     return &singleton;
 }
 

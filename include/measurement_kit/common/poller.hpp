@@ -19,6 +19,8 @@ class PollerInterface; // Forward decl.
 
 class Poller {
   public:
+    Poller(Var<PollerInterface> p) : impl(p) {}
+
     Poller();
     ~Poller();
 
@@ -57,6 +59,7 @@ class Poller {
     // End methods to set a different resolver on Android
 
     static Poller *global();
+    static Poller *tor();
 
   private:
     Var<PollerInterface> impl;
