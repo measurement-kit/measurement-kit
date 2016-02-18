@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/dns/defines.hpp>
+#include <measurement_kit/dns.hpp>
 #include "src/dns/query.hpp"
 
 #include <measurement_kit/common/libs.hpp>

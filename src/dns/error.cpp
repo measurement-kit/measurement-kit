@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/dns/error.hpp>
+#include <measurement_kit/dns.hpp>
 
 #include <event2/dns.h>
 

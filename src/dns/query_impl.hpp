@@ -5,9 +5,7 @@
 #ifndef SRC_DNS_QUERY_IMPL_HPP
 #define SRC_DNS_QUERY_IMPL_HPP
 
-#include <measurement_kit/dns/defines.hpp>
-#include <measurement_kit/dns/error.hpp>
-#include <measurement_kit/dns/response.hpp>
+#include <measurement_kit/dns.hpp>
 
 #include "src/common/libs_impl.hpp"
 #include <measurement_kit/common/logger.hpp>

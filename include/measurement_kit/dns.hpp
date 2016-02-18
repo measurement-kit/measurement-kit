@@ -5,9 +5,346 @@
 #ifndef MEASUREMENT_KIT_DNS_HPP
 #define MEASUREMENT_KIT_DNS_HPP
 
-#include <measurement_kit/dns/defines.hpp>
-#include <measurement_kit/dns/error.hpp>
-#include <measurement_kit/dns/response.hpp>
-#include <measurement_kit/dns/resolver.hpp>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
+#include <measurement_kit/common/constraints.hpp>
+#include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/libs.hpp>
+#include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/settings.hpp>
+
+
+
+struct evdns_base; // Internally we use evdns
+
+namespace mk {
+
+struct Libs;
+
+namespace dns {
+
+/// Format error
+class FormatError : public Error {
+  public:
+    /// Default constructor
+    FormatError() : Error(2000, "dns_lookup_error") {}
+};
+
+/// Server failed error
+class ServerFailedError : public Error {
+  public:
+    /// Default constructor
+    ServerFailedError() : Error(2001, "dns_lookup_error") {}
+};
+
+/// Not exist error
+class NotExistError : public Error {
+  public:
+    /// Default constructor
+    NotExistError() : Error(2002, "dns_lookup_error") {}
+};
+
+/// Not implemented error
+class NotImplementedError : public Error {
+  public:
+    /// Default constructor
+    NotImplementedError() : Error(2003, "dns_lookup_error") {}
+};
+
+/// Refused error
+class RefusedError : public Error {
+  public:
+    /// Default constructor
+    RefusedError() : Error(2004, "dns_lookup_error") {}
+};
+
+/// Truncated error
+class TruncatedError : public Error {
+  public:
+    /// Default constructor
+    TruncatedError() : Error(2005, "dns_lookup_error") {}
+};
+
+/// Uknown error
+class UnknownError : public Error {
+  public:
+    UnknownError() : Error(2006, "unknown_failure 2006") {}
+};
+
+/// Timeout error
+class TimeoutError : public Error {
+  public:
+    TimeoutError() : Error(2007, "generic_timeout_error") {}
+};
+
+/// Shutdown error
+class ShutdownError : public Error {
+  public:
+    ShutdownError() : Error(2008, "unknown_failure 2008") {}
+};
+
+/// Cancel error
+class CancelError : public Error {
+  public:
+    CancelError() : Error(2009, "unknown_failure 2009") {}
+};
+
+/// No data error
+class NoDataError : public Error {
+  public:
+    NoDataError() : Error(2010, "dns_lookup_error") {}
+};
+
+/// Invalid IPv4 error
+class InvalidIPv4AddressError : public Error {
+  public:
+    InvalidIPv4AddressError() : Error(2011, "unknown_failure 2011") {}
+};
+
+/// Invalid IPv6 error
+class InvalidIPv6AddressError : public Error {
+  public:
+    InvalidIPv6AddressError() : Error(2012, "unknown_failure 2012") {}
+};
+
+/// Unsupported class error
+class UnsupportedClassError : public Error {
+  public:
+    UnsupportedClassError() : Error(2013, "unknown_failure 2013") {}
+};
+
+/// Invalid name for PTR query error
+class InvalidNameForPTRError : public Error {
+  public:
+    InvalidNameForPTRError() : Error(2014, "unknown_failure 2014") {}
+};
+
+/// Resolver error
+class ResolverError : public Error {
+  public:
+    ResolverError() : Error(2015, "unknown_failure 2015") {}
+};
+
+/// Unsupported type error
+class UnsupportedTypeError : public Error {
+  public:
+    UnsupportedTypeError() : Error(2016, "unknown_failure 2016") {}
+};
+
+Error dns_error(int code); ///< Map evdns code to proper error
+
+/// Available query classes id
+enum class QueryClassId { IN, CS, CH, HS };
+
+/// Available query types id (REVERSE_A and REVERSE_AAAA are non standard)
+enum class QueryTypeId {
+    A,
+    NS,
+    MD,
+    MF,
+    CNAME,
+    SOA,
+    MB,
+    MG,
+    MR,
+    NUL,
+    WKS,
+    PTR,
+    HINFO,
+    MINFO,
+    MX,
+    TXT,
+    AAAA,
+    REVERSE_A,
+    REVERSE_AAAA
+};
+
+/// Query class
+class QueryClass {
+  public:
+    /// Constructor with id
+    QueryClass(QueryClassId id) : id_(id) {}
+
+    /// Constructor with string
+    QueryClass(const char *x) {
+        std::string str(x);
+        if (str == "IN")
+            id_ = QueryClassId::IN;
+        else if (str == "CS")
+            id_ = QueryClassId::CS;
+        else if (str == "CH")
+            id_ = QueryClassId::CH;
+        else if (str == "HS")
+            id_ = QueryClassId::HS;
+        else
+            throw std::runtime_error("invalid argument");
+    }
+
+    /// Equality operator
+    bool operator==(QueryClassId id) const { return id_ == id; }
+
+    /// Unequality operator
+    bool operator!=(QueryClassId id) const { return id_ != id; }
+
+    /// Cast to query class id
+    operator QueryClassId() const { return id_; }
+
+  private:
+    QueryClassId id_;
+};
+
+/// Query class
+class QueryType {
+  public:
+    /// Constructor with id
+    QueryType(QueryTypeId id) : id_(id) {}
+
+    /// Constructor with string
+    QueryType(const char *x) {
+        std::string str(x);
+        if (str == "A")
+            id_ = QueryTypeId::A;
+        else if (str == "NS")
+            id_ = QueryTypeId::NS;
+        else if (str == "MD")
+            id_ = QueryTypeId::MD;
+        else if (str == "MF")
+            id_ = QueryTypeId::MF;
+        else if (str == "CNAME")
+            id_ = QueryTypeId::CNAME;
+        else if (str == "SOA")
+            id_ = QueryTypeId::SOA;
+        else if (str == "MB")
+            id_ = QueryTypeId::MB;
+        else if (str == "MG")
+            id_ = QueryTypeId::MG;
+        else if (str == "MR")
+            id_ = QueryTypeId::MR;
+        else if (str == "NUL")
+            id_ = QueryTypeId::NUL;
+        else if (str == "WKS")
+            id_ = QueryTypeId::WKS;
+        else if (str == "PTR")
+            id_ = QueryTypeId::PTR;
+        else if (str == "HINFO")
+            id_ = QueryTypeId::HINFO;
+        else if (str == "MINFO")
+            id_ = QueryTypeId::MINFO;
+        else if (str == "MX")
+            id_ = QueryTypeId::MX;
+        else if (str == "TXT")
+            id_ = QueryTypeId::TXT;
+        else if (str == "AAAA")
+            id_ = QueryTypeId::AAAA;
+        else if (str == "REVERSE_A")
+            id_ = QueryTypeId::REVERSE_A;
+        else if (str == "REVERSE_AAAA")
+            id_ = QueryTypeId::REVERSE_AAAA;
+        else
+            throw std::runtime_error("invalid argument");
+    }
+
+    /// Equality operator
+    bool operator==(QueryTypeId id) const { return id_ == id; }
+
+    /// Unequality operator
+    bool operator!=(QueryTypeId id) const { return id_ != id; }
+
+    /// Cast to query class id
+    operator QueryTypeId() const { return id_; }
+
+  private:
+    QueryTypeId id_;
+};
+
+/// DNS response.
+class Response {
+
+  protected:
+    int code = 66 /* = DNS_ERR_UNKNOWN */;
+    double rtt = 0.0;
+    int ttl = 0;
+    char type = 0;
+    std::vector<std::string> results;
+
+  public:
+    Response(Response &) = default;
+    Response &operator=(Response &) = default;
+    Response(Response &&) = default;
+    Response &operator=(Response &&) = default;
+
+    /// Constructs an empty DNS response object.
+    Response() {}
+
+    /// Constructs a DNS response object.
+    Response(int code, char type, int count, int ttl, double started,
+             void *addresses, Logger *lp = Logger::global(),
+             Libs *libs = nullptr, int start_from = 0);
+
+    /// Get the results returned by the query.
+    std::vector<std::string> get_results() { return results; }
+
+    /// Get whether the response was authoritative.
+    std::string get_reply_authoritative() { return "unknown"; /* TODO */ }
+
+    /// Get the integer status code returned by evdns.
+    int get_evdns_status() { return code; }
+
+    /// Get the time to live of the response.
+    int get_ttl() { return ttl; }
+
+    /// Get the time elapsed since the request was sent until
+    /// the response was received.
+    double get_rtt() { return rtt; }
+
+    /// Return the evdns type (e.g. DNS_IPv4_A)
+    char get_type() { return type; }
+};
+
+/// DNS Resolver object.
+class Resolver : public NonCopyable, public NonMovable {
+
+  private:
+    void cleanup();
+
+  protected:
+    Settings settings;
+    Libs *libs = get_global_libs();
+    Poller *poller = mk::get_global_poller();
+    evdns_base *base = nullptr;
+    Logger *logger = Logger::global();
+
+  public:
+    /// Default constructor.
+    Resolver() {}
+
+    /// Constructor with specific settings.
+    Resolver(Settings settings_, Logger *lp = Logger::global(),
+             Libs *lev = nullptr, Poller *plr = nullptr) {
+        if (lev != nullptr) {
+            libs = lev;
+        }
+        if (plr != nullptr) {
+            poller = plr;
+        }
+        settings = settings_;
+        logger = lp;
+    }
+
+    /// Get the evdns_base bound to the settings.
+    evdns_base *get_evdns_base();
+
+    /// Issue a Query using this resolver.
+    void query(QueryClass dns_class, QueryType dns_type, std::string name,
+               std::function<void(Error, Response)> func);
+
+    /// Default destructor.
+    ~Resolver() { cleanup(); }
+};
+
+} // namespace dns
+} // namespace mk
 #endif
