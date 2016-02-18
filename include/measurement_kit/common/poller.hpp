@@ -26,6 +26,8 @@ class Poller {
 
     evdns_base *get_evdns_base() const;
 
+    void call_later(double, std::function<void()> cb) const;
+
     /// Call the function at the beginning of next I/O loop.
     /// \param cb The function to be called soon.
     /// \throw Error if the underlying libevent call fails.

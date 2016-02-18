@@ -29,6 +29,8 @@ class PollerLibevent : public PollerInterface, public NonCopyable,
 
     evdns_base *get_evdns_base() override { return dnsbase_; }
 
+    void call_later(double, std::function<void()>) override;
+
     void call_soon(std::function<void()>) override;
 
     void loop() override;

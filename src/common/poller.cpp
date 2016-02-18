@@ -17,6 +17,10 @@ event_base *Poller::get_event_base() const { return impl->get_event_base(); }
 
 evdns_base *Poller::get_evdns_base() const { return impl->get_evdns_base(); }
 
+void Poller::call_later(double timeo, std::function<void()> cb) const {
+    impl->call_later(timeo, cb);
+}
+
 void Poller::call_soon(std::function<void()> cb) const { impl->call_soon(cb); }
 
 void Poller::loop() const { impl->loop(); }

@@ -18,6 +18,7 @@ class PollerInterface {
     virtual ~PollerInterface(){}
     virtual event_base *get_event_base() = 0;
     virtual evdns_base *get_evdns_base() = 0;
+    virtual void call_later(double, std::function<void()>) = 0;
     virtual void call_soon(std::function<void()>) = 0;
     virtual void loop() = 0;
     virtual void loop_once() = 0;
