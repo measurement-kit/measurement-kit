@@ -15,18 +15,18 @@ VERSION_INFO = -release @VERSION@ -version-info 0
 AM_CFLAGS = -pthread $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
 AM_CXXFLAGS = -pthread $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
 
-lib_LTLIBRARIES =  # Empty
-libmeasurement_kit_la_LDFLAGS = -pthread $(VERSION_INFO) -lyaml-cpp
-libmeasurement_kit_la_SOURCES =  # Empty
+lib_LTLIBRARIES               = libmeasurement_kit.la
+libmeasurement_kit_la_LDFLAGS = -version-info $(VERSION_INFO)
+libmeasurement_kit_la_SOURCES = # Empty
 
-noinst_LTLIBRARIES =  # Empty
-noinst_PROGRAMS =  # Empty
+noinst_PROGRAMS    = # Empty
+ALL_TESTS          = # Empty
 
-include src/include.am
-include example/include.am
-include test/include.am
+include include.am
+include src/ext/include.am
 
-lib_LTLIBRARIES += libmeasurement_kit.la
+TESTS = $(ALL_TESTS)
+check_PROGRAMS = $(ALL_TESTS)
 
 VALGRIND = valgrind --trace-children=yes --error-exitcode=1 \
                     --dsymutil=yes --leak-check=yes

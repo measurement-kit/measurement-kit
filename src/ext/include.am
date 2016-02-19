@@ -1,5 +1,3 @@
-noinst_LTLIBRARIES += src/ext/libext.la
-
 DIST_SUBDIRS =
 SUBDIRS =
 
@@ -8,11 +6,9 @@ if USE_BUILTIN_LIBEVENT
     SUBDIRS += src/ext/libevent
 endif
 
-src_ext_libext_la_SOURCES = \
+libmeasurement_kit_la_SOURCES += \
     src/ext/strtonum.c \
     src/ext/http-parser/http_parser.c
-
-libmeasurement_kit_la_LIBADD += src/ext/libext.la
 
 if USE_BUILTIN_JANSSON
     DIST_SUBDIRS += src/ext/jansson
@@ -30,12 +26,7 @@ endif
 
 if USE_BUILTIN_YAMLCPP
 
-    lib_LTLIBRARIES += src/ext/libyaml-cpp.la
-
-    # Adapt CXXFLAGS to yaml-cpp:
-    src_ext_libyaml_cpp_la_CXXFLAGS = $(AM_CXXFLAGS) -Wno-deprecated-declarations
-
-    src_ext_libyaml_cpp_la_SOURCES = \
+    libmeasurement_kit_la_SOURCES += \
 	src/ext/yaml-cpp/src/stream.cpp \
 	src/ext/yaml-cpp/src/emitter.cpp \
 	src/ext/yaml-cpp/src/emit.cpp \
