@@ -119,3 +119,12 @@ example/http/request
 
 # files being edited
 *.swp
+
+# Dependencies
+src/ext/Catch/
+src/ext/boost/
+src/ext/http-parser/
+src/ext/jansson/
+src/ext/libevent/
+src/ext/libmaxminddb/
+src/ext/yaml-cpp/

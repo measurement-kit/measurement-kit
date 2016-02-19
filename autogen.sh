@@ -1,16 +1,18 @@
-#!/bin/sh -e
-# Clone specific tags from github and update local copy
+#!/bin/sh
+
+set -e
 
 get() {
   branch=$4
   [ -z "$branch" ] && branch=master
-  git clone --depth 50 -b $branch https://github.com/$1 tmp/$1
-  (cd tmp/$1 && git checkout $2)
-  (cd tmp/$1 && git archive --prefix=$3/ HEAD) | \
-    (cd src/ext/ && tar -xf-)
+  if [ ! -d src/ext/$3 ]; then
+      git clone --depth 50 -b $branch https://github.com/$1 src/ext/$3
+  else
+      (cd src/ext/$3 && git checkout $branch && git pull)
+  fi
+  (cd src/ext/$3 && git checkout $2)
 }
 
-rm -rf tmp/*
 get akheron/jansson v2.7-52-ge44b223 jansson
 get boostorg/assert boost-1.59.0 boost/assert
 get boostorg/config boost-1.59.0 boost/config
@@ -31,4 +33,5 @@ get joyent/http-parser v2.6.0 http-parser
 get measurement-kit/libevent patches-2.0 libevent patches-2.0
 get measurement-kit/libmaxminddb master libmaxminddb
 get philsquared/Catch v1.2.1 Catch
-rm -rf tmp
+
+autoreconf -i

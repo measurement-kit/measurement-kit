@@ -36,7 +36,7 @@ export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer
 
 (
     cd $SOURCEDIR
-    test -x ./configure || autoreconf -i
+    test -x ./configure || ./autogen.sh
     ./configure -q --disable-shared \
                 --disable-examples \
                 --with-libevent=builtin \

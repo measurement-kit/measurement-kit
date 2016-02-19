@@ -79,7 +79,7 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
     cd ${ROOTDIR}/build/${ARCH}-${API}
     test -f Makefile && make clean
     echo "Configure with --host=${ARCH} and toolchain ${ANDROID_TOOLCHAIN}"
-    test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && autoreconf -i)
+    test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && ./autogen.sh)
     ${ROOTDIR}/../../configure -q --host=${ARCH} --with-sysroot=${SYSROOT} \
       --with-libevent=builtin --with-yaml-cpp=builtin \
       --with-boost=builtin --disable-shared --libdir=/ \
