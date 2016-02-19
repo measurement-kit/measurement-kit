@@ -24,7 +24,7 @@ TEST_CASE("HTTP stream works as expected") {
         return;
     }
     auto stream = std::make_shared<Stream>(Settings{
-        {"address", "www.google.com"}, {"port", "80"},
+        {"address", "www.google.com"}, {"port", 80},
     });
     stream->on_connect([&]() {
         mk::debug("Connection made... sending request");
@@ -65,7 +65,7 @@ TEST_CASE("HTTP stream is robust to EOF") {
     // "end" handler deletes the stream.
 
     auto stream = new Stream(Settings{
-        {"dumb_transport", "1"},
+        {"dumb_transport", 1},
     });
     stream->on_error([](Error) {
         /* nothing */
@@ -97,7 +97,7 @@ TEST_CASE("HTTP stream works as expected when using Tor") {
     }
     auto stream = std::make_shared<Stream>(Settings{
         {"address", "www.google.com"},
-        {"port", "80"},
+        {"port", 80},
         {"socks5_proxy", "127.0.0.1:9050"},
     });
     stream->set_timeout(1.0);

@@ -72,6 +72,7 @@ test/common/poller
 test/common/socket_valid
 test/common/utils
 test/common/var
+test/common/settings
 test/echo_client
 test/echo_client2
 test/echo_client_evbuf

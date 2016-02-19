@@ -170,7 +170,7 @@ TEST_CASE("Make sure that settings are not modified") {
         {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
-        {"tor_socks_port", "9999"},
+        {"tor_socks_port", 9999},
     };
 
     client.request(settings,

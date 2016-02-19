@@ -37,13 +37,14 @@ class HTTPTestImpl : public ooni::OoniTestImpl {
                 rr["request"]["headers"] =
                     std::map<std::string, std::string>(headers);
                 rr["request"]["body"] = body;
-                rr["request"]["url"] = settings.at("url");
-                rr["request"]["http_version"] = settings.at("http_version");
-                rr["request"]["method"] = settings.at("method");
+                rr["request"]["url"] = settings.at("url").str();
+                rr["request"]["http_version"] =
+                    settings.at("http_version").str();
+                rr["request"]["method"] = settings.at("method").str();
 
                 // XXX we should probably update the OONI data format to remove
                 // this.
-                rr["method"] = settings.at("method");
+                rr["method"] = settings.at("method").str();
 
                 if (error == 0) {
                     rr["response"]["headers"] =

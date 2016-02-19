@@ -154,7 +154,7 @@ TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
-        {"tor_socks_port", "9055"},
+        {"tor_socks_port", 9055},
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
@@ -188,7 +188,7 @@ TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
-        {"tor_socks_port", "9999"},
+        {"tor_socks_port", 9999},
         {"socks5_proxy", "127.0.0.1:9055"},
     };
 

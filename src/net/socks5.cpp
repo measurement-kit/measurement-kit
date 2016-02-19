@@ -85,7 +85,7 @@ Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
                           (uint8_t)address.length());
             logger->debug("socks5: >> domain str=%s", address.c_str());
 
-            auto portnum = std::stoi(settings["port"]);
+            int portnum = settings["port"].as<int>();
             if (portnum < 0 || portnum > 65535) {
                 emit_error(SocksInvalidPortError());
                 return;
