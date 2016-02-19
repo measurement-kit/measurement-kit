@@ -33,10 +33,11 @@ it uses `autoconf`, `automake`, and `libtool`. Make sure you have those
 three packages installed on your system before proceeding.
 
 To compile and install Measurement Kit you need to follow a number of
-steps. The first step is to generate the `configure` script. To do that,
-run this command from the toplevel directory:
+steps. The first step is to download the sources of dependencies and to
+generate the `configure` script. To do that, run this command from the
+toplevel directory:
 
-    autoreconf -i
+    ./autogen.sh
 
 At this point you are ready to *configure* Measurement Kit to build
 on your system. The bare minimum requirements to built it are a C++11

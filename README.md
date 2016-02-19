@@ -114,7 +114,7 @@ fall back to the copy of the dependency stored under the
 
 The vanilla build process is the following:
 
-    autoreconf -i
+    ./autogen.sh
     ./configure
     make
 

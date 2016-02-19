@@ -10,7 +10,7 @@ Vagrant.configure(2) do |config|
     sudo apt-get install -y $APT_PACKAGES                                   && \
       git clone https://github.com/measurement-kit/measurement-kit          && \
       cd measurement-kit                                                    && \
-      autoreconf -i                                                         && \
+      ./autogen.sh                                                          && \
       ./configure                                                           && \
       make V=0                                                              && \
       make check V=0

@@ -10,7 +10,7 @@ before_install:
   - sudo apt-get install tor
   - pip install --user cpp-coveralls
 
-install: autoreconf -i
+install: ./autogen.sh
 
 # Only measure coverage with clang for now because I cannot manage to
 # convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
