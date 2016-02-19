@@ -5,7 +5,7 @@
 # information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.1.0, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.2.0-alpha, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([src/common/poller.cpp])
