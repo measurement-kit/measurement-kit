@@ -1,5 +1,0 @@
-EXAMPLES += example/mlabns/query
-
-example_mlabns_query_SOURCES = example/mlabns/query.cpp
-example_mlabns_query_LDADD = libmeasurement_kit.la
-example_mlabns_query_LDFLAGS = -lyaml-cpp

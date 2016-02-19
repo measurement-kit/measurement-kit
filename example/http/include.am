@@ -1,5 +1,0 @@
-EXAMPLES += example/http/request
-
-example_http_request_SOURCES = example/http/request.cpp
-example_http_request_LDADD = libmeasurement_kit.la
-example_http_request_LDFLAGS = -lyaml-cpp

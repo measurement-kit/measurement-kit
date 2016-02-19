@@ -15,6 +15,8 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 LT_INIT
 AC_CONFIG_HEADERS([config.h])
 
+AM_CONDITIONAL([BUILD_TESTS], [test "yes" = "yes"])  # for now, build always
+
 AC_CANONICAL_HOST
 
 # checks for programs
