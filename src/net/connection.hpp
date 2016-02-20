@@ -73,7 +73,11 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     void on_data(std::function<void(Buffer)> fn) override {
         Emitter::on_data(fn);
-        enable_read();
+        if (fn) {
+            enable_read();
+        } else {
+            disable_read();
+        }
     };
 
     evutil_socket_t get_fileno() { return (bufferevent_getfd(this->bev)); }
