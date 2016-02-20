@@ -9,6 +9,7 @@
 #include <map>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/var.hpp>
 #include <set>
@@ -77,7 +78,8 @@ class Client {
   public:
     /// Issue HTTP request.
     void request(Settings settings, Headers headers, std::string body,
-                 RequestCallback callback, Logger *lp = Logger::global());
+                 RequestCallback callback, Logger *lp = Logger::global(),
+                 Poller *poller = Poller::global());
 
     /// Get the global HTTP client instance
     static Var<Client> global() {
@@ -99,9 +101,11 @@ class Client {
 /// \param headers Optional HTTP request headers.
 /// \param body Optional HTTP request body.
 /// \param lp Optional logger.
+/// \param pol Optional poller.
 /// \param client Optional HTTP client.
 void request(Settings settings, RequestCallback cb, Headers headers = {},
              std::string body = "", Logger *lp = Logger::global(),
+             Poller *pol = Poller::global(),
              Var<Client> client = Client::global());
 
 } // namespace http

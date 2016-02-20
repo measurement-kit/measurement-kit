@@ -44,7 +44,8 @@ class TCPTest : public ooni::OoniTest {
         }
 
         auto connection = std::make_shared<net::Connection>(
-            "PF_UNSPEC", options["host"].c_str(), options["port"].c_str());
+            "PF_UNSPEC", options["host"].c_str(), options["port"].c_str(),
+            &logger, poller);
 
         //
         // FIXME The connection and this are bound in the

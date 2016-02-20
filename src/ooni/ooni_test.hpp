@@ -11,6 +11,7 @@
 #include <functional>                           // for function, __base
 #include <measurement_kit/common/logger.hpp>    // for Logger
 #include <measurement_kit/common/net_test.hpp>  // for NetTest
+#include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>  // for Settings
 #include <string>                               // for allocator, operator+
 #include <type_traits>                          // for move
@@ -195,6 +196,10 @@ class OoniTest : public mk::NetTest {
         file_report.close();
         cb();
     }
+
+    Poller *poller = Poller::global();
+
+    void set_poller(Poller *p) { poller = p; }
 };
 
 } // namespace ooni
