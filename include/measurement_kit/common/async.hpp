@@ -5,6 +5,7 @@
 #ifndef MEASUREMENT_KIT_COMMON_ASYNC_HPP
 #define MEASUREMENT_KIT_COMMON_ASYNC_HPP
 
+#include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/var.hpp>
 
 #include <functional>
@@ -18,7 +19,7 @@ struct AsyncState;
 class Async {
   public:
     /// Default constructor
-    Async();
+    Async(Poller *pol = Poller::global());
 
     /// Run the specified network test and call a callback when done
     /// \param func Callback called when test is done
