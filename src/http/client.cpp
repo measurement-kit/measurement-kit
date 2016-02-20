@@ -9,9 +9,9 @@ namespace mk {
 namespace http {
 
 void Client::request(Settings settings, Headers headers, std::string body,
-                     RequestCallback callback, Logger *lp) {
-    auto r =
-        new Request(settings, headers, body, std::move(callback), lp, &pending);
+                     RequestCallback callback, Logger *lp, Poller *po) {
+    auto r = new Request(settings, headers, body, std::move(callback), lp,
+                         po, &pending);
     pending.insert(r);
 }
 
@@ -29,8 +29,8 @@ Client::~Client() {
 }
 
 void request(Settings settings, RequestCallback cb, Headers headers,
-             std::string body, Logger *lp, Var<Client> client) {
-    client->request(settings, headers, body, cb, lp);
+             std::string body, Logger *lp, Poller *po, Var<Client> client) {
+    client->request(settings, headers, body, cb, lp, po);
 }
 
 } // namespace http

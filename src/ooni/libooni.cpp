@@ -43,6 +43,7 @@ Var<NetTest> DnsInjectionTest::create_test_() {
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
+    test->set_poller(poller);
     return Var<NetTest>(test);
 }
 
@@ -51,6 +52,7 @@ Var<NetTest> HttpInvalidRequestLineTest::create_test_() {
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
+    test->set_poller(poller);
     return Var<NetTest>(test);
 }
 
@@ -59,6 +61,7 @@ Var<NetTest> TcpConnectTest::create_test_() {
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
+    test->set_poller(poller);
     return Var<NetTest>(test);
 }
 

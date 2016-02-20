@@ -32,7 +32,7 @@ class DNSTest : public ooni::OoniTest {
             Settings{
                 {"nameserver", nameserver}, {"attempts", "1"},
             },
-            &logger, libs);
+            &logger, libs, poller);
 
         std::string nameserver_part;
         std::stringstream nameserver_ss(nameserver);

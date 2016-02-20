@@ -5,8 +5,9 @@
 #ifndef MEASUREMENT_KIT_OONI_BASE_TEST_HPP
 #define MEASUREMENT_KIT_OONI_BASE_TEST_HPP
 
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
+#include <measurement_kit/common/var.hpp>
 #include <functional>
 #include <string>
 
@@ -40,6 +41,12 @@ class BaseTest {
         return *this;
     }
 
+    /// Set poller to be used
+    BaseTest &set_poller(Poller *p) {
+        poller = p;
+        return *this;
+    }
+
     /// Set log-message handler
     BaseTest &on_log(std::function<void(const char *)> func) {
         log_handler = func;
@@ -62,6 +69,7 @@ class BaseTest {
     std::function<void(const char *)> log_handler; ///< Log handler func
     std::string input_path;                        ///< Input file path
     std::string output_path;                       ///< Output file path
+    Poller *poller = Poller::global();             ///< Poller to use
 };
 
 } // namespace ooni

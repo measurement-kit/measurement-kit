@@ -60,7 +60,7 @@ class HTTPTest : public ooni::OoniTest {
                 entry["agent"] = "agent";
                 entry["socksproxy"] = "";
                 callback(error, std::move(response));
-            }, &logger);
+            }, &logger, poller);
     }
 };
 

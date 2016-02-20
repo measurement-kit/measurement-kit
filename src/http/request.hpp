@@ -10,6 +10,7 @@
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common/poller.hpp>
 
 #include <measurement_kit/net/buffer.hpp>
 #include <measurement_kit/net/error.hpp>
@@ -41,6 +42,7 @@ class Request : public NonCopyable, public NonMovable {
     Response response;
     std::set<Request *> *parent = nullptr;
     Logger *logger = Logger::global();
+    Poller *poller = Poller::global();
 
     void emit_end(Error error, Response &&response) {
         close();
@@ -73,12 +75,14 @@ class Request : public NonCopyable, public NonMovable {
      * \param headers Request headers.
      * \param callback Function invoked when request is complete.
      * \param logger Logger to be used.
+     * \param pol Poller to be used.
      * \param parent Pointer to parent to implement self clean up.
      */
     Request(const Settings settings_, Headers headers, std::string body,
             RequestCallback &&callback_, Logger *lp = Logger::global(),
+            Poller *pol = Poller::global(),
             std::set<Request *> *parent_ = nullptr)
-        : callback(callback_), parent(parent_), logger(lp) {
+        : callback(callback_), parent(parent_), logger(lp), poller(pol) {
         auto settings = settings_; // Make a copy and work on that
         try {
             serializer = RequestSerializer(settings, headers, body);
@@ -100,7 +104,7 @@ class Request : public NonCopyable, public NonMovable {
                 settings["socks5_proxy"] = "127.0.0.1:9050";
             }
         }
-        stream = std::make_shared<Stream>(settings, logger);
+        stream = std::make_shared<Stream>(settings, logger, poller);
         stream->on_error([this](Error err) {
             if (err != net::EOFError()) {
                 emit_end(err, std::move(response));
