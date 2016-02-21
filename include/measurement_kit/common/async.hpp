@@ -21,6 +21,8 @@ class Async {
     /// Default constructor
     Async(Poller *pol = Poller::global());
 
+    ~Async();
+
     /// Run the specified network test and call a callback when done
     /// \param func Callback called when test is done
     /// \warn The callback is called from a background thread

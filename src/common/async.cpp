@@ -2,7 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <event2/thread.h>
 #include <atomic>
 #include <measurement_kit/common/async.hpp>
 #include <measurement_kit/common/logger.hpp>
@@ -20,14 +19,6 @@ struct AsyncState {
     Poller *poller = Poller::global();
 };
 
-class EvThreadSingleton {
-  private:
-    EvThreadSingleton() { evthread_use_pthreads(); }
-
-  public:
-    static void ensure() { static EvThreadSingleton singleton; }
-};
-
 // Make sure that, no matter what kind of poller we're using and what kind of
 // events it periodically schedules, if any, there is at least one event
 static void keep_me_alive(Var<AsyncState> state) {
@@ -38,7 +29,6 @@ static void keep_me_alive(Var<AsyncState> state) {
 }
 
 void Async::loop_thread(Var<AsyncState> state) {
-    EvThreadSingleton::ensure();
     debug("async: loop thread entered");
     keep_me_alive(state);
     state->poller->loop();
@@ -49,6 +39,11 @@ Async::Async(Poller *poller) {
     state.reset(new AsyncState());
     state->poller = poller;
     state->thread = std::thread(loop_thread, state);
+}
+
+Async::~Async() {
+    state->poller->break_loop();
+    state->thread.join();
 }
 
 void Async::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
