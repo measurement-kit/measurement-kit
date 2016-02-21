@@ -153,3 +153,9 @@ TEST_CASE("poller.call_soon() works") {
     poller.call_soon([&poller]() { poller.break_loop(); });
     poller.loop();
 }
+
+TEST_CASE("poller.call_later() works") {
+    mk::Poller poller;
+    poller.call_later(3.14, [&poller]() { poller.break_loop(); });
+    poller.loop();
+}

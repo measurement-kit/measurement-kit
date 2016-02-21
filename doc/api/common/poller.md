@@ -25,6 +25,16 @@ if (poller.count_nameservers() <= 0) {
     poller.add_nameserver("8.8.4.4:53");     // Also with port
 }
 
+// Schedule a call to run in the next I/O cycle
+poller.call_soon([objects]() {
+    // Do something with `objects`
+});
+
+// Schedule a call 3.14 seconds in the future
+poller.call_later(3.14, [objects]() {
+    // Do something with `objects`
+});
+
 mk::Poller *root = mk::Poller::global();
 ```
 

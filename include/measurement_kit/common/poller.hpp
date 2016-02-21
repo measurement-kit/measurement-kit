@@ -30,6 +30,8 @@ class Poller : public NonCopyable, public NonMovable {
     /// \throw Error if the underlying libevent call fails.
     void call_soon(std::function<void()> cb);
 
+    void call_later(double, std::function<void()> cb);
+
     void loop();
 
     void loop_once();

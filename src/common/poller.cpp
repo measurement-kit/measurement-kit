@@ -7,6 +7,7 @@
 #include <measurement_kit/common/error.hpp>
 #include <stdexcept>
 #include "src/common/libs_impl.hpp"
+#include "src/common/utils.hpp"
 
 // Using `extern "C"` for C callbacks is recommended by C++ FAQs.
 // See <https://isocpp.org/wiki/faq/pointers-to-members#memfnptr-vs-fnptr>.
@@ -36,13 +37,18 @@ Poller::~Poller() {
     libs_->event_base_free(base_);
 }
 
-void Poller::call_soon(std::function<void()> cb) {
+void Poller::call_later(double timeo, std::function<void()> cb) {
+    timeval tv, *tvp = timeval_init(&tv, timeo);
     auto cbp = new std::function<void()>(cb);
     if (event_base_once(base_, -1, EV_TIMEOUT, mk_call_soon_cb,
-                        cbp, nullptr) != 0) {
+                        cbp, tvp) != 0) {
         delete cbp;
         throw std::runtime_error("event_base_once() failed");
     }
+}
+
+void Poller::call_soon(std::function<void()> cb) {
+    call_later(-1.0, cb);
 }
 
 void Poller::loop() {
