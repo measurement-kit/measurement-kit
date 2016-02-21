@@ -28,9 +28,19 @@ class EvThreadSingleton {
     static void ensure() { static EvThreadSingleton singleton; }
 };
 
+// Make sure that, no matter what kind of poller we're using and what kind of
+// events it periodically schedules, if any, there is at least one event
+static void keep_me_alive(Var<AsyncState> state) {
+    state->poller->call_later(10.0, [state]() {
+        debug("async: keep-alive callback");
+        keep_me_alive(state);
+    });
+}
+
 void Async::loop_thread(Var<AsyncState> state) {
     EvThreadSingleton::ensure();
     debug("async: loop thread entered");
+    keep_me_alive(state);
     state->poller->loop();
     debug("async: exiting from thread");
 }
