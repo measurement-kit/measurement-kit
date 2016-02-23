@@ -19,7 +19,6 @@ class HTTPInvalidRequestLineImpl : public HTTPTestImpl {
 
     int tests_run = 0;
 
-    std::function<void(report::Entry)> callback;
 
   public:
     HTTPInvalidRequestLineImpl(Settings options_) : HTTPTestImpl(options_) {
@@ -29,11 +28,10 @@ class HTTPInvalidRequestLineImpl : public HTTPTestImpl {
 
     void main(Settings options, std::function<void(report::Entry)> &&cb) {
 
-        callback = cb;
-        auto handle_response = [this](Error, http::Response &&) {
+        auto handle_response = [this, cb](Error, http::Response &&) {
             tests_run += 1;
             if (tests_run == 3) {
-                callback(entry);
+                cb(entry);
             }
             // XXX we currently don't set the tampering key, because this test
             // speaks to a TCP Echo helper, hence the response will not be valid
