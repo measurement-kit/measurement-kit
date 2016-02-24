@@ -19,6 +19,7 @@ RequestSerializer::RequestSerializer(Settings settings, Headers headers_,
                                      std::string body_)
     : headers(headers_), body(body_) {
     auto url = settings["url"];
+    // TODO: migrate over to using `src/ext/parser_url.cpp`
     http_parser_url url_parser;
     http_parser_url_init(&url_parser); 
     if (http_parser_parse_url(url.c_str(), url.length(), 0, &url_parser) != 0) {

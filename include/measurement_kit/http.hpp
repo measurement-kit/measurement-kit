@@ -9,6 +9,7 @@
 #include <map>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/maybe.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/var.hpp>
@@ -107,6 +108,28 @@ void request(Settings settings, RequestCallback cb, Headers headers = {},
              std::string body = "", Logger *lp = Logger::global(),
              Poller *pol = Poller::global(),
              Var<Client> client = Client::global());
+
+/// Represents a URL.
+class Url {
+  public:
+    std::string schema;    /// URL schema
+    std::string address;   /// URL address
+    std::string port;      /// URL port
+    std::string path;      /// URL path
+    std::string query;     /// URL query
+    std::string pathquery; /// URL path followed by optional query
+};
+
+/// Parses a URL.
+/// \param url Input URL you want to parse.
+/// \return The parsed URL.
+/// \throw Exception on failure.
+Url parse_url(std::string url);
+
+/// Parses a URL without throwing an exception on failure.
+/// \param url Input URL you want to parse..
+/// \return An error (on failure) or the parsed URL.
+Maybe<Url> parse_url_noexcept(std::string url);
 
 } // namespace http
 } // namespace mk
