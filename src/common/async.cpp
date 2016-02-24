@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <event2/event.h>
 #include <atomic>
 #include <measurement_kit/common/async.hpp>
 #include <measurement_kit/common/logger.hpp>
@@ -19,19 +20,19 @@ struct AsyncState {
     Poller *poller = Poller::global();
 };
 
-// Make sure that, no matter what kind of poller we're using and what kind of
-// events it periodically schedules, if any, there is at least one event
-static void keep_me_alive(Var<AsyncState> state) {
-    state->poller->call_later(10.0, [state]() {
-        debug("async: keep-alive callback");
-        keep_me_alive(state);
-    });
-}
+static void mk_do_nothing(evutil_socket_t, short, void *p) {}
 
 void Async::loop_thread(Var<AsyncState> state) {
     debug("async: loop thread entered");
-    keep_me_alive(state);
+    struct timeval ten_seconds = {10, 0};
+    // Make sure that, no matter what kind of poller we're using and what kind
+    // of
+    // events it periodically schedules, if any, there is at least one event
+    event *ev = ::event_new(state->poller->get_event_base(), -1, EV_PERSIST,
+                            mk_do_nothing, nullptr);
+    ::event_add(ev, &ten_seconds);
     state->poller->loop();
+    ::event_free(ev);
     debug("async: exiting from thread");
 }
 
