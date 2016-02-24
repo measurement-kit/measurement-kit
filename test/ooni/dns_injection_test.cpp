@@ -11,7 +11,7 @@
 #include <measurement_kit/ooni.hpp>
 #include <string>
 #include <thread>
-#include "src/ooni/ooni_test.hpp"
+#include "src/ooni/ooni_test_impl.hpp"
 
 using namespace mk;
 
@@ -46,7 +46,7 @@ TEST_CASE("Make sure that set_output_path() works") {
         .set_input_file_path("test/fixtures/hosts.txt")
         .set_output_file_path("foo.txt")
         .create_test_();
-    auto ptr = static_cast<ooni::OoniTest *>(instance.get());
+    auto ptr = static_cast<ooni::OoniTestImpl *>(instance.get());
     REQUIRE(ptr->get_report_filename() == "foo.txt");
 }
 
@@ -56,6 +56,6 @@ TEST_CASE("Make sure that default get_output_path() is nonempty") {
         // called inside create_test_() throws an exception
         .set_input_file_path("test/fixtures/hosts.txt")
         .create_test_();
-    auto ptr = static_cast<ooni::OoniTest *>(instance.get());
+    auto ptr = static_cast<ooni::OoniTestImpl *>(instance.get());
     REQUIRE(ptr->get_report_filename() != "");
 }

@@ -12,14 +12,14 @@
 namespace mk {
 namespace ooni {
 
-class HTTPTestImpl : public ooni::OoniTest {
-    using ooni::OoniTest::OoniTest;
+class HTTPTestImpl : public ooni::OoniTestImpl {
+    using ooni::OoniTestImpl::OoniTestImpl;
 
     http::Client http_client;
 
   public:
     HTTPTestImpl(std::string input_filepath_, Settings options_)
-        : ooni::OoniTest(input_filepath_, options_) {
+        : ooni::OoniTestImpl(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";
     }

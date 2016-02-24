@@ -11,7 +11,7 @@
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/var.hpp>
 
-#include "src/ooni/ooni_test.hpp"
+#include "src/ooni/ooni_test_impl.hpp"
 #include "src/net/connection.hpp"
 
 namespace mk {
@@ -24,12 +24,12 @@ namespace ooni {
 
 typedef Var<net::Connection> TCPClient; /* XXX */
 
-class TCPTest : public ooni::OoniTest {
-    using ooni::OoniTest::OoniTest;
+class TCPTest : public ooni::OoniTestImpl {
+    using ooni::OoniTestImpl::OoniTestImpl;
 
   public:
     TCPTest(std::string input_filepath_, Settings options_)
-        : ooni::OoniTest(input_filepath_, options_) {
+        : ooni::OoniTestImpl(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";
     };

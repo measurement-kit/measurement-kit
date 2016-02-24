@@ -25,7 +25,7 @@
 namespace mk {
 namespace ooni {
 
-class OoniTest : public mk::NetTest {
+class OoniTestImpl : public mk::NetTest {
     std::string input_filepath;
     report::FileReporter file_report;
     std::string report_filename;
@@ -125,22 +125,22 @@ class OoniTest : public mk::NetTest {
     std::string probe_asn = "AS0";
     std::string probe_cc = "ZZ";
 
-    OoniTest() : OoniTest("", Settings()) {}
+    OoniTestImpl() : OoniTestImpl("", Settings()) {}
 
-    virtual ~OoniTest() {
+    virtual ~OoniTestImpl() {
         delete input;
         input = nullptr;
     }
 
-    OoniTest(OoniTest &) = delete;
-    OoniTest &operator=(OoniTest &) = delete;
-    OoniTest(OoniTest &&) = default;
-    OoniTest &operator=(OoniTest &&) = default;
+    OoniTestImpl(OoniTestImpl &) = delete;
+    OoniTestImpl &operator=(OoniTestImpl &) = delete;
+    OoniTestImpl(OoniTestImpl &&) = default;
+    OoniTestImpl &operator=(OoniTestImpl &&) = default;
 
-    OoniTest(std::string input_filepath_)
-        : OoniTest(input_filepath_, Settings()) {}
+    OoniTestImpl(std::string input_filepath_)
+        : OoniTestImpl(input_filepath_, Settings()) {}
 
-    OoniTest(std::string input_filepath_, Settings options_)
+    OoniTestImpl(std::string input_filepath_, Settings options_)
         : input_filepath(input_filepath_), options(options_),
           test_name("net_test"), test_version("0.0.1") {}
 
