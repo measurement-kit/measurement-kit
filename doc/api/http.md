@@ -8,6 +8,12 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/http.hpp>
 
+// Parsing of URL (throws exception on error)
+http::Url url = http::parse_url("http://www.google.com/");
+
+// Same as above but using a maybe
+Maybe<http::Url> url = http::parse_url_noexcept("http://www.kernel.org/");
+
 // Minimal invocation of request()
 mk::http::request({
         "url" : "http://nexa.polito.it/",
@@ -94,6 +100,21 @@ struct Response {
     std::string reason;
     Headers headers;
     std::string body;
+};
+```
+
+The HTTP url object returned by `parse_url()` is as follows:
+
+```
+/// Represents a URL.
+class Url {
+  public:
+    std::string schema;    /// URL schema
+    std::string address;   /// URL address
+    std::string port;      /// URL port
+    std::string path;      /// URL path
+    std::string query;     /// URL query
+    std::string pathquery; /// URL path followed by optional query
 };
 ```
 

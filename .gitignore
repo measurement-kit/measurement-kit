@@ -93,6 +93,7 @@ test/dns/query
 test/dns/resolver
 test/dns/response
 test/http/client
+test/http/parse_url
 test/http/request
 test/http/request_serializer
 test/http/response_parser
