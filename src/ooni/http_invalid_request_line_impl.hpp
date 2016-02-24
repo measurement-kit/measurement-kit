@@ -7,22 +7,22 @@
 
 #include "src/common/utils.hpp"
 #include "src/ooni/errors.hpp"
-#include "src/ooni/ooni_test.hpp"
-#include "src/ooni/http_test.hpp"
+#include "src/ooni/ooni_test_impl.hpp"
+#include "src/ooni/http_test_impl.hpp"
 #include <sys/stat.h>
 
 namespace mk {
 namespace ooni {
 
-class HTTPInvalidRequestLine : public HTTPTest {
-    using HTTPTest::HTTPTest;
+class HTTPInvalidRequestLineImpl : public HTTPTestImpl {
+    using HTTPTestImpl::HTTPTestImpl;
 
     int tests_run = 0;
 
     std::function<void(report::Entry)> callback;
 
   public:
-    HTTPInvalidRequestLine(Settings options_) : HTTPTest(options_) {
+    HTTPInvalidRequestLineImpl(Settings options_) : HTTPTestImpl(options_) {
         test_name = "http_invalid_request_line";
         test_version = "0.0.1";
     };

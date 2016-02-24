@@ -13,9 +13,9 @@
 #include <ratio>                               // for ratio
 #include <sys/stat.h>
 #include <thread>                              // for sleep_for
-#include "src/ooni/dns_injection.hpp"
-#include "src/ooni/http_invalid_request_line.hpp"
-#include "src/ooni/tcp_connect.hpp"
+#include "src/ooni/dns_injection_impl.hpp"
+#include "src/ooni/http_invalid_request_line_impl.hpp"
+#include "src/ooni/tcp_connect_impl.hpp"
 
 namespace mk {
 
@@ -39,7 +39,7 @@ void BaseTest::run(std::function<void()> callback) {
 }
 
 Var<NetTest> DnsInjectionTest::create_test_() {
-    OoniTest *test = new DNSInjection(input_path, settings);
+    OoniTestImpl *test = new DNSInjectionImpl(input_path, settings);
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
@@ -48,7 +48,7 @@ Var<NetTest> DnsInjectionTest::create_test_() {
 }
 
 Var<NetTest> HttpInvalidRequestLineTest::create_test_() {
-    OoniTest *test = new HTTPInvalidRequestLine(settings);
+    OoniTestImpl *test = new HTTPInvalidRequestLineImpl(settings);
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
@@ -57,7 +57,7 @@ Var<NetTest> HttpInvalidRequestLineTest::create_test_() {
 }
 
 Var<NetTest> TcpConnectTest::create_test_() {
-    OoniTest *test = new TCPConnect(input_path, settings);
+    OoniTestImpl *test = new TCPConnectImpl(input_path, settings);
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);

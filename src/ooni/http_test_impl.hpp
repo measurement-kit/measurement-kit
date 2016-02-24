@@ -7,24 +7,24 @@
 
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/http.hpp>
-#include "src/ooni/ooni_test.hpp"
+#include "src/ooni/ooni_test_impl.hpp"
 
 namespace mk {
 namespace ooni {
 
-class HTTPTest : public ooni::OoniTest {
-    using ooni::OoniTest::OoniTest;
+class HTTPTestImpl : public ooni::OoniTestImpl {
+    using ooni::OoniTestImpl::OoniTestImpl;
 
     http::Client http_client;
 
   public:
-    HTTPTest(std::string input_filepath_, Settings options_)
-        : ooni::OoniTest(input_filepath_, options_) {
+    HTTPTestImpl(std::string input_filepath_, Settings options_)
+        : ooni::OoniTestImpl(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";
     }
 
-    HTTPTest(Settings options_) : HTTPTest("", options_) {}
+    HTTPTestImpl(Settings options_) : HTTPTestImpl("", options_) {}
 
     void request(Settings settings, http::Headers headers, std::string body,
                  http::RequestCallback &&callback) {

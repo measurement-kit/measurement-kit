@@ -7,21 +7,21 @@
 
 #include <measurement_kit/dns.hpp>
 #include "src/ooni/errors.hpp"
-#include "src/ooni/ooni_test.hpp"
-#include "src/ooni/dns_test.hpp"
+#include "src/ooni/ooni_test_impl.hpp"
+#include "src/ooni/dns_test_impl.hpp"
 #include <sys/stat.h>
 
 namespace mk {
 namespace ooni {
 
-class DNSInjection : public DNSTest {
-    using DNSTest::DNSTest;
+class DNSInjectionImpl : public DNSTestImpl {
+    using DNSTestImpl::DNSTestImpl;
 
     std::function<void(report::Entry)> have_entry;
 
   public:
-    DNSInjection(std::string input_filepath_, Settings options_)
-        : DNSTest(input_filepath_, options_) {
+    DNSInjectionImpl(std::string input_filepath_, Settings options_)
+        : DNSTestImpl(input_filepath_, options_) {
         test_name = "dns_injection";
         test_version = "0.0.1";
 
