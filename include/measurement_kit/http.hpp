@@ -131,6 +131,45 @@ Url parse_url(std::string url);
 /// \return An error (on failure) or the parsed URL.
 Maybe<Url> parse_url_noexcept(std::string url);
 
+/// Send HTTP GET and receive response.
+/// \param url URL to send request to.
+/// \param settings Settings for HTTP request.
+/// \param cb Callback called when complete or on error.
+/// \param headers Optional HTTP request headers.
+/// \param body Optional HTTP request body.
+/// \param lp Optional logger.
+/// \param pol Optional poller.
+/// \param client Optional HTTP client.
+inline void GET(std::string url, RequestCallback cb,
+                Headers headers = {}, std::string body = "",
+                Settings settings = {}, Logger *lp = Logger::global(),
+                Poller *pol = Poller::global(),
+                Var<Client> client = Client::global()) {
+    settings["method"] = "GET";
+    settings["url"] = url;
+    request(settings, cb, headers, body, lp, pol, client);
+}
+
+/// Send HTTP request and receive response.
+/// \param method Method to use.
+/// \param url URL to send request to.
+/// \param settings Settings for HTTP request.
+/// \param cb Callback called when complete or on error.
+/// \param headers Optional HTTP request headers.
+/// \param body Optional HTTP request body.
+/// \param lp Optional logger.
+/// \param pol Optional poller.
+/// \param client Optional HTTP client.
+inline void request(std::string method, std::string url, RequestCallback cb,
+                    Headers headers = {}, std::string body = "",
+                    Settings settings = {}, Logger *lp = Logger::global(),
+                    Poller *pol = Poller::global(),
+                    Var<Client> client = Client::global()) {
+    settings["method"] = method;
+    settings["url"] = url;
+    request(settings, cb, headers, body, lp, pol, client);
+}
+
 } // namespace http
 } // namespace mk
 #endif
