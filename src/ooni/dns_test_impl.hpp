@@ -13,13 +13,13 @@
 namespace mk {
 namespace ooni {
 
-class DNSTest : public ooni::OoniTest {
+class DNSTestImpl : public ooni::OoniTest {
     using ooni::OoniTest::OoniTest;
 
     Var<dns::Resolver> resolver;
 
   public:
-    DNSTest(std::string input_filepath_, Settings options_)
+    DNSTestImpl(std::string input_filepath_, Settings options_)
         : ooni::OoniTest(input_filepath_, options_) {
         test_name = "dns_test";
         test_version = "0.0.1";

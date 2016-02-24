@@ -14,14 +14,14 @@
 namespace mk {
 namespace ooni {
 
-class DNSInjectionImpl : public DNSTest {
-    using DNSTest::DNSTest;
+class DNSInjectionImpl : public DNSTestImpl {
+    using DNSTestImpl::DNSTestImpl;
 
     std::function<void(report::Entry)> have_entry;
 
   public:
     DNSInjectionImpl(std::string input_filepath_, Settings options_)
-        : DNSTest(input_filepath_, options_) {
+        : DNSTestImpl(input_filepath_, options_) {
         test_name = "dns_injection";
         test_version = "0.0.1";
 
