@@ -24,11 +24,11 @@ namespace ooni {
 
 typedef Var<net::Connection> TCPClient; /* XXX */
 
-class TCPTest : public ooni::OoniTestImpl {
+class TCPTestImpl : public ooni::OoniTestImpl {
     using ooni::OoniTestImpl::OoniTestImpl;
 
   public:
-    TCPTest(std::string input_filepath_, Settings options_)
+    TCPTestImpl(std::string input_filepath_, Settings options_)
         : ooni::OoniTestImpl(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";

@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "src/ooni/dns_injection.hpp"
+#include "src/ooni/dns_injection_impl.hpp"
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

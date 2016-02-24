@@ -7,8 +7,8 @@
 
 #include <measurement_kit/dns.hpp>
 #include "src/ooni/errors.hpp"
-#include "src/ooni/ooni_test.hpp"
-#include "src/ooni/dns_test.hpp"
+#include "src/ooni/ooni_test_impl.hpp"
+#include "src/ooni/dns_test_impl.hpp"
 #include <sys/stat.h>
 
 namespace mk {

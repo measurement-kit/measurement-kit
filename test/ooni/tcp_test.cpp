@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "src/ooni/tcp_test.hpp"
+#include "src/ooni/tcp_test_impl.hpp"
 #include <measurement_kit/common.hpp>
 
 #include <iostream>
@@ -13,10 +13,10 @@
 using namespace mk;
 using namespace mk::ooni;
 
-TEST_CASE("TCPTest works as expected in a common case") {
+TEST_CASE("TCPTestImpl works as expected in a common case") {
 
     auto count = 0;
-    TCPTest tcp_test("", Settings());
+    TCPTestImpl tcp_test("", Settings());
 
     auto client1 = tcp_test.connect(
         {

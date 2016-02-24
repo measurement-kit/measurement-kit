@@ -6,8 +6,8 @@
 #include <functional>                          // for function
 #include <measurement_kit/common/async.hpp>    // for Async
 #include <measurement_kit/ooni/base_test.hpp>  // for BaseTest
-#include <measurement_kit/ooni/dns_injection_test_impl.hpp>
-#include <measurement_kit/ooni/http_invalid_request_line_test_impl.hpp>
+#include <measurement_kit/ooni/dns_injection_test.hpp>
+#include <measurement_kit/ooni/http_invalid_request_line_test.hpp>
 #include <measurement_kit/ooni/tcp_connect_test.hpp>
 #include <measurement_kit/common/var.hpp>      // for Var
 #include <ratio>                               // for ratio

@@ -8,7 +8,7 @@
 #include <measurement_kit/common/var.hpp>
 
 #include <measurement_kit/dns.hpp>
-#include "src/ooni/ooni_test.hpp"
+#include "src/ooni/ooni_test_impl.hpp"
 
 namespace mk {
 namespace ooni {

@@ -6,14 +6,14 @@
 #define SRC_OONI_TCP_CONNECT_HPP
 
 #include "src/ooni/errors.hpp"
-#include "src/ooni/tcp_test.hpp"
+#include "src/ooni/tcp_test_impl.hpp"
 #include <sys/stat.h>
 
 namespace mk {
 namespace ooni {
 
-class TCPConnectImpl : public TCPTest {
-    using TCPTest::TCPTest;
+class TCPConnectImpl : public TCPTestImpl {
+    using TCPTestImpl::TCPTestImpl;
 
     TCPClient client;
 
@@ -21,7 +21,7 @@ class TCPConnectImpl : public TCPTest {
 
   public:
     TCPConnectImpl(std::string input_filepath_, Settings options_)
-        : TCPTest(input_filepath_, options_) {
+        : TCPTestImpl(input_filepath_, options_) {
         test_name = "tcp_connect";
         test_version = "0.0.1";
 

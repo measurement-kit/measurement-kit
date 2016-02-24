@@ -7,7 +7,7 @@
 
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/http.hpp>
-#include "src/ooni/ooni_test.hpp"
+#include "src/ooni/ooni_test_impl.hpp"
 
 namespace mk {
 namespace ooni {
