@@ -63,5 +63,28 @@ Maybe<Transport> connect(Settings settings, Logger *lp, Poller *poller) {
     return Maybe<Transport>(transport);
 }
 
+void connect(std::string address, int port,
+             std::function<void(Error, Transport)> callback,
+             Settings settings, Logger *logger, Poller *poller) {
+    settings["address"] = address;
+    settings["port"] = std::to_string(port);
+    Maybe<Transport> maybe = connect(settings, logger, poller);
+    if (!maybe) {
+        callback(maybe.as_error(), Transport{});
+        return;
+    }
+    auto transport = maybe.as_value();
+    transport.on_connect([callback, transport]() {
+        transport.on_connect(nullptr);
+        transport.on_error(nullptr);
+        callback(NoError(), transport);
+    });
+    transport.on_error([callback, transport](Error error) {
+        transport.on_connect(nullptr);
+        transport.on_error(nullptr);
+        callback(error, transport);
+    });
+}
+
 } // namespace net
 } // namespace mk
