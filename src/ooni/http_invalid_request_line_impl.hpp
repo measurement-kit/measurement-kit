@@ -14,7 +14,7 @@
 namespace mk {
 namespace ooni {
 
-class HTTPInvalidRequestLine : public HTTPTest {
+class HTTPInvalidRequestLineImpl : public HTTPTest {
     using HTTPTest::HTTPTest;
 
     int tests_run = 0;
@@ -22,7 +22,7 @@ class HTTPInvalidRequestLine : public HTTPTest {
     std::function<void(report::Entry)> callback;
 
   public:
-    HTTPInvalidRequestLine(Settings options_) : HTTPTest(options_) {
+    HTTPInvalidRequestLineImpl(Settings options_) : HTTPTest(options_) {
         test_name = "http_invalid_request_line";
         test_version = "0.0.1";
     };

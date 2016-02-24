@@ -7,14 +7,14 @@
 #include <measurement_kit/common/async.hpp>    // for Async
 #include <measurement_kit/ooni/base_test.hpp>  // for BaseTest
 #include <measurement_kit/ooni/dns_injection_test.hpp>
-#include <measurement_kit/ooni/http_invalid_request_line_test.hpp>
+#include <measurement_kit/ooni/http_invalid_request_line_test_impl.hpp>
 #include <measurement_kit/ooni/tcp_connect_test.hpp>
 #include <measurement_kit/common/var.hpp>      // for Var
 #include <ratio>                               // for ratio
 #include <sys/stat.h>
 #include <thread>                              // for sleep_for
 #include "src/ooni/dns_injection.hpp"
-#include "src/ooni/http_invalid_request_line.hpp"
+#include "src/ooni/http_invalid_request_line_impl.hpp"
 #include "src/ooni/tcp_connect.hpp"
 
 namespace mk {
@@ -48,7 +48,7 @@ Var<NetTest> DnsInjectionTest::create_test_() {
 }
 
 Var<NetTest> HttpInvalidRequestLineTest::create_test_() {
-    OoniTest *test = new HTTPInvalidRequestLine(settings);
+    OoniTest *test = new HTTPInvalidRequestLineImpl(settings);
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
