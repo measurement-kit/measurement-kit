@@ -15,7 +15,7 @@
 #include <thread>                              // for sleep_for
 #include "src/ooni/dns_injection_impl.hpp"
 #include "src/ooni/http_invalid_request_line_impl.hpp"
-#include "src/ooni/tcp_connect.hpp"
+#include "src/ooni/tcp_connect_impl.hpp"
 
 namespace mk {
 
@@ -57,7 +57,7 @@ Var<NetTest> HttpInvalidRequestLineTest::create_test_() {
 }
 
 Var<NetTest> TcpConnectTest::create_test_() {
-    OoniTestImpl *test = new TCPConnect(input_path, settings);
+    OoniTestImpl *test = new TCPConnectImpl(input_path, settings);
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
