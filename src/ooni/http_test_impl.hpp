@@ -12,19 +12,19 @@
 namespace mk {
 namespace ooni {
 
-class HTTPTest : public ooni::OoniTest {
+class HTTPTestImpl : public ooni::OoniTest {
     using ooni::OoniTest::OoniTest;
 
     http::Client http_client;
 
   public:
-    HTTPTest(std::string input_filepath_, Settings options_)
+    HTTPTestImpl(std::string input_filepath_, Settings options_)
         : ooni::OoniTest(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";
     }
 
-    HTTPTest(Settings options_) : HTTPTest("", options_) {}
+    HTTPTestImpl(Settings options_) : HTTPTestImpl("", options_) {}
 
     void request(Settings settings, http::Headers headers, std::string body,
                  http::RequestCallback &&callback) {
