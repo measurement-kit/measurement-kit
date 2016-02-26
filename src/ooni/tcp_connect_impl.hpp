@@ -17,7 +17,6 @@ class TCPConnectImpl : public TCPTestImpl {
 
     TCPClient client;
 
-    std::function<void(report::Entry)> have_entry;
 
   public:
     TCPConnectImpl(std::string input_filepath_, Settings options_)
@@ -38,10 +37,10 @@ class TCPConnectImpl : public TCPTestImpl {
     void main(std::string input, Settings options,
               std::function<void(report::Entry)> &&cb) {
         options["host"] = input;
-        have_entry = cb;
-        client = connect(options, [this]() {
+        
+        connect(options, [this, cb](TCPClient) {
             logger.debug("tcp_connect: Got response to TCP connect test");
-            have_entry(entry);
+            cb(entry);
         });
     }
 };
