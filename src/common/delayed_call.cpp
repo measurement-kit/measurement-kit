@@ -42,6 +42,7 @@ DelayedCallState::~DelayedCallState() {
     if (evp_ == nullptr) return;
     libs_->event_free(evp_);
     evp_ = nullptr;
+    func_ = nullptr;
 }
 
 } // namespace mk
