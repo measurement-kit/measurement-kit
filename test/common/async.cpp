@@ -15,6 +15,8 @@
 #include <atomic>
 #include <unistd.h>
 
+#define NUM_TESTS 8
+
 using namespace mk;
 
 static void run_http_invalid_request_line(Async &async, std::atomic<int> &num) {
@@ -27,7 +29,7 @@ static void run_http_invalid_request_line(Async &async, std::atomic<int> &num) {
                        .create_test_(),
                    [&async, &num](Var<NetTest> test) {
                        mk::debug("test complete: %llu", test->identifier());
-                       if (++num > 16) {
+                       if (++num > NUM_TESTS) {
                            return;
                        }
                        run_http_invalid_request_line(async, num);
@@ -45,7 +47,7 @@ static void run_dns_injection(Async &async, std::atomic<int> &num) {
                        .create_test_(),
                    [&async, &num](Var<NetTest> test) {
                        mk::debug("test complete: %llu", test->identifier());
-                       if (++num > 16) {
+                       if (++num > NUM_TESTS) {
                            return;
                        }
                        run_dns_injection(async, num);
@@ -63,11 +65,11 @@ static void run_tcp_connect(Async &async, std::atomic<int> &num) {
                        .create_test_(),
                    [&async, &num](Var<NetTest> test) {
                        mk::debug("test complete: %llu", test->identifier());
-                       if (++num > 16) {
+                       if (++num > NUM_TESTS) {
                            return;
                        }
                        run_tcp_connect(async, num);
-                   });
+                    });
 }
 
 TEST_CASE("The async engine works as expected") {
@@ -87,7 +89,7 @@ TEST_CASE("The async engine works as expected") {
         run_http_invalid_request_line(async, num_tests);
         run_tcp_connect(async, num_tests);
     });
-    while (num_tests < 16) {
+    while (not async.empty() or num_tests < NUM_TESTS) {
         sleep(5);
     }
 }
