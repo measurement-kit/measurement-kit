@@ -14,6 +14,24 @@ http::Url url = http::parse_url("http://www.google.com/");
 // Same as above but using a maybe
 Maybe<http::Url> url = http::parse_url_noexcept("http://www.kernel.org/");
 
+// For sending a simple GET request you could use
+mk::http::GET("http://nexa.polito.it/",
+    [](mk::Error err, mk::http::Response resp) {
+        if (err) {
+            throw err;
+        }
+        // TODO: Process the response
+    });
+
+// For sending a simple request request you could use
+mk::http::request("HEAD", "http://nexa.polito.it/",
+    [](mk::Error err, mk::http::Response resp) {
+        if (err) {
+            throw err;
+        }
+        // TODO: Process the response
+    });
+
 // Minimal invocation of request()
 mk::http::request({
         "url" : "http://nexa.polito.it/",
