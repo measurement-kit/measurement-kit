@@ -8,6 +8,11 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/net.hpp>
 
+// Alternative syntax for connecting the transport
+net::connect("www.google.com", 80, [](Error error, Transport transport) {
+    // Do something with transport
+});
+
 auto maybe_transport = net::connect({
     {"address", "www.google.com"},
     {"port", "80"}

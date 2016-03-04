@@ -129,6 +129,13 @@ class Transport {
 Maybe<Transport> connect(Settings, Logger * = Logger::global(),
                          Poller * = Poller::global());
 
+/// Connects a transport (alternative syntax)
+void connect(std::string address, int port,
+             std::function<void(Error, Transport)> callback,
+             Settings settings = {},
+             Logger *logger = Logger::global(),
+             Poller *poller = Poller::global());
+
 } // namespace net
 } // namespace mk
 #endif
