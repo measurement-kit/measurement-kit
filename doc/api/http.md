@@ -15,7 +15,7 @@ http::Url url = http::parse_url("http://www.google.com/");
 Maybe<http::Url> url = http::parse_url_noexcept("http://www.kernel.org/");
 
 // For sending a simple GET request you could use
-mk::http::GET("http://nexa.polito.it/",
+mk::http::get("http://nexa.polito.it/",
     [](mk::Error err, mk::http::Response resp) {
         if (err) {
             throw err;
