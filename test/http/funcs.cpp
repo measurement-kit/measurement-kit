@@ -9,8 +9,8 @@
 using namespace mk;
 using namespace mk::http;
 
-TEST_CASE("http::GET() works as expected") {
-    http::GET("http://www.google.com/robots.txt",
+TEST_CASE("http::get() works as expected") {
+    http::get("http://www.google.com/robots.txt",
         [](Error error, Response &&response) {
             std::cout << "Error: " << (int)error << "\r\n";
             std::cout << response.body.substr(0, 128) << "\r\n";

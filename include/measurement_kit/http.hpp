@@ -140,7 +140,7 @@ Maybe<Url> parse_url_noexcept(std::string url);
 /// \param lp Optional logger.
 /// \param pol Optional poller.
 /// \param client Optional HTTP client.
-inline void GET(std::string url, RequestCallback cb,
+inline void get(std::string url, RequestCallback cb,
                 Headers headers = {}, std::string body = "",
                 Settings settings = {}, Logger *lp = Logger::global(),
                 Poller *pol = Poller::global(),
