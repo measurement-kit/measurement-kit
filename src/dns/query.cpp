@@ -62,13 +62,13 @@ static evdns_base *create_evdns_base(Settings settings,
     evdns_base *base;
     event_base *evb = poller->get_event_base();
 
-    // XXX free variables when entering error path
     if (settings.find("nameserver") != settings.end()) {
         if ((base = evdns_base_new(evb, 0)) == nullptr) {
             throw std::bad_alloc();
         }
         if (evdns_base_nameserver_ip_add(
                 base, settings["nameserver"].c_str()) != 0) {
+            evdns_base_free(base, 1);
             throw std::runtime_error("Cannot set server address");
         }
     } else if ((base = evdns_base_new(evb, 1)) == nullptr) {
@@ -78,11 +78,13 @@ static evdns_base *create_evdns_base(Settings settings,
     if (settings.find("attempts") != settings.end() &&
         evdns_base_set_option(base, "attempts",
                                     settings["attempts"].c_str()) != 0) {
+        evdns_base_free(base, 1);
         throw std::runtime_error("Cannot set 'attempts' option");
     }
     if (settings.find("timeout") != settings.end() &&
         evdns_base_set_option(base, "timeout",
                                     settings["timeout"].c_str()) != 0) {
+        evdns_base_free(base, 1);
         throw std::runtime_error("Cannot set 'timeout' option");
     }
 
@@ -93,6 +95,7 @@ static evdns_base *create_evdns_base(Settings settings,
     }
     if (evdns_base_set_option(base, "randomize-case", randomiz.c_str()) !=
         0) {
+        evdns_base_free(base, 1);
         throw std::runtime_error("Cannot set 'randomize-case' option");
     }
 
@@ -147,9 +150,8 @@ static std::vector<Answer> build_answers_evdns(int code, char type, int count,
                 // Note: address already in network byte order
                 if (inet_ntop(family, (char *)addresses + i * size,
                               string, sizeof(string)) == NULL) {
-                    logger->warn("dns - unexpected inet_ntop failure");
-                    code = DNS_ERR_UNKNOWN;
-                    break;
+                    logger->error("dns - unexpected inet_ntop failure");
+                    throw std::runtime_error("Unexpected inet_ntop failure");
                 }
                 Answer answer;
                 answer.code = code;
@@ -167,12 +169,12 @@ static std::vector<Answer> build_answers_evdns(int code, char type, int count,
 
         } else {
             logger->warn("dns - too many addresses");
-            code = DNS_ERR_UNKNOWN;
+            throw std::runtime_error("We got more responses than the maximum integer size. Something is very wrong.");
         }
 
     } else {
         logger->warn("dns - invalid response type");
-        code = DNS_ERR_UNKNOWN;
+        throw std::runtime_error("Invalid response type.");
     }
     return answers;
 }
@@ -223,6 +225,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
     evdns_base *base = create_evdns_base(settings, poller);
 
     if (dns_class != QueryClassId::IN) {
+        evdns_base_free(base, 1);
         cb(UnsupportedClassError(), nullptr);
         return;
     }
@@ -237,6 +240,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
             dns_type = QueryTypeId::REVERSE_AAAA;
             name = s;
         } else {
+            evdns_base_free(base, 1);
             cb(InvalidNameForPTRError(), nullptr);
             return;
         }
@@ -251,11 +255,27 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
     // We explain above why we don't store the return value
     // of the evdns_base_resolve_xxx() functions below
     //
+    // Note: evdns_base_resolve_xxx() return a evdns_request
+    // object that may be used to cancel the request. Yet, the
+    // semantic of cancelling a request is such that evdns
+    // could invoke the callback of a pending request if such
+    // request was cancelled when its corresponding response
+    // was already pending. This seems to be confirmed by
+    // comments in libevent's evdns.c:
+    //
+    //     This does nothing if the request's callback is
+    //     already running (pending_cb is set)
+    //
+    // For the above reason this class does not explicitly
+    // cancel pending evdns requests and uses the `cancelled`
+    // variable to keep track of cancelled requests.
+    //
     if (dns_type == QueryTypeId::A) {
         if (evdns_base_resolve_ipv4(
                     base, name.c_str(),
                     DNS_QUERY_NO_SEARCH, handle_resolve,
                     new QueryContext(base, cb, message)) == nullptr) {
+            evdns_base_free(base, 1);
             cb(ResolverError(), nullptr);
         }
         return;
@@ -265,6 +285,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
         if (evdns_base_resolve_ipv6(base, name.c_str(),
                     DNS_QUERY_NO_SEARCH, handle_resolve,
                     new QueryContext(base, cb, message)) == nullptr) {
+            evdns_base_free(base, 1);
             cb(ResolverError(), nullptr);
         }
         return;
@@ -273,6 +294,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
     if (dns_type == QueryTypeId::REVERSE_A) {
         in_addr netaddr;
         if (inet_pton(AF_INET, name.c_str(), &netaddr) != 1) {
+            evdns_base_free(base, 1);
             cb(InvalidIPv4AddressError(), nullptr);
             return;
         }
@@ -281,6 +303,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
                     &netaddr, DNS_QUERY_NO_SEARCH,
                     handle_resolve,
                     new QueryContext(base, cb, message)) == nullptr) {
+            evdns_base_free(base, 1);
             cb(ResolverError(), nullptr);
         }
         return;
@@ -289,6 +312,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
     if (dns_type == QueryTypeId::REVERSE_AAAA) {
         in6_addr netaddr;
         if (inet_pton(AF_INET6, name.c_str(), &netaddr) != 1) {
+            evdns_base_free(base, 1);
             cb(InvalidIPv6AddressError(), nullptr);
             return;
         }
@@ -296,12 +320,14 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
         if (evdns_base_resolve_reverse_ipv6(
                     base, &netaddr, DNS_QUERY_NO_SEARCH,
                     handle_resolve, new QueryContext(base, cb, message)) == nullptr) {
+            evdns_base_free(base, 1);
             cb(ResolverError(), nullptr);
             return;
         }
         return;
     }
 
+    evdns_base_free(base, 1);
     cb(UnsupportedTypeError(), nullptr);
 }
 
