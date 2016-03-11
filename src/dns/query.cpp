@@ -150,7 +150,7 @@ static std::vector<Answer> build_answers_evdns(int code, char type, int count,
                 // Note: address already in network byte order
                 if (inet_ntop(family, (char *)addresses + i * size,
                               string, sizeof(string)) == NULL) {
-                    logger->error("dns - unexpected inet_ntop failure");
+                    logger->warn("dns - unexpected inet_ntop failure");
                     throw std::runtime_error("Unexpected inet_ntop failure");
                 }
                 Answer answer;
