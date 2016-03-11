@@ -22,7 +22,7 @@ class BaseReporter {
     std::string probe_asn;
     std::string probe_cc;
 
-    time_t start_time;
+    time_t start_time = 0;
 
     Settings options;
 
