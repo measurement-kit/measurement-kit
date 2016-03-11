@@ -18,21 +18,21 @@ TEST_CASE("TCPTestImpl works as expected in a common case") {
     auto count = 0;
     TCPTestImpl tcp_test("", Settings());
 
-    auto client1 = tcp_test.connect(
+    tcp_test.connect(
         {
          {"host", "www.neubot.org"}, {"port", "80"},
         },
-        [&count]() {
+        [&count](TCPClient) {
             if (++count >= 2) {
                 mk::break_loop();
             }
         });
 
-    auto client2 = tcp_test.connect(
+    tcp_test.connect(
         {
          {"host", "ooni.nu"}, {"port", "80"},
         },
-        [&count]() {
+        [&count](TCPClient) {
             if (++count >= 2) {
                 mk::break_loop();
             }
