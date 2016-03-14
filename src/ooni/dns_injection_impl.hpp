@@ -17,8 +17,6 @@ namespace ooni {
 class DNSInjectionImpl : public DNSTestImpl {
     using DNSTestImpl::DNSTestImpl;
 
-    std::function<void(report::Entry)> have_entry;
-
   public:
     DNSInjectionImpl(std::string input_filepath_, Settings options_)
         : DNSTestImpl(input_filepath_, options_) {
@@ -38,16 +36,15 @@ class DNSInjectionImpl : public DNSTestImpl {
     void main(std::string input, Settings options,
               std::function<void(report::Entry)> &&cb) {
         entry["injected"] = NULL;
-        have_entry = cb;
         query("A", "IN", input, options["nameserver"],
-              [this](dns::Response response) {
+              [this, cb](dns::Response response) {
                   logger.debug("dns_injection: got response");
                   if (response.get_evdns_status() == DNS_ERR_NONE) {
                       entry["injected"] = true;
                   } else {
                       entry["injected"] = false;
                   }
-                  have_entry(entry);
+                  cb(entry);
               });
     }
 };

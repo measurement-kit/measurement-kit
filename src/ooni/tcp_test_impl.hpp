@@ -34,7 +34,7 @@ class TCPTestImpl : public ooni::OoniTestImpl {
         test_version = "0.0.1";
     };
 
-    TCPClient connect(Settings options, std::function<void()> &&cb) {
+    void connect(Settings options, std::function<void(TCPClient)> &&cb) {
 
         if (options["port"] == "") {
             throw std::runtime_error("Port is required");
@@ -53,17 +53,19 @@ class TCPTestImpl : public ooni::OoniTestImpl {
         // life cycles, which is &disaster.
         //
 
-        connection->on_error([cb, this](Error e) {
+        connection->on_error([cb, this, connection](Error e) {
+            connection->on_error(nullptr);
+            connection->on_connect(nullptr);
             entry["error_code"] = (int)e;
             entry["connection"] = "failed";
-            cb();
+            cb(connection);
         });
-        connection->on_connect([this, cb]() {
+        connection->on_connect([this, cb, connection]() {
+            connection->on_error(nullptr);
+            connection->on_connect(nullptr);
             entry["connection"] = "success";
-            cb();
+            cb(connection);
         });
-
-        return connection;
     }
 };
 
