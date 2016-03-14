@@ -34,6 +34,8 @@ class Poller : public NonCopyable, public NonMovable {
 
     void loop();
 
+    // Deprecated: this function was required to implement src/common/async.cpp
+    // and after async will be rewritten this function could be removed.
     void loop_once();
 
     void break_loop();
