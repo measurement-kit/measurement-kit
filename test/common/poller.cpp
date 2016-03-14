@@ -159,3 +159,16 @@ TEST_CASE("poller.call_later() works") {
     poller.call_later(3.14, [&poller]() { poller.break_loop(); });
     poller.loop();
 }
+
+TEST_CASE("The periodic event is fired when we call loop()") {
+    mk::Poller poller;
+    unsigned int count = 0;
+    poller.on_periodic_([&count](Poller *poller) {
+        if (++count < 3) {
+            return;
+        }
+        poller->break_loop();
+    });
+    poller.loop();
+    REQUIRE(count == 3);
+}

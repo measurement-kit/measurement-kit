@@ -60,10 +60,16 @@ class Poller : public NonCopyable, public NonMovable {
         return &singleton;
     }
 
+    // BEGIN internal functions used to test periodic event functionality
+    void handle_periodic_();
+    void on_periodic_(std::function<void(Poller *)> callback);
+    // END internal functions used to test periodic event functionality
+
   private:
     event_base *base_;
     evdns_base *dnsbase_;
     Libs *libs_ = get_global_libs();
+    std::function<void(Poller *)> periodic_cb_;
 };
 
 /*
