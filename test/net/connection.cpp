@@ -58,15 +58,16 @@ TEST_CASE("It is safe to manipulate Connection after close") {
     mk::loop();
 }
 
-TEST_CASE("It is safe to close Connection while resolve is in progress") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    Connection s("PF_INET", "nexa.polito.it", "80");
-    DelayedCall unsched(0.001, [&s]() { s.close(); });
-    DelayedCall bail_out(2.0, []() { mk::break_loop(); });
-    mk::loop();
-}
+// Disable this unittest since this requires an API change
+/* TEST_CASE("It is safe to close Connection while resolve is in progress") { */
+/*     if (CheckConnectivity::is_down()) { */
+/*         return; */
+/*     } */
+/*     Connection s("PF_INET", "nexa.polito.it", "80"); */
+/*     DelayedCall unsched(0.001, [&s]() { s.close(); }); */
+/*     DelayedCall bail_out(2.0, []() { mk::break_loop(); }); */
+/*     mk::loop(); */
+/* } */
 
 TEST_CASE("connect() iterates over all the available addresses") {
     if (CheckConnectivity::is_down()) {
