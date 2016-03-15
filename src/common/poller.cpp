@@ -20,6 +20,11 @@ static void mk_call_soon_cb(evutil_socket_t, short, void *p) {
     delete cbp;
 }
 
+static void do_periodic(evutil_socket_t, short, void *ptr) {
+    mk::Poller *poller = static_cast<mk::Poller *>(ptr);
+    poller->handle_periodic_();
+}
+
 } // extern "C"
 
 namespace mk {
@@ -50,11 +55,6 @@ void Poller::call_later(double timeo, std::function<void()> cb) {
 
 void Poller::call_soon(std::function<void()> cb) {
     call_later(-1.0, cb);
-}
-
-static void do_periodic(evutil_socket_t, short, void *ptr) {
-    Poller *poller = static_cast<Poller *>(ptr);
-    poller->handle_periodic_();
 }
 
 void Poller::handle_periodic_() {
