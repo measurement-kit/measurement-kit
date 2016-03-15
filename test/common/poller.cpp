@@ -12,6 +12,7 @@
 #include <measurement_kit/common.hpp>
 #include "src/common/delayed_call.hpp"
 #include "src/common/check_connectivity.hpp"
+#include "src/common/utils.hpp"
 
 #include <event2/dns.h>
 
@@ -150,6 +151,29 @@ TEST_CASE("We can clear all name servers and then issue a query") {
 
 TEST_CASE("poller.call_soon() works") {
     mk::Poller poller;
+    auto now = mk::time_now();
     poller.call_soon([&poller]() { poller.break_loop(); });
     poller.loop();
+    REQUIRE((mk::time_now() - now) < 1.00); // Very conservative check
+}
+
+TEST_CASE("poller.call_later() works") {
+    mk::Poller poller;
+    auto now = mk::time_now();
+    poller.call_later(3.14, [&poller]() { poller.break_loop(); });
+    poller.loop();
+    REQUIRE((mk::time_now() - now) > 3.00); // Very conservative check
+}
+
+TEST_CASE("The periodic event is fired when we call loop()") {
+    mk::Poller poller;
+    unsigned int count = 0;
+    poller.on_periodic_([&count](Poller *poller) {
+        if (++count < 3) {
+            return;
+        }
+        poller->break_loop();
+    });
+    poller.loop();
+    REQUIRE(count == 3);
 }
