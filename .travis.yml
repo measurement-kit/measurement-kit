@@ -36,9 +36,9 @@ script:
           ./mobile/ios/scripts/build.sh;
       else
           ./configure $ARG && make -j2 V=0 && make -j2 check-am V=0;
-          if [ "$VALGRIND" = "true" ]; then 
-              make run-valgrind;
-          fi
+      fi
+    - if [ "$VALGRIND" = "true" ]; then
+          make run-valgrind;
       fi
 
 # Silence gcov standard output since it produces way too much output
