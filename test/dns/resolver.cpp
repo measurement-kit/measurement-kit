@@ -175,8 +175,8 @@ TEST_CASE("We can override the default timeout") {
 
     // I need to remember to never run a DNS on that machine :^)
     Resolver reso(Settings{{"nameserver", "130.192.91.231"},
-                           {"attempts", "1"},
-                           {"timeout", "0.5"}});
+                           {"attempts", 1},
+                           {"timeout", 0.5}});
 
     auto ticks = mk::time_now();
     reso.query("IN", "A", "www.neubot.org", [&](Error e, Response response) {
@@ -202,7 +202,7 @@ TEST_CASE("We can override the default number of tries") {
 
     // I need to remember to never run a DNS on that machine :^)
     Resolver reso(Settings{
-        {"nameserver", "130.192.91.231"}, {"attempts", "2"}, {"timeout", "0.5"},
+        {"nameserver", "130.192.91.231"}, {"attempts", 2}, {"timeout", 0.5},
     });
 
     auto ticks = mk::time_now();
@@ -497,7 +497,7 @@ TEST_CASE("A request to a nonexistent server times out") {
 
     // I need to remember to never run a DNS on that machine :^)
     Resolver reso(Settings{
-        {"nameserver", "130.192.91.231"}, {"attempts", "1"},
+        {"nameserver", "130.192.91.231"}, {"attempts", 1},
     });
     reso.query("IN", "A", "www.neubot.org", [&](Error e, Response response) {
         REQUIRE(e == TimeoutError());
@@ -537,7 +537,7 @@ TEST_CASE("It is safe to cancel requests in flight") {
     //
 
     Resolver reso(Settings{
-        {"nameserver", "8.8.8.8"}, {"attempts", "1"},
+        {"nameserver", "8.8.8.8"}, {"attempts", 1},
     });
 
     // Step #1: estimate the average RTT

@@ -19,7 +19,7 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
         "It should be possible to write multiple entries to an open report") {
         const std::string input = "some input";
 
-        std::map<std::string, std::string> options;
+        mk::Settings options;
         options["opt1"] = "value1";
         options["opt2"] = "value2";
 

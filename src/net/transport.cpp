@@ -50,11 +50,7 @@ static Transport connect_internal(Settings settings, Logger *logger,
 Maybe<Transport> connect(Settings settings, Logger *lp, Poller *poller) {
     double timeo = 30.0;
     if (settings.find("timeout") != settings.end()) {
-        size_t invalid;
-        timeo = std::stod(settings["timeout"], &invalid);
-        if (invalid != settings["timeout"].length()) {
-            throw std::runtime_error("invalid argument");
-        }
+        timeo = settings["timeout"].as<double>();
     }
     Transport transport = connect_internal(settings, lp, poller);
     if (timeo >= 0.0) {

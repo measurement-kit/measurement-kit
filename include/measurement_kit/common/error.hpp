@@ -58,5 +58,11 @@ class MaybeNotInitializedError : public Error {
     MaybeNotInitializedError() : Error(2, "unknown_failure 2") {}
 };
 
+/// Value error
+class ValueError : public Error {
+  public:
+    ValueError() : Error(3, "unknown_failure 3") {}
+};
+
 } // namespace mk
 #endif
