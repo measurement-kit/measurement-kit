@@ -25,7 +25,7 @@ gen_headers() {
 gen_sources() {
     for name in `ls $2`; do
         if [ ! -d $2/$name ]; then
-            if echo $name | grep -q '\.c[pp]*$'; then
+            if echo $name | grep -q '\.c[p]*$'; then
                 echo "$1 += $2/$name"
             fi
         fi
@@ -43,8 +43,8 @@ gen_sources() {
 gen_executables() {
     for name in `ls $2`; do
         if [ ! -d $2/$name ]; then
-            if echo $name | grep -q '\.c[pp]*$'; then
-                bin_name=$(echo $name | sed 's/\.c[pp]*$//g')
+            if echo $name | grep -q '\.c[p]*$'; then
+                bin_name=$(echo $name | sed 's/\.c[p]*$//g')
                 echo ""
                 echo "if $3"
                 echo "    $1 += $2/$bin_name"
