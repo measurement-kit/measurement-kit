@@ -44,13 +44,14 @@ script:
 # Silence gcov standard output since it produces way too much output
 after_success:
     - if [ "$COVERAGE" = "true" ]; then
-        coveralls --gcov /usr/bin/gcov-4.6 --exclude src/ext > /dev/null;
+        coveralls --gcov /usr/bin/gcov-5 --exclude src/ext > /dev/null;
       fi
 
 after_failure:
     - if [ -f "test-suite.log" ]; then 
         cat test-suite.log;
       fi
+
 matrix:
   fast_finish: true
   include:
@@ -87,13 +88,13 @@ matrix:
                 - llvm-toolchain-precise-3.6
                 - ubuntu-toolchain-r-test
     - sudo: false
-      compiler: g++-4.8
-      env: OS="Ubuntu 12.04" COVERAGE=true CXX_V=4.8 CC_V=4.8 EXPORT=true
+      compiler: g++-5
+      env: OS="Ubuntu 12.04" COVERAGE=true CXX_V=5 CC_V=5 EXPORT=true
       addons: 
         apt:
             packages:
-                - g++-4.8
-                - gcc-4.8
+                - g++-5
+                - gcc-5
             sources:
                 - ubuntu-toolchain-r-test 
     - dist: trusty
