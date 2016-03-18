@@ -30,6 +30,9 @@ install:
           ARG="$ARG --disable-shared";
       fi  
 
+# Only measure coverage with clang for now because I cannot manage to
+# convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
+# (For more context see measurement-kit/measurement-kit#255)
 script:
     - if [ "$BUILD_TYPE" = "ios" ]; then 
           ./mobile/ios/scripts/build.sh;
@@ -43,7 +46,7 @@ script:
 # Silence gcov standard output since it produces way too much output
 after_success:
     - if [ "$COVERAGE" = "true" ]; then
-        coveralls --gcov /usr/bin/gcov-5 --exclude src/ext > /dev/null;
+        coveralls --gcov /usr/bin/gcov-4.6 --exclude src/ext > /dev/null;
       fi
 
 after_failure:
@@ -78,8 +81,8 @@ matrix:
                 - ubuntu-toolchain-r-test 
 
     - sudo: false
-      compiler: clang-3.6 
-      env: OS="Ubuntu 12.04" VALGRIND=true CXX_V=3.6 CC_V=3.6 EXPORT=true 
+      compiler: clang-3.6
+      env: OS="Ubuntu 12.04" VALGRIND=true CXX_V=3.6 CC_V=3.6 EXPORT=true
       addons:
         apt:
             packages:
@@ -91,15 +94,17 @@ matrix:
                 - ubuntu-toolchain-r-test
 
     - sudo: false
-      compiler: g++-5
-      env: OS="Ubuntu 12.04" COVERAGE=true CXX_V=5 CC_V=5 EXPORT=true
-      addons: 
+      compiler: clang-3.6 
+      env: OS="Ubuntu 12.04" COVERAGE=true CXX_V=3.6 CC_V=3.6 EXPORT=true 
+      addons:
         apt:
             packages:
-                - g++-5
-                - gcc-5
+                - clang-3.6
+                - llvm-3.6-dev
+                - valgrind
             sources:
-                - ubuntu-toolchain-r-test 
+                - llvm-toolchain-precise-3.6
+                - ubuntu-toolchain-r-test
 
     - dist: trusty
       compiler: clang-3.5
