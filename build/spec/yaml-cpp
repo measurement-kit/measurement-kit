@@ -1,0 +1,8 @@
+pkg_name=yaml-cpp
+pkg_repository=https://github.com/jbeder/$pkg_name
+pkg_branch=release-0.5.2-16-g97d56c3
+
+# See <https://cmake.org/pipermail/cmake/2010-August/038941.html> for
+# an explanation of usage of CMAKE_INSTALL_NAME_DIR, etc.
+pkg_cmake_flags="-D Boost_INCLUDE_DIR=$pkg_prefix/include -DCMAKE_INSTALL_NAME_DIR=$pkg_prefix/lib -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON -DCMAKE_INSTALL_RPATH='${CMAKE_INSTALL_NAME_DIR}' -DYAML_CPP_BUILD_TOOLS=OFF -DYAML_CPP_BUILD_CONTRIB=OFF -DBUILD_SHARED_LIBS=ON $pkg_cmake_flags"
+pkg_make_flags="VERBOSE=1"
