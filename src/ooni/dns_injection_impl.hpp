@@ -37,7 +37,7 @@ class DNSInjectionImpl : public DNSTestImpl {
               std::function<void(report::Entry)> &&cb) {
         entry["injected"] = NULL;
         query("A", "IN", input, options["nameserver"],
-              [this](dns::Message message) {
+              [this, cb](dns::Message message) {
                   logger.debug("dns_injection: got response");
                   if (message.error_code == DNS_ERR_NONE) {
                       entry["injected"] = true;
