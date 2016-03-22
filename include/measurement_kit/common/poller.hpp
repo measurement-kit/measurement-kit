@@ -32,6 +32,11 @@ class Poller : public NonCopyable, public NonMovable {
 
     void call_later(double, std::function<void()> cb);
 
+    void loop_with_initial_event(std::function<void()> cb) {
+        call_soon(cb);
+        loop();
+    }
+
     void loop();
 
     // Deprecated: this function was required to implement src/common/async.cpp
@@ -88,6 +93,10 @@ inline event_base *get_global_event_base(void) {
 
 inline evdns_base *get_global_evdns_base(void) {
     return (Poller::global()->get_evdns_base());
+}
+
+inline void loop_with_initial_event(std::function<void()> cb) {
+    Poller::global()->loop_with_initial_event(cb);
 }
 
 inline void loop(void) { Poller::global()->loop(); }
