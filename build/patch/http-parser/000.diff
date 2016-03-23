@@ -20,7 +20,7 @@ index 33c8ba0..407bc46 100644
 	$(CC) $(LDFLAGS_LIB) -o $(SONAME) $<
 
 +libhttp_parser.a: http_parser.o
-+ 	$(AR) $(ARFLAGS) libhttp_parser.a $<
++	$(AR) $(ARFLAGS) libhttp_parser.a $<
 +
 +library: $(SONAME) libhttp_parser.a
 +
@@ -31,25 +31,25 @@ index 33c8ba0..407bc46 100644
 	ctags $^
 
  install: library
-- 	$(INSTALL) -D  http_parser.h $(INCLUDEDIR)/http_parser.h
-- 	$(INSTALL) -D $(SONAME) $(LIBDIR)/$(SONAME)
-- 	ln -s $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
-+ 	$(INSTALL) -d $(INCLUDEDIR)
-+ 	$(INSTALL) http_parser.h $(INCLUDEDIR)/http_parser.h
-+ 	$(INSTALL) -d $(LIBDIR)
-+ 	$(INSTALL) $(SONAME) $(LIBDIR)/$(SONAME)
-+ 	$(INSTALL) libhttp_parser.a $(LIBDIR)/libhttp_parser.a
-+ 	ln -sf $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
+-	$(INSTALL) -D  http_parser.h $(INCLUDEDIR)/http_parser.h
+-	$(INSTALL) -D $(SONAME) $(LIBDIR)/$(SONAME)
+-	ln -s $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
++	$(INSTALL) -d $(INCLUDEDIR)
++	$(INSTALL) http_parser.h $(INCLUDEDIR)/http_parser.h
++	$(INSTALL) -d $(LIBDIR)
++	$(INSTALL) $(SONAME) $(LIBDIR)/$(SONAME)
++	$(INSTALL) libhttp_parser.a $(LIBDIR)/libhttp_parser.a
++	ln -sf $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
 
  install-strip: library
-- 	$(INSTALL) -D  http_parser.h $(INCLUDEDIR)/http_parser.h
-- 	$(INSTALL) -D -s $(SONAME) $(LIBDIR)/$(SONAME)
-- 	ln -s $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
-+ 	$(INSTALL) -d $(INCLUDEDIR)
-+ 	$(INSTALL) http_parser.h $(INCLUDEDIR)/http_parser.h
-+ 	$(INSTALL) -d $(LIBDIR)
-+ 	$(INSTALL) -s $(SONAME) $(LIBDIR)/$(SONAME)
-+ 	ln -sf $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
+-	$(INSTALL) -D  http_parser.h $(INCLUDEDIR)/http_parser.h
+-	$(INSTALL) -D -s $(SONAME) $(LIBDIR)/$(SONAME)
+-	ln -s $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
++	$(INSTALL) -d $(INCLUDEDIR)
++	$(INSTALL) http_parser.h $(INCLUDEDIR)/http_parser.h
++	$(INSTALL) -d $(LIBDIR)
++	$(INSTALL) -s $(SONAME) $(LIBDIR)/$(SONAME)
++	ln -sf $(LIBDIR)/$(SONAME) $(LIBDIR)/libhttp_parser.$(SOEXT)
 
  uninstall:
 	rm $(INCLUDEDIR)/http_parser.h
