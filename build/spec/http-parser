@@ -1,4 +1,5 @@
 pkg_name=http-parser
 pkg_repository=https://github.com/nodejs/$pkg_name
+pkg_tag=v2.6.0
 pkg_make_flags="PREFIX=$pkg_prefix $pkg_make_flags library"
 pkg_make_install_flags="PREFIX=$pkg_prefix $pkg_make_install_flags"

@@ -49,6 +49,9 @@ cd third_party/$pkg_name
 if [ ! -z "$pkg_branch" ]; then
     git checkout $pkg_branch
 fi
+if [ ! -z "$pkg_tag" ]; then
+    git checkout tags/$pkg_tag
+fi
 for diff in `ls ../../build/patch/$pkg_name`; do
     cp ../../build/patch/$pkg_name/$diff .
     git apply -v $diff
