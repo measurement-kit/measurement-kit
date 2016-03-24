@@ -41,9 +41,7 @@ class SettingsEntry : public std::string {
         return value;
     }
 
-    std::string str() const {
-        return as<std::string>();
-    }
+    std::string str() const { return as<std::string>(); }
 
   protected:
   private:
@@ -52,5 +50,21 @@ class SettingsEntry : public std::string {
 };
 
 typedef std::map<std::string, SettingsEntry> Settings;
+
+// Perhaps this could be moved in another place?
+template <typename To, typename From> To lexical_cast(From f) {
+    std::stringstream ss;
+    To value;
+    ss << f;
+    ss >> value;
+    if (!ss.eof()) {
+        throw ValueError(); // Not all input was converted
+    }
+    if (ss.fail()) {
+        throw ValueError(); // Input format was wrong
+    }
+    return value;
 }
+
+} // namespace mk
 #endif

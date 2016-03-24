@@ -82,6 +82,13 @@ class LineTooLongError : public Error {
     LineTooLongError() : Error(1010, "unknown_failure 1010") {}
 };
 
+/// Generic network error
+class NetworkError : public Error {
+  public:
+    NetworkError() : Error(1011, "unknown_failure 1011") {}
+};
+
+
 } // namespace net
 } // namespace mk
 #endif

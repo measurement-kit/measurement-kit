@@ -90,6 +90,7 @@ test/http/request_serializer
 test/http/response_parser
 test/http/stream
 test/net/buffer
+test/net/connect
 test/net/connection
 test/net/connection_check_fds
 test/net/transport
