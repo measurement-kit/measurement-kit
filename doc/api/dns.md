@@ -8,11 +8,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/dns.hpp>
 
-// Constructs resolver with default settings
-mk::dns::Resolver resolver;
-
-// Constructs resolver with specific settings
-mk::dns::Resolver reso({
+// Constructs settings to be passed to the query function
+mk::Settings settings({
     {"nameserver", "8.8.8.8:53"},  // Set the name server IP
     {"attempts", "1"},             // How many attempts before erroring out
     {"timeout", "3.1415"},         // How many seconds before timeout
@@ -20,50 +17,35 @@ mk::dns::Resolver reso({
 });
 
 // Issue an async DNS query
-reso.query(
+mk::dns::query(
         "IN",                                             // Domain of the query
         "AAAA",                                           // Type of query
         "nexa.polito.it",                                 // Name to resolve
-        [](mk::Error error, mk::dns::Response response) { // Callback
+        [](mk::Error error, mk::dns::Message message) { // Callback
             if (error) throw error;
-            // handle successful response
-        });
 
-// Construct response with default parameter
-mk::dns::Response response; // by default evdns status is DNS_ERR_UNKNOWN
+            // Return evdns status (this is mainly used internally)
+            int error_code = message.error_code;
 
-mk::dns::Response resp(
-        DNS_ERR_NONE,     // evdns status code
-        DNS_TYPE_IPv4,    // evdns type
-        n_records,        // number of returned records
-        ttl,              // records TTL
-        started,          // time when request was started (double)
-        addresses);       // opaque response body
+            // Get round trip time of the query
+            double rtt = message.rtt;
 
-// Get resolved records list
-for (std::string s : resp.get_results()) {
-    std::cout << s << "\n";
-}
+            for (auto answer : message.answers) {
+                // Get time to live of the answer
+                int ttl = answer.ttl;
 
-// Returns whether the response is authoritative
-std::string authoritative = resp.is_authoritative();
-
-// Return evdns status (this is mainly used internally)
-int code = resp.get_evdns_status();
-
-// Get time to live
-int ttl = resp.get_ttl();
-
-// Get round trip time
-double rtt = resp.get_rtt();
-
-#include <event2/dns.h> // for DNS_IPv4_A
-
-// Get evdns type
-char type = resp.get_type();
-if (type == DNS_IPv4_A) {
-    // do something if request was for IPv4
-}
+                if (answer.type == dns::QueryTypeId::A) {
+                    // Get the IPv4 address in the case of A answers
+                    std::string ipv4 = answer.ipv4;
+                } else if (answer.type == dns::QueryTypeId::AAAA) {
+                    // Get the IPv6 address in the case of AAAA answers
+                    std::string ipv6 = answer.ipv6;
+                } else if (answer.type == dns::QueryTypeId::PTR) {
+                    // Get the domain pointer in the case of PTR answers
+                    std::string hostname = answer.hostname;
+                }
+            }
+        }, settings);
 ```
 
 # DESCRIPTION
@@ -71,8 +53,7 @@ if (type == DNS_IPv4_A) {
 The DNS library allows you to issue DNS query and
 to receive the corresponding responses.
 
-The `Resolver` class represents a DNS resolver. When you construct
-a resolver you can specify the following settings:
+The `Settings` passed to the query function can be the following:
 
 - *attempts*: how many attempts before erroring out (default is three)
 
@@ -86,23 +67,22 @@ a resolver you can specify the following settings:
 - *timeout*: time after which we stop waiting for a response (by
   default this is five seconds)
 
-Once the resolver is constructed, you can use it to issue queries
-using its `query()` method. You pass to this method the
-type of query, the name to resolve, a callback to be called once the
-result of the query (either success or error) is know.
+You pass the `query()` function the type of query, the name to resolve, a
+callback to be called once the result of the query (either success or error) is
+know.
 
 The domain of the query must be `IN`. (Instead of specifying a string,
 e.g. `"IN"`, you can also explictly specify the corresponding query class
-id, e.g. `QueryClassId::IN`.)
+id, e.g. `dns::QueryClassId::IN`.)
 
 The type of query matches closely the query types made available
 by `evdns`. You can choose among the following:
 
-- `A`: resolve IPv4 address of domain
-- `REVERSE_A`: resolve domain of IPv4 address
-- `AAAA`: resolve IPv6 address of domain
-- `REVERSE_AAAA`: resolve domain of IPv6 address
-- `PTR`: perform reverse DNS resolution
+- `"A"`: resolve IPv4 address of domain
+- `"REVERSE_A"`: resolve domain of IPv4 address
+- `"AAAA"`: resolve IPv6 address of domain
+- `"REVERSE_AAAA"`: resolve domain of IPv6 address
+- `"PTR"`: perform reverse DNS resolution
 
 (Of course, instead of specifying the types as strings, e.g. `"A"` or `AAAA`, you
 can specify the corresponding query type, e.g. `QueryTypeId::A` or `QueryTypeId::AAAA`.)
@@ -135,11 +115,6 @@ The `Response` class holds the result of an async DNS `Query`. You do not
 typically instantiate a `Response` yourself, rather you receive an instance
 of `Response` in response to a DNS query.
 
-
-# BUGS
-
-Since `evnds` does not report whether the response was authoritative, the
-`is_authoritative()` method of `Response` class always returns `"unknown"`.
 
 # SEE ALSO
 

@@ -11,18 +11,14 @@
 
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/libs.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/settings.hpp>
 
 
-
 struct evdns_base; // Internally we use evdns
 
 namespace mk {
-
-struct Libs;
 
 namespace dns {
 
@@ -166,7 +162,7 @@ enum class QueryTypeId {
 class QueryClass {
   public:
     /// Constructor with id
-    QueryClass(QueryClassId id) : id_(id) {}
+    QueryClass(QueryClassId id = QueryClassId::IN) : id_(id) {}
 
     /// Constructor with string
     QueryClass(const char *x) {
@@ -200,7 +196,7 @@ class QueryClass {
 class QueryType {
   public:
     /// Constructor with id
-    QueryType(QueryTypeId id) : id_(id) {}
+    QueryType(QueryTypeId id = QueryTypeId::A) : id_(id) {}
 
     /// Constructor with string
     QueryType(const char *x) {
@@ -260,90 +256,60 @@ class QueryType {
     QueryTypeId id_;
 };
 
-/// DNS response.
-class Response {
+class Answer {
 
-  protected:
-    int code = 66 /* = DNS_ERR_UNKNOWN */;
-    double rtt = 0.0;
-    int ttl = 0;
-    char type = 0;
-    std::vector<std::string> results;
+    public:
+        QueryType type;
+        QueryClass qclass;
 
-  public:
-    Response(Response &) = default;
-    Response &operator=(Response &) = default;
-    Response(Response &&) = default;
-    Response &operator=(Response &&) = default;
+        int code = 0;
 
-    /// Constructs an empty DNS response object.
-    Response() {}
+        uint32_t ttl = 0;
 
-    /// Constructs a DNS response object.
-    Response(int code, char type, int count, int ttl, double started,
-             void *addresses, Logger *lp = Logger::global(),
-             Libs *libs = nullptr, int start_from = 0);
+        std::string name;
 
-    /// Get the results returned by the query.
-    std::vector<std::string> get_results() { return results; }
+        std::string ipv4; ///< For A records
+        std::string ipv6; ///< For AAAA records
 
-    /// Get whether the response was authoritative.
-    std::string get_reply_authoritative() { return "unknown"; /* TODO */ }
+        std::string hostname; ///< For PTR, SOA and CNAME records
 
-    /// Get the integer status code returned by evdns.
-    int get_evdns_status() { return code; }
+        std::string responsible_name; ///< For SOA records
+        uint32_t serial_number; ///< For SOA records
+        uint32_t refresh_interval; ///< For SOA records
+        uint32_t retry_interval; ///< For SOA records
+        uint32_t minimum_ttl; ///< For SOA records
+        uint32_t expiration_limit; ///< For SOA records
 
-    /// Get the time to live of the response.
-    int get_ttl() { return ttl; }
-
-    /// Get the time elapsed since the request was sent until
-    /// the response was received.
-    double get_rtt() { return rtt; }
-
-    /// Return the evdns type (e.g. DNS_IPv4_A)
-    char get_type() { return type; }
 };
 
-/// DNS Resolver object.
-class Resolver : public NonCopyable, public NonMovable {
+class Query {
+    public:
+        QueryType type;
+        QueryClass qclass;
 
-  private:
-    void cleanup();
+        uint32_t ttl = 0;
 
-  protected:
-    Settings settings;
-    Libs *libs = get_global_libs();
-    Poller *poller = mk::get_global_poller();
-    evdns_base *base = nullptr;
-    Logger *logger = Logger::global();
-
-  public:
-    /// Default constructor.
-    Resolver() {}
-
-    /// Constructor with specific settings.
-    Resolver(Settings settings_, Logger *lp = Logger::global(),
-             Libs *lev = nullptr, Poller *plr = nullptr) {
-        if (lev != nullptr) {
-            libs = lev;
-        }
-        if (plr != nullptr) {
-            poller = plr;
-        }
-        settings = settings_;
-        logger = lp;
-    }
-
-    /// Get the evdns_base bound to the settings.
-    evdns_base *get_evdns_base();
-
-    /// Issue a Query using this resolver.
-    void query(QueryClass dns_class, QueryType dns_type, std::string name,
-               std::function<void(Error, Response)> func);
-
-    /// Default destructor.
-    ~Resolver() { cleanup(); }
+        std::string name;
 };
+
+class Message {
+    public:
+        Message() {};
+        Message(std::nullptr_t) {};
+
+        double rtt = 0.0;
+
+        int error_code = 66;
+
+        std::vector<Answer> answers;
+        std::vector<Query> queries;
+};
+
+/// Perform a single DNS query
+void query(QueryClass dns_class, QueryType dns_type, std::string name,
+           std::function<void(Error, Message)> func,
+           Settings settings = {},
+           Poller *poller = mk::get_global_poller());
 
 } // namespace dns
 } // namespace mk
