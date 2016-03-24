@@ -1,5 +1,6 @@
 ---
 BasedOnStyle: LLVM
-AllowShortIfStatementsOnASingleLine: true
+ContinuationIndentWidth: 8
+AlignAfterOpenBracket: DontAlign
 IndentWidth: 4
 ---
