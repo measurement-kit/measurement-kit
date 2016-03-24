@@ -252,9 +252,6 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
     message.queries.push_back(query);
 
     //
-    // We explain above why we don't store the return value
-    // of the evdns_base_resolve_xxx() functions below
-    //
     // Note: evdns_base_resolve_xxx() return a evdns_request
     // object that may be used to cancel the request. Yet, the
     // semantic of cancelling a request is such that evdns
