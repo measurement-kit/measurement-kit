@@ -17,7 +17,6 @@
 #include "src/net/emitter.hpp"
 #include <measurement_kit/net/transport.hpp>
 
-#include "src/dns/query.hpp"
 #include <measurement_kit/dns.hpp>
 
 #include <event2/bufferevent.h>
@@ -34,7 +33,6 @@ namespace net {
 class Connection : public Emitter, public NonMovable, public NonCopyable {
   private:
     Bufferevent bev;
-    dns::Query dns_request;
     unsigned int connecting = 0;
     std::string address;
     std::string port;
@@ -52,7 +50,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     // Functions used when connecting
     void connect_next();
-    void handle_resolve(Error, char, std::vector<std::string>);
+    void handle_resolve(Error, std::vector<dns::Answer>);
     void resolve();
     bool resolve_internal(char);
 

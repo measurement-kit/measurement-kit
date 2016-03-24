@@ -158,8 +158,8 @@ void Connection::connect_next() {
     this->emit_error(ConnectFailedError());
 }
 
-void Connection::handle_resolve(Error error, char type,
-                                std::vector<std::string> results) {
+void Connection::handle_resolve(Error error,
+                                std::vector<dns::Answer> answers) {
 
     const char *_family;
 
@@ -169,23 +169,21 @@ void Connection::handle_resolve(Error error, char type,
 
     if (error) goto finally;
 
-    switch (type) {
-    case DNS_IPv4_A:
-        logger->info("handle_resolve - IPv4");
-        _family = "PF_INET";
-        break;
-    case DNS_IPv6_AAAA:
-        logger->info("handle_resolve - IPv6");
-        _family = "PF_INET6";
-        break;
-    default:
-        abort();
-    }
-
-    for (auto &address : results) {
+    for (auto answer: answers) {
+        std::string address;
+        if (answer.type == dns::QueryTypeId::A) {
+            address = answer.ipv4;
+            _family = "PF_INET";
+        } else if (answer.type == dns::QueryTypeId::AAAA) {
+            address = answer.ipv6;
+            _family = "PF_INET6";
+        } else {
+             abort();
+             break;
+        }
         logger->info("handle_resolve - address %s", address.c_str());
         logger->info("handle_resolve - family %s", _family);
-        addrlist.push_back(std::make_pair(_family, address));
+        addrlist.push_back(std::make_pair(_family, address.c_str()));
     }
 
 finally:
@@ -216,11 +214,11 @@ bool Connection::resolve_internal(char type) {
         return false;
     }
 
-    dns_request = dns::Query(
+    dns::query(
         dns::QueryClassId::IN, query,
-        address, [this](Error error, dns::Response resp) {
-            handle_resolve(error, resp.get_type(), resp.get_results());
-        }, logger, poller->get_evdns_base());
+        address, [this](Error error, dns::Message message) {
+            handle_resolve(error, message.answers);
+        }, {}, poller);
 
     return true;
 }
@@ -289,7 +287,6 @@ void Connection::resolve() {
 
 void Connection::close() {
     this->bev.close();
-    this->dns_request.cancel();
 }
 
 } // namespace net
