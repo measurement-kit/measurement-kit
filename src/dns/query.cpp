@@ -226,6 +226,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
         base = create_evdns_base(settings, poller);
     } catch (std::runtime_error &) {
         cb(GenericError(), nullptr); // TODO: refine error thrown here
+        return;
     } catch (std::bad_alloc &) {
         throw;  // Let this propagate as we can do nothing
     }
