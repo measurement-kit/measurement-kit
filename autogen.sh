@@ -25,7 +25,7 @@ gen_headers() {
 gen_sources() {
     for name in `ls $2`; do
         if [ ! -d $2/$name ]; then
-            if echo $name | grep -q '\.c[pp]*$'; then
+            if echo $name | grep -q '\.c[p]*$'; then
                 echo "$1 += $2/$name"
             fi
         fi
@@ -43,12 +43,13 @@ gen_sources() {
 gen_executables() {
     for name in `ls $2`; do
         if [ ! -d $2/$name ]; then
-            if echo $name | grep -q '\.c[pp]*$'; then
-                bin_name=$(echo $name | sed 's/\.c[pp]*$//g')
+            if echo $name | grep -q '\.c[p]*$'; then
+                bin_name=$(echo $name | sed 's/\.c[p]*$//g')
                 echo ""
                 echo "if $3"
                 echo "    $1 += $2/$bin_name"
                 echo "endif"
+                echo "$2/$bin_name" >> .gitignore
                 echo "$(slug $2/$bin_name)_SOURCES = $2/$name"
                 echo "$(slug $2/$bin_name)_LDADD = libmeasurement_kit.la"
             fi
@@ -80,6 +81,10 @@ echo ""                                                >> include.am
 gen_headers include/measurement_kit                    >> include.am
 gen_executables noinst_PROGRAMS example BUILD_EXAMPLES >> include.am
 gen_executables ALL_TESTS test BUILD_TESTS             >> include.am
+
+echo "* Updating .gitignore"
+sort -u .gitignore > .gitignore.new
+mv .gitignore.new .gitignore
 
 echo "* Fetching dependencies"
 get akheron/jansson v2.7-52-ge44b223 jansson
