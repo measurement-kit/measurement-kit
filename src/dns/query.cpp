@@ -220,9 +220,15 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
 
     Message message;
     Query query;
+    evdns_base *base;
 
-    // XXX add proper exception handling for evbase creation
-    evdns_base *base = create_evdns_base(settings, poller);
+    try {
+        base = create_evdns_base(settings, poller);
+    } catch (std::runtime_error &) {
+        cb(GenericError(), nullptr); // TODO: refine error thrown here
+    } catch (std::bad_alloc &) {
+        throw;  // Let this propagate as we can do nothing
+    }
 
     if (dns_class != QueryClassId::IN) {
         evdns_base_free(base, 1);
