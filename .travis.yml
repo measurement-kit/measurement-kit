@@ -107,15 +107,15 @@ matrix:
             - ubuntu-toolchain-r-test
 
     - dist: trusty
-      compiler: clang-3.5
+      compiler: clang-3.6
       env: OS="Ubuntu 14.04"
 
     - dist: trusty
-      compiler: g++-4.8
+      compiler: g++-5
       env: OS="Ubuntu 14.04"
 
     - os: osx
-      compiler: g++-4.8
+      compiler: g++-5
       env: OS=OSX CXX_V=4.8 CC_V=4.8 EXPORT=true
 
     - os: osx
