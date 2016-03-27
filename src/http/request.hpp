@@ -91,10 +91,10 @@ class Request : public NonCopyable, public NonMovable {
             return;
         }
         // Extend settings with address and port to connect to
-        settings["port"] = serializer.port;
-        settings["address"] = serializer.address;
+        settings["port"] = std::to_string(serializer.url.port);
+        settings["address"] = serializer.url.address;
         // If needed, extend settings with socks5 proxy info
-        if (serializer.schema == "httpo") {
+        if (serializer.url.schema == "httpo") {
             // tor_socks_port takes precedence because it's more specific
             if (settings.find("tor_socks_port") != settings.end()) {
                 std::string proxy = "127.0.0.1:";
