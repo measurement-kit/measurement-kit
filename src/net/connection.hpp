@@ -67,6 +67,8 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     Connection(const char *, const char *, const char *, Poller *, Logger *,
                evutil_socket_t);
 
+    Connection(bufferevent *bev);
+
     ~Connection() override;
 
     void on_data(std::function<void(Buffer)> fn) override {
