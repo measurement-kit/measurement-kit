@@ -108,7 +108,7 @@ class Url {
   public:
     std::string schema;    /// URL schema
     std::string address;   /// URL address
-    std::string port;      /// URL port
+    int port = 80;         /// URL port
     std::string path;      /// URL path
     std::string query;     /// URL query
     std::string pathquery; /// URL path followed by optional query

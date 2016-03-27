@@ -26,10 +26,7 @@ Url parse_url(std::string url) {
     retval.address = url.substr(url_parser.field_data[UF_HOST].off,
                                 url_parser.field_data[UF_HOST].len);
     if ((url_parser.field_set & (1 << UF_PORT)) != 0) {
-        retval.port = url.substr(url_parser.field_data[UF_PORT].off,
-                                  url_parser.field_data[UF_PORT].len);
-    } else {
-        retval.port = "80";
+        retval.port = url_parser.port;
     }
     if ((url_parser.field_set & (1 << UF_PATH)) != 0) {
         retval.path = url.substr(url_parser.field_data[UF_PATH].off,

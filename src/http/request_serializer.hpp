@@ -24,17 +24,14 @@ namespace http {
 struct RequestSerializer {
 
     std::string method;    /*!< Request method */
-    std::string schema;    /*!< URL schema */
-    std::string address;   /*!< URL address */
-    std::string port;      /*!< URL port */
-    std::string pathquery; /*!< URL path followed by optional query */
+    Url url;               /*!< Request URL */
     std::string protocol;  /*!< Request protocol */
     Headers headers;       /*!< Request headers */
     std::string body;      /*!< Request body */
 
     /*!
      * \brief Constructor.
-     * \param s A std::map with key values of the options supported:
+     * \param settings A std::map with key values of the options supported:
      *
      *             {
      *                 "follow_redirects": "yes|no",
@@ -44,10 +41,16 @@ struct RequestSerializer {
      *                 "http_version": "HTTP/1.1",
      *                 "path": by default is taken from the url
      *             }
-     * \param headers HTTP headers (moved for efficiency).
-     * \param body Request body (moved for efficiency).
+     * \param hdrs HTTP headers (moved for efficiency).
+     * \param bd Request body (moved for efficiency).
      */
-    RequestSerializer(Settings s, Headers headers, std::string body);
+    RequestSerializer(Settings settings, Headers hdrs, std::string bd) {
+        headers = hdrs;
+        body = bd;
+        url = parse_url(settings.at("url"));
+        protocol = settings.get("http_version", std::string("HTTP/1.1"));
+        method = settings.get("method", std::string("GET"));
+    }
 
     RequestSerializer() {
         // nothing
@@ -58,15 +61,15 @@ struct RequestSerializer {
      * \param buff Buffer where to serialize request.
      */
     void serialize(net::Buffer &buff) {
-        buff << method << " " << pathquery << " " << protocol << "\r\n";
+        buff << method << " " << url.pathquery << " " << protocol << "\r\n";
         for (auto &kv : headers) {
             buff << kv.first << ": " << kv.second << "\r\n";
         }
 
-        buff << "Host: " << address;
-        if (port != "80") {
+        buff << "Host: " << url.address;
+        if (url.port != 80) {
             buff << ":";
-            buff << port;
+            buff << std::to_string(url.port);
         }
         buff << "\r\n";
 
