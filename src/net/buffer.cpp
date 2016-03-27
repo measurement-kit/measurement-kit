@@ -7,18 +7,19 @@
 #include <stdint.h>                            // for uint16_t, uint32_t, etc
 #include <functional>                          // for function
 #include <measurement_kit/common/error.hpp>    // for NoError, Error
-#include <measurement_kit/common/evbuffer.hpp> // for Evbuffer
 #include <measurement_kit/common/maybe.hpp>    // for Maybe
 #include <measurement_kit/net/buffer.hpp>      // for Buffer
 #include <measurement_kit/net/error.hpp>       // for net specific errors
 #include <memory>                              // for unique_ptr
 #include <stdexcept>                           // for runtime_error
 #include <string>                              // for string, basic_string
+#include "src/net/evbuffer.hpp"
 
 namespace mk {
 namespace net {
 
 Buffer::Buffer(evbuffer *b) {
+    evbuf.reset(new Evbuffer);
     if (b != nullptr && evbuffer_add_buffer(*evbuf, b) != 0)
         throw std::runtime_error("evbuffer_add_buffer failed");
 }
@@ -34,6 +35,16 @@ Buffer &Buffer::operator>>(evbuffer *dest) {
     if (dest == nullptr) throw std::runtime_error("dest is nullptr");
     if (evbuffer_add_buffer(dest, *evbuf) != 0)
         throw std::runtime_error("evbuffer_add_buffer failed");
+    return *this;
+}
+
+Buffer &Buffer::operator<<(Buffer &source) {
+    *this << *source.evbuf;
+    return *this;
+}
+
+Buffer &Buffer::operator>>(Buffer &source) {
+    *this >> *source.evbuf;
     return *this;
 }
 

@@ -1,32 +1,26 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
 #ifndef MEASUREMENT_KIT_NET_BUFFER_HPP
 #define MEASUREMENT_KIT_NET_BUFFER_HPP
 
-#include <stddef.h>                             // for size_t
-#include <stdint.h>                             // for uint16_t, uint32_t, etc
-#include <string.h>                             // for strlen
-#include <functional>                           // for function
-#include <measurement_kit/common/evbuffer.hpp>  // for Evbuffer
-#include <measurement_kit/common/maybe.hpp>     // for Maybe
-#include <measurement_kit/common/var.hpp>       // for Evbuffer
-#include <stdexcept>                            // for runtime_error
-#include <string>                               // for string
-#include <tuple>                                // for tuple
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <functional>
+#include <measurement_kit/common.hpp>
+#include <stdexcept>
+#include <string>
+#include <tuple>
 struct evbuffer;
 
 namespace mk {
-
-class Error;
-
 namespace net {
 
-class Buffer {
-  private:
-    Var<Evbuffer> evbuf{new Evbuffer};
+// Forward declaration
+class Evbuffer;
 
+class Buffer {
   public:
     Buffer(evbuffer *b = nullptr);
 
@@ -42,14 +36,9 @@ class Buffer {
 
     Buffer &operator>>(evbuffer *dest);
 
-    Buffer &operator<<(Buffer &source) {
-        *this << *source.evbuf;
-        return *this;
-    }
-    Buffer &operator>>(Buffer &source) {
-        *this >> *source.evbuf;
-        return *this;
-    }
+    Buffer &operator<<(Buffer &source);
+
+    Buffer &operator>>(Buffer &source);
 
     size_t length();
 
@@ -121,6 +110,9 @@ class Buffer {
     void write_rand(size_t count);
 
     void write(size_t count, std::function<size_t(void *, size_t)> func);
+
+  private:
+    Var<Evbuffer> evbuf;
 };
 
 } // namespace net

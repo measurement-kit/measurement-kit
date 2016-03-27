@@ -11,6 +11,7 @@
 
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
+#include "src/net/evbuffer.hpp"
 
 #include <event2/buffer.h>
 
