@@ -49,7 +49,22 @@ class SettingsEntry : public std::string {
     // DOING THAT CREATES THE RISK OF OBJECT SLICING.
 };
 
-typedef std::map<std::string, SettingsEntry> Settings;
+class Settings : public std::map<std::string, SettingsEntry> {
+  public:
+    using std::map<std::string, SettingsEntry>::map;
+
+    template <typename Type> Type get(std::string key, Type def_value) {
+        if (find(key) == end()) {
+            return def_value;
+        }
+        return at(key).as<Type>();
+    }
+
+  protected:
+  private:
+    // NO ATTRIBUTES HERE BY DESIGN. DO NOT ADD ATTRIBUTES HERE BECAUSE
+    // DOING THAT CREATES THE RISK OF OBJECT SLICING.
+};
 
 // Perhaps this could be moved in another place?
 template <typename To, typename From> To lexical_cast(From f) {
