@@ -5,9 +5,7 @@
 #include <functional>
 #include <initializer_list>
 #include <map>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/maybe.hpp>
+#include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
 #include <regex>
@@ -33,7 +31,7 @@ Query::Query(std::initializer_list<std::pair<std::string, std::string>> in) {
     }
 }
 
-Maybe<std::string> Query::as_query() {
+ErrorOr<std::string> Query::as_query() {
     std::string query;
     if (policy == "" && metro == "" && address_family == "") {
         return query;
@@ -41,7 +39,7 @@ Maybe<std::string> Query::as_query() {
     if (policy != "") {
         if (policy != "geo" && policy != "random" && policy != "metro" &&
             policy != "country") {
-            return Maybe<std::string>(InvalidPolicyError(), "");
+            return InvalidPolicyError();
         }
         if (query != "") query += "&";
         query += "policy=" + policy;
@@ -49,14 +47,14 @@ Maybe<std::string> Query::as_query() {
     if (metro != "") {
         std::regex valid_metro("^[a-z]{3}$");
         if (!std::regex_match(metro, valid_metro)) {
-            return Maybe<std::string>(InvalidMetroError(), "");
+            return InvalidMetroError();
         }
         if (query != "") query += "&";
         query += "metro=" + metro;
     }
     if (address_family != "") {
         if (address_family != "ipv4" && address_family != "ipv6") {
-            return Maybe<std::string>(InvalidAddressFamilyError(), "");
+            return InvalidAddressFamilyError();
         }
         if (query != "") query += "&";
         query += "address_family=" + address_family;
@@ -67,7 +65,7 @@ Maybe<std::string> Query::as_query() {
 
 void query(std::string tool, std::function<void(Error, Reply)> callback,
            Query request) {
-    Maybe<std::string> query = request.as_query();
+    ErrorOr<std::string> query = request.as_query();
     if (!query) {
         callback(query.as_error(), Reply());
         return;
@@ -79,7 +77,7 @@ void query(std::string tool, std::function<void(Error, Reply)> callback,
         return;
     }
     url += tool;
-    url += query.as_value();
+    url += *query;
     mk::debug("about to call the request function");
     http::request(
         {

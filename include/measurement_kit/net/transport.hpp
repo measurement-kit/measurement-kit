@@ -53,8 +53,8 @@ class Transport {
 };
 
 /// Connects a transport
-Maybe<Transport> connect(Settings, Logger * = Logger::global(),
-                         Poller * = Poller::global());
+ErrorOr<Transport> connect(Settings, Logger * = Logger::global(),
+                           Poller * = Poller::global());
 
 /// Connects a transport (alternative syntax)
 void connect(std::string address, int port,

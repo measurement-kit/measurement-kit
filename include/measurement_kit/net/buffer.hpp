@@ -75,7 +75,7 @@ class Buffer {
         return read(n);
     }
 
-    Maybe<std::string> readline(size_t maxline);
+    ErrorOr<std::string> readline(size_t maxline);
 
     /*
      * Wrappers for write, including a handy wrapper for sending

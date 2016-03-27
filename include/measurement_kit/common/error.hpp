@@ -52,10 +52,10 @@ class GenericError : public Error {
     GenericError() : Error(1, "unknown_failure 1") {} ///< Default constructor
 };
 
-/// Maybe not initialized error
-class MaybeNotInitializedError : public Error {
+/// Not initialized error
+class NotInitializedError : public Error {
   public:
-    MaybeNotInitializedError() : Error(2, "unknown_failure 2") {}
+    NotInitializedError() : Error(2, "unknown_failure 2") {}
 };
 
 /// Value error

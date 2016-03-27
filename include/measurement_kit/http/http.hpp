@@ -6,12 +6,7 @@
 
 #include <functional>
 #include <map>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/maybe.hpp>
-#include <measurement_kit/common/poller.hpp>
-#include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common.hpp>
 #include <set>
 #include <string>
 
@@ -128,7 +123,7 @@ Url parse_url(std::string url);
 /// Parses a URL without throwing an exception on failure.
 /// \param url Input URL you want to parse..
 /// \return An error (on failure) or the parsed URL.
-Maybe<Url> parse_url_noexcept(std::string url);
+ErrorOr<Url> parse_url_noexcept(std::string url);
 
 /// Send HTTP GET and receive response.
 /// \param url URL to send request to.

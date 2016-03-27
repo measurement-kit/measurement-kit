@@ -46,11 +46,11 @@ Url parse_url(std::string url) {
     return retval;
 }
 
-Maybe<Url> parse_url_noexcept(std::string url) {
+ErrorOr<Url> parse_url_noexcept(std::string url) {
     try {
         return parse_url(url);
     } catch (Error &error) {
-        return Maybe<Url>(error, Url{});
+        return error;
     }
 }
 
