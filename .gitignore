@@ -66,7 +66,6 @@ src/ext/yaml-cpp/
 stamp-h1
 test-driver
 test/common/async
-test/common/bufferevent
 test/common/delayed_call
 test/common/log
 test/common/maybe
@@ -91,6 +90,7 @@ test/http/request_serializer
 test/http/response_parser
 test/http/stream
 test/net/buffer
+test/net/bufferevent
 test/net/connect
 test/net/connection
 test/net/connection_check_fds
