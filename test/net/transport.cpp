@@ -39,8 +39,20 @@ TEST_CASE("It is possible to use Transport with a custom poller") {
     REQUIRE(ok);
 }
 
-TEST_CASE("The alternative syntax for connect() works") {
-    net::connect("www.kernel.org", 80, [](Error error, Transport) {
-        std::cout << (int)error << "\n";
+TEST_CASE("Alternative connect() can connect to open port") {
+    loop_with_initial_event([]() {
+        net::connect("www.kernel.org", 80, [](Error error, Transport) {
+            REQUIRE(!error);
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("Alternative connect() works in case of error") {
+    loop_with_initial_event([]() {
+        net::connect("nexa.polito.it", 81, [](Error error, Transport) {
+            REQUIRE(error);
+            break_loop();
+        });
     });
 }

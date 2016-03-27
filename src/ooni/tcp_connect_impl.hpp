@@ -15,9 +15,6 @@ namespace ooni {
 class TCPConnectImpl : public TCPTestImpl {
     using TCPTestImpl::TCPTestImpl;
 
-    TCPClient client;
-
-
   public:
     TCPConnectImpl(std::string input_filepath_, Settings options_)
         : TCPTestImpl(input_filepath_, options_) {
@@ -38,7 +35,7 @@ class TCPConnectImpl : public TCPTestImpl {
               std::function<void(report::Entry)> &&cb) {
         options["host"] = input;
         
-        connect(options, [this, cb](TCPClient) {
+        connect(options, [this, cb](net::Transport) {
             logger.debug("tcp_connect: Got response to TCP connect test");
             cb(entry);
         });

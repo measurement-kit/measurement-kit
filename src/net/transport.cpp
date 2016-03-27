@@ -104,24 +104,15 @@ Maybe<Transport> connect(Settings settings, Logger *lp, Poller *poller) {
 void connect(std::string address, int port,
              std::function<void(Error, Transport)> callback,
              Settings settings, Logger *logger, Poller *poller) {
-    settings["address"] = address;
-    settings["port"] = std::to_string(port);
-    Maybe<Transport> maybe = connect(settings, logger, poller);
-    if (!maybe) {
-        callback(maybe.as_error(), Transport{});
-        return;
-    }
-    auto transport = maybe.as_value();
-    transport.on_connect([callback, transport]() {
-        transport.on_connect(nullptr);
-        transport.on_error(nullptr);
-        callback(NoError(), transport);
-    });
-    transport.on_error([callback, transport](Error error) {
-        transport.on_connect(nullptr);
-        transport.on_error(nullptr);
-        callback(error, transport);
-    });
+    net::connect(address, port, [callback](ConnectResult r) {
+        // TODO: it would be nice to pass to this callback a compound error
+        // that also contains info on all what went wrong when connecting
+        if (r.overall_error) {
+            callback(r.overall_error, nullptr);
+            return;
+        }
+        callback(NoError(), new Connection(r.connected_bev));
+    }, settings.get("timeout", 30.0), poller, logger);
 }
 
 } // namespace net

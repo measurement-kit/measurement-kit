@@ -18,9 +18,8 @@ namespace net {
 
 Connection::~Connection() {}
 
-void Connection::handle_read(bufferevent *bev, void *opaque) {
+void Connection::handle_read(bufferevent *, void *opaque) {
     auto self = (Connection *)opaque;
-    (void)bev; // Suppress warning about unused variable
     Buffer buff(bufferevent_get_input(self->bev));
     try {
         self->emit_data(buff);
@@ -29,9 +28,8 @@ void Connection::handle_read(bufferevent *bev, void *opaque) {
     }
 }
 
-void Connection::handle_write(bufferevent *bev, void *opaque) {
+void Connection::handle_write(bufferevent *, void *opaque) {
     auto self = (Connection *)opaque;
-    (void)bev; // Suppress warning about unused variable
     try {
         self->emit_flush();
     } catch (Error &error) {
@@ -39,10 +37,8 @@ void Connection::handle_write(bufferevent *bev, void *opaque) {
     }
 }
 
-void Connection::handle_event(bufferevent *bev, short what, void *opaque) {
+void Connection::handle_event(bufferevent *, short what, void *opaque) {
     auto self = (Connection *)opaque;
-
-    (void)bev; // Suppress warning about unused variable
 
     if (what & BEV_EVENT_CONNECTED) {
         self->connecting = 0;
@@ -100,6 +96,16 @@ Connection::Connection(const char *family, const char *address,
     if (!mk::socket_valid(filenum))
         start_connect = DelayedCall(0.0, [this]() { this->resolve(); },
                                     Libs::global(), poller->get_event_base());
+}
+
+Connection::Connection(bufferevent *buffev) {
+    this->bev.set_bufferevent(buffev);
+
+    /*
+     * The following makes this non copyable and non movable.
+     */
+    bufferevent_setcb(this->bev, this->handle_read, this->handle_write,
+                      this->handle_event, this);
 }
 
 void Connection::connect_next() {
