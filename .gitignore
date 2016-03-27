@@ -42,8 +42,10 @@ config.status
 config.sub
 configure
 depcomp
+example/dns/query
 example/http/request
 example/mlabns/query
+example/net/connect
 example/ooni/dns_injection
 example/ooni/http_invalid_request_line
 example/ooni/tcp_connect

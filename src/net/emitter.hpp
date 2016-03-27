@@ -9,8 +9,10 @@
 // Emitter transport
 //
 
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/net/transport.hpp>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
+
+#include "src/net/transport_interface.hpp"
 
 namespace mk {
 namespace net {
