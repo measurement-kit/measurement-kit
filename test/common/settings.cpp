@@ -116,3 +116,18 @@ TEST_CASE("The settings class throws an exception when converting from string"
     settings["key"] = "10";
     REQUIRE_THROWS_AS(settings["key"].as<bool>(), ValueError);
 }
+
+TEST_CASE("The Settings::get() method works as expected "
+          "when key does not exist") {
+    Settings settings;
+    REQUIRE(settings.get("key", 17.0) == 17.0);
+    REQUIRE(settings.find("key") == settings.end());
+}
+
+TEST_CASE("The Settings::get() method works as expected when key exists") {
+    Settings settings = {
+        {"key", 21.0},
+    };
+    REQUIRE(settings.get("key", 17.0) == 21.0);
+    REQUIRE(settings.find("key") != settings.end());
+}
