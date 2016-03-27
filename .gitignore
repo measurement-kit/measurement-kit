@@ -67,8 +67,8 @@ stamp-h1
 test-driver
 test/common/async
 test/common/delayed_call
+test/common/error_or
 test/common/log
-test/common/maybe
 test/common/poller
 test/common/settings
 test/common/socket_valid

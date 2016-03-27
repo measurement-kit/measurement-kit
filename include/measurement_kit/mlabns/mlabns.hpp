@@ -7,8 +7,7 @@
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/maybe.hpp>
+#include <measurement_kit/common.hpp>
 #include <string>
 #include <utility>
 #include <vector>
@@ -82,7 +81,7 @@ class Query {
 
     /// Obtain query from parameters.
     /// \return Query string on success, otherwise error.
-    Maybe<std::string> as_query();
+    ErrorOr<std::string> as_query();
 };
 
 /// Reply to mlab-ns query.

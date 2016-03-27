@@ -257,7 +257,7 @@ TEST_CASE("Readn works correctly") {
 
 TEST_CASE("Readline works correctly", "[Buffer]") {
     Buffer buff;
-    Maybe<std::string> line("");
+    ErrorOr<std::string> line("");
 
     SECTION("We can read LF terminated lines") {
         buff << "HTTP/1.1 200 Ok\n"
@@ -268,25 +268,25 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "HTTP/1.1 200 Ok\n");
+        REQUIRE(*line == "HTTP/1.1 200 Ok\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "Content-Type: text/html\n");
+        REQUIRE(*line == "Content-Type: text/html\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "Content-Length: 7\n");
+        REQUIRE(*line == "Content-Length: 7\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "\n");
+        REQUIRE(*line == "\n");
 
         // Here `line.as_value()` must be empty because
         // there is no ending LF.
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "");
+        REQUIRE(*line == "");
     }
 
     SECTION("We can read [CR]LF terminated lines") {
@@ -298,25 +298,25 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "HTTP/1.1 200 Ok\n");
+        REQUIRE(*line == "HTTP/1.1 200 Ok\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "Content-Type: text/html\r\n");
+        REQUIRE(*line == "Content-Type: text/html\r\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "Content-Length: 7\n");
+        REQUIRE(*line == "Content-Length: 7\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "\r\n");
+        REQUIRE(*line == "\r\n");
 
         // Here `line.as_value()` must be empty because
         // there is no ending LF.
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "");
+        REQUIRE(*line == "");
     }
 
     SECTION("EOL-not-found error is correctly reported") {
@@ -324,7 +324,7 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
         line = buff.readline(3);
         REQUIRE(!line);
         REQUIRE(line.as_error() == EOLNotFoundError());
-        REQUIRE_THROWS_AS(line.as_value(), Error);
+        REQUIRE_THROWS_AS(*line, Error);
     }
 
     SECTION("Line-too-long error is correctly reported") {
@@ -332,7 +332,7 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
         line = buff.readline(3);
         REQUIRE(!line);
         REQUIRE(line.as_error() == LineTooLongError());
-        REQUIRE_THROWS_AS(line.as_value(), Error);
+        REQUIRE_THROWS_AS(*line, Error);
     }
 }
 

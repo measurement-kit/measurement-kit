@@ -6,10 +6,8 @@
 #include <netinet/in.h>                        // for htonl, htons
 #include <stdint.h>                            // for uint16_t, uint32_t, etc
 #include <functional>                          // for function
-#include <measurement_kit/common/error.hpp>    // for NoError, Error
-#include <measurement_kit/common/maybe.hpp>    // for Maybe
-#include <measurement_kit/net/buffer.hpp>      // for Buffer
-#include <measurement_kit/net/error.hpp>       // for net specific errors
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 #include <memory>                              // for unique_ptr
 #include <stdexcept>                           // for runtime_error
 #include <string>                              // for string, basic_string
@@ -87,29 +85,30 @@ std::string Buffer::readpeek(bool ispeek, size_t upto) {
     return out;
 }
 
-Maybe<std::string> Buffer::readline(size_t maxline) {
+ErrorOr<std::string> Buffer::readline(size_t maxline) {
 
     size_t eol_length = 0;
     auto search_result =
         evbuffer_search_eol(*evbuf, nullptr, &eol_length, EVBUFFER_EOL_CRLF);
     if (search_result.pos < 0) {
         if (length() > maxline) {
-            return Maybe<std::string>(EOLNotFoundError(), "");
+            return EOLNotFoundError();
         }
-        return Maybe<std::string>("");
+        return std::string();
     }
 
     /*
      * Promotion to size_t safe because eol_length is a small
      * number and because we know that pos is non-negative.
      */
-    if (eol_length != 1 && eol_length != 2)
+    if (eol_length != 1 && eol_length != 2) {
         throw std::runtime_error("unexpected error");
+    }
     auto len = (size_t)search_result.pos + eol_length;
     if (len > maxline) {
-        return Maybe<std::string>(LineTooLongError(), "");
+        return LineTooLongError();
     }
-    return Maybe<std::string>(read(len));
+    return read(len);
 }
 
 void Buffer::write(const void *buf, size_t count) {

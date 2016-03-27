@@ -21,17 +21,16 @@ TEST_CASE("It is possible to use Transport with a custom poller") {
         return;
     }
     Poller poller;
-    Maybe<Transport> maybe_s = mk::net::connect({
+    ErrorOr<Transport> s = mk::net::connect({
         {"family", "PF_UNSPEC"},
         {"address", "nexa.polito.it"},
         {"port", "22"},
     }, Logger::global(), &poller);
-    REQUIRE(static_cast<bool>(maybe_s));
-    auto s = maybe_s.as_value();
-    s.set_timeout(5);
+    REQUIRE(static_cast<bool>(s));
+    s->set_timeout(5);
     auto ok = false;
-    s.on_error([&poller](Error) { poller.break_loop(); });
-    s.on_connect([&poller, &ok]() {
+    s->on_error([&poller](Error) { poller.break_loop(); });
+    s->on_connect([&poller, &ok]() {
         poller.break_loop();
         ok = true;
     });

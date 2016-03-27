@@ -89,7 +89,7 @@ static Transport connect_internal(Settings settings, Logger *logger,
                                     logger, poller));
 }
 
-Maybe<Transport> connect(Settings settings, Logger *lp, Poller *poller) {
+ErrorOr<Transport> connect(Settings settings, Logger *lp, Poller *poller) {
     double timeo = 30.0;
     if (settings.find("timeout") != settings.end()) {
         timeo = settings["timeout"].as<double>();
@@ -98,7 +98,7 @@ Maybe<Transport> connect(Settings settings, Logger *lp, Poller *poller) {
     if (timeo >= 0.0) {
         transport.set_timeout(timeo);
     }
-    return Maybe<Transport>(transport);
+    return transport;
 }
 
 void connect(std::string address, int port,
