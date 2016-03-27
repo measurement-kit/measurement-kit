@@ -2,16 +2,14 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Tests for src/common/libevent.h's Evbuffer
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common.hpp>
+#include "src/net/evbuffer.hpp"
 #include "src/common/delayed_call.hpp"
 
+using namespace mk::net;
 using namespace mk;
 
 TEST_CASE("The constructor is lazy") {

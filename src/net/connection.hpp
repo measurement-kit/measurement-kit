@@ -5,7 +5,7 @@
 #ifndef MEASUREMENT_KIT_NET_CONNECTION_HPP
 #define MEASUREMENT_KIT_NET_CONNECTION_HPP
 
-#include "src/common/bufferevent.hpp"
+#include "src/net/bufferevent.hpp"
 #include <measurement_kit/common/constraints.hpp>
 #include "src/common/delayed_call.hpp"
 #include <measurement_kit/common/error.hpp>
