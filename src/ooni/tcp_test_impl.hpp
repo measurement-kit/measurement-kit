@@ -30,7 +30,8 @@ class TCPTestImpl : public ooni::OoniTestImpl {
         test_version = "0.0.1";
     };
 
-    void connect(Settings options, std::function<void(net::Transport)> &&cb) {
+    void connect(Settings options,
+            std::function<void(Var<net::Transport>)> &&cb) {
         if (options["port"] == "") {
             throw std::runtime_error("Port is required");
         }
@@ -39,7 +40,7 @@ class TCPTestImpl : public ooni::OoniTestImpl {
         }
 
         net::connect(options["host"], options["port"].as<int>(),
-                [this, cb](Error error, net::Transport transport) {
+                [this, cb](Error error, Var<net::Transport> transport) {
                     if (error) {
                         entry["error_code"] = (int)error;
                         entry["connection"] = "failed";
