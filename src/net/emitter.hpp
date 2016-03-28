@@ -12,12 +12,10 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
 
-#include "src/net/transport_interface.hpp"
-
 namespace mk {
 namespace net {
 
-class Emitter : public TransportInterface {
+class Emitter : public Transport {
   private:
     std::function<void()> do_connect = []() {};
     std::function<void(Buffer)> do_data = [](Buffer) {};
@@ -69,7 +67,7 @@ class Emitter : public TransportInterface {
         do_connect = fn;
     }
 
-    virtual void on_data(std::function<void(Buffer)> fn) override {
+    void on_data(std::function<void(Buffer)> fn) override {
         logger->debug("emitter: register 'data' handler");
         do_data = fn;
     }

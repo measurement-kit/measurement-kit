@@ -17,48 +17,38 @@ class Error;
 
 namespace net {
 
-// Forward declaration
-class TransportInterface;
-
-/// A connection with TCP-like properties
 class Transport {
   public:
-    void emit_connect() const;        ///< Emit CONNECT event
-    void emit_data(Buffer buf) const; ///< Emit DATA event
-    void emit_flush() const;          ///< Emit FLUSH event
-    void emit_error(Error err) const; ///< Emit ERROR event
+    virtual void emit_connect() = 0;
+    virtual void emit_data(Buffer buf) = 0;
+    virtual void emit_flush() = 0;
+    virtual void emit_error(Error err) = 0;
 
-    Transport(TransportInterface * = nullptr); ///< Constructor
-    ~Transport() {};                           ///< Destructor
+    virtual ~Transport() {}
 
-    void on_connect(std::function<void()>) const;    ///< Set CONNECT handler
-    void on_data(std::function<void(Buffer)>) const; ///< Set DATA handler
-    void on_flush(std::function<void()>) const;      ///< Set FLUSH handler
-    void on_error(std::function<void(Error)>) const; ///< Set ERROR handler
+    virtual void on_connect(std::function<void()>) = 0;
+    virtual void on_data(std::function<void(Buffer)>) = 0;
+    virtual void on_flush(std::function<void()>) = 0;
+    virtual void on_error(std::function<void(Error)>) = 0;
 
-    void set_timeout(double) const; ///< Set I/O timeout
-    void clear_timeout() const;     ///< Clear I/O timeout
+    virtual void set_timeout(double) = 0;
+    virtual void clear_timeout() = 0;
 
-    void send(const void *, size_t) const; ///< Send C string
-    void send(std::string) const;          ///< Send C++ string
-    void send(Buffer) const;               ///< Send buffer
+    virtual void send(const void *, size_t) = 0;
+    virtual void send(std::string) = 0;
+    virtual void send(Buffer) = 0;
 
-    void close() const; ///< Close underlying socket
+    virtual void close() = 0;
 
-    std::string socks5_address() const; ///< Get SOCKS5 proxy address (if any)
-    std::string socks5_port() const;    ///< Get SOCKS5 proxy port (if any)
-
-  private:
-    Var<TransportInterface> impl;
+    virtual std::string socks5_address() = 0;
+    virtual std::string socks5_port() = 0;
 };
 
-/// Connects a transport
-ErrorOr<Transport> connect(Settings, Logger * = Logger::global(),
-                           Poller * = Poller::global());
+ErrorOr<Var<Transport>> connect(Settings, Logger * = Logger::global(),
+                                Poller * = Poller::global());
 
-/// Connects a transport (alternative syntax)
 void connect(std::string address, int port,
-             std::function<void(Error, Transport)> callback,
+             std::function<void(Error, Var<Transport>)> callback,
              Settings settings = {},
              Logger *logger = Logger::global(),
              Poller *poller = Poller::global());

@@ -35,7 +35,7 @@ class TCPConnectImpl : public TCPTestImpl {
               std::function<void(report::Entry)> &&cb) {
         options["host"] = input;
         
-        connect(options, [this, cb](net::Transport) {
+        connect(options, [this, cb](Var<net::Transport>) {
             logger.debug("tcp_connect: Got response to TCP connect test");
             cb(entry);
         });
