@@ -23,9 +23,6 @@ Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
 
     conn->on_error([this](Error err) { emit_error(err); });
     conn->on_connect([this]() {
-        conn->on_flush([]() {
-            // Nothing
-        });
         socks5_connect_();
     });
 }
