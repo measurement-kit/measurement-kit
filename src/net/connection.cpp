@@ -3,20 +3,15 @@
 // information on the copying conditions.
 
 #include <arpa/inet.h>
-
+#include <event2/dns.h>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 #include <new>
 #include <stdlib.h>
-
-#include <event2/dns.h>
-
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/net/error.hpp>
 #include "src/net/connection.hpp"
 
 namespace mk {
 namespace net {
-
-Connection::~Connection() {}
 
 void Connection::handle_read(bufferevent *, void *opaque) {
     auto self = (Connection *)opaque;

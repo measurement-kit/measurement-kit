@@ -25,6 +25,7 @@
 .deps
 .dirstamp
 .libs
+.vagrant
 /include.am
 /tmp
 Makefile
