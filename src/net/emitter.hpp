@@ -14,34 +14,22 @@ class Emitter : public Transport {
   public:
     void emit_connect() override {
         logger->debug("emitter: emit 'connect' event");
-        // With GNU C++ library, if a std::function sets itself, the
-        // associated context is free() leading to segfault
-        auto fn = do_connect;
-        fn();
+        do_connect();
     }
 
     virtual void emit_data(Buffer data) override {
         logger->debug("emitter: emit 'data' event");
-        // With GNU C++ library, if a std::function sets itself, the
-        // associated context is free() leading to segfault
-        auto fn = do_data;
-        fn(data);
+        do_data(data);
     }
 
     void emit_flush() override {
         logger->debug("emitter: emit 'flush' event");
-        // With GNU C++ library, if a std::function sets itself, the
-        // associated context is free() leading to segfault
-        auto fn = do_flush;
-        fn();
+        do_flush();
     }
 
     void emit_error(Error err) override {
         logger->debug("emitter: emit 'error' event");
-        // With GNU C++ library, if a std::function sets itself, the
-        // associated context is free() leading to segfault
-        auto fn = do_error;
-        fn(err);
+        do_error(err);
     }
 
     Emitter(Logger *lp = Logger::global()) : logger(lp) {}
@@ -92,10 +80,10 @@ class Emitter : public Transport {
     Logger *logger = Logger::global();
 
   private:
-    std::function<void()> do_connect = []() {};
-    std::function<void(Buffer)> do_data = [](Buffer) {};
-    std::function<void()> do_flush = []() {};
-    std::function<void(Error)> do_error = [](Error) {};
+    SafelyOverridableFunc<void()> do_connect = []() {};
+    SafelyOverridableFunc<void(Buffer)> do_data = [](Buffer) {};
+    SafelyOverridableFunc<void()> do_flush = []() {};
+    SafelyOverridableFunc<void(Error)> do_error = [](Error) {};
 };
 
 } // namespace net
