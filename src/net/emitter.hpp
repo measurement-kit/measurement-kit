@@ -43,8 +43,16 @@ class Emitter : public Transport {
 
     void on_data(std::function<void(Buffer)> fn) override {
         logger->debug("emitter: register 'data' handler");
+        if (fn) {
+            enable_read();
+        } else {
+            disable_read();
+        }
         do_data = fn;
     }
+
+    virtual void enable_read() {}
+    virtual void disable_read() {}
 
     void on_flush(std::function<void()> fn) override {
         logger->debug("emitter: register 'flush' handler");
