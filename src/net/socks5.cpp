@@ -23,6 +23,9 @@ Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
 
     conn->on_error([this](Error err) { emit_error(err); });
     conn->on_connect([this]() {
+        logger->debug("socks5: connected to Tor!");
+        conn->on_error(nullptr);
+        conn->on_connect(nullptr);
         socks5_connect_();
     });
 }
@@ -30,7 +33,7 @@ Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
 void Socks5::socks5_connect_() {
     // Step #1: send out preferred authentication methods
 
-    logger->debug("socks5: connected to Tor!");
+    conn->on_error([this](Error err) { emit_error(err); });
 
     Buffer out;
     out.write_uint8(5); // Version
