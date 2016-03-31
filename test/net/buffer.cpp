@@ -19,7 +19,32 @@ using namespace mk;
 using namespace mk::net;
 
 TEST_CASE("The constructor works correctly", "[Buffer]") {
-    REQUIRE_NOTHROW(Buffer());
+    Buffer buffer;
+    REQUIRE("" == buffer.read());
+}
+
+TEST_CASE("The constructor with null evbuffer works correctly", "[Buffer]") {
+    evbuffer *evbuf = nullptr;
+    Buffer buffer(evbuf);
+    REQUIRE("" == buffer.read());
+}
+
+TEST_CASE("The constructor with nonnull evbuffer works correctly", "[Buffer]") {
+    evbuffer *evbuf = evbuffer_new();
+    REQUIRE(evbuf != nullptr);
+    REQUIRE(evbuffer_add(evbuf, "foobar", 6) == 0);
+    Buffer buffer(evbuf);
+    REQUIRE("foobar" == buffer.read());
+}
+
+TEST_CASE("The constructor with C++ string works correctly", "[Buffer]") {
+    Buffer buffer("foobar");
+    REQUIRE("foobar" == buffer.read());
+}
+
+TEST_CASE("The constructor with C string works correctly", "[Buffer]") {
+    Buffer buffer("foobar", 6);
+    REQUIRE("foobar" == buffer.read());
 }
 
 TEST_CASE("Insertion/extraction work correctly for evbuffer") {

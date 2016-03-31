@@ -16,10 +16,19 @@
 namespace mk {
 namespace net {
 
-Buffer::Buffer(evbuffer *b) {
-    evbuf.reset(new Evbuffer);
+Buffer::Buffer() { evbuf.reset(new Evbuffer); }
+
+Buffer::Buffer(evbuffer *b) : Buffer() {
     if (b != nullptr && evbuffer_add_buffer(*evbuf, b) != 0)
         throw std::runtime_error("evbuffer_add_buffer failed");
+}
+
+Buffer::Buffer(std::string s) : Buffer() {
+    write(s);
+}
+
+Buffer::Buffer(const void *p, size_t n) : Buffer() {
+    write(p, n);
 }
 
 Buffer &Buffer::operator<<(evbuffer *source) {
