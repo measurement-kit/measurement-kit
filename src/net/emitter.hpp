@@ -17,7 +17,7 @@ class Emitter : public Transport {
         do_connect();
     }
 
-    virtual void emit_data(Buffer data) override {
+    void emit_data(Buffer data) override {
         logger->debug("emitter: emit 'data' event");
         do_data(data);
     }
