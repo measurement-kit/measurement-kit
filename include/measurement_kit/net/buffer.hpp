@@ -22,7 +22,10 @@ class Evbuffer;
 
 class Buffer {
   public:
-    Buffer(evbuffer *b = nullptr);
+    Buffer();
+    Buffer(evbuffer *b);
+    Buffer(std::string);
+    Buffer(const void *, size_t);
 
     ~Buffer() {}
 
