@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "src/net/socks5.hpp"
+#include "src/net/connect.hpp"
 
 namespace mk {
 namespace net {
@@ -28,6 +29,13 @@ Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
         conn->on_connect(nullptr);
         socks5_connect_();
     });
+}
+
+Socks5::Socks5(Var<Transport> tx, Settings s, Poller *, Logger *lp)
+    : Emitter(lp), settings(s), conn(tx),
+      proxy_address(settings["socks5_address"]),
+      proxy_port(settings["socks5_port"]) {
+    socks5_connect_();
 }
 
 void Socks5::socks5_connect_() {
@@ -164,6 +172,44 @@ void Socks5::socks5_connect_() {
             }
         });
     });
+}
+
+void socks5_connect(std::string address, int port, Settings settings,
+        std::function<void(Error, Var<Transport>)> callback,
+        Poller *poller, Logger *logger) {
+
+    auto proxy = settings["socks5_proxy"];
+    auto pos = proxy.find(":");
+    if (pos == std::string::npos) {
+        throw std::runtime_error("invalid argument");
+    }
+    auto proxy_address = proxy.substr(0, pos);
+    auto proxy_port = proxy.substr(pos + 1);
+
+    settings["address"] = address;
+    settings["port"] = port;
+
+    connect(proxy_address, lexical_cast<int>(proxy_port),
+            [=](ConnectResult r) {
+                if (r.overall_error) {
+                    callback(r.overall_error, nullptr);
+                    return;
+                }
+                Var<Transport> txp(new Connection(r.connected_bev));
+                Var<Transport> socks5(
+                        new Socks5(txp, settings, poller, logger));
+                socks5->on_connect([=]() {
+                    socks5->on_connect(nullptr);
+                    socks5->on_error(nullptr);
+                    callback(NoError(), socks5);
+                });
+                socks5->on_error([=](Error error) {
+                    socks5->on_connect(nullptr);
+                    socks5->on_error(nullptr);
+                    callback(error, nullptr);
+                });
+            },
+            settings.get("timeo", 10.0), poller, logger);
 }
 
 } // namespace net

@@ -4,16 +4,21 @@
 #ifndef SRC_NET_SOCKS5_HPP
 #define SRC_NET_SOCKS5_HPP
 
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/net.hpp>
 #include "src/net/connection.hpp"
 #include "src/net/emitter.hpp"
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 
 namespace mk {
 namespace net {
 
 class Socks5 : public Emitter {
   public:
+    // Constructor that attaches to already existing transport
+    Socks5(Var<Transport>, Settings, Poller * = Poller::global(),
+            Logger * = Logger::global());
+
+    // Constructor that creates its new own transport
     Socks5(Settings, Logger * = Logger::global(), Poller * = Poller::global());
 
     void set_timeout(double timeout) override { conn->set_timeout(timeout); }
@@ -41,6 +46,10 @@ class Socks5 : public Emitter {
     std::string proxy_address;
     std::string proxy_port;
 };
+
+void socks5_connect(std::string address, int port, Settings settings,
+        std::function<void(Error, Var<Transport>)> callback,
+        Poller *poller = Poller::global(), Logger *logger = Logger::global());
 
 } // namespace net
 } // namespace mk
