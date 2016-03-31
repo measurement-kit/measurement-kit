@@ -20,12 +20,6 @@ class Socks5 : public Emitter {
 
     void clear_timeout() override { conn.clear_timeout(); }
 
-    void send(const void *data, size_t count) override {
-        conn.send(data, count);
-    }
-
-    void send(std::string data) override { conn.send(data); }
-
     void send(Buffer data) override { conn.send(data); }
 
     void close() override {

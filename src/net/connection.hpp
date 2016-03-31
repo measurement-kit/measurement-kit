@@ -61,15 +61,6 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     ~Connection() override {}
 
-    void on_data(std::function<void(Buffer)> fn) override {
-        Emitter::on_data(fn);
-        if (fn) {
-            enable_read();
-        } else {
-            disable_read();
-        }
-    };
-
     evutil_socket_t get_fileno() { return (bufferevent_getfd(this->bev)); }
 
     void set_timeout(double timeout) override {
@@ -86,26 +77,15 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
         throw std::runtime_error("not implemented");
     }
 
-    void send(const void *base, size_t count) override {
-        if (base == NULL || count == 0) {
-            throw std::runtime_error("invalid argument");
-        }
-        if (bufferevent_write(bev, base, count) != 0) {
-            throw std::runtime_error("cannot write");
-        }
-    }
-
-    void send(std::string data) override { send(data.c_str(), data.length()); }
-
     void send(Buffer data) override { data >> bufferevent_get_output(bev); }
 
-    void enable_read() {
+    void enable_read() override {
         if (bufferevent_enable(this->bev, EV_READ) != 0) {
             throw std::runtime_error("cannot enable read");
         }
     }
 
-    void disable_read() {
+    void disable_read() override {
         if (bufferevent_disable(this->bev, EV_READ) != 0) {
             throw std::runtime_error("cannot disable read");
         }
