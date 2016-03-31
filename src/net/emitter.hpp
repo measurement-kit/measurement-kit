@@ -1,13 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
-#ifndef MEASUREMENT_KIT_NET_EMITTER_HPP
-#define MEASUREMENT_KIT_NET_EMITTER_HPP
-
-//
-// Emitter transport
-//
+#ifndef SRC_NET_EMITTER_HPP
+#define SRC_NET_EMITTER_HPP
 
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
@@ -16,15 +11,6 @@ namespace mk {
 namespace net {
 
 class Emitter : public Transport {
-  private:
-    std::function<void()> do_connect = []() {};
-    std::function<void(Buffer)> do_data = [](Buffer) {};
-    std::function<void()> do_flush = []() {};
-    std::function<void(Error)> do_error = [](Error) {};
-
-  protected:
-    Logger *logger = Logger::global();
-
   public:
     void emit_connect() override {
         logger->debug("emitter: emit 'connect' event");
@@ -60,7 +46,7 @@ class Emitter : public Transport {
 
     Emitter(Logger *lp = Logger::global()) : logger(lp) {}
 
-    ~Emitter() override {}
+    ~Emitter() override;
 
     void on_connect(std::function<void()> fn) override {
         logger->debug("emitter: register 'connect' handler");
@@ -101,6 +87,15 @@ class Emitter : public Transport {
     std::string socks5_address() override { return ""; }
 
     std::string socks5_port() override { return ""; }
+
+  protected:
+    Logger *logger = Logger::global();
+
+  private:
+    std::function<void()> do_connect = []() {};
+    std::function<void(Buffer)> do_data = [](Buffer) {};
+    std::function<void()> do_flush = []() {};
+    std::function<void(Error)> do_error = [](Error) {};
 };
 
 } // namespace net

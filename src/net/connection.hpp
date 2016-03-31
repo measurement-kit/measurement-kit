@@ -1,30 +1,20 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
-#ifndef MEASUREMENT_KIT_NET_CONNECTION_HPP
-#define MEASUREMENT_KIT_NET_CONNECTION_HPP
-
-#include "src/net/bufferevent.hpp"
-#include <measurement_kit/common/constraints.hpp>
-#include "src/common/delayed_call.hpp"
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/poller.hpp>
-#include "src/common/utils.hpp"
-
-#include <measurement_kit/net/buffer.hpp>
-#include "src/net/emitter.hpp"
-#include <measurement_kit/net/transport.hpp>
-
-#include <measurement_kit/dns.hpp>
+#ifndef SRC_NET_CONNECTION_HPP
+#define SRC_NET_CONNECTION_HPP
 
 #include <event2/bufferevent.h>
 #include <event2/event.h>
-
-#include <stdexcept>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/dns.hpp>
+#include <measurement_kit/net.hpp>
+#include "src/common/delayed_call.hpp"
+#include "src/common/utils.hpp"
+#include "src/net/bufferevent.hpp"
+#include "src/net/emitter.hpp"
 #include <list>
-
+#include <stdexcept>
 #include <string.h>
 
 namespace mk {
@@ -69,7 +59,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     Connection(bufferevent *bev);
 
-    ~Connection() override;
+    ~Connection() override {}
 
     void on_data(std::function<void(Buffer)> fn) override {
         Emitter::on_data(fn);
