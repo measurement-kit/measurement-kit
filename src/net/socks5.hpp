@@ -32,6 +32,8 @@ class Socks5 : public Emitter {
     std::string socks5_port() override { return proxy_port; }
 
   protected:
+    void socks5_connect_();
+
     Settings settings;
     Connection conn;
     Buffer buffer;
