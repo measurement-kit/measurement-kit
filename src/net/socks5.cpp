@@ -8,11 +8,12 @@ namespace mk {
 namespace net {
 
 Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
-    : Emitter(lp), settings(s),
-      conn(settings["family"].c_str(), settings["socks5_address"].c_str(),
-              settings["socks5_port"].c_str(), lp, poller),
-      proxy_address(settings["socks5_address"]),
+    : Emitter(lp), settings(s), proxy_address(settings["socks5_address"]),
       proxy_port(settings["socks5_port"]) {
+
+    conn.reset(new Connection(settings["family"].c_str(),
+            settings["socks5_address"].c_str(), settings["socks5_port"].c_str(),
+            lp, poller));
 
     logger->debug("socks5: connecting to Tor at %s:%s",
             settings["socks5_address"].c_str(),
@@ -20,9 +21,9 @@ Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
 
     // Step #0: Steal "error", "connect", and "flush" handlers
 
-    conn.on_error([this](Error err) { emit_error(err); });
-    conn.on_connect([this]() {
-        conn.on_flush([]() {
+    conn->on_error([this](Error err) { emit_error(err); });
+    conn->on_connect([this]() {
+        conn->on_flush([]() {
             // Nothing
         });
         socks5_connect_();
@@ -38,7 +39,7 @@ void Socks5::socks5_connect_() {
     out.write_uint8(5); // Version
     out.write_uint8(1); // Number of methods
     out.write_uint8(0); // "NO_AUTH" meth.
-    conn.send(out);
+    conn->send(out);
 
     logger->debug("socks5: >> version=5");
     logger->debug("socks5: >> number of methods=1");
@@ -46,7 +47,7 @@ void Socks5::socks5_connect_() {
 
     // Step #2: receive the allowed authentication methods
 
-    conn.on_data([this](Buffer d) {
+    conn->on_data([this](Buffer d) {
         buffer << d;
         auto readbuf = buffer.readn(2);
         if (readbuf == "") {
@@ -96,11 +97,11 @@ void Socks5::socks5_connect_() {
 
         logger->debug("socks5: >> port=%d", portnum);
 
-        conn.send(out);
+        conn->send(out);
 
         // Step #4: receive Tor's response
 
-        conn.on_data([this](Buffer d) {
+        conn->on_data([this](Buffer d) {
 
             buffer << d;
             if (buffer.length() < 5) {
@@ -152,8 +153,8 @@ void Socks5::socks5_connect_() {
             // If more data, pass it up
             //
 
-            conn.on_data([this](Buffer d) { emit_data(d); });
-            conn.on_flush([this]() { emit_flush(); });
+            conn->on_data([this](Buffer d) { emit_data(d); });
+            conn->on_flush([this]() { emit_flush(); });
 
             emit_connect();
 

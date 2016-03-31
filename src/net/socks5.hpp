@@ -16,15 +16,15 @@ class Socks5 : public Emitter {
   public:
     Socks5(Settings, Logger * = Logger::global(), Poller * = Poller::global());
 
-    void set_timeout(double timeout) override { conn.set_timeout(timeout); }
+    void set_timeout(double timeout) override { conn->set_timeout(timeout); }
 
-    void clear_timeout() override { conn.clear_timeout(); }
+    void clear_timeout() override { conn->clear_timeout(); }
 
-    void send(Buffer data) override { conn.send(data); }
+    void send(Buffer data) override { conn->send(data); }
 
     void close() override {
         isclosed = true;
-        conn.close();
+        conn->close();
     }
 
     std::string socks5_address() override { return proxy_address; }
@@ -35,7 +35,7 @@ class Socks5 : public Emitter {
     void socks5_connect_();
 
     Settings settings;
-    Connection conn;
+    Var<Transport> conn;
     Buffer buffer;
     bool isclosed = false;
     std::string proxy_address;
