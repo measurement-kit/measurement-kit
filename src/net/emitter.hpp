@@ -6,6 +6,7 @@
 
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
+#include <stdexcept>
 
 namespace mk {
 namespace net {
@@ -70,11 +71,18 @@ class Emitter : public Transport {
 
     void clear_timeout() override { logger->debug("emitter: clear_timeout"); }
 
-    void send(const void *, size_t) override {
+    void send(const void *p, size_t n) override {
         logger->debug("emitter: send opaque data");
+        if (p == nullptr) {
+            throw std::runtime_error("null pointer");
+        }
+        send(Buffer(p, n));
     }
 
-    void send(std::string) override { logger->debug("emitter: send string"); }
+    void send(std::string s) override {
+        logger->debug("emitter: send string");
+        send(Buffer(s));
+    }
 
     void send(Buffer) override { logger->debug("emitter: send buffer"); }
 
