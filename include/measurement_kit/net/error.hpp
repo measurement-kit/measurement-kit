@@ -11,10 +11,10 @@ namespace mk {
 namespace net {
 
 /// EOF error
-class EOFError : public Error {
+class EofError : public Error {
   public:
     /// Default constructor
-    EOFError() : Error(1000, "unknown_failure 1000") {}
+    EofError() : Error(1000, "unknown_failure 1000") {}
 };
 
 /// Timeout error
