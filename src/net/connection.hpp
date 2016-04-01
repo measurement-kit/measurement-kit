@@ -6,16 +6,16 @@
 
 #include <event2/bufferevent.h>
 #include <event2/event.h>
+#include <list>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/net.hpp>
+#include <stdexcept>
+#include <string.h>
 #include "src/common/delayed_call.hpp"
 #include "src/common/utils.hpp"
 #include "src/net/bufferevent.hpp"
 #include "src/net/emitter.hpp"
-#include <list>
-#include <stdexcept>
-#include <string.h>
 
 namespace mk {
 namespace net {
@@ -58,14 +58,13 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     void close() override;
 
+    void handle_event_(short);
+    void handle_read_();
+    void handle_write_();
+
   private:
     Bufferevent bev;
     Poller *poller = Poller::global();
-
-    // Libevent callbacks
-    static void handle_read(bufferevent *, void *);
-    static void handle_write(bufferevent *, void *);
-    static void handle_event(bufferevent *, short, void *);
 
     // Stuff for connecting (later this will be removed):
 

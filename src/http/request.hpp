@@ -106,7 +106,7 @@ class Request : public NonCopyable, public NonMovable {
         }
         stream = std::make_shared<Stream>(settings, logger, poller);
         stream->on_error([this](Error err) {
-            if (err != net::EOFError()) {
+            if (err != net::EofError()) {
                 emit_end(err, std::move(response));
             } else {
                 // When EOF is received, on_end() is called, therefore we

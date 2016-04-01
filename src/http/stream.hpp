@@ -49,7 +49,7 @@ class Stream {
         //
         connection->on_error([&](Error error) {
             auto safe_eh = error_handler;
-            if (error == net::EOFError()) {
+            if (error == net::EofError()) {
                 parser->eof();
             }
             // parser->eof() may cause this object to go out of

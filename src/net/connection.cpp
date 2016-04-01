@@ -10,54 +10,66 @@
 #include <stdlib.h>
 #include "src/net/connection.hpp"
 
+extern "C" {
+
+static void handle_libevent_read(bufferevent *, void *opaque) {
+    static_cast<mk::net::Connection *>(opaque)->handle_read_();
+}
+
+static void handle_libevent_write(bufferevent *, void *opaque) {
+    static_cast<mk::net::Connection *>(opaque)->handle_write_();
+}
+
+static void handle_libevent_event(bufferevent *, short what, void *opaque) {
+    static_cast<mk::net::Connection *>(opaque)->handle_event_(what);
+}
+
+} // extern "C"
 namespace mk {
 namespace net {
 
-void Connection::handle_read(bufferevent *, void *opaque) {
-    auto self = (Connection *)opaque;
-    Buffer buff(bufferevent_get_input(self->bev));
+void Connection::handle_read_() {
+    Buffer buff(bufferevent_get_input(bev));
     try {
-        self->emit_data(buff);
+        emit_data(buff);
     } catch (Error &error) {
-        self->emit_error(error);
+        emit_error(error);
     }
 }
 
-void Connection::handle_write(bufferevent *, void *opaque) {
-    auto self = (Connection *)opaque;
+void Connection::handle_write_() {
     try {
-        self->emit_flush();
+        emit_flush();
     } catch (Error &error) {
-        self->emit_error(error);
+        emit_error(error);
     }
 }
 
-void Connection::handle_event(bufferevent *, short what, void *opaque) {
-    auto self = (Connection *)opaque;
+void Connection::handle_event_(short what) {
 
     if (what & BEV_EVENT_CONNECTED) {
-        self->connecting = 0;
-        self->emit_connect();
+        connecting = 0;
+        emit_connect();
         return;
     }
 
     if (what & BEV_EVENT_EOF) {
-        self->emit_error(EOFError());
+        emit_error(EofError());
         return;
     }
 
-    if (self->connecting) {
-        self->logger->info("connection::handle_event - try connect next");
-        self->connect_next();
+    if (connecting) {
+        logger->info("connection::handle_event - try connect next");
+        connect_next();
         return;
     }
 
     if (what & BEV_EVENT_TIMEOUT) {
-        self->emit_error(TimeoutError());
+        emit_error(TimeoutError());
         return;
     }
 
-    self->emit_error(SocketError());
+    emit_error(SocketError());
 }
 
 Connection::Connection(const char *family, const char *address,
@@ -85,8 +97,8 @@ Connection::Connection(const char *family, const char *address,
     /*
      * The following makes this non copyable and non movable.
      */
-    bufferevent_setcb(this->bev, this->handle_read, this->handle_write,
-                      this->handle_event, this);
+    bufferevent_setcb(this->bev, handle_libevent_read, handle_libevent_write,
+                      handle_libevent_event, this);
 
     if (!mk::socket_valid(filenum))
         start_connect = DelayedCall(0.0, [this]() { this->resolve(); },
@@ -99,8 +111,8 @@ Connection::Connection(bufferevent *buffev) {
     /*
      * The following makes this non copyable and non movable.
      */
-    bufferevent_setcb(this->bev, this->handle_read, this->handle_write,
-                      this->handle_event, this);
+    bufferevent_setcb(this->bev, handle_libevent_read, handle_libevent_write,
+                      handle_libevent_event, this);
 }
 
 void Connection::connect_next() {
