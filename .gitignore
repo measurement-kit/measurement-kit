@@ -98,6 +98,7 @@ test/net/connection
 test/net/connection_check_fds
 test/net/emitter
 test/net/evbuffer
+test/net/socks5
 test/net/transport
 test/ooni/dns_injection
 test/ooni/dns_injection_test

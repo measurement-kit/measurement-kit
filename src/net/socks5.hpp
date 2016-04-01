@@ -42,6 +42,14 @@ class Socks5 : public Emitter {
     std::string proxy_port;
 };
 
+namespace socks5 {
+
+Buffer format_auth_request(Logger * = Logger::global());
+ErrorOr<bool> parse_auth_response(Buffer &, Logger * = Logger::global());
+ErrorOr<Buffer> format_connect_request(Settings, Logger * = Logger::global());
+ErrorOr<bool> parse_connect_response(Buffer &, Logger * = Logger::global());
+
+} // namespace socks5
 } // namespace net
 } // namespace mk
 #endif
