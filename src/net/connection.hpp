@@ -21,42 +21,7 @@ namespace mk {
 namespace net {
 
 class Connection : public Emitter, public NonMovable, public NonCopyable {
-  private:
-    Bufferevent bev;
-    unsigned int connecting = 0;
-    std::string address;
-    std::string port;
-    std::list<std::pair<std::string, std::string>> addrlist;
-    std::string family;
-    unsigned int must_resolve_ipv4 = 0;
-    unsigned int must_resolve_ipv6 = 0;
-    DelayedCall start_connect;
-    Poller *poller = Poller::global();
-
-    // Libevent callbacks
-    static void handle_read(bufferevent *, void *);
-    static void handle_write(bufferevent *, void *);
-    static void handle_event(bufferevent *, short, void *);
-
-    // Functions used when connecting
-    void connect_next();
-    void handle_resolve(Error, std::vector<dns::Answer>);
-    void resolve();
-    bool resolve_internal(char);
-
   public:
-    Connection(evutil_socket_t fd, Logger *lp = Logger::global(),
-               Poller *poller = mk::get_global_poller())
-        : Connection("PF_UNSPEC", "0.0.0.0", "0", poller, lp, fd) {}
-
-    Connection(const char *af, const char *a, const char *p,
-               Logger *lp = Logger::global(),
-               Poller *poller = mk::get_global_poller())
-        : Connection(af, a, p, poller, lp, -1) {}
-
-    Connection(const char *, const char *, const char *, Poller *, Logger *,
-               evutil_socket_t);
-
     Connection(bufferevent *bev);
 
     ~Connection() override {}
@@ -92,6 +57,45 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     }
 
     void close() override;
+
+  private:
+    Bufferevent bev;
+    Poller *poller = Poller::global();
+
+    // Libevent callbacks
+    static void handle_read(bufferevent *, void *);
+    static void handle_write(bufferevent *, void *);
+    static void handle_event(bufferevent *, short, void *);
+
+    // Stuff for connecting (later this will be removed):
+
+  public:
+    Connection(evutil_socket_t fd, Logger *lp = Logger::global(),
+               Poller *poller = mk::get_global_poller())
+        : Connection("PF_UNSPEC", "0.0.0.0", "0", poller, lp, fd) {}
+
+    Connection(const char *af, const char *a, const char *p,
+               Logger *lp = Logger::global(),
+               Poller *poller = mk::get_global_poller())
+        : Connection(af, a, p, poller, lp, -1) {}
+
+    Connection(const char *, const char *, const char *, Poller *, Logger *,
+               evutil_socket_t);
+
+  private:
+    unsigned int connecting = 0;
+    std::string address;
+    std::string port;
+    std::list<std::pair<std::string, std::string>> addrlist;
+    std::string family;
+    unsigned int must_resolve_ipv4 = 0;
+    unsigned int must_resolve_ipv6 = 0;
+    DelayedCall start_connect;
+
+    void connect_next();
+    void handle_resolve(Error, std::vector<dns::Answer>);
+    void resolve();
+    bool resolve_internal(char);
 };
 
 } // namespace net
