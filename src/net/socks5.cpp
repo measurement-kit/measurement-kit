@@ -22,7 +22,11 @@ Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
 
     // Step #0: Steal "error", "connect", and "flush" handlers
 
-    conn->on_error([this](Error err) { emit_error(err); });
+    conn->on_error([this](Error err) {
+        conn->on_error(nullptr);
+        conn->on_connect(nullptr);
+        emit_error(err);
+    });
     conn->on_connect([this]() {
         logger->debug("socks5: connected to Tor!");
         conn->on_error(nullptr);
