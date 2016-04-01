@@ -166,7 +166,7 @@ class Stream {
      * \returns A reference to this stream for chaining operations.
      */
     Stream &operator<<(std::string data) {
-        connection->send(data);
+        connection->write(data);
         return *this;
     }
 

@@ -38,7 +38,7 @@ void Socks5::socks5_connect_() {
     out.write_uint8(5); // Version
     out.write_uint8(1); // Number of methods
     out.write_uint8(0); // "NO_AUTH" meth.
-    conn.send(out);
+    conn.write(out);
 
     logger->debug("socks5: >> version=5");
     logger->debug("socks5: >> number of methods=1");
@@ -96,7 +96,7 @@ void Socks5::socks5_connect_() {
 
         logger->debug("socks5: >> port=%d", portnum);
 
-        conn.send(out);
+        conn.write(out);
 
         // Step #4: receive Tor's response
 

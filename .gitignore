@@ -96,6 +96,7 @@ test/net/bufferevent
 test/net/connect
 test/net/connection
 test/net/connection_check_fds
+test/net/emitter
 test/net/evbuffer
 test/net/transport
 test/ooni/dns_injection

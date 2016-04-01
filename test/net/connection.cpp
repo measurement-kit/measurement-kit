@@ -27,7 +27,7 @@ TEST_CASE("Connection::close() is idempotent") {
     Emitter &s = static_cast<Emitter &>(conn);
     s.on_connect([&s]() {
         s.enable_read();
-        s.send("GET / HTTP/1.0\r\n\r\n");
+        s.write("GET / HTTP/1.0\r\n\r\n");
     });
     s.on_data([&s](Buffer) {
         s.close();
@@ -47,7 +47,7 @@ TEST_CASE("It is safe to manipulate Connection after close") {
     Emitter &s = static_cast<Emitter &>(conn);
     s.on_connect([&s]() {
         s.enable_read();
-        s.send("GET / HTTP/1.0\r\n\r\n");
+        s.write("GET / HTTP/1.0\r\n\r\n");
     });
     s.on_data([&s](Buffer) {
         s.close();

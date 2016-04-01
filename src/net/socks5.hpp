@@ -20,7 +20,7 @@ class Socks5 : public Emitter {
 
     void clear_timeout() override { conn.clear_timeout(); }
 
-    void send(Buffer data) override { conn.send(data); }
+    void do_send(Buffer data) override { conn.write(data); }
 
     void close() override {
         isclosed = true;

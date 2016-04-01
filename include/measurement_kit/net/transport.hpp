@@ -31,12 +31,20 @@ class Transport {
     virtual void on_flush(std::function<void()>) = 0;
     virtual void on_error(std::function<void(Error)>) = 0;
 
+    virtual void record_received_data() = 0;
+    virtual void dont_record_received_data() = 0;
+    virtual Buffer &received_data() = 0;
+
+    virtual void record_sent_data() = 0;
+    virtual void dont_record_sent_data() = 0;
+    virtual Buffer &sent_data() = 0;
+
     virtual void set_timeout(double) = 0;
     virtual void clear_timeout() = 0;
 
-    virtual void send(const void *, size_t) = 0;
-    virtual void send(std::string) = 0;
-    virtual void send(Buffer) = 0;
+    virtual void write(const void *, size_t) = 0;
+    virtual void write(std::string) = 0;
+    virtual void write(Buffer) = 0;
 
     virtual void close() = 0;
 
