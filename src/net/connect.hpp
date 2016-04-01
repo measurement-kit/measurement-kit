@@ -22,10 +22,6 @@
 #include <sys/time.h>
 #include <vector>
 
-#ifndef MK_MOCK
-#define MK_MOCK(name_) decltype(name_) name_ = ::name_
-#endif
-
 struct bufferevent;
 
 extern "C" {
