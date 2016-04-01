@@ -88,6 +88,26 @@ class NetworkError : public Error {
     NetworkError() : Error(1011, "unknown_failure 1011") {}
 };
 
+class NoAvailableSocksAuthenticationError : public Error {
+  public:
+    NoAvailableSocksAuthenticationError()
+            : Error(1012, "unknown_failure 1012") {}
+};
+
+class SocksError : public Error {
+  public:
+    SocksError() : Error(1013, "unknown_failure 1013") {}
+};
+
+class BadSocksReservedFieldError : public Error {
+  public:
+    BadSocksReservedFieldError() : Error(1014, "unknown_failure 1014") {}
+};
+
+class BadSocksAtypeValueError : public Error {
+  public:
+    BadSocksAtypeValueError() : Error(1015, "unknown_failure 1015") {}
+};
 
 } // namespace net
 } // namespace mk
