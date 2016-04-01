@@ -3,16 +3,18 @@
 // information on the copying conditions.
 
 #include "src/net/socks5.hpp"
+#include "src/net/connect.hpp"
 
 namespace mk {
 namespace net {
 
 Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
-    : Emitter(lp), settings(s),
-      conn(settings["family"].c_str(), settings["socks5_address"].c_str(),
-              settings["socks5_port"].c_str(), lp, poller),
-      proxy_address(settings["socks5_address"]),
+    : Emitter(lp), settings(s), proxy_address(settings["socks5_address"]),
       proxy_port(settings["socks5_port"]) {
+
+    conn.reset(new Connection(settings["family"].c_str(),
+            settings["socks5_address"].c_str(), settings["socks5_port"].c_str(),
+            lp, poller));
 
     logger->debug("socks5: connecting to Tor at %s:%s",
             settings["socks5_address"].c_str(),
@@ -20,25 +22,36 @@ Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
 
     // Step #0: Steal "error", "connect", and "flush" handlers
 
-    conn.on_error([this](Error err) { emit_error(err); });
-    conn.on_connect([this]() {
-        conn.on_flush([]() {
-            // Nothing
-        });
+    conn->on_error([this](Error err) {
+        conn->on_error(nullptr);
+        conn->on_connect(nullptr);
+        emit_error(err);
+    });
+    conn->on_connect([this]() {
+        logger->debug("socks5: connected to Tor!");
+        conn->on_error(nullptr);
+        conn->on_connect(nullptr);
         socks5_connect_();
     });
+}
+
+Socks5::Socks5(Var<Transport> tx, Settings s, Poller *, Logger *lp)
+    : Emitter(lp), settings(s), conn(tx),
+      proxy_address(settings["socks5_address"]),
+      proxy_port(settings["socks5_port"]) {
+    socks5_connect_();
 }
 
 void Socks5::socks5_connect_() {
     // Step #1: send out preferred authentication methods
 
-    logger->debug("socks5: connected to Tor!");
+    conn->on_error([this](Error err) { emit_error(err); });
 
     Buffer out;
     out.write_uint8(5); // Version
     out.write_uint8(1); // Number of methods
     out.write_uint8(0); // "NO_AUTH" meth.
-    conn.send(out);
+    conn->send(out);
 
     logger->debug("socks5: >> version=5");
     logger->debug("socks5: >> number of methods=1");
@@ -46,7 +59,7 @@ void Socks5::socks5_connect_() {
 
     // Step #2: receive the allowed authentication methods
 
-    conn.on_data([this](Buffer d) {
+    conn->on_data([this](Buffer d) {
         buffer << d;
         auto readbuf = buffer.readn(2);
         if (readbuf == "") {
@@ -96,11 +109,11 @@ void Socks5::socks5_connect_() {
 
         logger->debug("socks5: >> port=%d", portnum);
 
-        conn.send(out);
+        conn->send(out);
 
         // Step #4: receive Tor's response
 
-        conn.on_data([this](Buffer d) {
+        conn->on_data([this](Buffer d) {
 
             buffer << d;
             if (buffer.length() < 5) {
@@ -152,8 +165,8 @@ void Socks5::socks5_connect_() {
             // If more data, pass it up
             //
 
-            conn.on_data([this](Buffer d) { emit_data(d); });
-            conn.on_flush([this]() { emit_flush(); });
+            conn->on_data([this](Buffer d) { emit_data(d); });
+            conn->on_flush([this]() { emit_flush(); });
 
             emit_connect();
 
@@ -163,6 +176,44 @@ void Socks5::socks5_connect_() {
             }
         });
     });
+}
+
+void socks5_connect(std::string address, int port, Settings settings,
+        std::function<void(Error, Var<Transport>)> callback,
+        Poller *poller, Logger *logger) {
+
+    auto proxy = settings["socks5_proxy"];
+    auto pos = proxy.find(":");
+    if (pos == std::string::npos) {
+        throw std::runtime_error("invalid argument");
+    }
+    auto proxy_address = proxy.substr(0, pos);
+    auto proxy_port = proxy.substr(pos + 1);
+
+    settings["address"] = address;
+    settings["port"] = port;
+
+    connect(proxy_address, lexical_cast<int>(proxy_port),
+            [=](ConnectResult r) {
+                if (r.overall_error) {
+                    callback(r.overall_error, nullptr);
+                    return;
+                }
+                Var<Transport> txp(new Connection(r.connected_bev));
+                Var<Transport> socks5(
+                        new Socks5(txp, settings, poller, logger));
+                socks5->on_connect([=]() {
+                    socks5->on_connect(nullptr);
+                    socks5->on_error(nullptr);
+                    callback(NoError(), socks5);
+                });
+                socks5->on_error([=](Error error) {
+                    socks5->on_connect(nullptr);
+                    socks5->on_error(nullptr);
+                    callback(error, nullptr);
+                });
+            },
+            settings.get("timeo", 10.0), poller, logger);
 }
 
 } // namespace net
