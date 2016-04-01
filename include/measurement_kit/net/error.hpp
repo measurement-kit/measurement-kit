@@ -109,6 +109,16 @@ class BadSocksAtypeValueError : public Error {
     BadSocksAtypeValueError() : Error(1015, "unknown_failure 1015") {}
 };
 
+class EvconnlistenerNewBindError : public Error {
+  public:
+    EvconnlistenerNewBindError() : Error(1016, "unknown_failure 1016") {}
+};
+
+class BuffereventSocketNewError : public Error {
+  public:
+    BuffereventSocketNewError() : Error(1017, "unknown_failure 1017") {}
+};
+
 } // namespace net
 } // namespace mk
 #endif
