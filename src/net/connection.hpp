@@ -42,7 +42,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
         throw std::runtime_error("not implemented");
     }
 
-    void send(Buffer data) override { data >> bufferevent_get_output(bev); }
+    void do_send(Buffer data) override { data >> bufferevent_get_output(bev); }
 
     void enable_read() override {
         if (bufferevent_enable(this->bev, EV_READ) != 0) {

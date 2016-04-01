@@ -20,6 +20,9 @@ class Emitter : public Transport {
 
     void emit_data(Buffer data) override {
         logger->debug("emitter: emit 'data' event");
+        if (do_record_received_data) {
+            received_data_record.write(data.peek());
+        }
         do_data(data);
     }
 
@@ -65,26 +68,59 @@ class Emitter : public Transport {
         do_error = fn;
     }
 
+    void record_received_data() override {
+        do_record_received_data = true;
+    }
+
+    void dont_record_received_data() override {
+        do_record_received_data = false;
+    }
+
+    Buffer &received_data() override {
+        return received_data_record;
+    }
+
+    void record_sent_data() override {
+        do_record_sent_data = true;
+    }
+
+    void dont_record_sent_data() override {
+        do_record_sent_data = false;
+    }
+
+    Buffer &sent_data() override {
+        return sent_data_record;
+    }
+
     void set_timeout(double timeo) override {
         logger->debug("emitter: set_timeout %f", timeo);
     }
 
     void clear_timeout() override { logger->debug("emitter: clear_timeout"); }
 
-    void send(const void *p, size_t n) override {
+    void write(const void *p, size_t n) override {
         logger->debug("emitter: send opaque data");
         if (p == nullptr) {
             throw std::runtime_error("null pointer");
         }
-        send(Buffer(p, n));
+        write(Buffer(p, n));
     }
 
-    void send(std::string s) override {
+    void write(std::string s) override {
         logger->debug("emitter: send string");
-        send(Buffer(s));
+        write(Buffer(s));
     }
 
-    void send(Buffer) override { logger->debug("emitter: send buffer"); }
+    void write(Buffer data) override {
+        logger->debug("emitter: send buffer");
+        if (do_record_sent_data) {
+            sent_data_record.write(data.peek());
+        }
+        do_send(data);
+    }
+
+    // Implements actual send and should be override by subclasses
+    virtual void do_send(Buffer) {}
 
     void close() override { logger->debug("emitter: close"); }
 
@@ -100,6 +136,10 @@ class Emitter : public Transport {
     SafelyOverridableFunc<void(Buffer)> do_data = [](Buffer) {};
     SafelyOverridableFunc<void()> do_flush = []() {};
     SafelyOverridableFunc<void(Error)> do_error = [](Error) {};
+    bool do_record_received_data = false;
+    Buffer received_data_record;
+    bool do_record_sent_data = false;
+    Buffer sent_data_record;
 };
 
 } // namespace net
