@@ -17,9 +17,6 @@ struct evbuffer;
 namespace mk {
 namespace net {
 
-// Forward declaration
-class Evbuffer;
-
 class Buffer {
   public:
     Buffer();
@@ -114,8 +111,7 @@ class Buffer {
 
     void write(size_t count, std::function<size_t(void *, size_t)> func);
 
-  private:
-    Var<Evbuffer> evbuf;
+    Var<evbuffer> evbuf;
 };
 
 } // namespace net

@@ -7,78 +7,43 @@
 
 #include <measurement_kit/common.hpp>
 #include "src/net/evbuffer.hpp"
-#include "src/common/delayed_call.hpp"
 
 using namespace mk::net;
 using namespace mk;
 
-TEST_CASE("The constructor is lazy") {
+static evbuffer *fail() { return nullptr; }
 
-    auto libs = Libs();
-    auto calls = 0;
-
-    libs.evbuffer_new = [&](void) {
-        ++calls;
-        return ((evbuffer *)NULL);
-    };
-    libs.evbuffer_free = [&](evbuffer *) { ++calls; };
-
-    { Evbuffer evbuf(&libs); }
-
-    REQUIRE(calls == 0);
+TEST_CASE("make_shared_evbuffer deals with evbuffer_new() failure") {
+    REQUIRE_THROWS_AS({
+        make_shared_evbuffer<fail>();
+    }, std::bad_alloc);
 }
 
-TEST_CASE("The (evbuffer*) operation allocates the internal evbuffer") {
+static bool ctor_called = false;
+static evbuffer *ctor() {
+    ctor_called = true;
+    return (evbuffer *)0xabad1dea;
+}
 
-    auto libs = Libs();
-    auto calls = 0;
+static bool dtor_called = false;
+static void dtor(evbuffer *p) {
+    dtor_called = true;
+    REQUIRE(p == (evbuffer *)0xabad1dea);
+}
 
-    libs.evbuffer_new = [&](void) {
-        ++calls;
-        return (::evbuffer_new());
-    };
-    libs.evbuffer_free = [&](evbuffer *e) {
-        ++calls;
-        evbuffer_free(e);
-    };
-
+TEST_CASE("make_shared_evbuffer creates a Var where evbuffer_free is called "
+        "when the last Var is gone") {
+    REQUIRE(ctor_called == false);
+    REQUIRE(dtor_called == false);
     {
-        Evbuffer evbuf(&libs);
-        auto p = (evbuffer *)evbuf;
-        (void)p;
+        make_shared_evbuffer<ctor, dtor>();
     }
-
-    REQUIRE(calls == 2);
+    REQUIRE(ctor_called == true);
+    REQUIRE(dtor_called == true);
 }
 
-TEST_CASE("The (evbuffer *) operation is idempotent") {
-
-    auto libs = Libs();
-    auto calls = 0;
-
-    libs.evbuffer_new = [&](void) {
-        ++calls;
-        return (::evbuffer_new());
-    };
-
-    Evbuffer evbuf(&libs);
-    auto p1 = (evbuffer *)evbuf;
-    auto p2 = (evbuffer *)evbuf;
-
-    REQUIRE(p1 == p2);
-    REQUIRE(calls == 1);
-}
-
-TEST_CASE("std::bad_alloc is raised when out of memory") {
-
-    auto libs = Libs();
-
-    libs.evbuffer_new = [&](void) { return ((evbuffer *)NULL); };
-
-    REQUIRE_THROWS_AS([&](void) {
-        /* Yes, I really really love inline functions <3 */
-        Evbuffer evbuf(&libs);
-        auto p = (evbuffer *)evbuf;
-        (void)p;
-    }(), std::bad_alloc);
+TEST_CASE("Var<evbuffer> works as expected") {
+    // This test is mean to check whether there are leaks or not using Valgrind
+    Var<evbuffer> evbuf = make_shared_evbuffer();
+    REQUIRE(evbuf.get() != nullptr);
 }

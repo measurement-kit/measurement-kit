@@ -50,33 +50,34 @@ TEST_CASE("The constructor with C string works correctly", "[Buffer]") {
 TEST_CASE("Insertion/extraction work correctly for evbuffer") {
 
     Buffer buff;
-    Evbuffer source;
-    Evbuffer dest;
+    Var<evbuffer> source = make_shared_evbuffer();
+    Var<evbuffer> dest = make_shared_evbuffer();
     auto sa = std::string(65536, 'A');
     auto r = std::string();
 
     char data[65536];
 
-    if (evbuffer_add(source, sa.c_str(), sa.length()) != 0)
+    if (evbuffer_add(source.get(), sa.c_str(), sa.length()) != 0)
         throw std::runtime_error("evbuffer_add failed");
 
     SECTION("Insertion works correctly") {
-        buff << source;
+        buff << source.get();
         REQUIRE(buff.length() == 65536);
         r = buff.read();
         REQUIRE(r == sa);
     }
 
     SECTION("Insertion throws for NULL evbuffer") {
-        REQUIRE_THROWS(buff << (evbuffer *)NULL);
+        REQUIRE_THROWS(buff << (evbuffer *)nullptr);
     }
 
     SECTION("Extraction works correctly") {
-        buff << source;
-        buff >> dest;
+        buff << source.get();
+        buff >> dest.get();
         REQUIRE(buff.length() == 0);
-        if (evbuffer_remove(dest, data, sizeof(data)) != sizeof(data))
+        if (evbuffer_remove(dest.get(), data, sizeof(data)) != sizeof(data)) {
             throw std::runtime_error("evbuffer remove failed");
+        }
         r = std::string(data, sizeof(data));
         REQUIRE(r == sa);
     }
@@ -130,7 +131,7 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
      * Initialize the source evbuffer.
      */
 
-    Evbuffer evbuf;
+    Var<evbuffer> evbuf = make_shared_evbuffer();
 
     auto sa = std::string(512, 'A');
     auto sb = std::string(512, 'B');
@@ -140,18 +141,21 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
 
     /* Repeat until we have three extents or more */
     do {
-        if (evbuffer_add(evbuf, sa.c_str(), sa.length()) != 0)
+        if (evbuffer_add(evbuf.get(), sa.c_str(), sa.length()) != 0) {
             throw std::runtime_error("FAIL");
-        if (evbuffer_add(evbuf, sb.c_str(), sb.length()) != 0)
+        }
+        if (evbuffer_add(evbuf.get(), sb.c_str(), sb.length()) != 0) {
             throw std::runtime_error("FAIL");
-        if (evbuffer_add(evbuf, sc.c_str(), sc.length()) != 0)
+        }
+        if (evbuffer_add(evbuf.get(), sc.c_str(), sc.length()) != 0) {
             throw std::runtime_error("FAIL");
+        }
         expect += sa + sb + sc;
-    } while ((n_extents = evbuffer_peek(evbuf, -1, NULL, NULL, 0)) < 3);
+    } while ((n_extents = evbuffer_peek(evbuf.get(), -1, NULL, NULL, 0)) < 3);
 
     SECTION("Make sure that we walk through all the extents") {
 
-        buff << evbuf;
+        buff << evbuf.get();
         buff.for_each([&](const void *p, size_t n) {
             r.append((const char *)p, n);
             ++counter;
@@ -166,7 +170,7 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
 
     SECTION("Make sure that stopping early works as expected") {
 
-        buff << evbuf;
+        buff << evbuf.get();
         buff.for_each([&](const void *p, size_t n) {
             r.append((const char *)p, n);
             ++counter;
