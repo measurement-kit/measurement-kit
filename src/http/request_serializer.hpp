@@ -1,48 +1,37 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
+#ifndef SRC_HTTP_REQUEST_SERIALIZER_HPP
+#define SRC_HTTP_REQUEST_SERIALIZER_HPP
 
-#ifndef MEASUREMENT_KIT_HTTP_REQUEST_SERIALIZER_HPP
-#define MEASUREMENT_KIT_HTTP_REQUEST_SERIALIZER_HPP
-
-#include <measurement_kit/common/settings.hpp>
-
-#include <measurement_kit/net/buffer.hpp>
-
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 #include <measurement_kit/http.hpp>
-
-#include <iosfwd>
 #include <string>
 #include <utility>
 
 namespace mk {
 namespace http {
 
-/*!
- * \brief HTTP request serializer.
- */
-struct RequestSerializer {
-
-    std::string method;    /*!< Request method */
-    Url url;               /*!< Request URL */
-    std::string protocol;  /*!< Request protocol */
-    Headers headers;       /*!< Request headers */
-    std::string body;      /*!< Request body */
+class RequestSerializer {
+  public:
+    std::string method;
+    Url url;
+    std::string protocol;
+    Headers headers;
+    std::string body;
 
     /*!
-     * \brief Constructor.
-     * \param settings A std::map with key values of the options supported:
+     * For settings the following options are supported:
      *
-     *             {
-     *                 "follow_redirects": "yes|no",
-     *                 "url": std::string,
-     *                 "ignore_body": "yes|no",
-     *                 "method": "GET|DELETE|PUT|POST|HEAD|...",
-     *                 "http_version": "HTTP/1.1",
-     *                 "path": by default is taken from the url
-     *             }
-     * \param hdrs HTTP headers (moved for efficiency).
-     * \param bd Request body (moved for efficiency).
+     *     {
+     *       "follow_redirects": "yes|no",
+     *       "url": std::string,
+     *       "ignore_body": "yes|no",
+     *       "method": "GET|DELETE|PUT|POST|HEAD|...",
+     *       "http_version": "HTTP/1.1",
+     *       "path": by default is taken from the url
+     *     }
      */
     RequestSerializer(Settings settings, Headers hdrs, std::string bd) {
         headers = hdrs;
@@ -52,14 +41,8 @@ struct RequestSerializer {
         method = settings.get("method", std::string("GET"));
     }
 
-    RequestSerializer() {
-        // nothing
-    }
+    RequestSerializer() {}
 
-    /*!
-     * \brief Serialize request.
-     * \param buff Buffer where to serialize request.
-     */
     void serialize(net::Buffer &buff) {
         buff << method << " " << url.pathquery << " " << protocol << "\r\n";
         for (auto &kv : headers) {
