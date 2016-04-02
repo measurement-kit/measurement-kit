@@ -4,43 +4,21 @@
 #ifndef SRC_NET_EVBUFFER_HPP
 #define SRC_NET_EVBUFFER_HPP
 
+#include <event2/buffer.h>
 #include <measurement_kit/common.hpp>
-#include <functional>
-#include <new>
-#include "src/common/libs_impl.hpp"
-struct evbuffer;
+#include <memory>
 
 namespace mk {
 namespace net {
 
-/// RAII wrapper for evbuffer
-class Evbuffer : public NonCopyable, public NonMovable {
-  public:
-    /// Constructor with optional libs pointer
-    Evbuffer(Libs *libs = get_global_libs()) : libs_(libs) {}
-
-    /// Destructor
-    ~Evbuffer() {
-        if (evbuf_ != nullptr) {
-            libs_->evbuffer_free(evbuf_);
-        }
+template<MK_MOCK(evbuffer_new), MK_MOCK(evbuffer_free)>
+Var<evbuffer> make_shared_evbuffer() {
+    evbuffer *p = evbuffer_new();
+    if (p == nullptr) {
+        throw std::bad_alloc();
     }
-
-    /// Cast to evbuffer-* operator
-    operator evbuffer *() {
-        if (evbuf_ == nullptr && (evbuf_ = libs_->evbuffer_new()) == nullptr) {
-            throw std::bad_alloc();
-        }
-        return evbuf_;
-    }
-
-    /// Access the underlying libevent
-    Libs *get_libs() { return libs_; }
-
-  private:
-    Libs *libs_ = get_global_libs();
-    evbuffer *evbuf_ = nullptr;
-};
+    return Var<evbuffer>(p, [](evbuffer *x) { evbuffer_free(x); });
+}
 
 } // namespace net
 } // namespace mk
