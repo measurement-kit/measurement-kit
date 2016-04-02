@@ -63,6 +63,10 @@ ErrorOr<Var<Transport>> connect(Settings settings, Logger *lp, Poller *poller) {
 void connect(std::string address, int port,
              std::function<void(Error, Var<Transport>)> callback,
              Settings settings, Logger *logger, Poller *poller) {
+    if (settings.find("socks5_proxy") != settings.end()) {
+        socks5_connect(address, port, settings, callback, poller, logger);
+        return;
+    }
     net::connect(address, port, [callback](ConnectResult r) {
         // TODO: it would be nice to pass to this callback a compound error
         // that also contains info on all what went wrong when connecting
