@@ -23,13 +23,8 @@
 #include <sys/socket.h>
 
 extern "C" {
-<<<<<<< 788cdd3d6b6bc4c45f7b859e07bccef84308c602
 void handle_resolve(
         int code, char type, int count, int ttl, void *addresses, void *opaque);
-=======
-    static inline void handle_resolve(int code, char type, int count, int ttl,
-            void *addresses, void *opaque);
->>>>>>> move (future) template to a private header
 }
 
 struct evdns_base;
@@ -60,12 +55,8 @@ class QueryContext {
     }
 };
 
-<<<<<<< 788cdd3d6b6bc4c45f7b859e07bccef84308c602
 template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_ip_add),
         MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_set_option)>
-=======
-
->>>>>>> move (future) template to a private header
 static inline evdns_base *create_evdns_base(
         Settings settings, Poller *poller = mk::get_global_poller()) {
 
