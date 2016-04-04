@@ -1,11 +1,11 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
+#ifndef SRC_HTTP_RESPONSE_PARSER_HPP
+#define SRC_HTTP_RESPONSE_PARSER_HPP
 
-#ifndef MEASUREMENT_KIT_HTTP_RESPONSE_PARSER_HPP
-#define MEASUREMENT_KIT_HTTP_RESPONSE_PARSER_HPP
-
-#include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 #include <measurement_kit/http.hpp>
 
 #include <functional>
@@ -16,14 +16,9 @@
 #include <type_traits>
 
 namespace mk {
-
-namespace net { class Buffer; }
-
 namespace http {
 
 class ResponseParserImpl; // See http.cpp
-
-typedef std::map<std::string, std::string> Headers;
 
 /*!
  * \brief Parse an HTTP response.
@@ -69,11 +64,7 @@ typedef std::map<std::string, std::string> Headers;
  *         parser.feed(data);
  *     });
  */
-class ResponseParser {
-
-  protected:
-    ResponseParserImpl *impl = nullptr;
-
+class ResponseParser : public NonCopyable, public NonMovable {
   public:
     /*!
      * \brief Default constructor.
@@ -81,38 +72,15 @@ class ResponseParser {
     ResponseParser(Logger * = Logger::global());
 
     /*!
-     * \brief Deleted copy constructor.
-     */
-    ResponseParser(ResponseParser &other) = delete;
-
-    /*!
-     * \brief Deleted copy assignment.
-     */
-    ResponseParser &operator=(ResponseParser &other) = delete;
-
-    /*!
-     * \brief Move constructor.
-     */
-    ResponseParser(ResponseParser &&other) { std::swap(impl, other.impl); }
-
-    /*!
-     * \brief Move assignment.
-     */
-    ResponseParser &operator=(ResponseParser &&other) {
-        std::swap(impl, other.impl);
-        return *this;
-    }
-
-    /*!
      * \brief Destructor.
      */
-    ~ResponseParser(void);
+    ~ResponseParser();
 
     /*!
      * \brief Register `begin` event handler.
      * \param fn The `begin` event handler.
      */
-    void on_begin(std::function<void(void)> &&fn);
+    void on_begin(std::function<void()> &&fn);
 
     /*!
      * \brief Register `headers_complete` event handler.
@@ -141,7 +109,7 @@ class ResponseParser {
      * \brief Register `end` event handler.
      * \param fn The `end` event handler.
      */
-    void on_end(std::function<void(void)> &&fn);
+    void on_end(std::function<void()> &&fn);
 
     /*!
      * \brief Feed the parser.
@@ -175,6 +143,9 @@ class ResponseParser {
      *         a class derived from it) on several error conditions.
      */
     void eof();
+
+  protected:
+    ResponseParserImpl *impl = nullptr;
 };
 
 } // namespace http
