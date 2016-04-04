@@ -28,10 +28,17 @@ include src/ext/include.am
 TESTS = $(ALL_TESTS)
 check_PROGRAMS = $(ALL_TESTS)
 
-VALGRIND = valgrind --trace-children=yes --error-exitcode=1 \
+VALGRIND = valgrind --trace-children=yes --error-exitcode=1                    \
                     --dsymutil=yes --leak-check=yes
 
 run-valgrind: $(check_PROGRAMS)
-	for test_name in $(TESTS); do       \
-	  $(VALGRIND) $$test_name || exit 1;\
-	done
+	                                                                       \
+	for test_name in $(TESTS); do                                          \
+	  if ! $(VALGRIND) $$test_name; then                                   \
+	    failed="$$test_name $$failed";                                     \
+	  fi;                                                                  \
+	done;                                                                  \
+	if test "$$failed" != ""; then                                         \
+	  echo "failed tests: $$failed";                                       \
+	  exit 1;                                                              \
+	fi
