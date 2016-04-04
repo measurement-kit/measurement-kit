@@ -23,7 +23,7 @@
 #include <sys/socket.h>
 
 extern "C" {
-    static inline void handle_resolve(int code, char type, int count, int ttl,
+    void handle_resolve(int code, char type, int count, int ttl,
             void *addresses, void *opaque);
 }
 

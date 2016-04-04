@@ -9,14 +9,14 @@ namespace mk {
 namespace dns {
 
 extern "C" {
-    static inline void handle_resolve(int code, char type, int count, int ttl,
+    void handle_resolve(int code, char type, int count, int ttl,
             void *addresses, void *opaque) {
         auto context = static_cast<QueryContext *>(opaque);
         dns_callback(code, type, count, ttl, addresses, context);
     }
 }
 
-static void query (QueryClass dns_class, QueryType dns_type,
+void query (QueryClass dns_class, QueryType dns_type,
         std::string name, std::function<void(Error, Message)> cb,
         Settings settings, Poller *poller) {
     query_debug (dns_class, dns_type, name, cb, settings, poller);
