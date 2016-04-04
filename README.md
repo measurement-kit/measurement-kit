@@ -38,6 +38,8 @@ In the short term we plan to add to MeasurementKit:
 
 - the [network diagnostic tool](https://github.com/ndt-project/ndt/wiki/NDTTestMethodology) network performance test
 
+- Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
+
 - the functionality to communicate with the [OONI backend](https://github.com/TheTorProject/ooni-backend)
 
 - more OONI tests
