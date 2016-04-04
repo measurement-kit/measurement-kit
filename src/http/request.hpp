@@ -1,39 +1,25 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
-#ifndef MEASUREMENT_KIT_HTTP_REQUEST_HPP
-#define MEASUREMENT_KIT_HTTP_REQUEST_HPP
-
-#include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/var.hpp>
-#include <measurement_kit/common/poller.hpp>
-
-#include <measurement_kit/net/buffer.hpp>
-#include <measurement_kit/net/error.hpp>
-
-#include <measurement_kit/http.hpp>
-#include "src/http/request_serializer.hpp"
-#include "src/http/response_parser.hpp"
-#include "src/http/stream.hpp"
+#ifndef SRC_HTTP_REQUEST_HPP
+#define SRC_HTTP_REQUEST_HPP
 
 #include <functional>
-#include <iosfwd>
 #include <map>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
+#include <measurement_kit/http.hpp>
 #include <memory>
 #include <set>
 #include <string>
 #include <type_traits>
+#include "src/http/request_serializer.hpp"
+#include "src/http/response_parser.hpp"
+#include "src/http/stream.hpp"
 
 namespace mk {
 namespace http {
 
-/*!
- * \brief HTTP request.
- */
 class Request : public NonCopyable, public NonMovable {
 
     RequestCallback callback;
@@ -113,7 +99,7 @@ class Request : public NonCopyable, public NonMovable {
                 // don't need to call emit_end() again here.
             }
         });
-        stream->on_connect([this](void) {
+        stream->on_connect([this]() {
             // TODO: improve the way in which we serialize the request
             //       to reduce unnecessary copies
             net::Buffer buf;

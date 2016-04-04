@@ -1,30 +1,18 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
-#ifndef MEASUREMENT_KIT_HTTP_STREAM_HPP
-#define MEASUREMENT_KIT_HTTP_STREAM_HPP
-
-#include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/var.hpp>
-
-#include <measurement_kit/net/error.hpp>
-#include <measurement_kit/net/transport.hpp>
+#ifndef SRC_HTTP_STREAM_HPP
+#define SRC_HTTP_STREAM_HPP
 
 #include "src/http/response_parser.hpp"
-
 #include <functional>
-#include <iosfwd>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 #include <memory>
 #include <string>
 #include <type_traits>
 
 namespace mk {
-
-namespace net { class Buffer; }
-
 namespace http {
 
 /*!
@@ -36,9 +24,8 @@ namespace http {
  * This is a mid-level HTTP abstraction that can be used when a high
  * degree of control is needed over the HTTP protocol.
  */
-class Stream {
-    Var<net::Transport> connection;
-    Var<ResponseParser> parser;
+class Stream : public NonCopyable, public NonMovable {
+
     std::function<void(Error)> error_handler;
     std::function<void()> connect_handler;
 
@@ -62,42 +49,13 @@ class Stream {
         connect_handler();
     }
 
+    Var<net::Transport> connection;
+    Var<ResponseParser> parser;
   public:
-    /*!
-     * \brief Get response parser.
-     * This is useful for writing tests.
-     */
     Var<ResponseParser> get_parser() { return parser; }
 
     Var<net::Transport> get_transport() { return connection; }
 
-    /*!
-     * \brief Deleted copy constructor.
-     * The `this` of this class is bound to lambdas, so it must
-     * not be copied or moved.
-     */
-    Stream(Stream & /*other*/) = delete;
-
-    /*!
-     * \brief Deleted copy assignment.
-     * The `this` of this class is bound to lambdas, so it must
-     * not be copied or moved.
-     */
-    Stream &operator=(Stream & /*other*/) = delete;
-
-    /*!
-     * \brief Deleted move constructor.
-     * The `this` of this class is bound to lambdas, so it must
-     * not be copied or moved.
-     */
-    Stream(Stream && /*other*/) = delete;
-
-    /*!
-     * \brief Deleted move assignment.
-     * The `this` of this class is bound to lambdas, so it must
-     * not be copied or moved.
-     */
-    Stream &operator=(Stream && /*other*/) = delete;
 
     //
     // How do you construct this object:

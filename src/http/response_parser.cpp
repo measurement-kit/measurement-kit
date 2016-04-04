@@ -2,21 +2,18 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common/logger.hpp>
-#include "src/http/response_parser.hpp"
-#include <measurement_kit/net/buffer.hpp>
-#include <measurement_kit/http.hpp>
-#include "ext/http-parser/http_parser.h"
-
 #include <functional>
-#include <iosfwd>
 #include <map>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
+#include <measurement_kit/http.hpp>
 #include <stdexcept>
 #include <string>
-#include <type_traits>
-
 #include <stddef.h>
 #include <string.h>
+#include <type_traits>
+#include "src/http/response_parser.hpp"
+#include "ext/http-parser/http_parser.h"
 
 #define MAXLINE 4096
 

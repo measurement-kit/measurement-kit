@@ -62,7 +62,7 @@ TEST_CASE("We don't leak when we receive a UPGRADE") {
 
 TEST_CASE("The HTTP response parser works as expected") {
     auto data = std::string();
-    auto parser = ResponseParser();
+    ResponseParser parser;
     auto body = std::string();
 
     //

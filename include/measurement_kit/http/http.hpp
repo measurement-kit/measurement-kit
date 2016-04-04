@@ -25,7 +25,6 @@ class ParserError : public Error {
     ParserError() : Error(3001, "unknown_error 3001") {};
 };
 
-
 /// Url Parse error occurred.
 class UrlParserError : public Error {
   public:
