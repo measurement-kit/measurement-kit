@@ -20,7 +20,7 @@ template <typename T> class ErrorOr {
 
     operator bool() const { return error_ == NoError(); }
 
-    T &as_value() {
+    const T &as_value() const {
         if (error_ != 0) {
             throw error_;
         }
@@ -29,9 +29,9 @@ template <typename T> class ErrorOr {
 
     Error as_error() const { return error_; }
 
-    T &operator*() { return as_value(); }
+    const T &operator*() const { return as_value(); }
 
-    T *operator->() {
+    const T *operator->() const {
         if (error_ != 0) {
             throw error_;
         }

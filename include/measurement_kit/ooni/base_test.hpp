@@ -48,7 +48,7 @@ class BaseTest {
     }
 
     /// Set log-message handler
-    BaseTest &on_log(std::function<void(const char *)> func) {
+    BaseTest &on_log(std::function<void(int, const char *)> func) {
         log_handler = func;
         return *this;
     }
@@ -66,7 +66,7 @@ class BaseTest {
 
     Settings settings;                             ///< Other test settings
     bool is_verbose = false;                       ///< Be verbose
-    std::function<void(const char *)> log_handler; ///< Log handler func
+    std::function<void(int, const char *)> log_handler; ///< Log handler func
     std::string input_path;                        ///< Input file path
     std::string output_path;                       ///< Output file path
     Poller *poller = Poller::global();             ///< Poller to use

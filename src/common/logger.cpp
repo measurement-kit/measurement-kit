@@ -9,17 +9,25 @@
 namespace mk {
 
 Logger::Logger() {
-    consumer_ = [](const char *s) { fprintf(stderr, "%s\n", s); };
+    consumer_ = [](int level, const char *s) {
+        if (level <= 0) {
+            fprintf(stderr, "warning: %s\n", s);
+        } else if (level == 1) {
+            fprintf(stderr, "%s\n", s);
+        } else {
+            fprintf(stderr, "debug: %s\n", s);
+        }
+    };
 }
 
-void Logger::logv(const char *fmt, va_list ap) {
+void Logger::logv(int level, const char *fmt, va_list ap) {
     if (!consumer_) return;
     int res = vsnprintf(buffer_, sizeof(buffer_), fmt, ap);
     // Once we know that res is non-negative we make it unsigned,
     // which allows the compiler to promote the smaller of res and
     // sizeof (buffer) to the correct size if needed.
     if (res < 0 || (unsigned int)res >= sizeof(buffer_)) return;
-    consumer_(buffer_);
+    consumer_(level, buffer_);
 }
 
 } // namespace mk

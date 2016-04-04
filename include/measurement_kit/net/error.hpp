@@ -119,6 +119,11 @@ class BuffereventSocketNewError : public Error {
     BuffereventSocketNewError() : Error(1017, "unknown_failure 1017") {}
 };
 
+class NotEnoughDataError : public Error {
+  public:
+    NotEnoughDataError() : Error(1018, "unknown_failure 1018") {}
+};
+
 } // namespace net
 } // namespace mk
 #endif

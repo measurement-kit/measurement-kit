@@ -43,6 +43,6 @@ int main(int argc, char **argv) {
         .set_backend(backend)
         .set_verbose(verbose)
         .set_input_file_path(argv[0])
-        .on_log([](const char *s) { std::cout << s << "\n"; })
+        .on_log([](int, const char *s) { std::cout << s << "\n"; })
         .run();
 }

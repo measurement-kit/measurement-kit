@@ -47,7 +47,9 @@ depcomp
 example/dns/query
 example/http/request
 example/mlabns/query
+example/ndt/ndt
 example/net/connect
+example/net/discard
 example/net/listen
 example/net/transport
 example/ooni/dns_injection

@@ -16,7 +16,7 @@ namespace mk {
 class NetTest : public NonCopyable, public NonMovable {
   public:
     /// Set log function used by this test.
-    virtual void on_log(std::function<void(const char *)> func) {
+    virtual void on_log(std::function<void(int, const char *)> func) {
         logger.on_log(func);
     }
 

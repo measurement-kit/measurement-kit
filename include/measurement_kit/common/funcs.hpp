@@ -56,9 +56,7 @@ template <typename T> class AutoResetFunc : public BaseFunc<T> {
 
 template <typename T> class AutoResetFuncList {
   public:
-    void operator+=(std::function<T> func) {
-        funcs_.push_back(func);
-    }
+    void operator+=(std::function<T> func) { funcs_.push_back(func); }
 
     void operator()() {
         for (auto func : funcs_) {
@@ -73,7 +71,10 @@ template <typename T> class AutoResetFuncList {
 
 class Error;
 
-template <typename T> using Callback = std::function<void(Error, T)>;
+template <typename... T> using Callback = std::function<void(Error, T...)>;
+
+template <typename... T>
+using Continuation = std::function<void(Callback<T...>)>;
 
 } // namespace
 #endif
