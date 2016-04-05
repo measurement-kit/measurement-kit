@@ -81,11 +81,6 @@ test/common/var
 test/dns/defines
 test/dns/error
 test/dns/query
-test/dns/resolver
-test/dns/response
-test/echo_client
-test/echo_client2
-test/echo_client_evbuf
 test/http/client
 test/http/funcs
 test/http/parse_url
