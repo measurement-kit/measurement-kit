@@ -23,8 +23,8 @@
 #include <sys/socket.h>
 
 extern "C" {
-    void handle_resolve(int code, char type, int count, int ttl,
-            void *addresses, void *opaque);
+void handle_resolve(
+        int code, char type, int count, int ttl, void *addresses, void *opaque);
 }
 
 struct evdns_base;
@@ -55,7 +55,8 @@ class QueryContext {
     }
 };
 
-
+template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_ip_add),
+        MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *create_evdns_base(
         Settings settings, Poller *poller = mk::get_global_poller()) {
 
@@ -210,7 +211,10 @@ static void dns_callback(int code, char type, int count, int ttl,
     delete context;
 }
 
-void query_debug (QueryClass dns_class, QueryType dns_type, std::string name,
+template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
+        MK_MOCK(evdns_base_resolve_ipv6), MK_MOCK(evdns_base_resolve_reverse),
+        MK_MOCK(evdns_base_resolve_reverse_ipv6)>
+void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
         std::function<void(Error, Message)> cb, Settings settings,
         Poller *poller) {
 
