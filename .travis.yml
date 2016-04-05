@@ -101,7 +101,6 @@ matrix:
           packages:
             - clang-3.6
             - llvm-3.6-dev
-            - valgrind
           sources:
             - llvm-toolchain-precise-3.6
             - ubuntu-toolchain-r-test
@@ -126,4 +125,4 @@ matrix:
     - env: OS=OSX BUILD_TYPE=ios
     - env: OS="Ubuntu 12.04" CXX_V=4.8 CC_V=4.8 EXPORT=true
     - env: OS="Ubuntu 12.04" VALGRIND=true CXX_V=3.6 CC_V=3.6 EXPORT=true
-      env: OS=OSX CXX_V=5 CC_V=5 EXPORT=true
+    - env: OS=OSX CXX_V=5 CC_V=5 EXPORT=true
