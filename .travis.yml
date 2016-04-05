@@ -116,7 +116,7 @@ matrix:
 
     - os: osx
       compiler: g++-5
-      env: OS=OSX CXX_V=4.8 CC_V=4.8 EXPORT=true
+      env: OS=OSX CXX_V=5 CC_V=5 EXPORT=true
 
     - os: osx
       compiler: g++
