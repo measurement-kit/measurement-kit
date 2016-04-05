@@ -122,6 +122,7 @@ get joyent/http-parser v2.6.0 http-parser
 get measurement-kit/libevent patches-2.0 libevent patches-2.0
 get measurement-kit/libmaxminddb master libmaxminddb
 get philsquared/Catch v1.2.1 Catch
+get nlohmann/json v1.1.0 json
 
 echo "* Running 'autoreconf -i'"
 autoreconf -i

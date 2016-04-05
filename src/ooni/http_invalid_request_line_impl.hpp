@@ -11,6 +11,8 @@
 #include "src/ooni/http_test_impl.hpp"
 #include <sys/stat.h>
 
+using json = nlohmann::json;
+
 namespace mk {
 namespace ooni {
 
@@ -26,7 +28,7 @@ class HTTPInvalidRequestLineImpl : public HTTPTestImpl {
         test_version = "0.0.1";
     };
 
-    void main(Settings options, std::function<void(report::Entry)> &&cb) {
+    void main(Settings options, std::function<void(json)> &&cb) {
 
         auto handle_response = [this, cb](Error, http::Response &&) {
             tests_run += 1;

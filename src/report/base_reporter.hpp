@@ -5,10 +5,14 @@
 #ifndef MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 #define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
+#include <ctime>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/version.hpp>
-#include "src/report/entry.hpp"
+#include "src/common/utils.hpp"
+#include "src/ext/json/src/json.hpp"                // for json
+
+using json = nlohmann::json;
 
 namespace mk {
 namespace report {
@@ -22,7 +26,7 @@ class BaseReporter {
     std::string probe_asn;
     std::string probe_cc;
 
-    time_t start_time = 0;
+    struct tm *test_start_time = nullptr;
 
     Settings options;
 
@@ -30,11 +34,9 @@ class BaseReporter {
 
     virtual ~BaseReporter(){};
 
-    std::string getHeader();
-
     virtual void open();
 
-    virtual void writeEntry(Entry &entry);
+    virtual void writeEntry(json &entry);
 
     virtual void close();
 
@@ -52,7 +54,7 @@ class BaseReporter {
 
     const std::string software_name = "measurement_kit";
     const std::string software_version = MEASUREMENT_KIT_VERSION;
-    const std::string data_format_version = "0.1";
+    const std::string data_format_version = "0.2.0";
 };
 
 } // namespace report

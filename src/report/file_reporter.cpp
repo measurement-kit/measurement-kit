@@ -11,16 +11,15 @@ void FileReporter::open() {
     BaseReporter::open();
     try {
         file.open(filename);
-        file << getHeader();
     } catch (...) {
         emit_error(GenericError());
     }
 }
 
-void FileReporter::writeEntry(Entry &entry) {
+void FileReporter::writeEntry(json &entry) {
     BaseReporter::writeEntry(entry);
     try {
-        file << entry.str();
+        file << entry.dump() << std::endl;
     } catch (...) {
         emit_error(GenericError());
     }

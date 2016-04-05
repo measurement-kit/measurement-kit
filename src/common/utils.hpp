@@ -111,6 +111,10 @@ void timeval_now(timeval *);
 
 double time_now();
 
+void utc_time_now(struct tm **);
+
+std::string timestamp(struct tm *);
+
 evutil_socket_t listen(int, const char *, const char *);
 
 void xfree(void *);
