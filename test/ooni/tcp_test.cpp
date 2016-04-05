@@ -22,7 +22,7 @@ TEST_CASE("TCPTestImpl works as expected in a common case") {
         {
          {"host", "www.neubot.org"}, {"port", "80"},
         },
-        [&count](TCPClient) {
+        [&count](Var<net::Transport>) {
             if (++count >= 2) {
                 mk::break_loop();
             }
@@ -32,7 +32,7 @@ TEST_CASE("TCPTestImpl works as expected in a common case") {
         {
          {"host", "ooni.nu"}, {"port", "80"},
         },
-        [&count](TCPClient) {
+        [&count](Var<net::Transport>) {
             if (++count >= 2) {
                 mk::break_loop();
             }

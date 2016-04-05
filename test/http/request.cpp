@@ -72,7 +72,7 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
     auto stream = r.get_stream();
     auto transport = stream->get_transport();
 
-    transport.emit_connect();
+    transport->emit_connect();
 
     Buffer data;
     data << "HTTP/1.1 200 Ok\r\n";
@@ -81,8 +81,8 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
     data << "Server: Antani/1.0.0.0\r\n";
     data << "\r\n";
     data << "1234567";
-    transport.emit_data(data);
-    transport.emit_error(NoError());
+    transport->emit_data(data);
+    transport->emit_error(NoError());
 
     REQUIRE(called == 1);
 }

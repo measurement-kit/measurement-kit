@@ -21,17 +21,17 @@ TEST_CASE("It is possible to use Transport with a custom poller") {
         return;
     }
     Poller poller;
-    Maybe<Transport> maybe_s = mk::net::connect({
+    ErrorOr<Var<Transport>> s = mk::net::connect({
         {"family", "PF_UNSPEC"},
         {"address", "nexa.polito.it"},
         {"port", "22"},
     }, Logger::global(), &poller);
-    REQUIRE(static_cast<bool>(maybe_s));
-    auto s = maybe_s.as_value();
-    s.set_timeout(5);
+    REQUIRE(static_cast<bool>(s));
+    Var<Transport> transport = s.as_value();
+    transport->set_timeout(5);
     auto ok = false;
-    s.on_error([&poller](Error) { poller.break_loop(); });
-    s.on_connect([&poller, &ok]() {
+    transport->on_error([&poller](Error) { poller.break_loop(); });
+    transport->on_connect([&poller, &ok]() {
         poller.break_loop();
         ok = true;
     });
@@ -39,8 +39,20 @@ TEST_CASE("It is possible to use Transport with a custom poller") {
     REQUIRE(ok);
 }
 
-TEST_CASE("The alternative syntax for connect() works") {
-    net::connect("www.kernel.org", 80, [](Error error, Transport) {
-        std::cout << (int)error << "\n";
+TEST_CASE("Alternative connect() can connect to open port") {
+    loop_with_initial_event([]() {
+        net::connect("www.kernel.org", 80, [](Error error, Var<Transport>) {
+            REQUIRE(!error);
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("Alternative connect() works in case of error") {
+    loop_with_initial_event([]() {
+        net::connect("nexa.polito.it", 81, [](Error error, Var<Transport>) {
+            REQUIRE(error);
+            break_loop();
+        });
     });
 }

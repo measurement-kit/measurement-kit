@@ -2,19 +2,20 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <measurement_kit/net.hpp>
+#include "src/net/connect.hpp"
 #include "src/net/connection.hpp"
 #include "src/net/emitter.hpp"
 #include "src/net/socks5.hpp"
-#include <measurement_kit/net/transport.hpp>
 
 namespace mk {
 namespace net {
 
-static Transport connect_internal(Settings settings, Logger *logger,
+static Var<Transport> connect_internal(Settings settings, Logger *logger,
                                        Poller *poller) {
 
     if (settings.find("dumb_transport") != settings.end()) {
-        return Transport(new Emitter(logger));
+        return Var<Transport>(new Emitter(logger));
     }
 
     if (settings.find("family") == settings.end()) {
@@ -38,48 +39,43 @@ static Transport connect_internal(Settings settings, Logger *logger,
         auto port = proxy.substr(pos + 1);
         settings["socks5_address"] = address;
         settings["socks5_port"] = port;
-        return Transport(new Socks5(settings, logger, poller));
+        return Var<Transport>(new Socks5(settings, logger, poller));
     }
 
-    return Transport(new Connection(settings["family"].c_str(),
-                                         settings["address"].c_str(),
-                                         settings["port"].c_str(),
-                                         logger, poller));
+    return Var<Transport>(new Connection(settings["family"].c_str(),
+                          settings["address"].c_str(),
+                          settings["port"].c_str(),
+                          logger, poller));
 }
 
-Maybe<Transport> connect(Settings settings, Logger *lp, Poller *poller) {
+ErrorOr<Var<Transport>> connect(Settings settings, Logger *lp, Poller *poller) {
     double timeo = 30.0;
     if (settings.find("timeout") != settings.end()) {
         timeo = settings["timeout"].as<double>();
     }
-    Transport transport = connect_internal(settings, lp, poller);
+    Var<Transport> transport = connect_internal(settings, lp, poller);
     if (timeo >= 0.0) {
-        transport.set_timeout(timeo);
+        transport->set_timeout(timeo);
     }
-    return Maybe<Transport>(transport);
+    return transport;
 }
 
 void connect(std::string address, int port,
-             std::function<void(Error, Transport)> callback,
+             std::function<void(Error, Var<Transport>)> callback,
              Settings settings, Logger *logger, Poller *poller) {
-    settings["address"] = address;
-    settings["port"] = std::to_string(port);
-    Maybe<Transport> maybe = connect(settings, logger, poller);
-    if (!maybe) {
-        callback(maybe.as_error(), Transport{});
+    if (settings.find("socks5_proxy") != settings.end()) {
+        socks5_connect(address, port, settings, callback, poller, logger);
         return;
     }
-    auto transport = maybe.as_value();
-    transport.on_connect([callback, transport]() {
-        transport.on_connect(nullptr);
-        transport.on_error(nullptr);
-        callback(NoError(), transport);
-    });
-    transport.on_error([callback, transport](Error error) {
-        transport.on_connect(nullptr);
-        transport.on_error(nullptr);
-        callback(error, transport);
-    });
+    net::connect(address, port, [callback](ConnectResult r) {
+        // TODO: it would be nice to pass to this callback a compound error
+        // that also contains info on all what went wrong when connecting
+        if (r.overall_error) {
+            callback(r.overall_error, nullptr);
+            return;
+        }
+        callback(NoError(), Var<Transport>(new Connection(r.connected_bev)));
+    }, settings.get("timeout", 30.0), poller, logger);
 }
 
 } // namespace net

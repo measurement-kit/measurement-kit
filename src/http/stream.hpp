@@ -1,30 +1,18 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
-#ifndef MEASUREMENT_KIT_HTTP_STREAM_HPP
-#define MEASUREMENT_KIT_HTTP_STREAM_HPP
-
-#include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/var.hpp>
-
-#include <measurement_kit/net/error.hpp>
-#include <measurement_kit/net/transport.hpp>
+#ifndef SRC_HTTP_STREAM_HPP
+#define SRC_HTTP_STREAM_HPP
 
 #include "src/http/response_parser.hpp"
-
 #include <functional>
-#include <iosfwd>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 #include <memory>
 #include <string>
 #include <type_traits>
 
 namespace mk {
-
-namespace net { class Buffer; }
-
 namespace http {
 
 /*!
@@ -36,20 +24,19 @@ namespace http {
  * This is a mid-level HTTP abstraction that can be used when a high
  * degree of control is needed over the HTTP protocol.
  */
-class Stream {
-    net::Transport connection;
-    Var<ResponseParser> parser;
+class Stream : public NonCopyable, public NonMovable {
+
     std::function<void(Error)> error_handler;
     std::function<void()> connect_handler;
 
     void connection_ready(void) {
-        connection.on_data([&](net::Buffer data) { parser->feed(data); });
+        connection->on_data([&](net::Buffer data) { parser->feed(data); });
         //
         // Intercept EOF error to implement body-ends-at-EOF semantic.
         //
-        connection.on_error([&](Error error) {
+        connection->on_error([&](Error error) {
             auto safe_eh = error_handler;
-            if (error == net::EOFError()) {
+            if (error == net::EofError()) {
                 parser->eof();
             }
             // parser->eof() may cause this object to go out of
@@ -62,42 +49,13 @@ class Stream {
         connect_handler();
     }
 
+    Var<net::Transport> connection;
+    Var<ResponseParser> parser;
   public:
-    /*!
-     * \brief Get response parser.
-     * This is useful for writing tests.
-     */
     Var<ResponseParser> get_parser() { return parser; }
 
-    net::Transport get_transport() { return connection; }
+    Var<net::Transport> get_transport() { return connection; }
 
-    /*!
-     * \brief Deleted copy constructor.
-     * The `this` of this class is bound to lambdas, so it must
-     * not be copied or moved.
-     */
-    Stream(Stream & /*other*/) = delete;
-
-    /*!
-     * \brief Deleted copy assignment.
-     * The `this` of this class is bound to lambdas, so it must
-     * not be copied or moved.
-     */
-    Stream &operator=(Stream & /*other*/) = delete;
-
-    /*!
-     * \brief Deleted move constructor.
-     * The `this` of this class is bound to lambdas, so it must
-     * not be copied or moved.
-     */
-    Stream(Stream && /*other*/) = delete;
-
-    /*!
-     * \brief Deleted move assignment.
-     * The `this` of this class is bound to lambdas, so it must
-     * not be copied or moved.
-     */
-    Stream &operator=(Stream && /*other*/) = delete;
 
     //
     // How do you construct this object:
@@ -125,7 +83,7 @@ class Stream {
         // error if needed, we'll deal with body-terminated-by-EOF
         // semantic when we know we are actually connected.
         //
-        connection.on_error([&](Error error) {
+        connection->on_error([&](Error error) {
             if (error_handler) {
                 error_handler(error);
             }
@@ -140,13 +98,13 @@ class Stream {
      */
     void on_connect(std::function<void(void)> &&fn) {
         connect_handler = fn;
-        connection.on_connect([this]() { connection_ready(); });
+        connection->on_connect([this]() { connection_ready(); });
     }
 
     /*!
      * \brief Close this stream.
      */
-    void close() { connection.close(); }
+    void close() { connection->close(); }
 
     /*!
      * \brief Destructor.
@@ -166,7 +124,7 @@ class Stream {
      * \returns A reference to this stream for chaining operations.
      */
     Stream &operator<<(std::string data) {
-        connection.send(data);
+        connection->write(data);
         return *this;
     }
 
@@ -177,7 +135,7 @@ class Stream {
      *         after some data was already passed to the kernel.
      */
     void on_flush(std::function<void(void)> &&fn) {
-        connection.on_flush(std::move(fn));
+        connection->on_flush(std::move(fn));
     }
 
     //
@@ -236,11 +194,11 @@ class Stream {
      * \brief Set timeout.
      * \param time The timeout in seconds.
      */
-    void set_timeout(double timeo) { connection.set_timeout(timeo); }
+    void set_timeout(double timeo) { connection->set_timeout(timeo); }
 
-    std::string socks5_address() { return connection.socks5_address(); }
+    std::string socks5_address() { return connection->socks5_address(); }
 
-    std::string socks5_port() { return connection.socks5_port(); }
+    std::string socks5_port() { return connection->socks5_port(); }
 };
 
 } // namespace http

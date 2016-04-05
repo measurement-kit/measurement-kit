@@ -1,76 +1,62 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
+#ifndef SRC_NET_EMITTER_HPP
+#define SRC_NET_EMITTER_HPP
 
-#ifndef MEASUREMENT_KIT_NET_EMITTER_HPP
-#define MEASUREMENT_KIT_NET_EMITTER_HPP
-
-//
-// Emitter transport
-//
-
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/net/transport.hpp>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
+#include <stdexcept>
 
 namespace mk {
 namespace net {
 
-class Emitter : public TransportInterface {
-  private:
-    std::function<void()> do_connect = []() {};
-    std::function<void(Buffer)> do_data = [](Buffer) {};
-    std::function<void()> do_flush = []() {};
-    std::function<void(Error)> do_error = [](Error) {};
-
-  protected:
-    Logger *logger = Logger::global();
-
+class Emitter : public Transport {
   public:
     void emit_connect() override {
         logger->debug("emitter: emit 'connect' event");
-        // With GNU C++ library, if a std::function sets itself, the
-        // associated context is free() leading to segfault
-        auto fn = do_connect;
-        fn();
+        do_connect();
     }
 
-    virtual void emit_data(Buffer data) override {
+    void emit_data(Buffer data) override {
         logger->debug("emitter: emit 'data' event");
-        // With GNU C++ library, if a std::function sets itself, the
-        // associated context is free() leading to segfault
-        auto fn = do_data;
-        fn(data);
+        if (do_record_received_data) {
+            received_data_record.write(data.peek());
+        }
+        do_data(data);
     }
 
     void emit_flush() override {
         logger->debug("emitter: emit 'flush' event");
-        // With GNU C++ library, if a std::function sets itself, the
-        // associated context is free() leading to segfault
-        auto fn = do_flush;
-        fn();
+        do_flush();
     }
 
     void emit_error(Error err) override {
         logger->debug("emitter: emit 'error' event");
-        // With GNU C++ library, if a std::function sets itself, the
-        // associated context is free() leading to segfault
-        auto fn = do_error;
-        fn(err);
+        do_error(err);
     }
 
     Emitter(Logger *lp = Logger::global()) : logger(lp) {}
 
-    ~Emitter() override {}
+    ~Emitter() override;
 
     void on_connect(std::function<void()> fn) override {
         logger->debug("emitter: register 'connect' handler");
         do_connect = fn;
     }
 
-    virtual void on_data(std::function<void(Buffer)> fn) override {
+    void on_data(std::function<void(Buffer)> fn) override {
         logger->debug("emitter: register 'data' handler");
+        if (fn) {
+            enable_read();
+        } else {
+            disable_read();
+        }
         do_data = fn;
     }
+
+    virtual void enable_read() {}
+    virtual void disable_read() {}
 
     void on_flush(std::function<void()> fn) override {
         logger->debug("emitter: register 'flush' handler");
@@ -82,25 +68,78 @@ class Emitter : public TransportInterface {
         do_error = fn;
     }
 
+    void record_received_data() override {
+        do_record_received_data = true;
+    }
+
+    void dont_record_received_data() override {
+        do_record_received_data = false;
+    }
+
+    Buffer &received_data() override {
+        return received_data_record;
+    }
+
+    void record_sent_data() override {
+        do_record_sent_data = true;
+    }
+
+    void dont_record_sent_data() override {
+        do_record_sent_data = false;
+    }
+
+    Buffer &sent_data() override {
+        return sent_data_record;
+    }
+
     void set_timeout(double timeo) override {
         logger->debug("emitter: set_timeout %f", timeo);
     }
 
     void clear_timeout() override { logger->debug("emitter: clear_timeout"); }
 
-    void send(const void *, size_t) override {
+    void write(const void *p, size_t n) override {
         logger->debug("emitter: send opaque data");
+        if (p == nullptr) {
+            throw std::runtime_error("null pointer");
+        }
+        write(Buffer(p, n));
     }
 
-    void send(std::string) override { logger->debug("emitter: send string"); }
+    void write(std::string s) override {
+        logger->debug("emitter: send string");
+        write(Buffer(s));
+    }
 
-    void send(Buffer) override { logger->debug("emitter: send buffer"); }
+    void write(Buffer data) override {
+        logger->debug("emitter: send buffer");
+        if (do_record_sent_data) {
+            sent_data_record.write(data.peek());
+        }
+        do_send(data);
+    }
+
+    // Implements actual send and should be override by subclasses
+    virtual void do_send(Buffer) {}
 
     void close() override { logger->debug("emitter: close"); }
 
     std::string socks5_address() override { return ""; }
 
     std::string socks5_port() override { return ""; }
+
+  protected:
+    Logger *logger = Logger::global();
+
+  private:
+    SafelyOverridableFunc<void()> do_connect = []() {};
+    SafelyOverridableFunc<void(Buffer)> do_data = [](Buffer) {};
+    SafelyOverridableFunc<void()> do_flush = []() {};
+    SafelyOverridableFunc<void(Error)> do_error = [](Error) {};
+    bool do_record_received_data = false;
+    Buffer received_data_record;
+    bool do_record_sent_data = false;
+    Buffer sent_data_record;
 };
 
 } // namespace net

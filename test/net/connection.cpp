@@ -23,10 +23,11 @@ TEST_CASE("Connection::close() is idempotent") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    Connection s("PF_INET", "nexa.polito.it", "80");
+    Connection conn("PF_INET", "nexa.polito.it", "80");
+    Emitter &s = static_cast<Emitter &>(conn);
     s.on_connect([&s]() {
         s.enable_read();
-        s.send("GET / HTTP/1.0\r\n\r\n");
+        s.write("GET / HTTP/1.0\r\n\r\n");
     });
     s.on_data([&s](Buffer) {
         s.close();
@@ -42,10 +43,11 @@ TEST_CASE("It is safe to manipulate Connection after close") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    Connection s("PF_INET", "nexa.polito.it", "80");
+    Connection conn("PF_INET", "nexa.polito.it", "80");
+    Emitter &s = static_cast<Emitter &>(conn);
     s.on_connect([&s]() {
         s.enable_read();
-        s.send("GET / HTTP/1.0\r\n\r\n");
+        s.write("GET / HTTP/1.0\r\n\r\n");
     });
     s.on_data([&s](Buffer) {
         s.close();

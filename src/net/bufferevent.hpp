@@ -24,6 +24,12 @@ class Bufferevent : public NonCopyable, public NonMovable {
     /// Default constructor
     Bufferevent(Libs *libs = Libs::global()) : libs_(libs) {}
 
+    /// Close previous bufferevent and own another one
+    void set_bufferevent(bufferevent *bev) {
+        close();
+        bev_ = bev;
+    }
+
     /// Constructor with socket
     Bufferevent(event_base *base, evutil_socket_t fd, int options,
                 Libs *libs = Libs::global()) {

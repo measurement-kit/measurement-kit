@@ -1,39 +1,25 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
-#ifndef MEASUREMENT_KIT_HTTP_REQUEST_HPP
-#define MEASUREMENT_KIT_HTTP_REQUEST_HPP
-
-#include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/var.hpp>
-#include <measurement_kit/common/poller.hpp>
-
-#include <measurement_kit/net/buffer.hpp>
-#include <measurement_kit/net/error.hpp>
-
-#include <measurement_kit/http.hpp>
-#include "src/http/request_serializer.hpp"
-#include "src/http/response_parser.hpp"
-#include "src/http/stream.hpp"
+#ifndef SRC_HTTP_REQUEST_HPP
+#define SRC_HTTP_REQUEST_HPP
 
 #include <functional>
-#include <iosfwd>
 #include <map>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
+#include <measurement_kit/http.hpp>
 #include <memory>
 #include <set>
 #include <string>
 #include <type_traits>
+#include "src/http/request_serializer.hpp"
+#include "src/http/response_parser.hpp"
+#include "src/http/stream.hpp"
 
 namespace mk {
 namespace http {
 
-/*!
- * \brief HTTP request.
- */
 class Request : public NonCopyable, public NonMovable {
 
     RequestCallback callback;
@@ -91,10 +77,10 @@ class Request : public NonCopyable, public NonMovable {
             return;
         }
         // Extend settings with address and port to connect to
-        settings["port"] = serializer.port;
-        settings["address"] = serializer.address;
+        settings["port"] = std::to_string(serializer.url.port);
+        settings["address"] = serializer.url.address;
         // If needed, extend settings with socks5 proxy info
-        if (serializer.schema == "httpo") {
+        if (serializer.url.schema == "httpo") {
             // tor_socks_port takes precedence because it's more specific
             if (settings.find("tor_socks_port") != settings.end()) {
                 std::string proxy = "127.0.0.1:";
@@ -106,14 +92,14 @@ class Request : public NonCopyable, public NonMovable {
         }
         stream = std::make_shared<Stream>(settings, logger, poller);
         stream->on_error([this](Error err) {
-            if (err != net::EOFError()) {
+            if (err != net::EofError()) {
                 emit_end(err, std::move(response));
             } else {
                 // When EOF is received, on_end() is called, therefore we
                 // don't need to call emit_end() again here.
             }
         });
-        stream->on_connect([this](void) {
+        stream->on_connect([this]() {
             // TODO: improve the way in which we serialize the request
             //       to reduce unnecessary copies
             net::Buffer buf;

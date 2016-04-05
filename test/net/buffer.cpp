@@ -11,6 +11,7 @@
 
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
+#include "src/net/evbuffer.hpp"
 
 #include <event2/buffer.h>
 
@@ -18,39 +19,65 @@ using namespace mk;
 using namespace mk::net;
 
 TEST_CASE("The constructor works correctly", "[Buffer]") {
-    REQUIRE_NOTHROW(Buffer());
+    Buffer buffer;
+    REQUIRE("" == buffer.read());
+}
+
+TEST_CASE("The constructor with null evbuffer works correctly", "[Buffer]") {
+    evbuffer *evbuf = nullptr;
+    Buffer buffer(evbuf);
+    REQUIRE("" == buffer.read());
+}
+
+TEST_CASE("The constructor with nonnull evbuffer works correctly", "[Buffer]") {
+    evbuffer *evbuf = evbuffer_new();
+    REQUIRE(evbuf != nullptr);
+    REQUIRE(evbuffer_add(evbuf, "foobar", 6) == 0);
+    Buffer buffer(evbuf);
+    REQUIRE("foobar" == buffer.read());
+}
+
+TEST_CASE("The constructor with C++ string works correctly", "[Buffer]") {
+    Buffer buffer("foobar");
+    REQUIRE("foobar" == buffer.read());
+}
+
+TEST_CASE("The constructor with C string works correctly", "[Buffer]") {
+    Buffer buffer("foobar", 6);
+    REQUIRE("foobar" == buffer.read());
 }
 
 TEST_CASE("Insertion/extraction work correctly for evbuffer") {
 
     Buffer buff;
-    Evbuffer source;
-    Evbuffer dest;
+    Var<evbuffer> source = make_shared_evbuffer();
+    Var<evbuffer> dest = make_shared_evbuffer();
     auto sa = std::string(65536, 'A');
     auto r = std::string();
 
     char data[65536];
 
-    if (evbuffer_add(source, sa.c_str(), sa.length()) != 0)
+    if (evbuffer_add(source.get(), sa.c_str(), sa.length()) != 0)
         throw std::runtime_error("evbuffer_add failed");
 
     SECTION("Insertion works correctly") {
-        buff << source;
+        buff << source.get();
         REQUIRE(buff.length() == 65536);
         r = buff.read();
         REQUIRE(r == sa);
     }
 
     SECTION("Insertion throws for NULL evbuffer") {
-        REQUIRE_THROWS(buff << (evbuffer *)NULL);
+        REQUIRE_THROWS(buff << (evbuffer *)nullptr);
     }
 
     SECTION("Extraction works correctly") {
-        buff << source;
-        buff >> dest;
+        buff << source.get();
+        buff >> dest.get();
         REQUIRE(buff.length() == 0);
-        if (evbuffer_remove(dest, data, sizeof(data)) != sizeof(data))
+        if (evbuffer_remove(dest.get(), data, sizeof(data)) != sizeof(data)) {
             throw std::runtime_error("evbuffer remove failed");
+        }
         r = std::string(data, sizeof(data));
         REQUIRE(r == sa);
     }
@@ -104,7 +131,7 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
      * Initialize the source evbuffer.
      */
 
-    Evbuffer evbuf;
+    Var<evbuffer> evbuf = make_shared_evbuffer();
 
     auto sa = std::string(512, 'A');
     auto sb = std::string(512, 'B');
@@ -114,18 +141,21 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
 
     /* Repeat until we have three extents or more */
     do {
-        if (evbuffer_add(evbuf, sa.c_str(), sa.length()) != 0)
+        if (evbuffer_add(evbuf.get(), sa.c_str(), sa.length()) != 0) {
             throw std::runtime_error("FAIL");
-        if (evbuffer_add(evbuf, sb.c_str(), sb.length()) != 0)
+        }
+        if (evbuffer_add(evbuf.get(), sb.c_str(), sb.length()) != 0) {
             throw std::runtime_error("FAIL");
-        if (evbuffer_add(evbuf, sc.c_str(), sc.length()) != 0)
+        }
+        if (evbuffer_add(evbuf.get(), sc.c_str(), sc.length()) != 0) {
             throw std::runtime_error("FAIL");
+        }
         expect += sa + sb + sc;
-    } while ((n_extents = evbuffer_peek(evbuf, -1, NULL, NULL, 0)) < 3);
+    } while ((n_extents = evbuffer_peek(evbuf.get(), -1, NULL, NULL, 0)) < 3);
 
     SECTION("Make sure that we walk through all the extents") {
 
-        buff << evbuf;
+        buff << evbuf.get();
         buff.for_each([&](const void *p, size_t n) {
             r.append((const char *)p, n);
             ++counter;
@@ -140,7 +170,7 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
 
     SECTION("Make sure that stopping early works as expected") {
 
-        buff << evbuf;
+        buff << evbuf.get();
         buff.for_each([&](const void *p, size_t n) {
             r.append((const char *)p, n);
             ++counter;
@@ -256,7 +286,7 @@ TEST_CASE("Readn works correctly") {
 
 TEST_CASE("Readline works correctly", "[Buffer]") {
     Buffer buff;
-    Maybe<std::string> line("");
+    ErrorOr<std::string> line("");
 
     SECTION("We can read LF terminated lines") {
         buff << "HTTP/1.1 200 Ok\n"
@@ -267,25 +297,25 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "HTTP/1.1 200 Ok\n");
+        REQUIRE(*line == "HTTP/1.1 200 Ok\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "Content-Type: text/html\n");
+        REQUIRE(*line == "Content-Type: text/html\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "Content-Length: 7\n");
+        REQUIRE(*line == "Content-Length: 7\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "\n");
+        REQUIRE(*line == "\n");
 
         // Here `line.as_value()` must be empty because
         // there is no ending LF.
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "");
+        REQUIRE(*line == "");
     }
 
     SECTION("We can read [CR]LF terminated lines") {
@@ -297,25 +327,25 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "HTTP/1.1 200 Ok\n");
+        REQUIRE(*line == "HTTP/1.1 200 Ok\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "Content-Type: text/html\r\n");
+        REQUIRE(*line == "Content-Type: text/html\r\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "Content-Length: 7\n");
+        REQUIRE(*line == "Content-Length: 7\n");
 
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "\r\n");
+        REQUIRE(*line == "\r\n");
 
         // Here `line.as_value()` must be empty because
         // there is no ending LF.
         line = buff.readline(1024);
         REQUIRE(static_cast<bool>(line));
-        REQUIRE(line.as_value() == "");
+        REQUIRE(*line == "");
     }
 
     SECTION("EOL-not-found error is correctly reported") {
@@ -323,7 +353,7 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
         line = buff.readline(3);
         REQUIRE(!line);
         REQUIRE(line.as_error() == EOLNotFoundError());
-        REQUIRE_THROWS_AS(line.as_value(), Error);
+        REQUIRE_THROWS_AS(*line, Error);
     }
 
     SECTION("Line-too-long error is correctly reported") {
@@ -331,7 +361,7 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
         line = buff.readline(3);
         REQUIRE(!line);
         REQUIRE(line.as_error() == LineTooLongError());
-        REQUIRE_THROWS_AS(line.as_value(), Error);
+        REQUIRE_THROWS_AS(*line, Error);
     }
 }
 

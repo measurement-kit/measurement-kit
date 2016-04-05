@@ -11,10 +11,10 @@ namespace mk {
 namespace net {
 
 /// EOF error
-class EOFError : public Error {
+class EofError : public Error {
   public:
     /// Default constructor
-    EOFError() : Error(1000, "unknown_failure 1000") {}
+    EofError() : Error(1000, "unknown_failure 1000") {}
 };
 
 /// Timeout error
@@ -80,6 +80,43 @@ class EOLNotFoundError : public Error {
 class LineTooLongError : public Error {
   public:
     LineTooLongError() : Error(1010, "unknown_failure 1010") {}
+};
+
+/// Generic network error
+class NetworkError : public Error {
+  public:
+    NetworkError() : Error(1011, "unknown_failure 1011") {}
+};
+
+class NoAvailableSocksAuthenticationError : public Error {
+  public:
+    NoAvailableSocksAuthenticationError()
+            : Error(1012, "unknown_failure 1012") {}
+};
+
+class SocksError : public Error {
+  public:
+    SocksError() : Error(1013, "unknown_failure 1013") {}
+};
+
+class BadSocksReservedFieldError : public Error {
+  public:
+    BadSocksReservedFieldError() : Error(1014, "unknown_failure 1014") {}
+};
+
+class BadSocksAtypeValueError : public Error {
+  public:
+    BadSocksAtypeValueError() : Error(1015, "unknown_failure 1015") {}
+};
+
+class EvconnlistenerNewBindError : public Error {
+  public:
+    EvconnlistenerNewBindError() : Error(1016, "unknown_failure 1016") {}
+};
+
+class BuffereventSocketNewError : public Error {
+  public:
+    BuffereventSocketNewError() : Error(1017, "unknown_failure 1017") {}
 };
 
 } // namespace net
