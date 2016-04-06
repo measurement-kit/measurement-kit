@@ -47,8 +47,8 @@ export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer
                 --prefix=/ \
                 $EXTRA_CONFIG
     make -j4 V=0
-    make install-strip V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}
-    rm -rf $BUILDDIR/build/${PLATFORM}/${ARCH}/include
-    make install-data-am V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}
+    make install-strip V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}/
+    rm -rf $BUILDDIR/build/${PLATFORM}/${ARCH}/include/
+    make install-data-am V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}/
     make distclean
 )
