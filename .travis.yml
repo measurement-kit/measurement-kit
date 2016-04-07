@@ -46,7 +46,8 @@ script:
 # Silence gcov standard output since it produces way too much output
 after_success:
     - if [ "$COVERAGE" = "true" ]; then
-        coveralls --gcov /usr/bin/gcov-4.6 --exclude src/ext > /dev/null;
+        coveralls --gcov /usr/bin/gcov-4.6 --exclude src/ext
+                  --exclude example > /dev/null;
       fi
 
 after_failure:
