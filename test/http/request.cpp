@@ -390,11 +390,25 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
     });
 }
 
-TEST_CASE("http::request_cycle() works for multiple requests") {
+TEST_CASE("http::request_cycle() works as expected") {
     loop_with_initial_event([]() {
         request_cycle({
             {"method", "GET"},
             {"url", "http://www.google.com/robots.txt"}
+        }, {}, "", [](Error error, Var<Response> r) {
+            REQUIRE(!error);
+            REQUIRE(r->status_code == 200);
+            REQUIRE(r->body.size() > 0);
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("http::request_cycle() works as expected using Tor") {
+    loop_with_initial_event([]() {
+        request_cycle({
+            {"method", "GET"},
+            {"url", "httpo://www.google.com/robots.txt"},
         }, {}, "", [](Error error, Var<Response> r) {
             REQUIRE(!error);
             REQUIRE(r->status_code == 200);

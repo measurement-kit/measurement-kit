@@ -29,7 +29,6 @@ void request_connect(Settings settings, RequestConnectCb cb,
         } else if (settings.find("socks5_proxy") == settings.end()) {
             settings["socks5_proxy"] = "127.0.0.1:9050";
         }
-        // XXX: socks5 not implemented yet
     }
     connect(url->address, url->port, cb, settings, logger, poller);
 }
