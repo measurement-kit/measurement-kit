@@ -90,6 +90,7 @@ static inline evdns_base *create_evdns_base(
     }
 
     // By default we don't randomize the query's case
+    // XXX check that randomize case is a valid value
     std::string randomiz{"0"};
     if (settings.find("randomize_case") != settings.end()) {
         randomiz = settings["randomize_case"];

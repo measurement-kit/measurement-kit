@@ -19,15 +19,15 @@ using namespace mk::dns;
 // Now testing query()
 static evdns_request *null_resolver(
         evdns_base *, const char *, int, evdns_callback_type, void *) {
-    return (evdns_request *)NULL;
+    return (evdns_request *)nullptr;
 }
 static evdns_request *null_resolver_reverse(evdns_base *,
         const struct in_addr *, int, evdns_callback_type, void *) {
-    return (evdns_request *)NULL;
+    return (evdns_request *)nullptr;
 }
 static evdns_request *null_resolver_reverse(evdns_base *,
         const struct in6_addr *, int, evdns_callback_type, void *) {
-    return (evdns_request *)NULL;
+    return (evdns_request *)nullptr;
 }
 static int null_inet_pton(int, const char *, void *) { return 0; }
 
@@ -36,6 +36,10 @@ static evdns_base *null_evdns_base_new(event_base *, int) {
 }
 
 static int null_evdns_base_nameserver_ip_add(evdns_base *, const char *) {
+    return -1;
+}
+
+static int null_evdns_base_set_option_randomize (evdns_base *, const char *, const char *) {
     return -1;
 }
 
@@ -48,6 +52,9 @@ static int null_evdns_base_nameserver_ip_add(evdns_base *, const char *) {
 
 BASE_FREE(evdns_base_nameserver_ip_add)
 BASE_FREE(evdns_set_options_attempts)
+BASE_FREE(evdns_set_options_attempts_negative)
+BASE_FREE(evdns_set_options_timeout)
+BASE_FREE(evdns_set_options_randomize)
 
 TEST_CASE("throw error while fails evdns_base_new") {
     REQUIRE_THROWS_AS(
@@ -60,7 +67,18 @@ TEST_CASE("throw error while fails evdns_base_nameserver_ip_add") {
         create_evdns_base<::evdns_base_new,
                 null_evdns_base_nameserver_ip_add,
                 base_free_evdns_base_nameserver_ip_add>(
-                {{"nameserver", "antani"}}, get_global_poller());
+                {{"nameserver", "nexa"}}, get_global_poller());
+    } catch (std::runtime_error &) {
+        REQUIRE (base_free_evdns_base_nameserver_ip_add_flag);
+        return;
+    }
+    REQUIRE(false);
+    base_free_evdns_base_nameserver_ip_add_flag = false;
+    try {
+        create_evdns_base<null_evdns_base_new,
+                null_evdns_base_nameserver_ip_add,
+                base_free_evdns_base_nameserver_ip_add>(
+                {{"nameserver", "nexa"}}, get_global_poller());
     } catch (std::runtime_error &) {
         REQUIRE (base_free_evdns_base_nameserver_ip_add_flag);
         return;
@@ -76,6 +94,46 @@ TEST_CASE("throw error while fails evdns_set_options for attempts") {
                 {{"attempts", "nexa"}}, get_global_poller());
     } catch (std::runtime_error &) {
         REQUIRE (base_free_evdns_set_options_attempts_flag);
+        return;
+    }
+    REQUIRE (false);
+}
+
+TEST_CASE("throw error while fails evdns_set_options for negative attempts") {
+    try {
+        create_evdns_base<::evdns_base_new,
+                ::evdns_base_nameserver_ip_add,
+                base_free_evdns_set_options_attempts_negative>(
+                {{"attempts", -1}}, get_global_poller());
+    } catch (std::runtime_error &) {
+        REQUIRE (base_free_evdns_set_options_attempts_negative_flag);
+        return;
+    }
+    REQUIRE (false);
+}
+
+TEST_CASE("throw error while fails evdns_set_options for timeout") {
+    try {
+        create_evdns_base<::evdns_base_new,
+                ::evdns_base_nameserver_ip_add,
+                base_free_evdns_set_options_timeout>(
+                {{"timeout", "nexa"}}, get_global_poller());
+    } catch (std::runtime_error &) {
+        REQUIRE (base_free_evdns_set_options_timeout_flag);
+        return;
+    }
+    REQUIRE (false);
+}
+
+TEST_CASE("throw error while fails evdns_set_options for randomize-case") {
+    try {
+        create_evdns_base<::evdns_base_new,
+                ::evdns_base_nameserver_ip_add,
+                base_free_evdns_set_options_randomize,
+                null_evdns_base_set_option_randomize>(
+                {{"randomize_case", ""}}, get_global_poller());
+    } catch (std::runtime_error &) {
+        REQUIRE (base_free_evdns_set_options_randomize_flag);
         return;
     }
     REQUIRE (false);
