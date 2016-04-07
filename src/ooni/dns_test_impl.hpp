@@ -46,7 +46,7 @@ class DNSTestImpl : public ooni::OoniTestImpl {
                 json query_entry;
                 query_entry["resolver_hostname"] = resolver_hostname;
                 query_entry["resolver_port"] = resolver_port;
-                query_entry["failure"] = NULL;
+                query_entry["failure"] = nullptr;
                 query_entry["answers"] = {};
                 if (query_type == dns::QueryTypeId::A) {
                     query_entry["query_type"] = "A";

@@ -40,16 +40,16 @@ double time_now(void) {
     return result;
 }
 
-void utc_time_now(struct tm **utc) {
+void utc_time_now(struct tm *utc) {
     time_t tv;
-    time(&tv);
-    *utc = gmtime(&tv);
+    tv = time(nullptr);
+    gmtime_r(&tv, utc);
 }
 
-std::string timestamp(struct tm *t) {
+std::string timestamp(const struct tm *t) {
     char result[30];
     std::string ts;
-    if (strftime(result, 30, "%Y-%m-%d %H:%M:%S", t) == 0) {
+    if (strftime(result, sizeof(result), "%Y-%m-%d %H:%M:%S", t) == 0) {
         throw std::runtime_error("strftime()");
     };
     return std::string(result);

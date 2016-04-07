@@ -26,7 +26,7 @@ class BaseReporter {
     std::string probe_asn;
     std::string probe_cc;
 
-    struct tm *test_start_time = nullptr;
+    struct tm test_start_time;
 
     Settings options;
 

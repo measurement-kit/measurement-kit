@@ -29,7 +29,7 @@ class OoniTestImpl : public mk::NetTest {
     report::FileReporter file_report;
     std::string report_filename;
 
-    struct tm *test_start_time = nullptr;
+    struct tm test_start_time;
 
     DelayedCall delayed_call;
 
@@ -39,7 +39,7 @@ class OoniTestImpl : public mk::NetTest {
             [=](std::string next_input) {
                 logger.debug("net_test: creating entry");
 
-                struct tm *measurement_start_time = nullptr;
+                struct tm measurement_start_time;
                 double start_time;
 
                 mk::utc_time_now(&measurement_start_time);
@@ -55,7 +55,7 @@ class OoniTestImpl : public mk::NetTest {
                     json entry;
                     entry["test_keys"] = test_keys;
                     entry["input"] = next_input;
-                    entry["measurement_start_time"] = mk::timestamp(measurement_start_time);
+                    entry["measurement_start_time"] = mk::timestamp(&measurement_start_time);
                     entry["test_runtime"] = mk::time_now() - start_time;
 
                     logger.debug("net_test: tearing down");
@@ -80,11 +80,6 @@ class OoniTestImpl : public mk::NetTest {
         probe_cc = "ZZ";
     }
 
-    void set_test_start_time() {
-        if (test_start_time == nullptr) {
-        }
-    }
-
     void open_report() {
         file_report.test_name = test_name;
         file_report.test_version = test_version;
@@ -102,12 +97,9 @@ class OoniTestImpl : public mk::NetTest {
 
     std::string generate_report_filename() {
         std::string filename;
-        if (test_start_time == nullptr) {
-             throw std::runtime_error("test_start_time not set");
-        }
         char buffer[100];
         strftime(buffer, sizeof(buffer), "%FT%H%M%SZ",
-                 test_start_time);
+                 &test_start_time);
         std::string iso_8601_date(buffer);
         filename = "report-" + test_name + "-";
         filename += iso_8601_date + ".json";
