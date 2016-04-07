@@ -292,3 +292,15 @@ TEST_CASE("The callback is called if input URL parsing fails") {
     });
     REQUIRE(called);
 }
+
+TEST_CASE("http::request_connect() works for normal connections") {
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/robots.txt"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            REQUIRE(static_cast<bool>(transport));
+            break_loop();
+        });
+    });
+}

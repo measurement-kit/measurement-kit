@@ -79,6 +79,7 @@ class Request : public NonCopyable, public NonMovable {
         // Extend settings with address and port to connect to
         settings["port"] = std::to_string(serializer.url.port);
         settings["address"] = serializer.url.address;
+
         // If needed, extend settings with socks5 proxy info
         if (serializer.url.schema == "httpo") {
             // tor_socks_port takes precedence because it's more specific
@@ -90,6 +91,7 @@ class Request : public NonCopyable, public NonMovable {
                 settings["socks5_proxy"] = "127.0.0.1:9050";
             }
         }
+
         stream = std::make_shared<Stream>(settings, logger, poller);
         stream->on_error([this](Error err) {
             if (err != net::EofError()) {
@@ -148,6 +150,11 @@ class Request : public NonCopyable, public NonMovable {
 
     std::string socks5_port() { return stream->socks5_port(); }
 };
+
+typedef std::function<void(Error, Var<Transport>)> RequestConnectCb;
+
+void request_connect(Settings, RequestConnectCb, Poller * = Poller::global(),
+    Logger * = Logger::global());
 
 } // namespace http
 } // namespace mk
