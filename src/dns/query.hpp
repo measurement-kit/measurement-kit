@@ -213,7 +213,7 @@ static void dns_callback(int code, char type, int count, int ttl,
 
 template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
         MK_MOCK(evdns_base_resolve_ipv6), MK_MOCK(evdns_base_resolve_reverse),
-        MK_MOCK(evdns_base_resolve_reverse_ipv6)>
+        MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
 void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
         std::function<void(Error, Message)> cb, Settings settings,
         Poller *poller) {
