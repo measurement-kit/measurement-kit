@@ -47,7 +47,7 @@ script:
 after_success:
     - if [ "$COVERAGE" = "true" ]; then
         coveralls --gcov /usr/bin/gcov-4.6 --exclude src/ext
-                  --exclude example > /dev/null;
+                  --exclude example --exclude test > /dev/null;
       fi
 
 after_failure:
