@@ -90,5 +90,17 @@ void request_recv_response(Var<Transport> transport, RequestRecvResponseCb cb,
     });
 }
 
+void request_sendrecv(Var<Transport> transport, Settings settings,
+        Headers headers, std::string body, RequestSendrecvCb callback,
+        Poller *poller, Logger *logger) {
+    request_send(transport, settings, headers, body, [=](Error error) {
+        if (error) {
+            callback(error, nullptr);
+            return;
+        }
+        request_recv_response(transport, callback, poller, logger);
+    });
+}
+
 } // namespace http
 } // namespace mk

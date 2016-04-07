@@ -343,3 +343,49 @@ TEST_CASE("http::request_recv_response() works as expected") {
         });
     });
 }
+
+TEST_CASE("http::sendrecv() works as expected") {
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            request_sendrecv(transport, {
+                {"method", "GET"},
+                {"url", "http://www.google.com/"},
+            }, {}, "", [transport](Error error, Var<Response> r) {
+                REQUIRE(!error);
+                REQUIRE(r->status_code == 302);
+                REQUIRE(r->body.size() > 0);
+                break_loop();
+            });
+        });
+    });
+}
+
+TEST_CASE("http::sendrecv() works for multiple requests") {
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            request_sendrecv(transport, {
+                {"method", "GET"},
+                {"url", "http://www.google.com/"},
+            }, {}, "", [transport](Error error, Var<Response> r) {
+                REQUIRE(!error);
+                REQUIRE(r->status_code == 302);
+                REQUIRE(r->body.size() > 0);
+                request_sendrecv(transport, {
+                    {"method", "GET"},
+                    {"url", "http://www.google.com/robots.txt"},
+                }, {}, "", [transport](Error error, Var<Response> r) {
+                    REQUIRE(!error);
+                    REQUIRE(r->status_code == 200);
+                    REQUIRE(r->body.size() > 0);
+                    break_loop();
+                });
+            });
+        });
+    });
+}

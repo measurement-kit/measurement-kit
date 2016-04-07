@@ -154,6 +154,7 @@ class Request : public NonCopyable, public NonMovable {
 typedef std::function<void(Error, Var<Transport>)> RequestConnectCb;
 typedef std::function<void(Error)> RequestSendCb;
 typedef std::function<void(Error, Var<Response>)> RequestRecvResponseCb;
+typedef std::function<void(Error, Var<Response>)> RequestSendrecvCb;
 
 void request_connect(Settings, RequestConnectCb, Poller * = Poller::global(),
         Logger * = Logger::global());
@@ -163,6 +164,10 @@ void request_send(Var<Transport>, Settings, Headers, std::string,
 
 void request_recv_response(Var<Transport>, RequestRecvResponseCb,
         Poller * = Poller::global(), Logger * = Logger::global());
+
+void request_sendrecv(Var<Transport>, Settings, Headers, std::string,
+        RequestSendrecvCb, Poller * = Poller::global(),
+        Logger * = Logger::global());
 
 } // namespace http
 } // namespace mk
