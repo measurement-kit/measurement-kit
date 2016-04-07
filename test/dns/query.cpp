@@ -31,6 +31,10 @@ static evdns_request *null_resolver_reverse(evdns_base *,
 }
 static int null_inet_pton(int, const char *, void *) { return 0; }
 
+static const char * null_inet_ntop (int, const void *, char *, socklen_t) {
+    return nullptr;
+}
+
 static evdns_base *null_evdns_base_new(event_base *, int) {
     return (evdns_base *)nullptr;
 }
@@ -137,6 +141,14 @@ TEST_CASE("throw error while fails evdns_set_options for randomize-case") {
         return;
     }
     REQUIRE (false);
+}
+
+TEST_CASE("throw error with too many addresses") { 
+    REQUIRE_THROWS_AS (build_answers_evdns(DNS_ERR_NONE, DNS_IPv4_A, (INT_MAX/4)+2, 20, nullptr), std::runtime_error);
+}
+
+TEST_CASE("throw error with ntop conversion error") {
+    REQUIRE_THROWS_AS (build_answers_evdns<null_inet_ntop>(DNS_ERR_NONE, DNS_IPv4_A, 1, 20, nullptr), std::runtime_error);
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
