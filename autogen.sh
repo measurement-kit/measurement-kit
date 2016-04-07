@@ -98,7 +98,7 @@ gen_executables noinst_PROGRAMS example BUILD_EXAMPLES >> include.am
 gen_executables ALL_TESTS test BUILD_TESTS             >> include.am
 
 echo "* Updating .gitignore"
-sort -u .gitignore > .gitignore.new
+LC_ALL=C sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
 
 echo "* Fetching dependencies"

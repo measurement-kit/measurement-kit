@@ -33,6 +33,7 @@ Makefile.in
 __venv__
 aclocal.m4
 autom4te.cache/
+builtin/
 compile
 config.guess
 config.h
@@ -107,3 +108,4 @@ test/ooni/tcp_connect_test
 test/ooni/tcp_test
 test/report/file
 test/traceroute/android
+third_party/
