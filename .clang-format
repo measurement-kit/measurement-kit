@@ -1,6 +1,6 @@
 ---
 BasedOnStyle: LLVM
-ContinuationIndentWidth: 8
+IndentWrappedFunctionNames: true
 AlignAfterOpenBracket: DontAlign
 IndentWidth: 4
 ---
