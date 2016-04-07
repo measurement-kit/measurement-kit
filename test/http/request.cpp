@@ -321,3 +321,25 @@ TEST_CASE("http::request_send() works as expected") {
         });
     });
 }
+
+TEST_CASE("http::request_recv_response() works as expected") {
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            request_send(transport, {
+                {"method", "GET"},
+                {"url", "http://www.google.com/"},
+            }, {}, "", [transport](Error error) {
+                REQUIRE(!error);
+                request_recv_response(transport, [](Error e, Var<Response> r) {
+                    REQUIRE(!e);
+                    REQUIRE(r->status_code == 302);
+                    REQUIRE(r->body.size() > 0);
+                    break_loop();
+                });
+            });
+        });
+    });
+}

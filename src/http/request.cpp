@@ -58,5 +58,37 @@ void request_send(Var<Transport> transport, Settings settings, Headers headers,
     transport->write(buff);
 }
 
+void request_recv_response(Var<Transport> transport, RequestRecvResponseCb cb,
+        Poller *poller, Logger *logger) {
+    Var<ResponseParserNg> parser(new ResponseParserNg);
+    Var<Response> response(new Response);
+    Var<bool> prevent_emit(new bool(false));
+
+    transport->on_data([=](Buffer data) { parser->feed(data); });
+    parser->on_response([=](Response r) { *response = r; });
+    parser->on_body([=](std::string s) { response->body += s; });
+
+    parser->on_end([=]() {
+        if (*prevent_emit == true) {
+            return;
+        }
+        transport->emit_error(NoError());
+    });
+    transport->on_error([=](Error err) {
+        if (err == EofError()) {
+            // Calling parser->on_eof() could trigger parser->on_end() and
+            // we don't want this function to call ->emit_error()
+            *prevent_emit = true;
+            parser->eof();
+        }
+        cb(err, response);
+        transport->on_error(nullptr);
+        transport->on_data(nullptr);
+        poller->call_soon([=]() {
+            logger->debug("request_recv_response: end of closure");
+        });
+    });
+}
+
 } // namespace http
 } // namespace mk
