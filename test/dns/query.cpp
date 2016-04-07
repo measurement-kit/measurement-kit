@@ -8,26 +8,77 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/dns.hpp>
 
-#include "src/dns/query.hpp"
 #include "src/common/check_connectivity.hpp"
 #include "src/common/delayed_call.hpp"
 #include "src/common/libs_impl.hpp"
+#include "src/dns/query.hpp"
 
 using namespace mk;
 using namespace mk::dns;
 
 // Now testing query()
-inline evdns_request * null_resolver (evdns_base *, const char *, int , evdns_callback_type, void *) {
+static evdns_request *null_resolver(
+        evdns_base *, const char *, int, evdns_callback_type, void *) {
     return (evdns_request *)NULL;
 }
-inline evdns_request * null_resolver_reverse (evdns_base *, const struct in_addr *, int , evdns_callback_type, void *) {
+static evdns_request *null_resolver_reverse(evdns_base *,
+        const struct in_addr *, int, evdns_callback_type, void *) {
     return (evdns_request *)NULL;
 }
-inline evdns_request * null_resolver_reverse (evdns_base *, const struct in6_addr *in, int , evdns_callback_type, void *) {
+static evdns_request *null_resolver_reverse(evdns_base *,
+        const struct in6_addr *, int, evdns_callback_type, void *) {
     return (evdns_request *)NULL;
 }
-inline int null_inet_pton (int, const char *, void *) {
-    return 0;
+static int null_inet_pton(int, const char *, void *) { return 0; }
+
+static evdns_base *null_evdns_base_new(event_base *, int) {
+    return (evdns_base *)nullptr;
+}
+
+static int null_evdns_base_nameserver_ip_add(evdns_base *, const char *) {
+    return -1;
+}
+
+#define BASE_FREE(name) \
+    static bool base_free_##name##_flag = false; \
+    static void base_free_##name (struct evdns_base *base, int fail_requests) { \
+        ::evdns_base_free (base, fail_requests); \
+        base_free_##name##_flag = true; \
+}
+
+BASE_FREE(evdns_base_nameserver_ip_add)
+BASE_FREE(evdns_set_options_attempts)
+
+TEST_CASE("throw error while fails evdns_base_new") {
+    REQUIRE_THROWS_AS(
+            create_evdns_base<null_evdns_base_new>({}, get_global_poller()),
+            std::bad_alloc);
+}
+
+TEST_CASE("throw error while fails evdns_base_nameserver_ip_add") {
+    try {
+        create_evdns_base<::evdns_base_new,
+                null_evdns_base_nameserver_ip_add,
+                base_free_evdns_base_nameserver_ip_add>(
+                {{"nameserver", "antani"}}, get_global_poller());
+    } catch (std::runtime_error &) {
+        REQUIRE (base_free_evdns_base_nameserver_ip_add_flag);
+        return;
+    }
+    REQUIRE(false);
+}
+
+TEST_CASE("throw error while fails evdns_set_options for attempts") {
+    try {
+        create_evdns_base<::evdns_base_new,
+                ::evdns_base_nameserver_ip_add,
+                base_free_evdns_set_options_attempts>(
+                {{"attempts", "nexa"}}, get_global_poller());
+    } catch (std::runtime_error &) {
+        REQUIRE (base_free_evdns_set_options_attempts_flag);
+        return;
+    }
+    REQUIRE (false);
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
@@ -35,15 +86,16 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
         return;
     }
     query_debug<::evdns_base_free, null_resolver>("IN", "A", "www.google.com",
-            [](Error e, Message) { REQUIRE(e == ResolverError()); }, {}
-            , get_global_poller());
+            [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
+            get_global_poller());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>("IN", "AAAA", "github.com",
+    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
+            "IN", "AAAA", "github.com",
             [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
             get_global_poller());
 }
@@ -52,39 +104,37 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    query_debug <::evdns_base_free, ::evdns_base_resolve_ipv4, 
-                 ::evdns_base_resolve_ipv6, null_resolver_reverse> 
-                    ("IN", "REVERSE_A", "8.8.8.8", [](Error e, Message) {
-                REQUIRE(e == ResolverError());
-                }, {}, get_global_poller());
+    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4,
+            ::evdns_base_resolve_ipv6, null_resolver_reverse>("IN", "REVERSE_A",
+            "8.8.8.8", [](Error e, Message) { REQUIRE(e == ResolverError()); },
+            {}, get_global_poller());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    query_debug <::evdns_base_free, ::evdns_base_resolve_ipv4, 
-                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
-                 null_resolver_reverse> 
-                    ("IN", "REVERSE_AAAA", "::1", [](Error e, Message) {
-                    REQUIRE(e == ResolverError());
-                }, {}, get_global_poller());
+    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4,
+            ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
+            null_resolver_reverse>("IN", "REVERSE_AAAA", "::1",
+            [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
+            get_global_poller());
 }
 
 TEST_CASE("dns::query deals with inet_pton returning 0") {
-    query_debug <::evdns_base_free, ::evdns_base_resolve_ipv4,
-                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
-                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton> 
-                ("IN", "REVERSE_A", "8.8.8.8", [](Error e, Message) {
-         REQUIRE(e == InvalidIPv4AddressError());
-    }, {}, get_global_poller());
+    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4,
+            ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
+            ::evdns_base_resolve_reverse_ipv6, null_inet_pton>("IN",
+            "REVERSE_A", "8.8.8.8",
+            [](Error e, Message) { REQUIRE(e == InvalidIPv4AddressError()); },
+            {}, get_global_poller());
 
-    query_debug <::evdns_base_free, ::evdns_base_resolve_ipv4,
-                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
-                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton> 
-                ("IN", "REVERSE_AAAA", "::1", [](Error e, Message) {
-         REQUIRE(e == InvalidIPv6AddressError());
-    }, {}, get_global_poller());
+    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4,
+            ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
+            ::evdns_base_resolve_reverse_ipv6, null_inet_pton>("IN",
+            "REVERSE_AAAA", "::1",
+            [](Error e, Message) { REQUIRE(e == InvalidIPv6AddressError()); },
+            {}, get_global_poller());
 }
 
 TEST_CASE("dns::query raises if the query is unsupported") {
