@@ -87,19 +87,6 @@ TEST_CASE("dns::query deals with inet_pton returning 0") {
     }, {}, get_global_poller());
 }
 
-TEST_CASE("dns::query deals with inet_pton returning -1") {
-    libs.inet_pton = [](int, const char *, void *) { return -1; };
-
-    // TODO refactor this to use Templates
-    /* query("IN", "REVERSE_A", "8.8.8.8", [](Error e, Response) { */
-    /*     REQUIRE(e == InvalidIPv4AddressError()); */
-    /* }, Logger::global(), NULL, &libs); */
-
-    /* query("IN", "REVERSE_AAAA", "::1", [](Error e, Response) { */
-    /*     REQUIRE(e == InvalidIPv6AddressError()); */
-    /* }, Logger::global(), NULL, &libs); */
-}
-
 TEST_CASE("dns::query raises if the query is unsupported") {
     query("IN", "MX", "www.neubot.org",
             [](Error e, Message) { REQUIRE(e == UnsupportedTypeError()); });
