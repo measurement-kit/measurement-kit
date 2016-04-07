@@ -41,7 +41,12 @@ class Request : public NonCopyable, public NonMovable {
         //
         if (parent != nullptr) {
             parent->erase(this);
-            delete this;
+            // XXX workaround to avoid deleting immediately the request and
+            // destroy objects on which we're working... this is not so robust
+            // but more work will be done in this area before 0.2.0
+            poller->call_soon([this]() {
+                delete this;
+            });
             return;
         }
     }
