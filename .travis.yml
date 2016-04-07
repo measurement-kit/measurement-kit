@@ -118,12 +118,12 @@ matrix:
       compiler: g++-5
       env: OS=OSX CXX_V=5 CC_V=5 EXPORT=true
 
-    - os: osx
-      compiler: g++5
+    - language: objective-c
+      os: osx
+      osx_image: xcode7.3
       env: OS=OSX BUILD_TYPE=ios
 
   allow_failures:
-    - env: OS=OSX BUILD_TYPE=ios
     - env: OS="Ubuntu 12.04" CXX_V=4.8 CC_V=4.8 EXPORT=true
     - env: OS="Ubuntu 12.04" VALGRIND=true CXX_V=3.6 CC_V=3.6 EXPORT=true
     - env: OS=OSX CXX_V=5 CC_V=5 EXPORT=true
