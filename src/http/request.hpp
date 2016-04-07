@@ -169,6 +169,9 @@ void request_sendrecv(Var<Transport>, Settings, Headers, std::string,
         RequestSendrecvCb, Poller * = Poller::global(),
         Logger * = Logger::global());
 
+void request_cycle(Settings, Headers, std::string, RequestSendrecvCb,
+        Poller * = Poller::global(), Logger * = Logger::global());
+
 } // namespace http
 } // namespace mk
 #endif

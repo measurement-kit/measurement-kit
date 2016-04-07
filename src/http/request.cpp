@@ -102,5 +102,17 @@ void request_sendrecv(Var<Transport> transport, Settings settings,
     });
 }
 
+void request_cycle(Settings settings, Headers headers, std::string body,
+        RequestSendrecvCb callback, Poller *poller, Logger *logger) {
+    request_connect(settings, [=](Error err, Var<Transport> transport) {
+        if (err) {
+            callback(err, nullptr);
+            return;
+        }
+        request_sendrecv(transport, settings, headers, body, callback,
+                poller, logger);
+    }, poller, logger);
+}
+
 } // namespace http
 } // namespace mk
