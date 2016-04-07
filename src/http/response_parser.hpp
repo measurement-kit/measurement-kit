@@ -50,16 +50,10 @@ class ResponseParser : public NonCopyable, public NonMovable {
     ResponseParserImpl *impl = nullptr;
 };
 
-// Header parsing states (see do_header_internal) - used by old impl.
+// Header parsing states (see do_header_internal)
 #define S_NOTHING 0
 #define S_FIELD 1
 #define S_VALUE 2
-
-enum class HeaderParserState {
-    NOTHING = 0,
-    FIELD = 1,
-    VALUE = 2,
-};
 
 class ResponseParserNg : public NonCopyable, public NonMovable {
   public:
@@ -93,7 +87,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     int do_message_begin_() {
         logger_->debug("http: BEGIN");
         response_ = Response();
-        prev_ = HeaderParserState::NOTHING;
+        prev_ = S_NOTHING;
         field_ = "";
         value_ = "";
         if (begin_fn_) {
@@ -110,13 +104,13 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
 
     int do_header_field_(const char *s, size_t n) {
         logger_->debug("http: FIELD");
-        do_header_internal(HeaderParserState::FIELD, s, n);
+        do_header_internal(S_FIELD, s, n);
         return 0;
     }
 
     int do_header_value_(const char *s, size_t n) {
         logger_->debug("http: VALUE");
-        do_header_internal(HeaderParserState::VALUE, s, n);
+        do_header_internal(S_VALUE, s, n);
         return 0;
     }
 
@@ -163,28 +157,27 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
 
     // Variables used during parsing
     Response response_;
-    HeaderParserState prev_ = HeaderParserState::NOTHING;
+    unsigned int prev_ = S_NOTHING;
     std::string field_;
     std::string value_;
 
-    void do_header_internal(HeaderParserState cur, const char *s, size_t n) {
-        using HPS = HeaderParserState;
+    void do_header_internal(unsigned int cur, const char *s, size_t n) {
         //
         // This implements the finite state machine described by the
         // documentation of joyent/http-parser.
         //
         // See github.com/joyent/http-parser/blob/master/README.md#callbacks
         //
-        if (prev_ == HPS::NOTHING && cur == HPS::FIELD) {
+        if (prev_ == S_NOTHING && cur == S_FIELD) {
             field_ = std::string(s, n);
-        } else if (prev_ == HPS::VALUE && cur == HPS::FIELD) {
+        } else if (prev_ == S_VALUE && cur == S_FIELD) {
             response_.headers[field_] = value_;
             field_ = std::string(s, n);
-        } else if (prev_ == HPS::FIELD && cur == HPS::FIELD) {
+        } else if (prev_ == S_FIELD && cur == S_FIELD) {
             field_.append(s, n);
-        } else if (prev_ == HPS::FIELD && cur == HPS::VALUE) {
+        } else if (prev_ == S_FIELD && cur == S_VALUE) {
             value_ = std::string(s, n);
-        } else if (prev_ == HPS::VALUE && cur == HPS::VALUE) {
+        } else if (prev_ == S_VALUE && cur == S_VALUE) {
             value_.append(s, n);
         } else {
             throw GenericError();
