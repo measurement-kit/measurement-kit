@@ -33,6 +33,7 @@ Makefile.in
 __venv__
 aclocal.m4
 autom4te.cache/
+builtin/
 compile
 config.guess
 config.h
@@ -81,11 +82,6 @@ test/common/var
 test/dns/defines
 test/dns/error
 test/dns/query
-test/dns/resolver
-test/dns/response
-test/echo_client
-test/echo_client2
-test/echo_client_evbuf
 test/http/client
 test/http/funcs
 test/http/parse_url
@@ -112,3 +108,4 @@ test/ooni/tcp_connect_test
 test/ooni/tcp_test
 test/report/file
 test/traceroute/android
+third_party/

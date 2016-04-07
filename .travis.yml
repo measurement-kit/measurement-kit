@@ -1,17 +1,17 @@
 language: cpp
 
 before_install:
-  - if [ "$INSTALL" = "true" ]; then 
-        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
-        sudo apt-get update -qq;
-        sudo apt-get install -qq -y --force-yes gcc-4.8 g++-4.8;
+  - if [ "$INSTALL" = "true" ]; then
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
+      sudo apt-get update -qq;
+      sudo apt-get install -qq -y --force-yes gcc-4.8 g++-4.8;
     fi
   - if [ "$OS" = "OSX" ]; then
-        brew update;
-        brew upgrade; 
+      brew update;
+      brew upgrade;
     fi
 
-install: 
+install:
     - if [ "$EXPORT" = "true" ]; then
         if [ "$CXX" = "g++" ]; then export CXX="g++-$CXX_V" CC="gcc-$CC_V"; fi;
         if [ "$CXX" = "clang++" ]; then
@@ -23,24 +23,24 @@ install:
            --with-boost=builtin --with-jansson=builtin
            --with-libmaxminddb=builtin"
     - if [ "$COVERAGE" = "true" ]; then
-          export CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;
-          pip install --user cpp-coveralls;
-      fi 
+        export CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;
+        pip install --user cpp-coveralls;
+      fi
     - if [ "$VALGRIND" = "true" ]; then
-          ARG="$ARG --disable-shared";
-      fi  
+        ARG="$ARG --disable-shared";
+      fi
 
 # Only measure coverage with clang for now because I cannot manage to
 # convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
 # (For more context see measurement-kit/measurement-kit#255)
 script:
-    - if [ "$BUILD_TYPE" = "ios" ]; then 
-          ./mobile/ios/scripts/build.sh;
+    - if [ "$BUILD_TYPE" = "ios" ]; then
+        ./mobile/ios/scripts/build.sh;
       else
-          ./configure $ARG && make -j2 V=0 && make -j2 check-am V=0;
+        ./configure $ARG && make -j2 V=0 && make -j2 check-am V=0;
       fi
     - if [ "$VALGRIND" = "true" ]; then
-          make run-valgrind;
+        make run-valgrind;
       fi
 
 # Silence gcov standard output since it produces way too much output
@@ -50,7 +50,7 @@ after_success:
       fi
 
 after_failure:
-    - if [ -f "test-suite.log" ]; then 
+    - if [ -f "test-suite.log" ]; then
         cat test-suite.log;
       fi
 
@@ -63,67 +63,66 @@ matrix:
       env: OS="Ubuntu 12.04" CXX_V=5 CC_V=5 EXPORT=true
       addons:
         apt:
-            packages:
-                - g++-5
-                - gcc-5
-            sources:
-                - ubuntu-toolchain-r-test 
+          packages:
+            - g++-5
+            - gcc-5
+          sources:
+            - ubuntu-toolchain-r-test
 
     - sudo: false
       compiler: g++-4.8
       env: OS="Ubuntu 12.04" CXX_V=4.8 CC_V=4.8 EXPORT=true
-      addons: 
+      addons:
         apt:
-            packages:
-                - g++-4.8
-                - gcc-4.8
-            sources:
-                - ubuntu-toolchain-r-test 
+          packages:
+            - g++-4.8
+            - gcc-4.8
+          sources:
+            - ubuntu-toolchain-r-test
 
     - sudo: false
       compiler: clang-3.6
       env: OS="Ubuntu 12.04" VALGRIND=true CXX_V=3.6 CC_V=3.6 EXPORT=true
       addons:
         apt:
-            packages:
-                - clang-3.6
-                - llvm-3.6-dev
-                - valgrind
-            sources:
-                - llvm-toolchain-precise-3.6
-                - ubuntu-toolchain-r-test
+          packages:
+            - clang-3.6
+            - llvm-3.6-dev
+            - valgrind
+          sources:
+            - llvm-toolchain-precise-3.6
+            - ubuntu-toolchain-r-test
 
     - sudo: false
-      compiler: clang-3.6 
-      env: OS="Ubuntu 12.04" COVERAGE=true CXX_V=3.6 CC_V=3.6 EXPORT=true 
+      compiler: clang-3.6
+      env: OS="Ubuntu 12.04" COVERAGE=true CXX_V=3.6 CC_V=3.6 EXPORT=true
       addons:
         apt:
-            packages:
-                - clang-3.6
-                - llvm-3.6-dev
-                - valgrind
-            sources:
-                - llvm-toolchain-precise-3.6
-                - ubuntu-toolchain-r-test
+          packages:
+            - clang-3.6
+            - llvm-3.6-dev
+          sources:
+            - llvm-toolchain-precise-3.6
+            - ubuntu-toolchain-r-test
 
     - dist: trusty
-      compiler: clang-3.5
+      compiler: clang-3.6
       env: OS="Ubuntu 14.04"
 
     - dist: trusty
-      compiler: g++-4.8
+      compiler: g++-5
       env: OS="Ubuntu 14.04"
 
     - os: osx
-      compiler: g++-4.8
-      env: OS=OSX CXX_V=4.8 CC_V=4.8 EXPORT=true
+      compiler: g++-5
+      env: OS=OSX CXX_V=5 CC_V=5 EXPORT=true
 
     - os: osx
-      compiler: g++
+      compiler: g++5
       env: OS=OSX BUILD_TYPE=ios
 
   allow_failures:
     - env: OS=OSX BUILD_TYPE=ios
     - env: OS="Ubuntu 12.04" CXX_V=4.8 CC_V=4.8 EXPORT=true
     - env: OS="Ubuntu 12.04" VALGRIND=true CXX_V=3.6 CC_V=3.6 EXPORT=true
-    - env: OS=OSX CXX_V=4.8 CC_V=4.8 EXPORT=true
+    - env: OS=OSX CXX_V=5 CC_V=5 EXPORT=true
