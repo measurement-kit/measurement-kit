@@ -34,5 +34,29 @@ void request_connect(Settings settings, RequestConnectCb cb,
     connect(url->address, url->port, cb, settings, logger, poller);
 }
 
+void request_send(Var<Transport> transport, Settings settings, Headers headers,
+        std::string body, RequestSendCb callback) {
+    RequestSerializer serializer;
+    try {
+        serializer = RequestSerializer(settings, headers, body);
+    } catch (std::exception &) {
+        callback(GenericError());
+        return;
+    }
+    transport->on_error([transport, callback](Error error) {
+        transport->on_error(nullptr);
+        transport->on_flush(nullptr);
+        callback(error);
+    });
+    transport->on_flush([transport, callback]() {
+        transport->on_error(nullptr);
+        transport->on_flush(nullptr);
+        callback(NoError());
+    });
+    Buffer buff;
+    serializer.serialize(buff);
+    transport->write(buff);
+}
+
 } // namespace http
 } // namespace mk

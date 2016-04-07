@@ -152,9 +152,13 @@ class Request : public NonCopyable, public NonMovable {
 };
 
 typedef std::function<void(Error, Var<Transport>)> RequestConnectCb;
+typedef std::function<void(Error)> RequestSendCb;
 
 void request_connect(Settings, RequestConnectCb, Poller * = Poller::global(),
-    Logger * = Logger::global());
+        Logger * = Logger::global());
+
+void request_send(Var<Transport>, Settings, Headers, std::string,
+        RequestSendCb);
 
 } // namespace http
 } // namespace mk

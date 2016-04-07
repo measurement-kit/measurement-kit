@@ -304,3 +304,20 @@ TEST_CASE("http::request_connect() works for normal connections") {
         });
     });
 }
+
+TEST_CASE("http::request_send() works as expected") {
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            request_send(transport, {
+                {"method", "GET"},
+                {"url", "http://www.google.com/"},
+            }, {}, "", [](Error error) {
+                REQUIRE(!error);
+                break_loop();
+            });
+        });
+    });
+}
