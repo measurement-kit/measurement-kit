@@ -413,12 +413,67 @@ TEST_CASE("http::request_cycle() works as expected using Tor") {
         request_cycle({
             {"method", "GET"},
             {"url", "httpo://www.google.com/robots.txt"},
-        }, {}, "", [](Error error, Var<Response> r) {
+        }, {}, "", [](Error, Var<Response>) {
             // Test disable because we don't know if Tor is running
             // but I have tested locally with Tor
             /*REQUIRE(!error);
             REQUIRE(r->status_code == 200);
             REQUIRE(r->body.size() > 0);*/
+        });
+        request_cycle({
+            {"method", "GET"},
+            {"url", "httpo://www.google.com/robots.txt"},
+            {"tor_socks_port", "9999"}
+        }, {}, "", [](Error, Var<Response>) {
+            // Test disable because we don't know if Tor is running
+            // but I have tested locally with Tor
+            /*REQUIRE(!error);
+            REQUIRE(r->status_code == 200);
+            REQUIRE(r->body.size() > 0);*/
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("http::request_connect fails without an url") {
+    loop_with_initial_event([]() {
+        request_connect({}, [](Error error, Var<Transport>) {
+            REQUIRE(error == GenericError());
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("http::request_connect fails with an uncorrect url") {
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", ">*7\n\n"}}, [](Error error, Var<Transport>) {
+            REQUIRE(error == UrlParserError());
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("http::request_send fails without url in settings ") {
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            request_send(transport, 
+                {{"method", "GET"}}, {}, "", [](Error error) {
+                REQUIRE(error == GenericError());
+                break_loop();
+            });
+        });
+    });
+}
+
+TEST_CASE("http::request_cycle() fails if fails request_send()") {
+    loop_with_initial_event([]() {
+        request_cycle({
+            {"method", "GET"}}, {}, "", [](Error error, Var<Response>) {
+            REQUIRE(error);
             break_loop();
         });
     });
