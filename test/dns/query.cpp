@@ -77,14 +77,14 @@ TEST_CASE("throw error while fails evdns_base_nameserver_ip_add") {
         return;
     }
     REQUIRE(false);
-    base_free_evdns_base_nameserver_ip_add_flag = false;
+}
+
+TEST_CASE("throw error while fails evdns_base_nameserver_ip_add and base_new") {
     try {
         create_evdns_base<null_evdns_base_new,
-                null_evdns_base_nameserver_ip_add,
-                base_free_evdns_base_nameserver_ip_add>(
+                null_evdns_base_nameserver_ip_add>(
                 {{"nameserver", "nexa"}}, get_global_poller());
-    } catch (std::runtime_error &) {
-        REQUIRE (base_free_evdns_base_nameserver_ip_add_flag);
+    } catch (std::bad_alloc &) {
         return;
     }
     REQUIRE(false);
@@ -152,18 +152,14 @@ TEST_CASE("throw error with ntop conversion error") {
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
+    if (CheckConnectivity::is_down()) {return;}
     query_debug<::evdns_base_free, null_resolver>("IN", "A", "www.google.com",
             [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
             get_global_poller());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
+    if (CheckConnectivity::is_down()) {return;}
     query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
             "IN", "AAAA", "github.com",
             [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
