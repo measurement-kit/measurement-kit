@@ -1,0 +1,28 @@
+{
+   <net_buffer_error>
+   Memcheck:Leak
+   fun:calloc
+   fun:evbuffer_new
+   fun:_ZL30____C_A_T_C_H____T_E_S_T____32v
+   fun:_ZN5Catch10RunContext20invokeActiveTestCaseEv
+   fun:_ZN5Catch10RunContext14runCurrentTestERSsS1_
+   fun:_ZN5Catch10RunContext7runTestERKNS_8TestCaseE
+   fun:_ZN5Catch6Runner8runTestsEv
+   fun:_ZN5Catch7Session3runEv
+   fun:main
+}
+{
+   <net_connection_error>
+   Memcheck:Leak
+   fun:calloc
+   fun:bufferevent_socket_new
+   fun:_ZN2mk11Bufferevent4makeEP10event_baseiiPNS_4LibsE
+   fun:_ZN2mk3net10ConnectionC1EPKcS3_S3_PNS_6PollerEPNS_6LoggerEi
+   fun:_ZL30____C_A_T_C_H____T_E_S_T____74v
+   fun:_ZN5Catch10RunContext20invokeActiveTestCaseEv
+   fun:_ZN5Catch10RunContext14runCurrentTestERSsS1_
+   fun:_ZN5Catch10RunContext7runTestERKNS_8TestCaseE
+   fun:_ZN5Catch6Runner8runTestsEv
+   fun:_ZN5Catch7Session3runEv
+   fun:main
+}

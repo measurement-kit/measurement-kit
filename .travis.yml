@@ -1,24 +1,19 @@
 language: cpp
 
 before_install:
-  - if [ "$INSTALL" = "true" ]; then
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test;
-      sudo apt-get update -qq;
-      sudo apt-get install -qq -y --force-yes gcc-4.8 g++-4.8;
-    fi
   - if [ "$OS" = "OSX" ]; then
       brew update;
       brew upgrade;
     fi
 
 install:
-    - if [ "$EXPORT" = "true" ]; then
-        if [ "$CXX" = "g++" ]; then export CXX="g++-$CXX_V" CC="gcc-$CC_V"; fi;
-        if [ "$CXX" = "clang++" ]; then
-          export CXX="clang++-$CXX_V" CC="clang-$CC_V";
-        fi;
-      fi
-    - ./autogen.sh
+    - env
+    - if [ "$CXX" = "g++" -a -n "${VER+1}" ]; then 
+          export CXX="g++-$VER" CC="gcc-$VER"; 
+      fi;
+    - if [ "$CXX" = "clang++" -a -n "${VER+1}" ]; then
+          export CXX="clang++-$VER" CC="clang-$VER";
+      fi;
     - ARG="-q --with-libevent=builtin --with-yaml-cpp=builtin
            --with-boost=builtin --with-jansson=builtin
            --with-libmaxminddb=builtin"
@@ -29,6 +24,7 @@ install:
     - if [ "$VALGRIND" = "true" ]; then
         ARG="$ARG --disable-shared";
       fi
+    - ./autogen.sh
 
 # Only measure coverage with clang for now because I cannot manage to
 # convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
@@ -37,10 +33,12 @@ script:
     - if [ "$BUILD_TYPE" = "ios" ]; then
         ./mobile/ios/scripts/build.sh;
       else
-        ./configure $ARG && make -j2 V=0 && make -j2 check-am V=0;
+        ./configure $ARG && make -j2 V=0;
       fi
     - if [ "$VALGRIND" = "true" ]; then
         make run-valgrind;
+      elif [ "$BUILD_TYPE" != "ios" ]; then 
+        make -j2 check-am V=0;
       fi
 
 # Silence gcov standard output since it produces way too much output
@@ -58,10 +56,9 @@ after_failure:
 matrix:
   fast_finish: true
   include:
-
     - sudo: false
       compiler: g++-5
-      env: OS="Ubuntu 12.04" CXX_V=5 CC_V=5 EXPORT=true
+      env: OS="Ubuntu 12.04" VER=5 
       addons:
         apt:
           packages:
@@ -71,19 +68,8 @@ matrix:
             - ubuntu-toolchain-r-test
 
     - sudo: false
-      compiler: g++-4.8
-      env: OS="Ubuntu 12.04" CXX_V=4.8 CC_V=4.8 EXPORT=true
-      addons:
-        apt:
-          packages:
-            - g++-4.8
-            - gcc-4.8
-          sources:
-            - ubuntu-toolchain-r-test
-
-    - sudo: false
       compiler: clang-3.6
-      env: OS="Ubuntu 12.04" VALGRIND=true CXX_V=3.6 CC_V=3.6 EXPORT=true
+      env: OS="Ubuntu 12.04" VALGRIND=true VER=3.6 
       addons:
         apt:
           packages:
@@ -96,7 +82,7 @@ matrix:
 
     - sudo: false
       compiler: clang-3.6
-      env: OS="Ubuntu 12.04" COVERAGE=true CXX_V=3.6 CC_V=3.6 EXPORT=true
+      env: OS="Ubuntu 12.04" COVERAGE=true VER=3.6 
       addons:
         apt:
           packages:
@@ -105,25 +91,54 @@ matrix:
           sources:
             - llvm-toolchain-precise-3.6
             - ubuntu-toolchain-r-test
-
-    - dist: trusty
-      compiler: clang-3.6
-      env: OS="Ubuntu 14.04"
-
-    - dist: trusty
-      compiler: g++-5
-      env: OS="Ubuntu 14.04"
-
-    - os: osx
-      compiler: g++-5
-      env: OS=OSX CXX_V=5 CC_V=5 EXPORT=true
-
+    
     - language: objective-c
       os: osx
       osx_image: xcode7.3
       env: OS=OSX BUILD_TYPE=ios
+    
+    - sudo: required
+      dist: trusty
+      compiler: clang-3.6
+      env: OS="Ubuntu 14.04" VER=3.6 
+      addons:
+        apt:
+          packages:
+            - clang-3.6
+            - llvm-3.6-dev
+          sources:
+            - llvm-toolchain-precise-3.6
+            - ubuntu-toolchain-r-test
+    
+    - os: osx
+      compiler: g++-5
+      env: OS=OSX VER=5
+
+    - sudo: required
+      dist: trusty
+      compiler: g++-5
+      env: OS="Ubuntu 14.04" VER=5 
+      addons:
+        apt:
+          packages:
+            - g++-5
+            - gcc-5
+          sources:
+            - ubuntu-toolchain-r-test
+    
+    - sudo: false
+      compiler: g++-4.8
+      env: OS="Ubuntu 12.04" VER=4.8 
+      addons:
+        apt:
+          packages:
+            - g++-4.8
+            - gcc-4.8
+          sources:
+            - ubuntu-toolchain-r-test
 
   allow_failures:
-    - env: OS="Ubuntu 12.04" CXX_V=4.8 CC_V=4.8 EXPORT=true
-    - env: OS="Ubuntu 12.04" VALGRIND=true CXX_V=3.6 CC_V=3.6 EXPORT=true
-    - env: OS=OSX CXX_V=5 CC_V=5 EXPORT=true
+    - env: OS=OSX VER=5
+    - env: OS="Ubuntu 14.04" VER=3.6 
+    - env: OS="Ubuntu 14.04" VER=5 
+    - env: OS="Ubuntu 12.04" VER=4.8 
