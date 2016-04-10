@@ -12,6 +12,7 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
 
+#include "src/common/check_connectivity.hpp"
 #include "src/http/request.hpp"
 
 using namespace mk;
@@ -19,6 +20,9 @@ using namespace mk::net;
 using namespace mk::http;
 
 TEST_CASE("HTTP Request works as expected") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     Request r(
         {
          {"url", "http://www.google.com/robots.txt"},
@@ -88,6 +92,9 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
 }
 
 TEST_CASE("HTTP Request correctly receives errors") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     Request r(
         {
          {"url", "http://nexa.polito.it:81/robots.txt"},
@@ -119,6 +126,9 @@ TEST_CASE("HTTP Request correctly receives errors") {
 }
 
 TEST_CASE("HTTP Request works as expected over Tor") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     Request r(
         {
          {"url", "http://www.google.com/robots.txt"},
@@ -294,6 +304,9 @@ TEST_CASE("The callback is called if input URL parsing fails") {
 }
 
 TEST_CASE("http::request_connect() works for normal connections") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_connect({
             {"url", "http://www.google.com/robots.txt"}
@@ -306,6 +319,9 @@ TEST_CASE("http::request_connect() works for normal connections") {
 }
 
 TEST_CASE("http::request_send() works as expected") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_connect({
             {"url", "http://www.google.com/"}
@@ -327,6 +343,9 @@ static inline bool status_code_ok(int code) {
 }
 
 TEST_CASE("http::request_recv_response() works as expected") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_connect({
             {"url", "http://www.google.com/"}
@@ -349,6 +368,9 @@ TEST_CASE("http::request_recv_response() works as expected") {
 }
 
 TEST_CASE("http::request_sendrecv() works as expected") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_connect({
             {"url", "http://www.google.com/"}
@@ -368,6 +390,9 @@ TEST_CASE("http::request_sendrecv() works as expected") {
 }
 
 TEST_CASE("http::request_sendrecv() works for multiple requests") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_connect({
             {"url", "http://www.google.com/"}
@@ -395,6 +420,9 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
 }
 
 TEST_CASE("http::request_cycle() works as expected") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_cycle({
             {"method", "GET"},
@@ -415,6 +443,9 @@ static inline bool check_error_after_tor(Error e) {
 }
 
 TEST_CASE("http::request_cycle() works as expected using httpo URLs") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_cycle({
             {"method", "GET"},
@@ -431,6 +462,9 @@ TEST_CASE("http::request_cycle() works as expected using httpo URLs") {
 }
 
 TEST_CASE("http::request_cycle() works as expected using tor_socks_port") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_cycle({
             {"method", "GET"},
@@ -448,6 +482,9 @@ TEST_CASE("http::request_cycle() works as expected using tor_socks_port") {
 }
 
 TEST_CASE("http::request_connect fails without an url") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_connect({}, [](Error error, Var<Transport>) {
             REQUIRE(error == MissingUrlError());
@@ -457,6 +494,9 @@ TEST_CASE("http::request_connect fails without an url") {
 }
 
 TEST_CASE("http::request_connect fails with an uncorrect url") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_connect({
             {"url", ">*7\n\n"}}, [](Error error, Var<Transport>) {
@@ -467,6 +507,9 @@ TEST_CASE("http::request_connect fails with an uncorrect url") {
 }
 
 TEST_CASE("http::request_send fails without url in settings") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_connect({
             {"url", "http://www.google.com/"}
@@ -482,6 +525,9 @@ TEST_CASE("http::request_send fails without url in settings") {
 }
 
 TEST_CASE("http::request_cycle() fails if fails request_send()") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
         request_cycle({
             {"method", "GET"}}, {}, "", [](Error error, Var<Response>) {
