@@ -287,7 +287,7 @@ void Connection::resolve() {
     }
     if (!ok) {
         connecting = 0;
-        emit_error(DNSGenericError());
+        emit_error(DnsGenericError());
         return;
     }
 
