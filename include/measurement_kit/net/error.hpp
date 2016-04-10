@@ -39,10 +39,10 @@ class ConnectFailedError : public Error {
 };
 
 /// DNS generic error
-class DNSGenericError : public Error {
+class DnsGenericError : public Error {
   public:
     /// Default constructor
-    DNSGenericError() : Error(1004, "unknown_failure 1004") {}
+    DnsGenericError() : Error(1004, "unknown_failure 1004") {}
 };
 
 /// Bad SOCKS version error
