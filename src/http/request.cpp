@@ -12,7 +12,7 @@ using namespace mk::net;
 void request_connect(Settings settings, RequestConnectCb cb,
         Poller *poller, Logger *logger) {
     if (settings.find("url") == settings.end()) {
-        cb(GenericError(), nullptr);
+        cb(MissingUrlError(), nullptr);
         return;
     }
     ErrorOr<Url> url = parse_url_noexcept(settings.at("url"));

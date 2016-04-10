@@ -450,7 +450,7 @@ TEST_CASE("http::request_cycle() works as expected using tor_socks_port") {
 TEST_CASE("http::request_connect fails without an url") {
     loop_with_initial_event([]() {
         request_connect({}, [](Error error, Var<Transport>) {
-            REQUIRE(error == GenericError());
+            REQUIRE(error == MissingUrlError());
             break_loop();
         });
     });
