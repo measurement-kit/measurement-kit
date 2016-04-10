@@ -35,6 +35,7 @@ TEST_CASE("The constructor with nonnull evbuffer works correctly", "[Buffer]") {
     REQUIRE(evbuffer_add(evbuf, "foobar", 6) == 0);
     Buffer buffer(evbuf);
     REQUIRE("foobar" == buffer.read());
+    evbuffer_free(evbuf);
 }
 
 TEST_CASE("The constructor with C++ string works correctly", "[Buffer]") {
