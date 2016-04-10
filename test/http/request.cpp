@@ -408,28 +408,40 @@ TEST_CASE("http::request_cycle() works as expected") {
     });
 }
 
-TEST_CASE("http::request_cycle() works as expected using Tor") {
+// Either tor was running and hence everything should be OK, or tor was
+// not running and hence connect() to socks port must have failed.
+static inline bool check_error_after_tor(Error e) {
+    return e == NoError() or e == ConnectFailedError();
+}
+
+TEST_CASE("http::request_cycle() works as expected using httpo URLs") {
     loop_with_initial_event([]() {
         request_cycle({
             {"method", "GET"},
             {"url", "httpo://www.google.com/robots.txt"},
-        }, {}, "", [](Error, Var<Response>) {
-            // Test disable because we don't know if Tor is running
-            // but I have tested locally with Tor
-            /*REQUIRE(!error);
-            REQUIRE(r->status_code == 200);
-            REQUIRE(r->body.size() > 0);*/
+        }, {}, "", [](Error error, Var<Response> r) {
+            REQUIRE(check_error_after_tor(error));
+            if (!error) {
+                REQUIRE(r->status_code == 200);
+                REQUIRE(r->body.size() > 0);
+            }
+            break_loop();
         });
+    });
+}
+
+TEST_CASE("http::request_cycle() works as expected using tor_socks_port") {
+    loop_with_initial_event([]() {
         request_cycle({
             {"method", "GET"},
-            {"url", "httpo://www.google.com/robots.txt"},
-            {"tor_socks_port", "9999"}
-        }, {}, "", [](Error, Var<Response>) {
-            // Test disable because we don't know if Tor is running
-            // but I have tested locally with Tor
-            /*REQUIRE(!error);
-            REQUIRE(r->status_code == 200);
-            REQUIRE(r->body.size() > 0);*/
+            {"url", "http://www.google.com/robots.txt"},
+            {"tor_socks_port", "9050"}
+        }, {}, "", [](Error error, Var<Response> r) {
+            REQUIRE(check_error_after_tor(error));
+            if (!error) {
+                REQUIRE(r->status_code == 200);
+                REQUIRE(r->body.size() > 0);
+            }
             break_loop();
         });
     });
