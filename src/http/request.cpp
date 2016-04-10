@@ -38,8 +38,8 @@ void request_send(Var<Transport> transport, Settings settings, Headers headers,
     RequestSerializer serializer;
     try {
         serializer = RequestSerializer(settings, headers, body);
-    } catch (std::exception &) {
-        callback(GenericError());
+    } catch (Error &error) {
+        callback(error);
         return;
     }
     transport->on_error([transport, callback](Error error) {

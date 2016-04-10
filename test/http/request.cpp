@@ -466,7 +466,7 @@ TEST_CASE("http::request_connect fails with an uncorrect url") {
     });
 }
 
-TEST_CASE("http::request_send fails without url in settings ") {
+TEST_CASE("http::request_send fails without url in settings") {
     loop_with_initial_event([]() {
         request_connect({
             {"url", "http://www.google.com/"}
@@ -474,7 +474,7 @@ TEST_CASE("http::request_send fails without url in settings ") {
             REQUIRE(!error);
             request_send(transport, 
                 {{"method", "GET"}}, {}, "", [](Error error) {
-                REQUIRE(error == GenericError());
+                REQUIRE(error == MissingUrlError());
                 break_loop();
             });
         });
