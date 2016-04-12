@@ -67,6 +67,10 @@ void request_recv_response(Var<Transport> transport, RequestRecvResponseCb cb,
     parser->on_response([=](Response r) { *response = r; });
     parser->on_body([=](std::string s) { response->body += s; });
 
+    // XXX/TODO: we should improve the parser such that the transport
+    // forwards the "error" event to it and then the parser does the right
+    // thing, so that the code becomes less "twisted" here.
+
     parser->on_end([=]() {
         if (*prevent_emit == true) {
             return;
