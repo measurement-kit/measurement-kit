@@ -20,11 +20,7 @@
 namespace mk {
 namespace http {
 
-/*!
- * \brief Implementation of ResponseParser.
- * \see ResponseParser.
- */
-class ResponseParserImpl {
+class ResponseParserImpl : public NonCopyable, public NonMovable {
 
     Logger *logger = Logger::global();
     http_parser parser;
@@ -37,8 +33,6 @@ class ResponseParserImpl {
     std::string field;
     std::string value;
     Headers headers;
-    bool closing = false;
-    bool parsing = false;
 
     static int do_message_begin(http_parser *p) {
         auto impl = static_cast<ResponseParserImpl *>(p->data);
@@ -134,10 +128,8 @@ class ResponseParserImpl {
     void parse(void) {
         auto total = (size_t)0;
         buffer.for_each([&](const void *base, size_t count) {
-            parsing = true;
             size_t n = http_parser_execute(&parser, &settings,
                                            (const char *)base, count);
-            parsing = false;
             if (parser.upgrade) {
                 throw UpgradeError();
             }
@@ -147,17 +139,10 @@ class ResponseParserImpl {
             total += count;
             return true;
         });
-        if (closing) {
-            delete this;
-            return;
-        }
         buffer.discard(total);
     }
 
   public:
-    /*!
-     * \brief Default constructor.
-     */
     ResponseParserImpl(Logger *lp = Logger::global()) : logger(lp) {
         http_parser_settings_init(&settings);
         settings.on_message_begin = do_message_begin;
@@ -171,37 +156,10 @@ class ResponseParserImpl {
         parser.data = this; /* Which makes this object non-movable */
     }
 
-    /*!
-     * \brief Deleted copy constructor.
-     */
-    ResponseParserImpl(ResponseParserImpl &other) = delete;
-
-    /*!
-     * \brief Deleted copy assignment operator.
-     */
-    ResponseParserImpl &operator=(ResponseParserImpl &other) = delete;
-
-    /*!
-     * \brief Deleted move operator.
-     */
-    ResponseParserImpl(ResponseParserImpl &&other) = delete;
-
-    /*!
-     * \brief Deleted move assignment operator.
-     */
-    ResponseParserImpl &operator=(ResponseParserImpl &&other) = delete;
-
-    /*!
-     * \brief Handler for the `begin` event.
-     */
     std::function<void(void)> begin_fn = [](void) {
         // nothing
     };
 
-    /*!
-     * \brief Handler for the `headers_complete` event.
-     * \see RequestParser::on_headers_complete.
-     */
     std::function<void(unsigned short, unsigned short, unsigned int,
                        std::string &&, Headers &&)> headers_complete_fn =
         [](unsigned short, unsigned short, unsigned int, std::string &&,
@@ -209,104 +167,42 @@ class ResponseParserImpl {
             // nothing
         };
 
-    /*!
-     * \brief Handler for the `body` event.
-     * \see RequestParser::on_body.
-     */
     std::function<void(std::string &&)> body_fn;
 
-    /*!
-     * \brief Handler for the `end` event.
-     */
     std::function<void(void)> end_fn = [](void) {
         // nothing
     };
 
-    /*!
-     * \brief Feed the parser.
-     * \param data Evbuffer containing the received data.
-     * \throws std::runtime_error This method throws std::runtime_error (or
-     *         a class derived from it) on several error conditions.
-     */
     void feed(net::Buffer &data) {
         buffer << data;
         parse();
     }
 
-    /*!
-     * \brief Feed the parser.
-     * \param data String containing the received data.
-     * \throws std::runtime_error This method throws std::runtime_error (or
-     *         a class derived from it) on several error conditions.
-     */
     void feed(std::string data) {
         buffer << data;
         parse();
     }
 
-    /*!
-     * \brief Feed the parser.
-     * \param c Character containing the received data.
-     * \remark This function is used for testing.
-     * \throws std::runtime_error This method throws std::runtime_error (or
-     *         a class derived from it) on several error conditions.
-     */
     void feed(char c) {
         buffer.write((const void *)&c, 1);
         parse();
     }
 
-    /*!
-     * \brief Tell the parser we hit EOF.
-     * \remark This allows us to implement the body-ends-at-EOF semantic.
-     * \throws std::runtime_error This method throws std::runtime_error (or
-     *         a class derived from it) on several error conditions.
-     */
     void eof() {
-        parsing = true;
         size_t n = http_parser_execute(&parser, &settings, NULL, 0);
-        parsing = false;
         if (parser.upgrade) {
             throw UpgradeError();
         }
         if (n != 0) {
             throw ParserError();
         }
-        if (closing) {
-            delete this;
-            return;
-        }
-    }
-
-    /*!
-     * \brief Destroy this parser.
-     * \remark Actual destruction may be delayed if parser is currently
-     *         parsing any incoming data.
-     */
-    void destroy() {
-        if (closing) {
-            return;
-        }
-        closing = true;
-        if (parsing) {
-            return;
-        }
-        delete this;
     }
 };
-
-//
-// ResponseParser
-//
 
 ResponseParser::ResponseParser(Logger *lp) : impl(new ResponseParserImpl(lp)) {}
 
 ResponseParser::~ResponseParser(void) {
-    if (impl == nullptr) {
-        return;
-    }
-    impl->destroy();
-    impl = nullptr; // Idempotent
+    delete impl;
 }
 
 void ResponseParser::on_begin(std::function<void(void)> &&fn) {

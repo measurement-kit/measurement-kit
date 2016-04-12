@@ -20,6 +20,10 @@ namespace mk {
 namespace http {
 using namespace mk::net;
 
+// TODO: it would probably optimal to merge `ResponseParserImpl` with this
+// class because actually here we have just code duplication after refactoring
+// that simplified the logic of `ResponseParserImpl`.
+
 class ResponseParserImpl; // Forward declaration
 
 class ResponseParser : public NonCopyable, public NonMovable {
