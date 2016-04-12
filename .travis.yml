@@ -1,17 +1,8 @@
 language: cpp
 
-before_install:
-  - if [ "$OS" = "OSX" ]; then
-      brew update;
-      brew upgrade;
-    fi
-
 install:
-    - if [ "$CXX" = "g++" -a -n "${VER+1}" ]; then 
-          export CXX="g++-$VER" CC="gcc-$VER"; 
-      fi;
-    - if [ "$CXX" = "clang++" -a -n "${VER+1}" ]; then
-          export CXX="clang++-$VER" CC="clang-$VER";
+    - if [ "$VER" != ""  ]; then 
+          export CXX="$CXX-$VER" CC="$CC-$VER"; 
       fi;
     - ARG="-q --with-libevent=builtin --with-yaml-cpp=builtin
            --with-boost=builtin --with-jansson=builtin
@@ -55,20 +46,10 @@ after_failure:
 matrix:
   fast_finish: true
   include:
-    - sudo: false
-      compiler: g++-5
-      env: OS="Ubuntu 12.04" VER=5 
-      addons:
-        apt:
-          packages:
-            - g++-5
-            - gcc-5
-          sources:
-            - ubuntu-toolchain-r-test
 
     - sudo: false
       compiler: clang-3.6
-      env: OS="Ubuntu 12.04" VALGRIND=true VER=3.6 
+      env: OS="12.04" VALGRIND=true VER=3.6 
       addons:
         apt:
           packages:
@@ -81,7 +62,7 @@ matrix:
 
     - sudo: false
       compiler: clang-3.6
-      env: OS="Ubuntu 12.04" COVERAGE=true VER=3.6 
+      env: OS="12.04" COVERAGE=true VER=3.6 
       addons:
         apt:
           packages:
@@ -91,32 +72,9 @@ matrix:
             - llvm-toolchain-precise-3.6
             - ubuntu-toolchain-r-test
     
-    - language: objective-c
-      os: osx
-      osx_image: xcode7.3
-      env: OS=OSX BUILD_TYPE=ios
-    
-    - sudo: required
-      dist: trusty
-      compiler: clang-3.6
-      env: OS="Ubuntu 14.04" VER=3.6 
-      addons:
-        apt:
-          packages:
-            - clang-3.6
-            - llvm-3.6-dev
-          sources:
-            - llvm-toolchain-precise-3.6
-            - ubuntu-toolchain-r-test
-    
-    - os: osx
+    - sudo: false
       compiler: g++-5
-      env: OS=OSX VER=5
-
-    - sudo: required
-      dist: trusty
-      compiler: g++-5
-      env: OS="Ubuntu 14.04" VER=5 
+      env: OS="12.04" VER=5 
       addons:
         apt:
           packages:
@@ -124,20 +82,6 @@ matrix:
             - gcc-5
           sources:
             - ubuntu-toolchain-r-test
-    
-    - sudo: false
-      compiler: g++-4.8
-      env: OS="Ubuntu 12.04" VER=4.8 
-      addons:
-        apt:
-          packages:
-            - g++-4.8
-            - gcc-4.8
-          sources:
-            - ubuntu-toolchain-r-test
 
   allow_failures:
-    - env: OS=OSX VER=5
-    - env: OS="Ubuntu 14.04" VER=3.6 
-    - env: OS="Ubuntu 14.04" VER=5 
-    - env: OS="Ubuntu 12.04" VER=4.8 
+    - env: BUILD_TYPE=ios
