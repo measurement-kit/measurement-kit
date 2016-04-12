@@ -12,6 +12,7 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
 
+#include "src/common/check_connectivity.hpp"
 #include "src/http/request.hpp"
 
 using namespace mk;
@@ -19,6 +20,9 @@ using namespace mk::net;
 using namespace mk::http;
 
 TEST_CASE("HTTP Request works as expected") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     Request r(
         {
          {"url", "http://www.google.com/robots.txt"},
@@ -88,6 +92,9 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
 }
 
 TEST_CASE("HTTP Request correctly receives errors") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     Request r(
         {
          {"url", "http://nexa.polito.it:81/robots.txt"},
@@ -119,6 +126,9 @@ TEST_CASE("HTTP Request correctly receives errors") {
 }
 
 TEST_CASE("HTTP Request works as expected over Tor") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     Request r(
         {
          {"url", "http://www.google.com/robots.txt"},
@@ -291,4 +301,238 @@ TEST_CASE("The callback is called if input URL parsing fails") {
         REQUIRE(err == GenericError());
     });
     REQUIRE(called);
+}
+
+TEST_CASE("http::request_connect() works for normal connections") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/robots.txt"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            REQUIRE(static_cast<bool>(transport));
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("http::request_send() works as expected") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            request_send(transport, {
+                {"method", "GET"},
+                {"url", "http://www.google.com/"},
+            }, {}, "", [](Error error) {
+                REQUIRE(!error);
+                break_loop();
+            });
+        });
+    });
+}
+
+static inline bool status_code_ok(int code) {
+    return code == 302 or code == 200;
+}
+
+TEST_CASE("http::request_recv_response() works as expected") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            request_send(transport, {
+                {"method", "GET"},
+                {"url", "http://www.google.com/"},
+            }, {}, "", [transport](Error error) {
+                REQUIRE(!error);
+                request_recv_response(transport, [](Error e, Var<Response> r) {
+                    REQUIRE(!e);
+                    REQUIRE(status_code_ok(r->status_code));
+                    REQUIRE(r->body.size() > 0);
+                    break_loop();
+                });
+            });
+        });
+    });
+}
+
+TEST_CASE("http::request_sendrecv() works as expected") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            request_sendrecv(transport, {
+                {"method", "GET"},
+                {"url", "http://www.google.com/"},
+            }, {}, "", [transport](Error error, Var<Response> r) {
+                REQUIRE(!error);
+                REQUIRE(status_code_ok(r->status_code));
+                REQUIRE(r->body.size() > 0);
+                break_loop();
+            });
+        });
+    });
+}
+
+TEST_CASE("http::request_sendrecv() works for multiple requests") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            request_sendrecv(transport, {
+                {"method", "GET"},
+                {"url", "http://www.google.com/"},
+            }, {}, "", [transport](Error error, Var<Response> r) {
+                REQUIRE(!error);
+                REQUIRE(status_code_ok(r->status_code));
+                REQUIRE(r->body.size() > 0);
+                request_sendrecv(transport, {
+                    {"method", "GET"},
+                    {"url", "http://www.google.com/robots.txt"},
+                }, {}, "", [transport](Error error, Var<Response> r) {
+                    REQUIRE(!error);
+                    REQUIRE(r->status_code == 200);
+                    REQUIRE(r->body.size() > 0);
+                    break_loop();
+                });
+            });
+        });
+    });
+}
+
+TEST_CASE("http::request_cycle() works as expected") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_cycle({
+            {"method", "GET"},
+            {"url", "http://www.google.com/robots.txt"}
+        }, {}, "", [](Error error, Var<Response> r) {
+            REQUIRE(!error);
+            REQUIRE(r->status_code == 200);
+            REQUIRE(r->body.size() > 0);
+            break_loop();
+        });
+    });
+}
+
+// Either tor was running and hence everything should be OK, or tor was
+// not running and hence connect() to socks port must have failed.
+static inline bool check_error_after_tor(Error e) {
+    return e == NoError() or e == ConnectFailedError();
+}
+
+TEST_CASE("http::request_cycle() works as expected using httpo URLs") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_cycle({
+            {"method", "GET"},
+            {"url", "httpo://www.google.com/robots.txt"},
+        }, {}, "", [](Error error, Var<Response> r) {
+            REQUIRE(check_error_after_tor(error));
+            if (!error) {
+                REQUIRE(r->status_code == 200);
+                REQUIRE(r->body.size() > 0);
+            }
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("http::request_cycle() works as expected using tor_socks_port") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_cycle({
+            {"method", "GET"},
+            {"url", "http://www.google.com/robots.txt"},
+            {"tor_socks_port", "9050"}
+        }, {}, "", [](Error error, Var<Response> r) {
+            REQUIRE(check_error_after_tor(error));
+            if (!error) {
+                REQUIRE(r->status_code == 200);
+                REQUIRE(r->body.size() > 0);
+            }
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("http::request_connect fails without an url") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_connect({}, [](Error error, Var<Transport>) {
+            REQUIRE(error == MissingUrlError());
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("http::request_connect fails with an uncorrect url") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", ">*7\n\n"}}, [](Error error, Var<Transport>) {
+            REQUIRE(error == UrlParserError());
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("http::request_send fails without url in settings") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_connect({
+            {"url", "http://www.google.com/"}
+        }, [](Error error, Var<Transport> transport) {
+            REQUIRE(!error);
+            request_send(transport, 
+                {{"method", "GET"}}, {}, "", [](Error error) {
+                REQUIRE(error == MissingUrlError());
+                break_loop();
+            });
+        });
+    });
+}
+
+TEST_CASE("http::request_cycle() fails if fails request_send()") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        request_cycle({
+            {"method", "GET"}}, {}, "", [](Error error, Var<Response>) {
+            REQUIRE(error);
+            break_loop();
+        });
+    });
 }

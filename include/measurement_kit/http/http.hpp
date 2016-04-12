@@ -43,6 +43,11 @@ class MissingUrlHostError : public Error {
     MissingUrlHostError() : Error(3004, "unknown_error 3004") {};
 };
 
+class MissingUrlError : public Error {
+  public:
+    MissingUrlError() : Error(3005, "unknown_error 3005") {};
+};
+
 /// HTTP headers.
 typedef std::map<std::string, std::string> Headers;
 
