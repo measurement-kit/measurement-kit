@@ -34,7 +34,7 @@ class DNSInjectionImpl : public DNSTestImpl {
     };
 
     void main(std::string input, Settings options,
-              std::function<void(report::Entry)> &&cb) {
+              std::function<void(json)> &&cb) {
         entry["injected"] = NULL;
         query("A", "IN", input, options["nameserver"],
               [this, cb](dns::Message message) {

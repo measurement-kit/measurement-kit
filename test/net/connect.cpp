@@ -110,6 +110,10 @@ TEST_CASE("connect_base works with ipv4") {
     });
 }
 
+static bool check_error (Error err) {
+    return err == NetworkError() or err == TimeoutError();
+}
+
 TEST_CASE("connect_base works with ipv4 and closed port") {
     if (CheckConnectivity::is_down()) {
         return;
@@ -117,7 +121,7 @@ TEST_CASE("connect_base works with ipv4 and closed port") {
     loop_with_initial_event([]() {
         connect_base("130.192.16.172", 81,
                 [](Error err, bufferevent *bev) {
-                    REQUIRE(err == NetworkError());
+                    REQUIRE(check_error(err));
                     REQUIRE(bev == nullptr);
                     break_loop();
                 },

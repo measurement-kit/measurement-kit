@@ -40,6 +40,21 @@ double time_now(void) {
     return result;
 }
 
+void utc_time_now(struct tm *utc) {
+    time_t tv;
+    tv = time(nullptr);
+    gmtime_r(&tv, utc);
+}
+
+std::string timestamp(const struct tm *t) {
+    char result[30];
+    std::string ts;
+    if (strftime(result, sizeof(result), "%Y-%m-%d %H:%M:%S", t) == 0) {
+        throw std::runtime_error("strftime()");
+    };
+    return std::string(result);
+}
+
 evutil_socket_t listen(int use_ipv6, const char *address, const char *port) {
     sockaddr_storage storage;
     socklen_t salen;
