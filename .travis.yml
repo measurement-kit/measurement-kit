@@ -84,4 +84,4 @@ matrix:
             - ubuntu-toolchain-r-test
 
   allow_failures:
-    - env: BUILD_TYPE=ios
+    - env: OS="12.04" VALGRIND=true VER=3.6 
