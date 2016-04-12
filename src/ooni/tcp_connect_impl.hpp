@@ -9,6 +9,8 @@
 #include "src/ooni/tcp_test_impl.hpp"
 #include <sys/stat.h>
 
+using json = nlohmann::json;
+
 namespace mk {
 namespace ooni {
 
@@ -32,9 +34,9 @@ class TCPConnectImpl : public TCPTestImpl {
     };
 
     void main(std::string input, Settings options,
-              std::function<void(report::Entry)> &&cb) {
+              std::function<void(json)> &&cb) {
         options["host"] = input;
-        
+
         connect(options, [this, cb](Var<net::Transport>) {
             logger.debug("tcp_connect: Got response to TCP connect test");
             cb(entry);

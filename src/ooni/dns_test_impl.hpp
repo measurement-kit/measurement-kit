@@ -10,6 +10,8 @@
 #include <measurement_kit/dns.hpp>
 #include "src/ooni/ooni_test_impl.hpp"
 
+using json = nlohmann::json;
+
 namespace mk {
 namespace ooni {
 
@@ -27,45 +29,42 @@ class DNSTestImpl : public ooni::OoniTestImpl {
                std::string query_name, std::string nameserver,
                std::function<void(dns::Message)> cb) {
 
-        std::string nameserver_part;
+        int resolver_port;
+        std::string resolver_hostname, nameserver_part;
         std::stringstream nameserver_ss(nameserver);
+
         std::getline(nameserver_ss, nameserver_part, ':');
-        entry["resolver"].push_back(nameserver_part);
+        resolver_hostname = nameserver_part;
+
         std::getline(nameserver_ss, nameserver_part, ':');
-        entry["resolver"].push_back(nameserver_part);
+        resolver_port = std::stoi(nameserver_part, nullptr);
 
         dns::query(
             query_class, query_type, query_name,
             [=](Error error, dns::Message message) {
                 logger.debug("dns_test: got response!");
-                YAML::Node query_entry;
+                json query_entry;
+                query_entry["resolver_hostname"] = resolver_hostname;
+                query_entry["resolver_port"] = resolver_port;
+                query_entry["failure"] = nullptr;
+                query_entry["answers"] = {};
                 if (query_type == dns::QueryTypeId::A) {
                     query_entry["query_type"] = "A";
-                    query_entry["query"] =
-                        "[Query('" + query_name + ", 1, 1')]";
+                    query_entry["hostname"] = query_name;
                 }
                 if (!error) {
-                    int idx = 0;
                     for (auto answer : message.answers) {
                         if (query_type == dns::QueryTypeId::A) {
-                            std::string rr;
-                            rr = "<RR name=" + query_name + " ";
-                            rr += "type=A class=IN ";
-                            rr += "ttl=" + std::to_string(answer.ttl) +
-                                  " ";
-                            rr += "auth=False>, ";
-                            rr += "<A address=" + answer.ipv4 + " ";
-                            rr += "ttl=" + std::to_string(answer.ttl) +
-                                  ">";
-                            query_entry["answers"][idx][0] = rr;
+                        query_entry["answers"].push_back({
+                                {"ttl", answer.ttl},
+                                {"ipv4", answer.ipv4},
+                                {"answer_type", "A"}
+                            });
                         }
-                        ++idx;
                     }
                 } else {
-                    query_entry["answers"][0] = NULL;
                     query_entry["failure"] = error.as_ooni_error();
                 }
-                query_entry["rtt"] = message.rtt;
                 // TODO add support for bytes received
                 // query_entry["bytes"] = response.get_bytes();
                 entry["queries"].push_back(query_entry);
