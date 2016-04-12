@@ -7,8 +7,11 @@
 
 #include <ctime>
 #include "src/report/file_reporter.hpp"
+#include "src/common/utils.hpp"
+#include "src/ext/json/src/json.hpp"
 
 using namespace mk::report;
+using json = nlohmann::json;
 
 TEST_CASE("The constructor for [FileReport] works correctly", "[BaseReport]") {
     REQUIRE_NOTHROW(FileReporter());
@@ -28,32 +31,33 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
         reporter.test_version = MEASUREMENT_KIT_VERSION;
         reporter.filename = "example_test_report.yaml";
         reporter.options = options;
-        reporter.start_time = time(0);
+        mk::utc_time_now(&reporter.test_start_time);
 
-        auto entry = Entry(input);
+        json entry;
+        entry["input"] = input;
         entry["antani"] = "fuffa";
         reporter.open();
         reporter.writeEntry(entry);
         reporter.close();
 
-        std::vector<YAML::Node> entries =
-            YAML::LoadAllFromFile(reporter.filename);
+        std::ifstream infile(reporter.filename);
+        for (std::string line; getline(infile, line);) {
+            json entry = json::parse(line.c_str());
+            REQUIRE(entry["test_name"].get<std::string>() ==
+                    reporter.test_name);
+            REQUIRE(entry["test_version"].get<std::string>() ==
+                    reporter.test_version);
+            REQUIRE(entry["probe_ip"].get<std::string>() == reporter.probe_ip);
 
-        // Check that the report header is correct
-        REQUIRE(entries[0]["test_name"].as<std::string>() ==
-                reporter.test_name);
-        REQUIRE(entries[0]["test_version"].as<std::string>() ==
-                reporter.test_version);
-        REQUIRE(entries[0]["probe_ip"].as<std::string>() == reporter.probe_ip);
+            REQUIRE(entry["software_name"].get<std::string>() ==
+                    "measurement_kit");
+            REQUIRE(entry["software_version"].get<std::string>() ==
+                    MEASUREMENT_KIT_VERSION);
+            REQUIRE(entry["data_format_version"].get<std::string>() == "0.2.0");
 
-        REQUIRE(entries[0]["software_name"].as<std::string>() ==
-                "measurement_kit");
-        REQUIRE(entries[0]["software_version"].as<std::string>() ==
-                MEASUREMENT_KIT_VERSION);
-        REQUIRE(entries[0]["data_format_version"].as<std::string>() == "0.1");
-
-        // Check that the first report entry is correct.
-        REQUIRE(entries[1]["input"].as<std::string>() == input);
-        REQUIRE(entries[1]["antani"].as<std::string>() == "fuffa");
+            // Check that the first report entry is correct.
+            REQUIRE(entry["input"].get<std::string>() == input);
+            REQUIRE(entry["antani"].get<std::string>() == "fuffa");
+        }
     }
 }

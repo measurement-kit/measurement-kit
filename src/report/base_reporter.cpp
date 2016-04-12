@@ -7,34 +7,25 @@
 namespace mk {
 namespace report {
 
-std::string BaseReporter::getHeader() {
-    std::stringstream output;
-    YAML::Node header;
-    header["test_name"] = test_name;
-    header["test_version"] = test_version;
-    header["start_time"] = start_time;
-    // header["options"] = options;
-    header["probe_ip"] = probe_ip;
-    // header["probe_asn"] = probe_ip;
-    // header["probe_cc"] = probe_ip;
-    header["software_name"] = software_name;
-    header["software_version"] = software_version;
-    header["data_format_version"] = data_format_version;
-    output << "---" << std::endl;
-    output << header << std::endl;
-    output << "..." << std::endl;
-    return output.str();
-}
-
 void BaseReporter::open() { openned = true; }
 
-void BaseReporter::writeEntry(Entry &) {
+void BaseReporter::writeEntry(json &entry) {
     if (!openned) {
         throw new std::runtime_error("The report is not open.");
     }
     if (closed) {
         throw new std::runtime_error("The report has already been closed.");
     }
+    entry["test_name"] = test_name;
+    entry["test_version"] = test_version;
+    entry["test_start_time"] = mk::timestamp(&test_start_time);
+    // header["options"] = options;
+    entry["probe_ip"] = probe_ip;
+    entry["probe_asn"] = probe_asn;
+    entry["probe_cc"] = probe_cc;
+    entry["software_name"] = software_name;
+    entry["software_version"] = software_version;
+    entry["data_format_version"] = data_format_version;
 }
 
 void BaseReporter::close() {
