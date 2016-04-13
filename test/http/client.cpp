@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Regression tests for `protocols/http.hpp` and `protocols/http.cpp`.
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
@@ -15,11 +11,13 @@
 using namespace mk;
 using namespace mk::http;
 
-TEST_CASE("HTTP Client works as expected") {
-    auto client = Client();
+// TODO: for now I have just refactored former http::Client tests to use
+// instead the http::request() API, we should now remove duplicates!
+
+TEST_CASE("http::request() works as expected") {
     auto count = 0;
 
-    client.request(
+    request(
         {
          {"url", "http://www.google.com/robots.txt"},
          {"method", "GET"},
@@ -29,7 +27,7 @@ TEST_CASE("HTTP Client works as expected") {
         {
          {"Accept", "*/*"},
         },
-        "", [&](Error, Response &&response) {
+        "", [&](Error, Response response) {
             std::cout << "Google:\r\n";
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
@@ -38,7 +36,7 @@ TEST_CASE("HTTP Client works as expected") {
             }
         });
 
-    client.request(
+    request(
         {
          {"url", "http://www.neubot.org/robots.txt"},
          {"method", "GET"},
@@ -47,7 +45,7 @@ TEST_CASE("HTTP Client works as expected") {
         {
          {"Accept", "*/*"},
         },
-        "", [&](Error, Response &&response) {
+        "", [&](Error, Response response) {
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
             if (++count >= 3) {
@@ -55,7 +53,7 @@ TEST_CASE("HTTP Client works as expected") {
             }
         });
 
-    client.request(
+    request(
         {
          {"url", "http://www.torproject.org/robots.txt"},
          {"method", "GET"},
@@ -64,7 +62,7 @@ TEST_CASE("HTTP Client works as expected") {
         {
          {"Accept", "*/*"},
         },
-        "", [&](Error, Response &&response) {
+        "", [&](Error, Response response) {
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
             if (++count >= 3) {
@@ -75,11 +73,10 @@ TEST_CASE("HTTP Client works as expected") {
     mk::loop();
 }
 
-TEST_CASE("HTTP Client works as expected over Tor") {
-    auto client = Client();
+TEST_CASE("http::request() works as expected over Tor") {
     auto count = 0;
 
-    client.request(
+    request(
         {
          {"url", "http://www.google.com/robots.txt"},
          {"method", "GET"},
@@ -90,7 +87,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {
          {"Accept", "*/*"},
         },
-        "", [&](Error error, Response &&response) {
+        "", [&](Error error, Response response) {
             std::cout << "Error: " << (int)error << std::endl;
             std::cout << "Google:\r\n";
             std::cout << response.body.substr(0, 128) << "\r\n";
@@ -100,7 +97,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
             }
         });
 
-    client.request(
+    request(
         {
          {"url", "http://www.neubot.org/robots.txt"},
          {"method", "GET"},
@@ -110,7 +107,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {
          {"Accept", "*/*"},
         },
-        "", [&](Error error, Response &&response) {
+        "", [&](Error error, Response response) {
             std::cout << "Error: " << (int)error << std::endl;
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
@@ -119,7 +116,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
             }
         });
 
-    client.request(
+    request(
         {
          {"url", "http://www.torproject.org/robots.txt"},
          {"method", "GET"},
@@ -129,7 +126,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
         {
          {"Accept", "*/*"},
         },
-        "", [&](Error error, Response &&response) {
+        "", [&](Error error, Response response) {
             std::cout << "Error: " << (int)error << std::endl;
             std::cout << response.body.substr(0, 128) << "\r\n";
             std::cout << "[snip]\r\n";
@@ -142,9 +139,7 @@ TEST_CASE("HTTP Client works as expected over Tor") {
 }
 
 TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
-    auto client = Client();
-
-    client.request(
+    request(
         {
          {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
          {"method", "POST"},
@@ -153,7 +148,7 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
         {
          {"Accept", "*/*"},
         },
-        "{\"test-helpers\": [\"dns\"]}", [](Error error, Response &&response) {
+        "{\"test-helpers\": [\"dns\"]}", [](Error error, Response response) {
             std::cout << "Error: " << (int)error << std::endl;
             std::cout << response.body << "\r\n";
             std::cout << "[snip]\r\n";
@@ -164,7 +159,14 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
 }
 
 TEST_CASE("Make sure that settings are not modified") {
-    auto client = Client();
+
+    // XXX Since settings are copied when passed to request() I am not
+    // sure now what was the purpose of this test, or whether this test
+    // has always been conceptually wrong since it cannot fail.
+    //
+    // Leaving it here for now, added a comment to trigger future
+    // investigation when we cleanup http tests in the aftermath of
+    // the current wave of MK cleanups.
 
     Settings settings{
         {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
@@ -173,12 +175,12 @@ TEST_CASE("Make sure that settings are not modified") {
         {"tor_socks_port", 9999},
     };
 
-    client.request(settings,
+    request(settings,
                    {
                     {"Accept", "*/*"},
                    },
                    "{\"test-helpers\": [\"dns\"]}",
-                   [](Error error, Response &&response) {
+                   [](Error error, Response response) {
                        // XXX: assumes that Tor is not running on port 9999
                        REQUIRE(error != 0);
                        std::cout << "Error: " << (int)error << std::endl;

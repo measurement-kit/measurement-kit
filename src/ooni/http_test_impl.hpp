@@ -17,8 +17,6 @@ namespace ooni {
 class HTTPTestImpl : public ooni::OoniTestImpl {
     using ooni::OoniTestImpl::OoniTestImpl;
 
-    http::Client http_client;
-
   public:
     HTTPTestImpl(std::string input_filepath_, Settings options_)
         : ooni::OoniTestImpl(input_filepath_, options_) {
@@ -31,9 +29,21 @@ class HTTPTestImpl : public ooni::OoniTestImpl {
     void request(Settings settings, http::Headers headers, std::string body,
                  http::RequestCallback &&callback) {
 
-        http_client.request(
+        // XXX This has been refactored from using http::Client to using
+        // the http::request() interface. The problem now is that the previous
+        // semantic of client was that, when the client dies, it stops any
+        // running request. The new semantic has not this feature, which
+        // makes the code much simpler, but which is *not* consistent with
+        // the assumptions made in this class, which could in theory be
+        // destroyed while the request is running. To avoid this potential
+        // memory error, we shall pass a smart pointer to this class to
+        // the lambda closure rather than `this` implicitly.
+        //
+        // That said, I think that the current usage of this code is OK
+        // but this comment's here to signal refactoring is needed.
+        http::request(
             settings, headers,
-            body, [=](Error error, http::Response &&response) {
+            body, [=](Error error, http::Response response) {
 
                 json rr;
                 rr["request"]["headers"] =
