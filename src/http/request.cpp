@@ -84,12 +84,12 @@ void request_recv_response(Var<Transport> transport, RequestRecvResponseCb cb,
             *prevent_emit = true;
             parser->eof();
         }
-        cb(err, response);
+        // TODO: make sure we remove all cycles
         transport->on_error(nullptr);
         transport->on_data(nullptr);
         poller->call_soon([=]() {
             logger->debug("request_recv_response: end of closure");
-            // TODO: make sure we remove all cycles
+            cb(err, response);
         });
     });
 }
