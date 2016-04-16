@@ -116,19 +116,6 @@ TEST_CASE("throw error while fails evdns_set_options for negative attempts") {
     REQUIRE (false);
 }
 
-TEST_CASE("throw error while fails evdns_set_options for timeout") {
-    try {
-        create_evdns_base<::evdns_base_new,
-                ::evdns_base_nameserver_ip_add,
-                base_free_evdns_set_options_timeout>(
-                {{"timeout", "nexa"}}, get_global_poller());
-    } catch (std::runtime_error &) {
-        REQUIRE (base_free_evdns_set_options_timeout_flag);
-        return;
-    }
-    REQUIRE (false);
-}
-
 TEST_CASE("throw error while fails evdns_set_options for randomize-case") {
     try {
         create_evdns_base<::evdns_base_new,
