@@ -141,7 +141,8 @@ void socks5_connect(std::string address, int port, Settings settings,
                     callback(r.overall_error, nullptr);
                     return;
                 }
-                Var<Transport> txp(new Connection(r.connected_bev));
+                Var<Transport> txp = Connection::make(r.connected_bev,
+                                                      poller, logger);
                 Var<Transport> socks5(
                         new Socks5(txp, settings, poller, logger));
                 socks5->on_connect([=]() {

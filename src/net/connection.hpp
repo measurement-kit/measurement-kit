@@ -4,6 +4,9 @@
 #ifndef SRC_NET_CONNECTION_HPP
 #define SRC_NET_CONNECTION_HPP
 
+#include "src/common/utils.hpp"
+#include "src/net/bufferevent.hpp"
+#include "src/net/emitter.hpp"
 #include <event2/bufferevent.h>
 #include <event2/event.h>
 #include <list>
@@ -12,18 +15,22 @@
 #include <measurement_kit/net.hpp>
 #include <stdexcept>
 #include <string.h>
-#include "src/common/utils.hpp"
-#include "src/net/bufferevent.hpp"
-#include "src/net/emitter.hpp"
 
 namespace mk {
 namespace net {
 
 class Connection : public Emitter, public NonMovable, public NonCopyable {
   public:
-    Connection(bufferevent *bev, Logger * = Logger::global());
+    static Var<Transport> make(bufferevent *bev,
+                               Poller *poller = Poller::global(),
+                               Logger *logger = Logger::global()) {
+        Connection *conn = new Connection(bev, poller, logger);
+        return Var<Transport>(conn);
+    }
 
-    ~Connection() override {}
+    ~Connection() override {
+        // Nothing for now
+    }
 
     void set_timeout(double timeout) override {
         timeval tv, *tvp = mk::timeval_init(&tv, timeout);
@@ -54,8 +61,27 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     void handle_read_();
     void handle_write_();
 
+#define safe_upcall(ptr_, method_and_args_)                                    \
+    do {                                                                       \
+        ptr_->method_and_args_;                                                \
+    } while (0)
+    static void emit_libevent_event_(Connection *me, short what) {
+        safe_upcall(me, handle_event_(what));
+    }
+    static void emit_libevent_read_(Connection *me) {
+        safe_upcall(me, handle_read_());
+    }
+    static void emit_libevent_write_(Connection *me) {
+        safe_upcall(me, handle_write_());
+    }
+#undef safe_upcall
+
   private:
+    Connection(bufferevent *bev, Poller * = Poller::global(),
+               Logger * = Logger::global());
+
     Bufferevent bev;
+    Poller *poller = Poller::global();
 };
 
 } // namespace net

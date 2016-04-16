@@ -30,7 +30,7 @@ void connect(std::string address, int port,
             callback(r.overall_error, nullptr);
             return;
         }
-        Var<Transport> txp(new Connection(r.connected_bev, logger));
+        Var<Transport> txp = Connection::make(r.connected_bev, poller, logger);
         txp->set_timeout(timeout);
         callback(NoError(), txp);
     }, timeout, poller, logger);

@@ -13,15 +13,18 @@
 extern "C" {
 
 static void handle_libevent_read(bufferevent *, void *opaque) {
-    static_cast<mk::net::Connection *>(opaque)->handle_read_();
+    auto conn = static_cast<mk::net::Connection *>(opaque);
+    conn->emit_libevent_read_(conn);
 }
 
 static void handle_libevent_write(bufferevent *, void *opaque) {
-    static_cast<mk::net::Connection *>(opaque)->handle_write_();
+    auto conn = static_cast<mk::net::Connection *>(opaque);
+    conn->emit_libevent_write_(conn);
 }
 
 static void handle_libevent_event(bufferevent *, short what, void *opaque) {
-    static_cast<mk::net::Connection *>(opaque)->handle_event_(what);
+    auto conn = static_cast<mk::net::Connection *>(opaque);
+    conn->emit_libevent_event_(conn, what);
 }
 
 } // extern "C"
@@ -60,8 +63,8 @@ void Connection::handle_event_(short what) {
     emit_error(SocketError());
 }
 
-Connection::Connection(bufferevent *buffev, Logger *logger)
-        : Emitter(logger) {
+Connection::Connection(bufferevent *buffev, Poller *poller, Logger *logger)
+        : Emitter(logger), poller(poller) {
     this->bev.set_bufferevent(buffev);
 
     // The following makes this non copyable and non movable.
