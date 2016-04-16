@@ -18,9 +18,6 @@ class Socks5 : public Emitter {
     Socks5(Var<Transport>, Settings, Poller * = Poller::global(),
             Logger * = Logger::global());
 
-    // Constructor that creates its new own transport
-    Socks5(Settings, Logger * = Logger::global(), Poller * = Poller::global());
-
     void set_timeout(double timeout) override { conn->set_timeout(timeout); }
 
     void clear_timeout() override { conn->clear_timeout(); }
