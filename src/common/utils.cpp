@@ -57,47 +57,12 @@ std::string timestamp(const struct tm *t) {
     return std::string(result);
 }
 
-evutil_socket_t listen(int use_ipv6, const char *address, const char *port) {
-    sockaddr_storage storage;
-    socklen_t salen;
-    const char *family;
-    evutil_socket_t filedesc;
-    int result;
-
-    if (use_ipv6)
-        family = "PF_INET6";
-    else
-        family = "PF_INET";
-
-    result = storage_init(&storage, &salen, family, address, port);
-    if (result == -1) return -1;
-
-    filedesc = socket_create(storage.ss_family, SOCK_STREAM, 0);
-    if (filedesc == MEASUREMENT_KIT_SOCKET_INVALID) return -1;
-
-    result = socket_listen(filedesc, &storage, salen);
-    if (result != 0) {
-        (void)evutil_closesocket(filedesc);
-        return -1;
-    }
-
-    return filedesc;
-}
-
-/* Many system's free() handle nullptr; is this needed? */
-void xfree(void *ptr) {
-    if (ptr != nullptr) free(ptr);
-}
-
 timeval *timeval_init(timeval *tv, double delta) {
-    debug("utils:timeval_init - enter");
     if (delta < 0) {
-        debug("utils:timeval_init - no init needed");
         return nullptr;
     }
     tv->tv_sec = (time_t)floor(delta);
     tv->tv_usec = (suseconds_t)((delta - floor(delta)) * 1000000);
-    debug("utils:timeval_init - ok");
     return tv;
 }
 
@@ -180,82 +145,6 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
     }
 
     info("utils:storage_init - ok");
-    return 0;
-}
-
-evutil_socket_t socket_create(int domain, int type, int protocol) {
-    evutil_socket_t filedesc;
-    int result;
-
-    info("utils:socket - enter");
-
-    filedesc = socket(domain, type, protocol);
-    if (filedesc == MEASUREMENT_KIT_SOCKET_INVALID) {
-        warn("utils:socket: cannot create socket");
-        return MEASUREMENT_KIT_SOCKET_INVALID;
-    }
-
-    result = evutil_make_socket_nonblocking(filedesc);
-    if (result != 0) {
-        warn("utils:socket: cannot make nonblocking");
-        (void)evutil_closesocket(filedesc);
-        return MEASUREMENT_KIT_SOCKET_INVALID;
-    }
-
-    info("utils:socket - ok");
-    return filedesc;
-}
-
-int socket_connect(evutil_socket_t filedesc, sockaddr_storage *storage,
-                   socklen_t salen) {
-    int result;
-
-    info("utils:socket_connect - enter");
-
-    result = connect(filedesc, (sockaddr *)storage, salen);
-    if (result != 0) {
-#ifndef WIN32
-        if (errno == EINPROGRESS)
-#else
-        if (WSAGetLastError() == WSA_EINPROGRESS) /* untested */
-#endif
-            goto looksgood;
-        warn("utils:socket_connect - connect() failed");
-        return -1;
-    }
-
-looksgood:
-    info("utils:socket_connect - ok");
-    return 0;
-}
-
-int socket_listen(evutil_socket_t filedesc, sockaddr_storage *storage,
-                  socklen_t salen) {
-    int result, activate;
-
-    info("utils:socket_listen - enter");
-
-    activate = 1;
-    result = setsockopt(filedesc, SOL_SOCKET, SO_REUSEADDR, &activate,
-                        sizeof(activate));
-    if (result != 0) {
-        warn("utils:socket_listen - setsockopt() failed");
-        return -1;
-    }
-
-    result = bind(filedesc, (sockaddr *)storage, salen);
-    if (result != 0) {
-        warn("utils:socket_listen - bind() failed");
-        return -1;
-    }
-
-    result = ::listen(filedesc, 10);
-    if (result != 0) {
-        warn("utils:socket_listen - listen() failed");
-        return -1;
-    }
-
-    info("utils:socket_listen - ok");
     return 0;
 }
 
