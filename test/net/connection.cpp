@@ -19,45 +19,38 @@
 using namespace mk;
 using namespace mk::net;
 
-TEST_CASE("Connection::close() is idempotent") {
+// TODO: move this test in test/net/transport.cpp
+TEST_CASE("Transport::close() is idempotent") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    Connection conn("PF_INET", "nexa.polito.it", "80");
-    Emitter &s = static_cast<Emitter &>(conn);
-    s.on_connect([&s]() {
-        s.enable_read();
-        s.write("GET / HTTP/1.0\r\n\r\n");
+    loop_with_initial_event([]() {
+        connect("nexa.polito.it", 80, [](Error err, Var<Transport> s) {
+            REQUIRE(!err);
+            s->close();
+            // It shall be safe to call close more than once
+            s->close();
+            s->close();
+            break_loop();
+        });
     });
-    s.on_data([&s](Buffer) {
-        s.close();
-        // It shall be safe to call close() more than once
-        s.close();
-        s.close();
-        mk::break_loop();
-    });
-    mk::loop();
 }
 
-TEST_CASE("It is safe to manipulate Connection after close") {
+// TODO: move this test in test/net/transport.cpp
+TEST_CASE("It is safe to manipulate Transport after close") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    Connection conn("PF_INET", "nexa.polito.it", "80");
-    Emitter &s = static_cast<Emitter &>(conn);
-    s.on_connect([&s]() {
-        s.enable_read();
-        s.write("GET / HTTP/1.0\r\n\r\n");
+    loop_with_initial_event([]() {
+        connect("nexa.polito.it", 80, [](Error err, Var<Transport> s) {
+            REQUIRE(!err);
+            s->close();
+            // We expect the transport to throw if we call its ->write() method
+            // after close because the underlying Bufferevent becomes empty
+            REQUIRE_THROWS(s->write("foo"));
+            break_loop();
+        });
     });
-    s.on_data([&s](Buffer) {
-        s.close();
-        // It shall be safe to call any API after close()
-        // where safe means that we don't segfault
-        REQUIRE_THROWS(s.enable_read());
-        REQUIRE_THROWS(s.disable_read());
-        mk::break_loop();
-    });
-    mk::loop();
 }
 
 // Disable this unittest since this requires an API change
