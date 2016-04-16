@@ -44,7 +44,7 @@ you can configure it using these methods:
   an echo server, required by the test, is running.
 
 - *set_output_file_path*: optional method to set output file path, otherwise
-  a file named "report-http_invalid_request_line-DATE.yamloo" is written into
+  a file named "report-http_invalid_request_line-DATE.json" is written into
   the current working directory.
 
 - *set_verbose*: if called, this method tells the test to run in verbose
