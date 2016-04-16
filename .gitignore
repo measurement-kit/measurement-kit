@@ -85,7 +85,6 @@ test/http/request
 test/http/request_serializer
 test/http/response_parser
 test/net/buffer
-test/net/bufferevent
 test/net/connect
 test/net/connection
 test/net/connection_check_fds

@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Tests for src/net/connection.h's Connection{State,}
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
@@ -45,9 +41,10 @@ TEST_CASE("It is safe to manipulate Transport after close") {
         connect("nexa.polito.it", 80, [](Error err, Var<Transport> s) {
             REQUIRE(!err);
             s->close();
-            // We expect the transport to throw if we call its ->write() method
-            // after close because the underlying Bufferevent becomes empty
-            REQUIRE_THROWS(s->write("foo"));
+            // One should not manipulate a Transport after close, but in any
+            // case that should be safe, because now close only removes all
+            // possible self references and clears the bufferevent.
+            s->write("foo");
             break_loop();
         });
     });
