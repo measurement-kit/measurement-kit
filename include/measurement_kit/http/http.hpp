@@ -68,32 +68,6 @@ typedef std::function<void(Error, Response)> RequestCallback;
 // Forward declaration of internally used class.
 class Request;
 
-/// HTTP client.
-class Client {
-
-  protected:
-    std::set<Request *> pending;
-
-  public:
-    /// Issue HTTP request.
-    void request(Settings settings, Headers headers, std::string body,
-                 RequestCallback callback, Logger *lp = Logger::global(),
-                 Poller *poller = Poller::global());
-
-    /// Get the global HTTP client instance
-    static Var<Client> global() {
-        static Var<Client> singleton(new Client);
-        return singleton;
-    }
-
-    Client() {} ///< Default constructor
-    ~Client();  ///< Destructor
-
-    //
-    // TODO: implement all the fancy methods
-    //
-};
-
 /// Send HTTP request and receive response.
 /// \param settings Settings for HTTP request.
 /// \param cb Callback called when complete or on error.
@@ -101,11 +75,16 @@ class Client {
 /// \param body Optional HTTP request body.
 /// \param lp Optional logger.
 /// \param pol Optional poller.
-/// \param client Optional HTTP client.
 void request(Settings settings, RequestCallback cb, Headers headers = {},
              std::string body = "", Logger *lp = Logger::global(),
-             Poller *pol = Poller::global(),
-             Var<Client> client = Client::global());
+             Poller *pol = Poller::global());
+
+// Signature of the old http::Client ->request method, widely used
+inline void request(Settings settings, Headers headers, std::string body,
+        RequestCallback cb, Logger *lp = Logger::global(),
+        Poller *pol = Poller::global()) {
+    request(settings, cb, headers, body, lp, pol);
+}
 
 /// Represents a URL.
 class Url {
@@ -137,15 +116,13 @@ ErrorOr<Url> parse_url_noexcept(std::string url);
 /// \param body Optional HTTP request body.
 /// \param lp Optional logger.
 /// \param pol Optional poller.
-/// \param client Optional HTTP client.
 inline void get(std::string url, RequestCallback cb,
                 Headers headers = {}, std::string body = "",
                 Settings settings = {}, Logger *lp = Logger::global(),
-                Poller *pol = Poller::global(),
-                Var<Client> client = Client::global()) {
+                Poller *pol = Poller::global()) {
     settings["method"] = "GET";
     settings["url"] = url;
-    request(settings, cb, headers, body, lp, pol, client);
+    request(settings, cb, headers, body, lp, pol);
 }
 
 /// Send HTTP request and receive response.
@@ -157,15 +134,13 @@ inline void get(std::string url, RequestCallback cb,
 /// \param body Optional HTTP request body.
 /// \param lp Optional logger.
 /// \param pol Optional poller.
-/// \param client Optional HTTP client.
 inline void request(std::string method, std::string url, RequestCallback cb,
                     Headers headers = {}, std::string body = "",
                     Settings settings = {}, Logger *lp = Logger::global(),
-                    Poller *pol = Poller::global(),
-                    Var<Client> client = Client::global()) {
+                    Poller *pol = Poller::global()) {
     settings["method"] = method;
     settings["url"] = url;
-    request(settings, cb, headers, body, lp, pol, client);
+    request(settings, cb, headers, body, lp, pol);
 }
 
 } // namespace http
