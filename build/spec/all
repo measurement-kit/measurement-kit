@@ -2,7 +2,6 @@
 set -e
 pkg_rootdir=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
 cd $pkg_rootdir
-for dependency in Catch boost http-parser jansson libevent libmaxminddb        \
-                  yaml-cpp libressl; do
+for dependency in Catch http-parser jansson libevent libmaxminddb libressl; do
     ./build/dependency $dependency
 done

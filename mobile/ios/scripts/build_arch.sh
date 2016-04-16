@@ -40,8 +40,6 @@ export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer
     ./configure -q --disable-shared \
                 --disable-examples \
                 --with-libevent=builtin \
-                --with-yaml-cpp=builtin \
-                --with-boost=builtin \
                 --with-jansson=builtin \
                 --with-libmaxminddb=builtin \
                 --prefix=/ \
