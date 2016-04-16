@@ -25,21 +25,14 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     ~Connection() override {}
 
-    evutil_socket_t get_fileno() { return (bufferevent_getfd(this->bev)); }
-
     void set_timeout(double timeout) override {
-        struct timeval tv, *tvp;
-        tvp = mk::timeval_init(&tv, timeout);
+        timeval tv, *tvp = mk::timeval_init(&tv, timeout);
         if (bufferevent_set_timeouts(this->bev, tvp, tvp) != 0) {
             throw std::runtime_error("cannot set timeout");
         }
     }
 
-    void clear_timeout() override { this->set_timeout(-1); }
-
-    void start_tls(unsigned int) {
-        throw std::runtime_error("not implemented");
-    }
+    void clear_timeout() override { set_timeout(-1); }
 
     void do_send(Buffer data) override { data >> bufferevent_get_output(bev); }
 
