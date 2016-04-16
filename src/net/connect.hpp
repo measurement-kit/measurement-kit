@@ -98,7 +98,7 @@ struct ResolveHostnameResult {
 typedef std::function<void(ResolveHostnameResult)> ResolveHostnameCb;
 
 void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
-        Logger *logger = Logger::global());
+        Poller *poller = Poller::global(), Logger *logger = Logger::global());
 
 struct ConnectResult {
     ResolveHostnameResult resolve_result;

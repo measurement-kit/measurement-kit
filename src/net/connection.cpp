@@ -105,12 +105,11 @@ Connection::Connection(const char *family, const char *address,
                                     Libs::global(), poller->get_event_base());
 }
 
-Connection::Connection(bufferevent *buffev) {
+Connection::Connection(bufferevent *buffev, Poller *poller, Logger *logger)
+        : Emitter(logger), poller(poller) {
     this->bev.set_bufferevent(buffev);
 
-    /*
-     * The following makes this non copyable and non movable.
-     */
+    // The following makes this non copyable and non movable.
     bufferevent_setcb(this->bev, handle_libevent_read, handle_libevent_write,
                       handle_libevent_event, this);
 }
