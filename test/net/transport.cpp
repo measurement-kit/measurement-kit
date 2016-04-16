@@ -15,44 +15,42 @@
 using namespace mk;
 using namespace mk::net;
 
-TEST_CASE("It is possible to use Transport with a custom poller") {
+TEST_CASE("net::connect() works with a custom poller") {
     // Note: this is how Portolan uses measurement-kit
     if (CheckConnectivity::is_down()) {
         return;
     }
+    set_verbose(1);
     Poller poller;
-    ErrorOr<Var<Transport>> s = mk::net::connect({
-        {"family", "PF_UNSPEC"},
-        {"address", "nexa.polito.it"},
-        {"port", "22"},
-    }, Logger::global(), &poller);
-    REQUIRE(static_cast<bool>(s));
-    Var<Transport> transport = s.as_value();
-    transport->set_timeout(5);
     auto ok = false;
-    transport->on_error([&poller](Error) { poller.break_loop(); });
-    transport->on_connect([&poller, &ok]() {
+    connect("nexa.polito.it", 22, [&](Error, Var<Transport>) {
         poller.break_loop();
         ok = true;
-    });
+    }, {}, Logger::global(), &poller);
     poller.loop();
     REQUIRE(ok);
 }
 
-TEST_CASE("Alternative connect() can connect to open port") {
+TEST_CASE("net::connect() can connect to open port") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
-        net::connect("www.kernel.org", 80, [](Error error, Var<Transport>) {
+        connect("www.kernel.org", 80, [](Error error, Var<Transport>) {
             REQUIRE(!error);
             break_loop();
         });
     });
 }
 
-TEST_CASE("Alternative connect() works in case of error") {
+TEST_CASE("net::connect() works in case of error") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
     loop_with_initial_event([]() {
-        net::connect("nexa.polito.it", 81, [](Error error, Var<Transport>) {
+        connect("nexa.polito.it", 81, [](Error error, Var<Transport>) {
             REQUIRE(error);
             break_loop();
-        });
+        }, {{"timeout", 5.0}});
     });
 }

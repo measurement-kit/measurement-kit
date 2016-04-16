@@ -22,7 +22,8 @@ namespace net {
 
 class Connection : public Emitter, public NonMovable, public NonCopyable {
   public:
-    Connection(bufferevent *bev);
+    Connection(bufferevent *bev, Poller * = Poller::global(),
+            Logger * = Logger::global());
 
     ~Connection() override {}
 

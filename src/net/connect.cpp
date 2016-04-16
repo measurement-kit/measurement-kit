@@ -58,7 +58,8 @@ void connect_first_of(std::vector<std::string> addresses, int port,
 }
 
 void resolve_hostname(
-        std::string hostname, ResolveHostnameCb cb, Logger *logger) {
+        std::string hostname, ResolveHostnameCb cb, Poller *poller,
+        Logger *logger) {
 
     logger->debug("resolve_hostname: %s", hostname.c_str());
 
@@ -107,8 +108,8 @@ void resolve_hostname(
                 }
             }
             cb(*result);
-        });
-    });
+        }, {}, poller);
+    }, {}, poller);
 }
 
 void connect(std::string hostname, int port, ConnectCb cb, double timeo,
@@ -137,7 +138,7 @@ void connect(std::string hostname, int port, ConnectCb cb, double timeo,
                         timeo, poller, logger);
 
             },
-            logger);
+            poller, logger);
 }
 
 } // namespace net

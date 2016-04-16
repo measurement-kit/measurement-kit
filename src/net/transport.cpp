@@ -71,15 +71,18 @@ void connect(std::string address, int port,
         socks5_connect(address, port, settings, callback, poller, logger);
         return;
     }
-    net::connect(address, port, [callback](ConnectResult r) {
+    double timeout = settings.get("timeout", 30.0);
+    net::connect(address, port, [=](ConnectResult r) {
         // TODO: it would be nice to pass to this callback a compound error
         // that also contains info on all what went wrong when connecting
         if (r.overall_error) {
             callback(r.overall_error, nullptr);
             return;
         }
-        callback(NoError(), Var<Transport>(new Connection(r.connected_bev)));
-    }, settings.get("timeout", 30.0), poller, logger);
+        Var<Transport> txp(new Connection(r.connected_bev, poller, logger));
+        txp->set_timeout(timeout);
+        callback(NoError(), txp);
+    }, timeout, poller, logger);
 }
 
 } // namespace net
