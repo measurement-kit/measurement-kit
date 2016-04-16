@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Regression tests for `protocols/http.hpp` and `protocols/http.cpp`.
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
@@ -19,11 +15,14 @@ using namespace mk;
 using namespace mk::net;
 using namespace mk::http;
 
-TEST_CASE("HTTP Request works as expected") {
+// TODO: after refactoring there are probably duplicated tests, we
+// should merge them to avoid testing things twice
+
+TEST_CASE("http::request works as expected") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    Request r(
+    request(
         {
          {"url", "http://www.google.com/robots.txt"},
          {"method", "GET"},
@@ -32,7 +31,7 @@ TEST_CASE("HTTP Request works as expected") {
         {
          {"Accept", "*/*"},
         },
-        "", [&](Error error, Response &&response) {
+        "", [](Error error, Response response) {
             if (error != 0) {
                 std::cout << "Error: " << (int)error << "\r\n";
                 mk::break_loop();
@@ -91,11 +90,11 @@ TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
     REQUIRE(called == 1);
 }
 
-TEST_CASE("HTTP Request correctly receives errors") {
+TEST_CASE("http::request correctly receives errors") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    Request r(
+    request(
         {
          {"url", "http://nexa.polito.it:81/robots.txt"},
          {"method", "GET"},
@@ -105,7 +104,7 @@ TEST_CASE("HTTP Request correctly receives errors") {
         {
          {"Accept", "*/*"},
         },
-        "", [&](Error error, Response &&response) {
+        "", [](Error error, Response response) {
             if (error != 0) {
                 std::cout << "Error: " << (int)error << "\r\n";
                 mk::break_loop();
@@ -125,11 +124,11 @@ TEST_CASE("HTTP Request correctly receives errors") {
     mk::loop();
 }
 
-TEST_CASE("HTTP Request works as expected over Tor") {
+TEST_CASE("http::request works as expected over Tor") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    Request r(
+    request(
         {
          {"url", "http://www.google.com/robots.txt"},
          {"method", "GET"},
@@ -139,7 +138,7 @@ TEST_CASE("HTTP Request works as expected over Tor") {
         {
          {"Accept", "*/*"},
         },
-        "", [&](Error error, Response &&response) {
+        "", [](Error error, Response response) {
             if (error != 0) {
                 std::cout << "Error: " << (int)error << "\r\n";
                 mk::break_loop();
@@ -294,11 +293,11 @@ TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     REQUIRE(r2.socks5_port() == "");
 }
 
-TEST_CASE("The callback is called if input URL parsing fails") {
+TEST_CASE("http::request() callback is called if input URL parsing fails") {
     bool called = false;
-    Request r1({}, {}, "", [&called](Error err, Response) {
+    request({}, {}, "", [&called](Error err, Response) {
         called = true;
-        REQUIRE(err == GenericError());
+        REQUIRE(err == MissingUrlError());
     });
     REQUIRE(called);
 }

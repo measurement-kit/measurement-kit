@@ -9,6 +9,8 @@
 using namespace mk;
 using namespace mk::http;
 
+// TODO: these tests should go in test/http/request.cpp
+
 TEST_CASE("http::get() works as expected") {
     http::get("http://www.google.com/robots.txt",
         [](Error error, Response &&response) {

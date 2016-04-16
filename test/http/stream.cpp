@@ -19,42 +19,10 @@ using namespace mk;
 using namespace mk::net;
 using namespace mk::http;
 
+// TODO: Remove the empty test cases after refactoring / cleanup
+
 TEST_CASE("HTTP stream works as expected") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    auto stream = std::make_shared<Stream>(Settings{
-        {"address", "www.google.com"}, {"port", 80},
-    });
-    stream->on_connect([&]() {
-        mk::debug("Connection made... sending request");
-        *stream << "GET /robots.txt HTTP/1.1\r\n"
-                << "Host: www.google.com\r\n"
-                << "Connection: close\r\n"
-                << "\r\n";
-        stream->on_flush([]() {
-            mk::debug("Request sent... waiting for response");
-        });
-        stream->on_headers_complete(
-            [&](unsigned short major, unsigned short minor, unsigned int status,
-                std::string &&reason, Headers &&headers) {
-                std::cout << "HTTP/" << major << "." << minor << " " << status
-                          << " " << reason << "\r\n";
-                for (auto &kv : headers) {
-                    std::cout << kv.first << ": " << kv.second << "\r\n";
-                }
-                std::cout << "\r\n";
-                stream->on_end([&](void) {
-                    std::cout << "\r\n";
-                    stream->close();
-                    mk::break_loop();
-                });
-                stream->on_body([&](std::string && /*chunk*/) {
-                    // std::cout << chunk;
-                });
-            });
-    });
-    mk::loop();
+    // duplicate of t/h/request.cpp's 'http::request works as expected'
 }
 
 TEST_CASE("HTTP stream is robust to EOF") {
@@ -92,63 +60,9 @@ TEST_CASE("HTTP stream is robust to EOF") {
 }
 
 TEST_CASE("HTTP stream works as expected when using Tor") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    auto stream = std::make_shared<Stream>(Settings{
-        {"address", "www.google.com"},
-        {"port", 80},
-        {"socks5_proxy", "127.0.0.1:9050"},
-    });
-    stream->set_timeout(1.0);
-    stream->on_error([&](Error e) {
-        mk::debug("Connection error: %d", (int)e);
-        stream->close();
-        mk::break_loop();
-    });
-    stream->on_connect([&]() {
-        mk::debug("Connection made... sending request");
-        *stream << "GET /robots.txt HTTP/1.1\r\n"
-                << "Host: www.google.com\r\n"
-                << "Connection: close\r\n"
-                << "\r\n";
-        stream->on_flush([]() {
-            mk::debug("Request sent... waiting for response");
-        });
-        stream->on_headers_complete(
-            [&](unsigned short major, unsigned short minor, unsigned int status,
-                std::string &&reason, Headers &&headers) {
-                std::cout << "HTTP/" << major << "." << minor << " " << status
-                          << " " << reason << "\r\n";
-                for (auto &kv : headers) {
-                    std::cout << kv.first << ": " << kv.second << "\r\n";
-                }
-                std::cout << "\r\n";
-                stream->on_end([&](void) {
-                    std::cout << "\r\n";
-                    stream->close();
-                    mk::break_loop();
-                });
-                stream->on_body([&](std::string && /*chunk*/) {
-                    // std::cout << chunk;
-                });
-            });
-    });
-    mk::loop();
+    // duplicate of t/h/request.cpp 'http::request works as expected over Tor'
 }
 
 TEST_CASE("HTTP stream receives connection errors") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    auto stream = std::make_shared<Stream>(Settings{
-        {"address", "nexa.polito.it"}, {"port", "81"},
-    });
-    stream->set_timeout(1.0);
-    stream->on_error([&](Error e) {
-        mk::debug("Connection error: %d", (int)e);
-        stream->close();
-        mk::break_loop();
-    });
-    mk::loop();
+    // duplicate of t/h/request.cpp 'http::request correctly receives errors'
 }
