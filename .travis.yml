@@ -44,7 +44,6 @@ after_failure:
       fi
 
 matrix:
-  fast_finish: true
   include:
 
     - sudo: false
@@ -82,6 +81,3 @@ matrix:
             - gcc-5
           sources:
             - ubuntu-toolchain-r-test
-
-  allow_failures:
-    - env: OS="12.04" VALGRIND=true VER=3.6 
