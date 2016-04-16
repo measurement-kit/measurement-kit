@@ -47,7 +47,7 @@ instantiating the class, you can configure it using these methods:
   that contains the domain names to be tested, one for each line.
 
 - *set_output_file_path*: optional method to set output file path, otherwise
-  a file named "report-tcp_connect-DATE.yamloo" is written into the current
+  a file named "report-tcp_connect-DATE.json" is written into the current
   working directory.
 
 - *set_verbose*: if called, this method tells the test to run in verbose

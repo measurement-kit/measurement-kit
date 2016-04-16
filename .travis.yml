@@ -4,8 +4,8 @@ install:
     - if [ "$VER" != ""  ]; then 
           export CXX="$CXX-$VER" CC="$CC-$VER"; 
       fi;
-    - ARG="-q --with-libevent=builtin --with-yaml-cpp=builtin
-           --with-boost=builtin --with-jansson=builtin
+    - ARG="-q --with-libevent=builtin
+           --with-jansson=builtin
            --with-libmaxminddb=builtin"
     - if [ "$COVERAGE" = "true" ]; then
         export CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;

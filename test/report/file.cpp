@@ -29,7 +29,7 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
         FileReporter reporter;
         reporter.test_name = "example_test";
         reporter.test_version = MEASUREMENT_KIT_VERSION;
-        reporter.filename = "example_test_report.yaml";
+        reporter.filename = "example_test_report.json";
         reporter.options = options;
         mk::utc_time_now(&reporter.test_start_time);
 
