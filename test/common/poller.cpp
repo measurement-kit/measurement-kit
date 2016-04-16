@@ -10,9 +10,9 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common.hpp>
-#include "src/common/delayed_call.hpp"
 #include "src/common/check_connectivity.hpp"
 #include "src/common/utils.hpp"
+#include "src/common/libs_impl.hpp"
 
 #include <event2/dns.h>
 
