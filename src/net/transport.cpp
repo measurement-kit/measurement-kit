@@ -63,6 +63,10 @@ ErrorOr<Var<Transport>> connect(Settings settings, Logger *lp, Poller *poller) {
 void connect(std::string address, int port,
              std::function<void(Error, Var<Transport>)> callback,
              Settings settings, Logger *logger, Poller *poller) {
+    if (settings.find("dumb_transport") != settings.end()) {
+        callback(NoError(), Var<Transport>(new Emitter(logger)));
+        return;
+    }
     if (settings.find("socks5_proxy") != settings.end()) {
         socks5_connect(address, port, settings, callback, poller, logger);
         return;
