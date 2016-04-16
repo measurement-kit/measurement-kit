@@ -14,6 +14,8 @@ using namespace mk::http;
 // TODO: for now I have just refactored former http::Client tests to use
 // instead the http::request() API, we should now remove duplicates!
 
+// TODO: these tests should go in test/http/request.cpp
+
 TEST_CASE("http::request() works as expected") {
     auto count = 0;
 
