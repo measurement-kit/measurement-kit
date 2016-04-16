@@ -72,13 +72,11 @@ src/ext/yaml-cpp/
 stamp-h1
 test-driver
 test/common/async
-test/common/delayed_call
 test/common/error_or
 test/common/funcs
 test/common/log
 test/common/poller
 test/common/settings
-test/common/socket_valid
 test/common/utils
 test/common/var
 test/dns/defines
