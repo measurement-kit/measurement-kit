@@ -52,9 +52,6 @@ class Transport {
     virtual std::string socks5_port() = 0;
 };
 
-ErrorOr<Var<Transport>> connect(Settings, Logger * = Logger::global(),
-                                Poller * = Poller::global());
-
 void connect(std::string address, int port,
              std::function<void(Error, Var<Transport>)> callback,
              Settings settings = {},
