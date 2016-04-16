@@ -156,8 +156,32 @@ typedef std::function<void(Error)> RequestSendCb;
 typedef std::function<void(Error, Var<Response>)> RequestRecvResponseCb;
 typedef std::function<void(Error, Var<Response>)> RequestSendrecvCb;
 
-void request_connect(Settings, RequestConnectCb, Poller * = Poller::global(),
-        Logger * = Logger::global());
+template<void (*do_connect)(std::string, int,
+        std::function<void(Error, Var<Transport>)>,
+        Settings, Logger *, Poller *) = net::connect>
+void request_connect(Settings settings, RequestConnectCb cb,
+        Poller *poller = Poller::global(), Logger *logger = Logger::global()) {
+    if (settings.find("url") == settings.end()) {
+        cb(MissingUrlError(), nullptr);
+        return;
+    }
+    ErrorOr<Url> url = parse_url_noexcept(settings.at("url"));
+    if (!url) {
+        cb(url.as_error(), nullptr);
+        return;
+    }
+    if (url->schema == "httpo") {
+        // tor_socks_port takes precedence because it's more specific
+        if (settings.find("tor_socks_port") != settings.end()) {
+            std::string proxy = "127.0.0.1:";
+            proxy += settings["tor_socks_port"];
+            settings["socks5_proxy"] = proxy;
+        } else if (settings.find("socks5_proxy") == settings.end()) {
+            settings["socks5_proxy"] = "127.0.0.1:9050";
+        }
+    }
+    do_connect(url->address, url->port, cb, settings, logger, poller);
+}
 
 void request_send(Var<Transport>, Settings, Headers, std::string,
         RequestSendCb);
