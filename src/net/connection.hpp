@@ -25,7 +25,6 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     ~Connection() override {}
 
-    template <MK_MOCK(bufferevent_set_timeouts)>
     void set_timeout(double timeout) override {
         timeval tv, *tvp = mk::timeval_init(&tv, timeout);
         if (bufferevent_set_timeouts(this->bev, tvp, tvp) != 0) {
@@ -37,14 +36,12 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     void do_send(Buffer data) override { data >> bufferevent_get_output(bev); }
 
-    template <MK_MOCK(bufferevent_enable)>
     void enable_read() override {
         if (bufferevent_enable(this->bev, EV_READ) != 0) {
             throw std::runtime_error("cannot enable read");
         }
     }
 
-    template <MK_MOCK(bufferevent_disable)>
     void disable_read() override {
         if (bufferevent_disable(this->bev, EV_READ) != 0) {
             throw std::runtime_error("cannot disable read");
