@@ -21,7 +21,6 @@
 *.so.*
 *.swp
 *.trs
-*.yamloo
 .DS_Store
 .deps
 .dirstamp
@@ -54,7 +53,6 @@ example/net/transport
 example/ooni/dns_injection
 example/ooni/http_invalid_request_line
 example/ooni/tcp_connect
-example_test_report.yaml
 install-sh
 libtool
 ltmain.sh
@@ -62,13 +60,11 @@ m4/*.m4
 missing
 site
 src/ext/Catch/
-src/ext/boost/
 src/ext/http-parser/
 src/ext/jansson/
 src/ext/json/
 src/ext/libevent/
 src/ext/libmaxminddb/
-src/ext/yaml-cpp/
 stamp-h1
 test-driver
 test/common/async

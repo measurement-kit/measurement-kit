@@ -96,6 +96,7 @@ MeasurementKit includes and unconditionally compiles the
 sources of the following projects:
 
 - [http-parser](https://github.com/joyent/http-parser)
+- [json](https://github.com/nlohmann/json)
 - [Catch](https://github.com/philsquared/Catch) (for tests only)
 - OpenBSD's [strtonum.c](http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/lib/libc/stdlib/strtonum.c)
 
@@ -105,10 +106,6 @@ are only conditionally compiled as explained below):
 - [libevent](https://github.com/libevent/libevent)
 - [jansson](https://github.com/akheron/jansson)
 - [libmaxminddb](https://github.com/maxmind/libmaxminddb)
-
-This project is always compiled with MeasurementKit: 
-
-- [json](https://github.com/nlohmann/json)
 
 The `./configure` script should check whether all
 the dependencies are in place and should configure the compilers
