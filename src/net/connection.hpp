@@ -5,7 +5,6 @@
 #define SRC_NET_CONNECTION_HPP
 
 #include "src/common/utils.hpp"
-#include "src/net/bufferevent.hpp"
 #include "src/net/emitter.hpp"
 #include <event2/bufferevent.h>
 #include <event2/event.h>
@@ -25,11 +24,14 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
                                Poller *poller = Poller::global(),
                                Logger *logger = Logger::global()) {
         Connection *conn = new Connection(bev, poller, logger);
-        return Var<Transport>(conn);
+        conn->self = Var<Transport>(conn);
+        return conn->self;
     }
 
     ~Connection() override {
-        // Nothing for now
+        if (bev) {
+            bufferevent_free(bev);
+        }
     }
 
     void set_timeout(double timeout) override {
@@ -61,9 +63,15 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     void handle_read_();
     void handle_write_();
 
+// Garbage collect this object when it's not used anymore
 #define safe_upcall(ptr_, method_and_args_)                                    \
     do {                                                                       \
-        ptr_->method_and_args_;                                                \
+        if (!ptr_->self.unique()) {                                            \
+            ptr_->method_and_args_;                                            \
+        }                                                                      \
+        if (ptr_->self.unique()) {                                             \
+            ptr_->poller->call_soon([ptr_]() { ptr_->self = nullptr; });       \
+        }                                                                      \
     } while (0)
     static void emit_libevent_event_(Connection *me, short what) {
         safe_upcall(me, handle_event_(what));
@@ -80,7 +88,8 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     Connection(bufferevent *bev, Poller * = Poller::global(),
                Logger * = Logger::global());
 
-    Bufferevent bev;
+    bufferevent *bev = nullptr;
+    Var<Transport> self;
     Poller *poller = Poller::global();
 };
 

@@ -65,7 +65,7 @@ void Connection::handle_event_(short what) {
 
 Connection::Connection(bufferevent *buffev, Poller *poller, Logger *logger)
         : Emitter(logger), poller(poller) {
-    this->bev.set_bufferevent(buffev);
+    bev = buffev;
 
     // The following makes this non copyable and non movable.
     bufferevent_setcb(this->bev, handle_libevent_read, handle_libevent_write,
@@ -73,7 +73,17 @@ Connection::Connection(bufferevent *buffev, Poller *poller, Logger *logger)
 }
 
 void Connection::close() {
-    this->bev.close();
+    // The objective of this function is to remove all possible self
+    // references to enable garbage collection of this transport, and
+    // to put the bufferevent into a "final" state.
+
+    on_connect(nullptr);
+    on_data(nullptr);
+    on_error(nullptr);
+    on_flush(nullptr);
+
+    disable_read();
+    bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
 }
 
 } // namespace net
