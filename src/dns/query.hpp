@@ -31,7 +31,7 @@ struct evdns_base;
 namespace mk {
 namespace dns {
 
-class QueryContext {
+class QueryContext : public NonMovable, public NonCopyable {
   public:
     ~QueryContext() {
         if (base != nullptr) {
@@ -277,20 +277,22 @@ void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
     // variable to keep track of cancelled requests.
     //
     if (dns_type == QueryTypeId::A) {
+        QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_ipv4(base, name.c_str(), DNS_QUERY_NO_SEARCH,
                     handle_resolve,
-                    new QueryContext(base, cb, message)) == nullptr) {
-            evdns_base_free(base, 1);
+                    context) == nullptr) {
+            delete context;
             cb(ResolverError(), nullptr);
         }
         return;
     }
 
     if (dns_type == QueryTypeId::AAAA) {
+        QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_ipv6(base, name.c_str(), DNS_QUERY_NO_SEARCH,
                     handle_resolve,
-                    new QueryContext(base, cb, message)) == nullptr) {
-            evdns_base_free(base, 1);
+                    context) == nullptr) {
+            delete context;
             cb(ResolverError(), nullptr);
         }
         return;
@@ -303,11 +305,11 @@ void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
             cb(InvalidIPv4AddressError(), nullptr);
             return;
         }
-
+        QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_reverse(base, &netaddr, DNS_QUERY_NO_SEARCH,
                     handle_resolve,
-                    new QueryContext(base, cb, message)) == nullptr) {
-            evdns_base_free(base, 1);
+                    context) == nullptr) {
+            delete context;
             cb(ResolverError(), nullptr);
         }
         return;
@@ -321,10 +323,11 @@ void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
             return;
         }
 
+        QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_reverse_ipv6(base, &netaddr, DNS_QUERY_NO_SEARCH,
                     handle_resolve,
-                    new QueryContext(base, cb, message)) == nullptr) {
-            evdns_base_free(base, 1);
+                    context) == nullptr) {
+            delete context;
             cb(ResolverError(), nullptr);
             return;
         }
