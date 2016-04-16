@@ -51,42 +51,38 @@ TEST_CASE("http::request works as expected") {
     mk::loop();
 }
 
-TEST_CASE("HTTP request behaves correctly when EOF indicates body END") {
-
+TEST_CASE("http::request_recv_response() behaves correctly when EOF "
+        "indicates body END") {
     auto called = 0;
 
-    //
-    // TODO: find a way to prevent a connection to nexa.polito.it when
-    // this test run, possibly creating a stub for connect() just as
-    // we created stubs for many libevent APIs.
-    //
+    loop_with_initial_event([&]() {
+        connect("nexa.polito.it", 80,
+            [&](Error err, Var<Transport> transport) {
+                REQUIRE(!err);
 
-    Request r(
-        {
-         {"url", "http://nexa.polito.it/"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.1"},
-        },
-        {
-         {"Accept", "*/*"},
-        },
-        "", [&called](Error, Response &&) { ++called; });
+                request_recv_response(transport,
+                        [&called](Error, Var<Response>) {
+                            ++called;
+                            break_loop();
+                        });
 
-    auto stream = r.get_stream();
-    auto transport = stream->get_transport();
-
-    transport->emit_connect();
-
-    Buffer data;
-    data << "HTTP/1.1 200 Ok\r\n";
-    data << "Content-Type: text/plain\r\n";
-    data << "Connection: close\r\n";
-    data << "Server: Antani/1.0.0.0\r\n";
-    data << "\r\n";
-    data << "1234567";
-    transport->emit_data(data);
-    transport->emit_error(NoError());
-
+                Buffer data;
+                data << "HTTP/1.1 200 Ok\r\n";
+                data << "Content-Type: text/plain\r\n";
+                data << "Connection: close\r\n";
+                data << "Server: Antani/1.0.0.0\r\n";
+                data << "\r\n";
+                data << "1234567";
+                transport->emit_data(data);
+                transport->emit_error(EofError());
+            },
+            {
+              // With this connect() succeeds immediately and the
+              // callback receives a dumb Emitter transport that you
+              // can drive by calling its emit_FOO() methods
+              {"dumb_transport", true}
+            });
+    });
     REQUIRE(called == 1);
 }
 
