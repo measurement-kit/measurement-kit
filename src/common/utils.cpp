@@ -25,6 +25,8 @@
 
 #include <event2/util.h>
 
+#define MEASUREMENT_KIT_SOCKET_INVALID -1
+
 namespace mk {
 
 void timeval_now(timeval *tv) {

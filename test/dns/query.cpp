@@ -8,7 +8,6 @@
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/common.hpp>
 
-#include "src/common/delayed_call.hpp"
 #include "src/common/libs_impl.hpp"
 #include "src/common/check_connectivity.hpp"
 
@@ -141,13 +140,6 @@ TEST_CASE("The system resolver works as expected") {
         return;
     }
 
-    auto failed = false;
-
-    DelayedCall d(10.0, [&](void) {
-        failed = true;
-        mk::break_loop();
-    });
-
     query("IN", "A", "www.neubot.org", [&](Error e, Message message) {
             REQUIRE(!e);
             REQUIRE(message.error_code == DNS_ERR_NONE);
@@ -227,6 +219,4 @@ TEST_CASE("The system resolver works as expected") {
             mk::break_loop();
         });
     mk::loop();
-
-    REQUIRE(!failed);
 }

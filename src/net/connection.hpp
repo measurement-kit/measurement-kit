@@ -12,7 +12,6 @@
 #include <measurement_kit/net.hpp>
 #include <stdexcept>
 #include <string.h>
-#include "src/common/delayed_call.hpp"
 #include "src/common/utils.hpp"
 #include "src/net/bufferevent.hpp"
 #include "src/net/emitter.hpp"

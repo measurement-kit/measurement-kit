@@ -14,7 +14,6 @@
 #include <measurement_kit/common/settings.hpp>  // for Settings
 #include <string>                               // for allocator, operator+
 #include <type_traits>                          // for move
-#include "src/common/delayed_call.hpp"          // for DelayedCall
 #include "src/common/libs_impl.hpp"             // for Libs
 #include "src/common/utils.hpp"                 // for utc_time_now
 #include "src/ooni/input_file_generator.hpp"    // for InputFileGenerator
@@ -30,8 +29,6 @@ class OoniTestImpl : public mk::NetTest {
     std::string report_filename;
 
     struct tm test_start_time;
-
-    DelayedCall delayed_call;
 
     void run_next_measurement(const std::function<void()> &&cb) {
         logger.debug("net_test: running next measurement");
@@ -116,7 +113,7 @@ class OoniTestImpl : public mk::NetTest {
     virtual void teardown() {}
 
     virtual void main(Settings, std::function<void(json)> &&cb) {
-        delayed_call = DelayedCall(1.25, [=](void) {
+        poller->call_later(1.25, [cb]() {
             json entry;
             cb(entry);
         });
@@ -124,7 +121,7 @@ class OoniTestImpl : public mk::NetTest {
 
     virtual void main(std::string, Settings,
                       std::function<void(json)> &&cb) {
-        delayed_call = DelayedCall(1.25, [=](void) {
+        poller->call_later(1.25, [cb]() {
             json entry;
             cb(entry);
         });
