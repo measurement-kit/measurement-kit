@@ -154,8 +154,22 @@ TEST_CASE("http::request works as expected over Tor") {
     mk::loop();
 }
 
-TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
+#define SOCKS_PORT_IS(port)                                                    \
+static void socks_port_is_ ## port(std::string, int,                           \
+        std::function<void(Error, Var<Transport>)>,                            \
+        Settings settings, Logger *, Poller *) {                               \
+    REQUIRE(settings.at("socks5_proxy") == "127.0.0.1:" # port);               \
+}
 
+static void socks_port_is_empty(std::string, int,
+        std::function<void(Error, Var<Transport>)>,
+        Settings settings, Logger *, Poller *) {
+    REQUIRE(settings.find("socks5_proxy") == settings.end());
+}
+
+SOCKS_PORT_IS(9055)
+
+TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
@@ -163,33 +177,15 @@ TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    Request r1{settings,
-               {
-                {"Accept", "*/*"},
-               },
-               "{\"test-helpers\": [\"dns\"]}",
-               [](Error, Response &&) {
-                   /* nothing */
-               }};
+    request_connect<socks_port_is_9055>(settings, nullptr);
 
     settings["url"] = "http://ooni.torproject.org/";
-    Request r2{settings,
-               {
-                {"Accept", "*/*"},
-               },
-               "{\"test-helpers\": [\"dns\"]}",
-               [](Error, Response &&) {
-                   /* nothing */
-               }};
-
-    REQUIRE(r1.socks5_address() == "127.0.0.1");
-    REQUIRE(r1.socks5_port() == "9055");
-    REQUIRE(r2.socks5_address() == "");
-    REQUIRE(r2.socks5_port() == "");
+    request_connect<socks_port_is_empty>(settings, nullptr);
 }
 
-TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
+SOCKS_PORT_IS(9999);
 
+TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
@@ -198,33 +194,13 @@ TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    Request r1{settings,
-               {
-                {"Accept", "*/*"},
-               },
-               "{\"test-helpers\": [\"dns\"]}",
-               [](Error, Response &&) {
-                   /* nothing */
-               }};
+    request_connect<socks_port_is_9999>(settings, nullptr);
 
     settings["url"] = "http://ooni.torproject.org/";
-    Request r2{settings,
-               {
-                {"Accept", "*/*"},
-               },
-               "{\"test-helpers\": [\"dns\"]}",
-               [](Error, Response &&) {
-                   /* nothing */
-               }};
-
-    REQUIRE(r1.socks5_address() == "127.0.0.1");
-    REQUIRE(r1.socks5_port() == "9999");
-    REQUIRE(r2.socks5_address() == "127.0.0.1");
-    REQUIRE(r2.socks5_port() == "9055");
+    request_connect<socks_port_is_9055>(settings, nullptr);
 }
 
 TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
-
     Settings settings{
         {"method", "POST"},
         {"http_version", "HTTP/1.1"},
@@ -232,61 +208,24 @@ TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    Request r1{settings,
-               {
-                {"Accept", "*/*"},
-               },
-               "{\"test-helpers\": [\"dns\"]}",
-               [](Error, Response &&) {
-                   /* nothing */
-               }};
+    request_connect<socks_port_is_9055>(settings, nullptr);
 
     settings["url"] = "http://ooni.torproject.org/";
-    Request r2{settings,
-               {
-                {"Accept", "*/*"},
-               },
-               "{\"test-helpers\": [\"dns\"]}",
-               [](Error, Response &&) {
-                   /* nothing */
-               }};
-
-    REQUIRE(r1.socks5_address() == "127.0.0.1");
-    REQUIRE(r1.socks5_port() == "9055");
-    REQUIRE(r2.socks5_address() == "127.0.0.1");
-    REQUIRE(r2.socks5_port() == "9055");
+    request_connect<socks_port_is_9055>(settings, nullptr);
 }
 
-TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
+SOCKS_PORT_IS(9050);
 
+TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     Settings settings{
         {"method", "POST"}, {"http_version", "HTTP/1.1"},
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    Request r1{settings,
-               {
-                {"Accept", "*/*"},
-               },
-               "{\"test-helpers\": [\"dns\"]}",
-               [](Error, Response &&) {
-                   /* nothing */
-               }};
+    request_connect<socks_port_is_9050>(settings, nullptr);
 
     settings["url"] = "http://ooni.torproject.org/";
-    Request r2{settings,
-               {
-                {"Accept", "*/*"},
-               },
-               "{\"test-helpers\": [\"dns\"]}",
-               [](Error, Response &&) {
-                   /* nothing */
-               }};
-
-    REQUIRE(r1.socks5_address() == "127.0.0.1");
-    REQUIRE(r1.socks5_port() == "9050");
-    REQUIRE(r2.socks5_address() == "");
-    REQUIRE(r2.socks5_port() == "");
+    request_connect<socks_port_is_empty>(settings, nullptr);
 }
 
 TEST_CASE("http::request() callback is called if input URL parsing fails") {
