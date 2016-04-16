@@ -7,6 +7,7 @@
 *.gcda
 *.gcno
 *.gcov
+*.json
 *.ko
 *.la
 *.lib
@@ -89,7 +90,6 @@ test/http/parse_url
 test/http/request
 test/http/request_serializer
 test/http/response_parser
-test/http/stream
 test/net/buffer
 test/net/bufferevent
 test/net/connect
