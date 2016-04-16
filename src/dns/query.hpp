@@ -305,6 +305,7 @@ void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
             cb(InvalidIPv4AddressError(), nullptr);
             return;
         }
+
         QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_reverse(base, &netaddr, DNS_QUERY_NO_SEARCH,
                     handle_resolve,
