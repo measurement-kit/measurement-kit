@@ -4,6 +4,8 @@
 #ifndef SRC_NET_SSL_CONTEXT_HPP
 #define SRC_NET_SSL_CONTEXT_HPP
 
+#include <measurement_kit/common.hpp>
+
 // Forward declarations
 struct ssl_st;
 struct ssl_ctx_st;
@@ -11,7 +13,7 @@ struct ssl_ctx_st;
 namespace mk {
 namespace net {
 
-class SslContext {
+class SslContext : public NonCopyable, public NonMovable {
   public:
     static ssl_ctx_st *get_client_context();
 
