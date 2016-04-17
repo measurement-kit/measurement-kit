@@ -5,7 +5,6 @@
 #define SRC_NET_CONNECTION_HPP
 
 #include "src/common/utils.hpp"
-#include "src/net/bufferevent.hpp"
 #include "src/net/emitter.hpp"
 #include <event2/bufferevent.h>
 #include <event2/event.h>
@@ -30,7 +29,9 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     }
 
     ~Connection() override {
-        // Nothing for now
+        if (bev != nullptr) {
+            bufferevent_free(bev);
+        }
     }
 
     void set_timeout(double timeout) override {
@@ -81,7 +82,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     Connection(bufferevent *bev, Poller * = Poller::global(),
                Logger * = Logger::global());
 
-    Bufferevent bev;
+    bufferevent *bev = nullptr;
     Var<Transport> self;
     Poller *poller = Poller::global();
     bool isclosed = false;
