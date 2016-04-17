@@ -65,7 +65,7 @@ void Connection::handle_event_(short what) {
 
 Connection::Connection(bufferevent *buffev, Poller *poller, Logger *logger)
         : Emitter(logger), poller(poller) {
-    this->bev.set_bufferevent(buffev);
+    this->bev = buffev;
 
     // The following makes this non copyable and non movable.
     bufferevent_setcb(this->bev, handle_libevent_read, handle_libevent_write,
@@ -86,7 +86,6 @@ void Connection::close(std::function<void()> cb) {
     disable_read();
 
     poller->call_soon([=]() {
-        this->bev.close();
         this->self = nullptr;
         cb();
     });
