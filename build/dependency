@@ -52,11 +52,13 @@ fi
 if [ ! -z "$pkg_tag" ]; then
     git checkout tags/$pkg_tag
 fi
-for diff in `ls ../../build/patch/$pkg_name`; do
-    cp ../../build/patch/$pkg_name/$diff .
-    git apply -v $diff
-    rm $diff
-done
+if [ -d ../../build/patch/$pkg_name ]; then
+    for diff in `ls ../../build/patch/$pkg_name`; do
+        cp ../../build/patch/$pkg_name/$diff .
+        git apply -v $diff
+        rm $diff
+    done
+fi
 if [ -x ./autogen.sh ]; then
     ./autogen.sh
 elif [ -f ./configure.ac ]; then
