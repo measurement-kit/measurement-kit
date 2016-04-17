@@ -110,8 +110,7 @@ are only conditionally compiled as explained below):
 The `./configure` script should check whether all
 the dependencies are in place and should configure the compilers
 properly. If a dependency is not found, `./configure` will
-fall back to the copy of the dependency stored under the
-`src/ext` directory.
+stop and tell you how you could install the dependency.
 
 The vanilla build process is the following:
 
