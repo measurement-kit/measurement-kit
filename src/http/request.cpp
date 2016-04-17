@@ -91,9 +91,7 @@ void request_cycle(Settings settings, Headers headers, std::string body,
         }
         request_sendrecv(transport, settings, headers, body,
                 [callback, transport](Error error, Var<Response> response) {
-                    // XXX must pass transport to callback to keep it alive
-                    // because transport has no self ownership concept
-                    transport->close([callback, error, response, transport]() {
+                    transport->close([callback, error, response]() {
                         callback(error, response);
                     });
                 },

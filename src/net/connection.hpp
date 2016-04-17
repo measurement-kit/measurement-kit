@@ -25,7 +25,8 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
                                Poller *poller = Poller::global(),
                                Logger *logger = Logger::global()) {
         Connection *conn = new Connection(bev, poller, logger);
-        return Var<Transport>(conn);
+        conn->self = Var<Transport>(conn);
+        return conn->self;
     }
 
     ~Connection() override {
@@ -81,6 +82,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
                Logger * = Logger::global());
 
     Bufferevent bev;
+    Var<Transport> self;
     Poller *poller = Poller::global();
     bool isclosed = false;
 };
