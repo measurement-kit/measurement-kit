@@ -85,9 +85,9 @@ void Connection::close(std::function<void()> cb) {
     bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
     disable_read();
 
+    close_cb = cb;
     poller->call_soon([=]() {
         this->self = nullptr;
-        cb();
     });
 }
 

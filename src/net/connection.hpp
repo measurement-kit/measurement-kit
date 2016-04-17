@@ -32,6 +32,9 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
         if (bev != nullptr) {
             bufferevent_free(bev);
         }
+        if (close_cb) {
+            close_cb();
+        }
     }
 
     void set_timeout(double timeout) override {
@@ -86,6 +89,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     Var<Transport> self;
     Poller *poller = Poller::global();
     bool isclosed = false;
+    std::function<void()> close_cb;
 };
 
 } // namespace net
