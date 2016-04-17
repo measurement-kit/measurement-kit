@@ -270,7 +270,8 @@ TEST_CASE("The system resolver works as expected") {
         REQUIRE(message.answers[0].ttl > 0);
         auto found = false;
         for (auto answer : message.answers) {
-            if (answer.ipv6 == "2001:41b8:202:deb:213:21ff:fe20:1426") {
+            if (answer.ipv6 == "2001:858:2:2:aabb::563b:1e28" or
+                answer.ipv6 == "2001:858:2:2:aabb:0:563b:1e28") {
                 found = true;
             }
         }
@@ -279,12 +280,12 @@ TEST_CASE("The system resolver works as expected") {
     });
     mk::loop();
 
-    query("IN", "REVERSE_AAAA", "2001:41b8:202:deb:213:21ff:fe20:1426",
+    query("IN", "REVERSE_AAAA", "2001:858:2:2:aabb::563b:1e28",
         [&](Error e, Message message) {
             REQUIRE(!e);
             REQUIRE(message.error_code == DNS_ERR_NONE);
             REQUIRE(message.answers.size() == 1);
-            REQUIRE(message.answers[0].hostname == "listera.torproject.org");
+            REQUIRE(message.answers[0].hostname == "nova.torproject.org");
             REQUIRE(message.rtt > 0.0);
             REQUIRE(message.answers[0].ttl > 0);
             mk::break_loop();
@@ -292,13 +293,12 @@ TEST_CASE("The system resolver works as expected") {
     mk::loop();
 
     query("IN", "PTR",
-        "6.2.4.1.0.2.e.f.f.f.1.2.3.1.2.0.b.e.d.0.2.0.2.0.8.b.1.4."
-        "1.0.0.2.ip6.arpa.",
+"8.2.e.1.b.3.6.5.0.0.0.0.b.b.a.a.2.0.0.0.2.0.0.0.8.5.8.0.1.0.0.2.ip6.arpa",
         [&](Error e, Message message) {
             REQUIRE(!e);
             REQUIRE(message.error_code == DNS_ERR_NONE);
             REQUIRE(message.answers.size() == 1);
-            REQUIRE(message.answers[0].hostname == "listera.torproject.org");
+            REQUIRE(message.answers[0].hostname == "nova.torproject.org");
             REQUIRE(message.rtt > 0.0);
             REQUIRE(message.answers[0].ttl > 0);
             mk::break_loop();
