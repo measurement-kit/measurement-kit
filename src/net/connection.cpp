@@ -72,8 +72,15 @@ Connection::Connection(bufferevent *buffev, Poller *poller, Logger *logger)
                       handle_libevent_event, this);
 }
 
-void Connection::close() {
-    this->bev.close();
+void Connection::close(std::function<void()> cb) {
+    if (isclosed) {
+        throw std::runtime_error("already closed");
+    }
+    isclosed = true;
+    poller->call_soon([=]() {
+        this->bev.close();
+        cb();
+    });
 }
 
 } // namespace net

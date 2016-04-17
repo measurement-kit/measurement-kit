@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
             transport->on_error([transport](Error) {
                 transport->on_error(nullptr);
                 transport->on_data(nullptr);
-                transport->close();
+                transport->close([](){});
             });
         });
     });

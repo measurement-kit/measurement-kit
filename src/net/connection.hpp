@@ -55,7 +55,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
         }
     }
 
-    void close() override;
+    void close(std::function<void()>) override;
 
     void handle_event_(short);
     void handle_read_();
@@ -82,6 +82,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     Bufferevent bev;
     Poller *poller = Poller::global();
+    bool isclosed = false;
 };
 
 } // namespace net

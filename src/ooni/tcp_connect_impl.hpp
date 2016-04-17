@@ -37,9 +37,13 @@ class TCPConnectImpl : public TCPTestImpl {
               std::function<void(json)> &&cb) {
         options["host"] = input;
 
-        connect(options, [this, cb](Var<net::Transport>) {
+        connect(options, [this, cb](Var<net::Transport> txp) {
             logger.debug("tcp_connect: Got response to TCP connect test");
-            cb(entry);
+            // XXX must pass `txp` to callback to keep it alive; this is
+            // because the transport has no self ownership concept...
+            txp->close([this, cb, txp]() {
+                cb(entry);
+            });
         });
     }
 };

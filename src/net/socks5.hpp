@@ -24,9 +24,9 @@ class Socks5 : public Emitter {
 
     void do_send(Buffer data) override { conn->write(data); }
 
-    void close() override {
+    void close(std::function<void()> callback) override {
         isclosed = true;
-        conn->close();
+        conn->close(callback);
     }
 
     std::string socks5_address() override { return proxy_address; }

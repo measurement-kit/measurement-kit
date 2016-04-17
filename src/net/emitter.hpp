@@ -122,7 +122,7 @@ class Emitter : public Transport {
     // Implements actual send and should be override by subclasses
     virtual void do_send(Buffer) {}
 
-    void close() override { logger->debug("emitter: close"); }
+    void close(std::function<void()>) override {}
 
     std::string socks5_address() override { return ""; }
 
