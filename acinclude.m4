@@ -28,6 +28,8 @@ AC_DEFUN([MK_AM_LIBEVENT], [
   AC_CHECK_LIB(event, event_new, [], [mk_not_found=1])
   AC_CHECK_HEADERS(event2/thread.h, [], [mk_not_found=1])
   AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [], [mk_not_found=1])
+  AC_CHECK_LIB(event_openssl, bufferevent_openssl_filter_new, [],
+               [mk_not_found=1])
 
   if test "$mk_not_found" = "1"; then
     AC_MSG_WARN([Failed to find dependency: libevent])
@@ -91,6 +93,91 @@ AC_DEFUN([MK_AM_LIBMAXMINDDB], [
     echo "    - to install on OSX: brew install libmaxminddb"
     echo "    - to compile from sources: ./build/dependency libmaxminddb"
     AC_MSG_ERROR([Please, install libmaxminddb and run configure again])
+  fi
+  echo ""
+])
+
+
+AC_DEFUN([MK_AM_OPENSSL], [
+  echo "> checking for dependency: openssl"
+
+  AC_ARG_WITH([openssl],
+              [AS_HELP_STRING([--with-openssl],
+                [SSL toolkit @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
+
+  mk_not_found=""
+  AC_CHECK_HEADERS(openssl/ssl.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(crypto, RSA_new, [], [mk_not_found=1])
+  AC_CHECK_LIB(ssl, SSL_new, [], [mk_not_found=1])
+
+  AC_MSG_CHECKING([whether OpenSSL is older than 1.0.0])
+  AC_RUN_IFELSE([
+    AC_LANG_SOURCE([
+      #include <openssl/opensslv.h>
+      #include <openssl/ssl.h>
+
+      /* Code taken from tor/src/common/crypto.h */
+
+      #define OPENSSL_VER(a,b,c,d,e)                                \
+        (((a)<<28) |                                                \
+         ((b)<<20) |                                                \
+         ((c)<<12) |                                                \
+         ((d)<< 4) |                                                \
+          (e))
+      #define OPENSSL_V_SERIES(a,b,c) OPENSSL_VER((a),(b),(c),0,0)
+
+      /* Code taken from tor/src/common/compat_openssl.h */
+
+      #if OPENSSL_VERSION_NUMBER < OPENSSL_V_SERIES(1,0,0)
+      # error "We require OpenSSL >= 1.0.0"
+      #endif
+
+      #if OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,1,0) && \
+          ! defined(LIBRESSL_VERSION_NUMBER)
+      /* We define this macro if we're trying to build with the majorly refactored
+       * API in OpenSSL 1.1 */
+      #define OPENSSL_1_1_API
+      #endif
+
+      #ifndef OPENSSL_1_1_API
+      #define OpenSSL_version_num() SSLeay()
+      #endif
+
+      int main() {
+        if (OpenSSL_version_num() != OPENSSL_VERSION_NUMBER) {
+          return 1;
+        }
+        if (OpenSSL_version_num() < OPENSSL_V_SERIES(1, 0, 0)) {
+          return 2;
+        }
+        return 0;
+      }
+    ])
+  ],
+  [AC_MSG_RESULT([yes])],
+  [
+    AC_MSG_RESULT([no])
+    if test /usr/local/Cellar/openssl; then
+      AC_MSG_WARN([MacOS ships an old system-wide OpenSSL but you seem to])
+      AC_MSG_WARN([have a new version installed with brew.])
+      AC_MSG_WARN([So, you should try adding this flag to configure:])
+      AC_MSG_WARN(['--with-openssl=/usr/local/Cellar/openssl/VERSION/'])
+    fi
+    mk_not_found=1
+  ])
+
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: openssl])
+    echo "    - to install on Debian: sudo apt-get install libssl-dev"
+    echo "    - to install on OSX: brew install openssl"
+    echo "    - to compile from sources: ./build/dependency libressl"
+    AC_MSG_ERROR([Please, install openssl and run configure again])
   fi
   echo ""
 ])
