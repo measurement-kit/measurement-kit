@@ -13,18 +13,15 @@
 extern "C" {
 
 static void handle_libevent_read(bufferevent *, void *opaque) {
-    auto conn = static_cast<mk::net::Connection *>(opaque);
-    conn->emit_libevent_read_(conn);
+    static_cast<mk::net::Connection *>(opaque)->handle_read_();
 }
 
 static void handle_libevent_write(bufferevent *, void *opaque) {
-    auto conn = static_cast<mk::net::Connection *>(opaque);
-    conn->emit_libevent_write_(conn);
+    static_cast<mk::net::Connection *>(opaque)->handle_write_();
 }
 
 static void handle_libevent_event(bufferevent *, short what, void *opaque) {
-    auto conn = static_cast<mk::net::Connection *>(opaque);
-    conn->emit_libevent_event_(conn, what);
+    static_cast<mk::net::Connection *>(opaque)->handle_event_(what);
 }
 
 } // extern "C"
@@ -85,9 +82,9 @@ void Connection::close(std::function<void()> cb) {
     bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
     disable_read();
 
+    close_cb = cb;
     poller->call_soon([=]() {
         this->self = nullptr;
-        cb();
     });
 }
 

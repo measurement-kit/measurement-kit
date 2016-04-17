@@ -32,6 +32,9 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
         if (bev != nullptr) {
             bufferevent_free(bev);
         }
+        if (close_cb) {
+            close_cb();
+        }
     }
 
     void set_timeout(double timeout) override {
@@ -63,21 +66,6 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     void handle_read_();
     void handle_write_();
 
-#define safe_upcall(ptr_, method_and_args_)                                    \
-    do {                                                                       \
-        ptr_->method_and_args_;                                                \
-    } while (0)
-    static void emit_libevent_event_(Connection *me, short what) {
-        safe_upcall(me, handle_event_(what));
-    }
-    static void emit_libevent_read_(Connection *me) {
-        safe_upcall(me, handle_read_());
-    }
-    static void emit_libevent_write_(Connection *me) {
-        safe_upcall(me, handle_write_());
-    }
-#undef safe_upcall
-
   private:
     Connection(bufferevent *bev, Poller * = Poller::global(),
                Logger * = Logger::global());
@@ -86,6 +74,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     Var<Transport> self;
     Poller *poller = Poller::global();
     bool isclosed = false;
+    std::function<void()> close_cb;
 };
 
 } // namespace net
