@@ -81,8 +81,9 @@ int main(int argc, char **argv) {
                 } else {
                     debug("* EOF");
                 }
-                tx->close();
-                break_loop();
+                tx->close([]() {
+                    break_loop();
+                });
             });
             tx->on_data([=](Buffer data) {
                 *incoming << data;

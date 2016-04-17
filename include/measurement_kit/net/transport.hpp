@@ -46,7 +46,7 @@ class Transport {
     virtual void write(std::string) = 0;
     virtual void write(Buffer) = 0;
 
-    virtual void close() = 0;
+    virtual void close(std::function<void()>) = 0;
 
     virtual std::string socks5_address() = 0;
     virtual std::string socks5_port() = 0;
