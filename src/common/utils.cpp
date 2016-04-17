@@ -90,14 +90,11 @@ void xfree(void *ptr) {
 }
 
 timeval *timeval_init(timeval *tv, double delta) {
-    debug("utils:timeval_init - enter");
     if (delta < 0) {
-        debug("utils:timeval_init - no init needed");
         return nullptr;
     }
     tv->tv_sec = (time_t)floor(delta);
     tv->tv_usec = (suseconds_t)((delta - floor(delta)) * 1000000);
-    debug("utils:timeval_init - ok");
     return tv;
 }
 

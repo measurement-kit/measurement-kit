@@ -7,6 +7,7 @@
 #include "src/net/connection.hpp"
 #include "src/net/emitter.hpp"
 #include "src/net/socks5.hpp"
+#include "src/net/ssl-context.hpp"
 
 namespace mk {
 namespace net {
@@ -28,6 +29,21 @@ void connect(std::string address, int port,
         // that also contains info on all what went wrong when connecting
         if (r.overall_error) {
             callback(r.overall_error, nullptr);
+            return;
+        }
+        if (settings.find("ssl") != settings.end()) {
+            connect_ssl(r.connected_bev, SslContext::get_client_ssl(),
+                        [=](Error err, bufferevent *bev) {
+                            if (err) {
+                                callback(err, nullptr);
+                                return;
+                            }
+                            Var<Transport> txp = Connection::make(bev,
+                                    poller, logger);
+                            txp->set_timeout(timeout);
+                            callback(NoError(), txp);
+                        },
+                        poller, logger);
             return;
         }
         Var<Transport> txp = Connection::make(r.connected_bev, poller, logger);

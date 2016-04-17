@@ -23,6 +23,7 @@
 #include <vector>
 
 struct bufferevent;
+struct ssl_st;
 
 extern "C" {
 void mk_bufferevent_on_event(bufferevent *, short, void *);
@@ -111,6 +112,11 @@ typedef std::function<void(ConnectResult)> ConnectCb;
 
 void connect(std::string hostname, int port, ConnectCb cb, double timeo = 10.0,
         Poller *poller = Poller::global(), Logger *logger = Logger::global());
+
+void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
+                 std::function<void(Error, bufferevent *)> cb,
+                 Poller * = Poller::global(),
+                 Logger * = Logger::global());
 
 } // namespace mk
 } // namespace net

@@ -47,6 +47,8 @@ void request_connect(Settings settings, RequestConnectCb cb,
         } else if (settings.find("socks5_proxy") == settings.end()) {
             settings["socks5_proxy"] = "127.0.0.1:9050";
         }
+    } else if (url->schema == "https") {
+        settings["ssl"] = true;
     }
     do_connect(url->address, url->port, cb, settings, logger, poller);
 }

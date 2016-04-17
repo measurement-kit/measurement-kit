@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
     std::string body;
     char ch;
-    std::string method;
+    std::string method = "GET";
     while ((ch = getopt(argc, argv, "b:m:v")) != -1) {
         switch (ch) {
         case 'b':

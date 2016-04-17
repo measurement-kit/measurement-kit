@@ -51,6 +51,41 @@ TEST_CASE("http::request works as expected") {
     mk::loop();
 }
 
+TEST_CASE("http::request() works using HTTPS") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    set_verbose(1);
+    loop_with_initial_event([]() {
+        request(
+            {
+                {"url", "https://didattica.polito.it/"},
+                {"method", "GET"},
+                {"http_version", "HTTP/1.1"},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "", [](Error error, Response response) {
+                if (error != 0) {
+                    std::cout << "Error: " << (int)error << "\r\n";
+                    mk::break_loop();
+                    return;
+                }
+                std::cout << "HTTP/" << response.http_major << "."
+                      << response.http_minor << " " << response.status_code
+                      << " " << response.reason << "\r\n";
+                for (auto kv : response.headers) {
+                    std::cout << kv.first << ": " << kv.second << "\r\n";
+                }
+                std::cout << "\r\n";
+                std::cout << response.body.substr(0, 128) << "\r\n";
+                std::cout << "[snip]\r\n";
+                mk::break_loop();
+            });
+    });
+}
+
 TEST_CASE("http::request_recv_response() behaves correctly when EOF "
         "indicates body END") {
     auto called = 0;
