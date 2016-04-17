@@ -75,6 +75,8 @@ gen_executables() {
 }
 
 get() {
+  echo ""
+  echo "> $3 (from github.com/$1)"
   branch=$4
   [ -z "$branch" ] && branch=master
   if [ ! -d src/ext/$3 ]; then
@@ -83,6 +85,7 @@ get() {
       (cd src/ext/$3 && git checkout $branch && git pull)
   fi
   (cd src/ext/$3 && git checkout $2)
+  echo ""
 }
 
 grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
@@ -101,13 +104,30 @@ echo "* Updating .gitignore"
 LC_ALL=C sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
 
-echo "* Fetching dependencies"
-get akheron/jansson v2.7-52-ge44b223 jansson
+echo "* Fetching dependencies that are build in any case"
 get joyent/http-parser v2.6.0 http-parser
-get measurement-kit/libevent patches-2.0 libevent patches-2.0
-get measurement-kit/libmaxminddb master libmaxminddb
 get philsquared/Catch v1.2.1 Catch
 get nlohmann/json v1.1.0 json v1.1.0
 
 echo "* Running 'autoreconf -i'"
 autoreconf -i
+
+echo "=== autogen.sh complete ==="
+echo ""
+echo "MeasurementKit is now ready to be compiled. To proceed you shall run"
+echo "now the './configure' script that adapts the build to your system."
+echo ""
+echo "The './configure' script shall also check for external dependencies. "
+echo "MeasurementKit external dependencies are:"
+echo ""
+for depname in `ls build/spec/|grep -v all`; do
+    echo "    - $depname"
+done
+echo ""
+echo "If any of these dependencies is missing, the './configure' script shall"
+echo "stop and tell you how you could install it. Note that you can compile"
+echo "any of these dependencies using the './build/dependency' script'. So, to"
+echo "install e.g. libevent, type:"
+echo ""
+echo "./build/dependency libevent"
+echo ""

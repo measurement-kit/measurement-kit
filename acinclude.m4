@@ -2,7 +2,6 @@ dnl Part of measurement-kit <https://measurement-kit.github.io/>.
 dnl Measurement-kit is free software. See AUTHORS and LICENSE for more
 dnl information on the copying conditions.
 
-
 AC_DEFUN([MK_AM_ENABLE_EXAMPLES], [
 AC_ARG_ENABLE([examples],
     AS_HELP_STRING([--disable-examples, skip building of examples programs]),
@@ -12,118 +11,88 @@ AM_CONDITIONAL([BUILD_EXAMPLES], [test "$enable_examples" = "yes"])
 
 
 AC_DEFUN([MK_AM_LIBEVENT], [
-measurement_kit_libevent_path=
+  echo "> checking for dependency: libevent"
 
-AC_ARG_WITH([libevent],
-            [AS_HELP_STRING([--with-libevent],
-             [event I/O library @<:@default=check@:>@])
-            ], [
-              measurement_kit_libevent_path=$withval
-              if test "$withval"x != "builtin"x; then
-                  CPPFLAGS="$CPPFLAGS -I$withval/include"
-                  LDFLAGS="$LDFLAGS -L$withval/lib"
-              fi
-            ], [])
+  AC_ARG_WITH([libevent],
+              [AS_HELP_STRING([--with-libevent],
+                [event I/O library @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
 
-if test "$measurement_kit_libevent_path"x != "builtin"x; then
-    AC_CHECK_HEADERS(event2/event.h, [],
-      [measurement_kit_libevent_path=builtin])
+  mk_not_found=""
+  AC_CHECK_HEADERS(event2/event.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(event, event_new, [], [mk_not_found=1])
+  AC_CHECK_HEADERS(event2/thread.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [], [mk_not_found=1])
 
-    AC_CHECK_LIB(event, event_new, [],
-      [measurement_kit_libevent_path=builtin])
-
-    AC_CHECK_HEADERS(event2/thread.h, [],
-      [measurement_kit_libevent_path=builtin])
-
-    AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [],
-      [measurement_kit_libevent_path=builtin])
-
-    if test "$measurement_kit_libevent_path"x = "builtin"x; then
-       AC_MSG_WARN([No libevent found: will use the builtin libevent])
-    fi
-fi
-
-if test "$measurement_kit_libevent_path"x = "builtin"x; then
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/libevent/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_builddir)/src/ext/libevent/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libevent -levent -levent_pthreads"
-    AC_CONFIG_SUBDIRS([src/ext/libevent])
-fi
-
-AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
-    [test "$measurement_kit_libevent_path"x = "builtin"x])
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: libevent])
+    echo "    - to install on Debian: sudo apt-get install libevent-dev"
+    echo "    - to install on OSX: brew install libevent"
+    echo "    - to compile from sources: ./build/dependency libevent"
+    AC_MSG_ERROR([Please, install libevent and run configure again])
+  fi
+  echo ""
 ])
 
 
 AC_DEFUN([MK_AM_JANSSON], [
-measurement_kit_jansson_path=
+  echo "> checking for dependency: jansson"
 
-AC_ARG_WITH([jansson],
-            [AS_HELP_STRING([--with-jansson],
-             [JSON library @<:@default=check@:>@]) ], [
-              measurement_kit_jansson_path=$withval
-              if test "$withval"x != "builtin"x; then
-                  CPPFLAGS="$CPPFLAGS -I$withval/include"
-                  LDFLAGS="$LDFLAGS -L$withval/lib"
-              fi
-            ], [])
+  AC_ARG_WITH([jansson],
+              [AS_HELP_STRING([--with-jansson],
+                [JSON library @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
 
-if test "$measurement_kit_jansson_path"x != "builtin"x; then
-    AC_CHECK_HEADERS(jansson.h, [],
-      [measurement_kit_jansson_path=builtin])
+  mk_not_found=""
+  AC_CHECK_HEADERS(jansson.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(jansson, json_null, [], [mk_not_found=1])
 
-    AC_CHECK_LIB(jansson, json_null, [],
-      [measurement_kit_jansson_path=builtin])
-
-    if test "$measurement_kit_jansson_path"x = "builtin"x; then
-       AC_MSG_WARN([No jansson found: will use the builtin jansson])
-    fi
-fi
-
-if test "$measurement_kit_jansson_path"x = "builtin"x; then
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/jansson/src"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/jansson/src -ljansson"
-    AC_CONFIG_SUBDIRS([src/ext/jansson])
-fi
-
-AM_CONDITIONAL([USE_BUILTIN_JANSSON],
-    [test "$measurement_kit_jansson_path"x = "builtin"x])
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: jansson])
+    echo "    - to install on Debian: sudo apt-get install libjansson-dev"
+    echo "    - to install on OSX: brew install jansson"
+    echo "    - to compile from sources: ./build/dependency jansson"
+    AC_MSG_ERROR([Please, install jansson and run configure again])
+  fi
+  echo ""
 ])
 
 
 AC_DEFUN([MK_AM_LIBMAXMINDDB], [
-measurement_kit_libmaxminddb_path=
+  echo "> checking for dependency: libmaxminddb"
 
-AC_ARG_WITH([libmaxminddb],
-            [AS_HELP_STRING([--with-libmaxminddb],
-             [GeoIP library @<:@default=check@:>@]) ], [
-              measurement_kit_libmaxminddb_path=$withval
-              if test "$withval"x != "builtin"x; then
-                  CPPFLAGS="$CPPFLAGS -I$withval/include"
-                  LDFLAGS="$LDFLAGS -L$withval/lib"
-              fi
-            ], [])
+  AC_ARG_WITH([libmaxminddb],
+              [AS_HELP_STRING([--with-libmaxminddb],
+                [GeoIP library @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
 
-if test "$measurement_kit_libmaxminddb_path"x != "builtin"x; then
-    AC_CHECK_HEADERS(maxminddb.h, [],
-      [measurement_kit_libmaxminddb_path=builtin])
+  mk_not_found=""
+  AC_CHECK_HEADERS(maxminddb.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(maxminddb, MMDB_open, [], [mk_not_found=1])
 
-    AC_CHECK_LIB(maxminddb, MMDB_open, [],
-      [measurement_kit_libmaxminddb_path=builtin])
-
-    if test "$measurement_kit_libmaxminddb_path"x = "builtin"x; then
-       AC_MSG_WARN([No libmaxminddb found: will use the builtin libmaxminddb])
-    fi
-fi
-
-if test "$measurement_kit_libmaxminddb_path"x = "builtin"x; then
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/libmaxminddb/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libmaxminddb/src -lmaxminddb"
-    AC_CONFIG_SUBDIRS([src/ext/libmaxminddb])
-fi
-
-AM_CONDITIONAL([USE_BUILTIN_LIBMAXMINDDB],
-    [test "$measurement_kit_libmaxminddb_path"x = "builtin"x])
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: libmaxminddb])
+    echo "    - to install on Debian: sudo apt-get install libmaxminddb-dev"
+    echo "    - to install on OSX: brew install libmaxminddb"
+    echo "    - to compile from sources: ./build/dependency libmaxminddb"
+    AC_MSG_ERROR([Please, install libmaxminddb and run configure again])
+  fi
+  echo ""
 ])
 
 
