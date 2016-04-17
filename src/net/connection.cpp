@@ -77,6 +77,14 @@ void Connection::close(std::function<void()> cb) {
         throw std::runtime_error("already closed");
     }
     isclosed = true;
+
+    on_connect(nullptr);
+    on_data(nullptr);
+    on_flush(nullptr);
+    on_error(nullptr);
+    bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
+    disable_read();
+
     poller->call_soon([=]() {
         this->bev.close();
         this->self = nullptr;
