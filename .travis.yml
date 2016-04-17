@@ -4,7 +4,7 @@ install:
     - if [ "$VER" != ""  ]; then 
           export CXX="$CXX-$VER" CC="$CC-$VER"; 
       fi;
-    - ARG="-q --with-libevent=builtin
+    - ARG="-q
            --with-jansson=builtin
            --with-libmaxminddb=builtin"
     - if [ "$COVERAGE" = "true" ]; then
