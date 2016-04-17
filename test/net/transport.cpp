@@ -47,6 +47,20 @@ TEST_CASE("net::connect() can connect to open port") {
     });
 }
 
+TEST_CASE("net::connect() can connect to SSL port") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    set_verbose(1);
+    loop_with_initial_event([]() {
+        connect("nexa.polito.it", 443, [](Error error, Var<Transport> txp) {
+            REQUIRE(!error);
+            txp->close([]() { break_loop(); });
+        },
+        {{"ssl", true}});
+    });
+}
+
 TEST_CASE("net::connect() works in case of error") {
     if (CheckConnectivity::is_down()) {
         return;

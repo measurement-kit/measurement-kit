@@ -16,7 +16,7 @@ using namespace mk;
 using namespace mk::net;
 
 static const char *kv_usage =
-        "usage: ./example/net/transport [-v] [-P address:port] url\n";
+        "usage: ./example/net/transport [-Sv] [-P address:port] url\n";
 
 static void print_line(std::string line) {
     std::string s;
@@ -33,10 +33,13 @@ int main(int argc, char **argv) {
 
     Settings settings;
     char ch;
-    while ((ch = getopt(argc, argv, "P:v")) != -1) {
+    while ((ch = getopt(argc, argv, "P:Sv")) != -1) {
         switch (ch) {
         case 'P':
             settings["socks5_proxy"] = optarg;
+            break;
+        case 'S':
+            settings["ssl"] = true;
             break;
         case 'v':
             set_verbose(1);

@@ -72,7 +72,7 @@ void query(std::string tool, std::function<void(Error, Reply)> callback,
         callback(query.as_error(), Reply());
         return;
     }
-    std::string url = "http://mlab-ns.appspot.com/";
+    std::string url = "https://mlab-ns.appspot.com/";
     std::regex valid_tool("^[a-z]+$");
     if (!std::regex_match(tool, valid_tool)) {
         callback(InvalidToolNameError(), Reply());

@@ -27,6 +27,8 @@ Url parse_url(std::string url) {
                                 url_parser.field_data[UF_HOST].len);
     if ((url_parser.field_set & (1 << UF_PORT)) != 0) {
         retval.port = url_parser.port;
+    } else if (retval.schema == "https") {
+        retval.port = 443;
     }
     if ((url_parser.field_set & (1 << UF_PATH)) != 0) {
         retval.path = url.substr(url_parser.field_data[UF_PATH].off,
