@@ -23,8 +23,12 @@ TEST_CASE("net::connect() works with a custom poller") {
     set_verbose(1);
     Poller poller;
     auto ok = false;
-    connect("nexa.polito.it", 22, [&](Error, Var<Transport>) {
-        poller.break_loop();
+    connect("nexa.polito.it", 22, [&](Error error, Var<Transport> txp) {
+        if (error) {
+            poller.break_loop();
+            return;
+        }
+        txp->close([&]() { poller.break_loop(); });
         ok = true;
     }, {}, Logger::global(), &poller);
     poller.loop();
@@ -36,9 +40,9 @@ TEST_CASE("net::connect() can connect to open port") {
         return;
     }
     loop_with_initial_event([]() {
-        connect("www.kernel.org", 80, [](Error error, Var<Transport>) {
+        connect("www.kernel.org", 80, [](Error error, Var<Transport> txp) {
             REQUIRE(!error);
-            break_loop();
+            txp->close([]() { break_loop(); });
         });
     });
 }

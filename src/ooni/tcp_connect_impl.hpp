@@ -39,9 +39,7 @@ class TCPConnectImpl : public TCPTestImpl {
 
         connect(options, [this, cb](Var<net::Transport> txp) {
             logger.debug("tcp_connect: Got response to TCP connect test");
-            // XXX must pass `txp` to callback to keep it alive; this is
-            // because the transport has no self ownership concept...
-            txp->close([this, cb, txp]() {
+            txp->close([this, cb]() {
                 cb(entry);
             });
         });

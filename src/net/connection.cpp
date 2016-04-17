@@ -79,6 +79,7 @@ void Connection::close(std::function<void()> cb) {
     isclosed = true;
     poller->call_soon([=]() {
         this->bev.close();
+        this->self = nullptr;
         cb();
     });
 }

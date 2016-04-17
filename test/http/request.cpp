@@ -247,7 +247,7 @@ TEST_CASE("http::request_connect() works for normal connections") {
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
             REQUIRE(static_cast<bool>(transport));
-            break_loop();
+            transport->close([]() { break_loop(); });
         });
     });
 }
@@ -264,9 +264,9 @@ TEST_CASE("http::request_send() works as expected") {
             request_send(transport, {
                 {"method", "GET"},
                 {"url", "http://www.google.com/"},
-            }, {}, "", [](Error error) {
+            }, {}, "", [transport](Error error) {
                 REQUIRE(!error);
-                break_loop();
+                transport->close([]() { break_loop(); });
             });
         });
     });
@@ -290,11 +290,12 @@ TEST_CASE("http::request_recv_response() works as expected") {
                 {"url", "http://www.google.com/"},
             }, {}, "", [transport](Error error) {
                 REQUIRE(!error);
-                request_recv_response(transport, [](Error e, Var<Response> r) {
+                request_recv_response(transport,
+                        [transport](Error e, Var<Response> r) {
                     REQUIRE(!e);
                     REQUIRE(status_code_ok(r->status_code));
                     REQUIRE(r->body.size() > 0);
-                    break_loop();
+                    transport->close([]() { break_loop(); });
                 });
             });
         });
@@ -317,7 +318,7 @@ TEST_CASE("http::request_sendrecv() works as expected") {
                 REQUIRE(!error);
                 REQUIRE(status_code_ok(r->status_code));
                 REQUIRE(r->body.size() > 0);
-                break_loop();
+                transport->close([]() { break_loop(); });
             });
         });
     });
@@ -346,7 +347,7 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
                     REQUIRE(!error);
                     REQUIRE(r->status_code == 200);
                     REQUIRE(r->body.size() > 0);
-                    break_loop();
+                    transport->close([]() { break_loop(); });
                 });
             });
         });
@@ -450,9 +451,9 @@ TEST_CASE("http::request_send fails without url in settings") {
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
             request_send(transport, 
-                {{"method", "GET"}}, {}, "", [](Error error) {
+                {{"method", "GET"}}, {}, "", [transport](Error error) {
                 REQUIRE(error == MissingUrlError());
-                break_loop();
+                transport->close([]() { break_loop(); });
             });
         });
     });
