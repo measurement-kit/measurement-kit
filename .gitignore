@@ -7,6 +7,7 @@
 *.gcda
 *.gcno
 *.gcov
+*.json
 *.ko
 *.la
 *.lib
@@ -20,7 +21,6 @@
 *.so.*
 *.swp
 *.trs
-*.yamloo
 .DS_Store
 .deps
 .dirstamp
@@ -53,7 +53,6 @@ example/net/transport
 example/ooni/dns_injection
 example/ooni/http_invalid_request_line
 example/ooni/tcp_connect
-example_test_report.yaml
 install-sh
 libtool
 ltmain.sh
@@ -61,23 +60,19 @@ m4/*.m4
 missing
 site
 src/ext/Catch/
-src/ext/boost/
 src/ext/http-parser/
 src/ext/jansson/
 src/ext/json/
 src/ext/libevent/
 src/ext/libmaxminddb/
-src/ext/yaml-cpp/
 stamp-h1
 test-driver
 test/common/async
-test/common/delayed_call
 test/common/error_or
 test/common/funcs
 test/common/log
 test/common/poller
 test/common/settings
-test/common/socket_valid
 test/common/utils
 test/common/var
 test/dns/defines
@@ -89,9 +84,7 @@ test/http/parse_url
 test/http/request
 test/http/request_serializer
 test/http/response_parser
-test/http/stream
 test/net/buffer
-test/net/bufferevent
 test/net/connect
 test/net/connect-many
 test/net/connection

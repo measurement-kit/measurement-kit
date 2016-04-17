@@ -9,30 +9,6 @@ namespace http {
 
 using namespace mk::net;
 
-void request_connect(Settings settings, RequestConnectCb cb,
-        Poller *poller, Logger *logger) {
-    if (settings.find("url") == settings.end()) {
-        cb(MissingUrlError(), nullptr);
-        return;
-    }
-    ErrorOr<Url> url = parse_url_noexcept(settings.at("url"));
-    if (!url) {
-        cb(url.as_error(), nullptr);
-        return;
-    }
-    if (url->schema == "httpo") {
-        // tor_socks_port takes precedence because it's more specific
-        if (settings.find("tor_socks_port") != settings.end()) {
-            std::string proxy = "127.0.0.1:";
-            proxy += settings["tor_socks_port"];
-            settings["socks5_proxy"] = proxy;
-        } else if (settings.find("socks5_proxy") == settings.end()) {
-            settings["socks5_proxy"] = "127.0.0.1:9050";
-        }
-    }
-    connect(url->address, url->port, cb, settings, logger, poller);
-}
-
 void request_send(Var<Transport> transport, Settings settings, Headers headers,
         std::string body, RequestSendCb callback) {
     RequestSerializer serializer;
@@ -84,12 +60,12 @@ void request_recv_response(Var<Transport> transport, RequestRecvResponseCb cb,
             *prevent_emit = true;
             parser->eof();
         }
-        cb(err, response);
+        // TODO: make sure we remove all cycles
         transport->on_error(nullptr);
         transport->on_data(nullptr);
         poller->call_soon([=]() {
             logger->debug("request_recv_response: end of closure");
-            // TODO: make sure we remove all cycles
+            cb(err, response);
         });
     });
 }
@@ -113,7 +89,12 @@ void request_cycle(Settings settings, Headers headers, std::string body,
             callback(err, nullptr);
             return;
         }
-        request_sendrecv(transport, settings, headers, body, callback,
+        request_sendrecv(transport, settings, headers, body,
+                [callback, transport](Error error, Var<Response> response) {
+                    transport->close([callback, error, response]() {
+                        callback(error, response);
+                    });
+                },
                 poller, logger);
     }, poller, logger);
 }

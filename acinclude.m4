@@ -2,7 +2,6 @@ dnl Part of measurement-kit <https://measurement-kit.github.io/>.
 dnl Measurement-kit is free software. See AUTHORS and LICENSE for more
 dnl information on the copying conditions.
 
-
 AC_DEFUN([MK_AM_ENABLE_EXAMPLES], [
 AC_ARG_ENABLE([examples],
     AS_HELP_STRING([--disable-examples, skip building of examples programs]),
@@ -12,246 +11,175 @@ AM_CONDITIONAL([BUILD_EXAMPLES], [test "$enable_examples" = "yes"])
 
 
 AC_DEFUN([MK_AM_LIBEVENT], [
-measurement_kit_libevent_path=
+  echo "> checking for dependency: libevent"
 
-AC_ARG_WITH([libevent],
-            [AS_HELP_STRING([--with-libevent],
-             [event I/O library @<:@default=check@:>@])
-            ], [
-              measurement_kit_libevent_path=$withval
-              if test "$withval"x != "builtin"x; then
-                  CPPFLAGS="$CPPFLAGS -I$withval/include"
-                  LDFLAGS="$LDFLAGS -L$withval/lib"
-              fi
-            ], [])
+  AC_ARG_WITH([libevent],
+              [AS_HELP_STRING([--with-libevent],
+                [event I/O library @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
 
-if test "$measurement_kit_libevent_path"x != "builtin"x; then
-    AC_CHECK_HEADERS(event2/event.h, [],
-      [measurement_kit_libevent_path=builtin])
+  mk_not_found=""
+  AC_CHECK_HEADERS(event2/event.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(event, event_new, [], [mk_not_found=1])
+  AC_CHECK_HEADERS(event2/thread.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [], [mk_not_found=1])
+  AC_CHECK_LIB(event_openssl, bufferevent_openssl_filter_new, [],
+               [mk_not_found=1])
 
-    AC_CHECK_LIB(event, event_new, [],
-      [measurement_kit_libevent_path=builtin])
-
-    AC_CHECK_HEADERS(event2/thread.h, [],
-      [measurement_kit_libevent_path=builtin])
-
-    AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [],
-      [measurement_kit_libevent_path=builtin])
-
-    if test "$measurement_kit_libevent_path"x = "builtin"x; then
-       AC_MSG_WARN([No libevent found: will use the builtin libevent])
-    fi
-fi
-
-if test "$measurement_kit_libevent_path"x = "builtin"x; then
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/libevent/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_builddir)/src/ext/libevent/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libevent -levent -levent_pthreads"
-    AC_CONFIG_SUBDIRS([src/ext/libevent])
-fi
-
-AM_CONDITIONAL([USE_BUILTIN_LIBEVENT],
-    [test "$measurement_kit_libevent_path"x = "builtin"x])
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: libevent])
+    echo "    - to install on Debian: sudo apt-get install libevent-dev"
+    echo "    - to install on OSX: brew install libevent"
+    echo "    - to compile from sources: ./build/dependency libevent"
+    AC_MSG_ERROR([Please, install libevent and run configure again])
+  fi
+  echo ""
 ])
 
 
 AC_DEFUN([MK_AM_JANSSON], [
-measurement_kit_jansson_path=
+  echo "> checking for dependency: jansson"
 
-AC_ARG_WITH([jansson],
-            [AS_HELP_STRING([--with-jansson],
-             [JSON library @<:@default=check@:>@]) ], [
-              measurement_kit_jansson_path=$withval
-              if test "$withval"x != "builtin"x; then
-                  CPPFLAGS="$CPPFLAGS -I$withval/include"
-                  LDFLAGS="$LDFLAGS -L$withval/lib"
-              fi
-            ], [])
+  AC_ARG_WITH([jansson],
+              [AS_HELP_STRING([--with-jansson],
+                [JSON library @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
 
-if test "$measurement_kit_jansson_path"x != "builtin"x; then
-    AC_CHECK_HEADERS(jansson.h, [],
-      [measurement_kit_jansson_path=builtin])
+  mk_not_found=""
+  AC_CHECK_HEADERS(jansson.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(jansson, json_null, [], [mk_not_found=1])
 
-    AC_CHECK_LIB(jansson, json_null, [],
-      [measurement_kit_jansson_path=builtin])
-
-    if test "$measurement_kit_jansson_path"x = "builtin"x; then
-       AC_MSG_WARN([No jansson found: will use the builtin jansson])
-    fi
-fi
-
-if test "$measurement_kit_jansson_path"x = "builtin"x; then
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/jansson/src"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/jansson/src -ljansson"
-    AC_CONFIG_SUBDIRS([src/ext/jansson])
-fi
-
-AM_CONDITIONAL([USE_BUILTIN_JANSSON],
-    [test "$measurement_kit_jansson_path"x = "builtin"x])
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: jansson])
+    echo "    - to install on Debian: sudo apt-get install libjansson-dev"
+    echo "    - to install on OSX: brew install jansson"
+    echo "    - to compile from sources: ./build/dependency jansson"
+    AC_MSG_ERROR([Please, install jansson and run configure again])
+  fi
+  echo ""
 ])
 
 
 AC_DEFUN([MK_AM_LIBMAXMINDDB], [
-measurement_kit_libmaxminddb_path=
+  echo "> checking for dependency: libmaxminddb"
 
-AC_ARG_WITH([libmaxminddb],
-            [AS_HELP_STRING([--with-libmaxminddb],
-             [GeoIP library @<:@default=check@:>@]) ], [
-              measurement_kit_libmaxminddb_path=$withval
-              if test "$withval"x != "builtin"x; then
-                  CPPFLAGS="$CPPFLAGS -I$withval/include"
-                  LDFLAGS="$LDFLAGS -L$withval/lib"
-              fi
-            ], [])
+  AC_ARG_WITH([libmaxminddb],
+              [AS_HELP_STRING([--with-libmaxminddb],
+                [GeoIP library @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
 
-if test "$measurement_kit_libmaxminddb_path"x != "builtin"x; then
-    AC_CHECK_HEADERS(maxminddb.h, [],
-      [measurement_kit_libmaxminddb_path=builtin])
+  mk_not_found=""
+  AC_CHECK_HEADERS(maxminddb.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(maxminddb, MMDB_open, [], [mk_not_found=1])
 
-    AC_CHECK_LIB(maxminddb, MMDB_open, [],
-      [measurement_kit_libmaxminddb_path=builtin])
-
-    if test "$measurement_kit_libmaxminddb_path"x = "builtin"x; then
-       AC_MSG_WARN([No libmaxminddb found: will use the builtin libmaxminddb])
-    fi
-fi
-
-if test "$measurement_kit_libmaxminddb_path"x = "builtin"x; then
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/libmaxminddb/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/libmaxminddb/src -lmaxminddb"
-    AC_CONFIG_SUBDIRS([src/ext/libmaxminddb])
-fi
-
-AM_CONDITIONAL([USE_BUILTIN_LIBMAXMINDDB],
-    [test "$measurement_kit_libmaxminddb_path"x = "builtin"x])
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: libmaxminddb])
+    echo "    - to install on Debian: sudo apt-get install libmaxminddb-dev"
+    echo "    - to install on OSX: brew install libmaxminddb"
+    echo "    - to compile from sources: ./build/dependency libmaxminddb"
+    AC_MSG_ERROR([Please, install libmaxminddb and run configure again])
+  fi
+  echo ""
 ])
 
 
-AC_DEFUN([MK_AM_BOOST], [
-# Step 1: process --with-boost and set measurement_kit_boost_path accordingly
-measurement_kit_boost_path=
-AC_ARG_WITH([boost],
-            [AS_HELP_STRING([--with-boost],
-             [Quasi-standard C++ libraries @<:@default=check@:>@])
-            ], [
-              measurement_kit_boost_path=$withval
-            ], [])
+AC_DEFUN([MK_AM_OPENSSL], [
+  echo "> checking for dependency: openssl"
 
-# Step 2: if not builtin, check whether we can use $measurement_kit_boost_path
-if test "$measurement_kit_boost_path"x != "builtin"x; then
+  AC_ARG_WITH([openssl],
+              [AS_HELP_STRING([--with-openssl],
+                [SSL toolkit @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
 
-    # Step 2.1: backup {CPP,LD}FLAGS and eventually augment them
-    measurement_kit_saved_cppflags="$CPPFLAGS"
-    if test "$measurement_kit_boost_path"x != ""x; then
-        CPPFLAGS="$CPPFLAGS -I ${measurement_kit_boost_path}/include"
+  mk_not_found=""
+  AC_CHECK_HEADERS(openssl/ssl.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(crypto, RSA_new, [], [mk_not_found=1])
+  AC_CHECK_LIB(ssl, SSL_new, [], [mk_not_found=1])
+
+  AC_MSG_CHECKING([whether OpenSSL is older than 1.0.0])
+  AC_RUN_IFELSE([
+    AC_LANG_SOURCE([
+      #include <openssl/opensslv.h>
+      #include <openssl/ssl.h>
+
+      /* Code taken from tor/src/common/crypto.h */
+
+      #define OPENSSL_VER(a,b,c,d,e)                                \
+        (((a)<<28) |                                                \
+         ((b)<<20) |                                                \
+         ((c)<<12) |                                                \
+         ((d)<< 4) |                                                \
+          (e))
+      #define OPENSSL_V_SERIES(a,b,c) OPENSSL_VER((a),(b),(c),0,0)
+
+      /* Code taken from tor/src/common/compat_openssl.h */
+
+      #if OPENSSL_VERSION_NUMBER < OPENSSL_V_SERIES(1,0,0)
+      # error "We require OpenSSL >= 1.0.0"
+      #endif
+
+      #if OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,1,0) && \
+          ! defined(LIBRESSL_VERSION_NUMBER)
+      /* We define this macro if we're trying to build with the majorly refactored
+       * API in OpenSSL 1.1 */
+      #define OPENSSL_1_1_API
+      #endif
+
+      #ifndef OPENSSL_1_1_API
+      #define OpenSSL_version_num() SSLeay()
+      #endif
+
+      int main() {
+        if (OpenSSL_version_num() != OPENSSL_VERSION_NUMBER) {
+          return 1;
+        }
+        if (OpenSSL_version_num() < OPENSSL_V_SERIES(1, 0, 0)) {
+          return 2;
+        }
+        return 0;
+      }
+    ])
+  ],
+  [AC_MSG_RESULT([yes])],
+  [
+    AC_MSG_RESULT([no])
+    if test /usr/local/Cellar/openssl; then
+      AC_MSG_WARN([MacOS ships an old system-wide OpenSSL but you seem to])
+      AC_MSG_WARN([have a new version installed with brew.])
+      AC_MSG_WARN([So, you should try adding this flag to configure:])
+      AC_MSG_WARN(['--with-openssl=/usr/local/Cellar/openssl/VERSION/'])
     fi
+    mk_not_found=1
+  ])
 
-    AC_LANG_PUSH([C++])
-
-    # Step 2.2: could we reach boost header neded by yaml-cpp 0.5.1?
-    AC_CHECK_HEADERS(boost/iterator/iterator_adaptor.hpp, [],
-      [measurement_kit_boost_path=builtin])
-    AC_CHECK_HEADERS(boost/iterator/iterator_facade.hpp, [],
-      [measurement_kit_boost_path=builtin])
-    AC_CHECK_HEADERS(boost/noncopyable.hpp, [],
-      [measurement_kit_boost_path=builtin])
-    AC_CHECK_HEADERS(boost/shared_ptr.hpp, [],
-      [measurement_kit_boost_path=builtin])
-    AC_CHECK_HEADERS(boost/smart_ptr/shared_ptr.hpp, [],
-      [measurement_kit_boost_path=builtin])
-    AC_CHECK_HEADERS(boost/type_traits.hpp, [],
-      [measurement_kit_boost_path=builtin])
-    AC_CHECK_HEADERS(boost/utility/enable_if.hpp, [],
-      [measurement_kit_boost_path=builtin])
-    AC_CHECK_HEADERS(boost/utility.hpp, [],
-      [measurement_kit_boost_path=builtin])
-
-    AC_LANG_POP([C++])
-
-    # Step 2.4: restore {CPP,LD}FLAGS if we have failed
-    if test "$measurement_kit_boost_path"x = "builtin"x; then
-       CPPFLAGS=$measurement_kit_saved_cppflags
-    fi
-fi
-
-# Step 3: if needed, prepare to include our own boost
-if test "$measurement_kit_boost_path"x = "builtin"x; then
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/assert/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/config/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/core/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/detail/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/iterator/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/mpl/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/predef/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/preprocessor/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/smart_ptr/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/static_assert/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/throw_exception/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/type_traits/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/typeof/include"
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/boost/utility/include"
-fi
-])
-
-
-AC_DEFUN([MK_AM_YAML_CPP], [
-# Step 1: process --with-yaml-cpp and set measurement_kit_yamlcpp_path accordingly
-measurement_kit_yamlcpp_path=
-AC_ARG_WITH([yaml-cpp],
-            [AS_HELP_STRING([--with-yaml-cpp],
-             [Library for managing YAML @<:@default=check@:>@])
-            ], [
-              measurement_kit_yamlcpp_path=$withval
-            ], [])
-
-# Step 2: if not builtin, check whether we can use $measurement_kit_yamlcpp_path
-if test "$measurement_kit_yamlcpp_path"x != "builtin"x; then
-
-    # Step 2.1: backup {CPP,LD}FLAGS and eventually augment them
-    measurement_kit_saved_cppflags="$CPPFLAGS"
-    measurement_kit_saved_ldflags="$LDFLAGS"
-    if test "$measurement_kit_yamlcpp_path"x != ""x; then
-        CPPFLAGS="$CPPFLAGS -I ${measurement_kit_yamlcpp_path}/include"
-        LDFLAGS="$LDFLAGS -L$measurement_kit_yamlcpp_path/lib"
-    fi
-    LDFLAGS="$LDFLAGS -lyaml-cpp"
-
-    AC_LANG_PUSH([C++])
-
-    # Step 2.2: could we reach yaml-cpp header?
-    AC_CHECK_HEADERS(yaml-cpp/yaml.h, [],
-      [measurement_kit_yamlcpp_path=builtin])
-
-    # Step 2.3: could we link with yaml-cpp?
-    AC_MSG_CHECKING([whether we can link with yaml-cpp])
-    AC_COMPILE_IFELSE([
-      AC_LANG_PROGRAM(
-        [[#include <yaml-cpp/yaml.h>], [YAML::Node node;]]
-      )],
-      [AC_MSG_RESULT([yes])]
-      [],
-      [
-        AC_MSG_RESULT([no])
-        measurement_kit_yamlcpp_path="builtin"
-      ])
-
-    AC_LANG_POP([C++])
-
-    # Step 2.4: restore {CPP,LD}FLAGS if we have failed
-    if test "$measurement_kit_yamlcpp_path"x = "builtin"x; then
-       AC_MSG_WARN([No yaml-cpp found: will use the builtin yaml-cpp])
-       CPPFLAGS=$measurement_kit_saved_cppflags
-       LDFLAGS=$measurement_kit_saved_ldflags
-    fi
-fi
-
-# Step 3: if needed, prepare to compile our own yaml-cpp
-if test "$measurement_kit_yamlcpp_path"x = "builtin"x; then
-    CPPFLAGS="$CPPFLAGS -I \$(top_srcdir)/src/ext/yaml-cpp/include"
-    LDFLAGS="$LDFLAGS -L\$(top_builddir)/src/ext/"
-fi
-AM_CONDITIONAL([USE_BUILTIN_YAMLCPP],
-    [test "$measurement_kit_yamlcpp_path"x = "builtin"x])
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: openssl])
+    echo "    - to install on Debian: sudo apt-get install libssl-dev"
+    echo "    - to install on OSX: brew install openssl"
+    echo "    - to compile from sources: ./build/dependency libressl"
+    AC_MSG_ERROR([Please, install openssl and run configure again])
+  fi
+  echo ""
 ])
 
 

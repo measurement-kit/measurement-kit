@@ -34,11 +34,13 @@ VALGRIND = valgrind --trace-children=yes --error-exitcode=1                    \
 run-valgrind: $(check_PROGRAMS)
 	                                                                       \
 	for test_name in $(TESTS); do                                          \
+	  echo "";                                                             \
 	  if ! $(VALGRIND) $$test_name; then                                   \
 	    failed="$$test_name $$failed";                                     \
 	  fi;                                                                  \
 	done;                                                                  \
 	if test "$$failed" != ""; then                                         \
+	  echo "";                                                             \
 	  echo "failed tests: $$failed";                                       \
 	  exit 1;                                                              \
 	fi

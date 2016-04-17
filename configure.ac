@@ -27,11 +27,11 @@ MK_AM_ENABLE_EXAMPLES
 
 # checks for libraries
 
+echo ""
+MK_AM_OPENSSL
 MK_AM_LIBEVENT
 MK_AM_JANSSON
 MK_AM_LIBMAXMINDDB
-MK_AM_BOOST
-MK_AM_YAML_CPP
 
 # checks for header files
 # checks for types

@@ -9,7 +9,6 @@ Vagrant.configure(2) do |config|
       sudo apt-get dist-upgrade -y
       sudo apt-get install -y g++ autoconf automake libtool valgrind git
       sudo apt-get install -y libevent-dev libssl-dev
-      sudo apt-get install -y libboost-dev libyaml-cpp-dev
     SHELL
   end
 end

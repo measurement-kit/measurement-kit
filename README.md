@@ -96,6 +96,7 @@ MeasurementKit includes and unconditionally compiles the
 sources of the following projects:
 
 - [http-parser](https://github.com/joyent/http-parser)
+- [json](https://github.com/nlohmann/json)
 - [Catch](https://github.com/philsquared/Catch) (for tests only)
 - OpenBSD's [strtonum.c](http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/lib/libc/stdlib/strtonum.c)
 
@@ -103,16 +104,13 @@ MeasurementKit also depends on the following projects (which
 are only conditionally compiled as explained below):
 
 - [libevent](https://github.com/libevent/libevent)
-- [yaml-cpp](https://github.com/jbeder/yaml-cpp)
-- selected [boost](https://github.com/boostorg/) libraries (only [the ones required by yaml-cpp](https://github.com/measurement-kit/measurement-kit/tree/master/src/ext/boost))
 - [jansson](https://github.com/akheron/jansson)
 - [libmaxminddb](https://github.com/maxmind/libmaxminddb)
 
 The `./configure` script should check whether all
 the dependencies are in place and should configure the compilers
 properly. If a dependency is not found, `./configure` will
-fall back to the copy of the dependency stored under the
-`src/ext` directory.
+stop and tell you how you could install the dependency.
 
 The vanilla build process is the following:
 
@@ -125,12 +123,6 @@ at specific directories using the following flags:
 
 - `--with-libevent=PREFIX` that tells `./configure` to use the
 libevent library and headers installed at PREFIX
-
-- `--with-yaml-cpp=PREFIX` that tells `./configure` to use the
-yaml-cpp library and headers installed at PREFIX
-
-- `--with-boost=PREFIX` that tells `./configure` to use the
-boost headers installed at PREFIX
 
 - `--with-jansson=PREFIX` that tells `./configure` to use the
 jansson library and headers installed at PREFIX

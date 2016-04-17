@@ -12,7 +12,9 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <yaml-cpp/yaml.h>
+#include "src/ext/json/src/json.hpp"
+
+using json = nlohmann::json;
 
 namespace mk {
 namespace mlabns {
@@ -70,7 +72,7 @@ void query(std::string tool, std::function<void(Error, Reply)> callback,
         callback(query.as_error(), Reply());
         return;
     }
-    std::string url = "http://mlab-ns.appspot.com/";
+    std::string url = "https://mlab-ns.appspot.com/";
     std::regex valid_tool("^[a-z]+$");
     if (!std::regex_match(tool, valid_tool)) {
         callback(InvalidToolNameError(), Reply());
@@ -92,21 +94,22 @@ void query(std::string tool, std::function<void(Error, Reply)> callback,
                 callback(UnexpectedHttpStatusCodeError(), Reply());
                 return;
             }
+
             Reply reply;
-            // XXX: here we should use a JSON library, not yaml-cpp
-            YAML::Node node;
             try {
-                node = YAML::Load(response.body);
-                // TODO: do we need to validate fields using regex?
-                reply.city = node["city"].as<std::string>();
-                reply.url = node["url"].as<std::string>();
-                for (auto ip : node["ip"]) {
-                    reply.ip.push_back(ip.as<std::string>());
+                auto node = json::parse (response.body);
+                reply.city = node["city"];
+                reply.url = node["url"];
+                for (auto ip2 : node["ip"]) {
+                    reply.ip.push_back(ip2);
                 }
-                reply.fqdn = node["fqdn"].as<std::string>();
-                reply.site = node["site"].as<std::string>();
-                reply.country = node["country"].as<std::string>();
-            } catch (YAML::Exception &) {
+                reply.fqdn = node["fqdn"];
+                reply.site = node["site"];
+                reply.country = node["country"];
+            } catch (std::invalid_argument &) {
+                callback(JsonParsingError(), Reply());
+                return;
+            } catch (std::out_of_range &){
                 callback(JsonParsingError(), Reply());
                 return;
             }

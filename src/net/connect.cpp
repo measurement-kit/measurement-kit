@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "src/net/connect.hpp"
+#include <event2/bufferevent_ssl.h>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/poller.hpp>
@@ -58,7 +59,8 @@ void connect_first_of(std::vector<std::string> addresses, int port,
 }
 
 void resolve_hostname(
-        std::string hostname, ResolveHostnameCb cb, Logger *logger) {
+        std::string hostname, ResolveHostnameCb cb, Poller *poller,
+        Logger *logger) {
 
     logger->debug("resolve_hostname: %s", hostname.c_str());
 
@@ -107,8 +109,8 @@ void resolve_hostname(
                 }
             }
             cb(*result);
-        });
-    });
+        }, {}, poller);
+    }, {}, poller);
 }
 
 void connect(std::string hostname, int port, ConnectCb cb, double timeo,
@@ -137,7 +139,28 @@ void connect(std::string hostname, int port, ConnectCb cb, double timeo,
                         timeo, poller, logger);
 
             },
-            logger);
+            poller, logger);
+}
+
+void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
+                 std::function<void(Error, bufferevent *)> cb,
+                 Poller *poller, Logger *logger) {
+    logger->debug("connect ssl...");
+
+    auto bev = bufferevent_openssl_filter_new(poller->get_event_base(),
+            orig_bev, ssl, BUFFEREVENT_SSL_CONNECTING,
+            BEV_OPT_CLOSE_ON_FREE);
+    if (bev == nullptr) {
+        bufferevent_free(orig_bev);
+        cb(GenericError(), nullptr);
+        return;
+    }
+
+    bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
+            new ConnectBaseCb([cb, logger](Error err, bufferevent *bev) {
+                logger->debug("connect ssl... callback");
+                cb(err, bev);
+            }));
 }
 
 } // namespace net

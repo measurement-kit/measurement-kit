@@ -4,6 +4,8 @@
 #ifndef SRC_NET_CONNECTION_HPP
 #define SRC_NET_CONNECTION_HPP
 
+#include "src/common/utils.hpp"
+#include "src/net/emitter.hpp"
 #include <event2/bufferevent.h>
 #include <event2/event.h>
 #include <list>
@@ -12,35 +14,37 @@
 #include <measurement_kit/net.hpp>
 #include <stdexcept>
 #include <string.h>
-#include "src/common/delayed_call.hpp"
-#include "src/common/utils.hpp"
-#include "src/net/bufferevent.hpp"
-#include "src/net/emitter.hpp"
 
 namespace mk {
 namespace net {
 
 class Connection : public Emitter, public NonMovable, public NonCopyable {
   public:
-    Connection(bufferevent *bev);
+    static Var<Transport> make(bufferevent *bev,
+                               Poller *poller = Poller::global(),
+                               Logger *logger = Logger::global()) {
+        Connection *conn = new Connection(bev, poller, logger);
+        conn->self = Var<Transport>(conn);
+        return conn->self;
+    }
 
-    ~Connection() override {}
-
-    evutil_socket_t get_fileno() { return (bufferevent_getfd(this->bev)); }
+    ~Connection() override {
+        if (bev != nullptr) {
+            bufferevent_free(bev);
+        }
+        if (close_cb) {
+            close_cb();
+        }
+    }
 
     void set_timeout(double timeout) override {
-        struct timeval tv, *tvp;
-        tvp = mk::timeval_init(&tv, timeout);
+        timeval tv, *tvp = mk::timeval_init(&tv, timeout);
         if (bufferevent_set_timeouts(this->bev, tvp, tvp) != 0) {
             throw std::runtime_error("cannot set timeout");
         }
     }
 
-    void clear_timeout() override { this->set_timeout(-1); }
-
-    void start_tls(unsigned int) {
-        throw std::runtime_error("not implemented");
-    }
+    void clear_timeout() override { set_timeout(-1); }
 
     void do_send(Buffer data) override { data >> bufferevent_get_output(bev); }
 
@@ -56,45 +60,21 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
         }
     }
 
-    void close() override;
+    void close(std::function<void()>) override;
 
     void handle_event_(short);
     void handle_read_();
     void handle_write_();
 
   private:
-    Bufferevent bev;
+    Connection(bufferevent *bev, Poller * = Poller::global(),
+               Logger * = Logger::global());
+
+    bufferevent *bev = nullptr;
+    Var<Transport> self;
     Poller *poller = Poller::global();
-
-    // Stuff for connecting (later this will be removed):
-
-  public:
-    Connection(evutil_socket_t fd, Logger *lp = Logger::global(),
-               Poller *poller = mk::get_global_poller())
-        : Connection("PF_UNSPEC", "0.0.0.0", "0", poller, lp, fd) {}
-
-    Connection(const char *af, const char *a, const char *p,
-               Logger *lp = Logger::global(),
-               Poller *poller = mk::get_global_poller())
-        : Connection(af, a, p, poller, lp, -1) {}
-
-    Connection(const char *, const char *, const char *, Poller *, Logger *,
-               evutil_socket_t);
-
-  private:
-    unsigned int connecting = 0;
-    std::string address;
-    std::string port;
-    std::list<std::pair<std::string, std::string>> addrlist;
-    std::string family;
-    unsigned int must_resolve_ipv4 = 0;
-    unsigned int must_resolve_ipv6 = 0;
-    DelayedCall start_connect;
-
-    void connect_next();
-    void handle_resolve(Error, std::vector<dns::Answer>);
-    void resolve();
-    bool resolve_internal(char);
+    bool isclosed = false;
+    std::function<void()> close_cb;
 };
 
 } // namespace net

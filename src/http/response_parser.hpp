@@ -20,41 +20,6 @@ namespace mk {
 namespace http {
 using namespace mk::net;
 
-class ResponseParserImpl; // Forward declaration
-
-class ResponseParser : public NonCopyable, public NonMovable {
-  public:
-    ResponseParser(Logger * = Logger::global());
-    ~ResponseParser();
-
-    void on_begin(std::function<void()> &&fn);
-
-    void on_headers_complete(
-        std::function<void(unsigned short http_major, unsigned short http_minor,
-                           unsigned int status_code, std::string &&reason,
-                           Headers &&headers)> &&fn);
-
-    void on_body(std::function<void(std::string &&)> &&fn);
-
-    void on_end(std::function<void()> &&fn);
-
-    void feed(Buffer &data);
-
-    void feed(std::string data);
-
-    void feed(char c);
-
-    void eof();
-
-  protected:
-    ResponseParserImpl *impl = nullptr;
-};
-
-// Header parsing states (see do_header_internal) - used by old impl.
-#define S_NOTHING 0
-#define S_FIELD 1
-#define S_VALUE 2
-
 enum class HeaderParserState {
     NOTHING = 0,
     FIELD = 1,

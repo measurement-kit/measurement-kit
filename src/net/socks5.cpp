@@ -8,30 +8,6 @@
 namespace mk {
 namespace net {
 
-Socks5::Socks5(Settings s, Logger *lp, Poller *poller)
-    : Emitter(lp), settings(s),
-      proxy_address(settings["socks5_address"]),
-      proxy_port(settings["socks5_port"]) {
-
-    conn.reset(new Connection(settings["family"].c_str(),
-            settings["socks5_address"].c_str(),
-              settings["socks5_port"].c_str(), lp, poller));
-
-    logger->debug("socks5: connecting to Tor at %s:%s",
-            settings["socks5_address"].c_str(),
-            settings["socks5_port"].c_str());
-
-    // Step #0: Steal "error", "connect", and "flush" handlers
-
-    conn->on_error([this](Error err) { emit_error(err); });
-    conn->on_connect([this]() {
-        conn->on_flush([]() {
-            // Nothing
-        });
-        socks5_connect_();
-    });
-}
-
 Socks5::Socks5(Var<Transport> tx, Settings s, Poller *, Logger *lp)
     : Emitter(lp), settings(s), conn(tx),
       proxy_address(settings["socks5_address"]),
@@ -165,7 +141,8 @@ void socks5_connect(std::string address, int port, Settings settings,
                     callback(r.overall_error, nullptr);
                     return;
                 }
-                Var<Transport> txp(new Connection(r.connected_bev));
+                Var<Transport> txp = Connection::make(r.connected_bev,
+                                                      poller, logger);
                 Var<Transport> socks5(
                         new Socks5(txp, settings, poller, logger));
                 socks5->on_connect([=]() {

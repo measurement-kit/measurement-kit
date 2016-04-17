@@ -75,6 +75,8 @@ gen_executables() {
 }
 
 get() {
+  echo ""
+  echo "> $3 (from github.com/$1)"
   branch=$4
   [ -z "$branch" ] && branch=master
   if [ ! -d src/ext/$3 ]; then
@@ -83,6 +85,7 @@ get() {
       (cd src/ext/$3 && git checkout $branch && git pull)
   fi
   (cd src/ext/$3 && git checkout $2)
+  echo ""
 }
 
 grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
@@ -101,28 +104,30 @@ echo "* Updating .gitignore"
 LC_ALL=C sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
 
-echo "* Fetching dependencies"
-get akheron/jansson v2.7-52-ge44b223 jansson
-get boostorg/assert boost-1.59.0 boost/assert
-get boostorg/config boost-1.59.0 boost/config
-get boostorg/core boost-1.59.0-8-g3add966 boost/core
-get boostorg/detail boost-1.59.0 boost/detail
-get boostorg/iterator boost-1.59.0 boost/iterator
-get boostorg/mpl boost-1.59.0 boost/mpl
-get boostorg/predef boost-1.59.0 boost/predef
-get boostorg/preprocessor boost-1.59.0 boost/preprocessor
-get boostorg/smart_ptr boost-1.59.0 boost/smart_ptr
-get boostorg/static_assert boost-1.59.0 boost/static_assert
-get boostorg/throw_exception boost-1.59.0 boost/throw_exception
-get boostorg/type_traits boost-1.59.0 boost/type_traits
-get boostorg/typeof boost-1.59.0 boost/typeof
-get boostorg/utility boost-1.59.0 boost/utility
-get jbeder/yaml-cpp release-0.5.2-16-g97d56c3 yaml-cpp
+echo "* Fetching dependencies that are build in any case"
 get joyent/http-parser v2.6.0 http-parser
-get measurement-kit/libevent patches-2.0 libevent patches-2.0
-get measurement-kit/libmaxminddb master libmaxminddb
 get philsquared/Catch v1.2.1 Catch
 get nlohmann/json v1.1.0 json v1.1.0
 
 echo "* Running 'autoreconf -i'"
 autoreconf -i
+
+echo "=== autogen.sh complete ==="
+echo ""
+echo "MeasurementKit is now ready to be compiled. To proceed you shall run"
+echo "now the './configure' script that adapts the build to your system."
+echo ""
+echo "The './configure' script shall also check for external dependencies. "
+echo "MeasurementKit external dependencies are:"
+echo ""
+for depname in `ls build/spec/|grep -v all`; do
+    echo "    - $depname"
+done
+echo ""
+echo "If any of these dependencies is missing, the './configure' script shall"
+echo "stop and tell you how you could install it. Note that you can compile"
+echo "any of these dependencies using the './build/dependency' script'. So, to"
+echo "install e.g. libevent, type:"
+echo ""
+echo "./build/dependency libevent"
+echo ""
