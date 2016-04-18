@@ -71,10 +71,15 @@ TEST_CASE("net::connect_many() works as expected") {
                 [](Error error, std::vector<Var<Transport>> conns) {
                     REQUIRE(!error);
                     REQUIRE(conns.size() == 3);
+                    Var<int> n(new int(0));
                     for (auto conn : conns) {
                         REQUIRE(static_cast<bool>(conn));
+                        conn->close([n]() {
+                            if (++(*n) >= 3) {
+                                break_loop();
+                            }
+                        });
                     }
-                    break_loop();
                 });
     });
 }
