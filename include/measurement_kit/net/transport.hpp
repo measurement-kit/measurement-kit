@@ -9,6 +9,7 @@
 #include <measurement_kit/net/buffer.hpp>
 #include <stddef.h>
 #include <string>
+#include <vector>
 
 namespace mk {
 
@@ -57,6 +58,13 @@ void connect(std::string address, int port,
              Settings settings = {},
              Logger *logger = Logger::global(),
              Poller *poller = Poller::global());
+
+using ConnectManyCb = std::function<void(Error, std::vector<Var<Transport>>)>;
+
+void connect_many(std::string address, int port, int num,
+        ConnectManyCb callback, Settings settings = {},
+        Logger *logger = Logger::global(),
+        Poller *poller = Poller::global());
 
 } // namespace net
 } // namespace mk
