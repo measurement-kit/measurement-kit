@@ -33,41 +33,17 @@ pkg_rootdir=$(cd $(dirname $(dirname $0)) && pwd -P)
 if [ -z "$pkg_prefix" ]; then
     pkg_prefix=$pkg_rootdir/builtin
 fi
-export pkg_prefix
+export pkg_prefix pkg_rootdir
 cd $pkg_rootdir
 if [ -x build/spec/$1 ]; then
     exec build/spec/$1  # If the spec is executable, pass control to it
 fi
 # Note that the spec has access to $pkg_rootdir
-. build/spec/$1
-if [ ! -d third_party/.cache/$pkg_name ]; then
-    git clone $pkg_clone_flags $pkg_repository third_party/.cache/$pkg_name
-fi
-rm -rf third_party/$pkg_name
-cp -R third_party/.cache/$pkg_name third_party/$pkg_name
-cd third_party/$pkg_name
-if [ ! -z "$pkg_branch" ]; then
-    git checkout $pkg_branch
-fi
-if [ ! -z "$pkg_tag" ]; then
-    git checkout tags/$pkg_tag
-fi
-if [ -d ../../build/patch/$pkg_name ]; then
-    for diff in `ls ../../build/patch/$pkg_name`; do
-        cp ../../build/patch/$pkg_name/$diff .
-        git apply -v $diff
-        rm $diff
-    done
-fi
-if [ -x ./autogen.sh ]; then
-    ./autogen.sh
-elif [ -f ./configure.ac ]; then
-    autoreconf -i
-fi
-if [ -x ./configure ]; then
-    ./configure --prefix=$pkg_prefix $pkg_configure_flags
-elif [ -f ./CMakeLists.txt ]; then
-    cmake -D CMAKE_INSTALL_PREFIX=$pkg_prefix $pkg_cmake_flags .
-fi
-make $pkg_make_flags
-$pkg_sudo make $pkg_make_install_flags install
+for step in clone patch configure make install; do
+    echo "$1: $step"
+    if [ -x ./build/spec/$1-$step ]; then
+        ./build/spec/$1-$step $1
+    else
+        ./build/dependency.d/$step $1
+    fi
+done
