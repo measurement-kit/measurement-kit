@@ -164,7 +164,7 @@ build process) run:
 ### How to build MeasurementKit on Android
 
 To compile MeasurementKit for Android, see the README.md file contained in
-the `mobile/android` directory of this repository.
+the `build/android` directory of this repository.
 
 ### How to build MeasurementKit on iOS
 
@@ -172,7 +172,7 @@ To compile and use MeasurementKit for iOS, do the following on a MacOSX
 system where Xcode and its command line tools have been installed:
 
 ```
-./mobile/ios/scripts/build.sh
+./build/ios/scripts/build.sh
 ```
 
 ### How to add MeasurementKit to an Xcode project.

@@ -32,11 +32,9 @@ void mk_bufferevent_on_event(bufferevent *, short, void *);
 namespace mk {
 namespace net {
 
-typedef std::function<void(Error, bufferevent *)> ConnectBaseCb;
-
 template <MK_MOCK(evutil_parse_sockaddr_port), MK_MOCK(bufferevent_socket_new),
         MK_MOCK(bufferevent_set_timeouts), MK_MOCK(bufferevent_socket_connect)>
-void connect_base(std::string address, int port, ConnectBaseCb cb,
+void connect_base(std::string address, int port, Callback<bufferevent *> cb,
         double timeout = 10.0, Poller *poller = Poller::global(),
         Logger *logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
@@ -74,7 +72,7 @@ void connect_base(std::string address, int port, ConnectBaseCb cb,
     // WARNING: set callbacks after connect() otherwise we free `bev` twice
     // NOTE: In case of `new` failure we let the stack unwind
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
-            new ConnectBaseCb(cb));
+            new Callback<bufferevent *>(cb));
 }
 
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
@@ -114,7 +112,7 @@ void connect(std::string hostname, int port, ConnectCb cb, double timeo = 10.0,
         Poller *poller = Poller::global(), Logger *logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
-                 std::function<void(Error, bufferevent *)> cb,
+                 Callback<bufferevent *> cb,
                  Poller * = Poller::global(),
                  Logger * = Logger::global());
 

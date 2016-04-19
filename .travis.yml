@@ -1,8 +1,8 @@
 language: cpp
 
 install:
-    - if [ "$VER" != ""  ]; then 
-          export CXX="$CXX-$VER" CC="$CC-$VER"; 
+    - if [ "$VER" != ""  ]; then
+          export CXX="$CXX-$VER" CC="$CC-$VER";
       fi;
     - ARG="-q --with-jansson=builtin --with-libmaxminddb=builtin"
     - if [ "$COVERAGE" = "true" ]; then
@@ -27,7 +27,7 @@ script:
       fi
     - if [ "$VALGRIND" = "true" ]; then
         make run-valgrind;
-      elif [ "$BUILD_TYPE" != "ios" ]; then 
+      elif [ "$BUILD_TYPE" != "ios" ]; then
         make -j2 check-am V=0;
       fi
 
@@ -48,7 +48,7 @@ matrix:
 
     - sudo: false
       compiler: clang-3.6
-      env: OS="12.04" VALGRIND=true VER=3.6 
+      env: OS="12.04" VALGRIND=true VER=3.6
       addons:
         apt:
           packages:
@@ -61,7 +61,7 @@ matrix:
 
     - sudo: false
       compiler: clang-3.6
-      env: OS="12.04" COVERAGE=true VER=3.6 
+      env: OS="12.04" COVERAGE=true VER=3.6
       addons:
         apt:
           packages:
@@ -70,10 +70,10 @@ matrix:
           sources:
             - llvm-toolchain-precise-3.6
             - ubuntu-toolchain-r-test
-    
+
     - sudo: false
       compiler: g++-5
-      env: OS="12.04" VER=5 
+      env: OS="12.04" VER=5
       addons:
         apt:
           packages:

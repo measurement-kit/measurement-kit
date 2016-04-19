@@ -1,4 +1,5 @@
-#!/bin/sh -e
+#!/bin/sh
+set -e
 
 if [ $# -ne 2 ]; then
     echo "$0 platform arch" 1>&2

@@ -44,10 +44,10 @@ class QueryContext : public NonMovable, public NonCopyable {
     evdns_base *base = nullptr;
 
     Message message;
-    std::function<void(Error, Message)> callback;
+    Callback<Message> callback;
 
     QueryContext(
-            evdns_base *b, std::function<void(Error, Message)> c, Message m) {
+            evdns_base *b, Callback<Message> c, Message m) {
         base = b;
         callback = c;
         message = m;
@@ -221,7 +221,7 @@ template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
         MK_MOCK(evdns_base_resolve_ipv6), MK_MOCK(evdns_base_resolve_reverse),
         MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
 void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
-        std::function<void(Error, Message)> cb, Settings settings,
+        Callback<Message> cb, Settings settings,
         Poller *poller) {
 
     Message message;

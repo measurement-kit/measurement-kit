@@ -13,7 +13,7 @@ namespace mk {
 namespace net {
 
 void connect(std::string address, int port,
-             std::function<void(Error, Var<Transport>)> callback,
+             Callback<Var<Transport>> callback,
              Settings settings, Logger *logger, Poller *poller) {
     if (settings.find("dumb_transport") != settings.end()) {
         callback(NoError(), Var<Transport>(new Emitter(logger)));
