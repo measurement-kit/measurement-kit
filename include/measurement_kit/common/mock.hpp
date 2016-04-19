@@ -18,6 +18,6 @@ Which is arguably faster than writing the following:
     template <decltype(event_base_new) event_base_new = ::event_base_new>
     void foobar() { ...
 */
-#define MK_MOCK(name_) decltype(name_) name_ = ::name_
+#define MK_MOCK(name_) decltype(name_) name_ = name_
 
 #endif
