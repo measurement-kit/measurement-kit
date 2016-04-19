@@ -19,7 +19,7 @@ class TCPConnectImpl : public TCPTestImpl {
 
   public:
     TCPConnectImpl(std::string input_filepath_, Settings options_)
-        : TCPTestImpl(input_filepath_, options_) {
+        : TCPTestImpl(options_) {
         test_name = "tcp_connect";
         test_version = "0.0.1";
 
