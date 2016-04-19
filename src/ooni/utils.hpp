@@ -13,9 +13,9 @@
 namespace mk {
 namespace ooni {
 
-template <decltype(http::get) http::get = http::get>
-inline void ip_lookup(Callback<std::string> callback) {
-    http::get("http://geoip.ubuntu.com/lookup",
+template <decltype(mk::http::get) httpget = mk::http::get>
+void ip_lookup(Callback<std::string> callback) {
+    httpget("http://geoip.ubuntu.com/lookup",
               [=](Error err, http::Response response) {
                   if (err) {
                       callback(err, "");
@@ -32,7 +32,7 @@ inline void ip_lookup(Callback<std::string> callback) {
                       return;
                   }
                   callback(NoError(), m[1]);
-              });
+              }, {}, "", {}, Logger::global(), Poller::global());
 }
 
 } // namespace ooni

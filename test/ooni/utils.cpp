@@ -8,8 +8,12 @@
 #include "src/ooni/utils.hpp"
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
+#include "src/common/check_connectivity.hpp"
 
 TEST_CASE("ip lookup works") {
+    if (mk::CheckConnectivity::is_down()) {
+        return;
+    }
     mk::loop_with_initial_event([]() {
         mk::ooni::ip_lookup([](mk::Error err, std::string) {
             REQUIRE(err == mk::NoError());
