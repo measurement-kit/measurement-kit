@@ -13,7 +13,7 @@
 namespace mk {
 namespace ooni {
 
-template <MK_MOCK(http::get)>
+template <decltype(http::get) http::get = http::get>
 inline void ip_lookup(Callback<std::string> callback) {
     http::get("http://geoip.ubuntu.com/lookup",
               [=](Error err, http::Response response) {
