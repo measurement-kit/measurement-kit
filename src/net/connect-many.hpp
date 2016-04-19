@@ -26,7 +26,7 @@ class ConnectManyCtx {
 };
 
 template <void (*do_connect)(std::string, int,
-              std::function<void(Error, Var<Transport>)>, Settings, Logger *,
+              Callback<Var<Transport>>, Settings, Logger *,
               Poller *) = net::connect>
 static void connect_many_(Var<ConnectManyCtx> ctx) {
     // Implementation note: this function connects sequentially, which

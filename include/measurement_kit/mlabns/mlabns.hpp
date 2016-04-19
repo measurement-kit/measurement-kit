@@ -99,7 +99,7 @@ class Reply {
 /// \param tool Name of tool (e.g. 'ndt', 'neubot').
 /// \param callback Callback called on response or error.
 /// \param request Optional request parameters.
-void query(std::string tool, std::function<void(Error, Reply)> callback,
+void query(std::string tool, Callback<Reply> callback,
            Query request = nullptr);
 
 } // namespace mlabns

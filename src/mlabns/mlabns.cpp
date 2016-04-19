@@ -65,7 +65,7 @@ ErrorOr<std::string> Query::as_query() {
     return query;
 }
 
-void query(std::string tool, std::function<void(Error, Reply)> callback,
+void query(std::string tool, Callback<Reply> callback,
            Query request) {
     ErrorOr<std::string> query = request.as_query();
     if (!query) {

@@ -33,6 +33,10 @@ template <typename T> class Var : public std::shared_ptr<T> {
         return std::shared_ptr<T>::operator*();
     }
 
+    template <typename R> Var<R> as() {
+        return std::static_pointer_cast<R>(*this);
+    }
+
   protected:
   private:
     // NO ATTRIBUTES HERE BY DESIGN. DO NOT ADD ATTRIBUTES HERE BECAUSE

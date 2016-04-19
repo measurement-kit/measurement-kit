@@ -1,4 +1,5 @@
-#!/bin/sh -e
+#!/bin/sh
+set -e
 ROOTDIR=$(cd `dirname "$0"` && pwd -P)
 
 if [ $# -ge 1 ]; then
