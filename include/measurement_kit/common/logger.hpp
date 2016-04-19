@@ -1,11 +1,11 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
 #ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
 #include <measurement_kit/common/constraints.hpp>
+#include <measurement_kit/common/funcs.hpp>
 
 #include <functional>
 #include <stdarg.h>
@@ -64,7 +64,7 @@ class Logger : public NonCopyable, public NonMovable {
     }
 
   private:
-    std::function<void(const char *)> consumer_;
+    SafelyOverridableFunc<void(const char *)> consumer_;
     int verbose_ = 0;
     char buffer_[32768];
 };
