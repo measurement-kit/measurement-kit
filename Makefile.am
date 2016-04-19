@@ -1,5 +1,3 @@
-# Makefile.am
-
 # Part of measurement-kit <https://measurement-kit.github.io/>.
 # Measurement-kit is free software. See AUTHORS and LICENSE for more
 # information on the copying conditions.
@@ -12,8 +10,8 @@ LIBMEASUREMENT_KIT_I_FLAGS += -I $(top_srcdir)/src
 LIBMEASUREMENT_KIT_W_FLAGS = -Wall -Wextra -pedantic
 
 VERSION_INFO = -release @VERSION@ -version-info 0
-AM_CFLAGS = -pthread $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
-AM_CXXFLAGS = -pthread $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
+AM_CFLAGS = $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
+AM_CXXFLAGS = $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
 
 lib_LTLIBRARIES               = libmeasurement_kit.la
 libmeasurement_kit_la_LDFLAGS = -version-info $(VERSION_INFO)

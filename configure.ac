@@ -1,5 +1,3 @@
-# configure.ac
-
 # Part of measurement-kit <https://measurement-kit.github.io/>.
 # Measurement-kit is free software. See AUTHORS and LICENSE for more
 # information on the copying conditions.
@@ -21,11 +19,16 @@ AC_CANONICAL_HOST
 
 # checks for programs
 AC_PROG_INSTALL
-AC_PROG_CXX()
+AC_PROG_CXX
 
 MK_AM_ENABLE_EXAMPLES
 
 # checks for libraries
+
+# Must set -pthread before testing for -levent_pthreads
+CFLAGS="$CFLAGS -pthread"
+CXXFLAGS="$CXXFLAGS -pthread"
+LDFLAGS="$LDFLAGS -pthread"
 
 echo ""
 MK_AM_OPENSSL
