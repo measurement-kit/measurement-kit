@@ -71,5 +71,9 @@ template <typename T> class AutoResetFuncList {
     std::vector<std::function<T>> funcs_;
 };
 
+class Error;
+
+template <typename T> using Callback = std::function<void(Error, T)>;
+
 } // namespace
 #endif

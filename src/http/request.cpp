@@ -33,7 +33,7 @@ void request_send(Var<Transport> transport, Settings settings, Headers headers,
     transport->write(buff);
 }
 
-void request_recv_response(Var<Transport> transport, RequestRecvResponseCb cb,
+void request_recv_response(Var<Transport> transport, Callback<Var<Response>> cb,
         Poller *poller, Logger *logger) {
     Var<ResponseParserNg> parser(new ResponseParserNg);
     Var<Response> response(new Response);
@@ -71,7 +71,7 @@ void request_recv_response(Var<Transport> transport, RequestRecvResponseCb cb,
 }
 
 void request_sendrecv(Var<Transport> transport, Settings settings,
-        Headers headers, std::string body, RequestSendrecvCb callback,
+        Headers headers, std::string body, Callback<Var<Response>> callback,
         Poller *poller, Logger *logger) {
     request_send(transport, settings, headers, body, [=](Error error) {
         if (error) {
@@ -83,7 +83,7 @@ void request_sendrecv(Var<Transport> transport, Settings settings,
 }
 
 void request_cycle(Settings settings, Headers headers, std::string body,
-        RequestSendrecvCb callback, Poller *poller, Logger *logger) {
+        Callback<Var<Response>> callback, Poller *poller, Logger *logger) {
     request_connect(settings, [=](Error err, Var<Transport> transport) {
         if (err) {
             callback(err, nullptr);
