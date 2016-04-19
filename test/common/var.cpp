@@ -13,11 +13,18 @@
 
 using namespace mk;
 
-struct Foo {
+class Foo {
+ public:
     double elem = 3.14;
     Foo() {}
     Foo(double x) : elem(x) {}
     void mascetti() {}
+};
+
+class FooChild : public Foo {
+ public:
+     double elemChild = 6.28;
+     FooChild(double y) : elemChild(y) {}
 };
 
 TEST_CASE("Var raises an exception when the pointee is nullptr") {
@@ -64,4 +71,10 @@ TEST_CASE("Operator->* throws when nullptr") {
 TEST_CASE("Get() throws when nullptr") {
     Var<Foo> il_melandri;
     REQUIRE_THROWS(il_melandri.get());
+}
+
+TEST_CASE("as() can downcast an object") {
+    Var<Foo> foo(new FooChild(7.0));
+    Var<FooChild> fooChild = foo.as<FooChild>();
+    REQUIRE(fooChild->elemChild == 7.0);
 }
