@@ -113,8 +113,8 @@ void resolve_hostname(
     }, {}, poller);
 }
 
-void connect(std::string hostname, int port, ConnectCb cb, double timeo,
-        Poller *poller, Logger *logger) {
+void connect(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
+        double timeo, Poller *poller, Logger *logger) {
 
     Var<ConnectResult> result(new ConnectResult);
     resolve_hostname(hostname,
@@ -122,19 +122,19 @@ void connect(std::string hostname, int port, ConnectCb cb, double timeo,
 
                 result->resolve_result = r;
                 if (result->resolve_result.addresses.size() <= 0) {
-                    result->overall_error = DnsGenericError();
-                    cb(*result);
+                    cb(DnsGenericError(), result);
                     return;
                 }
 
                 connect_first_of(result->resolve_result.addresses, port,
                         [=](std::vector<Error> e, bufferevent *b) {
-                            if (!b) {
-                                result->overall_error = ConnectFailedError();
-                            }
                             result->connect_result = e;
                             result->connected_bev = b;
-                            cb(*result);
+                            if (!b) {
+                                cb(ConnectFailedError(), result);
+                                return;
+                            }
+                            cb(NoError(), result);
                         },
                         timeo, poller, logger);
 

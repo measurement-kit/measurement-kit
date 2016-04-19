@@ -6,10 +6,13 @@
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
 #include <exception>
+#include <measurement_kit/common/var.hpp>
 #include <iosfwd>
 #include <string>
 
 namespace mk {
+
+class ErrorContext {};
 
 /// An error that occurred
 class Error : public std::exception {
@@ -34,6 +37,8 @@ class Error : public std::exception {
 
     /// Return error as OONI error
     std::string as_ooni_error() { return ooni_error_; }
+
+    Var<ErrorContext> context;
 
   private:
     int error_ = 0;
