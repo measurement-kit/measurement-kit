@@ -121,7 +121,7 @@ ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Logger *logger) {
 }
 
 void socks5_connect(std::string address, int port, Settings settings,
-        std::function<void(Error, Var<Transport>)> callback,
+        Callback<Var<Transport>> callback,
         Poller *poller, Logger *logger) {
 
     auto proxy = settings["socks5_proxy"];

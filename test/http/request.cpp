@@ -191,13 +191,13 @@ TEST_CASE("http::request works as expected over Tor") {
 
 #define SOCKS_PORT_IS(port)                                                    \
 static void socks_port_is_ ## port(std::string, int,                           \
-        std::function<void(Error, Var<Transport>)>,                            \
+        Callback<Var<Transport>>,                            \
         Settings settings, Logger *, Poller *) {                               \
     REQUIRE(settings.at("socks5_proxy") == "127.0.0.1:" # port);               \
 }
 
 static void socks_port_is_empty(std::string, int,
-        std::function<void(Error, Var<Transport>)>,
+        Callback<Var<Transport>>,
         Settings settings, Logger *, Poller *) {
     REQUIRE(settings.find("socks5_proxy") == settings.end());
 }

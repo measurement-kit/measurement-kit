@@ -14,7 +14,7 @@
 #include <string.h>
 
 void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
-    auto cb = static_cast<mk::net::ConnectBaseCb *>(ptr);
+    auto cb = static_cast<mk::Callback<bufferevent *> *>(ptr);
     if ((what & BEV_EVENT_CONNECTED) != 0) {
         (*cb)(mk::NoError(), bev);
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
@@ -143,7 +143,7 @@ void connect(std::string hostname, int port, ConnectCb cb, double timeo,
 }
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
-                 std::function<void(Error, bufferevent *)> cb,
+                 Callback<bufferevent *> cb,
                  Poller *poller, Logger *logger) {
     logger->debug("connect ssl...");
 
@@ -157,7 +157,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
     }
 
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
-            new ConnectBaseCb([cb, logger](Error err, bufferevent *bev) {
+            new Callback<bufferevent *>([cb, logger](Error err, bufferevent *bev) {
                 logger->debug("connect ssl... callback");
                 cb(err, bev);
             }));
