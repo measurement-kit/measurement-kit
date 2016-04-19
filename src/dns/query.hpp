@@ -203,13 +203,17 @@ static void dns_callback(int code, char type, int count, int ttl,
 
     context->message.answers =
             build_answers_evdns(code, type, count, ttl, addresses);
-    if (context->message.error_code != DNS_ERR_NONE) {
-        context->callback(mk::dns::dns_error(context->message.error_code),
-                context->message);
-    } else {
-        context->callback(NoError(), context->message);
+    try {
+        if (context->message.error_code != DNS_ERR_NONE) {
+            context->callback(mk::dns::dns_error(context->message.error_code),
+                    context->message);
+        } else {
+            context->callback(NoError(), context->message);
+        }
+    } catch (const Error& e) {
+        // suppress Error exceptions because we don't want this kind
+        // of exception to terminate the program
     }
-
     delete context;
 }
 
