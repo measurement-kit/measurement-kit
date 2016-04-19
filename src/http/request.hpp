@@ -19,15 +19,13 @@
 namespace mk {
 namespace http {
 
-typedef std::function<void(Error, Var<Transport>)> RequestConnectCb;
 typedef std::function<void(Error)> RequestSendCb;
-typedef std::function<void(Error, Var<Response>)> RequestRecvResponseCb;
-typedef std::function<void(Error, Var<Response>)> RequestSendrecvCb;
+typedef Callback<Var<Response>> RequestRecvResponseCb;
 
 template<void (*do_connect)(std::string, int,
-        std::function<void(Error, Var<Transport>)>,
+        Callback<Var<Transport>>,
         Settings, Logger *, Poller *) = net::connect>
-void request_connect(Settings settings, RequestConnectCb cb,
+void request_connect(Settings settings, Callback<Var<Transport>> cb,
         Poller *poller = Poller::global(), Logger *logger = Logger::global()) {
     if (settings.find("url") == settings.end()) {
         cb(MissingUrlError(), nullptr);
@@ -56,14 +54,14 @@ void request_connect(Settings settings, RequestConnectCb cb,
 void request_send(Var<Transport>, Settings, Headers, std::string,
         RequestSendCb);
 
-void request_recv_response(Var<Transport>, RequestRecvResponseCb,
+void request_recv_response(Var<Transport>, Callback<Var<Response>>,
         Poller * = Poller::global(), Logger * = Logger::global());
 
 void request_sendrecv(Var<Transport>, Settings, Headers, std::string,
-        RequestSendrecvCb, Poller * = Poller::global(),
+        Callback<Var<Response>>, Poller * = Poller::global(),
         Logger * = Logger::global());
 
-void request_cycle(Settings, Headers, std::string, RequestSendrecvCb,
+void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
         Poller * = Poller::global(), Logger * = Logger::global());
 
 } // namespace http

@@ -63,7 +63,7 @@ struct Response {
 };
 
 /// Type of callback called on error or when response is complete.
-typedef std::function<void(Error, Response)> RequestCallback;
+typedef Callback<Response> RequestCallback;
 
 // Forward declaration of internally used class.
 class Request;

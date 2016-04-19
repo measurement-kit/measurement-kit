@@ -54,12 +54,12 @@ class Transport {
 };
 
 void connect(std::string address, int port,
-             std::function<void(Error, Var<Transport>)> callback,
+             Callback<Var<Transport>> callback,
              Settings settings = {},
              Logger *logger = Logger::global(),
              Poller *poller = Poller::global());
 
-using ConnectManyCb = std::function<void(Error, std::vector<Var<Transport>>)>;
+using ConnectManyCb = Callback<std::vector<Var<Transport>>>;
 
 void connect_many(std::string address, int port, int num,
         ConnectManyCb callback, Settings settings = {},
