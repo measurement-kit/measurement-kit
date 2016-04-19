@@ -5,10 +5,10 @@
 #ifndef SRC_OONI_UTILS_HPP
 #define SRC_OONI_UTILS_HPP
 
-#include <measurement_kit/http.hpp>
 #include <measurement_kit/common.hpp>
-#include <string>
+#include <measurement_kit/http.hpp>
 #include <regex>
+#include <string>
 
 namespace mk {
 namespace ooni {
@@ -16,11 +16,10 @@ namespace ooni {
 inline void ip_lookup(Callback<std::string> callback) {
     http::get("http://geoip.ubuntu.com/lookup",
               [=](Error err, http::Response response) {
-                  if (err != NoError())
-                      {
-                          callback(err, "");
-                          return;
-                      }
+                  if (err) {
+                      callback(err, "");
+                      return;
+                  }
                   if (response.status_code != 200) {
                       callback(GenericError(), "");
                       return;
@@ -35,6 +34,6 @@ inline void ip_lookup(Callback<std::string> callback) {
               });
 }
 
-} //namespace ooni
-} //namespace mk
+} // namespace ooni
+} // namespace mk
 #endif
