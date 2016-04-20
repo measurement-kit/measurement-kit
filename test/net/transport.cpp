@@ -42,6 +42,12 @@ TEST_CASE("net::connect() can connect to open port") {
     loop_with_initial_event([]() {
         connect("www.kernel.org", 80, [](Error error, Var<Transport> txp) {
             REQUIRE(!error);
+            Var<ConnectResult> cr = error.context.as<ConnectResult>();
+            REQUIRE(cr);
+            REQUIRE(!cr->resolve_result.inet_pton_ipv4);
+            REQUIRE(!cr->resolve_result.inet_pton_ipv6);
+            REQUIRE(cr->resolve_result.addresses.size() > 0);
+            REQUIRE(cr->connected_bev);
             txp->close([]() { break_loop(); });
         });
     });
@@ -55,6 +61,12 @@ TEST_CASE("net::connect() can connect to SSL port") {
     loop_with_initial_event([]() {
         connect("nexa.polito.it", 443, [](Error error, Var<Transport> txp) {
             REQUIRE(!error);
+            Var<ConnectResult> cr = error.context.as<ConnectResult>();
+            REQUIRE(cr);
+            REQUIRE(!cr->resolve_result.inet_pton_ipv4);
+            REQUIRE(!cr->resolve_result.inet_pton_ipv6);
+            REQUIRE(cr->resolve_result.addresses.size() > 0);
+            REQUIRE(cr->connected_bev);
             txp->close([]() { break_loop(); });
         },
         {{"ssl", true}});
@@ -68,6 +80,12 @@ TEST_CASE("net::connect() works in case of error") {
     loop_with_initial_event([]() {
         connect("nexa.polito.it", 81, [](Error error, Var<Transport>) {
             REQUIRE(error);
+            Var<ConnectResult> cr = error.context.as<ConnectResult>();
+            REQUIRE(cr);
+            REQUIRE(!cr->resolve_result.inet_pton_ipv4);
+            REQUIRE(!cr->resolve_result.inet_pton_ipv6);
+            REQUIRE(cr->resolve_result.addresses.size() > 0);
+            REQUIRE(!cr->connected_bev);
             break_loop();
         }, {{"timeout", 5.0}});
     });

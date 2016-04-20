@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <cassert>
 #include <measurement_kit/net.hpp>
 #include "src/net/connect.hpp"
 #include "src/net/connection.hpp"
@@ -12,6 +13,7 @@
 namespace mk {
 namespace net {
 
+// TODO: this should be moved into src/net/connect.cpp
 void connect(std::string address, int port,
              Callback<Var<Transport>> callback,
              Settings settings, Logger *logger, Poller *poller) {
@@ -24,31 +26,35 @@ void connect(std::string address, int port,
         return;
     }
     double timeout = settings.get("timeout", 30.0);
-    net::connect(address, port, [=](ConnectResult r) {
-        // TODO: it would be nice to pass to this callback a compound error
-        // that also contains info on all what went wrong when connecting
-        if (r.overall_error) {
-            callback(r.overall_error, nullptr);
+    connect_logic(address, port, [=](Error err, Var<ConnectResult> r) {
+        if (err) {
+            err.context = r;
+            callback(err, nullptr);
             return;
         }
         if (settings.find("ssl") != settings.end()) {
-            connect_ssl(r.connected_bev, SslContext::get_client_ssl(),
+            connect_ssl(r->connected_bev, SslContext::get_client_ssl(),
                         [=](Error err, bufferevent *bev) {
                             if (err) {
+                                err.context = r;
                                 callback(err, nullptr);
                                 return;
                             }
                             Var<Transport> txp = Connection::make(bev,
                                     poller, logger);
                             txp->set_timeout(timeout);
-                            callback(NoError(), txp);
+                            assert(err == NoError());
+                            err.context = r;
+                            callback(err, txp);
                         },
                         poller, logger);
             return;
         }
-        Var<Transport> txp = Connection::make(r.connected_bev, poller, logger);
+        Var<Transport> txp = Connection::make(r->connected_bev, poller, logger);
         txp->set_timeout(timeout);
-        callback(NoError(), txp);
+        assert(err == NoError());
+        err.context = r;
+        callback(err, txp);
     }, timeout, poller, logger);
 }
 
