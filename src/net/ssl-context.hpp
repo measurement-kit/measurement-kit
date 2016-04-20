@@ -17,7 +17,7 @@ class SslContext : public NonCopyable, public NonMovable {
   public:
     static ssl_ctx_st *get_client_context();
 
-    static ssl_st *get_client_ssl();
+    static ssl_st *get_client_ssl(std::string hostname);
 
   private:
     SslContext();

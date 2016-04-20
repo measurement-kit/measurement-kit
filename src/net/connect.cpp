@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <openssl/ssl.h>
+
 #include "src/net/connect.hpp"
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/common/error.hpp>
@@ -143,6 +145,7 @@ void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> 
 }
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
+                 std::string hostname,
                  Callback<bufferevent *> cb,
                  Poller *poller, Logger *logger) {
     logger->debug("connect ssl...");
@@ -157,8 +160,43 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
     }
 
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
-            new Callback<bufferevent *>([cb, logger](Error err, bufferevent *bev) {
+            new Callback<bufferevent *>([cb, logger, ssl, hostname](Error err, bufferevent *bev) {
                 logger->debug("connect ssl... callback");
+
+                // We do this before checking the value of err, since err will
+                // be set also when the cert chain verification procedure
+                // occurs.
+                // We also do a check in here so that we can provide a more
+                // detailed error message to who called us.
+                long verify_err = SSL_get_verify_result(ssl);
+                if (verify_err != X509_V_OK) {
+                    logger->debug("ssl: got an invalid certificate");
+                    cb(SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err)), nullptr);
+                    return;
+                }
+
+                if (err) {
+                    logger->debug("error in connection.");
+                    cb(err, nullptr);
+                    return;
+                }
+
+                X509 *server_cert = SSL_get_peer_certificate(ssl);
+                if (server_cert == NULL) {
+                    logger->debug("ssl: got no certificate");
+                    bufferevent_free(bev);
+                    cb(SSLNoCertificateError(), nullptr);
+                    return;
+                }
+
+                Error hostname_validate_err = ssl_validate_hostname(hostname, server_cert);
+                if (hostname_validate_err) {
+                    logger->debug("ssl: got invalid hostname");
+                    bufferevent_free(bev);
+                    cb(hostname_validate_err, nullptr);
+                    return;
+                }
+
                 cb(err, bev);
             }));
 }

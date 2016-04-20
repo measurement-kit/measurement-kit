@@ -6,6 +6,7 @@
 
 #include "event2/util.h"
 #include "src/common/utils.hpp"
+#include "src/net/ssl-validate.hpp"
 #include <arpa/inet.h>
 #include <event2/bufferevent.h>
 #include <event2/util.h>
@@ -91,6 +92,7 @@ void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> 
         Logger *logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
+                 std::string hostname,
                  Callback<bufferevent *> cb,
                  Poller * = Poller::global(),
                  Logger * = Logger::global());
