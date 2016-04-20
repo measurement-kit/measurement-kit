@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "src/ooni/utils.hpp"
+
 namespace mk {
 namespace ooni {
 

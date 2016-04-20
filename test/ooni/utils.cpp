@@ -23,7 +23,7 @@ TEST_CASE("ip lookup works") {
 }
 
 TEST_CASE("geoip works") {
-    std::string resolved = "{\"country_asn\":\"AS15169 Google "
+    std::string resolved = "{\"asn\":\"AS15169 Google "
                            "Inc.\",\"country_code\":\"USA\",\"country_name\":"
                            "\"United States\"}";
     mk::ErrorOr<Json> json = mk::ooni::geoip(
