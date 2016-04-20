@@ -40,11 +40,14 @@ void ip_lookup(Callback<std::string> callback) {
             {}, "", {}, Logger::global(), Poller::global());
 }
 
+extern "C" {
 // this is needed to return a const char instead of a char for asn resolver
-inline GEOIP_API const char *
+inline const char *
 MK_GeoIP_name_by_name_gl(GeoIP *gi, const char *host, GeoIPLookup *gl) {
     return (const char *)GeoIP_name_by_name_gl(gi, host, gl);
 }
+
+} //extern C
 
 template <decltype(GeoIP_country_code3_by_name_gl) resolver>
 std::string geoip_query(std::string ip, std::string path) {
@@ -52,40 +55,20 @@ std::string geoip_query(std::string ip, std::string path) {
     GeoIPLookup gl;
     gi = GeoIP_open(path.c_str(), GEOIP_MEMORY_CACHE);
     if (gi == nullptr) {
+        GeoIP_delete(gi);
         return "";
     }
     const char *result;
     result = resolver(gi, ip.c_str(), &gl);
     if (result == NULL) {
+        GeoIP_delete(gi);
         return "";
     }
     GeoIP_delete(gi);
-    return std::string(result);
+    return result;
 }
 
-inline ErrorOr<Json> geoip(std::string ip, std::string path_country,
-                           std::string path_asn) {
-    Json json;
-    std::string result;
-
-    result = geoip_query<GeoIP_country_code3_by_name_gl>(ip, path_country);
-    if (result == "") {
-        return GenericError();
-    }
-    json["country_code"] = result;
-    result = geoip_query<GeoIP_country_name_by_name_gl>(ip, path_country);
-    if (result == "") {
-        return GenericError();
-    }
-    json["country_name"] = result;
-
-    result = geoip_query<MK_GeoIP_name_by_name_gl>(ip, path_asn);
-    if (result == "") {
-        return GenericError();
-    }
-    json["asn"] = result;
-    return ErrorOr<Json>(json);
-}
+ErrorOr<Json> geoip(std::string ip, std::string path_country, std::string path_asn);
 
 } // namespace ooni
 } // namespace mk
