@@ -86,7 +86,7 @@ typedef std::function<void(ResolveHostnameResult)> ResolveHostnameCb;
 void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
         Poller *poller = Poller::global(), Logger *logger = Logger::global());
 
-void connect(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
+void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
         double timeo = 10.0, Poller *poller = Poller::global(),
         Logger *logger = Logger::global());
 

@@ -13,6 +13,7 @@
 namespace mk {
 namespace net {
 
+// TODO: this should be moved into src/net/connect.cpp
 void connect(std::string address, int port,
              Callback<Var<Transport>> callback,
              Settings settings, Logger *logger, Poller *poller) {
@@ -25,7 +26,7 @@ void connect(std::string address, int port,
         return;
     }
     double timeout = settings.get("timeout", 30.0);
-    net::connect(address, port, [=](Error err, Var<ConnectResult> r) {
+    connect_logic(address, port, [=](Error err, Var<ConnectResult> r) {
         if (err) {
             err.context = r;
             callback(err, nullptr);

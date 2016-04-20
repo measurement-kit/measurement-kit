@@ -135,7 +135,7 @@ void socks5_connect(std::string address, int port, Settings settings,
     settings["address"] = address;
     settings["port"] = port;
 
-    connect(proxy_address, lexical_cast<int>(proxy_port),
+    connect_logic(proxy_address, lexical_cast<int>(proxy_port),
             [=](Error err, Var<ConnectResult> r) {
                 if (err) {
                     err.context = r;

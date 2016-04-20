@@ -113,7 +113,7 @@ void resolve_hostname(
     }, {}, poller);
 }
 
-void connect(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
+void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
         double timeo, Poller *poller, Logger *logger) {
 
     Var<ConnectResult> result(new ConnectResult);
