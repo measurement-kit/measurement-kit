@@ -5,10 +5,10 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
+#include "src/common/check_connectivity.hpp"
 #include "src/ooni/utils.hpp"
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
-#include "src/common/check_connectivity.hpp"
 
 TEST_CASE("ip lookup works") {
     if (mk::CheckConnectivity::is_down()) {
@@ -23,8 +23,11 @@ TEST_CASE("ip lookup works") {
 }
 
 TEST_CASE("geoip works") {
-    std::string resolved = "{\"country_asn\":\"AS15169 Google Inc.\",\"country_code\":\"USA\",\"country_name\":\"United States\"}";
-    mk::ErrorOr<Json> json = mk::ooni::geoip("8.8.8.8", "test/fixtures/GeoIP.dat", "test/fixtures/GeoIPASNum.dat");
-    REQUIRE (json);
-    REQUIRE (resolved == json->dump());
+    std::string resolved = "{\"country_asn\":\"AS15169 Google "
+                           "Inc.\",\"country_code\":\"USA\",\"country_name\":"
+                           "\"United States\"}";
+    mk::ErrorOr<Json> json = mk::ooni::geoip(
+        "8.8.8.8", "test/fixtures/GeoIP.dat", "test/fixtures/GeoIPASNum.dat");
+    REQUIRE(json);
+    REQUIRE(resolved == json->dump());
 }
