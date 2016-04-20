@@ -53,13 +53,11 @@ std::string geoip_query(std::string ip, std::string path) {
     GeoIPLookup gl;
     gi = GeoIP_open(path.c_str(), GEOIP_MEMORY_CACHE);
     if (gi == nullptr) {
-        std::cout << "impossible to open the database" << std::endl;
         return "";
     }
     const char *result;
     result = resolver(gi, ip.c_str(), &gl);
     if (result == NULL) {
-        std::cout << "error with resolver" << std::endl;
         return "";
     }
     GeoIP_delete(gi);
