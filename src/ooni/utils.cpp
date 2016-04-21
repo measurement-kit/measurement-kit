@@ -4,7 +4,7 @@
 
 #include "src/ooni/utils.hpp"
 
-namespace mk {
+namespace mk {
 namespace ooni {
 
 ErrorOr<Json> geoip(std::string ip, std::string path_country,
