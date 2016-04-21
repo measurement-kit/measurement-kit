@@ -8,24 +8,21 @@
 #include <openssl/ssl.h>
 #include <exception>
 #include <iostream>
+#include <measurement_kit/common.hpp>
 #include "src/net/ssl-context.hpp"
 
 namespace mk {
 namespace net {
 
-static const char *get_ca_file_location() {
-    return "/tmp/cacert.pem";
-}
-
-
-SSL_CTX *SslContext::get_client_context() {
+SslContext *SslContext::default_context() {
     static SslContext singleton;
-    return singleton.ctx;
+    return &singleton;
 }
 
 SSL *SslContext::get_client_ssl(std::string hostname) {
-    SSL *ssl = SSL_new(get_client_context());
+    SSL *ssl = SSL_new(ctx);
     if (ssl == nullptr) {
+        Logger::global()->debug("unable to initialise ssl");
         throw std::exception();
     }
 
@@ -35,28 +32,41 @@ SSL *SslContext::get_client_ssl(std::string hostname) {
     return ssl;
 }
 
-SslContext::SslContext() {
-    // The return values of the following function calls do not matter.
+void SslContext::init(std::string ca_bundle_path) {
     SSL_library_init();
     ERR_load_crypto_strings();
     SSL_load_error_strings();
-    // XXX we may want to only load the algorithms we need to use.
     OpenSSL_add_all_algorithms();
 
-    // FIXME: the code in here is really simple because we only aim to
-    // smoke test the OpenSSL functionality. What is missing here is at
-    // the minimum code to verify the peer certificate. Also we should
-    // not allow SSLv2 (and probably v3) connections, and we should also
-    // probably set SNI for the other end to respond correctly.
     ctx = SSL_CTX_new(TLSv1_client_method());
     if (ctx == nullptr) {
+        Logger::global()->debug("unable to setup context");
         throw std::exception();
     }
-    if (SSL_CTX_load_verify_locations(ctx, get_ca_file_location(), NULL) == 0) {
+
+    if (SSL_CTX_load_verify_locations(ctx, ca_bundle_path.c_str(), NULL) == 0) {
+        Logger::global()->debug("failed to load verify location");
          throw std::exception();
     };
 
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
+}
+
+SslContext::SslContext() {
+    std::string ca_bundle_path;
+    Settings *global_settings = Settings::global();
+    if (global_settings->find("ca_bundle_path") != global_settings->end()) {
+        ca_bundle_path = (*global_settings)["ca_bundle_path"];
+    } else {
+        // XXX should we add other system default locations in here?
+        Logger::global()->debug("failed to find ca_bundle");
+        throw std::exception();
+    }
+    init(ca_bundle_path);
+}
+
+SslContext::SslContext(std::string ca_bundle_path) {
+    init(ca_bundle_path);
 }
 
 SslContext::~SslContext() {

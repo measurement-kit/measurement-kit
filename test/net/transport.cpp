@@ -53,7 +53,7 @@ TEST_CASE("net::connect() can connect to open port") {
     });
 }
 
-TEST_CASE("net::connect() can connect to SSL port") {
+TEST_CASE("net::connect() can connect to ssl port") {
     if (CheckConnectivity::is_down()) {
         return;
     }
@@ -69,7 +69,49 @@ TEST_CASE("net::connect() can connect to SSL port") {
             REQUIRE(cr->connected_bev);
             txp->close([]() { break_loop(); });
         },
-        {{"ssl", true}});
+        {{"ssl", true}, {"ca_bundle_path", "test/fixtures/certs.pem"}});
+    });
+}
+
+TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    set_verbose(1);
+    loop_with_initial_event([]() {
+        connect("expired.badssl.com", 443, [](Error error, Var<Transport> txp) {
+            REQUIRE(error);
+            break_loop();
+        },
+        {{"ssl", true}, {"ca_bundle_path", "test/fixtures/certs.pem"}});
+    });
+}
+
+TEST_CASE("net::connect() ssl fails when presented a certificate with the wrong hostname") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    set_verbose(1);
+    loop_with_initial_event([]() {
+        connect("wrong.host.badssl.com", 443, [](Error error, Var<Transport> txp) {
+            REQUIRE(error);
+            break_loop();
+        },
+        {{"ssl", true}, {"ca_bundle_path", "test/fixtures/certs.pem"}});
+    });
+}
+
+TEST_CASE("net::connect() ssl works when using SNI") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    set_verbose(1);
+    loop_with_initial_event([]() {
+        connect("sha256.badssl.com", 443, [](Error error, Var<Transport> txp) {
+            REQUIRE(!error);
+            txp->close([]() { break_loop(); });
+        },
+        {{"ssl", true}, {"ca_bundle_path", "test/fixtures/certs.pem"}});
     });
 }
 
