@@ -2,7 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/net/connect.hpp"
 #include <functional>
 #include <iostream>
 #include <measurement_kit/common.hpp>
@@ -46,9 +45,38 @@ int main(int argc, char **argv) {
     std::string domain = argv[0];
 
     loop_with_initial_event([&domain, &port, &settings]() {
-        connect(domain, port, [](Error err, Var<Transport>) {
-            std::cout << "Connection result code: " << (int)err << "\n";
-            break_loop();
+        connect(domain, port, [](Error err, Var<Transport> txp) {
+            std::cout << "Overall connect result: " << (int)err << "\n";
+            Var<ConnectResult> cr = err.context.as<ConnectResult>();
+            if (!cr) {
+                std::cout << "No connection information\n";
+            } else {
+                std::cout << "input was valid ipv4: " <<
+                        cr->resolve_result.inet_pton_ipv4 << "\n";
+                std::cout << "input was valid ipv6: " <<
+                        cr->resolve_result.inet_pton_ipv4 << "\n";
+                std::cout << "ipv4 resolve error: " <<
+                        (int) cr->resolve_result.ipv4_err << "\n";
+                std::cout << "ipv6 resolve error: " <<
+                        (int) cr->resolve_result.ipv6_err << "\n";
+                std::cout << "list of addresses returned:\n";
+                for (auto addr : cr->resolve_result.addresses) {
+                    std::cout << "    - " << addr << "\n";
+                }
+                std::cout << "errors returned by the various connects:\n";
+                for (auto e : cr->connect_result) {
+                    std::cout << "    - " << (int)e << "\n";
+                }
+                std::cout << "bufferevent address used internally: "
+                        << cr->connected_bev << "\n";
+            }
+            if (txp) {
+                txp->close([]() {
+                    break_loop();
+                });
+            } else {
+                break_loop();
+            }
         }, settings);
     });
 }

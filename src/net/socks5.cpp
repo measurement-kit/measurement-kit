@@ -135,24 +135,28 @@ void socks5_connect(std::string address, int port, Settings settings,
     settings["address"] = address;
     settings["port"] = port;
 
-    connect(proxy_address, lexical_cast<int>(proxy_port),
-            [=](ConnectResult r) {
-                if (r.overall_error) {
-                    callback(r.overall_error, nullptr);
+    connect_logic(proxy_address, lexical_cast<int>(proxy_port),
+            [=](Error err, Var<ConnectResult> r) {
+                if (err) {
+                    err.context = r;
+                    callback(err, nullptr);
                     return;
                 }
-                Var<Transport> txp = Connection::make(r.connected_bev,
+                Var<Transport> txp = Connection::make(r->connected_bev,
                                                       poller, logger);
                 Var<Transport> socks5(
                         new Socks5(txp, settings, poller, logger));
                 socks5->on_connect([=]() {
                     socks5->on_connect(nullptr);
                     socks5->on_error(nullptr);
-                    callback(NoError(), socks5);
+                    Error error = NoError();
+                    error.context = r;
+                    callback(error, socks5);
                 });
                 socks5->on_error([=](Error error) {
                     socks5->on_connect(nullptr);
                     socks5->on_error(nullptr);
+                    error.context = r;
                     callback(error, nullptr);
                 });
             },

@@ -5,8 +5,6 @@
 #define SRC_NET_CONNECT_HPP
 
 #include "event2/util.h"
-#include "measurement_kit/common.hpp"
-#include "measurement_kit/dns.hpp"
 #include "src/common/utils.hpp"
 #include <arpa/inet.h>
 #include <event2/bufferevent.h>
@@ -15,6 +13,7 @@
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/net.hpp>
 #include <sstream>
 #include <string>
 #include <sys/socket.h>
@@ -82,34 +81,14 @@ void connect_first_of(std::vector<std::string> addresses, int port,
         Poller *poller = Poller::global(), Logger *logger = Logger::global(),
         size_t index = 0, Var<std::vector<Error>> errors = nullptr);
 
-struct ResolveHostnameResult {
-    bool inet_pton_ipv4 = false;
-    bool inet_pton_ipv6 = false;
-
-    Error ipv4_err;
-    dns::Message ipv4_reply;
-    Error ipv6_err;
-    dns::Message ipv6_reply;
-
-    std::vector<std::string> addresses;
-};
-
 typedef std::function<void(ResolveHostnameResult)> ResolveHostnameCb;
 
 void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
         Poller *poller = Poller::global(), Logger *logger = Logger::global());
 
-struct ConnectResult {
-    ResolveHostnameResult resolve_result;
-    std::vector<Error> connect_result;
-    Error overall_error;
-    bufferevent *connected_bev;
-};
-
-typedef std::function<void(ConnectResult)> ConnectCb;
-
-void connect(std::string hostname, int port, ConnectCb cb, double timeo = 10.0,
-        Poller *poller = Poller::global(), Logger *logger = Logger::global());
+void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
+        double timeo = 10.0, Poller *poller = Poller::global(),
+        Logger *logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                  Callback<bufferevent *> cb,

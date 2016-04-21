@@ -6,10 +6,14 @@
 
 #include <functional>
 #include <measurement_kit/common.hpp>
+#include <measurement_kit/dns.hpp>
 #include <measurement_kit/net/buffer.hpp>
 #include <stddef.h>
 #include <string>
 #include <vector>
+
+// Forward declaration
+struct bufferevent;
 
 namespace mk {
 
@@ -51,6 +55,24 @@ class Transport {
 
     virtual std::string socks5_address() = 0;
     virtual std::string socks5_port() = 0;
+};
+
+struct ResolveHostnameResult {
+    bool inet_pton_ipv4 = false;
+    bool inet_pton_ipv6 = false;
+
+    Error ipv4_err;
+    dns::Message ipv4_reply;
+    Error ipv6_err;
+    dns::Message ipv6_reply;
+
+    std::vector<std::string> addresses;
+};
+
+struct ConnectResult : public ErrorContext {
+    ResolveHostnameResult resolve_result;
+    std::vector<Error> connect_result;
+    bufferevent *connected_bev = nullptr;
 };
 
 void connect(std::string address, int port,

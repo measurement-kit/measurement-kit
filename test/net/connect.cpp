@@ -294,10 +294,10 @@ TEST_CASE("connect() works with valid IPv4") {
         return;
     }
     loop_with_initial_event([]() {
-        connect("www.google.com", 80, [](ConnectResult r) {
-            REQUIRE(!r.overall_error);
-            REQUIRE(r.connected_bev != nullptr);
-            ::bufferevent_free(r.connected_bev);
+        connect_logic("www.google.com", 80, [](Error e, Var<ConnectResult> r) {
+            REQUIRE(!e);
+            REQUIRE(r->connected_bev != nullptr);
+            ::bufferevent_free(r->connected_bev);
             break_loop();
         });
     });
@@ -308,9 +308,9 @@ TEST_CASE("connect() fails when port is closed or filtered") {
         return;
     }
     loop_with_initial_event([]() {
-        connect("www.google.com", 81, [](ConnectResult r) {
-            REQUIRE(r.overall_error);
-            REQUIRE(r.connected_bev == nullptr);
+        connect_logic("www.google.com", 81, [](Error e, Var<ConnectResult> r) {
+            REQUIRE(e);
+            REQUIRE(r->connected_bev == nullptr);
             break_loop();
         });
     });
