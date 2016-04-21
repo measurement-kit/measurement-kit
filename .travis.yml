@@ -55,8 +55,6 @@ matrix:
             - clang-3.6
             - llvm-3.6-dev
             - valgrind
-            - libgeoip1
-            - libgeoip-dev
           sources:
             - llvm-toolchain-precise-3.6
             - ubuntu-toolchain-r-test
@@ -69,8 +67,6 @@ matrix:
           packages:
             - clang-3.6
             - llvm-3.6-dev
-            - libgeoip1
-            - libgeoip-dev
           sources:
             - llvm-toolchain-precise-3.6
             - ubuntu-toolchain-r-test
@@ -83,7 +79,5 @@ matrix:
           packages:
             - g++-5
             - gcc-5
-            - libgeoip1
-            - libgeoip-dev
           sources:
             - ubuntu-toolchain-r-test
