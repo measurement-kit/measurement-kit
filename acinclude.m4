@@ -86,7 +86,7 @@ AC_DEFUN([MK_AM_GEOIP], [
 
   if test "$mk_not_found" = "1"; then
     AC_MSG_WARN([Failed to find dependency: geoip])
-    echo "    - to install on Debian: sudo apt-get install libgeoip1 libgeoip-dev geoip-bin"
+    echo "    - to install on Debian: sudo apt-get install libgeoip-dev"
     echo "    - to install on OSX: brew install libgeoip"
     echo "    - to compile from sources: ./build/dependency geoip"
     AC_MSG_ERROR([Please, install geoip and run configure again])
