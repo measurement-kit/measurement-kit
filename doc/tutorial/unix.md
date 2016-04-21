@@ -54,7 +54,7 @@ moment of writing this tutorial, it depends on:
 - [libevent](https://github.com/libevent/libevent)
 - [jansson](https://github.com/akheron/jansson)
 - [json](https://github.com/nlohmann/json)
-- [libmaxminddb](https://github.com/maxmind/libmaxminddb)
+- [geoip](https://github.com/maxmind/geoip-api-c)
 
 You may want to check the most recent version of [README.md](
 https://github.com/measurement-kit/measurement-kit/blob/master/README.md)

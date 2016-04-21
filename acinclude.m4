@@ -67,33 +67,6 @@ AC_DEFUN([MK_AM_JANSSON], [
   echo ""
 ])
 
-AC_DEFUN([MK_AM_LIBMAXMINDDB], [
-  echo "> checking for dependency: libmaxminddb"
-
-  AC_ARG_WITH([libmaxminddb],
-              [AS_HELP_STRING([--with-libmaxminddb],
-                [GeoIP library @<:@default=check@:>@])
-              ],
-              [
-                CPPFLAGS="$CPPFLAGS -I$withval/include"
-                LDFLAGS="$LDFLAGS -L$withval/lib"
-              ],
-              [])
-
-  mk_not_found=""
-  AC_CHECK_HEADERS(maxminddb.h, [], [mk_not_found=1])
-  AC_CHECK_LIB(maxminddb, MMDB_open, [], [mk_not_found=1])
-
-  if test "$mk_not_found" = "1"; then
-    AC_MSG_WARN([Failed to find dependency: libmaxminddb])
-    echo "    - to install on Debian: sudo apt-get install libmaxminddb-dev"
-    echo "    - to install on OSX: brew install libmaxminddb"
-    echo "    - to compile from sources: ./build/dependency libmaxminddb"
-    AC_MSG_ERROR([Please, install libmaxminddb and run configure again])
-  fi
-  echo ""
-])
-
 AC_DEFUN([MK_AM_GEOIP], [
   echo "> checking for dependency: geoip"
 

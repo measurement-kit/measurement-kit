@@ -82,7 +82,7 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
     test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && ./autogen.sh)
     ${ROOTDIR}/../../configure -q --host=${ARCH} --with-sysroot=${SYSROOT} \
       --with-libevent=builtin --disable-shared --libdir=/ \
-      --includedir=/include --with-libmaxminddb=builtin \
+      --includedir=/include --with-geoip=builtin \
       --with-jansson=builtin --disable-examples
     make V=0
     echo "Installing library in ${BASEDIR}/build/${ANDROID_TOOLCHAIN}"

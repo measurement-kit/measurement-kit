@@ -42,7 +42,6 @@ export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer
                 --disable-examples \
                 --with-libevent=builtin \
                 --with-jansson=builtin \
-                --with-libmaxminddb=builtin \
                 --prefix=/ \
                 $EXTRA_CONFIG
     make -j4 V=0

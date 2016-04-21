@@ -64,7 +64,6 @@ src/ext/http-parser/
 src/ext/jansson/
 src/ext/json/
 src/ext/libevent/
-src/ext/libmaxminddb/
 stamp-h1
 test-driver
 test/common/async
