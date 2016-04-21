@@ -4,7 +4,7 @@ install:
     - if [ "$VER" != ""  ]; then
           export CXX="$CXX-$VER" CC="$CC-$VER";
       fi;
-    - ARG="--with-jansson=builtin"
+    - ARG="-q --with-jansson=builtin"
     - if [ "$COVERAGE" = "true" ]; then
         export CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;
         pip install --user cpp-coveralls;
