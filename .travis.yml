@@ -4,9 +4,7 @@ install:
     - if [ "$VER" != ""  ]; then
           export CXX="$CXX-$VER" CC="$CC-$VER";
       fi;
-    - ARG="-q --with-jansson=builtin 
-            --with-libmaxminddb=builtin 
-            --with-geoip=builtin"
+    - ARG="--with-jansson=builtin"
     - if [ "$COVERAGE" = "true" ]; then
         export CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;
         pip install --user cpp-coveralls;
@@ -15,9 +13,7 @@ install:
         ARG="$ARG --disable-shared";
       fi
     - ./autogen.sh
-    - ./build/dependency libmaxminddb
     - ./build/dependency jansson
-    - ./build/dependency geoip
 
 # Only measure coverage with clang for now because I cannot manage to
 # convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
@@ -58,6 +54,8 @@ matrix:
             - clang-3.6
             - llvm-3.6-dev
             - valgrind
+            - libgeoip1
+            - libgeoip-dev
           sources:
             - llvm-toolchain-precise-3.6
             - ubuntu-toolchain-r-test
@@ -70,6 +68,8 @@ matrix:
           packages:
             - clang-3.6
             - llvm-3.6-dev
+            - libgeoip1
+            - libgeoip-dev
           sources:
             - llvm-toolchain-precise-3.6
             - ubuntu-toolchain-r-test
@@ -82,5 +82,7 @@ matrix:
           packages:
             - g++-5
             - gcc-5
+            - libgeoip1
+            - libgeoip-dev
           sources:
             - ubuntu-toolchain-r-test

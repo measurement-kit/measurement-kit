@@ -109,7 +109,7 @@ AC_DEFUN([MK_AM_GEOIP], [
 
   mk_not_found=""
   AC_CHECK_HEADERS(GeoIP.h, [], [mk_not_found=1])
-  AC_CHECK_LIB(geoip, GeoIP_open, [], [mk_not_found=1])
+  AC_CHECK_LIB(GeoIP, GeoIP_open, [], [mk_not_found=1])
 
   if test "$mk_not_found" = "1"; then
     AC_MSG_WARN([Failed to find dependency: geoip])
