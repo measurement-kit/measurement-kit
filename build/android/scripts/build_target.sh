@@ -71,30 +71,38 @@ export RANLIB=${TOOL_PATH}-ranlib
 export STRIP=${TOOL_PATH}-strip
 
 export CPPFLAGS="${CPPFLAGS} --sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_TOOLCHAIN}/include"
-export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib -lc++_static -latomic -lm"
+export LDFLAGS="${LDFLAGS} --sysroot=${SYSROOT} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib"
+export LIBS="${LIBS} -lc++_static -latomic -lm"
+
+export pkg_configure_flags="--host=${ARCH} --with-sysroot=${SYSROOT} --disable-shared"
+export pkg_cmake_flags="-DBUILD_SHARED_LIBS=OFF -DCMAKE_AR=${AR} -DCMAKE_RANLIB=${RANLIB}"
 
 (
     cd $ROOTDIR
     install -d ${ROOTDIR}/build/${ARCH}-${API}
+    export pkg_prefix=${ROOTDIR}/jni/${DESTDIR_NAME}
+    (cd ${ROOTDIR}/../.. && ./build/dependency all)
     cd ${ROOTDIR}/build/${ARCH}-${API}
     test -f Makefile && make clean
     echo "Configure with --host=${ARCH} and toolchain ${ANDROID_TOOLCHAIN}"
-    test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && ./autogen.sh)
-    ${ROOTDIR}/../../configure -q --host=${ARCH} --with-sysroot=${SYSROOT} \
-      --with-libevent=builtin --disable-shared --libdir=/ \
-      --includedir=/include --with-libmaxminddb=builtin \
-      --with-jansson=builtin --disable-examples
+    test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && autoreconf -i)
+    ${ROOTDIR}/../../configure --host=${ARCH} --with-sysroot=${SYSROOT} \
+      --with-libevent=${pkg_prefix} --with-yaml-cpp=${pkg_prefix} \
+      --with-boost=${pkg_prefix} --disable-shared \
+      --with-libmaxminddb=${pkg_prefix} \
+      --with-jansson=${pkg_prefix} --disable-examples \
+      --with-Catch=${pkg_prefix} --with-http-parser=${pkg_prefix} \
+      --prefix=${ROOTDIR}/jni/${DESTDIR_NAME}
     make V=0
     echo "Installing library in ${BASEDIR}/build/${ANDROID_TOOLCHAIN}"
     # The rationale of the following algorithm is to install-strip and do
     # only install headers we want and do not install extra stuff.
     # See: https://github.com/measurement-kit/measurement-kit/pull/274/files
-    make install-strip DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
+    make install-strip
     rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/include
-    make install-data-am DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/pkgconfig
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/usr
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/*.la
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/libevent_core.a
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/libevent_extra.a
+    make install-data-am
+    cd ${ROOTDIR}/jni/${DESTDIR_NAME}
+    rm -rf share
+    find lib -type f -name \*.a -exec mv {} . \;
+    rm -rf lib
 )
