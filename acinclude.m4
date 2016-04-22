@@ -72,7 +72,7 @@ AC_DEFUN([MK_AM_GEOIP], [
 
   AC_ARG_WITH([geoip],
               [AS_HELP_STRING([--with-geoip],
-                [GeoIP OLD API library @<:@default=check@:>@])
+                [GeoIP library @<:@default=check@:>@])
               ],
               [
                 CPPFLAGS="$CPPFLAGS -I$withval/include"

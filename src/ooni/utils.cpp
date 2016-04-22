@@ -43,6 +43,7 @@ ErrorOr<Json> geoip(std::string ip, std::string path_country,
     char *res;
     res = GeoIP_name_by_name_gl(gi, ip.c_str(), &gl);
     if (res == nullptr) {
+        GeoIP_delete(gi);
         return GenericError();
     }
     json["asn"] = res;
