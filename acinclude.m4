@@ -2,11 +2,33 @@ dnl Part of measurement-kit <https://measurement-kit.github.io/>.
 dnl Measurement-kit is free software. See AUTHORS and LICENSE for more
 dnl information on the copying conditions.
 
-AC_DEFUN([MK_AM_ENABLE_EXAMPLES], [
+AC_DEFUN([MK_AM_ENABLE_COVERAGE], [
+  AC_ARG_ENABLE([coverage],
+    AS_HELP_STRING([--enable-coverage, build for coverage]),
+      [enable_coverage=yes], [])
+])
+
+AC_DEFUN([MK_AM_ADD_COVERAGE_FLAGS_IF_NEEDED], [
+  if test "$enable_coverage" = "yes"; then
+    CFLAGS="--coverage $CFLAGS"
+    CXXFLAGS="--coverage $CXXFLAGS"
+    LDFLAGS="--coverage $LDFLAGS"
+  fi
+])
+
+AC_DEFUN([MK_AM_DISABLE_EXAMPLES], [
   AC_ARG_ENABLE([examples],
     AS_HELP_STRING([--disable-examples, skip building of examples programs]),
                    [], [enable_examples=yes])
   AM_CONDITIONAL([BUILD_EXAMPLES], [test "$enable_examples" = "yes"])
+])
+
+dnl TODO: this should be probably become --disable-network-tests
+AC_DEFUN([MK_AM_DISABLE_TESTS], [
+  AC_ARG_ENABLE([tests],
+    AS_HELP_STRING([--disable-tests, skip building and running test programs]),
+      [], [enable_tests=yes])
+  AM_CONDITIONAL([BUILD_TESTS], [test "$enable_tests" = "yes"])
 ])
 
 AC_DEFUN([MK_AM_LIBEVENT], [

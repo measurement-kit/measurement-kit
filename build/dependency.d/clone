@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+test "$pkg_rootdir" != ""
+. $pkg_rootdir/build/spec/$1
+test "$pkg_name" != "" -a "$pkg_repository" != ""
+cd $pkg_rootdir
+if [ ! -d third_party/.cache/$pkg_name ]; then
+    git clone $pkg_clone_flags $pkg_repository third_party/.cache/$pkg_name
+else
+    (cd third_party/.cache/$pkg_name && git pull)
+fi
+rm -rf third_party/$pkg_name
+cp -R third_party/.cache/$pkg_name third_party/$pkg_name
+cd third_party/$pkg_name
+if [ ! -z "$pkg_branch" ]; then
+    git checkout $pkg_branch
+fi
