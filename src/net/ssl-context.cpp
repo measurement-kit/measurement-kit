@@ -14,10 +14,16 @@
 namespace mk {
 namespace net {
 
-SslContext *SslContext::default_context() {
+Var<SslContext> SslContext::default_context() {
     static SslContext singleton;
-    return &singleton;
+    return Var<SslContext>(&singleton);
 }
+
+Var<SslContext> SslContext::make(std::string ca_bundle_path) {
+    SslContext *ssl_context = new SslContext(ca_bundle_path);
+    return Var<SslContext>(ssl_context);
+}
+
 
 SSL *SslContext::get_client_ssl(std::string hostname) {
     SSL *ssl = SSL_new(ctx);

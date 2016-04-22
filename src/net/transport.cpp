@@ -33,16 +33,17 @@ void connect(std::string address, int port,
             return;
         }
         if (settings.find("ssl") != settings.end()) {
-            SslContext *ssl_context;
+            Var<SslContext> ssl_context;
             if (settings.find("ca_bundle_path") != settings.end()) {
                 std::string ca_bundle_path = settings.at("ca_bundle_path");
                 logger->debug("ssl: using custom ca_bundle_path: %s", ca_bundle_path.c_str());
-                ssl_context = new SslContext(ca_bundle_path);
+                ssl_context = SslContext::make(ca_bundle_path);
             } else {
+                logger->debug("ssl: using default context");
                 ssl_context = SslContext::default_context();
             }
             connect_ssl(r->connected_bev, ssl_context->get_client_ssl(address), address,
-                        [=](Error err, bufferevent *bev) {
+                        [r, callback, timeout, ssl_context, poller, logger](Error err, bufferevent *bev) {
                             if (err) {
                                 err.context = r;
                                 callback(err, nullptr);

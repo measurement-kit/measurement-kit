@@ -27,6 +27,7 @@ struct ssl_st;
 
 extern "C" {
 void mk_bufferevent_on_event(bufferevent *, short, void *);
+void mk_bufferevent_on_event_ssl(bufferevent *, short, void *);
 }
 
 namespace mk {

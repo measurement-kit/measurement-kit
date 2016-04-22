@@ -30,6 +30,21 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
     delete cb;
 }
 
+void mk_bufferevent_on_event_ssl(bufferevent *bev, short what, void *ptr) {
+    auto cb = static_cast<mk::Callback<bufferevent *> *>(ptr);
+    if ((what & BEV_EVENT_CONNECTED) != 0) {
+        (*cb)(mk::NoError(), bev);
+    } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
+        bufferevent_free(bev);
+        (*cb)(mk::net::TimeoutError(), nullptr);
+    } else {
+        // The caller must perform the free of the bev
+        (*cb)(mk::net::NetworkError(), bev);
+    }
+    delete cb;
+}
+
+
 namespace mk {
 namespace net {
 
@@ -159,24 +174,21 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
         return;
     }
 
-    bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
+    bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event_ssl,
             new Callback<bufferevent *>([cb, logger, ssl, hostname](Error err, bufferevent *bev) {
                 logger->debug("connect ssl... callback");
 
-                // We do this before checking the value of err, since err will
-                // be set also when the cert chain verification procedure
-                // occurs.
-                // We also do a check in here so that we can provide a more
-                // detailed error message to who called us.
                 long verify_err = SSL_get_verify_result(ssl);
                 if (verify_err != X509_V_OK) {
                     logger->debug("ssl: got an invalid certificate");
+                    bufferevent_free(bev);
                     cb(SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err)), nullptr);
                     return;
                 }
 
                 if (err) {
                     logger->debug("error in connection.");
+                    bufferevent_free(bev);
                     cb(err, nullptr);
                     return;
                 }
@@ -190,6 +202,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                 }
 
                 Error hostname_validate_err = ssl_validate_hostname(hostname, server_cert);
+                X509_free(server_cert);
                 if (hostname_validate_err) {
                     logger->debug("ssl: got invalid hostname");
                     bufferevent_free(bev);
