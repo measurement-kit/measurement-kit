@@ -8,28 +8,49 @@ namespace mk {
 namespace ooni {
 
 ErrorOr<Json> geoip(std::string ip, std::string path_country,
-                           std::string path_asn) {
+                    std::string path_asn) {
     Json json;
-    std::string result;
+    GeoIP *gi;
+    GeoIPLookup gl;
 
-    result = geoip_query<GeoIP_country_code3_by_name_gl>(ip,  path_country);
-    if (result == "") {
+    gi = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
+    if (gi == nullptr) {
+        GeoIP_delete(gi);
+        return GenericError();
+    }
+
+    const char *result;
+    result = GeoIP_country_code3_by_name_gl(gi, ip.c_str(), &gl);
+    if (result == nullptr) {
+        GeoIP_delete(gi);
         return GenericError();
     }
     json["country_code"] = result;
-    result = geoip_query<GeoIP_country_name_by_name_gl>(ip,   path_country);
-    if (result == "") {
+
+    result = GeoIP_country_name_by_name_gl(gi, ip.c_str(), &gl);
+    if (result == nullptr) {
+        GeoIP_delete(gi);
         return GenericError();
     }
     json["country_name"] = result;
+    GeoIP_delete(gi);
 
-    result = geoip_query<MK_GeoIP_name_by_name_gl>(ip,        path_asn);
-    if (result == "") {
+    gi = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
+    if (gi == nullptr) {
+        GeoIP_delete(gi);
         return GenericError();
     }
-    json["asn"] = result;
+    char *res;
+    res = GeoIP_name_by_name_gl(gi, ip.c_str(), &gl);
+    if (res == nullptr) {
+        return GenericError();
+    }
+    json["asn"] = res;
+    free(res);
+    GeoIP_delete(gi);
+
     return json;
 }
 
-} //namespace ooni
-} //namespace mk
+} // namespace ooni
+} // namespace mk

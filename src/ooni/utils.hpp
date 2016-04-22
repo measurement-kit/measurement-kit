@@ -40,35 +40,8 @@ void ip_lookup(Callback<std::string> callback) {
             {}, "", {}, Logger::global(), Poller::global());
 }
 
-extern "C" {
-// this is needed to return a const char instead of a char for asn resolver
-inline const char *
-MK_GeoIP_name_by_name_gl(GeoIP *gi, const char *host, GeoIPLookup *gl) {
-    return (const char *)GeoIP_name_by_name_gl(gi, host, gl);
-}
-
-} //extern C
-
-template <decltype(GeoIP_country_code3_by_name_gl) resolver>
-std::string geoip_query(std::string ip, std::string path) {
-    GeoIP *gi;
-    GeoIPLookup gl;
-    gi = GeoIP_open(path.c_str(), GEOIP_MEMORY_CACHE);
-    if (gi == nullptr) {
-        GeoIP_delete(gi);
-        return "";
-    }
-    const char *result;
-    result = resolver(gi, ip.c_str(), &gl);
-    if (result == NULL) {
-        GeoIP_delete(gi);
-        return "";
-    }
-    GeoIP_delete(gi);
-    return result;
-}
-
-ErrorOr<Json> geoip(std::string ip, std::string path_country, std::string path_asn);
+ErrorOr<Json> geoip(std::string ip, std::string path_country,
+                    std::string path_asn);
 
 } // namespace ooni
 } // namespace mk
