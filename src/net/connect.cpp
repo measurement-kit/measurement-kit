@@ -31,6 +31,8 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
 }
 
 void mk_bufferevent_on_event_ssl(bufferevent *bev, short what, void *ptr) {
+    // XXX: Maybe this can be refactored a bit to have less duplication with
+    // the above function.
     auto cb = static_cast<mk::Callback<bufferevent *> *>(ptr);
     if ((what & BEV_EVENT_CONNECTED) != 0) {
         (*cb)(mk::NoError(), bev);
@@ -38,8 +40,15 @@ void mk_bufferevent_on_event_ssl(bufferevent *bev, short what, void *ptr) {
         bufferevent_free(bev);
         (*cb)(mk::net::TimeoutError(), nullptr);
     } else {
-        // The caller must perform the free of the bev
-        (*cb)(mk::net::NetworkError(), bev);
+        ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
+        long verify_err = SSL_get_verify_result(ssl);
+        if (verify_err != X509_V_OK) {
+            mk::Logger::global()->debug("ssl: got an invalid certificate");
+            (*cb)(mk::net::SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err)), nullptr);
+        } else {
+            (*cb)(mk::net::NetworkError(), nullptr);
+        }
+        bufferevent_free(bev);
     }
     delete cb;
 }
@@ -178,17 +187,8 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
             new Callback<bufferevent *>([cb, logger, ssl, hostname](Error err, bufferevent *bev) {
                 logger->debug("connect ssl... callback");
 
-                long verify_err = SSL_get_verify_result(ssl);
-                if (verify_err != X509_V_OK) {
-                    logger->debug("ssl: got an invalid certificate");
-                    bufferevent_free(bev);
-                    cb(SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err)), nullptr);
-                    return;
-                }
-
                 if (err) {
                     logger->debug("error in connection.");
-                    bufferevent_free(bev);
                     cb(err, nullptr);
                     return;
                 }

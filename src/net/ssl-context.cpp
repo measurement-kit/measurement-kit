@@ -14,17 +14,6 @@
 namespace mk {
 namespace net {
 
-Var<SslContext> SslContext::default_context() {
-    static SslContext singleton;
-    return Var<SslContext>(&singleton);
-}
-
-Var<SslContext> SslContext::make(std::string ca_bundle_path) {
-    SslContext *ssl_context = new SslContext(ca_bundle_path);
-    return Var<SslContext>(ssl_context);
-}
-
-
 SSL *SslContext::get_client_ssl(std::string hostname) {
     SSL *ssl = SSL_new(ctx);
     if (ssl == nullptr) {
@@ -32,8 +21,6 @@ SSL *SslContext::get_client_ssl(std::string hostname) {
         throw std::exception();
     }
 
-    // This is required to setup SNI (perhaps we should do this only when we
-    // see it's a hostname?)
     SSL_set_tlsext_host_name(ssl, hostname.c_str());
     return ssl;
 }
@@ -43,6 +30,8 @@ void SslContext::init(std::string ca_bundle_path) {
     ERR_load_crypto_strings();
     SSL_load_error_strings();
     OpenSSL_add_all_algorithms();
+
+    Logger::global()->debug("ssl: creating ssl context with bundle %s", ca_bundle_path.c_str());
 
     ctx = SSL_CTX_new(TLSv1_client_method());
     if (ctx == nullptr) {
