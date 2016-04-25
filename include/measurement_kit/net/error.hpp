@@ -119,6 +119,16 @@ class BuffereventSocketNewError : public Error {
     BuffereventSocketNewError() : Error(1017, "unknown_failure 1017") {}
 };
 
+class BuffereventFilterNewError : public Error {
+  public:
+    BuffereventFilterNewError() : Error(1018, "unknown_failure 1018") {}
+};
+
+class BuffereventFlushError : public Error {
+  public:
+    BuffereventFlushError() : Error(1019, "unknown_failure 1019") {}
+};
+
 } // namespace net
 } // namespace mk
 #endif
