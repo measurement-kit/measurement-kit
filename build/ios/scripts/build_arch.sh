@@ -71,8 +71,8 @@ export pkg_prefix=${DESTDIR}
                 --prefix=/ \
                 ${CONF_FLAGS}
     make -j4 V=0
-    make install-strip V=0 DESTDIR=${DESTDIR}
+    make install-strip V=0 DESTDIR=${DESTDIR}/
     rm -rf ${DESTDIR}/include/
-    make install-data-am V=0 DESTDIR=${DESTDIR}
+    make install-data-am V=0 DESTDIR=${DESTDIR}/
     make distclean
 )
