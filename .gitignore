@@ -61,9 +61,7 @@ missing
 site
 src/ext/Catch/
 src/ext/http-parser/
-src/ext/jansson/
 src/ext/json/
-src/ext/libevent/
 stamp-h1
 test-driver
 test/common/async
