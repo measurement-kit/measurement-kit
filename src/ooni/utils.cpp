@@ -15,7 +15,6 @@ ErrorOr<Json> geoip(std::string ip, std::string path_country,
 
     gi = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
     if (gi == nullptr) {
-        GeoIP_delete(gi);
         return GenericError();
     }
 
@@ -37,7 +36,6 @@ ErrorOr<Json> geoip(std::string ip, std::string path_country,
 
     gi = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
     if (gi == nullptr) {
-        GeoIP_delete(gi);
         return GenericError();
     }
     char *res;
