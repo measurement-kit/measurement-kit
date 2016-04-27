@@ -12,7 +12,8 @@ ErrorOr<json> geoip(std::string ip, std::string path_country,
     json node;
     GeoIP *gi;
     GeoIPLookup gl;
-
+    memset (&gl, 0, sizeof(gl));
+    
     gi = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
     if (gi == nullptr) {
         return GenericError();
