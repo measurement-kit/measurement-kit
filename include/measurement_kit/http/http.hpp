@@ -143,6 +143,19 @@ inline void request(std::string method, std::string url, RequestCallback cb,
     request(settings, cb, headers, body, lp, pol);
 }
 
+void request_send(Var<Transport>, Settings, Headers, std::string,
+                      RequestSendCb);
+    
+void request_recv_response(Var<Transport>, Callback<Var<Response>>,
+                      Poller * = Poller::global(), Logger * = Logger::global());
+    
+void request_sendrecv(Var<Transport>, Settings, Headers, std::string,
+                      Callback<Var<Response>>, Poller * = Poller::global(),
+                      Logger * = Logger::global());
+    
+void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
+                      Poller * = Poller::global(), Logger * = Logger::global());
+
 } // namespace http
 } // namespace mk
 #endif
