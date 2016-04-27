@@ -12,7 +12,7 @@
 #include <regex>
 #include <string>
 
-using Json = nlohmann::json;
+using json = nlohmann::json;
 
 namespace mk {
 namespace ooni {
@@ -40,7 +40,7 @@ void ip_lookup(Callback<std::string> callback) {
             {}, "", {}, Logger::global(), Poller::global());
 }
 
-ErrorOr<Json> geoip(std::string ip, std::string path_country,
+ErrorOr<json> geoip(std::string ip, std::string path_country,
                     std::string path_asn);
 
 } // namespace ooni

@@ -7,9 +7,9 @@
 namespace mk {
 namespace ooni {
 
-ErrorOr<Json> geoip(std::string ip, std::string path_country,
+ErrorOr<json> geoip(std::string ip, std::string path_country,
                     std::string path_asn) {
-    Json json;
+    json node;
     GeoIP *gi;
     GeoIPLookup gl;
 
@@ -24,14 +24,14 @@ ErrorOr<Json> geoip(std::string ip, std::string path_country,
         GeoIP_delete(gi);
         return GenericError();
     }
-    json["country_code"] = result;
+    node["country_code"] = result;
 
     result = GeoIP_country_name_by_name_gl(gi, ip.c_str(), &gl);
     if (result == nullptr) {
         GeoIP_delete(gi);
         return GenericError();
     }
-    json["country_name"] = result;
+    node["country_name"] = result;
     GeoIP_delete(gi);
 
     gi = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
@@ -44,11 +44,11 @@ ErrorOr<Json> geoip(std::string ip, std::string path_country,
         GeoIP_delete(gi);
         return GenericError();
     }
-    json["asn"] = res;
+    node["asn"] = res;
     free(res);
     GeoIP_delete(gi);
 
-    return json;
+    return node;
 }
 
 } // namespace ooni
