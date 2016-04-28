@@ -212,10 +212,10 @@ TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    request_connect<socks_port_is_9055>(settings, nullptr);
+    request_connect_impl<socks_port_is_9055>(settings, nullptr);
 
     settings["url"] = "http://ooni.torproject.org/";
-    request_connect<socks_port_is_empty>(settings, nullptr);
+    request_connect_impl<socks_port_is_empty>(settings, nullptr);
 }
 
 SOCKS_PORT_IS(9999);
@@ -229,10 +229,10 @@ TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    request_connect<socks_port_is_9999>(settings, nullptr);
+    request_connect_impl<socks_port_is_9999>(settings, nullptr);
 
     settings["url"] = "http://ooni.torproject.org/";
-    request_connect<socks_port_is_9055>(settings, nullptr);
+    request_connect_impl<socks_port_is_9055>(settings, nullptr);
 }
 
 TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
