@@ -143,6 +143,9 @@ inline void request(std::string method, std::string url, RequestCallback cb,
     request(settings, cb, headers, body, lp, pol);
 }
 
+void request_connect_(Settings, Callback<Var<Transport>>,
+                      Poller * = Poller::global(), Logger * = Logger::global());
+
 void request_send(Var<Transport>, Settings, Headers, std::string,
                       RequestSendCb);
     
