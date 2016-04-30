@@ -11,17 +11,14 @@ PLATFORM=$1
 ARCH=$2
 
 OPT_FLAGS="-Os -g3"
-MAKE_JOBS=16
+MAKE_JOBS=2
 
 ROOTDIR=$(cd $(dirname "$0") && pwd -P)
-echo $ROOTDIR
 SOURCEDIR=$(cd "${ROOTDIR}/../../../" && pwd -P)
-echo $SOURCEDIR
 BUILDDIR=$(cd "${ROOTDIR}/../" && pwd -P)
-echo $BUILDDIR
+
 mkdir -p "$BUILDDIR/build/${PLATFORM}/${ARCH}/"
 DESTDIR=$(cd "$BUILDDIR/build/${PLATFORM}/${ARCH}/" && pwd -P)
-echo $DESTDIR
 
 
 MIOS_VERSION="7.1"
