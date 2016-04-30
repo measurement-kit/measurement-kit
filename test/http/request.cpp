@@ -243,10 +243,10 @@ TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    request_connect<socks_port_is_9055>(settings, nullptr);
+    request_connect_impl<socks_port_is_9055>(settings, nullptr);
 
     settings["url"] = "http://ooni.torproject.org/";
-    request_connect<socks_port_is_9055>(settings, nullptr);
+    request_connect_impl<socks_port_is_9055>(settings, nullptr);
 }
 
 SOCKS_PORT_IS(9050);
@@ -257,10 +257,10 @@ TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     };
 
     settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    request_connect<socks_port_is_9050>(settings, nullptr);
+    request_connect_impl<socks_port_is_9050>(settings, nullptr);
 
     settings["url"] = "http://ooni.torproject.org/";
-    request_connect<socks_port_is_empty>(settings, nullptr);
+    request_connect_impl<socks_port_is_empty>(settings, nullptr);
 }
 
 TEST_CASE("http::request() callback is called if input URL parsing fails") {
@@ -272,12 +272,12 @@ TEST_CASE("http::request() callback is called if input URL parsing fails") {
     REQUIRE(called);
 }
 
-TEST_CASE("http::request_connect() works for normal connections") {
+TEST_CASE("http::request_connect_impl() works for normal connections") {
     if (CheckConnectivity::is_down()) {
         return;
     }
     loop_with_initial_event([]() {
-        request_connect({
+        request_connect_impl({
             {"url", "http://www.google.com/robots.txt"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
@@ -292,7 +292,7 @@ TEST_CASE("http::request_send() works as expected") {
         return;
     }
     loop_with_initial_event([]() {
-        request_connect({
+        request_connect_impl({
             {"url", "http://www.google.com/"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
@@ -316,7 +316,7 @@ TEST_CASE("http::request_recv_response() works as expected") {
         return;
     }
     loop_with_initial_event([]() {
-        request_connect({
+        request_connect_impl({
             {"url", "http://www.google.com/"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
@@ -342,7 +342,7 @@ TEST_CASE("http::request_sendrecv() works as expected") {
         return;
     }
     loop_with_initial_event([]() {
-        request_connect({
+        request_connect_impl({
             {"url", "http://www.google.com/"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
@@ -364,7 +364,7 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
         return;
     }
     loop_with_initial_event([]() {
-        request_connect({
+        request_connect_impl({
             {"url", "http://www.google.com/"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
@@ -451,24 +451,24 @@ TEST_CASE("http::request_cycle() works as expected using tor_socks_port") {
     });
 }
 
-TEST_CASE("http::request_connect fails without an url") {
+TEST_CASE("http::request_connect_impl fails without an url") {
     if (CheckConnectivity::is_down()) {
         return;
     }
     loop_with_initial_event([]() {
-        request_connect({}, [](Error error, Var<Transport>) {
+        request_connect_impl({}, [](Error error, Var<Transport>) {
             REQUIRE(error == MissingUrlError());
             break_loop();
         });
     });
 }
 
-TEST_CASE("http::request_connect fails with an uncorrect url") {
+TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
     if (CheckConnectivity::is_down()) {
         return;
     }
     loop_with_initial_event([]() {
-        request_connect({
+        request_connect_impl({
             {"url", ">*7\n\n"}}, [](Error error, Var<Transport>) {
             REQUIRE(error == UrlParserError());
             break_loop();
@@ -481,11 +481,11 @@ TEST_CASE("http::request_send fails without url in settings") {
         return;
     }
     loop_with_initial_event([]() {
-        request_connect({
+        request_connect_impl({
             {"url", "http://www.google.com/"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
-            request_send(transport, 
+            request_send(transport,
                 {{"method", "GET"}}, {}, "", [transport](Error error) {
                 REQUIRE(error == MissingUrlError());
                 transport->close([]() { break_loop(); });
