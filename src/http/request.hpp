@@ -25,7 +25,7 @@ typedef Callback<Var<Response>> RequestRecvResponseCb;
 template<void (*do_connect)(std::string, int,
         Callback<Var<Transport>>,
         Settings, Logger *, Poller *) = net::connect>
-void request_connect(Settings settings, Callback<Var<Transport>> cb,
+void request_connect_impl(Settings settings, Callback<Var<Transport>> cb,
         Poller *poller = Poller::global(), Logger *logger = Logger::global()) {
     if (settings.find("url") == settings.end()) {
         cb(MissingUrlError(), nullptr);

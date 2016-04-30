@@ -9,6 +9,12 @@ namespace http {
 
 using namespace mk::net;
 
+void request_connect(Settings settings, Callback<Var<Transport>> transport,
+         Poller *poller = Poller::global(), Logger *logger = Logger::global()) {
+    request_connect_impl(settings, transport, poller, logger);
+}
+
+
 void request_send(Var<Transport> transport, Settings settings, Headers headers,
         std::string body, RequestSendCb callback) {
     RequestSerializer serializer;
