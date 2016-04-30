@@ -13,7 +13,7 @@ index 48da18b..9164e20 100644
 +++ b/Makefile.am
 @@ -1,4 +1,4 @@
 -SUBDIRS = crypto ssl tls include apps tests man
-+SUBDIRS = crypto ssl tls include
++SUBDIRS = crypto ssl include
  ACLOCAL_AMFLAGS = -I m4
  
  pkgconfigdir = $(libdir)/pkgconfig
