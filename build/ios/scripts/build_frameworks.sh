@@ -2,7 +2,7 @@
 set -e
 
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
-EXTLIBRARIES="libevent libevent_pthreads libjansson"
+EXTLIBRARIES="libevent libevent_pthreads libjansson geoip"
 
 
 (
