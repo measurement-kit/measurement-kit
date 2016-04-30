@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <event2/thread.h>
 #include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/error.hpp>
@@ -29,8 +30,23 @@ static void do_periodic(evutil_socket_t, short, void *ptr) {
 
 namespace mk {
 
+class EvThreadSingleton {
+  private:
+    EvThreadSingleton() {
+        if (evthread_use_pthreads() != 0) {
+            throw std::runtime_error("evthread_use_pthreads() failed");
+        }
+    }
+
+  public:
+    static void ensure() {
+        static EvThreadSingleton singleton;
+    }
+};
+
 Poller::Poller(Libs *libs) {
     if (libs != nullptr) libs_ = libs;
+    EvThreadSingleton::ensure();
     if ((base_ = libs_->event_base_new()) == nullptr) throw std::bad_alloc();
     if ((dnsbase_ = libs_->evdns_base_new(base_, 1)) == nullptr) {
         libs_->event_base_free(base_);
