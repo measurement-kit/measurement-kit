@@ -166,7 +166,8 @@ AC_DEFUN([MK_AM_OPENSSL], [
       AC_MSG_WARN(['--with-openssl=/usr/local/Cellar/openssl/VERSION/'])
     fi
     mk_not_found=1
-  ])
+  ],
+  [AC_MSG_RESULT([Skip the test because we are cross-compiling])])
 
   if test "$mk_not_found" = "1"; then
     AC_MSG_WARN([Failed to find dependency: openssl])
