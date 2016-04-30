@@ -10,44 +10,66 @@ fi
 PLATFORM=$1
 ARCH=$2
 
-if [ "$PLATFORM" = "iPhoneOS" ]; then
-    EXTRA_CONFIG="--host=arm-apple-darwin14 --target=arm-apple-darwin14"
+OPT_FLAGS="-Os -g3"
+MAKE_JOBS=2
+
+ROOTDIR=$(cd $(dirname "$0") && pwd -P)
+SOURCEDIR=$(cd "${ROOTDIR}/../../../" && pwd -P)
+BUILDDIR=$(cd "${ROOTDIR}/../" && pwd -P)
+
+mkdir -p "$BUILDDIR/build/${PLATFORM}/${ARCH}/"
+DESTDIR=$(cd "$BUILDDIR/build/${PLATFORM}/${ARCH}/" && pwd -P)
+
+
+MIOS_VERSION="7.1"
+if [ $PLATFORM == "iphoneos" ]; then
+    MIOS_VERSION="-miphoneos-version-min=$MIOS_VERSION"
+else 
+    MIOS_VERSION="-mios-simulator-version-min=$MIOS_VERSION"
 fi
 
-ROOTDIR=$(cd $(dirname $0) && pwd -P)
-SOURCEDIR="$ROOTDIR/../../../"
-BUILDDIR="$ROOTDIR/../"
+HOST_FLAGS="-arch ${ARCH} ${MIOS_VERSION} -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
 
-# XXX We assume that the user has the iphoneos sdk installed
-AVAIL_SDKS=`xcodebuild -showsdks | grep "iphoneos"`
-FIRST_SDK=`echo "$AVAIL_SDKS" | head -n1`
-SDKVERSION=`echo "$FIRST_SDK" | cut -d\  -f2`
-echo "Using this SDK version: $SDKVERSION"
+if [ $PLATFORM == "iphoneos" ]; then
+    CHOST="arm-apple-darwin"
+else 
+    if [ $ARCH == "i386" ]; then
+        CHOST="i386-apple-darwin"
+    else
+        CHOST="x86_64-apple-darwin"
+    fi
+fi
+export CC="$(xcrun -find -sdk ${PLATFORM} cc)"
+export CXX="$(xcrun -find -sdk ${PLATFORM} g++)"
 
-DEVELOPER=$(xcode-select -print-path)
-MINIOSVERSION="7.1"
+export CFLAGS="${HOST_FLAGS} ${OPT_FLAGS}"
+export CXXFLAGS="${HOST_FLAGS} ${OPT_FLAGS}"
+export CPPFLAGS="-isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export LDFLAGS="${HOST_FLAGS}"
 
-export PATH="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin/:${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/usr/bin/:${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin:${DEVELOPER}/usr/bin:${PATH}"
-
-export CC="/usr/bin/gcc -arch ${ARCH} -miphoneos-version-min=${MINIOSVERSION}"
-export CXX="/usr/bin/g++ -arch ${ARCH} -miphoneos-version-min=${MINIOSVERSION}"
-export CPPFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
-export CFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
-export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
+CONF_FLAGS="--host=${CHOST} --enable-static --disable-shared"
+export pkg_configure_flags=${CONF_FLAGS}
+export pkg_make_flags=-j${MAKE_JOBS}
+export pkg_prefix=${DESTDIR}
 
 (
     cd $SOURCEDIR
+    ./build/dependency libressl
+    ./build/dependency libevent
+    ./build/dependency jansson
+    ./build/dependency geoip
     test -x ./configure || ./autogen.sh
     ./configure -q --disable-shared \
                 --disable-examples \
-                --with-libevent=builtin \
-                --with-jansson=builtin \
-                --with-geoip=builtin \
+                --with-libevent=${DESTDIR} \
+                --with-jansson=${DESTDIR} \
+                --with-geoip=${DESTDIR} \
+                --with-openssl=${DESTDIR} \
                 --prefix=/ \
-                $EXTRA_CONFIG
-    make -j4 V=0
-    make install-strip V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}/
-    rm -rf $BUILDDIR/build/${PLATFORM}/${ARCH}/include/
-    make install-data-am V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}/
+                ${CONF_FLAGS}
+    make -j${MAKE_JOBS} V=0
+    make install-strip V=0 DESTDIR=${DESTDIR}/
+    rm -rf ${DESTDIR}/include/
+    make install-data-am V=0 DESTDIR=${DESTDIR}/
     make distclean
 )
