@@ -60,7 +60,7 @@ export pkg_prefix=${DESTDIR}
     ./build/dependency libressl
     ./build/dependency libevent
     ./build/dependency jansson
-    ./build/dependency libmaxminddb 
+    ./build/dependency geoip
     test -x ./configure || ./autogen.sh
     ./configure -q --disable-shared \
                 --disable-examples \
