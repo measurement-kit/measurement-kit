@@ -27,14 +27,6 @@ struct AsyncState {
     volatile bool thread_running = false;
 };
 
-class EvThreadSingleton {
-  private:
-    EvThreadSingleton() { evthread_use_pthreads(); }
-
-  public:
-    static void ensure() { static EvThreadSingleton singleton; }
-};
-
 // Syntactic sugar
 #define LOCKED(foo)                                                            \
     {                                                                          \
@@ -56,7 +48,6 @@ class EvThreadSingleton {
     } while (0)
 
 void Async::loop_thread(Var<AsyncState> state) {
-    EvThreadSingleton::ensure();
     state->interrupted = false; // Undo previous break_loop() if any
 
     debug("async: loop thread entered");
