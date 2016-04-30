@@ -7,6 +7,7 @@
 #include <functional>
 #include <map>
 #include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 #include <set>
 #include <string>
 
@@ -142,6 +143,24 @@ inline void request(std::string method, std::string url, RequestCallback cb,
     settings["url"] = url;
     request(settings, cb, headers, body, lp, pol);
 }
+
+typedef std::function<void(Error)> RequestSendCb;
+
+void request_connect(Settings, Callback<Var<net::Transport>>,
+                      Poller *, Logger *);
+
+void request_send(Var<net::Transport>, Settings, Headers, std::string,
+                      RequestSendCb);
+
+void request_recv_response(Var<net::Transport>, Callback<Var<Response>>,
+                      Poller *, Logger *);
+
+void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
+                      Callback<Var<Response>>, Poller *,
+                      Logger *);
+
+void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
+                      Poller *, Logger *);
 
 } // namespace http
 } // namespace mk
