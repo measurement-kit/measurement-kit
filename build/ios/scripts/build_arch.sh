@@ -41,10 +41,10 @@ else
 fi
 export CC="$(xcrun -find -sdk ${PLATFORM} cc)"
 export CXX="$(xcrun -find -sdk ${PLATFORM} g++)"
-export CPP="$(xcrun -find -sdk ${PLATFORM} cpp)"
 
 export CFLAGS="${HOST_FLAGS} ${OPT_FLAGS}"
 export CXXFLAGS="${HOST_FLAGS} ${OPT_FLAGS}"
+export CPPFLAGS="-isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
 export LDFLAGS="${HOST_FLAGS}"
 
 CONF_FLAGS="--host=${CHOST} --enable-static --disable-shared"
@@ -67,7 +67,7 @@ export pkg_prefix=${DESTDIR}
                 --with-openssl=${DESTDIR} \
                 --prefix=/ \
                 ${CONF_FLAGS}
-    make -j4 V=0
+    make -j${MAKE_JOBS} V=0
     make install-strip V=0 DESTDIR=${DESTDIR}/
     rm -rf ${DESTDIR}/include/
     make install-data-am V=0 DESTDIR=${DESTDIR}/
