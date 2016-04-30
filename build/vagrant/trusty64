@@ -4,6 +4,6 @@ if [ -f Makefile ]; then
     make distclean
 fi
 ./autogen.sh
-./configure --with-libmaxminddb=builtin
+./configure
 make V=0
 make check V=0
