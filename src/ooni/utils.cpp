@@ -7,9 +7,7 @@
 namespace mk {
 namespace ooni {
 
-ErrorOr<json> geoip(std::string ip, std::string path_country,
-                    std::string path_asn) {
-    json node;
+static Error geoip_resolve_country (std::string ip, std::string path_country, json &node) { 
     GeoIP *gi;
     GeoIPLookup gl;
     memset (&gl, 0, sizeof(gl));
@@ -34,7 +32,14 @@ ErrorOr<json> geoip(std::string ip, std::string path_country,
     }
     node["country_name"] = result;
     GeoIP_delete(gi);
+    return NoError();
+}
 
+static Error geoip_resolve_asn (std::string ip, std::string path_asn, json &node) { 
+    GeoIP *gi;
+    GeoIPLookup gl;
+    memset (&gl, 0, sizeof(gl));
+    
     gi = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
     if (gi == nullptr) {
         return GenericError();
@@ -48,7 +53,20 @@ ErrorOr<json> geoip(std::string ip, std::string path_country,
     node["asn"] = res;
     free(res);
     GeoIP_delete(gi);
+    return NoError();
+}
 
+ErrorOr<json> geoip(std::string ip, std::string path_country,
+                    std::string path_asn) {
+    json node;
+    Error err = geoip_resolve_country (ip, path_country, node);
+    if (err) {
+        return err;
+    }
+    err = geoip_resolve_asn (ip, path_asn, node);
+    if (err) {
+        return err;
+    }
     return node;
 }
 

@@ -26,7 +26,7 @@ TEST_CASE("geoip works") {
     std::string resolved = "{\"asn\":\"AS15169 Google "
                            "Inc.\",\"country_code\":\"USA\",\"country_name\":"
                            "\"United States\"}";
-    mk::ErrorOr<Json> json = mk::ooni::geoip(
+    mk::ErrorOr<json> json = mk::ooni::geoip(
         "8.8.8.8", "test/fixtures/GeoIP.dat", "test/fixtures/GeoIPASNum.dat");
     REQUIRE(json);
     REQUIRE(resolved == json->dump());
