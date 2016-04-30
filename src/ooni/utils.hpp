@@ -5,10 +5,14 @@
 #ifndef SRC_OONI_UTILS_HPP
 #define SRC_OONI_UTILS_HPP
 
+#include "src/ext/json/src/json.hpp"
+#include <GeoIP.h>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
 #include <regex>
 #include <string>
+
+using json = nlohmann::json;
 
 namespace mk {
 namespace ooni {
@@ -16,24 +20,28 @@ namespace ooni {
 template <decltype(mk::http::get) httpget = mk::http::get>
 void ip_lookup(Callback<std::string> callback) {
     httpget("http://geoip.ubuntu.com/lookup",
-              [=](Error err, http::Response response) {
-                  if (err) {
-                      callback(err, "");
-                      return;
-                  }
-                  if (response.status_code != 200) {
-                      callback(GenericError(), "");
-                      return;
-                  }
-                  std::smatch m;
-                  std::regex regex("<Ip>(.*)</Ip>");
-                  if (std::regex_search(response.body, m, regex) == false) {
-                      callback(GenericError(), "");
-                      return;
-                  }
-                  callback(NoError(), m[1]);
-              }, {}, "", {}, Logger::global(), Poller::global());
+            [=](Error err, http::Response response) {
+                if (err) {
+                    callback(err, "");
+                    return;
+                }
+                if (response.status_code != 200) {
+                    callback(GenericError(), "");
+                    return;
+                }
+                std::smatch m;
+                std::regex regex("<Ip>(.*)</Ip>");
+                if (std::regex_search(response.body, m, regex) == false) {
+                    callback(GenericError(), "");
+                    return;
+                }
+                callback(NoError(), m[1]);
+            },
+            {}, "", {}, Logger::global(), Poller::global());
 }
+
+ErrorOr<json> geoip(std::string ip, std::string path_country,
+                    std::string path_asn);
 
 } // namespace ooni
 } // namespace mk
