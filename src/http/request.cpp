@@ -9,9 +9,9 @@ namespace http {
 
 using namespace mk::net;
 
-void request_connect(Settings setings, Callback<Var<Transport>> transport,
+void request_connect(Settings settings, Callback<Var<Transport>> transport,
          Poller *poller = Poller::global(), Logger *logger = Logger::global()) {
-    request_connect_impl(settings, transport, &poller, &logger);
+    request_connect_impl(settings, transport, poller, logger);
 }
 
 

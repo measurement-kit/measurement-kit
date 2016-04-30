@@ -7,6 +7,7 @@
 #include <functional>
 #include <map>
 #include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 #include <set>
 #include <string>
 
@@ -143,21 +144,23 @@ inline void request(std::string method, std::string url, RequestCallback cb,
     request(settings, cb, headers, body, lp, pol);
 }
 
-void request_connect(Settings, Callback<Var<Transport>>,
-                      Poller * = Poller::global(), Logger * = Logger::global());
+typedef std::function<void(Error)> RequestSendCb;
 
-void request_send(Var<Transport>, Settings, Headers, std::string,
+void request_connect(Settings, Callback<Var<net::Transport>>,
+                      Poller *, Logger *);
+
+void request_send(Var<net::Transport>, Settings, Headers, std::string,
                       RequestSendCb);
-    
-void request_recv_response(Var<Transport>, Callback<Var<Response>>,
-                      Poller * = Poller::global(), Logger * = Logger::global());
-    
-void request_sendrecv(Var<Transport>, Settings, Headers, std::string,
-                      Callback<Var<Response>>, Poller * = Poller::global(),
-                      Logger * = Logger::global());
-    
+
+void request_recv_response(Var<net::Transport>, Callback<Var<Response>>,
+                      Poller *, Logger *);
+
+void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
+                      Callback<Var<Response>>, Poller *,
+                      Logger *);
+
 void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
-                      Poller * = Poller::global(), Logger * = Logger::global());
+                      Poller *, Logger *);
 
 } // namespace http
 } // namespace mk
