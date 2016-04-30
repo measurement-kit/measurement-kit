@@ -105,7 +105,7 @@ are only conditionally compiled as explained below):
 
 - [libevent](https://github.com/libevent/libevent)
 - [jansson](https://github.com/akheron/jansson)
-- [libmaxminddb](https://github.com/maxmind/libmaxminddb)
+- [geoip](https://github.com/maxmind/geoip-api-c)
 
 The `./configure` script should check whether all
 the dependencies are in place and should configure the compilers
@@ -127,8 +127,8 @@ libevent library and headers installed at PREFIX
 - `--with-jansson=PREFIX` that tells `./configure` to use the
 jansson library and headers installed at PREFIX
 
-- `--with-libmaxminddb=PREFIX` that tells `./configure` to use the
-libmaxminddb library and headers installed at PREFIX
+- `--with-geoip=PREFIX` that tells `./configure` to use the
+geoip library and headers installed at PREFIX
 
 In all the above cases you can also specify PREFIX equal to
 `builtin` to force `./configure` to use builtin sources.
