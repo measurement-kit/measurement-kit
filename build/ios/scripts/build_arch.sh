@@ -29,10 +29,6 @@ ROOTDIR=$(cd $(dirname $0) && pwd -P)
 SOURCEDIR="$ROOTDIR/../../../"
 BUILDDIR="$ROOTDIR/../"
 
-DEVELOPER=$(xcode-select -print-path)
-
-export PATH="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin/:${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/usr/bin/:${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin:${DEVELOPER}/usr/bin:${PATH}"
-
 export CC="$(xcrun -find -sdk ${PLATFORM} cc)"
 export CXX="$(xcrun -find -sdk ${PLATFORM} g++)"
 export CPPFLAGS="-arch ${ARCH} -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
