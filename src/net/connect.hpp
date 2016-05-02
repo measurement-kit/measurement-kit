@@ -28,7 +28,6 @@ struct ssl_st;
 
 extern "C" {
 void mk_bufferevent_on_event(bufferevent *, short, void *);
-void mk_bufferevent_on_event_ssl(bufferevent *, short, void *);
 }
 
 namespace mk {
@@ -71,10 +70,15 @@ void connect_base(std::string address, int port, Callback<bufferevent *> cb,
         return;
     }
 
-    // WARNING: set callbacks after connect() otherwise we free `bev` twice
-    // NOTE: In case of `new` failure we let the stack unwind
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
-            new Callback<bufferevent *>(cb));
+            new Callback<bufferevent *>([cb](Error err, bufferevent *bev) {
+                if (err) {
+                    bufferevent_free(bev);
+                    cb(err, nullptr);
+                    return;
+                }
+                cb(err, bev);
+            }));
 }
 
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
