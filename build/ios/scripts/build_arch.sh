@@ -29,12 +29,6 @@ ROOTDIR=$(cd $(dirname $0) && pwd -P)
 SOURCEDIR="$ROOTDIR/../../../"
 BUILDDIR="$ROOTDIR/../"
 
-# We assume that the user has the iphoneos sdk installed
-AVAIL_SDKS=`xcodebuild -showsdks | grep "iphoneos"`
-FIRST_SDK=`echo "$AVAIL_SDKS" | head -n1`
-SDKVERSION=`echo "$FIRST_SDK" | cut -d\  -f2`
-echo "Using this SDK version: $SDKVERSION"
-
 DEVELOPER=$(xcode-select -print-path)
 
 export PATH="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin/:${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/usr/bin/:${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin:${DEVELOPER}/usr/bin:${PATH}"
