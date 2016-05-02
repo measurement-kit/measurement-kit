@@ -33,12 +33,12 @@ DEVELOPER=$(xcode-select -print-path)
 
 export PATH="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin/:${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/usr/bin/:${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin:${DEVELOPER}/usr/bin:${PATH}"
 
-export CC="$(xcrun -find -sdk ${PLATFORM} cc) -arch ${ARCH} $MINVERSION"
-export CXX="$(xcrun -find -sdk ${PLATFORM} g++) -arch ${ARCH} $MINVERSION"
-export CPPFLAGS="-isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
-export CFLAGS="-isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
-export CXXFLAGS="-isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
-export LDFLAGS="-isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export CC="$(xcrun -find -sdk ${PLATFORM} cc)"
+export CXX="$(xcrun -find -sdk ${PLATFORM} g++)"
+export CPPFLAGS="-arch ${ARCH} -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export CFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export CXXFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export LDFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
 
 export pkg_configure_flags="$EXTRA_CONFIG"
 export pkg_prefix=$BUILDDIR/build/${PLATFORM}/${ARCH}/
