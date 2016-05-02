@@ -3,14 +3,14 @@ set -e
 
 if [ $# -ne 2 ]; then
     echo "$0 platform arch" 1>&2
-    echo "Example: $0 iPhoneSimulator i386"
+    echo "Example: $0 iphonesimulator i386"
     exit 1
 fi
 
 PLATFORM=$1
 ARCH=$2
 
-if [ "$PLATFORM" = "iPhoneOS" ]; then
+if [ "$PLATFORM" = "iphoneos" ]; then
     EXTRA_CONFIG="--host=arm-apple-darwin14 --target=arm-apple-darwin14"
 elif [ "$ARCH" = "i386" ]; then
     EXTRA_CONFIG="--host=i386-apple-darwin14 --target=i386-apple-darwin14"
