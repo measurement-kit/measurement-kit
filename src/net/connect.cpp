@@ -2,9 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <openssl/ssl.h>
-
 #include "src/net/connect.hpp"
+#include <openssl/ssl.h>
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
@@ -185,6 +184,8 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
 
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event_ssl,
             new Callback<bufferevent *>([cb, logger, ssl, hostname](Error err, bufferevent *bev) {
+                int hostname_validate_err = 0;
+
                 logger->debug("connect ssl... callback");
 
                 if (err) {
@@ -201,12 +202,12 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                     return;
                 }
 
-                Error hostname_validate_err = ssl_validate_hostname(hostname, server_cert);
+                hostname_validate_err = tls_check_name(NULL, server_cert, hostname.c_str());
                 X509_free(server_cert);
-                if (hostname_validate_err) {
+                if (hostname_validate_err != 0) {
                     logger->debug("ssl: got invalid hostname");
                     bufferevent_free(bev);
-                    cb(hostname_validate_err, nullptr);
+                    cb(SSLInvalidHostnameError(), nullptr);
                     return;
                 }
 

@@ -4,9 +4,10 @@
 #ifndef SRC_NET_CONNECT_HPP
 #define SRC_NET_CONNECT_HPP
 
+#include "src/ext/tls_verify.h"
+
 #include "event2/util.h"
 #include "src/common/utils.hpp"
-#include "src/net/ssl-validate.hpp"
 #include <arpa/inet.h>
 #include <event2/bufferevent.h>
 #include <event2/util.h>

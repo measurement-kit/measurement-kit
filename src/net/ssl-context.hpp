@@ -4,6 +4,7 @@
 #ifndef SRC_NET_SSL_CONTEXT_HPP
 #define SRC_NET_SSL_CONTEXT_HPP
 
+#include <openssl/ssl.h>
 #include <measurement_kit/common.hpp>
 
 // Forward declarations

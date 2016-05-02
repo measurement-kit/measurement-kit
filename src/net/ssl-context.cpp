@@ -17,7 +17,7 @@ namespace net {
 SSL *SslContext::get_client_ssl(std::string hostname) {
     SSL *ssl = SSL_new(ctx);
     if (ssl == nullptr) {
-        Logger::global()->debug("ssl: failed to call SSL_new");
+        debug("ssl: failed to call SSL_new");
         throw std::exception();
     }
 
@@ -31,17 +31,17 @@ void SslContext::init(std::string ca_bundle_path) {
     SSL_load_error_strings();
     OpenSSL_add_all_algorithms();
 
-    Logger::global()->debug("ssl: creating ssl context with bundle %s", ca_bundle_path.c_str());
+    debug("ssl: creating ssl context with bundle %s", ca_bundle_path.c_str());
 
     ctx = SSL_CTX_new(TLSv1_client_method());
     if (ctx == nullptr) {
-        Logger::global()->debug("ssl: failed to create SSL_CTX");
+        debug("ssl: failed to create SSL_CTX");
         throw std::exception();
     }
 
     if (SSL_CTX_load_verify_locations(ctx, ca_bundle_path.c_str(), NULL) == 0) {
-        Logger::global()->debug("ssl: failed to load verify location");
-         throw std::exception();
+        debug("ssl: failed to load verify location");
+        throw std::exception();
     };
 
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
@@ -54,7 +54,7 @@ SslContext::SslContext() {
         ca_bundle_path = (*global_settings)["ca_bundle_path"];
     } else {
         // XXX should we add other system default locations in here?
-        Logger::global()->debug("ssl: failed to find ca_bundle");
+        debug("ssl: failed to find ca_bundle");
         throw std::exception();
     }
     init(ca_bundle_path);
