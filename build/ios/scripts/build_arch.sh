@@ -25,7 +25,7 @@ ROOTDIR=$(cd $(dirname $0) && pwd -P)
 SOURCEDIR="$ROOTDIR/../../../"
 BUILDDIR="$ROOTDIR/../"
 
-# XXX We assume that the user has the iphoneos sdk installed
+# We assume that the user has the iphoneos sdk installed
 AVAIL_SDKS=`xcodebuild -showsdks | grep "iphoneos"`
 FIRST_SDK=`echo "$AVAIL_SDKS" | head -n1`
 SDKVERSION=`echo "$FIRST_SDK" | cut -d\  -f2`
@@ -36,12 +36,12 @@ MINIOSVERSION="7.1"
 
 export PATH="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin/:${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/usr/bin/:${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin:${DEVELOPER}/usr/bin:${PATH}"
 
-export CC="/usr/bin/gcc -arch ${ARCH} -miphoneos-version-min=${MINIOSVERSION}"
-export CXX="/usr/bin/g++ -arch ${ARCH} -miphoneos-version-min=${MINIOSVERSION}"
-export CPPFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
-export CFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
-export CXXFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
-export LDFLAGS="-isysroot ${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDKVERSION}.sdk"
+export CC="$(xcrun -find -sdk ${PLATFORM} cc) -arch ${ARCH} -miphoneos-version-min=${MINIOSVERSION}"
+export CXX="$(xcrun -find -sdk ${PLATFORM} g++) -arch ${ARCH} -miphoneos-version-min=${MINIOSVERSION}"
+export CPPFLAGS="-isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export CFLAGS="-isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export CXXFLAGS="-isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export LDFLAGS="-isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
 
 export pkg_configure_flags="$EXTRA_CONFIG"
 export pkg_prefix=$BUILDDIR/build/${PLATFORM}/${ARCH}/
