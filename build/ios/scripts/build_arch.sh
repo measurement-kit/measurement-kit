@@ -12,13 +12,13 @@ ARCH=$2
 
 MINIOSVERSION="7.1"
 if [ "$PLATFORM" = "iphoneos" ]; then
-    EXTRA_CONFIG="--host=arm-apple-darwin14 --target=arm-apple-darwin14"
+    EXTRA_CONFIG="--host=arm-apple-darwin14 --target=arm-apple-darwin14 --enable-static --disable-shared"
     MINVERSION="-miphoneos-version-min=$MINIOSVERSION"
 elif [ "$ARCH" = "i386" ]; then
-    EXTRA_CONFIG="--host=i386-apple-darwin14 --target=i386-apple-darwin14"
+    EXTRA_CONFIG="--host=i386-apple-darwin14 --target=i386-apple-darwin14 --enable-static --disable-shared"
     MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
 elif [ "$ARCH" = "x86_64" ]; then
-    EXTRA_CONFIG="--host=x86_64-apple-darwin14 --target=x86_64-apple-darwin14"
+    EXTRA_CONFIG="--host=x86_64-apple-darwin14 --target=x86_64-apple-darwin14 --enable-static --disable-shared"
     MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
 else
     echo "$0: unsupported configuration" 1>&2
