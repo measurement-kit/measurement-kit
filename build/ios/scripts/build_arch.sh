@@ -27,7 +27,7 @@ fi
 
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
 SOURCEDIR="$ROOTDIR/../../../"
-BUILDDIR="$ROOTDIR/../"
+DESTDIR="$ROOTDIR/../build/${PLATFORM}/${ARCH}/"
 
 export CC="$(xcrun -find -sdk ${PLATFORM} cc)"
 export CXX="$(xcrun -find -sdk ${PLATFORM} g++)"
@@ -37,7 +37,7 @@ export CXXFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --
 export LDFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
 
 export pkg_configure_flags="$EXTRA_CONFIG"
-export pkg_prefix=$BUILDDIR/build/${PLATFORM}/${ARCH}/
+export pkg_prefix="$DESTDIR"
 export pkg_make_flags=-j4
 
 (
@@ -49,15 +49,15 @@ export pkg_make_flags=-j4
     test -x ./configure || ./autogen.sh
     ./configure -q --disable-shared \
                 --disable-examples \
-                --with-libevent=$BUILDDIR/build/${PLATFORM}/${ARCH}/ \
-                --with-jansson=$BUILDDIR/build/${PLATFORM}/${ARCH}/ \
-                --with-geoip=$BUILDDIR/build/${PLATFORM}/${ARCH}/ \
-                --with-openssl=$BUILDDIR/build/${PLATFORM}/${ARCH}/ \
+                --with-libevent=$DESTDIR/ \
+                --with-jansson=$DESTDIR/ \
+                --with-geoip=$DESTDIR/ \
+                --with-openssl=$DESTDIR/ \
                 --prefix=/ \
                 $EXTRA_CONFIG
     make -j4 V=0
-    make install-strip V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}/
-    rm -rf $BUILDDIR/build/${PLATFORM}/${ARCH}/include/
-    make install-data-am V=0 DESTDIR=$BUILDDIR/build/${PLATFORM}/${ARCH}/
+    make install-strip V=0 DESTDIR=$DESTDIR/
+    rm -rf $DESTDIR/include/
+    make install-data-am V=0 DESTDIR=$DESTDIR/
     make distclean
 )
