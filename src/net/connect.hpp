@@ -77,7 +77,7 @@ void connect_base(std::string address, int port, Callback<bufferevent *> cb,
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
 void connect_first_of(std::vector<std::string> addresses, int port,
-        ConnectFirstOfCb cb, double timeout = 10.0,
+        ConnectFirstOfCb cb, Settings settings = {},
         Poller *poller = Poller::global(), Logger *logger = Logger::global(),
         size_t index = 0, Var<std::vector<Error>> errors = nullptr);
 
@@ -87,7 +87,7 @@ void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
         Settings settings = {}, Poller *poller = Poller::global(), Logger *logger = Logger::global());
 
 void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
-        double timeo = 10.0, Settings settings = {}, Poller *poller = Poller::global(),
+        Settings settings = {}, Poller *poller = Poller::global(),
         Logger *logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
