@@ -197,7 +197,7 @@ TEST_CASE("connect_first_of works when all connect fail") {
                     REQUIRE(bev == nullptr);
                     break_loop();
                 },
-                {{"timeout",0.00001}});
+                {{"timeout", 0.00001}});
     });
 }
 

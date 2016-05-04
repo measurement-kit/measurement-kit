@@ -160,7 +160,7 @@ void socks5_connect(std::string address, int port, Settings settings,
                     callback(error, nullptr);
                 });
             },
-            settings , poller, logger);
+            settings, poller, logger);
 }
 
 void Socks5::socks5_connect_() {
