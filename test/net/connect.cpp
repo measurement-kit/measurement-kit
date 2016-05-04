@@ -315,3 +315,16 @@ TEST_CASE("connect() fails when port is closed or filtered") {
         });
     });
 }
+
+TEST_CASE("connect() fails when setting an invalid dns") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        connect_logic("www.google.com", 80, [](Error e, Var<ConnectResult> r) {
+            REQUIRE(e);
+            REQUIRE(r->connected_bev == nullptr);
+            break_loop();
+        }, 2.0, {{"nameserver", "8.8.8.1"}});
+    });
+}

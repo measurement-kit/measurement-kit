@@ -84,10 +84,10 @@ void connect_first_of(std::vector<std::string> addresses, int port,
 typedef std::function<void(ResolveHostnameResult)> ResolveHostnameCb;
 
 void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
-        Poller *poller = Poller::global(), Logger *logger = Logger::global());
+        Settings settings = {}, Poller *poller = Poller::global(), Logger *logger = Logger::global());
 
 void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
-        double timeo = 10.0, Poller *poller = Poller::global(),
+        double timeo = 10.0, Settings settings = {}, Poller *poller = Poller::global(),
         Logger *logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,

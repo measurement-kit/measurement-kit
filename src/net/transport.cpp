@@ -55,7 +55,7 @@ void connect(std::string address, int port,
         assert(err == NoError());
         err.context = r;
         callback(err, txp);
-    }, timeout, poller, logger);
+    }, timeout, {}, poller, logger);
 }
 
 } // namespace net

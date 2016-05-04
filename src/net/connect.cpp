@@ -59,8 +59,8 @@ void connect_first_of(std::vector<std::string> addresses, int port,
 }
 
 void resolve_hostname(
-        std::string hostname, ResolveHostnameCb cb, Poller *poller,
-        Logger *logger) {
+        std::string hostname, ResolveHostnameCb cb, 
+        Settings settings, Poller *poller, Logger *logger) {
 
     logger->debug("resolve_hostname: %s", hostname.c_str());
 
@@ -110,11 +110,11 @@ void resolve_hostname(
             }
             cb(*result);
         }, {}, poller);
-    }, {}, poller);
+    }, settings, poller);
 }
 
 void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
-        double timeo, Poller *poller, Logger *logger) {
+        double timeo, Settings settings, Poller *poller, Logger *logger) {
 
     Var<ConnectResult> result(new ConnectResult);
     resolve_hostname(hostname,
@@ -139,7 +139,7 @@ void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> 
                         timeo, poller, logger);
 
             },
-            poller, logger);
+            settings ,poller, logger);
 }
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
