@@ -175,7 +175,7 @@ TEST_CASE("connect_first_of works with empty vector") {
                     REQUIRE(errors.size() == 0);
                     REQUIRE(bev == nullptr);
                     break_loop();
-                }, {{"timeout", 3.14}});
+                }, {{"net/timeout", 3.14}});
     });
 }
 
@@ -197,7 +197,7 @@ TEST_CASE("connect_first_of works when all connect fail") {
                     REQUIRE(bev == nullptr);
                     break_loop();
                 },
-                {{"timeout", 0.00001}});
+                {{"net/timeout", 0.00001}});
     });
 }
 
@@ -220,7 +220,7 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
                     ::bufferevent_free(bev);
                     break_loop();
                 },
-                {{"timeout", 3.14}});
+                {{"net/timeout", 3.14}});
     });
 }
 
@@ -324,6 +324,6 @@ TEST_CASE("connect() fails when setting an invalid dns") {
             REQUIRE(e);
             REQUIRE(r->connected_bev == nullptr);
             break_loop();
-        }, {{"nameserver", "8.8.8.1"}, {"timeout",2.0}});
+        }, {{"dns/nameserver", "8.8.8.1"}, {"dns/timeout",2.0}});
     });
 }

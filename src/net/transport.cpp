@@ -17,22 +17,22 @@ namespace net {
 void connect(std::string address, int port,
              Callback<Var<Transport>> callback,
              Settings settings, Logger *logger, Poller *poller) {
-    if (settings.find("dumb_transport") != settings.end()) {
+    if (settings.find("net/dumb_transport") != settings.end()) {
         callback(NoError(), Var<Transport>(new Emitter(logger)));
         return;
     }
-    if (settings.find("socks5_proxy") != settings.end()) {
+    if (settings.find("net/socks5_proxy") != settings.end()) {
         socks5_connect(address, port, settings, callback, poller, logger);
         return;
     }
-    double timeout = settings.get("timeout", 30.0);
+    double timeout = settings.get("net/timeout", 30.0);
     connect_logic(address, port, [=](Error err, Var<ConnectResult> r) {
         if (err) {
             err.context = r;
             callback(err, nullptr);
             return;
         }
-        if (settings.find("ssl") != settings.end()) {
+        if (settings.find("net/ssl") != settings.end()) {
             connect_ssl(r->connected_bev, SslContext::get_client_ssl(),
                         [=](Error err, bufferevent *bev) {
                             if (err) {

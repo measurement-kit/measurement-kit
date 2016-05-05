@@ -43,7 +43,7 @@ void connect_first_of(std::vector<std::string> addresses, int port,
         cb(*errors, nullptr);
         return;
     }
-    double timeout = settings.get("timeout", 30.0);
+    double timeout = settings.get("net/timeout", 30.0);
     connect_base(addresses[index], port,
             [=](Error err, bufferevent *bev) {
                 errors->push_back(err);
