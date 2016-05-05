@@ -121,8 +121,8 @@ inline void get(std::string url, RequestCallback cb,
                 Headers headers = {}, std::string body = "",
                 Settings settings = {}, Logger *lp = Logger::global(),
                 Poller *pol = Poller::global()) {
-    settings["method"] = "GET";
-    settings["url"] = url;
+    settings["http/method"] = "GET";
+    settings["http/url"] = url;
     request(settings, cb, headers, body, lp, pol);
 }
 
@@ -139,8 +139,8 @@ inline void request(std::string method, std::string url, RequestCallback cb,
                     Headers headers = {}, std::string body = "",
                     Settings settings = {}, Logger *lp = Logger::global(),
                     Poller *pol = Poller::global()) {
-    settings["method"] = method;
-    settings["url"] = url;
+    settings["http/method"] = method;
+    settings["http/url"] = url;
     request(settings, cb, headers, body, lp, pol);
 }
 
