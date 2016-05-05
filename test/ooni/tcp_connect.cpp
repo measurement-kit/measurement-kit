@@ -14,7 +14,7 @@ using namespace mk::ooni;
 TEST_CASE(
     "The TCP connect test should run with an input file of DNS hostnames") {
     TCPConnectImpl tcp_connect("test/fixtures/hosts.txt", {
-                                                       {"port", "80"},
+                                                       {"net/port", "80"},
                                                       });
     tcp_connect.begin(
         [&]() { tcp_connect.end([]() { mk::break_loop(); }); });
