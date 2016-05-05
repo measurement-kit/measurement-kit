@@ -324,6 +324,6 @@ TEST_CASE("connect() fails when setting an invalid dns") {
             REQUIRE(e);
             REQUIRE(r->connected_bev == nullptr);
             break_loop();
-        }, {{"dns/nameserver", "8.8.8.1"}, {"dns/timeout",2.0}});
+        }, {{"dns/nameserver", "8.8.8.1"}, {"dns/timeout",0.001}, {"dns/attempts",1}});
     });
 }
