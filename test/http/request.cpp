@@ -24,9 +24,9 @@ TEST_CASE("http::request works as expected") {
     }
     request(
         {
-         {"url", "http://www.google.com/robots.txt"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.1"},
+         {"http/url", "http://www.google.com/robots.txt"},
+         {"http/method", "GET"},
+         {"http/http_version", "HTTP/1.1"},
         },
         {
          {"Accept", "*/*"},
@@ -59,9 +59,9 @@ TEST_CASE("http::request() works using HTTPS") {
     loop_with_initial_event([]() {
         request(
             {
-                {"url", "https://didattica.polito.it/"},
-                {"method", "GET"},
-                {"http_version", "HTTP/1.1"},
+                {"http/url", "https://didattica.polito.it/"},
+                {"http/method", "GET"},
+                {"http/http_version", "HTTP/1.1"},
             },
             {
                 {"Accept", "*/*"},
@@ -127,10 +127,10 @@ TEST_CASE("http::request correctly receives errors") {
     }
     request(
         {
-         {"url", "http://nexa.polito.it:81/robots.txt"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.1"},
-         {"timeout", "3.0"},
+         {"http/url", "http://nexa.polito.it:81/robots.txt"},
+         {"http/method", "GET"},
+         {"http/http_version", "HTTP/1.1"},
+         {"net/timeout", "3.0"},
         },
         {
          {"Accept", "*/*"},
@@ -161,10 +161,10 @@ TEST_CASE("http::request works as expected over Tor") {
     }
     request(
         {
-         {"url", "http://www.google.com/robots.txt"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.1"},
-         {"socks5_proxy", "127.0.0.1:9050"},
+         {"http/url", "http://www.google.com/robots.txt"},
+         {"http/method", "GET"},
+         {"http/http_version", "HTTP/1.1"},
+         {"net/socks5_proxy", "127.0.0.1:9050"},
         },
         {
          {"Accept", "*/*"},
@@ -193,28 +193,28 @@ TEST_CASE("http::request works as expected over Tor") {
 static void socks_port_is_ ## port(std::string, int,                           \
         Callback<Var<Transport>>,                            \
         Settings settings, Logger *, Poller *) {                               \
-    REQUIRE(settings.at("socks5_proxy") == "127.0.0.1:" # port);               \
+    REQUIRE(settings.at("net/socks5_proxy") == "127.0.0.1:" # port);               \
 }
 
 static void socks_port_is_empty(std::string, int,
         Callback<Var<Transport>>,
         Settings settings, Logger *, Poller *) {
-    REQUIRE(settings.find("socks5_proxy") == settings.end());
+    REQUIRE(settings.find("net/socks5_proxy") == settings.end());
 }
 
 SOCKS_PORT_IS(9055)
 
 TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     Settings settings{
-        {"method", "POST"},
-        {"http_version", "HTTP/1.1"},
-        {"tor_socks_port", 9055},
+        {"http/method", "POST"},
+        {"http/http_version", "HTTP/1.1"},
+        {"net/tor_socks_port", 9055},
     };
 
-    settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
+    settings["http/url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
     request_connect_impl<socks_port_is_9055>(settings, nullptr);
 
-    settings["url"] = "http://ooni.torproject.org/";
+    settings["http/url"] = "http://ooni.torproject.org/";
     request_connect_impl<socks_port_is_empty>(settings, nullptr);
 }
 
@@ -222,30 +222,30 @@ SOCKS_PORT_IS(9999);
 
 TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     Settings settings{
-        {"method", "POST"},
-        {"http_version", "HTTP/1.1"},
-        {"tor_socks_port", 9999},
-        {"socks5_proxy", "127.0.0.1:9055"},
+        {"http/method", "POST"},
+        {"http/http_version", "HTTP/1.1"},
+        {"net/tor_socks_port", 9999},
+        {"net/socks5_proxy", "127.0.0.1:9055"},
     };
 
-    settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
+    settings["http/url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
     request_connect_impl<socks_port_is_9999>(settings, nullptr);
 
-    settings["url"] = "http://ooni.torproject.org/";
+    settings["http/url"] = "http://ooni.torproject.org/";
     request_connect_impl<socks_port_is_9055>(settings, nullptr);
 }
 
 TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
     Settings settings{
-        {"method", "POST"},
-        {"http_version", "HTTP/1.1"},
-        {"socks5_proxy", "127.0.0.1:9055"},
+        {"http/method", "POST"},
+        {"http/http_version", "HTTP/1.1"},
+        {"net/socks5_proxy", "127.0.0.1:9055"},
     };
 
-    settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
+    settings["http/url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
     request_connect_impl<socks_port_is_9055>(settings, nullptr);
 
-    settings["url"] = "http://ooni.torproject.org/";
+    settings["http/url"] = "http://ooni.torproject.org/";
     request_connect_impl<socks_port_is_9055>(settings, nullptr);
 }
 
@@ -253,13 +253,13 @@ SOCKS_PORT_IS(9050);
 
 TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     Settings settings{
-        {"method", "POST"}, {"http_version", "HTTP/1.1"},
+        {"http/method", "POST"}, {"http_version", "HTTP/1.1"},
     };
 
-    settings["url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
+    settings["http/url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
     request_connect_impl<socks_port_is_9050>(settings, nullptr);
 
-    settings["url"] = "http://ooni.torproject.org/";
+    settings["http/url"] = "http://ooni.torproject.org/";
     request_connect_impl<socks_port_is_empty>(settings, nullptr);
 }
 
@@ -278,7 +278,7 @@ TEST_CASE("http::request_connect_impl() works for normal connections") {
     }
     loop_with_initial_event([]() {
         request_connect_impl({
-            {"url", "http://www.google.com/robots.txt"}
+            {"http/url", "http://www.google.com/robots.txt"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
             REQUIRE(static_cast<bool>(transport));
@@ -293,12 +293,12 @@ TEST_CASE("http::request_send() works as expected") {
     }
     loop_with_initial_event([]() {
         request_connect_impl({
-            {"url", "http://www.google.com/"}
+            {"http/url", "http://www.google.com/"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
             request_send(transport, {
-                {"method", "GET"},
-                {"url", "http://www.google.com/"},
+                {"http/method", "GET"},
+                {"http/url", "http://www.google.com/"},
             }, {}, "", [transport](Error error) {
                 REQUIRE(!error);
                 transport->close([]() { break_loop(); });
@@ -317,12 +317,12 @@ TEST_CASE("http::request_recv_response() works as expected") {
     }
     loop_with_initial_event([]() {
         request_connect_impl({
-            {"url", "http://www.google.com/"}
+            {"http/url", "http://www.google.com/"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
             request_send(transport, {
-                {"method", "GET"},
-                {"url", "http://www.google.com/"},
+                {"http/method", "GET"},
+                {"http/url", "http://www.google.com/"},
             }, {}, "", [transport](Error error) {
                 REQUIRE(!error);
                 request_recv_response(transport,
@@ -343,12 +343,12 @@ TEST_CASE("http::request_sendrecv() works as expected") {
     }
     loop_with_initial_event([]() {
         request_connect_impl({
-            {"url", "http://www.google.com/"}
+            {"http/url", "http://www.google.com/"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
             request_sendrecv(transport, {
-                {"method", "GET"},
-                {"url", "http://www.google.com/"},
+                {"http/method", "GET"},
+                {"http/url", "http://www.google.com/"},
             }, {}, "", [transport](Error error, Var<Response> r) {
                 REQUIRE(!error);
                 REQUIRE(status_code_ok(r->status_code));
@@ -365,19 +365,19 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
     }
     loop_with_initial_event([]() {
         request_connect_impl({
-            {"url", "http://www.google.com/"}
+            {"http/url", "http://www.google.com/"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
             request_sendrecv(transport, {
-                {"method", "GET"},
-                {"url", "http://www.google.com/"},
+                {"http/method", "GET"},
+                {"http/url", "http://www.google.com/"},
             }, {}, "", [transport](Error error, Var<Response> r) {
                 REQUIRE(!error);
                 REQUIRE(status_code_ok(r->status_code));
                 REQUIRE(r->body.size() > 0);
                 request_sendrecv(transport, {
-                    {"method", "GET"},
-                    {"url", "http://www.google.com/robots.txt"},
+                    {"http/method", "GET"},
+                    {"http/url", "http://www.google.com/robots.txt"},
                 }, {}, "", [transport](Error error, Var<Response> r) {
                     REQUIRE(!error);
                     REQUIRE(r->status_code == 200);
@@ -395,8 +395,8 @@ TEST_CASE("http::request_cycle() works as expected") {
     }
     loop_with_initial_event([]() {
         request_cycle({
-            {"method", "GET"},
-            {"url", "http://www.google.com/robots.txt"}
+            {"http/method", "GET"},
+            {"http/url", "http://www.google.com/robots.txt"}
         }, {}, "", [](Error error, Var<Response> r) {
             REQUIRE(!error);
             REQUIRE(r->status_code == 200);
@@ -418,8 +418,8 @@ TEST_CASE("http::request_cycle() works as expected using httpo URLs") {
     }
     loop_with_initial_event([]() {
         request_cycle({
-            {"method", "GET"},
-            {"url", "httpo://www.google.com/robots.txt"},
+            {"http/method", "GET"},
+            {"http/url", "httpo://www.google.com/robots.txt"},
         }, {}, "", [](Error error, Var<Response> r) {
             REQUIRE(check_error_after_tor(error));
             if (!error) {
@@ -437,9 +437,9 @@ TEST_CASE("http::request_cycle() works as expected using tor_socks_port") {
     }
     loop_with_initial_event([]() {
         request_cycle({
-            {"method", "GET"},
-            {"url", "http://www.google.com/robots.txt"},
-            {"tor_socks_port", "9050"}
+            {"http/method", "GET"},
+            {"http/url", "http://www.google.com/robots.txt"},
+            {"net/tor_socks_port", "9050"}
         }, {}, "", [](Error error, Var<Response> r) {
             REQUIRE(check_error_after_tor(error));
             if (!error) {
@@ -469,7 +469,7 @@ TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
     }
     loop_with_initial_event([]() {
         request_connect_impl({
-            {"url", ">*7\n\n"}}, [](Error error, Var<Transport>) {
+            {"http/url", ">*7\n\n"}}, [](Error error, Var<Transport>) {
             REQUIRE(error == UrlParserError());
             break_loop();
         });
@@ -482,11 +482,11 @@ TEST_CASE("http::request_send fails without url in settings") {
     }
     loop_with_initial_event([]() {
         request_connect_impl({
-            {"url", "http://www.google.com/"}
+            {"http/url", "http://www.google.com/"}
         }, [](Error error, Var<Transport> transport) {
             REQUIRE(!error);
             request_send(transport,
-                {{"method", "GET"}}, {}, "", [transport](Error error) {
+                {{"http/method", "GET"}}, {}, "", [transport](Error error) {
                 REQUIRE(error == MissingUrlError());
                 transport->close([]() { break_loop(); });
             });
@@ -500,7 +500,7 @@ TEST_CASE("http::request_cycle() fails if fails request_send()") {
     }
     loop_with_initial_event([]() {
         request_cycle({
-            {"method", "GET"}}, {}, "", [](Error error, Var<Response>) {
+            {"http/method", "GET"}}, {}, "", [](Error error, Var<Response>) {
             REQUIRE(error);
             break_loop();
         });
