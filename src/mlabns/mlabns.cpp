@@ -83,7 +83,7 @@ void query(std::string tool, Callback<Reply> callback,
     mk::debug("about to call the request function");
     http::request(
         {
-            {"method", "GET"}, {"url", url},
+            {"http/method", "GET"}, {"http/url", url},
         },
         [callback](Error error, http::Response response) {
             if (error) {
