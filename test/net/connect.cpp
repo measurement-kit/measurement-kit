@@ -175,7 +175,7 @@ TEST_CASE("connect_first_of works with empty vector") {
                     REQUIRE(errors.size() == 0);
                     REQUIRE(bev == nullptr);
                     break_loop();
-                });
+                }, {{"timeout", 3.14}});
     });
 }
 
