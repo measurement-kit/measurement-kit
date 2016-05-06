@@ -107,7 +107,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<> callback) {
     // reading primitive from the channel, i.e. `read_ndt()`.
 
     ctx->logger->in_progress("ndt: recv TEST_MSG");
-    read_ndt(ctx, [=](Error err, uint8_t type, std::string) {
+    read_ndt(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->complete("ndt: recv TEST_MSG", err);
         if (err) {
             callback(err);
@@ -120,6 +120,12 @@ void finalizing_test_impl(Var<Context> ctx, Callback<> callback) {
         if (type != TEST_MSG) {
             callback(GenericError());
             return;
+        }
+        try {
+            std::string x = json::parse(s)["msg"];
+            printf("%s", x.c_str());
+        } catch (std::exception &) {
+            // nothing
         }
         finalizing_test_impl<read_ndt>(ctx, callback);
     });

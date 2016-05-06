@@ -236,13 +236,15 @@ void recv_results_and_logout(Var<Context> ctx, Callback<> callback);
 template <MK_MOCK_NAMESPACE(messages, read)>
 void recv_results_and_logout_impl(Var<Context> ctx, Callback<> callback) {
     ctx->logger->in_progress("ndt: recv RESULTS");
-    read(ctx, [=](Error err, uint8_t type, std::string) {
+    read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->complete("ndt: recv RESULTS", err);
         if (err) {
             callback(err);
             return;
         }
         if (type == MSG_RESULTS) {
+            printf("%s", s.c_str());
+            fflush(stdout);
             // XXX: here we have the potential to loop forever...
             recv_results_and_logout_impl<read>(ctx, callback);
             return;
@@ -251,7 +253,7 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<> callback) {
             callback(GenericError());
             return;
         }
-        ctx->logger->debug("Got LOGOUT");
+        ctx->logger->info("Got LOGOUT");
         callback(NoError());
     });
 }
