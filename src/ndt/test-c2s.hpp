@@ -51,7 +51,6 @@ void c2s_coroutine_impl(std::string address, int port, double runtime,
     // TODO: in original NDT code there appears to be a maximum number
     // of bytes to be sent (`lht`), then the test is exited
 
-    double begin = time_now(); // FIXME
     std::string str(65535, 'a'); // TODO: fill with random data!
 
     logger->in_progress("ndt: connect");
@@ -65,6 +64,7 @@ void c2s_coroutine_impl(std::string address, int port, double runtime,
                 logger->info("Connected to %s:%d", address.c_str(), port);
                 logger->debug("ndt: suspend coroutine");
                 cb(NoError(), [=](Callback<> cb) {
+                    double begin = time_now();
                     logger->debug("ndt: resume coroutine");
                     logger->info("Starting upload");
                     txp->set_timeout(timeout);
