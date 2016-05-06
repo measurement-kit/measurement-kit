@@ -65,16 +65,28 @@ void c2s_coroutine_impl(std::string address, int port, double runtime,
                 logger->debug("ndt: suspend coroutine");
                 cb(NoError(), [=](Callback<> cb) {
                     double begin = time_now();
+                    Var<double> previous(new double(begin));
+                    Var<size_t> count(new size_t(0));
                     logger->debug("ndt: resume coroutine");
                     logger->info("Starting upload");
                     txp->set_timeout(timeout);
                     txp->on_flush([=]() {
-                        if (time_now() - begin > runtime) {
+                        double now = time_now();
+                        if (now - *previous > 0.5) {
+                            double x = (*count * 8) / 1000 / (now - *previous);
+                            *previous = now;
+                            *count = 0;
+                            printf("\rSpeed: %.2f kbit/s", x);
+                            fflush(stdout);
+                        }
+                        if (now - begin > runtime) {
+                            printf("\n");
                             logger->info("Elapsed enough time");
                             txp->emit_error(NoError());
                             return;
                         }
                         txp->write(str.data(), str.size());
+                        *count += str.size();
                     });
                     txp->on_error([=](Error err) {
                         logger->info("Ending upload (%d)", (int)err);
