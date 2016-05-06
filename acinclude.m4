@@ -67,11 +67,11 @@ AC_DEFUN([MK_AM_JANSSON], [
   echo ""
 ])
 
-AC_DEFUN([MK_AM_LIBMAXMINDDB], [
-  echo "> checking for dependency: libmaxminddb"
+AC_DEFUN([MK_AM_GEOIP], [
+  echo "> checking for dependency: geoip"
 
-  AC_ARG_WITH([libmaxminddb],
-              [AS_HELP_STRING([--with-libmaxminddb],
+  AC_ARG_WITH([geoip],
+              [AS_HELP_STRING([--with-geoip],
                 [GeoIP library @<:@default=check@:>@])
               ],
               [
@@ -81,15 +81,15 @@ AC_DEFUN([MK_AM_LIBMAXMINDDB], [
               [])
 
   mk_not_found=""
-  AC_CHECK_HEADERS(maxminddb.h, [], [mk_not_found=1])
-  AC_CHECK_LIB(maxminddb, MMDB_open, [], [mk_not_found=1])
+  AC_CHECK_HEADERS(GeoIP.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(GeoIP, GeoIP_open, [], [mk_not_found=1])
 
   if test "$mk_not_found" = "1"; then
-    AC_MSG_WARN([Failed to find dependency: libmaxminddb])
-    echo "    - to install on Debian: sudo apt-get install libmaxminddb-dev"
-    echo "    - to install on OSX: brew install libmaxminddb"
-    echo "    - to compile from sources: ./build/dependency libmaxminddb"
-    AC_MSG_ERROR([Please, install libmaxminddb and run configure again])
+    AC_MSG_WARN([Failed to find dependency: geoip])
+    echo "    - to install on Debian: sudo apt-get install libgeoip-dev"
+    echo "    - to install on OSX: brew install libgeoip"
+    echo "    - to compile from sources: ./build/dependency geoip"
+    AC_MSG_ERROR([Please, install geoip and run configure again])
   fi
   echo ""
 ])
@@ -166,7 +166,8 @@ AC_DEFUN([MK_AM_OPENSSL], [
       AC_MSG_WARN(['--with-openssl=/usr/local/Cellar/openssl/VERSION/'])
     fi
     mk_not_found=1
-  ])
+  ],
+  [AC_MSG_RESULT([Skip the test because we are cross-compiling])])
 
   if test "$mk_not_found" = "1"; then
     AC_MSG_WARN([Failed to find dependency: openssl])

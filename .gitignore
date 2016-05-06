@@ -61,10 +61,7 @@ missing
 site
 src/ext/Catch/
 src/ext/http-parser/
-src/ext/jansson/
 src/ext/json/
-src/ext/libevent/
-src/ext/libmaxminddb/
 stamp-h1
 test-driver
 test/common/async
@@ -78,6 +75,8 @@ test/common/var
 test/dns/defines
 test/dns/error
 test/dns/query
+test/fixtures/GeoIP.dat
+test/fixtures/GeoIPASNum.dat
 test/http/client
 test/http/funcs
 test/http/parse_url

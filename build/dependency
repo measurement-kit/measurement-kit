@@ -40,12 +40,15 @@ if [ -x build/spec/$1 ]; then
 fi
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
-if [ ! -d third_party/.cache/$pkg_name ]; then
-    git clone $pkg_clone_flags $pkg_repository third_party/.cache/$pkg_name
+if [ ! -d third_party/cache/$pkg_name ]; then
+    git clone $pkg_clone_flags $pkg_repository third_party/cache/$pkg_name
 fi
-rm -rf third_party/$pkg_name
-cp -R third_party/.cache/$pkg_name third_party/$pkg_name
-cd third_party/$pkg_name
+if [ ! -d third_party/build/ ]; then
+    mkdir third_party/build/
+fi
+rm -rf third_party/build/$pkg_name
+cp -R third_party/cache/$pkg_name third_party/build/$pkg_name
+cd third_party/build/$pkg_name
 if [ ! -z "$pkg_branch" ]; then
     git checkout $pkg_branch
 fi
@@ -57,9 +60,9 @@ if [ -x ./autogen.sh ]; then
 elif [ -f ./configure.ac ]; then
     autoreconf -i
 fi
-if [ -d ../../build/patch/$pkg_name ]; then
-    for diff in `ls ../../build/patch/$pkg_name`; do
-        cp ../../build/patch/$pkg_name/$diff .
+if [ -d ../../../build/patch/$pkg_name ]; then
+    for diff in `ls ../../../build/patch/$pkg_name`; do
+        cp ../../../build/patch/$pkg_name/$diff .
         git apply -v $diff
         rm $diff
     done

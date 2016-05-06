@@ -88,7 +88,22 @@ get() {
   echo ""
 }
 
+get_geoipdb() {
+  echo ""
+  base=https://download.maxmind.com/download/geoip/database
+  if [ ! -f "test/fixtures/GeoIP.dat" ]; then
+    wget -q $base/GeoLiteCountry/GeoIP.dat.gz -O test/fixtures/GeoIP.dat.gz
+    gzip -d test/fixtures/GeoIP.dat.gz
+  fi
+  if [ ! -f "test/fixtures/GeoIPASNum.dat" ]; then
+    wget -q $base/asnum/GeoIPASNum.dat.gz -O test/fixtures/GeoIPASNum.dat.gz
+    gzip -d test/fixtures/GeoIPASNum.dat.gz
+  fi
+}
+
 grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
+echo test/fixtures/GeoIP.dat >> .gitignore.new
+echo test/fixtures/GeoIPASNum.dat >> .gitignore.new
 mv .gitignore.new .gitignore
 
 echo "* Generating include.am"
@@ -108,6 +123,9 @@ echo "* Fetching dependencies that are build in any case"
 get joyent/http-parser v2.6.0 http-parser
 get philsquared/Catch v1.2.1 Catch
 get nlohmann/json v1.1.0 json v1.1.0
+
+echo "* Fetching geoip database"
+get_geoipdb
 
 echo "* Running 'autoreconf -i'"
 autoreconf -i

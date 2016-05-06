@@ -34,7 +34,7 @@ echo ""
 MK_AM_OPENSSL
 MK_AM_LIBEVENT
 MK_AM_JANSSON
-MK_AM_LIBMAXMINDDB
+MK_AM_GEOIP
 
 # checks for header files
 # checks for types
