@@ -33,6 +33,7 @@ void connect_impl(Var<Context> ctx, Callback<> callback) {
                     callback(err);
                     return;
                 }
+                txp->set_timeout(60.0);
                 ctx->conn = txp;
                 ctx->logger->info("Connected to %s:%d", ctx->address.c_str(),
                                   ctx->port);
@@ -266,9 +267,14 @@ void wait_close_impl(Var<Context> ctx, Callback<> callback) {
     Var<Buffer> buffer(new Buffer);
     read(ctx->conn, buffer, [=](Error err) {
         ctx->logger->complete("ndt: wait close", err);
+        // Note: the server SHOULD close the connection
         if (err == EofError()) {
-            // Note: the server SHOULD close the connection
             ctx->logger->info("Connection closed");
+            callback(NoError());
+            return;
+        }
+        if (err == TimeoutError()) {
+            ctx->logger->info("Closing connection after 1.0 sec timeout");
             callback(NoError());
             return;
         }
