@@ -51,7 +51,7 @@ void c2s_coroutine_impl(std::string address, int port, double runtime,
     // TODO: in original NDT code there appears to be a maximum number
     // of bytes to be sent (`lht`), then the test is exited
 
-    std::string str(65535, 'a'); // TODO: fill with random data!
+    std::string str(8192, 'a'); // TODO: fill with random data!
 
     logger->in_progress("ndt: connect");
     connect(address, port,
