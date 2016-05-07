@@ -62,6 +62,7 @@ TEST_CASE("http::request() works using HTTPS") {
                 {"http/url", "https://didattica.polito.it/"},
                 {"http/method", "GET"},
                 {"http/http_version", "HTTP/1.1"},
+                {"net/ca_bundle_path", "test/fixtures/certs.pem"}
             },
             {
                 {"Accept", "*/*"},

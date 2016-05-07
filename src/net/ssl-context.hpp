@@ -4,6 +4,7 @@
 #ifndef SRC_NET_SSL_CONTEXT_HPP
 #define SRC_NET_SSL_CONTEXT_HPP
 
+#include <openssl/ssl.h>
 #include <measurement_kit/common.hpp>
 
 // Forward declarations
@@ -15,13 +16,18 @@ namespace net {
 
 class SslContext : public NonCopyable, public NonMovable {
   public:
-    static ssl_ctx_st *get_client_context();
+    SSL *get_client_ssl(std::string hostname);
 
-    static ssl_st *get_client_ssl();
+    ~SslContext();
+
+    SslContext(std::string ca_bundle_path);
+
+    SslContext();
+
+    static Var<SslContext> global();
 
   private:
-    SslContext();
-    ~SslContext();
+    void init(std::string ca_bundle_path);
 
     ssl_ctx_st *ctx = nullptr;
 };

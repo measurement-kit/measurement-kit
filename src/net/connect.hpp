@@ -4,6 +4,8 @@
 #ifndef SRC_NET_CONNECT_HPP
 #define SRC_NET_CONNECT_HPP
 
+#include "src/ext/tls_verify.h"
+
 #include "event2/util.h"
 #include "src/common/utils.hpp"
 #include <arpa/inet.h>
@@ -71,7 +73,14 @@ void connect_base(std::string address, int port, Callback<bufferevent *> cb,
     // WARNING: set callbacks after connect() otherwise we free `bev` twice
     // NOTE: In case of `new` failure we let the stack unwind
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
-            new Callback<bufferevent *>(cb));
+            new Callback<bufferevent *>([cb](Error err, bufferevent *bev) {
+                if (err) {
+                    bufferevent_free(bev);
+                    cb(err, nullptr);
+                    return;
+                }
+                cb(err, bev);
+            }));
 }
 
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
@@ -91,6 +100,7 @@ void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> 
         Logger *logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
+                 std::string hostname,
                  Callback<bufferevent *> cb,
                  Poller * = Poller::global(),
                  Logger * = Logger::global());

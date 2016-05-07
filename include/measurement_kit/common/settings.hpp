@@ -61,6 +61,11 @@ class Settings : public std::map<std::string, SettingsEntry> {
         return at(key).as<Type>();
     }
 
+    static Settings *global() {
+         static Settings singleton;
+         return &singleton;
+    }
+
   protected:
   private:
     // NO ATTRIBUTES HERE BY DESIGN. DO NOT ADD ATTRIBUTES HERE BECAUSE
