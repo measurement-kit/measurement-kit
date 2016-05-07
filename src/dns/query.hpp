@@ -58,7 +58,7 @@ class QueryContext : public NonMovable, public NonCopyable {
 template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_ip_add),
         MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *create_evdns_base(
-        Settings settings, Poller *poller = mk::get_global_poller()) {
+        Settings settings, Poller *poller = Poller::global()) {
 
     evdns_base *base;
     event_base *evb = poller->get_event_base();

@@ -48,14 +48,9 @@ Poller::Poller(Libs *libs) {
     if (libs != nullptr) libs_ = libs;
     EvThreadSingleton::ensure();
     if ((base_ = libs_->event_base_new()) == nullptr) throw std::bad_alloc();
-    if ((dnsbase_ = libs_->evdns_base_new(base_, 1)) == nullptr) {
-        libs_->event_base_free(base_);
-        throw std::bad_alloc();
-    }
 }
 
 Poller::~Poller() {
-    libs_->evdns_base_free(dnsbase_, 1);
     libs_->event_base_free(base_);
 }
 
@@ -120,23 +115,6 @@ void Poller::loop_once() {
     auto result = libs_->event_base_loop(base_, EVLOOP_ONCE);
     if (result < 0) throw std::runtime_error("event_base_loop() failed");
     if (result == 1) warn("loop: no pending and/or active events");
-}
-
-void Poller::clear_nameservers() {
-    if (evdns_base_clear_nameservers_and_suspend(dnsbase_) != 0 ||
-        evdns_base_resume(dnsbase_) != 0) {
-        throw std::runtime_error("unexpected evdns failure");
-    }
-}
-
-int Poller::count_nameservers() {
-    return evdns_base_count_nameservers(dnsbase_);
-}
-
-void Poller::add_nameserver(std::string address) {
-    if (evdns_base_nameserver_ip_add(dnsbase_, address.c_str()) != 0) {
-        throw GenericError();
-    }
 }
 
 } // namespace mk
