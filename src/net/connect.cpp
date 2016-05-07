@@ -179,6 +179,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                 long verify_err = SSL_get_verify_result(ssl);
                 if (verify_err != X509_V_OK) {
                     debug("ssl: got an invalid certificate");
+                    bufferevent_free(bev);
                     cb(SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err)), nullptr);
                     return;
                 }
