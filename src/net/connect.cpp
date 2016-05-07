@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "src/net/connect.hpp"
+#include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/common/error.hpp>
@@ -162,16 +163,22 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
 
                 logger->debug("connect ssl... callback");
                 ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
-                long verify_err = SSL_get_verify_result(ssl);
-                if (verify_err != X509_V_OK) {
-                    debug("ssl: got an invalid certificate");
-                    err = SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err));
-                }
 
                 if (err) {
                     logger->debug("error in connection.");
+                    if (err == mk::net::NetworkError()) {
+                        long ssl_err = bufferevent_get_openssl_error(bev);
+                        err = SSLError(ERR_error_string(ssl_err, NULL));
+                    }
                     bufferevent_free(bev);
                     cb(err, nullptr);
+                    return;
+                }
+
+                long verify_err = SSL_get_verify_result(ssl);
+                if (verify_err != X509_V_OK) {
+                    debug("ssl: got an invalid certificate");
+                    cb(SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err)), nullptr);
                     return;
                 }
 
