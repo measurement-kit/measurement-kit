@@ -115,7 +115,7 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
               // With this connect() succeeds immediately and the
               // callback receives a dumb Emitter transport that you
               // can drive by calling its emit_FOO() methods
-              {"dumb_transport", true}
+              {"net/dumb_transport", true}
             });
     });
     REQUIRE(called == 1);
