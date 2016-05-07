@@ -21,6 +21,7 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
         (*cb)(mk::net::TimeoutError(), bev);
     } else {
+        // TODO: here we should map to the actual error that occurred
         (*cb)(mk::net::NetworkError(), bev);
     }
     delete cb;
@@ -156,22 +157,19 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
     }
 
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
-            new Callback<bufferevent *>([cb, logger, ssl, hostname](Error err, bufferevent *bev) {
+            new Callback<bufferevent *>([cb, logger, hostname](Error err, bufferevent *bev) {
                 int hostname_validate_err = 0;
 
                 logger->debug("connect ssl... callback");
-
                 ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
-                long verify_err = SSL_get_verify_result(ssl);
-                if (verify_err != X509_V_OK) {
-                    debug("ssl: got an invalid certificate");
-                    bufferevent_free(bev);
-                    cb(SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err)), nullptr);
-                    return;
-                }
 
                 if (err) {
                     logger->debug("error in connection.");
+                    long verify_err = SSL_get_verify_result(ssl);
+                    if (verify_err != X509_V_OK) {
+                        debug("ssl: got an invalid certificate");
+                        err = SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err));
+                    }
                     bufferevent_free(bev);
                     cb(err, nullptr);
                     return;

@@ -70,6 +70,8 @@ void connect_base(std::string address, int port, Callback<bufferevent *> cb,
         return;
     }
 
+    // WARNING: set callbacks after connect() otherwise we free `bev` twice
+    // NOTE: In case of `new` failure we let the stack unwind
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
             new Callback<bufferevent *>([cb](Error err, bufferevent *bev) {
                 if (err) {

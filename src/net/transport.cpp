@@ -39,7 +39,7 @@ void connect(std::string address, int port,
                 ssl_context = Var<SslContext>(new SslContext(settings.at("ca_bundle_path")));
             } else {
                 logger->debug("ssl: using default context");
-                ssl_context = Var<SslContext>(new SslContext());
+                ssl_context = SslContext::global();
             }
             connect_ssl(r->connected_bev, ssl_context->get_client_ssl(address), address,
                         [r, callback, timeout, ssl_context, poller, logger](Error err, bufferevent *bev) {

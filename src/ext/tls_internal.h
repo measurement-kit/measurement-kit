@@ -10,8 +10,8 @@
 /* Empty macro definitions to mock out the tls_set_error* functions
  */
 
-#define tls_set_errorx(ctx, errmsg, name) {}
-#define tls_set_error(ctx, errmsg, name) {}
+#define tls_set_errorx(ctx, errmsg, name)
+#define tls_set_error(ctx, errmsg, name)
 
 union tls_addr {
     struct in_addr ip4;

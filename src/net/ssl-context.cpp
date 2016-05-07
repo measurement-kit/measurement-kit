@@ -14,6 +14,8 @@
 namespace mk {
 namespace net {
 
+SslContext *SslContext::global_ = nullptr;
+
 SSL *SslContext::get_client_ssl(std::string hostname) {
     SSL *ssl = SSL_new(ctx);
     if (ssl == nullptr) {
@@ -39,12 +41,19 @@ void SslContext::init(std::string ca_bundle_path) {
         throw std::exception();
     }
 
-    if (SSL_CTX_load_verify_locations(ctx, ca_bundle_path.c_str(), NULL) == 0) {
+    if (SSL_CTX_load_verify_locations(ctx, ca_bundle_path.c_str(), NULL) != 1) {
         debug("ssl: failed to load verify location");
         throw std::exception();
     };
 
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
+}
+
+Var<SslContext> SslContext::global() {
+    if (global_ == nullptr){
+        global_ = new SslContext();
+    }
+    return Var<SslContext>(global_);
 }
 
 SslContext::SslContext() {
