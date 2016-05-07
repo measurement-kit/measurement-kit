@@ -20,23 +20,32 @@ template <typename T> class ErrorOr {
 
     operator bool() const { return error_ == NoError(); }
 
-    const T &as_value() const {
-        if (error_ != 0) {
-            throw error_;
-        }
-        return value_;
-    }
+#define XX                                                                     \
+    if (error_ != 0) {                                                         \
+        throw error_;                                                          \
+    }                                                                          \
+    return value_;
+
+    const T &as_value() const { XX }
+    T &as_value() { XX }
+
+#undef XX
 
     Error as_error() const { return error_; }
 
     const T &operator*() const { return as_value(); }
+    T &operator*() { return as_value(); }
 
-    const T *operator->() const {
-        if (error_ != 0) {
-            throw error_;
-        }
-        return &value_;
-    }
+#define XX                                                                     \
+    if (error_ != 0) {                                                         \
+        throw error_;                                                          \
+    }                                                                          \
+    return &value_;
+
+    const T *operator->() const { XX }
+    T *operator->() { XX }
+
+#undef XX
 
   private:
     Error error_;
