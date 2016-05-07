@@ -6,11 +6,10 @@ Vagrant.configure(2) do |config|
       v.memory = 2048
     end
     trusty64.vm.provision "shell", inline: <<-SHELL
-      sudo apt-add-repository -y ppa:maxmind/ppa
       sudo apt-get update
       sudo apt-get dist-upgrade -y
       sudo apt-get install -y g++ autoconf automake libtool valgrind git
-      sudo apt-get install -y libevent-dev libssl-dev libjansson-dev libmaxminddb-dev
+      sudo apt-get install -y libevent-dev libssl-dev libgeoip-dev libjansson-dev
     SHELL
   end
 end
