@@ -162,14 +162,14 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
 
                 logger->debug("connect ssl... callback");
                 ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
+                long verify_err = SSL_get_verify_result(ssl);
+                if (verify_err != X509_V_OK) {
+                    debug("ssl: got an invalid certificate");
+                    err = SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err));
+                }
 
                 if (err) {
                     logger->debug("error in connection.");
-                    long verify_err = SSL_get_verify_result(ssl);
-                    if (verify_err != X509_V_OK) {
-                        debug("ssl: got an invalid certificate");
-                        err = SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err));
-                    }
                     bufferevent_free(bev);
                     cb(err, nullptr);
                     return;
