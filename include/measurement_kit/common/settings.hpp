@@ -7,6 +7,7 @@
 
 #include <map>
 #include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/error_or.hpp>
 #include <sstream>
 #include <string>
 
@@ -84,6 +85,15 @@ template <typename To, typename From> To lexical_cast(From f) {
         throw ValueError(); // Input format was wrong
     }
     return value;
+}
+
+template <typename To, typename From>
+ErrorOr<To> lexical_cast_noexcept(From f) {
+    try {
+        return lexical_cast<To, From>(f);
+    } catch (Error err) {
+        return err;
+    }
 }
 
 } // namespace mk
