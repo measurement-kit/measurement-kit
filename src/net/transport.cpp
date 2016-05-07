@@ -33,8 +33,16 @@ void connect(std::string address, int port,
             return;
         }
         if (settings.find("net/ssl") != settings.end()) {
-            connect_ssl(r->connected_bev, SslContext::get_client_ssl(),
-                        [=](Error err, bufferevent *bev) {
+            Var<SslContext> ssl_context;
+            if (settings.find("net/ca_bundle_path") != settings.end()) {
+                logger->debug("ssl: using custom ca_bundle_path");
+                ssl_context = Var<SslContext>(new SslContext(settings.at("net/ca_bundle_path")));
+            } else {
+                logger->debug("ssl: using default context");
+                ssl_context = SslContext::global();
+            }
+            connect_ssl(r->connected_bev, ssl_context->get_client_ssl(address), address,
+                        [r, callback, timeout, ssl_context, poller, logger](Error err, bufferevent *bev) {
                             if (err) {
                                 err.context = r;
                                 callback(err, nullptr);
