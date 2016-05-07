@@ -55,8 +55,8 @@ Var<SslContext> SslContext::global() {
 SslContext::SslContext() {
     std::string ca_bundle_path;
     Settings *global_settings = Settings::global();
-    if (global_settings->find("ca_bundle_path") != global_settings->end()) {
-        ca_bundle_path = (*global_settings)["ca_bundle_path"];
+    if (global_settings->find("net/ca_bundle_path") != global_settings->end()) {
+        ca_bundle_path = (*global_settings)["net/ca_bundle_path"];
     } else {
         // XXX should we add other system default locations in here?
         debug("ssl: failed to find ca_bundle");

@@ -121,7 +121,7 @@ TEST_CASE("net::connect() ssl works when setting ca_bundle_path via global setti
     }
     set_verbose(1);
     Settings *global_settings = Settings::global();
-    (*global_settings)["ca_bundle_path"] = "test/fixtures/certs.pem";
+    (*global_settings)["net/ca_bundle_path"] = "test/fixtures/certs.pem";
     loop_with_initial_event([]() {
         connect("nexa.polito.it", 443, [](Error error, Var<Transport> txp) {
             REQUIRE(!error);

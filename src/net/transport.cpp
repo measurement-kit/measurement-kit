@@ -34,9 +34,9 @@ void connect(std::string address, int port,
         }
         if (settings.find("net/ssl") != settings.end()) {
             Var<SslContext> ssl_context;
-            if (settings.find("ca_bundle_path") != settings.end()) {
+            if (settings.find("net/ca_bundle_path") != settings.end()) {
                 logger->debug("ssl: using custom ca_bundle_path");
-                ssl_context = Var<SslContext>(new SslContext(settings.at("ca_bundle_path")));
+                ssl_context = Var<SslContext>(new SslContext(settings.at("net/ca_bundle_path")));
             } else {
                 logger->debug("ssl: using default context");
                 ssl_context = SslContext::global();
