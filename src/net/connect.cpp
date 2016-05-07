@@ -110,7 +110,7 @@ void resolve_hostname(
                 }
             }
             cb(*result);
-        }, {}, poller);
+        }, settings, poller);
     }, settings, poller);
 }
 
