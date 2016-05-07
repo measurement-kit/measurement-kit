@@ -30,7 +30,6 @@ class SslContext : public NonCopyable, public NonMovable {
     void init(std::string ca_bundle_path);
 
     ssl_ctx_st *ctx = nullptr;
-    static SslContext *global_;
 };
 
 } // namespace net

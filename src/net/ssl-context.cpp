@@ -14,8 +14,6 @@
 namespace mk {
 namespace net {
 
-SslContext *SslContext::global_ = nullptr;
-
 SSL *SslContext::get_client_ssl(std::string hostname) {
     SSL *ssl = SSL_new(ctx);
     if (ssl == nullptr) {
@@ -50,10 +48,8 @@ void SslContext::init(std::string ca_bundle_path) {
 }
 
 Var<SslContext> SslContext::global() {
-    if (global_ == nullptr){
-        global_ = new SslContext();
-    }
-    return Var<SslContext>(global_);
+    static Var<SslContext> singleton(new SslContext);
+    return singleton;
 }
 
 SslContext::SslContext() {
