@@ -21,11 +21,11 @@ using namespace mk::http;
 TEST_CASE("HTTP Request serializer works as expected") {
     auto serializer = RequestSerializer(
         {
-         {"follow_redirects", "yes"},
-         {"url", "http://www.example.com/antani?clacsonato=yes#melandri"},
-         {"ignore_body", "yes"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.0"},
+         {"http/follow_redirects", "yes"},
+         {"http/url", "http://www.example.com/antani?clacsonato=yes#melandri"},
+         {"http/ignore_body", "yes"},
+         {"http/method", "GET"},
+         {"http/http_version", "HTTP/1.0"},
         },
         {
          {"User-Agent", "Antani/1.0.0.0"},
