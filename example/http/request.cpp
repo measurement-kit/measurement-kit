@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     poller->call_soon([&body, &headers, &method, &poller, &url]() {
         http::request(
             {
-                {"method", method}, {"url", url},
+                {"http/method", method}, {"http/url", url},
             },
             [&poller](Error error, http::Response response) {
                 if (error) {

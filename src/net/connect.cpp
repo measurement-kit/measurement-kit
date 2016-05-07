@@ -32,7 +32,7 @@ namespace mk {
 namespace net {
 
 void connect_first_of(std::vector<std::string> addresses, int port,
-        ConnectFirstOfCb cb, double timeout, Poller *poller, Logger *logger,
+        ConnectFirstOfCb cb, Settings settings, Poller *poller, Logger *logger,
         size_t index, Var<std::vector<Error>> errors) {
     logger->debug("connect_first_of begin");
     if (!errors) {
@@ -43,12 +43,13 @@ void connect_first_of(std::vector<std::string> addresses, int port,
         cb(*errors, nullptr);
         return;
     }
+    double timeout = settings.get("net/timeout", 30.0);
     connect_base(addresses[index], port,
             [=](Error err, bufferevent *bev) {
                 errors->push_back(err);
                 if (err) {
                     logger->debug("connect_first_of failure");
-                    connect_first_of(addresses, port, cb, timeout, poller,
+                    connect_first_of(addresses, port, cb, settings, poller,
                             logger, index + 1, errors);
                     return;
                 }
@@ -59,8 +60,8 @@ void connect_first_of(std::vector<std::string> addresses, int port,
 }
 
 void resolve_hostname(
-        std::string hostname, ResolveHostnameCb cb, Poller *poller,
-        Logger *logger) {
+        std::string hostname, ResolveHostnameCb cb, 
+        Settings settings, Poller *poller, Logger *logger) {
 
     logger->debug("resolve_hostname: %s", hostname.c_str());
 
@@ -109,12 +110,12 @@ void resolve_hostname(
                 }
             }
             cb(*result);
-        }, {}, poller);
-    }, {}, poller);
+        }, settings, poller);
+    }, settings, poller);
 }
 
 void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
-        double timeo, Poller *poller, Logger *logger) {
+        Settings settings, Poller *poller, Logger *logger) {
 
     Var<ConnectResult> result(new ConnectResult);
     resolve_hostname(hostname,
@@ -136,10 +137,10 @@ void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> 
                             }
                             cb(NoError(), result);
                         },
-                        timeo, poller, logger);
+                        settings, poller, logger);
 
             },
-            poller, logger);
+            settings ,poller, logger);
 }
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,

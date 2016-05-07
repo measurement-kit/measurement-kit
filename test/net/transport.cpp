@@ -69,7 +69,7 @@ TEST_CASE("net::connect() can connect to ssl port") {
             REQUIRE(cr->connected_bev);
             txp->close([]() { break_loop(); });
         },
-        {{"ssl", true}, {"ca_bundle_path", "test/fixtures/certs.pem"}});
+        {{"net/ssl", true}, {"net/ca_bundle_path", "test/fixtures/certs.pem"}});
     });
 }
 
@@ -83,7 +83,7 @@ TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
             REQUIRE(error);
             break_loop();
         },
-        {{"ssl", true}, {"ca_bundle_path", "test/fixtures/certs.pem"}});
+        {{"net/ssl", true}, {"net/ca_bundle_path", "test/fixtures/certs.pem"}});
     });
 }
 
@@ -97,7 +97,7 @@ TEST_CASE("net::connect() ssl fails when presented a certificate with the wrong 
             REQUIRE(error);
             break_loop();
         },
-        {{"ssl", true}, {"ca_bundle_path", "test/fixtures/certs.pem"}});
+        {{"net/ssl", true}, {"net/ca_bundle_path", "test/fixtures/certs.pem"}});
     });
 }
 
@@ -111,7 +111,7 @@ TEST_CASE("net::connect() ssl works when using SNI") {
             REQUIRE(!error);
             txp->close([]() { break_loop(); });
         },
-        {{"ssl", true}, {"ca_bundle_path", "test/fixtures/certs.pem"}});
+        {{"net/ssl", true}, {"net/ca_bundle_path", "test/fixtures/certs.pem"}});
     });
 }
 
@@ -133,10 +133,9 @@ TEST_CASE("net::connect() ssl works when setting ca_bundle_path via global setti
             REQUIRE(cr->connected_bev);
             txp->close([]() { break_loop(); });
         },
-        {{"ssl", true}});
+        {{"net/ssl", true}});
     });
 }
-
 
 TEST_CASE("net::connect() works in case of error") {
     if (CheckConnectivity::is_down()) {
@@ -152,6 +151,6 @@ TEST_CASE("net::connect() works in case of error") {
             REQUIRE(cr->resolve_result.addresses.size() > 0);
             REQUIRE(!cr->connected_bev);
             break_loop();
-        }, {{"timeout", 5.0}});
+        }, {{"net/timeout", 5.0}});
     });
 }

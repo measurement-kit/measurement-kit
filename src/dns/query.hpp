@@ -63,12 +63,12 @@ static inline evdns_base *create_evdns_base(
     evdns_base *base;
     event_base *evb = poller->get_event_base();
 
-    if (settings.find("nameserver") != settings.end()) {
+    if (settings.find("dns/nameserver") != settings.end()) {
         if ((base = evdns_base_new(evb, 0)) == nullptr) {
             throw std::bad_alloc();
         }
         if (evdns_base_nameserver_ip_add(
-                    base, settings["nameserver"].c_str()) != 0) {
+                    base, settings["dns/nameserver"].c_str()) != 0) {
             evdns_base_free(base, 1);
             throw std::runtime_error("Cannot set server address");
         }
@@ -76,15 +76,15 @@ static inline evdns_base *create_evdns_base(
         throw std::bad_alloc();
     }
 
-    if (settings.find("attempts") != settings.end() &&
+    if (settings.find("dns/attempts") != settings.end() &&
             evdns_base_set_option(
-                    base, "attempts", settings["attempts"].c_str()) != 0) {
+                    base, "attempts", settings["dns/attempts"].c_str()) != 0) {
         evdns_base_free(base, 1);
         throw std::runtime_error("Cannot set 'attempts' option");
     }
-    if (settings.find("timeout") != settings.end() &&
+    if (settings.find("dns/timeout") != settings.end() &&
             evdns_base_set_option(
-                    base, "timeout", settings["timeout"].c_str()) != 0) {
+                    base, "timeout", settings["dns/timeout"].c_str()) != 0) {
         evdns_base_free(base, 1);
         throw std::runtime_error("Cannot set 'timeout' option");
     }
@@ -92,8 +92,8 @@ static inline evdns_base *create_evdns_base(
     // By default we don't randomize the query's case
     // XXX check that randomize case is a valid value
     std::string randomiz{"0"};
-    if (settings.find("randomize_case") != settings.end()) {
-        randomiz = settings["randomize_case"];
+    if (settings.find("dns/randomize_case") != settings.end()) {
+        randomiz = settings["dns/randomize_case"];
     }
     if (evdns_base_set_option(base, "randomize-case", randomiz.c_str()) != 0) {
         evdns_base_free(base, 1);

@@ -10,8 +10,8 @@ namespace net {
 
 Socks5::Socks5(Var<Transport> tx, Settings s, Poller *, Logger *lp)
     : Emitter(lp), settings(s), conn(tx),
-      proxy_address(settings["socks5_address"]),
-      proxy_port(settings["socks5_port"]) {
+      proxy_address(settings["net/socks5_address"]),
+      proxy_port(settings["net/socks5_port"]) {
     socks5_connect_();
 }
 
@@ -55,7 +55,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Logger *logger)
     logger->debug("socks5: >> Reserved (0)");
     logger->debug("socks5: >> ATYPE_DOMAINNAME (3)");
 
-    auto address = settings["address"];
+    auto address = settings["net/address"];
 
     if (address.length() > 255) {
         return SocksAddressTooLongError();
@@ -66,7 +66,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Logger *logger)
     logger->debug("socks5: >> domain len=%d", (uint8_t)address.length());
     logger->debug("socks5: >> domain str=%s", address.c_str());
 
-    int portnum = settings["port"].as<int>();
+    int portnum = settings["net/port"].as<int>();
     if (portnum < 0 || portnum > 65535) {
         return SocksInvalidPortError();
     }
@@ -124,7 +124,7 @@ void socks5_connect(std::string address, int port, Settings settings,
         Callback<Var<Transport>> callback,
         Poller *poller, Logger *logger) {
 
-    auto proxy = settings["socks5_proxy"];
+    auto proxy = settings["net/socks5_proxy"];
     auto pos = proxy.find(":");
     if (pos == std::string::npos) {
         throw std::runtime_error("invalid argument");
@@ -132,8 +132,8 @@ void socks5_connect(std::string address, int port, Settings settings,
     auto proxy_address = proxy.substr(0, pos);
     auto proxy_port = proxy.substr(pos + 1);
 
-    settings["address"] = address;
-    settings["port"] = port;
+    settings["net/address"] = address;
+    settings["net/port"] = port;
 
     connect_logic(proxy_address, lexical_cast<int>(proxy_port),
             [=](Error err, Var<ConnectResult> r) {
@@ -160,7 +160,7 @@ void socks5_connect(std::string address, int port, Settings settings,
                     callback(error, nullptr);
                 });
             },
-            settings.get("timeo", 10.0), poller, logger);
+            settings, poller, logger);
 }
 
 void Socks5::socks5_connect_() {
