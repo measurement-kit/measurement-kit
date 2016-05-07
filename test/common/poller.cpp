@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Tests for src/common/poller.cpp's Poller()
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
@@ -38,29 +34,6 @@ TEST_CASE("Constructor") {
 
         REQUIRE(bad_alloc_fired);
     }
-
-    SECTION("We deal with evdns_base_new() failure") {
-        auto libs = Libs();
-
-        auto event_base_free_fired = false;
-
-        libs.event_base_free = [&event_base_free_fired](event_base *b) {
-            event_base_free_fired = true;
-            ::event_base_free(b);
-        };
-        libs.evdns_base_new =
-            [](event_base *, int) { return ((evdns_base *)nullptr); };
-
-        auto bad_alloc_fired = false;
-        try {
-            Poller poller(&libs);
-        } catch (std::bad_alloc &) {
-            bad_alloc_fired = true;
-        }
-
-        REQUIRE(bad_alloc_fired);
-        REQUIRE(event_base_free_fired);
-    }
 }
 
 TEST_CASE("The destructor works properly") {
@@ -68,21 +41,15 @@ TEST_CASE("The destructor works properly") {
     auto libs = Libs();
 
     auto event_base_free_fired = false;
-    auto evdns_base_free_fired = false;
 
     libs.event_base_free = [&event_base_free_fired](event_base *b) {
         event_base_free_fired = true;
         ::event_base_free(b);
     };
-    libs.evdns_base_free = [&evdns_base_free_fired](evdns_base *b, int opt) {
-        evdns_base_free_fired = true;
-        ::evdns_base_free(b, opt);
-    };
 
     { Poller poller(&libs); }
 
     REQUIRE(event_base_free_fired);
-    REQUIRE(evdns_base_free_fired);
 }
 
 TEST_CASE("poller.loop() works properly in corner cases") {
@@ -128,25 +95,6 @@ TEST_CASE("poller.break_loop() works properly") {
     }
 
     REQUIRE(runtime_error_fired);
-}
-
-TEST_CASE("We can clear all name servers and then issue a query") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    mk::clear_nameservers();
-    REQUIRE(mk::count_nameservers() == 0);
-    mk::add_nameserver("8.8.8.8");
-    REQUIRE(evdns_base_resolve_ipv4(
-        get_global_evdns_base(), "www.polito.it", DNS_QUERY_NO_SEARCH,
-        [](int result, char type, int count, int ttl, void *, void *) {
-            REQUIRE(result == DNS_ERR_NONE);
-            REQUIRE(type == DNS_IPv4_A);
-            REQUIRE(count > 0);
-            REQUIRE(ttl > 0);
-            mk::break_loop();
-        }, nullptr) != nullptr);
-    mk::loop();
 }
 
 TEST_CASE("poller.call_soon() works") {
