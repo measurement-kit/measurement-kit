@@ -25,7 +25,7 @@ class DnsInjectionTest : public BaseTest {
 
     /// Set backend used to perform the test
     DnsInjectionTest &set_backend(std::string backend) {
-        settings["nameserver"] = backend;
+        settings["dns/nameserver"] = backend;
         return *this;
     }
 

@@ -70,7 +70,7 @@ TEST_CASE("throw error while fails evdns_base_nameserver_ip_add") {
     try {
         create_evdns_base<::evdns_base_new, null_evdns_base_nameserver_ip_add,
             base_free_evdns_base_nameserver_ip_add>(
-            {{"nameserver", "nexa"}}, get_global_poller());
+            {{"dns/nameserver", "nexa"}}, get_global_poller());
     } catch (std::runtime_error &) {
         REQUIRE(base_free_evdns_base_nameserver_ip_add_flag);
         return;
@@ -82,7 +82,7 @@ TEST_CASE("throw error while fails evdns_base_nameserver_ip_add and base_new") {
     try {
         create_evdns_base<null_evdns_base_new,
             null_evdns_base_nameserver_ip_add>(
-            {{"nameserver", "nexa"}}, get_global_poller());
+            {{"dns/nameserver", "nexa"}}, get_global_poller());
     } catch (std::bad_alloc &) {
         return;
     }
@@ -93,7 +93,7 @@ TEST_CASE("throw error while fails evdns_set_options for attempts") {
     try {
         create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
             base_free_evdns_set_options_attempts>(
-            {{"attempts", "nexa"}}, get_global_poller());
+            {{"dns/attempts", "nexa"}}, get_global_poller());
     } catch (std::runtime_error &) {
         REQUIRE(base_free_evdns_set_options_attempts_flag);
         return;
@@ -105,7 +105,7 @@ TEST_CASE("throw error while fails evdns_set_options for negative attempts") {
     try {
         create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
             base_free_evdns_set_options_attempts_negative>(
-            {{"attempts", -1}}, get_global_poller());
+            {{"dns/attempts", -1}}, get_global_poller());
     } catch (std::runtime_error &) {
         REQUIRE(base_free_evdns_set_options_attempts_negative_flag);
         return;
@@ -118,7 +118,7 @@ TEST_CASE("throw error while fails evdns_set_options for randomize-case") {
         create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
             base_free_evdns_set_options_randomize,
             null_evdns_base_set_option_randomize>(
-            {{"randomize_case", ""}}, get_global_poller());
+            {{"dns/randomize_case", ""}}, get_global_poller());
     } catch (std::runtime_error &) {
         REQUIRE(base_free_evdns_set_options_randomize_flag);
         return;

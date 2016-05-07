@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
             port = lexical_cast<int>(optarg);
             break;
         case 'T':
-            settings["socks5_proxy"] = "127.0.0.1:9050";
+            settings["net/socks5_proxy"] = "127.0.0.1:9050";
             break;
         case 'v':
             set_verbose(1);

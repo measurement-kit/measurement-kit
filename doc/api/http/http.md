@@ -34,7 +34,7 @@ mk::http::request("HEAD", "http://nexa.polito.it/",
 
 // Minimal invocation of request()
 mk::http::request({
-        "url" : "http://nexa.polito.it/",
+        "http/url" : "http://nexa.polito.it/",
     }, [](mk::Error err, mk::http::Response resp) {
         if (err) {
             throw err;
@@ -44,10 +44,10 @@ mk::http::request({
 
 // Invocation of request() with all optional arguments specified
 mk::http::request({
-        "follow_redirects" : "yes",       // default is no
-        "url" : "http://nexa.polito.it/", // must be specified
-        "method" : "PUT",                 // default is GET
-        "path" : "/robots.txt",           // default is to use URL
+        "http/follow_redirects" : "yes",       // default is no
+        "http/url" : "http://nexa.polito.it/", // must be specified
+        "http/method" : "PUT",                 // default is GET
+        "http/path" : "/robots.txt",           // default is to use URL
         "http_version" : "HTTP/1.0"       // default is HTTP/1.1
     }, [](mk::Error err, mk::http::Response resp) {
         if (err) {
@@ -71,14 +71,14 @@ to receive the corresponding responses. It receives the following arguments:
     - *follow_redirects*: if it set to yes, then the client
       will follow redirects (this is currently not implemented)
 
-    - *url*: the URL to use
+    - *http/url*: the URL to use
 
-    - *method*: the method to use (default: "GET")
+    - *http/method*: the method to use (default: "GET")
 
-    - *path*: path to use (if not specified the one inside
+    - *http/path*: path to use (if not specified the one inside
        the URL is used instead)
 
-    - *http_version*: specify HTTP version (otherwise
+    - *http/http_version*: specify HTTP version (otherwise
        `HTTP/1.1 is used)
 
 - *callback*: Function called when either a response is received
