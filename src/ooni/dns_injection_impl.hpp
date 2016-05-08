@@ -38,7 +38,7 @@ class DNSInjectionImpl : public DNSTestImpl {
         entry["injected"] = nullptr;
         query("A", "IN", input, options["dns/nameserver"],
               [this, cb](dns::Message message) {
-                  logger.debug("dns_injection: got response");
+                  logger->debug("dns_injection: got response");
                   if (message.error_code == DNS_ERR_NONE) {
                       entry["injected"] = true;
                   } else {

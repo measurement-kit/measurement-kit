@@ -16,7 +16,7 @@ namespace net {
 // TODO: this should be moved into src/net/connect.cpp
 void connect(std::string address, int port,
              Callback<Var<Transport>> callback,
-             Settings settings, Logger *logger, Poller *poller) {
+             Settings settings, Var<Logger> logger, Poller *poller) {
     if (settings.find("net/dumb_transport") != settings.end()) {
         callback(NoError(), Var<Transport>(new Emitter(logger)));
         return;

@@ -18,7 +18,7 @@ class InputFileGenerator : public InputGenerator {
     InputFileGenerator() {}
 
     InputFileGenerator(std::string input_filepath,
-                       Logger *lp = Logger::global())
+                       Var<Logger> lp = Logger::global())
         : logger(lp) {
         is = new std::ifstream(input_filepath);
     }
@@ -45,7 +45,7 @@ class InputFileGenerator : public InputGenerator {
 
   private:
     std::ifstream *is = nullptr;
-    Logger *logger = Logger::global();
+    Var<Logger> logger = Logger::global();
 };
 
 } // namespace ooni

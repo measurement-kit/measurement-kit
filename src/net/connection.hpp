@@ -22,7 +22,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
   public:
     static Var<Transport> make(bufferevent *bev,
                                Poller *poller = Poller::global(),
-                               Logger *logger = Logger::global()) {
+                               Var<Logger> logger = Logger::global()) {
         Connection *conn = new Connection(bev, poller, logger);
         conn->self = Var<Transport>(conn);
         return conn->self;
@@ -68,7 +68,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
   private:
     Connection(bufferevent *bev, Poller * = Poller::global(),
-               Logger * = Logger::global());
+               Var<Logger> = Logger::global());
 
     bufferevent *bev = nullptr;
     Var<Transport> self;

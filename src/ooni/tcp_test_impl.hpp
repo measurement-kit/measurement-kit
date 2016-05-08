@@ -54,7 +54,7 @@ class TCPTestImpl : public ooni::OoniTestImpl {
                         entry["failure"] = error.as_ooni_error();
                     }
                     cb(transport);
-                }, {}, &logger, poller);
+                }, {}, logger, poller);
     }
 };
 

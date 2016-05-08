@@ -7,6 +7,7 @@
 #include <functional>
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/funcs.hpp>
+#include <measurement_kit/common/var.hpp>
 #include <mutex>
 #include <stdarg.h>
 
@@ -14,7 +15,7 @@ namespace mk {
 
 class Logger : public NonCopyable, public NonMovable {
   public:
-    Logger();
+    static Var<Logger> make();
 
     void logv(const char *, va_list) __attribute__((format(printf, 2, 0)));
     void warn(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
@@ -26,9 +27,9 @@ class Logger : public NonCopyable, public NonMovable {
 
     void on_log(std::function<void(const char *)> fn) { consumer_ = fn; }
 
-    static Logger *global() {
-        static Logger singleton;
-        return &singleton;
+    static Var<Logger> global() {
+        static Var<Logger> singleton(new Logger);
+        return singleton;
     }
 
   private:
@@ -36,6 +37,8 @@ class Logger : public NonCopyable, public NonMovable {
     int verbose_ = 0;
     char buffer_[32768];
     std::mutex mutex_;
+
+    Logger();
 };
 
 void warn(const char *, ...) __attribute__((format(printf, 1, 2)));
