@@ -33,19 +33,22 @@ class EvThreadSingleton {
     }
 };
 
-class Poller : public NonCopyable, public NonMovable, public Reactor {
+class Poller : public Reactor {
   public:
     Poller(Libs *libs = nullptr) {
         if (libs != nullptr)
             libs_ = libs;
         EvThreadSingleton::ensure();
-        if ((base_ = libs_->event_base_new()) == nullptr)
+        base_.reset(libs_->event_base_new(), [this](event_base *p) {
+            libs_->event_base_free(p);
+        });
+        if (!base_)
             throw std::bad_alloc();
     }
 
-    ~Poller() { libs_->event_base_free(base_); }
+    ~Poller() {}
 
-    event_base *get_event_base() override { return base_; }
+    event_base *get_event_base() override { return base_.get(); }
 
     /// Call the function at the beginning of next I/O loop.
     /// \param cb The function to be called soon.
@@ -55,8 +58,8 @@ class Poller : public NonCopyable, public NonMovable, public Reactor {
     void call_later(double timeo, std::function<void()> cb) override {
         timeval tv, *tvp = timeval_init(&tv, timeo);
         auto cbp = new std::function<void()>(cb);
-        if (event_base_once(base_, -1, EV_TIMEOUT, mk_call_soon_cb, cbp, tvp) !=
-            0) {
+        if (event_base_once(base_.get(), -1, EV_TIMEOUT, mk_call_soon_cb, cbp,
+                            tvp) != 0) {
             delete cbp;
             throw std::runtime_error("event_base_once() failed");
         }
@@ -77,7 +80,7 @@ class Poller : public NonCopyable, public NonMovable, public Reactor {
         // the behavior described above, but the stable libevent doesn't.
         timeval ten_seconds;
         Var<event> persist(
-            ::event_new(base_, -1, EV_PERSIST, mk_do_periodic_cb, this),
+            ::event_new(base_.get(), -1, EV_PERSIST, mk_do_periodic_cb, this),
             [](event *p) {
                 if (p != nullptr) {
                     ::event_free(p);
@@ -89,7 +92,7 @@ class Poller : public NonCopyable, public NonMovable, public Reactor {
         if (event_add(persist.get(), timeval_init(&ten_seconds, 10.0)) != 0) {
             throw std::runtime_error("event_add() failed");
         }
-        auto result = libs_->event_base_dispatch(base_);
+        auto result = libs_->event_base_dispatch(base_.get());
         if (result < 0)
             throw std::runtime_error("event_base_dispatch() failed");
         if (result == 1)
@@ -97,7 +100,7 @@ class Poller : public NonCopyable, public NonMovable, public Reactor {
     }
 
     void loop_once() override {
-        auto result = libs_->event_base_loop(base_, EVLOOP_ONCE);
+        auto result = libs_->event_base_loop(base_.get(), EVLOOP_ONCE);
         if (result < 0)
             throw std::runtime_error("event_base_loop() failed");
         if (result == 1)
@@ -105,7 +108,7 @@ class Poller : public NonCopyable, public NonMovable, public Reactor {
     }
 
     void break_loop() override {
-        if (libs_->event_base_loopbreak(base_) != 0)
+        if (libs_->event_base_loopbreak(base_.get()) != 0)
             throw std::runtime_error("event_base_loopbreak() failed");
     }
 
@@ -115,7 +118,7 @@ class Poller : public NonCopyable, public NonMovable, public Reactor {
     // END internal functions used to test periodic event functionality
 
   private:
-    event_base *base_;
+    Var<event_base> base_;
     Libs *libs_ = get_global_libs();
     SafelyOverridableFunc<void(Poller *)> periodic_cb_;
 };
