@@ -60,7 +60,7 @@ void Connection::handle_event_(short what) {
     emit_error(SocketError());
 }
 
-Connection::Connection(bufferevent *buffev, Poller *poller, Logger *logger)
+Connection::Connection(bufferevent *buffev, Poller *poller, Var<Logger> logger)
         : Emitter(logger), poller(poller) {
     this->bev = buffev;
 

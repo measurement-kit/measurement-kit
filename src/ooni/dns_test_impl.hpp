@@ -42,7 +42,7 @@ class DNSTestImpl : public ooni::OoniTestImpl {
         dns::query(
             query_class, query_type, query_name,
             [=](Error error, dns::Message message) {
-                logger.debug("dns_test: got response!");
+                logger->debug("dns_test: got response!");
                 json query_entry;
                 query_entry["resolver_hostname"] = resolver_hostname;
                 query_entry["resolver_port"] = resolver_port;
@@ -68,9 +68,9 @@ class DNSTestImpl : public ooni::OoniTestImpl {
                 // TODO add support for bytes received
                 // query_entry["bytes"] = response.get_bytes();
                 entry["queries"].push_back(query_entry);
-                logger.debug("dns_test: callbacking");
+                logger->debug("dns_test: callbacking");
                 cb(message);
-                logger.debug("dns_test: callback called");
+                logger->debug("dns_test: callback called");
             }, Settings{
                 {"dns/nameserver", nameserver}, {"dns/attempts", "1"},
             }, poller);

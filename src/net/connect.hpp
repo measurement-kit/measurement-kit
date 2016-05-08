@@ -37,7 +37,7 @@ template <MK_MOCK(evutil_parse_sockaddr_port), MK_MOCK(bufferevent_socket_new),
         MK_MOCK(bufferevent_set_timeouts), MK_MOCK(bufferevent_socket_connect)>
 void connect_base(std::string address, int port, Callback<bufferevent *> cb,
         double timeout = 10.0, Poller *poller = Poller::global(),
-        Logger *logger = Logger::global()) {
+        Var<Logger> logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
 
     std::stringstream ss;
@@ -87,23 +87,23 @@ typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
 void connect_first_of(std::vector<std::string> addresses, int port,
         ConnectFirstOfCb cb, Settings settings = {},
-        Poller *poller = Poller::global(), Logger *logger = Logger::global(),
+        Poller *poller = Poller::global(), Var<Logger> logger = Logger::global(),
         size_t index = 0, Var<std::vector<Error>> errors = nullptr);
 
 typedef std::function<void(ResolveHostnameResult)> ResolveHostnameCb;
 
 void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
-        Settings settings = {}, Poller *poller = Poller::global(), Logger *logger = Logger::global());
+        Settings settings = {}, Poller *poller = Poller::global(), Var<Logger> logger = Logger::global());
 
 void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
         Settings settings = {}, Poller *poller = Poller::global(),
-        Logger *logger = Logger::global());
+        Var<Logger> logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                  std::string hostname,
                  Callback<bufferevent *> cb,
                  Poller * = Poller::global(),
-                 Logger * = Logger::global());
+                 Var<Logger> = Logger::global());
 
 } // namespace mk
 } // namespace net

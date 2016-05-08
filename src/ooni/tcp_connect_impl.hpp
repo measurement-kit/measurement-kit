@@ -38,7 +38,7 @@ class TCPConnectImpl : public TCPTestImpl {
         options["host"] = input;
 
         connect(options, [this, cb](Var<net::Transport> txp) {
-            logger.debug("tcp_connect: Got response to TCP connect test");
+            logger->debug("tcp_connect: Got response to TCP connect test");
             txp->close([this, cb]() {
                 cb(entry);
             });

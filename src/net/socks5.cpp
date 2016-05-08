@@ -8,14 +8,14 @@
 namespace mk {
 namespace net {
 
-Socks5::Socks5(Var<Transport> tx, Settings s, Poller *, Logger *lp)
+Socks5::Socks5(Var<Transport> tx, Settings s, Poller *, Var<Logger> lp)
     : Emitter(lp), settings(s), conn(tx),
       proxy_address(settings["net/socks5_address"]),
       proxy_port(settings["net/socks5_port"]) {
     socks5_connect_();
 }
 
-Buffer socks5_format_auth_request(Logger *logger) {
+Buffer socks5_format_auth_request(Var<Logger> logger) {
     Buffer out;
     out.write_uint8(5); // Version
     out.write_uint8(1); // Number of methods
@@ -26,7 +26,7 @@ Buffer socks5_format_auth_request(Logger *logger) {
     return out;
 }
 
-ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, Logger *logger) {
+ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, Var<Logger> logger) {
     auto readbuf = buffer.readn(2);
     if (readbuf == "") {
         return false; // Try again after next recv()
@@ -42,7 +42,7 @@ ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, Logger *logger) {
     return true;
 }
 
-ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Logger *logger) {
+ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Var<Logger> logger) {
     Buffer out;
 
     out.write_uint8(5); // Version
@@ -77,7 +77,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Logger *logger)
     return out;
 }
 
-ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Logger *logger) {
+ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Var<Logger> logger) {
     if (buffer.length() < 5) {
         return false; // Try again after next recv()
     }
@@ -122,7 +122,7 @@ ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Logger *logger) {
 
 void socks5_connect(std::string address, int port, Settings settings,
         Callback<Var<Transport>> callback,
-        Poller *poller, Logger *logger) {
+        Poller *poller, Var<Logger> logger) {
 
     auto proxy = settings["net/socks5_proxy"];
     auto pos = proxy.find(":");

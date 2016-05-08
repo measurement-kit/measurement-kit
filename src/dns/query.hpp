@@ -107,7 +107,7 @@ template <MK_MOCK(inet_ntop)>
 static inline std::vector<Answer> build_answers_evdns(
         int code, char type, int count, int ttl, void *addresses) {
 
-    Logger *logger = Logger::global();
+    Var<Logger> logger = Logger::global();
 
     std::vector<Answer> answers;
 

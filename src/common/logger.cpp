@@ -7,6 +7,8 @@
 
 namespace mk {
 
+/*static*/ Var<Logger> Logger::make() { return Var<Logger>(new Logger); }
+
 Logger::Logger() {
     consumer_ = [](const char *s) { fprintf(stderr, "%s\n", s); };
 }
