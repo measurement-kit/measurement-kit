@@ -4,8 +4,8 @@
 #ifndef SRC_COMMON_POLLER_HPP
 #define SRC_COMMON_POLLER_HPP
 
-#include "src/common/libs_impl.hpp"
 #include "src/common/utils.hpp"
+#include <event2/event.h>
 #include <event2/thread.h>
 #include <functional>
 #include <measurement_kit/common.hpp>
@@ -19,7 +19,7 @@ void mk_do_periodic_cb(evutil_socket_t, short, void *ptr);
 } // extern "C"
 namespace mk {
 
-class EvThreadSingleton {
+template <MK_MOCK(evthread_use_pthreads)> class EvThreadSingleton {
   private:
     EvThreadSingleton() {
         if (evthread_use_pthreads() != 0) {
@@ -29,22 +29,33 @@ class EvThreadSingleton {
 
   public:
     static void ensure() {
-        static EvThreadSingleton singleton;
+        static EvThreadSingleton<evthread_use_pthreads> singleton;
     }
 };
 
 class Poller : public Reactor {
   public:
-    Poller(Libs *libs = nullptr) {
-        if (libs != nullptr)
-            libs_ = libs;
-        EvThreadSingleton::ensure();
-        base_.reset(libs_->event_base_new(), [this](event_base *p) {
-            libs_->event_base_free(p);
+
+    // Poller cannot be a template because it must derive from Reactor but we
+    // need templates in the unit test and unfortunately the templatized
+    // constructor can't be called (http://stackoverflow.com/questions/3960849)
+    // hence two constructors: the normal one that calls `init_()` and the
+    // one receiving `nullptr` as argument which does not call `init_()` such
+    // that we can call this template function in regress tests.
+    template <MK_MOCK(evthread_use_pthreads), MK_MOCK(event_base_new),
+              MK_MOCK(event_base_free)>
+    void init_() {
+        EvThreadSingleton<evthread_use_pthreads>::ensure();
+        base_ = Var<event_base>(event_base_new(), [](event_base *p) {
+            if (p != nullptr) {
+                event_base_free(p);
+            }
         });
         if (!base_)
             throw std::bad_alloc();
     }
+    Poller(std::nullptr_t) {}
+    Poller() { init_(); }
 
     ~Poller() {}
 
@@ -55,7 +66,8 @@ class Poller : public Reactor {
     /// \throw Error if the underlying libevent call fails.
     void call_soon(std::function<void()> cb) override;
 
-    void call_later(double timeo, std::function<void()> cb) override {
+    template <MK_MOCK(event_base_once)>
+    void call_later_impl(double timeo, std::function<void()> cb) {
         timeval tv, *tvp = timeval_init(&tv, timeo);
         auto cbp = new std::function<void()>(cb);
         if (event_base_once(base_.get(), -1, EV_TIMEOUT, mk_call_soon_cb, cbp,
@@ -65,12 +77,16 @@ class Poller : public Reactor {
         }
     }
 
+    void call_later(double timeo, std::function<void()> cb) override;
+
     void loop_with_initial_event(std::function<void()> cb) override {
         call_soon(cb);
         loop();
     }
 
-    void loop() override {
+    template<MK_MOCK(event_new), MK_MOCK(event_free), MK_MOCK(event_add),
+             MK_MOCK(event_base_dispatch)>
+    void loop_impl() {
         // Register a persistent periodic event to make sure that the event
         // loop is not going to exit if we run out of events. This is required
         // to make sure that the ordinary libevent loop works like tor event
@@ -80,10 +96,10 @@ class Poller : public Reactor {
         // the behavior described above, but the stable libevent doesn't.
         timeval ten_seconds;
         Var<event> persist(
-            ::event_new(base_.get(), -1, EV_PERSIST, mk_do_periodic_cb, this),
+            event_new(base_.get(), -1, EV_PERSIST, mk_do_periodic_cb, this),
             [](event *p) {
                 if (p != nullptr) {
-                    ::event_free(p);
+                    event_free(p);
                 }
             });
         if (!persist) {
@@ -92,25 +108,31 @@ class Poller : public Reactor {
         if (event_add(persist.get(), timeval_init(&ten_seconds, 10.0)) != 0) {
             throw std::runtime_error("event_add() failed");
         }
-        auto result = libs_->event_base_dispatch(base_.get());
+        auto result = event_base_dispatch(base_.get());
         if (result < 0)
             throw std::runtime_error("event_base_dispatch() failed");
         if (result == 1)
             warn("loop: no pending and/or active events");
     }
 
-    void loop_once() override {
-        auto result = libs_->event_base_loop(base_.get(), EVLOOP_ONCE);
+    void loop() override;
+
+    template <MK_MOCK(event_base_loop)> void loop_once_impl() {
+        auto result = event_base_loop(base_.get(), EVLOOP_ONCE);
         if (result < 0)
             throw std::runtime_error("event_base_loop() failed");
         if (result == 1)
             warn("loop: no pending and/or active events");
     }
 
-    void break_loop() override {
-        if (libs_->event_base_loopbreak(base_.get()) != 0)
+    void loop_once() override;
+
+    template <MK_MOCK(event_base_loopbreak)> void break_loop_impl() {
+        if (event_base_loopbreak(base_.get()) != 0)
             throw std::runtime_error("event_base_loopbreak() failed");
     }
+
+    void break_loop() override;
 
     // BEGIN internal functions used to test periodic event functionality
     void handle_periodic_();
@@ -119,7 +141,6 @@ class Poller : public Reactor {
 
   private:
     Var<event_base> base_;
-    Libs *libs_ = get_global_libs();
     SafelyOverridableFunc<void(Poller *)> periodic_cb_;
 };
 
