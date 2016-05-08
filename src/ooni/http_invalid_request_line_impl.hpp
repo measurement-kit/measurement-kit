@@ -36,7 +36,7 @@ class HTTPInvalidRequestLineImpl : public TCPTestImpl {
             std::string request_line,
             std::function<void()> &&cb) {
         connect({{"host", backend_url.address}, {"port", std::to_string(backend_url.port)}},
-                [this, cb, request_line](Var<net::Transport> txp) {
+                [this, cb, request_line](Error err, Var<net::Transport> txp) {
 
             Var<std::string> received_data(new std::string);
             txp->on_data([this, received_data](net::Buffer data) {
