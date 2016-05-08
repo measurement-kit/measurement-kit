@@ -69,7 +69,6 @@ TEST_CASE("Make sure that it can pass options to the other levels") {
         .set_options("dns/nameserver", "8.8.8.1")
         .set_options("dns/timeout", "0.1")
         .set_options("dns/attempts", "1")
-        .set_verbose()
         .on_log([=](const char *s) { logs->push_back(s); })
         .run([&done]() { done = true; });
     do {
