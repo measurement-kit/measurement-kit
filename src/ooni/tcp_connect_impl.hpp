@@ -37,8 +37,12 @@ class TCPConnectImpl : public TCPTestImpl {
               std::function<void(json)> &&cb) {
         options["host"] = input;
 
-        connect(options, [this, cb](Var<net::Transport> txp) {
+        connect(options, [this, cb](Error err, Var<net::Transport> txp) {
             logger->debug("tcp_connect: Got response to TCP connect test");
+            if (err) {
+                cb(entry);
+                return;
+            }
             txp->close([this, cb]() {
                 cb(entry);
             });

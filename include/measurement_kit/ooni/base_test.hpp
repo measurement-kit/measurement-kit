@@ -44,6 +44,12 @@ class BaseTest {
         return *this;
     }
 
+    /// Set options
+    BaseTest &set_options(std::string key, std::string value) {
+        settings[key] = value;
+        return *this;
+    }
+
     /// Set log-message handler
     BaseTest &on_log(std::function<void(const char *)> func) {
         log_handler = func;
