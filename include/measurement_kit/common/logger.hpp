@@ -4,10 +4,9 @@
 #ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
+#include <functional>
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/funcs.hpp>
-
-#include <functional>
 #include <stdarg.h>
 
 namespace mk {
@@ -21,34 +20,13 @@ class Logger : public NonCopyable, public NonMovable {
     void logv(const char *, va_list) __attribute__((format(printf, 2, 0)));
 
     /// Log warning message
-    void warn(const char *fmt, ...) __attribute__((format(printf, 2, 3))) {
-        if (verbose_ >= 0) {
-            va_list ap;
-            va_start(ap, fmt);
-            logv(fmt, ap);
-            va_end(ap);
-        }
-    }
+    void warn(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
     /// Log info message
-    void info(const char *fmt, ...) __attribute__((format(printf, 2, 3))) {
-        if (verbose_ > 0) {
-            va_list ap;
-            va_start(ap, fmt);
-            logv(fmt, ap);
-            va_end(ap);
-        }
-    }
+    void info(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
     /// Log debug message
-    void debug(const char *fmt, ...) __attribute__((format(printf, 2, 3))) {
-        if (verbose_ > 0) {
-            va_list ap;
-            va_start(ap, fmt);
-            logv(fmt, ap);
-            va_end(ap);
-        }
-    }
+    void debug(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
     void set_verbose(int v) { verbose_ = v; } ///< Set logger verbose
 
@@ -69,39 +47,9 @@ class Logger : public NonCopyable, public NonMovable {
     char buffer_[32768];
 };
 
-inline void warn(const char *, ...) __attribute__((format(printf, 1, 2)));
-inline void debug(const char *, ...) __attribute__((format(printf, 1, 2)));
-inline void info(const char *, ...) __attribute__((format(printf, 1, 2)));
-
-inline void warn(const char *fmt, ...) {
-    auto logger = Logger::global();
-    if (logger->get_verbose() >= 0) {
-        va_list ap;
-        va_start(ap, fmt);
-        logger->logv(fmt, ap);
-        va_end(ap);
-    }
-}
-
-inline void info(const char *fmt, ...) {
-    auto logger = Logger::global();
-    if (logger->get_verbose() > 0) {
-        va_list ap;
-        va_start(ap, fmt);
-        logger->logv(fmt, ap);
-        va_end(ap);
-    }
-}
-
-inline void debug(const char *fmt, ...) {
-    auto logger = Logger::global();
-    if (logger->get_verbose() > 0) {
-        va_list ap;
-        va_start(ap, fmt);
-        logger->logv(fmt, ap);
-        va_end(ap);
-    }
-}
+void warn(const char *, ...) __attribute__((format(printf, 1, 2)));
+void debug(const char *, ...) __attribute__((format(printf, 1, 2)));
+void info(const char *, ...) __attribute__((format(printf, 1, 2)));
 
 inline void set_verbose(int v) { Logger::global()->set_verbose(v); }
 

@@ -3,7 +3,6 @@
 // information on the copying conditions.
 
 #include <measurement_kit/common/logger.hpp>
-
 #include <stdio.h>
 
 namespace mk {
@@ -21,5 +20,23 @@ void Logger::logv(const char *fmt, va_list ap) {
     if (res < 0 || (unsigned int)res >= sizeof(buffer_)) return;
     consumer_(buffer_);
 }
+
+#define XX(_logger_, _level_)                                                  \
+    if (_logger_->get_verbose() >= _level_) {                                  \
+        va_list ap;                                                            \
+        va_start(ap, fmt);                                                     \
+        _logger_->logv(_level_, fmt, ap);                                      \
+        va_end(ap);                                                            \
+    }
+
+void Logger::warn(const char *fmt, ...) { XX(this, 0); }
+void Logger::info(const char *fmt, ...) { XX(this, 1); }
+void Logger::debug(const char *fmt, ...) { XX(this, 1); }
+
+void warn(const char *fmt, ...) { XX(Logger::global(), 0); }
+void info(const char *fmt, ...) { XX(Logger::global(), 1); }
+void debug(const char *fmt, ...) { XX(Logger::global(), 1); }
+
+#undef XX
 
 } // namespace mk
