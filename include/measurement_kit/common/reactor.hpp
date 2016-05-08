@@ -14,6 +14,7 @@ namespace mk {
 class Reactor {
   public:
     static Var<Reactor> make();
+    static Var<Reactor> make_detached();
     virtual ~Reactor() {}
 
     virtual void call_soon(std::function<void()> cb) = 0;
@@ -30,6 +31,8 @@ class Reactor {
         static Var<Reactor> singleton = make();
         return singleton;
     }
+
+    static Var<Reactor> global_detached();
 };
 
 inline void loop_with_initial_event(std::function<void()> cb) {
