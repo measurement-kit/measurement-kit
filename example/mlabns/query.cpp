@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     std::cout << "> policy: " << query.policy << "\n";
     std::cout << "> tool: " << tool << "\n";
 
-    Poller *poller = Poller::global();
+    Var<Poller> poller = Poller::global();
     poller->call_soon([&poller, &query, &tool]() {
         mlabns::query(
             tool, [&poller](Error error, mlabns::Reply reply) {

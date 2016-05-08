@@ -24,9 +24,9 @@ typedef Callback<Var<Response>> RequestRecvResponseCb;
 
 template<void (*do_connect)(std::string, int,
         Callback<Var<Transport>>,
-        Settings, Var<Logger>, Poller *) = net::connect>
+        Settings, Var<Logger>, Var<Poller>) = net::connect>
 void request_connect_impl(Settings settings, Callback<Var<Transport>> cb,
-        Poller *poller = Poller::global(), Var<Logger> logger = Logger::global()) {
+        Var<Poller> poller = Poller::global(), Var<Logger> logger = Logger::global()) {
     if (settings.find("http/url") == settings.end()) {
         cb(MissingUrlError(), nullptr);
         return;
@@ -55,14 +55,14 @@ void request_send(Var<Transport>, Settings, Headers, std::string,
         RequestSendCb);
 
 void request_recv_response(Var<Transport>, Callback<Var<Response>>,
-        Poller * = Poller::global(), Var<Logger> = Logger::global());
+        Var<Poller> = Poller::global(), Var<Logger> = Logger::global());
 
 void request_sendrecv(Var<Transport>, Settings, Headers, std::string,
-        Callback<Var<Response>>, Poller * = Poller::global(),
+        Callback<Var<Response>>, Var<Poller> = Poller::global(),
         Var<Logger> = Logger::global());
 
 void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
-        Poller * = Poller::global(), Var<Logger> = Logger::global());
+        Var<Poller> = Poller::global(), Var<Logger> = Logger::global());
 
 } // namespace http
 } // namespace mk

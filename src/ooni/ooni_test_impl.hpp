@@ -214,9 +214,9 @@ class OoniTestImpl : public mk::NetTest {
         cb();
     }
 
-    Poller *poller = Poller::global();
+    Var<Poller> poller = Poller::global();
 
-    void set_poller(Poller *p) { poller = p; }
+    void set_poller(Var<Poller> p) { poller = p; }
 };
 
 } // namespace ooni

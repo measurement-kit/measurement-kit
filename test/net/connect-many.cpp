@@ -23,7 +23,7 @@ using namespace mk::net;
 
 static void success(std::string, int,
         Callback<Var<Transport>> cb,
-        Settings, Var<Logger> logger, Poller *) {
+        Settings, Var<Logger> logger, Var<Poller>) {
     cb(NoError(), Var<Transport>(new Emitter(logger)));
 }
 
@@ -39,7 +39,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() success") {
 
 static void fail(std::string, int,
         Callback<Var<Transport>> cb,
-        Settings, Var<Logger>, Poller *) {
+        Settings, Var<Logger>, Var<Poller>) {
     cb(GenericError(), Var<Transport>(nullptr));
 }
 
