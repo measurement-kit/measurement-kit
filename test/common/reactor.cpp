@@ -6,6 +6,7 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include "src/common/check_connectivity.hpp"
+#include <atomic>
 #include <chrono>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/dns.hpp>
