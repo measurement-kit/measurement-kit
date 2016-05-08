@@ -25,7 +25,7 @@ void Logger::logv(const char *fmt, va_list ap) {
     if (_logger_->get_verbose() >= _level_) {                                  \
         va_list ap;                                                            \
         va_start(ap, fmt);                                                     \
-        _logger_->logv(_level_, fmt, ap);                                      \
+        _logger_->logv(fmt, ap);                                               \
         va_end(ap);                                                            \
     }
 
