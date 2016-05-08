@@ -21,17 +21,17 @@ TEST_CASE("net::connect() works with a custom poller") {
         return;
     }
     set_verbose(1);
-    Poller poller;
+    Var<Poller> poller = Poller::make();
     auto ok = false;
     connect("nexa.polito.it", 22, [&](Error error, Var<Transport> txp) {
         if (error) {
-            poller.break_loop();
+            poller->break_loop();
             return;
         }
-        txp->close([&]() { poller.break_loop(); });
+        txp->close([&]() { poller->break_loop(); });
         ok = true;
-    }, {}, Logger::global(), &poller);
-    poller.loop();
+    }, {}, Logger::global(), poller);
+    poller->loop();
     REQUIRE(ok);
 }
 

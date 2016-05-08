@@ -10,7 +10,7 @@ namespace http {
 using namespace mk::net;
 
 void request_connect(Settings settings, Callback<Var<Transport>> transport,
-         Poller *poller = Poller::global(), Var<Logger> logger = Logger::global()) {
+         Var<Poller> poller = Poller::global(), Var<Logger> logger = Logger::global()) {
     request_connect_impl(settings, transport, poller, logger);
 }
 
@@ -40,7 +40,7 @@ void request_send(Var<Transport> transport, Settings settings, Headers headers,
 }
 
 void request_recv_response(Var<Transport> transport, Callback<Var<Response>> cb,
-        Poller *poller, Var<Logger> logger) {
+        Var<Poller> poller, Var<Logger> logger) {
     Var<ResponseParserNg> parser(new ResponseParserNg);
     Var<Response> response(new Response);
     Var<bool> prevent_emit(new bool(false));
@@ -78,7 +78,7 @@ void request_recv_response(Var<Transport> transport, Callback<Var<Response>> cb,
 
 void request_sendrecv(Var<Transport> transport, Settings settings,
         Headers headers, std::string body, Callback<Var<Response>> callback,
-        Poller *poller, Var<Logger> logger) {
+        Var<Poller> poller, Var<Logger> logger) {
     request_send(transport, settings, headers, body, [=](Error error) {
         if (error) {
             callback(error, nullptr);
@@ -89,7 +89,7 @@ void request_sendrecv(Var<Transport> transport, Settings settings,
 }
 
 void request_cycle(Settings settings, Headers headers, std::string body,
-        Callback<Var<Response>> callback, Poller *poller, Var<Logger> logger) {
+        Callback<Var<Response>> callback, Var<Poller> poller, Var<Logger> logger) {
     request_connect(settings, [=](Error err, Var<Transport> transport) {
         if (err) {
             callback(err, nullptr);

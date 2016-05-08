@@ -18,7 +18,7 @@ extern "C" {
 
 void query (QueryClass dns_class, QueryType dns_type,
         std::string name, Callback<Message> cb,
-        Settings settings, Poller *poller) {
+        Settings settings, Var<Poller> poller) {
     query_debug (dns_class, dns_type, name, cb, settings, poller);
 }
 

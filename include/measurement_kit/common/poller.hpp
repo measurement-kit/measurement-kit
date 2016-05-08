@@ -4,12 +4,11 @@
 #ifndef MEASUREMENT_KIT_COMMON_POLLER_HPP
 #define MEASUREMENT_KIT_COMMON_POLLER_HPP
 
+#include <functional>
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/funcs.hpp>
 #include <measurement_kit/common/libs.hpp>
-
-#include <functional>
-#include <string>
+#include <measurement_kit/common/var.hpp>
 
 struct event_base;
 
@@ -17,6 +16,8 @@ namespace mk {
 
 class Poller : public NonCopyable, public NonMovable {
   public:
+    static Var<Poller> make() { return Var<Poller>(new Poller); }
+
     Poller(Libs *libs = nullptr);
     ~Poller();
 
@@ -40,9 +41,9 @@ class Poller : public NonCopyable, public NonMovable {
 
     void break_loop();
 
-    static Poller *global() {
-        static Poller singleton;
-        return &singleton;
+    static Var<Poller> global() {
+        static Var<Poller> singleton(new Poller);
+        return singleton;
     }
 
     // BEGIN internal functions used to test periodic event functionality

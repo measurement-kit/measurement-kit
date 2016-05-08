@@ -42,7 +42,7 @@ class BaseTest {
     }
 
     /// Set poller to be used
-    BaseTest &set_poller(Poller *p) {
+    BaseTest &set_poller(Var<Poller> p) {
         poller = p;
         return *this;
     }
@@ -69,7 +69,7 @@ class BaseTest {
     std::function<void(const char *)> log_handler; ///< Log handler func
     std::string input_path;                        ///< Input file path
     std::string output_path;                       ///< Output file path
-    Poller *poller = Poller::global();             ///< Poller to use
+    Var<Poller> poller = Poller::global();             ///< Poller to use
 };
 
 } // namespace ooni

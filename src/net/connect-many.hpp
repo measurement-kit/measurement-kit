@@ -22,12 +22,12 @@ class ConnectManyCtx {
     int port = 0;
     Settings settings;
     Var<Logger> logger = Logger::global();
-    Poller *poller = Poller::global();
+    Var<Poller> poller = Poller::global();
 };
 
 template <void (*do_connect)(std::string, int,
               Callback<Var<Transport>>, Settings, Var<Logger>,
-              Poller *) = net::connect>
+              Var<Poller>) = net::connect>
 static void connect_many_(Var<ConnectManyCtx> ctx) {
     // Implementation note: this function connects sequentially, which
     // is slower but also much simpler to implement and verify
@@ -50,7 +50,7 @@ static void connect_many_(Var<ConnectManyCtx> ctx) {
 
 static Var<ConnectManyCtx> connect_many_make(std::string address, int port,
         int count, ConnectManyCb callback, Settings settings, Var<Logger> logger,
-        Poller *poller) {
+        Var<Poller> poller) {
     Var<ConnectManyCtx> ctx(new ConnectManyCtx);
     ctx->left = count;
     ctx->callback = callback;

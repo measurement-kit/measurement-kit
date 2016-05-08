@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     std::string url = argv[0];
 
     http::Headers headers;
-    Poller *poller = Poller::global();
+    Var<Poller> poller = Poller::global();
     poller->call_soon([&body, &headers, &method, &poller, &url]() {
         http::request(
             {

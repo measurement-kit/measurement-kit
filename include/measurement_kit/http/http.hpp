@@ -78,12 +78,12 @@ class Request;
 /// \param pol Optional poller.
 void request(Settings settings, RequestCallback cb, Headers headers = {},
              std::string body = "", Var<Logger> lp = Logger::global(),
-             Poller *pol = Poller::global());
+             Var<Poller> pol = Poller::global());
 
 // Signature of the old http::Client ->request method, widely used
 inline void request(Settings settings, Headers headers, std::string body,
         RequestCallback cb, Var<Logger> lp = Logger::global(),
-        Poller *pol = Poller::global()) {
+        Var<Poller> pol = Poller::global()) {
     request(settings, cb, headers, body, lp, pol);
 }
 
@@ -120,7 +120,7 @@ ErrorOr<Url> parse_url_noexcept(std::string url);
 inline void get(std::string url, RequestCallback cb,
                 Headers headers = {}, std::string body = "",
                 Settings settings = {}, Var<Logger> lp = Logger::global(),
-                Poller *pol = Poller::global()) {
+                Var<Poller> pol = Poller::global()) {
     settings["http/method"] = "GET";
     settings["http/url"] = url;
     request(settings, cb, headers, body, lp, pol);
@@ -138,7 +138,7 @@ inline void get(std::string url, RequestCallback cb,
 inline void request(std::string method, std::string url, RequestCallback cb,
                     Headers headers = {}, std::string body = "",
                     Settings settings = {}, Var<Logger> lp = Logger::global(),
-                    Poller *pol = Poller::global()) {
+                    Var<Poller> pol = Poller::global()) {
     settings["http/method"] = method;
     settings["http/url"] = url;
     request(settings, cb, headers, body, lp, pol);
@@ -147,20 +147,20 @@ inline void request(std::string method, std::string url, RequestCallback cb,
 typedef std::function<void(Error)> RequestSendCb;
 
 void request_connect(Settings, Callback<Var<net::Transport>>,
-                      Poller *, Var<Logger>);
+                      Var<Poller>, Var<Logger>);
 
 void request_send(Var<net::Transport>, Settings, Headers, std::string,
                       RequestSendCb);
 
 void request_recv_response(Var<net::Transport>, Callback<Var<Response>>,
-                      Poller *, Var<Logger>);
+                      Var<Poller>, Var<Logger>);
 
 void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
-                      Callback<Var<Response>>, Poller *,
+                      Callback<Var<Response>>, Var<Poller>,
                       Var<Logger>);
 
 void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
-                      Poller *, Var<Logger>);
+                      Var<Poller>, Var<Logger>);
 
 } // namespace http
 } // namespace mk

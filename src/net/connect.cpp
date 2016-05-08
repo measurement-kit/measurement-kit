@@ -32,7 +32,7 @@ namespace mk {
 namespace net {
 
 void connect_first_of(std::vector<std::string> addresses, int port,
-        ConnectFirstOfCb cb, Settings settings, Poller *poller, Var<Logger> logger,
+        ConnectFirstOfCb cb, Settings settings, Var<Poller> poller, Var<Logger> logger,
         size_t index, Var<std::vector<Error>> errors) {
     logger->debug("connect_first_of begin");
     if (!errors) {
@@ -61,7 +61,7 @@ void connect_first_of(std::vector<std::string> addresses, int port,
 
 void resolve_hostname(
         std::string hostname, ResolveHostnameCb cb, 
-        Settings settings, Poller *poller, Var<Logger> logger) {
+        Settings settings, Var<Poller> poller, Var<Logger> logger) {
 
     logger->debug("resolve_hostname: %s", hostname.c_str());
 
@@ -115,7 +115,7 @@ void resolve_hostname(
 }
 
 void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
-        Settings settings, Poller *poller, Var<Logger> logger) {
+        Settings settings, Var<Poller> poller, Var<Logger> logger) {
 
     Var<ConnectResult> result(new ConnectResult);
     resolve_hostname(hostname,
@@ -146,7 +146,7 @@ void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                  std::string hostname,
                  Callback<bufferevent *> cb,
-                 Poller *poller, Var<Logger> logger) {
+                 Var<Poller> poller, Var<Logger> logger) {
     logger->debug("connect ssl...");
 
     auto bev = bufferevent_openssl_filter_new(poller->get_event_base(),

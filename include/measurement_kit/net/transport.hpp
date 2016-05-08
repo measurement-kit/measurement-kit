@@ -79,14 +79,14 @@ void connect(std::string address, int port,
              Callback<Var<Transport>> callback,
              Settings settings = {},
              Var<Logger> logger = Logger::global(),
-             Poller *poller = Poller::global());
+             Var<Poller> poller = Poller::global());
 
 using ConnectManyCb = Callback<std::vector<Var<Transport>>>;
 
 void connect_many(std::string address, int port, int num,
         ConnectManyCb callback, Settings settings = {},
         Var<Logger> logger = Logger::global(),
-        Poller *poller = Poller::global());
+        Var<Poller> poller = Poller::global());
 
 } // namespace net
 } // namespace mk
