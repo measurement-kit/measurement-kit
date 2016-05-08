@@ -14,7 +14,6 @@
 #include <measurement_kit/common/settings.hpp>  // for Settings
 #include <string>                               // for allocator, operator+
 #include <type_traits>                          // for move
-#include "src/common/libs_impl.hpp"             // for Libs
 #include "src/common/utils.hpp"                 // for utc_time_now
 #include "src/ooni/input_file_generator.hpp"    // for InputFileGenerator
 #include "src/ooni/input_generator.hpp"         // for InputGenerator
@@ -104,8 +103,6 @@ class OoniTestImpl : public mk::NetTest {
     }
 
   protected:
-    Libs *libs = Libs::global();
-
     virtual void setup(std::string) {}
     virtual void setup() {}
 

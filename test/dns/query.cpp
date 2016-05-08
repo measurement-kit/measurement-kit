@@ -9,7 +9,6 @@
 #include <measurement_kit/dns.hpp>
 
 #include "src/common/check_connectivity.hpp"
-#include "src/common/libs_impl.hpp"
 #include "src/dns/query.hpp"
 
 using namespace mk;

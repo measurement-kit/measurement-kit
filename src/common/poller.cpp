@@ -27,6 +27,14 @@ void Poller::call_soon(std::function<void()> cb) {
     call_later(-1.0, cb);
 }
 
+void Poller::call_later(double timeo, std::function<void()> cb) {
+    call_later_impl(timeo, cb);
+}
+
+void Poller::loop() { loop_impl(); }
+void Poller::loop_once() { loop_once_impl(); }
+void Poller::break_loop() { break_loop_impl(); }
+
 void Poller::handle_periodic_() {
     if (periodic_cb_) {
         // Protection against the callback calling on_periodic_()
