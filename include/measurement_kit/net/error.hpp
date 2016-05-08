@@ -139,6 +139,11 @@ class SSLError : public Error {
         SSLError(std::string msg) : Error(1021, "ssl_error " + msg) {}
 };
 
+class NotEnoughDataError : public Error {
+  public:
+    NotEnoughDataError() : Error(1022, "unknown_failure 1022") {}
+};
+
 } // namespace net
 } // namespace mk
 #endif
