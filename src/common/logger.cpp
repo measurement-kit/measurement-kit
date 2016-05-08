@@ -12,12 +12,17 @@ Logger::Logger() {
 }
 
 void Logger::logv(const char *fmt, va_list ap) {
-    if (!consumer_) return;
+    if (!consumer_) {
+        return;
+    }
+    std::lock_guard<std::mutex> lock(mutex_);
     int res = vsnprintf(buffer_, sizeof(buffer_), fmt, ap);
     // Once we know that res is non-negative we make it unsigned,
     // which allows the compiler to promote the smaller of res and
     // sizeof (buffer) to the correct size if needed.
-    if (res < 0 || (unsigned int)res >= sizeof(buffer_)) return;
+    if (res < 0 || (unsigned int)res >= sizeof(buffer_)) {
+        return;
+    }
     consumer_(buffer_);
 }
 
