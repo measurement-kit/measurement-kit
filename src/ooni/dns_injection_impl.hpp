@@ -5,6 +5,7 @@
 #ifndef SRC_OONI_DNS_INJECTION_HPP
 #define SRC_OONI_DNS_INJECTION_HPP
 
+#include <event2/dns.h>
 #include <measurement_kit/dns.hpp>
 #include "src/ooni/errors.hpp"
 #include "src/ooni/ooni_test_impl.hpp"
