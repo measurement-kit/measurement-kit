@@ -119,9 +119,29 @@ class BuffereventSocketNewError : public Error {
     BuffereventSocketNewError() : Error(1017, "unknown_failure 1017") {}
 };
 
+class SSLInvalidCertificateError : public Error {
+    public:
+        SSLInvalidCertificateError(std::string msg) : Error(1018, "ssl_invalid_certificate " + msg) {}
+};
+
+class SSLNoCertificateError : public Error {
+    public:
+        SSLNoCertificateError() : Error(1019, "ssl_no_certificate") {}
+};
+
+class SSLInvalidHostnameError : public Error {
+    public:
+        SSLInvalidHostnameError() : Error(1020, "ssl_invalid_hostname") {}
+};
+
+class SSLError : public Error {
+    public:
+        SSLError(std::string msg) : Error(1021, "ssl_error " + msg) {}
+};
+
 class NotEnoughDataError : public Error {
   public:
-    NotEnoughDataError() : Error(1018, "unknown_failure 1018") {}
+    NotEnoughDataError() : Error(1022, "unknown_failure 1022") {}
 };
 
 } // namespace net

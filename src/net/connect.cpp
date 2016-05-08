@@ -3,6 +3,8 @@
 // information on the copying conditions.
 
 #include "src/net/connect.hpp"
+#include <openssl/err.h>
+#include <openssl/ssl.h>
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
@@ -18,12 +20,10 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
     if ((what & BEV_EVENT_CONNECTED) != 0) {
         (*cb)(mk::NoError(), bev);
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
-        bufferevent_free(bev);
-        (*cb)(mk::net::TimeoutError(), nullptr);
+        (*cb)(mk::net::TimeoutError(), bev);
     } else {
-        bufferevent_free(bev);
         // TODO: here we should map to the actual error that occurred
-        (*cb)(mk::net::NetworkError(), nullptr);
+        (*cb)(mk::net::NetworkError(), bev);
     }
     delete cb;
 }
@@ -144,6 +144,7 @@ void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> 
 }
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
+                 std::string hostname,
                  Callback<bufferevent *> cb,
                  Poller *poller, Logger *logger) {
     logger->debug("connect ssl...");
@@ -158,8 +159,48 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
     }
 
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
-            new Callback<bufferevent *>([cb, logger](Error err, bufferevent *bev) {
+            new Callback<bufferevent *>([cb, logger, hostname](Error err, bufferevent *bev) {
+                int hostname_validate_err = 0;
+
                 logger->debug("connect ssl... callback");
+                ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
+
+                if (err) {
+                    logger->debug("error in connection.");
+                    if (err == mk::net::NetworkError()) {
+                        long ssl_err = bufferevent_get_openssl_error(bev);
+                        err = SSLError(ERR_error_string(ssl_err, NULL));
+                    }
+                    bufferevent_free(bev);
+                    cb(err, nullptr);
+                    return;
+                }
+
+                long verify_err = SSL_get_verify_result(ssl);
+                if (verify_err != X509_V_OK) {
+                    debug("ssl: got an invalid certificate");
+                    bufferevent_free(bev);
+                    cb(SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err)), nullptr);
+                    return;
+                }
+
+                X509 *server_cert = SSL_get_peer_certificate(ssl);
+                if (server_cert == NULL) {
+                    logger->debug("ssl: got no certificate");
+                    bufferevent_free(bev);
+                    cb(SSLNoCertificateError(), nullptr);
+                    return;
+                }
+
+                hostname_validate_err = tls_check_name(NULL, server_cert, hostname.c_str());
+                X509_free(server_cert);
+                if (hostname_validate_err != 0) {
+                    logger->debug("ssl: got invalid hostname");
+                    bufferevent_free(bev);
+                    cb(SSLInvalidHostnameError(), nullptr);
+                    return;
+                }
+
                 cb(err, bev);
             }));
 }

@@ -303,7 +303,7 @@ class Message {
 void query(QueryClass dns_class, QueryType dns_type, std::string name,
            Callback<Message> func,
            Settings settings = {},
-           Poller *poller = mk::get_global_poller());
+           Poller *poller = Poller::global());
 
 } // namespace dns
 } // namespace mk
