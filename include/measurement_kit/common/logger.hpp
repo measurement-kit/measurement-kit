@@ -7,6 +7,7 @@
 #include <functional>
 #include <measurement_kit/common/constraints.hpp>
 #include <measurement_kit/common/funcs.hpp>
+#include <mutex>
 #include <stdarg.h>
 
 namespace mk {
@@ -45,6 +46,7 @@ class Logger : public NonCopyable, public NonMovable {
     SafelyOverridableFunc<void(const char *)> consumer_;
     int verbose_ = 0;
     char buffer_[32768];
+    std::mutex mutex_;
 };
 
 void warn(const char *, ...) __attribute__((format(printf, 1, 2)));
