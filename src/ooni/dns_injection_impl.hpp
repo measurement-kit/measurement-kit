@@ -46,7 +46,7 @@ class DNSInjectionImpl : public DNSTestImpl {
                       entry["injected"] = false;
                   }
                   cb(entry);
-              });
+              }, options);
     }
 };
 
