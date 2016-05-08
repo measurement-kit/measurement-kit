@@ -12,31 +12,20 @@
 
 namespace mk {
 
-/// Object used to log messages
 class Logger : public NonCopyable, public NonMovable {
   public:
-    Logger(); ///< Default constructor
+    Logger();
 
-    /// Variadic log function
     void logv(const char *, va_list) __attribute__((format(printf, 2, 0)));
-
-    /// Log warning message
     void warn(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
-
-    /// Log info message
     void info(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
-
-    /// Log debug message
     void debug(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
-    void set_verbose(int v) { verbose_ = v; } ///< Set logger verbose
+    void set_verbose(int v) { verbose_ = v; }
+    int get_verbose() { return verbose_; }
 
-    int get_verbose() { return verbose_; } ///< Get logger verbosity
-
-    /// Set logging function
     void on_log(std::function<void(const char *)> fn) { consumer_ = fn; }
 
-    /// Get global logger
     static Logger *global() {
         static Logger singleton;
         return &singleton;
