@@ -71,7 +71,7 @@ class HTTPTestImpl : public ooni::OoniTestImpl {
                 entry["agent"] = "agent";
                 entry["socksproxy"] = "";
                 callback(error, std::move(response));
-            }, logger, poller);
+            }, logger, reactor);
     }
 };
 

@@ -16,13 +16,13 @@ namespace net {
 // TODO: this should be moved into src/net/connect.cpp
 void connect(std::string address, int port,
              Callback<Var<Transport>> callback,
-             Settings settings, Var<Logger> logger, Var<Poller> poller) {
+             Settings settings, Var<Logger> logger, Var<Reactor> reactor) {
     if (settings.find("net/dumb_transport") != settings.end()) {
         callback(NoError(), Var<Transport>(new Emitter(logger)));
         return;
     }
     if (settings.find("net/socks5_proxy") != settings.end()) {
-        socks5_connect(address, port, settings, callback, poller, logger);
+        socks5_connect(address, port, settings, callback, reactor, logger);
         return;
     }
     double timeout = settings.get("net/timeout", 30.0);
@@ -42,28 +42,28 @@ void connect(std::string address, int port,
                 ssl_context = SslContext::global();
             }
             connect_ssl(r->connected_bev, ssl_context->get_client_ssl(address), address,
-                        [r, callback, timeout, ssl_context, poller, logger](Error err, bufferevent *bev) {
+                        [r, callback, timeout, ssl_context, reactor, logger](Error err, bufferevent *bev) {
                             if (err) {
                                 err.context = r;
                                 callback(err, nullptr);
                                 return;
                             }
                             Var<Transport> txp = Connection::make(bev,
-                                    poller, logger);
+                                    reactor, logger);
                             txp->set_timeout(timeout);
                             assert(err == NoError());
                             err.context = r;
                             callback(err, txp);
                         },
-                        poller, logger);
+                        reactor, logger);
             return;
         }
-        Var<Transport> txp = Connection::make(r->connected_bev, poller, logger);
+        Var<Transport> txp = Connection::make(r->connected_bev, reactor, logger);
         txp->set_timeout(timeout);
         assert(err == NoError());
         err.context = r;
         callback(err, txp);
-    }, settings, poller, logger);
+    }, settings, reactor, logger);
 }
 
 } // namespace net

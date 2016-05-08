@@ -9,9 +9,9 @@ namespace net {
 
 void connect_many(std::string address, int port, int num,
         ConnectManyCb callback, Settings settings, Var<Logger> logger,
-        Var<Poller> poller) {
+        Var<Reactor> reactor) {
     connect_many_<net::connect>(connect_many_make(address, port, num,
-            callback, settings, logger, poller));
+            callback, settings, logger, reactor));
 }
 
 } // namespace net

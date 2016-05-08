@@ -15,7 +15,7 @@ namespace net {
 class Socks5 : public Emitter {
   public:
     // Constructor that attaches to already existing transport
-    Socks5(Var<Transport>, Settings, Var<Poller> = Poller::global(),
+    Socks5(Var<Transport>, Settings, Var<Reactor> = Reactor::global(),
             Var<Logger> = Logger::global());
 
     void set_timeout(double timeout) override { conn->set_timeout(timeout); }
@@ -51,7 +51,7 @@ ErrorOr<bool> socks5_parse_connect_response(Buffer &, Var<Logger> = Logger::glob
 
 void socks5_connect(std::string address, int port, Settings settings,
         std::function<void(Error, Var<Transport>)> callback,
-        Var<Poller> poller = Poller::global(), Var<Logger> logger = Logger::global());
+        Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global());
 
 } // namespace net
 } // namespace mk

@@ -1,13 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
 #ifndef MEASUREMENT_KIT_OONI_BASE_TEST_HPP
 #define MEASUREMENT_KIT_OONI_BASE_TEST_HPP
 
-#include <measurement_kit/common/poller.hpp>
-#include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common.hpp>
 #include <functional>
 #include <string>
 
@@ -41,9 +38,9 @@ class BaseTest {
         return *this;
     }
 
-    /// Set poller to be used
-    BaseTest &set_poller(Var<Poller> p) {
-        poller = p;
+    /// Set reactor to be used
+    BaseTest &set_reactor(Var<Reactor> p) {
+        reactor = p;
         return *this;
     }
 
@@ -69,7 +66,7 @@ class BaseTest {
     std::function<void(const char *)> log_handler; ///< Log handler func
     std::string input_path;                        ///< Input file path
     std::string output_path;                       ///< Output file path
-    Var<Poller> poller = Poller::global();             ///< Poller to use
+    Var<Reactor> reactor = Reactor::global();             ///< Poller to use
 };
 
 } // namespace ooni
