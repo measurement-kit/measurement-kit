@@ -18,8 +18,8 @@ extern "C" {
 
 void query (QueryClass dns_class, QueryType dns_type,
         std::string name, Callback<Message> cb,
-        Settings settings, Var<Poller> poller) {
-    query_debug (dns_class, dns_type, name, cb, settings, poller);
+        Settings settings, Var<Reactor> reactor) {
+    query_debug (dns_class, dns_type, name, cb, settings, reactor);
 }
 
 } // namespace dns

@@ -14,7 +14,7 @@
 #include <functional>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/reactor.hpp>
 #include <measurement_kit/net.hpp>
 #include <sstream>
 #include <string>
@@ -36,7 +36,7 @@ namespace net {
 template <MK_MOCK(evutil_parse_sockaddr_port), MK_MOCK(bufferevent_socket_new),
         MK_MOCK(bufferevent_set_timeouts), MK_MOCK(bufferevent_socket_connect)>
 void connect_base(std::string address, int port, Callback<bufferevent *> cb,
-        double timeout = 10.0, Var<Poller> poller = Poller::global(),
+        double timeout = 10.0, Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
 
@@ -53,7 +53,7 @@ void connect_base(std::string address, int port, Callback<bufferevent *> cb,
     }
 
     bufferevent *bev;
-    if ((bev = bufferevent_socket_new(poller->get_event_base(), -1,
+    if ((bev = bufferevent_socket_new(reactor->get_event_base(), -1,
                  BEV_OPT_CLOSE_ON_FREE)) == nullptr) {
         throw GenericError(); // This should not happen
     }
@@ -87,22 +87,22 @@ typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
 void connect_first_of(std::vector<std::string> addresses, int port,
         ConnectFirstOfCb cb, Settings settings = {},
-        Var<Poller> poller = Poller::global(), Var<Logger> logger = Logger::global(),
+        Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global(),
         size_t index = 0, Var<std::vector<Error>> errors = nullptr);
 
 typedef std::function<void(ResolveHostnameResult)> ResolveHostnameCb;
 
 void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
-        Settings settings = {}, Var<Poller> poller = Poller::global(), Var<Logger> logger = Logger::global());
+        Settings settings = {}, Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global());
 
 void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
-        Settings settings = {}, Var<Poller> poller = Poller::global(),
+        Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                  std::string hostname,
                  Callback<bufferevent *> cb,
-                 Var<Poller> = Poller::global(),
+                 Var<Reactor> = Reactor::global(),
                  Var<Logger> = Logger::global());
 
 } // namespace mk

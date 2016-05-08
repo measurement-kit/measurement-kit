@@ -10,7 +10,7 @@
 #include <functional>                           // for function, __base
 #include <measurement_kit/common/logger.hpp>    // for Logger
 #include <measurement_kit/common/net_test.hpp>  // for NetTest
-#include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/reactor.hpp>
 #include <measurement_kit/common/settings.hpp>  // for Settings
 #include <string>                               // for allocator, operator+
 #include <type_traits>                          // for move
@@ -113,7 +113,7 @@ class OoniTestImpl : public mk::NetTest {
     virtual void teardown() {}
 
     virtual void main(Settings, std::function<void(json)> &&cb) {
-        poller->call_later(1.25, [cb]() {
+        reactor->call_later(1.25, [cb]() {
             json entry;
             cb(entry);
         });
@@ -121,7 +121,7 @@ class OoniTestImpl : public mk::NetTest {
 
     virtual void main(std::string, Settings,
                       std::function<void(json)> &&cb) {
-        poller->call_later(1.25, [cb]() {
+        reactor->call_later(1.25, [cb]() {
             json entry;
             cb(entry);
         });
@@ -214,9 +214,9 @@ class OoniTestImpl : public mk::NetTest {
         cb();
     }
 
-    Var<Poller> poller = Poller::global();
+    Var<Reactor> reactor = Reactor::global();
 
-    void set_poller(Var<Poller> p) { poller = p; }
+    void set_reactor(Var<Reactor> p) { reactor = p; }
 };
 
 } // namespace ooni

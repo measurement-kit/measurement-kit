@@ -73,7 +73,7 @@ class DNSTestImpl : public ooni::OoniTestImpl {
                 logger->debug("dns_test: callback called");
             }, Settings{
                 {"dns/nameserver", nameserver}, {"dns/attempts", "1"},
-            }, poller);
+            }, reactor);
     }
 };
 

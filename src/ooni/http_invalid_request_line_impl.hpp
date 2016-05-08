@@ -48,7 +48,7 @@ class HTTPInvalidRequestLineImpl : public TCPTestImpl {
 
             // We assume to have received all the data after a timeout of 5
             // seconds.
-            poller->call_later(timeout,
+            reactor->call_later(timeout,
                     [this, cb, received_data, request_line, txp]() {
                 if (*received_data != request_line) {
                     logger->info("Tampering detected!");

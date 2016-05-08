@@ -58,10 +58,10 @@ class QueryContext : public NonMovable, public NonCopyable {
 template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_ip_add),
         MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *create_evdns_base(
-        Settings settings, Var<Poller> poller = Poller::global()) {
+        Settings settings, Var<Reactor> reactor = Reactor::global()) {
 
     evdns_base *base;
-    event_base *evb = poller->get_event_base();
+    event_base *evb = reactor->get_event_base();
 
     if (settings.find("dns/nameserver") != settings.end()) {
         if ((base = evdns_base_new(evb, 0)) == nullptr) {
@@ -222,14 +222,14 @@ template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
         MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
 void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
         Callback<Message> cb, Settings settings,
-        Var<Poller> poller) {
+        Var<Reactor> reactor) {
 
     Message message;
     Query query;
     evdns_base *base;
 
     try {
-        base = create_evdns_base(settings, poller);
+        base = create_evdns_base(settings, reactor);
     } catch (std::runtime_error &) {
         cb(GenericError(), nullptr); // TODO: refine error thrown here
         return;

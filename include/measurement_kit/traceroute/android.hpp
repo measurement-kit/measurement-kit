@@ -70,7 +70,7 @@ class AndroidProber : public NonCopyable,
     /// \param evbase Event base to use (optional)
     AndroidProber(
         bool use_ipv4, int port,
-        event_base *evbase = Poller::global()->get_event_base(),
+        event_base *evbase = Reactor::global()->get_event_base(),
         Var<Logger> logger = Logger::global());
 
     /// Destructor

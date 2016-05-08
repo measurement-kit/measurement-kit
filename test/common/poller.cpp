@@ -9,6 +9,7 @@
 #include "src/common/check_connectivity.hpp"
 #include "src/common/utils.hpp"
 #include "src/common/libs_impl.hpp"
+#include "src/common/poller.hpp"
 
 #include <event2/dns.h>
 

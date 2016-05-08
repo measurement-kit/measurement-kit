@@ -8,7 +8,7 @@
 namespace mk {
 namespace net {
 
-Socks5::Socks5(Var<Transport> tx, Settings s, Var<Poller>, Var<Logger> lp)
+Socks5::Socks5(Var<Transport> tx, Settings s, Var<Reactor>, Var<Logger> lp)
     : Emitter(lp), settings(s), conn(tx),
       proxy_address(settings["net/socks5_address"]),
       proxy_port(settings["net/socks5_port"]) {
@@ -122,7 +122,7 @@ ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Var<Logger> logger) 
 
 void socks5_connect(std::string address, int port, Settings settings,
         Callback<Var<Transport>> callback,
-        Var<Poller> poller, Var<Logger> logger) {
+        Var<Reactor> reactor, Var<Logger> logger) {
 
     auto proxy = settings["net/socks5_proxy"];
     auto pos = proxy.find(":");
@@ -143,9 +143,9 @@ void socks5_connect(std::string address, int port, Settings settings,
                     return;
                 }
                 Var<Transport> txp = Connection::make(r->connected_bev,
-                                                      poller, logger);
+                                                      reactor, logger);
                 Var<Transport> socks5(
-                        new Socks5(txp, settings, poller, logger));
+                        new Socks5(txp, settings, reactor, logger));
                 socks5->on_connect([=]() {
                     socks5->on_connect(nullptr);
                     socks5->on_error(nullptr);
@@ -160,7 +160,7 @@ void socks5_connect(std::string address, int port, Settings settings,
                     callback(error, nullptr);
                 });
             },
-            settings, poller, logger);
+            settings, reactor, logger);
 }
 
 void Socks5::socks5_connect_() {

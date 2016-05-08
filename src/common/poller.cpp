@@ -2,13 +2,13 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common/poller.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/var.hpp>
 #include <event2/thread.h>
 #include <stdexcept>
 #include "src/common/libs_impl.hpp"
+#include "src/common/poller.hpp"
 #include "src/common/utils.hpp"
 
 // Using `extern "C"` for C callbacks is recommended by C++ FAQs.
