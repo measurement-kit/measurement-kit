@@ -27,7 +27,7 @@ class DNSTestImpl : public ooni::OoniTestImpl {
 
     void query(dns::QueryType query_type, dns::QueryClass query_class,
                std::string query_name, std::string nameserver,
-               std::function<void(dns::Message)> cb) {
+               std::function<void(dns::Message)> cb, Settings options = {}) {
 
         int resolver_port;
         std::string resolver_hostname, nameserver_part;
@@ -38,6 +38,9 @@ class DNSTestImpl : public ooni::OoniTestImpl {
 
         std::getline(nameserver_ss, nameserver_part, ':');
         resolver_port = std::stoi(nameserver_part, nullptr);
+
+        options["dns/nameserver"] = nameserver;
+        options["dns/attempts"] = 1;
 
         dns::query(
             query_class, query_type, query_name,
@@ -71,9 +74,7 @@ class DNSTestImpl : public ooni::OoniTestImpl {
                 logger->debug("dns_test: callbacking");
                 cb(message);
                 logger->debug("dns_test: callback called");
-            }, Settings{
-                {"dns/nameserver", nameserver}, {"dns/attempts", "1"},
-            }, reactor);
+            }, options, reactor);
     }
 };
 
