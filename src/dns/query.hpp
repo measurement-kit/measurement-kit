@@ -112,18 +112,18 @@ static inline std::vector<Answer> build_answers_evdns(
     std::vector<Answer> answers;
 
     if (code != DNS_ERR_NONE) {
-        logger->info("dns - request failed: %d", code);
+        logger->debug("dns: request failed: %d", code);
         // do not process the results if there was an error
 
     } else if (type == DNS_PTR) {
-        logger->info("dns - PTR");
+        logger->debug("dns: PTR");
         Answer answer;
         answer.code = code;
         answer.ttl = ttl;
         answer.type = QueryTypeId::PTR;
         // Note: cast magic copied from libevent regress tests
         answer.hostname = std::string(*(char **)addresses);
-        logger->info("dns - adding %s", answer.hostname.c_str());
+        logger->debug("dns: adding %s", answer.hostname.c_str());
         answers.push_back(answer);
     } else if (type == DNS_IPv4_A || type == DNS_IPv6_AAAA) {
 
@@ -134,11 +134,11 @@ static inline std::vector<Answer> build_answers_evdns(
         if (type == DNS_IPv4_A) {
             family = PF_INET;
             size = 4;
-            logger->info("dns - IPv4");
+            logger->debug("dns: IPv4");
         } else {
             family = PF_INET6;
             size = 16;
-            logger->info("dns - IPv6");
+            logger->debug("dns: IPv6");
         }
 
         //
@@ -151,7 +151,7 @@ static inline std::vector<Answer> build_answers_evdns(
                 // Note: address already in network byte order
                 if (inet_ntop(family, (char *)addresses + i * size, string,
                             sizeof(string)) == NULL) {
-                    logger->warn("dns - unexpected inet_ntop failure");
+                    logger->warn("dns: unexpected inet_ntop failure");
                     throw std::runtime_error("Unexpected inet_ntop failure");
                 }
                 Answer answer;
@@ -164,18 +164,18 @@ static inline std::vector<Answer> build_answers_evdns(
                     answer.ipv6 = string;
                     answer.type = QueryTypeId::AAAA;
                 }
-                logger->info("dns - adding '%s'", string);
+                logger->debug("dns: adding '%s'", string);
                 answers.push_back(answer);
             }
 
         } else {
-            logger->warn("dns - too many addresses");
+            logger->warn("dns: too many addresses");
             throw std::runtime_error("We got more responses than the maximum "
                                      "integer size. Something is very wrong.");
         }
 
     } else {
-        logger->warn("dns - invalid response type");
+        logger->warn("dns: invalid response type");
         throw std::runtime_error("Invalid response type.");
     }
     return answers;
