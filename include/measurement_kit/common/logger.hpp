@@ -4,9 +4,9 @@
 #ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
-#include <functional>
-#include <measurement_kit/common/constraints.hpp>
-#include <measurement_kit/common/funcs.hpp>
+#include <measurement_kit/common/delegate.hpp>
+#include <measurement_kit/common/non_copyable.hpp>
+#include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/var.hpp>
 #include <mutex>
 #include <stdarg.h>

@@ -1,11 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
 #ifndef SRC_COMMON_CHECK_CONNECTIVITY_HPP
 #define SRC_COMMON_CHECK_CONNECTIVITY_HPP
 
-#include <measurement_kit/common/constraints.hpp>
+#include <measurement_kit/common.hpp>
 
 // Forward declarations
 struct event_base;

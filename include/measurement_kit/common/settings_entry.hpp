@@ -4,6 +4,7 @@
 #ifndef MEASUREMENT_KIT_COMMON_SETTINGS_ENTRY_HPP
 #define MEASUREMENT_KIT_COMMON_SETTINGS_ENTRY_HPP
 
+#include <measurement_kit/common/error.hpp>
 #include <sstream>
 #include <string>
 
