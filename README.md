@@ -104,7 +104,6 @@ MeasurementKit also depends on the following projects (which
 are only conditionally compiled as explained below):
 
 - [libevent](https://github.com/libevent/libevent)
-- [jansson](https://github.com/akheron/jansson)
 - [geoip](https://github.com/maxmind/geoip-api-c)
 
 The `./configure` script should check whether all
@@ -123,9 +122,6 @@ at specific directories using the following flags:
 
 - `--with-libevent=PREFIX` that tells `./configure` to use the
 libevent library and headers installed at PREFIX
-
-- `--with-jansson=PREFIX` that tells `./configure` to use the
-jansson library and headers installed at PREFIX
 
 - `--with-geoip=PREFIX` that tells `./configure` to use the
 geoip library and headers installed at PREFIX
