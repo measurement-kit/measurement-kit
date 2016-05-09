@@ -59,3 +59,16 @@ TEST_CASE("Make sure that default get_output_path() is nonempty") {
     auto ptr = static_cast<ooni::OoniTestImpl *>(instance.get());
     REQUIRE(ptr->get_report_filename() != "");
 }
+
+TEST_CASE("The test should fail with an invalid dns") {
+    Var<std::list<std::string>> logs(new std::list<std::string>);
+    ooni::TcpConnectTest()
+        .set_port("80")
+        .set_options("dns/nameserver", "8.8.8.1")
+        .set_options("dns/attempts", "1")
+        .set_options("dns/timeout", "0.001")
+        .set_input_file_path("test/fixtures/hosts.txt")
+        .on_log([=](const char *s) { logs->push_back(s); })
+        .run();
+    for (auto &s : *logs) std::cout << s << "\n";
+}

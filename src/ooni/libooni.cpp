@@ -25,7 +25,7 @@ namespace ooni {
 
 void BaseTest::run() {
     // XXX Ideally it would be best to run this in the current thread with
-    // a dedicated poller, but the code is not yet ready for that.
+    // a dedicated reactor, but the code is not yet ready for that.
     bool done = false;
     run([&done]() { done = true; });
     do {
@@ -43,7 +43,7 @@ Var<NetTest> DnsInjectionTest::create_test_() {
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
-    test->set_poller(poller);
+    test->set_reactor(reactor);
     return Var<NetTest>(test);
 }
 
@@ -52,7 +52,7 @@ Var<NetTest> HttpInvalidRequestLineTest::create_test_() {
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
-    test->set_poller(poller);
+    test->set_reactor(reactor);
     return Var<NetTest>(test);
 }
 
@@ -61,7 +61,7 @@ Var<NetTest> TcpConnectTest::create_test_() {
     if (output_path != "") test->set_report_filename(output_path);
     if (is_verbose) test->set_verbose(1);
     if (log_handler) test->on_log(log_handler);
-    test->set_poller(poller);
+    test->set_reactor(reactor);
     return Var<NetTest>(test);
 }
 

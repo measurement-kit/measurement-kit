@@ -36,7 +36,7 @@ class Emitter : public Transport {
         do_error(err);
     }
 
-    Emitter(Logger *lp = Logger::global()) : logger(lp) {}
+    Emitter(Var<Logger> lp = Logger::global()) : logger(lp) {}
 
     ~Emitter() override;
 
@@ -129,7 +129,7 @@ class Emitter : public Transport {
     std::string socks5_port() override { return ""; }
 
   protected:
-    Logger *logger = Logger::global();
+    Var<Logger> logger = Logger::global();
 
   private:
     SafelyOverridableFunc<void()> do_connect = []() {};

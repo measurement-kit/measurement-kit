@@ -5,7 +5,7 @@
 #include <measurement_kit/common/async.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/net_test.hpp>
-#include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/reactor.hpp>
 
 #include <mutex>
 #include <map>

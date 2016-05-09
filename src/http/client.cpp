@@ -10,7 +10,7 @@ namespace http {
 
 // TODO: This function should be probably be moved in src/http/request.cpp
 void request(Settings settings, RequestCallback cb, Headers headers,
-             std::string body, Logger *lp, Poller *po) {
+             std::string body, Var<Logger> lp, Var<Reactor> po) {
     request_cycle(
         settings, headers, body, [cb](Error err, Var<Response> re) {
             // TODO: maybe change RequestCallback to receive a Var<Response>?

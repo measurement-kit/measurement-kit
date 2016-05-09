@@ -15,23 +15,23 @@
 using namespace mk;
 using namespace mk::net;
 
-TEST_CASE("net::connect() works with a custom poller") {
+TEST_CASE("net::connect() works with a custom reactor") {
     // Note: this is how Portolan uses measurement-kit
     if (CheckConnectivity::is_down()) {
         return;
     }
     set_verbose(1);
-    Poller poller;
+    Var<Reactor> reactor = Reactor::make();
     auto ok = false;
     connect("nexa.polito.it", 22, [&](Error error, Var<Transport> txp) {
         if (error) {
-            poller.break_loop();
+            reactor->break_loop();
             return;
         }
-        txp->close([&]() { poller.break_loop(); });
+        txp->close([&]() { reactor->break_loop(); });
         ok = true;
-    }, {}, Logger::global(), &poller);
-    poller.loop();
+    }, {}, Logger::global(), reactor);
+    reactor->loop();
     REQUIRE(ok);
 }
 

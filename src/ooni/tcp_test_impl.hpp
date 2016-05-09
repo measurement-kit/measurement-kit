@@ -39,8 +39,7 @@ class TCPTestImpl : public ooni::OoniTestImpl {
 
     TCPTestImpl(Settings options_) : TCPTestImpl("", options_) {};
 
-    void connect(Settings options,
-            std::function<void(Var<net::Transport>)> &&cb) {
+    void connect(Settings options, Callback<Var<net::Transport>> &&cb) {
         if (options["port"] == "") {
             throw std::runtime_error("Port is required");
         }
@@ -53,8 +52,8 @@ class TCPTestImpl : public ooni::OoniTestImpl {
                     if (error) {
                         entry["failure"] = error.as_ooni_error();
                     }
-                    cb(transport);
-                }, {}, &logger, poller);
+                    cb(error, transport);
+                }, options, logger, reactor);
     }
 };
 

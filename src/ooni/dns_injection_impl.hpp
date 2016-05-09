@@ -5,6 +5,7 @@
 #ifndef SRC_OONI_DNS_INJECTION_HPP
 #define SRC_OONI_DNS_INJECTION_HPP
 
+#include <event2/dns.h>
 #include <measurement_kit/dns.hpp>
 #include "src/ooni/errors.hpp"
 #include "src/ooni/ooni_test_impl.hpp"
@@ -38,14 +39,14 @@ class DNSInjectionImpl : public DNSTestImpl {
         entry["injected"] = nullptr;
         query("A", "IN", input, options["dns/nameserver"],
               [this, cb](dns::Message message) {
-                  logger.debug("dns_injection: got response");
+                  logger->debug("dns_injection: got response");
                   if (message.error_code == DNS_ERR_NONE) {
                       entry["injected"] = true;
                   } else {
                       entry["injected"] = false;
                   }
                   cb(entry);
-              });
+              }, options);
     }
 };
 

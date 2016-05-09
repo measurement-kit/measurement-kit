@@ -6,11 +6,10 @@
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/error_or.hpp>
 #include <measurement_kit/common/funcs.hpp>
-#include <measurement_kit/common/libs.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/mock.hpp>
 #include <measurement_kit/common/net_test.hpp>
-#include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/reactor.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/var.hpp>
 #include <measurement_kit/common/version.hpp>

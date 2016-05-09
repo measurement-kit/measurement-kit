@@ -28,7 +28,7 @@ enum class HeaderParserState {
 
 class ResponseParserNg : public NonCopyable, public NonMovable {
   public:
-    ResponseParserNg(Logger * = Logger::global());
+    ResponseParserNg(Var<Logger> = Logger::global());
 
     void on_begin(std::function<void()> fn) { begin_fn_ = fn; }
 
@@ -121,7 +121,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     SafelyOverridableFunc<void(std::string)> body_fn_;
     SafelyOverridableFunc<void()> end_fn_;
 
-    Logger *logger_ = Logger::global();
+    Var<Logger> logger_ = Logger::global();
     http_parser parser_;
     http_parser_settings settings_;
     Buffer buffer_;

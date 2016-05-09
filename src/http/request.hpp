@@ -24,9 +24,9 @@ typedef Callback<Var<Response>> RequestRecvResponseCb;
 
 template<void (*do_connect)(std::string, int,
         Callback<Var<Transport>>,
-        Settings, Logger *, Poller *) = net::connect>
+        Settings, Var<Logger>, Var<Reactor>) = net::connect>
 void request_connect_impl(Settings settings, Callback<Var<Transport>> cb,
-        Poller *poller = Poller::global(), Logger *logger = Logger::global()) {
+        Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global()) {
     if (settings.find("http/url") == settings.end()) {
         cb(MissingUrlError(), nullptr);
         return;
@@ -48,21 +48,21 @@ void request_connect_impl(Settings settings, Callback<Var<Transport>> cb,
     } else if (url->schema == "https") {
         settings["net/ssl"] = true;
     }
-    do_connect(url->address, url->port, cb, settings, logger, poller);
+    do_connect(url->address, url->port, cb, settings, logger, reactor);
 }
 
 void request_send(Var<Transport>, Settings, Headers, std::string,
         RequestSendCb);
 
 void request_recv_response(Var<Transport>, Callback<Var<Response>>,
-        Poller * = Poller::global(), Logger * = Logger::global());
+        Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
 void request_sendrecv(Var<Transport>, Settings, Headers, std::string,
-        Callback<Var<Response>>, Poller * = Poller::global(),
-        Logger * = Logger::global());
+        Callback<Var<Response>>, Var<Reactor> = Reactor::global(),
+        Var<Logger> = Logger::global());
 
 void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
-        Poller * = Poller::global(), Logger * = Logger::global());
+        Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
 } // namespace http
 } // namespace mk

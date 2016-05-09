@@ -78,15 +78,15 @@ struct ConnectResult : public ErrorContext {
 void connect(std::string address, int port,
              Callback<Var<Transport>> callback,
              Settings settings = {},
-             Logger *logger = Logger::global(),
-             Poller *poller = Poller::global());
+             Var<Logger> logger = Logger::global(),
+             Var<Reactor> reactor = Reactor::global());
 
 using ConnectManyCb = Callback<std::vector<Var<Transport>>>;
 
 void connect_many(std::string address, int port, int num,
         ConnectManyCb callback, Settings settings = {},
-        Logger *logger = Logger::global(),
-        Poller *poller = Poller::global());
+        Var<Logger> logger = Logger::global(),
+        Var<Reactor> reactor = Reactor::global());
 
 // TODO: these functions should be in src/net/transport.cpp
 

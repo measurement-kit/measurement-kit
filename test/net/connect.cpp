@@ -13,9 +13,8 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 #include <event2/bufferevent.h>
 #include <iostream>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/poller.hpp>
-#include <measurement_kit/net/error.hpp>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 using namespace mk;
 using namespace mk::net;
 

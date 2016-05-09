@@ -8,7 +8,7 @@
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/reactor.hpp>
 #include <measurement_kit/common/var.hpp>
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/net/error.hpp>
@@ -32,7 +32,7 @@ namespace mk {
 namespace net {
 
 void connect_first_of(std::vector<std::string> addresses, int port,
-        ConnectFirstOfCb cb, Settings settings, Poller *poller, Logger *logger,
+        ConnectFirstOfCb cb, Settings settings, Var<Reactor> reactor, Var<Logger> logger,
         size_t index, Var<std::vector<Error>> errors) {
     logger->debug("connect_first_of begin");
     if (!errors) {
@@ -49,19 +49,19 @@ void connect_first_of(std::vector<std::string> addresses, int port,
                 errors->push_back(err);
                 if (err) {
                     logger->debug("connect_first_of failure");
-                    connect_first_of(addresses, port, cb, settings, poller,
+                    connect_first_of(addresses, port, cb, settings, reactor,
                             logger, index + 1, errors);
                     return;
                 }
                 logger->debug("connect_first_of success");
                 cb(*errors, bev);
             },
-            timeout, poller, logger);
+            timeout, reactor, logger);
 }
 
 void resolve_hostname(
         std::string hostname, ResolveHostnameCb cb, 
-        Settings settings, Poller *poller, Logger *logger) {
+        Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
 
     logger->debug("resolve_hostname: %s", hostname.c_str());
 
@@ -110,12 +110,12 @@ void resolve_hostname(
                 }
             }
             cb(*result);
-        }, settings, poller);
-    }, settings, poller);
+        }, settings, reactor);
+    }, settings, reactor);
 }
 
 void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
-        Settings settings, Poller *poller, Logger *logger) {
+        Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
 
     Var<ConnectResult> result(new ConnectResult);
     resolve_hostname(hostname,
@@ -137,19 +137,19 @@ void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> 
                             }
                             cb(NoError(), result);
                         },
-                        settings, poller, logger);
+                        settings, reactor, logger);
 
             },
-            settings ,poller, logger);
+            settings, reactor, logger);
 }
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                  std::string hostname,
                  Callback<bufferevent *> cb,
-                 Poller *poller, Logger *logger) {
+                 Var<Reactor> reactor, Var<Logger> logger) {
     logger->debug("connect ssl...");
 
-    auto bev = bufferevent_openssl_filter_new(poller->get_event_base(),
+    auto bev = bufferevent_openssl_filter_new(reactor->get_event_base(),
             orig_bev, ssl, BUFFEREVENT_SSL_CONNECTING,
             BEV_OPT_CLOSE_ON_FREE);
     if (bev == nullptr) {

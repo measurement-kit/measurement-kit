@@ -36,26 +36,26 @@ class HTTPInvalidRequestLineImpl : public TCPTestImpl {
             std::string request_line,
             std::function<void()> &&cb) {
         connect({{"host", backend_url.address}, {"port", std::to_string(backend_url.port)}},
-                [this, cb, request_line](Var<net::Transport> txp) {
+                [this, cb, request_line](Error err, Var<net::Transport> txp) {
 
             Var<std::string> received_data(new std::string);
             txp->on_data([this, received_data](net::Buffer data) {
-                logger.debug("http_invalid_request_line: on_data");
+                logger->debug("http_invalid_request_line: on_data");
                 *received_data += data.read();
-                logger.debug("%s", received_data->c_str());
+                logger->debug("%s", received_data->c_str());
             });
             txp->write(request_line);
 
             // We assume to have received all the data after a timeout of 5
             // seconds.
-            poller->call_later(timeout,
+            reactor->call_later(timeout,
                     [this, cb, received_data, request_line, txp]() {
                 if (*received_data != request_line) {
-                    logger.info("Tampering detected!");
-                    logger.info("%s != %s", received_data->c_str(), request_line.c_str());
+                    logger->info("Tampering detected!");
+                    logger->info("%s != %s", received_data->c_str(), request_line.c_str());
                     entry["tampering"] = true;
                 } else if (entry["tampering"] == nullptr){
-                    logger.info("Tampering not detected.");
+                    logger->info("Tampering not detected.");
                     entry["tampering"] = false;
                 }
                 entry["sent"].push_back(request_line);

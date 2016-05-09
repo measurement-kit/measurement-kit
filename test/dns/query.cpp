@@ -9,7 +9,6 @@
 #include <measurement_kit/dns.hpp>
 
 #include "src/common/check_connectivity.hpp"
-#include "src/common/libs_impl.hpp"
 #include "src/dns/query.hpp"
 
 using namespace mk;
@@ -62,7 +61,7 @@ BASE_FREE(evdns_set_options_randomize)
 
 TEST_CASE("throw error while fails evdns_base_new") {
     REQUIRE_THROWS_AS(
-        create_evdns_base<null_evdns_base_new>({}, Poller::global()),
+        create_evdns_base<null_evdns_base_new>({}, Reactor::global()),
         std::bad_alloc);
 }
 
@@ -70,7 +69,7 @@ TEST_CASE("throw error while fails evdns_base_nameserver_ip_add") {
     try {
         create_evdns_base<::evdns_base_new, null_evdns_base_nameserver_ip_add,
             base_free_evdns_base_nameserver_ip_add>(
-            {{"dns/nameserver", "nexa"}}, Poller::global());
+            {{"dns/nameserver", "nexa"}}, Reactor::global());
     } catch (std::runtime_error &) {
         REQUIRE(base_free_evdns_base_nameserver_ip_add_flag);
         return;
@@ -82,7 +81,7 @@ TEST_CASE("throw error while fails evdns_base_nameserver_ip_add and base_new") {
     try {
         create_evdns_base<null_evdns_base_new,
             null_evdns_base_nameserver_ip_add>(
-            {{"dns/nameserver", "nexa"}}, Poller::global());
+            {{"dns/nameserver", "nexa"}}, Reactor::global());
     } catch (std::bad_alloc &) {
         return;
     }
@@ -93,7 +92,7 @@ TEST_CASE("throw error while fails evdns_set_options for attempts") {
     try {
         create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
             base_free_evdns_set_options_attempts>(
-            {{"dns/attempts", "nexa"}}, Poller::global());
+            {{"dns/attempts", "nexa"}}, Reactor::global());
     } catch (std::runtime_error &) {
         REQUIRE(base_free_evdns_set_options_attempts_flag);
         return;
@@ -105,7 +104,7 @@ TEST_CASE("throw error while fails evdns_set_options for negative attempts") {
     try {
         create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
             base_free_evdns_set_options_attempts_negative>(
-            {{"dns/attempts", -1}}, Poller::global());
+            {{"dns/attempts", -1}}, Reactor::global());
     } catch (std::runtime_error &) {
         REQUIRE(base_free_evdns_set_options_attempts_negative_flag);
         return;
@@ -118,7 +117,7 @@ TEST_CASE("throw error while fails evdns_set_options for randomize-case") {
         create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
             base_free_evdns_set_options_randomize,
             null_evdns_base_set_option_randomize>(
-            {{"dns/randomize_case", ""}}, Poller::global());
+            {{"dns/randomize_case", ""}}, Reactor::global());
     } catch (std::runtime_error &) {
         REQUIRE(base_free_evdns_set_options_randomize_flag);
         return;
@@ -144,7 +143,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
     }
     query_debug<::evdns_base_free, null_resolver>("IN", "A", "www.google.com",
         [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
-        Poller::global());
+        Reactor::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
@@ -154,7 +153,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
     query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
         "IN", "AAAA", "github.com",
         [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
-        Poller::global());
+        Reactor::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
@@ -164,7 +163,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
     query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4,
         ::evdns_base_resolve_ipv6, null_resolver_reverse>("IN", "REVERSE_A",
         "8.8.8.8", [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
-        Poller::global());
+        Reactor::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
@@ -175,7 +174,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
         ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
         null_resolver_reverse>("IN", "REVERSE_AAAA", "::1",
         [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
-        Poller::global());
+        Reactor::global());
 }
 
 TEST_CASE("dns::query deals with inet_pton returning 0") {
@@ -184,14 +183,14 @@ TEST_CASE("dns::query deals with inet_pton returning 0") {
         ::evdns_base_resolve_reverse_ipv6, null_inet_pton>("IN", "REVERSE_A",
         "8.8.8.8",
         [](Error e, Message) { REQUIRE(e == InvalidIPv4AddressError()); }, {},
-        Poller::global());
+        Reactor::global());
 
     query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4,
         ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
         ::evdns_base_resolve_reverse_ipv6, null_inet_pton>("IN", "REVERSE_AAAA",
         "::1",
         [](Error e, Message) { REQUIRE(e == InvalidIPv6AddressError()); }, {},
-        Poller::global());
+        Reactor::global());
 }
 
 TEST_CASE("dns::query raises if the query is unsupported") {

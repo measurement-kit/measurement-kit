@@ -36,7 +36,7 @@ inline void listen4(std::string address, int port, ListenCb cb) {
 
     auto cbp = new ListenInternalCb([cb](evutil_socket_t so) {
         bufferevent *bev = bufferevent_socket_new(
-                Poller::global()->get_event_base(), so, BEV_OPT_CLOSE_ON_FREE);
+                Reactor::global()->get_event_base(), so, BEV_OPT_CLOSE_ON_FREE);
         if (bev == nullptr) {
             (void)evutil_closesocket(so);
             return;
@@ -47,7 +47,7 @@ inline void listen4(std::string address, int port, ListenCb cb) {
     // Note: the listener is never freed and hence Valgrind is probably
     // going to complain that we have a memory leak here.
     evconnlistener *sl = evconnlistener_new_bind(
-            Poller::global()->get_event_base(),
+            Reactor::global()->get_event_base(),
             mk_listener_cb, cbp, LEV_OPT_CLOSE_ON_FREE | LEV_OPT_REUSEABLE, -1,
             (sockaddr *)&storage, salen);
     if (sl == nullptr) {

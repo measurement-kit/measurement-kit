@@ -57,13 +57,12 @@ int main(int argc, char **argv) {
     std::cout << "> policy: " << query.policy << "\n";
     std::cout << "> tool: " << tool << "\n";
 
-    Poller *poller = Poller::global();
-    poller->call_soon([&poller, &query, &tool]() {
+    loop_with_initial_event([&query, &tool]() {
         mlabns::query(
-            tool, [&poller](Error error, mlabns::Reply reply) {
+            tool, [](Error error, mlabns::Reply reply) {
                 if (error) {
                     std::cout << "< error: " << (int)error << "\n";
-                    poller->break_loop();
+                    break_loop();
                     return;
                 }
                 std::cout << "< city: " << reply.city << "\n";
@@ -76,8 +75,7 @@ int main(int argc, char **argv) {
                 std::cout << "< fqdn: " << reply.fqdn << "\n";
                 std::cout << "< site: " << reply.site << "\n";
                 std::cout << "< country: " << reply.country << "\n";
-                poller->break_loop();
+                break_loop();
             }, query);
     });
-    poller->loop();
 }
