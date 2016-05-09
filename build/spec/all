@@ -2,6 +2,6 @@
 set -e
 pkg_rootdir=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
 cd $pkg_rootdir
-for dependency in jansson libevent geoip libressl; do
+for dependency in libevent geoip libressl; do
     ./build/dependency $dependency
 done
