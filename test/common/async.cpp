@@ -73,4 +73,7 @@ TEST_CASE("The async engine works as expected") {
             sleep(1);
         }
     }
+
+    async.break_loop();
+    async.join();
 }
