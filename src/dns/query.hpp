@@ -103,46 +103,6 @@ static inline evdns_base *create_evdns_base(
     return base;
 }
 
-static inline const char *dns_code_to_string(int code) {
-    if (code == DNS_ERR_NONE) {
-        return "No error";
-    }
-    if (code == DNS_ERR_FORMAT) {
-        return "Bad request";
-    }
-    if (code == DNS_ERR_SERVERFAILED) {
-        return "Internal server error";
-    }
-    if (code == DNS_ERR_NOTEXIST) {
-        return "Not found";
-    }
-    if (code == DNS_ERR_NOTIMPL) {
-        return "Not implemented";
-    }
-    if (code == DNS_ERR_REFUSED) {
-        return "Forbidden";
-    }
-    if (code == DNS_ERR_TRUNCATED) {
-        return "Answer truncated";
-    }
-    if (code == DNS_ERR_UNKNOWN) {
-        return "Client resolver error";
-    }
-    if (code == DNS_ERR_TIMEOUT) {
-        return "Timed out";
-    }
-    if (code == DNS_ERR_SHUTDOWN) {
-        return "Resolver shutting down";
-    }
-    if (code == DNS_ERR_CANCEL) {
-        return "Query cancelled by user";
-    }
-    if (code == DNS_ERR_NODATA) {
-        return "No data available for query";
-    }
-    return "XXX";
-}
-
 template <MK_MOCK(inet_ntop)>
 static inline std::vector<Answer> build_answers_evdns(
         int code, char type, int count, int ttl, void *addresses) {
@@ -152,7 +112,7 @@ static inline std::vector<Answer> build_answers_evdns(
     std::vector<Answer> answers;
 
     if (code != DNS_ERR_NONE) {
-        logger->debug("dns: request failed: %s", dns_code_to_string(code));
+        logger->debug("dns: request failed: %d", code);
         // do not process the results if there was an error
 
     } else if (type == DNS_PTR) {
