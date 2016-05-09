@@ -40,33 +40,6 @@ AC_DEFUN([MK_AM_LIBEVENT], [
   echo ""
 ])
 
-AC_DEFUN([MK_AM_JANSSON], [
-  echo "> checking for dependency: jansson"
-
-  AC_ARG_WITH([jansson],
-              [AS_HELP_STRING([--with-jansson],
-                [JSON library @<:@default=check@:>@])
-              ],
-              [
-                CPPFLAGS="$CPPFLAGS -I$withval/include"
-                LDFLAGS="$LDFLAGS -L$withval/lib"
-              ],
-              [])
-
-  mk_not_found=""
-  AC_CHECK_HEADERS(jansson.h, [], [mk_not_found=1])
-  AC_CHECK_LIB(jansson, json_null, [], [mk_not_found=1])
-
-  if test "$mk_not_found" = "1"; then
-    AC_MSG_WARN([Failed to find dependency: jansson])
-    echo "    - to install on Debian: sudo apt-get install libjansson-dev"
-    echo "    - to install on OSX: brew install jansson"
-    echo "    - to compile from sources: ./build/dependency jansson"
-    AC_MSG_ERROR([Please, install jansson and run configure again])
-  fi
-  echo ""
-])
-
 AC_DEFUN([MK_AM_GEOIP], [
   echo "> checking for dependency: geoip"
 

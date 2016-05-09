@@ -99,9 +99,9 @@ class AndroidProber : public NonCopyable,
     int port_ = 0;                 ///< socket port
     Var<Logger> logger = Logger::global();///< logger
 
-    SafelyOverridableFunc<void(ProbeResult)> result_cb_;  ///< on result callback
-    SafelyOverridableFunc<void()> timeout_cb_;            ///< on timeout callback
-    SafelyOverridableFunc<void(Error)> error_cb_;         ///< on error callback
+    Delegate<void(ProbeResult)> result_cb_;  ///< on result callback
+    Delegate<void()> timeout_cb_;            ///< on timeout callback
+    Delegate<void(Error)> error_cb_;         ///< on error callback
 
     /// Call this when you don't receive a response within timeout
     void on_timeout() { probe_pending_ = false; }

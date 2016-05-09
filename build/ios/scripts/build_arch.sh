@@ -44,12 +44,10 @@ export pkg_make_flags=-j4
     cd $SOURCEDIR
     ./build/dependency libressl
     ./build/dependency libevent
-    ./build/dependency jansson
     ./build/dependency geoip
     test -x ./configure || ./autogen.sh
     ./configure -q --disable-examples \
                 --with-libevent=$DESTDIR/ \
-                --with-jansson=$DESTDIR/ \
                 --with-geoip=$DESTDIR/ \
                 --with-openssl=$DESTDIR/ \
                 --prefix=/ \

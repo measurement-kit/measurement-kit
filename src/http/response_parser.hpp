@@ -116,10 +116,10 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     }
 
   private:
-    SafelyOverridableFunc<void()> begin_fn_;
-    SafelyOverridableFunc<void(Response)> response_fn_;
-    SafelyOverridableFunc<void(std::string)> body_fn_;
-    SafelyOverridableFunc<void()> end_fn_;
+    Delegate<void()> begin_fn_;
+    Delegate<void(Response)> response_fn_;
+    Delegate<void(std::string)> body_fn_;
+    Delegate<void()> end_fn_;
 
     Var<Logger> logger_ = Logger::global();
     http_parser parser_;

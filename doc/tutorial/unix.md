@@ -52,7 +52,6 @@ Measurement Kit depends at build time on other pieces of software. At the
 moment of writing this tutorial, it depends on:
 
 - [libevent](https://github.com/libevent/libevent)
-- [jansson](https://github.com/akheron/jansson)
 - [json](https://github.com/nlohmann/json)
 - [geoip](https://github.com/maxmind/geoip-api-c)
 
