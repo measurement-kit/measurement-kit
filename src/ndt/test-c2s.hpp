@@ -20,14 +20,14 @@ using namespace net;
 /// Coroutine that does the real c2s test
 void c2s_coroutine(std::string address, int port, double runtime,
                    Callback<Continuation<>> cb, double timeout = 10.0,
-                   Logger *logger = Logger::global(),
-                   Poller *poller = Poller::global());
+                   Var<Logger> logger = Logger::global(),
+                   Var<Reactor> reactor = Reactor::global());
 
 /// Testable implementation of c2s_coroutine()
 template <MK_MOCK_NAMESPACE(net, connect)>
 void c2s_coroutine_impl(std::string address, int port, double runtime,
                         Callback<Continuation<>> cb, double timeout,
-                        Logger *logger, Poller *poller) {
+                        Var<Logger> logger, Var<Reactor> reactor) {
 
     // Performance note: This implementation does some string copies
     // when sending but in localhost testing this does not seem to be
@@ -53,10 +53,10 @@ void c2s_coroutine_impl(std::string address, int port, double runtime,
 
     std::string str(8192, 'a'); // TODO: fill with random data!
 
-    logger->in_progress("ndt: connect");
+    logger->debug("ndt: connect ...");
     connect(address, port,
             [=](Error err, Var<Transport> txp) {
-                logger->complete("ndt: connect", err);
+                logger->debug("ndt: connect ... %d", (int)err);
                 if (err) {
                     cb(err, nullptr);
                     return;
@@ -99,7 +99,7 @@ void c2s_coroutine_impl(std::string address, int port, double runtime,
                     txp->write(str.data(), str.size());
                 });
             },
-            {}, logger, poller);
+            {}, logger, reactor);
 }
 
 /// Run the C2S test
@@ -111,9 +111,9 @@ template <MK_MOCK_NAMESPACE(messages, read),
 void run_test_c2s_impl(Var<Context> ctx, Callback<> callback) {
 
     // The server sends us the PREPARE message containing the port number
-    ctx->logger->in_progress("ndt: recv TEST_PREPARE");
+    ctx->logger->debug("ndt: recv TEST_PREPARE ...");
     read(ctx, [=](Error err, uint8_t type, std::string s) {
-        ctx->logger->complete("ndt: recv TEST_PREPARE", err);
+        ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
             callback(err);
             return;
@@ -129,20 +129,20 @@ void run_test_c2s_impl(Var<Context> ctx, Callback<> callback) {
         }
 
         // We connect to the port and wait for coroutine to pause
-        ctx->logger->in_progress("ndt: start c2s coroutine");
+        ctx->logger->debug("ndt: start c2s coroutine ...");
         c2s_coroutine(
             ctx->address, *port, 10.0,
             [=](Error err, Continuation<> cc) {
-                ctx->logger->complete("ndt: start c2s coroutine", err);
+                ctx->logger->debug("ndt: start c2s coroutine ... %d", (int)err);
                 if (err) {
                     callback(err);
                     return;
                 }
 
                 // The server sends us the START message to tell we can start
-                ctx->logger->in_progress("ndt: recv TEST_START");
+                ctx->logger->debug("ndt: recv TEST_START ...");
                 read(ctx, [=](Error err, uint8_t type, std::string) {
-                    ctx->logger->complete("ndt: recv TEST_START", err);
+                    ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                     if (err) {
                         callback(err);
                         return;
@@ -162,9 +162,9 @@ void run_test_c2s_impl(Var<Context> ctx, Callback<> callback) {
                         }
 
                         // The server sends us MSG containing throughput
-                        ctx->logger->in_progress("ndt: recv TEST_MSG");
+                        ctx->logger->debug("ndt: recv TEST_MSG ...");
                         read(ctx, [=](Error err, uint8_t type, std::string s) {
-                            ctx->logger->complete("ndt: recv TEST_MSG", err);
+                            ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
                             if (err) {
                                 callback(err);
                                 return;
@@ -176,11 +176,11 @@ void run_test_c2s_impl(Var<Context> ctx, Callback<> callback) {
                             ctx->logger->info("C2S speed %s kbit/s", s.c_str());
 
                             // The server sends us the FINALIZE message
-                            ctx->logger->in_progress("ndt: recv TEST_FINALIZE");
+                            ctx->logger->debug("ndt: recv TEST_FINALIZE ...");
                             read(
                                 ctx, [=](Error err, uint8_t type, std::string) {
-                                    ctx->logger->complete(
-                                        "ndt: recv TEST_FINALIZE", err);
+                                    ctx->logger->debug(
+                                        "ndt: recv TEST_FINALIZE ... %d", (int)err);
                                     if (err) {
                                         callback(err);
                                         return;
@@ -197,7 +197,7 @@ void run_test_c2s_impl(Var<Context> ctx, Callback<> callback) {
                     });
                 });
             },
-            ctx->timeout, ctx->logger, ctx->poller);
+            ctx->timeout, ctx->logger, ctx->reactor);
     });
 }
 

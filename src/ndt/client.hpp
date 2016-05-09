@@ -23,7 +23,7 @@ template <Phase connect, Phase send_login, Phase recv_and_ignore_kickoff,
           Phase run_tests, Phase recv_results_and_logout, Phase wait_close,
           Cleanup disconnect_and_callback>
 void client_impl(std::string address, int port, Callback<> callback,
-                 Settings settings, Logger *logger, Poller *poller) {
+                 Settings settings, Var<Logger> logger, Var<Reactor> reactor) {
 
     // Note: this implementation is a template because that allows us to
     // easily change the functions implementing each phase of the protocol
@@ -33,7 +33,7 @@ void client_impl(std::string address, int port, Callback<> callback,
     ctx->address = address;
     ctx->callback = callback;
     ctx->logger = logger;
-    ctx->poller = poller;
+    ctx->reactor = reactor;
     ctx->port = port;
     ctx->settings = settings;
 

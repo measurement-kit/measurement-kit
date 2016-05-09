@@ -21,20 +21,20 @@ using namespace net;
 /// Coroutine that does the real s2c test
 void s2c_coroutine(std::string address, int port,
                    Callback<Continuation<double>> cb, double timeout = 10.0,
-                   Logger *logger = Logger::global(),
-                   Poller *poller = Poller::global());
+                   Var<Logger> logger = Logger::global(),
+                   Var<Reactor> reactor = Reactor::global());
 
 /// Testable implementation of s2c_coroutine()
 template <MK_MOCK_NAMESPACE(net, connect)>
 void s2c_coroutine_impl(std::string address, int port,
                         Callback<Continuation<double>> cb, double timeout,
-                        Logger *logger, Poller *poller) {
+                        Var<Logger> logger, Var<Reactor> reactor) {
 
     // The coroutine connects to the remote endpoint and then pauses
-    logger->in_progress("ndt: connect");
+    logger->debug("ndt: connect ...");
     connect(address, port,
             [=](Error err, Var<Transport> txp) {
-                logger->complete("ndt: connect", err);
+                logger->debug("ndt: connect ... %d", (int)err);
                 if (err) {
                     cb(err, nullptr);
                     return;
@@ -89,7 +89,7 @@ void s2c_coroutine_impl(std::string address, int port,
                     });
                 });
             },
-            {}, logger, poller);
+            {}, logger, reactor);
 }
 
 /// Final state of this test
@@ -106,9 +106,9 @@ void finalizing_test_impl(Var<Context> ctx, Callback<> callback) {
     // Because of that behavior, here we are forced to use our lowest level
     // reading primitive from the channel, i.e. `read_ndt()`.
 
-    ctx->logger->in_progress("ndt: recv TEST_MSG");
+    ctx->logger->debug("ndt: recv TEST_MSG ...");
     read_ndt(ctx, [=](Error err, uint8_t type, std::string s) {
-        ctx->logger->complete("ndt: recv TEST_MSG", err);
+        ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
         if (err) {
             callback(err);
             return;
@@ -144,9 +144,9 @@ template <MK_MOCK_NAMESPACE(messages, read),
 void run_test_s2c_impl(Var<Context> ctx, Callback<> callback) {
 
     // The server sends us the PREPARE message containing the port number
-    ctx->logger->in_progress("ndt: recv TEST_PREPARE");
+    ctx->logger->debug("ndt: recv TEST_PREPARE ...");
     read(ctx, [=](Error err, uint8_t type, std::string s) {
-        ctx->logger->complete("ndt: recv TEST_PREPARE", err);
+        ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
             callback(err);
             return;
@@ -162,20 +162,20 @@ void run_test_s2c_impl(Var<Context> ctx, Callback<> callback) {
         }
 
         // We connect to the port and wait for coroutine to pause
-        ctx->logger->in_progress("ndt: start s2c coroutine");
+        ctx->logger->debug("ndt: start s2c coroutine ...");
         s2c_coroutine(
             ctx->address, *port,
             [=](Error err, Continuation<double> cc) {
-                ctx->logger->complete("ndt: start s2c coroutine", err);
+                ctx->logger->debug("ndt: start s2c coroutine ... %d", (int)err);
                 if (err) {
                     callback(err);
                     return;
                 }
 
                 // The server sends us the START message to tell we can start
-                ctx->logger->in_progress("ndt: recv TEST_START");
+                ctx->logger->debug("ndt: recv TEST_START ...");
                 read(ctx, [=](Error err, uint8_t type, std::string) {
-                    ctx->logger->complete("ndt: recv TEST_START", err);
+                    ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                     if (err) {
                         callback(err);
                         return;
@@ -195,9 +195,9 @@ void run_test_s2c_impl(Var<Context> ctx, Callback<> callback) {
                         }
 
                         // The server sends us MSG containing throughput
-                        ctx->logger->in_progress("ndt: recv TEST_MSG");
+                        ctx->logger->debug("ndt: recv TEST_MSG ...");
                         read_json(ctx, [=](Error err, uint8_t type, json m) {
-                            ctx->logger->complete("ndt: recv TEST_MSG", err);
+                            ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
                             if (err) {
                                 callback(err);
                                 return;
@@ -210,7 +210,7 @@ void run_test_s2c_impl(Var<Context> ctx, Callback<> callback) {
                                     m.dump().c_str());
 
                             // We send our measured throughput to the client
-                            ctx->logger->in_progress("ndt: send TEST_MSG");
+                            ctx->logger->debug("ndt: send TEST_MSG ...");
                             ErrorOr<Buffer> out = format_test_msg(
                                 lexical_cast<std::string>(speed));
                             if (!out) {
@@ -218,8 +218,8 @@ void run_test_s2c_impl(Var<Context> ctx, Callback<> callback) {
                                 return;
                             }
                             write(ctx, *out, [=](Error err) {
-                                ctx->logger->complete("ndt: send TEST_MSG",
-                                                      err);
+                                ctx->logger->debug("ndt: send TEST_MSG ... %d",
+                                                      (int)err);
                                 if (err) {
                                     callback(err);
                                     return;
@@ -232,7 +232,7 @@ void run_test_s2c_impl(Var<Context> ctx, Callback<> callback) {
                     });
                 });
             },
-            ctx->timeout, ctx->logger, ctx->poller);
+            ctx->timeout, ctx->logger, ctx->reactor);
     });
 }
 

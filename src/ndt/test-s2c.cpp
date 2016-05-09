@@ -12,8 +12,8 @@ using namespace net;
 
 void s2c_coroutine(std::string address, int port,
                    Callback<Continuation<double>> cb, double timeout,
-                   Logger *logger, Poller *poller) {
-    s2c_coroutine_impl(address, port, cb, timeout, logger, poller);
+                   Var<Logger> logger, Var<Reactor> reactor) {
+    s2c_coroutine_impl(address, port, cb, timeout, logger, reactor);
 }
 
 void finalizing_test(Var<Context> ctx, Callback<> callback) {

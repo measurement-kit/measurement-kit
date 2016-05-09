@@ -19,8 +19,8 @@ struct Context {
     Var<net::Buffer> buff = net::Buffer::make();
     Callback<> callback;
     Var<net::Transport> conn;
-    Logger *logger = Logger::global();
-    Poller *poller = Poller::global();
+    Var<Logger> logger = Logger::global();
+    Var<Reactor> reactor = Reactor::global();
     int port = 0;
     Settings settings;
     int test_suite = TEST_STATUS | TEST_META | TEST_C2S | TEST_S2C;

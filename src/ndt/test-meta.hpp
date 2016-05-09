@@ -25,9 +25,9 @@ template <MK_MOCK_NAMESPACE(messages, read),
 void run_test_meta_impl(Var<Context> ctx, Callback<> callback) {
 
     // The server sends the PREPARE and START messages back to back
-    ctx->logger->in_progress("ndt: recv TEST_PREPARE");
+    ctx->logger->debug("ndt: recv TEST_PREPARE ...");
     read(ctx, [=](Error err, uint8_t type, std::string) {
-        ctx->logger->complete("ndt: recv TEST_PREPARE", err);
+        ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
             callback(err);
             return;
@@ -36,9 +36,9 @@ void run_test_meta_impl(Var<Context> ctx, Callback<> callback) {
             callback(GenericError());
             return;
         }
-        ctx->logger->in_progress("ndt: recv TEST_START");
+        ctx->logger->debug("ndt: recv TEST_START ...");
         read(ctx, [=](Error err, uint8_t type, std::string) {
-            ctx->logger->complete("ndt: recv TEST_START", err);
+            ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
             if (err) {
                 callback(err);
                 return;
@@ -78,7 +78,7 @@ void run_test_meta_impl(Var<Context> ctx, Callback<> callback) {
 
             ctx->logger->debug("ndt: send meta");
             write(ctx, *out, [=](Error err) {
-                ctx->logger->complete("ndt: send meta", err);
+                ctx->logger->debug("ndt: send meta ... %d", (int)err);
                 if (err) {
                     callback(err);
                     return;
@@ -87,9 +87,9 @@ void run_test_meta_impl(Var<Context> ctx, Callback<> callback) {
                 ctx->logger->info("Sent additional metadata to server");
 
                 // Now we read the FINALIZE message
-                ctx->logger->in_progress("ndt: recv TEST_FINALIZE");
+                ctx->logger->debug("ndt: recv TEST_FINALIZE ...");
                 read(ctx, [=](Error err, uint8_t type, std::string) {
-                    ctx->logger->complete("ndt: recv TEST_FINALIZE", err);
+                    ctx->logger->debug("ndt: recv TEST_FINALIZE ... %d", (int)err);
                     if (err) {
                         callback(err);
                         return;

@@ -10,8 +10,11 @@ namespace mk {
 namespace ndt {
 
 void client(std::string address, int port, Callback<> callback,
-            Settings settings = {}, Logger *logger = Logger::global(),
-            Poller *poller = Poller::global());
+            Settings settings = {}, Var<Logger> logger = Logger::global(),
+            Var<Reactor> reactor = Reactor::global());
+
+template <typename... T>
+using Continuation = std::function<void(Callback<T...>)>;
 
 } // namespace ndt
 } // namespace mk

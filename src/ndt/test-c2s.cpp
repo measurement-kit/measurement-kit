@@ -12,8 +12,8 @@ using namespace net;
 
 void c2s_coroutine(std::string address, int port, double runtime,
                    Callback<Continuation<>> cb, double timeout,
-                   Logger *logger, Poller *poller) {
-    c2s_coroutine_impl(address, port, runtime, cb, timeout, logger, poller);
+                   Var<Logger> logger, Var<Reactor> reactor) {
+    c2s_coroutine_impl(address, port, runtime, cb, timeout, logger, reactor);
 }
 
 void run_test_c2s(Var<Context> ctx, Callback<> callback) {

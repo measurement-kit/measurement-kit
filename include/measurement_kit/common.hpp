@@ -13,8 +13,8 @@
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/reactor.hpp>
-#include <measurement_kit/common/settings_entry.hpp>
 #include <measurement_kit/common/settings.hpp>
+#include <measurement_kit/common/settings_entry.hpp>
 #include <measurement_kit/common/var.hpp>
 #include <measurement_kit/common/version.hpp>
 #endif
