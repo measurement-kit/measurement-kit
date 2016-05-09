@@ -147,20 +147,21 @@ inline void request(std::string method, std::string url, RequestCallback cb,
 typedef std::function<void(Error)> RequestSendCb;
 
 void request_connect(Settings, Callback<Var<net::Transport>>,
-                      Var<Reactor>, Var<Logger>);
+                     Var<Reactor> = Reactor::global(),
+                     Var<Logger> = Logger::global());
 
-void request_send(Var<net::Transport>, Settings, Headers, std::string,
-                      RequestSendCb);
+void request_send(Var<Transport>, Settings, Headers, std::string,
+        RequestSendCb);
 
-void request_recv_response(Var<net::Transport>, Callback<Var<Response>>,
-                      Var<Reactor>, Var<Logger>);
+void request_recv_response(Var<Transport>, Callback<Var<Response>>,
+        Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
-void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
-                      Callback<Var<Response>>, Var<Reactor>,
-                      Var<Logger>);
+void request_sendrecv(Var<Transport>, Settings, Headers, std::string,
+        Callback<Var<Response>>, Var<Reactor> = Reactor::global(),
+        Var<Logger> = Logger::global());
 
 void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
-                      Var<Reactor>, Var<Logger>);
+        Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
 } // namespace http
 } // namespace mk
