@@ -65,8 +65,8 @@ src/ext/json/
 stamp-h1
 test-driver
 test/common/async
+test/common/delegate
 test/common/error_or
-test/common/funcs
 test/common/log
 test/common/poller
 test/common/settings
