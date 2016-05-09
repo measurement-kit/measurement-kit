@@ -33,7 +33,7 @@ class Logger : public NonCopyable, public NonMovable {
     }
 
   private:
-    SafelyOverridableFunc<void(const char *)> consumer_;
+    Delegate<void(const char *)> consumer_;
     int verbose_ = 0;
     char buffer_[32768];
     std::mutex mutex_;
