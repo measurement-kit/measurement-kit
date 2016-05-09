@@ -33,7 +33,7 @@ class Logger : public NonCopyable, public NonMovable {
     }
 
   private:
-    SafelyOverridableFunc<void(int, const char *)> consumer_;
+    SafelyOverridableFunc<void(const char *)> consumer_;
     int verbose_ = 0;
     char buffer_[32768];
     std::mutex mutex_;
@@ -47,7 +47,7 @@ void info(const char *, ...) __attribute__((format(printf, 1, 2)));
 
 inline void set_verbose(int v) { Logger::global()->set_verbose(v); }
 
-inline void on_log(std::function<void(int, const char *)> fn) {
+inline void on_log(std::function<void(const char *)> fn) {
     Logger::global()->on_log(fn);
 }
 
