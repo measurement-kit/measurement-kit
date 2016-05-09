@@ -88,6 +88,14 @@ void connect_many(std::string address, int port, int num,
         Var<Logger> logger = Logger::global(),
         Var<Reactor> reactor = Reactor::global());
 
+void write(Var<Transport> txp, Buffer buf, Callback<> cb);
+
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<> cb);
+
+inline void read(Var<Transport> t, Var<Buffer> buff, Callback<> callback) {
+    readn(t, buff, 1, callback);
+}
+
 } // namespace net
 } // namespace mk
 #endif
