@@ -73,4 +73,11 @@ TEST_CASE("The detached reactor works") {
     while (count > 0) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+
+    // Break the loop to terminate background thread and wait one more
+    // second such that the thread actually terminates. Strictly speaking,
+    // this code would not be needed, but not terminating the background
+    // thread properly makes Valgrind complain.
+    reactor->break_loop();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
