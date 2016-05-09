@@ -20,3 +20,16 @@ TEST_CASE("The HTTP Invalid Request Line test should run") {
     });
     mk::loop();
 }
+
+TEST_CASE("The HTTP Invalid Request Line can manage a failure while connecting") {
+    Settings options;
+    options["backend"] = "http://213.138.109.232/";
+    options["dns/nameserver"] = "8.8.8.1";
+    options["dns/timeout"] = 0.1;
+    HTTPInvalidRequestLineImpl http_invalid_request_line(options);
+    loop_with_initial_event([&]() {
+        http_invalid_request_line.begin([&]() {
+            http_invalid_request_line.end([]() { mk::break_loop(); });
+        });
+    });
+}
