@@ -42,6 +42,6 @@ int main(int argc, char **argv) {
     mk::ooni::HttpInvalidRequestLineTest()
         .set_backend(backend)
         .set_verbose(verbose)
-        .on_log([](int, const char *s) { std::cout << s << "\n"; })
+        .on_log([](const char *s) { std::cout << s << "\n"; })
         .run();
 }

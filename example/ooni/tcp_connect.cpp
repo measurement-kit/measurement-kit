@@ -41,6 +41,6 @@ int main(int argc, char **argv) {
         .set_port(port)
         .set_input_file_path(argv[0])
         .set_verbose(verbose)
-        .on_log([](int, const char *s) { std::cout << s << "\n"; })
+        .on_log([](const char *s) { std::cout << s << "\n"; })
         .run();
 }
