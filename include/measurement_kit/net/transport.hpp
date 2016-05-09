@@ -88,47 +88,10 @@ void connect_many(std::string address, int port, int num,
         Var<Logger> logger = Logger::global(),
         Var<Reactor> reactor = Reactor::global());
 
-// TODO: these functions should be in src/net/transport.cpp
+void write(Var<Transport> txp, Buffer buf, Callback<> cb);
 
-// Asynchronous write() of the content of the buffer
-inline void write(Var<Transport> txp, Buffer buf, Callback<> callback) {
-    txp->on_flush([=]() {
-        txp->on_flush(nullptr);
-        txp->on_error(nullptr);
-        callback(NoError());
-    });
-    txp->on_error([=](Error err) {
-        txp->on_flush(nullptr);
-        txp->on_error(nullptr);
-        callback(err);
-    });
-    txp->write(buf);
-}
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<> cb);
 
-// Like read() but only callback when N bytes have been recv'd
-inline void readn(Var<Transport> txp, Var<Buffer> buff, size_t n,
-                  Callback<> callback) {
-    if (buff->length() >= n) {
-        callback(NoError());
-        return;
-    }
-    txp->on_data([=](Buffer d) {
-        *buff << d;
-        if (buff->length() < n) {
-            return;
-        }
-        txp->on_data(nullptr);
-        txp->on_error(nullptr);
-        callback(NoError());
-    });
-    txp->on_error([=](Error error) {
-        txp->on_data(nullptr);
-        txp->on_error(nullptr);
-        callback(error);
-    });
-}
-
-// Asynchronous read of data to be stored into the buffer
 inline void read(Var<Transport> t, Var<Buffer> buff, Callback<> callback) {
     readn(t, buff, 1, callback);
 }

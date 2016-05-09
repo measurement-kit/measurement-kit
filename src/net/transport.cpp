@@ -66,5 +66,41 @@ void connect(std::string address, int port,
     }, settings, reactor, logger);
 }
 
+void write(Var<Transport> txp, Buffer buf, Callback<> cb) {
+    txp->on_flush([=]() {
+        txp->on_flush(nullptr);
+        txp->on_error(nullptr);
+        cb(NoError());
+    });
+    txp->on_error([=](Error err) {
+        txp->on_flush(nullptr);
+        txp->on_error(nullptr);
+        cb(err);
+    });
+    txp->write(buf);
+}
+
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<> cb) {
+    if (buff->length() >= n) {
+        // Shortcut that simplifies coding a great deal
+        cb(NoError());
+        return;
+    }
+    txp->on_data([=](Buffer d) {
+        *buff << d;
+        if (buff->length() < n) {
+            return;
+        }
+        txp->on_data(nullptr);
+        txp->on_error(nullptr);
+        cb(NoError());
+    });
+    txp->on_error([=](Error error) {
+        txp->on_data(nullptr);
+        txp->on_error(nullptr);
+        cb(error);
+    });
+}
+
 } // namespace net
 } // namespace mk
