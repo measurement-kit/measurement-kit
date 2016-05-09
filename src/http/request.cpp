@@ -10,10 +10,9 @@ namespace http {
 using namespace mk::net;
 
 void request_connect(Settings settings, Callback<Var<Transport>> transport,
-         Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global()) {
+         Var<Reactor> reactor, Var<Logger> logger) {
     request_connect_impl(settings, transport, reactor, logger);
 }
-
 
 void request_send(Var<Transport> transport, Settings settings, Headers headers,
         std::string body, RequestSendCb callback) {
