@@ -22,6 +22,7 @@ class Async {
     void break_loop();
     bool empty();
     void join();
+    ~Async();
     static Var<Async> global();
 
   private:

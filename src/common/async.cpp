@@ -13,6 +13,9 @@ Async::Async() {}
 
 void Async::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
     if (!running) {
+        // WARNING: below we're passing `this` to the thread, which means that
+        // the destructor MUST wait the thread. Otherwise, when the thread dies
+        // many strange things could happen (I have seen SIGABRT).
         thread = std::thread([this]() { reactor->loop(); });
         running = true;
     }
@@ -44,6 +47,13 @@ void Async::join() {
         thread.join();
         running = false;
     }
+}
+
+Async::~Async() {
+    // WARNING: This MUST be here to make sure we break the loop before we
+    // stop the thread. Not doing that leads to undefined behavior.
+    break_loop();
+    join();
 }
 
 /*static*/ Var<Async> Async::global() {
