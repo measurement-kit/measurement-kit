@@ -5,7 +5,8 @@
 #ifndef MEASUREMENT_KIT_COMMON_NET_TEST_HPP
 #define MEASUREMENT_KIT_COMMON_NET_TEST_HPP
 
-#include <measurement_kit/common/constraints.hpp>
+#include <measurement_kit/common/non_copyable.hpp>
+#include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/logger.hpp>
 
 #include <functional>

@@ -51,19 +51,6 @@ void request_connect_impl(Settings settings, Callback<Var<Transport>> cb,
     do_connect(url->address, url->port, cb, settings, logger, reactor);
 }
 
-void request_send(Var<Transport>, Settings, Headers, std::string,
-        RequestSendCb);
-
-void request_recv_response(Var<Transport>, Callback<Var<Response>>,
-        Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
-
-void request_sendrecv(Var<Transport>, Settings, Headers, std::string,
-        Callback<Var<Response>>, Var<Reactor> = Reactor::global(),
-        Var<Logger> = Logger::global());
-
-void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
-        Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
-
 } // namespace http
 } // namespace mk
 #endif
