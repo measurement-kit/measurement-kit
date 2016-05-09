@@ -130,7 +130,7 @@ void Async::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
 }
 
 void Async::break_loop() {
-    break_loop();
+    mk::break_loop();
     state->interrupted = true;
 }
 
