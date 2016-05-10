@@ -169,7 +169,7 @@ evutil_socket_t socket_create(int domain, int type, int protocol) {
 }
 
 // See <http://stackoverflow.com/questions/440133/>
-std::string random_within_charset(std::string charset, size_t length) {
+std::string random_within_charset(const std::string charset, size_t length) {
     if (charset.size() < 1) {
         throw ValueError();
     }
@@ -184,7 +184,7 @@ std::string random_within_charset(std::string charset, size_t length) {
 }
 
 std::string random_printable(size_t length) {
-    return random_within_charset(
+    static const std::string ascii =
             " !\"#$%&\'()*+,-./"         // before numbers
             "0123456789"                 // numbers
             ":;<=>?@"                    // after numbers
@@ -192,22 +192,25 @@ std::string random_printable(size_t length) {
             "[\\]^_`"                    // between upper and lower
             "abcdefghijklmnopqrstuvwxyz" // lowercase
             "{|}~"                       // final
-        , length);
+        ;
+    return random_within_charset(ascii, length);
 }
 
 std::string random_str(size_t length) {
-    return random_within_charset(
-            "0123456789"                  // numbers
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"  // uppercase
-            "abcdefghijklmnopqrstuvwxyz"  // lowercase
-        , length);
+    static const std::string alnum =
+            "0123456789"                 // numbers
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" // uppercase
+            "abcdefghijklmnopqrstuvwxyz" // lowercase
+        ;
+    return random_within_charset(alnum, length);
 }
 
 std::string random_str_uppercase(size_t length) {
-    return random_within_charset(
+    static const std::string num_upper =
             "0123456789"                  // numbers
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"  // uppercase
-        , length);
+        ;
+    return random_within_charset(num_upper, length);
 }
 
 std::string unreverse_ipv6(std::string s) {
