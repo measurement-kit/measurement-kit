@@ -174,7 +174,9 @@ std::string random_str(size_t length) {
                                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                "abcdefghijklmnopqrstuvwxyz";
         const size_t max_index = (sizeof(charset) - 1);
-        return charset[rand() % max_index];
+        int rand = 0;
+        evutil_secure_rng_get_bytes(&rand, sizeof (rand));
+        return charset[rand % max_index];
     };
     std::string str(length, 0);
     std::generate_n(str.begin(), length, randchar);
