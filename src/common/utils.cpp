@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <cstring>
 #include <measurement_kit/common/logger.hpp>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string>
 #include <sys/socket.h>
