@@ -12,15 +12,15 @@ namespace messages {
 using namespace net;
 using json = nlohmann::json;
 
-void read_ndt(Var<Context> ctx, mk::Callback<uint8_t, std::string> callback) {
+void read_ndt(Var<Context> ctx, mk::Callback<Error, uint8_t, std::string> callback) {
     read_ndt_impl(ctx, callback);
 }
 
-void read_json(Var<Context> ctx, Callback<uint8_t, json> callback) {
+void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
     read_json_impl(ctx, callback);
 }
 
-void read(Var<Context> ctx, Callback<uint8_t, std::string> callback) {
+void read(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback) {
     read_impl(ctx, callback);
 }
 
@@ -50,7 +50,7 @@ ErrorOr<Buffer> format_test_msg(std::string s) {
     });
 }
 
-void write(Var<Context> ctx, Buffer buff, Callback<> cb) {
+void write(Var<Context> ctx, Buffer buff, Callback<Error> cb) {
     std::string s = buff.peek();
     ctx->logger->debug("> [%lu]: (%d) %s", s.length(), s.c_str()[0],
                        s.substr(3).c_str());

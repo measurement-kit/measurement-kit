@@ -20,11 +20,11 @@ using namespace net;
 using json = nlohmann::json;
 
 /// Connects to the ndt server
-void connect(Var<Context> ctx, Callback<> callback);
+void connect(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of connect
 template <MK_MOCK_NAMESPACE(net, connect)>
-void connect_impl(Var<Context> ctx, Callback<> callback) {
+void connect_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: connect ...");
     connect(ctx->address, ctx->port,
             [=](Error err, Var<Transport> txp) {
@@ -43,12 +43,12 @@ void connect_impl(Var<Context> ctx, Callback<> callback) {
 }
 
 /// Send EXTENDED_LOGIN message to server
-void send_extended_login(Var<Context> ctx, Callback<> callback);
+void send_extended_login(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of send_extended_login()
 template <MK_MOCK_NAMESPACE(messages, format_msg_extended_login),
           MK_MOCK_NAMESPACE(messages, write)>
-void send_extended_login_impl(Var<Context> ctx, Callback<> callback) {
+void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: send login ...");
     ErrorOr<Buffer> out = format_msg_extended_login(ctx->test_suite);
     if (!out) {
@@ -68,11 +68,11 @@ void send_extended_login_impl(Var<Context> ctx, Callback<> callback) {
 }
 
 /// Receive and ignore the special kickoff message
-void recv_and_ignore_kickoff(Var<Context> ctx, Callback<> callback);
+void recv_and_ignore_kickoff(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of recv_and_ignore_kickoff
 template <MK_MOCK_NAMESPACE(net, readn)>
-void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<> callback) {
+void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv and ignore kickoff ...");
     readn(ctx->conn, ctx->buff, KICKOFF_MESSAGE_SIZE, [=](Error err) {
         ctx->logger->debug("ndt: recv and ignore kickoff ... %d", (int)err);
@@ -91,11 +91,11 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<> callback) {
 }
 
 /// Wait for our turn in queue for some time
-void wait_in_queue(Var<Context> ctx, Callback<> callback);
+void wait_in_queue(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of wait_in_queue()
 template <MK_MOCK_NAMESPACE(messages, read)>
-void wait_in_queue_impl(Var<Context> ctx, Callback<> callback) {
+void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait in queue ...");
     read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: wait in queue ... %d", (int)err);
@@ -123,11 +123,11 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<> callback) {
 }
 
 /// Receive LOGIN message from server with the server's version
-void recv_version(Var<Context> ctx, Callback<> callback);
+void recv_version(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of recv_version()
 template <MK_MOCK_NAMESPACE(messages, read)>
-void recv_version_impl(Var<Context> ctx, Callback<> callback) {
+void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv server version ...");
     read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv server version ... %d", (int)err);
@@ -146,11 +146,11 @@ void recv_version_impl(Var<Context> ctx, Callback<> callback) {
 }
 
 /// Receive IDs of tests the server is willing to perform with us
-void recv_tests_id(Var<Context> ctx, Callback<> callback);
+void recv_tests_id(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of recv_tests_id()
 template <MK_MOCK_NAMESPACE(messages, read)>
-void recv_tests_id_impl(Var<Context> ctx, Callback<> callback) {
+void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv tests ID ...");
     read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv tests ID ... %d", (int)err);
@@ -171,12 +171,12 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<> callback) {
     });
 }
 
-void run_tests(Var<Context> ctx, Callback<> callback); ///< Run tests
+void run_tests(Var<Context> ctx, Callback<Error> callback); ///< Run tests
 
 /// Testable implementation of run_tests()
 template <MK_MOCK_NAMESPACE(messages, read_json),
           MK_MOCK_NAMESPACE(messages, format_test_msg)>
-void run_tests_impl(Var<Context> ctx, Callback<> callback) {
+void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
 
     if (ctx->granted_suite.size() <= 0) {
         callback(NoError());
@@ -230,11 +230,11 @@ void run_tests_impl(Var<Context> ctx, Callback<> callback) {
 }
 
 /// Recv results message and then logout message
-void recv_results_and_logout(Var<Context> ctx, Callback<> callback);
+void recv_results_and_logout(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of recv_results_and_logout()
 template <MK_MOCK_NAMESPACE(messages, read)>
-void recv_results_and_logout_impl(Var<Context> ctx, Callback<> callback) {
+void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv RESULTS ...");
     read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv RESULTS ... %d", (int)err);
@@ -259,11 +259,11 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<> callback) {
 }
 
 /// Wait for server to close the connection
-void wait_close(Var<Context> ctx, Callback<> callback);
+void wait_close(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of wait_close()
 template <MK_MOCK_NAMESPACE(net, read)>
-void wait_close_impl(Var<Context> ctx, Callback<> callback) {
+void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait close ...");
     ctx->conn->set_timeout(1.0);
     Var<Buffer> buffer(new Buffer);

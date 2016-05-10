@@ -16,13 +16,13 @@ namespace tests {
 using namespace mk::net;
 
 /// Run the META test
-void run_test_meta(Var<Context> ctx, Callback<> callback);
+void run_test_meta(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of run_test_meta()
 template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
           MK_MOCK_NAMESPACE(messages, write)>
-void run_test_meta_impl(Var<Context> ctx, Callback<> callback) {
+void run_test_meta_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends the PREPARE and START messages back to back
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");

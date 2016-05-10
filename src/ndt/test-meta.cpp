@@ -8,7 +8,7 @@ namespace mk {
 namespace ndt {
 namespace tests {
 
-void run_test_meta(Var<Context> ctx, Callback<> callback) {
+void run_test_meta(Var<Context> ctx, Callback<Error> callback) {
     run_test_meta_impl(ctx, callback);
 }
 

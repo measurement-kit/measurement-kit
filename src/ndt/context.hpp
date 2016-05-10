@@ -17,7 +17,7 @@ namespace ndt {
 struct Context {
     std::string address;
     Var<net::Buffer> buff = net::Buffer::make();
-    Callback<> callback;
+    Callback<Error> callback;
     Var<net::Transport> conn;
     Var<Logger> logger = Logger::global();
     Var<Reactor> reactor = Reactor::global();

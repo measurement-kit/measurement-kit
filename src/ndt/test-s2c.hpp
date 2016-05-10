@@ -20,14 +20,14 @@ using namespace net;
 
 /// Coroutine that does the real s2c test
 void s2c_coroutine(std::string address, int port,
-                   Callback<Continuation<double>> cb, double timeout = 10.0,
+                   Callback<Error, Continuation<double>> cb, double timeout = 10.0,
                    Var<Logger> logger = Logger::global(),
                    Var<Reactor> reactor = Reactor::global());
 
 /// Testable implementation of s2c_coroutine()
 template <MK_MOCK_NAMESPACE(net, connect)>
 void s2c_coroutine_impl(std::string address, int port,
-                        Callback<Continuation<double>> cb, double timeout,
+                        Callback<Error, Continuation<double>> cb, double timeout,
                         Var<Logger> logger, Var<Reactor> reactor) {
 
     // The coroutine connects to the remote endpoint and then pauses
@@ -41,7 +41,7 @@ void s2c_coroutine_impl(std::string address, int port,
                 }
                 logger->info("Connected to %s:%d", address.c_str(), port);
                 logger->debug("ndt: suspend coroutine");
-                cb(NoError(), [=](Callback<double> cb) {
+                cb(NoError(), [=](Callback<Error, double> cb) {
 
                     // The coroutine is resumed and receives data
                     logger->debug("ndt: resume coroutine");
@@ -93,11 +93,11 @@ void s2c_coroutine_impl(std::string address, int port,
 }
 
 /// Final state of this test
-void finalizing_test(Var<Context> ctx, Callback<> callback);
+void finalizing_test(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of finalizing_test()
 template <MK_MOCK_NAMESPACE(messages, read_ndt)>
-void finalizing_test_impl(Var<Context> ctx, Callback<> callback) {
+void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // Note: at this point the server would send a sequence of TEST_MSG that
     // contain part of the results, except the last one that is empty. Then
@@ -132,7 +132,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<> callback) {
 }
 
 /// Run the S2C test
-void run_test_s2c(Var<Context> ctx, Callback<> callback);
+void run_test_s2c(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of run_test_s2c()
 template <MK_MOCK_NAMESPACE(messages, read),
@@ -141,7 +141,7 @@ template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK_NAMESPACE(messages, write),
           MK_MOCK(s2c_coroutine),
           MK_MOCK(finalizing_test)>
-void run_test_s2c_impl(Var<Context> ctx, Callback<> callback) {
+void run_test_s2c_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");

@@ -11,16 +11,16 @@ namespace tests {
 using namespace net;
 
 void s2c_coroutine(std::string address, int port,
-                   Callback<Continuation<double>> cb, double timeout,
+                   Callback<Error, Continuation<double>> cb, double timeout,
                    Var<Logger> logger, Var<Reactor> reactor) {
     s2c_coroutine_impl(address, port, cb, timeout, logger, reactor);
 }
 
-void finalizing_test(Var<Context> ctx, Callback<> callback) {
+void finalizing_test(Var<Context> ctx, Callback<Error> callback) {
     finalizing_test_impl(ctx, callback);
 }
 
-void run_test_s2c(Var<Context> ctx, Callback<> callback) {
+void run_test_s2c(Var<Context> ctx, Callback<Error> callback) {
     run_test_s2c_impl(ctx, callback);
 }
 

@@ -19,14 +19,14 @@ using namespace net;
 
 /// Coroutine that does the real c2s test
 void c2s_coroutine(std::string address, int port, double runtime,
-                   Callback<Continuation<>> cb, double timeout = 10.0,
+                   Callback<Error, Continuation<>> cb, double timeout = 10.0,
                    Var<Logger> logger = Logger::global(),
                    Var<Reactor> reactor = Reactor::global());
 
 /// Testable implementation of c2s_coroutine()
 template <MK_MOCK_NAMESPACE(net, connect)>
 void c2s_coroutine_impl(std::string address, int port, double runtime,
-                        Callback<Continuation<>> cb, double timeout,
+                        Callback<Error, Continuation<>> cb, double timeout,
                         Var<Logger> logger, Var<Reactor> reactor) {
 
     // Performance note: This implementation does some string copies
@@ -63,7 +63,7 @@ void c2s_coroutine_impl(std::string address, int port, double runtime,
                 }
                 logger->info("Connected to %s:%d", address.c_str(), port);
                 logger->debug("ndt: suspend coroutine");
-                cb(NoError(), [=](Callback<> cb) {
+                cb(NoError(), [=](Callback<Error> cb) {
                     double begin = time_now();
                     Var<double> previous(new double(begin));
                     Var<size_t> count(new size_t(0));
@@ -103,12 +103,12 @@ void c2s_coroutine_impl(std::string address, int port, double runtime,
 }
 
 /// Run the C2S test
-void run_test_c2s(Var<Context> ctx, Callback<> callback);
+void run_test_c2s(Var<Context> ctx, Callback<Error> callback);
 
 /// Testable implementation of run_test_c2s()
 template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK(c2s_coroutine)>
-void run_test_c2s_impl(Var<Context> ctx, Callback<> callback) {
+void run_test_c2s_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");

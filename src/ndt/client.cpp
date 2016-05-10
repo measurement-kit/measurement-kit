@@ -10,7 +10,7 @@
 namespace mk {
 namespace ndt {
 
-void client(std::string address, int port, Callback<> callback,
+void client(std::string address, int port, Callback<Error> callback,
             Settings settings, Var<Logger> logger, Var<Reactor> reactor) {
     client_impl<protocol::connect, protocol::send_extended_login,
                 protocol::recv_and_ignore_kickoff, protocol::wait_in_queue,

@@ -16,11 +16,11 @@ using namespace mk::net;
 using json = nlohmann::json;
 
 /// Receive message serialized according to the NDT protocol
-void read_ndt(Var<Context> ctx, Callback<uint8_t, std::string> callback);
+void read_ndt(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback);
 
 /// Testable implementation of read_ndt()
 template <decltype(net::readn) readn = net::readn>
-void read_ndt_impl(Var<Context> ctx, Callback<uint8_t, std::string> callback) {
+void read_ndt_impl(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback) {
 
     // Receive message type (1 byte) and length (2 bytes)
     readn(ctx->conn, ctx->buff, 3, [=](Error err) {
@@ -53,11 +53,11 @@ void read_ndt_impl(Var<Context> ctx, Callback<uint8_t, std::string> callback) {
 }
 
 /// Receive message serialized according to NDT protocol and containing a JSON
-void read_json(Var<Context> ctx, Callback<uint8_t, json> callback);
+void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback);
 
 /// Testable implementation of read_json()
 template <decltype(read_ndt) read_ndt = read_ndt>
-void read_json_impl(Var<Context> ctx, Callback<uint8_t, json> callback) {
+void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
     read_ndt(ctx, [=](Error err, uint8_t type, std::string m) {
         json message;
         if (err) {
@@ -75,11 +75,11 @@ void read_json_impl(Var<Context> ctx, Callback<uint8_t, json> callback) {
 }
 
 /// Read JSON message, parse JSON, and return msg field
-void read(Var<Context> ctx, Callback<uint8_t, std::string> callback);
+void read(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback);
 
 /// Testable implementation of read()
 template<decltype(read_json) read_json = read_json>
-void read_impl(Var<Context> ctx, Callback<uint8_t, std::string> callback) {
+void read_impl(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback) {
     read_json(ctx, [=](Error error, uint8_t type, json message) {
         if (error) {
             callback(error, 0, "");
@@ -103,7 +103,7 @@ ErrorOr<Buffer> format_msg_extended_login(unsigned char tests);
 ErrorOr<Buffer> format_test_msg(std::string s);
 
 /// Wrapper for net::write()
-void write(Var<Context>, Buffer, Callback<>);
+void write(Var<Context>, Buffer, Callback<Error>);
 
 /// Wrapper for ctx->conn->write()
 void write_noasync(Var<Context>, Buffer);
