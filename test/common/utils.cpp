@@ -8,6 +8,10 @@
 #include <measurement_kit/common.hpp>
 #include "src/common/utils.hpp"
 
+TEST_CASE("We are NOT using the default random seed") {
+    REQUIRE(mk::random_str(16) != "2PN0bdwPY7CA8M06");
+}
+
 TEST_CASE("IPv4 addresses are correctly reversed") {
     REQUIRE(mk::unreverse_ipv4("211.91.192.130.in-addr.arpa") ==
             "130.192.91.211");
