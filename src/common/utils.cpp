@@ -31,7 +31,7 @@ void timeval_now(timeval *tv) {
     }
 }
 
-double time_now(void) {
+double time_now() {
     timeval tv;
     timeval_now(&tv);
     double result = tv.tv_sec + tv.tv_usec / (double)1000000.0;
@@ -46,7 +46,6 @@ void utc_time_now(struct tm *utc) {
 
 std::string timestamp(const struct tm *t) {
     char result[30];
-    std::string ts;
     if (strftime(result, sizeof(result), "%Y-%m-%d %H:%M:%S", t) == 0) {
         throw std::runtime_error("strftime()");
     };
@@ -92,7 +91,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
                  const char *address, int _port) {
     int result;
 
-    info("utils:storage_init - enter");
+    debug("utils:storage_init - enter");
 
     if (_port < 0 || _port > 65535) {
         warn("utils:storage_init: invalid port");
@@ -140,7 +139,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
         throw std::runtime_error("invalid case");
     }
 
-    info("utils:storage_init - ok");
+    debug("utils:storage_init - ok");
     return 0;
 }
 
@@ -148,7 +147,7 @@ evutil_socket_t socket_create(int domain, int type, int protocol) {
     evutil_socket_t filedesc;
     int result;
 
-    info("utils:socket - enter");
+    debug("utils:socket - enter");
 
     filedesc = socket(domain, type, protocol);
     if (filedesc == MEASUREMENT_KIT_SOCKET_INVALID) {
@@ -163,13 +162,13 @@ evutil_socket_t socket_create(int domain, int type, int protocol) {
         return MEASUREMENT_KIT_SOCKET_INVALID;
     }
 
-    info("utils:socket - ok");
+    debug("utils:socket - ok");
     return filedesc;
 }
 
 // See <http://stackoverflow.com/questions/440133/>
 std::string random_str(size_t length) {
-    auto randchar = []() -> char {
+    auto randchar = []() {
         const char charset[] = "0123456789"
                                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                "abcdefghijklmnopqrstuvwxyz";
@@ -182,7 +181,7 @@ std::string random_str(size_t length) {
 }
 
 std::string random_str_uppercase(size_t length) {
-    auto randchar = []() -> char {
+    auto randchar = []() {
         const char charset[] = "0123456789"
                                "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const size_t max_index = (sizeof(charset) - 1);
@@ -198,14 +197,22 @@ std::string unreverse_ipv6(std::string s) {
     std::deque<char> r;
     for (; i < s.size(); ++i) {
         if ((i % 2) == 0) {
-            if (!isxdigit(s[i])) break;
+            if (!isxdigit(s[i])) {
+                break;
+            }
             r.push_front(s[i]);
-            if ((++added % 4) == 0 && added <= 28) r.push_front(':');
+            if ((++added % 4) == 0 && added <= 28) {
+                r.push_front(':');
+            }
         } else {
-            if (s[i] != '.') return "";
+            if (s[i] != '.') {
+                return "";
+            }
         }
     }
-    if (s.substr(i) != "ip6.arpa" && s.substr(i) != "ip6.arpa.") return "";
+    if (s.substr(i) != "ip6.arpa" && s.substr(i) != "ip6.arpa.") {
+        return "";
+    }
     return std::string(r.begin(), r.end());
 }
 
@@ -215,8 +222,12 @@ std::string unreverse_ipv4(std::string s) {
     unsigned cur = 0;
     for (; i < s.size(); ++i) {
         if (s[i] == '.') {
-            if (cur > 255) return "";
-            if (seen++ > 0) r.push_front('.');
+            if (cur > 255) {
+                return "";
+            }
+            if (seen++ > 0) {
+                r.push_front('.');
+            }
             r.insert(r.begin(), t.begin(), t.end());
             t.clear();
             cur = 0;
@@ -224,11 +235,13 @@ std::string unreverse_ipv4(std::string s) {
             t.push_back(s[i]);
             char tmpstr[] = {s[i], '\0'};
             cur = cur * 10 + atoi(tmpstr);
-        } else
+        } else {
             break;
+        }
     }
-    if (s.substr(i) != "in-addr.arpa" && s.substr(i) != "in-addr.arpa.")
+    if (s.substr(i) != "in-addr.arpa" && s.substr(i) != "in-addr.arpa.") {
         return "";
+    }
     return std::string(r.begin(), r.end());
 }
 
