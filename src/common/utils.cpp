@@ -15,6 +15,7 @@
 #include <cstring>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <regex>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string>
@@ -264,6 +265,16 @@ std::string unreverse_ipv4(std::string s) {
         return "";
     }
     return std::string(r.begin(), r.end());
+}
+
+// See <http://stackoverflow.com/questions/9435385/>
+std::vector<std::string> split(std::string s) {
+    // passing -1 as the submatch index parameter performs splitting
+    std::regex re{"\\s+"};
+    std::sregex_token_iterator
+        first{s.begin(), s.end(), re, -1},
+        last;
+    return {first, last};
 }
 
 } // namespace mk
