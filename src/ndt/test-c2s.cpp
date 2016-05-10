@@ -11,7 +11,7 @@ namespace tests {
 using namespace net;
 
 void c2s_coroutine(std::string address, int port, double runtime,
-                   Callback<Error, Continuation<>> cb, double timeout,
+                   Callback<Error, Continuation<Error>> cb, double timeout,
                    Var<Logger> logger, Var<Reactor> reactor) {
     c2s_coroutine_impl(address, port, runtime, cb, timeout, logger, reactor);
 }

@@ -19,14 +19,14 @@ using namespace net;
 
 /// Coroutine that does the real c2s test
 void c2s_coroutine(std::string address, int port, double runtime,
-                   Callback<Error, Continuation<>> cb, double timeout = 10.0,
+                   Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
                    Var<Logger> logger = Logger::global(),
                    Var<Reactor> reactor = Reactor::global());
 
 /// Testable implementation of c2s_coroutine()
 template <MK_MOCK_NAMESPACE(net, connect)>
 void c2s_coroutine_impl(std::string address, int port, double runtime,
-                        Callback<Error, Continuation<>> cb, double timeout,
+                        Callback<Error, Continuation<Error>> cb, double timeout,
                         Var<Logger> logger, Var<Reactor> reactor) {
 
     // Performance note: This implementation does some string copies
@@ -132,7 +132,7 @@ void run_test_c2s_impl(Var<Context> ctx, Callback<Error> callback) {
         ctx->logger->debug("ndt: start c2s coroutine ...");
         c2s_coroutine(
             ctx->address, *port, 10.0,
-            [=](Error err, Continuation<> cc) {
+            [=](Error err, Continuation<Error> cc) {
                 ctx->logger->debug("ndt: start c2s coroutine ... %d", (int)err);
                 if (err) {
                     callback(err);

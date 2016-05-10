@@ -20,14 +20,14 @@ using namespace net;
 
 /// Coroutine that does the real s2c test
 void s2c_coroutine(std::string address, int port,
-                   Callback<Error, Continuation<double>> cb, double timeout = 10.0,
+                   Callback<Error, Continuation<Error, double>> cb, double timeout = 10.0,
                    Var<Logger> logger = Logger::global(),
                    Var<Reactor> reactor = Reactor::global());
 
 /// Testable implementation of s2c_coroutine()
 template <MK_MOCK_NAMESPACE(net, connect)>
 void s2c_coroutine_impl(std::string address, int port,
-                        Callback<Error, Continuation<double>> cb, double timeout,
+                        Callback<Error, Continuation<Error, double>> cb, double timeout,
                         Var<Logger> logger, Var<Reactor> reactor) {
 
     // The coroutine connects to the remote endpoint and then pauses
@@ -165,7 +165,7 @@ void run_test_s2c_impl(Var<Context> ctx, Callback<Error> callback) {
         ctx->logger->debug("ndt: start s2c coroutine ...");
         s2c_coroutine(
             ctx->address, *port,
-            [=](Error err, Continuation<double> cc) {
+            [=](Error err, Continuation<Error, double> cc) {
                 ctx->logger->debug("ndt: start s2c coroutine ... %d", (int)err);
                 if (err) {
                     callback(err);

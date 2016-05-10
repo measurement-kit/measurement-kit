@@ -11,7 +11,7 @@ namespace tests {
 using namespace net;
 
 void s2c_coroutine(std::string address, int port,
-                   Callback<Error, Continuation<double>> cb, double timeout,
+                   Callback<Error, Continuation<Error, double>> cb, double timeout,
                    Var<Logger> logger, Var<Reactor> reactor) {
     s2c_coroutine_impl(address, port, cb, timeout, logger, reactor);
 }
