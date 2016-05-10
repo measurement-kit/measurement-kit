@@ -27,6 +27,13 @@ void Async::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
             debug("async: ending %llu", test->identifier());
             test->end([=]() {
                 debug("async: cleaning-up %llu", test->identifier());
+                // For robustness, delay the final callback to the beginning of
+                // next I/O cycle to prevent possible user after frees. This could
+                // happen because, in our current position on the stack, we have
+                // been called by `NetTest` code that may use `this` after calling
+                // the callback. But this would be a problem because `test` is
+                // most likely to be destroyed after `fn()` returns. This, when
+                // unwinding the stack, the use after free would happen.
                 reactor->call_soon([=]() {
                     debug("async: callbacking %llu", test->identifier());
                     active -= 1;
