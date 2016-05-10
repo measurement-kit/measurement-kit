@@ -32,6 +32,14 @@ class Reactor {
     }
 };
 
+inline void call_soon(std::function<void()> cb) {
+    Reactor::global()->call_soon(cb);
+}
+
+inline void call_later(double t, std::function<void()> cb) {
+    Reactor::global()->call_later(t, cb);
+}
+
 inline void loop_with_initial_event(std::function<void()> cb) {
     Reactor::global()->loop_with_initial_event(cb);
 }

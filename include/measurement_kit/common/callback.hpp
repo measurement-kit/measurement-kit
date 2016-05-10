@@ -8,9 +8,7 @@
 
 namespace mk {
 
-class Error;
-
-template <typename... T> using Callback = std::function<void(Error, T...)>;
+template <typename... T> using Callback = std::function<void(T...)>;
 
 } // namespace
 #endif

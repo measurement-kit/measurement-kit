@@ -20,12 +20,12 @@ namespace mk {
 namespace http {
 
 typedef std::function<void(Error)> RequestSendCb;
-typedef Callback<Var<Response>> RequestRecvResponseCb;
+typedef Callback<Error, Var<Response>> RequestRecvResponseCb;
 
 template<void (*do_connect)(std::string, int,
-        Callback<Var<Transport>>,
+        Callback<Error, Var<Transport>>,
         Settings, Var<Logger>, Var<Reactor>) = net::connect>
-void request_connect_impl(Settings settings, Callback<Var<Transport>> cb,
+void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
         Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global()) {
     if (settings.find("http/url") == settings.end()) {
         cb(MissingUrlError(), nullptr);
