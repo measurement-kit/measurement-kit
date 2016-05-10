@@ -25,8 +25,6 @@ void utc_time_now(struct tm *);
 std::string timestamp(const struct tm *);
 timeval *timeval_init(timeval *, double);
 
-void xfree(void *);
-
 evutil_socket_t listen(int, const char *, const char *);
 int storage_init(sockaddr_storage *, socklen_t *, const char *, const char *,
                  const char *);

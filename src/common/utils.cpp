@@ -84,11 +84,6 @@ evutil_socket_t listen(int use_ipv6, const char *address, const char *port) {
     return filedesc;
 }
 
-/* Many system's free() handle nullptr; is this needed? */
-void xfree(void *ptr) {
-    if (ptr != nullptr) free(ptr);
-}
-
 timeval *timeval_init(timeval *tv, double delta) {
     if (delta < 0) {
         return nullptr;
