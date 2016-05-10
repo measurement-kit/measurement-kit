@@ -21,9 +21,9 @@ class Settings : public std::map<std::string, SettingsEntry> {
         return at(key).as<Type>();
     }
 
-    static Settings *global() {
-         static Settings singleton;
-         return &singleton;
+    static Var<Settings> global() {
+         static Var<Settings> singleton(new Settings);
+         return singleton;
     }
 
   protected:
