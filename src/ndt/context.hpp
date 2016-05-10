@@ -24,7 +24,7 @@ struct Context {
     int port = 0;
     Settings settings;
     int test_suite = TEST_STATUS | TEST_META | TEST_C2S | TEST_S2C;
-    std::list<int> granted_suite;
+    std::list<std::string> granted_suite;
     double timeout = 10.0;
 };
 

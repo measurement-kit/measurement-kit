@@ -4,6 +4,7 @@
 #ifndef SRC_NDT_PROTOCOL_HPP
 #define SRC_NDT_PROTOCOL_HPP
 
+#include "src/common/utils.hpp"
 #include "src/ext/json/src/json.hpp"
 #include "src/ndt/context.hpp"
 #include "src/ndt/messages.hpp"
@@ -163,10 +164,7 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         ctx->logger->info("Authorized tests: %s", s.c_str());
-        // FIXME: honor test suite returned by server
-        ctx->granted_suite.push_back(TEST_C2S);
-        ctx->granted_suite.push_back(TEST_S2C);
-        ctx->granted_suite.push_back(TEST_META);
+        ctx->granted_suite = split(s);
         callback(NoError());
     });
 }
@@ -183,10 +181,16 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
         return;
     }
 
-    int num = ctx->granted_suite.front();
+    std::string s = ctx->granted_suite.front();
     ctx->granted_suite.pop_front();
 
-    if (num == TEST_C2S) {
+    ErrorOr<int> num = lexical_cast<int>(s);
+    if (!num) {
+        callback(num.as_error());
+        return;
+    }
+
+    if (*num == TEST_C2S) {
         ctx->logger->info("Run C2S test...");
         tests::run_test_c2s(ctx, [=](Error err) {
             ctx->logger->info("Run C2S test... complete (%d)", (int)err);
@@ -199,7 +203,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
         return;
     }
 
-    if (num == TEST_S2C) {
+    if (*num == TEST_S2C) {
         ctx->logger->info("Run S2C test...");
         tests::run_test_s2c(ctx, [=](Error err) {
             ctx->logger->info("Run S2C test... complete (%d)", (int)err);
@@ -212,7 +216,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
         return;
     }
 
-    if (num == TEST_META) {
+    if (*num == TEST_META) {
         ctx->logger->info("Run META test...");
         tests::run_test_meta(ctx, [=](Error err) {
             ctx->logger->info("Run META test... complete (%d)", (int)err);
@@ -225,7 +229,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
         return;
     }
 
-    ctx->logger->warn("ndt: unknown test: %d", num);
+    ctx->logger->warn("ndt: unknown test: %d", *num);
     callback(GenericError());
 }
 
