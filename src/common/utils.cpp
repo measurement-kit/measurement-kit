@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <cstddef>
 #include <cstring>
+#include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <stdint.h>
 #include <stdlib.h>
@@ -168,31 +169,45 @@ evutil_socket_t socket_create(int domain, int type, int protocol) {
 }
 
 // See <http://stackoverflow.com/questions/440133/>
-std::string random_str(size_t length) {
-    auto randchar = []() {
-        const char charset[] = "0123456789"
-                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                               "abcdefghijklmnopqrstuvwxyz";
-        const size_t max_index = (sizeof(charset) - 1);
+std::string random_within_charset(std::string charset, size_t length) {
+    if (charset.size() < 1) {
+        throw ValueError();
+    }
+    auto randchar = [&charset]() {
         int rand = 0;
         evutil_secure_rng_get_bytes(&rand, sizeof (rand));
-        return charset[rand % max_index];
+        return charset[rand % charset.size()];
     };
     std::string str(length, 0);
     std::generate_n(str.begin(), length, randchar);
     return str;
 }
 
+std::string random_printable(size_t length) {
+    return random_within_charset(
+            " !\"#$%&\'()*+,-./"         // before numbers
+            "0123456789"                 // numbers
+            ":;<=>?@"                    // after numbers
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" // uppercase
+            "[\\]^_`"                    // between upper and lower
+            "abcdefghijklmnopqrstuvwxyz" // lowercase
+            "{|}~"                       // final
+        , length);
+}
+
+std::string random_str(size_t length) {
+    return random_within_charset(
+            "0123456789"                  // numbers
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"  // uppercase
+            "abcdefghijklmnopqrstuvwxyz"  // lowercase
+        , length);
+}
+
 std::string random_str_uppercase(size_t length) {
-    auto randchar = []() {
-        const char charset[] = "0123456789"
-                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        const size_t max_index = (sizeof(charset) - 1);
-        return charset[rand() % max_index];
-    };
-    std::string str(length, 0);
-    std::generate_n(str.begin(), length, randchar);
-    return str;
+    return random_within_charset(
+            "0123456789"                  // numbers
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"  // uppercase
+        , length);
 }
 
 std::string unreverse_ipv6(std::string s) {
