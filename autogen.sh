@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+export LC_ALL=C  # Stable sorting regardless of the locale
 
 slug() {
     echo $(echo $1|tr '/-' '_'|sed 's/^include_measurement_kit/mk/g')
@@ -116,7 +117,7 @@ gen_executables noinst_PROGRAMS example BUILD_EXAMPLES >> include.am
 gen_executables ALL_TESTS test BUILD_TESTS             >> include.am
 
 echo "* Updating .gitignore"
-LC_ALL=C sort -u .gitignore > .gitignore.new
+sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
 
 echo "* Fetching dependencies that are build in any case"
