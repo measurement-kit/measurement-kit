@@ -268,7 +268,7 @@ std::string unreverse_ipv4(std::string s) {
 }
 
 // See <http://stackoverflow.com/questions/9435385/>
-std::vector<std::string> split(std::string s) {
+std::list<std::string> split(std::string s) {
     // passing -1 as the submatch index parameter performs splitting
     std::regex re{"\\s+"};
     std::sregex_token_iterator

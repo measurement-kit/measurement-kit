@@ -5,10 +5,10 @@
 #define SRC_COMMON_UTILS_HPP
 
 #include <event2/util.h>
+#include <list>
 #include <stddef.h>
 #include <string>
 #include <unistd.h>
-#include <vector>
 
 struct sockaddr_storage;
 struct timeval;
@@ -36,7 +36,7 @@ std::string random_str_uppercase(size_t length);
 std::string unreverse_ipv6(std::string s);
 std::string unreverse_ipv4(std::string s);
 
-std::vector<std::string> split(std::string s);
+std::list<std::string> split(std::string s);
 
 } // namespace mk
 #endif

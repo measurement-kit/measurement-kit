@@ -123,7 +123,7 @@ TEST_CASE("Verify that invalid input is rejected") {
 }
 
 TEST_CASE("split(std::string s) works properly") {
-    REQUIRE((mk::split(" 34    43  17 11 ") == std::vector<std::string>{
+    REQUIRE((mk::split(" 34    43  17 11 ") == std::list<std::string>{
                 {"", "34", "43", "17", "11"}
             }));
 }
