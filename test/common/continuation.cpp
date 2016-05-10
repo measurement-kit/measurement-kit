@@ -9,12 +9,12 @@
 
 using namespace mk;
 
-static void coroutine(Callback<Continuation<>> cb) {
+static void coroutine(Callback<Error, Continuation<Error>> cb) {
     // Pretend to do some work
     call_later(1.0, [=]() {
 
         // Transfer control back to parent and wait for it to restart us
-        cb(NoError(), [=](Callback<> cb) {
+        cb(NoError(), [=](Callback<Error> cb) {
 
             // Pretend again to do some work
             call_later(1.0, [=]() {
@@ -30,7 +30,7 @@ TEST_CASE("The continuation works as expected") {
     loop_with_initial_event([=]() {
 
         // Spawn the coroutine and wait for it to pause
-        coroutine([=](Error err, Continuation<> cc) {
+        coroutine([=](Error err, Continuation<Error> cc) {
             REQUIRE(!err);
 
             // Resume the coroutine and wait for it to complete
