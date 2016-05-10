@@ -64,7 +64,7 @@ struct Response {
 };
 
 /// Type of callback called on error or when response is complete.
-typedef Callback<Response> RequestCallback;
+typedef Callback<Error, Response> RequestCallback;
 
 // Forward declaration of internally used class.
 class Request;
@@ -146,21 +146,21 @@ inline void request(std::string method, std::string url, RequestCallback cb,
 
 typedef std::function<void(Error)> RequestSendCb;
 
-void request_connect(Settings, Callback<Var<net::Transport>>,
+void request_connect(Settings, Callback<Error, Var<net::Transport>>,
                      Var<Reactor> = Reactor::global(),
                      Var<Logger> = Logger::global());
 
 void request_send(Var<net::Transport>, Settings, Headers, std::string,
         RequestSendCb);
 
-void request_recv_response(Var<net::Transport>, Callback<Var<Response>>,
+void request_recv_response(Var<net::Transport>, Callback<Error, Var<Response>>,
         Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
 void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
-        Callback<Var<Response>>, Var<Reactor> = Reactor::global(),
+        Callback<Error, Var<Response>>, Var<Reactor> = Reactor::global(),
         Var<Logger> = Logger::global());
 
-void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
+void request_cycle(Settings, Headers, std::string, Callback<Error, Var<Response>>,
         Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
 } // namespace http

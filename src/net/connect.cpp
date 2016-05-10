@@ -16,7 +16,7 @@
 #include <string.h>
 
 void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
-    auto cb = static_cast<mk::Callback<bufferevent *> *>(ptr);
+    auto cb = static_cast<mk::Callback<Error, bufferevent *> *>(ptr);
     if ((what & BEV_EVENT_CONNECTED) != 0) {
         (*cb)(mk::NoError(), bev);
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
@@ -114,7 +114,7 @@ void resolve_hostname(
     }, settings, reactor);
 }
 
-void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
+void connect_logic(std::string hostname, int port, Callback<Error, Var<ConnectResult>> cb,
         Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
 
     Var<ConnectResult> result(new ConnectResult);
@@ -145,7 +145,7 @@ void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> 
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                  std::string hostname,
-                 Callback<bufferevent *> cb,
+                 Callback<Error, bufferevent *> cb,
                  Var<Reactor> reactor, Var<Logger> logger) {
     logger->debug("connect ssl...");
 
@@ -159,7 +159,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
     }
 
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
-            new Callback<bufferevent *>([cb, logger, hostname](Error err, bufferevent *bev) {
+            new Callback<Error, bufferevent *>([cb, logger, hostname](Error err, bufferevent *bev) {
                 int hostname_validate_err = 0;
 
                 logger->debug("connect ssl... callback");
