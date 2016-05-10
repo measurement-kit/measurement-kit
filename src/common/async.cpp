@@ -7,138 +7,65 @@
 #include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/reactor.hpp>
 
-#include <mutex>
-#include <map>
-#include <thread>
-
-#include <event2/thread.h>
-
 namespace mk {
 
-// Shared state between foreground and background threads
-struct AsyncState {
-    std::map<NetTest *, std::function<void(Var<NetTest>)>> callbacks;
-    std::map<NetTest *, Var<NetTest>> ready;
-    std::map<NetTest *, Var<NetTest>> active;
-    std::map<NetTest *, Var<NetTest>> complete;
-    volatile bool interrupted = false;
-    std::mutex mutex;
-    std::thread thread;
-    volatile bool thread_running = false;
-};
-
-// Syntactic sugar
-#define LOCKED(foo)                                                            \
-    {                                                                          \
-        std::lock_guard<std::mutex> lck(state->mutex);                         \
-        foo                                                                    \
-    }
-
-// Ensure consistency
-#define INSERT(m, k, v)                                                        \
-    do {                                                                       \
-        auto ret = m.insert(std::make_pair(k, v));                             \
-        if (!ret.second) throw std::runtime_error("Element already there");    \
-    } while (0)
-#define GET(v, m, k)                                                           \
-    do {                                                                       \
-        auto there = (m.find(k) != m.end());                                   \
-        if (!there) throw std::runtime_error("Element not there");             \
-        v = m[k];                                                              \
-    } while (0)
-
-void Async::loop_thread(Var<AsyncState> state) {
-    state->interrupted = false; // Undo previous break_loop() if any
-
-    debug("async: loop thread entered");
-    for (;;) {
-
-        LOCKED({
-            debug("async: loop thread locked");
-            auto empty = (state->ready.empty() && state->active.empty());
-            if (state->interrupted || empty) {
-                debug("async: %s", (empty) ? "empty" : "interrupted");
-                // Do this here so it's done while we're locked
-                debug("async: detaching thread...");
-                state->thread.detach();
-                state->thread_running = false;
-                break;
-            }
-
-            debug("async: not interrupted and not empty");
-            for (auto pair : state->ready) {
-                NetTest *ptr = pair.first;
-                debug("async: active: %lld", ptr->identifier());
-                INSERT(state->active, ptr, pair.second);
-                // Note: it should be safe to capture `state` by reference
-                // here because the destructor should not be able to destroy
-                // the background thread until we detach it and break.
-                ptr->begin([&state, ptr]() {
-                    ptr->end([&state, ptr]() {
-                        //
-                        // This callback is invoked by loop_once, when we do
-                        // not own the lock. For this reason it's important
-                        // to only modify state->active in the current thread,
-                        // i.e. in the background thread (i.e this function)
-                        //
-                        debug("async: test stopped");
-                        Var<NetTest> test;
-                        std::function<void(Var<NetTest>)> callback;
-                        LOCKED({
-                            GET(test, state->active, ptr);
-                            GET(callback, state->callbacks, ptr);
-                            state->active.erase(ptr);
-                            state->callbacks.erase(ptr);
-                            // Keep alive test until end of the loop
-                            INSERT(state->complete, ptr, test);
-                        });
-                        if (callback) {
-                            callback(test);
-                        }
-                    });
-                });
-            }
-            state->ready.clear();
-        })
-
-        debug("async: loop thread unlocked");
-        loop_once();
-
-        LOCKED({
-            // Do this here so tests have a chance to rewind their stack
-            debug("async: clearing terminated tests");
-            state->complete.clear();
-        })
-        debug("async: bottom of loop thread");
-    }
-    debug("async: exiting from thread");
-}
-
-Async::Async() { state.reset(new AsyncState()); }
+Async::Async() {}
 
 void Async::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
-    LOCKED({
-        debug("async: test inserted");
-        INSERT(state->ready, test.get(), test);
-        INSERT(state->callbacks, test.get(), fn);
-        if (!state->thread_running) {
-            debug("async: background thread started");
-            state->thread = std::thread(loop_thread, state);
-            state->thread_running = true;
-        }
-    })
+    if (!running) {
+        // WARNING: below we're passing `this` to the thread, which means that
+        // the destructor MUST wait the thread. Otherwise, when the thread dies
+        // many strange things could happen (I have seen SIGABRT).
+        thread = std::thread([this]() { reactor->loop(); });
+        running = true;
+    }
+    active += 1;
+    debug("async: scheduling %llu", test->identifier());
+    reactor->call_later(1.0, [=]() {
+        debug("async: starting %llu", test->identifier());
+        test->begin([=]() {
+            debug("async: ending %llu", test->identifier());
+            test->end([=]() {
+                debug("async: cleaning-up %llu", test->identifier());
+                // For robustness, delay the final callback to the beginning of
+                // next I/O cycle to prevent possible user after frees. This could
+                // happen because, in our current position on the stack, we have
+                // been called by `NetTest` code that may use `this` after calling
+                // the callback. But this would be a problem because `test` is
+                // most likely to be destroyed after `fn()` returns. This, when
+                // unwinding the stack, the use after free would happen.
+                reactor->call_soon([=]() {
+                    debug("async: callbacking %llu", test->identifier());
+                    active -= 1;
+                    debug("async: #active tasks: %d", (int)active);
+                    fn(test);
+                });
+            });
+        });
+    });
 }
 
-void Async::break_loop() {
-    mk::break_loop();
-    state->interrupted = true;
+void Async::break_loop() { reactor->break_loop(); }
+
+bool Async::empty() { return active == 0; }
+
+void Async::join() {
+    if (running) {
+        thread.join();
+        running = false;
+    }
 }
 
-bool Async::empty() { return !state->thread_running; }
+Async::~Async() {
+    // WARNING: This MUST be here to make sure we break the loop before we
+    // stop the thread. Not doing that leads to undefined behavior.
+    break_loop();
+    join();
+}
 
-Async *Async::global() {
-    static Async singleton;
-    return &singleton;
+/*static*/ Var<Async> Async::global() {
+    static Var<Async> singleton(new Async);
+    return singleton;
 }
 
 } // namespace mk

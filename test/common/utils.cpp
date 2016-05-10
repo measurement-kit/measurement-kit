@@ -5,8 +5,65 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
+#include <cctype>
 #include <measurement_kit/common.hpp>
 #include "src/common/utils.hpp"
+
+TEST_CASE("We are NOT using the default random seed") {
+    // Note: the default random generator shall be seeded using 1 unless
+    // seeded otherwise, according to Linux and MacOS manpages
+    REQUIRE(mk::random_str(16) != "2PN0bdwPY7CA8M06");
+}
+
+TEST_CASE("random_within_charset() works with zero length string") {
+    REQUIRE_THROWS_AS(mk::random_within_charset("", 16), mk::ValueError);
+}
+
+TEST_CASE("random_within_charset() uses all the available charset") {
+    REQUIRE(mk::random_within_charset("x", 4) == "xxxx");
+}
+
+TEST_CASE("random_printable() generates printable characters") {
+    for (auto x : mk::random_str(65536)) {
+        REQUIRE((x >= ' ' && x <= '~'));
+    }
+}
+
+TEST_CASE("random_str() really generates only characters or numbers") {
+    auto found_num = false;
+    auto found_upper = false;
+    auto found_low = false;
+    for (auto x : mk::random_str(1024)) {
+        if (isdigit(x)) {
+            found_num = true;
+        } else if (isupper(x)) {
+            found_upper = true;
+        } else if (islower(x)) {
+            found_low = true;
+        } else {
+            REQUIRE(false);
+        }
+    }
+    REQUIRE(found_num);
+    REQUIRE(found_upper);
+    REQUIRE(found_low);
+}
+
+TEST_CASE("random_str_uppercase() really generates only uppercase") {
+    auto found_num = false;
+    auto found_upper = false;
+    for (auto x : mk::random_str_uppercase(1024)) {
+        if (isdigit(x)) {
+            found_num = true;
+        } else if (isupper(x)) {
+            found_upper = true;
+        } else {
+            REQUIRE(false);
+        }
+    }
+    REQUIRE(found_num);
+    REQUIRE(found_upper);
+}
 
 TEST_CASE("IPv4 addresses are correctly reversed") {
     REQUIRE(mk::unreverse_ipv4("211.91.192.130.in-addr.arpa") ==
@@ -63,4 +120,10 @@ TEST_CASE("Verify that invalid input is rejected") {
                 "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0."
                 "2.") == "");
     }
+}
+
+TEST_CASE("split(std::string s) works properly") {
+    REQUIRE((mk::split(" 34    43  17 11 ") == std::vector<std::string>{
+                {"", "34", "43", "17", "11"}
+            }));
 }

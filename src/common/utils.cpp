@@ -2,28 +2,27 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common/logger.hpp>
 #include "src/common/utils.hpp"
-#include "ext/strtonum.h"
-
+#include "src/ext/strtonum.h"
 #include <algorithm>
-#include <deque>
-#include <cstddef>
-#include <iosfwd>
-#include <string>
-
-#include <sys/types.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-
-#include <errno.h>
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include <ctype.h>
+#include <deque>
 #include <event2/util.h>
+#include <math.h>
+#include <netinet/in.h>
+#include <cstddef>
+#include <cstring>
+#include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/logger.hpp>
+#include <regex>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <time.h>
 
 #define MEASUREMENT_KIT_SOCKET_INVALID -1
 
@@ -35,7 +34,7 @@ void timeval_now(timeval *tv) {
     }
 }
 
-double time_now(void) {
+double time_now() {
     timeval tv;
     timeval_now(&tv);
     double result = tv.tv_sec + tv.tv_usec / (double)1000000.0;
@@ -50,43 +49,10 @@ void utc_time_now(struct tm *utc) {
 
 std::string timestamp(const struct tm *t) {
     char result[30];
-    std::string ts;
     if (strftime(result, sizeof(result), "%Y-%m-%d %H:%M:%S", t) == 0) {
         throw std::runtime_error("strftime()");
     };
     return std::string(result);
-}
-
-evutil_socket_t listen(int use_ipv6, const char *address, const char *port) {
-    sockaddr_storage storage;
-    socklen_t salen;
-    const char *family;
-    evutil_socket_t filedesc;
-    int result;
-
-    if (use_ipv6)
-        family = "PF_INET6";
-    else
-        family = "PF_INET";
-
-    result = storage_init(&storage, &salen, family, address, port);
-    if (result == -1) return -1;
-
-    filedesc = socket_create(storage.ss_family, SOCK_STREAM, 0);
-    if (filedesc == MEASUREMENT_KIT_SOCKET_INVALID) return -1;
-
-    result = socket_listen(filedesc, &storage, salen);
-    if (result != 0) {
-        (void)evutil_closesocket(filedesc);
-        return -1;
-    }
-
-    return filedesc;
-}
-
-/* Many system's free() handle nullptr; is this needed? */
-void xfree(void *ptr) {
-    if (ptr != nullptr) free(ptr);
 }
 
 timeval *timeval_init(timeval *tv, double delta) {
@@ -128,7 +94,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
                  const char *address, int _port) {
     int result;
 
-    info("utils:storage_init - enter");
+    debug("utils:storage_init - enter");
 
     if (_port < 0 || _port > 65535) {
         warn("utils:storage_init: invalid port");
@@ -176,7 +142,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
         throw std::runtime_error("invalid case");
     }
 
-    info("utils:storage_init - ok");
+    debug("utils:storage_init - ok");
     return 0;
 }
 
@@ -184,7 +150,7 @@ evutil_socket_t socket_create(int domain, int type, int protocol) {
     evutil_socket_t filedesc;
     int result;
 
-    info("utils:socket - enter");
+    debug("utils:socket - enter");
 
     filedesc = socket(domain, type, protocol);
     if (filedesc == MEASUREMENT_KIT_SOCKET_INVALID) {
@@ -199,88 +165,53 @@ evutil_socket_t socket_create(int domain, int type, int protocol) {
         return MEASUREMENT_KIT_SOCKET_INVALID;
     }
 
-    info("utils:socket - ok");
+    debug("utils:socket - ok");
     return filedesc;
 }
 
-int socket_connect(evutil_socket_t filedesc, sockaddr_storage *storage,
-                   socklen_t salen) {
-    int result;
-
-    info("utils:socket_connect - enter");
-
-    result = connect(filedesc, (sockaddr *)storage, salen);
-    if (result != 0) {
-#ifndef WIN32
-        if (errno == EINPROGRESS)
-#else
-        if (WSAGetLastError() == WSA_EINPROGRESS) /* untested */
-#endif
-            goto looksgood;
-        warn("utils:socket_connect - connect() failed");
-        return -1;
+// See <http://stackoverflow.com/questions/440133/>
+std::string random_within_charset(const std::string charset, size_t length) {
+    if (charset.size() < 1) {
+        throw ValueError();
     }
-
-looksgood:
-    info("utils:socket_connect - ok");
-    return 0;
-}
-
-int socket_listen(evutil_socket_t filedesc, sockaddr_storage *storage,
-                  socklen_t salen) {
-    int result, activate;
-
-    info("utils:socket_listen - enter");
-
-    activate = 1;
-    result = setsockopt(filedesc, SOL_SOCKET, SO_REUSEADDR, &activate,
-                        sizeof(activate));
-    if (result != 0) {
-        warn("utils:socket_listen - setsockopt() failed");
-        return -1;
-    }
-
-    result = bind(filedesc, (sockaddr *)storage, salen);
-    if (result != 0) {
-        warn("utils:socket_listen - bind() failed");
-        return -1;
-    }
-
-    result = ::listen(filedesc, 10);
-    if (result != 0) {
-        warn("utils:socket_listen - listen() failed");
-        return -1;
-    }
-
-    info("utils:socket_listen - ok");
-    return 0;
-}
-
-// Stolen from:
-// http://stackoverflow.com/questions/440133/how-do-i-create-a-random-alpha-numeric-string-in-c
-std::string random_str(size_t length) {
-    auto randchar = []() -> char {
-        const char charset[] = "0123456789"
-                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                               "abcdefghijklmnopqrstuvwxyz";
-        const size_t max_index = (sizeof(charset) - 1);
-        return charset[rand() % max_index];
+    auto randchar = [&charset]() {
+        int rand = 0;
+        evutil_secure_rng_get_bytes(&rand, sizeof (rand));
+        return charset[rand % charset.size()];
     };
     std::string str(length, 0);
     std::generate_n(str.begin(), length, randchar);
     return str;
+}
+
+std::string random_printable(size_t length) {
+    static const std::string ascii =
+            " !\"#$%&\'()*+,-./"         // before numbers
+            "0123456789"                 // numbers
+            ":;<=>?@"                    // after numbers
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" // uppercase
+            "[\\]^_`"                    // between upper and lower
+            "abcdefghijklmnopqrstuvwxyz" // lowercase
+            "{|}~"                       // final
+        ;
+    return random_within_charset(ascii, length);
+}
+
+std::string random_str(size_t length) {
+    static const std::string alnum =
+            "0123456789"                 // numbers
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ" // uppercase
+            "abcdefghijklmnopqrstuvwxyz" // lowercase
+        ;
+    return random_within_charset(alnum, length);
 }
 
 std::string random_str_uppercase(size_t length) {
-    auto randchar = []() -> char {
-        const char charset[] = "0123456789"
-                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        const size_t max_index = (sizeof(charset) - 1);
-        return charset[rand() % max_index];
-    };
-    std::string str(length, 0);
-    std::generate_n(str.begin(), length, randchar);
-    return str;
+    static const std::string num_upper =
+            "0123456789"                  // numbers
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"  // uppercase
+        ;
+    return random_within_charset(num_upper, length);
 }
 
 std::string unreverse_ipv6(std::string s) {
@@ -288,14 +219,22 @@ std::string unreverse_ipv6(std::string s) {
     std::deque<char> r;
     for (; i < s.size(); ++i) {
         if ((i % 2) == 0) {
-            if (!isxdigit(s[i])) break;
+            if (!isxdigit(s[i])) {
+                break;
+            }
             r.push_front(s[i]);
-            if ((++added % 4) == 0 && added <= 28) r.push_front(':');
+            if ((++added % 4) == 0 && added <= 28) {
+                r.push_front(':');
+            }
         } else {
-            if (s[i] != '.') return "";
+            if (s[i] != '.') {
+                return "";
+            }
         }
     }
-    if (s.substr(i) != "ip6.arpa" && s.substr(i) != "ip6.arpa.") return "";
+    if (s.substr(i) != "ip6.arpa" && s.substr(i) != "ip6.arpa.") {
+        return "";
+    }
     return std::string(r.begin(), r.end());
 }
 
@@ -305,8 +244,12 @@ std::string unreverse_ipv4(std::string s) {
     unsigned cur = 0;
     for (; i < s.size(); ++i) {
         if (s[i] == '.') {
-            if (cur > 255) return "";
-            if (seen++ > 0) r.push_front('.');
+            if (cur > 255) {
+                return "";
+            }
+            if (seen++ > 0) {
+                r.push_front('.');
+            }
             r.insert(r.begin(), t.begin(), t.end());
             t.clear();
             cur = 0;
@@ -314,12 +257,24 @@ std::string unreverse_ipv4(std::string s) {
             t.push_back(s[i]);
             char tmpstr[] = {s[i], '\0'};
             cur = cur * 10 + atoi(tmpstr);
-        } else
+        } else {
             break;
+        }
     }
-    if (s.substr(i) != "in-addr.arpa" && s.substr(i) != "in-addr.arpa.")
+    if (s.substr(i) != "in-addr.arpa" && s.substr(i) != "in-addr.arpa.") {
         return "";
+    }
     return std::string(r.begin(), r.end());
+}
+
+// See <http://stackoverflow.com/questions/9435385/>
+std::vector<std::string> split(std::string s) {
+    // passing -1 as the submatch index parameter performs splitting
+    std::regex re{"\\s+"};
+    std::sregex_token_iterator
+        first{s.begin(), s.end(), re, -1},
+        last;
+    return {first, last};
 }
 
 } // namespace mk

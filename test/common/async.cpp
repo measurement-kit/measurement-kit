@@ -74,3 +74,20 @@ TEST_CASE("The async engine works as expected") {
         }
     }
 }
+
+TEST_CASE("The destructor work as expected if the thread was already joined") {
+    Async async;
+    run_dns_injection(async);
+    run_dns_injection(async);
+    while (!async.empty()) {
+        sleep(1);
+    }
+    async.break_loop();
+    async.join();
+}
+
+TEST_CASE("Nothing strange happens if no thread is bound to Async") {
+    Async async;
+    REQUIRE(async.empty()); // Mainly to avoid unused variable warning
+}
+
