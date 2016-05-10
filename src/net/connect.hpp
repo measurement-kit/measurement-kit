@@ -35,7 +35,7 @@ namespace net {
 
 template <MK_MOCK(evutil_parse_sockaddr_port), MK_MOCK(bufferevent_socket_new),
         MK_MOCK(bufferevent_set_timeouts), MK_MOCK(bufferevent_socket_connect)>
-void connect_base(std::string address, int port, Callback<bufferevent *> cb,
+void connect_base(std::string address, int port, Callback<Error, bufferevent *> cb,
         double timeout = 10.0, Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
@@ -73,7 +73,7 @@ void connect_base(std::string address, int port, Callback<bufferevent *> cb,
     // WARNING: set callbacks after connect() otherwise we free `bev` twice
     // NOTE: In case of `new` failure we let the stack unwind
     bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
-            new Callback<bufferevent *>([cb](Error err, bufferevent *bev) {
+            new Callback<Error, bufferevent *>([cb](Error err, bufferevent *bev) {
                 if (err) {
                     bufferevent_free(bev);
                     cb(err, nullptr);
@@ -95,13 +95,13 @@ typedef std::function<void(ResolveHostnameResult)> ResolveHostnameCb;
 void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
         Settings settings = {}, Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global());
 
-void connect_logic(std::string hostname, int port, Callback<Var<ConnectResult>> cb,
+void connect_logic(std::string hostname, int port, Callback<Error, Var<ConnectResult>> cb,
         Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                  std::string hostname,
-                 Callback<bufferevent *> cb,
+                 Callback<Error, bufferevent *> cb,
                  Var<Reactor> = Reactor::global(),
                  Var<Logger> = Logger::global());
 

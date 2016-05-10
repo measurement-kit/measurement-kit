@@ -15,7 +15,7 @@ namespace net {
 
 // TODO: this should be moved into src/net/connect.cpp
 void connect(std::string address, int port,
-             Callback<Var<Transport>> callback,
+             Callback<Error, Var<Transport>> callback,
              Settings settings, Var<Logger> logger, Var<Reactor> reactor) {
     if (settings.find("net/dumb_transport") != settings.end()) {
         callback(NoError(), Var<Transport>(new Emitter(logger)));
@@ -66,7 +66,7 @@ void connect(std::string address, int port,
     }, settings, reactor, logger);
 }
 
-void write(Var<Transport> txp, Buffer buf, Callback<> cb) {
+void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
     txp->on_flush([=]() {
         txp->on_flush(nullptr);
         txp->on_error(nullptr);
@@ -80,7 +80,7 @@ void write(Var<Transport> txp, Buffer buf, Callback<> cb) {
     txp->write(buf);
 }
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<> cb) {
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb) {
     if (buff->length() >= n) {
         // Shortcut that simplifies coding a great deal
         cb(NoError());
