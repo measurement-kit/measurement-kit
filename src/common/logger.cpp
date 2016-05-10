@@ -38,11 +38,11 @@ void Logger::logv(const char *fmt, va_list ap) {
 
 void Logger::warn(const char *fmt, ...) { XX(this, 0); }
 void Logger::info(const char *fmt, ...) { XX(this, 1); }
-void Logger::debug(const char *fmt, ...) { XX(this, 1); }
+void Logger::debug(const char *fmt, ...) { XX(this, 2); }
 
 void warn(const char *fmt, ...) { XX(Logger::global(), 0); }
 void info(const char *fmt, ...) { XX(Logger::global(), 1); }
-void debug(const char *fmt, ...) { XX(Logger::global(), 1); }
+void debug(const char *fmt, ...) { XX(Logger::global(), 2); }
 
 #undef XX
 
