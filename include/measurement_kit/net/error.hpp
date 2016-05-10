@@ -144,6 +144,11 @@ class NotEnoughDataError : public Error {
     NotEnoughDataError() : Error(1022, "unknown_failure 1022") {}
 };
 
+class MissingCaBundlePathError : public Error {
+  public:
+    MissingCaBundlePathError() : Error(1023, "unknown_failure 1023") {}
+};
+
 } // namespace net
 } // namespace mk
 #endif

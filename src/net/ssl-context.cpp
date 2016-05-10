@@ -8,7 +8,7 @@
 #include <openssl/ssl.h>
 #include <exception>
 #include <iostream>
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 #include "src/net/ssl-context.hpp"
 
 namespace mk {
@@ -54,13 +54,13 @@ Var<SslContext> SslContext::global() {
 
 SslContext::SslContext() {
     std::string ca_bundle_path;
-    Settings *global_settings = Settings::global();
+    Var<Settings> global_settings = Settings::global();
     if (global_settings->find("net/ca_bundle_path") != global_settings->end()) {
         ca_bundle_path = (*global_settings)["net/ca_bundle_path"];
     } else {
         // XXX should we add other system default locations in here?
-        debug("ssl: failed to find ca_bundle");
-        throw std::exception();
+        warn("ssl: failed to find ca_bundle");
+        throw MissingCaBundlePathError();
     }
     init(ca_bundle_path);
 }
