@@ -39,7 +39,7 @@ class TCPTestImpl : public ooni::OoniTestImpl {
 
     TCPTestImpl(Settings options_) : TCPTestImpl("", options_) {};
 
-    void connect(Settings options, Callback<Var<net::Transport>> &&cb) {
+    void connect(Settings options, Callback<Error, Var<net::Transport>> &&cb) {
         if (options["port"] == "") {
             throw std::runtime_error("Port is required");
         }
