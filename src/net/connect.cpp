@@ -16,7 +16,7 @@
 #include <string.h>
 
 void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
-    auto cb = static_cast<mk::Callback<Error, bufferevent *> *>(ptr);
+    auto cb = static_cast<mk::Callback<mk::Error, bufferevent *> *>(ptr);
     if ((what & BEV_EVENT_CONNECTED) != 0) {
         (*cb)(mk::NoError(), bev);
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
