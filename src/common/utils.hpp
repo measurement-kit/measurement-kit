@@ -27,6 +27,8 @@ int storage_init(sockaddr_storage *, socklen_t *, int, const char *,
 int storage_init(sockaddr_storage *, socklen_t *, int, const char *, int);
 evutil_socket_t socket_create(int, int, int);
 
+std::string random_within_charset(std::string charset, size_t length);
+std::string random_printable(size_t length);
 std::string random_str(size_t length);
 std::string random_str_uppercase(size_t length);
 
