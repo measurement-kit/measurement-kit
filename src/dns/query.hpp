@@ -15,7 +15,7 @@
 #include <map>
 #include <new>
 #include <stdexcept>
-#include <stdint.h>
+#include <limits.h>
 #include <string>
 #include <type_traits>
 
