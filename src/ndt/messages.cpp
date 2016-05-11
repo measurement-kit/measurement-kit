@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/ndt/messages.hpp"
+#include "src/ndt/messages_impl.hpp"
 #include "src/ext/json/src/json.hpp"
 
 namespace mk {
