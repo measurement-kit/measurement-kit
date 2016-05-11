@@ -30,7 +30,7 @@ void connect_impl(Var<Context> ctx, Callback<Error> callback) {
                     return;
                 }
                 txp->set_timeout(60.0);
-                ctx->conn = txp;
+                ctx->txp = txp;
                 ctx->logger->info("Connected to %s:%d", ctx->address.c_str(),
                                   ctx->port);
                 callback(NoError());
@@ -62,7 +62,7 @@ void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
 template <MK_MOCK_NAMESPACE(net, readn)>
 void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv and ignore kickoff ...");
-    readn(ctx->conn, ctx->buff, KICKOFF_MESSAGE_SIZE, [=](Error err) {
+    readn(ctx->txp, ctx->buff, KICKOFF_MESSAGE_SIZE, [=](Error err) {
         ctx->logger->debug("ndt: recv and ignore kickoff ... %d", (int)err);
         if (err) {
             callback(err);
@@ -233,9 +233,9 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
 template <MK_MOCK_NAMESPACE(net, read)>
 void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait close ...");
-    ctx->conn->set_timeout(1.0);
+    ctx->txp->set_timeout(1.0);
     Var<Buffer> buffer(new Buffer);
-    read(ctx->conn, buffer, [=](Error err) {
+    read(ctx->txp, buffer, [=](Error err) {
         ctx->logger->debug("ndt: wait close ... %d", (int)err);
         // Note: the server SHOULD close the connection
         if (err == EofError()) {

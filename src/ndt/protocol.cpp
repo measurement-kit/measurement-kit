@@ -45,10 +45,10 @@ void wait_close(Var<Context> ctx, Callback<Error> callback) {
 }
 
 void disconnect_and_callback(Var<Context> ctx, Error err) {
-    if (ctx->conn) {
-        Var<Transport> conn = ctx->conn;
-        ctx->conn = nullptr;
-        conn->close([=]() { ctx->callback(err); });
+    if (ctx->txp) {
+        Var<Transport> txp = ctx->txp;
+        ctx->txp = nullptr;
+        txp->close([=]() { ctx->callback(err); });
         return;
     }
     ctx->callback(err);

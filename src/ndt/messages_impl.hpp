@@ -19,7 +19,7 @@ template <decltype(net::readn) readn = net::readn>
 void read_ndt_impl(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback) {
 
     // Receive message type (1 byte) and length (2 bytes)
-    readn(ctx->conn, ctx->buff, 3, [=](Error err) {
+    readn(ctx->txp, ctx->buff, 3, [=](Error err) {
         if (err) {
             callback(err, 0, "");
             return;
@@ -36,7 +36,7 @@ void read_ndt_impl(Var<Context> ctx, Callback<Error, uint8_t, std::string> callb
         }
 
         // Now read the message payload (`length` bytes in total)
-        readn(ctx->conn, ctx->buff, *length, [=](Error err) {
+        readn(ctx->txp, ctx->buff, *length, [=](Error err) {
             if (err) {
                 callback(err, 0, "");
                 return;

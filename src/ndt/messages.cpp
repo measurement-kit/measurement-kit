@@ -54,14 +54,14 @@ void write(Var<Context> ctx, Buffer buff, Callback<Error> cb) {
     std::string s = buff.peek();
     ctx->logger->debug("> [%lu]: (%d) %s", s.length(), s.c_str()[0],
                        s.substr(3).c_str());
-    net::write(ctx->conn, buff, cb);
+    net::write(ctx->txp, buff, cb);
 }
 
 void write_noasync(Var<Context> ctx, Buffer buff) {
     std::string s = buff.peek();
     ctx->logger->debug("> [%lu]: (%d) %s", s.length(), s.c_str()[0],
                        s.substr(3).c_str());
-    ctx->conn->write(buff);
+    ctx->txp->write(buff);
 }
 
 } // namespace messages

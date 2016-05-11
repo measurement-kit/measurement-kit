@@ -18,14 +18,14 @@ struct Context {
     std::string address;
     Var<net::Buffer> buff = net::Buffer::make();
     Callback<Error> callback;
-    Var<net::Transport> conn;
+    std::list<std::string> granted_suite;
     Var<Logger> logger = Logger::global();
     Var<Reactor> reactor = Reactor::global();
     int port = 0;
     Settings settings;
     int test_suite = TEST_STATUS | TEST_META | TEST_C2S | TEST_S2C;
-    std::list<std::string> granted_suite;
     double timeout = 10.0;
+    Var<net::Transport> txp;
 };
 
 } // namespace mk
