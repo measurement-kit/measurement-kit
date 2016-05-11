@@ -11,7 +11,6 @@
 namespace mk {
 namespace ndt {
 
-/// Implementation of the client algorithm
 template <Phase connect, Phase send_login, Phase recv_and_ignore_kickoff,
           Phase wait_in_queue, Phase recv_version, Phase recv_tests_id,
           Phase run_tests, Phase recv_results_and_logout, Phase wait_close,

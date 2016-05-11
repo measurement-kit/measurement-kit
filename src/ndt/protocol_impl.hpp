@@ -5,7 +5,6 @@
 #define SRC_NDT_PROTOCOL_IMPL_HPP
 
 #include "src/common/utils.hpp"
-#include "src/ext/json/src/json.hpp"
 #include "src/ndt/context.hpp"
 #include "src/ndt/messages.hpp"
 #include "src/ndt/protocol.hpp"
@@ -19,9 +18,7 @@ namespace ndt {
 namespace protocol {
 
 using namespace net;
-using json = nlohmann::json;
 
-/// Testable implementation of connect
 template <MK_MOCK_NAMESPACE(net, connect)>
 void connect_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: connect ...");
@@ -41,7 +38,6 @@ void connect_impl(Var<Context> ctx, Callback<Error> callback) {
             ctx->settings, ctx->logger, ctx->reactor);
 }
 
-/// Testable implementation of send_extended_login()
 template <MK_MOCK_NAMESPACE(messages, format_msg_extended_login),
           MK_MOCK_NAMESPACE(messages, write)>
 void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
@@ -63,7 +59,6 @@ void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-/// Testable implementation of recv_and_ignore_kickoff
 template <MK_MOCK_NAMESPACE(net, readn)>
 void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv and ignore kickoff ...");
@@ -83,7 +78,6 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-/// Testable implementation of wait_in_queue()
 template <MK_MOCK_NAMESPACE(messages, read)>
 void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait in queue ...");
@@ -112,7 +106,6 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-/// Testable implementation of recv_version()
 template <MK_MOCK_NAMESPACE(messages, read)>
 void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv server version ...");
@@ -132,7 +125,6 @@ void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-/// Testable implementation of recv_tests_id()
 template <MK_MOCK_NAMESPACE(messages, read)>
 void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv tests ID ...");
@@ -152,7 +144,6 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-/// Testable implementation of run_tests()
 template <MK_MOCK_NAMESPACE(messages, read_json),
           MK_MOCK_NAMESPACE(messages, format_test_msg)>
 void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
@@ -214,7 +205,6 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     callback(GenericError());
 }
 
-/// Testable implementation of recv_results_and_logout()
 template <MK_MOCK_NAMESPACE(messages, read)>
 void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv RESULTS ...");
@@ -240,7 +230,6 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-/// Testable implementation of wait_close()
 template <MK_MOCK_NAMESPACE(net, read)>
 void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait close ...");

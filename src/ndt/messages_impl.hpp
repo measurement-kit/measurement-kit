@@ -15,7 +15,6 @@ namespace messages {
 using namespace mk::net;
 using json = nlohmann::json;
 
-/// Testable implementation of read_ndt()
 template <decltype(net::readn) readn = net::readn>
 void read_ndt_impl(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback) {
 
@@ -49,7 +48,6 @@ void read_ndt_impl(Var<Context> ctx, Callback<Error, uint8_t, std::string> callb
     });
 }
 
-/// Testable implementation of read_json()
 template <decltype(read_ndt) read_ndt = read_ndt>
 void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
     read_ndt(ctx, [=](Error err, uint8_t type, std::string m) {
@@ -68,7 +66,6 @@ void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
     });
 }
 
-/// Testable implementation of read()
 template<decltype(read_json) read_json = read_json>
 void read_impl(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback) {
     read_json(ctx, [=](Error error, uint8_t type, json message) {

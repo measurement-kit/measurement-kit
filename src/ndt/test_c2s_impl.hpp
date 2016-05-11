@@ -18,7 +18,6 @@ namespace test_c2s {
 
 using namespace net;
 
-/// Testable implementation of c2s_coroutine()
 template <MK_MOCK_NAMESPACE(net, connect)>
 void coroutine_impl(std::string address, int port, double runtime,
                         Callback<Error, Continuation<Error>> cb, double timeout,
@@ -97,7 +96,6 @@ void coroutine_impl(std::string address, int port, double runtime,
             {}, logger, reactor);
 }
 
-/// Testable implementation of run_test_c2s()
 template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK(test_c2s::coroutine)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {

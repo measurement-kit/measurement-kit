@@ -13,9 +13,6 @@ namespace mk {
 namespace ndt {
 namespace test_meta {
 
-using namespace mk::net;
-
-/// Run the META test
 void run(Var<Context> ctx, Callback<Error> callback);
 
 } // namespace test_meta

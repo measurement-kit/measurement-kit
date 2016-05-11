@@ -16,7 +16,6 @@ namespace test_meta {
 
 using namespace mk::net;
 
-/// Testable implementation of run_test_meta()
 template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
           MK_MOCK_NAMESPACE(messages, write)>

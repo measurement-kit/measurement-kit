@@ -19,7 +19,6 @@ namespace test_s2c {
 using json = nlohmann::json;
 using namespace net;
 
-/// Testable implementation of s2c_coroutine()
 template <MK_MOCK_NAMESPACE(net, connect)>
 void coroutine_impl(std::string address, int port,
                         Callback<Error, Continuation<Error, double>> cb, double timeout,
@@ -87,7 +86,6 @@ void coroutine_impl(std::string address, int port,
             {}, logger, reactor);
 }
 
-/// Testable implementation of finalizing_test()
 template <MK_MOCK_NAMESPACE(messages, read_ndt)>
 void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
 
@@ -123,7 +121,6 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-/// Testable implementation of run_test_s2c()
 template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
           MK_MOCK_NAMESPACE(messages, read_json),
