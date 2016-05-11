@@ -88,7 +88,8 @@ void coroutine_impl(std::string address, int port, double runtime,
             {}, logger, reactor);
 }
 
-template <MK_MOCK_NAMESPACE(messages, read), MK_MOCK(test_c2s::coroutine)>
+template <MK_MOCK_NAMESPACE(messages, read),
+          MK_MOCK_NAMESPACE(test_c2s, coroutine)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number

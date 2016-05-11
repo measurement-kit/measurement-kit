@@ -114,7 +114,8 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
 template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
           MK_MOCK_NAMESPACE(messages, read_json),
-          MK_MOCK_NAMESPACE(messages, write), MK_MOCK(test_s2c::coroutine),
+          MK_MOCK_NAMESPACE(messages, write),
+          MK_MOCK_NAMESPACE(test_s2c, coroutine),
           MK_MOCK(finalizing_test)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
