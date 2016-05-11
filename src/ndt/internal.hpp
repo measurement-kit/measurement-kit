@@ -7,6 +7,7 @@
 // This implementation targets v3.7.0 of the NDT protocol
 // See <https://github.com/ndt-project/ndt/wiki/NDTProtocol>
 
+#include "src/common/utils.hpp"
 #include "src/ext/json/src/json.hpp"
 #include <list>
 #include <measurement_kit/common.hpp>

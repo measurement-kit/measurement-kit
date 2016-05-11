@@ -4,7 +4,6 @@
 #ifndef SRC_NDT_TEST_C2S_IMPL_HPP
 #define SRC_NDT_TEST_C2S_IMPL_HPP
 
-#include "src/common/utils.hpp"
 #include "src/ndt/internal.hpp"
 
 namespace mk {
