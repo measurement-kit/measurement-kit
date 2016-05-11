@@ -81,6 +81,19 @@ void read_impl(Var<Context> ctx,
     });
 }
 
+static inline ErrorOr<Buffer> format_any(unsigned char type, json message) {
+    Buffer out;
+    out.write_uint8(type);
+    std::string s = message.dump();
+    if (s.size() > UINT16_MAX) {
+        return ValueError();
+    }
+    uint16_t length = (uint16_t)s.size();
+    out.write_uint16(length);
+    out.write(s.data(), s.size());
+    return out;
+}
+
 } // namespace messages
 } // namespace ndt
 } // namespace mk
