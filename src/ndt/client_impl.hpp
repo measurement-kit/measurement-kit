@@ -31,6 +31,9 @@ void client_impl(std::string address, int port, Callback<Error> callback,
     ctx->port = port;
     ctx->settings = settings;
 
+    // The following code implements this sequence diagram:
+    // https://raw.githubusercontent.com/wiki/ndt-project/ndt/NDTProtocol.images/ndt_10.png
+
     connect(ctx, [ctx](Error err) {
         if (err) {
             disconnect_and_callback(ctx, err);
