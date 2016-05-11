@@ -4,12 +4,15 @@
 #ifndef SRC_NDT_CLIENT_IMPL_HPP
 #define SRC_NDT_CLIENT_IMPL_HPP
 
-#include "src/ndt/client.hpp"
+#include "src/ndt/context.hpp"
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ndt.hpp>
 
 namespace mk {
 namespace ndt {
+
+using Phase = void (*)(Var<Context>, Callback<Error>);
+using Cleanup = void (*)(Var<Context>, Error);
 
 template <Phase connect, Phase send_login, Phase recv_and_ignore_kickoff,
           Phase wait_in_queue, Phase recv_version, Phase recv_tests_id,
