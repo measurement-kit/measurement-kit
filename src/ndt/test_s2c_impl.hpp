@@ -1,0 +1,231 @@
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
+#ifndef SRC_NDT_TEST_S2C_IMPL_HPP
+#define SRC_NDT_TEST_S2C_IMPL_HPP
+
+#include "src/common/utils.hpp"
+#include "src/ndt/context.hpp"
+#include "src/ndt/definitions.hpp"
+#include "src/ndt/messages.hpp"
+#include "src/ndt/test_s2c.hpp"
+#include <measurement_kit/ndt.hpp>
+#include <measurement_kit/net.hpp>
+
+namespace mk {
+namespace ndt {
+namespace tests {
+
+using json = nlohmann::json;
+using namespace net;
+
+/// Testable implementation of s2c_coroutine()
+template <MK_MOCK_NAMESPACE(net, connect)>
+void s2c_coroutine_impl(std::string address, int port,
+                        Callback<Error, Continuation<Error, double>> cb, double timeout,
+                        Var<Logger> logger, Var<Reactor> reactor) {
+
+    // The coroutine connects to the remote endpoint and then pauses
+    logger->debug("ndt: connect ...");
+    connect(address, port,
+            [=](Error err, Var<Transport> txp) {
+                logger->debug("ndt: connect ... %d", (int)err);
+                if (err) {
+                    cb(err, nullptr);
+                    return;
+                }
+                logger->info("Connected to %s:%d", address.c_str(), port);
+                logger->debug("ndt: suspend coroutine");
+                cb(NoError(), [=](Callback<Error, double> cb) {
+
+                    // The coroutine is resumed and receives data
+                    logger->debug("ndt: resume coroutine");
+                    logger->info("Starting download");
+                    Var<double> begin(new double(0.0));
+                    Var<size_t> total(new size_t(0));
+                    Var<double> previous(new double(0.0));
+                    Var<size_t> count(new size_t(0));
+                    txp->set_timeout(timeout);
+
+                    txp->on_data([=](Buffer data) {
+                        if (*begin == 0.0) {
+                            *begin = *previous = time_now();
+                        }
+                        *total += data.length();
+                        double ct = time_now();
+                        *count += data.length();
+                        if (ct - *previous > 0.5) {
+                            double x = (*count * 8) / 1000 / (ct - *previous);
+                            *count = 0;
+                            *previous = ct;
+                            printf("\rSpeed: %.2f kbit/s", x);
+                            fflush(stdout);
+                        }
+                        // TODO: force close the connection after a given
+                        // large amount of time has passed
+                    });
+
+                    txp->on_error([=](Error err) {
+                        printf("\n");
+                        logger->info("Ending download (%d)", (int)err);
+                        double elapsed_time = time_now() - *begin;
+                        logger->debug("ndt: elapsed %lf", elapsed_time);
+                        logger->debug("ndt: total %lu",
+                                      (unsigned long)*total);
+                        double speed = 0.0;
+                        if (err == EofError()) {
+                            if (elapsed_time > 0.0) {
+                                speed = *total * 8.0 / 1000.0 / elapsed_time;
+                            }
+                            err = NoError();
+                        }
+                        logger->info("S2C speed %lf kbit/s", speed);
+                        txp->close([=]() { cb(err, speed); });
+                    });
+                });
+            },
+            {}, logger, reactor);
+}
+
+/// Testable implementation of finalizing_test()
+template <MK_MOCK_NAMESPACE(messages, read_ndt)>
+void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
+
+    // Note: at this point the server would send a sequence of TEST_MSG that
+    // contain part of the results, except the last one that is empty. Then
+    // after such empty TEST_MSG, it would send a TEST_FINALIZE message.
+    //
+    // Because of that behavior, here we are forced to use our lowest level
+    // reading primitive from the channel, i.e. `read_ndt()`.
+
+    ctx->logger->debug("ndt: recv TEST_MSG ...");
+    read_ndt(ctx, [=](Error err, uint8_t type, std::string s) {
+        ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
+        if (err) {
+            callback(err);
+            return;
+        }
+        if (type == TEST_FINALIZE) {
+            callback(NoError());
+            return;
+        }
+        if (type != TEST_MSG) {
+            callback(GenericError());
+            return;
+        }
+        try {
+            std::string x = json::parse(s)["msg"];
+            printf("%s", x.c_str());
+        } catch (std::exception &) {
+            // nothing
+        }
+        finalizing_test_impl<read_ndt>(ctx, callback);
+    });
+}
+
+/// Testable implementation of run_test_s2c()
+template <MK_MOCK_NAMESPACE(messages, read),
+          MK_MOCK_NAMESPACE(messages, format_test_msg),
+          MK_MOCK_NAMESPACE(messages, read_json),
+          MK_MOCK_NAMESPACE(messages, write),
+          MK_MOCK(s2c_coroutine),
+          MK_MOCK(finalizing_test)>
+void run_test_s2c_impl(Var<Context> ctx, Callback<Error> callback) {
+
+    // The server sends us the PREPARE message containing the port number
+    ctx->logger->debug("ndt: recv TEST_PREPARE ...");
+    read(ctx, [=](Error err, uint8_t type, std::string s) {
+        ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
+        if (err) {
+            callback(err);
+            return;
+        }
+        if (type != TEST_PREPARE) {
+            callback(GenericError());
+            return;
+        }
+        ErrorOr<int> port = lexical_cast_noexcept<int>(s);
+        if (!port || *port < 0 || *port > 65535) {
+            callback(GenericError());
+            return;
+        }
+
+        // We connect to the port and wait for coroutine to pause
+        ctx->logger->debug("ndt: start s2c coroutine ...");
+        s2c_coroutine(
+            ctx->address, *port,
+            [=](Error err, Continuation<Error, double> cc) {
+                ctx->logger->debug("ndt: start s2c coroutine ... %d", (int)err);
+                if (err) {
+                    callback(err);
+                    return;
+                }
+
+                // The server sends us the START message to tell we can start
+                ctx->logger->debug("ndt: recv TEST_START ...");
+                read(ctx, [=](Error err, uint8_t type, std::string) {
+                    ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
+                    if (err) {
+                        callback(err);
+                        return;
+                    }
+                    if (type != TEST_START) {
+                        callback(GenericError());
+                        return;
+                    }
+
+                    // We resume coroutine and wait for its completion
+                    ctx->logger->debug("ndt: resume s2c coroutine");
+                    cc([=](Error err, double speed) {
+                        ctx->logger->debug("ndt: s2c coroutine complete");
+                        if (err) {
+                            callback(err);
+                            return;
+                        }
+
+                        // The server sends us MSG containing throughput
+                        ctx->logger->debug("ndt: recv TEST_MSG ...");
+                        read_json(ctx, [=](Error err, uint8_t type, json m) {
+                            ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
+                            if (err) {
+                                callback(err);
+                                return;
+                            }
+                            if (type != TEST_MSG) {
+                                callback(GenericError());
+                                return;
+                            }
+                            ctx->logger->debug("ndt: speed %s",
+                                    m.dump().c_str());
+
+                            // We send our measured throughput to the client
+                            ctx->logger->debug("ndt: send TEST_MSG ...");
+                            ErrorOr<Buffer> out = format_test_msg(
+                                lexical_cast<std::string>(speed));
+                            if (!out) {
+                                callback(GenericError());
+                                return;
+                            }
+                            write(ctx, *out, [=](Error err) {
+                                ctx->logger->debug("ndt: send TEST_MSG ... %d",
+                                                      (int)err);
+                                if (err) {
+                                    callback(err);
+                                    return;
+                                }
+
+                                // We enter into the final state of this test
+                                finalizing_test(ctx, callback);
+                            });
+                        });
+                    });
+                });
+            },
+            ctx->timeout, ctx->logger, ctx->reactor);
+    });
+}
+
+} // namespace tests
+} // namespace ndt
+} // namespace mk
+#endif

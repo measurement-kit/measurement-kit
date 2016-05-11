@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/ndt/test_meta.hpp"
+#include "src/ndt/test_meta_impl.hpp"
 
 namespace mk {
 namespace ndt {
