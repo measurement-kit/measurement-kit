@@ -48,7 +48,8 @@
 #define KICKOFF_MESSAGE "123456 654321"
 #define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
 
-#define MSG_NDT_VERSION "v3.7.0" ///< Version of NDT that we declare to be
+// During the handshake we declare to be this version of NDT
+#define MSG_NDT_VERSION "v3.7.0"
 
 namespace mk {
 namespace ndt {
