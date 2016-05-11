@@ -33,8 +33,8 @@ class BaseTest {
     }
 
     /// Set verbose
-    BaseTest &set_verbose(bool verbose = true) {
-        is_verbose = verbose;
+    BaseTest &set_verbosity(uint32_t level) {
+        verbosity = level;
         return *this;
     }
 
@@ -51,7 +51,7 @@ class BaseTest {
     }
 
     /// Set log-message handler
-    BaseTest &on_log(std::function<void(const char *)> func) {
+    BaseTest &on_log(Delegate<void(uint32_t, const char *)> func) {
         log_handler = func;
         return *this;
     }
@@ -68,8 +68,8 @@ class BaseTest {
     void run(std::function<void()> callback);
 
     Settings settings;                             ///< Other test settings
-    bool is_verbose = false;                       ///< Be verbose
-    std::function<void(const char *)> log_handler; ///< Log handler func
+    int verbosity = MK_LOG_WARNING;
+    Delegate<void(uint32_t, const char *)> log_handler;
     std::string input_path;                        ///< Input file path
     std::string output_path;                       ///< Output file path
     Var<Reactor> reactor = Reactor::global();             ///< Poller to use

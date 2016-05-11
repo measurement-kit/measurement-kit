@@ -16,7 +16,7 @@
 TEST_CASE("By default the logger is quiet") {
     std::string buffer;
 
-    mk::on_log([&buffer](const char *s) {
+    mk::on_log([&buffer](uint32_t, const char *s) {
         buffer += s;
         buffer += "\n";
     });
@@ -30,12 +30,28 @@ TEST_CASE("By default the logger is quiet") {
 TEST_CASE("It is possible to make the logger verbose") {
     std::string buffer;
 
-    mk::on_log([&buffer](const char *s) {
+    mk::on_log([&buffer](uint32_t, const char *s) {
         buffer += s;
         buffer += "\n";
     });
 
-    mk::set_verbose(1);
+    mk::set_verbosity(MK_LOG_INFO);
+
+    mk::debug("Antani");
+    mk::info("Foo");
+
+    REQUIRE(buffer == "Foo\n");
+}
+
+TEST_CASE("Verbosity can be further increased") {
+    std::string buffer;
+
+    mk::on_log([&buffer](uint32_t, const char *s) {
+        buffer += s;
+        buffer += "\n";
+    });
+
+    mk::set_verbosity(MK_LOG_DEBUG);
 
     mk::debug("Antani");
     mk::info("Foo");

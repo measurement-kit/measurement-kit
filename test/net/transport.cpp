@@ -20,7 +20,7 @@ TEST_CASE("net::connect() works with a custom reactor") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    set_verbose(1);
+    set_verbosity(MK_LOG_DEBUG);
     Var<Reactor> reactor = Reactor::make();
     auto ok = false;
     connect("nexa.polito.it", 22, [&](Error error, Var<Transport> txp) {
@@ -57,7 +57,7 @@ TEST_CASE("net::connect() can connect to ssl port") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    set_verbose(1);
+    set_verbosity(MK_LOG_DEBUG);
     loop_with_initial_event([]() {
         connect("nexa.polito.it", 443, [](Error error, Var<Transport> txp) {
             REQUIRE(!error);
@@ -77,7 +77,7 @@ TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    set_verbose(1);
+    set_verbosity(MK_LOG_DEBUG);
     loop_with_initial_event([]() {
         connect("expired.badssl.com", 443, [](Error error, Var<Transport> txp) {
             REQUIRE(error);
@@ -91,7 +91,7 @@ TEST_CASE("net::connect() ssl fails when presented a certificate with the wrong 
     if (CheckConnectivity::is_down()) {
         return;
     }
-    set_verbose(1);
+    set_verbosity(MK_LOG_DEBUG);
     loop_with_initial_event([]() {
         connect("wrong.host.badssl.com", 443, [](Error error, Var<Transport> txp) {
             REQUIRE(error);
@@ -105,7 +105,7 @@ TEST_CASE("net::connect() ssl works when using SNI") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    set_verbose(1);
+    set_verbosity(MK_LOG_DEBUG);
     loop_with_initial_event([]() {
         connect("sha256.badssl.com", 443, [](Error error, Var<Transport> txp) {
             REQUIRE(!error);
@@ -119,7 +119,7 @@ TEST_CASE("net::connect() ssl works when setting ca_bundle_path via global setti
     if (CheckConnectivity::is_down()) {
         return;
     }
-    set_verbose(1);
+    set_verbosity(MK_LOG_DEBUG);
     Var<Settings> global_settings = Settings::global();
     (*global_settings)["net/ca_bundle_path"] = "test/fixtures/certs.pem";
     loop_with_initial_event([]() {

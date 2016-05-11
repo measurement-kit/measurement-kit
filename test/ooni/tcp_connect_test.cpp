@@ -20,7 +20,7 @@ TEST_CASE("Synchronous tcp-connect test") {
     ooni::TcpConnectTest()
         .set_port("80")
         .set_input_file_path("test/fixtures/hosts.txt")
-        .on_log([=](const char *s) { logs->push_back(s); })
+        .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs) std::cout << s << "\n";
 }
@@ -31,7 +31,7 @@ TEST_CASE("Asynchronous tcp-connect test") {
     ooni::TcpConnectTest()
         .set_port("80")
         .set_input_file_path("test/fixtures/hosts.txt")
-        .on_log([=](const char *s) { logs->push_back(s); })
+        .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run([&done]() { done = true; });
     do {
         std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -68,7 +68,7 @@ TEST_CASE("The test should fail with an invalid dns") {
         .set_options("dns/attempts", "1")
         .set_options("dns/timeout", "0.001")
         .set_input_file_path("test/fixtures/hosts.txt")
-        .on_log([=](const char *s) { logs->push_back(s); })
+        .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs) std::cout << s << "\n";
 }

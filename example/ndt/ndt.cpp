@@ -18,21 +18,19 @@ int main(int argc, char **argv) {
 
     int port = 3001;
     char ch;
-    int verbose = 0;
     while ((ch = getopt(argc, argv, "p:v")) != -1) {
         switch (ch) {
         case 'p':
             port = lexical_cast<int>(optarg);
             break;
         case 'v':
-            verbose++;
+            increase_verbosity();
             break;
         default:
             std::cout << kv_usage;
             exit(1);
         }
     }
-    set_verbose(verbose);
     argc -= optind;
     argv += optind;
 
