@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/ndt/test-s2c.hpp"
+#include "src/ndt/test_s2c.hpp"
 
 namespace mk {
 namespace ndt {

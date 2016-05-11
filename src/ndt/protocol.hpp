@@ -8,9 +8,9 @@
 #include "src/ext/json/src/json.hpp"
 #include "src/ndt/context.hpp"
 #include "src/ndt/messages.hpp"
-#include "src/ndt/test-c2s.hpp"
-#include "src/ndt/test-s2c.hpp"
-#include "src/ndt/test-meta.hpp"
+#include "src/ndt/test_c2s.hpp"
+#include "src/ndt/test_s2c.hpp"
+#include "src/ndt/test_meta.hpp"
 #include <measurement_kit/ndt.hpp>
 
 namespace mk {
