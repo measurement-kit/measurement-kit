@@ -248,6 +248,16 @@ void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
+static inline void disconnect_and_callback_impl(Var<Context> ctx, Error err) {
+    if (ctx->txp) {
+        Var<Transport> txp = ctx->txp;
+        ctx->txp = nullptr;
+        txp->close([=]() { ctx->callback(err); });
+        return;
+    }
+    ctx->callback(err);
+}
+
 } // namespace protocol
 } // namespace mk
 } // namespace ndt

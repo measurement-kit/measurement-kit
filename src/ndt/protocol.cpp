@@ -45,13 +45,7 @@ void wait_close(Var<Context> ctx, Callback<Error> callback) {
 }
 
 void disconnect_and_callback(Var<Context> ctx, Error err) {
-    if (ctx->txp) {
-        Var<Transport> txp = ctx->txp;
-        ctx->txp = nullptr;
-        txp->close([=]() { ctx->callback(err); });
-        return;
-    }
-    ctx->callback(err);
+    disconnect_and_callback_impl(ctx, err);
 }
 
 } // namespace protocol
