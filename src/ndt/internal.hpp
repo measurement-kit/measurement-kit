@@ -25,7 +25,6 @@
     Definitions used by the NDT test.
 */
 
-// TODO: add here the definition of all messages
 #define COMM_FAILURE 0
 #define SRV_QUEUE 1
 #define MSG_LOGIN 2
@@ -39,14 +38,12 @@
 #define MSG_WAITING 10
 #define MSG_EXTENDED_LOGIN 11
 
-// TODO: add here the definition of all tests
-#define TEST_NONE 0
-#define TEST_MID 1 << 0
-#define TEST_C2S 1 << 1
-#define TEST_S2C 1 << 2
-#define TEST_SFW 1 << 3
-#define TEST_STATUS 1 << 4
-#define TEST_META 1 << 5
+#define TEST_MID 1
+#define TEST_C2S 2
+#define TEST_S2C 4
+#define TEST_SFW 8
+#define TEST_STATUS 16
+#define TEST_META 32
 
 #define KICKOFF_MESSAGE "123456 654321"
 #define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
