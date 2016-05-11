@@ -10,7 +10,12 @@ namespace mk {
 namespace ndt {
 namespace messages {
 
-template <decltype(net::readn) readn = net::readn>
+/*
+    +----------+------------+-------------------+
+    | type (1) | length (2) | payload (0-65535) |
+    +----------+------------+-------------------+
+*/
+template <MK_MOCK_NAMESPACE(net, readn)>
 void read_ndt_impl(Var<Context> ctx,
                    Callback<Error, uint8_t, std::string> callback) {
 
@@ -44,7 +49,8 @@ void read_ndt_impl(Var<Context> ctx,
     });
 }
 
-template <decltype(read_ndt) read_ndt = read_ndt>
+// Like `read_ndt()` but decode the payload using JSON
+template <MK_MOCK(read_ndt)>
 void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
     read_ndt(ctx, [=](Error err, uint8_t type, std::string m) {
         json message;
@@ -62,7 +68,8 @@ void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
     });
 }
 
-template <decltype(read_json) read_json = read_json>
+// Like `read_json()` but return the `msg` field only
+template <MK_MOCK(read_json)>
 void read_impl(Var<Context> ctx,
                Callback<Error, uint8_t, std::string> callback) {
     read_json(ctx, [=](Error error, uint8_t type, json message) {
