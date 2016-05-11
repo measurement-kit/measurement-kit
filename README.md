@@ -85,7 +85,7 @@ Then proceed with the instruction to build and test MeasurementKit.
 To build, MeasurementKit needs:
 
 - a C90 compiler (such as gcc or clang)
-- a C++11 compiler (such as g++ or clang++)
+- a C++11 compiler (such as g++ >= 4.9 or clang++ >= 3.6)
 - autoconf, automake, and libtool
 - a Unix environment (such as Linux or MacOS)
 
