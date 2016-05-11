@@ -14,14 +14,14 @@
 
 namespace mk {
 namespace ndt {
-namespace tests {
+namespace test_s2c {
 
 using json = nlohmann::json;
 using namespace net;
 
 /// Testable implementation of s2c_coroutine()
 template <MK_MOCK_NAMESPACE(net, connect)>
-void s2c_coroutine_impl(std::string address, int port,
+void coroutine_impl(std::string address, int port,
                         Callback<Error, Continuation<Error, double>> cb, double timeout,
                         Var<Logger> logger, Var<Reactor> reactor) {
 
@@ -128,9 +128,9 @@ template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
           MK_MOCK_NAMESPACE(messages, read_json),
           MK_MOCK_NAMESPACE(messages, write),
-          MK_MOCK(s2c_coroutine),
+          MK_MOCK(test_s2c::coroutine),
           MK_MOCK(finalizing_test)>
-void run_test_s2c_impl(Var<Context> ctx, Callback<Error> callback) {
+void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
@@ -152,7 +152,7 @@ void run_test_s2c_impl(Var<Context> ctx, Callback<Error> callback) {
 
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start s2c coroutine ...");
-        s2c_coroutine(
+        coroutine(
             ctx->address, *port,
             [=](Error err, Continuation<Error, double> cc) {
                 ctx->logger->debug("ndt: start s2c coroutine ... %d", (int)err);
@@ -225,7 +225,7 @@ void run_test_s2c_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-} // namespace tests
+} // namespace test_s2c
 } // namespace ndt
 } // namespace mk
 #endif

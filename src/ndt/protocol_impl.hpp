@@ -173,7 +173,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
 
     if (*num == TEST_C2S) {
         ctx->logger->info("Run C2S test...");
-        tests::run_test_c2s(ctx, [=](Error err) {
+        test_c2s::run(ctx, [=](Error err) {
             ctx->logger->info("Run C2S test... complete (%d)", (int)err);
             if (err) {
                 callback(err);
@@ -186,7 +186,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
 
     if (*num == TEST_S2C) {
         ctx->logger->info("Run S2C test...");
-        tests::run_test_s2c(ctx, [=](Error err) {
+        test_s2c::run(ctx, [=](Error err) {
             ctx->logger->info("Run S2C test... complete (%d)", (int)err);
             if (err) {
                 callback(err);
@@ -199,7 +199,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
 
     if (*num == TEST_META) {
         ctx->logger->info("Run META test...");
-        tests::run_test_meta(ctx, [=](Error err) {
+        test_meta::run(ctx, [=](Error err) {
             ctx->logger->info("Run META test... complete (%d)", (int)err);
             if (err) {
                 callback(err);

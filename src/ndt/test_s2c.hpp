@@ -13,13 +13,13 @@
 
 namespace mk {
 namespace ndt {
-namespace tests {
+namespace test_s2c {
 
 using json = nlohmann::json;
 using namespace net;
 
 /// Coroutine that does the real s2c test
-void s2c_coroutine(std::string address, int port,
+void coroutine(std::string address, int port,
                    Callback<Error, Continuation<Error, double>> cb, double timeout = 10.0,
                    Var<Logger> logger = Logger::global(),
                    Var<Reactor> reactor = Reactor::global());
@@ -28,9 +28,9 @@ void s2c_coroutine(std::string address, int port,
 void finalizing_test(Var<Context> ctx, Callback<Error> callback);
 
 /// Run the S2C test
-void run_test_s2c(Var<Context> ctx, Callback<Error> callback);
+void run(Var<Context> ctx, Callback<Error> callback);
 
-} // namespace tests
+} // namespace test_s2c
 } // namespace ndt
 } // namespace mk
 #endif

@@ -6,12 +6,12 @@
 
 namespace mk {
 namespace ndt {
-namespace tests {
+namespace test_meta {
 
-void run_test_meta(Var<Context> ctx, Callback<Error> callback) {
-    run_test_meta_impl(ctx, callback);
+void run(Var<Context> ctx, Callback<Error> callback) {
+    run_impl(ctx, callback);
 }
 
-} // namespace tests
+} // namespace test_meta
 } // namespace mk
 } // namespace ndt

@@ -14,13 +14,13 @@
 
 namespace mk {
 namespace ndt {
-namespace tests {
+namespace test_c2s {
 
 using namespace net;
 
 /// Testable implementation of c2s_coroutine()
 template <MK_MOCK_NAMESPACE(net, connect)>
-void c2s_coroutine_impl(std::string address, int port, double runtime,
+void coroutine_impl(std::string address, int port, double runtime,
                         Callback<Error, Continuation<Error>> cb, double timeout,
                         Var<Logger> logger, Var<Reactor> reactor) {
 
@@ -99,8 +99,8 @@ void c2s_coroutine_impl(std::string address, int port, double runtime,
 
 /// Testable implementation of run_test_c2s()
 template <MK_MOCK_NAMESPACE(messages, read),
-          MK_MOCK(c2s_coroutine)>
-void run_test_c2s_impl(Var<Context> ctx, Callback<Error> callback) {
+          MK_MOCK(test_c2s::coroutine)>
+void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
@@ -122,7 +122,7 @@ void run_test_c2s_impl(Var<Context> ctx, Callback<Error> callback) {
 
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start c2s coroutine ...");
-        c2s_coroutine(
+        coroutine(
             ctx->address, *port, 10.0,
             [=](Error err, Continuation<Error> cc) {
                 ctx->logger->debug("ndt: start c2s coroutine ... %d", (int)err);
@@ -193,7 +193,7 @@ void run_test_c2s_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-} // namespace tests
+} // namespace test_c2s
 } // namespace ndt
 } // namespace mk
 #endif

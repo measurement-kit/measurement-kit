@@ -11,14 +11,14 @@
 
 namespace mk {
 namespace ndt {
-namespace tests {
+namespace test_meta {
 
 using namespace mk::net;
 
 /// Run the META test
-void run_test_meta(Var<Context> ctx, Callback<Error> callback);
+void run(Var<Context> ctx, Callback<Error> callback);
 
-} // namespace tests
+} // namespace test_meta
 } // namespace mk
 } // namespace ndt
 #endif

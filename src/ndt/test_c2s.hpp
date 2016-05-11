@@ -13,20 +13,20 @@
 
 namespace mk {
 namespace ndt {
-namespace tests {
+namespace test_c2s {
 
 using namespace net;
 
 /// Coroutine that does the real c2s test
-void c2s_coroutine(std::string address, int port, double runtime,
+void coroutine(std::string address, int port, double runtime,
                    Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
                    Var<Logger> logger = Logger::global(),
                    Var<Reactor> reactor = Reactor::global());
 
 /// Run the C2S test
-void run_test_c2s(Var<Context> ctx, Callback<Error> callback);
+void run(Var<Context> ctx, Callback<Error> callback);
 
-} // namespace tests
+} // namespace test_c2s
 } // namespace ndt
 } // namespace mk
 #endif

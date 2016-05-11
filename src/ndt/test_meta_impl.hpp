@@ -12,7 +12,7 @@
 
 namespace mk {
 namespace ndt {
-namespace tests {
+namespace test_meta {
 
 using namespace mk::net;
 
@@ -20,7 +20,7 @@ using namespace mk::net;
 template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
           MK_MOCK_NAMESPACE(messages, write)>
-void run_test_meta_impl(Var<Context> ctx, Callback<Error> callback) {
+void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends the PREPARE and START messages back to back
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
@@ -105,7 +105,7 @@ void run_test_meta_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-} // namespace tests
+} // namespace test_meta
 } // namespace mk
 } // namespace ndt
 #endif

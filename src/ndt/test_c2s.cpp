@@ -6,20 +6,20 @@
 
 namespace mk {
 namespace ndt {
-namespace tests {
+namespace test_c2s {
 
 using namespace net;
 
-void c2s_coroutine(std::string address, int port, double runtime,
+void coroutine(std::string address, int port, double runtime,
                    Callback<Error, Continuation<Error>> cb, double timeout,
                    Var<Logger> logger, Var<Reactor> reactor) {
-    c2s_coroutine_impl(address, port, runtime, cb, timeout, logger, reactor);
+    coroutine_impl(address, port, runtime, cb, timeout, logger, reactor);
 }
 
-void run_test_c2s(Var<Context> ctx, Callback<Error> callback) {
-    run_test_c2s_impl(ctx, callback);
+void run(Var<Context> ctx, Callback<Error> callback) {
+    run_impl(ctx, callback);
 }
 
-} // namespace tests
+} // namespace test_c2s
 } // namespace ndt
 } // namespace mk
