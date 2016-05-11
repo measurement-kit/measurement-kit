@@ -224,6 +224,7 @@ AC_DEFUN([MK_AM_CXXFLAGS_ADD_WARNINGS], [
 
 AC_DEFUN([MK_AM_PRINT_SUMMARY], [
   echo "==== configured variables ==="
+  echo "CPP      : $CPP"
   echo "CC       : $CC"
   echo "CXX      : $CXX"
   echo "CFLAGS   : $CFLAGS"
