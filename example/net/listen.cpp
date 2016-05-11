@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
             port = lexical_cast<int>(optarg);
             break;
         case 'v':
-            set_verbose(1);
+            increase_verbosity();
             break;
         default:
             std::cout << kv_usage;

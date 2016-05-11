@@ -17,12 +17,12 @@ namespace mk {
 class NetTest : public NonCopyable, public NonMovable {
   public:
     /// Set log function used by this test.
-    virtual void on_log(std::function<void(const char *)> func) {
+    virtual void on_log(Delegate<void(uint32_t, const char *)> func) {
         logger->on_log(func);
     }
 
     /// Make this test log verbose.
-    virtual void set_verbose(int verbose) { logger->set_verbose(verbose); }
+    virtual void set_verbosity(uint32_t level) { logger->set_verbosity(level); }
 
     /// Start iterating over the input.
     /// \param func Callback called when we are done.

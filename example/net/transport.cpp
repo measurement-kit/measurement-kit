@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
             settings["net/ssl"] = true;
             break;
         case 'v':
-            set_verbose(1);
+            increase_verbosity();
             break;
         default:
             std::cout << kv_usage;

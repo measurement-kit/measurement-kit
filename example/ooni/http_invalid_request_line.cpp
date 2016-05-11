@@ -13,7 +13,7 @@
 
 int main(int argc, char **argv) {
     std::string backend = "http://213.138.109.232/";
-    bool verbose = false;
+    uint32_t verbosity = 0;
     std::string name = argv[0];
     char ch;
 
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
             backend = optarg;
             break;
         case 'v':
-            verbose = true;
+            ++verbosity;
             break;
         default:
             std::cout << "Usage: " << name << " [-v] [-b backend]"
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 
     mk::ooni::HttpInvalidRequestLineTest()
         .set_backend(backend)
-        .set_verbose(verbose)
-        .on_log([](const char *s) { std::cout << s << "\n"; })
+        .set_verbosity(verbosity)
+        .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
 }

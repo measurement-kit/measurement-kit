@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
             settings["net/socks5_proxy"] = "127.0.0.1:9050";
             break;
         case 'v':
-            set_verbose(1);
+            increase_verbosity();
             break;
         default:
             std::cout << kv_usage;
