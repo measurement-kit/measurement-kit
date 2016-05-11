@@ -68,7 +68,7 @@ TEST_CASE("Make sure that it can pass options to the other levels") {
         .set_options("dns/nameserver", "8.8.8.1")
         .set_options("dns/timeout", "0.1")
         .set_options("dns/attempts", "1")
-        .on_log([=](const char *s) { logs->push_back(s); })
+        .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs) std::cout << s << "\n";
 }
@@ -77,7 +77,7 @@ TEST_CASE("Make sure that the test can deal with an invalid backend") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
     ooni::HttpInvalidRequestLineTest()
         .set_backend("nexacenter.org")
-        .on_log([=](const char *s) { logs->push_back(s); })
+        .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs) std::cout << s << "\n";
 }
