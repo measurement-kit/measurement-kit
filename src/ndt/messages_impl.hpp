@@ -4,16 +4,11 @@
 #ifndef SRC_NDT_MESSAGES_IMPL_HPP
 #define SRC_NDT_MESSAGES_IMPL_HPP
 
-#include "src/ndt/messages.hpp"
-#include "src/ext/json/src/json.hpp"
-#include <measurement_kit/net.hpp>
+#include "src/ndt/internal.hpp"
 
 namespace mk {
 namespace ndt {
 namespace messages {
-
-using namespace mk::net;
-using json = nlohmann::json;
 
 template <decltype(net::readn) readn = net::readn>
 void read_ndt_impl(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback) {

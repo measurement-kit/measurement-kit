@@ -3,14 +3,10 @@
 // information on the copying conditions.
 
 #include "src/ndt/messages_impl.hpp"
-#include "src/ext/json/src/json.hpp"
 
 namespace mk {
 namespace ndt {
 namespace messages {
-
-using namespace net;
-using json = nlohmann::json;
 
 void read_ndt(Var<Context> ctx, mk::Callback<Error, uint8_t, std::string> callback) {
     read_ndt_impl(ctx, callback);

@@ -5,19 +5,11 @@
 #define SRC_NDT_PROTOCOL_IMPL_HPP
 
 #include "src/common/utils.hpp"
-#include "src/ndt/context.hpp"
-#include "src/ndt/messages.hpp"
-#include "src/ndt/protocol.hpp"
-#include "src/ndt/test_c2s.hpp"
-#include "src/ndt/test_s2c.hpp"
-#include "src/ndt/test_meta.hpp"
-#include <measurement_kit/ndt.hpp>
+#include "src/ndt/internal.hpp"
 
 namespace mk {
 namespace ndt {
 namespace protocol {
-
-using namespace net;
 
 template <MK_MOCK_NAMESPACE(net, connect)>
 void connect_impl(Var<Context> ctx, Callback<Error> callback) {

@@ -5,19 +5,11 @@
 #define SRC_NDT_TEST_S2C_IMPL_HPP
 
 #include "src/common/utils.hpp"
-#include "src/ndt/context.hpp"
-#include "src/ndt/definitions.hpp"
-#include "src/ndt/messages.hpp"
-#include "src/ndt/test_s2c.hpp"
-#include <measurement_kit/ndt.hpp>
-#include <measurement_kit/net.hpp>
+#include "src/ndt/internal.hpp"
 
 namespace mk {
 namespace ndt {
 namespace test_s2c {
-
-using json = nlohmann::json;
-using namespace net;
 
 template <MK_MOCK_NAMESPACE(net, connect)>
 void coroutine_impl(std::string address, int port,

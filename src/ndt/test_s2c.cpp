@@ -8,8 +8,6 @@ namespace mk {
 namespace ndt {
 namespace test_s2c {
 
-using namespace net;
-
 void coroutine(std::string address, int port,
                    Callback<Error, Continuation<Error, double>> cb, double timeout,
                    Var<Logger> logger, Var<Reactor> reactor) {

@@ -3,9 +3,6 @@
 // information on the copying conditions.
 
 #include "src/ndt/client_impl.hpp"
-#include "src/ndt/protocol.hpp"
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/ndt.hpp>
 
 namespace mk {
 namespace ndt {

@@ -4,9 +4,7 @@
 #ifndef SRC_NDT_CLIENT_IMPL_HPP
 #define SRC_NDT_CLIENT_IMPL_HPP
 
-#include "src/ndt/context.hpp"
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/ndt.hpp>
+#include "src/ndt/internal.hpp"
 
 namespace mk {
 namespace ndt {

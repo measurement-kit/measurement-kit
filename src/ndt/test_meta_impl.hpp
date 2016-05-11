@@ -4,17 +4,11 @@
 #ifndef SRC_NDT_TEST_META_IMPL_HPP
 #define SRC_NDT_TEST_META_IMPL_HPP
 
-#include "src/ext/json/src/json.hpp"
-#include "src/ndt/context.hpp"
-#include "src/ndt/messages.hpp"
-#include "src/ndt/test_meta.hpp"
-#include <measurement_kit/ndt.hpp>
+#include "src/ndt/internal.hpp"
 
 namespace mk {
 namespace ndt {
 namespace test_meta {
-
-using namespace mk::net;
 
 template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
