@@ -3,6 +3,9 @@ set -e
 if [ -f Makefile ]; then
     make distclean
 fi
+export CPP=cpp-5
+export CC=gcc-5
+export CXX=g++-5
 ./autogen.sh
 ./configure
 make V=0
