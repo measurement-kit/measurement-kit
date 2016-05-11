@@ -20,6 +20,7 @@ void connect_impl(Var<Context> ctx, Callback<Error> callback) {
                     callback(err);
                     return;
                 }
+                // FIXME: make sure timeout mechanism is sane
                 txp->set_timeout(60.0);
                 ctx->txp = txp;
                 ctx->logger->info("Connected to %s:%d", ctx->address.c_str(),
