@@ -62,6 +62,7 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         std::string s = ctx->buff->readn(KICKOFF_MESSAGE_SIZE);
         if (s != KICKOFF_MESSAGE) {
+            // TODO: wouldn't it better to just warn?
             callback(GenericError());
             return;
         }
