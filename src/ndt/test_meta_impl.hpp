@@ -80,7 +80,8 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                 // Now we read the FINALIZE message
                 ctx->logger->debug("ndt: recv TEST_FINALIZE ...");
                 read(ctx, [=](Error err, uint8_t type, std::string) {
-                    ctx->logger->debug("ndt: recv TEST_FINALIZE ... %d", (int)err);
+                    ctx->logger->debug("ndt: recv TEST_FINALIZE ... %d",
+                                       (int)err);
                     if (err) {
                         callback(err);
                         return;

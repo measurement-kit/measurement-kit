@@ -13,8 +13,8 @@ namespace test_c2s {
 
 template <MK_MOCK_NAMESPACE(net, connect)>
 void coroutine_impl(std::string address, int port, double runtime,
-                        Callback<Error, Continuation<Error>> cb, double timeout,
-                        Var<Logger> logger, Var<Reactor> reactor) {
+                    Callback<Error, Continuation<Error>> cb, double timeout,
+                    Var<Logger> logger, Var<Reactor> reactor) {
 
     // Performance note: This implementation does some string copies
     // when sending but in localhost testing this does not seem to be
@@ -89,8 +89,7 @@ void coroutine_impl(std::string address, int port, double runtime,
             {}, logger, reactor);
 }
 
-template <MK_MOCK_NAMESPACE(messages, read),
-          MK_MOCK(test_c2s::coroutine)>
+template <MK_MOCK_NAMESPACE(messages, read), MK_MOCK(test_c2s::coroutine)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
@@ -147,7 +146,8 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                         // The server sends us MSG containing throughput
                         ctx->logger->debug("ndt: recv TEST_MSG ...");
                         read(ctx, [=](Error err, uint8_t type, std::string s) {
-                            ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
+                            ctx->logger->debug("ndt: recv TEST_MSG ... %d",
+                                               (int)err);
                             if (err) {
                                 callback(err);
                                 return;
@@ -160,22 +160,22 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                             // The server sends us the FINALIZE message
                             ctx->logger->debug("ndt: recv TEST_FINALIZE ...");
-                            read(
-                                ctx, [=](Error err, uint8_t type, std::string) {
-                                    ctx->logger->debug(
-                                        "ndt: recv TEST_FINALIZE ... %d", (int)err);
-                                    if (err) {
-                                        callback(err);
-                                        return;
-                                    }
-                                    if (type != TEST_FINALIZE) {
-                                        callback(GenericError());
-                                        return;
-                                    }
+                            read(ctx, [=](Error err, uint8_t type,
+                                          std::string) {
+                                ctx->logger->debug(
+                                    "ndt: recv TEST_FINALIZE ... %d", (int)err);
+                                if (err) {
+                                    callback(err);
+                                    return;
+                                }
+                                if (type != TEST_FINALIZE) {
+                                    callback(GenericError());
+                                    return;
+                                }
 
-                                    // The C2S phase is now finished
-                                    callback(NoError());
-                                });
+                                // The C2S phase is now finished
+                                callback(NoError());
+                            });
                         });
                     });
                 });

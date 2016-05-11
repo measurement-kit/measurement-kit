@@ -13,8 +13,8 @@ namespace test_s2c {
 
 template <MK_MOCK_NAMESPACE(net, connect)>
 void coroutine_impl(std::string address, int port,
-                        Callback<Error, Continuation<Error, double>> cb, double timeout,
-                        Var<Logger> logger, Var<Reactor> reactor) {
+                    Callback<Error, Continuation<Error, double>> cb,
+                    double timeout, Var<Logger> logger, Var<Reactor> reactor) {
 
     // The coroutine connects to the remote endpoint and then pauses
     logger->debug("ndt: connect ...");
@@ -61,8 +61,7 @@ void coroutine_impl(std::string address, int port,
                         logger->info("Ending download (%d)", (int)err);
                         double elapsed_time = time_now() - *begin;
                         logger->debug("ndt: elapsed %lf", elapsed_time);
-                        logger->debug("ndt: total %lu",
-                                      (unsigned long)*total);
+                        logger->debug("ndt: total %lu", (unsigned long)*total);
                         double speed = 0.0;
                         if (err == EofError()) {
                             if (elapsed_time > 0.0) {
@@ -116,8 +115,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
 template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
           MK_MOCK_NAMESPACE(messages, read_json),
-          MK_MOCK_NAMESPACE(messages, write),
-          MK_MOCK(test_s2c::coroutine),
+          MK_MOCK_NAMESPACE(messages, write), MK_MOCK(test_s2c::coroutine),
           MK_MOCK(finalizing_test)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
@@ -175,7 +173,8 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                         // The server sends us MSG containing throughput
                         ctx->logger->debug("ndt: recv TEST_MSG ...");
                         read_json(ctx, [=](Error err, uint8_t type, json m) {
-                            ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
+                            ctx->logger->debug("ndt: recv TEST_MSG ... %d",
+                                               (int)err);
                             if (err) {
                                 callback(err);
                                 return;
@@ -185,7 +184,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                                 return;
                             }
                             ctx->logger->debug("ndt: speed %s",
-                                    m.dump().c_str());
+                                               m.dump().c_str());
 
                             // We send our measured throughput to the client
                             ctx->logger->debug("ndt: send TEST_MSG ...");
@@ -197,7 +196,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                             }
                             write(ctx, *out, [=](Error err) {
                                 ctx->logger->debug("ndt: send TEST_MSG ... %d",
-                                                      (int)err);
+                                                   (int)err);
                                 if (err) {
                                     callback(err);
                                     return;

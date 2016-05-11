@@ -9,8 +9,8 @@ namespace ndt {
 namespace test_c2s {
 
 void coroutine(std::string address, int port, double runtime,
-                   Callback<Error, Continuation<Error>> cb, double timeout,
-                   Var<Logger> logger, Var<Reactor> reactor) {
+               Callback<Error, Continuation<Error>> cb, double timeout,
+               Var<Logger> logger, Var<Reactor> reactor) {
     coroutine_impl(address, port, runtime, cb, timeout, logger, reactor);
 }
 

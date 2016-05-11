@@ -15,12 +15,12 @@
 #include <string>
 
 /*
- ____        __ _       _ _   _                 
-|  _ \  ___ / _(_)_ __ (_) |_(_) ___  _ __  ___ 
+ ____        __ _       _ _   _
+|  _ \  ___ / _(_)_ __ (_) |_(_) ___  _ __  ___
 | | | |/ _ \ |_| | '_ \| | __| |/ _ \| '_ \/ __|
 | |_| |  __/  _| | | | | | |_| | (_) | | | \__ \
 |____/ \___|_| |_|_| |_|_|\__|_|\___/|_| |_|___/
-                                                
+
     Definitions used by the NDT test.
 */
 
@@ -48,7 +48,7 @@
 #define TEST_META 1 << 5
 
 #define KICKOFF_MESSAGE "123456 654321"
-#define KICKOFF_MESSAGE_SIZE (sizeof (KICKOFF_MESSAGE) -1)
+#define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
 
 #define MSG_NDT_VERSION "v3.7.0" ///< Version of NDT that we declare to be
 
@@ -59,10 +59,10 @@ using json = nlohmann::json;
 using namespace mk::net;
 
 /*
-  ____            _            _   
- / ___|___  _ __ | |_ _____  _| |_ 
+  ____            _            _
+ / ___|___  _ __ | |_ _____  _| |_
 | |   / _ \| '_ \| __/ _ \ \/ / __|
-| |__| (_) | | | | ||  __/>  <| |_ 
+| |__| (_) | | | | ||  __/>  <| |_
  \____\___/|_| |_|\__\___/_/\_\\__|
 
     Data structure representing a NDT test.
@@ -83,12 +83,12 @@ struct Context {
 };
 
 /*
- __  __                                     
-|  \/  | ___  ___ ___  __ _  __ _  ___  ___ 
+ __  __
+|  \/  | ___  ___ ___  __ _  __ _  ___  ___
 | |\/| |/ _ \/ __/ __|/ _` |/ _` |/ _ \/ __|
 | |  | |  __/\__ \__ \ (_| | (_| |  __/\__ \
 |_|  |_|\___||___/___/\__,_|\__, |\___||___/
-                            |___/           
+                            |___/
 
     Sending and receiving NDT protocol messages.
 */
@@ -107,12 +107,12 @@ void write_noasync(Var<Context>, Buffer);
 } // namespace messages
 
 /*
- ____            _                  _ 
+ ____            _                  _
 |  _ \ _ __ ___ | |_ ___   ___ ___ | |
 | |_) | '__/ _ \| __/ _ \ / __/ _ \| |
 |  __/| | | (_) | || (_) | (_| (_) | |
 |_|   |_|  \___/ \__\___/ \___\___/|_|
-                                      
+
     Implementation of NDT's control protocol.
 */
 namespace protocol {
@@ -131,32 +131,32 @@ void disconnect_and_callback(Var<Context> ctx, Error err);
 } // namespace protocol
 
 /*
- _____         _      ____ ____  ____  
-|_   _|__  ___| |_   / ___|___ \/ ___| 
+ _____         _      ____ ____  ____
+|_   _|__  ___| |_   / ___|___ \/ ___|
   | |/ _ \/ __| __| | |     __) \___ \
   | |  __/\__ \ |_  | |___ / __/ ___) |
-  |_|\___||___/\__|  \____|_____|____/ 
-                                       
+  |_|\___||___/\__|  \____|_____|____/
+
     Client to server test: upload data and measure speed.
 */
 namespace test_c2s {
 
 void coroutine(std::string address, int port, double runtime,
-                   Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
-                   Var<Logger> logger = Logger::global(),
-                   Var<Reactor> reactor = Reactor::global());
+               Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
+               Var<Logger> logger = Logger::global(),
+               Var<Reactor> reactor = Reactor::global());
 
 void run(Var<Context> ctx, Callback<Error> callback);
 
 } // namespace test_c2s
 
 /*
- _____         _     __  __ _____ _____  _    
+ _____         _     __  __ _____ _____  _
 |_   _|__  ___| |_  |  \/  | ____|_   _|/ \
   | |/ _ \/ __| __| | |\/| |  _|   | | / _ \
   | |  __/\__ \ |_  | |  | | |___  | |/ ___ \
   |_|\___||___/\__| |_|  |_|_____| |_/_/   \_\
-                                              
+
 
     META test: send metadata describing the client to the server
 */
@@ -167,20 +167,20 @@ void run(Var<Context> ctx, Callback<Error> callback);
 } // namespace test_meta
 
 /*
- _____         _     ____ ____   ____ 
+ _____         _     ____ ____   ____
 |_   _|__  ___| |_  / ___|___ \ / ___|
-  | |/ _ \/ __| __| \___ \ __) | |    
-  | |  __/\__ \ |_   ___) / __/| |___ 
+  | |/ _ \/ __| __| \___ \ __) | |
+  | |  __/\__ \ |_   ___) / __/| |___
   |_|\___||___/\__| |____/_____|\____|
-                                      
+
     Test sever to client: download data and measure speed
 */
 namespace test_s2c {
 
 void coroutine(std::string address, int port,
-                   Callback<Error, Continuation<Error, double>> cb, double timeout = 10.0,
-                   Var<Logger> logger = Logger::global(),
-                   Var<Reactor> reactor = Reactor::global());
+               Callback<Error, Continuation<Error, double>> cb,
+               double timeout = 10.0, Var<Logger> logger = Logger::global(),
+               Var<Reactor> reactor = Reactor::global());
 
 void finalizing_test(Var<Context> ctx, Callback<Error> callback);
 

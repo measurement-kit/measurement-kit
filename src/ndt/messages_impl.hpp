@@ -11,7 +11,8 @@ namespace ndt {
 namespace messages {
 
 template <decltype(net::readn) readn = net::readn>
-void read_ndt_impl(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback) {
+void read_ndt_impl(Var<Context> ctx,
+                   Callback<Error, uint8_t, std::string> callback) {
 
     // Receive message type (1 byte) and length (2 bytes)
     readn(ctx->txp, ctx->buff, 3, [=](Error err) {
@@ -61,8 +62,9 @@ void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
     });
 }
 
-template<decltype(read_json) read_json = read_json>
-void read_impl(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback) {
+template <decltype(read_json) read_json = read_json>
+void read_impl(Var<Context> ctx,
+               Callback<Error, uint8_t, std::string> callback) {
     read_json(ctx, [=](Error error, uint8_t type, json message) {
         if (error) {
             callback(error, 0, "");

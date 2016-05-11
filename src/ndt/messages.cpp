@@ -8,7 +8,8 @@ namespace mk {
 namespace ndt {
 namespace messages {
 
-void read_ndt(Var<Context> ctx, mk::Callback<Error, uint8_t, std::string> callback) {
+void read_ndt(Var<Context> ctx,
+              mk::Callback<Error, uint8_t, std::string> callback) {
     read_ndt_impl(ctx, callback);
 }
 
@@ -34,16 +35,17 @@ static ErrorOr<Buffer> format_any(unsigned char type, json message) {
 }
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests) {
-    return format_any(MSG_EXTENDED_LOGIN, json{
-        {"msg", MSG_NDT_VERSION},
-        {"tests", lexical_cast<std::string>((int)tests)},
-    });
+    return format_any(MSG_EXTENDED_LOGIN,
+                      json{
+                          {"msg", MSG_NDT_VERSION},
+                          {"tests", lexical_cast<std::string>((int)tests)},
+                      });
 }
 
 ErrorOr<Buffer> format_test_msg(std::string s) {
     return format_any(TEST_MSG, json{
-        {"msg", s},
-    });
+                                    {"msg", s},
+                                });
 }
 
 void write(Var<Context> ctx, Buffer buff, Callback<Error> cb) {
