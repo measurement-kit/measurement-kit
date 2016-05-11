@@ -55,7 +55,7 @@ TEST_CASE("http::request() works using HTTPS") {
     if (CheckConnectivity::is_down()) {
         return;
     }
-    set_verbose(1);
+    set_verbosity(MK_LOG_DEBUG);
     loop_with_initial_event([]() {
         request(
             {

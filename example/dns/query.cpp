@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
             query_type = optarg;
             break;
         case 'v':
-            set_verbose(1);
+            increase_verbosity();
             break;
         default:
             std::cout << kv_usage;
