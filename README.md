@@ -182,13 +182,13 @@ it in your project adding this line in your Podfile:
 You can use a specific branch, e.g.:
 
     pod 'measurement_kit',
-      :git => 'https://github.com/measurement-kit/measurement-kit.git'
+      :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :branch => 'branch-name'
 
 Similarly, you can use a specific tag, e.g.:
 
     pod 'measurement_kit', 
-      :git => 'https://github.com/measurement-kit/measurement-kit.git'
+      :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :tag => 'v0.x.y'
 
 Then type `pod install` and open `.xcworkspace` file (beware not to open the
