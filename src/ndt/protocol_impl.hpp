@@ -208,7 +208,11 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         if (type == MSG_RESULTS) {
-            ctx->logger->info("%s", s.c_str());
+            for (auto x : split(s, "\n")) {
+                if (x != "") {
+                    ctx->logger->info("%s", x.c_str());
+                }
+            }
             // XXX: here we have the potential to loop forever...
             recv_results_and_logout_impl<read>(ctx, callback);
             return;
