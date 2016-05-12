@@ -18,9 +18,25 @@ using namespace mk::http;
 
 void loop_request(int, Var<Transport>, int);
 
-int main() {
+static const char *kv_usage =
+    "usage: ./example/http/client_dash [-a address]\n";
+
+int main(int argc, char **argv) {
     Settings settings;
     settings["url"] = "http://127.0.0.1";
+    char ch;
+
+    while ((ch = getopt(argc, argv, "a:")) != -1) {
+        switch (ch) {
+        case 'a':
+            settings["url"] = optarg;
+            std::cout << optarg;
+            break;
+        default:
+            std::cout << kv_usage;
+            exit(1);
+        }
+    }
 
     std::cout << "Test Started\n";
 
