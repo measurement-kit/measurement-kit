@@ -13,9 +13,8 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 #include <event2/bufferevent.h>
 #include <iostream>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/poller.hpp>
-#include <measurement_kit/net/error.hpp>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/net.hpp>
 using namespace mk;
 using namespace mk::net;
 
@@ -175,8 +174,7 @@ TEST_CASE("connect_first_of works with empty vector") {
                     REQUIRE(errors.size() == 0);
                     REQUIRE(bev == nullptr);
                     break_loop();
-                },
-                3.14);
+                }, {{"net/timeout", 3.14}});
     });
 }
 
@@ -198,7 +196,7 @@ TEST_CASE("connect_first_of works when all connect fail") {
                     REQUIRE(bev == nullptr);
                     break_loop();
                 },
-                0.00001);
+                {{"net/timeout", 0.00001}});
     });
 }
 
@@ -221,7 +219,7 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
                     ::bufferevent_free(bev);
                     break_loop();
                 },
-                3.14);
+                {{"net/timeout", 3.14}});
     });
 }
 
@@ -313,5 +311,18 @@ TEST_CASE("connect() fails when port is closed or filtered") {
             REQUIRE(r->connected_bev == nullptr);
             break_loop();
         });
+    });
+}
+
+TEST_CASE("connect() fails when setting an invalid dns") {
+    if (CheckConnectivity::is_down()) {
+        return;
+    }
+    loop_with_initial_event([]() {
+        connect_logic("www.google.com", 80, [](Error e, Var<ConnectResult> r) {
+            REQUIRE(e);
+            REQUIRE(r->connected_bev == nullptr);
+            break_loop();
+        }, {{"dns/nameserver", "8.8.8.1"}, {"dns/timeout",0.001}, {"dns/attempts",1}});
     });
 }

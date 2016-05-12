@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
             method = optarg;
             break;
         case 'v':
-            set_verbose(1);
+            increase_verbosity();
             break;
         default:
             std::cout << kv_usage;
@@ -49,16 +49,15 @@ int main(int argc, char **argv) {
     std::string url = argv[0];
 
     http::Headers headers;
-    Poller *poller = Poller::global();
-    poller->call_soon([&body, &headers, &method, &poller, &url]() {
+    loop_with_initial_event([&body, &headers, &method, &url]() {
         http::request(
             {
-                {"method", method}, {"url", url},
+                {"http/method", method}, {"http/url", url},
             },
-            [&poller](Error error, http::Response response) {
+            [](Error error, http::Response response) {
                 if (error) {
                     std::cout << "Error: " << (int)error << "\n";
-                    poller->break_loop();
+                    break_loop();
                     return;
                 }
                 std::cout << response.response_line << "\n";
@@ -66,9 +65,8 @@ int main(int argc, char **argv) {
                     std::cout << pair.first << ": " << pair.second << "\n";
                 }
                 std::cout << "\n" << response.body << "\n";
-                poller->break_loop();
+                break_loop();
             },
             headers, body);
     });
-    poller->loop();
 }

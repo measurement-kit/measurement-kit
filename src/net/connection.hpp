@@ -21,9 +21,9 @@ namespace net {
 class Connection : public Emitter, public NonMovable, public NonCopyable {
   public:
     static Var<Transport> make(bufferevent *bev,
-                               Poller *poller = Poller::global(),
-                               Logger *logger = Logger::global()) {
-        Connection *conn = new Connection(bev, poller, logger);
+                               Var<Reactor> reactor = Reactor::global(),
+                               Var<Logger> logger = Logger::global()) {
+        Connection *conn = new Connection(bev, reactor, logger);
         conn->self = Var<Transport>(conn);
         return conn->self;
     }
@@ -67,12 +67,12 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     void handle_write_();
 
   private:
-    Connection(bufferevent *bev, Poller * = Poller::global(),
-               Logger * = Logger::global());
+    Connection(bufferevent *bev, Var<Reactor> = Reactor::global(),
+               Var<Logger> = Logger::global());
 
     bufferevent *bev = nullptr;
     Var<Transport> self;
-    Poller *poller = Poller::global();
+    Var<Reactor> reactor = Reactor::global();
     bool isclosed = false;
     std::function<void()> close_cb;
 };

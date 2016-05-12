@@ -12,9 +12,9 @@ echo "Building for this architectures: $ARCHS"
 
 for ARCH in ${ARCHS}; do
     if [ "${ARCH}" == "i386" ] || [ "${ARCH}" == "x86_64" ]; then
-        PLATFORM="iPhoneSimulator"
+        PLATFORM="iphonesimulator"
     else
-        PLATFORM="iPhoneOS"
+        PLATFORM="iphoneos"
     fi
     $ROOTDIR/build_arch.sh ${PLATFORM} ${ARCH}
 done

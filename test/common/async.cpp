@@ -19,7 +19,7 @@ using namespace mk;
 static void run_http_invalid_request_line(Async &async) {
     async.run_test(ooni::HttpInvalidRequestLineTest()
                        .set_backend("http://nexa.polito.it/")
-                       .on_log([](const char *s) {
+                       .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #1: %s\n", s);
                        })
                        .create_test_(),
@@ -32,7 +32,7 @@ static void run_dns_injection(Async &async) {
     async.run_test(ooni::DnsInjectionTest()
                        .set_backend("8.8.8.8:53")
                        .set_input_file_path("test/fixtures/hosts.txt")
-                       .on_log([](const char *s) {
+                       .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #3: %s\n", s);
                        })
                        .create_test_(),
@@ -45,7 +45,7 @@ static void run_tcp_connect(Async &async) {
     async.run_test(ooni::TcpConnectTest()
                        .set_port("80")
                        .set_input_file_path("test/fixtures/hosts.txt")
-                       .on_log([](const char *s) {
+                       .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #4: %s\n", s);
                        })
                        .create_test_(),
@@ -74,3 +74,20 @@ TEST_CASE("The async engine works as expected") {
         }
     }
 }
+
+TEST_CASE("The destructor work as expected if the thread was already joined") {
+    Async async;
+    run_dns_injection(async);
+    run_dns_injection(async);
+    while (!async.empty()) {
+        sleep(1);
+    }
+    async.break_loop();
+    async.join();
+}
+
+TEST_CASE("Nothing strange happens if no thread is bound to Async") {
+    Async async;
+    REQUIRE(async.empty()); // Mainly to avoid unused variable warning
+}
+

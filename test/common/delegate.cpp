@@ -15,28 +15,13 @@ class Helper {
     void emit() { func_(); }
 
   private:
-    SafelyOverridableFunc<void()> func_;
+    Delegate<void()> func_;
 };
 
-TEST_CASE("SafelyOverridableFunc works as expected") {
+TEST_CASE("Delegate works as expected") {
     Helper helper;
     helper.on([&helper]() {
         helper.on([&helper]() {});
     });
     helper.emit();
-}
-
-TEST_CASE("AutoResetFunc works as expected") {
-    AutoResetFunc<void()> func = []() {};
-    func();
-    REQUIRE_THROWS(func());
-}
-
-TEST_CASE("AutoResetFuncList works as expected") {
-    int count = 0;
-    AutoResetFuncList<void()> list;
-    list += [&count]() { count += 10; };
-    list += [&count]() { count += 1; };
-    list();
-    REQUIRE(count == 11);
 }

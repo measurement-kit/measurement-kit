@@ -21,9 +21,9 @@ TEST_CASE("http::request() works as expected") {
 
     request(
         {
-         {"url", "http://www.google.com/robots.txt"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.1"},
+         {"http/url", "http://www.google.com/robots.txt"},
+         {"http/method", "GET"},
+         {"http/http_version", "HTTP/1.1"},
          {"Connection", "close"},
         },
         {
@@ -40,9 +40,9 @@ TEST_CASE("http::request() works as expected") {
 
     request(
         {
-         {"url", "http://www.neubot.org/robots.txt"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.1"},
+         {"http/url", "http://www.neubot.org/robots.txt"},
+         {"http/method", "GET"},
+         {"http/http_version", "HTTP/1.1"},
         },
         {
          {"Accept", "*/*"},
@@ -57,9 +57,9 @@ TEST_CASE("http::request() works as expected") {
 
     request(
         {
-         {"url", "http://www.torproject.org/robots.txt"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.1"},
+         {"http/url", "http://www.torproject.org/robots.txt"},
+         {"http/method", "GET"},
+         {"http/http_version", "HTTP/1.1"},
         },
         {
          {"Accept", "*/*"},
@@ -80,11 +80,11 @@ TEST_CASE("http::request() works as expected over Tor") {
 
     request(
         {
-         {"url", "http://www.google.com/robots.txt"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.1"},
+         {"http/url", "http://www.google.com/robots.txt"},
+         {"http/method", "GET"},
+         {"http/http_version", "HTTP/1.1"},
          {"Connection", "close"},
-         {"socks5_proxy", "127.0.0.1:9050"},
+         {"net/socks5_proxy", "127.0.0.1:9050"},
         },
         {
          {"Accept", "*/*"},
@@ -101,10 +101,10 @@ TEST_CASE("http::request() works as expected over Tor") {
 
     request(
         {
-         {"url", "http://www.neubot.org/robots.txt"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.1"},
-         {"socks5_proxy", "127.0.0.1:9050"},
+         {"http/url", "http://www.neubot.org/robots.txt"},
+         {"http/method", "GET"},
+         {"http/http_version", "HTTP/1.1"},
+         {"net/socks5_proxy", "127.0.0.1:9050"},
         },
         {
          {"Accept", "*/*"},
@@ -120,10 +120,10 @@ TEST_CASE("http::request() works as expected over Tor") {
 
     request(
         {
-         {"url", "http://www.torproject.org/robots.txt"},
-         {"method", "GET"},
-         {"http_version", "HTTP/1.1"},
-         {"socks5_proxy", "127.0.0.1:9050"},
+         {"http/url", "http://www.torproject.org/robots.txt"},
+         {"http/method", "GET"},
+         {"http/http_version", "HTTP/1.1"},
+         {"net/socks5_proxy", "127.0.0.1:9050"},
         },
         {
          {"Accept", "*/*"},
@@ -143,9 +143,9 @@ TEST_CASE("http::request() works as expected over Tor") {
 TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
     request(
         {
-         {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
-         {"method", "POST"},
-         {"http_version", "HTTP/1.1"},
+         {"http/url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
+         {"http/method", "POST"},
+         {"http/http_version", "HTTP/1.1"},
         },
         {
          {"Accept", "*/*"},
@@ -171,10 +171,10 @@ TEST_CASE("Make sure that settings are not modified") {
     // the current wave of MK cleanups.
 
     Settings settings{
-        {"url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
-        {"method", "POST"},
-        {"http_version", "HTTP/1.1"},
-        {"tor_socks_port", 9999},
+        {"http/url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
+        {"http/method", "POST"},
+        {"http/http_version", "HTTP/1.1"},
+        {"net/tor_socks_port", 9999},
     };
 
     request(settings,
@@ -195,9 +195,9 @@ TEST_CASE("Make sure that settings are not modified") {
 
     // Make sure that no changes were made
     for (auto &iter : settings) {
-        auto ok = iter.first == "url" || iter.first == "method" ||
-                  iter.first == "http_version" ||
-                  iter.first == "tor_socks_port";
+        auto ok = iter.first == "http/url" || iter.first == "http/method" ||
+                  iter.first == "http/http_version" ||
+                  iter.first == "net/tor_socks_port";
         REQUIRE(ok);
     }
 }

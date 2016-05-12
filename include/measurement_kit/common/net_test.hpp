@@ -5,7 +5,8 @@
 #ifndef MEASUREMENT_KIT_COMMON_NET_TEST_HPP
 #define MEASUREMENT_KIT_COMMON_NET_TEST_HPP
 
-#include <measurement_kit/common/constraints.hpp>
+#include <measurement_kit/common/non_copyable.hpp>
+#include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/logger.hpp>
 
 #include <functional>
@@ -16,12 +17,12 @@ namespace mk {
 class NetTest : public NonCopyable, public NonMovable {
   public:
     /// Set log function used by this test.
-    virtual void on_log(std::function<void(const char *)> func) {
-        logger.on_log(func);
+    virtual void on_log(Delegate<void(uint32_t, const char *)> func) {
+        logger->on_log(func);
     }
 
     /// Make this test log verbose.
-    virtual void set_verbose(int verbose) { logger.set_verbose(verbose); }
+    virtual void set_verbosity(uint32_t level) { logger->set_verbosity(level); }
 
     /// Start iterating over the input.
     /// \param func Callback called when we are done.
@@ -38,7 +39,7 @@ class NetTest : public NonCopyable, public NonMovable {
     virtual ~NetTest();
 
   protected:
-    Logger logger;
+    Var<Logger> logger = Logger::make();
 };
 
 } // namespace mk

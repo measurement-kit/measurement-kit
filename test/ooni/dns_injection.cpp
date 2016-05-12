@@ -14,7 +14,8 @@ using namespace mk::ooni;
 TEST_CASE(
     "The DNS Injection test should run with an input file of DNS hostnames") {
     Settings options;
-    options["nameserver"] = "8.8.8.1:53";
+    options["dns/nameserver"] = "8.8.8.1:53";
+    options["dns/timeout"] = 0.1;
     DNSInjectionImpl dns_injection("test/fixtures/hosts.txt", options);
     dns_injection.begin(
         [&]() { dns_injection.end([]() { mk::break_loop(); }); });
@@ -24,7 +25,7 @@ TEST_CASE(
 TEST_CASE("The DNS Injection test should throw an exception if an invalid file "
           "path is given") {
     Settings options;
-    options["nameserver"] = "8.8.8.1:53";
+    options["dns/nameserver"] = "8.8.8.1:53";
     REQUIRE_THROWS_AS(DNSInjectionImpl dns_injection(
                           "/tmp/this-file-does-not-exist.txt", options),
                       InputFileDoesNotExist);
@@ -33,7 +34,7 @@ TEST_CASE("The DNS Injection test should throw an exception if an invalid file "
 TEST_CASE("The DNS Injection test should throw an exception if no file path is "
           "given") {
     Settings options;
-    options["nameserver"] = "8.8.8.1:53";
+    options["dns/nameserver"] = "8.8.8.1:53";
     REQUIRE_THROWS_AS(DNSInjectionImpl dns_injection("", options),
                       InputFileRequired);
 }

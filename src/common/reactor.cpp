@@ -2,14 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#ifndef MEASUREMENT_KIT_COMMON_LIBS_HPP
-#define MEASUREMENT_KIT_COMMON_LIBS_HPP
+#include <measurement_kit/common.hpp>
+#include "src/common/poller.hpp"
 
 namespace mk {
 
-struct Libs;
-
-Libs *get_global_libs();  /// Access global libs object
+/*static*/ Var<Reactor> Reactor::make() { return Var<Reactor>(new Poller); }
 
 } // namespace mk
-#endif

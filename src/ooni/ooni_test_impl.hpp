@@ -10,11 +10,10 @@
 #include <functional>                           // for function, __base
 #include <measurement_kit/common/logger.hpp>    // for Logger
 #include <measurement_kit/common/net_test.hpp>  // for NetTest
-#include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/reactor.hpp>
 #include <measurement_kit/common/settings.hpp>  // for Settings
 #include <string>                               // for allocator, operator+
 #include <type_traits>                          // for move
-#include "src/common/libs_impl.hpp"             // for Libs
 #include "src/common/utils.hpp"                 // for utc_time_now
 #include "src/ooni/input_file_generator.hpp"    // for InputFileGenerator
 #include "src/ooni/input_generator.hpp"         // for InputGenerator
@@ -31,10 +30,10 @@ class OoniTestImpl : public mk::NetTest {
     struct tm test_start_time;
 
     void run_next_measurement(const std::function<void()> &&cb) {
-        logger.debug("net_test: running next measurement");
+        logger->debug("net_test: running next measurement");
         input->next(
             [=](std::string next_input) {
-                logger.debug("net_test: creating entry");
+                logger->debug("net_test: creating entry");
 
                 struct tm measurement_start_time;
                 double start_time;
@@ -42,10 +41,10 @@ class OoniTestImpl : public mk::NetTest {
                 mk::utc_time_now(&measurement_start_time);
                 start_time = mk::time_now();
 
-                logger.debug("net_test: calling setup");
+                logger->debug("net_test: calling setup");
                 setup();
 
-                logger.debug("net_test: running with input %s",
+                logger->debug("net_test: running with input %s",
                              next_input.c_str());
 
                 main(next_input, options, [=](json test_keys) {
@@ -55,18 +54,18 @@ class OoniTestImpl : public mk::NetTest {
                     entry["measurement_start_time"] = mk::timestamp(&measurement_start_time);
                     entry["test_runtime"] = mk::time_now() - start_time;
 
-                    logger.debug("net_test: tearing down");
+                    logger->debug("net_test: tearing down");
                     teardown();
 
                     file_report.writeEntry(entry);
-                    logger.debug("net_test: written entry");
+                    logger->debug("net_test: written entry");
 
-                    logger.debug("net_test: increased");
+                    logger->debug("net_test: increased");
                     run_next_measurement(std::move(cb));
                 });
             },
             [=]() {
-                logger.debug("net_test: reached end of input");
+                logger->debug("net_test: reached end of input");
                 cb();
             });
     }
@@ -104,8 +103,6 @@ class OoniTestImpl : public mk::NetTest {
     }
 
   protected:
-    Libs *libs = Libs::global();
-
     virtual void setup(std::string) {}
     virtual void setup() {}
 
@@ -113,7 +110,7 @@ class OoniTestImpl : public mk::NetTest {
     virtual void teardown() {}
 
     virtual void main(Settings, std::function<void(json)> &&cb) {
-        poller->call_later(1.25, [cb]() {
+        reactor->call_later(1.25, [cb]() {
             json entry;
             cb(entry);
         });
@@ -121,7 +118,7 @@ class OoniTestImpl : public mk::NetTest {
 
     virtual void main(std::string, Settings,
                       std::function<void(json)> &&cb) {
-        poller->call_later(1.25, [cb]() {
+        reactor->call_later(1.25, [cb]() {
             json entry;
             cb(entry);
         });
@@ -170,7 +167,7 @@ class OoniTestImpl : public mk::NetTest {
     }
 
     InputGenerator *input_generator() {
-        return new InputFileGenerator(input_filepath, &logger);
+        return new InputFileGenerator(input_filepath, logger);
     }
 
     /*!
@@ -181,7 +178,7 @@ class OoniTestImpl : public mk::NetTest {
         geoip_lookup();
         open_report();
         if (input_filepath != "") {
-            logger.debug("net_test: found input file");
+            logger->debug("net_test: found input file");
             if (input != nullptr) {
                 delete input;
                 input = nullptr;
@@ -189,17 +186,17 @@ class OoniTestImpl : public mk::NetTest {
             input = input_generator();
             run_next_measurement(std::move(cb));
         } else {
-            logger.debug("net_test: no input file");
+            logger->debug("net_test: no input file");
             json entry;
             entry["input"] = "";
-            logger.debug("net_test: calling setup");
+            logger->debug("net_test: calling setup");
             setup();
             main(options, [=](json entry) {
-                logger.debug("net_test: tearing down");
+                logger->debug("net_test: tearing down");
                 teardown();
                 file_report.writeEntry(entry);
-                logger.debug("net_test: written entry");
-                logger.debug("net_test: reached end of input");
+                logger->debug("net_test: written entry");
+                logger->debug("net_test: reached end of input");
                 cb();
             });
         }
@@ -214,9 +211,9 @@ class OoniTestImpl : public mk::NetTest {
         cb();
     }
 
-    Poller *poller = Poller::global();
+    Var<Reactor> reactor = Reactor::global();
 
-    void set_poller(Poller *p) { poller = p; }
+    void set_reactor(Var<Reactor> p) { reactor = p; }
 };
 
 } // namespace ooni

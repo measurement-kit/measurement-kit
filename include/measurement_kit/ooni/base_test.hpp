@@ -1,13 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
 #ifndef MEASUREMENT_KIT_OONI_BASE_TEST_HPP
 #define MEASUREMENT_KIT_OONI_BASE_TEST_HPP
 
-#include <measurement_kit/common/poller.hpp>
-#include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common.hpp>
 #include <functional>
 #include <string>
 
@@ -36,19 +33,25 @@ class BaseTest {
     }
 
     /// Set verbose
-    BaseTest &set_verbose(bool verbose = true) {
-        is_verbose = verbose;
+    BaseTest &set_verbosity(uint32_t level) {
+        verbosity = level;
         return *this;
     }
 
-    /// Set poller to be used
-    BaseTest &set_poller(Poller *p) {
-        poller = p;
+    /// Set reactor to be used
+    BaseTest &set_reactor(Var<Reactor> p) {
+        reactor = p;
+        return *this;
+    }
+
+    /// Set options
+    BaseTest &set_options(std::string key, std::string value) {
+        settings[key] = value;
         return *this;
     }
 
     /// Set log-message handler
-    BaseTest &on_log(std::function<void(const char *)> func) {
+    BaseTest &on_log(Delegate<void(uint32_t, const char *)> func) {
         log_handler = func;
         return *this;
     }
@@ -65,11 +68,11 @@ class BaseTest {
     void run(std::function<void()> callback);
 
     Settings settings;                             ///< Other test settings
-    bool is_verbose = false;                       ///< Be verbose
-    std::function<void(const char *)> log_handler; ///< Log handler func
+    int verbosity = MK_LOG_WARNING;
+    Delegate<void(uint32_t, const char *)> log_handler;
     std::string input_path;                        ///< Input file path
     std::string output_path;                       ///< Output file path
-    Poller *poller = Poller::global();             ///< Poller to use
+    Var<Reactor> reactor = Reactor::global();             ///< Poller to use
 };
 
 } // namespace ooni

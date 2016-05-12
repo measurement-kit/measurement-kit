@@ -22,8 +22,8 @@ using namespace mk::net;
 */
 
 static void success(std::string, int,
-        Callback<Var<Transport>> cb,
-        Settings, Logger *logger, Poller *) {
+        Callback<Error, Var<Transport>> cb,
+        Settings, Var<Logger> logger, Var<Reactor>) {
     cb(NoError(), Var<Transport>(new Emitter(logger)));
 }
 
@@ -33,13 +33,13 @@ TEST_CASE("net::connect_many() correctly handles net::connect() success") {
                 REQUIRE(!err);
                 REQUIRE(conns.size() == 3);
             },
-            {}, Logger::global(), Poller::global());
+            {}, Logger::global(), Reactor::global());
     connect_many_<success>(ctx);
 }
 
 static void fail(std::string, int,
-        Callback<Var<Transport>> cb,
-        Settings, Logger *, Poller *) {
+        Callback<Error, Var<Transport>> cb,
+        Settings, Var<Logger>, Var<Reactor>) {
     cb(GenericError(), Var<Transport>(nullptr));
 }
 
@@ -49,7 +49,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
                 REQUIRE(err);
                 REQUIRE(conns.size() == 0);
             },
-            {}, Logger::global(), Poller::global());
+            {}, Logger::global(), Reactor::global());
     connect_many_<fail>(ctx);
 }
 

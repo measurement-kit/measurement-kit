@@ -14,7 +14,7 @@
 int main(int argc, char **argv) {
     std::string backend = "8.8.8.1";
     std::string name = argv[0];
-    bool verbose = false;
+    uint32_t verbosity = 0;
     char ch;
 
     while ((ch = getopt(argc, argv, "b:v")) != -1) {
@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
             backend = optarg;
             break;
         case 'v':
-            verbose = true;
+            ++verbosity;
             break;
         default:
             std::cout << "Usage: " << name << " [-v] [-b backend] file_name"
@@ -41,8 +41,8 @@ int main(int argc, char **argv) {
 
     mk::ooni::DnsInjectionTest()
         .set_backend(backend)
-        .set_verbose(verbose)
+        .set_verbosity(verbosity)
         .set_input_file_path(argv[0])
-        .on_log([](const char *s) { std::cout << s << "\n"; })
+        .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
 }

@@ -64,7 +64,7 @@ struct Response {
 };
 
 /// Type of callback called on error or when response is complete.
-typedef Callback<Response> RequestCallback;
+typedef Callback<Error, Response> RequestCallback;
 
 // Forward declaration of internally used class.
 class Request;
@@ -77,14 +77,14 @@ class Request;
 /// \param lp Optional logger.
 /// \param pol Optional poller.
 void request(Settings settings, RequestCallback cb, Headers headers = {},
-             std::string body = "", Logger *lp = Logger::global(),
-             Poller *pol = Poller::global());
+             std::string body = "", Var<Logger> lp = Logger::global(),
+             Var<Reactor> reactor = Reactor::global());
 
 // Signature of the old http::Client ->request method, widely used
 inline void request(Settings settings, Headers headers, std::string body,
-        RequestCallback cb, Logger *lp = Logger::global(),
-        Poller *pol = Poller::global()) {
-    request(settings, cb, headers, body, lp, pol);
+        RequestCallback cb, Var<Logger> lp = Logger::global(),
+        Var<Reactor> reactor = Reactor::global()) {
+    request(settings, cb, headers, body, lp, reactor);
 }
 
 /// Represents a URL.
@@ -119,11 +119,11 @@ ErrorOr<Url> parse_url_noexcept(std::string url);
 /// \param pol Optional poller.
 inline void get(std::string url, RequestCallback cb,
                 Headers headers = {}, std::string body = "",
-                Settings settings = {}, Logger *lp = Logger::global(),
-                Poller *pol = Poller::global()) {
-    settings["method"] = "GET";
-    settings["url"] = url;
-    request(settings, cb, headers, body, lp, pol);
+                Settings settings = {}, Var<Logger> lp = Logger::global(),
+                Var<Reactor> reactor = Reactor::global()) {
+    settings["http/method"] = "GET";
+    settings["http/url"] = url;
+    request(settings, cb, headers, body, lp, reactor);
 }
 
 /// Send HTTP request and receive response.
@@ -137,30 +137,31 @@ inline void get(std::string url, RequestCallback cb,
 /// \param pol Optional poller.
 inline void request(std::string method, std::string url, RequestCallback cb,
                     Headers headers = {}, std::string body = "",
-                    Settings settings = {}, Logger *lp = Logger::global(),
-                    Poller *pol = Poller::global()) {
-    settings["method"] = method;
-    settings["url"] = url;
-    request(settings, cb, headers, body, lp, pol);
+                    Settings settings = {}, Var<Logger> lp = Logger::global(),
+                    Var<Reactor> reactor = Reactor::global()) {
+    settings["http/method"] = method;
+    settings["http/url"] = url;
+    request(settings, cb, headers, body, lp, reactor);
 }
 
 typedef std::function<void(Error)> RequestSendCb;
 
-void request_connect(Settings, Callback<Var<net::Transport>>,
-                      Poller *, Logger *);
+void request_connect(Settings, Callback<Error, Var<net::Transport>>,
+                     Var<Reactor> = Reactor::global(),
+                     Var<Logger> = Logger::global());
 
 void request_send(Var<net::Transport>, Settings, Headers, std::string,
-                      RequestSendCb);
+        RequestSendCb);
 
-void request_recv_response(Var<net::Transport>, Callback<Var<Response>>,
-                      Poller *, Logger *);
+void request_recv_response(Var<net::Transport>, Callback<Error, Var<Response>>,
+        Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
 void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
-                      Callback<Var<Response>>, Poller *,
-                      Logger *);
+        Callback<Error, Var<Response>>, Var<Reactor> = Reactor::global(),
+        Var<Logger> = Logger::global());
 
-void request_cycle(Settings, Headers, std::string, Callback<Var<Response>>,
-                      Poller *, Logger *);
+void request_cycle(Settings, Headers, std::string, Callback<Error, Var<Response>>,
+        Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
 } // namespace http
 } // namespace mk

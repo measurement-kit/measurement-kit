@@ -301,9 +301,9 @@ class Message {
 
 /// Perform a single DNS query
 void query(QueryClass dns_class, QueryType dns_type, std::string name,
-           Callback<Message> func,
+           Callback<Error, Message> func,
            Settings settings = {},
-           Poller *poller = mk::get_global_poller());
+           Var<Reactor> reactor = Reactor::global());
 
 } // namespace dns
 } // namespace mk

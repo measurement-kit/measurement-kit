@@ -22,8 +22,8 @@ TEST_CASE("TCPTestImpl works as expected in a common case") {
         {
          {"host", "www.neubot.org"}, {"port", "80"},
         },
-        [&count](Var<net::Transport> txp) {
-            if (++count >= 2) {
+        [&count](Error, Var<net::Transport> txp) {
+            if (++count >= 3) {
                 txp->close([]() { mk::break_loop(); });
             } else {
                 txp->close([]() {});
@@ -34,13 +34,24 @@ TEST_CASE("TCPTestImpl works as expected in a common case") {
         {
          {"host", "ooni.nu"}, {"port", "80"},
         },
-        [&count](Var<net::Transport> txp) {
-            if (++count >= 2) {
+        [&count](Error, Var<net::Transport> txp) {
+            if (++count >= 3) {
                 txp->close([]() { mk::break_loop(); });
             } else {
                 txp->close([]() {});
             }
         });
 
+    tcp_test.connect(
+        {
+         {"host", "ooni.nu"}, {"port", "80"}, 
+         {"dns/nameserver", "8.8.8.1"}, {"dns/timeout", 0.0001}
+        },
+        [&count](Error err, Var<net::Transport> txp) {
+            REQUIRE(err);
+            if (++count >= 3) {
+                []() { mk::break_loop(); };
+            }
+        });
     mk::loop();
 }

@@ -76,17 +76,25 @@ struct ConnectResult : public ErrorContext {
 };
 
 void connect(std::string address, int port,
-             Callback<Var<Transport>> callback,
+             Callback<Error, Var<Transport>> callback,
              Settings settings = {},
-             Logger *logger = Logger::global(),
-             Poller *poller = Poller::global());
+             Var<Logger> logger = Logger::global(),
+             Var<Reactor> reactor = Reactor::global());
 
-using ConnectManyCb = Callback<std::vector<Var<Transport>>>;
+using ConnectManyCb = Callback<Error, std::vector<Var<Transport>>>;
 
 void connect_many(std::string address, int port, int num,
         ConnectManyCb callback, Settings settings = {},
-        Logger *logger = Logger::global(),
-        Poller *poller = Poller::global());
+        Var<Logger> logger = Logger::global(),
+        Var<Reactor> reactor = Reactor::global());
+
+void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
+
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb);
+
+inline void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback) {
+    readn(t, buff, 1, callback);
+}
 
 } // namespace net
 } // namespace mk
