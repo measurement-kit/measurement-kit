@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
+cd $ROOTDIR/build/ios
+tar -czf ios-dependencies.tgz tmp
+gpg2 -b --armor ios-dependencies.tgz
