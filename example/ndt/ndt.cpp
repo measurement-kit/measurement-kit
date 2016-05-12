@@ -12,16 +12,20 @@
 
 using namespace mk;
 
-static const char *kv_usage = "usage: ./example/net/ndt [-v] [-p port] host\n";
+static const char *kv_usage =
+    "usage: ./example/net/ndt [-C /path/to/ca/bundle] [-v] [-p port] [host]\n";
 
 int main(int argc, char **argv) {
 
-    int port = 3001;
     char ch;
-    while ((ch = getopt(argc, argv, "p:v")) != -1) {
+    Settings settings;
+    while ((ch = getopt(argc, argv, "C:p:v")) != -1) {
         switch (ch) {
+        case 'C':
+            settings["net/ca_bundle_path"] = optarg;
+            break;
         case 'p':
-            port = lexical_cast<int>(optarg);
+            settings["port"] = lexical_cast<int>(optarg);
             break;
         case 'v':
             increase_verbosity();
@@ -34,16 +38,17 @@ int main(int argc, char **argv) {
     argc -= optind;
     argv += optind;
 
-    if (argc != 1) {
+    if (argc > 1) {
         std::cout << kv_usage;
         exit(1);
+    } else if (argc == 1) {
+        settings["address"] = argv[0];
     }
-    std::string host = argv[0];
 
-    loop_with_initial_event([&]() {
-        ndt::run_with_specific_server(host, port, [](Error err) {
+    loop_with_initial_event([=]() {
+        ndt::run([](Error err) {
             std::cout << "result: " << err << "\n";
             break_loop();
-        });
+        }, settings);
     });
 }
