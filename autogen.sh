@@ -25,7 +25,9 @@ gen_headers() {
     echo "$(slug $1)_include_HEADERS = # Empty"
     for name in `ls $1`; do
         if [ ! -d $1/$name ]; then
-            echo "$(slug $1)_include_HEADERS += $1/$name"
+            if echo $name | grep -q ".hpp$"; then
+                echo "$(slug $1)_include_HEADERS += $1/$name"
+            fi
         fi
     done
     echo ""
@@ -106,7 +108,6 @@ get_geoipdb() {
 grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
 echo test/fixtures/GeoIP.dat >> .gitignore.new
 echo test/fixtures/GeoIPASNum.dat >> .gitignore.new
-echo include/measurement_kit/common/version.hpp >> .gitignore.new
 mv .gitignore.new .gitignore
 
 echo "* Generating include.am"
