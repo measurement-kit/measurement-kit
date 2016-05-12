@@ -9,9 +9,10 @@
 namespace mk {
 namespace ndt {
 
-void client(std::string address, int port, Callback<Error> callback,
-            Settings settings = {}, Var<Logger> logger = Logger::global(),
-            Var<Reactor> reactor = Reactor::global());
+void run_with_specific_server(std::string address, int port,
+                              Callback<Error> callback, Settings settings = {},
+                              Var<Logger> logger = Logger::global(),
+                              Var<Reactor> reactor = Reactor::global());
 
 } // namespace ndt
 } // namespace mk

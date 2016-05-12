@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     std::string host = argv[0];
 
     loop_with_initial_event([&]() {
-        ndt::client(host, port, [](Error err) {
+        ndt::run_with_specific_server(host, port, [](Error err) {
             std::cout << "result: " << err << "\n";
             break_loop();
         });
