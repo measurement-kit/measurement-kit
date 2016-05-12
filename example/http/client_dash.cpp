@@ -30,7 +30,6 @@ int main(int argc, char **argv) {
         switch (ch) {
         case 'a':
             settings["url"] = optarg;
-            std::cout << optarg;
             break;
         default:
             std::cout << kv_usage;
