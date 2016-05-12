@@ -45,6 +45,7 @@ config.sub
 configure
 depcomp
 example/dns/query
+example/http/client_dash
 example/http/request
 example/mlabns/query
 example/net/connect

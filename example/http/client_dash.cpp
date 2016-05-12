@@ -95,7 +95,6 @@ void loop_request(int iteraction, Var<Transport> transport, int speed_kbit) {
                                             - saved_times) / CLOCKS_PER_SEC;
 
                                 if (time_elapsed < 0) {
-                                    std::cout << "NOTHERE\n";
                                     std::cout << "Error\n";
                                     break_loop();
                                     return;
