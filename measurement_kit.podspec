@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = "measurement_kit"
-  s.version = "0.2.0-alpha"
+  s.version = "0.2.0-alpha.1"
   s.summary = "Portable network measurement library"
   s.author = "Davide Allavena",
              "Simone Basso",
@@ -18,5 +18,5 @@ Pod::Spec.new do |s|
     ./build/ios/scripts/build.sh
   CMD
   s.platform = :ios, "9.0"
-  s.vendored_framework = "mobile/ios/Frameworks/*.framework"
+  s.vendored_framework = "build/ios/Frameworks/*.framework"
 end
