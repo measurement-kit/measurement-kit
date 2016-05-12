@@ -48,15 +48,13 @@ void coroutine_impl(std::string address, int port,
                             double x = (*count * 8) / 1000 / (ct - *previous);
                             *count = 0;
                             *previous = ct;
-                            printf("\rSpeed: %.2f kbit/s", x);
-                            fflush(stdout);
+                            logger->info("Speed: %.2f kbit/s", x);
                         }
                         // TODO: force close the connection after a given
                         // large amount of time has passed
                     });
 
                     txp->on_error([=](Error err) {
-                        printf("\n");
                         logger->info("Ending download (%d)", (int)err);
                         double elapsed_time = time_now() - *begin;
                         logger->debug("ndt: elapsed %lf", elapsed_time);
@@ -103,7 +101,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         try {
             std::string x = json::parse(s)["msg"];
-            printf("%s", x.c_str());
+            ctx->logger->info("%s", x.c_str());
         } catch (std::exception &) {
             // nothing
         }

@@ -62,11 +62,9 @@ void coroutine_impl(std::string address, int port, double runtime,
                             double x = (*count * 8) / 1000 / (now - *previous);
                             *previous = now;
                             *count = 0;
-                            printf("\rSpeed: %.2f kbit/s", x);
-                            fflush(stdout);
+                            logger->info("Speed: %.2f kbit/s", x);
                         }
                         if (now - begin > runtime) {
-                            printf("\n");
                             logger->info("Elapsed enough time");
                             txp->emit_error(NoError());
                             return;
