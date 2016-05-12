@@ -226,7 +226,7 @@ the callback passed as argument to *run* is invoked when the test completed.
 ```C++
 // Run async test
 mk::ooni::HttpInvalidRequestLineTest()
-    .set_backend("http://127.0.0.1/")
+    .set_options("backend", "http://127.0.0.1/")
     .set_verbose()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
