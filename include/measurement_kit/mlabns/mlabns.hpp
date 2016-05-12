@@ -57,33 +57,6 @@ class JsonParsingError : public Error {
     JsonParsingError() : Error(5005, "unknown_failure 5005") {}
 };
 
-/// Query for mlab-ns.
-class Query {
-  public:
-    std::string policy;         ///< 'geo' | 'random' | 'metro' | 'country'
-    std::string metro;          ///< e.g. 'trn'
-    std::string address_family; ///< 'ipv4' | 'ipv6'
-
-    Query() {}               ///< Default constructor
-    Query(std::nullptr_t) {} ///< Constructor with null params
-
-    /// Construct object from the specified settings.
-    /// \param settings Initializer list containing settings.
-    /// \remark No exception is raised if settings are invalid. You will
-    //          notice that later when the query string is created.
-    /// Example:
-    ///     Query request({
-    ///         {"policy", "random"},
-    ///         {"metro, "trn"},
-    ///         {"address_family", "ipv6"}
-    ///     });
-    Query(std::initializer_list<std::pair<std::string, std::string>> settings);
-
-    /// Obtain query from parameters.
-    /// \return Query string on success, otherwise error.
-    ErrorOr<std::string> as_query();
-};
-
 /// Reply to mlab-ns query.
 class Reply {
   public:
@@ -96,11 +69,9 @@ class Reply {
 };
 
 /// Query mlab-ns and receive response.
-/// \param tool Name of tool (e.g. 'ndt', 'neubot').
-/// \param callback Callback called on response or error.
-/// \param request Optional request parameters.
 void query(std::string tool, Callback<Error, Reply> callback,
-           Query request = nullptr);
+           Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
+           Var<Logger> logger = Logger::global());
 
 } // namespace mlabns
 } // namespace mk
