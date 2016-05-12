@@ -1,3 +1,44 @@
+# MeasurementKit 0.2.0-alpha [2016-05-12]
+
+We are not ready to declare a stable release yet, because tons of things still need love. However, we've reached a point where we could tag an alpha release. Too many changes, hence listing them in the order in which I see them when reading the huge diff since the previous stable release:
+
+- autogenerate toplevel headers
+- rewrite async
+- add more functional programming abstractions
+- allow to bind context to errors
+- rename the Maybe object as ErrorOr
+- remove evbuffer wrapper
+- introduce lexical_cast
+- use templates rather than Libs object to make code testable
+- all global objects are now `Var<>` rather than raw pointers
+- more granular logger levels
+- make logger thread safe
+- the Poller is now known as Reactor (but Poller is still an implementation of Reactor)
+- removed code to manage global dns resolver, now each test sets its own resolver
+- now Settings maps strings to most scalar types
+- now it is possible to cast from `Var<BaseClass>` to `Var<DerivedClass>`
+- rewritten dns code from scratch to increase memory safety
+- rewritten http code from scratch to increase memory safety
+- prefix settings with module name, to avoid conflicts
+- implement client for mlabns
+- remove TransportInterface, make Transport abstract and pass around `Var<Transport>`
+- rewrite from scratch the connect flow to increase memory safety
+- implement SSL transport
+- verify SSL certificates
+- allow to connect many socket at once
+- migrated OONI code to use JSON rather than YAML (thus replacing yaml-cpp dependency with nlohmann/json)
+- as a consequence of previous change, remove boost from dependencies
+- implement GeoIP using the old rather than the new maxmind library (not all free database available for new library)
+- removed most dependency from tree and rely now on the `./build/dependency` script
+- add ./autogen.sh script to automatically generate parts of the tree that it would be otherwise tedious to maintain
+- rewritten from scratch and significantly improved travis.yml
+- added more example files
+- moved the mobile subtree below build along with the new `./build/dependency` script
+- added basic listener
+- more cleanups and bug fixes
+
+To speed up cross compiling, this release would also be the first release to contain bits of compiled code (e.g. libressl) that could be downloaded during the cross compilation process.
+
 # MeasurementKit 0.1.2 [2016-02-04]
 - cleanups and bug fixes
 
