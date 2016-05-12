@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// This example will run a synchronous dns-injection test
-//
-
 #include <measurement_kit/ooni.hpp>
 #include <iostream>
 #include <string>
@@ -40,7 +36,7 @@ int main(int argc, char **argv) {
     }
 
     mk::ooni::DnsInjectionTest()
-        .set_backend(backend)
+        .set_options("backend", backend)
         .set_verbosity(verbosity)
         .set_input_file_path(argv[0])
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })

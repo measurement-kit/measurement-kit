@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// This example will run a synchronous tcp-connection test
-//
-
 #include <measurement_kit/ooni.hpp>
 #include <iostream>
 #include <string>
@@ -38,7 +34,7 @@ int main(int argc, char **argv) {
         exit(1);
     }
     mk::ooni::TcpConnectTest()
-        .set_port(port)
+        .set_options("port", port)
         .set_input_file_path(argv[0])
         .set_verbosity(verbosity)
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
