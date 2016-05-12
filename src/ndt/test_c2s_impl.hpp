@@ -136,7 +136,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                     ctx->logger->debug("ndt: resume c2s coroutine");
                     cc([=](Error err) {
                         ctx->logger->debug("ndt: c2s coroutine complete");
-                        if (err) {
+                        if (err && err != BrokenPipeError()) {
                             callback(err);
                             return;
                         }
