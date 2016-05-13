@@ -106,7 +106,9 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
             std::string x = json::parse(s)["msg"];
             for (auto e : split(x, "\n")) {
                 if (e != "") {
-                    ctx->logger->debug("%s", e.c_str());
+                    // This should be info because there are Web100
+                    // variables containing RTT and other useful metrics
+                    ctx->logger->info("%s", e.c_str());
                 }
             }
         } catch (std::exception &) {
