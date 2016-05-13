@@ -77,7 +77,7 @@ void query(std::string tool, Callback<Error, Reply> callback, Settings settings,
     url += tool;
     url += *query;
     logger->info("query mlabns for tool %s", tool.c_str());
-    logger->debug("mlabs url: %s", url.c_str());
+    logger->debug("mlabns url: %s", url.c_str());
     http::request("GET", url,
                   [callback, logger](Error error, http::Response response) {
                       if (error) {
