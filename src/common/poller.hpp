@@ -20,18 +20,24 @@ void mk_do_periodic_cb(evutil_socket_t, short, void *ptr);
 } // extern "C"
 namespace mk {
 
-template <MK_MOCK(evthread_use_pthreads)> class MkLibrarySingleton {
+template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction)>
+class MkLibrarySingleton {
   private:
     MkLibrarySingleton() {
         if (evthread_use_pthreads() != 0) {
             throw std::runtime_error("evthread_use_pthreads() failed");
         }
-        (void)signal(SIGPIPE, SIG_IGN);
+        struct sigaction sa;
+        memset(&sa, 0, sizeof (sa));
+        sa.sa_handler = SIG_IGN;
+        if (sigaction(SIGPIPE, &sa, nullptr) != 0) {
+            throw std::runtime_error("sigaction() failed");
+        }
     }
 
   public:
     static void ensure() {
-        static MkLibrarySingleton<evthread_use_pthreads> singleton;
+        static MkLibrarySingleton<evthread_use_pthreads, sigaction> singleton;
     }
 };
 
@@ -44,10 +50,10 @@ class Poller : public Reactor {
     // hence two constructors: the normal one that calls `init_()` and the
     // one receiving `nullptr` as argument which does not call `init_()` such
     // that we can call this template function in regress tests.
-    template <MK_MOCK(evthread_use_pthreads), MK_MOCK(event_base_new),
-              MK_MOCK(event_base_free)>
+    template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction),
+              MK_MOCK(event_base_new), MK_MOCK(event_base_free)>
     void init_() {
-        MkLibrarySingleton<evthread_use_pthreads>::ensure();
+        MkLibrarySingleton<evthread_use_pthreads, sigaction>::ensure();
         base_ = Var<event_base>(event_base_new(), [](event_base *p) {
             if (p != nullptr) {
                 event_base_free(p);
