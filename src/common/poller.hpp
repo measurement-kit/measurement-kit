@@ -5,6 +5,7 @@
 #define SRC_COMMON_POLLER_HPP
 
 #include "src/common/utils.hpp"
+#include <csignal>
 #include <event2/event.h>
 #include <event2/thread.h>
 #include <functional>
@@ -19,17 +20,18 @@ void mk_do_periodic_cb(evutil_socket_t, short, void *ptr);
 } // extern "C"
 namespace mk {
 
-template <MK_MOCK(evthread_use_pthreads)> class EvThreadSingleton {
+template <MK_MOCK(evthread_use_pthreads)> class MkLibrarySingleton {
   private:
-    EvThreadSingleton() {
+    MkLibrarySingleton() {
         if (evthread_use_pthreads() != 0) {
             throw std::runtime_error("evthread_use_pthreads() failed");
         }
+        (void)signal(SIGPIPE, SIG_IGN);
     }
 
   public:
     static void ensure() {
-        static EvThreadSingleton<evthread_use_pthreads> singleton;
+        static MkLibrarySingleton<evthread_use_pthreads> singleton;
     }
 };
 
@@ -45,7 +47,7 @@ class Poller : public Reactor {
     template <MK_MOCK(evthread_use_pthreads), MK_MOCK(event_base_new),
               MK_MOCK(event_base_free)>
     void init_() {
-        EvThreadSingleton<evthread_use_pthreads>::ensure();
+        MkLibrarySingleton<evthread_use_pthreads>::ensure();
         base_ = Var<event_base>(event_base_new(), [](event_base *p) {
             if (p != nullptr) {
                 event_base_free(p);

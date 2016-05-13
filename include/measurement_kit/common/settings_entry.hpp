@@ -5,6 +5,7 @@
 #define MEASUREMENT_KIT_COMMON_SETTINGS_ENTRY_HPP
 
 #include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/error_or.hpp>
 #include <sstream>
 #include <string>
 
@@ -37,6 +38,14 @@ class SettingsEntry : public std::string {
             throw ValueError(); // Input format was wrong
         }
         return value;
+    }
+
+    template <typename Type> ErrorOr<Type> as_noexcept() const {
+        try {
+            return as<Type>();
+        } catch (Error &e) {
+            return e;
+        }
     }
 
     std::string str() const { return as<std::string>(); }
