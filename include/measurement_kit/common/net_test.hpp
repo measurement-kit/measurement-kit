@@ -27,6 +27,7 @@ class NetTest : public NonCopyable, public NonMovable {
 
     virtual unsigned long long identifier() { return (unsigned long long)this; }
 
+    NetTest(Settings options) : options(options) {}
     virtual ~NetTest();
 
     Var<Logger> logger = Logger::make();
