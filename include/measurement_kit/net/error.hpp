@@ -149,6 +149,11 @@ class MissingCaBundlePathError : public Error {
     MissingCaBundlePathError() : Error(1023, "unknown_failure 1023") {}
 };
 
+class BrokenPipeError : public Error {
+  public:
+    BrokenPipeError() : Error(1024, "unknown_failure 1024") {}
+};
+
 } // namespace net
 } // namespace mk
 #endif
