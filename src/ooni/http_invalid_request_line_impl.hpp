@@ -76,7 +76,13 @@ class HTTPInvalidRequestLineImpl : public TCPTestImpl {
     void main(Settings options, std::function<void(json)> &&cb) {
         entry["tampering"] = nullptr;
 
-        http::Url backend_url = mk::http::parse_url(options["backend"]);
+        ErrorOr<http::Url> backend_url = mk::http::parse_url_noexcept(options["backend"]);
+
+        if (!backend_url) {
+            logger->debug("Invalid backend url.");
+            cb(entry);
+            return;
+        }
 
         auto handle_response = [this, cb]() {
             tests_run += 1;
@@ -90,7 +96,7 @@ class HTTPInvalidRequestLineImpl : public TCPTestImpl {
         std::string test_random_invalid_method(mk::random_str_uppercase(4));
         test_random_invalid_method += " / HTTP/1.1\n\r";
         send_receive_invalid_request_line(
-            backend_url, test_random_invalid_method, handle_response, options);
+            *backend_url, test_random_invalid_method, handle_response, options);
 
         // test_random_invalid_field_count
         // ' '.join(randomStr(5) for x in range(4)) + '\n\r'
@@ -101,7 +107,7 @@ class HTTPInvalidRequestLineImpl : public TCPTestImpl {
                 " " + mk::random_str_uppercase(5);
         }
         test_random_invalid_field_count += "\n\r";
-        send_receive_invalid_request_line(backend_url,
+        send_receive_invalid_request_line(*backend_url,
                                           test_random_invalid_field_count,
                                           handle_response, options);
 
@@ -110,7 +116,7 @@ class HTTPInvalidRequestLineImpl : public TCPTestImpl {
         std::string test_random_big_request_method(
             mk::random_str_uppercase(1024));
         test_random_big_request_method += " / HTTP/1.1\n\r";
-        send_receive_invalid_request_line(backend_url,
+        send_receive_invalid_request_line(*backend_url,
                                           test_random_big_request_method,
                                           handle_response, options);
 
@@ -118,7 +124,7 @@ class HTTPInvalidRequestLineImpl : public TCPTestImpl {
         // 'GET / HTTP/' + randomStr(3)
         std::string test_random_invalid_version_number("GET / HTTP/");
         test_random_invalid_version_number += mk::random_str_uppercase(3);
-        send_receive_invalid_request_line(backend_url,
+        send_receive_invalid_request_line(*backend_url,
                                           test_random_invalid_version_number,
                                           handle_response, options);
     }
