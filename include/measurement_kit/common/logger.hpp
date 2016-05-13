@@ -17,6 +17,7 @@
 #define MK_LOG_WARNING 0
 #define MK_LOG_INFO 1
 #define MK_LOG_DEBUG 2
+#define MK_LOG_DEBUG2 3
 #define MK_LOG_VERBOSITY_MASK 31
 
 namespace mk {
