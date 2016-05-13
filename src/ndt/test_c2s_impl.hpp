@@ -13,7 +13,8 @@ namespace test_c2s {
 template <MK_MOCK_NAMESPACE(net, connect)>
 void coroutine_impl(std::string address, int port, double runtime,
                     Callback<Error, Continuation<Error>> cb, double timeout,
-                    Var<Logger> logger, Var<Reactor> reactor) {
+                    Settings settings, Var<Logger> logger,
+                    Var<Reactor> reactor) {
 
     // Performance note: This implementation does some string copies
     // when sending but in localhost testing this does not seem to be
@@ -36,6 +37,8 @@ void coroutine_impl(std::string address, int port, double runtime,
 
     // TODO: in original NDT code there appears to be a maximum number
     // of bytes to be sent (`lht`), then the test is exited
+
+    dump_settings(settings, "ndt/c2s", logger);
 
     std::string str = random_printable(8192);
 
@@ -83,7 +86,7 @@ void coroutine_impl(std::string address, int port, double runtime,
                     txp->write(str.data(), str.size());
                 });
             },
-            {}, logger, reactor);
+            settings, logger, reactor);
 }
 
 template <MK_MOCK_NAMESPACE(messages, read),
@@ -178,7 +181,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                     });
                 });
             },
-            ctx->timeout, ctx->logger, ctx->reactor);
+            ctx->timeout, ctx->settings, ctx->logger, ctx->reactor);
     });
 }
 

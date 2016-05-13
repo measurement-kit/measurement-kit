@@ -10,8 +10,9 @@ namespace test_c2s {
 
 void coroutine(std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout,
-               Var<Logger> logger, Var<Reactor> reactor) {
-    coroutine_impl(address, port, runtime, cb, timeout, logger, reactor);
+               Settings settings, Var<Logger> logger, Var<Reactor> reactor) {
+    coroutine_impl(address, port, runtime, cb, timeout,
+                   settings, logger, reactor);
 }
 
 void run(Var<Context> ctx, Callback<Error> callback) {

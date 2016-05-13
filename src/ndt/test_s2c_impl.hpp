@@ -13,7 +13,10 @@ namespace test_s2c {
 template <MK_MOCK_NAMESPACE(net, connect)>
 void coroutine_impl(std::string address, int port,
                     Callback<Error, Continuation<Error, double>> cb,
-                    double timeout, Var<Logger> logger, Var<Reactor> reactor) {
+                    double timeout, Settings settings, Var<Logger> logger,
+                    Var<Reactor> reactor) {
+
+    dump_settings(settings, "ndt/s2c", logger);
 
     // The coroutine connects to the remote endpoint and then pauses
     logger->debug("ndt: connect ...");
@@ -71,7 +74,7 @@ void coroutine_impl(std::string address, int port,
                     });
                 });
             },
-            {}, logger, reactor);
+            settings, logger, reactor);
 }
 
 template <MK_MOCK_NAMESPACE(messages, read_ndt)>
@@ -211,7 +214,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                     });
                 });
             },
-            ctx->timeout, ctx->logger, ctx->reactor);
+            ctx->timeout, ctx->settings, ctx->logger, ctx->reactor);
     });
 }
 

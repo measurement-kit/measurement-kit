@@ -32,6 +32,8 @@ void run_with_specific_server_impl(std::string address, int port,
     ctx->port = port;
     ctx->settings = settings;
 
+    dump_settings(ctx->settings, "ndt", ctx->logger);
+
     // The following code implements this sequence diagram:
     // https://raw.githubusercontent.com/wiki/ndt-project/ndt/NDTProtocol.images/ndt_10.png
 

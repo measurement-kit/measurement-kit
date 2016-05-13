@@ -10,8 +10,8 @@ namespace test_s2c {
 
 void coroutine(std::string address, int port,
                Callback<Error, Continuation<Error, double>> cb, double timeout,
-               Var<Logger> logger, Var<Reactor> reactor) {
-    coroutine_impl(address, port, cb, timeout, logger, reactor);
+               Settings settings, Var<Logger> logger, Var<Reactor> reactor) {
+    coroutine_impl(address, port, cb, timeout, settings, logger, reactor);
 }
 
 void finalizing_test(Var<Context> ctx, Callback<Error> callback) {
