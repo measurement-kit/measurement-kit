@@ -103,7 +103,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
             std::string x = json::parse(s)["msg"];
             for (auto e : split(x, "\n")) {
                 if (e != "") {
-                    ctx->logger->info("%s", e.c_str());
+                    ctx->logger->debug("%s", e.c_str());
                 }
             }
         } catch (std::exception &) {
