@@ -56,9 +56,7 @@ class NetTestDsl {
 
     // This is the method that subclasses must override to define exactly
     // how a network test should be created from these settings
-    virtual Var<NetTest> create_test_() {
-        return Var<NetTest>(nullptr);
-    }
+    virtual Var<NetTest> create_test_() { return Var<NetTest>(nullptr); }
 
     void run();
     void run(std::function<void()> callback);
@@ -70,6 +68,12 @@ class NetTestDsl {
     std::string output_path;
     Var<Reactor> reactor = Reactor::global();
 };
+
+#define MK_DECLARE_TEST_DSL(_name_)                                            \
+    class _name_ : public mk::NetTestDsl {                                     \
+      public:                                                                  \
+        Var<NetTest> create_test_() override;                                  \
+    };
 
 } // namespace mk
 #endif
