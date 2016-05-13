@@ -9,10 +9,7 @@
 namespace mk {
 namespace ooni {
 
-class DnsInjectionTest : public NetTestDsl {
-  public:
-    Var<NetTest> create_test_() override;
-};
+MK_DECLARE_TEST_DSL(DnsInjectionTest)
 
 } // namespace ooni
 } // namespace mk

@@ -9,10 +9,7 @@
 namespace mk {
 namespace ooni {
 
-class HttpInvalidRequestLineTest : public NetTestDsl {
-  public:
-    Var<NetTest> create_test_() override;
-};
+MK_DECLARE_TEST_DSL(HttpInvalidRequestLineTest)
 
 } // namespace ooni
 } // namespace mk

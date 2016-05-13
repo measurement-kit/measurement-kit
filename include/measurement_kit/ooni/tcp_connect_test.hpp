@@ -9,10 +9,7 @@
 namespace mk {
 namespace ooni {
 
-class TcpConnectTest : public NetTestDsl {
-  public:
-    Var<NetTest> create_test_() override;
-};
+MK_DECLARE_TEST_DSL(TcpConnectTest)
 
 } // namespace ooni
 } // namespace mk
