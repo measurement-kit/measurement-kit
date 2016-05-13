@@ -151,7 +151,7 @@ class OoniTestImpl : public mk::NetTest {
         : OoniTestImpl(input_filepath_, Settings()) {}
 
     OoniTestImpl(std::string input_filepath_, Settings options_)
-        : input_filepath(input_filepath_), options(options_),
+        : input_filepath(input_filepath_), NetTest(options_),
         test_name("net_test"), test_version("0.0.1") {
             mk::utc_time_now(&test_start_time);
         }
