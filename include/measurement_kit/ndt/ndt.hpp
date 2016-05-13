@@ -18,6 +18,8 @@ void run(Callback<Error> callback, Settings settings = {},
          Var<Logger> logger = Logger::global(),
          Var<Reactor> reactor = Reactor::global());
 
+MK_DECLARE_TEST_DSL(NdtTest)
+
 } // namespace ndt
 } // namespace mk
 #endif

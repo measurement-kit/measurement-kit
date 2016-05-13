@@ -11,24 +11,25 @@
 #include <unistd.h>
 
 using namespace mk;
+using namespace mk::ndt;
 
 static const char *kv_usage =
     "usage: ./example/net/ndt [-C /path/to/ca/bundle] [-v] [-p port] [host]\n";
 
 int main(int argc, char **argv) {
 
+    NdtTest test;
     char ch;
-    Settings settings;
     while ((ch = getopt(argc, argv, "C:p:v")) != -1) {
         switch (ch) {
         case 'C':
-            settings["net/ca_bundle_path"] = optarg;
+            test.set_options("net/ca_bundle_path", optarg);
             break;
         case 'p':
-            settings["port"] = lexical_cast<int>(optarg);
+            test.set_options("port", optarg);
             break;
         case 'v':
-            increase_verbosity();
+            test.increase_verbosity();
             break;
         default:
             std::cout << kv_usage;
@@ -42,13 +43,8 @@ int main(int argc, char **argv) {
         std::cout << kv_usage;
         exit(1);
     } else if (argc == 1) {
-        settings["address"] = argv[0];
+        test.set_options("address", argv[0]);
     }
 
-    loop_with_initial_event([=]() {
-        ndt::run([](Error err) {
-            std::cout << "result: " << err << "\n";
-            break_loop();
-        }, settings);
-    });
+    test.run();
 }
