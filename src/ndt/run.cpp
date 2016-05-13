@@ -22,10 +22,14 @@ void run_with_specific_server(std::string address, int port,
 
 void run(Callback<Error> callback, Settings settings, Var<Logger> logger,
          Var<Reactor> reactor) {
-    int port = settings.get<int>("port", 3001);
+    ErrorOr<int> port = settings.get_noexcept<int>("port", 3001);
+    if (!port) {
+        callback(port.as_error());
+        return;
+    }
     std::string address = settings.get<std::string>("address", "");
     if (address != "") {
-        run_with_specific_server(address, port, callback, settings,
+        run_with_specific_server(address, *port, callback, settings,
                                  logger, reactor);
         return;
     }
@@ -34,7 +38,7 @@ void run(Callback<Error> callback, Settings settings, Var<Logger> logger,
             callback(err);
             return;
         }
-        run_with_specific_server(reply.fqdn, port, callback, settings,
+        run_with_specific_server(reply.fqdn, *port, callback, settings,
                                  logger, reactor);
     }, settings, reactor, logger);
 }
