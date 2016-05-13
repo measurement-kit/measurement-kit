@@ -126,7 +126,6 @@ class OoniTestImpl : public mk::NetTest {
 
   public:
     json entry;
-    Settings options;
     InputGenerator *input = nullptr;
 
     std::string test_name;
@@ -210,8 +209,6 @@ class OoniTestImpl : public mk::NetTest {
         file_report.close();
         cb();
     }
-
-    Var<Reactor> reactor = Reactor::global();
 
     void set_reactor(Var<Reactor> p) { reactor = p; }
 };

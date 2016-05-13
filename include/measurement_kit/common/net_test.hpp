@@ -8,38 +8,30 @@
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/reactor.hpp>
+#include <measurement_kit/common/settings.hpp>
 
 #include <functional>
 
 namespace mk {
 
-/// The generic network test
 class NetTest : public NonCopyable, public NonMovable {
   public:
-    /// Set log function used by this test.
     virtual void on_log(Delegate<void(uint32_t, const char *)> func) {
         logger->on_log(func);
     }
-
-    /// Make this test log verbose.
     virtual void set_verbosity(uint32_t level) { logger->set_verbosity(level); }
 
-    /// Start iterating over the input.
-    /// \param func Callback called when we are done.
     virtual void begin(std::function<void()> func) = 0;
-
-    /// Make sure that report is written.
-    /// \param func Callback invoked when report is written.
     virtual void end(std::function<void()> func) = 0;
 
-    /// Return the unique identifier of this test.
     virtual unsigned long long identifier() { return (unsigned long long)this; }
 
-    /// Default destructor.
     virtual ~NetTest();
 
-  protected:
     Var<Logger> logger = Logger::make();
+    Var<Reactor> reactor = Reactor::make();
+    Settings options;
 };
 
 } // namespace mk
