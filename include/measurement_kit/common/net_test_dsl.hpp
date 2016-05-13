@@ -39,6 +39,11 @@ class NetTestDsl {
         return *this;
     }
 
+    NetTestDsl &increase_verbosity() {
+        verbosity += 1;
+        return *this;
+    }
+
     NetTestDsl &set_reactor(Var<Reactor> p) {
         reactor = p;
         return *this;
