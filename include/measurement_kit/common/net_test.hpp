@@ -31,7 +31,7 @@ class NetTest : public NonCopyable, public NonMovable {
     virtual ~NetTest();
 
     Var<Logger> logger = Logger::make();
-    Var<Reactor> reactor = Reactor::make();
+    Var<Reactor> reactor = Reactor::global();
     Settings options;
 };
 
