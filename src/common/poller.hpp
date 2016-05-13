@@ -6,6 +6,7 @@
 
 #include "src/common/utils.hpp"
 #include <csignal>
+#include <cstring>
 #include <event2/event.h>
 #include <event2/thread.h>
 #include <functional>
