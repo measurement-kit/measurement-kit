@@ -76,9 +76,10 @@ void query(std::string tool, Callback<Error, Reply> callback, Settings settings,
     }
     url += tool;
     url += *query;
-    mk::debug("about to call the request function");
+    logger->info("query mlabns for tool %s", tool.c_str());
+    logger->debug("mlabs url: %s", url.c_str());
     http::request("GET", url,
-                  [callback](Error error, http::Response response) {
+                  [callback, logger](Error error, http::Response response) {
                       if (error) {
                           callback(error, Reply());
                           return;
@@ -106,6 +107,7 @@ void query(std::string tool, Callback<Error, Reply> callback, Settings settings,
                           callback(JsonParsingError(), Reply());
                           return;
                       }
+                      logger->info("mlabns says to use %s", reply.fqdn.c_str());
                       callback(NoError(), reply);
                   },
                   {}, "", settings, logger, reactor);
