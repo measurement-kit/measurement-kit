@@ -3,7 +3,7 @@
 # information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.2.0-alpha, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.2.0-alpha.1, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -50,6 +50,6 @@ MK_AM_CXXFLAGS_ADD_WARNINGS
 
 # checks for system services
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile include/measurement_kit/common/version.hpp])
 AC_OUTPUT
 MK_AM_PRINT_SUMMARY

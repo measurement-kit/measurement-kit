@@ -126,7 +126,6 @@ class OoniTestImpl : public mk::NetTest {
 
   public:
     json entry;
-    Settings options;
     InputGenerator *input = nullptr;
 
     std::string test_name;
@@ -152,7 +151,7 @@ class OoniTestImpl : public mk::NetTest {
         : OoniTestImpl(input_filepath_, Settings()) {}
 
     OoniTestImpl(std::string input_filepath_, Settings options_)
-        : input_filepath(input_filepath_), options(options_),
+        : NetTest(options_), input_filepath(input_filepath_),
         test_name("net_test"), test_version("0.0.1") {
             mk::utc_time_now(&test_start_time);
         }
@@ -210,8 +209,6 @@ class OoniTestImpl : public mk::NetTest {
         file_report.close();
         cb();
     }
-
-    Var<Reactor> reactor = Reactor::global();
 
     void set_reactor(Var<Reactor> p) { reactor = p; }
 };

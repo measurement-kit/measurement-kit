@@ -85,7 +85,7 @@ Then proceed with the instruction to build and test MeasurementKit.
 To build, MeasurementKit needs:
 
 - a C90 compiler (such as gcc or clang)
-- a C++11 compiler (such as g++ or clang++)
+- a C++11 compiler (such as g++ >= 4.9 or clang++ >= 3.6)
 - autoconf, automake, and libtool
 - a Unix environment (such as Linux or MacOS)
 
@@ -182,13 +182,13 @@ it in your project adding this line in your Podfile:
 You can use a specific branch, e.g.:
 
     pod 'measurement_kit',
-      :git => 'https://github.com/measurement-kit/measurement-kit.git'
+      :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :branch => 'branch-name'
 
 Similarly, you can use a specific tag, e.g.:
 
     pod 'measurement_kit', 
-      :git => 'https://github.com/measurement-kit/measurement-kit.git'
+      :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :tag => 'v0.x.y'
 
 Then type `pod install` and open `.xcworkspace` file (beware not to open the
