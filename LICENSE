@@ -1,4 +1,4 @@
-Copyright (c) 2013-2015, Simone Basso, Arturo Filastò,
+Copyright (c) 2013-2016, Simone Basso, Arturo Filastò,
     Nexa Center for Internet & Society - Politecnico di Torino (DAUIN),
     and the measurement-kit contributors.
 All rights reserved.
@@ -25,8 +25,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 - - -
 
-The following copyright statement applies to the scripts in mobile/ios
-used to compile MeasurementKit which are derivative work of ursachec/CPAProxy.
+The following copyright statement applies to the scripts in build/ios,
+which are a derivative work of ursachec/CPAProxy.
 
 Portions Copyright (c) 2013, Claudiu-Vlad Ursache
 
@@ -76,8 +76,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 - - -
 
-The following copyright statement applies to acinclude.m4 that searchs the
-default ca-bundle for MeasurementKit which are derivative work of curl/curl.
+The following copyright statement applies to portions of acinclude.m4 that
+search for a default CA bundle; they derive from curl code.
 
 Copyright (c) 1996 - 2016, Daniel Stenberg, daniel@haxx.se, and many
 contributors, see the THANKS file.
