@@ -2,5 +2,12 @@
 set -e
 ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
 cd $ROOTDIR/build/ios
+
+# Do not ship *.la files that would break the build and, while there, also
+# remove directories that we don't need for cross compiling MK
+find tmp -type f -name \*.la -exec rm {} \;
+find tmp -type d -name share -exec rm -rf {} \;
+find tmp -type d -name bin -exec rm -rf {} \;
+
 tar -czf ios-dependencies.tgz tmp
 gpg2 -b --armor ios-dependencies.tgz
