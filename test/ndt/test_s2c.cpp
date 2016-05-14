@@ -10,6 +10,7 @@
 
 using namespace mk;
 using namespace mk::ndt;
+using json = nlohmann::json;
 
 static void failure(std::string, int, Callback<Error, Var<Transport>> cb,
                     Settings, Var<Logger>, Var<Reactor>) {
@@ -129,6 +130,135 @@ TEST_CASE("run() deals with coroutine failure") {
                        messages::read_json,
                        messages::write,
                        failure>(ctx, [](Error err) {
+        REQUIRE(err == GenericError());
+    });
+}
+
+static int failure_in_test_start_cnt = 0;
+static void failure_in_test_start(Var<Context>,
+                                  Callback<Error, uint8_t, std::string> cb) {
+    if (failure_in_test_start_cnt++ == 0) {
+        cb(NoError(), TEST_PREPARE, "3010");
+    } else {
+        cb(GenericError(), 0, "");
+    }
+}
+
+static void connect_but_fail_later(std::string, int,
+                    Callback<Error, Continuation<Error, double>> cb,
+                    double, Settings, Var<Logger>, Var<Reactor>) {
+    cb(NoError(), [](Callback<Error, double> cb) {
+        cb(GenericError(), 0.0);
+    });
+}
+
+TEST_CASE("run() deals with error when reading TEST_START") {
+    Var<Context> ctx(new Context);
+    test_s2c::run_impl<failure_in_test_start, messages::format_test_msg,
+                       messages::read_json,
+                       messages::write,
+                       connect_but_fail_later>(ctx, [](Error err) {
+        REQUIRE(err == GenericError());
+    });
+}
+
+static int not_test_start_cnt = 0;
+static void not_test_start(Var<Context>,
+                           Callback<Error, uint8_t, std::string> cb) {
+    if (not_test_start_cnt++ == 0) {
+        cb(NoError(), TEST_PREPARE, "3010");
+    } else {
+        cb(NoError(), MSG_ERROR, "");
+    }
+}
+
+TEST_CASE("run() deals with unexpected message instead of TEST_START") {
+    Var<Context> ctx(new Context);
+    test_s2c::run_impl<not_test_start, messages::format_test_msg,
+                       messages::read_json,
+                       messages::write,
+                       connect_but_fail_later>(ctx, [](Error err) {
+        REQUIRE(err == GenericError());
+    });
+}
+
+static int test_prepare_and_start_cnt = 0;
+static void test_prepare_and_start(Var<Context>,
+                           Callback<Error, uint8_t, std::string> cb) {
+    if (test_prepare_and_start_cnt++ == 0) {
+        cb(NoError(), TEST_PREPARE, "3010");
+    } else {
+        cb(NoError(), TEST_START, "");
+        test_prepare_and_start_cnt = 0; // Prepare for next invocation
+    }
+}
+
+TEST_CASE("run() deals with coroutine terminating with error") {
+    Var<Context> ctx(new Context);
+    test_s2c::run_impl<test_prepare_and_start, messages::format_test_msg,
+                       messages::read_json,
+                       messages::write,
+                       connect_but_fail_later>(ctx, [](Error err) {
+        REQUIRE(err == GenericError());
+    });
+}
+
+static void failure(Var<Context>, Callback<Error, uint8_t, json> cb) {
+    cb(GenericError(), 0, {});
+}
+
+TEST_CASE("run() deals with error when reading TEST_MSG") {
+    Var<Context> ctx(new Context);
+    test_s2c::run_impl<test_prepare_and_start, messages::format_test_msg,
+                       failure,
+                       messages::write,
+                       connect_but_fail_later>(ctx, [](Error err) {
+        REQUIRE(err == GenericError());
+    });
+}
+
+static void invalid_msg(Var<Context>, Callback<Error, uint8_t, json> cb) {
+    cb(NoError(), MSG_ERROR, {});
+}
+
+TEST_CASE("run() deals with unexpected message instead of TEST_MSG") {
+    Var<Context> ctx(new Context);
+    test_s2c::run_impl<test_prepare_and_start, messages::format_test_msg,
+                       invalid_msg,
+                       messages::write,
+                       connect_but_fail_later>(ctx, [](Error err) {
+        REQUIRE(err == GenericError());
+    });
+}
+
+static void msg_test_ok(Var<Context>, Callback<Error, uint8_t, json> cb) {
+    cb(NoError(), TEST_MSG, {});
+}
+
+static ErrorOr<Buffer> failure(std::string) {
+    return GenericError();
+}
+
+TEST_CASE("run() deals with format_test_msg() failure") {
+    Var<Context> ctx(new Context);
+    test_s2c::run_impl<test_prepare_and_start, failure,
+                       msg_test_ok,
+                       messages::write,
+                       connect_but_fail_later>(ctx, [](Error err) {
+        REQUIRE(err == GenericError());
+    });
+}
+
+static void failure(Var<Context>, Buffer, Callback<Error> cb) {
+    cb(GenericError());
+}
+
+TEST_CASE("run() deals with write() failure") {
+    Var<Context> ctx(new Context);
+    test_s2c::run_impl<test_prepare_and_start, messages::format_test_msg,
+                       msg_test_ok,
+                       failure,
+                       connect_but_fail_later>(ctx, [](Error err) {
         REQUIRE(err == GenericError());
     });
 }
