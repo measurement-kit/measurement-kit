@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Tests for src/common/async.cpp's
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 

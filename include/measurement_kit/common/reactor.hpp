@@ -44,6 +44,8 @@ inline void loop_with_initial_event(std::function<void()> cb) {
     Reactor::global()->loop_with_initial_event(cb);
 }
 
+void loop_with_initial_event_and_connectivity(std::function<void()> cb);
+
 inline void loop() { Reactor::global()->loop(); }
 
 inline void loop_once() { Reactor::global()->loop_once(); }

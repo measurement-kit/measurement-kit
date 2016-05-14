@@ -17,9 +17,10 @@ TEST_CASE(
     options["backend"] = "8.8.8.1:53";
     options["dns/timeout"] = 0.1;
     DNSInjectionImpl dns_injection("test/fixtures/hosts.txt", options);
-    dns_injection.begin(
-        [&]() { dns_injection.end([]() { mk::break_loop(); }); });
-    mk::loop();
+    loop_with_initial_event_and_connectivity([&]() {
+        dns_injection.begin(
+            [&]() { dns_injection.end([]() { break_loop(); }); });
+    });
 }
 
 TEST_CASE("The DNS Injection test should throw an exception if an invalid file "

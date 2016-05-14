@@ -6,15 +6,8 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common.hpp>
-#include "src/common/check_connectivity.hpp"
 #include "src/common/utils.hpp"
 #include "src/common/poller.hpp"
-
-#include <event2/dns.h>
-
-#include <functional>
-#include <new>
-#include <stdexcept>
 
 using namespace mk;
 
