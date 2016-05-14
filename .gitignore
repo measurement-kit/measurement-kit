@@ -86,7 +86,8 @@ test/http/parse_url
 test/http/request
 test/http/request_serializer
 test/http/response_parser
-test/ndt/ndt
+test/ndt/integration
+test/ndt/run
 test/net/buffer
 test/net/connect
 test/net/connect-many
