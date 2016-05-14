@@ -10,87 +10,18 @@
 namespace mk {
 namespace traceroute {
 
-/// Socket create error
-class SocketCreateError : public Error {
-  public:
-    /// Default constructor
-    SocketCreateError() : Error(4000, "unknown_failure 4000") {}
-};
-
-/// Setsockopt error
-class SetsockoptError : public Error {
-  public:
-    /// Default constructor
-    SetsockoptError() : Error(4001, "unknown_failure 4001") {}
-};
-
-/// Probe already pending error
-class ProbeAlreadyPendingError : public Error {
-  public:
-    /// Default constructor
-    ProbeAlreadyPendingError() : Error(4002, "unknown_failure 4002") {}
-};
-
-/// Payload too long error
-class PayloadTooLongError : public Error {
-  public:
-    /// Default constructor
-    PayloadTooLongError() : Error(4003, "unknown_failure 4003") {}
-};
-
-/// Storage init error
-class StorageInitError : public Error {
-  public:
-    /// Default constructor
-    StorageInitError() : Error(4004, "unknown_failure 4004") {}
-};
-
-/// Bind error
-class BindError : public Error {
-  public:
-    /// Default constructor
-    BindError() : Error(4005, "unknown_failure 4005") {}
-};
-
-/// Event new error
-class EventNewError : public Error {
-  public:
-    /// Default constructor
-    EventNewError() : Error(4006, "unknown_failure 4006") {}
-};
-
-/// Sendto error
-class SendtoError : public Error {
-  public:
-    /// Default constructor
-    SendtoError() : Error(4007, "unknown_failure 4007") {}
-};
-
-/// No probe pending error
-class NoProbePendingError : public Error {
-  public:
-    /// Default constructor
-    NoProbePendingError() : Error(4008, "unknown_failure 4008") {}
-};
-
-/// Clock gettime error
-class ClockGettimeError : public Error {
-  public:
-    /// Default constructor
-    ClockGettimeError() : Error(4009, "unknown_failure 4009") {}
-};
-
-class EventAddError : public Error {
-  public:
-    /// Default constructor
-    EventAddError() : Error(4010, "unknown_failure 4010") {}
-};
-
-class SocketAlreadyClosedError : public Error {
-  public:
-    /// Default constructor
-    SocketAlreadyClosedError() : Error(4011, "unknown_failure 4011") {}
-};
+MK_DEFINE_ERR(4000, SocketCreateError, "unknown_failure 4000")
+MK_DEFINE_ERR(4001, SetsockoptError, "unknown_failure 4001")
+MK_DEFINE_ERR(4002, ProbeAlreadyPendingError, "unknown_failure 4002")
+MK_DEFINE_ERR(4003, PayloadTooLongError, "unknown_failure 4003")
+MK_DEFINE_ERR(4004, StorageInitError, "unknown_failure 4004")
+MK_DEFINE_ERR(4005, BindError, "unknown_failure 4005")
+MK_DEFINE_ERR(4006, EventNewError, "unknown_failure 4006")
+MK_DEFINE_ERR(4007, SendtoError, "unknown_failure 4007")
+MK_DEFINE_ERR(4008, NoProbePendingError, "unknown_failure 4008")
+MK_DEFINE_ERR(4009, ClockGettimeError, "unknown_failure 4009")
+MK_DEFINE_ERR(4010, EventAddError, "unknown_failure 4010")
+MK_DEFINE_ERR(4011, SocketAlreadyClosedError, "unknown_failure 4011")
 
 } // namespace net
 } // namespace mk
