@@ -51,7 +51,7 @@ class Error : public std::exception {
         _name_() : Error(_code_, _ooe_) {}                                     \
     };
 
-MK_DEFINE_ERR(0, NoError, "success")
+MK_DEFINE_ERR(0, NoError, "")
 MK_DEFINE_ERR(1, GenericError, "unknown_failure 1")
 MK_DEFINE_ERR(2, NotInitializedError, "unknown_failure 2")
 MK_DEFINE_ERR(3, ValueError, "unknown_failure 3")
