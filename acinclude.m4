@@ -221,11 +221,10 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
 
   AC_ARG_WITH(ca-bundle,
 AC_HELP_STRING([--with-ca-bundle=FILE],
-[Path to a file containing CA certificates (example: /etc/ca-bundle.crt)])
-AC_HELP_STRING([--without-ca-bundle], [Don't use a default CA bundle]),
+[Path to a file containing CA certificates (example: /etc/ca-bundle.crt)]),
   [
     want_ca="$withval"
-    if test "x$want_ca" = "xyes"; then
+    if test "x$want_ca" = "xyes" -o "x$want_ca" = "x"; then
       AC_MSG_ERROR([--with-ca-bundle=FILE requires a path to the CA bundle])
     fi
   ],
@@ -247,7 +246,7 @@ AC_HELP_STRING([--without-ca-bundle], [Don't use a default CA bundle]),
                  /usr/share/ssl/certs/ca-bundle.crt \
                  /usr/local/share/certs/ca-root.crt \
                  /etc/ssl/cert.pem \
-                 "$cac"; do
+                 /usr/local/etc/openssl/cert.pem; do
           if test -f "$a"; then
             ca="$a"
             break
