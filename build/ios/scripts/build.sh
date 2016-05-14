@@ -8,6 +8,17 @@ else
     ARCHS="i386 x86_64 armv7 armv7s arm64"
 fi
 
+echo "Downloading and verifying precompiled dependencies from github"
+(
+    set -e # just in case
+    cd $ROOTDIR/..
+    curl --progress-bar -LO https://github.com/measurement-kit/measurement-kit/releases/download/v0.2.0-alpha/ios-dependencies.tgz
+    curl --progress-bar -LO https://github.com/measurement-kit/measurement-kit/releases/download/v0.2.0-alpha/ios-dependencies.tgz.asc
+    gpg2 --verify ios-dependencies.tgz.asc
+    tar -xzf ios-dependencies.tgz
+    rm ios-dependencies.tgz ios-dependencies.tgz.asc
+)
+
 echo "Building for this architectures: $ARCHS"
 
 for ARCH in ${ARCHS}; do
