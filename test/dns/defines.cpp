@@ -6,7 +6,6 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/dns.hpp>
-#include <measurement_kit/common.hpp>
 
 using namespace mk;
 using namespace mk::dns;
