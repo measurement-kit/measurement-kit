@@ -39,6 +39,9 @@ MK_AM_GEOIP
 # checks for types
 # checks for structures
 
+# checks for ca-bundle
+MK_CHECK_CA_BUNDLE
+
 # checks for compiler characteristics
 
 MK_AM_REQUIRE_C99
