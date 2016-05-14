@@ -216,22 +216,19 @@ dnl Search ca-bundle if not given
 dnl This check is inspired by cURL
 
 AC_DEFUN([MK_CHECK_CA_BUNDLE], [
-
   AC_MSG_CHECKING([default CA cert bundle/path])
 
-  AC_ARG_WITH(ca-bundle,
-AC_HELP_STRING([--with-ca-bundle=FILE],
-[Path to a file containing CA certificates (example: /etc/ca-bundle.crt)]),
-  [
-    want_ca="$withval"
-    if test "x$want_ca" = "xyes" -o "x$want_ca" = "x"; then
-      AC_MSG_ERROR([--with-ca-bundle=FILE requires a path to the CA bundle])
-    fi
-  ],
-  [ want_ca="unset" ])
+  AC_ARG_WITH([ca-bundle],
+              AC_HELP_STRING([--with-ca-bundle=FILE],
+               [Path to a file containing CA certificates (example: /etc/ca-bundle.crt)]),
+              [
+              want_ca="$withval"
+              if test "x$want_ca" = "xyes" -o "x$want_ca" = "x"; then
+                   AC_MSG_ERROR([--with-ca-bundle=FILE requires a path to the CA bundle])
+              fi
+              ],
+              [want_ca="unset"])
   
-  ca_warning="   (warning: certs not found)"
-
   if test "x$want_ca" != "xno" -a "x$want_ca" != "xunset"; then
     dnl --with-ca-bundle given
     ca="$want_ca"
@@ -258,12 +255,8 @@ AC_HELP_STRING([--with-ca-bundle=FILE],
     fi
   fi
 
-  if test "x$ca" = "xno" || test -f "$ca"; then
-    ca_warning=""
-  fi
-
   if test "x$ca" != "xno"; then
-    CURL_CA_BUNDLE='"'$ca'"'
+    MK_CA_BUNDLE="$ca"
     AC_DEFINE_UNQUOTED(MK_CA_BUNDLE, "$ca", [Location of default ca bundle])
     AC_SUBST(MK_CA_BUNDLE)
     AC_MSG_RESULT([$ca])
