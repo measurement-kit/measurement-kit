@@ -70,6 +70,7 @@ test/common/delegate
 test/common/error_or
 test/common/logger
 test/common/poller
+test/common/reactor
 test/common/settings
 test/common/utils
 test/common/var
