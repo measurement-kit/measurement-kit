@@ -53,7 +53,6 @@ example/net/transport
 example/ooni/dns_injection
 example/ooni/http_invalid_request_line
 example/ooni/tcp_connect
-include/measurement_kit/common/version.hpp
 install-sh
 libtool
 ltmain.sh
