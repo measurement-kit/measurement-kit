@@ -212,6 +212,58 @@ CXXFLAGS="$measurement_kit_saved_cxxflags $measurement_kit_cxx_stdlib_flags"
 AC_LANG_POP([C++])
 ])
 
+dnl Search ca-bundle if not given
+dnl This check is inspired by cURL
+
+AC_DEFUN([MK_CHECK_CA_BUNDLE], [
+  AC_MSG_CHECKING([default CA cert bundle/path])
+
+  AC_ARG_WITH([ca-bundle],
+              AC_HELP_STRING([--with-ca-bundle=FILE],
+               [Path to a file containing CA certificates (example: /etc/ca-bundle.crt)]),
+              [
+               want_ca="$withval"
+              ],
+              [want_ca="unset"])
+  
+  if test "x$want_ca" != "xunset"; then
+    dnl --with-ca-bundle given
+    ca="$want_ca"
+  else
+    dnl first try autodetecting a CA bundle
+    ca="no"
+    if test "x$cross_compiling" != "xyes"; then
+      dnl NOT cross-compiling and...
+      dnl --with-ca-* option is not  provided
+        for a in /etc/ssl/certs/ca-certificates.crt \
+                 /etc/pki/tls/certs/ca-bundle.crt \
+                 /usr/share/ssl/certs/ca-bundle.crt \
+                 /usr/local/share/certs/ca-root.crt \
+                 /etc/ssl/cert.pem \
+                 /usr/local/etc/openssl/cert.pem; do
+          if test -f "$a"; then
+            ca="$a"
+            break
+          fi
+        done
+    else
+      dnl no option given and cross-compiling
+      AC_MSG_WARN([skipped the ca-bundle detection when cross-compiling])
+    fi
+  fi
+
+  if test "x$ca" != "xno"; then
+    MK_CA_BUNDLE="$ca"
+    AC_DEFINE_UNQUOTED(MK_CA_BUNDLE, "$ca", [Location of default ca bundle])
+    AC_SUBST(MK_CA_BUNDLE)
+    AC_MSG_RESULT([$ca])
+  fi
+  if test "x$ca" = "xno"; then
+    AC_MSG_RESULT([no])
+  fi
+])
+
+
 AC_DEFUN([MK_AM_CXXFLAGS_ADD_WARNINGS], [
   AC_MSG_CHECKING([whether compiler is clang to add clang specific warnings])
   if test echo | $CXX -dM -E - | grep __clang__ > /dev/null; then
