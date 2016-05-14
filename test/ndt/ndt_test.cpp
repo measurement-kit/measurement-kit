@@ -10,7 +10,5 @@
 using namespace mk::ndt;
 
 TEST_CASE("The NDT test DSL works") {
-    NdtTest()
-        .set_verbosity(MK_LOG_INFO)
-        .run();
+    NdtTest().set_verbosity(MK_LOG_INFO).run();
 }
