@@ -15,47 +15,12 @@
 namespace mk {
 namespace mlabns {
 
-/// Invalid mlab-ns policy error
-class InvalidPolicyError : public Error {
-  public:
-    /// Default constructor
-    InvalidPolicyError() : Error(5000, "unknown_failure 5000") {}
-};
-
-/// Invalid mlab-ns address-family error
-class InvalidAddressFamilyError : public Error {
-  public:
-    /// Default constructor
-    InvalidAddressFamilyError() : Error(5001, "unknown_failure 5001") {}
-};
-
-/// Invalid mlab-ns metro error
-class InvalidMetroError : public Error {
-  public:
-    /// Default constructor
-    InvalidMetroError() : Error(5002, "unknown_failure 5002") {}
-};
-
-/// Invalid mlab-ns tool name error
-class InvalidToolNameError : public Error {
-  public:
-    /// Default constructor
-    InvalidToolNameError() : Error(5003, "unknown_failure 5003") {}
-};
-
-/// Invalid mlab-ns HTTP status code error
-class UnexpectedHttpStatusCodeError : public Error {
-  public:
-    /// Default constructor
-    UnexpectedHttpStatusCodeError() : Error(5004, "unknown_failure 5004") {}
-};
-
-/// Invalid mlab-ns JSON error
-class JsonParsingError : public Error {
-  public:
-    /// Default constructor
-    JsonParsingError() : Error(5005, "unknown_failure 5005") {}
-};
+MK_DEFINE_ERR(5000, InvalidPolicyError, "unknown_failure 5000")
+MK_DEFINE_ERR(5001, InvalidAddressFamilyError, "unknown_failure 5001")
+MK_DEFINE_ERR(5002, InvalidMetroError, "unknown_failure 5002")
+MK_DEFINE_ERR(5003, InvalidToolNameError, "unknown_failure 5003")
+MK_DEFINE_ERR(5004, UnexpectedHttpStatusCodeError, "unknown_failure 5004")
+MK_DEFINE_ERR(5005, JsonParsingError, "unknown_failure 5005")
 
 /// Reply to mlab-ns query.
 class Reply {
