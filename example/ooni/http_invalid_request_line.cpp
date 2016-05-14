@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// This example will run a synchronous http_invalid_request_line test
-//
-
 #include <measurement_kit/ooni.hpp>
 #include <iostream>
 #include <string>
@@ -40,7 +36,7 @@ int main(int argc, char **argv) {
     }
 
     mk::ooni::HttpInvalidRequestLineTest()
-        .set_backend(backend)
+        .set_options("backend", backend)
         .set_verbosity(verbosity)
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
