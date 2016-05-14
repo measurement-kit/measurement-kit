@@ -5,6 +5,7 @@
 #define SRC_NDT_RUN_IMPL_HPP
 
 #include "src/ndt/internal.hpp"
+#include <measurement_kit/mlabns.hpp>
 
 namespace mk {
 namespace ndt {
