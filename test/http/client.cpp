@@ -17,8 +17,8 @@ using namespace mk::http;
 // TODO: these tests should go in test/http/request.cpp
 
 TEST_CASE("http::request() works as expected") {
-    loop_with_initial_event_and_connectivity([]() {
-        auto count = 0;
+    auto count = 0;
+    loop_with_initial_event_and_connectivity([&]() {
 
         request(
             {
@@ -77,8 +77,8 @@ TEST_CASE("http::request() works as expected") {
 }
 
 TEST_CASE("http::request() works as expected over Tor") {
-    loop_with_initial_event_and_connectivity([]() {
-        auto count = 0;
+    auto count = 0;
+    loop_with_initial_event_and_connectivity([&]() {
 
         request(
             {
