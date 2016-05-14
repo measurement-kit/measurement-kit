@@ -77,7 +77,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 - - -
 
 The following copyright statement applies to portions of acinclude.m4 that
-search for a default, which are a derivative work of curl/curl.
+search for a default CA bundle; they derive from curl code.
 
 Copyright (c) 1996 - 2016, Daniel Stenberg, daniel@haxx.se, and many
 contributors, see the THANKS file.
