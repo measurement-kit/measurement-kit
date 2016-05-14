@@ -59,7 +59,7 @@ static void invalid(Var<Transport>, Var<Buffer> buff, size_t n,
                     Callback<Error> cb) {
     std::string s(n, 'a');
     buff->write(s);
-    cb(GenericError());
+    cb(NoError());
 }
 
 TEST_CASE("recv_and_ignore_kickoff() deals with invalid kickoff message") {
@@ -198,4 +198,19 @@ TEST_CASE("wait_close() deals with a extra data") {
     ctx->txp.reset(new Emitter);
     protocol::wait_close_impl<no_error>(
         ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+// To increase coverage
+TEST_CASE("disconnect_and_callback_impl() without transport") {
+    Var<Context> ctx(new Context);
+    ctx->callback = [](Error e) { REQUIRE(e == NoError()); };
+    protocol::disconnect_and_callback_impl(ctx, NoError());
+}
+
+// To increase coverage
+TEST_CASE("disconnect_and_callback_impl() with transport") {
+    Var<Context> ctx(new Context);
+    ctx->txp.reset(new Emitter);
+    ctx->callback = [](Error e) { REQUIRE(e == NoError()); };
+    protocol::disconnect_and_callback_impl(ctx, NoError());
 }
