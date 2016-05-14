@@ -139,7 +139,7 @@ static void test_prepare_and_start(Var<Context>,
         cb(NoError(), TEST_PREPARE, "3010");
     } else {
         cb(NoError(), TEST_START, "");
-        test_prepare_and_start_cnt = 0; // Prepare for next invocation
+        count = 0; // Prepare for next invocation
     }
 }
 
