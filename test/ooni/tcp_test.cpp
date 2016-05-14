@@ -18,40 +18,42 @@ TEST_CASE("TCPTestImpl works as expected in a common case") {
     auto count = 0;
     TCPTestImpl tcp_test("", Settings());
 
-    tcp_test.connect(
-        {
-         {"host", "www.neubot.org"}, {"port", "80"},
-        },
-        [&count](Error, Var<net::Transport> txp) {
-            if (++count >= 3) {
-                txp->close([]() { mk::break_loop(); });
-            } else {
-                txp->close([]() {});
-            }
-        });
+    loop_with_initial_event_and_connectivity([&]() {
 
-    tcp_test.connect(
-        {
-         {"host", "ooni.nu"}, {"port", "80"},
-        },
-        [&count](Error, Var<net::Transport> txp) {
-            if (++count >= 3) {
-                txp->close([]() { mk::break_loop(); });
-            } else {
-                txp->close([]() {});
-            }
-        });
+        tcp_test.connect(
+            {
+                {"host", "www.neubot.org"}, {"port", "80"},
+            },
+            [&count](Error, Var<net::Transport> txp) {
+                if (++count >= 3) {
+                    txp->close([]() { break_loop(); });
+                } else {
+                    txp->close([]() {});
+                }
+            });
 
-    tcp_test.connect(
-        {
-         {"host", "ooni.nu"}, {"port", "80"}, 
-         {"dns/nameserver", "8.8.8.1"}, {"dns/timeout", 0.0001}
-        },
-        [&count](Error err, Var<net::Transport> txp) {
-            REQUIRE(err);
-            if (++count >= 3) {
-                []() { mk::break_loop(); };
-            }
-        });
-    mk::loop();
+        tcp_test.connect(
+            {
+                {"host", "ooni.nu"}, {"port", "80"},
+            },
+            [&count](Error, Var<net::Transport> txp) {
+                if (++count >= 3) {
+                    txp->close([]() { break_loop(); });
+                } else {
+                    txp->close([]() {});
+                }
+            });
+
+        tcp_test.connect({{"host", "ooni.nu"},
+                          {"port", "80"},
+                          {"dns/nameserver", "8.8.8.1"},
+                          {"dns/timeout", 0.0001}},
+                         [&count](Error err, Var<net::Transport> txp) {
+                             REQUIRE(err);
+                             if (++count >= 3) {
+                                 []() { break_loop(); };
+                             }
+                         });
+
+    });
 }

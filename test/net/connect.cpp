@@ -2,18 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Tests for src/net/connect.{c,h}pp
-//
-
 #define CATCH_CONFIG_MAIN
 
 #include "src/net/connect.hpp"
-#include "src/common/check_connectivity.hpp"
 #include "src/ext/Catch/single_include/catch.hpp"
 #include <event2/bufferevent.h>
 #include <iostream>
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
 using namespace mk;
 using namespace mk::net;
@@ -34,12 +28,12 @@ static int fail(const char *, sockaddr *, int *) { return -1; }
 TEST_CASE("connect_base deals with evutil_parse_sockaddr_port error") {
     loop_with_initial_event([]() {
         connect_base<fail>("130.192.16.172", 80,
-                [](Error e, bufferevent *b) {
-                    REQUIRE(e);
-                    REQUIRE(b == nullptr);
-                    break_loop();
-                },
-                3.14);
+                           [](Error e, bufferevent *b) {
+                               REQUIRE(e);
+                               REQUIRE(b == nullptr);
+                               break_loop();
+                           },
+                           3.14);
     });
 }
 
@@ -48,8 +42,8 @@ static bufferevent *fail(event_base *, evutil_socket_t, int) { return nullptr; }
 TEST_CASE("connect_base deals with bufferevent_socket_new error") {
     bool ok = false;
     try {
-        connect_base<::evutil_parse_sockaddr_port, fail>(
-                "130.192.16.172", 80, nullptr, 3.14);
+        connect_base<::evutil_parse_sockaddr_port, fail>("130.192.16.172", 80,
+                                                         nullptr, 3.14);
     } catch (GenericError &) {
         ok = true;
     }
@@ -62,7 +56,7 @@ TEST_CASE("connect_base deals with bufferevent_set_timeouts error") {
     bool ok = false;
     try {
         connect_base<::evutil_parse_sockaddr_port, ::bufferevent_socket_new,
-                fail>("130.192.16.172", 80, nullptr, 3.14);
+                     fail>("130.192.16.172", 80, nullptr, 3.14);
     } catch (GenericError &) {
         ok = true;
     }
@@ -72,15 +66,17 @@ TEST_CASE("connect_base deals with bufferevent_set_timeouts error") {
 static int fail(bufferevent *, sockaddr *, int) { return -1; }
 
 TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
+    // Note: connectivity not required to run this test
     loop_with_initial_event([]() {
         connect_base<::evutil_parse_sockaddr_port, ::bufferevent_socket_new,
-                bufferevent_set_timeouts, fail>("130.192.16.172", 80,
-                [](Error e, bufferevent *b) {
-                    REQUIRE(e);
-                    REQUIRE(b == nullptr);
-                    break_loop();
-                },
-                3.14);
+                     bufferevent_set_timeouts, fail>(
+            "130.192.16.172", 80,
+            [](Error e, bufferevent *b) {
+                REQUIRE(e);
+                REQUIRE(b == nullptr);
+                break_loop();
+            },
+            3.14);
     });
 }
 
@@ -94,140 +90,117 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
 */
 
 TEST_CASE("connect_base works with ipv4") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         connect_base("130.192.16.172", 80,
-                [](Error err, bufferevent *bev) {
-                    REQUIRE(!err);
-                    REQUIRE(bev);
-                    ::bufferevent_free(bev);
-                    break_loop();
-                },
-                3.14);
+                     [](Error err, bufferevent *bev) {
+                         REQUIRE(!err);
+                         REQUIRE(bev);
+                         ::bufferevent_free(bev);
+                         break_loop();
+                     },
+                     3.14);
     });
 }
 
-static bool check_error (Error err) {
+static bool check_error(Error err) {
     return err == NetworkError() or err == TimeoutError();
 }
 
 TEST_CASE("connect_base works with ipv4 and closed port") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         connect_base("130.192.16.172", 81,
-                [](Error err, bufferevent *bev) {
-                    REQUIRE(check_error(err));
-                    REQUIRE(bev == nullptr);
-                    break_loop();
-                },
-                3.14);
+                     [](Error err, bufferevent *bev) {
+                         REQUIRE(check_error(err));
+                         REQUIRE(bev == nullptr);
+                         break_loop();
+                     },
+                     3.14);
     });
 }
 
 TEST_CASE("connect_base works with ipv4 and timeout") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         connect_base("130.192.16.172", 80,
-                [](Error err, bufferevent *bev) {
-                    REQUIRE(err == TimeoutError());
-                    REQUIRE(bev == nullptr);
-                    break_loop();
-                },
-                0.00001);
+                     [](Error err, bufferevent *bev) {
+                         REQUIRE(err == TimeoutError());
+                         REQUIRE(bev == nullptr);
+                         break_loop();
+                     },
+                     0.00001);
     });
 }
 
 TEST_CASE("connect_base works with ipv6") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         connect_base("2a00:1450:4001:801::1004", 80,
-                [](Error err, bufferevent *bev) {
-                    if (err) {
-                        REQUIRE(err);
-                        REQUIRE(bev == nullptr);
-                    } else {
-                        REQUIRE(!err);
-                        REQUIRE(bev);
-                        ::bufferevent_free(bev);
-                    }
-                    break_loop();
-                },
-                3.14);
+                     [](Error err, bufferevent *bev) {
+                         if (err) {
+                             REQUIRE(err);
+                             REQUIRE(bev == nullptr);
+                         } else {
+                             REQUIRE(!err);
+                             REQUIRE(bev);
+                             ::bufferevent_free(bev);
+                         }
+                         break_loop();
+                     },
+                     3.14);
     });
 }
 
 TEST_CASE("connect_first_of works with empty vector") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         connect_first_of({}, 80,
-                [](std::vector<Error> errors, bufferevent *bev) {
-                    REQUIRE(errors.size() == 0);
-                    REQUIRE(bev == nullptr);
-                    break_loop();
-                }, {{"net/timeout", 3.14}});
+                         [](std::vector<Error> errors, bufferevent *bev) {
+                             REQUIRE(errors.size() == 0);
+                             REQUIRE(bev == nullptr);
+                             break_loop();
+                         },
+                         {{"net/timeout", 3.14}});
     });
 }
 
 TEST_CASE("connect_first_of works when all connect fail") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         connect_first_of(
-                {
-                        "130.192.16.172", "130.192.16.172", "130.192.16.172",
-                },
-                80,
-                [](std::vector<Error> errors, bufferevent *bev) {
-                    REQUIRE(errors.size() == 3);
-                    for (Error err : errors) {
-                        REQUIRE(err == TimeoutError());
-                    }
-                    REQUIRE(bev == nullptr);
-                    break_loop();
-                },
-                {{"net/timeout", 0.00001}});
+            {
+                "130.192.16.172", "130.192.16.172", "130.192.16.172",
+            },
+            80,
+            [](std::vector<Error> errors, bufferevent *bev) {
+                REQUIRE(errors.size() == 3);
+                for (Error err : errors) {
+                    REQUIRE(err == TimeoutError());
+                }
+                REQUIRE(bev == nullptr);
+                break_loop();
+            },
+            {{"net/timeout", 0.00001}});
     });
 }
 
 TEST_CASE("connect_first_of works when a connect succeeds") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         connect_first_of(
-                {
-                        "130.192.16.172", "130.192.16.172", "130.192.16.172",
-                },
-                80,
-                [](std::vector<Error> errors, bufferevent *bev) {
-                    REQUIRE(errors.size() == 1);
-                    for (Error err : errors) {
-                        REQUIRE(err == NoError());
-                    }
-                    REQUIRE(bev);
-                    ::bufferevent_free(bev);
-                    break_loop();
-                },
-                {{"net/timeout", 3.14}});
+            {
+                "130.192.16.172", "130.192.16.172", "130.192.16.172",
+            },
+            80,
+            [](std::vector<Error> errors, bufferevent *bev) {
+                REQUIRE(errors.size() == 1);
+                for (Error err : errors) {
+                    REQUIRE(err == NoError());
+                }
+                REQUIRE(bev);
+                ::bufferevent_free(bev);
+                break_loop();
+            },
+            {{"net/timeout", 3.14}});
     });
 }
 
 TEST_CASE("resolve_hostname works with IPv4 address") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         std::string hostname = "130.192.16.172";
         resolve_hostname(hostname, [hostname](ResolveHostnameResult r) {
             REQUIRE(r.inet_pton_ipv4);
@@ -239,10 +212,7 @@ TEST_CASE("resolve_hostname works with IPv4 address") {
 }
 
 TEST_CASE("resolve_hostname works with IPv6 address") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         std::string hostname = "2a00:1450:400d:807::200e";
         resolve_hostname(hostname, [hostname](ResolveHostnameResult r) {
             REQUIRE(r.inet_pton_ipv6);
@@ -254,10 +224,7 @@ TEST_CASE("resolve_hostname works with IPv6 address") {
 }
 
 TEST_CASE("resolve_hostname works with domain") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         resolve_hostname("google.com", [](ResolveHostnameResult r) {
             REQUIRE(not r.inet_pton_ipv4);
             REQUIRE(not r.inet_pton_ipv6);
@@ -271,10 +238,7 @@ TEST_CASE("resolve_hostname works with domain") {
 }
 
 TEST_CASE("stress resolve_hostname with invalid address and domain") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         // Pass input that is neither invalid IPvX nor valid domain
         resolve_hostname("192.1688.antani", [](ResolveHostnameResult r) {
             REQUIRE(not r.inet_pton_ipv4);
@@ -288,10 +252,7 @@ TEST_CASE("stress resolve_hostname with invalid address and domain") {
 }
 
 TEST_CASE("connect() works with valid IPv4") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         connect_logic("www.google.com", 80, [](Error e, Var<ConnectResult> r) {
             REQUIRE(!e);
             REQUIRE(r->connected_bev != nullptr);
@@ -302,10 +263,7 @@ TEST_CASE("connect() works with valid IPv4") {
 }
 
 TEST_CASE("connect() fails when port is closed or filtered") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
+    loop_with_initial_event_and_connectivity([]() {
         connect_logic("www.google.com", 81, [](Error e, Var<ConnectResult> r) {
             REQUIRE(e);
             REQUIRE(r->connected_bev == nullptr);
@@ -315,14 +273,15 @@ TEST_CASE("connect() fails when port is closed or filtered") {
 }
 
 TEST_CASE("connect() fails when setting an invalid dns") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    loop_with_initial_event([]() {
-        connect_logic("www.google.com", 80, [](Error e, Var<ConnectResult> r) {
-            REQUIRE(e);
-            REQUIRE(r->connected_bev == nullptr);
-            break_loop();
-        }, {{"dns/nameserver", "8.8.8.1"}, {"dns/timeout",0.001}, {"dns/attempts",1}});
+    loop_with_initial_event_and_connectivity([]() {
+        connect_logic("www.google.com", 80,
+                      [](Error e, Var<ConnectResult> r) {
+                          REQUIRE(e);
+                          REQUIRE(r->connected_bev == nullptr);
+                          break_loop();
+                      },
+                      {{"dns/nameserver", "8.8.8.1"},
+                       {"dns/timeout", 0.001},
+                       {"dns/attempts", 1}});
     });
 }

@@ -2,15 +2,10 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Tests for include/measurement_kit/common/settings.hpp
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common/settings.hpp>
-#include <string>
 
 using namespace mk;
 
