@@ -76,7 +76,7 @@ TEST_CASE("Make sure that it can pass options to the other levels") {
 TEST_CASE("Make sure that the test can deal with an invalid backend") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
     ooni::HttpInvalidRequestLineTest()
-        .set_backend("nexacenter.org")
+        .set_options("backend", "nexacenter.org")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs) std::cout << s << "\n";
