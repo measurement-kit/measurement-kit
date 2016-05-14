@@ -1,0 +1,201 @@
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
+
+#define CATCH_CONFIG_MAIN
+#include "src/ext/Catch/single_include/catch.hpp"
+
+#include "src/net/emitter.hpp"
+#include "src/ndt/protocol_impl.hpp"
+#include <measurement_kit/ndt.hpp>
+
+using namespace mk;
+using namespace mk::ndt;
+using namespace mk::net;
+using json = nlohmann::json;
+
+static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
+                 Var<Logger>, Var<Reactor>) {
+    cb(GenericError(), nullptr);
+}
+
+TEST_CASE("we deal with connect() errors") {
+    Var<Context> ctx(new Context);
+    protocol::connect_impl<fail>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+static ErrorOr<Buffer> fail(unsigned char) { return GenericError(); }
+
+TEST_CASE("send_extended_login() deals with message formatting error") {
+    Var<Context> ctx(new Context);
+    protocol::send_extended_login_impl<fail>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+static ErrorOr<Buffer> success(unsigned char) { return Buffer(); }
+
+static void fail(Var<Context>, Buffer, Callback<Error> cb) {
+    cb(GenericError());
+}
+
+TEST_CASE("send_extended_login() deals with write error") {
+    Var<Context> ctx(new Context);
+    protocol::send_extended_login_impl<success, fail>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+static void fail(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb) {
+    cb(GenericError());
+}
+
+TEST_CASE("recv_and_ignore_kickoff() deals with readn() error") {
+    Var<Context> ctx(new Context);
+    protocol::recv_and_ignore_kickoff_impl<fail>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+static void invalid(Var<Transport>, Var<Buffer> buff, size_t n,
+                    Callback<Error> cb) {
+    std::string s(n, 'a');
+    buff->write(s);
+    cb(GenericError());
+}
+
+TEST_CASE("recv_and_ignore_kickoff() deals with invalid kickoff message") {
+    Var<Context> ctx(new Context);
+    protocol::recv_and_ignore_kickoff_impl<invalid>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+    cb(GenericError(), 0, "");
+}
+
+TEST_CASE("wait_in_queue() deals with read() error") {
+    Var<Context> ctx(new Context);
+    protocol::wait_in_queue_impl<fail>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+static void unexpected(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+    cb(NoError(), MSG_ERROR, "");
+}
+
+TEST_CASE("wait_in_queue() deals with unexpected message error") {
+    Var<Context> ctx(new Context);
+    protocol::wait_in_queue_impl<unexpected>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+static void bad_time(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+    cb(NoError(), SRV_QUEUE, "xo");
+}
+
+TEST_CASE("wait_in_queue() deals with invalid wait time") {
+    Var<Context> ctx(new Context);
+    protocol::wait_in_queue_impl<bad_time>(
+        ctx, [](Error err) { REQUIRE(err == ValueError()); });
+}
+
+static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+    cb(NoError(), SRV_QUEUE, "1");
+}
+
+TEST_CASE("wait_in_queue() deals with nonzero wait time") {
+    Var<Context> ctx(new Context);
+    protocol::wait_in_queue_impl<nonzero>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+TEST_CASE("recv_version() deals with read() error") {
+    Var<Context> ctx(new Context);
+    protocol::recv_version_impl<fail>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+TEST_CASE("recv_version() deals with unexpected message error") {
+    Var<Context> ctx(new Context);
+    protocol::recv_version_impl<unexpected>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+TEST_CASE("recv_tests_id() deals with read() error") {
+    Var<Context> ctx(new Context);
+    protocol::recv_tests_id_impl<fail>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+TEST_CASE("recv_tests_id() deals with unexpected message error") {
+    Var<Context> ctx(new Context);
+    protocol::recv_tests_id_impl<unexpected>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+TEST_CASE("run_tests() deals with invalid number") {
+    Var<Context> ctx(new Context);
+    ctx->granted_suite.push_front("");
+    protocol::run_tests(ctx, [](Error err) { REQUIRE(err); });
+}
+
+TEST_CASE("run_tests() deals with unknown test") {
+    Var<Context> ctx(new Context);
+    ctx->granted_suite.push_front("71");
+    protocol::run_tests(ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+TEST_CASE("recv_results_and_logout() deals with read() error") {
+    Var<Context> ctx(new Context);
+    protocol::recv_results_and_logout_impl<fail>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+TEST_CASE("recv_results_and_logout() deals with unexpected message error") {
+    Var<Context> ctx(new Context);
+    protocol::recv_results_and_logout_impl<unexpected>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+static void eof_error(Var<Transport>, Var<Buffer>, Callback<Error> cb) {
+    cb(EofError());
+}
+
+TEST_CASE("wait_close() deals with EofError") {
+    Var<Context> ctx(new Context);
+    ctx->txp.reset(new Emitter);
+    protocol::wait_close_impl<eof_error>(
+        ctx, [](Error err) { REQUIRE(err == NoError()); });
+}
+
+static void timeout_error(Var<Transport>, Var<Buffer>, Callback<Error> cb) {
+    cb(TimeoutError());
+}
+
+TEST_CASE("wait_close() deals with TimeoutError") {
+    Var<Context> ctx(new Context);
+    ctx->txp.reset(new Emitter);
+    protocol::wait_close_impl<timeout_error>(
+        ctx, [](Error err) { REQUIRE(err == NoError()); });
+}
+
+static void generic_error(Var<Transport>, Var<Buffer>, Callback<Error> cb) {
+    cb(GenericError());
+}
+
+TEST_CASE("wait_close() deals with an error") {
+    Var<Context> ctx(new Context);
+    ctx->txp.reset(new Emitter);
+    protocol::wait_close_impl<generic_error>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}
+
+static void no_error(Var<Transport>, Var<Buffer>, Callback<Error> cb) {
+    cb(NoError());
+}
+
+TEST_CASE("wait_close() deals with a extra data") {
+    Var<Context> ctx(new Context);
+    ctx->txp.reset(new Emitter);
+    protocol::wait_close_impl<no_error>(
+        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+}

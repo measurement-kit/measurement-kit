@@ -149,7 +149,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     std::string s = ctx->granted_suite.front();
     ctx->granted_suite.pop_front();
 
-    ErrorOr<int> num = lexical_cast<int>(s);
+    ErrorOr<int> num = lexical_cast_noexcept<int>(s);
     if (!num) {
         callback(num.as_error());
         return;
