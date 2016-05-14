@@ -84,6 +84,7 @@ test/http/parse_url
 test/http/request
 test/http/request_serializer
 test/http/response_parser
+test/mlabns/mlabns
 test/net/buffer
 test/net/connect
 test/net/connect-many
