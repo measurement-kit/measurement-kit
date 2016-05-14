@@ -53,6 +53,6 @@ MK_AM_CXXFLAGS_ADD_WARNINGS
 
 # checks for system services
 
-AC_CONFIG_FILES([Makefile include/measurement_kit/common/version.hpp])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 MK_AM_PRINT_SUMMARY
