@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include <arpa/inet.h>
+#include <errno.h>
 #include <event2/dns.h>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
@@ -54,6 +55,11 @@ void Connection::handle_event_(short what) {
 
     if (what & BEV_EVENT_TIMEOUT) {
         emit_error(TimeoutError());
+        return;
+    }
+
+    if (errno == EPIPE) {
+        emit_error(BrokenPipeError());
         return;
     }
 
