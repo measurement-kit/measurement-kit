@@ -214,7 +214,7 @@ AC_LANG_POP([C++])
 
 
 AC_DEFUN([MK_CHECK_CA_BUNDLE], [
-  AC_MSG_CHECKING([default CA cert bundle/path])
+  AC_MSG_CHECKING([CA bundle path])
 
   AC_ARG_WITH([ca-bundle],
               AC_HELP_STRING([--with-ca-bundle=FILE],
