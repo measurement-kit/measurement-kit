@@ -14,40 +14,12 @@
 namespace mk {
 namespace http {
 
-/// Received UPGRADE request error.
-class UpgradeError : public Error {
-  public:
-    UpgradeError (): Error(3000, "unknown_error 3000") {};
-};
-
-/// Parse error occurred.
-class ParserError : public Error {
-  public:
-    ParserError() : Error(3001, "unknown_error 3001") {};
-};
-
-/// Url Parse error occurred.
-class UrlParserError : public Error {
-  public:
-    UrlParserError() : Error(3002, "unknown_error 3002") {};
-};
-
-/// Missing Url Schema error occurred.
-class MissingUrlSchemaError : public Error {
-  public:
-    MissingUrlSchemaError() : Error(3003, "unknown_error 3003") {};
-};
-
-/// Missing Url Host error occurred.
-class MissingUrlHostError : public Error {
-  public:
-    MissingUrlHostError() : Error(3004, "unknown_error 3004") {};
-};
-
-class MissingUrlError : public Error {
-  public:
-    MissingUrlError() : Error(3005, "unknown_error 3005") {};
-};
+MK_DEFINE_ERR(3000, UpgradeError, "unknown_error 3000")
+MK_DEFINE_ERR(3001, ParserError, "unknown_error 3001")
+MK_DEFINE_ERR(3002, UrlParserError, "unknown_error 3002")
+MK_DEFINE_ERR(3003, MissingUrlSchemaError, "unknown_error 3003")
+MK_DEFINE_ERR(3004, MissingUrlHostError, "unknown_error 3004")
+MK_DEFINE_ERR(3005, MissingUrlError, "unknown_error 3005")
 
 /// HTTP headers.
 typedef std::map<std::string, std::string> Headers;

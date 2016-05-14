@@ -6,8 +6,8 @@
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
 #include <exception>
-#include <measurement_kit/common/var.hpp>
 #include <iosfwd>
+#include <measurement_kit/common/var.hpp>
 #include <string>
 
 namespace mk {
@@ -45,29 +45,16 @@ class Error : public std::exception {
     std::string ooni_error_;
 };
 
-/// No error
-class NoError : public Error {
-  public:
-    NoError() : Error() {} ///< Default constructor
-};
+#define MK_DEFINE_ERR(_code_, _name_, _ooe_)                                   \
+    class _name_ : public Error {                                              \
+      public:                                                                  \
+        _name_() : Error(_code_, _ooe_) {}                                     \
+    };
 
-/// Generic error
-class GenericError : public Error {
-  public:
-    GenericError() : Error(1, "unknown_failure 1") {} ///< Default constructor
-};
-
-/// Not initialized error
-class NotInitializedError : public Error {
-  public:
-    NotInitializedError() : Error(2, "unknown_failure 2") {}
-};
-
-/// Value error
-class ValueError : public Error {
-  public:
-    ValueError() : Error(3, "unknown_failure 3") {}
-};
+MK_DEFINE_ERR(0, NoError, "success")
+MK_DEFINE_ERR(1, GenericError, "unknown_failure 1")
+MK_DEFINE_ERR(2, NotInitializedError, "unknown_failure 2")
+MK_DEFINE_ERR(3, ValueError, "unknown_failure 3")
 
 } // namespace mk
 #endif
