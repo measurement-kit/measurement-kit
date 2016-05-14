@@ -89,6 +89,7 @@ test/http/response_parser
 test/ndt/integration
 test/ndt/ndt_test
 test/ndt/run
+test/ndt/test_s2c
 test/net/buffer
 test/net/connect
 test/net/connect-many
