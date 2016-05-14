@@ -27,7 +27,7 @@ TESTS = $(ALL_TESTS)
 check_PROGRAMS = $(ALL_TESTS)
 
 VALGRIND = valgrind --trace-children=yes --error-exitcode=1                    \
-                    --dsymutil=yes --leak-check=yes
+                    --dsymutil=yes --leak-check=yes --gen-suppressions=all
 
 run-valgrind: $(check_PROGRAMS)
 	                                                                       \
