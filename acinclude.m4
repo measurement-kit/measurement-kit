@@ -222,14 +222,11 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
               AC_HELP_STRING([--with-ca-bundle=FILE],
                [Path to a file containing CA certificates (example: /etc/ca-bundle.crt)]),
               [
-              want_ca="$withval"
-              if test "x$want_ca" = "xyes" -o "x$want_ca" = "x"; then
-                   AC_MSG_ERROR([--with-ca-bundle=FILE requires a path to the CA bundle])
-              fi
+               want_ca="$withval"
               ],
               [want_ca="unset"])
   
-  if test "x$want_ca" != "xno" -a "x$want_ca" != "xunset"; then
+  if test "x$want_ca" != "xunset"; then
     dnl --with-ca-bundle given
     ca="$want_ca"
   else
