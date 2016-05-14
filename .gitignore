@@ -92,6 +92,7 @@ test/ndt/ndt_test
 test/ndt/protocol
 test/ndt/run
 test/ndt/test_c2s
+test/ndt/test_meta
 test/ndt/test_s2c
 test/net/buffer
 test/net/connect
