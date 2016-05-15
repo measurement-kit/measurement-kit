@@ -4,8 +4,6 @@
 #ifndef MEASUREMENT_KIT_COMMON_MOCK_HPP
 #define MEASUREMENT_KIT_COMMON_MOCK_HPP
 
-#include <measurement_kit/common/error.hpp>
-
 /*
 Simplifies life when you use templates for mocking APIs because
 allows you to write the following:
