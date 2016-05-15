@@ -28,28 +28,6 @@ TEST_CASE("read_ndt() deals with the first readn() error") {
     });
 }
 
-// These two tests trigger "impossible cases" that now are handled
-// in code using assert(), thus they are commented out
-#if 0
-TEST_CASE("read_ndt() deals with read_uint8() error") {
-    Var<Context> ctx(new Context);
-    // Do not write any byte so we cannot read a uint8
-    messages::read_ll_impl<succeed>(ctx, [](Error err, uint8_t, std::string) {
-        REQUIRE(err == ReadingMessageTypeError());
-    });
-}
-
-TEST_CASE("read_ndt() deals with read_uint16() error") {
-    Var<Context> ctx(new Context);
-    // Write some bytes but not enough to read uint8 plus uint16
-    ctx->buff->write_uint8(1);
-    ctx->buff->write_uint8(3);
-    messages::read_ll_impl<succeed>(ctx, [](Error err, uint8_t, std::string) {
-        REQUIRE(err == ReadingMessageLengthError());
-    });
-}
-#endif
-
 TEST_CASE("read_ndt() deals with the second readn() error") {
     Var<Context> ctx(new Context);
     // Now we have enough bytes to read type and lenght such that we

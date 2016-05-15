@@ -28,9 +28,10 @@ void read_ll_impl(Var<Context> ctx,
             return;
         }
         ErrorOr<uint8_t> type = ctx->buff->read_uint8();
-        assert(!!type);
         ErrorOr<uint16_t> length = ctx->buff->read_uint16();
-        assert(!!length);
+        // Note: we don't check for `type` and `length` true-ness because
+        // we are after a readn() which should ensure enough space is there,
+        // hence, if that's not the case, we'll see an exception
 
         // Now read the message payload (`*length` bytes in total)
         net_readn_second(ctx->txp, ctx->buff, *length, [=](Error err) {
@@ -39,6 +40,8 @@ void read_ll_impl(Var<Context> ctx,
                 return;
             }
             std::string s = ctx->buff->readn(*length);
+            // TODO: rather than using assert() here we should modify readn()
+            // to return ErrorOr<> (exceptions are better than asserts)
             assert(s.size() == *length);
             debug("< [%d]: (%d) %s", *length, *type, s.c_str());
             callback(NoError(), *type, s);
