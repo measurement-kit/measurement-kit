@@ -21,6 +21,7 @@ Which is arguably faster than writing the following:
 #define MK_MOCK(name_) decltype(name_) name_ = name_
 
 // Same as MK_MOCK but with namespace
-#define MK_MOCK_NAMESPACE(ns_, name_) decltype(ns_::name_) name_ = ns_::name_
+#define MK_MOCK_NAMESPACE(ns_, name_)                                          \
+    decltype(ns_::name_) ns_ ## _ ## name_ = ns_::name_
 
 #endif
