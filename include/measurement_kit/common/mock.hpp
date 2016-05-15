@@ -20,8 +20,16 @@ Which is arguably faster than writing the following:
 */
 #define MK_MOCK(name_) decltype(name_) name_ = name_
 
+// Same as MK_MOCK but with suffix
+#define MK_MOCK_SUFFIX(name_, suffix_)                                         \
+    decltype(name_) name_ ## _ ## suffix_ = name_
+
 // Same as MK_MOCK but with namespace
 #define MK_MOCK_NAMESPACE(ns_, name_)                                          \
     decltype(ns_::name_) ns_ ## _ ## name_ = ns_::name_
+
+// Same as MK_MOCK_NAMESPACE but with suffix
+#define MK_MOCK_NAMESPACE_SUFFIX(ns_, name_, suffix_)                          \
+    decltype(ns_::name_) ns_ ## _ ## name_ ## _ ## suffix_ = ns_::name_
 
 #endif
