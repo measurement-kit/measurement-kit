@@ -94,7 +94,7 @@ void run_with_specific_server_impl(std::string address, int port,
 template <MK_MOCK(run_with_specific_server), MK_MOCK_NAMESPACE(mlabns, query)>
 void run_impl(Callback<Error> callback, Settings settings, Var<Logger> logger,
          Var<Reactor> reactor) {
-    ErrorOr<int> port = settings.get_noexcept<int>("port", 3001);
+    ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
     if (!port) {
         callback(InvalidPortError(port.as_error()));
         return;

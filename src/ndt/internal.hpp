@@ -48,6 +48,8 @@
 #define KICKOFF_MESSAGE "123456 654321"
 #define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
 
+#define NDT_PORT 3001
+
 // During the handshake we declare to be this version of NDT
 #define MSG_NDT_VERSION "v3.7.0"
 
@@ -73,7 +75,7 @@ struct Context {
     Callback<Error> callback;
     std::list<std::string> granted_suite;
     Var<Logger> logger = Logger::global();
-    int port = 3301;
+    int port = NDT_PORT;
     Var<Reactor> reactor = Reactor::global();
     Settings settings;
     int test_suite = TEST_STATUS | TEST_META | TEST_C2S | TEST_S2C;
