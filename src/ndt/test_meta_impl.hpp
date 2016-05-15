@@ -10,18 +10,18 @@ namespace mk {
 namespace ndt {
 namespace test_meta {
 
-template <MK_MOCK_NAMESPACE_SUFFIX(messages, read, first),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read, second),
+template <MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, first),
+          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, second),
           MK_MOCK_NAMESPACE_SUFFIX(messages, format_test_msg, first),
           MK_MOCK_NAMESPACE_SUFFIX(messages, format_test_msg, second),
           MK_MOCK_NAMESPACE_SUFFIX(messages, format_test_msg, third),
           MK_MOCK_NAMESPACE(messages, write),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read, third)>
+          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, third)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends the PREPARE and START messages back to back
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
-    messages_read_first(ctx, [=](Error err, uint8_t type, std::string) {
+    messages_read_msg_first(ctx, [=](Error err, uint8_t type, std::string) {
         ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
             callback(ReadingTestPrepareError(err));
@@ -32,7 +32,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         ctx->logger->debug("ndt: recv TEST_START ...");
-        messages_read_second(ctx, [=](Error err, uint8_t type, std::string) {
+        messages_read_msg_second(ctx, [=](Error err, uint8_t type, std::string) {
             ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
             if (err) {
                 callback(ReadingTestStartError(err));
@@ -86,7 +86,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                 // Now we read the FINALIZE message
                 ctx->logger->debug("ndt: recv TEST_FINALIZE ...");
-                messages_read_third(ctx, [=](Error err, uint8_t type, std::string) {
+                messages_read_msg_third(ctx, [=](Error err, uint8_t type, std::string) {
                     ctx->logger->debug("ndt: recv TEST_FINALIZE ... %d",
                                        (int)err);
                     if (err) {

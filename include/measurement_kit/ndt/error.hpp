@@ -10,9 +10,9 @@ namespace mk {
 namespace ndt {
 
 MK_DEFINE_ERR(6000, ReadingMessageTypeLengthError, "unknown_error 6000")
-MK_DEFINE_ERR(6001, ReadingMessageTypeError, "unknown_error 6001")
-MK_DEFINE_ERR(6002, ReadingMessageLengthError, "unknown_error 6002")
-MK_DEFINE_ERR(6003, ReadingMessageBodyError, "unknown_error 6003")
+//MK_DEFINE_ERR(6001, ReadingMessageTypeError, "unknown_error 6001")
+//MK_DEFINE_ERR(6002, ReadingMessageLengthError, "unknown_error 6002")
+MK_DEFINE_ERR(6003, ReadingMessagePayloadError, "unknown_error 6003")
 MK_DEFINE_ERR(6004, MessageTooLongError, "unknown_error 6004")
 MK_DEFINE_ERR(6005, ConnectControlConnectionError, "unknown_error 6005")
 MK_DEFINE_ERR(6006, FormatExtendedLoginMessageError, "unknown_error 6006")

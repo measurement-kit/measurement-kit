@@ -20,8 +20,7 @@ void connect_impl(Var<Context> ctx, Callback<Error> callback) {
                     callback(ConnectControlConnectionError(err));
                     return;
                 }
-                // FIXME: make sure timeout mechanism is sane
-                txp->set_timeout(60.0);
+                txp->set_timeout(ctx->timeout);
                 ctx->txp = txp;
                 ctx->logger->info("Connected to %s:%d", ctx->address.c_str(),
                                   ctx->port);
@@ -70,10 +69,10 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_NAMESPACE(messages, read)>
+template <MK_MOCK_NAMESPACE(messages, read_msg)>
 void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait in queue ...");
-    messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: wait in queue ... %d", (int)err);
         if (err) {
             callback(ReadingSrvQueueMessageError(err));
@@ -98,10 +97,10 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_NAMESPACE(messages, read)>
+template <MK_MOCK_NAMESPACE(messages, read_msg)>
 void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv server version ...");
-    messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv server version ... %d", (int)err);
         if (err) {
             callback(ReadingServerVersionMessageError(err));
@@ -117,10 +116,10 @@ void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_NAMESPACE(messages, read)>
+template <MK_MOCK_NAMESPACE(messages, read_msg)>
 void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv tests ID ...");
-    messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv tests ID ... %d", (int)err);
         if (err) {
             callback(ReadingTestsIdMessageError(err));
@@ -184,10 +183,10 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     callback(UnknownTestIdError());
 }
 
-template <MK_MOCK_NAMESPACE(messages, read)>
+template <MK_MOCK_NAMESPACE(messages, read_msg)>
 void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv RESULTS ...");
-    messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv RESULTS ... %d", (int)err);
         if (err) {
             callback(ReadingResultsOrLogoutError(err));
@@ -202,7 +201,7 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
                 }
             }
             // XXX: here we have the potential to loop forever...
-            recv_results_and_logout_impl<messages_read>(ctx, callback);
+            recv_results_and_logout_impl<messages_read_msg>(ctx, callback);
             return;
         }
         if (type != MSG_LOGOUT) {

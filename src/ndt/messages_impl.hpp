@@ -5,6 +5,7 @@
 #define SRC_NDT_MESSAGES_IMPL_HPP
 
 #include "src/ndt/internal.hpp"
+#include <cassert>
 
 namespace mk {
 namespace ndt {
@@ -27,23 +28,18 @@ void read_ll_impl(Var<Context> ctx,
             return;
         }
         ErrorOr<uint8_t> type = ctx->buff->read_uint8();
-        if (!type) {
-            callback(ReadingMessageTypeError(type.as_error()), 0, "");
-            return;
-        }
+        assert(!!type);
         ErrorOr<uint16_t> length = ctx->buff->read_uint16();
-        if (!length) {
-            callback(ReadingMessageLengthError(length.as_error()), 0, "");
-            return;
-        }
+        assert(!!length);
 
-        // Now read the message payload (`length` bytes in total)
+        // Now read the message payload (`*length` bytes in total)
         net_readn_second(ctx->txp, ctx->buff, *length, [=](Error err) {
             if (err) {
-                callback(ReadingMessageBodyError(err), 0, "");
+                callback(ReadingMessagePayloadError(err), 0, "");
                 return;
             }
             std::string s = ctx->buff->readn(*length);
+            assert(s.size() == *length);
             debug("< [%d]: (%d) %s", *length, *type, s.c_str());
             callback(NoError(), *type, s);
         });
@@ -71,8 +67,8 @@ void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
 
 // Like `read_json()` but return the `msg` field only
 template <MK_MOCK(read_json)>
-void read_impl(Var<Context> ctx,
-               Callback<Error, uint8_t, std::string> callback) {
+void read_msg_impl(Var<Context> ctx,
+                   Callback<Error, uint8_t, std::string> callback) {
     read_json(ctx, [=](Error error, uint8_t type, json message) {
         if (error) {
             callback(error, 0, "");
@@ -96,6 +92,7 @@ static inline ErrorOr<Buffer> format_any(unsigned char type, json message) {
     if (s.size() > UINT16_MAX) {
         return MessageTooLongError();
     }
+    // Cast safe because we've just excluded the case where it's bigger
     uint16_t length = (uint16_t)s.size();
     out.write_uint16(length);
     out.write(s.data(), s.size());

@@ -119,9 +119,9 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_NAMESPACE_SUFFIX(messages, read, first),
+template <MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, first),
           MK_MOCK(coroutine),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read, second),
+          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, second),
           MK_MOCK_NAMESPACE(messages, read_json),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
           MK_MOCK_NAMESPACE(messages, write),
@@ -130,7 +130,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
-    messages_read_first(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read_msg_first(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
             callback(ReadingTestPrepareError(err));
@@ -159,7 +159,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                 // The server sends us the START message to tell we can start
                 ctx->logger->debug("ndt: recv TEST_START ...");
-                messages_read_second(ctx, [=](Error err, uint8_t type, std::string) {
+                messages_read_msg_second(ctx, [=](Error err, uint8_t type, std::string) {
                     ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                     if (err) {
                         callback(ReadingTestStartError(err));

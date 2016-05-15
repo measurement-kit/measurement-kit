@@ -49,9 +49,11 @@
 #define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
 
 #define NDT_PORT 3001
+#define NDT_TIMEOUT 10.0
 
-// During the handshake we declare to be this version of NDT
-#define MSG_NDT_VERSION "v3.7.0"
+// During the handshake we declare to be measurement-kit version such and
+// such that is compatible with version v3.7.0 of NDT
+#define MSG_NDT_VERSION "v3.7.0 (measurement-kit/" MEASUREMENT_KIT_VERSION ")"
 
 namespace mk {
 namespace ndt {
@@ -79,7 +81,7 @@ struct Context {
     Var<Reactor> reactor = Reactor::global();
     Settings settings;
     int test_suite = TEST_STATUS | TEST_META | TEST_C2S | TEST_S2C;
-    double timeout = 10.0;
+    double timeout = NDT_TIMEOUT;
     Var<Transport> txp;
 };
 
@@ -97,7 +99,7 @@ namespace messages {
 
 void read_ll(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback);
 void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback);
-void read(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback);
+void read_msg(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback);
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests);
 ErrorOr<Buffer> format_test_msg(std::string s);

@@ -23,15 +23,18 @@ static void succeed(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb) {
 
 TEST_CASE("read_ndt() deals with the first readn() error") {
     Var<Context> ctx(new Context);
-    messages::read_ndt_impl<fail>(ctx, [](Error err, uint8_t, std::string) {
+    messages::read_ll_impl<fail>(ctx, [](Error err, uint8_t, std::string) {
         REQUIRE(err == ReadingMessageTypeLengthError());
     });
 }
 
+// These two tests trigger "impossible cases" that now are handled
+// in code using assert(), thus they are commented out
+#if 0
 TEST_CASE("read_ndt() deals with read_uint8() error") {
     Var<Context> ctx(new Context);
     // Do not write any byte so we cannot read a uint8
-    messages::read_ndt_impl<succeed>(ctx, [](Error err, uint8_t, std::string) {
+    messages::read_ll_impl<succeed>(ctx, [](Error err, uint8_t, std::string) {
         REQUIRE(err == ReadingMessageTypeError());
     });
 }
@@ -41,10 +44,11 @@ TEST_CASE("read_ndt() deals with read_uint16() error") {
     // Write some bytes but not enough to read uint8 plus uint16
     ctx->buff->write_uint8(1);
     ctx->buff->write_uint8(3);
-    messages::read_ndt_impl<succeed>(ctx, [](Error err, uint8_t, std::string) {
+    messages::read_ll_impl<succeed>(ctx, [](Error err, uint8_t, std::string) {
         REQUIRE(err == ReadingMessageLengthError());
     });
 }
+#endif
 
 TEST_CASE("read_ndt() deals with the second readn() error") {
     Var<Context> ctx(new Context);
@@ -52,8 +56,8 @@ TEST_CASE("read_ndt() deals with the second readn() error") {
     // arrive to invoke readn() one second time
     ctx->buff->write_uint8(1);
     ctx->buff->write_uint16(3);
-    messages::read_ndt_impl<succeed, fail>(ctx, [](Error err, uint8_t, std::string) {
-        REQUIRE(err == ReadingMessageBodyError());
+    messages::read_ll_impl<succeed, fail>(ctx, [](Error err, uint8_t, std::string) {
+        REQUIRE(err == ReadingMessagePayloadError());
     });
 }
 
@@ -89,14 +93,14 @@ static void invalid(Var<Context>, Callback<Error, uint8_t, json> cb) {
 
 TEST_CASE("read() deals with read_json() error") {
     Var<Context> ctx(new Context);
-    messages::read_impl<fail>(ctx, [](Error err, uint8_t, std::string) {
+    messages::read_msg_impl<fail>(ctx, [](Error err, uint8_t, std::string) {
         REQUIRE(err == MockedError());
     });
 }
 
 TEST_CASE("read() deals with json without 'msg' field") {
     Var<Context> ctx(new Context);
-    messages::read_impl<invalid>(ctx, [](Error err, uint8_t, std::string) {
+    messages::read_msg_impl<invalid>(ctx, [](Error err, uint8_t, std::string) {
         REQUIRE(err == JsonKeyError());
     });
 }

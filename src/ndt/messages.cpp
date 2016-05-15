@@ -17,8 +17,8 @@ void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
     read_json_impl(ctx, callback);
 }
 
-void read(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback) {
-    read_impl(ctx, callback);
+void read_msg(Var<Context> ctx, Callback<Error, uint8_t, std::string> cb) {
+    read_msg_impl(ctx, cb);
 }
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests) {
