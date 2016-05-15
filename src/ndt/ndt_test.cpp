@@ -21,8 +21,9 @@ class NdtTestImpl : public NetTest {
 Var<NetTest> NdtTest::create_test_() {
     NdtTestImpl *test = new NdtTestImpl(settings);
     test->set_verbosity(verbosity);
-    if (log_handler)
+    if (log_handler) {
         test->on_log(log_handler);
+    }
     test->reactor = reactor;
     return Var<NetTest>(test);
 }
