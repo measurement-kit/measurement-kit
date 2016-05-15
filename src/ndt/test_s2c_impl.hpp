@@ -51,7 +51,7 @@ void coroutine_impl(std::string address, int port,
                             double x = (*count * 8) / 1000 / (ct - *previous);
                             *count = 0;
                             *previous = ct;
-                            logger->info("Speed: %.2f kbit/s", x);
+                            logger->info("Speed: %.2f kb/s", x);
                         }
                         // TODO: force close the connection after a given
                         // large amount of time has passed
@@ -69,7 +69,7 @@ void coroutine_impl(std::string address, int port,
                             }
                             err = NoError();
                         }
-                        logger->info("S2C speed %lf kbit/s", speed);
+                        logger->info("S2C speed %lf kb/s", speed);
                         txp->close([=]() { cb(err, speed); });
                     });
                 });
@@ -195,7 +195,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                             ctx->logger->debug("ndt: speed %s",
                                                m.dump().c_str());
 
-                            // We send our measured throughput to the client
+                            // We send our measured throughput to the server
                             ctx->logger->debug("ndt: send TEST_MSG ...");
                             ErrorOr<Buffer> out = messages_format_test_msg(
                                 lexical_cast<std::string>(speed));

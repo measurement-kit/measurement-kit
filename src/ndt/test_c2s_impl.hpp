@@ -27,17 +27,6 @@ void coroutine_impl(std::string address, int port, double runtime,
     // use), I was able to send at over 1.1 GiB/s and similar speeds
     // were achieved using stripped down NDT code from `test_c2s_clt.c`.
 
-    // FIXME: "The NDT Client in the C2S Throughput test MUST use a 8192 Byte
-    // buffer to send the packets through the newly opened connection as fast as
-    // possible (i.e. without any delays) for 10 seconds. The content of the
-    // buffer SHOULD be initialized a single time and sent repeatedly. The
-    // contents of the buffer SHOULD avoid repeating content (to avoid
-    // any automatic compression mechanisms) and MUST include only US-ASCII
-    // printable characters."
-
-    // TODO: in original NDT code there appears to be a maximum number
-    // of bytes to be sent (`lht`), then the test is exited
-
     dump_settings(settings, "ndt/c2s", logger);
 
     std::string str = random_printable(8192);
@@ -65,7 +54,7 @@ void coroutine_impl(std::string address, int port, double runtime,
                             double x = (*count * 8) / 1000 / (now - *previous);
                             *previous = now;
                             *count = 0;
-                            logger->info("Speed: %.2f kbit/s", x);
+                            logger->info("Speed: %.2f kb/s", x);
                         }
                         if (now - begin > runtime) {
                             logger->info("Elapsed enough time");
@@ -117,7 +106,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start c2s coroutine ...");
         coroutine(
-            ctx->address, *port, 10.0,
+            ctx->address, *port, TEST_C2S_DURATION,
             [=](Error err, Continuation<Error> cc) {
                 ctx->logger->debug("ndt: start c2s coroutine ... %d", (int)err);
                 if (err) {
@@ -163,7 +152,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                                 callback(NotTestMsgError());
                                 return;
                             }
-                            ctx->logger->info("C2S speed %s kbit/s", s.c_str());
+                            ctx->logger->info("C2S speed calculated by server: %s kb/s", s.c_str());
 
                             // The server sends us the FINALIZE message
                             ctx->logger->debug("ndt: recv TEST_FINALIZE ...");

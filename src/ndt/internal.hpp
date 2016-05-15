@@ -55,6 +55,8 @@
 // such that is compatible with version v3.7.0 of NDT
 #define MSG_NDT_VERSION "v3.7.0 (measurement-kit/" MEASUREMENT_KIT_VERSION ")"
 
+#define TEST_C2S_DURATION 10.0
+
 namespace mk {
 namespace ndt {
 

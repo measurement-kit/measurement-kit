@@ -167,10 +167,12 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
         break;
     }
     if (func) {
-        ctx->logger->info("Run %d test...", *num);
+        ctx->logger->info("Run test with id %d ...", *num);
         func(ctx, [=](Error err) {
-            ctx->logger->info("Run %d test... complete (%d)", *num, (int)err);
+            ctx->logger->info("Run test with id %d ... complete (%d)", *num, (int)err);
             if (err) {
+                // TODO: perhaps it would be better to have a specific error
+                // for each failed test to disambiguate
                 callback(TestFailedError(err));
                 return;
             }
@@ -217,6 +219,7 @@ template <MK_MOCK_NAMESPACE(net, read)>
 void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait close ...");
     ctx->txp->set_timeout(1.0);
+    // TODO: here we should probably use ctx->buff
     Var<Buffer> buffer(new Buffer);
     net_read(ctx->txp, buffer, [=](Error err) {
         ctx->logger->debug("ndt: wait close ... %d", (int)err);
