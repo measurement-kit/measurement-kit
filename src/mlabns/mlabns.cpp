@@ -101,10 +101,10 @@ void query(std::string tool, Callback<Error, Reply> callback, Settings settings,
                           reply.site = node["site"];
                           reply.country = node["country"];
                       } catch (std::invalid_argument &) {
-                          callback(JsonParsingError(), Reply());
+                          callback(JsonParseError(), Reply());
                           return;
                       } catch (std::out_of_range &) {
-                          callback(JsonParsingError(), Reply());
+                          callback(JsonKeyError(), Reply());
                           return;
                       }
                       logger->info("mlabns says to use %s", reply.fqdn.c_str());
