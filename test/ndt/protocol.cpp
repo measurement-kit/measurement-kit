@@ -144,6 +144,16 @@ TEST_CASE("run_tests() deals with unknown test") {
     protocol::run_tests(ctx, [](Error err) { REQUIRE(err == GenericError()); });
 }
 
+static void fail(Var<Context>, Callback<Error> cb) { cb(GenericError()); }
+
+TEST_CASE("run_tests() deals with test failure") {
+    Var<Context> ctx(new Context);
+    ctx->granted_suite.push_front(lexical_cast<std::string>(TEST_C2S));
+    protocol::run_tests_impl<fail>(ctx, [](Error err) {
+        REQUIRE(err == GenericError());
+    });
+}
+
 TEST_CASE("recv_results_and_logout() deals with read() error") {
     Var<Context> ctx(new Context);
     protocol::recv_results_and_logout_impl<fail>(
