@@ -105,7 +105,7 @@ void run_impl(Callback<Error> callback, Settings settings, Var<Logger> logger,
                                  logger, reactor);
         return;
     }
-    query("ndt", [=](Error err, mlabns::Reply reply) {
+    mlabns_query("ndt", [=](Error err, mlabns::Reply reply) {
         if (err) {
             callback(err);
             return;

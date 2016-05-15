@@ -20,7 +20,7 @@ void read_ndt_impl(Var<Context> ctx,
                    Callback<Error, uint8_t, std::string> callback) {
 
     // Receive message type (1 byte) and length (2 bytes)
-    readn(ctx->txp, ctx->buff, 3, [=](Error err) {
+    net_readn(ctx->txp, ctx->buff, 3, [=](Error err) {
         if (err) {
             callback(err, 0, "");
             return;
@@ -37,7 +37,7 @@ void read_ndt_impl(Var<Context> ctx,
         }
 
         // Now read the message payload (`length` bytes in total)
-        readn(ctx->txp, ctx->buff, *length, [=](Error err) {
+        net_readn(ctx->txp, ctx->buff, *length, [=](Error err) {
             if (err) {
                 callback(err, 0, "");
                 return;

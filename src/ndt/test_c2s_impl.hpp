@@ -43,7 +43,7 @@ void coroutine_impl(std::string address, int port, double runtime,
     std::string str = random_printable(8192);
 
     logger->debug("ndt: connect ...");
-    connect(address, port,
+    net_connect(address, port,
             [=](Error err, Var<Transport> txp) {
                 logger->debug("ndt: connect ... %d", (int)err);
                 if (err) {
@@ -89,13 +89,12 @@ void coroutine_impl(std::string address, int port, double runtime,
             settings, logger, reactor);
 }
 
-template <MK_MOCK_NAMESPACE(messages, read),
-          MK_MOCK_NAMESPACE(test_c2s, coroutine)>
+template <MK_MOCK_NAMESPACE(messages, read), MK_MOCK(coroutine)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
-    read(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
             callback(err);
@@ -124,7 +123,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                 // The server sends us the START message to tell we can start
                 ctx->logger->debug("ndt: recv TEST_START ...");
-                read(ctx, [=](Error err, uint8_t type, std::string) {
+                messages_read(ctx, [=](Error err, uint8_t type, std::string) {
                     ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                     if (err) {
                         callback(err);
@@ -146,7 +145,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                         // The server sends us MSG containing throughput
                         ctx->logger->debug("ndt: recv TEST_MSG ...");
-                        read(ctx, [=](Error err, uint8_t type, std::string s) {
+                        messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
                             ctx->logger->debug("ndt: recv TEST_MSG ... %d",
                                                (int)err);
                             if (err) {
@@ -161,7 +160,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                             // The server sends us the FINALIZE message
                             ctx->logger->debug("ndt: recv TEST_FINALIZE ...");
-                            read(ctx, [=](Error err, uint8_t type,
+                            messages_read(ctx, [=](Error err, uint8_t type,
                                           std::string) {
                                 ctx->logger->debug(
                                     "ndt: recv TEST_FINALIZE ... %d", (int)err);

@@ -20,7 +20,7 @@ void coroutine_impl(std::string address, int port,
 
     // The coroutine connects to the remote endpoint and then pauses
     logger->debug("ndt: connect ...");
-    connect(address, port,
+    net_connect(address, port,
             [=](Error err, Var<Transport> txp) {
                 logger->debug("ndt: connect ... %d", (int)err);
                 if (err) {
@@ -88,7 +88,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
     // reading primitive from the channel, i.e. `read_ndt()`.
 
     ctx->logger->debug("ndt: recv TEST_MSG ...");
-    read_ndt(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read_ndt(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
         if (err) {
             callback(err);
@@ -114,7 +114,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
         } catch (std::exception &) {
             // nothing
         }
-        finalizing_test_impl<read_ndt>(ctx, callback);
+        finalizing_test_impl<messages_read_ndt>(ctx, callback);
     });
 }
 
@@ -122,13 +122,12 @@ template <MK_MOCK_NAMESPACE(messages, read),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
           MK_MOCK_NAMESPACE(messages, read_json),
           MK_MOCK_NAMESPACE(messages, write),
-          MK_MOCK_NAMESPACE(test_s2c, coroutine),
-          MK_MOCK(finalizing_test)>
+          MK_MOCK(coroutine), MK_MOCK(finalizing_test)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
-    read(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
             callback(err);
@@ -157,7 +156,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                 // The server sends us the START message to tell we can start
                 ctx->logger->debug("ndt: recv TEST_START ...");
-                read(ctx, [=](Error err, uint8_t type, std::string) {
+                messages_read(ctx, [=](Error err, uint8_t type, std::string) {
                     ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                     if (err) {
                         callback(err);
@@ -179,7 +178,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                         // The server sends us MSG containing throughput
                         ctx->logger->debug("ndt: recv TEST_MSG ...");
-                        read_json(ctx, [=](Error err, uint8_t type, json m) {
+                        messages_read_json(ctx, [=](Error err, uint8_t type, json m) {
                             ctx->logger->debug("ndt: recv TEST_MSG ... %d",
                                                (int)err);
                             if (err) {
@@ -195,13 +194,13 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                             // We send our measured throughput to the client
                             ctx->logger->debug("ndt: send TEST_MSG ...");
-                            ErrorOr<Buffer> out = format_test_msg(
+                            ErrorOr<Buffer> out = messages_format_test_msg(
                                 lexical_cast<std::string>(speed));
                             if (!out) {
                                 callback(GenericError());
                                 return;
                             }
-                            write(ctx, *out, [=](Error err) {
+                            messages_write(ctx, *out, [=](Error err) {
                                 ctx->logger->debug("ndt: send TEST_MSG ... %d",
                                                    (int)err);
                                 if (err) {

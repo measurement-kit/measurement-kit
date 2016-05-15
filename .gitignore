@@ -86,6 +86,7 @@ test/http/parse_url
 test/http/request
 test/http/request_serializer
 test/http/response_parser
+test/mlabns/mlabns
 test/ndt/integration
 test/ndt/messages
 test/ndt/ndt_test
@@ -94,7 +95,6 @@ test/ndt/run
 test/ndt/test_c2s
 test/ndt/test_meta
 test/ndt/test_s2c
-test/mlabns/mlabns
 test/net/buffer
 test/net/connect
 test/net/connect-many

@@ -17,7 +17,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends the PREPARE and START messages back to back
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
-    read(ctx, [=](Error err, uint8_t type, std::string) {
+    messages_read(ctx, [=](Error err, uint8_t type, std::string) {
         ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
             callback(err);
@@ -28,7 +28,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         ctx->logger->debug("ndt: recv TEST_START ...");
-        read(ctx, [=](Error err, uint8_t type, std::string) {
+        messages_read(ctx, [=](Error err, uint8_t type, std::string) {
             ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
             if (err) {
                 callback(err);
@@ -42,14 +42,14 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
             // Now we send all the TEST messages containing metadata
             ErrorOr<Buffer> out;
 
-            out = format_test_msg("client.version:" MEASUREMENT_KIT_VERSION);
+            out = messages_format_test_msg("client.version:" MEASUREMENT_KIT_VERSION);
             if (!out) {
                 callback(GenericError());
                 return;
             }
             messages::write_noasync(ctx, *out);
 
-            out = format_test_msg("client.application:measurement-kit");
+            out = messages_format_test_msg("client.application:measurement-kit");
             if (!out) {
                 callback(GenericError());
                 return;
@@ -61,14 +61,14 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
             // XXX not sending: client.kernel.version
 
             // Now we send the empty TEST message to signal we're done
-            out = format_test_msg("");
+            out = messages_format_test_msg("");
             if (!out) {
                 callback(GenericError());
                 return;
             }
 
             ctx->logger->debug("ndt: send meta");
-            write(ctx, *out, [=](Error err) {
+            messages_write(ctx, *out, [=](Error err) {
                 ctx->logger->debug("ndt: send meta ... %d", (int)err);
                 if (err) {
                     callback(err);
@@ -79,7 +79,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                 // Now we read the FINALIZE message
                 ctx->logger->debug("ndt: recv TEST_FINALIZE ...");
-                read(ctx, [=](Error err, uint8_t type, std::string) {
+                messages_read(ctx, [=](Error err, uint8_t type, std::string) {
                     ctx->logger->debug("ndt: recv TEST_FINALIZE ... %d",
                                        (int)err);
                     if (err) {
