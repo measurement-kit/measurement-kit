@@ -17,7 +17,7 @@ void connect_impl(Var<Context> ctx, Callback<Error> callback) {
             [=](Error err, Var<Transport> txp) {
                 ctx->logger->debug("ndt: connect ... %d", (int)err);
                 if (err) {
-                    callback(err);
+                    callback(ConnectControlConnectionError(err));
                     return;
                 }
                 // FIXME: make sure timeout mechanism is sane
@@ -37,13 +37,13 @@ void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
     ErrorOr<Buffer> out = messages_format_msg_extended_login(ctx->test_suite);
     if (!out) {
         ctx->logger->debug("ndt: send login ... %d", (int)out.as_error());
-        callback(out.as_error());
+        callback(FormatExtendedLoginMessageError(out.as_error()));
         return;
     }
     messages_write(ctx, *out, [=](Error err) {
         ctx->logger->debug("ndt: send login ... %d", (int)err);
         if (err) {
-            callback(err);
+            callback(WriteExtendedLoginMessageError(err));
             return;
         }
         ctx->logger->info("Sent LOGIN with test suite: %d", ctx->test_suite);
@@ -57,13 +57,12 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     net_readn(ctx->txp, ctx->buff, KICKOFF_MESSAGE_SIZE, [=](Error err) {
         ctx->logger->debug("ndt: recv and ignore kickoff ... %d", (int)err);
         if (err) {
-            callback(err);
+            callback(ReadingKickoffMessageError(err));
             return;
         }
         std::string s = ctx->buff->readn(KICKOFF_MESSAGE_SIZE);
         if (s != KICKOFF_MESSAGE) {
-            // TODO: wouldn't it better to just warn?
-            callback(GenericError());
+            callback(InvalidKickoffMessageError());
             return;
         }
         ctx->logger->info("Got legacy KICKOFF message (ignored)");
@@ -77,22 +76,22 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
     messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: wait in queue ... %d", (int)err);
         if (err) {
-            callback(err);
+            callback(ReadingSrvQueueMessageError(err));
             return;
         }
         if (type != SRV_QUEUE) {
-            callback(GenericError());
+            callback(NotSrvQueueMessageError());
             return;
         }
         ErrorOr<unsigned> wait_time = lexical_cast_noexcept<unsigned>(s);
         if (!wait_time) {
-            callback(wait_time.as_error());
+            callback(InvalidSrvQueueMessageError(wait_time.as_error()));
             return;
         }
         ctx->logger->info("Wait time before test starts: %d", *wait_time);
         // XXX Simplified implementation
         if (*wait_time > 0) {
-            callback(GenericError());
+            callback(UnhandledSrvQueueMessageError());
             return;
         }
         callback(NoError());
@@ -105,11 +104,11 @@ void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
     messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv server version ... %d", (int)err);
         if (err) {
-            callback(err);
+            callback(ReadingServerVersionMessageError(err));
             return;
         }
         if (type != MSG_LOGIN) {
-            callback(GenericError());
+            callback(NotServerVersionMessageError());
             return;
         }
         ctx->logger->info("Got server version: %s", s.c_str());
@@ -124,11 +123,11 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
     messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv tests ID ... %d", (int)err);
         if (err) {
-            callback(err);
+            callback(ReadingTestsIdMessageError(err));
             return;
         }
         if (type != MSG_LOGIN) {
-            callback(GenericError());
+            callback(NotTestsIdMessageError());
             return;
         }
         ctx->logger->info("Authorized tests: %s", s.c_str());
@@ -152,7 +151,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
 
     ErrorOr<int> num = lexical_cast_noexcept<int>(s);
     if (!num) {
-        callback(num.as_error());
+        callback(InvalidTestIdError(num.as_error()));
         return;
     }
 
@@ -173,7 +172,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
         func(ctx, [=](Error err) {
             ctx->logger->info("Run %d test... complete (%d)", *num, (int)err);
             if (err) {
-                callback(err);
+                callback(TestFailedError(err));
                 return;
             }
             run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx, callback);
@@ -182,7 +181,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     }
 
     ctx->logger->warn("ndt: unknown test: %d", *num);
-    callback(GenericError());
+    callback(UnknownTestIdError());
 }
 
 template <MK_MOCK_NAMESPACE(messages, read)>
@@ -191,7 +190,7 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
     messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv RESULTS ... %d", (int)err);
         if (err) {
-            callback(err);
+            callback(ReadingResultsOrLogoutError(err));
             return;
         }
         if (type == MSG_RESULTS) {
@@ -207,7 +206,7 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         if (type != MSG_LOGOUT) {
-            callback(GenericError());
+            callback(NotResultsOrLogoutError());
             return;
         }
         ctx->logger->info("Got LOGOUT");
@@ -234,11 +233,11 @@ void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         if (err) {
-            callback(err);
+            callback(WaitingCloseError(err));
             return;
         }
         ctx->logger->debug("ndt: got extra data: %s", buffer->read().c_str());
-        callback(GenericError());
+        callback(DataAfterLogoutError());
     });
 }
 

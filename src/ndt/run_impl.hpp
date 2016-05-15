@@ -96,7 +96,7 @@ void run_impl(Callback<Error> callback, Settings settings, Var<Logger> logger,
          Var<Reactor> reactor) {
     ErrorOr<int> port = settings.get_noexcept<int>("port", 3001);
     if (!port) {
-        callback(port.as_error());
+        callback(InvalidPortError(port.as_error()));
         return;
     }
     std::string address = settings.get<std::string>("address", "");
@@ -107,7 +107,7 @@ void run_impl(Callback<Error> callback, Settings settings, Var<Logger> logger,
     }
     mlabns_query("ndt", [=](Error err, mlabns::Reply reply) {
         if (err) {
-            callback(err);
+            callback(MlabnsQueryError(err));
             return;
         }
         run_with_specific_server(reply.fqdn, *port, callback, settings,

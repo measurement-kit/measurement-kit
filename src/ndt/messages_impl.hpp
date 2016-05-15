@@ -15,31 +15,32 @@ namespace messages {
     | type (1) | length (2) | payload (0-65535) |
     +----------+------------+-------------------+
 */
-template <MK_MOCK_NAMESPACE(net, readn)>
+template <MK_MOCK_NAMESPACE_SUFFIX(net, readn, first),
+          MK_MOCK_NAMESPACE_SUFFIX(net, readn, second)>
 void read_ndt_impl(Var<Context> ctx,
                    Callback<Error, uint8_t, std::string> callback) {
 
     // Receive message type (1 byte) and length (2 bytes)
-    net_readn(ctx->txp, ctx->buff, 3, [=](Error err) {
+    net_readn_first(ctx->txp, ctx->buff, 3, [=](Error err) {
         if (err) {
-            callback(err, 0, "");
+            callback(ReadingMessageTypeLengthError(err), 0, "");
             return;
         }
         ErrorOr<uint8_t> type = ctx->buff->read_uint8();
         if (!type) {
-            callback(type.as_error(), 0, "");
+            callback(ReadingMessageTypeError(type.as_error()), 0, "");
             return;
         }
         ErrorOr<uint16_t> length = ctx->buff->read_uint16();
         if (!length) {
-            callback(length.as_error(), 0, "");
+            callback(ReadingMessageLengthError(length.as_error()), 0, "");
             return;
         }
 
         // Now read the message payload (`length` bytes in total)
-        net_readn(ctx->txp, ctx->buff, *length, [=](Error err) {
+        net_readn_second(ctx->txp, ctx->buff, *length, [=](Error err) {
             if (err) {
-                callback(err, 0, "");
+                callback(ReadingMessageBodyError(err), 0, "");
                 return;
             }
             std::string s = ctx->buff->readn(*length);
@@ -61,7 +62,7 @@ void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
         try {
             message = json::parse(m);
         } catch (const std::exception &) {
-            callback(GenericError(), 0, message);
+            callback(JsonParseError(), 0, message);
             return;
         }
         callback(NoError(), type, message);
@@ -81,7 +82,7 @@ void read_impl(Var<Context> ctx,
         try {
             s = message["msg"];
         } catch (const std::exception &) {
-            callback(GenericError(), 0, "");
+            callback(JsonKeyError(), 0, "");
             return;
         }
         callback(NoError(), type, s);
@@ -93,7 +94,7 @@ static inline ErrorOr<Buffer> format_any(unsigned char type, json message) {
     out.write_uint8(type);
     std::string s = message.dump();
     if (s.size() > UINT16_MAX) {
-        return ValueError();
+        return MessageTooLongError();
     }
     uint16_t length = (uint16_t)s.size();
     out.write_uint16(length);

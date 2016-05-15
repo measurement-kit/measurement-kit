@@ -91,7 +91,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
     messages_read_ndt(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
         if (err) {
-            callback(err);
+            callback(ReadingTestMsgError(err));
             return;
         }
         if (type == TEST_FINALIZE) {
@@ -99,7 +99,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         if (type != TEST_MSG) {
-            callback(GenericError());
+            callback(NotTestMsgError());
             return;
         }
         try {
@@ -112,34 +112,37 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
                 }
             }
         } catch (std::exception &) {
-            // nothing
+            // nothing - because this would be the case of the last empty msg
         }
+        // XXX: Here we can loop forever
         finalizing_test_impl<messages_read_ndt>(ctx, callback);
     });
 }
 
-template <MK_MOCK_NAMESPACE(messages, read),
-          MK_MOCK_NAMESPACE(messages, format_test_msg),
+template <MK_MOCK_NAMESPACE_SUFFIX(messages, read, first),
+          MK_MOCK(coroutine),
+          MK_MOCK_NAMESPACE_SUFFIX(messages, read, second),
           MK_MOCK_NAMESPACE(messages, read_json),
+          MK_MOCK_NAMESPACE(messages, format_test_msg),
           MK_MOCK_NAMESPACE(messages, write),
-          MK_MOCK(coroutine), MK_MOCK(finalizing_test)>
+          MK_MOCK(finalizing_test)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
-    messages_read(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read_first(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
-            callback(err);
+            callback(ReadingTestPrepareError(err));
             return;
         }
         if (type != TEST_PREPARE) {
-            callback(GenericError());
+            callback(NotTestPrepareError());
             return;
         }
         ErrorOr<int> port = lexical_cast_noexcept<int>(s);
         if (!port || *port < 0 || *port > 65535) {
-            callback(GenericError());
+            callback(InvalidPortError());
             return;
         }
 
@@ -150,20 +153,20 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
             [=](Error err, Continuation<Error, double> cc) {
                 ctx->logger->debug("ndt: start s2c coroutine ... %d", (int)err);
                 if (err) {
-                    callback(err);
+                    callback(ConnectTestConnectionError(err));
                     return;
                 }
 
                 // The server sends us the START message to tell we can start
                 ctx->logger->debug("ndt: recv TEST_START ...");
-                messages_read(ctx, [=](Error err, uint8_t type, std::string) {
+                messages_read_second(ctx, [=](Error err, uint8_t type, std::string) {
                     ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                     if (err) {
-                        callback(err);
+                        callback(ReadingTestStartError(err));
                         return;
                     }
                     if (type != TEST_START) {
-                        callback(GenericError());
+                        callback(NotTestStartError());
                         return;
                     }
 
@@ -182,11 +185,11 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                             ctx->logger->debug("ndt: recv TEST_MSG ... %d",
                                                (int)err);
                             if (err) {
-                                callback(err);
+                                callback(ReadingTestMsgError(err));
                                 return;
                             }
                             if (type != TEST_MSG) {
-                                callback(GenericError());
+                                callback(NotTestMsgError());
                                 return;
                             }
                             ctx->logger->debug("ndt: speed %s",
@@ -197,14 +200,14 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                             ErrorOr<Buffer> out = messages_format_test_msg(
                                 lexical_cast<std::string>(speed));
                             if (!out) {
-                                callback(GenericError());
+                                callback(SerializingTestMsgError());
                                 return;
                             }
                             messages_write(ctx, *out, [=](Error err) {
                                 ctx->logger->debug("ndt: send TEST_MSG ... %d",
                                                    (int)err);
                                 if (err) {
-                                    callback(err);
+                                    callback(WritingTestMsgError(err));
                                     return;
                                 }
 

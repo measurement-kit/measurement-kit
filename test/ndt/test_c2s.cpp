@@ -12,36 +12,36 @@ using namespace mk;
 using namespace mk::ndt;
 using json = nlohmann::json;
 
-static void failure(std::string, int, Callback<Error, Var<Transport>> cb,
+static void fail(std::string, int, Callback<Error, Var<Transport>> cb,
                     Settings, Var<Logger>, Var<Reactor>) {
-    cb(GenericError(), nullptr);
+    cb(MockedError(), nullptr);
 }
 
 TEST_CASE("coroutine() is robust to connect error") {
-    test_c2s::coroutine_impl<failure>(
+    test_c2s::coroutine_impl<fail>(
         "www.google.com", 3301, 10.0,
-        [](Error err, Continuation<Error>) { REQUIRE(err == GenericError()); },
+        [](Error err, Continuation<Error>) { REQUIRE(err == MockedError()); },
         2.0, {}, Logger::global(), Reactor::global());
 }
 
-static void failure(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
-    cb(GenericError(), 0, "");
+static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+    cb(MockedError(), 0, "");
 }
 
 static void invalid(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
     cb(NoError(), MSG_ERROR, "");
 }
 
-TEST_CASE("run() deals with messages::read() failure") {
+TEST_CASE("run() deals with messages::read() fail") {
     Var<Context> ctx(new Context);
-    test_c2s::run_impl<failure>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+    test_c2s::run_impl<fail>(
+        ctx, [](Error err) { REQUIRE(err == ReadingTestPrepareError()); });
 }
 
 TEST_CASE("run() deals with receiving message different from PREPARE") {
     Var<Context> ctx(new Context);
     test_c2s::run_impl<invalid>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+        ctx, [](Error err) { REQUIRE(err == NotTestPrepareError()); });
 }
 
 static void invalid_port(Var<Context>,
@@ -52,7 +52,7 @@ static void invalid_port(Var<Context>,
 TEST_CASE("run() deals with receiving invalid port") {
     Var<Context> ctx(new Context);
     test_c2s::run_impl<invalid_port>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+        ctx, [](Error err) { REQUIRE(err == InvalidPortError()); });
 }
 
 static void too_large(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
@@ -62,7 +62,7 @@ static void too_large(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
 TEST_CASE("run() deals with receiving too large port") {
     Var<Context> ctx(new Context);
     test_c2s::run_impl<too_large>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+        ctx, [](Error err) { REQUIRE(err == InvalidPortError()); });
 }
 
 static void too_small(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
@@ -72,191 +72,86 @@ static void too_small(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
 TEST_CASE("run() deals with receiving too small port") {
     Var<Context> ctx(new Context);
     test_c2s::run_impl<too_small>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+        ctx, [](Error err) { REQUIRE(err == InvalidPortError()); });
 }
 
-static void success(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void test_prepare(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
-static void failure(std::string, int, double,
+static void fail(std::string, int, double,
                     Callback<Error, Continuation<Error>> cb, double, Settings,
                     Var<Logger>, Var<Reactor>) {
-    cb(GenericError(), [](Callback<Error>) {
+    cb(MockedError(), [](Callback<Error>) {
         REQUIRE(false); // should not happen
     });
 }
 
-TEST_CASE("run() deals with coroutine failure") {
+TEST_CASE("run() deals with coroutine fail") {
     Var<Context> ctx(new Context);
-    test_c2s::run_impl<success, failure>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
-}
-
-static void failure_in_test_start(Var<Context>,
-                                  Callback<Error, uint8_t, std::string> cb) {
-    static int count = 0;
-    if (count++ == 0) {
-        cb(NoError(), TEST_PREPARE, "3010");
-    } else {
-        cb(GenericError(), 0, "");
-    }
+    test_c2s::run_impl<test_prepare, fail>(
+        ctx, [](Error err) { REQUIRE(err == ConnectTestConnectionError()); });
 }
 
 static void connect_but_fail_later(std::string, int, double,
                                    Callback<Error, Continuation<Error>> cb,
                                    double, Settings, Var<Logger>,
                                    Var<Reactor>) {
-    cb(NoError(), [](Callback<Error> cb) { cb(GenericError()); });
+    cb(NoError(), [](Callback<Error> cb) { cb(MockedError()); });
 }
 
 TEST_CASE("run() deals with error when reading TEST_START") {
     Var<Context> ctx(new Context);
-    test_c2s::run_impl<failure_in_test_start, connect_but_fail_later>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
-}
-
-static void not_test_start(Var<Context>,
-                           Callback<Error, uint8_t, std::string> cb) {
-    static int count = 0;
-    if (count++ == 0) {
-        cb(NoError(), TEST_PREPARE, "3010");
-    } else {
-        cb(NoError(), MSG_ERROR, "");
-    }
+    test_c2s::run_impl<test_prepare, connect_but_fail_later, fail>(
+        ctx, [](Error err) { REQUIRE(err == ReadingTestStartError()); });
 }
 
 TEST_CASE("run() deals with unexpected message instead of TEST_START") {
     Var<Context> ctx(new Context);
-    test_c2s::run_impl<not_test_start, connect_but_fail_later>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+    test_c2s::run_impl<test_prepare, connect_but_fail_later, invalid>(
+        ctx, [](Error err) { REQUIRE(err == NotTestStartError()); });
 }
 
-static void test_prepare_and_start(Var<Context>,
-                                   Callback<Error, uint8_t, std::string> cb) {
-    static int count = 0;
-    if (count++ == 0) {
-        cb(NoError(), TEST_PREPARE, "3010");
-    } else {
-        cb(NoError(), TEST_START, "");
-        count = 0; // Prepare for next invocation
-    }
+static void test_start(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+    cb(NoError(), TEST_START, "");
 }
 
 TEST_CASE("run() deals with coroutine terminating with error") {
     Var<Context> ctx(new Context);
-    test_c2s::run_impl<test_prepare_and_start, connect_but_fail_later>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+    test_c2s::run_impl<test_prepare, connect_but_fail_later, test_start>(
+        ctx, [](Error err) { REQUIRE(err == MockedError()); });
 }
 
-static void success(std::string, int, double,
+static void coro_ok(std::string, int, double,
                     Callback<Error, Continuation<Error>> cb, double, Settings,
                     Var<Logger>, Var<Reactor>) {
     cb(NoError(), [](Callback<Error> cb) { cb(NoError()); });
 }
 
-static void error_at_test_msg(Var<Context>,
-                              Callback<Error, uint8_t, std::string> cb) {
-    static int count = 0;
-    switch (count++) {
-    case 0:
-        cb(NoError(), TEST_PREPARE, "3010");
-        break;
-    case 1:
-        cb(NoError(), TEST_START, "");
-        break;
-    case 2:
-        cb(GenericError(), 0, "");
-        break;
-    default:
-        REQUIRE(false);
-        /* NOTREACHED */
-    }
-}
-
 TEST_CASE("run() deals with error when reading TEST_MSG") {
     Var<Context> ctx(new Context);
-    test_c2s::run_impl<error_at_test_msg, success>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
-}
-
-static void not_test_msg(Var<Context>,
-                         Callback<Error, uint8_t, std::string> cb) {
-    static int count = 0;
-    switch (count++) {
-    case 0:
-        cb(NoError(), TEST_PREPARE, "3010");
-        break;
-    case 1:
-        cb(NoError(), TEST_START, "");
-        break;
-    case 2:
-        cb(NoError(), MSG_ERROR, "");
-        break;
-    default:
-        REQUIRE(false);
-        /* NOTREACHED */
-    }
+    test_c2s::run_impl<test_prepare, coro_ok, test_start, fail>(
+        ctx, [](Error err) { REQUIRE(err == ReadingTestMsgError()); });
 }
 
 TEST_CASE("run() deals with unexpected message instead of TEST_MSG") {
     Var<Context> ctx(new Context);
-    test_c2s::run_impl<not_test_msg, success>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+    test_c2s::run_impl<test_prepare, coro_ok, test_start, invalid>(
+        ctx, [](Error err) { REQUIRE(err == NotTestMsgError()); });
 }
 
-static void error_at_test_finalize(Var<Context>,
-                                   Callback<Error, uint8_t, std::string> cb) {
-    static int count = 0;
-    switch (count++) {
-    case 0:
-        cb(NoError(), TEST_PREPARE, "3010");
-        break;
-    case 1:
-        cb(NoError(), TEST_START, "");
-        break;
-    case 2:
-        cb(NoError(), TEST_MSG, "");
-        break;
-    case 3:
-        cb(GenericError(), 0, "");
-        break;
-    default:
-        REQUIRE(false);
-        /* NOTREACHED */
-    }
+static void test_msg(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+    cb(NoError(), TEST_MSG, "");
 }
 
 TEST_CASE("run() deals with error when reading TEST_FINALIZE") {
     Var<Context> ctx(new Context);
-    test_c2s::run_impl<error_at_test_finalize, success>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
-}
-
-static void not_test_finalize(Var<Context>,
-                              Callback<Error, uint8_t, std::string> cb) {
-    static int count = 0;
-    switch (count++) {
-    case 0:
-        cb(NoError(), TEST_PREPARE, "3010");
-        break;
-    case 1:
-        cb(NoError(), TEST_START, "");
-        break;
-    case 2:
-        cb(NoError(), TEST_MSG, "");
-        break;
-    case 3:
-        cb(NoError(), MSG_ERROR, "");
-        break;
-    default:
-        REQUIRE(false);
-        /* NOTREACHED */
-    }
+    test_c2s::run_impl<test_prepare, coro_ok, test_start, test_msg, fail>(
+        ctx, [](Error err) { REQUIRE(err == ReadingTestFinalizeError()); });
 }
 
 TEST_CASE("run() deals with unexpected message instead of TEST_FINALIZE") {
     Var<Context> ctx(new Context);
-    test_c2s::run_impl<not_test_finalize, success>(
-        ctx, [](Error err) { REQUIRE(err == GenericError()); });
+    test_c2s::run_impl<test_prepare, coro_ok, test_start, test_msg, invalid>(
+        ctx, [](Error err) { REQUIRE(err == NotTestFinalizeError()); });
 }
