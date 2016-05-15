@@ -156,36 +156,22 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
         return;
     }
 
-    if (*num == TEST_C2S) {
-        ctx->logger->info("Run C2S test...");
-        test_c2s_run(ctx, [=](Error err) {
-            ctx->logger->info("Run C2S test... complete (%d)", (int)err);
-            if (err) {
-                callback(err);
-                return;
-            }
-            run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx, callback);
-        });
-        return;
+    std::function<void(Var<Context>, Callback<Error>)> func;
+    switch (*num) {
+    case TEST_C2S:
+        func = test_c2s_run;
+        break;
+    case TEST_META:
+        func = test_meta_run;
+        break;
+    case TEST_S2C:
+        func = test_s2c_run;
+        break;
     }
-
-    if (*num == TEST_S2C) {
-        ctx->logger->info("Run S2C test...");
-        test_s2c_run(ctx, [=](Error err) {
-            ctx->logger->info("Run S2C test... complete (%d)", (int)err);
-            if (err) {
-                callback(err);
-                return;
-            }
-            run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx, callback);
-        });
-        return;
-    }
-
-    if (*num == TEST_META) {
-        ctx->logger->info("Run META test...");
-        test_meta_run(ctx, [=](Error err) {
-            ctx->logger->info("Run META test... complete (%d)", (int)err);
+    if (func) {
+        ctx->logger->info("Run %d test...", *num);
+        func(ctx, [=](Error err) {
+            ctx->logger->info("Run %d test... complete (%d)", *num, (int)err);
             if (err) {
                 callback(err);
                 return;
