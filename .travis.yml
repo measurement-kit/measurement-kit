@@ -15,9 +15,6 @@ install:
     - ./autogen.sh
     - ./build/dependency geoip
 
-# Only measure coverage with clang for now because I cannot manage to
-# convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
-# (For more context see measurement-kit/measurement-kit#255)
 script:
     - if [ "$BUILD_TYPE" = "ios" ]; then
         ./mobile/ios/scripts/build.sh;
@@ -25,7 +22,7 @@ script:
         ./configure $ARG && make -j2 V=0;
       fi
     - if [ "$VALGRIND" = "true" ]; then
-        make run-valgrind;
+        make run-valgrind V=0;
       elif [ "$BUILD_TYPE" != "ios" ]; then
         make -j2 check-am V=0;
       fi
@@ -42,6 +39,9 @@ after_failure:
         cat test-suite.log;
       fi
 
+# Only measure coverage with clang for now because I cannot manage to
+# convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
+# (For more context see measurement-kit/measurement-kit#255)
 matrix:
   include:
 
