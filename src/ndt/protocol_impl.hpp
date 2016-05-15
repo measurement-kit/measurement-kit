@@ -137,8 +137,9 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_NAMESPACE(messages, read_json),
-          MK_MOCK_NAMESPACE(messages, format_test_msg)>
+template <MK_MOCK_NAMESPACE(test_c2s, run),
+          MK_MOCK_NAMESPACE(test_meta, run),
+          MK_MOCK_NAMESPACE(test_s2c, run)>
 void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
 
     if (ctx->granted_suite.size() <= 0) {
@@ -157,39 +158,39 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
 
     if (*num == TEST_C2S) {
         ctx->logger->info("Run C2S test...");
-        test_c2s::run(ctx, [=](Error err) {
+        test_c2s_run(ctx, [=](Error err) {
             ctx->logger->info("Run C2S test... complete (%d)", (int)err);
             if (err) {
                 callback(err);
                 return;
             }
-            run_tests_impl<messages_read_json, messages_format_test_msg>(ctx, callback);
+            run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx, callback);
         });
         return;
     }
 
     if (*num == TEST_S2C) {
         ctx->logger->info("Run S2C test...");
-        test_s2c::run(ctx, [=](Error err) {
+        test_s2c_run(ctx, [=](Error err) {
             ctx->logger->info("Run S2C test... complete (%d)", (int)err);
             if (err) {
                 callback(err);
                 return;
             }
-            run_tests_impl<messages_read_json, messages_format_test_msg>(ctx, callback);
+            run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx, callback);
         });
         return;
     }
 
     if (*num == TEST_META) {
         ctx->logger->info("Run META test...");
-        test_meta::run(ctx, [=](Error err) {
+        test_meta_run(ctx, [=](Error err) {
             ctx->logger->info("Run META test... complete (%d)", (int)err);
             if (err) {
                 callback(err);
                 return;
             }
-            run_tests_impl<messages_read_json, messages_format_test_msg>(ctx, callback);
+            run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx, callback);
         });
         return;
     }
