@@ -34,9 +34,10 @@ TEST_CASE("read_ndt() deals with the second readn() error") {
     // arrive to invoke readn() one second time
     ctx->buff->write_uint8(1);
     ctx->buff->write_uint16(3);
-    messages::read_ll_impl<succeed, fail>(ctx, [](Error err, uint8_t, std::string) {
-        REQUIRE(err == ReadingMessagePayloadError());
-    });
+    messages::read_ll_impl<succeed, fail>(
+        ctx, [](Error err, uint8_t, std::string) {
+            REQUIRE(err == ReadingMessagePayloadError());
+        });
 }
 
 static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
@@ -49,9 +50,8 @@ static void succeed(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
 
 TEST_CASE("read_json() deals with read_ndt() error") {
     Var<Context> ctx(new Context);
-    messages::read_json_impl<fail>(ctx, [](Error err, uint8_t, json) {
-        REQUIRE(err == MockedError());
-    });
+    messages::read_json_impl<fail>(
+        ctx, [](Error err, uint8_t, json) { REQUIRE(err == MockedError()); });
 }
 
 TEST_CASE("read_json() deals with invalid JSON") {

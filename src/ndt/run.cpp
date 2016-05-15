@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/mlabns.hpp>
 #include "src/ndt/run_impl.hpp"
+#include <measurement_kit/mlabns.hpp>
 
 namespace mk {
 namespace ndt {

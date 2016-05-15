@@ -5,8 +5,8 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "src/net/emitter.hpp"
 #include "src/ndt/protocol_impl.hpp"
+#include "src/net/emitter.hpp"
 #include <measurement_kit/ndt.hpp>
 
 using namespace mk;
@@ -21,16 +21,18 @@ static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
 
 TEST_CASE("we deal with connect() errors") {
     Var<Context> ctx(new Context);
-    protocol::connect_impl<fail>(
-        ctx, [](Error err) { REQUIRE(err == ConnectControlConnectionError()); });
+    protocol::connect_impl<fail>(ctx, [](Error err) {
+        REQUIRE(err == ConnectControlConnectionError());
+    });
 }
 
 static ErrorOr<Buffer> fail(unsigned char) { return MockedError(); }
 
 TEST_CASE("send_extended_login() deals with message formatting error") {
     Var<Context> ctx(new Context);
-    protocol::send_extended_login_impl<fail>(
-        ctx, [](Error err) { REQUIRE(err == FormatExtendedLoginMessageError()); });
+    protocol::send_extended_login_impl<fail>(ctx, [](Error err) {
+        REQUIRE(err == FormatExtendedLoginMessageError());
+    });
 }
 
 static ErrorOr<Buffer> success(unsigned char) { return Buffer(); }
@@ -41,8 +43,9 @@ static void fail(Var<Context>, Buffer, Callback<Error> cb) {
 
 TEST_CASE("send_extended_login() deals with write error") {
     Var<Context> ctx(new Context);
-    protocol::send_extended_login_impl<success, fail>(
-        ctx, [](Error err) { REQUIRE(err == WriteExtendedLoginMessageError()); });
+    protocol::send_extended_login_impl<success, fail>(ctx, [](Error err) {
+        REQUIRE(err == WriteExtendedLoginMessageError());
+    });
 }
 
 static void fail(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb) {
@@ -104,14 +107,16 @@ static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
 
 TEST_CASE("wait_in_queue() deals with nonzero wait time") {
     Var<Context> ctx(new Context);
-    protocol::wait_in_queue_impl<nonzero>(
-        ctx, [](Error err) { REQUIRE(err == UnhandledSrvQueueMessageError()); });
+    protocol::wait_in_queue_impl<nonzero>(ctx, [](Error err) {
+        REQUIRE(err == UnhandledSrvQueueMessageError());
+    });
 }
 
 TEST_CASE("recv_version() deals with read() error") {
     Var<Context> ctx(new Context);
-    protocol::recv_version_impl<fail>(
-        ctx, [](Error err) { REQUIRE(err == ReadingServerVersionMessageError()); });
+    protocol::recv_version_impl<fail>(ctx, [](Error err) {
+        REQUIRE(err == ReadingServerVersionMessageError());
+    });
 }
 
 TEST_CASE("recv_version() deals with unexpected message error") {
@@ -135,13 +140,15 @@ TEST_CASE("recv_tests_id() deals with unexpected message error") {
 TEST_CASE("run_tests() deals with invalid number") {
     Var<Context> ctx(new Context);
     ctx->granted_suite.push_front("");
-    protocol::run_tests(ctx, [](Error err) { REQUIRE(err == InvalidTestIdError()); });
+    protocol::run_tests(
+        ctx, [](Error err) { REQUIRE(err == InvalidTestIdError()); });
 }
 
 TEST_CASE("run_tests() deals with unknown test") {
     Var<Context> ctx(new Context);
     ctx->granted_suite.push_front("71");
-    protocol::run_tests(ctx, [](Error err) { REQUIRE(err == UnknownTestIdError()); });
+    protocol::run_tests(
+        ctx, [](Error err) { REQUIRE(err == UnknownTestIdError()); });
 }
 
 static void fail(Var<Context>, Callback<Error> cb) { cb(MockedError()); }
@@ -149,9 +156,8 @@ static void fail(Var<Context>, Callback<Error> cb) { cb(MockedError()); }
 TEST_CASE("run_tests() deals with test failure") {
     Var<Context> ctx(new Context);
     ctx->granted_suite.push_front(lexical_cast<std::string>(TEST_C2S));
-    protocol::run_tests_impl<fail>(ctx, [](Error err) {
-        REQUIRE(err == TestFailedError());
-    });
+    protocol::run_tests_impl<fail>(
+        ctx, [](Error err) { REQUIRE(err == TestFailedError()); });
 }
 
 TEST_CASE("recv_results_and_logout() deals with read() error") {

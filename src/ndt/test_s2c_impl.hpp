@@ -20,61 +20,62 @@ void coroutine_impl(std::string address, int port,
 
     // The coroutine connects to the remote endpoint and then pauses
     logger->debug("ndt: connect ...");
-    net_connect(address, port,
-            [=](Error err, Var<Transport> txp) {
-                logger->debug("ndt: connect ... %d", (int)err);
-                if (err) {
-                    cb(err, nullptr);
-                    return;
-                }
-                logger->info("Connected to %s:%d", address.c_str(), port);
-                logger->debug("ndt: suspend coroutine");
-                cb(NoError(), [=](Callback<Error, double> cb) {
+    net_connect(
+        address, port,
+        [=](Error err, Var<Transport> txp) {
+            logger->debug("ndt: connect ... %d", (int)err);
+            if (err) {
+                cb(err, nullptr);
+                return;
+            }
+            logger->info("Connected to %s:%d", address.c_str(), port);
+            logger->debug("ndt: suspend coroutine");
+            cb(NoError(), [=](Callback<Error, double> cb) {
 
-                    // The coroutine is resumed and receives data
-                    logger->debug("ndt: resume coroutine");
-                    logger->info("Starting download");
-                    Var<double> begin(new double(0.0));
-                    Var<size_t> total(new size_t(0));
-                    Var<double> previous(new double(0.0));
-                    Var<size_t> count(new size_t(0));
-                    txp->set_timeout(timeout);
+                // The coroutine is resumed and receives data
+                logger->debug("ndt: resume coroutine");
+                logger->info("Starting download");
+                Var<double> begin(new double(0.0));
+                Var<size_t> total(new size_t(0));
+                Var<double> previous(new double(0.0));
+                Var<size_t> count(new size_t(0));
+                txp->set_timeout(timeout);
 
-                    txp->on_data([=](Buffer data) {
-                        if (*begin == 0.0) {
-                            *begin = *previous = time_now();
-                        }
-                        *total += data.length();
-                        double ct = time_now();
-                        *count += data.length();
-                        if (ct - *previous > 0.5) {
-                            double x = (*count * 8) / 1000 / (ct - *previous);
-                            *count = 0;
-                            *previous = ct;
-                            logger->info("Speed: %.2f kb/s", x);
-                        }
-                        // TODO: force close the connection after a given
-                        // large amount of time has passed
-                    });
-
-                    txp->on_error([=](Error err) {
-                        logger->info("Ending download (%d)", (int)err);
-                        double elapsed_time = time_now() - *begin;
-                        logger->debug("ndt: elapsed %lf", elapsed_time);
-                        logger->debug("ndt: total %lu", (unsigned long)*total);
-                        double speed = 0.0;
-                        if (err == EofError()) {
-                            if (elapsed_time > 0.0) {
-                                speed = *total * 8.0 / 1000.0 / elapsed_time;
-                            }
-                            err = NoError();
-                        }
-                        logger->info("S2C speed %lf kb/s", speed);
-                        txp->close([=]() { cb(err, speed); });
-                    });
+                txp->on_data([=](Buffer data) {
+                    if (*begin == 0.0) {
+                        *begin = *previous = time_now();
+                    }
+                    *total += data.length();
+                    double ct = time_now();
+                    *count += data.length();
+                    if (ct - *previous > 0.5) {
+                        double x = (*count * 8) / 1000 / (ct - *previous);
+                        *count = 0;
+                        *previous = ct;
+                        logger->info("Speed: %.2f kb/s", x);
+                    }
+                    // TODO: force close the connection after a given
+                    // large amount of time has passed
                 });
-            },
-            settings, logger, reactor);
+
+                txp->on_error([=](Error err) {
+                    logger->info("Ending download (%d)", (int)err);
+                    double elapsed_time = time_now() - *begin;
+                    logger->debug("ndt: elapsed %lf", elapsed_time);
+                    logger->debug("ndt: total %lu", (unsigned long)*total);
+                    double speed = 0.0;
+                    if (err == EofError()) {
+                        if (elapsed_time > 0.0) {
+                            speed = *total * 8.0 / 1000.0 / elapsed_time;
+                        }
+                        err = NoError();
+                    }
+                    logger->info("S2C speed %lf kb/s", speed);
+                    txp->close([=]() { cb(err, speed); });
+                });
+            });
+        },
+        settings, logger, reactor);
 }
 
 template <MK_MOCK_NAMESPACE(messages, read_msg)>
@@ -112,8 +113,7 @@ template <MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, first),
           MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, second),
           MK_MOCK_NAMESPACE(messages, read_json),
           MK_MOCK_NAMESPACE(messages, format_test_msg),
-          MK_MOCK_NAMESPACE(messages, write),
-          MK_MOCK(finalizing_test)>
+          MK_MOCK_NAMESPACE(messages, write), MK_MOCK(finalizing_test)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
@@ -147,7 +147,8 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                 // The server sends us the START message to tell we can start
                 ctx->logger->debug("ndt: recv TEST_START ...");
-                messages_read_msg_second(ctx, [=](Error err, uint8_t type, std::string) {
+                messages_read_msg_second(ctx, [=](Error err, uint8_t type,
+                                                  std::string) {
                     ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                     if (err) {
                         callback(ReadingTestStartError(err));
@@ -169,7 +170,8 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                         // The server sends us MSG containing throughput
                         ctx->logger->debug("ndt: recv TEST_MSG ...");
-                        messages_read_json(ctx, [=](Error err, uint8_t type, json m) {
+                        messages_read_json(ctx, [=](Error err, uint8_t type,
+                                                    json m) {
                             ctx->logger->debug("ndt: recv TEST_MSG ... %d",
                                                (int)err);
                             if (err) {

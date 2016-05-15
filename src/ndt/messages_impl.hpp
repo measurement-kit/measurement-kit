@@ -19,7 +19,7 @@ namespace messages {
 template <MK_MOCK_NAMESPACE_SUFFIX(net, readn, first),
           MK_MOCK_NAMESPACE_SUFFIX(net, readn, second)>
 void read_ll_impl(Var<Context> ctx,
-                   Callback<Error, uint8_t, std::string> callback) {
+                  Callback<Error, uint8_t, std::string> callback) {
 
     // Receive message type (1 byte) and length (2 bytes)
     net_readn_first(ctx->txp, ctx->buff, 3, [=](Error err) {

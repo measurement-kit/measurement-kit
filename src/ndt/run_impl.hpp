@@ -93,7 +93,7 @@ void run_with_specific_server_impl(std::string address, int port,
 
 template <MK_MOCK(run_with_specific_server), MK_MOCK_NAMESPACE(mlabns, query)>
 void run_impl(Callback<Error> callback, Settings settings, Var<Logger> logger,
-         Var<Reactor> reactor) {
+              Var<Reactor> reactor) {
     ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
     if (!port) {
         callback(InvalidPortError(port.as_error()));
@@ -101,18 +101,20 @@ void run_impl(Callback<Error> callback, Settings settings, Var<Logger> logger,
     }
     std::string address = settings.get<std::string>("address", "");
     if (address != "") {
-        run_with_specific_server(address, *port, callback, settings,
-                                 logger, reactor);
+        run_with_specific_server(address, *port, callback, settings, logger,
+                                 reactor);
         return;
     }
-    mlabns_query("ndt", [=](Error err, mlabns::Reply reply) {
-        if (err) {
-            callback(MlabnsQueryError(err));
-            return;
-        }
-        run_with_specific_server(reply.fqdn, *port, callback, settings,
-                                 logger, reactor);
-    }, settings, reactor, logger);
+    mlabns_query("ndt",
+                 [=](Error err, mlabns::Reply reply) {
+                     if (err) {
+                         callback(MlabnsQueryError(err));
+                         return;
+                     }
+                     run_with_specific_server(reply.fqdn, *port, callback,
+                                              settings, logger, reactor);
+                 },
+                 settings, reactor, logger);
 }
 
 } // namespace mk

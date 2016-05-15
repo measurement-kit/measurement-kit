@@ -32,77 +32,82 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         ctx->logger->debug("ndt: recv TEST_START ...");
-        messages_read_msg_second(ctx, [=](Error err, uint8_t type, std::string) {
-            ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
-            if (err) {
-                callback(ReadingTestStartError(err));
-                return;
-            }
-            if (type != TEST_START) {
-                callback(NotTestStartError());
-                return;
-            }
-
-            // Now we send all the TEST messages containing metadata
-            ErrorOr<Buffer> out;
-
-            ctx->logger->debug("send client.version");
-            out = messages_format_test_msg_first("client.version:" MEASUREMENT_KIT_VERSION);
-            if (!out) {
-                callback(SerializingClientVersionError());
-                return;
-            }
-            messages::write_noasync(ctx, *out);
-            ctx->logger->debug("send client.version ... 0");
-
-            ctx->logger->debug("send client.application");
-            out = messages_format_test_msg_second("client.application:measurement-kit");
-            if (!out) {
-                callback(SerializingClientApplicationError());
-                return;
-            }
-            messages::write_noasync(ctx, *out);
-            ctx->logger->debug("send client.application ... 0");
-
-            // XXX not sending: client.os.name
-            // XXX not sending: client.browser.name
-            // XXX not sending: client.kernel.version
-
-            // Now we send the empty TEST message to signal we're done
-            ctx->logger->debug("ndt: send final empty message");
-            out = messages_format_test_msg_third("");
-            if (!out) {
-                callback(SerializingFinalMetaError());
-                return;
-            }
-            messages_write(ctx, *out, [=](Error err) {
-                ctx->logger->debug("ndt: send final empty message ... %d", (int)err);
+        messages_read_msg_second(
+            ctx, [=](Error err, uint8_t type, std::string) {
+                ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                 if (err) {
-                    callback(WritingMetaError(err));
+                    callback(ReadingTestStartError(err));
+                    return;
+                }
+                if (type != TEST_START) {
+                    callback(NotTestStartError());
                     return;
                 }
 
-                ctx->logger->info("Sent additional metadata to server");
+                // Now we send all the TEST messages containing metadata
+                ErrorOr<Buffer> out;
 
-                // Now we read the FINALIZE message
-                ctx->logger->debug("ndt: recv TEST_FINALIZE ...");
-                messages_read_msg_third(ctx, [=](Error err, uint8_t type, std::string) {
-                    ctx->logger->debug("ndt: recv TEST_FINALIZE ... %d",
+                ctx->logger->debug("send client.version");
+                out = messages_format_test_msg_first(
+                    "client.version:" MEASUREMENT_KIT_VERSION);
+                if (!out) {
+                    callback(SerializingClientVersionError());
+                    return;
+                }
+                messages::write_noasync(ctx, *out);
+                ctx->logger->debug("send client.version ... 0");
+
+                ctx->logger->debug("send client.application");
+                out = messages_format_test_msg_second(
+                    "client.application:measurement-kit");
+                if (!out) {
+                    callback(SerializingClientApplicationError());
+                    return;
+                }
+                messages::write_noasync(ctx, *out);
+                ctx->logger->debug("send client.application ... 0");
+
+                // XXX not sending: client.os.name
+                // XXX not sending: client.browser.name
+                // XXX not sending: client.kernel.version
+
+                // Now we send the empty TEST message to signal we're done
+                ctx->logger->debug("ndt: send final empty message");
+                out = messages_format_test_msg_third("");
+                if (!out) {
+                    callback(SerializingFinalMetaError());
+                    return;
+                }
+                messages_write(ctx, *out, [=](Error err) {
+                    ctx->logger->debug("ndt: send final empty message ... %d",
                                        (int)err);
                     if (err) {
-                        callback(ReadingTestFinalizeError(err));
-                        return;
-                    }
-                    if (type != TEST_FINALIZE) {
-                        callback(NotTestFinalizeError());
+                        callback(WritingMetaError(err));
                         return;
                     }
 
-                    // We're done
-                    callback(NoError());
+                    ctx->logger->info("Sent additional metadata to server");
+
+                    // Now we read the FINALIZE message
+                    ctx->logger->debug("ndt: recv TEST_FINALIZE ...");
+                    messages_read_msg_third(
+                        ctx, [=](Error err, uint8_t type, std::string) {
+                            ctx->logger->debug("ndt: recv TEST_FINALIZE ... %d",
+                                               (int)err);
+                            if (err) {
+                                callback(ReadingTestFinalizeError(err));
+                                return;
+                            }
+                            if (type != TEST_FINALIZE) {
+                                callback(NotTestFinalizeError());
+                                return;
+                            }
+
+                            // We're done
+                            callback(NoError());
+                        });
                 });
             });
-        });
     });
 }
 

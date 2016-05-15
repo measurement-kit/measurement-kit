@@ -33,49 +33,50 @@ void coroutine_impl(std::string address, int port, double runtime,
 
     logger->debug("ndt: connect ...");
     net_connect(address, port,
-            [=](Error err, Var<Transport> txp) {
-                logger->debug("ndt: connect ... %d", (int)err);
-                if (err) {
-                    cb(err, nullptr);
-                    return;
-                }
-                logger->info("Connected to %s:%d", address.c_str(), port);
-                logger->debug("ndt: suspend coroutine");
-                cb(NoError(), [=](Callback<Error> cb) {
-                    double begin = time_now();
-                    Var<double> previous(new double(begin));
-                    Var<size_t> count(new size_t(0));
-                    logger->debug("ndt: resume coroutine");
-                    logger->info("Starting upload");
-                    txp->set_timeout(timeout);
-                    txp->on_flush([=]() {
-                        double now = time_now();
-                        if (now - *previous > 0.5) {
-                            double x = (*count * 8) / 1000 / (now - *previous);
-                            *previous = now;
-                            *count = 0;
-                            logger->info("Speed: %.2f kb/s", x);
-                        }
-                        if (now - begin > runtime) {
-                            logger->info("Elapsed enough time");
-                            txp->emit_error(NoError());
-                            return;
-                        }
-                        txp->write(str.data(), str.size());
-                        *count += str.size();
-                    });
-                    txp->on_error([=](Error err) {
-                        logger->info("Ending upload (%d)", (int)err);
-                        txp->close([=]() {
-                            logger->info("Connection to %s:%d closed",
-                                         address.c_str(), port);
-                            cb(err);
+                [=](Error err, Var<Transport> txp) {
+                    logger->debug("ndt: connect ... %d", (int)err);
+                    if (err) {
+                        cb(err, nullptr);
+                        return;
+                    }
+                    logger->info("Connected to %s:%d", address.c_str(), port);
+                    logger->debug("ndt: suspend coroutine");
+                    cb(NoError(), [=](Callback<Error> cb) {
+                        double begin = time_now();
+                        Var<double> previous(new double(begin));
+                        Var<size_t> count(new size_t(0));
+                        logger->debug("ndt: resume coroutine");
+                        logger->info("Starting upload");
+                        txp->set_timeout(timeout);
+                        txp->on_flush([=]() {
+                            double now = time_now();
+                            if (now - *previous > 0.5) {
+                                double x =
+                                    (*count * 8) / 1000 / (now - *previous);
+                                *previous = now;
+                                *count = 0;
+                                logger->info("Speed: %.2f kb/s", x);
+                            }
+                            if (now - begin > runtime) {
+                                logger->info("Elapsed enough time");
+                                txp->emit_error(NoError());
+                                return;
+                            }
+                            txp->write(str.data(), str.size());
+                            *count += str.size();
                         });
+                        txp->on_error([=](Error err) {
+                            logger->info("Ending upload (%d)", (int)err);
+                            txp->close([=]() {
+                                logger->info("Connection to %s:%d closed",
+                                             address.c_str(), port);
+                                cb(err);
+                            });
+                        });
+                        txp->write(str.data(), str.size());
                     });
-                    txp->write(str.data(), str.size());
-                });
-            },
-            settings, logger, reactor);
+                },
+                settings, logger, reactor);
 }
 
 template <MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, first),
@@ -116,7 +117,8 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                 // The server sends us the START message to tell we can start
                 ctx->logger->debug("ndt: recv TEST_START ...");
-                messages_read_msg_second(ctx, [=](Error err, uint8_t type, std::string) {
+                messages_read_msg_second(ctx, [=](Error err, uint8_t type,
+                                                  std::string) {
                     ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                     if (err) {
                         callback(ReadingTestStartError(err));
@@ -141,7 +143,9 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                         // The server sends us MSG containing throughput
                         ctx->logger->debug("ndt: recv TEST_MSG ...");
-                        messages_read_msg_third(ctx, [=](Error err, uint8_t type, std::string s) {
+                        messages_read_msg_third(ctx, [=](Error err,
+                                                         uint8_t type,
+                                                         std::string s) {
                             ctx->logger->debug("ndt: recv TEST_MSG ... %d",
                                                (int)err);
                             if (err) {
@@ -152,26 +156,29 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                                 callback(NotTestMsgError());
                                 return;
                             }
-                            ctx->logger->info("C2S speed calculated by server: %s kb/s", s.c_str());
+                            ctx->logger->info(
+                                "C2S speed calculated by server: %s kb/s",
+                                s.c_str());
 
                             // The server sends us the FINALIZE message
                             ctx->logger->debug("ndt: recv TEST_FINALIZE ...");
-                            messages_read_msg_fourth(ctx, [=](Error err, uint8_t type,
-                                          std::string) {
-                                ctx->logger->debug(
-                                    "ndt: recv TEST_FINALIZE ... %d", (int)err);
-                                if (err) {
-                                    callback(ReadingTestFinalizeError(err));
-                                    return;
-                                }
-                                if (type != TEST_FINALIZE) {
-                                    callback(NotTestFinalizeError());
-                                    return;
-                                }
+                            messages_read_msg_fourth(
+                                ctx, [=](Error err, uint8_t type, std::string) {
+                                    ctx->logger->debug(
+                                        "ndt: recv TEST_FINALIZE ... %d",
+                                        (int)err);
+                                    if (err) {
+                                        callback(ReadingTestFinalizeError(err));
+                                        return;
+                                    }
+                                    if (type != TEST_FINALIZE) {
+                                        callback(NotTestFinalizeError());
+                                        return;
+                                    }
 
-                                // The C2S phase is now finished
-                                callback(NoError());
-                            });
+                                    // The C2S phase is now finished
+                                    callback(NoError());
+                                });
                         });
                     });
                 });

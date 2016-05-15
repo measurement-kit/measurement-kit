@@ -15,15 +15,14 @@ class NdtTestImpl : public NetTest {
         run([=](Error) { cb(); }, options, logger, reactor);
     }
 
-    void end(Callback<> cb) override {
-        cb();
-    }
+    void end(Callback<> cb) override { cb(); }
 };
 
 Var<NetTest> NdtTest::create_test_() {
     NdtTestImpl *test = new NdtTestImpl(settings);
     test->set_verbosity(verbosity);
-    if (log_handler) test->on_log(log_handler);
+    if (log_handler)
+        test->on_log(log_handler);
     test->reactor = reactor;
     return Var<NetTest>(test);
 }

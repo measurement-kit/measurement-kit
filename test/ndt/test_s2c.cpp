@@ -123,7 +123,8 @@ TEST_CASE("run() deals with coroutine failure") {
         ctx, [](Error err) { REQUIRE(err == ConnectTestConnectionError()); });
 }
 
-static void test_prepare(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void test_prepare(Var<Context>,
+                         Callback<Error, uint8_t, std::string> cb) {
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
@@ -206,6 +207,7 @@ static void failure(Var<Context>, Buffer, Callback<Error> cb) {
 
 TEST_CASE("run() deals with write() failure") {
     Var<Context> ctx(new Context);
-    test_s2c::run_impl<test_prepare, coro_ok, test_start, msg_test, success, failure>(
+    test_s2c::run_impl<test_prepare, coro_ok, test_start, msg_test, success,
+                       failure>(
         ctx, [](Error err) { REQUIRE(err == WritingTestMsgError()); });
 }

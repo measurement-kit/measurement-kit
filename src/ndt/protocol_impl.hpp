@@ -14,19 +14,19 @@ template <MK_MOCK_NAMESPACE(net, connect)>
 void connect_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: connect ...");
     net_connect(ctx->address, ctx->port,
-            [=](Error err, Var<Transport> txp) {
-                ctx->logger->debug("ndt: connect ... %d", (int)err);
-                if (err) {
-                    callback(ConnectControlConnectionError(err));
-                    return;
-                }
-                txp->set_timeout(ctx->timeout);
-                ctx->txp = txp;
-                ctx->logger->info("Connected to %s:%d", ctx->address.c_str(),
-                                  ctx->port);
-                callback(NoError());
-            },
-            ctx->settings, ctx->logger, ctx->reactor);
+                [=](Error err, Var<Transport> txp) {
+                    ctx->logger->debug("ndt: connect ... %d", (int)err);
+                    if (err) {
+                        callback(ConnectControlConnectionError(err));
+                        return;
+                    }
+                    txp->set_timeout(ctx->timeout);
+                    ctx->txp = txp;
+                    ctx->logger->info("Connected to %s:%d",
+                                      ctx->address.c_str(), ctx->port);
+                    callback(NoError());
+                },
+                ctx->settings, ctx->logger, ctx->reactor);
 }
 
 template <MK_MOCK_NAMESPACE(messages, format_msg_extended_login),
@@ -135,8 +135,7 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_NAMESPACE(test_c2s, run),
-          MK_MOCK_NAMESPACE(test_meta, run),
+template <MK_MOCK_NAMESPACE(test_c2s, run), MK_MOCK_NAMESPACE(test_meta, run),
           MK_MOCK_NAMESPACE(test_s2c, run)>
 void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
 
@@ -169,14 +168,16 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     if (func) {
         ctx->logger->info("Run test with id %d ...", *num);
         func(ctx, [=](Error err) {
-            ctx->logger->info("Run test with id %d ... complete (%d)", *num, (int)err);
+            ctx->logger->info("Run test with id %d ... complete (%d)", *num,
+                              (int)err);
             if (err) {
                 // TODO: perhaps it would be better to have a specific error
                 // for each failed test to disambiguate
                 callback(TestFailedError(err));
                 return;
             }
-            run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx, callback);
+            run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx,
+                                                                      callback);
         });
         return;
     }

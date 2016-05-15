@@ -9,7 +9,7 @@ namespace ndt {
 namespace messages {
 
 void read_ll(Var<Context> ctx,
-              mk::Callback<Error, uint8_t, std::string> callback) {
+             mk::Callback<Error, uint8_t, std::string> callback) {
     read_ll_impl(ctx, callback);
 }
 
