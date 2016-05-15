@@ -43,7 +43,7 @@ void read_ll_impl(Var<Context> ctx,
             // TODO: rather than using assert() here we should modify readn()
             // to return ErrorOr<> (exceptions are better than asserts)
             assert(s.size() == *length);
-            debug("< [%d]: (%d) %s", *length, *type, s.c_str());
+            ctx->logger->debug("< [%d]: (%d) %s", *length, *type, s.c_str());
             callback(NoError(), *type, s);
         });
     });

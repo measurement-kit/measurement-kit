@@ -77,18 +77,11 @@ void coroutine_impl(std::string address, int port,
             settings, logger, reactor);
 }
 
-template <MK_MOCK_NAMESPACE(messages, read_ll)>
+template <MK_MOCK_NAMESPACE(messages, read_msg)>
 void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
 
-    // Note: at this point the server would send a sequence of TEST_MSG that
-    // contain part of the results, except the last one that is empty. Then
-    // after such empty TEST_MSG, it would send a TEST_FINALIZE message.
-    //
-    // Because of that behavior, here we are forced to use our lowest level
-    // reading primitive from the channel, i.e. `read_ll()`.
-
     ctx->logger->debug("ndt: recv TEST_MSG ...");
-    messages_read_ll(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
         if (err) {
             callback(ReadingTestMsgError(err));
@@ -102,20 +95,15 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
             callback(NotTestMsgError());
             return;
         }
-        try {
-            std::string x = json::parse(s)["msg"];
-            for (auto e : split(x, "\n")) {
-                if (e != "") {
-                    // This should be info because there are Web100
-                    // variables containing RTT and other useful metrics
-                    ctx->logger->info("%s", e.c_str());
-                }
+        for (auto e : split(s, "\n")) {
+            if (e != "") {
+                // This should be info because there are Web100
+                // variables containing RTT and other useful metrics
+                ctx->logger->info("%s", e.c_str());
             }
-        } catch (std::exception &) {
-            // nothing - because this would be the case of the last empty msg
         }
         // XXX: Here we can loop forever
-        finalizing_test_impl<messages_read_ll>(ctx, callback);
+        finalizing_test_impl<messages_read_msg>(ctx, callback);
     });
 }
 

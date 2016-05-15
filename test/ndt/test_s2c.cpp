@@ -30,7 +30,7 @@ static void failure(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
     cb(MockedError(), 0, "");
 }
 
-TEST_CASE("finalizing_test() deals with read_ndt() error") {
+TEST_CASE("finalizing_test() deals with read_msg() error") {
     Var<Context> ctx(new Context);
     test_s2c::finalizing_test_impl<failure>(
         ctx, [](Error err) { REQUIRE(err == ReadingTestMsgError()); });
