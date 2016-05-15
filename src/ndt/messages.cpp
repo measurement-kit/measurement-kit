@@ -8,9 +8,9 @@ namespace mk {
 namespace ndt {
 namespace messages {
 
-void read_ndt(Var<Context> ctx,
+void read_ll(Var<Context> ctx,
               mk::Callback<Error, uint8_t, std::string> callback) {
-    read_ndt_impl(ctx, callback);
+    read_ll_impl(ctx, callback);
 }
 
 void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {

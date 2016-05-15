@@ -17,7 +17,7 @@ namespace messages {
 */
 template <MK_MOCK_NAMESPACE_SUFFIX(net, readn, first),
           MK_MOCK_NAMESPACE_SUFFIX(net, readn, second)>
-void read_ndt_impl(Var<Context> ctx,
+void read_ll_impl(Var<Context> ctx,
                    Callback<Error, uint8_t, std::string> callback) {
 
     // Receive message type (1 byte) and length (2 bytes)
@@ -50,10 +50,10 @@ void read_ndt_impl(Var<Context> ctx,
     });
 }
 
-// Like `read_ndt()` but decode the payload using JSON
-template <MK_MOCK(read_ndt)>
+// Like `read_ll()` but decode the payload using JSON
+template <MK_MOCK(read_ll)>
 void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
-    read_ndt(ctx, [=](Error err, uint8_t type, std::string m) {
+    read_ll(ctx, [=](Error err, uint8_t type, std::string m) {
         json message;
         if (err) {
             callback(err, 0, message);

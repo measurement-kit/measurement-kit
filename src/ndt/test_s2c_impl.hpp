@@ -77,7 +77,7 @@ void coroutine_impl(std::string address, int port,
             settings, logger, reactor);
 }
 
-template <MK_MOCK_NAMESPACE(messages, read_ndt)>
+template <MK_MOCK_NAMESPACE(messages, read_ll)>
 void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // Note: at this point the server would send a sequence of TEST_MSG that
@@ -85,10 +85,10 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
     // after such empty TEST_MSG, it would send a TEST_FINALIZE message.
     //
     // Because of that behavior, here we are forced to use our lowest level
-    // reading primitive from the channel, i.e. `read_ndt()`.
+    // reading primitive from the channel, i.e. `read_ll()`.
 
     ctx->logger->debug("ndt: recv TEST_MSG ...");
-    messages_read_ndt(ctx, [=](Error err, uint8_t type, std::string s) {
+    messages_read_ll(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
         if (err) {
             callback(ReadingTestMsgError(err));
@@ -115,7 +115,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
             // nothing - because this would be the case of the last empty msg
         }
         // XXX: Here we can loop forever
-        finalizing_test_impl<messages_read_ndt>(ctx, callback);
+        finalizing_test_impl<messages_read_ll>(ctx, callback);
     });
 }
 
