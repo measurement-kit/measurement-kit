@@ -12,8 +12,8 @@
 
 using namespace mk;
 
-static void run_http_invalid_request_line(Async &async) {
-    async.run_test(ooni::HttpInvalidRequestLineTest()
+static void run_http_invalid_request_line(Runner &runner) {
+    runner.run_test(ooni::HttpInvalidRequestLineTest()
                        .set_options("backend", "http://nexa.polito.it/")
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #1: %s\n", s);
@@ -24,8 +24,8 @@ static void run_http_invalid_request_line(Async &async) {
                    });
 }
 
-static void run_dns_injection(Async &async) {
-    async.run_test(ooni::DnsInjectionTest()
+static void run_dns_injection(Runner &runner) {
+    runner.run_test(ooni::DnsInjectionTest()
                        .set_options("backend", "8.8.8.8:53")
                        .set_input_file_path("test/fixtures/hosts.txt")
                        .on_log([](uint32_t, const char *s) {
@@ -37,8 +37,8 @@ static void run_dns_injection(Async &async) {
                    });
 }
 
-static void run_tcp_connect(Async &async) {
-    async.run_test(ooni::TcpConnectTest()
+static void run_tcp_connect(Runner &runner) {
+    runner.run_test(ooni::TcpConnectTest()
                        .set_options("port", "80")
                        .set_input_file_path("test/fixtures/hosts.txt")
                        .on_log([](uint32_t, const char *s) {
@@ -50,40 +50,39 @@ static void run_tcp_connect(Async &async) {
                    });
 }
 
-TEST_CASE("The async engine works as expected") {
+TEST_CASE("The runner engine works as expected") {
 
-    Async async;
+    Runner runner;
 
     for (int i = 0; i < 4; ++i) {
         mk::debug("do another iteration of tests");
 
         // Create tests in temporary void functions to also check that we can
         // create them in functions that later return in real apps
-        run_dns_injection(async);
-        run_http_invalid_request_line(async);
-        run_http_invalid_request_line(async);
-        run_tcp_connect(async);
+        run_dns_injection(runner);
+        run_http_invalid_request_line(runner);
+        run_http_invalid_request_line(runner);
+        run_tcp_connect(runner);
 
         // TODO Need to implement a better sync mechanism?
-        while (!async.empty()) {
+        while (!runner.empty()) {
             sleep(1);
         }
     }
 }
 
 TEST_CASE("The destructor work as expected if the thread was already joined") {
-    Async async;
-    run_dns_injection(async);
-    run_dns_injection(async);
-    while (!async.empty()) {
+    Runner runner;
+    run_dns_injection(runner);
+    run_dns_injection(runner);
+    while (!runner.empty()) {
         sleep(1);
     }
-    async.break_loop();
-    async.join();
+    runner.break_loop();
+    runner.join();
 }
 
-TEST_CASE("Nothing strange happens if no thread is bound to Async") {
-    Async async;
-    REQUIRE(async.empty()); // Mainly to avoid unused variable warning
+TEST_CASE("Nothing strange happens if no thread is bound to Runner") {
+    Runner runner;
+    REQUIRE(runner.empty()); // Mainly to avoid unused variable warning
 }
-
