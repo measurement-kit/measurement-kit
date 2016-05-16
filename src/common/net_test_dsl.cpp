@@ -21,7 +21,7 @@ void NetTestDsl::run() {
 }
 
 void NetTestDsl::run(std::function<void()> callback) {
-    Async::global()->run_test(create_test_(),
+    Runner::global()->run_test(create_test_(),
                               [=](Var<NetTest>) { callback(); });
 }
 
