@@ -133,7 +133,7 @@ TEST_CASE(
     std::string tool = "neubot";
 
     loop_with_initial_event([=]() {
-        mlabns::query_debug<get_debug_error>(tool,
+        mlabns::query_impl<get_debug_error>(tool,
                                              [](Error error, mlabns::Reply) {
                                                  REQUIRE(error);
                                                  break_loop();
@@ -160,7 +160,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
     std::string tool = "neubot";
 
     loop_with_initial_event([=]() {
-        mlabns::query_debug<get_debug_invalid_status_code>(
+        mlabns::query_impl<get_debug_invalid_status_code>(
             tool,
             [](Error error, mlabns::Reply) {
                 REQUIRE(error == mlabns::UnexpectedHttpStatusCodeError());
@@ -188,7 +188,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response is "
     std::string tool = "neubot";
 
     loop_with_initial_event([=]() {
-        mlabns::query_debug<get_debug_invalid_response>(
+        mlabns::query_impl<get_debug_invalid_response>(
             tool,
             [](Error error, mlabns::Reply) {
                 REQUIRE(error == JsonParseError());
@@ -224,7 +224,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
     std::string tool = "neubot";
 
     loop_with_initial_event([=]() {
-        mlabns::query_debug<get_debug_invalid_uncomplete_json>(
+        mlabns::query_impl<get_debug_invalid_uncomplete_json>(
             tool,
             [](Error error, mlabns::Reply) {
                 REQUIRE(error == JsonKeyError());

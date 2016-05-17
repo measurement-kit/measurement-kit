@@ -11,7 +11,7 @@ ErrorOr<std::string> as_query(Settings &settings);
 
 void query(std::string tool, Callback<Error, Reply> callback, Settings settings,
            Var<Reactor> reactor, Var<Logger> logger) {
-    query_debug(tool, callback, settings, reactor, logger);
+    query_impl(tool, callback, settings, reactor, logger);
 }
 
 } // namespace mlabns
