@@ -3,7 +3,6 @@
 // information on the copying conditions.
 
 #include <measurement_kit/common.hpp>
-#include <mutex>
 #include <thread>
 #include <future>
 
