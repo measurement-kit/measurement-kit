@@ -56,7 +56,7 @@ TEST_CASE("Operator-* throws on error if ErrorOr is not initialized") {
 
 TEST_CASE("Operator-> throws on error if ErrorOr is not initialized") {
     ErrorOr<Foobar> eo;
-    REQUIRE_THROWS_AS(eo->foo, Error);
+    REQUIRE_THROWS_AS(eo->foo = 10, Error);
 }
 
 TEST_CASE("Operator-* throws on error if ErrorOr is an error") {
@@ -66,5 +66,5 @@ TEST_CASE("Operator-* throws on error if ErrorOr is an error") {
 
 TEST_CASE("Operator-> throws on error if ErrorOr is an error") {
     ErrorOr<Foobar> eo{GenericError()};
-    REQUIRE_THROWS_AS(eo->foo, Error);
+    REQUIRE_THROWS_AS(eo->foo = 10, Error);
 }
