@@ -30,7 +30,7 @@ void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
     }
     active += 1;
     debug("runner: scheduling %llu", test->identifier());
-    reactor->call_later(1.0, [=]() {
+    reactor->call_soon([=]() {
         debug("runner: starting %llu", test->identifier());
         test->begin([=]() {
             debug("runner: ending %llu", test->identifier());
