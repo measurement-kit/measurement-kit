@@ -47,7 +47,8 @@ TEST_CASE("Query can pass the settings to the dns level") {
     });
 }
 
-TEST_CASE("Make sure that an error is passed to callback with invalid query") {
+TEST_CASE("Make sure that an error is passed to callback with invalid "
+          "address_family settings") {
     Settings settings;
     settings["mlabns/address_family"] = "ip4"; // Invalid
     settings["mlabns/metro"] = "trn";
@@ -64,8 +65,8 @@ TEST_CASE("Make sure that an error is passed to callback with invalid query") {
     });
 }
 
-TEST_CASE(
-    "Make sure that an error is passed to callback with invalid query 1") {
+TEST_CASE("Make sure that an error is passed to callback with invalid metro "
+          "settings") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "trno"; // Invalid
@@ -82,8 +83,8 @@ TEST_CASE(
     });
 }
 
-TEST_CASE(
-    "Make sure that an error is passed to callback with invalid query 2") {
+TEST_CASE("Make sure that an error is passed to callback with invalid policy "
+          "settings") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "trn";
@@ -101,7 +102,7 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Make sure that an error is passed to callback with invalid query 3") {
+    "Make sure that an error is passed to callback with invalid tool settings) {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "trn";
@@ -109,12 +110,12 @@ TEST_CASE(
     std::string tool = "antani"; // Invalid
 
     loop_with_initial_event([=]() {
-        mlabns::query(tool,
-                      [](Error error, mlabns::Reply) {
-                          REQUIRE(error);
-                          break_loop();
-                      },
-                      settings);
+    mlabns::query(tool,
+                  [](Error error, mlabns::Reply) {
+                      REQUIRE(error);
+                      break_loop();
+                  },
+                  settings);
     });
 }
 
@@ -134,12 +135,12 @@ TEST_CASE(
 
     loop_with_initial_event([=]() {
         mlabns::query_impl<get_debug_error>(tool,
-                                             [](Error error, mlabns::Reply) {
-                                                 REQUIRE(error);
-                                                 break_loop();
-                                             },
-                                             settings, Reactor::global(),
-                                             Logger::global());
+                                            [](Error error, mlabns::Reply) {
+                                                REQUIRE(error);
+                                                break_loop();
+                                            },
+                                            settings, Reactor::global(),
+                                            Logger::global());
     });
 }
 
