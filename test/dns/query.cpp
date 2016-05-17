@@ -45,6 +45,11 @@ static int null_evdns_base_set_option_randomize(evdns_base *, const char *,
     return -1;
 }
 
+static int null_evdns_base_set_option_timeout(evdns_base *, const char *,
+                                                const char *) {
+    return -1;
+}
+
 #define BASE_FREE(name)                                                        \
     static bool base_free_##name##_flag = false;                               \
     static void base_free_##name(struct evdns_base *base, int fail_requests) { \
@@ -94,6 +99,18 @@ TEST_CASE("throw error while fails evdns_set_options for attempts") {
             {{"dns/attempts", "nexa"}}, Reactor::global());
     } catch (std::runtime_error &) {
         REQUIRE(base_free_evdns_set_options_attempts_flag);
+        return;
+    }
+    REQUIRE(false);
+}
+
+TEST_CASE("throw error while fails evdns_set_options for timeout") {
+    try {
+        create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
+                          base_free_evdns_set_options_timeout>(
+            {{"dns/attempts", "nexa"}}, Reactor::global());
+    } catch (std::runtime_error &) {
+        REQUIRE(base_free_evdns_set_options_timeout_flag);
         return;
     }
     REQUIRE(false);
