@@ -57,7 +57,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
     return query;
 }
 
-template <decltype(http::get) get = http::get>
+template <MK_MOCK_NAMESPACE(http, get)>
 inline void query_impl(std::string tool, Callback<Error, Reply> callback,
                         Settings settings, Var<Reactor> reactor,
                         Var<Logger> logger) {
@@ -76,7 +76,7 @@ inline void query_impl(std::string tool, Callback<Error, Reply> callback,
     url += *query;
     logger->info("query mlabns for tool %s", tool.c_str());
     logger->debug("mlabns url: %s", url.c_str());
-    get(url,
+    http::get(url,
         [callback, logger](Error error, http::Response response) {
             if (error) {
                 callback(error, Reply());
