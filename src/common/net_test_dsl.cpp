@@ -14,10 +14,10 @@ namespace mk {
 void NetTestDsl::run() {
     // XXX Ideally it would be best to run this in the current thread with
     // a dedicated reactor, but the code is not yet ready for that.
-    std::promise<bool> accumulate_promise;
-    std::future<bool> accumulate_future = accumulate_promise.get_future();
-    run([&accumulate_promise]() { accumulate_promise.set_value(true);});
-    accumulate_future.wait();
+    std::promise<bool> promise;
+    std::future<bool> future = promise.get_future();
+    run([&promise]() { promise.set_value(true);});
+    future.wait();
 }
 
 void NetTestDsl::run(std::function<void()> callback) {
