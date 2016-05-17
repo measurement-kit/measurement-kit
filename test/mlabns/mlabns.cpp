@@ -102,7 +102,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid policy "
 }
 
 TEST_CASE(
-    "Make sure that an error is passed to callback with invalid tool settings) {
+    "Make sure that an error is passed to callback with invalid tool settings") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "trn";
@@ -136,7 +136,7 @@ TEST_CASE(
     loop_with_initial_event([=]() {
         mlabns::query_impl<get_debug_error>(tool,
                                             [](Error error, mlabns::Reply) {
-                                                REQUIRE(error);
+                                                REQUIRE(error == GenericError());
                                                 break_loop();
                                             },
                                             settings, Reactor::global(),
