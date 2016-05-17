@@ -7,6 +7,8 @@
 
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/mlabns.hpp>
+#include <measurement_kit/http.hpp>
+#include "src/mlabns/mlabns.hpp"
 
 using namespace mk;
 
@@ -19,7 +21,7 @@ TEST_CASE("Query works as expected") {
 
     loop_with_initial_event([=]() {
         mlabns::query(
-            tool, [](Error error, mlabns::Reply reply) {
+            tool, [](Error error, mlabns::Reply) {
                 REQUIRE(!error);
                 break_loop();
             }, settings);
@@ -36,14 +38,14 @@ TEST_CASE("Query can pass the settings to the dns level") {
 
     loop_with_initial_event([=]() {
         mlabns::query(
-            tool, [](Error error, mlabns::Reply reply) {
+            tool, [](Error error, mlabns::Reply) {
                 REQUIRE(error);
                 break_loop();
             }, settings);
     });
 }
 
-TEST_CASE("make sure that an error is passed to callback with invalid query") {
+TEST_CASE("Make sure that an error is passed to callback with invalid query") {
     Settings settings;
     settings["mlabns/address_family"] = "ip4"; // Invalid
     settings["mlabns/metro"] = "trn";
@@ -52,14 +54,14 @@ TEST_CASE("make sure that an error is passed to callback with invalid query") {
 
     loop_with_initial_event([=]() {
         mlabns::query(
-            tool, [](Error error, mlabns::Reply reply) {
+            tool, [](Error error, mlabns::Reply) {
                 REQUIRE(error);
                 break_loop();
             }, settings);
     });
 }
 
-TEST_CASE("make sure that an error is passed to callback with invalid query 1") {
+TEST_CASE("Make sure that an error is passed to callback with invalid query 1") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "trno"; // Invalid
@@ -68,14 +70,14 @@ TEST_CASE("make sure that an error is passed to callback with invalid query 1") 
 
     loop_with_initial_event([=]() {
         mlabns::query(
-            tool, [](Error error, mlabns::Reply reply) {
+            tool, [](Error error, mlabns::Reply) {
                 REQUIRE(error);
                 break_loop();
             }, settings);
     });
 }
 
-TEST_CASE("make sure that an error is passed to callback with invalid query 2") {
+TEST_CASE("Make sure that an error is passed to callback with invalid query 2") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "trn";
@@ -84,15 +86,14 @@ TEST_CASE("make sure that an error is passed to callback with invalid query 2") 
 
     loop_with_initial_event([=]() {
         mlabns::query(
-            tool, [](Error error, mlabns::Reply reply) {
+            tool, [](Error error, mlabns::Reply) {
                 REQUIRE(error);
                 break_loop();
             }, settings);
     });
 }
 
-
-TEST_CASE("make sure that an error is passed to callback with invalid query 3") {
+TEST_CASE("Make sure that an error is passed to callback with invalid query 3") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "trn";
@@ -101,9 +102,110 @@ TEST_CASE("make sure that an error is passed to callback with invalid query 3") 
 
     loop_with_initial_event([=]() {
         mlabns::query(
-            tool, [](Error error, mlabns::Reply reply) {
-                REQUIRE(error == InvalidQuery());
+            tool, [](Error error, mlabns::Reply) {
+                REQUIRE(error);
                 break_loop();
             }, settings);
+    });
+}
+
+static void get_debug_error(std::string, http::RequestCallback cb,
+                http::Headers, std::string,
+                Settings, Var<Logger>,
+                Var<Reactor>) {
+    cb(GenericError(), http::Response());
+}
+
+TEST_CASE("Make sure that an error is passed to callback if http::request fails") {
+    Settings settings;
+    settings["mlabns/address_family"] = "ipv4";
+    settings["mlabns/metro"] = "trn";
+    settings["mlabns/policy"] = "random";
+    std::string tool = "neubot";
+
+    loop_with_initial_event([=]() {
+        mlabns::query_debug<get_debug_error>(
+            tool, [](Error error, mlabns::Reply) {
+                REQUIRE(error);
+                break_loop();
+            }, settings, Reactor::global(), Logger::global());
+    });
+}
+
+static void get_debug_invalid_status_code(std::string, http::RequestCallback cb,
+                http::Headers, std::string,
+                Settings, Var<Logger>,
+                Var<Reactor>) {
+    http::Response response;
+    response.status_code = 500;
+    cb(NoError(), response);
+}
+
+TEST_CASE("Make sure that an error is passed to callback if the response status is not 200") {
+    Settings settings;
+    settings["mlabns/address_family"] = "ipv4";
+    settings["mlabns/metro"] = "trn";
+    settings["mlabns/policy"] = "random";
+    std::string tool = "neubot";
+
+    loop_with_initial_event([=]() {
+        mlabns::query_debug<get_debug_invalid_status_code>(
+            tool, [](Error error, mlabns::Reply) {
+                REQUIRE(error == mlabns::UnexpectedHttpStatusCodeError());
+                break_loop();
+            }, settings, Reactor::global(), Logger::global());
+    });
+}
+
+static void get_debug_invalid_response(std::string, http::RequestCallback cb,
+                http::Headers, std::string,
+                Settings, Var<Logger>,
+                Var<Reactor>) {
+    http::Response response;
+    response.status_code = 200;
+    response.body = "alfj9882//234j<<<384982";
+    cb(NoError(), response);
+}
+
+TEST_CASE("Make sure that an error is passed to callback if the response is not a json") {
+    Settings settings;
+    settings["mlabns/address_family"] = "ipv4";
+    settings["mlabns/metro"] = "trn";
+    settings["mlabns/policy"] = "random";
+    std::string tool = "neubot";
+
+    loop_with_initial_event([=]() {
+        mlabns::query_debug<get_debug_invalid_response>(
+            tool, [](Error error, mlabns::Reply) {
+                REQUIRE(error == JsonParseError());
+                break_loop();
+            }, settings, Reactor::global(), Logger::global());
+    });
+}
+
+static void get_debug_invalid_uncomplete_json(std::string, http::RequestCallback cb,
+                http::Headers, std::string,
+                Settings, Var<Logger>,
+                Var<Reactor>) {
+    http::Response response;
+    response.status_code = 200;
+    // This json does not contain the country field
+    response.body = "{\"city\": \"Turin\", \"url\": \"http://neubot.mlab.mlab1v4.trn01.measurement-lab.org:8080\", \"ip\": [\"194.116.85.211\"], \"fqdn\": \"neubot.mlab.mlab1v4.trn01.measurement-lab.org\", \"site\": \"trn01\"}";
+    cb(NoError(), response);
+}
+
+TEST_CASE("Make sure that an error is passed to callback if the response does not contain all fields") {
+    Settings settings;
+    settings["mlabns/address_family"] = "ipv4";
+    settings["mlabns/metro"] = "trn";
+    settings["mlabns/policy"] = "random";
+    std::string tool = "neubot";
+
+    loop_with_initial_event([=]() {
+        mlabns::query_debug<get_debug_invalid_uncomplete_json>(
+            tool, [](Error error, mlabns::Reply) {
+                REQUIRE(error == JsonKeyError());
+                break_loop();
+            }, settings, Reactor::global(), Logger::global());
     });
 }
