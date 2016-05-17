@@ -41,6 +41,69 @@ TEST_CASE("Query can pass the settings to the dns level") {
                 break_loop();
             }, settings);
     });
+}
+
+TEST_CASE("make sure that an error is passed to callback with invalid query") {
+    Settings settings;
+    settings["mlabns/address_family"] = "ip4"; // Invalid
+    settings["mlabns/metro"] = "trn";
+    settings["mlabns/policy"] = "random";
+    std::string tool = "neubot";
+
+    loop_with_initial_event([=]() {
+        mlabns::query(
+            tool, [](Error error, mlabns::Reply reply) {
+                REQUIRE(error);
+                break_loop();
+            }, settings);
+    });
+}
+
+TEST_CASE("make sure that an error is passed to callback with invalid query 1") {
+    Settings settings;
+    settings["mlabns/address_family"] = "ipv4";
+    settings["mlabns/metro"] = "trno"; // Invalid
+    settings["mlabns/policy"] = "random";
+    std::string tool = "neubot";
+
+    loop_with_initial_event([=]() {
+        mlabns::query(
+            tool, [](Error error, mlabns::Reply reply) {
+                REQUIRE(error);
+                break_loop();
+            }, settings);
+    });
+}
+
+TEST_CASE("make sure that an error is passed to callback with invalid query 2") {
+    Settings settings;
+    settings["mlabns/address_family"] = "ipv4";
+    settings["mlabns/metro"] = "trn";
+    settings["mlabns/policy"] = "antani"; // Invalid
+    std::string tool = "neubot";
+
+    loop_with_initial_event([=]() {
+        mlabns::query(
+            tool, [](Error error, mlabns::Reply reply) {
+                REQUIRE(error);
+                break_loop();
+            }, settings);
+    });
+}
 
 
+TEST_CASE("make sure that an error is passed to callback with invalid query 3") {
+    Settings settings;
+    settings["mlabns/address_family"] = "ipv4";
+    settings["mlabns/metro"] = "trn";
+    settings["mlabns/policy"] = "random";
+    std::string tool = "antani"; // Invalid
+
+    loop_with_initial_event([=]() {
+        mlabns::query(
+            tool, [](Error error, mlabns::Reply reply) {
+                REQUIRE(error == InvalidQuery());
+                break_loop();
+            }, settings);
+    });
 }
