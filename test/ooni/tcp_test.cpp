@@ -48,7 +48,7 @@ TEST_CASE("TCPTestImpl works as expected in a common case") {
                           {"port", "80"},
                           {"dns/nameserver", "8.8.8.1"},
                           {"dns/timeout", 0.0001}},
-                         [&count](Error err, Var<net::Transport> txp) {
+                         [&count](Error err, Var<net::Transport>) {
                              REQUIRE(err);
                              if (++count >= 3) {
                                  break_loop();
