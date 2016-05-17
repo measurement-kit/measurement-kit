@@ -26,9 +26,8 @@ MK_AM_ENABLE_EXAMPLES
 # checks for libraries
 
 # Must set -pthread before testing for -levent_pthreads
-CFLAGS="$CFLAGS -pthread"
-CXXFLAGS="$CXXFLAGS -pthread"
-LDFLAGS="$LDFLAGS -pthread"
+MK_AM_PTHREAD_COMPILE
+MK_AM_PTHREAD_LINK
 
 echo ""
 MK_AM_OPENSSL
