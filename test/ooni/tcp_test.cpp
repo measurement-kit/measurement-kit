@@ -51,7 +51,7 @@ TEST_CASE("TCPTestImpl works as expected in a common case") {
                          [&count](Error err, Var<net::Transport> txp) {
                              REQUIRE(err);
                              if (++count >= 3) {
-                                 []() { break_loop(); };
+                                 break_loop();
                              }
                          });
 
