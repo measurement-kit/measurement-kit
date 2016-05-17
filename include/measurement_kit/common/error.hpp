@@ -13,39 +13,26 @@ namespace mk {
 
 class ErrorContext {};
 
-/// An error that occurred
 class Error : public std::exception {
   public:
     Error(int e, std::string ooe, Error c)
-        : child(new Error(c)), error_(e), ooni_error_(ooe) {}
+        : child(new Error(c)), code(e), ooni_error(ooe) {}
+    Error(int e, std::string ooe) : code(e), ooni_error(ooe) {}
+    Error() : Error(0, "") {}
 
-    /// Constructor with error code and OONI error
-    Error(int e, std::string ooe) : error_(e), ooni_error_(ooe) {}
+    operator bool() const { return code != 0; }
 
-    Error() : Error(0, "") {}               ///< Default constructor (no error)
-    operator int() const { return error_; } ///< Cast to integer
+    bool operator==(int n) const { return code == n; }
+    bool operator==(Error e) const { return code == e.code; }
+    bool operator!=(int n) const { return code != n; }
+    bool operator!=(Error e) const { return code != e.code; }
 
-    /// Equality operator
-    bool operator==(int n) const { return error_ == n; }
-
-    /// Equality operator
-    bool operator==(Error e) const { return error_ == e.error_; }
-
-    /// Unequality operator
-    bool operator!=(int n) const { return error_ != n; }
-
-    /// Unequality operator
-    bool operator!=(Error e) const { return error_ != e.error_; }
-
-    /// Return error as OONI error
-    std::string as_ooni_error() { return ooni_error_; }
+    std::string as_ooni_error() { return ooni_error; }
 
     Var<ErrorContext> context;
     Var<Error> child;
-
-  private:
-    int error_ = 0;
-    std::string ooni_error_;
+    int code = 0;
+    std::string ooni_error;
 };
 
 #define MK_DEFINE_ERR(_code_, _name_, _ooe_)                                   \
