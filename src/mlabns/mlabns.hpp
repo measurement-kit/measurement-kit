@@ -3,16 +3,12 @@
 // information on the copying conditions.
 
 #include "src/ext/json/src/json.hpp"
-#include <functional>
-#include <initializer_list>
-#include <map>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
 #include <regex>
 #include <string>
 #include <utility>
-#include <vector>
 
 using json = nlohmann::json;
 
