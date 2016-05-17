@@ -76,7 +76,7 @@ inline void query_impl(std::string tool, Callback<Error, Reply> callback,
     url += *query;
     logger->info("query mlabns for tool %s", tool.c_str());
     logger->debug("mlabns url: %s", url.c_str());
-    http::get(url,
+    http_get(url,
         [callback, logger](Error error, http::Response response) {
             if (error) {
                 callback(error, Reply());
