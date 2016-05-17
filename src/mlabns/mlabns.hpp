@@ -21,9 +21,10 @@ namespace mlabns {
 
 ErrorOr<std::string> as_query(Settings &settings);
 
-template<decltype(http::get) get = http::get>
-inline void query_debug(std::string tool, Callback<Error, Reply> callback, Settings settings,
-           Var<Reactor> reactor, Var<Logger> logger) {
+template <decltype(http::get) get = http::get>
+inline void query_debug(std::string tool, Callback<Error, Reply> callback,
+                        Settings settings, Var<Reactor> reactor,
+                        Var<Logger> logger) {
     ErrorOr<std::string> query = as_query(settings);
     if (!query) {
         callback(query.as_error(), Reply());
@@ -33,43 +34,44 @@ inline void query_debug(std::string tool, Callback<Error, Reply> callback, Setti
     std::regex valid_tool("^[a-z]+$");
     if (!std::regex_match(tool, valid_tool)) {
         callback(InvalidToolNameError(), Reply());
-            return;
-        }
+        return;
+    }
     url += tool;
     url += *query;
     logger->info("query mlabns for tool %s", tool.c_str());
     logger->debug("mlabns url: %s", url.c_str());
-    get(url, [callback, logger](Error error, http::Response response) {
-                      if (error) {
-                          callback(error, Reply());
-                          return;
-                      }
-                      if (response.status_code != 200) {
-                          callback(UnexpectedHttpStatusCodeError(), Reply());
-                          return;
-                      }
-                      Reply reply;
-                      try {
-                          auto node = json::parse(response.body);
-                          reply.city = node.at("city");
-                          reply.url = node.at("url");
-                          for (auto ip2 : node.at("ip")) {
-                              reply.ip.push_back(ip2);
-                          }
-                          reply.fqdn = node.at("fqdn");
-                          reply.site = node.at("site");
-                          reply.country = node.at("country");
-                      } catch (std::invalid_argument &) {
-                          callback(JsonParseError(), Reply());
-                          return;
-                      } catch (std::out_of_range &) {
-                          callback(JsonKeyError(), Reply());
-                          return;
-                      }
-                      logger->info("mlabns says to use %s", reply.fqdn.c_str());
-                      callback(NoError(), reply);
-                  },
-                  {}, "", settings, logger, reactor);
+    get(url,
+        [callback, logger](Error error, http::Response response) {
+            if (error) {
+                callback(error, Reply());
+                return;
+            }
+            if (response.status_code != 200) {
+                callback(UnexpectedHttpStatusCodeError(), Reply());
+                return;
+            }
+            Reply reply;
+            try {
+                auto node = json::parse(response.body);
+                reply.city = node.at("city");
+                reply.url = node.at("url");
+                for (auto ip2 : node.at("ip")) {
+                    reply.ip.push_back(ip2);
+                }
+                reply.fqdn = node.at("fqdn");
+                reply.site = node.at("site");
+                reply.country = node.at("country");
+            } catch (std::invalid_argument &) {
+                callback(JsonParseError(), Reply());
+                return;
+            } catch (std::out_of_range &) {
+                callback(JsonKeyError(), Reply());
+                return;
+            }
+            logger->info("mlabns says to use %s", reply.fqdn.c_str());
+            callback(NoError(), reply);
+        },
+        {}, "", settings, logger, reactor);
 }
 
 } // namespace mlabns
