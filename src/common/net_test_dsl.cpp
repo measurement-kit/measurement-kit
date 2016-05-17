@@ -7,17 +7,17 @@
 #include <measurement_kit/common.hpp>
 #include <ratio>
 #include <thread>
+#include <future>
 
 namespace mk {
 
 void NetTestDsl::run() {
     // XXX Ideally it would be best to run this in the current thread with
     // a dedicated reactor, but the code is not yet ready for that.
-    bool done = false;
-    run([&done]() { done = true; });
-    do {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    } while (!done);
+    std::promise<bool> promise;
+    std::future<bool> future = promise.get_future();
+    run([&promise]() { promise.set_value(true);});
+    future.wait();
 }
 
 void NetTestDsl::run(std::function<void()> callback) {
