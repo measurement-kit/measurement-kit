@@ -142,11 +142,6 @@ class OoniTestImpl : public mk::NetTest {
         input = nullptr;
     }
 
-    OoniTestImpl(OoniTestImpl &) = delete;
-    OoniTestImpl &operator=(OoniTestImpl &) = delete;
-    OoniTestImpl(OoniTestImpl &&) = default;
-    OoniTestImpl &operator=(OoniTestImpl &&) = default;
-
     OoniTestImpl(std::string input_filepath_)
         : OoniTestImpl(input_filepath_, Settings()) {}
 
