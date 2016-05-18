@@ -3,6 +3,8 @@
 // information on the copying conditions.
 
 #include <measurement_kit/common.hpp>
+#include <thread>
+#include <future>
 
 namespace mk {
 
@@ -10,15 +12,24 @@ Runner::Runner() {}
 
 void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
     if (!running) {
+        std::promise<bool> promise;
+        std::future<bool> future = promise.get_future();
         // WARNING: below we're passing `this` to the thread, which means that
         // the destructor MUST wait the thread. Otherwise, when the thread dies
         // many strange things could happen (I have seen SIGABRT).
-        thread = std::thread([this]() { reactor->loop(); });
+        debug("runner: starting reactor in background...");
+        thread = std::thread([&promise, this]() {
+            reactor->loop_with_initial_event([&promise]() {
+                debug("runner: starting reactor in background... ok");
+                promise.set_value(true);
+            });
+        });
+        future.wait();
         running = true;
     }
     active += 1;
     debug("runner: scheduling %llu", test->identifier());
-    reactor->call_later(1.0, [=]() {
+    reactor->call_soon([=]() {
         debug("runner: starting %llu", test->identifier());
         test->begin([=]() {
             debug("runner: ending %llu", test->identifier());
