@@ -18,6 +18,8 @@
 #include "src/ooni/input_file_generator.hpp"    // for InputFileGenerator
 #include "src/ooni/input_generator.hpp"         // for InputGenerator
 #include "src/report/file_reporter.hpp"         // for FileReporter
+#include "src/ooni/errors.hpp"
+#include <sys/stat.h>
 
 namespace mk {
 namespace ooni {
@@ -122,6 +124,17 @@ class OoniTestImpl : public mk::NetTest {
             json entry;
             cb(entry);
         });
+    }
+
+    void validate_input_filepath(std::string input_filepath_) {
+        if (input_filepath_ == "") {
+            throw InputFileRequired("An input file is required!");
+        }
+
+        struct stat buffer;
+        if (stat(input_filepath_.c_str(), &buffer) != 0) {
+            throw InputFileDoesNotExist(input_filepath_ + " does not exist");
+        }
     }
 
   public:
