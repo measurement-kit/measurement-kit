@@ -17,6 +17,6 @@ Pod::Spec.new do |s|
   s.prepare_command = <<-CMD
     ./build/ios/scripts/build.sh
   CMD
-  s.platform = :ios, "9.0"
+  s.platform = :ios, "7.1"
   s.vendored_framework = "build/ios/Frameworks/*.framework"
 end
