@@ -239,8 +239,6 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
             break
           fi
         done
-    else
-      AC_MSG_WARN([skipped the ca-bundle detection when cross-compiling])
     fi
   fi
 
@@ -250,7 +248,8 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
     AC_SUBST(MK_CA_BUNDLE)
     AC_MSG_RESULT([$ca])
   elif test "x$cross_compiling" == "xyes"; then
-    AC_MSG_RESULT([no])
+    AC_MSG_RESULT([skipped (cross compiling)])
+    AC_MSG_WARN([skipped the ca-bundle detection when cross-compiling])
   else
     AC_MSG_ERROR([you should give a ca-bundle location])
   fi
