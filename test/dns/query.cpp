@@ -70,75 +70,45 @@ TEST_CASE("throw error while fails evdns_base_new") {
 }
 
 TEST_CASE("throw error while fails evdns_base_nameserver_ip_add") {
-    try {
-        create_evdns_base<::evdns_base_new, null_evdns_base_nameserver_ip_add,
+    REQUIRE_THROWS_AS((create_evdns_base<::evdns_base_new, null_evdns_base_nameserver_ip_add,
                           base_free_evdns_base_nameserver_ip_add>(
-            {{"dns/nameserver", "nexa"}}, Reactor::global());
-    } catch (std::runtime_error &) {
+            {{"dns/nameserver", "nexa"}}, Reactor::global())), std::runtime_error);
         REQUIRE(base_free_evdns_base_nameserver_ip_add_flag);
-        return;
-    }
-    REQUIRE(false);
 }
 
 TEST_CASE("throw error while fails evdns_base_nameserver_ip_add and base_new") {
-    try {
-        create_evdns_base<null_evdns_base_new,
+    REQUIRE_THROWS_AS((create_evdns_base<null_evdns_base_new,
                           null_evdns_base_nameserver_ip_add>(
-            {{"dns/nameserver", "nexa"}}, Reactor::global());
-    } catch (std::bad_alloc &) {
-        return;
-    }
-    REQUIRE(false);
+            {{"dns/nameserver", "nexa"}}, Reactor::global())), std::bad_alloc);
 }
 
 TEST_CASE("throw error while fails evdns_set_options for attempts") {
-    try {
-        create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
+    REQUIRE_THROWS_AS((create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
                           base_free_evdns_set_options_attempts>(
-            {{"dns/attempts", "nexa"}}, Reactor::global());
-    } catch (std::runtime_error &) {
+            {{"dns/attempts", "nexa"}}, Reactor::global())), std::runtime_error);
         REQUIRE(base_free_evdns_set_options_attempts_flag);
-        return;
-    }
-    REQUIRE(false);
 }
 
 TEST_CASE("throw error while fails evdns_set_options for timeout") {
-    try {
-        create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
+    REQUIRE_THROWS_AS((create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
                           base_free_evdns_set_options_timeout>(
-            {{"dns/attempts", "nexa"}}, Reactor::global());
-    } catch (std::runtime_error &) {
+            {{"dns/attempts", "nexa"}}, Reactor::global())), std::runtime_error);
         REQUIRE(base_free_evdns_set_options_timeout_flag);
-        return;
-    }
-    REQUIRE(false);
 }
 
 TEST_CASE("throw error while fails evdns_set_options for negative attempts") {
-    try {
-        create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
+    REQUIRE_THROWS_AS((create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
                           base_free_evdns_set_options_attempts_negative>(
-            {{"dns/attempts", -1}}, Reactor::global());
-    } catch (std::runtime_error &) {
+            {{"dns/attempts", -1}}, Reactor::global())), std::runtime_error);
         REQUIRE(base_free_evdns_set_options_attempts_negative_flag);
-        return;
-    }
-    REQUIRE(false);
 }
 
 TEST_CASE("throw error while fails evdns_set_options for randomize-case") {
-    try {
-        create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
+    REQUIRE_THROWS_AS((create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
                           base_free_evdns_set_options_randomize,
                           null_evdns_base_set_option_randomize>(
-            {{"dns/randomize_case", ""}}, Reactor::global());
-    } catch (std::runtime_error &) {
+            {{"dns/randomize_case", ""}}, Reactor::global())), std::runtime_error);
         REQUIRE(base_free_evdns_set_options_randomize_flag);
-        return;
-    }
-    REQUIRE(false);
 }
 
 TEST_CASE("throw error with too many addresses") {
