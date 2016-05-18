@@ -249,8 +249,10 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
     AC_DEFINE_UNQUOTED(MK_CA_BUNDLE, "$ca", [Location of default ca bundle])
     AC_SUBST(MK_CA_BUNDLE)
     AC_MSG_RESULT([$ca])
-  else
+  elif test "x$cross_compiling" == "xyes"; then
     AC_MSG_RESULT([no])
+  else
+    AC_MSG_ERROR([you should give a ca-bundle location])
   fi
 ])
 
