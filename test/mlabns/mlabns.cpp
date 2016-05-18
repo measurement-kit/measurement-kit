@@ -101,8 +101,8 @@ TEST_CASE("Make sure that an error is passed to callback with invalid policy "
     });
 }
 
-TEST_CASE(
-    "Make sure that an error is passed to callback with invalid tool settings") {
+TEST_CASE("Make sure that an error is passed to callback with invalid tool "
+          "settings") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "trn";
@@ -110,19 +110,21 @@ TEST_CASE(
     std::string tool = "antani"; // Invalid
 
     loop_with_initial_event([=]() {
-    mlabns::query(tool,
-                  [](Error error, mlabns::Reply) {
-                      REQUIRE(error);
-                      break_loop();
-                  },
-                  settings);
+        mlabns::query(tool,
+                      [](Error error, mlabns::Reply) {
+                          REQUIRE(error);
+                          break_loop();
+                      },
+                      settings);
     });
 }
+
+MK_DEFINE_ERR(0001, MockError, "mock_error 0001")
 
 static void get_debug_error(std::string, http::RequestCallback cb,
                             http::Headers, std::string, Settings, Var<Logger>,
                             Var<Reactor>) {
-    cb(GenericError(), http::Response());
+    cb(MockError(), http::Response());
 }
 
 TEST_CASE(
@@ -136,7 +138,7 @@ TEST_CASE(
     loop_with_initial_event([=]() {
         mlabns::query_impl<get_debug_error>(tool,
                                             [](Error error, mlabns::Reply) {
-                                                REQUIRE(error == GenericError());
+                                                REQUIRE(error == MockError());
                                                 break_loop();
                                             },
                                             settings, Reactor::global(),
