@@ -52,7 +52,7 @@ void coroutine_impl(std::string address, int port,
                         double x = (*count * 8) / 1000 / (ct - *previous);
                         *count = 0;
                         *previous = ct;
-                        logger->info("Speed: %.2f kb/s", x);
+                        logger->info("Speed: %.2f kbit/s", x);
                     }
                     // TODO: force close the connection after a given
                     // large amount of time has passed
@@ -70,7 +70,7 @@ void coroutine_impl(std::string address, int port,
                         }
                         err = NoError();
                     }
-                    logger->info("S2C speed %lf kb/s", speed);
+                    logger->info("S2C speed %lf kbit/s", speed);
                     txp->close([=]() { cb(err, speed); });
                 });
             });

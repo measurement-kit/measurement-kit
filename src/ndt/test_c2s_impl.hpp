@@ -55,7 +55,7 @@ void coroutine_impl(std::string address, int port, double runtime,
                                     (*count * 8) / 1000 / (now - *previous);
                                 *previous = now;
                                 *count = 0;
-                                logger->info("Speed: %.2f kb/s", x);
+                                logger->info("Speed: %.2f kbit/s", x);
                             }
                             if (now - begin > runtime) {
                                 logger->info("Elapsed enough time");
@@ -157,7 +157,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                                 return;
                             }
                             ctx->logger->info(
-                                "C2S speed calculated by server: %s kb/s",
+                                "C2S speed calculated by server: %s kbit/s",
                                 s.c_str());
 
                             // The server sends us the FINALIZE message
