@@ -212,7 +212,6 @@ CXXFLAGS="$measurement_kit_saved_cxxflags $measurement_kit_cxx_stdlib_flags"
 AC_LANG_POP([C++])
 ])
 
-
 AC_DEFUN([MK_CHECK_CA_BUNDLE], [
   AC_MSG_CHECKING([CA bundle path])
 
@@ -240,8 +239,6 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
             break
           fi
         done
-    else
-      AC_MSG_WARN([skipped the ca-bundle detection when cross-compiling])
     fi
   fi
 
@@ -250,11 +247,53 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
     AC_DEFINE_UNQUOTED(MK_CA_BUNDLE, "$ca", [Location of default ca bundle])
     AC_SUBST(MK_CA_BUNDLE)
     AC_MSG_RESULT([$ca])
+  elif test "x$cross_compiling" == "xyes"; then
+    AC_MSG_RESULT([skipped (cross compiling)])
+    AC_MSG_WARN([skipped the ca-bundle detection when cross-compiling])
   else
     AC_MSG_RESULT([no])
+    AC_MSG_ERROR([you should give a ca-bundle location])
   fi
 ])
 
+AC_DEFUN([MK_AM_PTHREAD_COMPILE], [
+  AC_MSG_CHECKING([whether we can omit -pthread when compiling threaded code])
+  AC_COMPILE_IFELSE([
+    AC_LANG_SOURCE([
+      #include <pthread.h>
+      int main() {
+        pthread_mutex_t mutex;
+        pthread_mutex_create(&mutex, 0);
+        return 0;
+      }
+    ])
+  ],
+  [AC_MSG_RESULT([no])],
+  [
+    AC_MSG_RESULT([yes])
+    CFLAGS="$CFLAGS -pthread"
+    CXXFLAGS="$CXXFLAGS -pthread"
+  ])
+])
+
+AC_DEFUN([MK_AM_PTHREAD_LINK], [
+  AC_MSG_CHECKING([whether we can omit -pthread when linking threaded code])
+  AC_LINK_IFELSE([
+    AC_LANG_SOURCE([
+      #include <pthread.h>
+      int main() {
+        pthread_mutex_t mutex;
+        pthread_mutex_create(&mutex, 0);
+        return 0;
+      }
+    ])
+  ],
+  [AC_MSG_RESULT([no])],
+  [
+    AC_MSG_RESULT([yes])
+    LDFLAGS="$LDFLAGS -pthread"
+  ])
+])
 
 AC_DEFUN([MK_AM_CXXFLAGS_ADD_WARNINGS], [
   AC_MSG_CHECKING([whether compiler is clang to add clang specific warnings])

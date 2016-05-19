@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_ASYNC_HPP
-#define MEASUREMENT_KIT_COMMON_ASYNC_HPP
+#ifndef MEASUREMENT_KIT_COMMON_RUNNER_HPP
+#define MEASUREMENT_KIT_COMMON_RUNNER_HPP
 
 #include <atomic>
 #include <functional>
@@ -15,15 +15,15 @@ namespace mk {
 
 class NetTest;
 
-class Async {
+class Runner {
   public:
-    Async();
+    Runner();
     void run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> func);
     void break_loop();
     bool empty();
     void join();
-    ~Async();
-    static Var<Async> global();
+    ~Runner();
+    static Var<Runner> global();
 
   private:
     std::atomic<int> active{0};
