@@ -38,46 +38,36 @@ void run_with_specific_server_impl(std::string address, int port,
     // The following code implements this sequence diagram:
     // https://raw.githubusercontent.com/wiki/ndt-project/ndt/NDTProtocol.images/ndt_10.png
 
+#define TRAP_ERRORS(e)                                                         \
+    if (e) {                                                                   \
+        disconnect_and_callback(ctx, e);                                       \
+        return;                                                                \
+    }
+
     connect(ctx, [ctx](Error err) {
-        if (err) {
-            disconnect_and_callback(ctx, err);
-            return;
-        }
+        TRAP_ERRORS(err);
+
         send_login(ctx, [ctx](Error err) {
-            if (err) {
-                disconnect_and_callback(ctx, err);
-                return;
-            }
+            TRAP_ERRORS(err);
+
             recv_and_ignore_kickoff(ctx, [ctx](Error err) {
-                if (err) {
-                    disconnect_and_callback(ctx, err);
-                    return;
-                }
+                TRAP_ERRORS(err);
+
                 wait_in_queue(ctx, [ctx](Error err) {
-                    if (err) {
-                        disconnect_and_callback(ctx, err);
-                        return;
-                    }
+                    TRAP_ERRORS(err);
+
                     recv_version(ctx, [ctx](Error err) {
-                        if (err) {
-                            disconnect_and_callback(ctx, err);
-                            return;
-                        }
+                        TRAP_ERRORS(err);
+
                         recv_tests_id(ctx, [ctx](Error err) {
-                            if (err) {
-                                disconnect_and_callback(ctx, err);
-                                return;
-                            }
+                            TRAP_ERRORS(err);
+
                             run_tests(ctx, [ctx](Error err) {
-                                if (err) {
-                                    disconnect_and_callback(ctx, err);
-                                    return;
-                                }
+                                TRAP_ERRORS(err);
+
                                 recv_results_and_logout(ctx, [ctx](Error err) {
-                                    if (err) {
-                                        disconnect_and_callback(ctx, err);
-                                        return;
-                                    }
+                                    TRAP_ERRORS(err);
+
                                     wait_close(ctx, [ctx](Error err) {
                                         disconnect_and_callback(ctx, err);
                                     });
@@ -89,6 +79,8 @@ void run_with_specific_server_impl(std::string address, int port,
             });
         });
     });
+
+#undef TRAP_ERRORS
 }
 
 template <MK_MOCK(run_with_specific_server), MK_MOCK_NAMESPACE(mlabns, query)>

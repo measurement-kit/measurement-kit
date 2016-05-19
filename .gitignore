@@ -87,7 +87,6 @@ test/http/request
 test/http/request_serializer
 test/http/response_parser
 test/mlabns/mlabns
-test/ndt/integration
 test/ndt/messages
 test/ndt/ndt_test
 test/ndt/protocol
