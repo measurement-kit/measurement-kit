@@ -69,7 +69,7 @@ TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
     loop_with_initial_event_and_connectivity([]() {
         set_verbosity(MK_LOG_DEBUG);
         connect("expired.badssl.com", 443,
-                [](Error error, Var<Transport> txp) {
+                [](Error error, Var<Transport> ) {
                     REQUIRE(error);
                     break_loop();
                 },
@@ -83,7 +83,7 @@ TEST_CASE("net::connect() ssl fails when presented a certificate with the "
     loop_with_initial_event_and_connectivity([]() {
         set_verbosity(MK_LOG_DEBUG);
         connect("wrong.host.badssl.com", 443,
-                [](Error error, Var<Transport> txp) {
+                [](Error error, Var<Transport>) {
                     REQUIRE(error);
                     break_loop();
                 },
