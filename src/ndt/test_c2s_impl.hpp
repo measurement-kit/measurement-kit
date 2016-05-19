@@ -51,8 +51,7 @@ void coroutine_impl(std::string address, int port, double runtime,
                         txp->on_flush([=]() {
                             double now = time_now();
                             if (now - *previous > 0.5) {
-                                double x =
-                                    (*count * 8) / 1000 / (now - *previous);
+                                double x = (*count * 8) / 1000 / (now - *previous);
                                 *previous = now;
                                 *count = 0;
                                 logger->info("Speed: %.2f kbit/s", x);
