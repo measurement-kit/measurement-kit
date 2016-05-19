@@ -164,26 +164,28 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     case TEST_S2C:
         func = test_s2c_run;
         break;
-    }
-    if (func) {
-        ctx->logger->info("Run test with id %d ...", *num);
-        func(ctx, [=](Error err) {
-            ctx->logger->info("Run test with id %d ... complete (%d)", *num,
-                              (int)err);
-            if (err) {
-                // TODO: perhaps it would be better to have a specific error
-                // for each failed test to disambiguate
-                callback(TestFailedError(err));
-                return;
-            }
-            run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx,
-                                                                      callback);
-        });
-        return;
+    default:
+        ctx->logger->warn("ndt: unknown test: %d", *num);
+        // The spec says that the connection MUST be closed if we receive
+        // an test we do not requested for; this is what happens below when
+        // the callback of this stage is called with an error argument
+        callback(UnknownTestIdError());
+        break;
     }
 
-    ctx->logger->warn("ndt: unknown test: %d", *num);
-    callback(UnknownTestIdError());
+    ctx->logger->info("Run test with id %d ...", *num);
+    func(ctx, [=](Error err) {
+        ctx->logger->info("Run test with id %d ... complete (%d)", *num,
+                          (int)err);
+        if (err) {
+            // TODO: perhaps it would be better to have a specific error
+            // for each failed test to disambiguate
+            callback(TestFailedError(err));
+            return;
+        }
+        run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx,
+                                                                  callback);
+    });
 }
 
 template <MK_MOCK_NAMESPACE(messages, read_msg)>
