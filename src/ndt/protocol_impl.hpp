@@ -154,23 +154,23 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     }
 
     std::function<void(Var<Context>, Callback<Error>)> func;
-    switch (*num) {
-    case TEST_C2S:
+    if (*num == TEST_C2S) {
         func = test_c2s_run;
-        break;
-    case TEST_META:
+    } else if (*num == TEST_META) {
         func = test_meta_run;
-        break;
-    case TEST_S2C:
+    } else if (*num == TEST_S2C) {
         func = test_s2c_run;
-        break;
-    default:
+    } else {
+        /* nothing */
+    }
+
+    if (!func) {
         ctx->logger->warn("ndt: unknown test: %d", *num);
         // The spec says that the connection MUST be closed if we receive
         // an test we do not requested for; this is what happens below when
         // the callback of this stage is called with an error argument
         callback(UnknownTestIdError());
-        break;
+        return;
     }
 
     ctx->logger->info("Run test with id %d ...", *num);
