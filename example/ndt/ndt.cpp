@@ -2,11 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <iostream>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ndt.hpp>
-#include <stdlib.h>
 #include <string>
 #include <unistd.h>
 
