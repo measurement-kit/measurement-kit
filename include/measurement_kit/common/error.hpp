@@ -58,5 +58,11 @@ MK_DEFINE_ERR(4, MockedError, "")
 MK_DEFINE_ERR(5, JsonParseError, "")
 MK_DEFINE_ERR(6, JsonKeyError, "")
 
+#define MK_ERR_NET(x) (1000 + x)
+#define MK_ERR_DNS(x) (2000 + x)
+#define MK_ERR_HTTP(x) (3000 + x)
+#define MK_ERR_TRACEROUTE(x) (4000 + x)
+#define MK_ERR_MLABNS(x) (5000 + x)
+
 } // namespace mk
 #endif

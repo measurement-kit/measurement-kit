@@ -10,18 +10,18 @@
 namespace mk {
 namespace traceroute {
 
-MK_DEFINE_ERR(4000, SocketCreateError, "")
-MK_DEFINE_ERR(4001, SetsockoptError, "")
-MK_DEFINE_ERR(4002, ProbeAlreadyPendingError, "")
-MK_DEFINE_ERR(4003, PayloadTooLongError, "")
-MK_DEFINE_ERR(4004, StorageInitError, "")
-MK_DEFINE_ERR(4005, BindError, "")
-MK_DEFINE_ERR(4006, EventNewError, "")
-MK_DEFINE_ERR(4007, SendtoError, "")
-MK_DEFINE_ERR(4008, NoProbePendingError, "")
-MK_DEFINE_ERR(4009, ClockGettimeError, "")
-MK_DEFINE_ERR(4010, EventAddError, "")
-MK_DEFINE_ERR(4011, SocketAlreadyClosedError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(0), SocketCreateError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(1), SetsockoptError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(2), ProbeAlreadyPendingError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(3), PayloadTooLongError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(4), StorageInitError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(5), BindError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(6), EventNewError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(7), SendtoError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(8), NoProbePendingError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(9), ClockGettimeError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(10), EventAddError, "")
+MK_DEFINE_ERR(MK_ERR_TRACEROUTE(11), SocketAlreadyClosedError, "")
 
 } // namespace net
 } // namespace mk

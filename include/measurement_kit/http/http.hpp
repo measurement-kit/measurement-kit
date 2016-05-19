@@ -14,12 +14,12 @@
 namespace mk {
 namespace http {
 
-MK_DEFINE_ERR(3000, UpgradeError, "")
-MK_DEFINE_ERR(3001, ParserError, "")
-MK_DEFINE_ERR(3002, UrlParserError, "")
-MK_DEFINE_ERR(3003, MissingUrlSchemaError, "")
-MK_DEFINE_ERR(3004, MissingUrlHostError, "")
-MK_DEFINE_ERR(3005, MissingUrlError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(0), UpgradeError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(1), ParserError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(2), UrlParserError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "")
 
 /// HTTP headers.
 typedef std::map<std::string, std::string> Headers;
