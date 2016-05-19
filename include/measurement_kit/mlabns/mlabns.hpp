@@ -15,11 +15,11 @@
 namespace mk {
 namespace mlabns {
 
-MK_DEFINE_ERR(5000, InvalidPolicyError, "unknown_failure 5000")
-MK_DEFINE_ERR(5001, InvalidAddressFamilyError, "unknown_failure 5001")
-MK_DEFINE_ERR(5002, InvalidMetroError, "unknown_failure 5002")
-MK_DEFINE_ERR(5003, InvalidToolNameError, "unknown_failure 5003")
-MK_DEFINE_ERR(5004, UnexpectedHttpStatusCodeError, "unknown_failure 5004")
+MK_DEFINE_ERR(5000, InvalidPolicyError, "")
+MK_DEFINE_ERR(5001, InvalidAddressFamilyError, "")
+MK_DEFINE_ERR(5002, InvalidMetroError, "")
+MK_DEFINE_ERR(5003, InvalidToolNameError, "")
+MK_DEFINE_ERR(5004, UnexpectedHttpStatusCodeError, "")
 
 /// Reply to mlab-ns query.
 class Reply {

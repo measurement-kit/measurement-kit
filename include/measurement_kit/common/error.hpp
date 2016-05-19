@@ -15,10 +15,18 @@ class ErrorContext {};
 
 class Error : public std::exception {
   public:
+    Error(int e, std::string ooe, Var<Error> c)
+                : child(c), code(e), ooni_error(ooe) {
+        if (code != 0 && ooni_error == "") {
+            ooni_error = "unknown_failure " + std::to_string(code);
+        }
+    }
+
     Error(int e, std::string ooe, Error c)
-        : child(new Error(c)), code(e), ooni_error(ooe) {}
-    Error(int e, std::string ooe) : code(e), ooni_error(ooe) {}
-    Error() : Error(0, "") {}
+        : Error(e, ooe, Var<Error>(new Error(c))) {}
+    Error(int e, std::string ooe) : Error(e, ooe, nullptr) {}
+    Error(int e) : Error(e, "", nullptr) {}
+    Error() : Error(0, "", nullptr) {}
 
     operator bool() const { return code != 0; }
 
@@ -43,12 +51,12 @@ class Error : public std::exception {
     };
 
 MK_DEFINE_ERR(0, NoError, "")
-MK_DEFINE_ERR(1, GenericError, "unknown_failure 1")
-MK_DEFINE_ERR(2, NotInitializedError, "unknown_failure 2")
-MK_DEFINE_ERR(3, ValueError, "unknown_failure 3")
-MK_DEFINE_ERR(4, MockedError, "unknown_failure 4")
-MK_DEFINE_ERR(5, JsonParseError, "unknown_failure 5")
-MK_DEFINE_ERR(6, JsonKeyError, "unknown_failure 6")
+MK_DEFINE_ERR(1, GenericError, "")
+MK_DEFINE_ERR(2, NotInitializedError, "")
+MK_DEFINE_ERR(3, ValueError, "")
+MK_DEFINE_ERR(4, MockedError, "")
+MK_DEFINE_ERR(5, JsonParseError, "")
+MK_DEFINE_ERR(6, JsonKeyError, "")
 
 } // namespace mk
 #endif
