@@ -58,9 +58,8 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
 }
 
 template <MK_MOCK_NAMESPACE(http, get)>
-inline void query_impl(std::string tool, Callback<Error, Reply> callback,
-                        Settings settings, Var<Reactor> reactor,
-                        Var<Logger> logger) {
+void query_impl(std::string tool, Callback<Error, Reply> callback,
+                Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
     ErrorOr<std::string> query = as_query(settings);
     if (!query) {
         callback(query.as_error(), Reply());
