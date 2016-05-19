@@ -14,19 +14,32 @@ using namespace mk;
 using namespace mk::ndt;
 
 static const char *kv_usage =
-    "usage: ./example/net/ndt [-C /path/to/ca/bundle] [-v] [-p port] [host]\n";
+    "usage: ./example/net/ndt [-v] [-C /path/to/ca.bundle] [-p port] "
+    "                         [-T download|none|upload] [host]\n";
 
 int main(int argc, char **argv) {
 
     NdtTest test;
     char ch;
-    while ((ch = getopt(argc, argv, "C:p:v")) != -1) {
+    while ((ch = getopt(argc, argv, "C:p:T:v")) != -1) {
         switch (ch) {
         case 'C':
             test.set_options("net/ca_bundle_path", optarg);
             break;
         case 'p':
             test.set_options("port", optarg);
+            break;
+        case 'T':
+            if (strcmp(optarg, "download") == 0) {
+                test.set_options("test_suite", MK_NDT_DOWNLOAD);
+            } else if (strcmp(optarg, "none") == 0) {
+                test.set_options("test_suite", 0);
+            } else if (strcmp(optarg, "upload") == 0) {
+                test.set_options("test_suite", MK_NDT_UPLOAD);
+            } else {
+                warn("invalid parameter for -T option: %s", optarg);
+                exit(1);
+            }
             break;
         case 'v':
             test.increase_verbosity();

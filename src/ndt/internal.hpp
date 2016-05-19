@@ -39,8 +39,8 @@
 #define MSG_EXTENDED_LOGIN 11
 
 #define TEST_MID 1
-#define TEST_C2S 2
-#define TEST_S2C 4
+#define TEST_C2S MK_NDT_UPLOAD
+#define TEST_S2C MK_NDT_DOWNLOAD
 #define TEST_SFW 8
 #define TEST_STATUS 16
 #define TEST_META 32
@@ -82,7 +82,10 @@ struct Context {
     int port = NDT_PORT;
     Var<Reactor> reactor = Reactor::global();
     Settings settings;
-    int test_suite = TEST_STATUS | TEST_META | TEST_C2S | TEST_S2C;
+    // We always set these two tests because they are the bare minimum
+    // required to talk to a NDT server. Other sets could be added as flags
+    // by the user using the options passed to the run() function.
+    int test_suite = TEST_STATUS | TEST_META;
     double timeout = NDT_TIMEOUT;
     Var<Transport> txp;
 };

@@ -49,7 +49,7 @@ class NetTestDsl {
         return *this;
     }
 
-    NetTestDsl &set_options(std::string key, std::string value) {
+    template <typename T> NetTestDsl &set_options(std::string key, T value) {
         settings[key] = value;
         return *this;
     }

@@ -33,6 +33,10 @@ void run_with_specific_server_impl(std::string address, int port,
     ctx->port = port;
     ctx->settings = settings;
 
+    // If the user has not configured the test_suite to run, default with
+    // running the download and the uploade phases of the test.
+    ctx->test_suite |= settings.get("test_suite", TEST_C2S|TEST_S2C);
+
     dump_settings(ctx->settings, "ndt", ctx->logger);
 
     // The following code implements this sequence diagram:
