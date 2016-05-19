@@ -119,12 +119,10 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
     });
 }
 
-MK_DEFINE_ERR(0001, MockError, "mock_error 0001")
-
 static void get_debug_error(std::string, http::RequestCallback cb,
                             http::Headers, std::string, Settings, Var<Logger>,
                             Var<Reactor>) {
-    cb(MockError(), http::Response());
+    cb(MockedError(), http::Response());
 }
 
 TEST_CASE(
@@ -138,7 +136,7 @@ TEST_CASE(
     loop_with_initial_event([=]() {
         mlabns::query_impl<get_debug_error>(tool,
                                             [](Error error, mlabns::Reply) {
-                                                REQUIRE(error == MockError());
+                                                REQUIRE(error == MockedError());
                                                 break_loop();
                                             },
                                             settings, Reactor::global(),
