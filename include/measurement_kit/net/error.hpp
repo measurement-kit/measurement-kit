@@ -28,21 +28,11 @@ MK_DEFINE_ERR(MK_ERR_NET(14), BadSocksReservedFieldError, "")
 MK_DEFINE_ERR(MK_ERR_NET(15), BadSocksAtypeValueError, "")
 MK_DEFINE_ERR(MK_ERR_NET(16), EvconnlistenerNewBindError, "")
 MK_DEFINE_ERR(MK_ERR_NET(17), BuffereventSocketNewError, "")
-
-class SSLInvalidCertificateError : public Error {
-  public:
-    SSLInvalidCertificateError(std::string msg)
-        : Error(MK_ERR_NET(18), "ssl_invalid_certificate " + msg) {}
-};
-
-MK_DEFINE_ERR(MK_ERR_NET(19), SSLNoCertificateError, "ssl_no_certificate")
-MK_DEFINE_ERR(MK_ERR_NET(20), SSLInvalidHostnameError, "ssl_invalid_hostname")
-
-class SSLError : public Error {
-  public:
-    SSLError(std::string msg) : Error(MK_ERR_NET(21), "ssl_error " + msg) {}
-};
-
+MK_DEFINE_ERR(MK_ERR_NET(18), SslInvalidCertificateError,
+              "ssl_invalid_certificate")
+MK_DEFINE_ERR(MK_ERR_NET(19), SslNoCertificateError, "ssl_no_certificate")
+MK_DEFINE_ERR(MK_ERR_NET(20), SslInvalidHostnameError, "ssl_invalid_hostname")
+MK_DEFINE_ERR(MK_ERR_NET(21), SslError, "ssl_error")
 MK_DEFINE_ERR(MK_ERR_NET(22), NotEnoughDataError, "")
 MK_DEFINE_ERR(MK_ERR_NET(23), MissingCaBundlePathError, "")
 MK_DEFINE_ERR(MK_ERR_NET(24), BrokenPipeError, "")
