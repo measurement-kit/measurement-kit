@@ -5,7 +5,6 @@
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
 #include <exception>
-#include <iosfwd>
 #include <measurement_kit/common/var.hpp>
 #include <string>
 
@@ -15,6 +14,10 @@ class ErrorContext {};
 
 class Error : public std::exception {
   public:
+    Error() : Error(0, "", nullptr) {}
+    Error(int e) : Error(e, "", nullptr) {}
+    Error(int e, std::string ooe) : Error(e, ooe, nullptr) {}
+
     Error(int e, std::string ooe, Var<Error> c)
                 : child(c), code(e), ooni_error(ooe) {
         if (code != 0 && ooni_error == "") {
@@ -24,9 +27,6 @@ class Error : public std::exception {
 
     Error(int e, std::string ooe, Error c)
         : Error(e, ooe, Var<Error>(new Error(c))) {}
-    Error(int e, std::string ooe) : Error(e, ooe, nullptr) {}
-    Error(int e) : Error(e, "", nullptr) {}
-    Error() : Error(0, "", nullptr) {}
 
     operator bool() const { return code != 0; }
 
@@ -47,6 +47,10 @@ class Error : public std::exception {
     class _name_ : public Error {                                              \
       public:                                                                  \
         _name_() : Error(_code_, _ooe_) {}                                     \
+        _name_(std::string s) : Error(_code_, _ooe_) {                         \
+            ooni_error += " ";                                                 \
+            ooni_error += s;                                                   \
+        }                                                                      \
         _name_(Error e) : Error(_code_, _ooe_, e) {}                           \
     };
 

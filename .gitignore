@@ -67,6 +67,7 @@ stamp-h1
 test-driver
 test/common/continuation
 test/common/delegate
+test/common/error
 test/common/error_or
 test/common/logger
 test/common/poller
