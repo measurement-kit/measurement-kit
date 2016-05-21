@@ -206,7 +206,7 @@ TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     request_connect_impl<socks_port_is_empty>(settings, nullptr);
 }
 
-SOCKS_PORT_IS(9999);
+SOCKS_PORT_IS(9999)
 
 TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     Settings settings{
@@ -237,7 +237,7 @@ TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
     request_connect_impl<socks_port_is_9055>(settings, nullptr);
 }
 
-SOCKS_PORT_IS(9050);
+SOCKS_PORT_IS(9050)
 
 TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     Settings settings{
