@@ -22,7 +22,7 @@ class DNSInjectionImpl : public DNSTestImpl {
         test_name = "dns_injection";
         test_version = "0.0.1";
 
-        validate_input_filepath(input_filepath_);
+        validate_input_filepath();
     };
 
     void main(std::string input, Settings options,

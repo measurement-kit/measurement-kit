@@ -123,7 +123,7 @@ class OoniTestImpl : public mk::NetTest {
         });
     }
 
-    void validate_input_filepath(std::string input_filepath_) {
+    void validate_input_filepath() {
         if (input_filepath_ == "") {
             throw InputFileRequired("An input file is required!");
         }
