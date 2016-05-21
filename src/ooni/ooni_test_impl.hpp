@@ -123,14 +123,14 @@ class OoniTestImpl : public mk::NetTest {
         });
     }
 
-    void validate_input_filepath(std::string input_filepath_) {
-        if (input_filepath_ == "") {
+    void validate_input_filepath() {
+        if (input_filepath == "") {
             throw InputFileRequired("An input file is required!");
         }
 
         struct stat buffer;
-        if (stat(input_filepath_.c_str(), &buffer) != 0) {
-            throw InputFileDoesNotExist(input_filepath_ + " does not exist");
+        if (stat(input_filepath.c_str(), &buffer) != 0) {
+            throw InputFileDoesNotExist(input_filepath + " does not exist");
         }
     }
 

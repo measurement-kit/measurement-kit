@@ -20,7 +20,7 @@ class TCPConnectImpl : public TCPTestImpl {
         : TCPTestImpl(input_filepath_, options_) {
         test_name = "tcp_connect";
         test_version = "0.0.1";
-        validate_input_filepath(input_filepath_);
+        validate_input_filepath();
     };
 
     void main(std::string input, Settings options,
