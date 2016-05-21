@@ -56,7 +56,7 @@ class OoniTestImpl : public mk::NetTest {
                     logger->debug("net_test: tearing down");
                     teardown();
 
-                    file_report.writeEntry(entry);
+                    file_report.write_entry(entry);
                     logger->debug("net_test: written entry");
 
                     logger->debug("net_test: increased");
@@ -198,7 +198,7 @@ class OoniTestImpl : public mk::NetTest {
             main(options, [=](json entry) {
                 logger->debug("net_test: tearing down");
                 teardown();
-                file_report.writeEntry(entry);
+                file_report.write_entry(entry);
                 logger->debug("net_test: written entry");
                 logger->debug("net_test: reached end of input");
                 cb();

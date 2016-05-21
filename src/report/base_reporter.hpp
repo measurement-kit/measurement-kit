@@ -1,16 +1,13 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
-#ifndef MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
-#define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
+#ifndef SRC_REPORT_BASE_REPORTER_HPP
+#define SRC_REPORT_BASE_REPORTER_HPP
 
 #include <ctime>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/version.hpp>
+#include <measurement_kit/common.hpp>
 #include "src/common/utils.hpp"
-#include "src/ext/json/src/json.hpp"                // for json
+#include "src/ext/json/src/json.hpp"
 
 using json = nlohmann::json;
 
@@ -19,42 +16,44 @@ namespace report {
 
 class BaseReporter {
   public:
+    const std::string software_name = "measurement_kit";
+    const std::string software_version = MEASUREMENT_KIT_VERSION;
+    const std::string data_format_version = "0.2.0";
+
     std::string test_name;
     std::string test_version;
-    std::string probe_ip;
 
+    std::string probe_ip;
     std::string probe_asn;
     std::string probe_cc;
 
-    struct tm test_start_time;
+    tm test_start_time;
 
     Settings options;
 
-    BaseReporter(){};
+    BaseReporter() {}
 
-    virtual ~BaseReporter(){};
+    virtual ~BaseReporter() {}
 
     virtual void open();
 
-    virtual void writeEntry(json &entry);
+    virtual void write_entry(json &entry);
 
     virtual void close();
 
-    void on_error(std::function<void(Error)> func) { error_fn_ = func; }
+    void on_error(Delegate<void(Error)> func) { error_fn_ = func; }
 
     void emit_error(Error err) {
-        if (!error_fn_) throw err;
+        if (!error_fn_) {
+            throw err;
+        }
         error_fn_(err);
     }
 
   private:
-    std::function<void(Error)> error_fn_;
-    bool closed = false;
-    bool openned = false;
-
-    const std::string software_name = "measurement_kit";
-    const std::string software_version = MEASUREMENT_KIT_VERSION;
-    const std::string data_format_version = "0.2.0";
+    Delegate<void(Error)> error_fn_;
+    bool closed_ = false;
+    bool openned_ = false;
 };
 
 } // namespace report
