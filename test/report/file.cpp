@@ -37,7 +37,7 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
         entry["input"] = input;
         entry["antani"] = "fuffa";
         reporter.open();
-        reporter.writeEntry(entry);
+        reporter.write_entry(entry);
         reporter.close();
 
         std::ifstream infile(reporter.filename);

@@ -16,8 +16,8 @@ void FileReporter::open() {
     }
 }
 
-void FileReporter::writeEntry(json &entry) {
-    BaseReporter::writeEntry(entry);
+void FileReporter::write_entry(json &entry) {
+    BaseReporter::write_entry(entry);
     try {
         file << entry.dump() << std::endl;
     } catch (...) {

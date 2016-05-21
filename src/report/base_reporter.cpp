@@ -7,13 +7,13 @@
 namespace mk {
 namespace report {
 
-void BaseReporter::open() { openned = true; }
+void BaseReporter::open() { openned_ = true; }
 
-void BaseReporter::writeEntry(json &entry) {
-    if (!openned) {
+void BaseReporter::write_entry(json &entry) {
+    if (!openned_) {
         throw new std::runtime_error("The report is not open.");
     }
-    if (closed) {
+    if (closed_) {
         throw new std::runtime_error("The report has already been closed.");
     }
     entry["test_name"] = test_name;
@@ -29,8 +29,8 @@ void BaseReporter::writeEntry(json &entry) {
 }
 
 void BaseReporter::close() {
-    openned = false;
-    closed = true;
+    openned_ = false;
+    closed_ = true;
 }
 
 } // namespace report
