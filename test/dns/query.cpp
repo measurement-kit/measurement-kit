@@ -45,11 +45,6 @@ static int null_evdns_base_set_option_randomize(evdns_base *, const char *,
     return -1;
 }
 
-static int null_evdns_base_set_option_timeout(evdns_base *, const char *,
-                                              const char *) {
-    return -1;
-}
-
 #define BASE_FREE(name)                                                        \
     static bool base_free_##name##_flag = false;                               \
     static void base_free_##name(struct evdns_base *base, int fail_requests) { \
