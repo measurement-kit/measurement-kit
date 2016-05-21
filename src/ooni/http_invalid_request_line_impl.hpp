@@ -6,9 +6,9 @@
 #define SRC_OONI_HTTP_INVALID_REQUEST_LINE_HPP
 
 #include <measurement_kit/http.hpp>
+#include <measurement_kit/ooni.hpp>
 
 #include "src/common/utils.hpp"
-#include "src/ooni/errors.hpp"
 #include "src/ooni/ooni_test_impl.hpp"
 #include "src/ooni/tcp_test_impl.hpp"
 #include <sys/stat.h>
