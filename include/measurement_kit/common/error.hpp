@@ -67,6 +67,7 @@ MK_DEFINE_ERR(6, JsonKeyError, "")
 #define MK_ERR_HTTP(x) (3000 + x)
 #define MK_ERR_TRACEROUTE(x) (4000 + x)
 #define MK_ERR_MLABNS(x) (5000 + x)
+#define MK_ERR_OONI(x) (6000 + x)
 
 } // namespace mk
 #endif
