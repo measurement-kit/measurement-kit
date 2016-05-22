@@ -85,7 +85,6 @@ class Emitter {
 int main() {
     Emitter emitter;
     loop_with_initial_event([&emitter]() {
-        set_verbose(MK_LOG_DEBUG);
         emitter.on([&emitter]() {
             emitter.on([&emitter]() {
                 break_loop();
