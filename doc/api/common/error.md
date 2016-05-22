@@ -137,7 +137,7 @@ not fail, again checking whether the context is not `nullptr`. For example:
 
 The `Var<Error> child` field is a smart pointer that MAY be set to indicate
 that the current error was provoked by another underlying error. This should
-allow the programmer to properly layer errors. Thus, one could learn that a
+allow the programmer to properly layer errors. Thus, one could learn that, say, a
 specific call to an API failed, and that the reason why that failed was that
 it was not possible to establish a network connection, and that the reason
 why that was not possible is that the DNS failed.
