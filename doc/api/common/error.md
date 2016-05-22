@@ -16,8 +16,8 @@ class Error : public std::exception {
   public:
     Error();
     Error(int code);
-    Error(int code, std::string ooni_error);
-    Error(int code, std::string ooni_error, Error child);
+    Error(int code, std::string reason);
+    Error(int code, std::string reason, Error child);
 
     operator bool() const;
 
