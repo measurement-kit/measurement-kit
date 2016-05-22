@@ -71,34 +71,6 @@ struct Response {
     std::string body;
 };
 
-void request(Settings settings, Callback<Error, Response> cb, Headers headers = {},
-             std::string body = "", Var<Logger> lp = Logger::global(),
-             Var<Reactor> reactor = Reactor::global());
-
-inline void request(Settings settings, Headers headers, std::string body,
-        Callback<Error, Response> cb, Var<Logger> lp = Logger::global(),
-        Var<Reactor> reactor = Reactor::global()) {
-    request(settings, cb, headers, body, lp, reactor);
-}
-
-inline void get(std::string url, Callback<Error, Response> cb,
-                Headers headers = {}, std::string body = "",
-                Settings settings = {}, Var<Logger> lp = Logger::global(),
-                Var<Reactor> reactor = Reactor::global()) {
-    settings["http/method"] = "GET";
-    settings["http/url"] = url;
-    request(settings, cb, headers, body, lp, reactor);
-}
-
-inline void request(std::string method, std::string url, Callback<Error, Response> cb,
-                    Headers headers = {}, std::string body = "",
-                    Settings settings = {}, Var<Logger> lp = Logger::global(),
-                    Var<Reactor> reactor = Reactor::global()) {
-    settings["http/method"] = method;
-    settings["http/url"] = url;
-    request(settings, cb, headers, body, lp, reactor);
-}
-
 void request_connect(Settings, Callback<Error, Var<net::Transport>>,
                      Var<Reactor> = Reactor::global(),
                      Var<Logger> = Logger::global());
@@ -115,6 +87,36 @@ void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
 
 void request_cycle(Settings, Headers, std::string, Callback<Error, Var<Response>>,
         Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
+
+inline void request(Settings settings, Callback<Error, Var<Response>> cb, Headers headers = {},
+             std::string body = "", Var<Logger> lp = Logger::global(),
+             Var<Reactor> reactor = Reactor::global()) {
+    request_cycle(settings, headers, body, cb, reactor, lp);
+}
+
+inline void request(Settings settings, Headers headers, std::string body,
+        Callback<Error, Var<Response>> cb, Var<Logger> lp = Logger::global(),
+        Var<Reactor> reactor = Reactor::global()) {
+    request(settings, cb, headers, body, lp, reactor);
+}
+
+inline void get(std::string url, Callback<Error, Var<Response>> cb,
+                Headers headers = {}, std::string body = "",
+                Settings settings = {}, Var<Logger> lp = Logger::global(),
+                Var<Reactor> reactor = Reactor::global()) {
+    settings["http/method"] = "GET";
+    settings["http/url"] = url;
+    request(settings, cb, headers, body, lp, reactor);
+}
+
+inline void request(std::string method, std::string url, Callback<Error, Var<Response>> cb,
+                    Headers headers = {}, std::string body = "",
+                    Settings settings = {}, Var<Logger> lp = Logger::global(),
+                    Var<Reactor> reactor = Reactor::global()) {
+    settings["http/method"] = method;
+    settings["http/url"] = url;
+    request(settings, cb, headers, body, lp, reactor);
+}
 
 } // namespace http
 } // namespace mk

@@ -119,10 +119,10 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
     });
 }
 
-static void get_debug_error(std::string, Callback<Error, http::Response> cb,
+static void get_debug_error(std::string, Callback<Error, Var<http::Response>> cb,
                             http::Headers, std::string, Settings, Var<Logger>,
                             Var<Reactor>) {
-    cb(MockedError(), http::Response());
+    cb(MockedError(), nullptr);
 }
 
 TEST_CASE(
@@ -144,11 +144,11 @@ TEST_CASE(
     });
 }
 
-static void get_debug_invalid_status_code(std::string, Callback<Error, http::Response> cb,
+static void get_debug_invalid_status_code(std::string, Callback<Error, Var<http::Response>> cb,
                                           http::Headers, std::string, Settings,
                                           Var<Logger>, Var<Reactor>) {
-    http::Response response;
-    response.status_code = 500;
+    Var<http::Response> response(new http::Response);
+    response->status_code = 500;
     cb(NoError(), response);
 }
 
@@ -171,12 +171,12 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
     });
 }
 
-static void get_debug_invalid_response(std::string, Callback<Error, http::Response> cb,
+static void get_debug_invalid_response(std::string, Callback<Error, Var<http::Response>> cb,
                                        http::Headers, std::string, Settings,
                                        Var<Logger>, Var<Reactor>) {
-    http::Response response;
-    response.status_code = 200;
-    response.body = "alfj9882//234j<<<384982";
+    Var<http::Response> response(new http::Response);
+    response->status_code = 200;
+    response->body = "alfj9882//234j<<<384982";
     cb(NoError(), response);
 }
 
@@ -200,14 +200,14 @@ TEST_CASE("Make sure that an error is passed to callback if the response is "
 }
 
 static void get_debug_invalid_uncomplete_json(std::string,
-                                              Callback<Error, http::Response> cb,
+                                              Callback<Error, Var<http::Response>> cb,
                                               http::Headers, std::string,
                                               Settings, Var<Logger>,
                                               Var<Reactor>) {
-    http::Response response;
-    response.status_code = 200;
+    Var<http::Response> response(new http::Response);
+    response->status_code = 200;
     // This json does not contain the country field
-    response.body = "{\"city\": \"Turin\", \"url\": "
+    response->body = "{\"city\": \"Turin\", \"url\": "
                     "\"http://"
                     "neubot.mlab.mlab1v4.trn01.measurement-lab.org:8080\", "
                     "\"ip\": [\"194.116.85.211\"], \"fqdn\": "
