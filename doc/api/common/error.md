@@ -120,7 +120,7 @@ context involves three steps: making sure that the context is not `nullptr`, cas
 the base error class to the specific expected class, and making sure that the case did
 not fail, again checking whether the context is not `nullptr`. For example:
 
-```
+```C++
     operation([=](Error err) {
         if (err) {
             if (err.context) {
