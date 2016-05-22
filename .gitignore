@@ -105,6 +105,7 @@ test/ooni/tcp_connect
 test/ooni/tcp_connect_test
 test/ooni/tcp_test
 test/ooni/utils
+test/report/entry
 test/report/file
 test/traceroute/android
 third_party/
