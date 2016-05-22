@@ -117,6 +117,7 @@ int main() {
     ErrorOr<Result> error = generate_error();
     REQUIRE(!error);
     REQUIRE_THROWS(*error);
+    REQUIRE_THROWS(error->foo);
     REQUIRE(error.as_error() == MockedError());
 }
 ```
