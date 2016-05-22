@@ -16,8 +16,10 @@ TEST_CASE("http::get() works as expected") {
         http::get("http://www.google.com/robots.txt",
                   [](Error error, Var<Response> response) {
                       std::cout << "Error: " << (int)error << "\r\n";
-                      std::cout << response->body.substr(0, 128) << "\r\n";
-                      std::cout << "[snip]\r\n";
+                      if (response) {
+                          std::cout << response->body.substr(0, 128) << "\r\n";
+                          std::cout << "[snip]\r\n";
+                      }
                       break_loop();
                   });
     });
@@ -33,8 +35,10 @@ TEST_CASE("http::request() works as expected") {
                       "",
                       [](Error error, Var<Response> response) {
                           std::cout << "Error: " << (int)error << "\r\n";
-                          std::cout << response->body.substr(0, 128) << "\r\n";
-                          std::cout << "[snip]\r\n";
+                          if (response) {
+                              std::cout << response->body.substr(0, 128) << "\r\n";
+                              std::cout << "[snip]\r\n";
+                          }
                           break_loop();
                       });
     });
