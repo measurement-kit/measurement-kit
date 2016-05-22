@@ -102,20 +102,20 @@ static ErrorOr<Result> generate_error() {
 
 int main() {
     ErrorOr<int> seventeen = generate_seventeen();
-    REQUIRE(!seventeen);
+    REQUIRE(!!seventeen);
     REQUIRE(*seventeen == 17);
     *seventeen = 42;
     REQUIRE(*seventeen == 42);
 
     ErrorOr<Result> result = generate_result();
-    REQUIRE(!result);
+    REQUIRE(!!result);
     REQUIRE(result->foo == 17);
     REQUIRE(result->bar = 3.14);
     result->foo = 42;
     REQUIRE(result->foo == 42);
 
     ErrorOr<Result> error = generate_error();
-    REQUIRE(!!error);
+    REQUIRE(!error);
     REQUIRE_THROWS(*error);
     REQUIRE(error.as_error() == MockedError());
 }
