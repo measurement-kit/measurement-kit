@@ -74,7 +74,7 @@ using namespace mk;
 
 class Emitter {
   public:
-    void on(std::function<void()> cb) { func_ = cb; }
+    void on(Callback<> cb) { func_ = cb; }
     void emit() { func_(); }
 
   private:
