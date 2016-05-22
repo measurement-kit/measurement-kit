@@ -52,12 +52,18 @@ TEST_CASE("We can add objects and lists to an existing entry") {
 
 TEST_CASE("We raise mk::DomainError when keys cannot be added to entry") {
     Entry entry;
-    entry.push_back(17.0);
-    REQUIRE_THROWS_AS((entry["foo"] = "foobar"), DomainError);
+    // Operate on entry["list"] rather than on Entry to make sure that after
+    // more than one access cycle we're still using the Entry type, which raises
+    // DomainError, rather than the base type nlohmann/json.
+    entry["list"].push_back(17.0);
+    REQUIRE_THROWS_AS((entry["list"]["foo"] = "foobar"), DomainError);
 }
 
 TEST_CASE("We raise mk::DomainError when we cannot append added to entry") {
     Entry entry;
-    entry["foo"] = "foobar";
-    REQUIRE_THROWS_AS((entry.push_back(17.0)), DomainError);
+    // Operate on entry["dict"] rather than on Entry to make sure that after
+    // more than one access cycle we're still using the Entry type, which raises
+    // DomainError, rather than the base type nlohmann/json.
+    entry["dict"]["foo"] = "foobar";
+    REQUIRE_THROWS_AS((entry["dict"].push_back(17.0)), DomainError);
 }
