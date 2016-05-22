@@ -85,41 +85,16 @@ void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
         Callback<Error, Var<Response>>, Var<Reactor> = Reactor::global(),
         Var<Logger> = Logger::global());
 
-void request_cycle(Settings, Headers, std::string, Callback<Error, Var<Response>>,
+void request(Settings, Headers, std::string, Callback<Error, Var<Response>>,
         Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
-inline void request(Settings settings, Callback<Error, Var<Response>> cb, Headers headers = {},
-             std::string body = "",
-             Var<Reactor> reactor = Reactor::global(),
-             Var<Logger> lp = Logger::global()) {
-    request_cycle(settings, headers, body, cb, reactor, lp);
-}
-
-inline void request(Settings settings, Headers headers, std::string body,
-        Callback<Error, Var<Response>> cb,
-        Var<Reactor> reactor = Reactor::global(),
-        Var<Logger> lp = Logger::global()) {
-    request(settings, cb, headers, body, reactor, lp);
-}
-
 inline void get(std::string url, Callback<Error, Var<Response>> cb,
-                Headers headers = {}, std::string body = "",
-                Settings settings = {},
+                Headers headers = {}, Settings settings = {},
                 Var<Reactor> reactor = Reactor::global(),
                 Var<Logger> lp = Logger::global()) {
     settings["http/method"] = "GET";
     settings["http/url"] = url;
-    request(settings, cb, headers, body, reactor, lp);
-}
-
-inline void request(std::string method, std::string url, Callback<Error, Var<Response>> cb,
-                    Headers headers = {}, std::string body = "",
-                    Settings settings = {},
-                    Var<Reactor> reactor = Reactor::global(),
-                    Var<Logger> lp = Logger::global()) {
-    settings["http/method"] = method;
-    settings["http/url"] = url;
-    request(settings, cb, headers, body, reactor, lp);
+    request(settings, headers, "", cb, reactor, lp);
 }
 
 } // namespace http
