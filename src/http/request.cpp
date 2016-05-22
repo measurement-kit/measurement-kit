@@ -9,19 +9,6 @@ namespace http {
 
 using namespace mk::net;
 
-void request(Settings settings, Callback<Error, Response> cb, Headers headers,
-             std::string body, Var<Logger> lp, Var<Reactor> po) {
-    request_cycle(
-        settings, headers, body, [cb](Error err, Var<Response> re) {
-            // TODO: maybe change RequestCallback to receive a Var<Response>?
-            Response rex;
-            if (re) {
-                rex = *re;
-            }
-            cb(err, rex);
-        }, po, lp);
-}
-
 void request_connect(Settings settings, Callback<Error, Var<Transport>> transport,
          Var<Reactor> reactor, Var<Logger> logger) {
     request_connect_impl(settings, transport, reactor, logger);

@@ -54,17 +54,17 @@ int main(int argc, char **argv) {
             {
                 {"http/method", method}, {"http/url", url},
             },
-            [](Error error, http::Response response) {
+            [](Error error, Var<http::Response> response) {
                 if (error) {
                     std::cout << "Error: " << (int)error << "\n";
                     break_loop();
                     return;
                 }
-                std::cout << response.response_line << "\n";
-                for (auto &pair : response.headers) {
+                std::cout << response->response_line << "\n";
+                for (auto &pair : response->headers) {
                     std::cout << pair.first << ": " << pair.second << "\n";
                 }
-                std::cout << "\n" << response.body << "\n";
+                std::cout << "\n" << response->body << "\n";
                 break_loop();
             },
             headers, body);
