@@ -44,13 +44,13 @@ class Error : public std::exception {
         }                                                   \
     }
 
-MK_DEFINE_ERR(0, NoError, "")
-MK_DEFINE_ERR(1, GenericError, "")
-MK_DEFINE_ERR(2, NotInitializedError, "")
-MK_DEFINE_ERR(3, ValueError, "")
-MK_DEFINE_ERR(4, MockedError, "")
-MK_DEFINE_ERR(5, JsonParseError, "")
-MK_DEFINE_ERR(6, JsonKeyError, "")
+MK_DEFINE_ERR(0, NoError, "");
+MK_DEFINE_ERR(1, GenericError, "");
+MK_DEFINE_ERR(2, NotInitializedError, "");
+MK_DEFINE_ERR(3, ValueError, "");
+MK_DEFINE_ERR(4, MockedError, "");
+MK_DEFINE_ERR(5, JsonParseError, "");
+MK_DEFINE_ERR(6, JsonKeyError, "");
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)
