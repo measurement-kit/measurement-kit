@@ -63,7 +63,7 @@ MK_DEFINE_ERR(6, JsonKeyError, "");
 ```
 
 # STABILITY
-1 - Experimental
+2 - Stable
 
 # DESCRIPTION
 
