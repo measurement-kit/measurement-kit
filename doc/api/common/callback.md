@@ -41,6 +41,7 @@ static void slow_operation(Callback<Error> cb) {
 
 int main() {
     loop_with_initial_event([=]() {
+        set_verbose(MK_LOG_DEBUG);
         slow_operation([=]() {
             break_loop();
         });
