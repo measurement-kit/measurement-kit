@@ -106,7 +106,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
             logger->info("mlabns says to use %s", reply.fqdn.c_str());
             callback(NoError(), reply);
         },
-        {}, "", settings, reactor, logger);
+        {}, settings, reactor, logger);
 }
 
 } // namespace mlabns

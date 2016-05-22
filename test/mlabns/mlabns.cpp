@@ -120,7 +120,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
 }
 
 static void get_debug_error(std::string, Callback<Error, Var<http::Response>> cb,
-                            http::Headers, std::string, Settings, Var<Reactor>,
+                            http::Headers, Settings, Var<Reactor>,
                             Var<Logger>) {
     cb(MockedError(), nullptr);
 }
@@ -146,7 +146,7 @@ TEST_CASE(
 }
 
 static void get_debug_invalid_status_code(std::string, Callback<Error, Var<http::Response>> cb,
-                                          http::Headers, std::string, Settings,
+                                          http::Headers, Settings,
                                           Var<Reactor>, Var<Logger>) {
     Var<http::Response> response(new http::Response);
     response->status_code = 500;
@@ -173,7 +173,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
 }
 
 static void get_debug_invalid_response(std::string, Callback<Error, Var<http::Response>> cb,
-                                       http::Headers, std::string, Settings,
+                                       http::Headers, Settings,
                                        Var<Reactor>, Var<Logger>) {
     Var<http::Response> response(new http::Response);
     response->status_code = 200;
@@ -202,7 +202,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response is "
 
 static void get_debug_invalid_uncomplete_json(std::string,
                                               Callback<Error, Var<http::Response>> cb,
-                                              http::Headers, std::string,
+                                              http::Headers,
                                               Settings, Var<Reactor>,
                                               Var<Logger>) {
     Var<http::Response> response(new http::Response);
