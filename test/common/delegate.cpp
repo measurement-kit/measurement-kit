@@ -15,7 +15,7 @@ class Helper {
     void emit() { func_(); }
 
   private:
-    Delegate<void()> func_;
+    Delegate<> func_;
 };
 
 TEST_CASE("Delegate works as expected") {

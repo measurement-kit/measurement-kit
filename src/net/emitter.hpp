@@ -134,10 +134,10 @@ class Emitter : public Transport {
     Var<Logger> logger = Logger::global();
 
   private:
-    Delegate<void()> do_connect = []() {};
-    Delegate<void(Buffer)> do_data = [](Buffer) {};
-    Delegate<void()> do_flush = []() {};
-    Delegate<void(Error)> do_error = [](Error) {};
+    Delegate<> do_connect = []() {};
+    Delegate<Buffer> do_data = [](Buffer) {};
+    Delegate<> do_flush = []() {};
+    Delegate<Error> do_error = [](Error) {};
     bool do_record_received_data = false;
     Buffer received_data_record;
     bool do_record_sent_data = false;

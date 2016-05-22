@@ -41,7 +41,7 @@ class BaseReporter {
 
     virtual void close();
 
-    void on_error(Delegate<void(Error)> func) { error_fn_ = func; }
+    void on_error(Delegate<Error> func) { error_fn_ = func; }
 
     void emit_error(Error err) {
         if (!error_fn_) {
@@ -51,7 +51,7 @@ class BaseReporter {
     }
 
   private:
-    Delegate<void(Error)> error_fn_;
+    Delegate<Error> error_fn_;
     bool closed_ = false;
     bool openned_ = false;
 };

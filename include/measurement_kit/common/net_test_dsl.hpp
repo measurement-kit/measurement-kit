@@ -54,7 +54,7 @@ class NetTestDsl {
         return *this;
     }
 
-    NetTestDsl &on_log(Delegate<void(uint32_t, const char *)> func) {
+    NetTestDsl &on_log(Delegate<uint32_t, const char *> func) {
         log_handler = func;
         return *this;
     }
@@ -68,7 +68,7 @@ class NetTestDsl {
 
     Settings settings;
     int verbosity = MK_LOG_WARNING;
-    Delegate<void(uint32_t, const char *)> log_handler;
+    Delegate<uint32_t, const char *> log_handler;
     std::string input_path;
     std::string output_path;
     Var<Reactor> reactor = Reactor::global();
