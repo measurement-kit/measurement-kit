@@ -118,4 +118,6 @@ int main() {
 
 # HISTORY
 
-The `ErrorOr` template class appeared in MeasurementKit 0.2.0.
+The `ErrorOr` template class appeared in MeasurementKit 0.2.0. This template class
+was originally called `Maybe` but it was later renamed `ErrorOr` because there is
+[a namesake class with similar purpose in LLVM](http://llvm.org/docs/doxygen/html/classllvm_1_1ErrorOr.html).
