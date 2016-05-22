@@ -33,4 +33,4 @@ void operation(Reactor r, Callback<Error> cb) {
 
 # HISTORY
 
-The `Error` class appeared in MeasurementKit 0.2.0.
+The `Callback` alias appeared in MeasurementKit 0.2.0.
