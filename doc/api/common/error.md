@@ -177,7 +177,7 @@ To make sure that errors belonging to different MeasurementKit libraries are
 disjoint, `measurement_kit/common.hpp` also defines offsets at which errors of each library
 SHOULD start, as well as useful macros that takes codes relative to a specific
 library and yields absolute error codes. Each MeasurementKit library is given
-room for up to 1,000 error codes. At least the following offset SHOULD be
+room for up to 1,000 error codes. At least the following offsets SHOULD be
 defined by the `measurement_kit/common.hpp` header:
 
 - 0 for the *common* lib
