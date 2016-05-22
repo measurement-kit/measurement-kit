@@ -10,7 +10,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 namespace mk {
 
-template<typename... T> using Callback<T...> = std::function<void(T...)>;
+template<typename... T>
+using Callback<T...> = std::function<void(T...)>;
 
 }
 ```
