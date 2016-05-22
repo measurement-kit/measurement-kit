@@ -17,7 +17,7 @@ namespace mk {
 
 class NetTest : public NonCopyable, public NonMovable {
   public:
-    virtual void on_log(Delegate<void(uint32_t, const char *)> func) {
+    virtual void on_log(Delegate<uint32_t, const char *> func) {
         logger->on_log(func);
     }
     virtual void set_verbosity(uint32_t level) { logger->set_verbosity(level); }
