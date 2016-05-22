@@ -110,7 +110,7 @@ as show in the following snippet of code:
     REQUIRE((FooError() == FoobarError()));
 ```
 
-The `as_ooni_error()` method allows to obtain the OONI error string corresponding
+The `as_ooni_error()` method allows to obtain the [OONI error string](https://github.com/TheTorProject/ooni-spec/blob/master/data-formats/df-000-base.md#error-strings) corresponding
 to a specific MeasurementKit error. In the future the error returned by `as_ooni_error()`
 MAY be different from the error stored in the `reason` field.
 
