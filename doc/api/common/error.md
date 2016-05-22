@@ -174,7 +174,7 @@ also the following generic error codes:
 - *JsonKeyError*: indicates that a JSON object does not contain a specific key
 
 To make sure that errors belonging to different MeasurementKit libraries are
-disjoint, this module also defines offsets at which errors of each library
+disjoint, `measurement_kit/common.hpp` also defines offsets at which errors of each library
 SHOULD start, as well as useful macros that takes codes relative to a specific
 library and yields absolute error codes. Each MeasurementKit library is given
 room for up to 1,000 error codes. At least the following offset SHOULD be
