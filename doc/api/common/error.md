@@ -15,6 +15,9 @@ bool x = (error != 17);             // Implicit conversion here
 bool y = (error == 17);             // Also here
 ```
 
+# STABILITY
+2 - Unstable
+
 # DESCRIPTION
 
 In general MeasurementKit code reports errors using the `Error` class
