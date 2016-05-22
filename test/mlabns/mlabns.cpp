@@ -119,7 +119,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
     });
 }
 
-static void get_debug_error(std::string, http::RequestCallback cb,
+static void get_debug_error(std::string, Callback<Error, http::Response> cb,
                             http::Headers, std::string, Settings, Var<Logger>,
                             Var<Reactor>) {
     cb(MockedError(), http::Response());
@@ -144,7 +144,7 @@ TEST_CASE(
     });
 }
 
-static void get_debug_invalid_status_code(std::string, http::RequestCallback cb,
+static void get_debug_invalid_status_code(std::string, Callback<Error, http::Response> cb,
                                           http::Headers, std::string, Settings,
                                           Var<Logger>, Var<Reactor>) {
     http::Response response;
@@ -171,7 +171,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
     });
 }
 
-static void get_debug_invalid_response(std::string, http::RequestCallback cb,
+static void get_debug_invalid_response(std::string, Callback<Error, http::Response> cb,
                                        http::Headers, std::string, Settings,
                                        Var<Logger>, Var<Reactor>) {
     http::Response response;
@@ -200,7 +200,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response is "
 }
 
 static void get_debug_invalid_uncomplete_json(std::string,
-                                              http::RequestCallback cb,
+                                              Callback<Error, http::Response> cb,
                                               http::Headers, std::string,
                                               Settings, Var<Logger>,
                                               Var<Reactor>) {

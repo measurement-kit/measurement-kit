@@ -4,11 +4,9 @@
 #ifndef MEASUREMENT_KIT_HTTP_HTTP_HPP
 #define MEASUREMENT_KIT_HTTP_HTTP_HPP
 
-#include <functional>
 #include <map>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
-#include <set>
 #include <string>
 
 namespace mk {
@@ -21,7 +19,7 @@ MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "")
 
-typedef std::map<std::string, std::string> Headers;
+using Headers = std::map<std::string, std::string>;
 
 struct Response {
     std::string response_line;
@@ -33,14 +31,12 @@ struct Response {
     std::string body;
 };
 
-typedef Callback<Error, Response> RequestCallback;
-
-void request(Settings settings, RequestCallback cb, Headers headers = {},
+void request(Settings settings, Callback<Error, Response> cb, Headers headers = {},
              std::string body = "", Var<Logger> lp = Logger::global(),
              Var<Reactor> reactor = Reactor::global());
 
 inline void request(Settings settings, Headers headers, std::string body,
-        RequestCallback cb, Var<Logger> lp = Logger::global(),
+        Callback<Error, Response> cb, Var<Logger> lp = Logger::global(),
         Var<Reactor> reactor = Reactor::global()) {
     request(settings, cb, headers, body, lp, reactor);
 }
@@ -58,7 +54,7 @@ class Url {
 Url parse_url(std::string url);
 ErrorOr<Url> parse_url_noexcept(std::string url);
 
-inline void get(std::string url, RequestCallback cb,
+inline void get(std::string url, Callback<Error, Response> cb,
                 Headers headers = {}, std::string body = "",
                 Settings settings = {}, Var<Logger> lp = Logger::global(),
                 Var<Reactor> reactor = Reactor::global()) {
@@ -67,7 +63,7 @@ inline void get(std::string url, RequestCallback cb,
     request(settings, cb, headers, body, lp, reactor);
 }
 
-inline void request(std::string method, std::string url, RequestCallback cb,
+inline void request(std::string method, std::string url, Callback<Error, Response> cb,
                     Headers headers = {}, std::string body = "",
                     Settings settings = {}, Var<Logger> lp = Logger::global(),
                     Var<Reactor> reactor = Reactor::global()) {
@@ -76,14 +72,12 @@ inline void request(std::string method, std::string url, RequestCallback cb,
     request(settings, cb, headers, body, lp, reactor);
 }
 
-typedef std::function<void(Error)> RequestSendCb;
-
 void request_connect(Settings, Callback<Error, Var<net::Transport>>,
                      Var<Reactor> = Reactor::global(),
                      Var<Logger> = Logger::global());
 
 void request_send(Var<net::Transport>, Settings, Headers, std::string,
-        RequestSendCb);
+        Callback<Error>);
 
 void request_recv_response(Var<net::Transport>, Callback<Error, Var<Response>>,
         Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
