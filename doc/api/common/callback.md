@@ -21,7 +21,7 @@ using Callback<T...> = std::function<void(T...)>;
 
 # DESCRIPTION
 
-The Callback alias allows to more compactly writing callbacks and SHOULD be
+The `Callback` alias allows to more compactly writing callbacks and SHOULD be
 used to indicate one-shot callbacks instead of `std::function<T>`.
 
 # EXAMPLE
@@ -31,9 +31,19 @@ used to indicate one-shot callbacks instead of `std::function<T>`.
 
 using namespace mk;
 
-static void operation(Var<Reactor> r, Callback<Error> cb) {
-    r->call_later(1.0, [=]() {
+static void slow_operation(Callback<Error> cb) {
+    debug("slow operation ...");
+    call_later(1.0, [=]() {
+        debug("slow operation ... done");
         cb(NoError());
+    });
+}
+
+int main() {
+    loop_with_initial_event([=]() {
+        slow_operation([=]() {
+            break_loop();
+        });
     });
 }
 ```
