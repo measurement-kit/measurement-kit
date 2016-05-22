@@ -80,8 +80,8 @@ with error code equal to zero (a special value used to indicate that no error ha
 actually occurred). The constructor with error code allows to set the error code that
 is wrapped by an error; a nonzero error code indicates failure. The constructor
 with error code and reason allows to set both error code and a reason string; at the
-moment the reason string must be a [OONI error string](https://github.com/TheTorProject/ooni-spec/blob/master/data-formats/df-000-base.md#error-strings),
-but this could change in the future. The constructor with error code, reason, and
+moment the reason string MUST be a [OONI error string](https://github.com/TheTorProject/ooni-spec/blob/master/data-formats/df-000-base.md#error-strings),
+but this MAY change in the future. The constructor with error code, reason, and
 underlying error allows also to specify that the current error was triggered by
 another, underlying error.
 
