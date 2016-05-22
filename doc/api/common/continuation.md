@@ -32,13 +32,13 @@ resumes another function that has paused waiting for explicit continuation.
 using namespace mk;
 
 static void coroutine(Callback<Error, Continuation<Error>> cb) {
-    debug("slow operation ...");
+    debug("initial slow operation ...");
     call_later(1.0, [=]() {
-        debug("slow operation ... done");
+        debug("initial slow operation ... done");
         cb(NoError(), [=](Callback<Error> cb) {
-            debug("slow operation ...");
+            debug("other slow operation ...");
             call_later(1.0, [=]() {
-                debug("slow operation ... done");
+                debug("other slow operation ... done");
                 cb(NoError());
             });
         });
