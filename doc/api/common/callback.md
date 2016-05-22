@@ -11,6 +11,9 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 template<typename... T> using Callback<T...> = std::function<void(T...)>;
 ```
 
+# STABILITY
+2 - Stable
+
 # DESCRIPTION
 
 The Callback alias allows to more compactly writing callbacks and SHOULD be
@@ -27,9 +30,6 @@ void operation(Reactor r, Callback<Error> cb) {
     });
 }
 ```
-
-# STABILITY
-2 - Stable
 
 # HISTORY
 
