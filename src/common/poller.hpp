@@ -150,7 +150,7 @@ class Poller : public Reactor {
 
   private:
     Var<event_base> base_;
-    Delegate<void(Poller *)> periodic_cb_;
+    Delegate<Poller *> periodic_cb_;
 };
 
 } // namespace mk
