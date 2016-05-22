@@ -37,7 +37,7 @@ void ip_lookup(Callback<Error, std::string> callback) {
                 }
                 callback(NoError(), m[1]);
             },
-            {}, "", {}, Logger::global(), Reactor::global());
+            {}, "", {}, Reactor::global(), Logger::global());
 }
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,
