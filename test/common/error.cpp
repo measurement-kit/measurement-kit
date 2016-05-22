@@ -15,7 +15,7 @@ TEST_CASE("The default constructed error is true-ish") {
     REQUIRE(!err.context);
     REQUIRE(!err.child);
     REQUIRE(err.code == 0);
-    REQUIRE(err.ooni_error == "");
+    REQUIRE(err.reason == "");
 }
 
 TEST_CASE("Error constructed with error code is correctly initialized") {
@@ -24,7 +24,7 @@ TEST_CASE("Error constructed with error code is correctly initialized") {
     REQUIRE(!err.context);
     REQUIRE(!err.child);
     REQUIRE(err.code == 17);
-    REQUIRE(err.ooni_error == "unknown_failure 17");
+    REQUIRE(err.reason == "unknown_failure 17");
 }
 
 TEST_CASE("Error constructed with error and message is correctly initialized") {
@@ -33,7 +33,7 @@ TEST_CASE("Error constructed with error and message is correctly initialized") {
     REQUIRE(!err.context);
     REQUIRE(!err.child);
     REQUIRE(err.code == 17);
-    REQUIRE(err.ooni_error == "antani");
+    REQUIRE(err.reason == "antani");
 }
 
 TEST_CASE("Constructor with underlying error works correctly") {
@@ -42,7 +42,7 @@ TEST_CASE("Constructor with underlying error works correctly") {
     REQUIRE(!err.context);
     REQUIRE(*err.child == MockedError());
     REQUIRE(err.code == 17);
-    REQUIRE(err.ooni_error == "antani");
+    REQUIRE(err.reason == "antani");
 }
 
 TEST_CASE("Equality works for errors") {
@@ -62,5 +62,5 @@ TEST_CASE("The defined-error constructor with string works") {
     REQUIRE(!!ex);
     REQUIRE(ex.code == 17);
     REQUIRE(ex.as_ooni_error() == "example error antani");
-    REQUIRE(ex.ooni_error == "example error antani");
+    REQUIRE(ex.reason == "example error antani");
 }

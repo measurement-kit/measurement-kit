@@ -19,9 +19,9 @@ class Error : public std::exception {
     Error(int e, std::string ooe) : Error(e, ooe, nullptr) {}
 
     Error(int e, std::string ooe, Var<Error> c)
-                : child(c), code(e), ooni_error(ooe) {
-        if (code != 0 && ooni_error == "") {
-            ooni_error = "unknown_failure " + std::to_string(code);
+                : child(c), code(e), reason(ooe) {
+        if (code != 0 && reason == "") {
+            reason = "unknown_failure " + std::to_string(code);
         }
     }
 
@@ -35,12 +35,12 @@ class Error : public std::exception {
     bool operator!=(int n) const { return code != n; }
     bool operator!=(Error e) const { return code != e.code; }
 
-    std::string as_ooni_error() { return ooni_error; }
+    std::string as_ooni_error() { return reason; }
 
     Var<ErrorContext> context;
     Var<Error> child;
     int code = 0;
-    std::string ooni_error;
+    std::string reason;
 };
 
 #define MK_DEFINE_ERR(_code_, _name_, _ooe_)                                   \
@@ -48,8 +48,8 @@ class Error : public std::exception {
       public:                                                                  \
         _name_() : Error(_code_, _ooe_) {}                                     \
         _name_(std::string s) : Error(_code_, _ooe_) {                         \
-            ooni_error += " ";                                                 \
-            ooni_error += s;                                                   \
+            reason += " ";                                                     \
+            reason += s;                                                       \
         }                                                                      \
         _name_(Error e) : Error(_code_, _ooe_, e) {}                           \
     };
