@@ -62,7 +62,11 @@ The `as_value()` method returns a reference to the (possibly `const`)
 underlying value, if the `ErrorOr` contains a value; otherwise, the
 contained error is thrown.
 
-The `as_error()` function returns the error field.
+The `as_error()` method returns the error field. Calling this method is
+always safe, regardless of whether the `ErrorOr` contains an error or
+a value. This method is typically called to access the underlying error
+once `operator bool()` has been used to ascertain that the `ErrorOr`
+contains an error, as shown in the above snippet.
 
 The `operator*()` method is an alias for `as_value()`.
 
