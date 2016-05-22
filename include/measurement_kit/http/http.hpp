@@ -12,12 +12,52 @@
 namespace mk {
 namespace http {
 
+/*
+ _____
+| ____|_ __ _ __ ___  _ __ ___
+|  _| | '__| '__/ _ \| '__/ __|
+| |___| |  | | | (_) | |  \__ \
+|_____|_|  |_|  \___/|_|  |___/
+
+*/
+
 MK_DEFINE_ERR(MK_ERR_HTTP(0), UpgradeError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(1), ParserError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(2), UrlParserError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "")
+
+/*
+ _   _      _
+| | | |_ __| |
+| | | | '__| |
+| |_| | |  | |
+ \___/|_|  |_|
+
+*/
+
+class Url {
+  public:
+    std::string schema;
+    std::string address;
+    int port = 80;
+    std::string path;
+    std::string query;
+    std::string pathquery;
+};
+
+Url parse_url(std::string url);
+ErrorOr<Url> parse_url_noexcept(std::string url);
+
+/*
+                                _
+ _ __ ___  __ _ _   _  ___  ___| |_
+| '__/ _ \/ _` | | | |/ _ \/ __| __|
+| | |  __/ (_| | |_| |  __/\__ \ |_
+|_|  \___|\__, |\__,_|\___||___/\__|
+             |_|
+*/
 
 using Headers = std::map<std::string, std::string>;
 
@@ -40,19 +80,6 @@ inline void request(Settings settings, Headers headers, std::string body,
         Var<Reactor> reactor = Reactor::global()) {
     request(settings, cb, headers, body, lp, reactor);
 }
-
-class Url {
-  public:
-    std::string schema;
-    std::string address;
-    int port = 80;
-    std::string path;
-    std::string query;
-    std::string pathquery;
-};
-
-Url parse_url(std::string url);
-ErrorOr<Url> parse_url_noexcept(std::string url);
 
 inline void get(std::string url, Callback<Error, Response> cb,
                 Headers headers = {}, std::string body = "",
