@@ -67,8 +67,9 @@ The `as_error()` function returns the error field.
 The `operator*()` method is an alias for `as_value()`.
 
 The `operator->()` method returns a (possibly `const`) pointer to the
-underlying field and could this be useful to access fields of a structure
-directly.
+underlying field, if the `ErrorOr` contains a value; otherwise, the
+contained error is thrown. This method could this be useful to access
+fields of a structure directly.
 
 # EXAMPLE
 
