@@ -8,7 +8,11 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
+namespace mk {
+
 template<typename... T> using Callback<T...> = std::function<void(T...)>;
+
+}
 ```
 
 # STABILITY
@@ -23,6 +27,8 @@ used to indicate one-shot callbacks instead of `std::function<T>`.
 
 ```C++
 #include <measurement_kit/common.hpp>
+
+using namespace mk;
 
 void operation(Reactor r, Callback<Error> cb) {
     r.call_later(1.0, [=]() {
