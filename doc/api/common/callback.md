@@ -30,8 +30,8 @@ used to indicate one-shot callbacks instead of `std::function<T>`.
 
 using namespace mk;
 
-void operation(Reactor r, Callback<Error> cb) {
-    r.call_later(1.0, [=]() {
+static void operation(Var<Reactor> r, Callback<Error> cb) {
+    r->call_later(1.0, [=]() {
         cb(NoError());
     });
 }
