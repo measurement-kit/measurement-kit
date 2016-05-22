@@ -21,74 +21,43 @@ MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "")
 
-/// HTTP headers.
 typedef std::map<std::string, std::string> Headers;
 
-/// HTTP response.
 struct Response {
-    std::string response_line; ///< Original HTTP response line.
-    unsigned short http_major; ///< HTTP major version number.
-    unsigned short http_minor; ///< HTTP minor version number.
-    unsigned int status_code;  ///< HTTP status code.
-    std::string reason;        ///< HTTP reason string.
-    Headers headers;           ///< Response headers.
-    std::string body;          ///< Response body.
+    std::string response_line;
+    unsigned short http_major;
+    unsigned short http_minor;
+    unsigned int status_code;
+    std::string reason;
+    Headers headers;
+    std::string body;
 };
 
-/// Type of callback called on error or when response is complete.
 typedef Callback<Error, Response> RequestCallback;
 
-// Forward declaration of internally used class.
-class Request;
-
-/// Send HTTP request and receive response.
-/// \param settings Settings for HTTP request.
-/// \param cb Callback called when complete or on error.
-/// \param headers Optional HTTP request headers.
-/// \param body Optional HTTP request body.
-/// \param lp Optional logger.
-/// \param pol Optional poller.
 void request(Settings settings, RequestCallback cb, Headers headers = {},
              std::string body = "", Var<Logger> lp = Logger::global(),
              Var<Reactor> reactor = Reactor::global());
 
-// Signature of the old http::Client ->request method, widely used
 inline void request(Settings settings, Headers headers, std::string body,
         RequestCallback cb, Var<Logger> lp = Logger::global(),
         Var<Reactor> reactor = Reactor::global()) {
     request(settings, cb, headers, body, lp, reactor);
 }
 
-/// Represents a URL.
 class Url {
   public:
-    std::string schema;    /// URL schema
-    std::string address;   /// URL address
-    int port = 80;         /// URL port
-    std::string path;      /// URL path
-    std::string query;     /// URL query
-    std::string pathquery; /// URL path followed by optional query
+    std::string schema;
+    std::string address;
+    int port = 80;
+    std::string path;
+    std::string query;
+    std::string pathquery;
 };
 
-/// Parses a URL.
-/// \param url Input URL you want to parse.
-/// \return The parsed URL.
-/// \throw Exception on failure.
 Url parse_url(std::string url);
-
-/// Parses a URL without throwing an exception on failure.
-/// \param url Input URL you want to parse..
-/// \return An error (on failure) or the parsed URL.
 ErrorOr<Url> parse_url_noexcept(std::string url);
 
-/// Send HTTP GET and receive response.
-/// \param url URL to send request to.
-/// \param settings Settings for HTTP request.
-/// \param cb Callback called when complete or on error.
-/// \param headers Optional HTTP request headers.
-/// \param body Optional HTTP request body.
-/// \param lp Optional logger.
-/// \param pol Optional poller.
 inline void get(std::string url, RequestCallback cb,
                 Headers headers = {}, std::string body = "",
                 Settings settings = {}, Var<Logger> lp = Logger::global(),
@@ -98,15 +67,6 @@ inline void get(std::string url, RequestCallback cb,
     request(settings, cb, headers, body, lp, reactor);
 }
 
-/// Send HTTP request and receive response.
-/// \param method Method to use.
-/// \param url URL to send request to.
-/// \param settings Settings for HTTP request.
-/// \param cb Callback called when complete or on error.
-/// \param headers Optional HTTP request headers.
-/// \param body Optional HTTP request body.
-/// \param lp Optional logger.
-/// \param pol Optional poller.
 inline void request(std::string method, std::string url, RequestCallback cb,
                     Headers headers = {}, std::string body = "",
                     Settings settings = {}, Var<Logger> lp = Logger::global(),
