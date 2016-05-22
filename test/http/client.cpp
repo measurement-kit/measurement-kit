@@ -32,8 +32,10 @@ TEST_CASE("http::request() works as expected") {
             },
             "", [&](Error, Var<Response> response) {
                 std::cout << "Google:\r\n";
-                std::cout << response->body.substr(0, 128) << "\r\n";
-                std::cout << "[snip]\r\n";
+                if (response) {
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
                 if (++count >= 3) {
                     break_loop();
                 }
@@ -49,8 +51,10 @@ TEST_CASE("http::request() works as expected") {
                 {"Accept", "*/*"},
             },
             "", [&](Error, Var<Response> response) {
-                std::cout << response->body.substr(0, 128) << "\r\n";
-                std::cout << "[snip]\r\n";
+                if (response) {
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
                 if (++count >= 3) {
                     break_loop();
                 }
@@ -66,8 +70,10 @@ TEST_CASE("http::request() works as expected") {
                 {"Accept", "*/*"},
             },
             "", [&](Error, Var<Response> response) {
-                std::cout << response->body.substr(0, 128) << "\r\n";
-                std::cout << "[snip]\r\n";
+                if (response) {
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
                 if (++count >= 3) {
                     break_loop();
                 }
@@ -93,9 +99,11 @@ TEST_CASE("http::request() works as expected over Tor") {
             },
             "", [&](Error error, Var<Response> response) {
                 std::cout << "Error: " << (int)error << std::endl;
-                std::cout << "Google:\r\n";
-                std::cout << response->body.substr(0, 128) << "\r\n";
-                std::cout << "[snip]\r\n";
+                if (response) {
+                    std::cout << "Google:\r\n";
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
                 if (++count >= 3) {
                     break_loop();
                 }
@@ -113,8 +121,10 @@ TEST_CASE("http::request() works as expected over Tor") {
             },
             "", [&](Error error, Var<Response> response) {
                 std::cout << "Error: " << (int)error << std::endl;
-                std::cout << response->body.substr(0, 128) << "\r\n";
-                std::cout << "[snip]\r\n";
+                if (response) {
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
                 if (++count >= 3) {
                     break_loop();
                 }
@@ -132,8 +142,10 @@ TEST_CASE("http::request() works as expected over Tor") {
             },
             "", [&](Error error, Var<Response> response) {
                 std::cout << "Error: " << (int)error << std::endl;
-                std::cout << response->body.substr(0, 128) << "\r\n";
-                std::cout << "[snip]\r\n";
+                if (response) {
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
                 if (++count >= 3) {
                     break_loop();
                 }
@@ -156,8 +168,10 @@ TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
             "{\"test-helpers\": [\"dns\"]}",
             [](Error error, Var<Response> response) {
                 std::cout << "Error: " << (int)error << std::endl;
-                std::cout << response->body << "\r\n";
-                std::cout << "[snip]\r\n";
+                if (response) {
+                    std::cout << response->body << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
                 break_loop();
             });
 
@@ -191,8 +205,10 @@ TEST_CASE("Make sure that settings are not modified") {
                     // XXX: assumes that Tor is not running on port 9999
                     REQUIRE(error != 0);
                     std::cout << "Error: " << (int)error << std::endl;
-                    std::cout << response->body << "\r\n";
-                    std::cout << "[snip]\r\n";
+                    if (response) {
+                        std::cout << response->body << "\r\n";
+                        std::cout << "[snip]\r\n";
+                    }
                     break_loop();
                 });
     });
