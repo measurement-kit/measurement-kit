@@ -21,7 +21,7 @@ using Continuation = std::function<void(Callback<T...>)>;
 
 # DESCRIPTION
 
-The Continuation alias allows to more compactly express a function that
+The `Continuation` alias allows to more compactly express a function that
 resumes another function that has paused waiting for explicit continuation.
 
 # EXAMPLE
