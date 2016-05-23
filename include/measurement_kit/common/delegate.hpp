@@ -9,13 +9,13 @@
 
 namespace mk {
 
-template <typename T> class Delegate {
+template <typename T> class Delegate_ {
   public:
-    Delegate() {}
-    template <typename F> Delegate(F f) : func(f) {}
-    Delegate(std::function<T> f) : func(f) {}
+    Delegate_() {}
+    template <typename F> Delegate_(F f) : func(f) {}
+    Delegate_(std::function<T> f) : func(f) {}
 
-    ~Delegate() {}
+    ~Delegate_() {}
 
     void operator=(std::function<T> f) { func = f; }
     template <typename F> void operator=(F f) { func = f; }
@@ -34,6 +34,8 @@ template <typename T> class Delegate {
   protected:
     std::function<T> func;
 };
+
+template <typename... T> using Delegate = Delegate_<void(T...)>;
 
 } // namespace
 #endif

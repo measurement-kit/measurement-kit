@@ -182,7 +182,7 @@ static inline std::vector<Answer> build_answers_evdns(
     return answers;
 }
 
-static void dns_callback(int code, char type, int count, int ttl,
+static inline void dns_callback(int code, char type, int count, int ttl,
         void *addresses, QueryContext *context) {
     context->message.error_code = code;
 

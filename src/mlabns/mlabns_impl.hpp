@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/ext/json/src/json.hpp"
 #include <measurement_kit/common.hpp>
+#include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
 #include <regex>
@@ -76,18 +76,18 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
     logger->info("query mlabns for tool %s", tool.c_str());
     logger->debug("mlabns url: %s", url.c_str());
     http_get(url,
-        [callback, logger](Error error, http::Response response) {
+        [callback, logger](Error error, Var<http::Response> response) {
             if (error) {
                 callback(error, Reply());
                 return;
             }
-            if (response.status_code != 200) {
+            if (response->status_code != 200) {
                 callback(UnexpectedHttpStatusCodeError(), Reply());
                 return;
             }
             Reply reply;
             try {
-                auto node = json::parse(response.body);
+                auto node = json::parse(response->body);
                 reply.city = node.at("city");
                 reply.url = node.at("url");
                 for (auto ip2 : node.at("ip")) {
@@ -106,7 +106,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
             logger->info("mlabns says to use %s", reply.fqdn.c_str());
             callback(NoError(), reply);
         },
-        {}, "", settings, logger, reactor);
+        {}, settings, reactor, logger);
 }
 
 } // namespace mlabns

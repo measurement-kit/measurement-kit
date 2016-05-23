@@ -4,13 +4,9 @@
 #ifndef SRC_OONI_TCP_TEST_HPP
 #define SRC_OONI_TCP_TEST_HPP
 
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/ext.hpp>
 #include <measurement_kit/net.hpp>
-
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/var.hpp>
-
-#include "src/ext/json/src/json.hpp"                // for json
 
 #include "src/ooni/ooni_test_impl.hpp"
 

@@ -169,7 +169,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                     logger->debug("error in connection.");
                     if (err == mk::net::NetworkError()) {
                         long ssl_err = bufferevent_get_openssl_error(bev);
-                        err = SSLError(ERR_error_string(ssl_err, NULL));
+                        err = SslError(ERR_error_string(ssl_err, NULL));
                     }
                     bufferevent_free(bev);
                     cb(err, nullptr);
@@ -180,7 +180,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                 if (verify_err != X509_V_OK) {
                     debug("ssl: got an invalid certificate");
                     bufferevent_free(bev);
-                    cb(SSLInvalidCertificateError(X509_verify_cert_error_string(verify_err)), nullptr);
+                    cb(SslInvalidCertificateError(X509_verify_cert_error_string(verify_err)), nullptr);
                     return;
                 }
 
@@ -188,7 +188,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                 if (server_cert == NULL) {
                     logger->debug("ssl: got no certificate");
                     bufferevent_free(bev);
-                    cb(SSLNoCertificateError(), nullptr);
+                    cb(SslNoCertificateError(), nullptr);
                     return;
                 }
 
@@ -197,7 +197,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                 if (hostname_validate_err != 0) {
                     logger->debug("ssl: got invalid hostname");
                     bufferevent_free(bev);
-                    cb(SSLInvalidHostnameError(), nullptr);
+                    cb(SslInvalidHostnameError(), nullptr);
                     return;
                 }
 

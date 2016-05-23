@@ -75,7 +75,7 @@ gen_executables() {
     done
 }
 
-get() {
+get_repo() {
   echo ""
   echo "> $3 (from github.com/$1)"
   branch=$4
@@ -121,9 +121,8 @@ sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
 
 echo "* Fetching dependencies that are build in any case"
-get joyent/http-parser v2.6.0 http-parser
-get philsquared/Catch v1.2.1 Catch
-get nlohmann/json v1.1.0 json v1.1.0
+get_repo joyent/http-parser v2.6.0 http-parser
+get_repo philsquared/Catch v1.2.1 Catch
 
 echo "* Fetching geoip database"
 get_geoipdb

@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// This example shows how to use http::request()
-//
-
 #include <functional>
 #include <iostream>
 #include <measurement_kit/common.hpp>
@@ -54,19 +50,20 @@ int main(int argc, char **argv) {
             {
                 {"http/method", method}, {"http/url", url},
             },
-            [](Error error, http::Response response) {
+            headers,
+            body,
+            [](Error error, Var<http::Response> response) {
                 if (error) {
                     std::cout << "Error: " << (int)error << "\n";
                     break_loop();
                     return;
                 }
-                std::cout << response.response_line << "\n";
-                for (auto &pair : response.headers) {
+                std::cout << response->response_line << "\n";
+                for (auto &pair : response->headers) {
                     std::cout << pair.first << ": " << pair.second << "\n";
                 }
-                std::cout << "\n" << response.body << "\n";
+                std::cout << "\n" << response->body << "\n";
                 break_loop();
-            },
-            headers, body);
+            });
     });
 }

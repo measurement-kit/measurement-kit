@@ -8,17 +8,14 @@
 #include <ctime>                                // for gmtime, strftime, time
 #include <fstream>                              // for string, char_traits
 #include <functional>                           // for function, __base
-#include <measurement_kit/common/logger.hpp>    // for Logger
-#include <measurement_kit/common/net_test.hpp>  // for NetTest
-#include <measurement_kit/common/reactor.hpp>
-#include <measurement_kit/common/settings.hpp>  // for Settings
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/ooni.hpp>
 #include <string>                               // for allocator, operator+
 #include <type_traits>                          // for move
 #include "src/common/utils.hpp"                 // for utc_time_now
 #include "src/ooni/input_file_generator.hpp"    // for InputFileGenerator
 #include "src/ooni/input_generator.hpp"         // for InputGenerator
 #include "src/report/file_reporter.hpp"         // for FileReporter
-#include "src/ooni/errors.hpp"
 #include <sys/stat.h>
 
 namespace mk {
@@ -59,7 +56,7 @@ class OoniTestImpl : public mk::NetTest {
                     logger->debug("net_test: tearing down");
                     teardown();
 
-                    file_report.writeEntry(entry);
+                    file_report.write_entry(entry);
                     logger->debug("net_test: written entry");
 
                     logger->debug("net_test: increased");
@@ -126,14 +123,14 @@ class OoniTestImpl : public mk::NetTest {
         });
     }
 
-    void validate_input_filepath(std::string input_filepath_) {
-        if (input_filepath_ == "") {
+    void validate_input_filepath() {
+        if (input_filepath == "") {
             throw InputFileRequired("An input file is required!");
         }
 
         struct stat buffer;
-        if (stat(input_filepath_.c_str(), &buffer) != 0) {
-            throw InputFileDoesNotExist(input_filepath_ + " does not exist");
+        if (stat(input_filepath.c_str(), &buffer) != 0) {
+            throw InputFileDoesNotExist(input_filepath + " does not exist");
         }
     }
 
@@ -201,7 +198,7 @@ class OoniTestImpl : public mk::NetTest {
             main(options, [=](json entry) {
                 logger->debug("net_test: tearing down");
                 teardown();
-                file_report.writeEntry(entry);
+                file_report.write_entry(entry);
                 logger->debug("net_test: written entry");
                 logger->debug("net_test: reached end of input");
                 cb();
