@@ -8,9 +8,9 @@
 // See <https://github.com/ndt-project/ndt/wiki/NDTProtocol>
 
 #include "src/common/utils.hpp"
-#include "src/ext/json/src/json.hpp"
 #include <list>
 #include <measurement_kit/common.hpp>
+#include <measurement_kit/ext.hpp>
 #include <measurement_kit/ndt.hpp>
 #include <measurement_kit/net.hpp>
 #include <string>
