@@ -10,7 +10,7 @@
 #include "src/common/utils.hpp"
 #include <list>
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext.hpp>
+#include <measurement_kit/ext/json.hpp>
 #include <measurement_kit/ndt.hpp>
 #include <measurement_kit/net.hpp>
 #include <string>
