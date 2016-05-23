@@ -18,146 +18,164 @@ using namespace mk::http;
 
 TEST_CASE("http::request() works as expected") {
     auto count = 0;
+    loop_with_initial_event_and_connectivity([&]() {
 
-    request(
-        {
-         {"http/url", "http://www.google.com/robots.txt"},
-         {"http/method", "GET"},
-         {"http/http_version", "HTTP/1.1"},
-         {"Connection", "close"},
-        },
-        {
-         {"Accept", "*/*"},
-        },
-        "", [&](Error, Response response) {
-            std::cout << "Google:\r\n";
-            std::cout << response.body.substr(0, 128) << "\r\n";
-            std::cout << "[snip]\r\n";
-            if (++count >= 3) {
-                mk::break_loop();
-            }
-        });
+        request(
+            {
+                {"http/url", "http://www.google.com/robots.txt"},
+                {"http/method", "GET"},
+                {"http/http_version", "HTTP/1.1"},
+                {"Connection", "close"},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "", [&](Error, Var<Response> response) {
+                std::cout << "Google:\r\n";
+                if (response) {
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
+                if (++count >= 3) {
+                    break_loop();
+                }
+            });
 
-    request(
-        {
-         {"http/url", "http://www.neubot.org/robots.txt"},
-         {"http/method", "GET"},
-         {"http/http_version", "HTTP/1.1"},
-        },
-        {
-         {"Accept", "*/*"},
-        },
-        "", [&](Error, Response response) {
-            std::cout << response.body.substr(0, 128) << "\r\n";
-            std::cout << "[snip]\r\n";
-            if (++count >= 3) {
-                mk::break_loop();
-            }
-        });
+        request(
+            {
+                {"http/url", "http://www.neubot.org/robots.txt"},
+                {"http/method", "GET"},
+                {"http/http_version", "HTTP/1.1"},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "", [&](Error, Var<Response> response) {
+                if (response) {
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
+                if (++count >= 3) {
+                    break_loop();
+                }
+            });
 
-    request(
-        {
-         {"http/url", "http://www.torproject.org/robots.txt"},
-         {"http/method", "GET"},
-         {"http/http_version", "HTTP/1.1"},
-        },
-        {
-         {"Accept", "*/*"},
-        },
-        "", [&](Error, Response response) {
-            std::cout << response.body.substr(0, 128) << "\r\n";
-            std::cout << "[snip]\r\n";
-            if (++count >= 3) {
-                mk::break_loop();
-            }
-        });
+        request(
+            {
+                {"http/url", "http://www.torproject.org/robots.txt"},
+                {"http/method", "GET"},
+                {"http/http_version", "HTTP/1.1"},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "", [&](Error, Var<Response> response) {
+                if (response) {
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
+                if (++count >= 3) {
+                    break_loop();
+                }
+            });
 
-    mk::loop();
+    });
 }
 
 TEST_CASE("http::request() works as expected over Tor") {
     auto count = 0;
+    loop_with_initial_event_and_connectivity([&]() {
 
-    request(
-        {
-         {"http/url", "http://www.google.com/robots.txt"},
-         {"http/method", "GET"},
-         {"http/http_version", "HTTP/1.1"},
-         {"Connection", "close"},
-         {"net/socks5_proxy", "127.0.0.1:9050"},
-        },
-        {
-         {"Accept", "*/*"},
-        },
-        "", [&](Error error, Response response) {
-            std::cout << "Error: " << (int)error << std::endl;
-            std::cout << "Google:\r\n";
-            std::cout << response.body.substr(0, 128) << "\r\n";
-            std::cout << "[snip]\r\n";
-            if (++count >= 3) {
-                mk::break_loop();
-            }
-        });
+        request(
+            {
+                {"http/url", "http://www.google.com/robots.txt"},
+                {"http/method", "GET"},
+                {"http/http_version", "HTTP/1.1"},
+                {"Connection", "close"},
+                {"net/socks5_proxy", "127.0.0.1:9050"},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "", [&](Error error, Var<Response> response) {
+                std::cout << "Error: " << (int)error << std::endl;
+                if (response) {
+                    std::cout << "Google:\r\n";
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
+                if (++count >= 3) {
+                    break_loop();
+                }
+            });
 
-    request(
-        {
-         {"http/url", "http://www.neubot.org/robots.txt"},
-         {"http/method", "GET"},
-         {"http/http_version", "HTTP/1.1"},
-         {"net/socks5_proxy", "127.0.0.1:9050"},
-        },
-        {
-         {"Accept", "*/*"},
-        },
-        "", [&](Error error, Response response) {
-            std::cout << "Error: " << (int)error << std::endl;
-            std::cout << response.body.substr(0, 128) << "\r\n";
-            std::cout << "[snip]\r\n";
-            if (++count >= 3) {
-                mk::break_loop();
-            }
-        });
+        request(
+            {
+                {"http/url", "http://www.neubot.org/robots.txt"},
+                {"http/method", "GET"},
+                {"http/http_version", "HTTP/1.1"},
+                {"net/socks5_proxy", "127.0.0.1:9050"},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "", [&](Error error, Var<Response> response) {
+                std::cout << "Error: " << (int)error << std::endl;
+                if (response) {
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
+                if (++count >= 3) {
+                    break_loop();
+                }
+            });
 
-    request(
-        {
-         {"http/url", "http://www.torproject.org/robots.txt"},
-         {"http/method", "GET"},
-         {"http/http_version", "HTTP/1.1"},
-         {"net/socks5_proxy", "127.0.0.1:9050"},
-        },
-        {
-         {"Accept", "*/*"},
-        },
-        "", [&](Error error, Response response) {
-            std::cout << "Error: " << (int)error << std::endl;
-            std::cout << response.body.substr(0, 128) << "\r\n";
-            std::cout << "[snip]\r\n";
-            if (++count >= 3) {
-                mk::break_loop();
-            }
-        });
+        request(
+            {
+                {"http/url", "http://www.torproject.org/robots.txt"},
+                {"http/method", "GET"},
+                {"http/http_version", "HTTP/1.1"},
+                {"net/socks5_proxy", "127.0.0.1:9050"},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "", [&](Error error, Var<Response> response) {
+                std::cout << "Error: " << (int)error << std::endl;
+                if (response) {
+                    std::cout << response->body.substr(0, 128) << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
+                if (++count >= 3) {
+                    break_loop();
+                }
+            });
 
-    mk::loop();
+    });
 }
 
 TEST_CASE("Make sure that we can access OONI's bouncer using httpo://...") {
-    request(
-        {
-         {"http/url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
-         {"http/method", "POST"},
-         {"http/http_version", "HTTP/1.1"},
-        },
-        {
-         {"Accept", "*/*"},
-        },
-        "{\"test-helpers\": [\"dns\"]}", [](Error error, Response response) {
-            std::cout << "Error: " << (int)error << std::endl;
-            std::cout << response.body << "\r\n";
-            std::cout << "[snip]\r\n";
-            mk::break_loop();
-        });
+    loop_with_initial_event_and_connectivity([]() {
+        request(
+            {
+                {"http/url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
+                {"http/method", "POST"},
+                {"http/http_version", "HTTP/1.1"},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "{\"test-helpers\": [\"dns\"]}",
+            [](Error error, Var<Response> response) {
+                std::cout << "Error: " << (int)error << std::endl;
+                if (response) {
+                    std::cout << response->body << "\r\n";
+                    std::cout << "[snip]\r\n";
+                }
+                break_loop();
+            });
 
-    mk::loop();
+    });
 }
 
 TEST_CASE("Make sure that settings are not modified") {
@@ -177,21 +195,23 @@ TEST_CASE("Make sure that settings are not modified") {
         {"net/tor_socks_port", 9999},
     };
 
-    request(settings,
-                   {
+    loop_with_initial_event_and_connectivity([&]() {
+        request(settings,
+                {
                     {"Accept", "*/*"},
-                   },
-                   "{\"test-helpers\": [\"dns\"]}",
-                   [](Error error, Response response) {
-                       // XXX: assumes that Tor is not running on port 9999
-                       REQUIRE(error != 0);
-                       std::cout << "Error: " << (int)error << std::endl;
-                       std::cout << response.body << "\r\n";
-                       std::cout << "[snip]\r\n";
-                       mk::break_loop();
-                   });
-
-    mk::loop();
+                },
+                "{\"test-helpers\": [\"dns\"]}",
+                [](Error error, Var<Response> response) {
+                    // XXX: assumes that Tor is not running on port 9999
+                    REQUIRE(error != 0);
+                    std::cout << "Error: " << (int)error << std::endl;
+                    if (response) {
+                        std::cout << response->body << "\r\n";
+                        std::cout << "[snip]\r\n";
+                    }
+                    break_loop();
+                });
+    });
 
     // Make sure that no changes were made
     for (auto &iter : settings) {

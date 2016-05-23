@@ -5,9 +5,7 @@
 #ifndef SRC_OONI_TCP_CONNECT_HPP
 #define SRC_OONI_TCP_CONNECT_HPP
 
-#include "src/ooni/errors.hpp"
 #include "src/ooni/tcp_test_impl.hpp"
-#include <sys/stat.h>
 
 using json = nlohmann::json;
 
@@ -22,15 +20,7 @@ class TCPConnectImpl : public TCPTestImpl {
         : TCPTestImpl(input_filepath_, options_) {
         test_name = "tcp_connect";
         test_version = "0.0.1";
-
-        if (input_filepath_ == "") {
-            throw InputFileRequired("An input file is required!");
-        }
-
-        struct stat buffer;
-        if (stat(input_filepath_.c_str(), &buffer) != 0) {
-            throw InputFileDoesNotExist(input_filepath_ + " does not exist");
-        }
+        validate_input_filepath();
     };
 
     void main(std::string input, Settings options,

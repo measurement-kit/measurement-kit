@@ -17,6 +17,7 @@
 #define MK_LOG_WARNING 0
 #define MK_LOG_INFO 1
 #define MK_LOG_DEBUG 2
+#define MK_LOG_DEBUG2 3
 #define MK_LOG_VERBOSITY_MASK 31
 
 namespace mk {
@@ -38,7 +39,7 @@ class Logger : public NonCopyable, public NonMovable {
     void increase_verbosity();
     uint32_t get_verbosity() { return verbosity_; }
 
-    void on_log(Delegate<void(uint32_t, const char *)> fn) { consumer_ = fn; }
+    void on_log(Delegate<uint32_t, const char *> fn) { consumer_ = fn; }
 
     static Var<Logger> global() {
         static Var<Logger> singleton(new Logger);
@@ -46,7 +47,7 @@ class Logger : public NonCopyable, public NonMovable {
     }
 
   private:
-    Delegate<void(uint32_t, const char *)> consumer_;
+    Delegate<uint32_t, const char *> consumer_;
     uint32_t verbosity_ = MK_LOG_WARNING;
     char buffer_[32768];
     std::mutex mutex_;
@@ -63,7 +64,7 @@ inline void set_verbosity(uint32_t v) { Logger::global()->set_verbosity(v); }
 inline void increase_verbosity() { Logger::global()->increase_verbosity(); }
 inline uint32_t get_verbosity() { return Logger::global()->get_verbosity(); }
 
-inline void on_log(Delegate<void(uint32_t, const char *)> fn) {
+inline void on_log(Delegate<uint32_t, const char *> fn) {
     Logger::global()->on_log(fn);
 }
 

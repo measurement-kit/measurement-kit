@@ -7,10 +7,8 @@
 
 #include <event2/dns.h>
 #include <measurement_kit/dns.hpp>
-#include "src/ooni/errors.hpp"
 #include "src/ooni/ooni_test_impl.hpp"
 #include "src/ooni/dns_test_impl.hpp"
-#include <sys/stat.h>
 
 namespace mk {
 namespace ooni {
@@ -24,20 +22,13 @@ class DNSInjectionImpl : public DNSTestImpl {
         test_name = "dns_injection";
         test_version = "0.0.1";
 
-        if (input_filepath_ == "") {
-            throw InputFileRequired("An input file is required!");
-        }
-
-        struct stat buffer;
-        if (stat(input_filepath_.c_str(), &buffer) != 0) {
-            throw InputFileDoesNotExist(input_filepath_ + " does not exist");
-        }
+        validate_input_filepath();
     };
 
     void main(std::string input, Settings options,
               std::function<void(json)> &&cb) {
         entry["injected"] = nullptr;
-        query("A", "IN", input, options["dns/nameserver"],
+        query("A", "IN", input, options["backend"],
               [this, cb](dns::Message message) {
                   logger->debug("dns_injection: got response");
                   if (message.error_code == DNS_ERR_NONE) {

@@ -8,16 +8,15 @@
 #include <ctime>                                // for gmtime, strftime, time
 #include <fstream>                              // for string, char_traits
 #include <functional>                           // for function, __base
-#include <measurement_kit/common/logger.hpp>    // for Logger
-#include <measurement_kit/common/net_test.hpp>  // for NetTest
-#include <measurement_kit/common/reactor.hpp>
-#include <measurement_kit/common/settings.hpp>  // for Settings
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/ooni.hpp>
 #include <string>                               // for allocator, operator+
 #include <type_traits>                          // for move
 #include "src/common/utils.hpp"                 // for utc_time_now
 #include "src/ooni/input_file_generator.hpp"    // for InputFileGenerator
 #include "src/ooni/input_generator.hpp"         // for InputGenerator
 #include "src/report/file_reporter.hpp"         // for FileReporter
+#include <sys/stat.h>
 
 namespace mk {
 namespace ooni {
@@ -57,7 +56,7 @@ class OoniTestImpl : public mk::NetTest {
                     logger->debug("net_test: tearing down");
                     teardown();
 
-                    file_report.writeEntry(entry);
+                    file_report.write_entry(entry);
                     logger->debug("net_test: written entry");
 
                     logger->debug("net_test: increased");
@@ -124,9 +123,19 @@ class OoniTestImpl : public mk::NetTest {
         });
     }
 
+    void validate_input_filepath() {
+        if (input_filepath == "") {
+            throw InputFileRequired("An input file is required!");
+        }
+
+        struct stat buffer;
+        if (stat(input_filepath.c_str(), &buffer) != 0) {
+            throw InputFileDoesNotExist(input_filepath + " does not exist");
+        }
+    }
+
   public:
     json entry;
-    Settings options;
     InputGenerator *input = nullptr;
 
     std::string test_name;
@@ -143,16 +152,11 @@ class OoniTestImpl : public mk::NetTest {
         input = nullptr;
     }
 
-    OoniTestImpl(OoniTestImpl &) = delete;
-    OoniTestImpl &operator=(OoniTestImpl &) = delete;
-    OoniTestImpl(OoniTestImpl &&) = default;
-    OoniTestImpl &operator=(OoniTestImpl &&) = default;
-
     OoniTestImpl(std::string input_filepath_)
         : OoniTestImpl(input_filepath_, Settings()) {}
 
     OoniTestImpl(std::string input_filepath_, Settings options_)
-        : input_filepath(input_filepath_), options(options_),
+        : NetTest(options_), input_filepath(input_filepath_),
         test_name("net_test"), test_version("0.0.1") {
             mk::utc_time_now(&test_start_time);
         }
@@ -194,7 +198,7 @@ class OoniTestImpl : public mk::NetTest {
             main(options, [=](json entry) {
                 logger->debug("net_test: tearing down");
                 teardown();
-                file_report.writeEntry(entry);
+                file_report.write_entry(entry);
                 logger->debug("net_test: written entry");
                 logger->debug("net_test: reached end of input");
                 cb();
@@ -210,8 +214,6 @@ class OoniTestImpl : public mk::NetTest {
         file_report.close();
         cb();
     }
-
-    Var<Reactor> reactor = Reactor::global();
 
     void set_reactor(Var<Reactor> p) { reactor = p; }
 };

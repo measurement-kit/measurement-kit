@@ -32,13 +32,11 @@ TEST_CASE("Works as expected for more complex case") {
 TEST_CASE("Recognizes wrong ports") {
     SECTION("Negative port") {
         REQUIRE_THROWS_AS(
-                http::parse_url("https://www.kernel.org:-4/abc?foobar"),
-                Error);
+            http::parse_url("https://www.kernel.org:-4/abc?foobar"), Error);
     }
 
     SECTION("Too large port") {
         REQUIRE_THROWS_AS(
-                http::parse_url("https://www.kernel.org:65537/abc?foobar"),
-                Error);
+            http::parse_url("https://www.kernel.org:65537/abc?foobar"), Error);
     }
 }

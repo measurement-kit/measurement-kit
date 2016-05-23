@@ -5,6 +5,8 @@
 #define SRC_COMMON_POLLER_HPP
 
 #include "src/common/utils.hpp"
+#include <csignal>
+#include <cstring>
 #include <event2/event.h>
 #include <event2/thread.h>
 #include <functional>
@@ -19,17 +21,24 @@ void mk_do_periodic_cb(evutil_socket_t, short, void *ptr);
 } // extern "C"
 namespace mk {
 
-template <MK_MOCK(evthread_use_pthreads)> class EvThreadSingleton {
+template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction)>
+class MkLibrarySingleton {
   private:
-    EvThreadSingleton() {
+    MkLibrarySingleton() {
         if (evthread_use_pthreads() != 0) {
             throw std::runtime_error("evthread_use_pthreads() failed");
+        }
+        struct sigaction sa;
+        memset(&sa, 0, sizeof (sa));
+        sa.sa_handler = SIG_IGN;
+        if (sigaction(SIGPIPE, &sa, nullptr) != 0) {
+            throw std::runtime_error("sigaction() failed");
         }
     }
 
   public:
     static void ensure() {
-        static EvThreadSingleton<evthread_use_pthreads> singleton;
+        static MkLibrarySingleton<evthread_use_pthreads, sigaction> singleton;
     }
 };
 
@@ -42,10 +51,10 @@ class Poller : public Reactor {
     // hence two constructors: the normal one that calls `init_()` and the
     // one receiving `nullptr` as argument which does not call `init_()` such
     // that we can call this template function in regress tests.
-    template <MK_MOCK(evthread_use_pthreads), MK_MOCK(event_base_new),
-              MK_MOCK(event_base_free)>
+    template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction),
+              MK_MOCK(event_base_new), MK_MOCK(event_base_free)>
     void init_() {
-        EvThreadSingleton<evthread_use_pthreads>::ensure();
+        MkLibrarySingleton<evthread_use_pthreads, sigaction>::ensure();
         base_ = Var<event_base>(event_base_new(), [](event_base *p) {
             if (p != nullptr) {
                 event_base_free(p);
@@ -141,7 +150,7 @@ class Poller : public Reactor {
 
   private:
     Var<event_base> base_;
-    Delegate<void(Poller *)> periodic_cb_;
+    Delegate<Poller *> periodic_cb_;
 };
 
 } // namespace mk

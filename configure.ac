@@ -39,6 +39,9 @@ MK_AM_GEOIP
 # checks for types
 # checks for structures
 
+# checks for ca-bundle
+MK_CHECK_CA_BUNDLE
+
 # checks for compiler characteristics
 
 MK_AM_REQUIRE_C99
@@ -50,6 +53,6 @@ MK_AM_CXXFLAGS_ADD_WARNINGS
 
 # checks for system services
 
-AC_CONFIG_FILES([Makefile include/measurement_kit/common/version.hpp])
+AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 MK_AM_PRINT_SUMMARY

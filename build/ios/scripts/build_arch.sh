@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+# TODO: rewrite this script in terms of `../cross` and `../dependency`
+
 if [ $# -ne 2 ]; then
     echo "$0 platform arch" 1>&2
     echo "Example: $0 iphonesimulator i386"
@@ -27,7 +29,7 @@ fi
 
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
 SOURCEDIR="$ROOTDIR/../../../"
-DESTDIR="$ROOTDIR/../build/${PLATFORM}/${ARCH}/"
+DESTDIR="$ROOTDIR/../tmp/${PLATFORM}/${ARCH}/"
 
 export CC="$(xcrun -find -sdk ${PLATFORM} cc)"
 export CXX="$(xcrun -find -sdk ${PLATFORM} g++)"
@@ -42,9 +44,6 @@ export pkg_make_flags=-j4
 
 (
     cd $SOURCEDIR
-    ./build/dependency libressl
-    ./build/dependency libevent
-    ./build/dependency geoip
     test -x ./configure || ./autogen.sh
     ./configure -q --disable-examples \
                 --with-libevent=$DESTDIR/ \

@@ -6,20 +6,17 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common.hpp>
-#include "src/common/check_connectivity.hpp"
 #include "src/common/utils.hpp"
 #include "src/common/poller.hpp"
-
-#include <event2/dns.h>
-
-#include <functional>
-#include <new>
-#include <stdexcept>
 
 using namespace mk;
 
 static int fail_int() { return -1; }
 static event_base *fail_evbase() { return nullptr; }
+
+static int fail(int, const struct sigaction *, struct sigaction *) {
+    return -1;
+}
 
 static bool event_base_free_called = false;
 static void event_base_free_mock(event_base *p) {
@@ -37,16 +34,22 @@ TEST_CASE("Constructor") {
         REQUIRE_THROWS(poller.init_<fail_int>());
     }
 
+    SECTION("We deal with sigaction() failure") {
+        Poller poller(nullptr);
+        REQUIRE_THROWS((poller.init_<evthread_use_pthreads, fail>()));
+    }
+
     SECTION("We deal with event_base_new() failure") {
         Poller poller(nullptr);
-        REQUIRE_THROWS((poller.init_<evthread_use_pthreads, fail_evbase>()));
+        REQUIRE_THROWS((poller.init_<evthread_use_pthreads, sigaction,
+                                     fail_evbase>()));
     }
 }
 
 TEST_CASE("The destructor works properly") {
     {
         Poller poller(nullptr);
-        poller.init_<evthread_use_pthreads, event_base_new,
+        poller.init_<evthread_use_pthreads, sigaction, event_base_new,
                      event_base_free_mock>();
     }
     REQUIRE(event_base_free_called);

@@ -49,6 +49,7 @@ example/http/client_dash
 example/http/request
 example/mlabns/query
 example/net/connect
+example/net/discard
 example/net/listen
 example/net/transport
 example/ooni/dns_injection
@@ -65,12 +66,13 @@ src/ext/http-parser/
 src/ext/json/
 stamp-h1
 test-driver
-test/common/async
 test/common/continuation
 test/common/delegate
+test/common/error
 test/common/error_or
 test/common/logger
 test/common/poller
+test/common/runner
 test/common/settings
 test/common/utils
 test/common/var
@@ -85,6 +87,7 @@ test/http/parse_url
 test/http/request
 test/http/request_serializer
 test/http/response_parser
+test/mlabns/mlabns
 test/net/buffer
 test/net/connect
 test/net/connect-many

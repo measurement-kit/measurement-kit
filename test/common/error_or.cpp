@@ -34,29 +34,11 @@ TEST_CASE("The ErrorOr template works as expected when there is an error") {
     REQUIRE_THROWS_AS(*eo, Error);
 }
 
-TEST_CASE("The ErrorOr template works as expected when the empty "
-          "constructor is called") {
-    ErrorOr<int> eo;
-    REQUIRE(static_cast<bool>(eo) == false);
-    REQUIRE(eo.as_error() == NotInitializedError());
-    REQUIRE_THROWS_AS(*eo, Error);
-}
-
 TEST_CASE("One can use arrow operator to access structure wrapped "
           "by ErrorOr template") {
     ErrorOr<Foobar> eo{Foobar{}};
     REQUIRE(eo->foo == 17);
     REQUIRE(eo->bar == 3.14);
-}
-
-TEST_CASE("Operator-* throws on error if ErrorOr is not initialized") {
-    ErrorOr<int> eo;
-    REQUIRE_THROWS_AS(*eo, Error);
-}
-
-TEST_CASE("Operator-> throws on error if ErrorOr is not initialized") {
-    ErrorOr<Foobar> eo;
-    REQUIRE_THROWS_AS(eo->foo, Error);
 }
 
 TEST_CASE("Operator-* throws on error if ErrorOr is an error") {
@@ -66,5 +48,5 @@ TEST_CASE("Operator-* throws on error if ErrorOr is an error") {
 
 TEST_CASE("Operator-> throws on error if ErrorOr is an error") {
     ErrorOr<Foobar> eo{GenericError()};
-    REQUIRE_THROWS_AS(eo->foo, Error);
+    REQUIRE_THROWS_AS(eo->foo = 10, Error);
 }

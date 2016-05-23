@@ -13,12 +13,13 @@ using namespace mk::ooni;
 
 TEST_CASE(
     "The TCP connect test should run with an input file of DNS hostnames") {
-    TCPConnectImpl tcp_connect("test/fixtures/hosts.txt", {
-                                                       {"port", "80"},
-                                                      });
-    tcp_connect.begin(
-        [&]() { tcp_connect.end([]() { mk::break_loop(); }); });
-    mk::loop();
+    TCPConnectImpl tcp_connect("test/fixtures/hosts.txt",
+                               {
+                                   {"port", "80"},
+                               });
+    loop_with_initial_event_and_connectivity([&]() {
+        tcp_connect.begin([&]() { tcp_connect.end([]() { break_loop(); }); });
+    });
 }
 
 TEST_CASE("The TCP connect test should throw an exception if an invalid file "
@@ -34,14 +35,13 @@ TEST_CASE(
 }
 
 TEST_CASE("The TCP connect test should fail with an invalid dns resolver") {
-    loop_with_initial_event([=]() {
-        TCPConnectImpl tcp_connect("test/fixtures/hosts.txt",
-                                      {{"host", "nexacenter.org"},
-                                       {"port", "80"},
-                                       {"dns/nameserver", "8.8.8.1"},
-                                       {"dns/attempts", 1},
-                                       {"dns/timeout", 0.0001}});
-        tcp_connect.begin(
-            [&]() { tcp_connect.end([]() { mk::break_loop(); }); });
+    TCPConnectImpl tcp_connect("test/fixtures/hosts.txt",
+                               {{"host", "nexacenter.org"},
+                                {"port", "80"},
+                                {"dns/nameserver", "8.8.8.1"},
+                                {"dns/attempts", 1},
+                                {"dns/timeout", 0.0001}});
+    loop_with_initial_event([&]() {
+        tcp_connect.begin([&]() { tcp_connect.end([]() { break_loop(); }); });
     });
 }

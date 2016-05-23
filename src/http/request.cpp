@@ -87,7 +87,7 @@ void request_sendrecv(Var<Transport> transport, Settings settings,
     });
 }
 
-void request_cycle(Settings settings, Headers headers, std::string body,
+void request(Settings settings, Headers headers, std::string body,
         Callback<Error, Var<Response>> callback, Var<Reactor> reactor, Var<Logger> logger) {
     request_connect(settings, [=](Error err, Var<Transport> transport) {
         if (err) {
