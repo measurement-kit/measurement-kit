@@ -19,24 +19,24 @@ namespace ooni {
 template <decltype(mk::http::get) httpget = mk::http::get>
 void ip_lookup(Callback<Error, std::string> callback) {
     httpget("http://geoip.ubuntu.com/lookup",
-            [=](Error err, http::Response response) {
+            [=](Error err, Var<http::Response> response) {
                 if (err) {
                     callback(err, "");
                     return;
                 }
-                if (response.status_code != 200) {
+                if (response->status_code != 200) {
                     callback(GenericError(), "");
                     return;
                 }
                 std::smatch m;
                 std::regex regex("<Ip>(.*)</Ip>");
-                if (std::regex_search(response.body, m, regex) == false) {
+                if (std::regex_search(response->body, m, regex) == false) {
                     callback(GenericError(), "");
                     return;
                 }
                 callback(NoError(), m[1]);
             },
-            {}, "", {}, Logger::global(), Reactor::global());
+            {}, {}, Reactor::global(), Logger::global());
 }
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,

@@ -29,20 +29,20 @@ TEST_CASE("http::request works as expected") {
             {
                 {"Accept", "*/*"},
             },
-            "", [](Error error, Response response) {
+            "", [](Error error, Var<Response> response) {
                 if (error != 0) {
                     std::cout << "Error: " << (int)error << "\r\n";
                     break_loop();
                     return;
                 }
-                std::cout << "HTTP/" << response.http_major << "."
-                          << response.http_minor << " " << response.status_code
-                          << " " << response.reason << "\r\n";
-                for (auto &kv : response.headers) {
+                std::cout << "HTTP/" << response->http_major << "."
+                          << response->http_minor << " " << response->status_code
+                          << " " << response->reason << "\r\n";
+                for (auto &kv : response->headers) {
                     std::cout << kv.first << ": " << kv.second << "\r\n";
                 }
                 std::cout << "\r\n";
-                std::cout << response.body.substr(0, 128) << "\r\n";
+                std::cout << response->body.substr(0, 128) << "\r\n";
                 std::cout << "[snip]\r\n";
                 break_loop();
             });
@@ -59,21 +59,21 @@ TEST_CASE("http::request() works using HTTPS") {
                 {
                     {"Accept", "*/*"},
                 },
-                "", [](Error error, Response response) {
+                "", [](Error error, Var<Response> response) {
                     if (error != 0) {
                         std::cout << "Error: " << (int)error << "\r\n";
                         break_loop();
                         return;
                     }
-                    std::cout << "HTTP/" << response.http_major << "."
-                              << response.http_minor << " "
-                              << response.status_code << " " << response.reason
+                    std::cout << "HTTP/" << response->http_major << "."
+                              << response->http_minor << " "
+                              << response->status_code << " " << response->reason
                               << "\r\n";
-                    for (auto kv : response.headers) {
+                    for (auto kv : response->headers) {
                         std::cout << kv.first << ": " << kv.second << "\r\n";
                     }
                     std::cout << "\r\n";
-                    std::cout << response.body.substr(0, 128) << "\r\n";
+                    std::cout << response->body.substr(0, 128) << "\r\n";
                     std::cout << "[snip]\r\n";
                     break_loop();
                 });
@@ -125,20 +125,20 @@ TEST_CASE("http::request correctly receives errors") {
             {
                 {"Accept", "*/*"},
             },
-            "", [](Error error, Response response) {
+            "", [](Error error, Var<Response> response) {
                 if (error != 0) {
                     std::cout << "Error: " << (int)error << "\r\n";
                     break_loop();
                     return;
                 }
-                std::cout << "HTTP/" << response.http_major << "."
-                          << response.http_minor << " " << response.status_code
-                          << " " << response.reason << "\r\n";
-                for (auto &kv : response.headers) {
+                std::cout << "HTTP/" << response->http_major << "."
+                          << response->http_minor << " " << response->status_code
+                          << " " << response->reason << "\r\n";
+                for (auto &kv : response->headers) {
                     std::cout << kv.first << ": " << kv.second << "\r\n";
                 }
                 std::cout << "\r\n";
-                std::cout << response.body.substr(0, 128) << "\r\n";
+                std::cout << response->body.substr(0, 128) << "\r\n";
                 std::cout << "[snip]\r\n";
                 break_loop();
             });
@@ -157,20 +157,20 @@ TEST_CASE("http::request works as expected over Tor") {
             {
                 {"Accept", "*/*"},
             },
-            "", [](Error error, Response response) {
+            "", [](Error error, Var<Response> response) {
                 if (error != 0) {
                     std::cout << "Error: " << (int)error << "\r\n";
                     break_loop();
                     return;
                 }
-                std::cout << "HTTP/" << response.http_major << "."
-                          << response.http_minor << " " << response.status_code
-                          << " " << response.reason << "\r\n";
-                for (auto &kv : response.headers) {
+                std::cout << "HTTP/" << response->http_major << "."
+                          << response->http_minor << " " << response->status_code
+                          << " " << response->reason << "\r\n";
+                for (auto &kv : response->headers) {
                     std::cout << kv.first << ": " << kv.second << "\r\n";
                 }
                 std::cout << "\r\n";
-                std::cout << response.body.substr(0, 128) << "\r\n";
+                std::cout << response->body.substr(0, 128) << "\r\n";
                 std::cout << "[snip]\r\n";
                 break_loop();
             });
@@ -253,7 +253,7 @@ TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
 
 TEST_CASE("http::request() callback is called if input URL parsing fails") {
     bool called = false;
-    request({}, {}, "", [&called](Error err, Response) {
+    request({}, {}, "", [&called](Error err, Var<Response>) {
         called = true;
         REQUIRE(err == MissingUrlError());
     });
@@ -376,9 +376,9 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
     });
 }
 
-TEST_CASE("http::request_cycle() works as expected") {
+TEST_CASE("http::request() works as expected") {
     loop_with_initial_event_and_connectivity([]() {
-        request_cycle({{"http/method", "GET"},
+        request({{"http/method", "GET"},
                        {"http/url", "http://www.google.com/robots.txt"}},
                       {}, "", [](Error error, Var<Response> r) {
                           REQUIRE(!error);
@@ -395,9 +395,9 @@ static inline bool check_error_after_tor(Error e) {
     return e == NoError() or e == ConnectFailedError();
 }
 
-TEST_CASE("http::request_cycle() works as expected using httpo URLs") {
+TEST_CASE("http::request() works as expected using httpo URLs") {
     loop_with_initial_event_and_connectivity([]() {
-        request_cycle(
+        request(
             {
                 {"http/method", "GET"},
                 {"http/url", "httpo://www.google.com/robots.txt"},
@@ -413,9 +413,9 @@ TEST_CASE("http::request_cycle() works as expected using httpo URLs") {
     });
 }
 
-TEST_CASE("http::request_cycle() works as expected using tor_socks_port") {
+TEST_CASE("http::request() works as expected using tor_socks_port") {
     loop_with_initial_event_and_connectivity([]() {
-        request_cycle({{"http/method", "GET"},
+        request({{"http/method", "GET"},
                        {"http/url", "http://www.google.com/robots.txt"},
                        {"net/tor_socks_port", "9050"}},
                       {}, "", [](Error error, Var<Response> r) {
@@ -463,9 +463,9 @@ TEST_CASE("http::request_send fails without url in settings") {
     });
 }
 
-TEST_CASE("http::request_cycle() fails if fails request_send()") {
+TEST_CASE("http::request() fails if fails request_send()") {
     loop_with_initial_event_and_connectivity([]() {
-        request_cycle({{"http/method", "GET"}}, {}, "",
+        request({{"http/method", "GET"}}, {}, "",
                       [](Error error, Var<Response>) {
                           REQUIRE(error);
                           break_loop();
