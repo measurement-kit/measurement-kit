@@ -61,6 +61,7 @@ MK_DEFINE_ERR(3, ValueError, "")
 MK_DEFINE_ERR(4, MockedError, "")
 MK_DEFINE_ERR(5, JsonParseError, "")
 MK_DEFINE_ERR(6, JsonKeyError, "")
+MK_DEFINE_ERR(7, DomainError, "")
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)

@@ -6,8 +6,8 @@
 
 #include <ctime>
 #include <measurement_kit/common.hpp>
+#include <measurement_kit/ext.hpp>
 #include "src/common/utils.hpp"
-#include "src/ext/json/src/json.hpp"
 
 using json = nlohmann::json;
 
