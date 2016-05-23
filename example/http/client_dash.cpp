@@ -32,7 +32,6 @@ int main(int argc, char **argv) {
         switch (ch) {
         case 'a':
             settings["http/url"] = optarg;
-            std::cout << optarg;
             break;
         case 'v':
             increase_verbosity();
