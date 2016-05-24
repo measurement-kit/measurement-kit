@@ -277,4 +277,5 @@ AC_DEFUN([MK_AM_PRINT_SUMMARY], [
   echo "CPPFLAGS : $CPPFLAGS"
   echo "CXXFLAGS : $CXXFLAGS"
   echo "LDFLAGS  : $LDFLAGS"
+  echo "LIBS     : $LIBS"
 ])
