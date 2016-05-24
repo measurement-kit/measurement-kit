@@ -10,9 +10,13 @@ namespace mk {
 
 template <typename T> class ErrorOr {
   public:
+    ErrorOr() : error_(NotInitializedError()) {}
+
     ErrorOr(T value) : value_(value) {}
 
     ErrorOr(Error error) : error_(error) {}
+
+    ErrorOr(Error error, T value) : error_(error), value_(value) {}
 
     operator bool() const { return error_ == NoError(); }
 

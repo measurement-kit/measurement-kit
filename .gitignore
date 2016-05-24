@@ -47,6 +47,7 @@ depcomp
 example/dns/query
 example/http/request
 example/mlabns/query
+example/ndt/ndt
 example/net/connect
 example/net/discard
 example/net/listen
@@ -88,6 +89,13 @@ test/http/request
 test/http/request_serializer
 test/http/response_parser
 test/mlabns/mlabns
+test/ndt/messages
+test/ndt/ndt_test
+test/ndt/protocol
+test/ndt/run
+test/ndt/test_c2s
+test/ndt/test_meta
+test/ndt/test_s2c
 test/net/buffer
 test/net/connect
 test/net/connect-many
@@ -106,6 +114,7 @@ test/ooni/tcp_connect
 test/ooni/tcp_connect_test
 test/ooni/tcp_test
 test/ooni/utils
+test/report/entry
 test/report/file
 test/traceroute/android
 third_party/

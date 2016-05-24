@@ -6,9 +6,9 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <ctime>
+#include <measurement_kit/ext.hpp>
 #include "src/report/file_reporter.hpp"
 #include "src/common/utils.hpp"
-#include "src/ext/json/src/json.hpp"
 
 using namespace mk::report;
 using json = nlohmann::json;
