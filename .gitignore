@@ -45,13 +45,13 @@ config.sub
 configure
 depcomp
 example/dns/query
-example/http/client_dash
 example/http/request
 example/mlabns/query
 example/net/connect
 example/net/discard
 example/net/listen
 example/net/transport
+example/neubot/client_dash
 example/ooni/dns_injection
 example/ooni/http_invalid_request_line
 example/ooni/tcp_connect
