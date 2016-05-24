@@ -10,7 +10,6 @@ AC_DEFUN([MK_AM_ENABLE_EXAMPLES], [
 ])
 
 AC_DEFUN([MK_AM_LIBEVENT], [
-  echo "> checking for dependency: libevent"
 
   AC_ARG_WITH([libevent],
               [AS_HELP_STRING([--with-libevent],
@@ -37,11 +36,9 @@ AC_DEFUN([MK_AM_LIBEVENT], [
     echo "    - to compile from sources: ./build/dependency libevent"
     AC_MSG_ERROR([Please, install libevent and run configure again])
   fi
-  echo ""
 ])
 
 AC_DEFUN([MK_AM_GEOIP], [
-  echo "> checking for dependency: geoip"
 
   AC_ARG_WITH([geoip],
               [AS_HELP_STRING([--with-geoip],
@@ -64,11 +61,9 @@ AC_DEFUN([MK_AM_GEOIP], [
     echo "    - to compile from sources: ./build/dependency geoip"
     AC_MSG_ERROR([Please, install geoip and run configure again])
   fi
-  echo ""
 ])
 
 AC_DEFUN([MK_AM_OPENSSL], [
-  echo "> checking for dependency: openssl"
 
   AC_ARG_WITH([openssl],
               [AS_HELP_STRING([--with-openssl],
@@ -149,7 +144,6 @@ AC_DEFUN([MK_AM_OPENSSL], [
     echo "    - to compile from sources: ./build/dependency libressl"
     AC_MSG_ERROR([Please, install openssl and run configure again])
   fi
-  echo ""
 ])
 
 AC_DEFUN([MK_AM_REQUIRE_C99], [
