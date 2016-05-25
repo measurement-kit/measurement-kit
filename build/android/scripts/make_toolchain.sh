@@ -33,9 +33,8 @@ bash $MAKE_TOOLCHAIN \
   --platform=android-${API} \
   --toolchain=${ARCH}-4.9 \
   --install-dir=${INSTALL_DIR} \
-  --llvm-version=3.6 \
-  --stl=libc++ \
-  --system=$(uname | tr -s 'A-Z' 'a-z')-x86_64
+  --use-llvm \
+  --stl=libc++
 
 if [ $ARCH = x86 ]; then
     cp $NDK_DIR/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a $INSTALL_DIR/sysroot/usr/lib/
