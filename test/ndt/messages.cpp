@@ -13,11 +13,13 @@ using namespace mk::ndt;
 using namespace mk::net;
 using json = nlohmann::json;
 
-static void fail(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb) {
+static void fail(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb,
+                 Var<Reactor> = Reactor::global()) {
     cb(MockedError());
 }
 
-static void succeed(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb) {
+static void succeed(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb,
+                    Var<Reactor> = Reactor::global()) {
     cb(NoError());
 }
 
@@ -25,7 +27,7 @@ TEST_CASE("read_ndt() deals with the first readn() error") {
     Var<Context> ctx(new Context);
     messages::read_ll_impl<fail>(ctx, [](Error err, uint8_t, std::string) {
         REQUIRE(err == ReadingMessageTypeLengthError());
-    });
+    }, Reactor::global());
 }
 
 TEST_CASE("read_ndt() deals with the second readn() error") {
@@ -37,35 +39,40 @@ TEST_CASE("read_ndt() deals with the second readn() error") {
     messages::read_ll_impl<succeed, fail>(
         ctx, [](Error err, uint8_t, std::string) {
             REQUIRE(err == ReadingMessagePayloadError());
-        });
+        }, Reactor::global());
 }
 
-static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                 Var<Reactor> = Reactor::global()) {
     cb(MockedError(), 0, "");
 }
 
-static void succeed(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void succeed(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                    Var<Reactor> = Reactor::global()) {
     cb(NoError(), 0, "");
 }
 
 TEST_CASE("read_json() deals with read_ndt() error") {
     Var<Context> ctx(new Context);
     messages::read_json_impl<fail>(
-        ctx, [](Error err, uint8_t, json) { REQUIRE(err == MockedError()); });
+        ctx, [](Error err, uint8_t, json) { REQUIRE(err == MockedError()); },
+        Reactor::global());
 }
 
 TEST_CASE("read_json() deals with invalid JSON") {
     Var<Context> ctx(new Context);
     messages::read_json_impl<succeed>(ctx, [](Error err, uint8_t, json) {
         REQUIRE(err == JsonParseError());
-    });
+    }, Reactor::global());
 }
 
-static void fail(Var<Context>, Callback<Error, uint8_t, json> cb) {
+static void fail(Var<Context>, Callback<Error, uint8_t, json> cb,
+                 Var<Reactor> = Reactor::global()) {
     cb(MockedError(), 0, {});
 }
 
-static void invalid(Var<Context>, Callback<Error, uint8_t, json> cb) {
+static void invalid(Var<Context>, Callback<Error, uint8_t, json> cb,
+                    Var<Reactor> = Reactor::global()) {
     cb(NoError(), 0, {});
 }
 
@@ -73,14 +80,14 @@ TEST_CASE("read() deals with read_json() error") {
     Var<Context> ctx(new Context);
     messages::read_msg_impl<fail>(ctx, [](Error err, uint8_t, std::string) {
         REQUIRE(err == MockedError());
-    });
+    }, Reactor::global());
 }
 
 TEST_CASE("read() deals with json without 'msg' field") {
     Var<Context> ctx(new Context);
     messages::read_msg_impl<invalid>(ctx, [](Error err, uint8_t, std::string) {
         REQUIRE(err == JsonKeyError());
-    });
+    }, Reactor::global());
 }
 
 TEST_CASE("format_any() deals with too large input") {

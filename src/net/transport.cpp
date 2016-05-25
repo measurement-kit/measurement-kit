@@ -80,10 +80,14 @@ void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
     txp->write(buf);
 }
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb) {
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
+           Var<Reactor> reactor) {
     if (buff->length() >= n) {
-        // Shortcut that simplifies coding a great deal
-        cb(NoError());
+        // Shortcut that simplifies coding a great deal - yet, do not callback
+        // immediately to avoid O(N) stack consumption
+        reactor->call_soon([=]() {
+            cb(NoError());
+        });
         return;
     }
     txp->on_data([=](Buffer d) {

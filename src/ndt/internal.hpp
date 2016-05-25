@@ -102,9 +102,12 @@ struct Context {
 */
 namespace messages {
 
-void read_ll(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback);
-void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback);
-void read_msg(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback);
+void read_ll(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback,
+             Var<Reactor> reactor = Reactor::global());
+void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback,
+               Var<Reactor> reactor = Reactor::global());
+void read_msg(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback,
+              Var<Reactor> reactor = Reactor::global());
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests);
 ErrorOr<Buffer> format_test_msg(std::string s);
