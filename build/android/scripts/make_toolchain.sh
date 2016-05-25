@@ -10,10 +10,12 @@ if [ $# -ne 3 ]; then
     exit 1
 fi
 
+ROOTDIR=$(cd $(dirname $0)/.. && pwd -P)
+
 NDK_DIR=$1
 ARCH=$2
 API=$3
-BASEDIR=./toolchain
+BASEDIR=$ROOTDIR/toolchain
 
 # XXX shortcut for armeabi-v7a
 # According https://developer.android.com/ndk/guides/standalone_toolchain.html
