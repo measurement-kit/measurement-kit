@@ -7,9 +7,9 @@
 namespace mk {
 namespace neubot {
 
-void run(Settings settings, Callback<Error> cb,
+void run(Settings settings, Callback<Error> cb, std::string auth,
             Var<Reactor> reactor, Var<Logger> logger) {
-    run_impl(settings, cb, reactor, logger);
+    run_impl(settings, cb, auth, reactor, logger);
 }
 
 } // namespace neubot

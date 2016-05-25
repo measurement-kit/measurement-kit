@@ -12,6 +12,7 @@ namespace neubot {
 
 // Run a dash test
 void run(Settings settings, Callback<Error> cb,
+        std::string auth = "",
         Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global());
 
