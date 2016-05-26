@@ -24,7 +24,7 @@ static const char *kv_usage =
 int main(int argc, char **argv) {
     Settings settings;
     settings["http/url"] = "http://127.0.0.1";
-    settings["http/negotiate"] = true;
+    settings["negotiate"] = true;
     char ch;
 
     while ((ch = getopt(argc, argv, "a:vn")) != -1) {
@@ -45,7 +45,8 @@ int main(int argc, char **argv) {
     }
 
     loop_with_initial_event([=]() {
-        run_negotiation(settings, [=] (Error err) {
+        run_negotiation(settings, [=](Error err) {
+
             if (err) {
                 break_loop();
             }
