@@ -48,7 +48,8 @@ TEST_CASE("send_extended_login() deals with write error") {
     });
 }
 
-static void fail(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb) {
+static void fail(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb,
+                 Var<Reactor> = Reactor::global()) {
     cb(MockedError());
 }
 
@@ -59,7 +60,7 @@ TEST_CASE("recv_and_ignore_kickoff() deals with readn() error") {
 }
 
 static void invalid(Var<Transport>, Var<Buffer> buff, size_t n,
-                    Callback<Error> cb) {
+                    Callback<Error> cb, Var<Reactor> = Reactor::global()) {
     std::string s(n, 'a');
     buff->write(s);
     cb(NoError());
@@ -71,7 +72,8 @@ TEST_CASE("recv_and_ignore_kickoff() deals with invalid kickoff message") {
         ctx, [](Error err) { REQUIRE(err == InvalidKickoffMessageError()); });
 }
 
-static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                 Var<Reactor> = Reactor::global()) {
     cb(MockedError(), 0, "");
 }
 
@@ -81,7 +83,8 @@ TEST_CASE("wait_in_queue() deals with read() error") {
         ctx, [](Error err) { REQUIRE(err == ReadingSrvQueueMessageError()); });
 }
 
-static void unexpected(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void unexpected(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                       Var<Reactor> = Reactor::global()) {
     cb(NoError(), MSG_ERROR, "");
 }
 
@@ -91,7 +94,8 @@ TEST_CASE("wait_in_queue() deals with unexpected message error") {
         ctx, [](Error err) { REQUIRE(err == NotSrvQueueMessageError()); });
 }
 
-static void bad_time(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void bad_time(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                     Var<Reactor> = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "xo");
 }
 
@@ -101,7 +105,8 @@ TEST_CASE("wait_in_queue() deals with invalid wait time") {
         ctx, [](Error err) { REQUIRE(err == InvalidSrvQueueMessageError()); });
 }
 
-static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                    Var<Reactor> = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "1");
 }
 
@@ -172,7 +177,8 @@ TEST_CASE("recv_results_and_logout() deals with unexpected message error") {
         ctx, [](Error err) { REQUIRE(err == NotResultsOrLogoutError()); });
 }
 
-static void eof_error(Var<Transport>, Var<Buffer>, Callback<Error> cb) {
+static void eof_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
+                      Var<Reactor> = Reactor::global()) {
     cb(EofError());
 }
 
@@ -183,7 +189,8 @@ TEST_CASE("wait_close() deals with EofError") {
         ctx, [](Error err) { REQUIRE(err == NoError()); });
 }
 
-static void timeout_error(Var<Transport>, Var<Buffer>, Callback<Error> cb) {
+static void timeout_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
+                          Var<Reactor> = Reactor::global()) {
     cb(TimeoutError());
 }
 
@@ -194,7 +201,8 @@ TEST_CASE("wait_close() deals with TimeoutError") {
         ctx, [](Error err) { REQUIRE(err == NoError()); });
 }
 
-static void mocked_error(Var<Transport>, Var<Buffer>, Callback<Error> cb) {
+static void mocked_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
+                         Var<Reactor> = Reactor::global()) {
     cb(MockedError());
 }
 
@@ -205,7 +213,8 @@ TEST_CASE("wait_close() deals with an error") {
         ctx, [](Error err) { REQUIRE(err == WaitingCloseError()); });
 }
 
-static void no_error(Var<Transport>, Var<Buffer>, Callback<Error> cb) {
+static void no_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
+                     Var<Reactor> = Reactor::global()) {
     cb(NoError());
 }
 

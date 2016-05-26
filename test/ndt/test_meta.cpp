@@ -14,7 +14,8 @@ using namespace mk::ndt;
 using namespace mk::net;
 using json = nlohmann::json;
 
-static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                 Var<Reactor> = Reactor::global()) {
     cb(MockedError(), 0, "");
 }
 
@@ -24,7 +25,8 @@ TEST_CASE("run() deals with read() error") {
         ctx, [](Error err) { REQUIRE(err == ReadingTestPrepareError()); });
 }
 
-static void unexpected(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void unexpected(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                       Var<Reactor> = Reactor::global()) {
     cb(NoError(), MSG_ERROR, "");
 }
 
@@ -35,7 +37,8 @@ TEST_CASE("run() deals with unexpected message type") {
 }
 
 static void test_prepare(Var<Context>,
-                         Callback<Error, uint8_t, std::string> cb) {
+                         Callback<Error, uint8_t, std::string> cb,
+                         Var<Reactor> = Reactor::global()) {
     cb(NoError(), TEST_PREPARE, "");
 }
 
@@ -59,7 +62,8 @@ static ErrorOr<Buffer> success(std::string s) {
     return buff;
 }
 
-static void test_start(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void test_start(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                       Var<Reactor> = Reactor::global()) {
     cb(NoError(), TEST_START, "");
 }
 

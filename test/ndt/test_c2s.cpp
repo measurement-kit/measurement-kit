@@ -24,11 +24,13 @@ TEST_CASE("coroutine() is robust to connect error") {
         2.0, {}, Logger::global(), Reactor::global());
 }
 
-static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                 Var<Reactor> = Reactor::global()) {
     cb(MockedError(), 0, "");
 }
 
-static void invalid(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void invalid(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                    Var<Reactor> = Reactor::global()) {
     cb(NoError(), MSG_ERROR, "");
 }
 
@@ -45,7 +47,8 @@ TEST_CASE("run() deals with receiving message different from PREPARE") {
 }
 
 static void invalid_port(Var<Context>,
-                         Callback<Error, uint8_t, std::string> cb) {
+                         Callback<Error, uint8_t, std::string> cb,
+                         Var<Reactor> = Reactor::global()) {
     cb(NoError(), TEST_PREPARE, "foobar");
 }
 
@@ -55,7 +58,8 @@ TEST_CASE("run() deals with receiving invalid port") {
         ctx, [](Error err) { REQUIRE(err == InvalidPortError()); });
 }
 
-static void too_large(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void too_large(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                      Var<Reactor> = Reactor::global()) {
     cb(NoError(), TEST_PREPARE, "65536");
 }
 
@@ -65,7 +69,8 @@ TEST_CASE("run() deals with receiving too large port") {
         ctx, [](Error err) { REQUIRE(err == InvalidPortError()); });
 }
 
-static void too_small(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void too_small(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                      Var<Reactor> = Reactor::global()) {
     cb(NoError(), TEST_PREPARE, "-1");
 }
 
@@ -76,7 +81,8 @@ TEST_CASE("run() deals with receiving too small port") {
 }
 
 static void test_prepare(Var<Context>,
-                         Callback<Error, uint8_t, std::string> cb) {
+                         Callback<Error, uint8_t, std::string> cb,
+                         Var<Reactor> = Reactor::global()) {
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
@@ -113,7 +119,8 @@ TEST_CASE("run() deals with unexpected message instead of TEST_START") {
         ctx, [](Error err) { REQUIRE(err == NotTestStartError()); });
 }
 
-static void test_start(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void test_start(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                       Var<Reactor> = Reactor::global()) {
     cb(NoError(), TEST_START, "");
 }
 
@@ -141,7 +148,8 @@ TEST_CASE("run() deals with unexpected message instead of TEST_MSG") {
         ctx, [](Error err) { REQUIRE(err == NotTestMsgError()); });
 }
 
-static void test_msg(Var<Context>, Callback<Error, uint8_t, std::string> cb) {
+static void test_msg(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                     Var<Reactor> = Reactor::global()) {
     cb(NoError(), TEST_MSG, "");
 }
 

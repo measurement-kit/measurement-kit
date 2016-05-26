@@ -105,10 +105,10 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                             // We're done
                             callback(NoError());
-                        });
+                        }, ctx->reactor);
                 });
-            });
-    });
+            }, ctx->reactor);
+    }, ctx->reactor);
 }
 
 } // namespace test_meta
