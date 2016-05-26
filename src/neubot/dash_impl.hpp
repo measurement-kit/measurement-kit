@@ -21,19 +21,20 @@ using namespace mk::http;
 namespace mk {
 namespace neubot {
 
-static inline void loop_request(int iteraction, Var<Transport> transport,
+static inline void loop_request(Var<Transport> transport,
                                 int speed_kbit, Callback<Error> cb,
                                 std::string auth,
-                                Var<Reactor> reactor, Var<Logger> logger) {
+                                Var<Reactor> reactor, Var<Logger> logger,
+                                int iteration = 0) {
 
     int rate_index = 0;
     Settings settings;
     int DASH_RATES[] = {100,  150,  200,  250,  300,   400,  500,
-                        700,  900,  1200, 1500, 2000,  2500, 3000,
-                        4000, 5000, 6000, 7000, 10000, 20000};
+                                    700,  900,  1200, 1500, 2000,  2500, 3000,
+                                    4000, 5000, 6000, 7000, 10000, 20000};
     std::string url = "http://127.0.0.1/dash/download/";
 
-    if (iteraction > DASH_MAX_ITERATION) {
+    if (iteration > DASH_MAX_ITERATION) {
         transport->close([=]() { cb(NoError()); });
         return;
     };
@@ -67,6 +68,7 @@ static inline void loop_request(int iteraction, Var<Transport> transport,
                 transport,
                 [=](Error error, Var<Response> res) {
                     if (error) {
+                        std::cout << "Error: " << (int)error;
                         cb(error);
                         return;
                     }
@@ -81,10 +83,12 @@ static inline void loop_request(int iteraction, Var<Transport> transport,
                         return;
                     }
 
+                    //TODO
+
                     double speed = double(length / time_elapsed);
                     int s_k = (speed * 8) / 1000;
 
-                    std::cout << "DASH: [" << iteraction << "/"
+                    std::cout << "DASH: [" << iteration << "/"
                               << DASH_MAX_ITERATION << "] rate: " << rate_kbit
                               << " Kbit/s, speed: " << s_k
                               << " Kbit/s, elapsed: " << time_elapsed << " s\n";
@@ -97,8 +101,8 @@ static inline void loop_request(int iteraction, Var<Transport> transport,
                         }
                     }
 
-                    loop_request(iteraction + 1, transport, s_k, cb, auth, reactor,
-                                 logger);
+                    loop_request(transport, s_k, cb, auth, reactor,
+                                 logger, iteration + 1);
 
                     return;
                 },
@@ -118,7 +122,7 @@ static inline void run_impl(Settings settings, Callback<Error> cb, std::string a
                             return;
                         }
 
-                        loop_request(1, transport, 100, cb, auth, reactor, logger);
+                        loop_request(transport, 100, cb, auth, reactor, logger);
 
                         return;
                     },
