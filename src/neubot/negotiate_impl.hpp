@@ -23,6 +23,7 @@ using json = nlohmann::json;
 
 namespace mk {
 namespace neubot {
+namespace negotiate {
 
 static inline void collect(Var<Transport> transport, Callback<Error> cb,
                            std::string auth, Var<json> measurements,
@@ -46,9 +47,8 @@ static inline void collect(Var<Transport> transport, Callback<Error> cb,
                 return;
             }
 
-            transport->close([=]() { break_loop(); });
+            transport->close([=]() { cb(NoError()); });
 
-            return;
         },
         reactor, logger);
 }
@@ -92,45 +92,47 @@ static inline void loop_req_negotiate(Var<Transport> transport,
             std::string auth = respbody.at("authorization");
             auto queue_pos = respbody.at("queue_pos");
             auto real_address = respbody.at("real_address");
-            auto unchoked = respbody.at("unchoked");
+            int unchoked = respbody.at("unchoked");
 
             // XXX
-            if (auth == "") {
+            if (unchoked == 0) {
                 loop_req_negotiate(transport, cb, reactor, logger,
                                    iteration + 1);
             } else {
-                run(settings,
-                    [=](Error err, Var<json> measurements) {
-                        if (err) {
-                            std::cout << "Error: " << (int)error;
-                            cb(err);
-                            return;
-                        }
+                dash::run(settings,
+                          [=](Error err, Var<json> measurements) {
+                              if (err) {
+                                  std::cout << "Error: " << (int)error;
+                                  cb(err);
+                                  return;
+                              }
 
-                        collect(transport,
-                                [=](Error err) {
-                                    if (err) {
-                                        std::cout << "Error: " << (int)error;
-                                        cb(err);
-                                        return;
-                                    }
-                                },
-                                auth, measurements, reactor, logger);
+                              collect(transport,
+                                      [=](Error err) {
+                                          if (err) {
+                                              std::cout << "Error: "
+                                                        << (int)error;
+                                              cb(err);
+                                              return;
+                                          }
 
-                    },
-                    auth);
+                                          cb(NoError());
+                                      },
+                                      auth, measurements, reactor, logger);
+
+                          },
+                          auth);
             }
 
         },
         reactor, logger);
 }
 
-static inline void run_negotiation_impl(Settings settings, Callback<Error> cb,
-                                        Var<Reactor> reactor,
-                                        Var<Logger> logger) {
+static inline void run_impl(Settings settings, Callback<Error> cb,
+                            Var<Reactor> reactor, Var<Logger> logger) {
 
     if (!settings["negotiate"].as<bool>()) {
-        run(settings, [=](Error err, Var<json> measurements) {
+        dash::run(settings, [=](Error err, Var<json>) {
             if (err) {
                 break_loop();
                 return;
@@ -155,5 +157,6 @@ static inline void run_negotiation_impl(Settings settings, Callback<Error> cb,
                     reactor, logger);
 }
 
+} // namespace negotiate
 } // namespace neubot
 } // namespace mk

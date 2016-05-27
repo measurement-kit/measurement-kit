@@ -22,6 +22,7 @@ using json = nlohmann::json;
 
 namespace mk {
 namespace neubot {
+namespace dash {
 
 static inline void loop_request(Var<Transport> transport, int speed_kbit,
                                 Callback<Error, Var<json>> cb, std::string auth,
@@ -157,5 +158,6 @@ static inline void run_impl(Settings settings, Callback<Error, Var<json>> cb,
                     reactor, logger);
 }
 
+} // namespace dash
 } // namespace neubot
 } // namespace mk

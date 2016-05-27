@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 using namespace mk;
-using namespace mk::neubot;
+using namespace mk::neubot::negotiate;
 using namespace mk::net;
 using namespace mk::http;
 
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
             settings["http/url"] = optarg;
             break;
         case 'n':
-            settings["http/negotiate"] = false;
+            settings["negotiate"] = false;
             break;
         case 'v':
             increase_verbosity();
@@ -45,11 +45,10 @@ int main(int argc, char **argv) {
     }
 
     loop_with_initial_event([=]() {
-        run_negotiation(settings, [=](Error err) {
+        run_negotiation(settings, [=](Error) {
 
-            if (err) {
-                break_loop();
-            }
+            break_loop();
+
         });
     });
 }

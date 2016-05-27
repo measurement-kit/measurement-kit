@@ -2,15 +2,17 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/neubot/negotiation_impl.hpp"
+#include "src/neubot/negotiate_impl.hpp"
 
 namespace mk {
 namespace neubot {
+namespace negotiate {
 
 void run_negotiation(Settings settings, Callback<Error> cb,
                      Var<Reactor> reactor, Var<Logger> logger) {
-    run_negotiation_impl(settings, cb, reactor, logger);
+    run_impl(settings, cb, reactor, logger);
 }
 
+} // namespace negotiate
 } // namespace neubot
 } // namespace mk
