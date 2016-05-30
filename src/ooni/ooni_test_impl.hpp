@@ -10,13 +10,15 @@
 #include <functional>                           // for function, __base
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/report.hpp>
 #include <string>                               // for allocator, operator+
 #include <type_traits>                          // for move
 #include "src/common/utils.hpp"                 // for utc_time_now
 #include "src/ooni/input_file_generator.hpp"    // for InputFileGenerator
 #include "src/ooni/input_generator.hpp"         // for InputGenerator
-#include "src/report/file_reporter.hpp"         // for FileReporter
 #include <sys/stat.h>
+
+using json = nlohmann::json;
 
 namespace mk {
 namespace ooni {

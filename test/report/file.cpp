@@ -7,7 +7,7 @@
 
 #include <ctime>
 #include <measurement_kit/ext.hpp>
-#include "src/report/file_reporter.hpp"
+#include <measurement_kit/report.hpp>
 #include "src/common/utils.hpp"
 
 using namespace mk::report;
