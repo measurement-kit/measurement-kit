@@ -15,6 +15,9 @@ namespace report {
 // such json library to implement this class.
 class Entry : private nlohmann::json {
   public:
+    // TODO: Find out why coverage is not computed for this class even though
+    // there are regress tests stressing many of its functionality
+
     using nlohmann::json::json;
 
     static Entry Array() {
@@ -35,15 +38,13 @@ class Entry : private nlohmann::json {
     }
 
     // Implementation of list
-#define XX                                                                     \
-        try {                                                                  \
-            nlohmann::json::push_back(value);                                  \
-        } catch (std::domain_error &) {                                        \
-            throw DomainError();                                               \
+    void push_back(Entry value) {
+        try {
+            nlohmann::json::push_back(value);
+        } catch (std::domain_error &) {
+            throw DomainError();
         }
-    template <typename T> void push_back(T value) { XX }
-    void push_back(Entry &&value) { XX }
-#undef XX
+    }
 
     std::string dump() {
         return nlohmann::json::dump();
