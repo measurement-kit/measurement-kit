@@ -13,8 +13,6 @@
 #include "src/ooni/tcp_test_impl.hpp"
 #include <sys/stat.h>
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace ooni {
 
@@ -73,7 +71,7 @@ class HTTPInvalidRequestLineImpl : public TCPTestImpl {
                 });
     };
 
-    void main(Settings options, std::function<void(json)> &&cb) {
+    void main(Settings options, std::function<void(report::Entry)> &&cb) {
         entry["tampering"] = nullptr;
 
         ErrorOr<http::Url> backend_url = mk::http::parse_url_noexcept(options["backend"]);

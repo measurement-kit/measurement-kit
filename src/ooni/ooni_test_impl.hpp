@@ -18,8 +18,6 @@
 #include "src/ooni/input_generator.hpp"         // for InputGenerator
 #include <sys/stat.h>
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace ooni {
 
@@ -48,8 +46,8 @@ class OoniTestImpl : public mk::NetTest {
                 logger->debug("net_test: running with input %s",
                              next_input.c_str());
 
-                main(next_input, options, [=](json test_keys) {
-                    json entry;
+                main(next_input, options, [=](report::Entry test_keys) {
+                    report::Entry entry;
                     entry["test_keys"] = test_keys;
                     entry["input"] = next_input;
                     entry["measurement_start_time"] = mk::timestamp(&measurement_start_time);
@@ -110,17 +108,17 @@ class OoniTestImpl : public mk::NetTest {
     virtual void teardown(std::string) {}
     virtual void teardown() {}
 
-    virtual void main(Settings, std::function<void(json)> &&cb) {
+    virtual void main(Settings, std::function<void(report::Entry)> &&cb) {
         reactor->call_later(1.25, [cb]() {
-            json entry;
+            report::Entry entry;
             cb(entry);
         });
     }
 
     virtual void main(std::string, Settings,
-                      std::function<void(json)> &&cb) {
+                      std::function<void(report::Entry)> &&cb) {
         reactor->call_later(1.25, [cb]() {
-            json entry;
+            report::Entry entry;
             cb(entry);
         });
     }
@@ -137,7 +135,7 @@ class OoniTestImpl : public mk::NetTest {
     }
 
   public:
-    json entry;
+    report::Entry entry;
     InputGenerator *input = nullptr;
 
     std::string test_name;
@@ -193,11 +191,11 @@ class OoniTestImpl : public mk::NetTest {
             run_next_measurement(std::move(cb));
         } else {
             logger->debug("net_test: no input file");
-            json entry;
+            report::Entry entry;
             entry["input"] = "";
             logger->debug("net_test: calling setup");
             setup();
-            main(options, [=](json entry) {
+            main(options, [=](report::Entry entry) {
                 logger->debug("net_test: tearing down");
                 teardown();
                 file_report.write_entry(entry);
