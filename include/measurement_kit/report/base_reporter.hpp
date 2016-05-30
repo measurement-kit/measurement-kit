@@ -1,15 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_REPORT_BASE_REPORTER_HPP
-#define SRC_REPORT_BASE_REPORTER_HPP
+#ifndef MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
+#define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
 #include <ctime>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
-#include "src/common/utils.hpp"
-
-using json = nlohmann::json;
 
 namespace mk {
 namespace report {
@@ -37,7 +34,7 @@ class BaseReporter {
 
     virtual void open();
 
-    virtual void write_entry(json &entry);
+    virtual void write_entry(nlohmann::json &entry);
 
     virtual void close();
 
