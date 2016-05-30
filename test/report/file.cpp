@@ -33,7 +33,7 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
         reporter.options = options;
         mk::utc_time_now(&reporter.test_start_time);
 
-        json entry;
+        mk::report::Entry entry;
         entry["input"] = input;
         entry["antani"] = "fuffa";
         reporter.open();

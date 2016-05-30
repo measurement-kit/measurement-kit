@@ -6,7 +6,7 @@
 
 #include <ctime>
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext.hpp>
+#include <measurement_kit/report/entry.hpp>
 
 namespace mk {
 namespace report {
@@ -34,7 +34,7 @@ class BaseReporter {
 
     virtual void open();
 
-    virtual void write_entry(nlohmann::json &entry);
+    virtual void write_entry(Entry &entry);
 
     virtual void close();
 

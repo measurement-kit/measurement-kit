@@ -15,7 +15,7 @@ class FileReporter : public BaseReporter {
     std::string filename;
 
     void open() override;
-    void write_entry(nlohmann::json &entry) override;
+    void write_entry(Entry &entry) override;
     void close() override;
 
   private:

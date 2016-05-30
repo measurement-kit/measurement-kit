@@ -15,7 +15,11 @@ namespace report {
 // such json library to implement this class.
 class Entry : private nlohmann::json {
   public:
-    Entry() {}
+    using nlohmann::json::json;
+
+    static Entry Array() {
+        return static_cast<Entry>(nlohmann::json::array());
+    }
 
     // Implementation of dict
     template <typename T> Entry &operator=(T value) {
@@ -31,16 +35,22 @@ class Entry : private nlohmann::json {
     }
 
     // Implementation of list
-    template <typename T> void push_back(T value) {
-        try {
-            nlohmann::json::push_back(value);
-        } catch (std::domain_error &) {
-            throw DomainError();
+#define XX                                                                     \
+        try {                                                                  \
+            nlohmann::json::push_back(value);                                  \
+        } catch (std::domain_error &) {                                        \
+            throw DomainError();                                               \
         }
-    }
+    template <typename T> void push_back(T value) { XX }
+    void push_back(Entry &&value) { XX }
+#undef XX
 
     std::string dump() {
         return nlohmann::json::dump();
+    }
+
+    friend bool operator==(Entry &left, std::nullptr_t right) {
+        return static_cast<nlohmann::json &>(left) == right;
     }
 
   protected:
