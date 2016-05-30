@@ -19,10 +19,7 @@ class Entry : private nlohmann::json {
     // there are regress tests stressing many of its functionality
 
     using nlohmann::json::json;
-
-    static Entry Array() {
-        return static_cast<Entry>(nlohmann::json::array());
-    }
+    static Entry Array();
 
     // Implementation of dict
     template <typename T> Entry &operator=(T value) {
@@ -38,17 +35,9 @@ class Entry : private nlohmann::json {
     }
 
     // Implementation of list
-    void push_back(Entry value) {
-        try {
-            nlohmann::json::push_back(value);
-        } catch (std::domain_error &) {
-            throw DomainError();
-        }
-    }
+    void push_back(Entry);
 
-    std::string dump() {
-        return nlohmann::json::dump();
-    }
+    std::string dump();
 
     friend bool operator==(Entry &left, std::nullptr_t right) {
         return static_cast<nlohmann::json &>(left) == right;
