@@ -39,5 +39,9 @@ std::string Entry::dump() {
     return nlohmann::json::dump();
 }
 
+bool Entry::operator==(std::nullptr_t right) {
+    return static_cast<nlohmann::json &>(*this) == right;
+}
+
 } // namespace report
 } // namespace mk
