@@ -8,7 +8,10 @@ namespace mk {
 namespace report {
 
 /* static */ Entry Entry::Array() {
-    return static_cast<Entry>(nlohmann::json::array());
+    Entry entry;
+    entry.push_back(17.0);
+    entry.erase(0);
+    return entry;
 }
 
 void Entry::push_back(Entry value) {
