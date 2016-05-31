@@ -22,10 +22,8 @@ class Entry : private nlohmann::json {
     static Entry Array();
 
     // Implementation of dict
-    template <typename T> Entry &operator=(T value) {
-        nlohmann::json::operator=(value);
-        return *this;
-    }
+    Entry &operator=(Entry value);
+
     template <typename K> Entry &operator[](const K &key) {
         try {
             return static_cast<Entry &>(nlohmann::json::operator[](key));

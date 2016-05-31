@@ -14,6 +14,11 @@ namespace report {
     return entry;
 }
 
+Entry &Entry::operator=(Entry value) {
+    nlohmann::json::operator=(value);
+    return *this;
+}
+
 void Entry::push_back(Entry value) {
     try {
         nlohmann::json::push_back(value);
