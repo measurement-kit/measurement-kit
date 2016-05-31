@@ -25,12 +25,10 @@ class Entry : private nlohmann::json {
     Entry &operator=(Entry value);
 
     template <typename K> Entry &operator[](const K &key) {
-        try {
-            return static_cast<Entry &>(nlohmann::json::operator[](key));
-        } catch (std::domain_error &) {
-            throw DomainError();
-        }
+        return operator[](std::string(key));
     }
+
+    Entry &operator[](std::string key);
 
     // Implementation of list
     void push_back(Entry);

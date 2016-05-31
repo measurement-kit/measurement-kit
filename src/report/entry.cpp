@@ -19,6 +19,14 @@ Entry &Entry::operator=(Entry value) {
     return *this;
 }
 
+Entry &Entry::operator[](std::string key) {
+    try {
+        return static_cast<Entry &>(nlohmann::json::operator[](key));
+    } catch (std::domain_error &) {
+        throw DomainError();
+    }
+}
+
 void Entry::push_back(Entry value) {
     try {
         nlohmann::json::push_back(value);
