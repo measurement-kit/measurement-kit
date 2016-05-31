@@ -7,8 +7,10 @@
 namespace mk {
 namespace report {
 
-/* static */ Entry Entry::Array() {
+/* static */ Entry Entry::array() {
     Entry entry;
+    // Manually construct an empty array by pushing
+    // a value and then removing it
     entry.push_back(17.0);
     entry.erase(0);
     return entry;

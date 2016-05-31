@@ -15,9 +15,9 @@ namespace report {
 // such json library to implement this class.
 class Entry : private nlohmann::json {
   public:
-
     using nlohmann::json::json;
-    static Entry Array();
+
+    static Entry array();
 
     // Implementation of dict
     Entry &operator=(Entry value);
