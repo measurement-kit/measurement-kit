@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+DEPENDENCIES="$DEPENCENCIES autoconf"
+DEPENDENCIES="$DEPENDENCIES automake"
+DEPENDENCIES="$DEPENDENCIES clang"
+DEPENDENCIES="$DEPENDENCIES git"
+DEPENDENCIES="$DEPENDENCIES libevent-dev"
+DEPENDENCIES="$DEPENDENCIES libgeoip-dev"
+DEPENDENCIES="$DEPENDENCIES libssl-dev"
+DEPENDENCIES="$DEPENDENCIES libtool"
+DEPENDENCIES="$DEPENDENCIES make"
+DEPENDENCIES="$DEPENDENCIES valgrind"
+DEPENDENCIES="$DEPENDENCIES wget"
+
+subr_depend() {
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y $DEPENDENCIES
+}

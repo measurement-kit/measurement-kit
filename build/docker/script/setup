@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+REPOROOT=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
+
+if [ "$configure_flags" != "" ]; then
+    args="$args -e configure_flags=$configure_flags"
+fi
+if [ "$make_flags" != "" ]; then
+    args="$args -e make_flags=$make_flags"
+fi
+
+docker_image=$1
+shift
+if [ "$docker_image" = "" ]; then
+    echo "fatal: docker_image is not set" 1>&2
+    exit 1
+fi
+
+docker run $args -v $REPOROOT:/mk $docker_image                            \
+    /mk/build/docker/script/template "$@"
