@@ -48,6 +48,7 @@ elif [ $ARCH = "mips64el-linux-android" ]; then
     export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
     LIB_SUFFIX=64
     DESTDIR_NAME=mips64
+    CONFIG_EXTRA="--disable-asm"
 elif [ $ARCH = x86 ]; then
     export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/i686-linux-android
     DESTDIR_NAME=x86
@@ -75,7 +76,7 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
 
 BUILDDIR="${ROOTDIR}/jni/${DESTDIR_NAME}"
 
-export pkg_configure_flags="--host=${ARCH} --disable-shared --disable-asm"
+export pkg_configure_flags="--host=${ARCH} --disable-shared"
 export pkg_make_flags=-j2
 export pkg_prefix=${BUILDDIR}
 
@@ -84,7 +85,9 @@ export pkg_prefix=${BUILDDIR}
     test -f Makefile && make clean
     echo "Configure with --host=${ARCH} and toolchain ${ANDROID_TOOLCHAIN}"
     test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && ./autogen.sh)
-    ${ROOTDIR}/../../build/dependency all
+    ${ROOTDIR}/../../build/dependency geoip
+    pkg_configure_flags="$pkg_configure_flags $CONFIG_EXTRA" ${ROOTDIR}/../../build/dependency libressl
+    ${ROOTDIR}/../../build/dependency libevent
     ${ROOTDIR}/../../configure -q --host=${ARCH} --with-sysroot=${SYSROOT} \
       --with-libevent=${BUILDDIR} --with-geoip=${BUILDDIR} \
       --with-openssl=${BUILDDIR} --disable-examples \
