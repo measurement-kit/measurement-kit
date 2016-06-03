@@ -53,6 +53,7 @@ elif [ $ARCH = "mips64el-linux-android" ]; then
     export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
     LIB_SUFFIX=64
     DESTDIR_NAME=mips64
+    CONFIG_EXTRA="--disable-asm"
 elif [ $ARCH = x86 ]; then
     export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/i686-linux-android
     DESTDIR_NAME=x86
@@ -80,7 +81,7 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
 
 BUILDDIR="${ROOTDIR}/jni/${DESTDIR_NAME}"
 
-export pkg_configure_flags="--host=${ARCH} --disable-shared --disable-asm"
+export pkg_configure_flags="--host=${ARCH} --disable-shared"
 export pkg_make_flags=-j2
 export pkg_prefix=${BUILDDIR}
 
