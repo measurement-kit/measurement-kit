@@ -8,6 +8,9 @@ fi
 if [ "$make_flags" != "" ]; then
     args="$args -e make_flags=$make_flags"
 fi
+if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
+    args="$args -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN"
+fi
 
 docker_image=$1
 shift
@@ -17,4 +20,4 @@ if [ "$docker_image" = "" ]; then
 fi
 
 docker run $args -v $REPOROOT:/mk $docker_image                            \
-    /mk/build/docker/script/template "$@"
+    /mk/build/docker/script/init "$@"

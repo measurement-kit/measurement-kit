@@ -1,0 +1,36 @@
+#!/bin/sh
+set -e
+
+DEPENDENCIES="$DEPENCENCIES autoconf"
+DEPENDENCIES="$DEPENDENCIES automake"
+DEPENDENCIES="$DEPENDENCIES git"
+DEPENDENCIES="$DEPENDENCIES libevent-dev"
+DEPENDENCIES="$DEPENDENCIES libgeoip-dev"
+DEPENDENCIES="$DEPENDENCIES libssl-dev"
+DEPENDENCIES="$DEPENDENCIES libtool"
+DEPENDENCIES="$DEPENDENCIES make"
+DEPENDENCIES="$DEPENDENCIES python"
+DEPENDENCIES="$DEPENDENCIES python-pip"
+DEPENDENCIES="$DEPENDENCIES wget"
+
+export CFLAGS="$CFLAGS --coverage -g -O0"
+export CXXFLAGS="$CXXFLAGS --coverage -g -O0"
+export LDFLAGS="$LDFLAGS --coverage"
+
+subr_depend() {
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y $DEPENDENCIES
+    pip install --user cpp-coveralls
+}
+
+subr_finalize() {
+    /root/.local/bin/coveralls                                             \
+                               --gcov-options '\-lp'                       \
+                               --build-root .                              \
+                               --exclude include/measurement_kit/ext       \
+                               --exclude src/ext                           \
+                               --exclude example                           \
+                               --exclude third_party                       \
+      > /dev/null;
+}

@@ -6,13 +6,25 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
+subr_start_over() {
+    if [ -f Makefile ]; then
+        make distclean
+    fi
+}
+
+subr_finalize() {
+    echo "You can override this step"
+}
+
 cd /mk
 . build/docker/spec/$1
 env
 sleep 5
 
 subr_depend
+subr_start_over
 ./autogen.sh
 ./configure $configure_flags
 make $make_flags V=0
 make $make_flags check V=0
+subr_finalize
