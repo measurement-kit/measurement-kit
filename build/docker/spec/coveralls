@@ -2,9 +2,8 @@
 set -e
 REPOROOT=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
 . $REPOROOT/build/docker/template/coverage
-. $REPOROOT/build/docker/template/xenial
+. $REPOROOT/build/docker/template/gcc
 
-debian_deps="$debian_deps g++"
 debian_deps="$debian_deps python"
 debian_deps="$debian_deps python-pip"
 

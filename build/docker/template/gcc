@@ -4,3 +4,7 @@ REPOROOT=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
 . $REPOROOT/build/docker/template/xenial
 
 debian_deps="$debian_deps g++"
+
+export CPP="gcc -E"
+export CC="gcc"
+export CXX="g++"

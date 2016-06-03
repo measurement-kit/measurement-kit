@@ -1,9 +1,8 @@
 #!/bin/sh
 set -e
 REPOROOT=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
-. $REPOROOT/build/docker/template/xenial
+. $REPOROOT/build/docker/template/clang
 
-debian_deps="$debian_deps clang"
 debian_deps="$debian_deps valgrind"
 
 export configure_flags="--disable-shared"
