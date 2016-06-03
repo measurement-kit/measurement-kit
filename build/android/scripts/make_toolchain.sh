@@ -10,10 +10,12 @@ if [ $# -ne 3 ]; then
     exit 1
 fi
 
+ROOTDIR=$(cd $(dirname $0)/.. && pwd -P)
+
 NDK_DIR=$1
 ARCH=$2
 API=$3
-BASEDIR=./toolchain
+BASEDIR=$ROOTDIR/toolchain
 
 # XXX shortcut for armeabi-v7a
 # According https://developer.android.com/ndk/guides/standalone_toolchain.html
@@ -33,9 +35,8 @@ bash $MAKE_TOOLCHAIN \
   --platform=android-${API} \
   --toolchain=${ARCH}-4.9 \
   --install-dir=${INSTALL_DIR} \
-  --llvm-version=3.6 \
-  --stl=libc++ \
-  --system=$(uname | tr -s 'A-Z' 'a-z')-x86_64
+  --use-llvm \
+  --stl=libc++
 
 if [ $ARCH = x86 ]; then
     cp $NDK_DIR/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a $INSTALL_DIR/sysroot/usr/lib/
