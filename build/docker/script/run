@@ -24,6 +24,14 @@ subr_finalize() {
     exit 0
 }
 
+if [ -z "$make_flags" ]; then
+    NPROC=$(nproc)
+    if [ $NPROC -gt 4 ]; then
+        NPROC=4
+    fi
+    make_flags="-j$(NPROC)"
+fi
+
 . build/docker/spec/$1
 env
 sleep 5
