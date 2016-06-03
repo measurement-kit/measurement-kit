@@ -59,6 +59,7 @@ matrix:
           packages:
             - g++-5
             - gcc-5
+            - valgrind
           sources:
             - ubuntu-toolchain-r-test
 
