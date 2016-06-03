@@ -88,5 +88,6 @@ matrix:
             - ubuntu-toolchain-r-test
 
     - sudo: required
-      service: docker
+      services:
+        - docker
       env: OS="12.04" DOCKER="valgrind"
