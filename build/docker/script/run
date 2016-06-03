@@ -31,7 +31,6 @@ sleep 5
 subr_depend
 subr_start_over
 subr_autogen
-echo "XX" $configure_flags
 ./configure $configure_flags
 make $make_flags V=0
 subr_make_check
