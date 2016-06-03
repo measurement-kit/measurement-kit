@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <cstring>
 #include <measurement_kit/report.hpp>
 #include "src/common/utils.hpp"
 
