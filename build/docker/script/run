@@ -29,7 +29,7 @@ if [ -z "$make_flags" ]; then
     if [ $NPROC -gt 4 ]; then
         NPROC=4
     fi
-    make_flags="-j$(NPROC)"
+    make_flags="-j$NPROC"
 fi
 
 . build/docker/spec/$1
