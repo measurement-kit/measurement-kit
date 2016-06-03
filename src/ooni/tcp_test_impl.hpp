@@ -26,8 +26,8 @@ class TCPTestImpl : public ooni::OoniTestImpl {
         : ooni::OoniTestImpl(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";
-        entry["sent"] = report::Entry::Array();
-        entry["received"] = report::Entry::Array();
+        entry["sent"] = report::Entry::array();
+        entry["received"] = report::Entry::array();
         entry["failure"] = nullptr;
     };
 

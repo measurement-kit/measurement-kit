@@ -69,7 +69,7 @@ TEST_CASE("We raise mk::DomainError when we cannot append added to entry") {
 }
 
 TEST_CASE("We can create an Array") {
-    Entry entry = Entry::Array();
+    Entry entry = Entry::array();
     entry.push_back(10.0);
     entry.push_back(9.0);
     entry.push_back(11.0);
