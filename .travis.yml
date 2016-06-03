@@ -9,27 +9,16 @@ install:
         export CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;
         pip install --user cpp-coveralls;
       fi
-    - if [ "$VALGRIND" = "true" ]; then
-        ARG="$ARG --disable-shared";
-      fi
-    - if [ "$DOCKER" = "" ]; then
-        ./autogen.sh;
-      fi
-    - if [ "$DOCKER" = "" ]; then
-        ./build/dependency geoip;
-      fi
+    - ./autogen.sh;
+    - ./build/dependency geoip;
 
 script:
     - if [ "$BUILD_TYPE" = "ios" ]; then
         ./mobile/ios/scripts/build.sh;
-      elif [ "$DOCKER" = "" ]; then
+      else
         ./configure $ARG && make -j2 V=0;
       fi
-    - if [ "$DOCKER" != "" ]; then
-        ./build/docker/$DOCKER make_flags="-j$(nproc)";
-      elif [ "$VALGRIND" = "true" ]; then
-        make run-valgrind V=0;
-      elif [ "$BUILD_TYPE" != "ios" ]; then
+    - if [ "$BUILD_TYPE" != "ios" ]; then
         make -j2 check-am V=0;
       fi
 
@@ -45,27 +34,12 @@ after_failure:
         cat test-suite.log;
       fi
 
-# Only measure coverage with clang for now because I cannot manage to
-# convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
-# (For more context see measurement-kit/measurement-kit#255)
 matrix:
   include:
 
     - sudo: false
       compiler: gcc-5
-      env: OS="12.04" VALGRIND=true VER=5
-      addons:
-        apt:
-          packages:
-            - g++-5
-            - gcc-5
-            - valgrind
-          sources:
-            - ubuntu-toolchain-r-test
-
-    - sudo: false
-      compiler: gcc-5
-      env: OS="12.04" COVERAGE=true VER=5
+      env: COVERAGE=true VER=5
       addons:
         apt:
           packages:
@@ -76,7 +50,7 @@ matrix:
 
     - sudo: false
       compiler: g++-5
-      env: OS="12.04" VER=5
+      env: VER=5
       addons:
         apt:
           packages:
@@ -84,13 +58,3 @@ matrix:
             - gcc-5
           sources:
             - ubuntu-toolchain-r-test
-
-    - sudo: required
-      services:
-        - docker
-      env: OS="12.04" DOCKER="valgrind-gcc"
-
-    - sudo: required
-      services:
-        - docker
-      env: OS="12.04" DOCKER="valgrind-clang"
