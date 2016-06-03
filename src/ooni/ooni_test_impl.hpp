@@ -50,7 +50,7 @@ class OoniTestImpl : public mk::NetTest {
                     report::Entry entry;
                     entry["test_keys"] = test_keys;
                     entry["input"] = next_input;
-                    entry["measurement_start_time"] = mk::timestamp(&measurement_start_time);
+                    entry["measurement_start_time"] = *mk::timestamp(&measurement_start_time);
                     entry["test_runtime"] = mk::time_now() - start_time;
 
                     logger->debug("net_test: tearing down");
