@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 REPOROOT=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
-. $REPOROOT/build/docker/template/clang
+. $REPOROOT/build/docker/template/gcc-precise
 
 debian_deps="$debian_deps valgrind"
 

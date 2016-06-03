@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+REPOROOT=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
+. $REPOROOT/build/docker/template/precise
+
+debian_deps="$debian_deps python-software-properties"
+
+export CPP="gcc-5 -E"
+export CC="gcc-5"
+export CXX="g++-5"
+
+subr_depend() {
+    debian_depend
+    apt-add-repository -y ppa:ubuntu-toolchain-r/test
+    apt-get update
+    apt-get install -y g++-5 gcc-5
+}

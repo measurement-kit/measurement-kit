@@ -12,6 +12,10 @@ subr_start_over() {
     fi
 }
 
+subr_autogen() {
+    ./autogen.sh
+}
+
 subr_make_check() {
     make $make_flags check V=0
 }
@@ -26,7 +30,8 @@ sleep 5
 
 subr_depend
 subr_start_over
-./autogen.sh
+subr_autogen
+echo "XX" $configure_flags
 ./configure $configure_flags
 make $make_flags V=0
 subr_make_check
