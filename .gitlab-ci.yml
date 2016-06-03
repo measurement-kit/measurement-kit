@@ -1,0 +1,6 @@
+valgrind-gcc:
+  image: ubuntu:xenial
+  script: ./build/docker/script/run valgrind-gcc
+valgrind-clang:
+  image: ubuntu:xenial
+  script: ./build/docker/script/run valgrind-clang
