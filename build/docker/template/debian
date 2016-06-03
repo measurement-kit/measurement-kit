@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+debian_depend() {
+    apt-get update
+    apt-get upgrade -y
+    if [ "$debian_deps" != "" ]; then
+        apt-get install -y $debian_deps
+    fi
+}
+
+subr_depend() {
+    debian_depend
+}
