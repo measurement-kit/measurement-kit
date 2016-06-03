@@ -90,10 +90,12 @@ void connect_many(std::string address, int port, int num,
 
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb);
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
+           Var<Reactor> reactor = Reactor::global());
 
-inline void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback) {
-    readn(t, buff, 1, callback);
+inline void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
+                 Var<Reactor> reactor = Reactor::global()) {
+    readn(t, buff, 1, callback, reactor);
 }
 
 } // namespace net

@@ -2,7 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/report/file_reporter.hpp"
+#include <measurement_kit/report.hpp>
+
+using json = nlohmann::json;
 
 namespace mk {
 namespace report {
@@ -16,7 +18,7 @@ void FileReporter::open() {
     }
 }
 
-void FileReporter::write_entry(json &entry) {
+void FileReporter::write_entry(report::Entry &entry) {
     BaseReporter::write_entry(entry);
     try {
         file << entry.dump() << std::endl;

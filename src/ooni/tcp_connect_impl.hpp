@@ -7,8 +7,6 @@
 
 #include "src/ooni/tcp_test_impl.hpp"
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace ooni {
 
@@ -24,7 +22,7 @@ class TCPConnectImpl : public TCPTestImpl {
     };
 
     void main(std::string input, Settings options,
-              std::function<void(json)> &&cb) {
+              std::function<void(report::Entry)> &&cb) {
         options["host"] = input;
 
         connect(options, [this, cb](Error err, Var<net::Transport> txp) {

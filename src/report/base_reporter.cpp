@@ -2,14 +2,17 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/report/base_reporter.hpp"
+#include <measurement_kit/report.hpp>
+#include "src/common/utils.hpp"
+
+using json = nlohmann::json;
 
 namespace mk {
 namespace report {
 
 void BaseReporter::open() { openned_ = true; }
 
-void BaseReporter::write_entry(json &entry) {
+void BaseReporter::write_entry(report::Entry &entry) {
     if (!openned_) {
         throw new std::runtime_error("The report is not open.");
     }
