@@ -13,11 +13,11 @@ if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
 fi
 
 docker_image=$1
-shift
 if [ "$docker_image" = "" ]; then
-    echo "fatal: docker_image is not set" 1>&2
+    echo "usage: $0 docker-image-name" 1>&2
     exit 1
 fi
+shift
 
 docker run $args -v $REPOROOT:/mk $docker_image                            \
     /mk/build/docker/script/init "$@"
