@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+
+DEPENDENCIES="$DEPENCENCIES autoconf"
+DEPENDENCIES="$DEPENDENCIES automake"
+DEPENDENCIES="$DEPENDENCIES g++"
+DEPENDENCIES="$DEPENDENCIES git"
+DEPENDENCIES="$DEPENDENCIES libevent-dev"
+DEPENDENCIES="$DEPENDENCIES libgeoip-dev"
+DEPENDENCIES="$DEPENDENCIES libssl-dev"
+DEPENDENCIES="$DEPENDENCIES libtool"
+DEPENDENCIES="$DEPENDENCIES make"
+DEPENDENCIES="$DEPENDENCIES valgrind"
+DEPENDENCIES="$DEPENDENCIES wget"
+
+export configure_flags="--disable-shared"
+
+subr_depend() {
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y $DEPENDENCIES
+}
+
+subr_make_check() {
+    make $make_flags run-valgrind V=0
+}

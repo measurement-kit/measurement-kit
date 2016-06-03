@@ -12,6 +12,10 @@ subr_start_over() {
     fi
 }
 
+subr_make_check() {
+    make $make_flags check V=0
+}
+
 subr_finalize() {
     echo "You can override this step"
 }
@@ -26,5 +30,5 @@ subr_start_over
 ./autogen.sh
 ./configure $configure_flags
 make $make_flags V=0
-make $make_flags check V=0
+subr_make_check
 subr_finalize
