@@ -28,27 +28,21 @@ class BaseReporter {
 
     Settings options;
 
-    BaseReporter() {}
+    BaseReporter();
 
     virtual ~BaseReporter() {}
 
-    virtual void open();
+#define XX __attribute__((warn_unused_result))
 
-    virtual void write_entry(Entry &entry);
+    virtual Error open() XX;
 
-    virtual void close();
+    virtual Error write_entry(Entry &entry) XX;
 
-    void on_error(Delegate<Error> func) { error_fn_ = func; }
+    virtual Error close() XX;
 
-    void emit_error(Error err) {
-        if (!error_fn_) {
-            throw err;
-        }
-        error_fn_(err);
-    }
+#undef XX
 
   private:
-    Delegate<Error> error_fn_;
     bool closed_ = false;
     bool openned_ = false;
 };

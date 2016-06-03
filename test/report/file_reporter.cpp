@@ -11,15 +11,24 @@
 #include "src/common/utils.hpp"
 
 using namespace mk::report;
+using namespace mk;
 using json = nlohmann::json;
 
-TEST_CASE("The constructor for [FileReport] works correctly", "[BaseReport]") {
+TEST_CASE("The constructor works correctly") {
     REQUIRE_NOTHROW(FileReporter());
 }
 
-TEST_CASE("Report lifecycle", "[BaseReport]") {
-    SECTION(
-        "It should be possible to write multiple entries to an open report") {
+TEST_CASE("open() tells us if it encounters an error") {
+    FileReporter reporter;
+    // This should cause failure on open() because directory doesn't exist
+    reporter.filename = "/nonexistent/foobar.json";
+    REQUIRE(reporter.open() != NoError());
+}
+
+// TODO: how to test failure of write and close?
+
+TEST_CASE(
+    "It should be possible to write multiple entries to an open report") {
         const std::string input = "some input";
 
         mk::Settings options;
@@ -36,9 +45,9 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
         mk::report::Entry entry;
         entry["input"] = input;
         entry["antani"] = "fuffa";
-        reporter.open();
-        reporter.write_entry(entry);
-        reporter.close();
+        REQUIRE(reporter.open() == NoError());
+        REQUIRE(reporter.write_entry(entry) == NoError());
+        REQUIRE(reporter.close() == NoError());
 
         std::ifstream infile(reporter.filename);
         for (std::string line; getline(infile, line);) {
@@ -60,4 +69,3 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
             REQUIRE(entry["antani"].get<std::string>() == "fuffa");
         }
     }
-}

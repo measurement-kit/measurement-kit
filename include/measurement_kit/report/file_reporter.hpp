@@ -14,9 +14,13 @@ class FileReporter : public BaseReporter {
   public:
     std::string filename;
 
-    void open() override;
-    void write_entry(Entry &entry) override;
-    void close() override;
+#define XX __attribute__((warn_unused_result))
+
+    Error open() override XX;
+    Error write_entry(Entry &entry) override XX;
+    Error close() override XX;
+
+#undef XX
 
   private:
     std::ofstream file;

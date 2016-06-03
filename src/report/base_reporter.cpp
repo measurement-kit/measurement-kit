@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <cstring>
 #include <measurement_kit/report.hpp>
 #include "src/common/utils.hpp"
 
@@ -10,18 +11,28 @@ using json = nlohmann::json;
 namespace mk {
 namespace report {
 
-void BaseReporter::open() { openned_ = true; }
+BaseReporter::BaseReporter() {
+    memset(&test_start_time, 0, sizeof (test_start_time));
+}
 
-void BaseReporter::write_entry(report::Entry &entry) {
+Error BaseReporter::open() {
+    if (openned_) {
+        return ReportAlreadyOpen();
+    }
+    openned_ = true;
+    return NoError();
+}
+
+Error BaseReporter::write_entry(report::Entry &entry) {
     if (!openned_) {
-        throw new std::runtime_error("The report is not open.");
+        return ReportNotOpen();
     }
     if (closed_) {
-        throw new std::runtime_error("The report has already been closed.");
+        return ReportAlreadyClosed();
     }
     entry["test_name"] = test_name;
     entry["test_version"] = test_version;
-    entry["test_start_time"] = mk::timestamp(&test_start_time);
+    entry["test_start_time"] = *mk::timestamp(&test_start_time);
     // header["options"] = options;
     entry["probe_ip"] = probe_ip;
     entry["probe_asn"] = probe_asn;
@@ -29,11 +40,15 @@ void BaseReporter::write_entry(report::Entry &entry) {
     entry["software_name"] = software_name;
     entry["software_version"] = software_version;
     entry["data_format_version"] = data_format_version;
+    return NoError();
 }
 
-void BaseReporter::close() {
-    openned_ = false;
+Error BaseReporter::close() {
+    if (closed_) {
+        return ReportAlreadyClosed();
+    }
     closed_ = true;
+    return NoError();
 }
 
 } // namespace report
