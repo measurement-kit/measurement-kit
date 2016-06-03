@@ -1,7 +1,6 @@
 # MeasurementKit
 
-[![Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit)
-[![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=master&service=github)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master)
+[![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit) [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=master&service=github)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/master/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/master)
 
 MeasurementKit is a library that implements open network measurement methodologies
 (performance, censorship, etc.) and targets mobile platforms (Android and iOS).
