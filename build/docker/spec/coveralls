@@ -1,14 +1,30 @@
 #!/bin/sh
 set -e
-REPOROOT=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
-. $REPOROOT/build/docker/template/coverage
-. $REPOROOT/build/docker/template/gcc
 
+export CC="gcc"
+export CFLAGS="$CFLAGS --coverage -g -O0"
+export CPP="gcc -E"
+export CXXFLAGS="$CXXFLAGS --coverage -g -O0"
+export CXX="g++"
+export LDFLAGS="$LDFLAGS --coverage"
+
+debian_deps="$debian_deps autoconf"
+debian_deps="$debian_deps automake"
+debian_deps="$debian_deps g++"
+debian_deps="$debian_deps git"
+debian_deps="$debian_deps libevent-dev"
+debian_deps="$debian_deps libgeoip-dev"
+debian_deps="$debian_deps libssl-dev"
+debian_deps="$debian_deps libtool"
+debian_deps="$debian_deps make"
 debian_deps="$debian_deps python"
 debian_deps="$debian_deps python-pip"
+debian_deps="$debian_deps wget"
 
 subr_depend() {
-    debian_depend
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y $debian_deps
     pip install --user cpp-coveralls
 }
 

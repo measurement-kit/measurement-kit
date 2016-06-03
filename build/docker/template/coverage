@@ -1,6 +1,0 @@
-#!/bin/sh
-set -e
-
-export CFLAGS="$CFLAGS --coverage -g -O0"
-export CXXFLAGS="$CXXFLAGS --coverage -g -O0"
-export LDFLAGS="$LDFLAGS --coverage"
