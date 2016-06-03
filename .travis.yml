@@ -12,16 +12,22 @@ install:
     - if [ "$VALGRIND" = "true" ]; then
         ARG="$ARG --disable-shared";
       fi
-    - ./autogen.sh
-    - ./build/dependency geoip
+    - if [ "$DOCKER" = "" ]; then
+        ./autogen.sh;
+      fi
+    - if [ "$DOCKER" = "" ]; then
+        ./build/dependency geoip;
+      fi
 
 script:
     - if [ "$BUILD_TYPE" = "ios" ]; then
         ./mobile/ios/scripts/build.sh;
-      else
+      elif [ "$DOCKER" = "" ]; then
         ./configure $ARG && make -j2 V=0;
       fi
-    - if [ "$VALGRIND" = "true" ]; then
+    - if [ "$DOCKER" != "" ]; then
+        ./build/docker/$DOCKER
+      elif [ "$VALGRIND" = "true" ]; then
         make run-valgrind V=0;
       elif [ "$BUILD_TYPE" != "ios" ]; then
         make -j2 check-am V=0;
@@ -80,3 +86,7 @@ matrix:
             - gcc-5
           sources:
             - ubuntu-toolchain-r-test
+
+    - sudo: required
+      service: docker
+      env: OS="12.04" DOCKER="valgrind"
