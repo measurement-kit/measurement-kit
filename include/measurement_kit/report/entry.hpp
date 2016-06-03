@@ -15,33 +15,25 @@ namespace report {
 // such json library to implement this class.
 class Entry : private nlohmann::json {
   public:
-    // TODO: Find out why coverage is not computed for this class even though
-    // there are regress tests stressing many of its functionality
-
     using nlohmann::json::json;
-    static Entry Array();
+
+    static Entry array();
 
     // Implementation of dict
-    template <typename T> Entry &operator=(T value) {
-        nlohmann::json::operator=(value);
-        return *this;
-    }
+    Entry &operator=(Entry value);
     template <typename K> Entry &operator[](const K &key) {
-        try {
-            return static_cast<Entry &>(nlohmann::json::operator[](key));
-        } catch (std::domain_error &) {
-            throw DomainError();
-        }
+        // The intent is to only accept string keys but apparently we need
+        // to use this template to forward to the real operator
+        return operator[](std::string(key));
     }
+    Entry &operator[](std::string key);
 
     // Implementation of list
     void push_back(Entry);
 
     std::string dump();
 
-    friend bool operator==(Entry &left, std::nullptr_t right) {
-        return static_cast<nlohmann::json &>(left) == right;
-    }
+    bool operator==(std::nullptr_t right);
 
   protected:
   private:
