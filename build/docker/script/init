@@ -17,7 +17,7 @@ subr_make_check() {
 }
 
 subr_finalize() {
-    echo "You can override this step"
+    exit 0
 }
 
 cd /mk
