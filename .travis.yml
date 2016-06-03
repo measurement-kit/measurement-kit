@@ -9,8 +9,8 @@ install:
         export CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;
         pip install --user cpp-coveralls;
       fi
-    - ./autogen.sh;
-    - ./build/dependency geoip;
+    - ./autogen.sh
+    - ./build/dependency geoip
 
 script:
     - if [ "$BUILD_TYPE" = "ios" ]; then
