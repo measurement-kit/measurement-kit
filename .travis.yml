@@ -88,4 +88,9 @@ matrix:
     - sudo: required
       services:
         - docker
-      env: OS="12.04" DOCKER="valgrind"
+      env: OS="12.04" DOCKER="valgrind-gcc"
+
+    - sudo: required
+      services:
+        - docker
+      env: OS="12.04" DOCKER="valgrind-clang"
