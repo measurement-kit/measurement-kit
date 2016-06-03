@@ -1,34 +1,5 @@
 #!/bin/sh
 set -e
 
-if [ $# -ne 1 ]; then
-    echo "usage: $0 spec-name" 1>&2
-    exit 1
-fi
-
-subr_start_over() {
-    if [ -f Makefile ]; then
-        make distclean
-    fi
-}
-
-subr_make_check() {
-    make $make_flags check V=0
-}
-
-subr_finalize() {
-    exit 0
-}
-
 cd /mk
-. build/docker/spec/$1
-env
-sleep 5
-
-subr_depend
-subr_start_over
-./autogen.sh
-./configure $configure_flags
-make $make_flags V=0
-subr_make_check
-subr_finalize
+./build/docker/script/run "$@"
