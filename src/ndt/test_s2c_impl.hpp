@@ -105,7 +105,7 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         // XXX: Here we can loop forever
         finalizing_test_impl<messages_read_msg>(ctx, callback);
-    });
+    }, ctx->reactor);
 }
 
 template <MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, first),
@@ -204,12 +204,12 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                                 // We enter into the final state of this test
                                 finalizing_test(ctx, callback);
                             });
-                        });
+                        }, ctx->reactor);
                     });
-                });
+                }, ctx->reactor);
             },
             ctx->timeout, ctx->settings, ctx->logger, ctx->reactor);
-    });
+    }, ctx->reactor);
 }
 
 } // namespace test_s2c

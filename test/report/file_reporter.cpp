@@ -7,7 +7,7 @@
 
 #include <ctime>
 #include <measurement_kit/ext.hpp>
-#include "src/report/file_reporter.hpp"
+#include <measurement_kit/report.hpp>
 #include "src/common/utils.hpp"
 
 using namespace mk::report;
@@ -33,7 +33,7 @@ TEST_CASE("Report lifecycle", "[BaseReport]") {
         reporter.options = options;
         mk::utc_time_now(&reporter.test_start_time);
 
-        json entry;
+        mk::report::Entry entry;
         entry["input"] = input;
         entry["antani"] = "fuffa";
         reporter.open();

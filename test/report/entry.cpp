@@ -67,3 +67,12 @@ TEST_CASE("We raise mk::DomainError when we cannot append added to entry") {
     entry["dict"]["foo"] = "foobar";
     REQUIRE_THROWS_AS((entry["dict"].push_back(17.0)), DomainError);
 }
+
+TEST_CASE("We can create an Array") {
+    Entry entry = Entry::array();
+    entry.push_back(10.0);
+    entry.push_back(9.0);
+    entry.push_back(11.0);
+    entry.push_back(8.0);
+    REQUIRE(entry.dump() == "[10.0,9.0,11.0,8.0]");
+}

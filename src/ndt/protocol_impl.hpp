@@ -66,7 +66,7 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->info("Got legacy KICKOFF message (ignored)");
         callback(NoError());
-    });
+    }, ctx->reactor);
 }
 
 template <MK_MOCK_NAMESPACE(messages, read_msg)>
@@ -94,7 +94,7 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         callback(NoError());
-    });
+    }, ctx->reactor);
 }
 
 template <MK_MOCK_NAMESPACE(messages, read_msg)>
@@ -113,7 +113,7 @@ void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
         ctx->logger->info("Got server version: %s", s.c_str());
         // TODO: validate the server version?
         callback(NoError());
-    });
+    }, ctx->reactor);
 }
 
 template <MK_MOCK_NAMESPACE(messages, read_msg)>
@@ -132,7 +132,7 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
         ctx->logger->info("Authorized tests: %s", s.c_str());
         ctx->granted_suite = split(s);
         callback(NoError());
-    });
+    }, ctx->reactor);
 }
 
 template <MK_MOCK_NAMESPACE(test_c2s, run), MK_MOCK_NAMESPACE(test_meta, run),
@@ -215,7 +215,7 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->info("Got LOGOUT");
         callback(NoError());
-    });
+    }, ctx->reactor);
 }
 
 template <MK_MOCK_NAMESPACE(net, read)>
@@ -243,7 +243,7 @@ void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->debug("ndt: got extra data: %s", buffer->read().c_str());
         callback(DataAfterLogoutError());
-    });
+    }, ctx->reactor);
 }
 
 static inline void disconnect_and_callback_impl(Var<Context> ctx, Error err) {

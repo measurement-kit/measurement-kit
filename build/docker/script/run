@@ -1,0 +1,45 @@
+#!/bin/sh
+set -e
+
+if [ $# -ne 1 ]; then
+    echo "usage: $0 spec-name" 1>&2
+    exit 1
+fi
+
+subr_start_over() {
+    if [ -f Makefile ]; then
+        make distclean
+    fi
+}
+
+subr_autogen() {
+    ./autogen.sh
+}
+
+subr_make_check() {
+    make $make_flags check V=0
+}
+
+subr_finalize() {
+    exit 0
+}
+
+if [ -z "$make_flags" ]; then
+    NPROC=$(nproc)
+    if [ $NPROC -gt 4 ]; then
+        NPROC=4
+    fi
+    make_flags="-j$NPROC"
+fi
+
+. build/docker/spec/$1
+env
+sleep 5
+
+subr_depend
+subr_start_over
+subr_autogen
+./configure $configure_flags
+make $make_flags V=0
+subr_make_check
+subr_finalize
