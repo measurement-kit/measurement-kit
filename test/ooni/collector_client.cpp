@@ -38,7 +38,7 @@ static void fail(Var<Transport>, Settings, Headers, std::string,
 }
 
 const static Settings SETTINGS = {
-    {"ooni/collector_base_url", collector::default_collector_url()},
+    {"collector_base_url", collector::default_collector_url()},
 };
 
 TEST_CASE("collector::post deals with network error") {

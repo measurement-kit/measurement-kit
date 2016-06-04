@@ -36,11 +36,11 @@ template <MK_MOCK_NAMESPACE(http, request_sendrecv)>
 void post_impl(Var<Transport> transport, std::string append_to_url,
                std::string body, Callback<Error, nlohmann::json> callback,
                Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
-    if (settings.find("ooni/collector_base_url") == settings.end()) {
+    if (settings.find("collector_base_url") == settings.end()) {
         callback(MissingCollectorBaseUrlError(), nullptr);
         return;
     }
-    std::string url = settings["ooni/collector_base_url"];
+    std::string url = settings["collector_base_url"];
     url += append_to_url;
     settings["http/url"] = url;
     settings["http/method"] = "POST";
@@ -92,11 +92,11 @@ Error valid_entry(Entry entry);
 template <MK_MOCK_NAMESPACE(http, request_connect)>
 void connect_impl(Settings settings, Callback<Error, Var<Transport>> callback,
                   Var<Reactor> reactor, Var<Logger> logger) {
-    if (settings.find("ooni/collector_base_url") == settings.end()) {
+    if (settings.find("collector_base_url") == settings.end()) {
         callback(MissingCollectorBaseUrlError(), nullptr);
         return;
     }
-    settings["http/url"] = settings.at("ooni/collector_base_url");
+    settings["http/url"] = settings.at("collector_base_url");
     http_request_connect(settings, callback, reactor, logger);
 }
 
@@ -238,7 +238,7 @@ void submit_report_impl(std::string filepath, std::string collector_base_url,
         return;
     }
 
-    settings["ooni/collector_base_url"] = collector_base_url;
+    settings["collector_base_url"] = collector_base_url;
     logger->info("connecting to collector %s...", collector_base_url.c_str());
     collector_connect(
         settings,
