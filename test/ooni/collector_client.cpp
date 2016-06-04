@@ -245,13 +245,13 @@ TEST_CASE("submit_report() deals with invalid file") {
 
 TEST_CASE("submit_report() deals with get_next_entry error") {
     loop_with_initial_event([=]() {
-        collector::submit_report_impl<fail>(
-            "test/fixtures/hosts.txt", "",
-            [=](Error err) {
-                REQUIRE(err == MockedError());
-                break_loop();
-            },
-            {}, Reactor::global(), Logger::global());
+        collector::submit_report_impl<fail>("test/fixtures/hosts.txt", "",
+                                            [=](Error err) {
+                                                REQUIRE(err == MockedError());
+                                                break_loop();
+                                            },
+                                            {}, Reactor::global(),
+                                            Logger::global());
     });
 }
 
@@ -259,8 +259,8 @@ static ErrorOr<Entry> success(Var<std::istream>, Var<Logger>) {
     return Entry{};
 }
 
-static void fail(Settings, Callback<Error, Var<Transport>> cb,
-                 Var<Reactor>, Var<Logger>) {
+static void fail(Settings, Callback<Error, Var<Transport>> cb, Var<Reactor>,
+                 Var<Logger>) {
     cb(MockedError(), nullptr);
 }
 
@@ -276,8 +276,8 @@ TEST_CASE("submit_report() deals with collector_connect error") {
     });
 }
 
-static void success(Settings, Callback<Error, Var<Transport>> cb,
-                    Var<Reactor>, Var<Logger>) {
+static void success(Settings, Callback<Error, Var<Transport>> cb, Var<Reactor>,
+                    Var<Logger>) {
     cb(NoError(), nullptr);
 }
 
@@ -306,3 +306,14 @@ TEST_CASE("submit_report() deals with collector_create_report error") {
 |_|_| |_|\__\___|\__, |_|  \__,_|\__|_|\___/|_| |_|
                  |___/
 */
+
+TEST_CASE("The collector client works as expected") {
+    loop_with_initial_event([=]() {
+        collector::submit_report("test/fixtures/report.json",
+                                 collector::default_collector_url(),
+                                 [=](Error err) {
+                                     REQUIRE(err == NoError());
+                                     break_loop();
+                                 });
+    });
+}

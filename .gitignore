@@ -7,7 +7,6 @@
 *.gcda
 *.gcno
 *.gcov
-*.json
 *.ko
 *.la
 *.lib
@@ -26,6 +25,7 @@
 .dirstamp
 .libs
 .vagrant
+/*.json
 /include.am
 /tmp
 Makefile
