@@ -135,7 +135,11 @@ static Entry ENTRY{
     {"test_name", "tcp_connect"},
     {"test_runtime", 0.253494024276733},
     {"test_start_time", "2016-06-04 17:53:13"},
-    {"test_version","0.0.1"}
+    {"test_version","0.0.1"},
+    {"input_hashes", {
+        "37e60e13536f6afe47a830bfb6b371b5cf65da66d7ad65137344679b24fdccd1",
+        "e0611ecd28bead38a7afeb4dda8ae3449d0fc2e1ba53fa7355f2799dce9af290"
+    }},
 };
 
 static Entry BAD_ENTRY{
@@ -155,7 +159,11 @@ static Entry BAD_ENTRY{
     {"test_name", "tcp_connect"},
     {"test_runtime", 0.253494024276733},
     {"test_start_time", "2016-06-04 17:53:13"},
-    {"test_version","0.0.1"}
+    {"test_version","0.0.1"},
+    {"input_hashes", {
+        "37e60e13536f6afe47a830bfb6b371b5cf65da66d7ad65137344679b24fdccd1",
+        "e0611ecd28bead38a7afeb4dda8ae3449d0fc2e1ba53fa7355f2799dce9af290"
+    }},
 };
 
 TEST_CASE("collector::create_report deals with entry with missing key") {
@@ -218,6 +226,16 @@ TEST_CASE("collector::create_report deals with missing report_id") {
         [=](Error err, std::string s) {
             REQUIRE(err == JsonDomainError());
             REQUIRE(s == "");
+        },
+        {}, Reactor::global(), Logger::global());
+}
+
+TEST_CASE("collector::update_report deals with entry with missing key") {
+    Entry entry;
+    collector::update_report_impl<fail>(
+        nullptr, "xx", entry,
+        [=](Error err) {
+            REQUIRE(err == MissingMandatoryKeyError());
         },
         {}, Reactor::global(), Logger::global());
 }
