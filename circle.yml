@@ -4,4 +4,4 @@ machine:
 
 test:
   override:
-    - ./build/docker/clang
+    - ./build/docker/valgrind-clang
