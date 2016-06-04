@@ -35,6 +35,10 @@ class Entry : private nlohmann::json {
 
     bool operator==(std::nullptr_t right);
 
+    nlohmann::json as_nlohmann_json_() {
+        return static_cast<nlohmann::json>(*this);
+    }
+
   protected:
   private:
     // NO ATTRIBUTES HERE BY DESIGN. DO NOT ADD ATTRIBUTES HERE BECAUSE

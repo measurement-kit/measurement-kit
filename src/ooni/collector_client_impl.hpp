@@ -54,16 +54,17 @@ void post_impl(Var<Transport> transport, std::string append_to_url,
                                   callback(err, nullptr);
                                   return;
                               }
-                              if (response->status_code != 200) {
+                              if (response->status_code < 200 &&
+                                  response->status_code > 299) {
                                   callback(HttpRequestFailedError(), "");
                                   return;
                               }
+                              nlohmann::json reply;
                               // If response is empty, don't parse it
                               if (response->body == "") {
-                                  callback(NoError(), nlohmann::json::object());
+                                  callback(NoError(), reply);
                                   return;
                               }
-                              nlohmann::json reply;
                               try {
                                   reply = nlohmann::json::parse(response->body);
                               } catch (std::invalid_argument &) {
@@ -139,18 +140,13 @@ void update_report_impl(Var<Transport> transport, std::string report_id,
                         Settings settings, Var<Reactor> reactor,
                         Var<Logger> logger) {
     // TODO: validate entry?
-    nlohmann::json request{
-        {"content", entry.dump()}, {"format", "json"},
+    Entry request{
+        {"content", entry.as_nlohmann_json_()}, {"format", "json"},
     };
     std::string body = request.dump();
     collector_post(transport, "/report/" + report_id, body,
-                   [=](Error err, nlohmann::json reply) {
-                       if (err) {
-                           callback(err);
-                           return;
-                       }
-                       logger->debug("xxx response: %s", reply.dump().c_str());
-                       callback(NoError());
+                   [=](Error err, nlohmann::json) {
+                       callback(err);
                    },
                    settings, reactor, logger);
 }
@@ -163,14 +159,8 @@ void close_report_impl(Var<Transport> transport, std::string report_id,
     // below to just tell the user how closing report went
     logger->info("closing report...");
     collector_post(transport, "/report/" + report_id + "/close", "",
-                   [=](Error err, nlohmann::json reply) {
-                       logger->info("closing report... %d", err.code);
-                       if (err) {
-                           callback(err);
-                           return;
-                       }
-                       logger->debug("xxx response: %s", reply.dump().c_str());
-                       callback(NoError());
+                   [=](Error err, nlohmann::json) {
+                       callback(err);
                    },
                    settings, reactor, logger);
 }
@@ -223,7 +213,6 @@ void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
                         callback(entry.as_error());
                         return;
                     }
-                    logger->info("closing report...");
                     collector_close_report(txp, report_id, callback, settings,
                                            reactor, logger);
                     return;
