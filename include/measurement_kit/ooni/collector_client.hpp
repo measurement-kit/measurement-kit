@@ -11,6 +11,23 @@ namespace mk {
 namespace ooni {
 namespace collector {
 
+/*
+    To submit a file report, pass it to `submit_report()`:
+*/
+
+std::string default_collector_url();
+
+void submit_report(std::string filepath, std::string collector_base_url,
+                   Callback<Error> callback, Settings conf = {},
+                   Var<Reactor> = Reactor::global(),
+                   Var<Logger> = Logger::global());
+
+/*
+    The following APIs are used to implement `submit_report()` and could
+    also be the basic bricks to open report at the beginning, update during
+    the test progress, and close when test ends:
+*/
+
 void connect(Settings, Callback<Error, Var<net::Transport>>,
              Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
@@ -27,13 +44,6 @@ void update_report(Var<net::Transport>, std::string report_id, report::Entry,
 void close_report(Var<net::Transport>, std::string report_id, Callback<Error>,
                   Settings = {}, Var<Reactor> = Reactor::global(),
                   Var<Logger> = Logger::global());
-
-void submit_report(std::string filepath, std::string collector_base_url,
-                   Callback<Error> callback, Settings conf = {},
-                   Var<Reactor> = Reactor::global(),
-                   Var<Logger> = Logger::global());
-
-std::string default_collector_url();
 
 } // namespace collector
 } // namespace mk
