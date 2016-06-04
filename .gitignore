@@ -105,6 +105,7 @@ test/net/emitter
 test/net/evbuffer
 test/net/socks5
 test/net/transport
+test/ooni/collector_client
 test/ooni/dns_injection
 test/ooni/dns_injection_test
 test/ooni/http_invalid_request_line

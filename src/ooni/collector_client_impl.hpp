@@ -58,15 +58,15 @@ void post_impl(Var<Transport> transport, std::string append_to_url,
                                   return;
                               }
                               if (response->status_code / 100 != 2) {
-                                  callback(HttpRequestFailedError(), "");
+                                  callback(HttpRequestFailedError(), nullptr);
+                                  return;
+                              }
+                              // If response is empty, don't parse it
+                              if (response->body == "") {
+                                  callback(NoError(), nullptr);
                                   return;
                               }
                               nlohmann::json reply;
-                              // If response is empty, don't parse it
-                              if (response->body == "") {
-                                  callback(NoError(), reply);
-                                  return;
-                              }
                               try {
                                   reply = nlohmann::json::parse(response->body);
                               } catch (std::invalid_argument &) {
@@ -169,30 +169,10 @@ void close_report_impl(Var<Transport> transport, std::string report_id,
                    settings, reactor, logger);
 }
 
-static inline ErrorOr<Entry> get_next_entry(Var<std::istream> file,
-                                            Var<Logger> logger) {
-    std::string line;
-    std::getline(*file, line);
-    if (file->eof()) {
-        logger->info("End of file found");
-        return FileEofError();
-    }
-    if (!file->good()) {
-        logger->warn("I/O error reading file");
-        return FileIoError();
-    }
-    logger->debug("Read line from report: %s", line.c_str());
-    try {
-        // Works because we are using nlohmann::json::json() as Entry::Entry()
-        return Entry(nlohmann::json::parse(line));
-    } catch (std::invalid_argument &) {
-        return JsonParseError();
-    }
-    /* NOTREACHED */
-}
+ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger);
 
 template <MK_MOCK_NAMESPACE(collector, update_report),
-          MK_MOCK_NAMESPACE(collector, close_report)>
+          MK_MOCK_NAMESPACE(collector, get_next_entry)>
 void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
                                 std::string report_id, int line, Entry entry,
                                 Callback<Error> callback, Settings settings,
@@ -211,18 +191,18 @@ void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
             logger->debug("scheduling read of next entry...");
             reactor->call_soon([=]() {
                 logger->debug("reading next entry");
-                ErrorOr<Entry> entry = get_next_entry(file, logger);
+                ErrorOr<Entry> entry = collector_get_next_entry(file, logger);
                 if (!entry) {
                     if (entry.as_error() != FileEofError()) {
                         callback(entry.as_error());
                         return;
                     }
-                    collector_close_report(txp, report_id, callback, settings,
-                                           reactor, logger);
+                    close_report(txp, report_id, callback, settings, reactor,
+                                 logger);
                     return;
                 }
                 update_and_fetch_next_impl<collector_update_report,
-                                           collector_close_report>(
+                                           collector_get_next_entry>(
                     file, txp, report_id, line + 1, *entry, callback, settings,
                     reactor, logger);
             });
@@ -230,7 +210,8 @@ void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
         settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, connect),
+template <MK_MOCK_NAMESPACE(collector, get_next_entry),
+          MK_MOCK_NAMESPACE(collector, connect),
           MK_MOCK_NAMESPACE(collector, create_report)>
 void submit_report_impl(std::string filepath, std::string collector_base_url,
                         Callback<Error> callback, Settings settings,
@@ -241,7 +222,7 @@ void submit_report_impl(std::string filepath, std::string collector_base_url,
         callback(CannotOpenReportError());
         return;
     }
-    ErrorOr<Entry> entry = get_next_entry(file, logger);
+    ErrorOr<Entry> entry = collector_get_next_entry(file, logger);
     if (!entry) {
         callback(entry.as_error());
         return;

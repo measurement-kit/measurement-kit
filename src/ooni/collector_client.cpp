@@ -42,6 +42,27 @@ void close_report(Var<Transport> transport, std::string report_id,
                       logger);
 }
 
+ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger) {
+    std::string line;
+    std::getline(*file, line);
+    if (file->eof()) {
+        logger->info("End of file found");
+        return FileEofError();
+    }
+    if (!file->good()) {
+        logger->warn("I/O error reading file");
+        return FileIoError();
+    }
+    logger->debug("Read line from report: %s", line.c_str());
+    try {
+        // Works because we are using nlohmann::json::json() as Entry::Entry()
+        return Entry(nlohmann::json::parse(line));
+    } catch (std::invalid_argument &) {
+        return JsonParseError();
+    }
+    /* NOTREACHED */
+}
+
 void submit_report(std::string filepath, std::string collector_base_url,
                    Callback<Error> callback, Settings conf,
                    Var<Reactor> reactor, Var<Logger> logger) {
