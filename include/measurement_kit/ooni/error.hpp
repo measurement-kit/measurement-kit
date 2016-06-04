@@ -11,6 +11,8 @@ namespace ooni {
 
 MK_DEFINE_ERR(MK_ERR_OONI(0), InputFileDoesNotExist, "")
 MK_DEFINE_ERR(MK_ERR_OONI(1), InputFileRequired, "")
+MK_DEFINE_ERR(MK_ERR_OONI(2), MissingCollectorBaseUrlError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(3), CannotOpenReportError, "")
 
 } // namespace mk
 } // namespace ooni
