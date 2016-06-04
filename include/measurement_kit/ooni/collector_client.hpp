@@ -33,6 +33,8 @@ void submit_report(std::string filepath, std::string collector_base_url,
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
+std::string default_collector_url();
+
 } // namespace collector
 } // namespace mk
 } // namespace ooni

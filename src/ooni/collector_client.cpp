@@ -49,6 +49,10 @@ void submit_report(std::string filepath, std::string collector_base_url,
                        logger);
 }
 
+std::string default_collector_url() {
+    return "http://a.collector.test.ooni.io";
+}
+
 } // namespace collector
 } // namespace mk
 } // namespace ooni

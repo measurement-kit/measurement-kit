@@ -163,6 +163,7 @@ void close_report_impl(Var<Transport> transport, std::string report_id,
     logger->info("closing report...");
     collector_post(transport, "/report/" + report_id + "/close", "",
                    [=](Error err, nlohmann::json) {
+                       logger->info("closing report... %d", err.code);
                        callback(err);
                    },
                    settings, reactor, logger);

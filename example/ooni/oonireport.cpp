@@ -13,10 +13,6 @@ using namespace mk::ooni;
 using namespace mk;
 
 static void upload_report(std::string url, int index, char **argv) {
-    if (url == "") {
-        break_loop();
-        return;
-    }
     if (argv[index] == nullptr) {
         break_loop();
         return;
@@ -32,7 +28,7 @@ static void upload_report(std::string url, int index, char **argv) {
 }
 
 int main(int argc, char **argv) {
-    std::string url;
+    std::string url = collector::default_collector_url();
     int ch;
 
     while ((ch = getopt(argc, argv, "c:v")) != -1) {
