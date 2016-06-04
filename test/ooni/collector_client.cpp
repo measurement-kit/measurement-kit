@@ -5,6 +5,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "src/ext/Catch/single_include/catch.hpp"
+#include "src/net/emitter.hpp"
 #include "src/ooni/collector_client_impl.hpp"
 #include <measurement_kit/ooni.hpp>
 #include <sstream>
@@ -14,6 +15,54 @@ using namespace mk::net;
 using namespace mk::ooni;
 using namespace mk::report;
 using namespace mk;
+
+/*
+       _   _ _
+ _   _| |_(_) |
+| | | | __| | |
+| |_| | |_| | |
+ \__,_|\__|_|_|
+
+*/
+
+class MockConnection : public Emitter, public NonCopyable, public NonMovable {
+    // TODO: consider whether it would make sense to add
+    // this functionality directly to Emitter
+
+  public:
+    static Var<Transport> make() {
+        MockConnection *conn = new MockConnection;
+        conn->self = Var<Transport>(conn);
+        return conn->self;
+    }
+
+    ~MockConnection() override {
+        if (close_cb) {
+            close_cb();
+        }
+    }
+
+    void close(Callback<> cb) override;
+
+  private:
+    bool isclosed = false;
+    Callback<> close_cb;
+    Var<Reactor> reactor = Reactor::global();
+    Var<Transport> self;
+
+    MockConnection() {}
+};
+
+void MockConnection::close(Callback<> cb) {
+    if (isclosed) {
+        throw std::runtime_error("already closed");
+    }
+    isclosed = true;
+    close_cb = cb;
+    reactor->call_soon([=]() {
+        self = nullptr;
+    });
+}
 
 /*
              _ _
@@ -277,7 +326,7 @@ static void fail(Var<Transport>, std::string, Entry, Callback<Error> cb,
 TEST_CASE("update_and_fetch_next() deals with update_report error") {
     loop_with_initial_event([=]() {
         collector::update_and_fetch_next_impl<fail>(
-            nullptr, nullptr, "", 1, {},
+            nullptr, MockConnection::make(), "", 1, {},
             [=](Error err) {
                 REQUIRE(err == MockedError());
                 break_loop();
@@ -298,7 +347,7 @@ static ErrorOr<Entry> fail(Var<std::istream>, Var<Logger>) {
 TEST_CASE("update_and_fetch_next() deals with get_next_entry error") {
     loop_with_initial_event([=]() {
         collector::update_and_fetch_next_impl<success, fail>(
-            nullptr, nullptr, "", 1, {},
+            nullptr, MockConnection::make(), "", 1, {},
             [=](Error err) {
                 REQUIRE(err == MockedError());
                 break_loop();
@@ -354,7 +403,7 @@ TEST_CASE("submit_report() deals with collector_connect error") {
 
 static void success(Settings, Callback<Error, Var<Transport>> cb, Var<Reactor>,
                     Var<Logger>) {
-    cb(NoError(), nullptr);
+    cb(NoError(), MockConnection::make());
 }
 
 static void fail(Var<Transport>, Entry, Callback<Error, std::string> cb,

@@ -193,7 +193,7 @@ void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
         [=](Error err) {
             logger->info("adding entry report #%d... %d", line, err.code);
             if (err) {
-                callback(err);
+                txp->close([=]() { callback(err); });
                 return;
             }
             // After #644 bug and fix, I prefer to always break explicit
@@ -204,11 +204,15 @@ void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
                 ErrorOr<Entry> entry = collector_get_next_entry(file, logger);
                 if (!entry) {
                     if (entry.as_error() != FileEofError()) {
-                        callback(entry.as_error());
+                        txp->close([=]() { callback(entry.as_error()); });
                         return;
                     }
-                    close_report(txp, report_id, callback, settings, reactor,
-                                 logger);
+                    close_report(
+                        txp, report_id,
+                        [=](Error err) {
+                            txp->close([=]() { callback(err); });
+                        },
+                        settings, reactor, logger);
                     return;
                 }
                 update_and_fetch_next_impl<collector_update_report,
@@ -255,7 +259,7 @@ void submit_report_impl(std::string filepath, std::string collector_base_url,
                 [=](Error err, std::string report_id) {
                     logger->info("creating report... %d", err.code);
                     if (err) {
-                        callback(err);
+                        txp->close([=]() { callback(err); });
                         return;
                     }
                     update_and_fetch_next_impl(file, txp, report_id, 1, *entry,
