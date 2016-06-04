@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "src/ooni/collector_client_impl.hpp"
+#include <regex>
 
 namespace mk {
 namespace ooni {
@@ -10,6 +11,37 @@ namespace collector {
 
 using namespace mk::http;
 using namespace mk::net;
+using namespace mk::report;
+
+static const std::regex re_name{"^[A-Za-z0-9._-]+$"};
+static const std::regex re_version{
+    "^[0-9]+.[0-9]+(.[0-9]+(-[A-Za-z0-9._-]+)?)?$"};
+
+static std::map<std::string, std::regex> mandatory_re{
+    {"software_name", re_name},
+    {"software_version", re_version},
+    {"probe_asn", std::regex{"^AS[0-9]+$"}},
+    {"probe_cc", std::regex{"^[A-Z]{2}$"}},
+    {"test_name", re_name},
+    {"test_version", re_version},
+    {"data_format_version", re_version},
+    {"test_start_time",
+     std::regex{"^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$"}},
+};
+
+Error valid_entry(Entry entry) {
+    // TODO: also validate the optional values
+    for (auto pair : mandatory_re) {
+        ErrorOr<std::string> s = entry[pair.first];
+        if (!s) {
+            return MissingMandatoryKeyError();
+        }
+        if (!std::regex_match(*s, pair.second)) {
+            return InvalidMandatoryValueError(pair.first);
+        }
+    }
+    return NoError();
+}
 
 void post(Var<Transport> transport, std::string url_extra, std::string body,
           Callback<Error, nlohmann::json> callback, Settings conf,

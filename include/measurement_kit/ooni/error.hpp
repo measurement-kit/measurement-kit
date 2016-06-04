@@ -13,6 +13,8 @@ MK_DEFINE_ERR(MK_ERR_OONI(0), InputFileDoesNotExist, "")
 MK_DEFINE_ERR(MK_ERR_OONI(1), InputFileRequired, "")
 MK_DEFINE_ERR(MK_ERR_OONI(2), MissingCollectorBaseUrlError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(3), CannotOpenReportError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(4), MissingMandatoryKeyError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(5), InvalidMandatoryValueError, "")
 
 } // namespace mk
 } // namespace ooni

@@ -76,3 +76,17 @@ TEST_CASE("We can create an Array") {
     entry.push_back(8.0);
     REQUIRE(entry.dump() == "[10.0,9.0,11.0,8.0]");
 }
+
+TEST_CASE("Cast works when possible") {
+    Entry entry{{"foo", "bar"}};
+    ErrorOr<std::string> s = entry["foo"];
+    REQUIRE(!!s);
+    REQUIRE(*s == "bar");
+}
+
+TEST_CASE("Cast returns error when not possible") {
+    Entry entry{{"foo", nullptr}};
+    ErrorOr<std::string> s = entry["foo"];
+    REQUIRE(!s);
+    REQUIRE(s.as_error() == JsonDomainError());
+}

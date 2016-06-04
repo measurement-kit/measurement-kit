@@ -118,9 +118,69 @@ static void fail(Var<Transport>, std::string, std::string,
     cb(MockedError(), nullptr);
 }
 
-TEST_CASE("collector::create_report deals with POST error") {
+static Entry ENTRY{
+    {"data_format_version", "0.2.0"},
+    {"input", "torproject.org"},
+    {"measurement_start_time", "2016-06-04 17:53:13"},
+    {"probe_asn", "AS0"},
+    {"probe_cc", "ZZ"},
+    {"probe_ip", "127.0.0.1"},
+    {"software_name", "measurement_kit"},
+    {"software_version", "0.2.0-alpha.1"},
+    {"test_keys", {
+        {"failure", nullptr},
+        {"received", nlohmann::json::array()},
+        {"sent", nlohmann::json::array()},
+    }},
+    {"test_name", "tcp_connect"},
+    {"test_runtime", 0.253494024276733},
+    {"test_start_time", "2016-06-04 17:53:13"},
+    {"test_version","0.0.1"}
+};
+
+static Entry BAD_ENTRY{
+    {"data_format_version", "0.2.0"},
+    {"input", "torproject.org"},
+    {"measurement_start_time", "2016-06-04 17:53:13"},
+    {"probe_asn", "AS0"},
+    {"probe_cc", "ZZ"},
+    {"probe_ip", "127.0.0.1"},
+    {"software_name", "measurement kit"}, // This should fail
+    {"software_version", "0.2.0-alpha.1"},
+    {"test_keys", {
+        {"failure", nullptr},
+        {"received", nlohmann::json::array()},
+        {"sent", nlohmann::json::array()},
+    }},
+    {"test_name", "tcp_connect"},
+    {"test_runtime", 0.253494024276733},
+    {"test_start_time", "2016-06-04 17:53:13"},
+    {"test_version","0.0.1"}
+};
+
+TEST_CASE("collector::create_report deals with entry with missing key") {
     Entry entry;
-    collector::create_report_impl<fail>(nullptr, entry,
+    collector::create_report_impl<fail>(
+        nullptr, entry,
+        [=](Error err, std::string s) {
+            REQUIRE(err == MissingMandatoryKeyError());
+            REQUIRE(s == "");
+        },
+        {}, Reactor::global(), Logger::global());
+}
+
+TEST_CASE("collector::create_report deals with entry with invalid value") {
+    collector::create_report_impl<fail>(
+        nullptr, BAD_ENTRY,
+        [=](Error err, std::string s) {
+            REQUIRE(err == InvalidMandatoryValueError());
+            REQUIRE(s == "");
+        },
+        {}, Reactor::global(), Logger::global());
+}
+
+TEST_CASE("collector::create_report deals with POST error") {
+    collector::create_report_impl<fail>(nullptr, ENTRY,
                                         [=](Error err, std::string s) {
                                             REQUIRE(err == MockedError());
                                             REQUIRE(s == "");
@@ -136,9 +196,8 @@ static void wrong_json_type(Var<Transport>, std::string, std::string,
 }
 
 TEST_CASE("collector::create_report deals with wrong JSON type") {
-    Entry entry;
     collector::create_report_impl<wrong_json_type>(
-        nullptr, entry,
+        nullptr, ENTRY,
         [=](Error err, std::string s) {
             REQUIRE(err == JsonDomainError());
             REQUIRE(s == "");
@@ -154,9 +213,8 @@ static void missing_report_id(Var<Transport>, std::string, std::string,
 }
 
 TEST_CASE("collector::create_report deals with missing report_id") {
-    Entry entry;
     collector::create_report_impl<missing_report_id>(
-        nullptr, entry,
+        nullptr, ENTRY,
         [=](Error err, std::string s) {
             REQUIRE(err == JsonDomainError());
             REQUIRE(s == "");

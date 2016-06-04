@@ -78,6 +78,8 @@ void post_impl(Var<Transport> transport, std::string append_to_url,
                           reactor, logger);
 }
 
+Error valid_entry(Entry entry);
+
 /*
              _
   __ _ _ __ (_)
@@ -105,7 +107,11 @@ void create_report_impl(Var<Transport> transport, Entry entry,
                         Var<Logger> logger) {
 
     Entry request;
-    // TODO: validate entry?
+    Error err = valid_entry(entry);
+    if (err != NoError()) {
+        callback(err, "");
+        return;
+    }
     request["software_name"] = entry["software_name"];
     request["software_version"] = entry["software_version"];
     request["probe_asn"] = entry["probe_asn"];
@@ -143,7 +149,11 @@ void update_report_impl(Var<Transport> transport, std::string report_id,
                         Entry entry, Callback<Error> callback,
                         Settings settings, Var<Reactor> reactor,
                         Var<Logger> logger) {
-    // TODO: validate entry?
+    Error err = valid_entry(entry);
+    if (err != NoError()) {
+        callback(err);
+        return;
+    }
     Entry request{{"format", "json"}};
     request["content"] = entry;
     std::string body = request.dump();
