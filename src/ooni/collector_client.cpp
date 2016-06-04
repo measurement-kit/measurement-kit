@@ -34,7 +34,7 @@ Error valid_entry(Entry entry) {
     for (auto pair : mandatory_re) {
         ErrorOr<std::string> s = entry[pair.first];
         if (!s) {
-            return MissingMandatoryKeyError();
+            return MissingMandatoryKeyError(s.as_error());
         }
         if (!std::regex_match(*s, pair.second)) {
             return InvalidMandatoryValueError(pair.first);
