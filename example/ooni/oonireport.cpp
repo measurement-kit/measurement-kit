@@ -12,22 +12,21 @@
 using namespace mk::ooni;
 using namespace mk;
 
-static void upload_report(std::string url, int argc, char **argv) {
+static void upload_report(std::string url, int index, char **argv) {
     if (url == "") {
-        warn("Default collector not yet supported");
         break_loop();
         return;
     }
-    if (argv[argc] == nullptr) {
+    if (argv[index] == nullptr) {
         break_loop();
         return;
     }
-    info("submitting report %s...", argv[argc]);
-    collector::submit_report(argv[argc], url, [=](Error err) {
-        info("submitting report %s... %d", argv[argc], err.code);
+    info("submitting report %s...", argv[index]);
+    collector::submit_report(argv[index], url, [=](Error err) {
+        info("submitting report %s... %d", argv[index], err.code);
         call_soon([=]() {
             debug("scheduling submit of next report...");
-            upload_report(url, argc + 1, argv);
+            upload_report(url, index + 1, argv);
         });
     });
 }
@@ -51,12 +50,8 @@ int main(int argc, char **argv) {
     }
     argc -= optind;
     argv += optind;
-    if (argc < 1) {
-        std::cout << USAGE << "\n";
-        exit(1);
-    }
 
     loop_with_initial_event([&]() {
-        upload_report(url, argc, argv);
+        upload_report(url, 0, argv);
     });
 }

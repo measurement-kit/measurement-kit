@@ -4,6 +4,9 @@
 #ifndef SRC_OONI_COLLECTOR_CLIENT_IMPL_HPP
 #define SRC_OONI_COLLECTOR_CLIENT_IMPL_HPP
 
+// This file implements the OONI collector client protocol
+// See <https://github.com/TheTorProject/ooni-spec/blob/master/oonib.md>
+
 #include <fstream>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/ooni.hpp>
@@ -54,8 +57,7 @@ void post_impl(Var<Transport> transport, std::string append_to_url,
                                   callback(err, nullptr);
                                   return;
                               }
-                              if (response->status_code < 200 &&
-                                  response->status_code > 299) {
+                              if (response->status_code / 100 != 2) {
                                   callback(HttpRequestFailedError(), "");
                                   return;
                               }
@@ -111,7 +113,9 @@ void create_report_impl(Var<Transport> transport, Entry entry,
     request["test_name"] = entry["test_name"];
     request["test_version"] = entry["test_version"];
     request["test_start_time"] = entry["test_start_time"];
-    request["input_hashes"] = entry["input_hashes"];
+    if (entry["input_hashes"] != nullptr) {
+        request["input_hashes"] = entry["input_hashes"];
+    }
     request["data_format_version"] = entry["data_format_version"];
     request["format"] = "json";
     std::string body = request.dump();
@@ -125,8 +129,8 @@ void create_report_impl(Var<Transport> transport, Entry entry,
                        std::string report_id;
                        try {
                            report_id = reply["report_id"];
-                       } catch (std::out_of_range &) {
-                           callback(JsonKeyError(), "");
+                       } catch (std::domain_error &) {
+                           callback(JsonDomainError(), "");
                            return;
                        }
                        callback(NoError(), report_id);
@@ -140,9 +144,8 @@ void update_report_impl(Var<Transport> transport, std::string report_id,
                         Settings settings, Var<Reactor> reactor,
                         Var<Logger> logger) {
     // TODO: validate entry?
-    Entry request{
-        {"content", entry.as_nlohmann_json_()}, {"format", "json"},
-    };
+    Entry request{{"format", "json"}};
+    request["content"] = entry;
     std::string body = request.dump();
     collector_post(transport, "/report/" + report_id, body,
                    [=](Error err, nlohmann::json) {
@@ -177,7 +180,7 @@ static inline ErrorOr<Entry> get_next_entry(Var<std::istream> file,
         logger->warn("I/O error reading file");
         return FileIoError();
     }
-    logger->debug("Got line: %s", line.c_str());
+    logger->debug("Read line from report: %s", line.c_str());
     try {
         // Works because we are using nlohmann::json::json() as Entry::Entry()
         return Entry(nlohmann::json::parse(line));
@@ -190,14 +193,14 @@ static inline ErrorOr<Entry> get_next_entry(Var<std::istream> file,
 template <MK_MOCK_NAMESPACE(collector, update_report),
           MK_MOCK_NAMESPACE(collector, close_report)>
 void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
-                                std::string report_id, Entry entry,
+                                std::string report_id, int line, Entry entry,
                                 Callback<Error> callback, Settings settings,
                                 Var<Reactor> reactor, Var<Logger> logger) {
-    logger->info("adding entry report...");
+    logger->info("adding entry report #%d...", line);
     collector_update_report(
         txp, report_id, entry,
         [=](Error err) {
-            logger->info("adding entry report... %d", err.code);
+            logger->info("adding entry report #%d... %d", line, err.code);
             if (err) {
                 callback(err);
                 return;
@@ -219,8 +222,8 @@ void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
                 }
                 update_and_fetch_next_impl<collector_update_report,
                                            collector_close_report>(
-                    file, txp, report_id, *entry, callback, settings, reactor,
-                    logger);
+                    file, txp, report_id, line + 1, *entry, callback, settings,
+                    reactor, logger);
             });
         },
         settings, reactor, logger);
@@ -263,7 +266,7 @@ void submit_report_impl(std::string filepath, std::string collector_base_url,
                         callback(err);
                         return;
                     }
-                    update_and_fetch_next_impl(file, txp, report_id, *entry,
+                    update_and_fetch_next_impl(file, txp, report_id, 1, *entry,
                                                callback, settings, reactor,
                                                logger);
                 },

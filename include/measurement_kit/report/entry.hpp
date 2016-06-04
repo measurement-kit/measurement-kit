@@ -34,10 +34,7 @@ class Entry : private nlohmann::json {
     std::string dump();
 
     bool operator==(std::nullptr_t right);
-
-    nlohmann::json as_nlohmann_json_() {
-        return static_cast<nlohmann::json>(*this);
-    }
+    bool operator!=(std::nullptr_t right);
 
   protected:
   private:

@@ -61,7 +61,7 @@ MK_DEFINE_ERR(3, ValueError, "")
 MK_DEFINE_ERR(4, MockedError, "")
 MK_DEFINE_ERR(5, JsonParseError, "")
 MK_DEFINE_ERR(6, JsonKeyError, "")
-MK_DEFINE_ERR(7, DomainError, "")
+MK_DEFINE_ERR(7, JsonDomainError, "")
 MK_DEFINE_ERR(8, FileEofError, "")
 MK_DEFINE_ERR(9, FileIoError, "")
 
