@@ -122,8 +122,14 @@ TEST_CASE("Verify that invalid input is rejected") {
     }
 }
 
-TEST_CASE("split(std::string s) works properly") {
+TEST_CASE("split(std::string s) works properly in the common case") {
     REQUIRE((mk::split(" 34    43  17 11 ") == std::list<std::string>{
                 {"", "34", "43", "17", "11"}
+            }));
+}
+
+TEST_CASE("split(std::string s) works properly with only one token") {
+    REQUIRE((mk::split("34") == std::list<std::string>{
+                {"34"}
             }));
 }

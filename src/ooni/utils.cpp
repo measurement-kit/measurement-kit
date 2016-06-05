@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "src/ooni/utils.hpp"
+#include "src/common/utils.hpp"
 
 namespace mk {
 namespace ooni {
@@ -51,6 +52,7 @@ static Error geoip_resolve_asn (std::string ip, std::string path_asn, json &node
         return GenericError();
     }
     node["asn"] = res;
+    node["asn"] = split(node["asn"]).front(); // We only want ASXXXX
     free(res);
     GeoIP_delete(gi);
     return NoError();
@@ -58,7 +60,13 @@ static Error geoip_resolve_asn (std::string ip, std::string path_asn, json &node
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,
                     std::string path_asn) {
-    json node;
+    json node{
+        // Set sane values such that we should not have errors accessing
+        // output even when lookup may fail for current database
+        {"country_code", "ZZ"},
+        {"country_name", "ZZ"},
+        {"asn", "AS0"},
+    };
     Error err = geoip_resolve_country (ip, path_country, node);
     if (err) {
         return err;
