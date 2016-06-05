@@ -10,18 +10,12 @@
 
 namespace mk {
 namespace ooni {
-namespace dns_template {
 
 using namespace mk::report;
 
-void query(dns::QueryType, dns::QueryClass, std::string query_name,
-           std::string name_server, Var<Entry>, Callback<Error, dns::Message>,
-           Settings = {}, Var<Reactor> = Reactor::global(),
-           Var<Logger> = Logger::global());
-
-    void query(dns::QueryType query_type, dns::QueryClass query_class,
-               std::string query_name, std::string nameserver,
-               Var<Entry> entry, Callback<Error, dns::Message> cb,
+    void dns_template(Var<Entry> entry, std::string nameserver,
+               dns::QueryType query_type, dns::QueryClass query_class,
+               std::string query_name, Callback<Error, dns::Message> cb,
                Settings options, Var<Reactor> reactor, Var<Logger> logger) {
 
         int resolver_port;
@@ -72,7 +66,6 @@ void query(dns::QueryType, dns::QueryClass, std::string query_name,
             }, options, reactor);
     }
 
-} // namespace dns_template
 } // namespace ooni
 } // namespace mk
 #endif

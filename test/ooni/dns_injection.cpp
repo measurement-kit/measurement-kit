@@ -8,8 +8,38 @@
 #include "src/ooni/dns_injection_impl.hpp"
 #include <measurement_kit/common.hpp>
 
-using namespace mk;
 using namespace mk::ooni;
+using namespace mk::report;
+using namespace mk;
+
+TEST_CASE("Check dns-injection output for non-injected entry") {
+    loop_with_initial_event([=]() {
+        dns_injection(
+            "8.8.8.8", "nexa.polito.it", [=](Error err, Var<Entry> entry) {
+                REQUIRE(!err);
+                std::string temp;
+                temp = (*entry)["data_format_version"];
+                REQUIRE(temp == "0.2.0.");
+                /*
+                REQUIRE((*entry)["data_format_version"] == "0.2.0");
+                REQUIRE((*entry)["input"] == "nexa.polito.it");
+                REQUIRE((*entry)["measurement_start_time"] != nullptr);
+                REQUIRE((*entry)["probe_asn"] != nullptr);
+                REQUIRE((*entry)["probe_cc"] != nullptr);
+                REQUIRE((*entry)["probe_ip"] != nullptr);
+                REQUIRE((*entry)["software_name"] == "measurement_kit");
+                REQUIRE((*entry)["software_version"] == MEASUREMENT_KIT_VERSION);
+                REQUIRE((*entry)["test_name"] == "dns_injection");
+                REQUIRE((*entry)["test_runtime"] > 0.0);
+                REQUIRE((*entry)["test_start_time"] != nullptr);
+                REQUIRE((*entry)["test_version"] != nullptr);
+                REQUIRE((*entry)["test_keys"] != nullptr);
+                REQUIRE((*entry)["test_keys"]["injected"] == false);
+                warn("xx: %s", entry->dump().c_str());
+                */
+            });
+    });
+}
 
 TEST_CASE(
     "The DNS Injection test should run with an input file of DNS hostnames") {

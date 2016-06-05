@@ -15,11 +15,6 @@ namespace ooni {
 
 using namespace mk::report;
 
-namespace dns_injection {
-void run(std::string input, Callback<Error, Var<Entry>>, Settings = {},
-         Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
-}
-
 class DNSInjectionImpl : public OoniTestImpl {
   public:
     DNSInjectionImpl(std::string input_filepath_, Settings options_)
@@ -32,19 +27,19 @@ class DNSInjectionImpl : public OoniTestImpl {
 
     void main(std::string input, Settings options,
               std::function<void(report::Entry)> &&cb) {
-        dns_injection::run(input, [this, cb](Error, Var<report::Entry> entry) {
-            cb(*entry);
-        }, options, reactor, logger);
+        dns_injection(options["backend"], input,
+                      [this, cb](Error, Var<report::Entry> entry) {
+                           cb(*entry);
+                       }, options, reactor, logger);
     }
 };
 
-namespace dns_injection {
-
-void run(std::string input, Callback<Error, Var<Entry>> cb,
-         Settings options, Var<Reactor> reactor, Var<Logger> logger) {
+void dns_injection(std::string name_server, std::string input,
+                   Callback<Error, Var<Entry>> callback, Settings options,
+                   Var<Reactor> reactor, Var<Logger> logger) {
         Var<Entry> entry(new Entry);
         (*entry)["injected"] = nullptr;
-        dns_template::query("A", "IN", input, options["backend"], entry,
+        dns_template(entry, name_server, "A", "IN", input,
               [=](Error error, dns::Message message) {
                   logger->debug("dns_injection: got response");
                   if (message.error_code == DNS_ERR_NONE) {
@@ -52,11 +47,10 @@ void run(std::string input, Callback<Error, Var<Entry>> cb,
                   } else {
                       (*entry)["injected"] = false;
                   }
-                  cb(error, entry);
+                  callback(error, entry);
               }, options, reactor, logger);
     }
 
-} // namespace dns_injection
 } // namespace ooni
 } // namespace mk
 #endif
