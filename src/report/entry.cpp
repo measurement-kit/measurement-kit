@@ -37,6 +37,14 @@ void Entry::push_back(Entry value) {
     }
 }
 
+Entry &Entry::operator[](int key) {
+    try {
+        return static_cast<Entry &>(nlohmann::json::operator[](key));
+    } catch (std::domain_error &) {
+        throw JsonDomainError();
+    }
+}
+
 std::string Entry::dump() {
     return nlohmann::json::dump();
 }
