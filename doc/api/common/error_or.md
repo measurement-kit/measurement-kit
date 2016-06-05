@@ -50,8 +50,8 @@ as shown in the following snippet:
     }
     use_result(*res);
 ```
-The first form of the constructor creates an uninitialized `ErrorOr` object
-that shall throw `NotInitializedError` when accessed. This constructor allows
+The first form of the constructor creates an `ErrorOr` object initialized
+with error equal to `NotInitializedError`. This constructor allows
 to write code like the following:
 
 ```C++
