@@ -127,7 +127,8 @@ void bar() {
 4) a test source file that overrides the template defaults
 
 ```C++
-// TODO: include Catch header and add proper defines
+// test/foo/foo.cpp
+#include <catch.hpp>
 #include "src/foo/foo_impl.hpp"
 
 static void fail(Callback<Error> cb) {
