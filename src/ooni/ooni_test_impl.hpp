@@ -16,6 +16,7 @@
 #include "src/common/utils.hpp"                 // for utc_time_now
 #include "src/ooni/input_file_generator.hpp"    // for InputFileGenerator
 #include "src/ooni/input_generator.hpp"         // for InputGenerator
+#include "src/ooni/utils.hpp"
 #include <sys/stat.h>
 
 namespace mk {
@@ -73,7 +74,36 @@ class OoniTestImpl : public mk::NetTest {
         probe_ip = "127.0.0.1";
         probe_asn = "AS0";
         probe_cc = "ZZ";
-        cb();
+        ip_lookup([=](Error err, std::string ip) {
+            if (!err) {
+                logger->info("probe ip: %s", ip.c_str());
+                if (options.get("save_real_probe_ip", false)) {
+                    logger->debug("saving user's real ip on user's request");
+                    probe_ip = ip;
+                }
+                std::string country_p = options.get("geoip_country_path",
+                                                    std::string{});
+                std::string asn_p = options.get("geoip_asn_path",
+                                                std::string{});
+                if (country_p == "" or asn_p == "") {
+                    logger->warn("geoip files not configured; skipping");
+                } else {
+                    ErrorOr<nlohmann::json> res = geoip(ip, country_p, asn_p);
+                    if (!!res) {
+                        logger->debug("GeoIP result: %s", res->dump().c_str());
+                        try {
+                            probe_asn = (*res)["asn"];
+                            logger->info("probe_asn: %s", probe_asn.c_str());
+                            probe_cc = (*res)["country_code"];
+                            logger->info("probe_cc: %s", probe_cc.c_str());
+                        } catch (std::domain_error &) {
+                            logger->warn("failed to access geoip result");
+                        }
+                    }
+                }
+            }
+            cb();
+        });
     }
 
     void open_report() {
