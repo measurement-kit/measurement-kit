@@ -61,7 +61,9 @@ MK_DEFINE_ERR(3, ValueError, "")
 MK_DEFINE_ERR(4, MockedError, "")
 MK_DEFINE_ERR(5, JsonParseError, "")
 MK_DEFINE_ERR(6, JsonKeyError, "")
-MK_DEFINE_ERR(7, DomainError, "")
+MK_DEFINE_ERR(7, JsonDomainError, "")
+MK_DEFINE_ERR(8, FileEofError, "")
+MK_DEFINE_ERR(9, FileIoError, "")
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)
@@ -69,6 +71,7 @@ MK_DEFINE_ERR(7, DomainError, "")
 #define MK_ERR_TRACEROUTE(x) (4000 + x)
 #define MK_ERR_MLABNS(x) (5000 + x)
 #define MK_ERR_OONI(x) (6000 + x)
+#define MK_ERR_REPORT(x) (7000 + x)
 
 } // namespace mk
 #endif

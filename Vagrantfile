@@ -6,12 +6,12 @@ Vagrant.configure(2) do |config|
       v.memory = 2048
     end
     trusty64.vm.provision "shell", inline: <<-SHELL
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-      sudo apt-get update
-      sudo apt-get dist-upgrade -y
-      sudo apt-get install -y gcc-5 g++-5
-      sudo apt-get install -y autoconf automake libtool valgrind git
-      sudo apt-get install -y libevent-dev libssl-dev libgeoip-dev
+      cd /mk
+      ./build/docker/script/run gcc-trusty depend start_over
+      echo "Now run:"
+      echo "1. vagrant ssh"
+      echo "2. cd /mk"
+      echo "3. ./build/vagrant/trusty64"
     SHELL
   end
 end

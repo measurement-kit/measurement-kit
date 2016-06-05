@@ -19,7 +19,7 @@ using namespace mk::net;
 using namespace mk::http;
 
 static const char *kv_usage =
-    "usage: ./example/http/dash [-vn] [-a address]\n";
+    "usage: ./example/http/client_dash [-vn] [-a address]\n";
 
 int main(int argc, char **argv) {
     Settings settings;

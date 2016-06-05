@@ -10,8 +10,6 @@
 #include <measurement_kit/dns.hpp>
 #include "src/ooni/ooni_test_impl.hpp"
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace ooni {
 
@@ -46,7 +44,7 @@ class DNSTestImpl : public ooni::OoniTestImpl {
             query_class, query_type, query_name,
             [=](Error error, dns::Message message) {
                 logger->debug("dns_test: got response!");
-                json query_entry;
+                report::Entry query_entry;
                 query_entry["resolver_hostname"] = resolver_hostname;
                 query_entry["resolver_port"] = resolver_port;
                 query_entry["failure"] = nullptr;
