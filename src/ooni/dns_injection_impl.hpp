@@ -13,12 +13,17 @@
 namespace mk {
 namespace ooni {
 
-class DNSInjectionImpl : public DNSTestImpl {
-    using DNSTestImpl::DNSTestImpl;
+using namespace mk::report;
 
+namespace dns_injection {
+void run(std::string input, Callback<Error, Var<Entry>>, Settings = {},
+         Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
+}
+
+class DNSInjectionImpl : public OoniTestImpl {
   public:
     DNSInjectionImpl(std::string input_filepath_, Settings options_)
-        : DNSTestImpl(input_filepath_, options_) {
+            : OoniTestImpl(input_filepath_, options_) {
         test_name = "dns_injection";
         test_version = "0.0.1";
 
@@ -27,20 +32,31 @@ class DNSInjectionImpl : public DNSTestImpl {
 
     void main(std::string input, Settings options,
               std::function<void(report::Entry)> &&cb) {
-        entry["injected"] = nullptr;
-        query("A", "IN", input, options["backend"],
-              [this, cb](dns::Message message) {
-                  logger->debug("dns_injection: got response");
-                  if (message.error_code == DNS_ERR_NONE) {
-                      entry["injected"] = true;
-                  } else {
-                      entry["injected"] = false;
-                  }
-                  cb(entry);
-              }, options);
+        dns_injection::run(input, [this, cb](Error, Var<report::Entry> entry) {
+            cb(*entry);
+        }, options, reactor, logger);
     }
 };
 
+namespace dns_injection {
+
+void run(std::string input, Callback<Error, Var<Entry>> cb,
+         Settings options, Var<Reactor> reactor, Var<Logger> logger) {
+        Var<Entry> entry(new Entry);
+        (*entry)["injected"] = nullptr;
+        dns_template::query("A", "IN", input, options["backend"], entry,
+              [=](Error error, dns::Message message) {
+                  logger->debug("dns_injection: got response");
+                  if (message.error_code == DNS_ERR_NONE) {
+                      (*entry)["injected"] = true;
+                  } else {
+                      (*entry)["injected"] = false;
+                  }
+                  cb(error, entry);
+              }, options, reactor, logger);
+    }
+
+} // namespace dns_injection
 } // namespace ooni
 } // namespace mk
 #endif

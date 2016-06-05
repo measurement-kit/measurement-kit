@@ -5,27 +5,24 @@
 #ifndef SRC_OONI_DNS_TEST_HPP
 #define SRC_OONI_DNS_TEST_HPP
 
-#include <measurement_kit/common/var.hpp>
-
+#include <measurement_kit/common.hpp>
 #include <measurement_kit/dns.hpp>
-#include "src/ooni/ooni_test_impl.hpp"
 
 namespace mk {
 namespace ooni {
+namespace dns_template {
 
-class DNSTestImpl : public ooni::OoniTestImpl {
-    using ooni::OoniTestImpl::OoniTestImpl;
+using namespace mk::report;
 
-  public:
-    DNSTestImpl(std::string input_filepath_, Settings options_)
-        : ooni::OoniTestImpl(input_filepath_, options_) {
-        test_name = "dns_test";
-        test_version = "0.0.1";
-    };
+void query(dns::QueryType, dns::QueryClass, std::string query_name,
+           std::string name_server, Var<Entry>, Callback<Error, dns::Message>,
+           Settings = {}, Var<Reactor> = Reactor::global(),
+           Var<Logger> = Logger::global());
 
     void query(dns::QueryType query_type, dns::QueryClass query_class,
                std::string query_name, std::string nameserver,
-               std::function<void(dns::Message)> cb, Settings options = {}) {
+               Var<Entry> entry, Callback<Error, dns::Message> cb,
+               Settings options, Var<Reactor> reactor, Var<Logger> logger) {
 
         int resolver_port;
         std::string resolver_hostname, nameserver_part;
@@ -56,7 +53,7 @@ class DNSTestImpl : public ooni::OoniTestImpl {
                 if (!error) {
                     for (auto answer : message.answers) {
                         if (query_type == dns::QueryTypeId::A) {
-                        query_entry["answers"].push_back({
+                            query_entry["answers"].push_back({
                                 {"ttl", answer.ttl},
                                 {"ipv4", answer.ipv4},
                                 {"answer_type", "A"}
@@ -68,14 +65,14 @@ class DNSTestImpl : public ooni::OoniTestImpl {
                 }
                 // TODO add support for bytes received
                 // query_entry["bytes"] = response.get_bytes();
-                entry["queries"].push_back(query_entry);
+                (*entry)["queries"].push_back(query_entry);
                 logger->debug("dns_test: callbacking");
-                cb(message);
+                cb(error, message);
                 logger->debug("dns_test: callback called");
             }, options, reactor);
     }
-};
 
+} // namespace dns_template
 } // namespace ooni
 } // namespace mk
 #endif
