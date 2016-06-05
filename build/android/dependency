@@ -32,3 +32,7 @@ for ARCH in $ALL_ARCHS; do
     fi
     $ANDROIDDIR/cross ${ARCH} ${API} $BUILDDIR/dependency $SPEC
 done
+
+# Install spec so we know what version was used to build the archive
+install -d $ANDROIDDIR/jni/spec
+install -m644 $BUILDDIR/spec/$SPEC $ANDROIDDIR/jni/spec/$SPEC
