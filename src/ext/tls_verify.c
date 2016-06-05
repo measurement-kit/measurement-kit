@@ -26,7 +26,6 @@
 
 #include "tls_internal.h"
 
-
 static int tls_match_name(const char *cert_name, const char *name);
 static int tls_check_subject_altname(struct tls *ctx, X509 *cert,
     const char *name);
