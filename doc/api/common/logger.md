@@ -61,7 +61,8 @@ reserved values. Only the first four bits are used to represent levels
 of verbosity, while other bits are currently reserved.
 
 The `Logger` class specifies how logs are processed. You can change the
-function that receives logs. You can change the verbosity level.
+function that receives logs. You can change the verbosity level. And
+of course you can log messages as well.
 
 The `make()` factory creates a logger wrapped by a shared pointer.
 
