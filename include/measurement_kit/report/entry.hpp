@@ -42,14 +42,14 @@ class Entry : private nlohmann::json {
         return operator[](std::string(key));
     }
     Entry &operator[](std::string key);
-    constexpr bool is_object() const {
+    bool is_object() const {
         return nlohmann::json::is_object();
     }
 
     // Implementation of list
     void push_back(Entry);
     Entry &operator[](int key);
-    constexpr bool is_array() const {
+    bool is_array() const {
         return nlohmann::json::is_array();
     }
 
@@ -58,7 +58,7 @@ class Entry : private nlohmann::json {
     }
     std::string dump();
 
-    constexpr bool is_null() const {
+    bool is_null() const {
         return nlohmann::json::is_null();
     }
 
