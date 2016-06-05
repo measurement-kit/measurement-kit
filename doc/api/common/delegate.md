@@ -26,7 +26,7 @@ template <typename T> class Delegate_ {
 };
 
 template <typename... T>
-using Delegate = Delegate_<void(T...);
+using Delegate = Delegate_<void(T...)>;
 
 }
 ```
