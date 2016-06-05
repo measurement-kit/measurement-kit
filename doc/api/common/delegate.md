@@ -1,5 +1,5 @@
 # NAME
-Delegate -- Callback function that can modify itself.
+Delegate -- Method that can modify itself.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
