@@ -82,7 +82,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
                 return;
             }
             if (response->status_code != 200) {
-                callback(UnexpectedHttpStatusCodeError(), Reply());
+                callback(http::HttpRequestFailedError(), Reply());
                 return;
             }
             Reply reply;

@@ -238,13 +238,15 @@ class OoniTestImpl : public mk::NetTest {
         });
     }
 
-    /*!
-     * \brief Make sure that the report is written.
-     * \param cb Callback called when the report is written.
-     */
-    virtual void end(std::function<void()> cb) override {
+    void end(std::function<void()> cb) override {
         file_report.close();
-        cb();
+        // Note: here we make the reasonable assumption that the owner of this
+        // instance would keep it safe until the final callback is fired
+        collector::submit_report(
+            get_report_filename(),
+            options.get("collector_base_url",
+                        collector::default_collector_url()),
+            [=](Error) { cb(); }, options, reactor, logger);
     }
 
     void set_reactor(Var<Reactor> p) { reactor = p; }

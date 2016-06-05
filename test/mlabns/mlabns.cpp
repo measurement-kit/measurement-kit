@@ -165,7 +165,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
         mlabns::query_impl<get_debug_invalid_status_code>(
             tool,
             [](Error error, mlabns::Reply) {
-                REQUIRE(error == mlabns::UnexpectedHttpStatusCodeError());
+                REQUIRE(error == http::HttpRequestFailedError());
                 break_loop();
             },
             settings, Reactor::global(), Logger::global());

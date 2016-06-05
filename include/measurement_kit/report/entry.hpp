@@ -19,6 +19,14 @@ class Entry : private nlohmann::json {
 
     static Entry array();
 
+    template <typename T> operator ErrorOr<T>() {
+        try {
+            return nlohmann::json::operator T();
+        } catch (std::domain_error &) {
+            return JsonDomainError();
+        }
+    }
+
     // Implementation of dict
     Entry &operator=(Entry value);
     template <typename K> Entry &operator[](const K &key) {
@@ -34,6 +42,7 @@ class Entry : private nlohmann::json {
     std::string dump();
 
     bool operator==(std::nullptr_t right);
+    bool operator!=(std::nullptr_t right);
 
   protected:
   private:
