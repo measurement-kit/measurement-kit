@@ -66,7 +66,7 @@ of course you can log messages as well.
 
 The `make()` factory creates a logger wrapped by a shared pointer.
 
-The `logv()`, `log()`, `warn()`, `info()`, and `debug()` allow to write
+The `logv()`, `log()`, `warn()`, `info()`, and `debug()` methods allow to write
 log messages. Specifically, `logv()` and `log()` take an explicit logging
 level argument, while other functions provide it implicitly. Messages
 are only written if the current verbosity not lower than the verbosity
