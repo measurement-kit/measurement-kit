@@ -57,6 +57,11 @@ to write code like the following:
 ```C++
     ErrorOr<Result> res;
     // ...
+    
+    REQUIRE_THROWS_AS(*res, NotInitializedError());
+    REQUIRE(res.as_error() == NotInitializedError());
+    
+    // ...
     res = some_operation();
 ```
 
