@@ -34,6 +34,8 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
     static const int DASH_RATES[] = {100,  150,  200,  250,  300,   400,  500,
                         700,  900,  1200, 1500, 2000,  2500, 3000,
                         4000, 5000, 6000, 7000, 10000, 20000};
+    static const int sizeofrates = (int) (sizeof(DASH_RATES) /
+                                        sizeof(int));
     std::string url = "http://127.0.0.1/dash/download/";
 
     if (iteration > DASH_MAX_ITERATION) {
@@ -42,7 +44,8 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
     }
 
     // Bisect
-    while (DASH_RATES[rate_index] < speed_kbit) {
+    while ((DASH_RATES[rate_index] < speed_kbit) &&
+        (rate_index < sizeofrates)) {
         rate_index++;
     }
     rate_index -= 1;
@@ -148,7 +151,6 @@ static inline void run_impl(Settings settings, Callback<Error, Var<json>> cb,
                         }
 
                         Var<json> measurements(new json);
-                        *measurements = {};
 
                         loop_request(transport, 100, cb, auth, measurements,
                                      reactor, logger);
