@@ -75,7 +75,9 @@ class OoniTestImpl : public mk::NetTest {
         probe_asn = "AS0";
         probe_cc = "ZZ";
         ip_lookup([=](Error err, std::string ip) {
-            if (!err) {
+            if (err) {
+                logger->warn("ip_lookup() failed: error code: %d", err.code);
+            } else {
                 logger->info("probe ip: %s", ip.c_str());
                 if (options.get("save_real_probe_ip", false)) {
                     logger->debug("saving user's real ip on user's request");
@@ -91,14 +93,16 @@ class OoniTestImpl : public mk::NetTest {
                     ErrorOr<nlohmann::json> res = geoip(ip, country_p, asn_p);
                     if (!!res) {
                         logger->debug("GeoIP result: %s", res->dump().c_str());
-                        try {
-                            probe_asn = (*res)["asn"];
-                            logger->info("probe_asn: %s", probe_asn.c_str());
-                            probe_cc = (*res)["country_code"];
-                            logger->info("probe_cc: %s", probe_cc.c_str());
-                        } catch (std::domain_error &) {
-                            logger->warn("failed to access geoip result");
-                        }
+                        // Since `geoip()` sets defaults before querying, the
+                        // following accesses of json should not fail unless for
+                        // programmer error after refactoring. In that case,
+                        // better to let the exception unwind than just print
+                        // a warning, because the former is easier to notice
+                        // and therefore fix during development
+                        probe_asn = (*res)["asn"];
+                        logger->info("probe_asn: %s", probe_asn.c_str());
+                        probe_cc = (*res)["country_code"];
+                        logger->info("probe_cc: %s", probe_cc.c_str());
                     }
                 }
             }
