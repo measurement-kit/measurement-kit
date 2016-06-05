@@ -58,8 +58,10 @@ to write code like the following:
     ErrorOr<Result> res;
     // ...
     
+    /* Note that until assigned:
+    
     REQUIRE_THROWS_AS(*res, NotInitializedError());
-    REQUIRE(res.as_error() == NotInitializedError());
+    REQUIRE(res.as_error() == NotInitializedError()); */
     
     // ...
     res = some_operation();
