@@ -76,30 +76,30 @@ gen_executables() {
 }
 
 get_repo() {
-  echo ""
-  echo "> $3 (from github.com/$1)"
-  branch=$4
-  [ -z "$branch" ] && branch=master
-  if [ ! -d src/ext/$3 ]; then
-      git clone --depth 50 -b $branch https://github.com/$1 src/ext/$3
-  else
-      (cd src/ext/$3 && git checkout $branch && git pull)
-  fi
-  (cd src/ext/$3 && git checkout $2)
-  echo ""
+    echo ""
+    echo "> $3 (from github.com/$1)"
+    branch=$4
+    [ -z "$branch" ] && branch=master
+    if [ ! -d src/ext/$3 ]; then
+        git clone --depth 50 -b $branch https://github.com/$1 src/ext/$3
+    else
+        (cd src/ext/$3 && git checkout $branch && git pull)
+    fi
+    (cd src/ext/$3 && git checkout $2)
+    echo ""
 }
 
 get_geoipdb() {
-  echo ""
-  base=https://download.maxmind.com/download/geoip/database
-  if [ ! -f "test/fixtures/GeoIP.dat" ]; then
-    wget -q $base/GeoLiteCountry/GeoIP.dat.gz -O test/fixtures/GeoIP.dat.gz
-    gzip -d test/fixtures/GeoIP.dat.gz
-  fi
-  if [ ! -f "test/fixtures/GeoIPASNum.dat" ]; then
-    wget -q $base/asnum/GeoIPASNum.dat.gz -O test/fixtures/GeoIPASNum.dat.gz
-    gzip -d test/fixtures/GeoIPASNum.dat.gz
-  fi
+    echo ""
+    base=https://download.maxmind.com/download/geoip/database
+    if [ ! -f "test/fixtures/GeoIP.dat" ]; then
+        wget -q $base/GeoLiteCountry/GeoIP.dat.gz -O test/fixtures/GeoIP.dat.gz
+        gzip -d test/fixtures/GeoIP.dat.gz
+    fi
+    if [ ! -f "test/fixtures/GeoIPASNum.dat" ]; then
+        wget -q $base/asnum/GeoIPASNum.dat.gz -O test/fixtures/GeoIPASNum.dat.gz
+        gzip -d test/fixtures/GeoIPASNum.dat.gz
+    fi
 }
 
 grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
@@ -121,8 +121,8 @@ sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
 
 echo "* Fetching dependencies that are build in any case"
-get_repo joyent/http-parser v2.6.0 http-parser
-get_repo philsquared/Catch v1.2.1 Catch
+get_repo nodejs/http-parser v2.7.0 http-parser
+get_repo philsquared/Catch v1.5.0 Catch
 
 echo "* Fetching geoip database"
 get_geoipdb
@@ -130,6 +130,7 @@ get_geoipdb
 echo "* Running 'autoreconf -i'"
 autoreconf -i
 
+echo ""
 echo "=== autogen.sh complete ==="
 echo ""
 echo "MeasurementKit is now ready to be compiled. To proceed you shall run"
