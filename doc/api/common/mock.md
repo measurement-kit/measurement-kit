@@ -64,7 +64,7 @@ are prefixed to the function name. For example:
 Usage of these macros is typically coupled with a pattern used in MK
 by which implementation of a functionality consists of:
 
-1. a public header file containing prototypes
+1) a public header file containing prototypes
 
 ```C++
 // include/measurement_kit/foo/foo.hpp
@@ -78,7 +78,7 @@ void bar();
 #endif
 ```
 
-2. a private implementation header containing templates
+2) a private implementation header containing templates
 
 ```C++
 // src/foo/foo_impl.hpp
@@ -109,7 +109,7 @@ void bar_impl() {
 #endif
 ```
 
-3. a private implementation file pulling the private header
+3) a private implementation file pulling the private header
 
 ```C++
 // src/foo/foo.cpp
@@ -122,7 +122,7 @@ void bar() {
 }
 ```
 
-4. a test source file that overrides the template defaults
+4) a test source file that overrides the template defaults
 
 ```C++
 // TODO: include Catch header and add proper defines
