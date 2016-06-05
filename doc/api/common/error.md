@@ -195,6 +195,22 @@ defined by the `measurement_kit/common.hpp` header:
 - 7,000 for the *report* lib
 - 8,000 for the *ndt* lib
 
+# BUGS
+
+The list of defined errors should be in a separate file, since they change more
+frequently than the definition of `Error`, which is stable.
+
+Since the only integral value to which `Error` could be converted is `bool` there
+are odd cases where the following statement:
+
+```C++
+    REQUIRE(err == SomeError());
+```
+
+may fail because the two errors are different but `Catch` may still print as
+reason for the failed error `1 == 1` because both classes evaluate to `true` (i.e. `1`)
+even though they internally contain two different errors.
+
 # HISTORY
 
 The `Error` class appeared in MeasurementKit 0.1.0. The `ErrorContext` class, the
