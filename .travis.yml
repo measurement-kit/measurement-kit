@@ -1,5 +1,9 @@
 language: cpp
 
+branches:
+  except:
+    - /^doc\/.*$/
+
 install:
     - if [ "$VER" != ""  ]; then
           export CXX="$CXX-$VER" CC="$CC-$VER";
