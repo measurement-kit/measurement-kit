@@ -69,8 +69,8 @@ The `make()` factory creates a logger wrapped by a shared pointer.
 The `logv()`, `log()`, `warn()`, `info()`, and `debug()` methods allow to write
 log messages. Specifically, `logv()` and `log()` take an explicit logging
 level argument, while other functions provide it implicitly. Messages
-are only written if the current verbosity not lower than the verbosity
-of the currently logged message.
+are only written if the current verbosity level is not lower than the verbosity
+level of the currently logged message.
 
 The `set_verbosity()`, `increase_verbosity()` and `get_verbosity()` methods
 allow to manage the verbosity level of the logger. The default verbosity
