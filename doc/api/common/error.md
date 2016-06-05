@@ -122,7 +122,7 @@ MAY be different from the error stored in the `reason` field.
 The `Var<ErrorContext> context` field is a shared smart pointer (see `Var`) that MAY
 store the error context in specific cases. The typical pattern for accessing such error
 context involves three steps: making sure that the context is not `nullptr`, casting
-the base error class to the specific expected class, and making sure that the case did
+the base error class to the specific expected class, and making sure that the cast did
 not fail, again checking whether the context is not `nullptr`. For example:
 
 ```C++
@@ -192,6 +192,8 @@ defined by the `measurement_kit/common.hpp` header:
 - 4,000 for the *traceroute* lib
 - 5,000 for the *mlabns* lib
 - 6,000 for the *ooni* lib
+- 7,000 for the *report* lib
+- 8,000 for the *ndt* lib
 
 # HISTORY
 
