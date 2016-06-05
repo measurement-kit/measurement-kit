@@ -93,10 +93,12 @@ namespace foo {
 template<MK_MOCK_NAMESPACE_SUFFIX(foobar, bbbaz, 1),
          MK_MOCK_NAMESPACE_SUFFIX(foobar, bbbaz, 2)>
 void bar_impl() {
+    // With default arguments is equal to calling foobar::bbbaz()
     foobar_bbbaaz_1([=](Error err) {
         if (err) {
             throw err;
         }
+        // With default arguments is equal to calling foobar::bbbaz()
         foobar_bbbaz_2([=](Error err) {
             if (err) {
                 mk::warn("something's wrong");
@@ -133,6 +135,8 @@ static void fail(Callback<Error> cb) {
 }
 
 TEST_CASE("Foo deals with initial error") {
+    // This overrides the first invocation of foobar::bbbaz with
+    // a mocked function that always fail execution
     REQUIRE_THROWS(foo::bar_impl<fail>());
 }
 
@@ -141,6 +145,8 @@ static void success(Callback<Error> cb) {
 }
 
 TEST_CASE("Foo deals with second error") {
+    // In this case we mock success of the first invocation
+    // and failure of the second invocation
     foo::bar_impl<success, fail>();
 }
 ```
