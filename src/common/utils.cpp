@@ -13,7 +13,6 @@
 #include <netinet/in.h>
 #include <cstddef>
 #include <cstring>
-#include <measurement_kit/common.hpp>
 #include <regex>
 #include <stdint.h>
 #include <stdlib.h>
@@ -46,11 +45,11 @@ void utc_time_now(struct tm *utc) {
     gmtime_r(&tv, utc);
 }
 
-std::string timestamp(const struct tm *t) {
+ErrorOr<std::string> timestamp(const struct tm *t) {
     char result[30];
     if (strftime(result, sizeof(result), "%Y-%m-%d %H:%M:%S", t) == 0) {
-        throw std::runtime_error("strftime()");
-    };
+        return ValueError();
+    }
     return std::string(result);
 }
 

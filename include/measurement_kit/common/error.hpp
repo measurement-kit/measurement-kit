@@ -69,6 +69,7 @@ MK_DEFINE_ERR(7, DomainError, "")
 #define MK_ERR_TRACEROUTE(x) (4000 + x)
 #define MK_ERR_MLABNS(x) (5000 + x)
 #define MK_ERR_OONI(x) (6000 + x)
+#define MK_ERR_REPORT(x) (7000 + x)
 
 } // namespace mk
 #endif

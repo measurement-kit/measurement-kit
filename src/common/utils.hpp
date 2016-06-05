@@ -6,6 +6,7 @@
 
 #include <event2/util.h>
 #include <list>
+#include <measurement_kit/common.hpp>
 #include <stddef.h>
 #include <string>
 #include <unistd.h>
@@ -23,7 +24,7 @@ class Settings;
 void timeval_now(timeval *);
 double time_now();
 void utc_time_now(struct tm *);
-std::string timestamp(const struct tm *);
+ErrorOr<std::string> timestamp(const struct tm *);
 timeval *timeval_init(timeval *, double);
 
 int storage_init(sockaddr_storage *, socklen_t *, const char *, const char *,

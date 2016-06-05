@@ -1,0 +1,38 @@
+#!/bin/sh
+set -e
+
+export CC="gcc-5"
+export CPP="gcc-5 -E"
+export CXX="g++-5"
+
+export configure_flags="$configure_flags --with-geoip=builtin"
+export configure_flags="$configure_flags --disable-shared"
+
+debian_deps="$debian_deps autoconf"
+debian_deps="$debian_deps automake"
+debian_deps="$debian_deps git"
+debian_deps="$debian_deps libevent-dev"
+debian_deps="$debian_deps libssl-dev"
+debian_deps="$debian_deps libtool"
+debian_deps="$debian_deps make"
+debian_deps="$debian_deps python-software-properties"
+debian_deps="$debian_deps valgrind"
+debian_deps="$debian_deps wget"
+
+subr_depend() {
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y $debian_deps
+    apt-add-repository -y ppa:ubuntu-toolchain-r/test
+    apt-get update
+    apt-get install -y g++-5 gcc-5
+}
+
+subr_autogen() {
+    ./build/dependency geoip
+    ./autogen.sh
+}
+
+subr_make_check() {
+    make $make_flags run-valgrind V=0
+}

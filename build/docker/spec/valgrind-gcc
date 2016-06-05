@@ -1,0 +1,30 @@
+#!/bin/sh
+set -e
+
+export CPP="gcc -E"
+export CC="gcc"
+export CXX="g++"
+
+export configure_flags="$configure_flags --disable-shared"
+
+debian_deps="$debian_deps autoconf"
+debian_deps="$debian_deps automake"
+debian_deps="$debian_deps g++"
+debian_deps="$debian_deps git"
+debian_deps="$debian_deps libevent-dev"
+debian_deps="$debian_deps libgeoip-dev"
+debian_deps="$debian_deps libssl-dev"
+debian_deps="$debian_deps libtool"
+debian_deps="$debian_deps make"
+debian_deps="$debian_deps valgrind"
+debian_deps="$debian_deps wget"
+
+subr_depend() {
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y $debian_deps
+}
+
+subr_make_check() {
+    make $make_flags run-valgrind V=0
+}
