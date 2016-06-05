@@ -17,7 +17,7 @@ that can all be pulled by including the `common.hpp` header.
 This library contains the following modules:
 
 - [callback](common/callback.md): alias for callback functions
-- [continuation](common/continuation.md): function to restart a paused coroutine
+- [continuation](common/continuation.md): function to restart a paused function (i.e. a simple coroutine)
 - [delegate](common/delegate.md): overridable member function
 - [error](common/error.md): represents an error
 - [error_or](common/error_or.md): contains a value or an error
