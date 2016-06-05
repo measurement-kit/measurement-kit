@@ -25,7 +25,7 @@ Entry &Entry::operator[](std::string key) {
     try {
         return static_cast<Entry &>(nlohmann::json::operator[](key));
     } catch (std::domain_error &) {
-        throw DomainError();
+        throw JsonDomainError();
     }
 }
 
@@ -33,7 +33,7 @@ void Entry::push_back(Entry value) {
     try {
         nlohmann::json::push_back(value);
     } catch (std::domain_error &) {
-        throw DomainError();
+        throw JsonDomainError();
     }
 }
 
@@ -43,6 +43,10 @@ std::string Entry::dump() {
 
 bool Entry::operator==(std::nullptr_t right) {
     return static_cast<nlohmann::json &>(*this) == right;
+}
+
+bool Entry::operator!=(std::nullptr_t right) {
+    return static_cast<nlohmann::json &>(*this) != right;
 }
 
 } // namespace report
