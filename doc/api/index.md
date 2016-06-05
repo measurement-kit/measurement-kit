@@ -1,5 +1,8 @@
 # MeasurementKit API
 
+MeasurementKit is composed of several libraries. Follow the links below
+to find out more on a specific library API.
+
 - [common](common.md): common functionality
 - [dns](dns.md): dns library
 - [ext](ext.nd): third party headers
