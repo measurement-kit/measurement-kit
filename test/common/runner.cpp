@@ -15,6 +15,8 @@ using namespace mk;
 static void run_http_invalid_request_line(Runner &runner) {
     runner.run_test(ooni::HttpInvalidRequestLineTest()
                        .set_options("backend", "http://nexa.polito.it/")
+                       .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
+                       .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #1: %s\n", s);
                        })
@@ -27,6 +29,8 @@ static void run_http_invalid_request_line(Runner &runner) {
 static void run_dns_injection(Runner &runner) {
     runner.run_test(ooni::DnsInjectionTest()
                        .set_options("backend", "8.8.8.8:53")
+                       .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
+                       .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
                        .set_input_file_path("test/fixtures/hosts.txt")
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #3: %s\n", s);
@@ -40,6 +44,8 @@ static void run_dns_injection(Runner &runner) {
 static void run_tcp_connect(Runner &runner) {
     runner.run_test(ooni::TcpConnectTest()
                        .set_options("port", "80")
+                       .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
+                       .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
                        .set_input_file_path("test/fixtures/hosts.txt")
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #4: %s\n", s);

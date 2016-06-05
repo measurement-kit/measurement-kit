@@ -37,6 +37,8 @@ int main(int argc, char **argv) {
 
     mk::ooni::HttpInvalidRequestLineTest()
         .set_options("backend", backend)
+        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
+        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
         .set_verbosity(verbosity)
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
