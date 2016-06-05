@@ -52,7 +52,7 @@ not possible to initialize the `Delegate` using the lambda or the function.
 
 The assignment operators allow to reassign the underlying function wrapped by
 a `Delegate`. It is safe to call these operators to override the function that
-the `Delegate` wraps from within the body of such function itself. The function
+the `Delegate` wraps from within the body of the delegate itself. The function
 assignment operator overrides the underlying function with a newly specified
 `std::function<>`. The templated assignment operator overrides the underlying
 function with a lambda expression. The `nullptr` assignment operator resets
