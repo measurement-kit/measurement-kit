@@ -83,6 +83,11 @@ verbosity level of the message and the message itself. The default log
 function prints on the standard error output the log level as integer
 followed by the formatted log message string.
 
+The `global()` factory returns the default logger.
+
+This module also includes syntactic sugar functions named like `Logger`
+method that operate on the default logger with equal semantic.
+
 Internally, the logger implementation MUST be implemented to be thread
 safe, i.e. it MUST be safe to invoke concurrently the logger from multiple
 threads, *as far as* the consistency of the logger internals is
