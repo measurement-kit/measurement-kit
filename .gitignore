@@ -52,7 +52,7 @@ example/net/connect
 example/net/discard
 example/net/listen
 example/net/transport
-example/neubot/client_dash
+example/neubot/dash
 example/ooni/dns_injection
 example/ooni/http_invalid_request_line
 example/ooni/tcp_connect

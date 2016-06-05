@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_NEUBOT_DASH_HPP
 #define MEASUREMENT_KIT_NEUBOT_DASH_HPP
 
-#include <functional>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
 

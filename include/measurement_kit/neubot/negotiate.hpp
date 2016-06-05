@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_NEUBOT_NEGOTIATE_HPP
 #define MEASUREMENT_KIT_NEUBOT_NEGOTIATE_HPP
 
-#include <functional>
 #include <measurement_kit/common.hpp>
 
 namespace mk {
