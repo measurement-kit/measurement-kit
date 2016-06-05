@@ -41,13 +41,13 @@ which is arguably faster than writing the following:
 
 `MK_MOCK_SUFFIX` is similar to `MOCK` but also takes a suffix that
 is appended to the function name within the template. This is useful
-when you want to distinguish the first and the second invocation of
+when you want to distinguish the N-th and the N+1-th invocation of
 a function within another function.
 
 The `MK_MOCK_NAMESPACE` and `MK_MOCK_NAMESPACE_SUFFIX` macros are
 equal to `MK_MOCK` and `MK_MOCK_SUFFIX` respectively, except that you
 get also to specify a namespace and that such namespace plus underscore
-are prefixed to the functio name. For example:
+are prefixed to the function name. For example:
 
 ```C++
   namespace foo {
