@@ -42,7 +42,7 @@ static inline void collect(Var<Transport> transport, Callback<Error> cb,
         body,
         [=](Error error, Var<Response> res) {
             if (error || (res->status_code != 200)) {
-                std::cout << "Error: " << (int)error;
+                logger -> warn("Error: %d", (int) error);
                 cb(error);
                 return;
             }
@@ -102,7 +102,7 @@ static inline void loop_req_negotiate(Var<Transport> transport,
                 dash::run(settings,
                           [=](Error err, Var<json> measurements) {
                               if (err) {
-                                  std::cout << "Error: " << (int)error;
+                                  logger -> warn("Error: %d", (int) error);
                                   cb(err);
                                   return;
                               }
@@ -110,8 +110,8 @@ static inline void loop_req_negotiate(Var<Transport> transport,
                               collect(transport,
                                       [=](Error err) {
                                           if (err) {
-                                              std::cout << "Error: "
-                                                        << (int)error;
+                                              logger -> warn("Error: %d",
+                                                (int) error);
                                               cb(err);
                                               return;
                                           }
@@ -145,7 +145,7 @@ static inline void run_impl(Settings settings, Callback<Error> cb,
                     [=](Error error, Var<Transport> transport) {
 
                         if (error) {
-                            std::cout << "Error: " << (int)error;
+                            logger -> warn("Error: %d", (int) error);
                             transport->close([=]() { cb(error); });
                             return;
                         }

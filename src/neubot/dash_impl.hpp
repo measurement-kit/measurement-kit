@@ -67,7 +67,7 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
         "",
         [=](Error error) {
             if (error) {
-                std::cout << "Error: " << (int)error;
+                logger -> warn("Error: %d", (int) error);
                 cb(error, nullptr);
                 return;
             }
@@ -76,7 +76,7 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
                 transport,
                 [=](Error error, Var<Response> res) {
                     if (error) {
-                        std::cout << "Error: " << (int)error;
+                        logger -> warn("Error: %d", (int) error);
                         cb(error, nullptr);
                         return;
                     }
@@ -145,7 +145,7 @@ static inline void run_impl(Settings settings, Callback<Error, Var<json>> cb,
                     [=](Error error, Var<Transport> transport) {
 
                         if (error) {
-                            std::cout << "Error: " << (int)error;
+                            logger -> warn("Error: %d", (int) error);
                             cb(error, nullptr);
                             return;
                         }
