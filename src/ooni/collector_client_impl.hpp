@@ -121,6 +121,8 @@ void create_report_impl(Var<Transport> transport, Entry entry,
     request["test_start_time"] = entry["test_start_time"];
     if (entry["input_hashes"] != nullptr) {
         request["input_hashes"] = entry["input_hashes"];
+    } else {
+        request["input_hashes"] = Entry::array();
     }
     request["data_format_version"] = entry["data_format_version"];
     request["format"] = "json";

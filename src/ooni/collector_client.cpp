@@ -103,7 +103,7 @@ void submit_report(std::string filepath, std::string collector_base_url,
 }
 
 std::string default_collector_url() {
-    return "http://a.collector.test.ooni.io";
+    return MK_OONI_DEFAULT_COLLECTOR_URL;
 }
 
 } // namespace collector
