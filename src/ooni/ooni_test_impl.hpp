@@ -16,6 +16,7 @@
 #include "src/common/utils.hpp"                 // for utc_time_now
 #include "src/ooni/input_file_generator.hpp"    // for InputFileGenerator
 #include "src/ooni/input_generator.hpp"         // for InputGenerator
+#include "src/ooni/utils.hpp"
 #include <sys/stat.h>
 
 namespace mk {
@@ -69,10 +70,44 @@ class OoniTestImpl : public mk::NetTest {
             });
     }
 
-    void geoip_lookup() {
+    void geoip_lookup(Callback<> cb) {
         probe_ip = "127.0.0.1";
         probe_asn = "AS0";
         probe_cc = "ZZ";
+        ip_lookup([=](Error err, std::string ip) {
+            if (err) {
+                logger->warn("ip_lookup() failed: error code: %d", err.code);
+            } else {
+                logger->info("probe ip: %s", ip.c_str());
+                if (options.get("save_real_probe_ip", false)) {
+                    logger->debug("saving user's real ip on user's request");
+                    probe_ip = ip;
+                }
+                std::string country_p = options.get("geoip_country_path",
+                                                    std::string{});
+                std::string asn_p = options.get("geoip_asn_path",
+                                                std::string{});
+                if (country_p == "" or asn_p == "") {
+                    logger->warn("geoip files not configured; skipping");
+                } else {
+                    ErrorOr<nlohmann::json> res = geoip(ip, country_p, asn_p);
+                    if (!!res) {
+                        logger->debug("GeoIP result: %s", res->dump().c_str());
+                        // Since `geoip()` sets defaults before querying, the
+                        // following accesses of json should not fail unless for
+                        // programmer error after refactoring. In that case,
+                        // better to let the exception unwind than just print
+                        // a warning, because the former is easier to notice
+                        // and therefore fix during development
+                        probe_asn = (*res)["asn"];
+                        logger->info("probe_asn: %s", probe_asn.c_str());
+                        probe_cc = (*res)["country_code"];
+                        logger->info("probe_cc: %s", probe_cc.c_str());
+                    }
+                }
+            }
+            cb();
+        });
     }
 
     void open_report() {
@@ -174,36 +209,33 @@ class OoniTestImpl : public mk::NetTest {
         return new InputFileGenerator(input_filepath, logger);
     }
 
-    /*!
-     * \brief Start iterating over the input.
-     * \param cb Callback called when we are done.
-     */
-    virtual void begin(std::function<void()> cb) override {
-        geoip_lookup();
-        open_report();
-        if (input_filepath != "") {
-            logger->debug("net_test: found input file");
-            if (input != nullptr) {
-                delete input;
-                input = nullptr;
+    void begin(Callback<> cb) override {
+        geoip_lookup([=]() {
+            open_report();
+            if (input_filepath != "") {
+                logger->debug("net_test: found input file");
+                if (input != nullptr) {
+                    delete input;
+                    input = nullptr;
+                }
+                input = input_generator();
+                run_next_measurement(std::move(cb));
+            } else {
+                logger->debug("net_test: no input file");
+                report::Entry entry;
+                entry["input"] = "";
+                logger->debug("net_test: calling setup");
+                setup();
+                main(options, [=](report::Entry entry) {
+                    logger->debug("net_test: tearing down");
+                    teardown();
+                    file_report.write_entry(entry);
+                    logger->debug("net_test: written entry");
+                    logger->debug("net_test: reached end of input");
+                    cb();
+                });
             }
-            input = input_generator();
-            run_next_measurement(std::move(cb));
-        } else {
-            logger->debug("net_test: no input file");
-            report::Entry entry;
-            entry["input"] = "";
-            logger->debug("net_test: calling setup");
-            setup();
-            main(options, [=](report::Entry entry) {
-                logger->debug("net_test: tearing down");
-                teardown();
-                file_report.write_entry(entry);
-                logger->debug("net_test: written entry");
-                logger->debug("net_test: reached end of input");
-                cb();
-            });
-        }
+        });
     }
 
     void end(std::function<void()> cb) override {

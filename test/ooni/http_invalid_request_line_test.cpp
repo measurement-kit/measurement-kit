@@ -19,6 +19,8 @@ TEST_CASE("Synchronous http-invalid-request-line test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
     ooni::HttpInvalidRequestLineTest()
         .set_options("backend", "http://213.138.109.232/")
+        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
+        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs)
@@ -30,6 +32,8 @@ TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
     ooni::HttpInvalidRequestLineTest()
         .set_options("backend",
                      "http://data.neubot.org/") // Let's troll Davide!
+        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
+        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs)
@@ -41,6 +45,8 @@ TEST_CASE("Asynchronous http-invalid-request-line test") {
     bool done = false;
     ooni::HttpInvalidRequestLineTest()
         .set_options("backend", "http://213.138.109.232/")
+        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
+        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run([&done]() { done = true; });
     do {
