@@ -12,6 +12,7 @@ namespace mk {
 
 template <typename T> class ErrorOr {
   public:
+    ErrorOr();
     ErrorOr(T);
     ErrorOr(Error);
 
@@ -49,9 +50,18 @@ as shown in the following snippet:
     }
     use_result(*res);
 ```
+The first form of the constructor creates an uninitialized `ErrorOr` object
+that shall throw `NotInitializedError` when accessed. This constructor allows
+to write code like the following:
 
-The first form of the constructor initializes the `ErrorOr` template
-with a value. The second form of the constructor initialized the `ErrorOr`
+```C++
+    ErrorOr<Result> res;
+    // ...
+    res = some_operation();
+```
+
+The second form of the constructor initializes the `ErrorOr` template
+with a value. The third form of the constructor initialized the `ErrorOr`
 template with an error.
 
 The `operator bool()` method returns true if the underlying error object
