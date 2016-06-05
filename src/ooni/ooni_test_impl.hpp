@@ -69,10 +69,11 @@ class OoniTestImpl : public mk::NetTest {
             });
     }
 
-    void geoip_lookup() {
+    void geoip_lookup(Callback<> cb) {
         probe_ip = "127.0.0.1";
         probe_asn = "AS0";
         probe_cc = "ZZ";
+        cb();
     }
 
     void open_report() {
@@ -174,36 +175,33 @@ class OoniTestImpl : public mk::NetTest {
         return new InputFileGenerator(input_filepath, logger);
     }
 
-    /*!
-     * \brief Start iterating over the input.
-     * \param cb Callback called when we are done.
-     */
-    virtual void begin(std::function<void()> cb) override {
-        geoip_lookup();
-        open_report();
-        if (input_filepath != "") {
-            logger->debug("net_test: found input file");
-            if (input != nullptr) {
-                delete input;
-                input = nullptr;
+    void begin(Callback<> cb) override {
+        geoip_lookup([=]() {
+            open_report();
+            if (input_filepath != "") {
+                logger->debug("net_test: found input file");
+                if (input != nullptr) {
+                    delete input;
+                    input = nullptr;
+                }
+                input = input_generator();
+                run_next_measurement(std::move(cb));
+            } else {
+                logger->debug("net_test: no input file");
+                report::Entry entry;
+                entry["input"] = "";
+                logger->debug("net_test: calling setup");
+                setup();
+                main(options, [=](report::Entry entry) {
+                    logger->debug("net_test: tearing down");
+                    teardown();
+                    file_report.write_entry(entry);
+                    logger->debug("net_test: written entry");
+                    logger->debug("net_test: reached end of input");
+                    cb();
+                });
             }
-            input = input_generator();
-            run_next_measurement(std::move(cb));
-        } else {
-            logger->debug("net_test: no input file");
-            report::Entry entry;
-            entry["input"] = "";
-            logger->debug("net_test: calling setup");
-            setup();
-            main(options, [=](report::Entry entry) {
-                logger->debug("net_test: tearing down");
-                teardown();
-                file_report.write_entry(entry);
-                logger->debug("net_test: written entry");
-                logger->debug("net_test: reached end of input");
-                cb();
-            });
-        }
+        });
     }
 
     /*!
