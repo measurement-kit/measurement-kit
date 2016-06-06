@@ -7,24 +7,19 @@
 namespace mk {
 namespace ndt {
 
-class NdtTestImpl : public NetTest {
-  public:
-    using NetTest::NetTest;
+void NdtTest::begin(Callback<> cb) {
+    ndt::run([=](Error) { cb(); }, options, logger, reactor);
+}
 
-    void begin(Callback<> cb) override {
-        run([=](Error) { cb(); }, options, logger, reactor);
-    }
-
-    void end(Callback<> cb) override { cb(); }
-};
+void NdtTest::end(Callback<> cb) { cb(); }
 
 Var<NetTest> NdtTest::create_test_() {
-    NdtTestImpl *test = new NdtTestImpl(settings);
-    test->set_verbosity(verbosity);
-    if (log_handler) {
-        test->on_log(log_handler);
-    }
+    NdtTest *test = new NdtTest;
+    test->logger = logger;
     test->reactor = reactor;
+    test->options = options;
+    test->input_filepath = input_filepath;
+    test->output_filepath = output_filepath;
     return Var<NetTest>(test);
 }
 

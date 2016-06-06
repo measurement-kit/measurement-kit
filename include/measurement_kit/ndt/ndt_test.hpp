@@ -9,7 +9,13 @@
 namespace mk {
 namespace ndt {
 
-MK_DECLARE_TEST_DSL(NdtTest)
+class NdtTest : public NetTest {
+  public:
+    using NetTest::NetTest;
+    void begin(Callback<>) override;
+    void end(Callback<>) override;
+    Var<NetTest> create_test_() override;
+};
 
 } // namespace ndt
 } // namespace mk
