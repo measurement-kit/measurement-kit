@@ -81,8 +81,7 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
 
 BUILDDIR="${ROOTDIR}/jni/${DESTDIR_NAME}"
 
-export pkg_configure_flags="--host=${ARCH} --disable-shared"
-export pkg_make_flags=-j2
+export pkg_configure_flags="--host=${ARCH} --disable-shared $CONFIG_EXTRA"
 export pkg_prefix=${BUILDDIR}
 
 if [ $# -gt 0 ]; then

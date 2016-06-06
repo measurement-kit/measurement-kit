@@ -12,11 +12,16 @@ echo "Downloading and verifying precompiled dependencies from github"
 (
     set -e # just in case
     cd $ROOTDIR/..
-    curl --progress-bar -LO https://github.com/measurement-kit/measurement-kit/releases/download/v0.2.0-alpha/ios-dependencies.tgz
-    curl --progress-bar -LO https://github.com/measurement-kit/measurement-kit/releases/download/v0.2.0-alpha/ios-dependencies.tgz.asc
-    gpg2 --verify ios-dependencies.tgz.asc
-    tar -xzf ios-dependencies.tgz
-    rm ios-dependencies.tgz ios-dependencies.tgz.asc
+    # Note: the precompiled dependencies MAY be downloadable from a previous
+    # release, what matters to decide if they're outdated is the `spec` dir that
+    # you can find inside each tarball and contains version number info
+    DEPS_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.2.0-alpha/ios-dependencies-20160605T234602Z.tgz
+    DEPS_FILE=$(basename $DEPS_URL)
+    curl --progress-bar -LO $DEPS_URL
+    curl --progress-bar -LO $DEPS_URL.asc
+    gpg2 --verify $DEPS_FILE.asc
+    tar -xzf $DEPS_FILE
+    rm $DEPS_FILE $DEPS_FILE.asc
 )
 
 echo "Building for this architectures: $ARCHS"
