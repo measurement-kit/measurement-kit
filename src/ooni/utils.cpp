@@ -19,7 +19,7 @@ static Error geoip_resolve_country (std::string ip, std::string path_country, js
     }
 
     const char *result;
-    result = GeoIP_country_code3_by_name_gl(gi, ip.c_str(), &gl);
+    result = GeoIP_country_code_by_name_gl(gi, ip.c_str(), &gl);
     if (result == nullptr) {
         GeoIP_delete(gi);
         return GenericError();
