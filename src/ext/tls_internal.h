@@ -6,6 +6,7 @@
 #define SRC_EXT_TLS_INTERNAL_H
 
 #include <openssl/x509.h>
+#include <netinet/in.h>
 
 struct tls {
     char *errmsg;
