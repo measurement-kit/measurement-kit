@@ -43,7 +43,6 @@ export LDFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --s
 
 export pkg_configure_flags="$EXTRA_CONFIG -q"
 export pkg_prefix="$DESTDIR"
-export pkg_make_flags="-j4 V=0"
 
 if [ $# -gt 0 ]; then
     $@
