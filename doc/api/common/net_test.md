@@ -81,9 +81,13 @@ and runs it synchronously using the default runner:
 using namespace mk;
 
 int main() {
+    // XXX would be useful to unify DSL and test...
     Runner::global()->run(ooni::DnsInjectionTest::make({
         {"backend", "8.8.8.1:53"},
+        {"dns/attempts", 1},
+        {"dns/timeout", 0.5},
     });
+}
     
     // FIXME
 
