@@ -56,7 +56,7 @@ TEST_CASE("Make sure that set_output_path() works") {
                         .set_output_file_path("foo.txt")
                         .create_test_();
     auto ptr = static_cast<ooni::OoniTestImpl *>(instance.get());
-    REQUIRE(ptr->get_report_filename() == "foo.txt");
+    REQUIRE(ptr->get_output_file_path() == "foo.txt");
 }
 
 TEST_CASE("Make sure that default get_output_path() is nonempty") {
@@ -67,5 +67,5 @@ TEST_CASE("Make sure that default get_output_path() is nonempty") {
                         .set_input_file_path("test/fixtures/hosts.txt")
                         .create_test_();
     auto ptr = static_cast<ooni::OoniTestImpl *>(instance.get());
-    REQUIRE(ptr->get_report_filename() != "");
+    REQUIRE(ptr->get_output_file_path() != "");
 }
