@@ -35,11 +35,13 @@ tests. More in detail it currently implements:
 
 - [mlab-ns client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/mlabns/mlabns.hpp) (with which you can interact with Measurement Lab backend to know the server with which to run tests)
 
-- the functionality to communicate with the [OONI backend](https://github.com/TheTorProject/ooni-backend)
+- the functionality to communicate with the [OONI collector](https://github.com/TheTorProject/ooni-backend)
 
 In the short term we plan to add to MeasurementKit:
 
 - Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
+
+- the functionality to communicate with the [OONI bouncer](https://github.com/TheTorProject/ooni-backend)
 
 - more OONI tests
 
