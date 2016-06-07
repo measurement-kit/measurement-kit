@@ -6,8 +6,6 @@
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/dns.hpp>
-#include <measurement_kit/common.hpp>
-
 #include <event2/dns.h>
 
 using namespace mk;

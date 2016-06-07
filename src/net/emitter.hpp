@@ -14,12 +14,12 @@ namespace net {
 class Emitter : public Transport {
   public:
     void emit_connect() override {
-        logger->debug("emitter: emit 'connect' event");
+        logger->log(MK_LOG_DEBUG2, "emitter: emit 'connect' event");
         do_connect();
     }
 
     void emit_data(Buffer data) override {
-        logger->debug("emitter: emit 'data' event");
+        logger->log(MK_LOG_DEBUG2, "emitter: emit 'data' event");
         if (do_record_received_data) {
             received_data_record.write(data.peek());
         }
@@ -27,26 +27,26 @@ class Emitter : public Transport {
     }
 
     void emit_flush() override {
-        logger->debug("emitter: emit 'flush' event");
+        logger->log(MK_LOG_DEBUG2, "emitter: emit 'flush' event");
         do_flush();
     }
 
     void emit_error(Error err) override {
-        logger->debug("emitter: emit 'error' event");
+        logger->log(MK_LOG_DEBUG2, "emitter: emit 'error' event");
         do_error(err);
     }
 
-    Emitter(Logger *lp = Logger::global()) : logger(lp) {}
+    Emitter(Var<Logger> lp = Logger::global()) : logger(lp) {}
 
     ~Emitter() override;
 
     void on_connect(std::function<void()> fn) override {
-        logger->debug("emitter: register 'connect' handler");
+        logger->log(MK_LOG_DEBUG2, "emitter: register 'connect' handler");
         do_connect = fn;
     }
 
     void on_data(std::function<void(Buffer)> fn) override {
-        logger->debug("emitter: register 'data' handler");
+        logger->log(MK_LOG_DEBUG2, "emitter: register 'data' handler");
         if (fn) {
             enable_read();
         } else {
@@ -59,12 +59,12 @@ class Emitter : public Transport {
     virtual void disable_read() {}
 
     void on_flush(std::function<void()> fn) override {
-        logger->debug("emitter: register 'flush' handler");
+        logger->log(MK_LOG_DEBUG2, "emitter: register 'flush' handler");
         do_flush = fn;
     }
 
     void on_error(std::function<void(Error)> fn) override {
-        logger->debug("emitter: register 'error' handler");
+        logger->log(MK_LOG_DEBUG2, "emitter: register 'error' handler");
         do_error = fn;
     }
 
@@ -93,13 +93,15 @@ class Emitter : public Transport {
     }
 
     void set_timeout(double timeo) override {
-        logger->debug("emitter: set_timeout %f", timeo);
+        logger->log(MK_LOG_DEBUG2, "emitter: set_timeout %f", timeo);
     }
 
-    void clear_timeout() override { logger->debug("emitter: clear_timeout"); }
+    void clear_timeout() override {
+        logger->log(MK_LOG_DEBUG2, "emitter: clear_timeout");
+    }
 
     void write(const void *p, size_t n) override {
-        logger->debug("emitter: send opaque data");
+        logger->log(MK_LOG_DEBUG2, "emitter: send opaque data");
         if (p == nullptr) {
             throw std::runtime_error("null pointer");
         }
@@ -107,12 +109,12 @@ class Emitter : public Transport {
     }
 
     void write(std::string s) override {
-        logger->debug("emitter: send string");
+        logger->log(MK_LOG_DEBUG2, "emitter: send string");
         write(Buffer(s));
     }
 
     void write(Buffer data) override {
-        logger->debug("emitter: send buffer");
+        logger->log(MK_LOG_DEBUG2, "emitter: send buffer");
         if (do_record_sent_data) {
             sent_data_record.write(data.peek());
         }
@@ -129,13 +131,13 @@ class Emitter : public Transport {
     std::string socks5_port() override { return ""; }
 
   protected:
-    Logger *logger = Logger::global();
+    Var<Logger> logger = Logger::global();
 
   private:
-    SafelyOverridableFunc<void()> do_connect = []() {};
-    SafelyOverridableFunc<void(Buffer)> do_data = [](Buffer) {};
-    SafelyOverridableFunc<void()> do_flush = []() {};
-    SafelyOverridableFunc<void(Error)> do_error = [](Error) {};
+    Delegate<> do_connect = []() {};
+    Delegate<Buffer> do_data = [](Buffer) {};
+    Delegate<> do_flush = []() {};
+    Delegate<Error> do_error = [](Error) {};
     bool do_record_received_data = false;
     Buffer received_data_record;
     bool do_record_sent_data = false;

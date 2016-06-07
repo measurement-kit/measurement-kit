@@ -15,6 +15,7 @@
 #include <map>
 #include <new>
 #include <stdexcept>
+#include <limits.h>
 #include <string>
 #include <type_traits>
 
@@ -44,10 +45,10 @@ class QueryContext : public NonMovable, public NonCopyable {
     evdns_base *base = nullptr;
 
     Message message;
-    Callback<Message> callback;
+    Callback<Error, Message> callback;
 
     QueryContext(
-            evdns_base *b, Callback<Message> c, Message m) {
+            evdns_base *b, Callback<Error, Message> c, Message m) {
         base = b;
         callback = c;
         message = m;
@@ -58,17 +59,17 @@ class QueryContext : public NonMovable, public NonCopyable {
 template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_ip_add),
         MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *create_evdns_base(
-        Settings settings, Poller *poller = mk::get_global_poller()) {
+        Settings settings, Var<Reactor> reactor = Reactor::global()) {
 
     evdns_base *base;
-    event_base *evb = poller->get_event_base();
+    event_base *evb = reactor->get_event_base();
 
-    if (settings.find("nameserver") != settings.end()) {
+    if (settings.find("dns/nameserver") != settings.end()) {
         if ((base = evdns_base_new(evb, 0)) == nullptr) {
             throw std::bad_alloc();
         }
         if (evdns_base_nameserver_ip_add(
-                    base, settings["nameserver"].c_str()) != 0) {
+                    base, settings["dns/nameserver"].c_str()) != 0) {
             evdns_base_free(base, 1);
             throw std::runtime_error("Cannot set server address");
         }
@@ -76,15 +77,15 @@ static inline evdns_base *create_evdns_base(
         throw std::bad_alloc();
     }
 
-    if (settings.find("attempts") != settings.end() &&
+    if (settings.find("dns/attempts") != settings.end() &&
             evdns_base_set_option(
-                    base, "attempts", settings["attempts"].c_str()) != 0) {
+                    base, "attempts", settings["dns/attempts"].c_str()) != 0) {
         evdns_base_free(base, 1);
         throw std::runtime_error("Cannot set 'attempts' option");
     }
-    if (settings.find("timeout") != settings.end() &&
+    if (settings.find("dns/timeout") != settings.end() &&
             evdns_base_set_option(
-                    base, "timeout", settings["timeout"].c_str()) != 0) {
+                    base, "timeout", settings["dns/timeout"].c_str()) != 0) {
         evdns_base_free(base, 1);
         throw std::runtime_error("Cannot set 'timeout' option");
     }
@@ -92,8 +93,8 @@ static inline evdns_base *create_evdns_base(
     // By default we don't randomize the query's case
     // XXX check that randomize case is a valid value
     std::string randomiz{"0"};
-    if (settings.find("randomize_case") != settings.end()) {
-        randomiz = settings["randomize_case"];
+    if (settings.find("dns/randomize_case") != settings.end()) {
+        randomiz = settings["dns/randomize_case"];
     }
     if (evdns_base_set_option(base, "randomize-case", randomiz.c_str()) != 0) {
         evdns_base_free(base, 1);
@@ -107,23 +108,23 @@ template <MK_MOCK(inet_ntop)>
 static inline std::vector<Answer> build_answers_evdns(
         int code, char type, int count, int ttl, void *addresses) {
 
-    Logger *logger = Logger::global();
+    Var<Logger> logger = Logger::global();
 
     std::vector<Answer> answers;
 
     if (code != DNS_ERR_NONE) {
-        logger->info("dns - request failed: %d", code);
+        logger->debug("dns: request failed: %d", code);
         // do not process the results if there was an error
 
     } else if (type == DNS_PTR) {
-        logger->info("dns - PTR");
+        logger->debug("dns: PTR");
         Answer answer;
         answer.code = code;
         answer.ttl = ttl;
         answer.type = QueryTypeId::PTR;
         // Note: cast magic copied from libevent regress tests
         answer.hostname = std::string(*(char **)addresses);
-        logger->info("dns - adding %s", answer.hostname.c_str());
+        logger->debug("dns: adding %s", answer.hostname.c_str());
         answers.push_back(answer);
     } else if (type == DNS_IPv4_A || type == DNS_IPv6_AAAA) {
 
@@ -134,11 +135,11 @@ static inline std::vector<Answer> build_answers_evdns(
         if (type == DNS_IPv4_A) {
             family = PF_INET;
             size = 4;
-            logger->info("dns - IPv4");
+            logger->debug("dns: IPv4");
         } else {
             family = PF_INET6;
             size = 16;
-            logger->info("dns - IPv6");
+            logger->debug("dns: IPv6");
         }
 
         //
@@ -151,7 +152,7 @@ static inline std::vector<Answer> build_answers_evdns(
                 // Note: address already in network byte order
                 if (inet_ntop(family, (char *)addresses + i * size, string,
                             sizeof(string)) == NULL) {
-                    logger->warn("dns - unexpected inet_ntop failure");
+                    logger->warn("dns: unexpected inet_ntop failure");
                     throw std::runtime_error("Unexpected inet_ntop failure");
                 }
                 Answer answer;
@@ -164,24 +165,24 @@ static inline std::vector<Answer> build_answers_evdns(
                     answer.ipv6 = string;
                     answer.type = QueryTypeId::AAAA;
                 }
-                logger->info("dns - adding '%s'", string);
+                logger->debug("dns: adding '%s'", string);
                 answers.push_back(answer);
             }
 
         } else {
-            logger->warn("dns - too many addresses");
+            logger->warn("dns: too many addresses");
             throw std::runtime_error("We got more responses than the maximum "
                                      "integer size. Something is very wrong.");
         }
 
     } else {
-        logger->warn("dns - invalid response type");
+        logger->warn("dns: invalid response type");
         throw std::runtime_error("Invalid response type.");
     }
     return answers;
 }
 
-static void dns_callback(int code, char type, int count, int ttl,
+static inline void dns_callback(int code, char type, int count, int ttl,
         void *addresses, QueryContext *context) {
     context->message.error_code = code;
 
@@ -221,15 +222,15 @@ template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
         MK_MOCK(evdns_base_resolve_ipv6), MK_MOCK(evdns_base_resolve_reverse),
         MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
 void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
-        Callback<Message> cb, Settings settings,
-        Poller *poller) {
+        Callback<Error, Message> cb, Settings settings,
+        Var<Reactor> reactor) {
 
     Message message;
     Query query;
     evdns_base *base;
 
     try {
-        base = create_evdns_base(settings, poller);
+        base = create_evdns_base(settings, reactor);
     } catch (std::runtime_error &) {
         cb(GenericError(), nullptr); // TODO: refine error thrown here
         return;

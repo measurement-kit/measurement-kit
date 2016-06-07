@@ -6,7 +6,6 @@
 
 #include "src/net/socks5.hpp"
 #include "src/ext/Catch/single_include/catch.hpp"
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
 using namespace mk;
 using namespace mk::net;
@@ -68,7 +67,7 @@ TEST_CASE("parse_auth_response() works as expected") {
 TEST_CASE("format_connect_request() works as expected") {
     SECTION("When the address is too long") {
         ErrorOr<Buffer> rc = socks5_format_connect_request({
-            {"address", std::string(1024, 'A')},
+            {"net/address", std::string(1024, 'A')},
         });
         REQUIRE(rc.as_error() == SocksAddressTooLongError());
         REQUIRE_THROWS_AS(rc.as_value(), Error);
@@ -76,8 +75,7 @@ TEST_CASE("format_connect_request() works as expected") {
 
     SECTION("When the port number is negative") {
         ErrorOr<Buffer> rc = socks5_format_connect_request({
-            {"address", "130.192.91.211"},
-            {"port", -1},
+            {"net/address", "130.192.91.211"}, {"net/port", -1},
         });
         REQUIRE(rc.as_error() == SocksInvalidPortError());
         REQUIRE_THROWS_AS(rc.as_value(), Error);
@@ -85,8 +83,7 @@ TEST_CASE("format_connect_request() works as expected") {
 
     SECTION("When the port number is too large") {
         ErrorOr<Buffer> rc = socks5_format_connect_request({
-            {"address", "130.192.91.211"},
-            {"port", 65536},
+            {"net/address", "130.192.91.211"}, {"net/port", 65536},
         });
         REQUIRE(rc.as_error() == SocksInvalidPortError());
         REQUIRE_THROWS_AS(rc.as_value(), Error);
@@ -96,8 +93,7 @@ TEST_CASE("format_connect_request() works as expected") {
         std::string address = "130.192.91.211";
         uint16_t orig_port = 8080;
         ErrorOr<Buffer> rc = socks5_format_connect_request({
-            {"address", address},
-            {"port", orig_port},
+            {"net/address", address}, {"net/port", orig_port},
         });
         REQUIRE(rc.as_error() == NoError());
         std::string msg = rc->read(5 + address.length());
@@ -108,8 +104,8 @@ TEST_CASE("format_connect_request() works as expected") {
         REQUIRE(msg[4] == address.length());
         REQUIRE(msg.substr(5, address.length()) == address);
         // XXX This part of the test is currently not possible:
-        //uint16_t port = rc->read_uint16();
-        //REQUIRE(port == orig_port);
+        // uint16_t port = rc->read_uint16();
+        // REQUIRE(port == orig_port);
     }
 }
 
@@ -230,13 +226,13 @@ TEST_CASE("parse_connect_response() works as expected") {
         input.write_uint8(4);
         // <IPv6>
         input.write_uint8(0), input.write_uint8(0), input.write_uint8(0),
-                input.write_uint8(0);
+            input.write_uint8(0);
         input.write_uint8(0), input.write_uint8(0), input.write_uint8(0),
-                input.write_uint8(0);
+            input.write_uint8(0);
         input.write_uint8(0), input.write_uint8(0), input.write_uint8(0),
-                input.write_uint8(0);
+            input.write_uint8(0);
         input.write_uint8(0), input.write_uint8(0), input.write_uint8(0),
-                input.write_uint8(0);
+            input.write_uint8(0);
         // </IPv6>
         input.write_uint16(8080);
         ErrorOr<bool> rc = socks5_parse_connect_response(input);

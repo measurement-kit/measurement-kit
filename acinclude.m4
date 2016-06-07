@@ -10,7 +10,6 @@ AC_DEFUN([MK_AM_ENABLE_EXAMPLES], [
 ])
 
 AC_DEFUN([MK_AM_LIBEVENT], [
-  echo "> checking for dependency: libevent"
 
   AC_ARG_WITH([libevent],
               [AS_HELP_STRING([--with-libevent],
@@ -37,38 +36,9 @@ AC_DEFUN([MK_AM_LIBEVENT], [
     echo "    - to compile from sources: ./build/dependency libevent"
     AC_MSG_ERROR([Please, install libevent and run configure again])
   fi
-  echo ""
-])
-
-AC_DEFUN([MK_AM_JANSSON], [
-  echo "> checking for dependency: jansson"
-
-  AC_ARG_WITH([jansson],
-              [AS_HELP_STRING([--with-jansson],
-                [JSON library @<:@default=check@:>@])
-              ],
-              [
-                CPPFLAGS="$CPPFLAGS -I$withval/include"
-                LDFLAGS="$LDFLAGS -L$withval/lib"
-              ],
-              [])
-
-  mk_not_found=""
-  AC_CHECK_HEADERS(jansson.h, [], [mk_not_found=1])
-  AC_CHECK_LIB(jansson, json_null, [], [mk_not_found=1])
-
-  if test "$mk_not_found" = "1"; then
-    AC_MSG_WARN([Failed to find dependency: jansson])
-    echo "    - to install on Debian: sudo apt-get install libjansson-dev"
-    echo "    - to install on OSX: brew install jansson"
-    echo "    - to compile from sources: ./build/dependency jansson"
-    AC_MSG_ERROR([Please, install jansson and run configure again])
-  fi
-  echo ""
 ])
 
 AC_DEFUN([MK_AM_GEOIP], [
-  echo "> checking for dependency: geoip"
 
   AC_ARG_WITH([geoip],
               [AS_HELP_STRING([--with-geoip],
@@ -91,11 +61,9 @@ AC_DEFUN([MK_AM_GEOIP], [
     echo "    - to compile from sources: ./build/dependency geoip"
     AC_MSG_ERROR([Please, install geoip and run configure again])
   fi
-  echo ""
 ])
 
 AC_DEFUN([MK_AM_OPENSSL], [
-  echo "> checking for dependency: openssl"
 
   AC_ARG_WITH([openssl],
               [AS_HELP_STRING([--with-openssl],
@@ -176,7 +144,6 @@ AC_DEFUN([MK_AM_OPENSSL], [
     echo "    - to compile from sources: ./build/dependency libressl"
     AC_MSG_ERROR([Please, install openssl and run configure again])
   fi
-  echo ""
 ])
 
 AC_DEFUN([MK_AM_REQUIRE_C99], [
@@ -239,6 +206,52 @@ CXXFLAGS="$measurement_kit_saved_cxxflags $measurement_kit_cxx_stdlib_flags"
 AC_LANG_POP([C++])
 ])
 
+
+AC_DEFUN([MK_CHECK_CA_BUNDLE], [
+  AC_MSG_CHECKING([CA bundle path])
+
+  AC_ARG_WITH([ca-bundle],
+              AC_HELP_STRING([--with-ca-bundle=FILE],
+               [Path to a file containing CA certificates (example: /etc/ca-bundle.crt)]),
+              [
+               want_ca="$withval"
+              ],
+              [want_ca="unset"])
+  
+  if test "x$want_ca" != "xunset"; then
+    ca="$want_ca"
+  else
+    ca="no"
+    if test "x$cross_compiling" != "xyes"; then
+        for a in /etc/ssl/certs/ca-certificates.crt \
+                 /etc/pki/tls/certs/ca-bundle.crt \
+                 /usr/share/ssl/certs/ca-bundle.crt \
+                 /usr/local/share/certs/ca-root.crt \
+                 /etc/ssl/cert.pem \
+                 /usr/local/etc/openssl/cert.pem; do
+          if test -f "$a"; then
+            ca="$a"
+            break
+          fi
+        done
+    fi
+  fi
+
+  if test "x$ca" != "xno"; then
+    MK_CA_BUNDLE="$ca"
+    AC_DEFINE_UNQUOTED(MK_CA_BUNDLE, "$ca", [Location of default ca bundle])
+    AC_SUBST(MK_CA_BUNDLE)
+    AC_MSG_RESULT([$ca])
+  elif test "x$cross_compiling" == "xyes"; then
+    AC_MSG_RESULT([skipped (cross compiling)])
+    AC_MSG_WARN([skipped the ca-bundle detection when cross-compiling])
+  else
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([you should give a ca-bundle location])
+  fi
+])
+
+
 AC_DEFUN([MK_AM_CXXFLAGS_ADD_WARNINGS], [
   AC_MSG_CHECKING([whether compiler is clang to add clang specific warnings])
   if test echo | $CXX -dM -E - | grep __clang__ > /dev/null; then
@@ -251,10 +264,12 @@ AC_DEFUN([MK_AM_CXXFLAGS_ADD_WARNINGS], [
 
 AC_DEFUN([MK_AM_PRINT_SUMMARY], [
   echo "==== configured variables ==="
+  echo "CPP      : $CPP"
   echo "CC       : $CC"
   echo "CXX      : $CXX"
   echo "CFLAGS   : $CFLAGS"
   echo "CPPFLAGS : $CPPFLAGS"
   echo "CXXFLAGS : $CXXFLAGS"
   echo "LDFLAGS  : $LDFLAGS"
+  echo "LIBS     : $LIBS"
 ])

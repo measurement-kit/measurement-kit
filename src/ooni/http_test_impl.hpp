@@ -9,8 +9,6 @@
 #include <measurement_kit/http.hpp>
 #include "src/ooni/ooni_test_impl.hpp"
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace ooni {
 
@@ -45,7 +43,7 @@ class HTTPTestImpl : public ooni::OoniTestImpl {
             settings, headers,
             body, [=](Error error, http::Response response) {
 
-                json rr;
+                report::Entry rr;
                 rr["request"]["headers"] =
                     std::map<std::string, std::string>(headers);
                 rr["request"]["body"] = body;
@@ -71,7 +69,7 @@ class HTTPTestImpl : public ooni::OoniTestImpl {
                 entry["agent"] = "agent";
                 entry["socksproxy"] = "";
                 callback(error, std::move(response));
-            }, &logger, poller);
+            }, logger, reactor);
     }
 };
 

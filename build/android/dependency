@@ -1,0 +1,38 @@
+#!/bin/sh
+set -e
+
+if [ $# -lt 2 ]; then
+    echo "usage: $0 NDK_DIR spec" 1>&2
+    exit 1
+fi
+
+ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
+BUILDDIR=$ROOTDIR/build
+ANDROIDDIR=$BUILDDIR/android
+
+NDK_DIR=$1
+SPEC=$2
+API=21
+if [ "$3" != "" ]; then
+    API=$3
+fi
+
+echo ""
+echo "Cross-compiling $SPEC for all archs"
+
+. $BUILDDIR/spec/$SPEC
+
+ALL_ARCHS="aarch64-linux-android arm-linux-androideabi arm-linux-androideabi-v7a mipsel-linux-android mips64el-linux-android x86 x86_64"
+
+for ARCH in $ALL_ARCHS; do
+    echo ""
+    echo "Cross compiling $SPEC for arch ${ARCH}"
+    if [ ! -d $ANDROIDDIR/toolchain/${ARCH}-${API} ]; then
+        $ANDROIDDIR/scripts/make_toolchain.sh ${NDK_DIR} ${ARCH} ${API}
+    fi
+    $ANDROIDDIR/cross ${ARCH} ${API} $BUILDDIR/dependency $SPEC
+done
+
+# Install spec so we know what version was used to build the archive
+install -d $ANDROIDDIR/jni/spec
+install -m644 $BUILDDIR/spec/$SPEC $ANDROIDDIR/jni/spec/$SPEC

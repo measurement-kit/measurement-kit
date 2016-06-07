@@ -21,13 +21,13 @@ class ConnectManyCtx {
     std::string address;
     int port = 0;
     Settings settings;
-    Logger *logger = Logger::global();
-    Poller *poller = Poller::global();
+    Var<Logger> logger = Logger::global();
+    Var<Reactor> reactor = Reactor::global();
 };
 
 template <void (*do_connect)(std::string, int,
-              Callback<Var<Transport>>, Settings, Logger *,
-              Poller *) = net::connect>
+              Callback<Error, Var<Transport>>, Settings, Var<Logger>,
+              Var<Reactor>) = net::connect>
 static void connect_many_(Var<ConnectManyCtx> ctx) {
     // Implementation note: this function connects sequentially, which
     // is slower but also much simpler to implement and verify
@@ -45,12 +45,12 @@ static void connect_many_(Var<ConnectManyCtx> ctx) {
             --ctx->left;
             connect_many_<do_connect>(ctx);
         },
-        ctx->settings, ctx->logger, ctx->poller);
+        ctx->settings, ctx->logger, ctx->reactor);
 }
 
 static Var<ConnectManyCtx> connect_many_make(std::string address, int port,
-        int count, ConnectManyCb callback, Settings settings, Logger *logger,
-        Poller *poller) {
+        int count, ConnectManyCb callback, Settings settings, Var<Logger> logger,
+        Var<Reactor> reactor) {
     Var<ConnectManyCtx> ctx(new ConnectManyCtx);
     ctx->left = count;
     ctx->callback = callback;
@@ -58,7 +58,7 @@ static Var<ConnectManyCtx> connect_many_make(std::string address, int port,
     ctx->port = port;
     ctx->settings = settings;
     ctx->logger = logger;
-    ctx->poller = poller;
+    ctx->reactor = reactor;
     return ctx;
 }
 

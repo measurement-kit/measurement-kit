@@ -5,8 +5,8 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <measurement_kit/common.hpp>
 #include "src/net/evbuffer.hpp"
+#include <measurement_kit/common.hpp>
 
 using namespace mk::net;
 using namespace mk;
@@ -14,9 +14,7 @@ using namespace mk;
 static evbuffer *fail() { return nullptr; }
 
 TEST_CASE("make_shared_evbuffer deals with evbuffer_new() failure") {
-    REQUIRE_THROWS_AS({
-        make_shared_evbuffer<fail>();
-    }, std::bad_alloc);
+    REQUIRE_THROWS_AS({ make_shared_evbuffer<fail>(); }, std::bad_alloc);
 }
 
 static bool ctor_called = false;
@@ -32,12 +30,10 @@ static void dtor(evbuffer *p) {
 }
 
 TEST_CASE("make_shared_evbuffer creates a Var where evbuffer_free is called "
-        "when the last Var is gone") {
+          "when the last Var is gone") {
     REQUIRE(ctor_called == false);
     REQUIRE(dtor_called == false);
-    {
-        make_shared_evbuffer<ctor, dtor>();
-    }
+    { make_shared_evbuffer<ctor, dtor>(); }
     REQUIRE(ctor_called == true);
     REQUIRE(dtor_called == true);
 }

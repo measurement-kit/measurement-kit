@@ -2,36 +2,60 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/report/file_reporter.hpp"
+#include <measurement_kit/report.hpp>
+
+using json = nlohmann::json;
 
 namespace mk {
 namespace report {
 
-void FileReporter::open() {
-    BaseReporter::open();
-    try {
-        file.open(filename);
-    } catch (...) {
-        emit_error(GenericError());
+static Error map_error(std::ofstream &file) {
+    if (file.eof()) {
+        return ReportEofError();
     }
+    if (file.bad()) {
+        return ReportIoError();
+    }
+    if (file.fail()) {
+        return ReportLogicalError();
+    }
+    return GenericError();
 }
 
-void FileReporter::writeEntry(json &entry) {
-    BaseReporter::writeEntry(entry);
-    try {
-        file << entry.dump() << std::endl;
-    } catch (...) {
-        emit_error(GenericError());
+Error FileReporter::open() {
+    Error error = BaseReporter::open();
+    if (error) {
+        return error;
     }
+    file.open(filename);
+    if (!file.good()) {
+        return map_error(file);
+    }
+    return NoError();
 }
 
-void FileReporter::close() {
-    BaseReporter::close();
-    try {
-        file.close();
-    } catch (...) {
-        emit_error(GenericError());
+Error FileReporter::write_entry(report::Entry &entry) {
+    Error error = BaseReporter::write_entry(entry);
+    if (error) {
+        return error;
     }
+    file << entry.dump() << std::endl;
+    if (!file.good()) {
+        return map_error(file);
+    }
+    return NoError();
+}
+
+Error FileReporter::close() {
+    Error error = BaseReporter::close();
+    if (error) {
+        return error;
+    }
+    file.close();
+    if (!file.good()) {
+        return map_error(file);
+    }
+    return NoError();
 }
 
 } // namespace report

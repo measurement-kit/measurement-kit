@@ -1,73 +1,77 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
 #include <exception>
 #include <measurement_kit/common/var.hpp>
-#include <iosfwd>
 #include <string>
 
 namespace mk {
 
 class ErrorContext {};
 
-/// An error that occurred
 class Error : public std::exception {
   public:
-    /// Constructor with error code and OONI error
-    Error(int e, std::string ooe) : error_(e), ooni_error_(ooe) {}
+    Error() : Error(0, "", nullptr) {}
+    Error(int e) : Error(e, "", nullptr) {}
+    Error(int e, std::string ooe) : Error(e, ooe, nullptr) {}
 
-    Error() : Error(0, "") {}               ///< Default constructor (no error)
-    operator int() const { return error_; } ///< Cast to integer
+    Error(int e, std::string ooe, Var<Error> c)
+                : child(c), code(e), reason(ooe) {
+        if (code != 0 && reason == "") {
+            reason = "unknown_failure " + std::to_string(code);
+        }
+    }
 
-    /// Equality operator
-    bool operator==(int n) const { return error_ == n; }
+    Error(int e, std::string ooe, Error c)
+        : Error(e, ooe, Var<Error>(new Error(c))) {}
 
-    /// Equality operator
-    bool operator==(Error e) const { return error_ == e.error_; }
+    operator bool() const { return code != 0; }
 
-    /// Unequality operator
-    bool operator!=(int n) const { return error_ != n; }
+    bool operator==(int n) const { return code == n; }
+    bool operator==(Error e) const { return code == e.code; }
+    bool operator!=(int n) const { return code != n; }
+    bool operator!=(Error e) const { return code != e.code; }
 
-    /// Unequality operator
-    bool operator!=(Error e) const { return error_ != e.error_; }
-
-    /// Return error as OONI error
-    std::string as_ooni_error() { return ooni_error_; }
+    std::string as_ooni_error() { return reason; }
 
     Var<ErrorContext> context;
-
-  private:
-    int error_ = 0;
-    std::string ooni_error_;
+    Var<Error> child;
+    int code = 0;
+    std::string reason;
 };
 
-/// No error
-class NoError : public Error {
-  public:
-    NoError() : Error() {} ///< Default constructor
-};
+#define MK_DEFINE_ERR(_code_, _name_, _ooe_)                                   \
+    class _name_ : public Error {                                              \
+      public:                                                                  \
+        _name_() : Error(_code_, _ooe_) {}                                     \
+        _name_(std::string s) : Error(_code_, _ooe_) {                         \
+            reason += " ";                                                     \
+            reason += s;                                                       \
+        }                                                                      \
+        _name_(Error e) : Error(_code_, _ooe_, e) {}                           \
+    };
 
-/// Generic error
-class GenericError : public Error {
-  public:
-    GenericError() : Error(1, "unknown_failure 1") {} ///< Default constructor
-};
+MK_DEFINE_ERR(0, NoError, "")
+MK_DEFINE_ERR(1, GenericError, "")
+MK_DEFINE_ERR(2, NotInitializedError, "")
+MK_DEFINE_ERR(3, ValueError, "")
+MK_DEFINE_ERR(4, MockedError, "")
+MK_DEFINE_ERR(5, JsonParseError, "")
+MK_DEFINE_ERR(6, JsonKeyError, "")
+MK_DEFINE_ERR(7, JsonDomainError, "")
+MK_DEFINE_ERR(8, FileEofError, "")
+MK_DEFINE_ERR(9, FileIoError, "")
 
-/// Not initialized error
-class NotInitializedError : public Error {
-  public:
-    NotInitializedError() : Error(2, "unknown_failure 2") {}
-};
-
-/// Value error
-class ValueError : public Error {
-  public:
-    ValueError() : Error(3, "unknown_failure 3") {}
-};
+#define MK_ERR_NET(x) (1000 + x)
+#define MK_ERR_DNS(x) (2000 + x)
+#define MK_ERR_HTTP(x) (3000 + x)
+#define MK_ERR_TRACEROUTE(x) (4000 + x)
+#define MK_ERR_MLABNS(x) (5000 + x)
+#define MK_ERR_OONI(x) (6000 + x)
+#define MK_ERR_REPORT(x) (7000 + x)
 
 } // namespace mk
 #endif

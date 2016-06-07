@@ -10,10 +10,10 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 // Constructs settings to be passed to the query function
 mk::Settings settings({
-    {"nameserver", "8.8.8.8:53"},  // Set the name server IP
-    {"attempts", "1"},             // How many attempts before erroring out
-    {"timeout", "3.1415"},         // How many seconds before timeout
-    {"randomize_case", "1"},       // Whether to randomize request case
+    {"dns/nameserver", "8.8.8.8:53"},  // Set the name server IP
+    {"dns/attempts", "1"},             // How many attempts before erroring out
+    {"dns/timeout", "3.1415"},         // How many seconds before timeout
+    {"dns/randomize_case", "1"},       // Whether to randomize request case
 });
 
 // Issue an async DNS query

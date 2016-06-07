@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// This example will run a synchronous dns-injection test
-//
-
 #include <measurement_kit/ooni.hpp>
 #include <iostream>
 #include <string>
@@ -14,7 +10,7 @@
 int main(int argc, char **argv) {
     std::string backend = "8.8.8.1";
     std::string name = argv[0];
-    bool verbose = false;
+    uint32_t verbosity = 0;
     char ch;
 
     while ((ch = getopt(argc, argv, "b:v")) != -1) {
@@ -23,7 +19,7 @@ int main(int argc, char **argv) {
             backend = optarg;
             break;
         case 'v':
-            verbose = true;
+            ++verbosity;
             break;
         default:
             std::cout << "Usage: " << name << " [-v] [-b backend] file_name"
@@ -40,9 +36,11 @@ int main(int argc, char **argv) {
     }
 
     mk::ooni::DnsInjectionTest()
-        .set_backend(backend)
-        .set_verbose(verbose)
+        .set_options("backend", backend)
+        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
+        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
+        .set_verbosity(verbosity)
         .set_input_file_path(argv[0])
-        .on_log([](const char *s) { std::cout << s << "\n"; })
+        .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
 }
