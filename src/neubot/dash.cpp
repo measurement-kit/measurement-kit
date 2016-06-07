@@ -10,8 +10,8 @@ namespace dash {
 
 
 void run(Settings settings, Callback<Error, Var<json>> cb,
-         Var<Reactor> reactor, Var<Logger> logger) {
-    run_impl(settings, cb, reactor, logger);
+         std::string auth, Var<Reactor> reactor, Var<Logger> logger) {
+    run_impl(settings, cb, auth, reactor, logger);
 }
 
 } // namespace dash

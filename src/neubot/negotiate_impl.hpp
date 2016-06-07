@@ -26,8 +26,9 @@ namespace neubot {
 namespace negotiate {
 
 static inline void collect(Var<Transport> transport, Callback<Error> cb,
-                           Var<json> measurements, Settings settings,
-                           Var<Reactor> reactor, Var<Logger> logger) {
+                           std::string auth, Var<json> measurements,
+                           Settings settings, Var<Reactor> reactor,
+                           Var<Logger> logger) {
     std::string body = measurements->dump();
     settings["http/method"] = "POST";
     settings["http/path"] = "/collect/dash";
@@ -35,7 +36,7 @@ static inline void collect(Var<Transport> transport, Callback<Error> cb,
     request_sendrecv(
         transport, settings,
         {
-            {"Content-Type", "application/json"}, {"Authorization", settings["auth"]},
+            {"Content-Type", "application/json"}, {"Authorization", auth},
         },
         body,
         [=](Error error, Var<Response> res) {
@@ -90,8 +91,6 @@ static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> 
             auto real_address = respbody.at("real_address");
             int unchoked = respbody.at("unchoked");
 
-            settings["auth"] = auth;
-
             // XXX
             if (unchoked == 0) {
                 loop_req_negotiate(transport, cb, settings, reactor, logger,
@@ -115,9 +114,10 @@ static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> 
                                           }
 
                                           cb(NoError());
-                                      }, measurements, settings, reactor, logger);
+                                      }, auth, measurements, settings, reactor,
+                                      logger);
 
-                          });
+                          }, auth);
             }
 
         },

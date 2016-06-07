@@ -13,6 +13,7 @@ namespace dash {
 
 // Run a dash test
 void run(Settings settings, Callback<Error,  Var<nlohmann::json>> cb,
+        std::string auth = "",
         Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global());
 

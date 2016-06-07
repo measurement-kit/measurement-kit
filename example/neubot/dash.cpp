@@ -43,10 +43,10 @@ int main(int argc, char **argv) {
     }
 
     loop_with_initial_event([=]() {
-        run(settings, [=](Error error) {
+        run([=](Error error) {
             debug("Error: %d", (int) error);
 
             break_loop();
-        });
+        }, settings);
     });
 }

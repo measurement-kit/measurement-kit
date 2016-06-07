@@ -26,9 +26,9 @@ namespace dash {
 
 static inline void loop_request(Var<Transport> transport, int speed_kbit,
                                 Callback<Error, Var<json>> cb,
-                                Var<json> measurements, Settings settings,
-                                Var<Reactor> reactor, Var<Logger> logger,
-                                int iteration = 1) {
+                                Var<json> measurements, std::string auth,
+                                Settings settings, Var<Reactor> reactor,
+                                Var<Logger> logger, int iteration = 1) {
 
     int rate_index = 0;
     static const int DASH_RATES[] = {100,  150,  200,  250,  300,   400,  500,
@@ -62,7 +62,7 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
     http::request_send(
         transport, settings,
         {
-            {"Authorization", settings["auth"]},
+            {"Authorization", auth},
         },
         "",
         [=](Error error) {
@@ -129,7 +129,7 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
                         }
                     }
 
-                    loop_request(transport, s_k, cb, measurements,
+                    loop_request(transport, s_k, cb, measurements, auth,
                                  settings, reactor, logger, iteration + 1);
 
                 },
@@ -138,7 +138,8 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
 }
 
 static inline void run_impl(Settings settings, Callback<Error, Var<json>> cb,
-                            Var<Reactor> reactor, Var<Logger> logger) {
+                            std::string auth, Var<Reactor> reactor,
+                            Var<Logger> logger) {
     settings["http/path"] = "";
     settings["http/method"] = "GET";
 
@@ -154,7 +155,7 @@ static inline void run_impl(Settings settings, Callback<Error, Var<json>> cb,
                         Var<json> measurements(new json);
 
                         loop_request(transport, 100, cb, measurements,
-                                     settings, reactor, logger);
+                                     auth, settings, reactor, logger);
 
                         return;
                     },

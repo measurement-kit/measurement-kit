@@ -13,7 +13,6 @@ namespace negotiate {
 void run(Callback<Error> cb, Settings settings = {
             {"url", ""},
             {"negotiate", true},
-            {"auth", ""}
         }, Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global());
 
