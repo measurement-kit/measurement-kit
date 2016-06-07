@@ -1,3 +1,46 @@
+# MeasurementKit 0.2.0-beta [2016-06-07]
+
+- add initial NDT client implementation
+- add more continuous integration providers using docker
+- add support for setting default CA bundle path
+- updated http-parser to v2.7.0
+- updated Catch to v1.5.0
+- add precompiled dependencies for Android and iOS
+- upgrade Android build scripts to NDK r11c
+- switch to use libevent's upstream repository instead of our fork
+- peg GeoIP to v2.7.9 rather than using the master branch
+- update libressl to v2.3.6
+- add more documentation for common
+- start updating existing docs
+- migrate the tree to use templates to mock API calls
+- rationalize HTTP and mlabns APIs
+- rationalize OONI tests DSL API (this would probably break apps)
+- add client for OONI report protocol
+- make Delegate more convenient
+- make Error way more robust and convenient, e.g. allow to chain errors
+- use define to increase robustness of error definitions
+- allow to pass flags to logger to convey extended semantic, e.g. state update
+- add more helpful MOCK macros
+- unify NetTest and NetTestDsl object models (OONI not yet ready for that)
+- rename Poller as Reactor (more precise name); Poller is now a React implement.
+- Reactor: add `loop_with_initial_event_and_connectivity`
+- rename Async as Runner (more precise name)
+- make Settings more useful
+- add nlohmann/json as external header
+- rewrite report::Entry using nlohmann/json via private inheritance
+- FIX: make sure `readn()` never consumes too much stack
+- export `report` headers as public API now that it uses `report::Entry`
+- make sure we don't ignore possible errors when writing report
+- remove unused, incomplete Tor controller
+- downgrade minimum iOS platform from 9.0 to 7.1
+- use `std::promise<>` and `std::future<>` for increased robustness
+- Poller: make sure we ignore `SIGPIPE`
+- significantly increase code coverage (now greater than 93%)
+- make sure we handle `EPIPE`
+- FIX: make sure OONI code produces spec compliant reports
+- refactor OoniTestImpl replacing InputGenerator with much simpler code
+- add to OONI support for geolookup and for automatically submitting reports
+
 # MeasurementKit 0.2.0-alpha [2016-05-12]
 
 We are not ready to declare a stable release yet, because tons of things still need love. However, we've reached a point where we could tag an alpha release. Too many changes, hence listing them in the order in which I see them when reading the huge diff since the previous stable release:

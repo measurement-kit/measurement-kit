@@ -62,7 +62,7 @@ void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback,
         }
         try {
             message = json::parse(m);
-        } catch (const std::exception &) {
+        } catch (const std::invalid_argument &) {
             callback(JsonParseError(), 0, message);
             return;
         }
@@ -82,9 +82,12 @@ void read_msg_impl(Var<Context> ctx,
         }
         std::string s;
         try {
-            s = message["msg"];
-        } catch (const std::exception &) {
+            s = message.at("msg");
+        } catch (const std::out_of_range &) {
             callback(JsonKeyError(), 0, "");
+            return;
+        } catch (const std::domain_error &) {
+            callback(JsonDomainError(), 0, "");
             return;
         }
         callback(NoError(), type, s);

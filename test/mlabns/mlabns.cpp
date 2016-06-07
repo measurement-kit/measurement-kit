@@ -235,3 +235,39 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
             settings, Reactor::global(), Logger::global());
     });
 }
+
+static void get_debug_json_with_unexpected_type(std::string,
+                                                Callback<Error, Var<http::Response>> cb,
+                                                http::Headers,
+                                                Settings, Var<Reactor>,
+                                                Var<Logger>) {
+    Var<http::Response> response(new http::Response);
+    response->status_code = 200;
+    // IP is a int rather than being a list
+    response->body = "{\"city\": \"Turin\", \"url\": "
+                    "\"http://"
+                    "neubot.mlab.mlab1v4.trn01.measurement-lab.org:8080\", "
+                    "\"ip\": 194, \"fqdn\": "
+                    "\"neubot.mlab.mlab1v4.trn01.measurement-lab.org\", "
+                    "\"site\": \"trn01\", \"country\": \"IT\"}";
+    cb(NoError(), response);
+}
+
+TEST_CASE("Make sure that an error is passed to callback if the response "
+          "contains a field with invalid type") {
+    Settings settings;
+    settings["mlabns/address_family"] = "ipv4";
+    settings["mlabns/metro"] = "trn";
+    settings["mlabns/policy"] = "random";
+    std::string tool = "neubot";
+
+    loop_with_initial_event([=]() {
+        mlabns::query_impl<get_debug_json_with_unexpected_type>(
+            tool,
+            [](Error error, mlabns::Reply) {
+                REQUIRE(error == JsonDomainError());
+                break_loop();
+            },
+            settings, Reactor::global(), Logger::global());
+    });
+}
