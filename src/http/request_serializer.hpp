@@ -44,7 +44,7 @@ class RequestSerializer {
         protocol = settings.get("http_version", std::string("HTTP/1.1"));
         method = settings.get("method", std::string("GET"));
         path = settings.get("path", std::string(""));
-        if (path != "" && path[0] != "/") {
+        if (path != "" && path[0] != '/') {
             path = "/" + path;
         }
 
