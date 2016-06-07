@@ -26,12 +26,12 @@ class RequestSerializer {
      * For settings the following options are supported:
      *
      *     {
-     *       {"follow_redirects", "yes|no"},
-     *       {"url", std::string},
-     *       {"ignore_body", "yes|no"},
-     *       {"method", "GET|DELETE|PUT|POST|HEAD|..."},
-     *       {"http_version", "HTTP/1.1"},
-     *       {"path", by default is taken from the url}
+     *       {"http/follow_redirects", "yes|no"},
+     *       {"http/url", std::string},
+     *       {"http/ignore_body", "yes|no"},
+     *       {"http/method", "GET|DELETE|PUT|POST|HEAD|..."},
+     *       {"http/http_version", "HTTP/1.1"},
+     *       {"http/path", by default is taken from the url}
      *     }
      */
     RequestSerializer(Settings settings, Headers hdrs, std::string bd) {
@@ -41,10 +41,10 @@ class RequestSerializer {
             throw MissingUrlError();
         }
 
-        url = parse_url(settings.at("url"));
-        protocol = settings.get("http_version", std::string("HTTP/1.1"));
-        method = settings.get("method", std::string("GET"));
-        path = settings.get("path", std::string(""));
+        url = parse_url(settings.at("http/url"));
+        protocol = settings.get("http/http_version", std::string("HTTP/1.1"));
+        method = settings.get("http/method", std::string("GET"));
+        path = settings.get("http/path", std::string(""));
         if (path != "" && path[0] != '/') {
             path = "/" + path;
         }
