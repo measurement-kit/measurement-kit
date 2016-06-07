@@ -21,6 +21,6 @@ TEST_CASE("geoip works") {
         "8.8.8.8", "test/fixtures/GeoIP.dat", "test/fixtures/GeoIPASNum.dat");
     REQUIRE(!!json);
     REQUIRE(((*json)["asn"] == std::string{"AS15169"}));
-    REQUIRE(((*json)["country_code"] == std::string{"USA"}));
+    REQUIRE(((*json)["country_code"] == std::string{"US"}));
     REQUIRE(((*json)["country_name"] == std::string{"United States"}));
 }

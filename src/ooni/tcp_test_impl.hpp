@@ -26,10 +26,7 @@ class TCPTestImpl : public ooni::OoniTestImpl {
         : ooni::OoniTestImpl(input_filepath_, options_) {
         test_name = "tcp_test";
         test_version = "0.0.1";
-        entry["sent"] = report::Entry::array();
-        entry["received"] = report::Entry::array();
-        entry["failure"] = nullptr;
-    };
+    }
 
     TCPTestImpl(Settings options_) : TCPTestImpl("", options_) {};
 
@@ -43,9 +40,6 @@ class TCPTestImpl : public ooni::OoniTestImpl {
 
         net::connect(options["host"], options["port"].as<int>(),
                 [this, cb](Error error, Var<net::Transport> transport) {
-                    if (error) {
-                        entry["failure"] = error.as_ooni_error();
-                    }
                     cb(error, transport);
                 }, options, logger, reactor);
     }

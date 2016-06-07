@@ -169,7 +169,6 @@ class OoniTestImpl : public mk::NetTest, public mk::NonCopyable,
     }
 
   public:
-    report::Entry entry;
     InputGenerator *input = nullptr;
 
     std::string test_name;
@@ -219,11 +218,18 @@ class OoniTestImpl : public mk::NetTest, public mk::NonCopyable,
                 run_next_measurement(std::move(cb));
             } else {
                 logger->debug("net_test: no input file");
-                report::Entry entry;
-                entry["input"] = "";
+                struct tm measurement_start_time;
+                double start_time;
+                mk::utc_time_now(&measurement_start_time);
+                start_time = mk::time_now();
                 logger->debug("net_test: calling setup");
                 setup();
-                main(options, [=](report::Entry entry) {
+                main(options, [=](report::Entry test_keys) {
+                    report::Entry entry;
+                    entry["test_keys"] = test_keys;
+                    entry["input"] = "";
+                    entry["measurement_start_time"] = *mk::timestamp(&measurement_start_time);
+                    entry["test_runtime"] = mk::time_now() - start_time;
                     logger->debug("net_test: tearing down");
                     teardown();
                     file_report.write_entry(entry);

@@ -19,20 +19,19 @@ class TCPConnectImpl : public TCPTestImpl {
         test_name = "tcp_connect";
         test_version = "0.0.1";
         validate_input_filepath();
-    };
+    }
 
     void main(std::string input, Settings options,
               std::function<void(report::Entry)> &&cb) {
         options["host"] = input;
-
         connect(options, [this, cb](Error err, Var<net::Transport> txp) {
             logger->debug("tcp_connect: Got response to TCP connect test");
             if (err) {
-                cb(entry);
+                cb(report::Entry{{"connection", err.as_ooni_error()}});
                 return;
             }
             txp->close([this, cb]() {
-                cb(entry);
+                cb(report::Entry{{"connection", "success"}});
             });
         });
     }

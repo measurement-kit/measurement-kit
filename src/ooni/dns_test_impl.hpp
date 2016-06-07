@@ -23,7 +23,8 @@ class DNSTestImpl : public ooni::OoniTestImpl {
         test_version = "0.0.1";
     };
 
-    void query(dns::QueryType query_type, dns::QueryClass query_class,
+    void query(Var<report::Entry> entry,
+               dns::QueryType query_type, dns::QueryClass query_class,
                std::string query_name, std::string nameserver,
                std::function<void(dns::Message)> cb, Settings options = {}) {
 
@@ -68,7 +69,7 @@ class DNSTestImpl : public ooni::OoniTestImpl {
                 }
                 // TODO add support for bytes received
                 // query_entry["bytes"] = response.get_bytes();
-                entry["queries"].push_back(query_entry);
+                (*entry)["queries"].push_back(query_entry);
                 logger->debug("dns_test: callbacking");
                 cb(message);
                 logger->debug("dns_test: callback called");
