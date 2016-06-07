@@ -22,18 +22,6 @@ TEST_CASE(
     });
 }
 
-TEST_CASE("The TCP connect test should throw an exception if an invalid file "
-          "path is given") {
-    REQUIRE_THROWS_AS(
-        TCPConnectImpl("/tmp/this-file-does-not-exist.txt", Settings()),
-        InputFileDoesNotExist);
-}
-
-TEST_CASE(
-    "The TCP connect test should throw an exception if no file path is given") {
-    REQUIRE_THROWS_AS(TCPConnectImpl("", Settings()), InputFileRequired);
-}
-
 TEST_CASE("The TCP connect test should fail with an invalid dns resolver") {
     TCPConnectImpl tcp_connect("test/fixtures/hosts.txt",
                                {{"host", "nexacenter.org"},
