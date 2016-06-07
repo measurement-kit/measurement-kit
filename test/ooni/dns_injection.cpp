@@ -22,20 +22,3 @@ TEST_CASE(
             [&]() { dns_injection.end([]() { break_loop(); }); });
     });
 }
-
-TEST_CASE("The DNS Injection test should throw an exception if an invalid file "
-          "path is given") {
-    Settings options;
-    options["backend"] = "8.8.8.1:53";
-    REQUIRE_THROWS_AS(DNSInjectionImpl dns_injection(
-                          "/tmp/this-file-does-not-exist.txt", options),
-                      InputFileDoesNotExist);
-}
-
-TEST_CASE("The DNS Injection test should throw an exception if no file path is "
-          "given") {
-    Settings options;
-    options["backend"] = "8.8.8.1:53";
-    REQUIRE_THROWS_AS(DNSInjectionImpl dns_injection("", options),
-                      InputFileRequired);
-}

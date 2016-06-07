@@ -18,11 +18,11 @@ class TCPConnectImpl : public TCPTestImpl {
         : TCPTestImpl(input_filepath_, options_) {
         test_name = "tcp_connect";
         test_version = "0.0.1";
-        validate_input_filepath();
+        needs_input = true;
     }
 
     void main(std::string input, Settings options,
-              std::function<void(report::Entry)> &&cb) {
+              std::function<void(report::Entry)> cb) {
         options["host"] = input;
         connect(options, [this, cb](Error err, Var<net::Transport> txp) {
             logger->debug("tcp_connect: Got response to TCP connect test");
