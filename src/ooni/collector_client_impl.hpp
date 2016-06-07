@@ -69,7 +69,7 @@ void post_impl(Var<Transport> transport, std::string append_to_url,
                               nlohmann::json reply;
                               try {
                                   reply = nlohmann::json::parse(response->body);
-                              } catch (std::invalid_argument &) {
+                              } catch (const std::invalid_argument &) {
                                   callback(JsonParseError(), nullptr);
                                   return;
                               }
@@ -136,9 +136,12 @@ void create_report_impl(Var<Transport> transport, Entry entry,
                        }
                        std::string report_id;
                        try {
-                           report_id = reply["report_id"];
-                       } catch (std::domain_error &) {
+                           report_id = reply.at("report_id");
+                       } catch (const std::domain_error &) {
                            callback(JsonDomainError(), "");
+                           return;
+                       } catch (const std::out_of_range &) {
+                           callback(JsonKeyError(), "");
                            return;
                        }
                        callback(NoError(), report_id);

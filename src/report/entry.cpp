@@ -22,6 +22,8 @@ Entry &Entry::operator=(Entry value) {
 }
 
 Entry &Entry::operator[](std::string key) {
+    // Note: out_of_range could not happen because operator[] returns
+    // a null json object if the accessed key is missing
     try {
         return static_cast<Entry &>(nlohmann::json::operator[](key));
     } catch (std::domain_error &) {

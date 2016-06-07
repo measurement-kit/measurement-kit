@@ -73,7 +73,7 @@ static void fail(Var<Context>, Callback<Error, uint8_t, json> cb,
 
 static void invalid(Var<Context>, Callback<Error, uint8_t, json> cb,
                     Var<Reactor> = Reactor::global()) {
-    cb(NoError(), 0, {});
+    cb(NoError(), 0, {{"foo", "baz"}, {"baz", 1}});
 }
 
 TEST_CASE("read() deals with read_json() error") {
@@ -87,6 +87,18 @@ TEST_CASE("read() deals with json without 'msg' field") {
     Var<Context> ctx(new Context);
     messages::read_msg_impl<invalid>(ctx, [](Error err, uint8_t, std::string) {
         REQUIRE(err == JsonKeyError());
+    }, Reactor::global());
+}
+
+static void bad_type(Var<Context>, Callback<Error, uint8_t, json> cb,
+                    Var<Reactor> = Reactor::global()) {
+    cb(NoError(), 0, 3.14);
+}
+
+TEST_CASE("read() deals with json with 'msg' field of the wrong type") {
+    Var<Context> ctx(new Context);
+    messages::read_msg_impl<bad_type>(ctx, [](Error err, uint8_t, std::string) {
+        REQUIRE(err == JsonDomainError());
     }, Reactor::global());
 }
 
