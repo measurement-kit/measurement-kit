@@ -22,10 +22,9 @@
 namespace mk {
 namespace ooni {
 
-class OoniTestImpl : public mk::NetTest {
-    std::string input_filepath;
+class OoniTestImpl : public mk::NetTest, public mk::NonCopyable,
+                     public mk::NonMovable {
     report::FileReporter file_report;
-    std::string report_filename;
 
     struct tm test_start_time;
 
@@ -116,7 +115,7 @@ class OoniTestImpl : public mk::NetTest {
         file_report.test_start_time = test_start_time;
 
         file_report.options = options;
-        file_report.filename = get_report_filename();
+        file_report.filename = get_output_file_path();
 
         file_report.probe_ip = probe_ip;
         file_report.probe_cc = probe_cc;
@@ -125,7 +124,7 @@ class OoniTestImpl : public mk::NetTest {
         file_report.open();
     }
 
-    std::string generate_report_filename() {
+    std::string generate_output_file_path() {
         std::string filename;
         char buffer[100];
         strftime(buffer, sizeof(buffer), "%FT%H%M%SZ",
@@ -191,18 +190,16 @@ class OoniTestImpl : public mk::NetTest {
         : OoniTestImpl(input_filepath_, Settings()) {}
 
     OoniTestImpl(std::string input_filepath_, Settings options_)
-        : NetTest(options_), input_filepath(input_filepath_),
+        : NetTest(input_filepath_, options_),
         test_name("net_test"), test_version("0.0.1") {
             mk::utc_time_now(&test_start_time);
         }
 
-    void set_report_filename(std::string s) { report_filename = s; }
-
-    std::string get_report_filename() {
-        if (report_filename == "") {
-            report_filename = generate_report_filename();
+    std::string get_output_file_path() {
+        if (output_filepath == "") {
+            output_filepath = generate_output_file_path();
         }
-        return report_filename;
+        return output_filepath;
     }
 
     InputGenerator *input_generator() {
@@ -243,13 +240,11 @@ class OoniTestImpl : public mk::NetTest {
         // Note: here we make the reasonable assumption that the owner of this
         // instance would keep it safe until the final callback is fired
         collector::submit_report(
-            get_report_filename(),
+            get_output_file_path(),
             options.get("collector_base_url",
                         collector::default_collector_url()),
             [=](Error) { cb(); }, options, reactor, logger);
     }
-
-    void set_reactor(Var<Reactor> p) { reactor = p; }
 };
 
 } // namespace ooni

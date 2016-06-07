@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
+cd $ROOTDIR/build/android
+
+# Do not ship *.la files that would break the build and, while there, also
+# remove directories that we don't need for cross compiling MK
+find jni -type f -name \*.la -exec rm {} \;
+find jni -type f -name \*.pc -exec rm {} \;
+find jni -type d -depth -name share -exec rm -rf {} \;
+find jni -type d -depth -name bin -exec rm -rf {} \;
+find jni -type d -depth -name pkgconfig -exec rm -rf {} \;
+
+now=`date +%Y%m%dT%H%M%SZ`
+tar -czf android-dependencies-$now.tgz jni
+gpg2 -u 7733D95B -b --armor android-dependencies-$now.tgz

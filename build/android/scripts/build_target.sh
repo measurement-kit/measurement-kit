@@ -76,6 +76,8 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
 
 BUILDDIR="${ROOTDIR}/jni/${DESTDIR_NAME}"
 
+# TODO: use `cross` to setup the environment and build MK
+
 export pkg_configure_flags="--host=${ARCH} --disable-shared"
 export pkg_make_flags=-j2
 export pkg_prefix=${BUILDDIR}
@@ -85,9 +87,6 @@ export pkg_prefix=${BUILDDIR}
     test -f Makefile && make clean
     echo "Configure with --host=${ARCH} and toolchain ${ANDROID_TOOLCHAIN}"
     test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && ./autogen.sh)
-    ${ROOTDIR}/../../build/dependency geoip
-    pkg_configure_flags="$pkg_configure_flags $CONFIG_EXTRA" ${ROOTDIR}/../../build/dependency libressl
-    ${ROOTDIR}/../../build/dependency libevent
     ${ROOTDIR}/../../configure -q --host=${ARCH} --with-sysroot=${SYSROOT} \
       --with-libevent=${BUILDDIR} --with-geoip=${BUILDDIR} \
       --with-openssl=${BUILDDIR} --disable-examples \
