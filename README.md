@@ -16,6 +16,8 @@ Currently it implements the following high-level tests:
 
 - [OONI](https://ooni.torproject.org/)'s [TCP Connect](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-008-tcpconnect.md) test
 
+- the [network diagnostic tool](https://github.com/ndt-project/ndt/wiki/NDTTestMethodology) network performance test
+
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
 
@@ -25,21 +27,19 @@ tests. More in detail it currently implements:
 - [DNS client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/dns/dns.hpp) (with which you can resolve and reverse-resolve A and AAAA
   records using arbitrary name servers)
 
-- [HTTP client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/http.hpp) (with which you can send HTTP/1.1 requests and receive
+- [HTTP client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/http/http.hpp) (with which you can send HTTP/1.1 requests and receive
   and parse the corresponding responses)
 
 - [traceroute for Android](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/traceroute/android.hpp) (with which you can send individual traceroute
   probes with a specified payload and TTL)
 
-- [mlab-ns client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/mlabns.hpp) (with which you can interact with Measurement Lab backend to know the server with which to run tests)
+- [mlab-ns client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/mlabns/mlabns.hpp) (with which you can interact with Measurement Lab backend to know the server with which to run tests)
+
+- the functionality to communicate with the [OONI backend](https://github.com/TheTorProject/ooni-backend)
 
 In the short term we plan to add to MeasurementKit:
 
-- the [network diagnostic tool](https://github.com/ndt-project/ndt/wiki/NDTTestMethodology) network performance test
-
 - Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
-
-- the functionality to communicate with the [OONI backend](https://github.com/TheTorProject/ooni-backend)
 
 - more OONI tests
 
@@ -48,7 +48,7 @@ such as [uTP](https://github.com/bittorrent/libutp), and traceroute for iOS.
 
 The following index illustrates the content of the remainder of this file:
 
-- [How to clone the repositorty](#how-to-clone-the-repository)
+- [How to clone the repository](#how-to-clone-the-repository)
 - [How to test a specific branch](#how-to-test-a-specific-branch)
 - [How to build MeasurementKit](#how-to-build-measurementkit)
   - [How to build MeasurementKit on a Unix-like system](#how-to-build-measurementkit-on-a-unix-like-system)
@@ -207,7 +207,7 @@ of the same thread that called *run*).
 
 // Run sync test
 mk::ooni::HttpInvalidRequestLineTest()
-    .set_backend("http://127.0.0.1/")
+    .set_options("backend", "http://127.0.0.1/")
     .set_verbose()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
