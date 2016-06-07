@@ -25,18 +25,18 @@ namespace neubot {
 namespace dash {
 
 static inline void loop_request(Var<Transport> transport, int speed_kbit,
-                                Callback<Error, Var<json>> cb, std::string auth,
-                                Var<json> measurements, Var<Reactor> reactor,
-                                Var<Logger> logger, int iteration = 1) {
+                                Callback<Error, Var<json>> cb,
+                                Var<json> measurements, Settings settings,
+                                Var<Reactor> reactor, Var<Logger> logger,
+                                int iteration = 1) {
 
     int rate_index = 0;
-    Settings settings;
     static const int DASH_RATES[] = {100,  150,  200,  250,  300,   400,  500,
                         700,  900,  1200, 1500, 2000,  2500, 3000,
                         4000, 5000, 6000, 7000, 10000, 20000};
     static const int sizeofrates = (int) (sizeof(DASH_RATES) /
                                         sizeof(int));
-    std::string url = "http://127.0.0.1/dash/download/";
+    std::string path = "/dash/download/";
 
     if (iteration > DASH_MAX_ITERATION) {
         transport->close([=]() { cb(NoError(), measurements); });
@@ -55,14 +55,14 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
 
     int rate_kbit = DASH_RATES[rate_index];
     int count = ((rate_kbit * 1000) / 8) * DASH_SECONDS;
-    url += std::to_string(count);
-    settings["http/url"] = url;
+    path += std::to_string(count);
+    settings["http/path"] = path;
     double saved_times = mk::time_now();
 
     http::request_send(
         transport, settings,
         {
-            {"Authorization", auth},
+            {"Authorization", settings["auth"]},
         },
         "",
         [=](Error error) {
@@ -91,7 +91,7 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
                         return;
                     }
                     // TODO
-                    if (auth != "") {
+                    if (settings.at("auth") != "") {
                         json::object_t result = {
                             //{"connect_time", self.rtts[0]}
                             //{"delta_user_time", delta_user_time}
@@ -129,8 +129,8 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
                         }
                     }
 
-                    loop_request(transport, s_k, cb, auth, measurements,
-                                 reactor, logger, iteration + 1);
+                    loop_request(transport, s_k, cb, measurements,
+                                 settings, reactor, logger, iteration + 1);
 
                 },
                 reactor, logger);
@@ -138,8 +138,9 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
 }
 
 static inline void run_impl(Settings settings, Callback<Error, Var<json>> cb,
-                            std::string auth, Var<Reactor> reactor,
-                            Var<Logger> logger) {
+                            Var<Reactor> reactor, Var<Logger> logger) {
+    settings["http/path"] = "";
+    settings["http/method"] = "GET";
 
     request_connect(settings,
                     [=](Error error, Var<Transport> transport) {
@@ -152,8 +153,8 @@ static inline void run_impl(Settings settings, Callback<Error, Var<json>> cb,
 
                         Var<json> measurements(new json);
 
-                        loop_request(transport, 100, cb, auth, measurements,
-                                     reactor, logger);
+                        loop_request(transport, 100, cb, measurements,
+                                     settings, reactor, logger);
 
                         return;
                     },

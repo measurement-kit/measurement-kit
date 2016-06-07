@@ -23,14 +23,12 @@ static const char *kv_usage =
 
 int main(int argc, char **argv) {
     Settings settings;
-    settings["http/url"] = "http://127.0.0.1";
-    settings["negotiate"] = true;
     char ch;
 
     while ((ch = getopt(argc, argv, "a:vn")) != -1) {
         switch (ch) {
         case 'a':
-            settings["http/url"] = optarg;
+            settings["url"] = optarg;
             break;
         case 'n':
             settings["negotiate"] = false;
@@ -49,7 +47,6 @@ int main(int argc, char **argv) {
             debug("Error: %d", (int) error);
 
             break_loop();
-
         });
     });
 }

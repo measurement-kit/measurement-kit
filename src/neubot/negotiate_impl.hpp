@@ -26,18 +26,16 @@ namespace neubot {
 namespace negotiate {
 
 static inline void collect(Var<Transport> transport, Callback<Error> cb,
-                           std::string auth, Var<json> measurements,
+                           Var<json> measurements, Settings settings,
                            Var<Reactor> reactor, Var<Logger> logger) {
-    Settings settings;
-    std::string url = "http://127.0.0.1/collect/dash";
     std::string body = measurements->dump();
-    settings["http/url"] = url;
     settings["http/method"] = "POST";
+    settings["http/path"] = "/collect/dash";
 
     request_sendrecv(
         transport, settings,
         {
-            {"Content-Type", "application/json"}, {"Authorization", auth},
+            {"Content-Type", "application/json"}, {"Authorization", settings["auth"]},
         },
         body,
         [=](Error error, Var<Response> res) {
@@ -53,20 +51,18 @@ static inline void collect(Var<Transport> transport, Callback<Error> cb,
         reactor, logger);
 }
 
-static inline void loop_req_negotiate(Var<Transport> transport,
-                                      Callback<Error> cb, Var<Reactor> reactor,
+static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> cb,
+                                      Settings settings, Var<Reactor> reactor,
                                       Var<Logger> logger, int iteration = 0) {
 
-    Settings settings;
     std::array<int, 20> DASH_RATES{{100,  150,  200,  250,  300,   400,  500,
                                     700,  900,  1200, 1500, 2000,  2500, 3000,
                                     4000, 5000, 6000, 7000, 10000, 20000}};
-    std::string url = "http://127.0.0.1/negotiate/dash";
     json::object_t value = {{"dash_rates", DASH_RATES}};
     json json_body(value);
     std::string body = json_body.dump();
 
-    settings["http/url"] = url;
+    settings["http/path"] = "/negotiate/dash";
     settings["http/method"] = "POST";
 
     if (iteration > DASH_MAX_NEGOTIATION) {
@@ -94,9 +90,11 @@ static inline void loop_req_negotiate(Var<Transport> transport,
             auto real_address = respbody.at("real_address");
             int unchoked = respbody.at("unchoked");
 
+            settings["auth"] = auth;
+
             // XXX
             if (unchoked == 0) {
-                loop_req_negotiate(transport, cb, reactor, logger,
+                loop_req_negotiate(transport, cb, settings, reactor, logger,
                                    iteration + 1);
             } else {
                 dash::run(settings,
@@ -117,19 +115,23 @@ static inline void loop_req_negotiate(Var<Transport> transport,
                                           }
 
                                           cb(NoError());
-                                      },
-                                      auth, measurements, reactor, logger);
+                                      }, measurements, settings, reactor, logger);
 
-                          },
-                          auth);
+                          });
             }
 
         },
         reactor, logger);
 }
 
-static inline void run_impl(Settings settings, Callback<Error> cb,
+static inline void run_impl(Callback<Error> cb, Settings settings,
                             Var<Reactor> reactor, Var<Logger> logger) {
+
+    if (settings.at("url") == "") {
+        settings["http/url"] = "http://127.0.0.1";
+    } else {
+        settings["http/url"] = settings["url"];
+    }
 
     if (!settings["negotiate"].as<bool>()) {
         dash::run(settings, [=](Error err, Var<json>) {
@@ -150,7 +152,7 @@ static inline void run_impl(Settings settings, Callback<Error> cb,
                             return;
                         }
 
-                        loop_req_negotiate(transport, cb, reactor, logger);
+                        loop_req_negotiate(transport, cb, settings, reactor, logger);
 
                         return;
                     },
