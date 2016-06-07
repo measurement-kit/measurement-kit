@@ -70,7 +70,7 @@ class HTTPInvalidRequestLineImpl : public TCPTestImpl {
                 });
     }
 
-    void main(Settings options, std::function<void(report::Entry)> &&cb) {
+    void main(std::string, Settings options, Callback<report::Entry> cb) {
         Var<report::Entry> entry(new report::Entry);
         (*entry)["tampering"] = nullptr;
         (*entry)["received"] = report::Entry::array();

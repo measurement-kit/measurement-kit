@@ -21,12 +21,11 @@ class DNSInjectionImpl : public DNSTestImpl {
         : DNSTestImpl(input_filepath_, options_) {
         test_name = "dns_injection";
         test_version = "0.0.1";
-
-        validate_input_filepath();
+        needs_input = true;
     }
 
     void main(std::string input, Settings options,
-              std::function<void(report::Entry)> &&cb) {
+              std::function<void(report::Entry)> cb) {
         Var<report::Entry> entry(new report::Entry);
         (*entry)["injected"] = nullptr;
         query(entry, "A", "IN", input, options["backend"],
