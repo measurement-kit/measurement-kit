@@ -37,9 +37,10 @@ class RequestSerializer {
     RequestSerializer(Settings settings, Headers hdrs, std::string bd) {
         headers = hdrs;
         body = bd;
-        if (settings.find("url") == settings.end()) {
+        if (settings.find("http/url") == settings.end()) {
             throw MissingUrlError();
         }
+<<<<<<< HEAD
         url = parse_url(settings.at("url"));
         protocol = settings.get("http_version", std::string("HTTP/1.1"));
         method = settings.get("method", std::string("GET"));
@@ -48,6 +49,11 @@ class RequestSerializer {
             path = "/" + path;
         }
 
+=======
+        url = parse_url(settings.at("http/url"));
+        protocol = settings.get("http/http_version", std::string("HTTP/1.1"));
+        method = settings.get("http/method", std::string("GET"));
+>>>>>>> master
     }
 
     RequestSerializer() {}

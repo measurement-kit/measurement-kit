@@ -9,11 +9,10 @@ namespace http {
 
 using namespace mk::net;
 
-void request_connect(Settings settings, Callback<Var<Transport>> transport,
-         Poller *poller = Poller::global(), Logger *logger = Logger::global()) {
-    request_connect_impl(settings, transport, poller, logger);
+void request_connect(Settings settings, Callback<Error, Var<Transport>> transport,
+         Var<Reactor> reactor, Var<Logger> logger) {
+    request_connect_impl(settings, transport, reactor, logger);
 }
-
 
 void request_send(Var<Transport> transport, Settings settings, Headers headers,
         std::string body, RequestSendCb callback) {
@@ -39,8 +38,8 @@ void request_send(Var<Transport> transport, Settings settings, Headers headers,
     transport->write(buff);
 }
 
-void request_recv_response(Var<Transport> transport, Callback<Var<Response>> cb,
-        Poller *poller, Logger *logger) {
+void request_recv_response(Var<Transport> transport, Callback<Error, Var<Response>> cb,
+        Var<Reactor> reactor, Var<Logger> logger) {
     Var<ResponseParserNg> parser(new ResponseParserNg);
     Var<Response> response(new Response);
     Var<bool> prevent_emit(new bool(false));
@@ -69,7 +68,7 @@ void request_recv_response(Var<Transport> transport, Callback<Var<Response>> cb,
         // TODO: make sure we remove all cycles
         transport->on_error(nullptr);
         transport->on_data(nullptr);
-        poller->call_soon([=]() {
+        reactor->call_soon([=]() {
             logger->debug("request_recv_response: end of closure");
             cb(err, response);
         });
@@ -77,19 +76,19 @@ void request_recv_response(Var<Transport> transport, Callback<Var<Response>> cb,
 }
 
 void request_sendrecv(Var<Transport> transport, Settings settings,
-        Headers headers, std::string body, Callback<Var<Response>> callback,
-        Poller *poller, Logger *logger) {
+        Headers headers, std::string body, Callback<Error, Var<Response>> callback,
+        Var<Reactor> reactor, Var<Logger> logger) {
     request_send(transport, settings, headers, body, [=](Error error) {
         if (error) {
             callback(error, nullptr);
             return;
         }
-        request_recv_response(transport, callback, poller, logger);
+        request_recv_response(transport, callback, reactor, logger);
     });
 }
 
-void request_cycle(Settings settings, Headers headers, std::string body,
-        Callback<Var<Response>> callback, Poller *poller, Logger *logger) {
+void request(Settings settings, Headers headers, std::string body,
+        Callback<Error, Var<Response>> callback, Var<Reactor> reactor, Var<Logger> logger) {
     request_connect(settings, [=](Error err, Var<Transport> transport) {
         if (err) {
             callback(err, nullptr);
@@ -101,8 +100,8 @@ void request_cycle(Settings settings, Headers headers, std::string body,
                         callback(error, response);
                     });
                 },
-                poller, logger);
-    }, poller, logger);
+                reactor, logger);
+    }, reactor, logger);
 }
 
 } // namespace http

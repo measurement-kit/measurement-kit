@@ -10,114 +10,32 @@
 namespace mk {
 namespace net {
 
-/// EOF error
-class EofError : public Error {
-  public:
-    /// Default constructor
-    EofError() : Error(1000, "unknown_failure 1000") {}
-};
-
-/// Timeout error
-class TimeoutError : public Error {
-  public:
-    /// Default constructor
-    TimeoutError() : Error(1001, "generic_timeout_error") {}
-};
-
-/// Socket error
-class SocketError : public Error {
-  public:
-    /// Default constructor
-    SocketError() : Error(1002, "unknown_failure 1002") {}
-};
-
-/// Connect failed error
-class ConnectFailedError : public Error {
-  public:
-    /// Default constructor
-    ConnectFailedError() : Error(1003, "unknown_failure 1003") {}
-};
-
-/// DNS generic error
-class DnsGenericError : public Error {
-  public:
-    /// Default constructor
-    DnsGenericError() : Error(1004, "unknown_failure 1004") {}
-};
-
-/// Bad SOCKS version error
-class BadSocksVersionError : public Error {
-  public:
-    /// Default constructor
-    BadSocksVersionError() : Error(1005, "socks_error") {}
-};
-
-/// SOCKS address too long
-class SocksAddressTooLongError : public Error {
-  public:
-    SocksAddressTooLongError() : Error(1006, "unknown_failure 1006") {}
-};
-
-/// SOCKS invalid port
-class SocksInvalidPortError : public Error {
-  public:
-    SocksInvalidPortError() : Error(1007, "unknown_failure 1007") {}
-};
-
-/// SOCKS generic error
-class SocksGenericError : public Error {
-  public:
-    SocksGenericError() : Error(1008, "socks_error") {}
-};
-
-/// EOL not found error
-class EOLNotFoundError : public Error {
-  public:
-    EOLNotFoundError() : Error(1009, "unknown_failure 1009") {}
-};
-
-/// Line too long error
-class LineTooLongError : public Error {
-  public:
-    LineTooLongError() : Error(1010, "unknown_failure 1010") {}
-};
-
-/// Generic network error
-class NetworkError : public Error {
-  public:
-    NetworkError() : Error(1011, "unknown_failure 1011") {}
-};
-
-class NoAvailableSocksAuthenticationError : public Error {
-  public:
-    NoAvailableSocksAuthenticationError()
-            : Error(1012, "unknown_failure 1012") {}
-};
-
-class SocksError : public Error {
-  public:
-    SocksError() : Error(1013, "unknown_failure 1013") {}
-};
-
-class BadSocksReservedFieldError : public Error {
-  public:
-    BadSocksReservedFieldError() : Error(1014, "unknown_failure 1014") {}
-};
-
-class BadSocksAtypeValueError : public Error {
-  public:
-    BadSocksAtypeValueError() : Error(1015, "unknown_failure 1015") {}
-};
-
-class EvconnlistenerNewBindError : public Error {
-  public:
-    EvconnlistenerNewBindError() : Error(1016, "unknown_failure 1016") {}
-};
-
-class BuffereventSocketNewError : public Error {
-  public:
-    BuffereventSocketNewError() : Error(1017, "unknown_failure 1017") {}
-};
+MK_DEFINE_ERR(MK_ERR_NET(0), EofError, "")
+MK_DEFINE_ERR(MK_ERR_NET(1), TimeoutError, "generic_timeout_error")
+MK_DEFINE_ERR(MK_ERR_NET(2), SocketError, "")
+MK_DEFINE_ERR(MK_ERR_NET(3), ConnectFailedError, "")
+MK_DEFINE_ERR(MK_ERR_NET(4), DnsGenericError, "")
+MK_DEFINE_ERR(MK_ERR_NET(5), BadSocksVersionError, "socks_error")
+MK_DEFINE_ERR(MK_ERR_NET(6), SocksAddressTooLongError, "")
+MK_DEFINE_ERR(MK_ERR_NET(7), SocksInvalidPortError, "")
+MK_DEFINE_ERR(MK_ERR_NET(8), SocksGenericError, "socks_error")
+MK_DEFINE_ERR(MK_ERR_NET(9), EOLNotFoundError, "")
+MK_DEFINE_ERR(MK_ERR_NET(10), LineTooLongError, "")
+MK_DEFINE_ERR(MK_ERR_NET(11), NetworkError, "")
+MK_DEFINE_ERR(MK_ERR_NET(12), NoAvailableSocksAuthenticationError, "")
+MK_DEFINE_ERR(MK_ERR_NET(13), SocksError, "")
+MK_DEFINE_ERR(MK_ERR_NET(14), BadSocksReservedFieldError, "")
+MK_DEFINE_ERR(MK_ERR_NET(15), BadSocksAtypeValueError, "")
+MK_DEFINE_ERR(MK_ERR_NET(16), EvconnlistenerNewBindError, "")
+MK_DEFINE_ERR(MK_ERR_NET(17), BuffereventSocketNewError, "")
+MK_DEFINE_ERR(MK_ERR_NET(18), SslInvalidCertificateError,
+              "ssl_invalid_certificate")
+MK_DEFINE_ERR(MK_ERR_NET(19), SslNoCertificateError, "ssl_no_certificate")
+MK_DEFINE_ERR(MK_ERR_NET(20), SslInvalidHostnameError, "ssl_invalid_hostname")
+MK_DEFINE_ERR(MK_ERR_NET(21), SslError, "ssl_error")
+MK_DEFINE_ERR(MK_ERR_NET(22), NotEnoughDataError, "")
+MK_DEFINE_ERR(MK_ERR_NET(23), MissingCaBundlePathError, "")
+MK_DEFINE_ERR(MK_ERR_NET(24), BrokenPipeError, "")
 
 } // namespace net
 } // namespace mk

@@ -1,7 +1,6 @@
 # MeasurementKit
 
-[![Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit)
-[![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=master&service=github)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master)
+[![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit) [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=master&service=github)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/master/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/master) [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit)
 
 MeasurementKit is a library that implements open network measurement methodologies
 (performance, censorship, etc.) and targets mobile platforms (Android and iOS).
@@ -85,7 +84,7 @@ Then proceed with the instruction to build and test MeasurementKit.
 To build, MeasurementKit needs:
 
 - a C90 compiler (such as gcc or clang)
-- a C++11 compiler (such as g++ or clang++)
+- a C++11 compiler (such as g++ >= 4.9 or clang++ >= 3.6)
 - autoconf, automake, and libtool
 - a Unix environment (such as Linux or MacOS)
 
@@ -104,7 +103,6 @@ MeasurementKit also depends on the following projects (which
 are only conditionally compiled as explained below):
 
 - [libevent](https://github.com/libevent/libevent)
-- [jansson](https://github.com/akheron/jansson)
 - [geoip](https://github.com/maxmind/geoip-api-c)
 
 The `./configure` script should check whether all
@@ -123,9 +121,6 @@ at specific directories using the following flags:
 
 - `--with-libevent=PREFIX` that tells `./configure` to use the
 libevent library and headers installed at PREFIX
-
-- `--with-jansson=PREFIX` that tells `./configure` to use the
-jansson library and headers installed at PREFIX
 
 - `--with-geoip=PREFIX` that tells `./configure` to use the
 geoip library and headers installed at PREFIX
@@ -186,13 +181,13 @@ it in your project adding this line in your Podfile:
 You can use a specific branch, e.g.:
 
     pod 'measurement_kit',
-      :git => 'https://github.com/measurement-kit/measurement-kit.git'
+      :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :branch => 'branch-name'
 
 Similarly, you can use a specific tag, e.g.:
 
     pod 'measurement_kit', 
-      :git => 'https://github.com/measurement-kit/measurement-kit.git'
+      :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :tag => 'v0.x.y'
 
 Then type `pod install` and open `.xcworkspace` file (beware not to open the
@@ -230,7 +225,7 @@ the callback passed as argument to *run* is invoked when the test completed.
 ```C++
 // Run async test
 mk::ooni::HttpInvalidRequestLineTest()
-    .set_backend("http://127.0.0.1/")
+    .set_options("backend", "http://127.0.0.1/")
     .set_verbose()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks

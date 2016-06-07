@@ -5,11 +5,7 @@
 #ifndef SRC_OONI_TCP_CONNECT_HPP
 #define SRC_OONI_TCP_CONNECT_HPP
 
-#include "src/ooni/errors.hpp"
 #include "src/ooni/tcp_test_impl.hpp"
-#include <sys/stat.h>
-
-using json = nlohmann::json;
 
 namespace mk {
 namespace ooni {
@@ -22,25 +18,20 @@ class TCPConnectImpl : public TCPTestImpl {
         : TCPTestImpl(input_filepath_, options_) {
         test_name = "tcp_connect";
         test_version = "0.0.1";
-
-        if (input_filepath_ == "") {
-            throw InputFileRequired("An input file is required!");
-        }
-
-        struct stat buffer;
-        if (stat(input_filepath_.c_str(), &buffer) != 0) {
-            throw InputFileDoesNotExist(input_filepath_ + " does not exist");
-        }
-    };
+        validate_input_filepath();
+    }
 
     void main(std::string input, Settings options,
-              std::function<void(json)> &&cb) {
+              std::function<void(report::Entry)> &&cb) {
         options["host"] = input;
-
-        connect(options, [this, cb](Var<net::Transport> txp) {
-            logger.debug("tcp_connect: Got response to TCP connect test");
+        connect(options, [this, cb](Error err, Var<net::Transport> txp) {
+            logger->debug("tcp_connect: Got response to TCP connect test");
+            if (err) {
+                cb(report::Entry{{"connection", err.as_ooni_error()}});
+                return;
+            }
             txp->close([this, cb]() {
-                cb(entry);
+                cb(report::Entry{{"connection", "success"}});
             });
         });
     }

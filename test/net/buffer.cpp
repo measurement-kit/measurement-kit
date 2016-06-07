@@ -2,34 +2,28 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Tests for net/buffer.hpp buffer.
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/net.hpp>
 #include "src/net/evbuffer.hpp"
-
 #include <event2/buffer.h>
+#include <measurement_kit/net.hpp>
 
 using namespace mk;
 using namespace mk::net;
 
-TEST_CASE("The constructor works correctly", "[Buffer]") {
+TEST_CASE("The constructor works correctly") {
     Buffer buffer;
     REQUIRE("" == buffer.read());
 }
 
-TEST_CASE("The constructor with null evbuffer works correctly", "[Buffer]") {
+TEST_CASE("The constructor with null evbuffer works correctly") {
     evbuffer *evbuf = nullptr;
     Buffer buffer(evbuf);
     REQUIRE("" == buffer.read());
 }
 
-TEST_CASE("The constructor with nonnull evbuffer works correctly", "[Buffer]") {
+TEST_CASE("The constructor with nonnull evbuffer works correctly") {
     evbuffer *evbuf = evbuffer_new();
     REQUIRE(evbuf != nullptr);
     REQUIRE(evbuffer_add(evbuf, "foobar", 6) == 0);
@@ -38,12 +32,12 @@ TEST_CASE("The constructor with nonnull evbuffer works correctly", "[Buffer]") {
     evbuffer_free(evbuf);
 }
 
-TEST_CASE("The constructor with C++ string works correctly", "[Buffer]") {
+TEST_CASE("The constructor with C++ string works correctly") {
     Buffer buffer("foobar");
     REQUIRE("foobar" == buffer.read());
 }
 
-TEST_CASE("The constructor with C string works correctly", "[Buffer]") {
+TEST_CASE("The constructor with C string works correctly") {
     Buffer buffer("foobar", 6);
     REQUIRE("foobar" == buffer.read());
 }
@@ -88,7 +82,7 @@ TEST_CASE("Insertion/extraction work correctly for evbuffer") {
     }
 }
 
-TEST_CASE("length() works correctly", "[Buffer]") {
+TEST_CASE("length() works correctly") {
     Buffer buff;
 
     SECTION("Lengh is zero at the beginning") { REQUIRE(buff.length() == 0); }
@@ -106,7 +100,7 @@ TEST_CASE("length() works correctly", "[Buffer]") {
     }
 }
 
-TEST_CASE("Foreach is robust to corner cases and errors", "[Buffer]") {
+TEST_CASE("Foreach is robust to corner cases and errors") {
     Buffer buff;
 
     SECTION("No function is invoked when the buffer is empty") {
@@ -122,7 +116,7 @@ TEST_CASE("Foreach is robust to corner cases and errors", "[Buffer]") {
      */
 }
 
-TEST_CASE("Foreach works correctly", "[Buffer]") {
+TEST_CASE("Foreach works correctly") {
 
     Buffer buff;
     auto counter = 0;
@@ -185,7 +179,7 @@ TEST_CASE("Foreach works correctly", "[Buffer]") {
     }
 }
 
-TEST_CASE("Discard works correctly", "[Buffer]") {
+TEST_CASE("Discard works correctly") {
     Buffer buff;
 
     SECTION("Discard does not misbehave when the buffer is empty") {
@@ -285,7 +279,7 @@ TEST_CASE("Readn works correctly") {
     }
 }
 
-TEST_CASE("Readline works correctly", "[Buffer]") {
+TEST_CASE("Readline works correctly") {
     Buffer buff;
     ErrorOr<std::string> line("");
 
@@ -366,7 +360,7 @@ TEST_CASE("Readline works correctly", "[Buffer]") {
     }
 }
 
-TEST_CASE("Write works correctly", "[Buffer]") {
+TEST_CASE("Write works correctly") {
     Buffer buff;
     auto pc = "0123456789";
     auto str = std::string(pc);
@@ -422,7 +416,8 @@ TEST_CASE("Write works correctly", "[Buffer]") {
             const char *p = (const char *)pp;
             for (size_t i = 0; i < n; ++i) {
                 for (auto j = 0; j < 8; ++j) {
-                    if ((p[i] & (1 << j)) == 0) ++zeroes;
+                    if ((p[i] & (1 << j)) == 0)
+                        ++zeroes;
                     ++total;
                 }
             }
@@ -439,7 +434,7 @@ TEST_CASE("Write works correctly", "[Buffer]") {
     }
 }
 
-TEST_CASE("Write into works correctly", "[Buffer]") {
+TEST_CASE("Write into works correctly") {
     Buffer buff;
 
     SECTION("Typical usage") {

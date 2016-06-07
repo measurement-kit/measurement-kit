@@ -5,16 +5,10 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "src/common/check_connectivity.hpp"
 #include "src/ooni/utils.hpp"
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/http.hpp>
 
 TEST_CASE("ip lookup works") {
-    if (mk::CheckConnectivity::is_down()) {
-        return;
-    }
-    mk::loop_with_initial_event([]() {
+    mk::loop_with_initial_event_and_connectivity([]() {
         mk::ooni::ip_lookup([](mk::Error err, std::string) {
             REQUIRE(err == mk::NoError());
             mk::break_loop();
@@ -23,11 +17,10 @@ TEST_CASE("ip lookup works") {
 }
 
 TEST_CASE("geoip works") {
-    std::string resolved = "{\"asn\":\"AS15169 Google "
-                           "Inc.\",\"country_code\":\"USA\",\"country_name\":"
-                           "\"United States\"}";
     mk::ErrorOr<json> json = mk::ooni::geoip(
         "8.8.8.8", "test/fixtures/GeoIP.dat", "test/fixtures/GeoIPASNum.dat");
-    REQUIRE(json);
-    REQUIRE(resolved == json->dump());
+    REQUIRE(!!json);
+    REQUIRE(((*json)["asn"] == std::string{"AS15169"}));
+    REQUIRE(((*json)["country_code"] == std::string{"US"}));
+    REQUIRE(((*json)["country_name"] == std::string{"United States"}));
 }

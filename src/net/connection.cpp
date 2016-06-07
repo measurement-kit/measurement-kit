@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include <arpa/inet.h>
+#include <errno.h>
 #include <event2/dns.h>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
@@ -57,11 +58,16 @@ void Connection::handle_event_(short what) {
         return;
     }
 
+    if (errno == EPIPE) {
+        emit_error(BrokenPipeError());
+        return;
+    }
+
     emit_error(SocketError());
 }
 
-Connection::Connection(bufferevent *buffev, Poller *poller, Logger *logger)
-        : Emitter(logger), poller(poller) {
+Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> logger)
+        : Emitter(logger), reactor(reactor) {
     this->bev = buffev;
 
     // The following makes this non copyable and non movable.
@@ -83,7 +89,7 @@ void Connection::close(std::function<void()> cb) {
     disable_read();
 
     close_cb = cb;
-    poller->call_soon([=]() {
+    reactor->call_soon([=]() {
         this->self = nullptr;
     });
 }

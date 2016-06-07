@@ -26,6 +26,8 @@ Buffer::Buffer(evbuffer *b) : Buffer() {
     }
 }
 
+/*static*/ Var<Buffer> Buffer::make() { return Var<Buffer>(new Buffer); }
+
 Buffer::Buffer(std::string s) : Buffer() {
     write(s);
 }
@@ -129,11 +131,43 @@ void Buffer::write(const void *buf, size_t count) {
         throw std::runtime_error("evbuffer_add failed");
 }
 
+ErrorOr<uint8_t> Buffer::read_uint8() {
+    uint8_t value = 0;
+    if (length() < sizeof (value)) {
+        return NotEnoughDataError();
+    }
+    std::string str = read(sizeof (value));
+    memcpy(&value, str.data(), sizeof (value));
+    return value;
+}
+
 void Buffer::write_uint8(uint8_t num) { write(&num, sizeof(num)); }
+
+ErrorOr<uint16_t> Buffer::read_uint16() {
+    uint16_t value = 0;
+    if (length() < sizeof (value)) {
+        return NotEnoughDataError();
+    }
+    std::string str = read(sizeof (value));
+    memcpy(&value, str.data(), sizeof (value));
+    value = ntohs(value);
+    return value;
+}
 
 void Buffer::write_uint16(uint16_t num) {
     num = htons(num);
     write(&num, sizeof(num));
+}
+
+ErrorOr<uint32_t> Buffer::read_uint32() {
+    uint32_t value = 0;
+    if (length() < sizeof (value)) {
+        return NotEnoughDataError();
+    }
+    std::string str = read(sizeof (value));
+    memcpy(&value, str.data(), sizeof (value));
+    value = ntohl(value);
+    return value;
 }
 
 void Buffer::write_uint32(uint32_t num) {

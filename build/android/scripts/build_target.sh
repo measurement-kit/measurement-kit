@@ -48,6 +48,7 @@ elif [ $ARCH = "mips64el-linux-android" ]; then
     export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
     LIB_SUFFIX=64
     DESTDIR_NAME=mips64
+    CONFIG_EXTRA="--disable-asm"
 elif [ $ARCH = x86 ]; then
     export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/i686-linux-android
     DESTDIR_NAME=x86
@@ -73,28 +74,34 @@ export STRIP=${TOOL_PATH}-strip
 export CPPFLAGS="${CPPFLAGS} --sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_TOOLCHAIN}/include"
 export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib -lc++_static -latomic -lm"
 
+BUILDDIR="${ROOTDIR}/jni/${DESTDIR_NAME}"
+
+# TODO: use `cross` to setup the environment and build MK
+
+export pkg_configure_flags="--host=${ARCH} --disable-shared"
+export pkg_make_flags=-j2
+export pkg_prefix=${BUILDDIR}
+
 (
-    cd $ROOTDIR
-    install -d ${ROOTDIR}/build/${ARCH}-${API}
-    cd ${ROOTDIR}/build/${ARCH}-${API}
+    cd "${ROOTDIR}/../../"
     test -f Makefile && make clean
     echo "Configure with --host=${ARCH} and toolchain ${ANDROID_TOOLCHAIN}"
     test -x ${ROOTDIR}/../../configure || (cd ${ROOTDIR}/../.. && ./autogen.sh)
     ${ROOTDIR}/../../configure -q --host=${ARCH} --with-sysroot=${SYSROOT} \
-      --with-libevent=builtin --disable-shared --libdir=/ \
-      --includedir=/include --with-geoip=builtin \
-      --with-jansson=builtin --disable-examples
-    make V=0
+      --with-libevent=${BUILDDIR} --with-geoip=${BUILDDIR} \
+      --with-openssl=${BUILDDIR} --disable-examples \
+      --prefix=${BUILDDIR} --disable-shared
+    make V=0 -j2
     echo "Installing library in ${BASEDIR}/build/${ANDROID_TOOLCHAIN}"
     # The rationale of the following algorithm is to install-strip and do
     # only install headers we want and do not install extra stuff.
     # See: https://github.com/measurement-kit/measurement-kit/pull/274/files
-    make install-strip DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/include
-    make install-data-am DESTDIR=${ROOTDIR}/jni/${DESTDIR_NAME}
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/pkgconfig
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/usr
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/*.la
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/libevent_core.a
-    rm -rf ${ROOTDIR}/jni/${DESTDIR_NAME}/libevent_extra.a
+    make install-strip
+    rm -rf ${BUILDDIR}/include
+    make install-data-am DESTDIR=${BUILDDIR}/
+    rm -rf ${BUILDDIR}/usr
+    rm -rf ${BUILDDIR}/share
+    rm -rf ${BUILDDIR}/bin
+    rm -rf ${BUILDDIR}/lib/*.la
+    rm -rf ${BUILDDIR}/lib/pkgconfig
 )

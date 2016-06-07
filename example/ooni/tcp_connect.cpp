@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// This example will run a synchronous tcp-connection test
-//
-
 #include <measurement_kit/ooni.hpp>
 #include <iostream>
 #include <string>
@@ -14,7 +10,7 @@
 int main(int argc, char **argv) {
     std::string port = "80";
     std::string name = argv[0];
-    bool verbose = false;
+    uint32_t verbosity = 0;
     char ch;
     while ((ch = getopt(argc, argv, "p:v")) != -1) {
         switch (ch) {
@@ -22,7 +18,7 @@ int main(int argc, char **argv) {
             port = std::string(optarg);
             break;
         case 'v':
-            verbose = true;
+            ++verbosity;
             break;
         default:
             std::cout << "Usage: " << name << " [-v] [-p port] file_name"
@@ -38,9 +34,11 @@ int main(int argc, char **argv) {
         exit(1);
     }
     mk::ooni::TcpConnectTest()
-        .set_port(port)
+        .set_options("port", port)
+        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
+        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
         .set_input_file_path(argv[0])
-        .set_verbose(verbose)
-        .on_log([](const char *s) { std::cout << s << "\n"; })
+        .set_verbosity(verbosity)
+        .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
 }

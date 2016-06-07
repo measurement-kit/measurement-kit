@@ -2,15 +2,10 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Tests for include/measurement_kit/common/settings.hpp
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common/settings.hpp>
-#include <string>
 
 using namespace mk;
 
@@ -129,5 +124,35 @@ TEST_CASE("The Settings::get() method works as expected when key exists") {
         {"key", 21.0},
     };
     REQUIRE(settings.get("key", 17.0) == 21.0);
+    REQUIRE(settings.find("key") != settings.end());
+}
+
+
+TEST_CASE("The Settings::get_noexcept() method works as expected "
+          "when key does not exist") {
+    Settings settings;
+    ErrorOr<double> rv = settings.get_noexcept("key", 17.0);
+    REQUIRE(*rv == 17.0);
+    REQUIRE(settings.find("key") == settings.end());
+}
+
+TEST_CASE("The Settings::get_noexcept() method works as expected "
+          "when key exists and conversion is possible") {
+    Settings settings = {
+        {"key", 21.0},
+    };
+    ErrorOr<double> rv = settings.get_noexcept("key", 17.0);
+    REQUIRE(*rv == 21.0);
+    REQUIRE(settings.find("key") != settings.end());
+}
+
+TEST_CASE("The Settings::get_noexcept() method works as expected "
+          "when key exists and conversion is not possible") {
+    Settings settings = {
+        {"key", "xx"},
+    };
+    ErrorOr<double> rv = settings.get_noexcept("key", 17.0);
+    REQUIRE(!rv);
+    REQUIRE_THROWS_AS(*rv, Error);
     REQUIRE(settings.find("key") != settings.end());
 }

@@ -26,6 +26,8 @@ class Buffer {
 
     ~Buffer() {}
 
+    static Var<Buffer> make();
+
     /*
      * I expect to read (write) from (into) the input (output)
      * evbuffer of a certain bufferevent. It seems to me natural
@@ -101,9 +103,15 @@ class Buffer {
 
     void write(const void *buf, size_t count);
 
+    ErrorOr<uint8_t> read_uint8();
+
     void write_uint8(uint8_t);
 
+    ErrorOr<uint16_t> read_uint16();
+
     void write_uint16(uint16_t);
+
+    ErrorOr<uint32_t> read_uint32();
 
     void write_uint32(uint32_t);
 
