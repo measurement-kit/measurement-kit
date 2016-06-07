@@ -26,6 +26,13 @@ class Entry : private nlohmann::json {
             return JsonDomainError();
         }
     }
+    template <typename T> operator T() {
+        try {
+            return nlohmann::json::operator T();
+        } catch (std::domain_error &) {
+            throw JsonDomainError();
+        }
+    }
 
     // Implementation of dict
     Entry &operator=(Entry value);
@@ -35,13 +42,29 @@ class Entry : private nlohmann::json {
         return operator[](std::string(key));
     }
     Entry &operator[](std::string key);
+    bool is_object() const {
+        return nlohmann::json::is_object();
+    }
 
     // Implementation of list
     void push_back(Entry);
+    Entry &operator[](int key);
+    bool is_array() const {
+        return nlohmann::json::is_array();
+    }
 
+    size_t size() const {
+        return nlohmann::json::size();
+    }
     std::string dump();
 
+    bool is_null() const {
+        return nlohmann::json::is_null();
+    }
+
+    bool operator==(Entry right);
     bool operator==(std::nullptr_t right);
+    bool operator!=(Entry right);
     bool operator!=(std::nullptr_t right);
 
   protected:
