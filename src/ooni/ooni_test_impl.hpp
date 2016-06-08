@@ -52,6 +52,11 @@ class OoniTestImpl : public mk::NetTest, public mk::NonCopyable,
         setup(next_input);
 
         logger->debug("net_test: running with input %s", next_input.c_str());
+
+        // Note: important to pass `options` to `main()` as opposed to using
+        // `options` from `main()` because `main()` could in principle modify
+        // existing options for the test's sake and we don't want this fact
+        // to have an impact outside of `main()` scope.
         main(next_input, options, [=](report::Entry test_keys) {
             report::Entry entry;
             entry["test_keys"] = test_keys;
