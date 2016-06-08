@@ -20,3 +20,7 @@ $IOSDIR/cross iphonesimulator x86_64 $BUILDDIR/dependency $1
 $IOSDIR/cross iphoneos armv7 $BUILDDIR/dependency $1
 $IOSDIR/cross iphoneos armv7s $BUILDDIR/dependency $1
 $IOSDIR/cross iphoneos arm64 $BUILDDIR/dependency $1
+
+# Install spec so we know what version was used to build the archive
+install -d $IOSDIR/tmp/spec
+install -m644 $BUILDDIR/spec/$1 $IOSDIR/tmp/spec/$1

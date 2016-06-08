@@ -17,7 +17,9 @@ namespace mk {
 namespace ooni {
 
 template <decltype(mk::http::get) httpget = mk::http::get>
-void ip_lookup(Callback<Error, std::string> callback) {
+void ip_lookup(Callback<Error, std::string> callback, Settings settings = {},
+               Var<Reactor> reactor = Reactor::global(),
+               Var<Logger> logger = Logger::global()) {
     httpget("http://geoip.ubuntu.com/lookup",
             [=](Error err, Var<http::Response> response) {
                 if (err) {
@@ -36,7 +38,7 @@ void ip_lookup(Callback<Error, std::string> callback) {
                 }
                 callback(NoError(), m[1]);
             },
-            {}, {}, Reactor::global(), Logger::global());
+            {}, settings, reactor, logger);
 }
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,

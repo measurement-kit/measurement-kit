@@ -265,7 +265,7 @@ TEST_CASE("collector::create_report deals with wrong JSON type") {
 static void missing_report_id(Var<Transport>, std::string, std::string,
                               Callback<Error, nlohmann::json> cb, Settings,
                               Var<Reactor>, Var<Logger>) {
-    nlohmann::json json{{"foo", "bar"}};
+    nlohmann::json json{{"foo", "bar"}, {"bar", "baz"}};
     cb(NoError(), json);
 }
 
@@ -273,7 +273,7 @@ TEST_CASE("collector::create_report deals with missing report_id") {
     collector::create_report_impl<missing_report_id>(
         nullptr, ENTRY,
         [=](Error err, std::string s) {
-            REQUIRE(err == JsonDomainError());
+            REQUIRE(err == JsonKeyError());
             REQUIRE(s == "");
         },
         {}, Reactor::global(), Logger::global());

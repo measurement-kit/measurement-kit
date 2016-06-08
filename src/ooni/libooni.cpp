@@ -16,35 +16,29 @@
 #include "src/ooni/tcp_connect_impl.hpp"
 
 namespace mk {
-
-class NetTest;
-
 namespace ooni {
 
 Var<NetTest> DnsInjectionTest::create_test_() {
-    OoniTestImpl *test = new DNSInjectionImpl(input_path, settings);
-    if (output_path != "") test->set_report_filename(output_path);
-    test->set_verbosity(verbosity);
-    if (log_handler) test->on_log(log_handler);
-    test->set_reactor(reactor);
+    DNSInjectionImpl *test = new DNSInjectionImpl(input_filepath, options);
+    test->logger = logger;
+    test->reactor = reactor;
+    test->output_filepath = output_filepath;
     return Var<NetTest>(test);
 }
 
 Var<NetTest> HttpInvalidRequestLineTest::create_test_() {
-    OoniTestImpl *test = new HTTPInvalidRequestLineImpl(settings);
-    if (output_path != "") test->set_report_filename(output_path);
-    test->set_verbosity(verbosity);
-    if (log_handler) test->on_log(log_handler);
-    test->set_reactor(reactor);
+    HTTPInvalidRequestLineImpl *test = new HTTPInvalidRequestLineImpl(options);
+    test->logger = logger;
+    test->reactor = reactor;
+    test->output_filepath = output_filepath;
     return Var<NetTest>(test);
 }
 
 Var<NetTest> TcpConnectTest::create_test_() {
-    OoniTestImpl *test = new TCPConnectImpl(input_path, settings);
-    if (output_path != "") test->set_report_filename(output_path);
-    test->set_verbosity(verbosity);
-    if (log_handler) test->on_log(log_handler);
-    test->set_reactor(reactor);
+    TCPConnectImpl *test = new TCPConnectImpl(input_filepath, options);
+    test->logger = logger;
+    test->reactor = reactor;
+    test->output_filepath = output_filepath;
     return Var<NetTest>(test);
 }
 

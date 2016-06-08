@@ -21,22 +21,22 @@ class DNSInjectionImpl : public DNSTestImpl {
         : DNSTestImpl(input_filepath_, options_) {
         test_name = "dns_injection";
         test_version = "0.0.1";
-
-        validate_input_filepath();
-    };
+        needs_input = true;
+    }
 
     void main(std::string input, Settings options,
-              std::function<void(report::Entry)> &&cb) {
-        entry["injected"] = nullptr;
-        query("A", "IN", input, options["backend"],
-              [this, cb](dns::Message message) {
+              std::function<void(report::Entry)> cb) {
+        Var<report::Entry> entry(new report::Entry);
+        (*entry)["injected"] = nullptr;
+        query(entry, "A", "IN", input, options["backend"],
+              [=](dns::Message message) {
                   logger->debug("dns_injection: got response");
                   if (message.error_code == DNS_ERR_NONE) {
-                      entry["injected"] = true;
+                      (*entry)["injected"] = true;
                   } else {
-                      entry["injected"] = false;
+                      (*entry)["injected"] = false;
                   }
-                  cb(entry);
+                  cb(*entry);
               }, options);
     }
 };

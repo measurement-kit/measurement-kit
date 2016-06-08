@@ -56,16 +56,5 @@ TEST_CASE("Make sure that set_output_path() works") {
                         .set_output_file_path("foo.txt")
                         .create_test_();
     auto ptr = static_cast<ooni::OoniTestImpl *>(instance.get());
-    REQUIRE(ptr->get_report_filename() == "foo.txt");
-}
-
-TEST_CASE("Make sure that default get_output_path() is nonempty") {
-    auto instance = ooni::DnsInjectionTest()
-                        // Note: must also set valid input file path otherwise
-                        // the constructor
-                        // called inside create_test_() throws an exception
-                        .set_input_file_path("test/fixtures/hosts.txt")
-                        .create_test_();
-    auto ptr = static_cast<ooni::OoniTestImpl *>(instance.get());
-    REQUIRE(ptr->get_report_filename() != "");
+    REQUIRE(ptr->output_filepath == "foo.txt");
 }

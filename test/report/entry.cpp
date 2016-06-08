@@ -78,15 +78,20 @@ TEST_CASE("We can create an Array") {
 }
 
 TEST_CASE("Cast works when possible") {
-    Entry entry{{"foo", "bar"}};
+    Entry entry{{"foo", "bar"}, {"baz", 17.0}};
     ErrorOr<std::string> s = entry["foo"];
     REQUIRE(!!s);
     REQUIRE(*s == "bar");
 }
 
 TEST_CASE("Cast returns error when not possible") {
-    Entry entry{{"foo", nullptr}};
+    Entry entry{{"foo", nullptr}, {"baz", 17.0}};
     ErrorOr<std::string> s = entry["foo"];
     REQUIRE(!s);
     REQUIRE(s.as_error() == JsonDomainError());
+}
+
+TEST_CASE("Make sure it does not throw when accessing nonexistent key") {
+    Entry entry{{"foo", "bar"}, {"baz", 17.0}};
+    REQUIRE((entry["bar"] == nullptr));
 }

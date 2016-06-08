@@ -4,8 +4,6 @@
 
 #include <measurement_kit/report.hpp>
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace report {
 

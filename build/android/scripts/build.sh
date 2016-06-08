@@ -10,7 +10,7 @@ ALL_ARCHS="aarch64-linux-android arm-linux-androideabi arm-linux-androideabi-v7a
 
 if [ $# -eq 3 ]; then
     NDK_DIR=$1
-    ARCH=$2
+    ALL_ARCHS=$2
     API=$3
 elif [ $# -eq 1 -o $# -eq 2 ]; then
     NDK_DIR=$1
@@ -19,10 +19,6 @@ elif [ $# -eq 1 -o $# -eq 2 ]; then
     else
         API=21
     fi
-    for arch in $ALL_ARCHS; do
-        $0 $NDK_DIR $arch $API
-    done
-    exit 0
 else
     echo "Usage: $0 NDK_DIR [[ARCH] API]" 1>&2
     echo "  NDK_DIR: path where NDK is installed" 1>&2
@@ -39,10 +35,28 @@ else
     exit 1
 fi
 
+echo "Downloading and verifying precompiled dependencies from github"
 (
+    set -e # just in case
+    cd $ROOTDIR
+    # Note: the precompiled dependencies MAY be downloadable from a previous
+    # release, what matters to decide if they're outdated is the `spec` dir that
+    # you can find inside each tarball and contains version number info
+    DEPS_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.2.0-alpha/android-dependencies-20160607T203701Z.tgz
+    DEPS_FILE=$(basename $DEPS_URL)
+    curl --progress-bar -LO $DEPS_URL
+    curl --progress-bar -LO $DEPS_URL.asc
+    gpg2 --verify $DEPS_FILE.asc
+    tar -xzf $DEPS_FILE
+    rm $DEPS_FILE $DEPS_FILE.asc
+)
+
+for ARCH in $ALL_ARCHS; do
+  (
     cd $ROOTDIR
     if [ ! -d toolchain/${ARCH}-${API} ]; then
         ${ROOTDIR}/scripts/make_toolchain.sh ${NDK_DIR} ${ARCH} ${API}
     fi
     ${ROOTDIR}/scripts/build_target.sh ${ARCH} ${API}
-)
+  )
+done

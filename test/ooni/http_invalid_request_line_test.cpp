@@ -61,13 +61,7 @@ TEST_CASE("Make sure that set_output_path() works") {
                         .set_output_file_path("foo.txt")
                         .create_test_();
     auto ptr = static_cast<ooni::OoniTestImpl *>(instance.get());
-    REQUIRE(ptr->get_report_filename() == "foo.txt");
-}
-
-TEST_CASE("Make sure that default get_output_path() is nonempty") {
-    auto instance = ooni::HttpInvalidRequestLineTest().create_test_();
-    auto ptr = static_cast<ooni::OoniTestImpl *>(instance.get());
-    REQUIRE(ptr->get_report_filename() != "");
+    REQUIRE(ptr->output_filepath == "foo.txt");
 }
 
 TEST_CASE("Make sure that it can pass options to the other levels") {
