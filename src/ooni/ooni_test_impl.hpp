@@ -106,7 +106,7 @@ class OoniTestImpl : public mk::NetTest, public mk::NonCopyable,
                 }
             }
             cb();
-        });
+        }, options, reactor, logger);
     }
 
     void open_report() {
