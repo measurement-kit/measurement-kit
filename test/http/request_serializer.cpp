@@ -45,21 +45,22 @@ TEST_CASE("HTTP Request serializer works as expected") {
 TEST_CASE("HTTP Request serializer works as expected with explicit path") {
     auto serializer = RequestSerializer(
         {
-         {"http/follow_redirects", "yes"},
-         {"http/url", "http://www.example.com/antani?clacsonato=yes#melandri"},
-         {"http/path", "/antani?amicimiei=yes#melandri"}
-         {"http/ignore_body", "yes"},
-         {"http/method", "GET"},
-         {"http/http_version", "HTTP/1.0"},
+            {"http/follow_redirects", "yes"},
+            {"http/url",
+             "http://www.example.com/antani?clacsonato=yes#melandri"},
+            {"http/path", "/antani?amicimiei"},
+            {"http/ignore_body", "yes"},
+            {"http/method", "GET"},
+            {"http/http_version", "HTTP/1.0"},
         },
         {
-         {"User-Agent", "Antani/1.0.0.0"},
+            {"User-Agent", "Antani/1.0.0.0"},
         },
         "0123456789");
     Buffer buffer;
     serializer.serialize(buffer);
     auto serialized = buffer.read();
-    std::string expect = "GET /antani?clacsonato=no HTTP/1.0\r\n";
+    std::string expect = "GET /antani?amicimiei HTTP/1.0\r\n";
     expect += "User-Agent: Antani/1.0.0.0\r\n";
     expect += "Host: www.example.com\r\n";
     expect += "Content-Length: 10\r\n";
