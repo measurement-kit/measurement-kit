@@ -94,6 +94,7 @@ class NetTest {
     class _name_ : public mk::NetTest {                                        \
       public:                                                                  \
         Var<NetTest> create_test_() override;                                  \
+      private:                                                                 \
         void begin(Callback<>) override {                                      \
             throw std::runtime_error("not yet implemented");                   \
         }                                                                      \

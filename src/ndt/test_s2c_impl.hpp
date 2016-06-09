@@ -182,6 +182,8 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                                 callback(NotTestMsgError());
                                 return;
                             }
+                            // TODO: if we will ever parse `m` remember about
+                            // possible access errors for json objects
                             ctx->logger->debug("ndt: speed %s",
                                                m.dump().c_str());
 

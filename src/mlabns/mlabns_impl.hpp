@@ -102,6 +102,9 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
             } catch (std::out_of_range &) {
                 callback(JsonKeyError(), Reply());
                 return;
+            } catch (std::domain_error &) {
+                callback(JsonDomainError(), Reply());
+                return;
             }
             logger->info("mlabns says to use %s", reply.fqdn.c_str());
             callback(NoError(), reply);
