@@ -30,7 +30,7 @@ Url parse_url(std::string url) {
     } else if (retval.schema == "https") {
         retval.port = 443;
     } else {
-        retval.port = 80; /* set on construction but could have been changed */
+        retval.port = 80; /* redundant; but I want to cover all cases */
     }
     if ((url_parser.field_set & (1 << UF_PATH)) != 0) {
         retval.path = url.substr(url_parser.field_data[UF_PATH].off,
