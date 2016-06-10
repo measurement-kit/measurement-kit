@@ -34,6 +34,7 @@ void SslContext::init(std::string ca_bundle_path) {
         ERR_load_crypto_strings();
         SSL_load_error_strings();
         OpenSSL_add_all_algorithms();
+        ssl_initialized = true;
     }
 
     debug("ssl: creating ssl context with bundle %s", ca_bundle_path.c_str());
