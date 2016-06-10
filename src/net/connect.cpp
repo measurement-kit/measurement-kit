@@ -178,7 +178,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                     logger->debug("error in connection.");
                     if (err == mk::net::NetworkError()) {
                         long ssl_err = bufferevent_get_openssl_error(bev);
-                        err = SslError(ERR_error_string(ssl_err, NULL));
+                        err = SslError(ERR_error_string(ssl_err, nullptr));
                     }
                     bufferevent_free(bev);
                     cb(err, nullptr);
@@ -196,7 +196,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                 }
 
                 X509 *server_cert = SSL_get_peer_certificate(ssl);
-                if (server_cert == NULL) {
+                if (server_cert == nullptr) {
                     logger->debug("ssl: got no certificate");
                     bufferevent_free(bev);
                     cb(SslNoCertificateError(), nullptr);
@@ -204,7 +204,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                 }
 
                 hostname_validate_err =
-                    tls_check_name(NULL, server_cert, hostname.c_str());
+                    tls_check_name(nullptr, server_cert, hostname.c_str());
                 X509_free(server_cert);
                 if (hostname_validate_err != 0) {
                     logger->debug("ssl: got invalid hostname");
