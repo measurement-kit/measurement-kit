@@ -6,8 +6,8 @@
 
 #include "ext/http-parser/http_parser.h"
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/net.hpp>
 #include <measurement_kit/http.hpp>
+#include <measurement_kit/net.hpp>
 
 #include <functional>
 #include <iosfwd>

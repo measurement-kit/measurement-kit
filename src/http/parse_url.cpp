@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/http.hpp>
 #include "src/ext/http-parser/http_parser.h"
+#include <measurement_kit/http.hpp>
 
 namespace mk {
 namespace http {
@@ -11,7 +11,7 @@ namespace http {
 Url parse_url(std::string url) {
     Url retval;
     http_parser_url url_parser;
-    http_parser_url_init(&url_parser); 
+    http_parser_url_init(&url_parser);
     if (http_parser_parse_url(url.c_str(), url.length(), 0, &url_parser) != 0) {
         throw UrlParserError();
     }

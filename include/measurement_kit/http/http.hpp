@@ -4,6 +4,8 @@
 #ifndef MEASUREMENT_KIT_HTTP_HTTP_HPP
 #define MEASUREMENT_KIT_HTTP_HTTP_HPP
 
+// Documentation: doc/api/http.md
+
 #include <map>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
@@ -19,6 +21,7 @@ namespace http {
 | |___| |  | | | (_) | |  \__ \
 |_____|_|  |_|  \___/|_|  |___/
 
+    Error codes in the HTTP module.
 */
 
 MK_DEFINE_ERR(MK_ERR_HTTP(0), UpgradeError, "")
@@ -36,6 +39,7 @@ MK_DEFINE_ERR(MK_ERR_HTTP(6), HttpRequestFailedError, "")
 | |_| | |  | |
  \___/|_|  |_|
 
+    Code to parse URLs.
 */
 
 class Url {
@@ -58,9 +62,25 @@ ErrorOr<Url> parse_url_noexcept(std::string url);
 | | |  __/ (_| | |_| |  __/\__ \ |_
 |_|  \___|\__, |\__,_|\___||___/\__|
              |_|
+
+    HTTP request and response structs, logic to make requests.
 */
 
 using Headers = std::map<std::string, std::string>;
+
+class Request {
+  public:
+    std::string method;
+    Url url;
+    std::string protocol;
+    Headers headers;
+    std::string path;
+    std::string body;
+
+    Request() {}
+    Error init(Settings, Headers, std::string);
+    void serialize(net::Buffer &);
+};
 
 struct Response {
     std::string response_line;
@@ -77,17 +97,34 @@ void request_connect(Settings, Callback<Error, Var<net::Transport>>,
                      Var<Logger> = Logger::global());
 
 void request_send(Var<net::Transport>, Settings, Headers, std::string,
-        Callback<Error>);
+                  Callback<Error>);
 
 void request_recv_response(Var<net::Transport>, Callback<Error, Var<Response>>,
-        Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
+                           Var<Reactor> = Reactor::global(),
+                           Var<Logger> = Logger::global());
 
 void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
-        Callback<Error, Var<Response>>, Var<Reactor> = Reactor::global(),
-        Var<Logger> = Logger::global());
+                      Callback<Error, Var<Response>>,
+                      Var<Reactor> = Reactor::global(),
+                      Var<Logger> = Logger::global());
+
+/*
+ * For settings the following options are defined:
+ *
+ *     {
+ *       {"http/follow_redirects", boolean},
+ *       {"http/url", std::string},
+ *       {"http/ignore_body", boolean},
+ *       {"http/method", "GET|DELETE|PUT|POST|HEAD|..."},
+ *       {"http/http_version", "HTTP/1.1"},
+ *       {"http/path", by default is taken from the url}
+ *     }
+ *
+ * Currently `http/follow_redirects` is not supported.
+ */
 
 void request(Settings, Headers, std::string, Callback<Error, Var<Response>>,
-        Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
+             Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
 inline void get(std::string url, Callback<Error, Var<Response>> cb,
                 Headers headers = {}, Settings settings = {},
