@@ -4,7 +4,8 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "src/net/connect.hpp"
+#include "src/net/connect_impl.hpp"
+#include "src/net/emitter.hpp"
 #include "src/ext/Catch/single_include/catch.hpp"
 #include <event2/bufferevent.h>
 #include <iostream>
@@ -78,6 +79,38 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
             },
             3.14);
     });
+}
+
+static void success(std::string, int, Callback<Error, Var<Transport>> cb,
+                    Settings, Var<Logger> logger, Var<Reactor>) {
+    cb(NoError(), Var<Transport>(new Emitter(logger)));
+}
+
+TEST_CASE("net::connect_many() correctly handles net::connect() success") {
+    Var<ConnectManyCtx> ctx =
+        connect_many_make("www.google.com", 80, 3,
+                          [](Error err, std::vector<Var<Transport>> conns) {
+                              REQUIRE(!err);
+                              REQUIRE(conns.size() == 3);
+                          },
+                          {}, Logger::global(), Reactor::global());
+    connect_many_impl<success>(ctx);
+}
+
+static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
+                 Var<Logger>, Var<Reactor>) {
+    cb(GenericError(), Var<Transport>(nullptr));
+}
+
+TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
+    Var<ConnectManyCtx> ctx =
+        connect_many_make("www.google.com", 80, 3,
+                          [](Error err, std::vector<Var<Transport>> conns) {
+                              REQUIRE(err);
+                              REQUIRE(conns.size() == 0);
+                          },
+                          {}, Logger::global(), Reactor::global());
+    connect_many_impl<fail>(ctx);
 }
 
 /*
@@ -283,5 +316,24 @@ TEST_CASE("connect() fails when setting an invalid dns") {
                       {{"dns/nameserver", "8.8.8.1"},
                        {"dns/timeout", 0.001},
                        {"dns/attempts", 1}});
+    });
+}
+
+TEST_CASE("net::connect_many() works as expected") {
+    loop_with_initial_event_and_connectivity([]() {
+        connect_many("www.google.com", 80, 3,
+                     [](Error error, std::vector<Var<Transport>> conns) {
+                         REQUIRE(!error);
+                         REQUIRE(conns.size() == 3);
+                         Var<int> n(new int(0));
+                         for (auto conn : conns) {
+                             REQUIRE(static_cast<bool>(conn));
+                             conn->close([n]() {
+                                 if (++(*n) >= 3) {
+                                     break_loop();
+                                 }
+                             });
+                         }
+                     });
     });
 }

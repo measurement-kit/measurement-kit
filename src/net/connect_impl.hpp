@@ -98,11 +98,10 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
                 ctx->settings, ctx->logger, ctx->reactor);
 }
 
-static Var<ConnectManyCtx> connect_many_make(std::string address, int port,
-                                             int count, ConnectManyCb callback,
-                                             Settings settings,
-                                             Var<Logger> logger,
-                                             Var<Reactor> reactor) {
+static inline Var<ConnectManyCtx>
+connect_many_make(std::string address, int port, int count,
+                  ConnectManyCb callback, Settings settings, Var<Logger> logger,
+                  Var<Reactor> reactor) {
     Var<ConnectManyCtx> ctx(new ConnectManyCtx);
     ctx->left = count;
     ctx->callback = callback;
