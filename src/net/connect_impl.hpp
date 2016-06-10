@@ -4,8 +4,8 @@
 #ifndef SRC_NET_CONNECT_IMPL_HPP
 #define SRC_NET_CONNECT_IMPL_HPP
 
-#include "src/net/connect.hpp"
 #include "src/common/utils.hpp"
+#include "src/net/connect.hpp"
 #include <arpa/inet.h>
 #include <event2/bufferevent.h>
 #include <event2/util.h>
@@ -25,10 +25,12 @@ namespace mk {
 namespace net {
 
 template <MK_MOCK(evutil_parse_sockaddr_port), MK_MOCK(bufferevent_socket_new),
-        MK_MOCK(bufferevent_set_timeouts), MK_MOCK(bufferevent_socket_connect)>
-void connect_base(std::string address, int port, Callback<Error, bufferevent *> cb,
-        double timeout = 10.0, Var<Reactor> reactor = Reactor::global(),
-        Var<Logger> logger = Logger::global()) {
+          MK_MOCK(bufferevent_set_timeouts),
+          MK_MOCK(bufferevent_socket_connect)>
+void connect_base(std::string address, int port,
+                  Callback<Error, bufferevent *> cb, double timeout = 10.0,
+                  Var<Reactor> reactor = Reactor::global(),
+                  Var<Logger> logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
 
     std::stringstream ss;
@@ -45,7 +47,7 @@ void connect_base(std::string address, int port, Callback<Error, bufferevent *> 
 
     bufferevent *bev;
     if ((bev = bufferevent_socket_new(reactor->get_event_base(), -1,
-                 BEV_OPT_CLOSE_ON_FREE)) == nullptr) {
+                                      BEV_OPT_CLOSE_ON_FREE)) == nullptr) {
         throw GenericError(); // This should not happen
     }
 
@@ -63,15 +65,16 @@ void connect_base(std::string address, int port, Callback<Error, bufferevent *> 
 
     // WARNING: set callbacks after connect() otherwise we free `bev` twice
     // NOTE: In case of `new` failure we let the stack unwind
-    bufferevent_setcb(bev, nullptr, nullptr, mk_bufferevent_on_event,
-            new Callback<Error, bufferevent *>([cb](Error err, bufferevent *bev) {
-                if (err) {
-                    bufferevent_free(bev);
-                    cb(err, nullptr);
-                    return;
-                }
-                cb(err, bev);
-            }));
+    bufferevent_setcb(
+        bev, nullptr, nullptr, mk_bufferevent_on_event,
+        new Callback<Error, bufferevent *>([cb](Error err, bufferevent *bev) {
+            if (err) {
+                bufferevent_free(bev);
+                cb(err, nullptr);
+                return;
+            }
+            cb(err, bev);
+        }));
 }
 
 template <MK_MOCK_NAMESPACE(net, connect)>
@@ -83,21 +86,23 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
         return;
     }
     net_connect(ctx->address, ctx->port,
-        [=](Error err, Var<Transport> txp) {
-            if (err) {
-                ctx->callback(err, ctx->connections);
-                return;
-            }
-            ctx->connections.push_back(txp);
-            --ctx->left;
-            connect_many_impl<net_connect>(ctx);
-        },
-        ctx->settings, ctx->logger, ctx->reactor);
+                [=](Error err, Var<Transport> txp) {
+                    if (err) {
+                        ctx->callback(err, ctx->connections);
+                        return;
+                    }
+                    ctx->connections.push_back(txp);
+                    --ctx->left;
+                    connect_many_impl<net_connect>(ctx);
+                },
+                ctx->settings, ctx->logger, ctx->reactor);
 }
 
 static Var<ConnectManyCtx> connect_many_make(std::string address, int port,
-        int count, ConnectManyCb callback, Settings settings, Var<Logger> logger,
-        Var<Reactor> reactor) {
+                                             int count, ConnectManyCb callback,
+                                             Settings settings,
+                                             Var<Logger> logger,
+                                             Var<Reactor> reactor) {
     Var<ConnectManyCtx> ctx(new ConnectManyCtx);
     ctx->left = count;
     ctx->callback = callback;

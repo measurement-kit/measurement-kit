@@ -34,21 +34,25 @@ namespace net {
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
 void connect_first_of(std::vector<std::string> addresses, int port,
-        ConnectFirstOfCb cb, Settings settings = {},
-        Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global(),
-        size_t index = 0, Var<std::vector<Error>> errors = nullptr);
+                      ConnectFirstOfCb cb, Settings settings = {},
+                      Var<Reactor> reactor = Reactor::global(),
+                      Var<Logger> logger = Logger::global(), size_t index = 0,
+                      Var<std::vector<Error>> errors = nullptr);
 
 typedef std::function<void(ResolveHostnameResult)> ResolveHostnameCb;
 
 void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
-        Settings settings = {}, Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global());
+                      Settings settings = {},
+                      Var<Reactor> reactor = Reactor::global(),
+                      Var<Logger> logger = Logger::global());
 
-void connect_logic(std::string hostname, int port, Callback<Error, Var<ConnectResult>> cb,
-        Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
-        Var<Logger> logger = Logger::global());
+void connect_logic(std::string hostname, int port,
+                   Callback<Error, Var<ConnectResult>> cb,
+                   Settings settings = {},
+                   Var<Reactor> reactor = Reactor::global(),
+                   Var<Logger> logger = Logger::global());
 
-void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
-                 std::string hostname,
+void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                  Callback<Error, bufferevent *> cb,
                  Var<Reactor> = Reactor::global(),
                  Var<Logger> = Logger::global());
