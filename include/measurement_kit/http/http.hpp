@@ -31,6 +31,7 @@ MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(6), HttpRequestFailedError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(7), HeaderParserInternalError, "")
 
 /*
  _   _      _

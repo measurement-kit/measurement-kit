@@ -21,12 +21,19 @@ using namespace mk::net;
 Error Request::init(Settings settings, Headers hdrs, std::string bd) {
     headers = hdrs;
     body = bd;
+    // TODO: the following check and the URL parsing are duplicated also
+    // in the code that connect()s; we should not duplicate code
     if (settings.find("http/url") == settings.end()) {
         return MissingUrlError();
     }
-    url = parse_url(settings.at("http/url"));
+    ErrorOr<Url> maybe_url = parse_url_noexcept(settings.at("http/url"));
+    if (!maybe_url) {
+        return maybe_url.as_error();
+    }
+    url = *maybe_url;
     protocol = settings.get("http/http_version", std::string("HTTP/1.1"));
     method = settings.get("http/method", std::string("GET"));
+    // XXX should we really distinguish between path and query here?
     path = settings.get("http/path", std::string(""));
     if (path != "" && path[0] != '/') {
         path = "/" + path;
@@ -82,6 +89,7 @@ void request_send(Var<Transport> txp, Settings settings, Headers headers,
         callback(error);
         return;
     }
+    // TODO: here we can simplify by using net::write()
     txp->on_error([txp, callback](Error error) {
         txp->on_error(nullptr);
         txp->on_flush(nullptr);
@@ -127,11 +135,10 @@ void request_recv_response(Var<Transport> txp,
             *prevent_emit = true;
             parser->eof();
         }
-        // TODO: make sure we remove all cycles
         txp->on_error(nullptr);
         txp->on_data(nullptr);
         reactor->call_soon([=]() {
-            logger->debug("request_recv_response: end of closure");
+            logger->log(MK_LOG_DEBUG2, "request_recv_response: end of closure");
             cb(err, response);
         });
     });

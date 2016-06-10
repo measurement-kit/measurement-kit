@@ -56,7 +56,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     void eof() { parser_execute(nullptr, 0); }
 
     int do_message_begin_() {
-        logger_->debug("http: BEGIN");
+        logger_->log(MK_LOG_DEBUG2, "http: BEGIN");
         response_ = Response();
         prev_ = HeaderParserState::NOTHING;
         field_ = "";
@@ -68,25 +68,25 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     }
 
     int do_status_(const char *s, size_t n) {
-        logger_->debug("http: STATUS");
+        logger_->log(MK_LOG_DEBUG2, "http: STATUS");
         response_.reason.append(s, n);
         return 0;
     }
 
     int do_header_field_(const char *s, size_t n) {
-        logger_->debug("http: FIELD");
+        logger_->log(MK_LOG_DEBUG2, "http: FIELD");
         do_header_internal(HeaderParserState::FIELD, s, n);
         return 0;
     }
 
     int do_header_value_(const char *s, size_t n) {
-        logger_->debug("http: VALUE");
+        logger_->log(MK_LOG_DEBUG2, "http: VALUE");
         do_header_internal(HeaderParserState::VALUE, s, n);
         return 0;
     }
 
     int do_headers_complete_() {
-        logger_->debug("http: HEADERS_COMPLETE");
+        logger_->log(MK_LOG_DEBUG2, "http: HEADERS_COMPLETE");
         if (field_ != "") { // Also copy last header
             response_.headers[field_] = value_;
         }
@@ -100,7 +100,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     }
 
     int do_body_(const char *s, size_t n) {
-        logger_->debug("http: BODY");
+        logger_->log(MK_LOG_DEBUG2, "http: BODY");
         if (body_fn_) {
             body_fn_(std::string(s, n));
         }
@@ -108,7 +108,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     }
 
     int do_message_complete_() {
-        logger_->debug("http: END");
+        logger_->log(MK_LOG_DEBUG2, "http: END");
         if (end_fn_) {
             end_fn_();
         }
@@ -152,10 +152,13 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         } else if (prev_ == HPS::VALUE && cur == HPS::VALUE) {
             value_.append(s, n);
         } else {
-            throw GenericError();
+            throw HeaderParserInternalError();
         }
         prev_ = cur;
     }
+
+    // XXX parse() and parser_execute() should return Error
+    // and should be tagged with warn_unused_result
 
     void parse() {
         size_t total = 0;

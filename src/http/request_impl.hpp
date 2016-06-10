@@ -10,6 +10,8 @@
 namespace mk {
 namespace http {
 
+// TODO: mock more functions in request.cpp
+
 template <MK_MOCK_NAMESPACE(net, connect)>
 void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
                           Var<Reactor> reactor = Reactor::global(),
@@ -26,6 +28,9 @@ void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
     if (url->schema == "httpo") {
         // tor_socks_port takes precedence because it's more specific
         if (settings.find("net/tor_socks_port") != settings.end()) {
+            // XXX The following is a violation of layers because we are
+            // setting a variable that NET code should set for itself; we
+            // should do nothing in this case, lower layer should do
             std::string proxy = "127.0.0.1:";
             proxy += settings["net/tor_socks_port"];
             settings["net/socks5_proxy"] = proxy;

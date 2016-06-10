@@ -12,7 +12,7 @@ Url parse_url(std::string url) {
     Url retval;
     http_parser_url url_parser;
     http_parser_url_init(&url_parser);
-    if (http_parser_parse_url(url.c_str(), url.length(), 0, &url_parser) != 0) {
+    if (http_parser_parse_url(url.data(), url.size(), 0, &url_parser) != 0) {
         throw UrlParserError();
     }
     if ((url_parser.field_set & (1 << UF_SCHEMA)) == 0) {
@@ -29,6 +29,8 @@ Url parse_url(std::string url) {
         retval.port = url_parser.port;
     } else if (retval.schema == "https") {
         retval.port = 443;
+    } else {
+        retval.port = 80; /* set on construction but could have been changed */
     }
     if ((url_parser.field_set & (1 << UF_PATH)) != 0) {
         retval.path = url.substr(url_parser.field_data[UF_PATH].off,
@@ -38,8 +40,8 @@ Url parse_url(std::string url) {
     }
     retval.pathquery = retval.path;
     if ((url_parser.field_set & (1 << UF_QUERY)) != 0) {
-        retval.query += url.substr(url_parser.field_data[UF_QUERY].off,
-                                   url_parser.field_data[UF_QUERY].len);
+        retval.query = url.substr(url_parser.field_data[UF_QUERY].off,
+                                  url_parser.field_data[UF_QUERY].len);
         retval.pathquery += "?" + retval.query;
     }
     return retval;
@@ -48,7 +50,7 @@ Url parse_url(std::string url) {
 ErrorOr<Url> parse_url_noexcept(std::string url) {
     try {
         return parse_url(url);
-    } catch (Error &error) {
+    } catch (Error error) {
         return error;
     }
 }
