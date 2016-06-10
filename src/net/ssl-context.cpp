@@ -80,7 +80,7 @@ SslContext::SslContext(std::string ca_bundle_path) {
 }
 
 SslContext::~SslContext() {
-    EVP_cleanup();
+    //EVP_cleanup();  // XXX Should this be called on every destruction?
     SSL_CTX_free(ctx);
 }
 
