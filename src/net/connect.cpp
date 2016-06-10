@@ -2,16 +2,16 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/net/connect.hpp"
+#include "src/net/connect_impl.hpp"
+#include "src/net/emitter.hpp"
+#include "src/net/socks5.hpp"
+#include "src/net/ssl-context.hpp"
+#include <cassert>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <event2/bufferevent_ssl.h>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/reactor.hpp>
-#include <measurement_kit/common/var.hpp>
 #include <measurement_kit/dns.hpp>
-#include <measurement_kit/net/error.hpp>
+#include <measurement_kit/net.hpp>
 #include <stddef.h>
 #include <string.h>
 
@@ -203,6 +203,65 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
 
                 cb(err, bev);
             }));
+}
+
+void connect_many(std::string address, int port, int num,
+        ConnectManyCb callback, Settings settings, Var<Logger> logger,
+        Var<Reactor> reactor) {
+    connect_many_impl<net::connect>(connect_many_make(address, port, num,
+            callback, settings, logger, reactor));
+}
+
+void connect(std::string address, int port,
+             Callback<Error, Var<Transport>> callback,
+             Settings settings, Var<Logger> logger, Var<Reactor> reactor) {
+    if (settings.find("net/dumb_transport") != settings.end()) {
+        callback(NoError(), Var<Transport>(new Emitter(logger)));
+        return;
+    }
+    if (settings.find("net/socks5_proxy") != settings.end()) {
+        socks5_connect(address, port, settings, callback, reactor, logger);
+        return;
+    }
+    double timeout = settings.get("net/timeout", 30.0);
+    connect_logic(address, port, [=](Error err, Var<ConnectResult> r) {
+        if (err) {
+            err.context = r;
+            callback(err, nullptr);
+            return;
+        }
+        if (settings.find("net/ssl") != settings.end()) {
+            Var<SslContext> ssl_context;
+            if (settings.find("net/ca_bundle_path") != settings.end()) {
+                logger->debug("ssl: using custom ca_bundle_path");
+                ssl_context = Var<SslContext>(new SslContext(settings.at("net/ca_bundle_path")));
+            } else {
+                logger->debug("ssl: using default context");
+                ssl_context = SslContext::global();
+            }
+            connect_ssl(r->connected_bev, ssl_context->get_client_ssl(address), address,
+                        [r, callback, timeout, ssl_context, reactor, logger](Error err, bufferevent *bev) {
+                            if (err) {
+                                err.context = r;
+                                callback(err, nullptr);
+                                return;
+                            }
+                            Var<Transport> txp = Connection::make(bev,
+                                    reactor, logger);
+                            txp->set_timeout(timeout);
+                            assert(err == NoError());
+                            err.context = r;
+                            callback(err, txp);
+                        },
+                        reactor, logger);
+            return;
+        }
+        Var<Transport> txp = Connection::make(r->connected_bev, reactor, logger);
+        txp->set_timeout(timeout);
+        assert(err == NoError());
+        err.context = r;
+        callback(err, txp);
+    }, settings, reactor, logger);
 }
 
 } // namespace net
