@@ -49,6 +49,11 @@ class Transport {
     virtual std::string socks5_port() = 0;
 };
 
+/*
+ *  Syntactic sugar when you need only to write or read (vis a vis Transport,
+ *  required when you need read and write at the same time).
+ */
+
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
 
 void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
