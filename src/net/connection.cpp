@@ -63,6 +63,8 @@ void Connection::handle_event_(short what) {
         return;
     }
 
+    // TODO: Here we need to map more network errors
+
     emit_error(SocketError());
 }
 
