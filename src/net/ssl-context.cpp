@@ -18,8 +18,8 @@ namespace net {
 SSL *SslContext::get_client_ssl(std::string hostname) {
     SSL *ssl = SSL_new(ctx);
     if (ssl == nullptr) {
-        debug("ssl: failed to call SSL_new");
-        throw std::exception();
+        warn("ssl: failed to call SSL_new");
+        throw std::runtime_error("SSL_new() failed");
     }
 
     SSL_set_tlsext_host_name(ssl, hostname.c_str());
@@ -27,10 +27,14 @@ SSL *SslContext::get_client_ssl(std::string hostname) {
 }
 
 void SslContext::init(std::string ca_bundle_path) {
-    SSL_library_init();
-    ERR_load_crypto_strings();
-    SSL_load_error_strings();
-    OpenSSL_add_all_algorithms();
+    static bool ssl_initialized = false;
+
+    if (!ssl_initialized) {
+        SSL_library_init();
+        ERR_load_crypto_strings();
+        SSL_load_error_strings();
+        OpenSSL_add_all_algorithms();
+    }
 
     debug("ssl: creating ssl context with bundle %s", ca_bundle_path.c_str());
 
