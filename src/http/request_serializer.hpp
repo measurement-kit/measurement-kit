@@ -19,18 +19,19 @@ class RequestSerializer {
     Url url;
     std::string protocol;
     Headers headers;
+    std::string path;
     std::string body;
 
     /*!
      * For settings the following options are supported:
      *
      *     {
-     *       "follow_redirects": "yes|no",
-     *       "url": std::string,
-     *       "ignore_body": "yes|no",
-     *       "method": "GET|DELETE|PUT|POST|HEAD|...",
-     *       "http_version": "HTTP/1.1",
-     *       "path": by default is taken from the url
+     *       {"http/follow_redirects", "yes|no"},
+     *       {"http/url", std::string},
+     *       {"http/ignore_body", "yes|no"},
+     *       {"http/method", "GET|DELETE|PUT|POST|HEAD|..."},
+     *       {"http/http_version", "HTTP/1.1"},
+     *       {"http/path", by default is taken from the url}
      *     }
      */
     RequestSerializer(Settings settings, Headers hdrs, std::string bd) {
@@ -39,15 +40,26 @@ class RequestSerializer {
         if (settings.find("http/url") == settings.end()) {
             throw MissingUrlError();
         }
+
         url = parse_url(settings.at("http/url"));
         protocol = settings.get("http/http_version", std::string("HTTP/1.1"));
         method = settings.get("http/method", std::string("GET"));
+        path = settings.get("http/path", std::string(""));
+        if (path != "" && path[0] != '/') {
+            path = "/" + path;
+        }
     }
 
     RequestSerializer() {}
 
     void serialize(net::Buffer &buff) {
-        buff << method << " " << url.pathquery << " " << protocol << "\r\n";
+        buff << method << " ";
+        if (path != "") {
+            buff << path;
+        } else {
+            buff << url.pathquery;
+        }
+        buff << " " << protocol << "\r\n";
         for (auto &kv : headers) {
             buff << kv.first << ": " << kv.second << "\r\n";
         }

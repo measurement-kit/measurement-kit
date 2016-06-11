@@ -89,7 +89,7 @@ ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger) {
     try {
         // Works because we are using nlohmann::json::json() as Entry::Entry()
         return Entry(nlohmann::json::parse(line));
-    } catch (std::invalid_argument &) {
+    } catch (const std::invalid_argument &) {
         return JsonParseError();
     }
     /* NOTREACHED */
