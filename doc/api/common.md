@@ -37,4 +37,4 @@ This library contains the following modules:
 
 # HISTORY
 
-The `common` alias appeared in MeasurementKit 0.1.0.
+The `common` library appeared in MeasurementKit 0.1.0.
