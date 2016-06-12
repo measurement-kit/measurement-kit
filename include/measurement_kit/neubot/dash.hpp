@@ -6,13 +6,14 @@
 
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
+#include <measurement_kit/report.hpp>
 
 namespace mk {
 namespace neubot {
 namespace dash {
 
 // Run a dash test
-void run(Settings settings, Callback<Error,  Var<nlohmann::json>> cb,
+void run(Settings settings, Callback<Error,  Var<report::Entry>> cb,
         std::string auth = "",
         Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global());

@@ -8,7 +8,7 @@ namespace mk {
 namespace neubot {
 namespace negotiate {
 
-void run(Callback<Error> cb, Settings settings, 
+void run(Callback<Error> cb, Settings settings,
                      Var<Reactor> reactor, Var<Logger> logger) {
     run_impl(cb, settings, reactor, logger);
 }

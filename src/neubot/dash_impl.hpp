@@ -5,7 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext.hpp>
+#include <measurement_kit/report.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/neubot.hpp>
 #include <stdlib.h>
@@ -18,15 +18,15 @@
 using namespace mk;
 using namespace mk::net;
 using namespace mk::http;
-using json = nlohmann::json;
+using namespace mk::report;
 
 namespace mk {
 namespace neubot {
 namespace dash {
 
 static inline void loop_request(Var<Transport> transport, int speed_kbit,
-                                Callback<Error, Var<json>> cb,
-                                Var<json> measurements, std::string auth,
+                                Callback<Error, Var<Entry>> cb,
+                                Var<Entry> measurements, std::string auth,
                                 Settings settings, Var<Reactor> reactor,
                                 Var<Logger> logger, int iteration = 1) {
 
@@ -87,12 +87,12 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
 
                     if (time_elapsed < 0) {
                         logger -> warn("Time elapsed can't be negative");
-                        cb(error, nullptr);
+                        cb(ValueError(), nullptr);
                         return;
                     }
                     // TODO
-                    if (settings.at("auth") != "") {
-                        json::object_t result = {
+                    if (auth != "") {
+                        Entry result = {
                             //{"connect_time", self.rtts[0]}
                             //{"delta_user_time", delta_user_time}
                             //{"delta_sys_time", delta_sys_time}
@@ -129,15 +129,17 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
                         }
                     }
 
-                    loop_request(transport, s_k, cb, measurements, auth,
+                    reactor -> call_soon([=]() {
+                        loop_request(transport, s_k, cb, measurements, auth,
                                  settings, reactor, logger, iteration + 1);
+                             });
 
                 },
                 reactor, logger);
         });
 }
 
-static inline void run_impl(Settings settings, Callback<Error, Var<json>> cb,
+static inline void run_impl(Settings settings, Callback<Error, Var<Entry>> cb,
                             std::string auth, Var<Reactor> reactor,
                             Var<Logger> logger) {
     settings["http/path"] = "";
@@ -152,7 +154,7 @@ static inline void run_impl(Settings settings, Callback<Error, Var<json>> cb,
                             return;
                         }
 
-                        Var<json> measurements(new json);
+                        Var<Entry> measurements(new Entry);
 
                         loop_request(transport, 100, cb, measurements,
                                      auth, settings, reactor, logger);

@@ -6,9 +6,11 @@
 #include <functional>
 #include <iostream>
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext.hpp>
+#include <measurement_kit/report.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/neubot.hpp>
+#include <measurement_kit/mlabns.hpp>
+
 #include <stdlib.h>
 #include <string>
 #include <unistd.h>
@@ -19,14 +21,14 @@ using namespace mk;
 using namespace mk::neubot;
 using namespace mk::net;
 using namespace mk::http;
-using json = nlohmann::json;
+using namespace mk::report;
 
 namespace mk {
 namespace neubot {
 namespace negotiate {
 
 static inline void collect(Var<Transport> transport, Callback<Error> cb,
-                           std::string auth, Var<json> measurements,
+                           std::string auth, Var<Entry> measurements,
                            Settings settings, Var<Reactor> reactor,
                            Var<Logger> logger) {
     std::string body = measurements->dump();
@@ -59,18 +61,20 @@ static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> 
     std::array<int, 20> DASH_RATES{{100,  150,  200,  250,  300,   400,  500,
                                     700,  900,  1200, 1500, 2000,  2500, 3000,
                                     4000, 5000, 6000, 7000, 10000, 20000}};
-    json::object_t value = {{"dash_rates", DASH_RATES}};
-    json json_body(value);
-    std::string body = json_body.dump();
+    Entry value = {{"dash_rates", DASH_RATES}};
+    std::string body = value.dump();
 
     settings["http/path"] = "/negotiate/dash";
     settings["http/method"] = "POST";
 
+
     if (iteration > DASH_MAX_NEGOTIATION) {
         std::cout << "Too many negotiations\n";
-        transport->close([=]() { cb(NoError()); });
+        transport->close([=]() { cb(ValueError()); });
         return;
     };
+
+
 
     request_sendrecv(
         transport, settings,
@@ -85,7 +89,7 @@ static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> 
                 return;
             }
 
-            auto respbody = json::parse(res->body);
+            auto respbody = nlohmann::json::parse(res->body);
             std::string auth = respbody.at("authorization");
             auto queue_pos = respbody.at("queue_pos");
             auto real_address = respbody.at("real_address");
@@ -93,11 +97,14 @@ static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> 
 
             // XXX
             if (unchoked == 0) {
-                loop_req_negotiate(transport, cb, settings, reactor, logger,
-                                   iteration + 1);
+                reactor -> call_soon([=]() {
+                    loop_req_negotiate(transport, cb, settings, reactor, logger,
+                                       iteration + 1);
+                         });
+
             } else {
                 dash::run(settings,
-                          [=](Error err, Var<json> measurements) {
+                          [=](Error err, Var<Entry> measurements) {
                               if (err) {
                                   logger -> warn("Error: %d", (int) error);
                                   cb(err);
@@ -127,16 +134,31 @@ static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> 
 static inline void run_impl(Callback<Error> cb, Settings settings,
                             Var<Reactor> reactor, Var<Logger> logger) {
 
-    if (settings.at("url") == "") {
-        settings["http/url"] = "http://127.0.0.1";
+
+    std::string tool = "neubot";
+    std::string url;
+
+    if (settings["url"] == "") {
+        mlabns::query(
+           tool, [&url](Error error, mlabns::Reply reply) {
+               if (error) {
+                   logger -> warn("Error: %d", (int) error);
+                   cb(error);
+                   return;
+               }
+               url = reply.url;
+           });
+        settings["http/url"] = url;
     } else {
         settings["http/url"] = settings["url"];
     }
 
-    if (!settings["negotiate"].as<bool>()) {
-        dash::run(settings, [=](Error err, Var<json>) {
-            if (err) {
-                break_loop();
+
+    if (settings["negotiate"] == "false") {
+        dash::run(settings, [=](Error error, Var<Entry>) {
+            if (error) {
+                logger -> warn("Error: %d", (int) error);
+                cb(error);
                 return;
             }
         });

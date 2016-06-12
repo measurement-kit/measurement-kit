@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
             settings["url"] = optarg;
             break;
         case 'n':
-            settings["negotiate"] = false;
+            settings["negotiate"] = "false";
             break;
         case 'v':
             increase_verbosity();

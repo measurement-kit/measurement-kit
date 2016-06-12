@@ -9,7 +9,7 @@ namespace neubot {
 namespace dash {
 
 
-void run(Settings settings, Callback<Error, Var<json>> cb,
+void run(Settings settings, Callback<Error, Var<Entry>> cb,
          std::string auth, Var<Reactor> reactor, Var<Logger> logger) {
     run_impl(settings, cb, auth, reactor, logger);
 }
