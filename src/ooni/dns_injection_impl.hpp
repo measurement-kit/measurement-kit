@@ -7,17 +7,15 @@
 
 #include <event2/dns.h>
 #include <measurement_kit/dns.hpp>
-#include "src/ooni/ooni_test_impl.hpp"
+#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace ooni {
 
-class DNSInjectionImpl : public OoniTestImpl {
-    using OoniTestImpl::OoniTestImpl;
-
+class DNSInjectionImpl : public OoniTest {
   public:
     DNSInjectionImpl(std::string input_filepath_, Settings options_)
-        : OoniTestImpl(input_filepath_, options_) {
+        : OoniTest(input_filepath_, options_) {
         test_name = "dns_injection";
         test_version = "0.0.1";
         needs_input = true;

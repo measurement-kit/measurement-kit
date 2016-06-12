@@ -5,15 +5,15 @@
 #ifndef SRC_OONI_TCP_CONNECT_HPP
 #define SRC_OONI_TCP_CONNECT_HPP
 
-#include "src/ooni/ooni_test_impl.hpp"
+#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace ooni {
 
-class TCPConnectImpl : public OoniTestImpl {
+class TCPConnectImpl : public OoniTest {
   public:
     TCPConnectImpl(std::string input_filepath_, Settings options_)
-        : OoniTestImpl(input_filepath_, options_) {
+        : OoniTest(input_filepath_, options_) {
         test_name = "tcp_connect";
         test_version = "0.0.1";
         needs_input = true;

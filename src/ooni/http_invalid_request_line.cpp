@@ -6,7 +6,6 @@
 #include <measurement_kit/ooni.hpp>
 
 #include "src/common/utils.hpp"
-#include "src/ooni/ooni_test_impl.hpp"
 
 namespace mk {
 namespace ooni {

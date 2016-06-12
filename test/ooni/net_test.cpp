@@ -5,14 +5,13 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "src/ooni/ooni_test_impl.hpp"
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/ooni.hpp>
 
 using namespace mk::ooni;
 using namespace mk;
 
 TEST_CASE("The NetTest should callback when it has finished running") {
-    mk::ooni::OoniTestImpl test("");
+    mk::ooni::OoniTest test("");
     // Note: connectivity not needed here
     loop_with_initial_event([&]() {
         test.begin([&]() { test.end([]() { break_loop(); }); });

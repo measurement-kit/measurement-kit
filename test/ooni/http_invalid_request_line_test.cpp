@@ -5,7 +5,6 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "src/ooni/ooni_test_impl.hpp"
 #include <chrono>
 #include <iostream>
 #include <list>
@@ -60,7 +59,7 @@ TEST_CASE("Make sure that set_output_path() works") {
     auto instance = ooni::HttpInvalidRequestLineTest()
                         .set_output_file_path("foo.txt")
                         .create_test_();
-    auto ptr = static_cast<ooni::OoniTestImpl *>(instance.get());
+    auto ptr = static_cast<ooni::OoniTest *>(instance.get());
     REQUIRE(ptr->output_filepath == "foo.txt");
 }
 

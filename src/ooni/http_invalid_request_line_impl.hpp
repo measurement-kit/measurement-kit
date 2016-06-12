@@ -9,15 +9,14 @@
 #include <measurement_kit/ooni.hpp>
 
 #include "src/common/utils.hpp"
-#include "src/ooni/ooni_test_impl.hpp"
 #include <sys/stat.h>
 
 namespace mk {
 namespace ooni {
 
-class HTTPInvalidRequestLineImpl : public OoniTestImpl {
+class HTTPInvalidRequestLineImpl : public OoniTest {
   public:
-    HTTPInvalidRequestLineImpl(Settings options_) : OoniTestImpl("", options_) {
+    HTTPInvalidRequestLineImpl(Settings options_) : OoniTest("", options_) {
         test_name = "http_invalid_request_line";
         test_version = "0.0.1";
     }
