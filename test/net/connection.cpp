@@ -11,12 +11,4 @@
 using namespace mk;
 using namespace mk::net;
 
-TEST_CASE("connect() iterates over all the available addresses") {
-    // TODO: remove
-    // Test cancelled because not applicable anymore
-}
-
-TEST_CASE("It is possible to use Connection with a custom poller") {
-    // TODO: remove
-    // Test superseded by similar test in test/net/transport.cpp
-}
+// TODO: Write tests for the Connection class
