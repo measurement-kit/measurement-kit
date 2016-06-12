@@ -14,7 +14,7 @@ namespace templates {
 
 void dns_query(Var<Entry> entry, dns::QueryType, dns::QueryClass,
                std::string query_name, std::string nameserver,
-               Callback<dns::Message>, Settings,
+               Callback<Error, dns::Message>, Settings = {},
                Var<Reactor> = Reactor::global(),
                Var<Logger> = Logger::global());
 

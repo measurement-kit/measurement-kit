@@ -17,7 +17,7 @@ using namespace mk::report;
 
 void dns_query(Var<Entry> entry, dns::QueryType query_type,
                dns::QueryClass query_class, std::string query_name,
-               std::string nameserver, Callback<dns::Message> cb,
+               std::string nameserver, Callback<Error, dns::Message> cb,
                Settings options, Var<Reactor> reactor, Var<Logger> logger) {
 
     int resolver_port;
@@ -40,7 +40,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                    query_entry["resolver_hostname"] = resolver_hostname;
                    query_entry["resolver_port"] = resolver_port;
                    query_entry["failure"] = nullptr;
-                   query_entry["answers"] = {};
+                   query_entry["answers"] = Entry::array();
                    if (query_type == dns::QueryTypeId::A) {
                        query_entry["query_type"] = "A";
                        query_entry["hostname"] = query_name;
@@ -61,7 +61,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                    // query_entry["bytes"] = response.get_bytes();
                    (*entry)["queries"].push_back(query_entry);
                    logger->debug("dns_test: callbacking");
-                   cb(message);
+                   cb(error, message);
                    logger->debug("dns_test: callback called");
                },
                options, reactor);
@@ -71,19 +71,25 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
                   std::string body, Callback<Error, Var<http::Response>> cb,
                   Var<Reactor> reactor, Var<Logger> logger) {
 
+    (*entry)["agent"] = "agent";
+    (*entry)["socksproxy"] = nullptr;
+
+    if (settings.find("http/method") == settings.end()) {
+        settings["http/method"] = "GET";
+    }
+
     http::request(
         settings, headers, body,
         [=](Error error, Var<http::Response> response) {
-
             Entry rr;
             rr["request"]["headers"] =
                 std::map<std::string, std::string>(headers);
             rr["request"]["body"] = body;
-            rr["request"]["url"] = settings.at("url").str();
-            rr["request"]["method"] = settings.at("method").str();
+            rr["request"]["url"] = settings.at("http/url").c_str();
+            rr["request"]["method"] = settings.at("http/method").c_str();
 
             // XXX we should probably update OONI data format to remove this.
-            rr["method"] = settings.at("method").str();
+            rr["method"] = settings.at("http/method").c_str();
 
             if (!error) {
                 rr["response"]["headers"] =
@@ -91,14 +97,12 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
                 rr["response"]["body"] = response->body;
                 rr["response"]["response_line"] = response->response_line;
                 rr["response"]["code"] = response->status_code;
+                rr["failure"] = nullptr;
             } else {
-                rr["failure"] = "unknown_failure measurement_kit_error";
-                rr["error_code"] = error.code;
+                rr["failure"] = error.as_ooni_error();
             }
 
             (*entry)["requests"].push_back(rr);
-            (*entry)["agent"] = "agent";
-            (*entry)["socksproxy"] = "";
             cb(error, response);
         },
         reactor, logger);
@@ -106,17 +110,16 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
 
 void tcp_connect(Settings options, Callback<Error, Var<net::Transport>> cb,
                  Var<Reactor> reactor, Var<Logger> logger) {
-    if (options["port"] == "") {
-        throw std::runtime_error("Port is required");
+    ErrorOr<int> port = options["port"].as_noexcept<int>();
+    if (!port) {
+        cb(port.as_error(), nullptr);
+        return;
     }
     if (options["host"] == "") {
-        options["host"] = "localhost";
+        cb(MissingRequiredHostError(), nullptr);
+        return;
     }
-    net::connect(options["host"], options["port"].as<int>(),
-                 [=](Error error, Var<net::Transport> transport) {
-                     cb(error, transport);
-                 },
-                 options, logger, reactor);
+    net::connect(options["host"], *port, cb, options, logger, reactor);
 }
 
 } // namespace templates

@@ -104,7 +104,7 @@ test/ooni/collector_client
 test/ooni/dns_injection
 test/ooni/http_invalid_request_line
 test/ooni/tcp_connect
-test/ooni/tcp_test
+test/ooni/templates
 test/ooni/utils
 test/report/base_reporter
 test/report/entry
