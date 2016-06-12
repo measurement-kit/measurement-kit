@@ -6,7 +6,7 @@
 #include <openssl/evp.h>
 #include <openssl/ossl_typ.h>
 #include <openssl/ssl.h>
-#include <exception>
+#include <stdexcept>
 #include <iostream>
 #include <measurement_kit/net.hpp>
 #include "src/net/ssl-context.hpp"
@@ -18,8 +18,8 @@ namespace net {
 SSL *SslContext::get_client_ssl(std::string hostname) {
     SSL *ssl = SSL_new(ctx);
     if (ssl == nullptr) {
-        debug("ssl: failed to call SSL_new");
-        throw std::exception();
+        warn("ssl: failed to call SSL_new");
+        throw std::runtime_error("SSL_new() failed");
     }
 
     SSL_set_tlsext_host_name(ssl, hostname.c_str());
@@ -27,22 +27,27 @@ SSL *SslContext::get_client_ssl(std::string hostname) {
 }
 
 void SslContext::init(std::string ca_bundle_path) {
-    SSL_library_init();
-    ERR_load_crypto_strings();
-    SSL_load_error_strings();
-    OpenSSL_add_all_algorithms();
+    static bool ssl_initialized = false;
+
+    if (!ssl_initialized) {
+        SSL_library_init();
+        ERR_load_crypto_strings();
+        SSL_load_error_strings();
+        OpenSSL_add_all_algorithms();
+        ssl_initialized = true;
+    }
 
     debug("ssl: creating ssl context with bundle %s", ca_bundle_path.c_str());
 
     ctx = SSL_CTX_new(TLSv1_client_method());
     if (ctx == nullptr) {
         debug("ssl: failed to create SSL_CTX");
-        throw std::exception();
+        throw std::runtime_error("Failed to create SSL_CTX");
     }
 
     if (SSL_CTX_load_verify_locations(ctx, ca_bundle_path.c_str(), NULL) != 1) {
         debug("ssl: failed to load verify location");
-        throw std::exception();
+        throw std::runtime_error("Failed to load verify location");
     };
 
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
@@ -75,7 +80,6 @@ SslContext::SslContext(std::string ca_bundle_path) {
 }
 
 SslContext::~SslContext() {
-    EVP_cleanup();
     SSL_CTX_free(ctx);
 }
 

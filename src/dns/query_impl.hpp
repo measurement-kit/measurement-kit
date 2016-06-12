@@ -1,6 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
+#ifndef SRC_DNS_QUERY_IMPL_HPP
+#define SRC_DNS_QUERY_IMPL_HPP
 
 #include <measurement_kit/dns.hpp>
 
@@ -221,7 +223,7 @@ static inline void dns_callback(int code, char type, int count, int ttl,
 template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
         MK_MOCK(evdns_base_resolve_ipv6), MK_MOCK(evdns_base_resolve_reverse),
         MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
-void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
+void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
         Callback<Error, Message> cb, Settings settings,
         Var<Reactor> reactor) {
 
@@ -346,3 +348,4 @@ void query_debug(QueryClass dns_class, QueryType dns_type, std::string name,
 
 } // namespace dns
 } // namespace mk
+#endif

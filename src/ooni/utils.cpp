@@ -2,11 +2,16 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/ooni/utils.hpp"
+#include "src/ooni/utils_impl.hpp"
 #include "src/common/utils.hpp"
 
 namespace mk {
 namespace ooni {
+
+void ip_lookup(Callback<Error, std::string> callback, Settings settings,
+               Var<Reactor> reactor, Var<Logger> logger) {
+    ip_lookup_impl(callback, settings, reactor, logger);
+}
 
 static Error geoip_resolve_country (std::string ip, std::string path_country, json &node) { 
     GeoIP *gi;

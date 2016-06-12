@@ -4,29 +4,18 @@
 #ifndef SRC_HTTP_REQUEST_HPP
 #define SRC_HTTP_REQUEST_HPP
 
-#include <functional>
-#include <map>
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/net.hpp>
-#include <measurement_kit/http.hpp>
-#include <memory>
-#include <set>
-#include <string>
-#include <type_traits>
-#include "src/http/request_serializer.hpp"
 #include "src/http/response_parser.hpp"
+#include <measurement_kit/http.hpp>
 
 namespace mk {
 namespace http {
 
-typedef std::function<void(Error)> RequestSendCb;
-typedef Callback<Error, Var<Response>> RequestRecvResponseCb;
+// TODO: mock more functions in request.cpp
 
-template<void (*do_connect)(std::string, int,
-        Callback<Error, Var<Transport>>,
-        Settings, Var<Logger>, Var<Reactor>) = net::connect>
+template <MK_MOCK_NAMESPACE(net, connect)>
 void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
-        Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global()) {
+                          Var<Reactor> reactor = Reactor::global(),
+                          Var<Logger> logger = Logger::global()) {
     if (settings.find("http/url") == settings.end()) {
         cb(MissingUrlError(), nullptr);
         return;
@@ -39,6 +28,9 @@ void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
     if (url->schema == "httpo") {
         // tor_socks_port takes precedence because it's more specific
         if (settings.find("net/tor_socks_port") != settings.end()) {
+            // XXX The following is a violation of layers because we are
+            // setting a variable that NET code should set for itself; we
+            // should do nothing in this case, lower layer should do
             std::string proxy = "127.0.0.1:";
             proxy += settings["net/tor_socks_port"];
             settings["net/socks5_proxy"] = proxy;
@@ -48,7 +40,7 @@ void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
     } else if (url->schema == "https") {
         settings["net/ssl"] = true;
     }
-    do_connect(url->address, url->port, cb, settings, logger, reactor);
+    net_connect(url->address, url->port, cb, settings, logger, reactor);
 }
 
 } // namespace http

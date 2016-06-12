@@ -83,11 +83,8 @@ test/dns/error
 test/dns/query
 test/fixtures/GeoIP.dat
 test/fixtures/GeoIPASNum.dat
-test/http/client
-test/http/funcs
 test/http/parse_url
 test/http/request
-test/http/request_serializer
 test/http/response_parser
 test/mlabns/mlabns
 test/ndt/messages
@@ -99,9 +96,7 @@ test/ndt/test_meta
 test/ndt/test_s2c
 test/net/buffer
 test/net/connect
-test/net/connect-many
 test/net/connection
-test/net/connection_check_fds
 test/net/emitter
 test/net/evbuffer
 test/net/socks5
