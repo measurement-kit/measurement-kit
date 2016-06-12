@@ -4,6 +4,7 @@
 
 #define CATCH_CONFIG_MAIN
 
+#include "src/common/check_connectivity.hpp"
 #include "src/net/connect_impl.hpp"
 #include "src/net/emitter.hpp"
 #include "src/ext/Catch/single_include/catch.hpp"
