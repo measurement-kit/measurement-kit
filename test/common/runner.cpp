@@ -22,7 +22,7 @@ static void run_http_invalid_request_line(Runner &runner) {
                        })
                        .create_test_(),
                    [](Var<NetTest> test) {
-                       mk::debug("test complete: %llu", test->identifier());
+                       mk::debug("test complete: %p", (void *)test.get());
                    });
 }
 
@@ -37,7 +37,7 @@ static void run_dns_injection(Runner &runner) {
                        })
                        .create_test_(),
                    [](Var<NetTest> test) {
-                       mk::debug("test complete: %llu", test->identifier());
+                       mk::debug("test complete: %p", (void *)test.get());
                    });
 }
 
@@ -52,7 +52,7 @@ static void run_tcp_connect(Runner &runner) {
                        })
                        .create_test_(),
                    [](Var<NetTest> test) {
-                       mk::debug("test complete: %llu", test->identifier());
+                       mk::debug("test complete: %p", (void *)test.get());
                    });
 }
 

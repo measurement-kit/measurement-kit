@@ -41,8 +41,6 @@ class NetTest {
         reactor->call_soon(func);
     }
 
-    unsigned long long identifier() { return (unsigned long long)this; }
-
     NetTest() {}
     NetTest(Settings o) : options(o) {}
     NetTest(std::string i, Settings o) : options(o), input_filepath(i) {}
