@@ -1,3 +1,8 @@
+# MeasurementKit 0.2.0-beta.1 [2016-06-08]
+
+- `ip_lookup()`: allow custom settings, reactor, and logger (required
+   by Android app)
+
 # MeasurementKit 0.2.0-beta [2016-06-07]
 
 - add initial NDT client implementation

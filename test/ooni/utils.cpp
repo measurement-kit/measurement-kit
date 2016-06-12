@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "src/ooni/utils.hpp"
+#include "src/ooni/utils_impl.hpp"
 
 TEST_CASE("ip lookup works") {
     mk::loop_with_initial_event_and_connectivity([]() {

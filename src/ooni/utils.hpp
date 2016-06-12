@@ -16,30 +16,9 @@ using json = nlohmann::json;
 namespace mk {
 namespace ooni {
 
-template <decltype(mk::http::get) httpget = mk::http::get>
 void ip_lookup(Callback<Error, std::string> callback, Settings settings = {},
                Var<Reactor> reactor = Reactor::global(),
-               Var<Logger> logger = Logger::global()) {
-    httpget("http://geoip.ubuntu.com/lookup",
-            [=](Error err, Var<http::Response> response) {
-                if (err) {
-                    callback(err, "");
-                    return;
-                }
-                if (response->status_code != 200) {
-                    callback(GenericError(), "");
-                    return;
-                }
-                std::smatch m;
-                std::regex regex("<Ip>(.*)</Ip>");
-                if (std::regex_search(response->body, m, regex) == false) {
-                    callback(GenericError(), "");
-                    return;
-                }
-                callback(NoError(), m[1]);
-            },
-            {}, settings, reactor, logger);
-}
+               Var<Logger> logger = Logger::global());
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,
                     std::string path_asn);
