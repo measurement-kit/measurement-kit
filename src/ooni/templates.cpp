@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include <event2/dns.h>
+#include <measurement_kit/http.hpp>
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/ooni.hpp>
 #include <measurement_kit/report.hpp>
@@ -15,10 +16,9 @@ namespace templates {
 using namespace mk::report;
 
 void dns_query(Var<Entry> entry, dns::QueryType query_type,
-                      dns::QueryClass query_class, std::string query_name,
-                      std::string nameserver, Callback<dns::Message> cb,
-                      Settings options, Var<Reactor> reactor,
-                      Var<Logger> logger) {
+               dns::QueryClass query_class, std::string query_name,
+               std::string nameserver, Callback<dns::Message> cb,
+               Settings options, Var<Reactor> reactor, Var<Logger> logger) {
 
     int resolver_port;
     std::string resolver_hostname, nameserver_part;
@@ -65,6 +65,43 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                    logger->debug("dns_test: callback called");
                },
                options, reactor);
+}
+
+void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
+                  std::string body, Callback<Error, Var<http::Response>> cb,
+                  Var<Reactor> reactor, Var<Logger> logger) {
+
+    http::request(
+        settings, headers, body,
+        [=](Error error, Var<http::Response> response) {
+
+            Entry rr;
+            rr["request"]["headers"] =
+                std::map<std::string, std::string>(headers);
+            rr["request"]["body"] = body;
+            rr["request"]["url"] = settings.at("url").str();
+            rr["request"]["method"] = settings.at("method").str();
+
+            // XXX we should probably update OONI data format to remove this.
+            rr["method"] = settings.at("method").str();
+
+            if (!error) {
+                rr["response"]["headers"] =
+                    std::map<std::string, std::string>(response->headers);
+                rr["response"]["body"] = response->body;
+                rr["response"]["response_line"] = response->response_line;
+                rr["response"]["code"] = response->status_code;
+            } else {
+                rr["failure"] = "unknown_failure measurement_kit_error";
+                rr["error_code"] = error.code;
+            }
+
+            (*entry)["requests"].push_back(rr);
+            (*entry)["agent"] = "agent";
+            (*entry)["socksproxy"] = "";
+            cb(error, response);
+        },
+        reactor, logger);
 }
 
 } // namespace templates
