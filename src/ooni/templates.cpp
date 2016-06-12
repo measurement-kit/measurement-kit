@@ -3,8 +3,8 @@
 // information on the copying conditions.
 
 #include <event2/dns.h>
-#include <measurement_kit/http.hpp>
 #include <measurement_kit/dns.hpp>
+#include <measurement_kit/http.hpp>
 #include <measurement_kit/ooni.hpp>
 #include <measurement_kit/report.hpp>
 #include <sstream>
@@ -102,6 +102,21 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
             cb(error, response);
         },
         reactor, logger);
+}
+
+void tcp_connect(Settings options, Callback<Error, Var<net::Transport>> cb,
+                 Var<Reactor> reactor, Var<Logger> logger) {
+    if (options["port"] == "") {
+        throw std::runtime_error("Port is required");
+    }
+    if (options["host"] == "") {
+        options["host"] = "localhost";
+    }
+    net::connect(options["host"], options["port"].as<int>(),
+                 [=](Error error, Var<net::Transport> transport) {
+                     cb(error, transport);
+                 },
+                 options, logger, reactor);
 }
 
 } // namespace templates

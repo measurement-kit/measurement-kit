@@ -5,35 +5,24 @@
 #ifndef SRC_OONI_TCP_CONNECT_HPP
 #define SRC_OONI_TCP_CONNECT_HPP
 
-#include "src/ooni/tcp_test_impl.hpp"
+#include "src/ooni/ooni_test_impl.hpp"
 
 namespace mk {
 namespace ooni {
 
-class TCPConnectImpl : public TCPTestImpl {
-    using TCPTestImpl::TCPTestImpl;
-
+class TCPConnectImpl : public OoniTestImpl {
   public:
     TCPConnectImpl(std::string input_filepath_, Settings options_)
-        : TCPTestImpl(input_filepath_, options_) {
+        : OoniTestImpl(input_filepath_, options_) {
         test_name = "tcp_connect";
         test_version = "0.0.1";
         needs_input = true;
     }
 
-    void main(std::string input, Settings options,
-              std::function<void(report::Entry)> cb) {
-        options["host"] = input;
-        connect(options, [this, cb](Error err, Var<net::Transport> txp) {
-            logger->debug("tcp_connect: Got response to TCP connect test");
-            if (err) {
-                cb(report::Entry{{"connection", err.as_ooni_error()}});
-                return;
-            }
-            txp->close([this, cb]() {
-                cb(report::Entry{{"connection", "success"}});
-            });
-        });
+    void main(std::string input, Settings options, Callback<report::Entry> cb) {
+        tcp_connect(input, options, [=](Var<report::Entry> entry) {
+            cb(*entry);
+        }, reactor, logger);
     }
 };
 
