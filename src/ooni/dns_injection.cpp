@@ -30,5 +30,13 @@ void dns_injection(std::string input, Settings options, Callback<Var<Entry>> cb,
                          options, reactor, logger);
 }
 
+Var<NetTest> DnsInjection::create_test_() {
+    DnsInjection *test = new DnsInjection(input_filepath, options);
+    test->logger = logger;
+    test->reactor = reactor;
+    test->output_filepath = output_filepath;
+    return Var<NetTest>(test);
+}
+
 } // namespace ooni
 } // namespace mk

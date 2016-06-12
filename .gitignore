@@ -102,12 +102,9 @@ test/net/socks5
 test/net/transport
 test/ooni/collector_client
 test/ooni/dns_injection
-test/ooni/dns_injection_test
 test/ooni/http_invalid_request_line
-test/ooni/http_invalid_request_line_test
 test/ooni/net_test
 test/ooni/tcp_connect
-test/ooni/tcp_connect_test
 test/ooni/tcp_test
 test/ooni/utils
 test/report/base_reporter

@@ -29,5 +29,13 @@ void tcp_connect(std::string input, Settings options,
     }, reactor, logger);
 }
 
+Var<NetTest> TcpConnect::create_test_() {
+    TcpConnect *test = new TcpConnect(input_filepath, options);
+    test->logger = logger;
+    test->reactor = reactor;
+    test->output_filepath = output_filepath;
+    return Var<NetTest>(test);
+}
+
 } // namespace ooni
 } // namespace mk
