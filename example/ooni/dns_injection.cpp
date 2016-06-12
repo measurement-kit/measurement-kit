@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    mk::ooni::DnsInjectionTest()
+    mk::ooni::DnsInjection()
         .set_options("backend", backend)
         .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
         .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")

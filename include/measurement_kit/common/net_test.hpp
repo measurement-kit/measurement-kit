@@ -79,27 +79,5 @@ class NetTest {
     std::string output_filepath;
 };
 
-// Note: until we properly unify tests as seen through the DSL (for example,
-// DnsInjectionTest) and tests meant to run (DNSInjectionTestImpl), when using
-// the DSL style creation it would not be possible to run the tests.
-//
-// Ideally, in the future, this would change and it would be possible to
-// create a test class and either schedule it for running on the runner or
-// just directly run it using ->begin() and ->end().
-//
-// For NDT, it is already like this. For OONI, not yet.
-#define MK_DECLARE_TEST_DSL(_name_)                                            \
-    class _name_ : public mk::NetTest {                                        \
-      public:                                                                  \
-        Var<NetTest> create_test_() override;                                  \
-      private:                                                                 \
-        void begin(Callback<>) override {                                      \
-            throw std::runtime_error("not yet implemented");                   \
-        }                                                                      \
-        void end(Callback<>) override {                                        \
-            throw std::runtime_error("not yet implemented");                   \
-        }                                                                      \
-    };
-
 } // namespace mk
 #endif
