@@ -21,12 +21,6 @@ template<typename T> class Var;
 class Logger;
 class Settings;
 
-void timeval_now(timeval *);
-double time_now();
-void utc_time_now(struct tm *);
-ErrorOr<std::string> timestamp(const struct tm *);
-timeval *timeval_init(timeval *, double);
-
 int storage_init(sockaddr_storage *, socklen_t *, const char *, const char *,
                  const char *);
 int storage_init(sockaddr_storage *, socklen_t *, int, const char *,
