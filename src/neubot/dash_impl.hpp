@@ -4,13 +4,14 @@
 #include "src/common/utils.hpp"
 #include <functional>
 #include <iostream>
+#include <stdlib.h>
+#include <string>
+#include <unistd.h>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/report.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/neubot.hpp>
-#include <stdlib.h>
-#include <string>
-#include <unistd.h>
+#include <measurement_kit/mlabns.hpp>
 
 #define DASH_MAX_ITERATION 15
 #define DASH_SECONDS 2
@@ -19,6 +20,7 @@ using namespace mk;
 using namespace mk::net;
 using namespace mk::http;
 using namespace mk::report;
+using namespace mk::mlabns;
 
 namespace mk {
 namespace neubot {
@@ -87,7 +89,7 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
 
                     if (time_elapsed < 0) {
                         logger -> warn("Time elapsed can't be negative");
-                        cb(ValueError(), nullptr);
+                        cb(NegativeTimeError(), nullptr);
                         return;
                     }
                     // TODO

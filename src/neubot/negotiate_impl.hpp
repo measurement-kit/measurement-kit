@@ -22,6 +22,7 @@ using namespace mk::neubot;
 using namespace mk::net;
 using namespace mk::http;
 using namespace mk::report;
+using namespace mk::mlabns;
 
 namespace mk {
 namespace neubot {
@@ -54,7 +55,7 @@ static inline void collect(Var<Transport> transport, Callback<Error> cb,
         reactor, logger);
 }
 
-static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> cb,
+static inline void loop_negotiate(Var<Transport> transport, Callback<Error> cb,
                                       Settings settings, Var<Reactor> reactor,
                                       Var<Logger> logger, int iteration = 0) {
 
@@ -70,7 +71,7 @@ static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> 
 
     if (iteration > DASH_MAX_NEGOTIATION) {
         std::cout << "Too many negotiations\n";
-        transport->close([=]() { cb(ValueError()); });
+        transport->close([=]() { cb(TooManyNegotiationsError()); });
         return;
     };
 
@@ -98,7 +99,7 @@ static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> 
             // XXX
             if (unchoked == 0) {
                 reactor -> call_soon([=]() {
-                    loop_req_negotiate(transport, cb, settings, reactor, logger,
+                    loop_negotiate(transport, cb, settings, reactor, logger,
                                        iteration + 1);
                          });
 
@@ -134,51 +135,80 @@ static inline void loop_req_negotiate(Var<Transport> transport, Callback<Error> 
 static inline void run_impl(Callback<Error> cb, Settings settings,
                             Var<Reactor> reactor, Var<Logger> logger) {
 
+    if (settings["url"] != "") {
 
-    std::string tool = "neubot";
-    std::string url;
-
-    if (settings["url"] == "") {
-        mlabns::query(
-           tool, [&url](Error error, mlabns::Reply reply) {
-               if (error) {
-                   logger -> warn("Error: %d", (int) error);
-                   cb(error);
-                   return;
-               }
-               url = reply.url;
-           });
-        settings["http/url"] = url;
-    } else {
         settings["http/url"] = settings["url"];
-    }
 
+        if (settings["negotiate"] == "false") {
+            dash::run(settings, [=](Error error, Var<Entry>) {
+                if (error) {
+                    logger -> warn("Error: %d", (int) error);
+                    cb(error);
+                    return;
+                }
+            });
+            return;
+        }
 
-    if (settings["negotiate"] == "false") {
-        dash::run(settings, [=](Error error, Var<Entry>) {
-            if (error) {
-                logger -> warn("Error: %d", (int) error);
-                cb(error);
-                return;
-            }
-        });
+        request_connect(settings,
+                        [=](Error error, Var<Transport> transport) {
+
+                            if (error) {
+                                logger -> warn("Error: %d", (int) error);
+                                transport->close([=]() { cb(error); });
+                                return;
+                            }
+
+                            loop_negotiate(transport, cb, settings, reactor,
+                                logger);
+
+                            return;
+                        },
+                        reactor, logger);
         return;
     }
 
-    request_connect(settings,
-                    [=](Error error, Var<Transport> transport) {
+    query( "neubot", [=](Error error, mlabns::Reply reply) {
+        if (error) {
+           logger -> warn("Error: %d", (int) error);
+           cb(error);
+           return;
+        }
 
-                        if (error) {
-                            logger -> warn("Error: %d", (int) error);
-                            transport->close([=]() { cb(error); });
-                            return;
-                        }
+        Settings s = settings;
 
-                        loop_req_negotiate(transport, cb, settings, reactor, logger);
+        s["http/url"] = reply.url;
 
-                        return;
-                    },
-                    reactor, logger);
+        if (s["negotiate"] == "false") {
+            dash::run(s, [=](Error error, Var<Entry>) {
+                if (error) {
+                    logger -> warn("Error: %d", (int) error);
+                    cb(error);
+                    return;
+                }
+            });
+
+            return;
+        }
+
+        request_connect(s, [=](Error error, Var<Transport> transport) {
+
+            if (error) {
+                logger -> warn("Error: %d", (int) error);
+                transport->close([=]() { cb(error); });
+                return;
+            }
+
+            loop_negotiate(transport, cb, s, reactor, logger);
+
+            return;
+        }, reactor, logger);
+
+
+    });
+
+    return;
+
 }
 
 } // namespace negotiate
