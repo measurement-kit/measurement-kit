@@ -20,7 +20,6 @@ using namespace mk;
 using namespace mk::net;
 using namespace mk::http;
 using namespace mk::report;
-using namespace mk::mlabns;
 
 namespace mk {
 namespace neubot {

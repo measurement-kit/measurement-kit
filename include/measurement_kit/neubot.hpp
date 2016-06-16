@@ -2,5 +2,6 @@
 #ifndef MEASUREMENT_KIT_NEUBOT_HPP
 #define MEASUREMENT_KIT_NEUBOT_HPP
 #include <measurement_kit/neubot/dash.hpp>
+#include <measurement_kit/neubot/error.hpp>
 #include <measurement_kit/neubot/negotiate.hpp>
 #endif
