@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
                   << "\n";
         exit(1);
     }
-    mk::ooni::TcpConnectTest()
+    mk::ooni::TcpConnect()
         .set_options("port", port)
         .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
         .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
