@@ -22,8 +22,9 @@ TEST_CASE("Running the NDT test using begin / end works") {
     test->reactor = reactor;
     test->set_verbosity(MK_LOG_INFO);
     reactor->loop_with_initial_event([&]() {
-        test->begin([=]() {
-            test->end([=]() {
+        // TODO: do not ignore errors here, perhaps
+        test->begin([=](Error) {
+            test->end([=](Error) {
                 reactor->break_loop();
             });
         });

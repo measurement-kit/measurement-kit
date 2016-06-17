@@ -30,15 +30,15 @@ class NetTest {
         return *this;
     }
 
-    virtual void begin(Callback<> func) {
+    virtual void begin(Callback<Error> func) {
         // You must override this on subclasses to actually start
         // running the test you're interested to run
-        reactor->call_soon(func);
+        reactor->call_soon([=]() { func(NoError()); });
     }
-    virtual void end(Callback<> func) {
+    virtual void end(Callback<Error> func) {
         // You must override this on subclasses to actually terminate
         // running the test (i.e. send results to collector)
-        reactor->call_soon(func);
+        reactor->call_soon([=]() { func(NoError()); });
     }
 
     NetTest() {}

@@ -18,8 +18,10 @@ TEST_CASE("The HTTP Invalid Request Line test should run") {
     options["backend"] = "http://213.138.109.232/";
     ooni::HttpInvalidRequestLine http_invalid_request_line(options);
     loop_with_initial_event_and_connectivity([&]() {
-        http_invalid_request_line.begin(
-            [&]() { http_invalid_request_line.end([]() { break_loop(); }); });
+        // TODO: handle errors?
+        http_invalid_request_line.begin([&](Error) {
+            http_invalid_request_line.end([](Error) { break_loop(); });
+        });
     });
 }
 
@@ -31,8 +33,8 @@ TEST_CASE(
     options["dns/timeout"] = 0.1;
     ooni::HttpInvalidRequestLine http_invalid_request_line(options);
     loop_with_initial_event_and_connectivity([&]() {
-        http_invalid_request_line.begin([&]() {
-            http_invalid_request_line.end([]() { break_loop(); });
+        http_invalid_request_line.begin([&](Error) {
+            http_invalid_request_line.end([](Error) { break_loop(); });
         });
     });
 }
