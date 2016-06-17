@@ -22,8 +22,9 @@ TEST_CASE(
     options["dns/timeout"] = 0.1;
     ooni::DnsInjection dns_injection("test/fixtures/hosts.txt", options);
     loop_with_initial_event_and_connectivity([&]() {
+        // TODO: handle errors?
         dns_injection.begin(
-            [&]() { dns_injection.end([]() { break_loop(); }); });
+            [&](Error) { dns_injection.end([](Error) { break_loop(); }); });
     });
 }
 

@@ -12,8 +12,8 @@ namespace ndt {
 class NdtTest : public NetTest {
   public:
     using NetTest::NetTest;
-    void begin(Callback<>) override;
-    void end(Callback<>) override;
+    void begin(Callback<Error>) override;
+    void end(Callback<Error>) override;
     Var<NetTest> create_test_() override;
 };
 
