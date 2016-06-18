@@ -38,6 +38,10 @@ ErrorOr<Buffer> format_test_msg(std::string s) {
                                 });
 }
 
+ErrorOr<Buffer> format_msg_waiting() {
+    return format_any(MSG_WAITING, json{});
+}
+
 void write(Var<Context> ctx, Buffer buff, Callback<Error> cb) {
     std::string s = buff.peek();
     ctx->logger->debug("> [%lu]: (%d) %s", s.length(), s.c_str()[0],
