@@ -62,6 +62,7 @@ namespace ndt {
 
 using json = nlohmann::json;
 using namespace mk::net;
+using namespace mk::report;
 
 /*
   ____            _            _
@@ -77,6 +78,7 @@ struct Context {
     std::string address;
     Var<Buffer> buff = Buffer::make();
     Callback<Error> callback;
+    Var<Entry> entry;
     std::list<std::string> granted_suite;
     Var<Logger> logger = Logger::global();
     int port = NDT_PORT;
@@ -188,7 +190,7 @@ void run(Var<Context> ctx, Callback<Error> callback);
 */
 namespace test_s2c {
 
-void coroutine(std::string address, int port,
+void coroutine(Var<Entry> report_entry, std::string address, int port,
                Callback<Error, Continuation<Error, double>> cb,
                double timeout = 10.0, Settings settings = {},
                Var<Logger> logger = Logger::global(),

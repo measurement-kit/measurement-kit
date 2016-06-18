@@ -20,7 +20,7 @@ void NdtTest::main(std::string, Settings settings, Callback<Entry> cb) {
     (*entry)["failure"] = nullptr;
     // Note: `options` is the class attribute and `settings` is instead a
     // possibly modified copy of the `options` object
-    ndt::run([=](Error error) {
+    ndt::run(entry, [=](Error error) {
         if (error) {
             (*entry)["failure"] = error.as_ooni_error();
         }
