@@ -10,8 +10,10 @@ namespace mk {
 namespace ndt {
 namespace test_s2c {
 
+using namespace mk::report;
+
 template <MK_MOCK_NAMESPACE(net, connect)>
-void coroutine_impl(std::string address, int port,
+void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
                     Callback<Error, Continuation<Error, double>> cb,
                     double timeout, Settings settings, Var<Logger> logger,
                     Var<Reactor> reactor) {
@@ -42,6 +44,7 @@ void coroutine_impl(std::string address, int port,
                 txp->set_timeout(timeout);
                 *previous = begin;
                 logger->info("Speed: %lf s %lf kbit/s", 0.0, 0.0);
+                (*report_entry)["receiver_data"].push_back({0.0, 0.0});
 
                 txp->on_data([=](Buffer data) {
                     *total += data.length();
@@ -53,6 +56,7 @@ void coroutine_impl(std::string address, int port,
                         *count = 0;
                         *previous = ct;
                         logger->info("Speed: %lf s %lf kbit/s", el, x);
+                        (*report_entry)["receiver_data"].push_back({el, x});
                     }
                     // TODO: force close the connection after a given
                     // large amount of time has passed
@@ -137,7 +141,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start s2c coroutine ...");
         coroutine(
-            ctx->address, *port,
+            ctx->entry, ctx->address, *port,
             [=](Error err, Continuation<Error, double> cc) {
                 ctx->logger->debug("ndt: start s2c coroutine ... %d", (int)err);
                 if (err) {
