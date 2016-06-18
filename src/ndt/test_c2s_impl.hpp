@@ -47,14 +47,16 @@ void coroutine_impl(std::string address, int port, double runtime,
                         Var<size_t> count(new size_t(0));
                         logger->debug("ndt: resume coroutine");
                         logger->info("Starting upload");
+                        logger->info("Speed: %lf s %lf kbit/s", 0.0, 0.0);
                         txp->set_timeout(timeout);
                         txp->on_flush([=]() {
                             double now = time_now();
                             if (now - *previous > 0.5) {
+                                double el = now - begin;
                                 double x = (*count * 8) / 1000 / (now - *previous);
                                 *previous = now;
                                 *count = 0;
-                                logger->info("Speed: %.2f kbit/s", x);
+                                logger->info("Speed: %lf s %lf kbit/s", el, x);
                             }
                             if (now - begin > runtime) {
                                 logger->info("Elapsed enough time");
