@@ -35,24 +35,24 @@ void coroutine_impl(std::string address, int port,
                 // The coroutine is resumed and receives data
                 logger->debug("ndt: resume coroutine");
                 logger->info("Starting download");
-                Var<double> begin(new double(0.0));
+                double begin = time_now();
                 Var<size_t> total(new size_t(0));
                 Var<double> previous(new double(0.0));
                 Var<size_t> count(new size_t(0));
                 txp->set_timeout(timeout);
+                *previous = begin;
+                logger->info("Speed: %lf s %lf kbit/s", 0.0, 0.0);
 
                 txp->on_data([=](Buffer data) {
-                    if (*begin == 0.0) {
-                        *begin = *previous = time_now();
-                    }
                     *total += data.length();
                     double ct = time_now();
                     *count += data.length();
                     if (ct - *previous > 0.5) {
+                        double el = ct - begin;
                         double x = (*count * 8) / 1000 / (ct - *previous);
                         *count = 0;
                         *previous = ct;
-                        logger->info("Speed: %.2f kbit/s", x);
+                        logger->info("Speed: %lf s %lf kbit/s", el, x);
                     }
                     // TODO: force close the connection after a given
                     // large amount of time has passed
@@ -60,7 +60,7 @@ void coroutine_impl(std::string address, int port,
 
                 txp->on_error([=](Error err) {
                     logger->info("Ending download (%d)", (int)err);
-                    double elapsed_time = time_now() - *begin;
+                    double elapsed_time = time_now() - begin;
                     logger->debug("ndt: elapsed %lf", elapsed_time);
                     logger->debug("ndt: total %lu", (unsigned long)*total);
                     double speed = 0.0;
