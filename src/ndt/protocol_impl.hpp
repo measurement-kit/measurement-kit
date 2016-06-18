@@ -227,9 +227,9 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
         if (type == MSG_RESULTS) {
             for (auto x : split(s, "\n")) {
                 if (x != "") {
-                    // Should be info because it allows us to see the
-                    // internals at the end of the NDT test
-                    ctx->logger->info("%s", x.c_str());
+                    ctx->logger->debug("%s", x.c_str());
+                    (void)messages::add_to_report(ctx->entry,
+                            "summary_data", x);
                 }
             }
             // XXX: here we have the potential to loop forever...

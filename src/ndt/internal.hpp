@@ -123,6 +123,8 @@ ErrorOr<Buffer> format_msg_waiting();
 void write(Var<Context>, Buffer, Callback<Error>);
 void write_noasync(Var<Context>, Buffer);
 
+Error add_to_report(Var<Entry> entry, std::string key, std::string item);
+
 } // namespace messages
 
 /*
