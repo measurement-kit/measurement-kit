@@ -102,9 +102,8 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         for (auto e : split(s, "\n")) {
             if (e != "") {
-                // This should be info because there are Web100
-                // variables containing RTT and other useful metrics
-                ctx->logger->info("%s", e.c_str());
+                ctx->logger->debug("%s", e.c_str());
+                messages::add_to_report(ctx->entry, "web100_data", e);
             }
         }
         // XXX: Here we can loop forever

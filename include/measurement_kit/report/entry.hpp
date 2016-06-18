@@ -18,6 +18,7 @@ class Entry : private nlohmann::json {
     using nlohmann::json::json;
 
     static Entry array();
+    static Entry object();
 
     template <typename T> operator ErrorOr<T>() {
         try {
