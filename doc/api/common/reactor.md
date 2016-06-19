@@ -40,7 +40,7 @@ void loop_with_initial_event_and_connectivity(Callback<> func);
 # DESCRIPTION
 
 The `Reactor` abstract interface dispatches I/O events. Most MeasurementKit
-objects refer to specific a `Reactor` object.
+objects refer to a specific `Reactor` object.
 
 The `make()` factory returns a new reactor allocated on the heap whose
 lifecycle is manager using a `Var<>` smart pointer. The `global()` factory
