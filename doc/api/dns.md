@@ -5,47 +5,9 @@ mk::dns -- MeasurementKit DNS library
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
+
 ```C++
-#include <measurement_kit/dns.hpp>
-
-// Constructs settings to be passed to the query function
-mk::Settings settings({
-    {"dns/nameserver", "8.8.8.8:53"},  // Set the name server IP
-    {"dns/attempts", "1"},             // How many attempts before erroring out
-    {"dns/timeout", "3.1415"},         // How many seconds before timeout
-    {"dns/randomize_case", "1"},       // Whether to randomize request case
-});
-
-// Issue an async DNS query
-mk::dns::query(
-        "IN",                                             // Domain of the query
-        "AAAA",                                           // Type of query
-        "nexa.polito.it",                                 // Name to resolve
-        [](mk::Error error, mk::dns::Message message) { // Callback
-            if (error) throw error;
-
-            // Return evdns status (this is mainly used internally)
-            int error_code = message.error_code;
-
-            // Get round trip time of the query
-            double rtt = message.rtt;
-
-            for (auto answer : message.answers) {
-                // Get time to live of the answer
-                int ttl = answer.ttl;
-
-                if (answer.type == dns::QueryTypeId::A) {
-                    // Get the IPv4 address in the case of A answers
-                    std::string ipv4 = answer.ipv4;
-                } else if (answer.type == dns::QueryTypeId::AAAA) {
-                    // Get the IPv6 address in the case of AAAA answers
-                    std::string ipv6 = answer.ipv6;
-                } else if (answer.type == dns::QueryTypeId::PTR) {
-                    // Get the domain pointer in the case of PTR answers
-                    std::string hostname = answer.hostname;
-                }
-            }
-        }, settings);
+// TODO
 ```
 
 # DESCRIPTION
@@ -97,7 +59,6 @@ instance of `mk::NoError()`. Otherwise, the error that occurred is
 reported. Among all the possible errors, the following are defined by
 MeasurementKit DNS implementation:
 
-
 - `FormatError`: invalid response format
 - `ServerFailedError`:  server failure
 - `NotExistError`:  the name does not exist
@@ -115,6 +76,50 @@ The `Response` class holds the result of an async DNS `Query`. You do not
 typically instantiate a `Response` yourself, rather you receive an instance
 of `Response` in response to a DNS query.
 
+# EXAMPLE
+
+```C++
+#include <measurement_kit/dns.hpp>
+
+// Constructs settings to be passed to the query function
+mk::Settings settings({
+    {"dns/nameserver", "8.8.8.8:53"},  // Set the name server IP
+    {"dns/attempts", "1"},             // How many attempts before erroring out
+    {"dns/timeout", "3.1415"},         // How many seconds before timeout
+    {"dns/randomize_case", "1"},       // Whether to randomize request case
+});
+
+// Issue an async DNS query
+mk::dns::query(
+        "IN",                                             // Domain of the query
+        "AAAA",                                           // Type of query
+        "nexa.polito.it",                                 // Name to resolve
+        [](mk::Error error, mk::dns::Message message) { // Callback
+            if (error) throw error;
+
+            // Return evdns status (this is mainly used internally)
+            int error_code = message.error_code;
+
+            // Get round trip time of the query
+            double rtt = message.rtt;
+
+            for (auto answer : message.answers) {
+                // Get time to live of the answer
+                int ttl = answer.ttl;
+
+                if (answer.type == dns::QueryTypeId::A) {
+                    // Get the IPv4 address in the case of A answers
+                    std::string ipv4 = answer.ipv4;
+                } else if (answer.type == dns::QueryTypeId::AAAA) {
+                    // Get the IPv6 address in the case of AAAA answers
+                    std::string ipv6 = answer.ipv6;
+                } else if (answer.type == dns::QueryTypeId::PTR) {
+                    // Get the domain pointer in the case of PTR answers
+                    std::string hostname = answer.hostname;
+                }
+            }
+        }, settings);
+```
 
 # SEE ALSO
 
