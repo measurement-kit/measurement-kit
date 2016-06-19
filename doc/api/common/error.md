@@ -107,7 +107,7 @@ as in the following snippet of code:
 The equality and inequality operators allow to compare errors with error codes and
 with errors. Currently, the comparison is *only* performed on the grounds of the
 error code, hence different error classes having the same error code would be equal,
-as show in the following snippet of code:
+as shown in the following snippet of code:
 
 ```C++
     MK_DEFINE_ERR(7, FooError, "");
