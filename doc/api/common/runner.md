@@ -8,11 +8,15 @@ MeasurementKit (libmeasurement\_kit, -lmeasurement\_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
+namespace mk {
+
 class Runner {
   public:
     static Var<Runner> global();
     void run(Var<NetTest> test, Callback<Var<NetTest>> callback);
 };
+
+}
 ```
 
 # STABILITY
