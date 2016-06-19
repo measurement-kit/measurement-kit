@@ -89,7 +89,15 @@ for each logging message. Such function is a delegate (i.e. the delegate
 body can safely change the delegate itself) and takes in input the
 verbosity level of the message and the message itself. The default log
 function prints on the standard error output the log level as integer
-followed by the formatted log message string.
+enclosed by angular braces, followed by the formatted log message string.
+For example:
+
+```
+<0> A warning message
+<1> A info message
+<2> A debug message
+<3> A debug2 message
+```
 
 The `global()` factory returns the default logger.
 
