@@ -20,9 +20,9 @@ The `net` libraries contains low level networking functionality.
 This library contains the following modules:
 
 - [buffer](net/buffer.md): Buffer for incoming/outgoing data
-- [connect](common/connect.md): Functions to establish connections
-- [error](common/error.md): Network-level errors
-- [transport](common/transport.md): Abstract interface for connected sockets
+- [connect](net/connect.md): Functions to establish connections
+- [error](net/error.md): Network-level errors
+- [transport](net/transport.md): Abstract interface for connected sockets
 
 # HISTORY
 
