@@ -31,6 +31,7 @@ This library contains the following modules:
 - [runner](common/runner.md): class for running network tests and manage theif lifecycle
 - [settings](common/settings.md): class containing test settings
 - [settings_entry](common/settings_entry.md): a setting inside test settings
+- [utils](common/utils.md): generic utility functions
 - [var](common/var.md): shared smart pointer with null pointer checks
 - [version](common/version.md): MeasurementKit version macro
 
