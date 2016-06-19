@@ -39,6 +39,8 @@ public class Foo : public mk::NonCopyable {
     ~Foo() {
         delete bar;
     }
+  private:
+    Bar *bar = nullptr;
 };
 ```
 
