@@ -28,10 +28,14 @@ class Settings : public std::map<std::string, SettingsEntry> {
 use `SettingsEntry` to implement a generic scalar type container.
 
 In addition to the typical methods of `std::map`, `Settings` also features
-the `get()` and the `get_noexcept()` method. The `get()` method returns the value
+the `get()` and the `get_noexcept()` method.
+
+The `get()` method returns the value
 at `key` if available, otherwise the default value `defval`. An exception may
 be raised if it is not possible to convert the value associated to `key`
-to type `T`. The `get_noexcept()` method is like `get()` except that it does
+to type `T`.
+
+The `get_noexcept()` method is like `get()` except that it does
 not throw exceptions and instead it returns a `ErrorOr<T>` type.
 
 # HISTORY
