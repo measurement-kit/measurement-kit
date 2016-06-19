@@ -67,34 +67,7 @@ The call operator allows to call the `Delegate`.
 
 # EXAMPLE
 
-```C++
-#include <measurement_kit/common.hpp>
-
-using namespace mk;
-
-class Emitter {
-  public:
-    void on(Callback<> cb) { func_ = cb; }
-    void emit() { func_(); }
-
-  private:
-    //Callback<> func_; // Using callback here leads to use after free
-    Delegate<> func_;
-};
-
-int main() {
-    Emitter emitter;
-    loop_with_initial_event([&emitter]() {
-        emitter.on([&emitter]() {
-            emitter.on([&emitter]() {
-                break_loop();
-            });
-            emitter.emit();
-        });
-        emitter.emit();
-    });
-}
-```
+See `example/common/delegate.cpp`.
 
 # HISTORY
 
