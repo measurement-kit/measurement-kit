@@ -1,5 +1,5 @@
 # NAME
-Delegate -- Method that can modify itself.
+Delegate -- Function that can modify itself when used as a method.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
