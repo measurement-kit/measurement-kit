@@ -42,7 +42,7 @@ to pass `nullptr` to this function; in such case further attempts to
 access the pointee would result in `std::runtime_error` being raised.
 
 The `get()` and `operator->()` methods return the pointee if non null and
-throws `std::runtime_error` otherwise.
+throw `std::runtime_error` otherwise.
 
 The `operator*()` method returns a reference to `*ptr` where `ptr` is the
 pointee if the pointee is non null and throws `std::runtime_error` otherwise.
