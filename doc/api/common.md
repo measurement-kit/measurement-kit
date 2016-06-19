@@ -25,7 +25,6 @@ This library contains the following modules:
 - [logger](common/logger.md): functionality to log messages
 - [mock](common/mock.md): macros to mock implementation and write tests
 - [net_test](common/net_test.md): generic network test
-- [net_test_dsl](common/net_test_dsl.md): internal domain specific language to request execution of a network test
 - [non_copyable](common/non_copyable.md): non copyable class
 - [non_movable](common/non_movable.md): non movable class
 - [reactor](common/reactor.md): class for dispatching I/O events and timeouts
