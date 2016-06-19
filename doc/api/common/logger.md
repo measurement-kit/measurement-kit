@@ -102,7 +102,11 @@ For example:
 The `global()` factory returns the default logger.
 
 This module also includes syntactic sugar functions named like `Logger`
-method that operate on the default logger with equal semantic.
+methods that call the namesake method of the default logger. That is:
+
+```C++
+  mk::debug("Foobar");  // == mk::Logger::global()->debug("Foobar");
+```
 
 Internally, the logger implementation MUST be implemented to be thread
 safe, i.e. it MUST be safe to invoke concurrently the logger from multiple
