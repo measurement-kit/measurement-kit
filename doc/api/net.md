@@ -9,6 +9,10 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/net.hpp>
 ```
 
+# STABILITY
+
+2 - Stable
+
 # DESCRIPTION
 
 The `net` libraries contains low level networking functionality.
