@@ -15,7 +15,11 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # DESCRIPTION
 
-The `traceroute` library contains code to run traceroutes.
+The `traceroute` library contains the following modules:
+
+- [android](traceroute/android.md): Code to run traceroute for Android
+- [error](traceroute/error.md): Traceroute specific errors
+- [interface](traceroute/interface.md): Generic traceroute interface
 
 # HISTORY
 
