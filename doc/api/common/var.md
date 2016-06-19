@@ -8,6 +8,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
+namespace mk {
+
 template typename<T> class Var : public std::shared_ptr<T> {
   public:
     Var(T ptr);
@@ -19,6 +21,7 @@ template typename<T> class Var : public std::shared_ptr<T> {
     template <typename R> Var<R> as();
 };
 
+}
 ```
 
 # DESCRIPTION
