@@ -108,7 +108,7 @@ callback; that is:
 
 Internally `run(Callback<>)` would use a `Runner` to run the test in a
 background thread. What would be passed to such `Runner` is not the test
-instantiated on the heap, rather a dynamically allocated copy of it
+instantiated on the stack, rather a dynamically allocated copy of it
 created using the `create_test_()` function that subclassess MUST therefore
 override. (The default implementation of such function returns an
 uninitialized `Var<NetTest>` which would throw `std::runtime_error`
