@@ -10,11 +10,9 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 namespace mk {
 
-template <typename To, typename From>
-To lexical_cast(From f);
+template <typename To, typename From> To lexical_cast(From f);
 
-template <typename To, typename From>
-ErrorOr<To> lexical_cast_noexcept(From f);
+template <typename To, typename From> ErrorOr<To> lexical_cast_noexcept(From f);
 
 }
 ```
