@@ -42,7 +42,7 @@ void loop_with_initial_event_and_connectivity(Callback<> func);
 The `Reactor` abstract interface dispatches I/O events. Most MeasurementKit
 objects refer to a specific `Reactor` object.
 
-The `make()` and `global()` factories returns a reactor allocated on the heap whose
+The `make()` and `global()` factories return a reactor allocated on the heap whose
 lifecycle is manager using a `Var<>` smart pointer. Specifically, `make()` allocates
 a new reactor and `global()` returns a reference to the global reactor.
 
