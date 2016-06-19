@@ -8,49 +8,108 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
-mk::Poller poller;
-event_base *p = poller.get_event_base();
-evdns_base *dp = poller.get_evdns_base();
+namespace mk {
 
-poller.loop();                    // Blocking method to run the event loop
-poller.break_loop();              // Break out of event loop
-poller.loop_once();               // Just one iteration of event loop
+class Reactor {
+  public:
+    static Var<Reactor> make();
+    static Var<Reactor> global();
 
-// Functions to work with the DNS server addresses
-// They are especially useful in mobile applications where typically
-// we do not have /etc/resolv.conf and hence by default no name-server
-// is configured and name resolution does not work at all
-if (poller.count_nameservers() <= 0) {
-    poller.add_nameserver("8.8.8.8");        // Leaving the port implied
-    poller.add_nameserver("8.8.4.4:53");     // Also with port
+    virtual void call_later(double delay, Callback<> callback) = 0;
+    virtual void call_soon(Callback<> callback) = 0;
+
+    virtual void loop() = 0;
+    virtual void break_loop() = 0;
+    virtual void loop_with_initial_event(Callback<> func) = 0;
 }
 
-// Schedule a call to run in the next I/O cycle
-poller.call_soon([objects]() {
-    // Do something with `objects`
-});
+/* Functions using the global reactor: */
 
-// Schedule a call 3.14 seconds in the future
-poller.call_later(3.14, [objects]() {
-    // Do something with `objects`
-});
+void call_later(double delay, Callback<> callback);
+void call_soon(Callback<> callback);
 
-mk::Poller *root = mk::Poller::global();
+void loop();
+void break_loop();
+void loop_with_initial_event(Callback<> func);
+
+/* For regress tests: */
+
+void loop_with_initial_event_and_connectivity(Callback<> func);
 ```
 
 # DESCRIPTION
 
-The `Poller` object dispatches I/O events. Most MeasurementKit objects
-refer to a `Poller` object (be it a specific poller or the global poller).
+The `Reactor` abstract interface dispatches I/O events. Most MeasurementKit
+objects refer to specific a `Reactor` object.
 
-Generally, you setup some objects making sure they refer to a poller and
-then you invoke that poller's `loop()` method. Until you're satisfied and
-you exit from the event loop using the `break_loop()` method.
+The `make()` factory returns a new reactor allocated on the heap whose
+lifecycle is manager using a `Var<>` smart pointer. The `global()` factory
+returns the global reactor allocated on the heap and wrapped by `Var<>`.
 
-This is the standard way of doing things in single-threaded programs. See
-the documentation of `Async` to see how to run measurements in a background
-thread (which is what you typically want for apps).
+The `call_later()` method schedules the callback `callback` to be executed
+after `delay` seconds. Use the closure of the lambda to pass objects to the
+callback (and make sure that the lifecycle is managed correctly):
+
+```
+    Var<Object> obj(new Object);
+    reactor->call_later(1.22, [=]() {
+        // Here we have used `=` to pass all objects accessible on the
+        // stack by value to the lambda. This pattern should be safe as
+        // long as either copying the objects makes sense or you pass
+        // around objects managed through a Var<> smart pointer.
+        obj->something();
+    });
+```
+
+The `call_soon()` method is just syntactic sugar for `call_later()` with
+`0.0` passed as the first argument.
+
+The blocking `loop()` method would run the event loop until the `break_loop()`
+method is called. Calling `break_loop()` before `loop()` has no effect, in
+the sense that the event loop would not be interrupted when entered. In fact,
+this is a typical error (at least, it has been for me) leading to a program
+that does not terminate. To avoid this, use `loop_with_initial_event()`:
+
+```C++
+int main(int argc, char **argv) {
+    Reactor reactor = Reactor::make();
+
+    // Allocate objects on the stack before calling the blocking
+    // `loop_with_initial_event` method of `reactor`.
+    Object ob{reactor};
+    Foo bar;
+
+    // Capture by reference (`&`) because this method is blocking
+    reactor->loop_with_initial_event([&]() {
+        obj.action([&]() {
+            bar.baz();
+            reactor->break_loop();
+        });
+    });
+}
+```
+
+This method basically starts the event loop and ensures that the callback
+provided as its only argument is invoked just after the loop is started. This
+way, there is the guarantee that, even if `break_loop()` is called
+immediately because `action()` completes immediately, `break_loop()`
+always occurs *after* starting the loop and hence the loop is always interrupted.
+
+In `common/reactor.hpp` we also define syntactic sugar functions that operate
+on the global poller. That is `mk::loop()` is syntactic sugar for:
+
+```C++
+mk::Poller::global()->loop();
+```
+
+Additionally, for writing regress tests, there is also a function in this
+header, called `loop_with_initial_event_and_connectivity()` that doesn't enter
+into the main loop if there is no connectivity. This way, tests requiring working
+network access are not run when network access is missing.
+
 
 # HISTORY
 
-The `Poller` class appeared in MeasurementKit 0.1.0.
+The `Poller` class appeared in MeasurementKit 0.1.0. It was renamed `Reactor` in
+MeasurementKit 0.2.0. As of MK v0.2.0, the `Poller` still exists as a specific
+implementation of the `Reactor` interface described in this manual page.
