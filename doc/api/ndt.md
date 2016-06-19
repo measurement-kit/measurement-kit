@@ -9,6 +9,10 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/ndt.hpp>
 ```
 
+# STABILITY
+
+1 - Experimental
+
 # DESCRIPTION
 
 The `ndt` libraries allows to run the Network Diagnostic Tool (NDT) test.
