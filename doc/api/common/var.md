@@ -24,6 +24,10 @@ template typename<T> class Var : public std::shared_ptr<T> {
 }
 ```
 
+# STABILITY
+
+2 - Stable
+
 # DESCRIPTION
 
 `Var<T>` template class is a drop-in replacement for the
