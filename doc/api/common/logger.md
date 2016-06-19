@@ -70,7 +70,14 @@ The `logv()`, `log()`, `warn()`, `info()`, and `debug()` methods allow to write
 log messages. Specifically, `logv()` and `log()` take an explicit logging
 level argument, while other functions provide it implicitly. Messages
 are only written if the current verbosity level is not lower than the verbosity
-level of the currently logged message.
+level of the currently logged message. That is,
+
+```C++
+    Var<Logger> logger = Logger::make();
+    logger->set_verbosity(MK_LOG_INFO);
+    logger->info("This message will be printed");
+    logger->debug("This one won't");
+```
 
 The `set_verbosity()`, `increase_verbosity()` and `get_verbosity()` methods
 allow to manage the verbosity level of the logger. The default verbosity
