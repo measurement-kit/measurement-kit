@@ -80,7 +80,7 @@ TEST_CASE("Asynchronous http-invalid-request-line test") {
 
 TEST_CASE("Make sure that set_output_path() works") {
     auto instance = ooni::HttpInvalidRequestLine()
-                        .set_output_file_path("foo.txt")
+                        .set_output_filepath("foo.txt")
                         .create_test_();
     auto ptr = static_cast<ooni::OoniTest *>(instance.get());
     REQUIRE(ptr->output_filepath == "foo.txt");
