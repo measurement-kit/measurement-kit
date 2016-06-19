@@ -115,7 +115,8 @@ uninitialized `Var<NetTest>` which would throw `std::runtime_error`
 when the `Runner` would try to access the underlying pointer.)
 
 Also note that `run()` MAY just be syntactic sugar for `run(Callback<>)` and
-MAY therefore execute the test in a background thread using a `Runner`.
+MAY therefore execute the test in a background thread using a `Runner`. (As of
+0.2.0 this is indeed how it is implemented.)
 
 If you want more control on how the test is executed, there is a lower
 level API, comprised by the `begin()` and `end()` methods; e.g.:
