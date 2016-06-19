@@ -1,5 +1,5 @@
 # NAME
-Constraints -- Forbids movability
+NonMovable -- Forbids movability
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -28,4 +28,4 @@ the specific value of `this` to the registered low-level callback.
 
 # HISTORY
 
-`NonCopyable` and `NonMovable` appeared in MeasurementKit 0.1.0.
+`NonMovable` appeared in MeasurementKit 0.1.0.
