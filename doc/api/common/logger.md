@@ -141,8 +141,7 @@ emitting a log message. Thus, you MUST NOT call the logger from a logger callbac
 because this MAY result in deadlock or internal buffer corruption, depending on
 the mutex implementation. Ideally, the log message should be printed on some
 file, or you should save it as described above and then schedule a delayed call to
-properly process the logger, if for some reason the process of processing it is 
-long and may further lead to calling again the logger functionality itself.
+properly process the message, if processing it is going to be slow.
 
 # EXAMPLE
 
