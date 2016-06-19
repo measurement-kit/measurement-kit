@@ -37,6 +37,10 @@ void loop_with_initial_event(Callback<> func);
 void loop_with_initial_event_and_connectivity(Callback<> func);
 ```
 
+# STABILITY
+
+2 - Stable
+
 # DESCRIPTION
 
 The `Reactor` abstract interface dispatches I/O events. Most MeasurementKit
