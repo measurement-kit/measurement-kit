@@ -211,5 +211,5 @@ even though they internally contain two different errors.
 # HISTORY
 
 The `Error` class appeared in MeasurementKit 0.1.0. The `ErrorContext` class, the
-`MK_DEFINE_ERR` macro, and the macros to compute absolute offsets all appeared
+`MK_DEFINE_ERR` macro, and the macros to compute absolute error codes all appeared
 in MeasurementKit 0.2.0.
