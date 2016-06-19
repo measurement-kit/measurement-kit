@@ -1,5 +1,5 @@
 # NAME
-Poller -- Dispatcher of I/O events
+Reactor -- Dispatcher of I/O events
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
