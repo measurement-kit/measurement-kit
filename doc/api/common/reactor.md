@@ -102,11 +102,24 @@ on the global poller. That is `mk::loop()` is syntactic sugar for:
 mk::Poller::global()->loop();
 ```
 
-Additionally, for writing regress tests, there is also a function in this
-header, called `loop_with_initial_event_and_connectivity()` that doesn't enter
-into the main loop if there is no connectivity. This way, tests requiring working
-network access are not run when network access is missing.
+The `loop_with_initial_event_and_connectivity()` is a function that only starts the
+event loop and calls the initial function when there is connectivity. This is used
+typically in tests to avoid running tests requiring the network when the network is
+not available. For example,
 
+```C++
+TEST_CASE("We can GET a specific URL") {
+    loop_with_initial_event_and_connectivity([]() {
+        /* We enter here only if we have working connectivity. Without this check for
+           connectivity, the test would fail, not because of an error in the code rather
+           because connectivity is missing. */
+        http::get("http://www.example.com", [](Error e, Var<http::Response>) {
+            REQUIRE(!e);
+            break_loop();
+        });
+    });
+}
+```
 
 # HISTORY
 
