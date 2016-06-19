@@ -84,9 +84,9 @@ of `Response` in response to a DNS query.
 // Constructs settings to be passed to the query function
 mk::Settings settings({
     {"dns/nameserver", "8.8.8.8:53"},  // Set the name server IP
-    {"dns/attempts", "1"},             // How many attempts before erroring out
-    {"dns/timeout", "3.1415"},         // How many seconds before timeout
-    {"dns/randomize_case", "1"},       // Whether to randomize request case
+    {"dns/attempts", 1},               // How many attempts before erroring out
+    {"dns/timeout", 3.1415 },          // How many seconds before timeout
+    {"dns/randomize_case", true},      // Whether to randomize request case
 });
 
 // Issue an async DNS query
@@ -94,7 +94,7 @@ mk::dns::query(
         "IN",                                             // Domain of the query
         "AAAA",                                           // Type of query
         "nexa.polito.it",                                 // Name to resolve
-        [](mk::Error error, mk::dns::Message message) { // Callback
+        [](mk::Error error, mk::dns::Message message) {   // Callback
             if (error) throw error;
 
             // Return evdns status (this is mainly used internally)
