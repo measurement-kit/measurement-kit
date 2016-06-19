@@ -139,7 +139,7 @@ message printed more than once. Instead use this pattern:
 Also, note that, being thread safe, the logger MUST lock its internals before
 emitting a log message. Thus, you MUST NOT call the logger from a logger callback
 because this MAY result in deadlock or internal buffer corruption, depending on
-how implementation details. Ideally, the log message should be printed on some
+the mutex implementation. Ideally, the log message should be printed on some
 file, or you should save it as described above and then schedule a delayed call to
 properly process the logger, if for some reason the process of processing it is 
 long and may further lead to calling again the logger functionality itself.
