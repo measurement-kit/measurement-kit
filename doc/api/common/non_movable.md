@@ -10,7 +10,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 namespace mk {
 
-class NonMovab;e {
+class NonMovable {
   public:
     NonMovable(NonMovable &&) = delete;
     NonMovable &operator=(NonMovable &&) = delete;
