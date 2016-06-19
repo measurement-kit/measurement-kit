@@ -86,14 +86,3 @@ net::Buffer buffer;
 
 The above example also shows that `Error` (and other `common.hpp` definitions)
 are automatically pulled by `net.hpp`.
-
-# Private API
-
-As a user of Measurement Kit you cannot access the functionality
-documented here, because it is not declared in public headers.
-
-However, this documentation could be interesting for Measurement Kit
-developers, as it defines internally used interfaces.
-
-Of course, being this API only used internally, do not expect it
-to necessarily be stable for a long time.
