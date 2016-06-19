@@ -25,28 +25,7 @@ used to indicate one-shot callbacks instead of `std::function<T>`.
 
 # EXAMPLE
 
-```C++
-#include <measurement_kit/common.hpp>
-
-using namespace mk;
-
-static void slow_operation(Callback<Error> cb) {
-    debug("slow operation ...");
-    call_later(1.0, [=]() {
-        debug("slow operation ... done");
-        cb(NoError());
-    });
-}
-
-int main() {
-    loop_with_initial_event([=]() {
-        set_verbose(MK_LOG_DEBUG);
-        slow_operation([=]() {
-            break_loop();
-        });
-    });
-}
-```
+See `example/common/callback.cpp`.
 
 # HISTORY
 
