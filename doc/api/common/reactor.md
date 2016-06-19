@@ -50,7 +50,7 @@ The `call_later()` method schedules the callback `callback` to be executed
 after `delay` seconds. Use the closure of the lambda to pass objects to the
 callback (and make sure that the lifecycle is managed correctly):
 
-```
+```C++
     Var<Object> obj(new Object);
     reactor->call_later(1.22, [=]() {
         // Here we have used `=` to pass all objects accessible on the
