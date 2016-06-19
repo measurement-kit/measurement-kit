@@ -9,6 +9,10 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/mlabns.hpp>
 ```
 
+# STABILITY
+
+2 - Stable
+
 # DESCRIPTION
 
 The `mlabns` library allows to query M-Lab nameserver (mlabns).
