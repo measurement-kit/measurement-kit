@@ -1,4 +1,4 @@
-Welcome to Measurement Kit **v0.2.0-beta** documentation!
+Welcome to Measurement Kit **v0.2.0-beta.1** documentation!
 
 # How to generate documentation
 
@@ -18,21 +18,21 @@ mkdocs build
 
 # Public API
 
-This documents the API defined by Measurement Kit public headers. This is
-the API to which you are insterested as a Measurement Kit user.
+MeasurementKit is composed of several libraries. Follow the links below
+to find out more on a specific library API.
 
-Measurement Kit is composed of the following modules:
+- [common](api/common.md): common functionality
+- [dns](api/dns.md): dns library
+- [ext](api/ext.nd): third party headers
+- [http](api/http.md): http library
+- [mlabns](api/mlabns.md): m-lab name service library
+- [ndt](api/ndt.md): network diagnostic tool library
+- [net](api/net.md): low-level networking library
+- [ooni](api/ooni.md): open observatory of network interference library
+- [report](api/report.md): library for managing test results
+- [traceroute](api/traceroute.md): traceroute library
 
-- *common*: contains common code
-- *dns*: contains DNS code
-- *http*: contains HTTP code
-- *net*: contains socket-level code
-- *ooni*: contains OONI tests
-- *report*: contains code to generate test reports
-- *tor*: contains code to control a Tor client
-- *traceroute*: contains traceroute code
-
-Each module is contained in its own header file named after the module and
+Each library is contained in its own header file named after the module and
 stored inside the `measurement_kit` directory in the include path.
 
 Therefore, to pull `dns` module's definitions, write:
