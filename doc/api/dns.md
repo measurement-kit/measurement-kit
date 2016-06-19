@@ -17,16 +17,16 @@ to receive the corresponding responses.
 
 The `Settings` passed to the query function can be the following:
 
-- *attempts*: how many attempts before erroring out (default is three)
+- *dns/attempts*: how many attempts before erroring out (default is three)
 
-- *nameserver*: address (and optionally port) of the name server (if you
+- *dns/nameserver*: address (and optionally port) of the name server (if you
   don't specify this, the default name server is used)
 
-- *randomize_case*: whether to [randomize request case to make DNS
+- *dns/randomize_case*: whether to [randomize request case to make DNS
   poisoning more complex](https://lists.torproject.org/pipermail/tor-commits/2008-October/026025.html)
   (by default this is not done)
 
-- *timeout*: time after which we stop waiting for a response (by
+- *dns/timeout*: time after which we stop waiting for a response (by
   default this is five seconds)
 
 You pass the `query()` function the type of query, the name to resolve, a
