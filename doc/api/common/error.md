@@ -197,9 +197,6 @@ defined by the `measurement_kit/common.hpp` header:
 
 # BUGS
 
-The list of defined errors should be in a separate file, since they change more
-frequently than the definition of `Error`, which is stable.
-
 Since the only integral value to which `Error` could be converted is `bool` there
 are odd cases where the following statement:
 
