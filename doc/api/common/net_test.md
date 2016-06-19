@@ -11,63 +11,165 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 class NetTest : public NonCopyable, public NonMovable {
   public:
-    NetTest(Settings options);
-    virtual ~NetTest();
+    /* Set up: */
+  
+    NetTest &on_log(Delegate<uint32_t, const char *>);
+    NetTest &set_verbosity(uint32_t);
+    NetTest &increase_verbosity();
+    NetTest &set_input_file_path(std::string);
+    NetTest &set_output_file_path(std::string);
+    NetTest &set_reactor(Var<Reactor>);
+    template <typename T> NetTest &set_options(std::string, T);
 
-    void on_log(Delegate<uint32_t, const char *> func);
-    void set_verbosity(uint32_t);
-
-    virtual void begin(Callback<>) = 0;
-    virtual void end(Callback<>) = 0;
-
-    unsigned long long identifier();
-
-    Var<Logger> logger = Logger::global();
+    Var<Logger> logger = Logger::make();
     Var<Reactor> reactor = Reactor::global();
     Settings options;
+    std::string input_filepath;
+    std::string output_filepath;
+
+    /* Running in a background thread: */
+
+    virtual Var<NetTest> create_test_();
+    void run();
+    void run(Callback<>);
+
+    /* Running in a foreground thread: */
+
+    virtual void begin(Callback<>);
+    virtual void end(Callback<>);
 };
 
 ```
 
 # STABILITY
 
-1 - Experimental
+2 - Stable
 
 # DESCRIPTION
 
 `NetTest` is the abstract base class of all tests. It defines the
 basic behavior of a test but certain aspects are left to subclasses
-to implement.
+to implement. One notable subclass is `OoniTest`, which implements
+all the operations required by a OONI-like test (i.e. identification
+of the client IP address, ISP and location, production of a JSON
+report during the test, submission of the report to a collector host.)
 
-The constructor initializes the public `options` attribute. The
-destructor is empty and declared virtual because this is an abstract
-class.
+The `NetTest` class contains the following public attributes:
 
-The `on_log()` and `set_verbosity()` methods allow to configure the
-public `logger` attribute. The thread safety caveats that apply to
-`Logger` of course also apply to these two methods.
+- *logger*: logger object to use
+- *reactor*: reactor object to use
+- *options*: options of the test
+- *input_filepath*: optional path of the input file
+- *output_filepath*: optional path of the output file
 
-The `begin()` and `end()` abstract methods respectively start and
-conclude a test. They are not implemented and shall be implemented
-by subclasses.
+These attributes could either be set directly as in
 
-The `identifier()` method returns a identifier unique to this test.
+```C++
+    FooTest test;
+    test.options["foo"] = false;
+    test.output_filepath = "/tmp/file.json";
+```
+
+Or they could be set using setters leading to a domain-specific-language
+style of initialization of tests, e.g.:
+
+```C++
+    FooTest test = FooTest()
+        .set_options("foo", false)
+        .set_output_filepath("/tmp/file.json");
+```
+
+The domain-specific-language initialization style could be combined with the
+`run()` methods, allowing to express the intention of running a specific test
+in a very compact and declarative way:
+
+```C++
+    FooTest()
+        .set_options("foo", false)
+        .set_options("/tmp/file.json")
+        .run();
+```
+
+The difference between `run()` and `run(Callback<>)` is that the former is
+blocking, while the latter is nonblocking and invokes the provided callback
+when the test is complete. Note that `run(Callback<>)` executes the test
+in a background thread, so *make sure you lock shared resources* inside the
+callback; that is:
+
+```C++
+    FooTest()
+        .set_options("foo", false)
+        .set_options("/tmp/file.json")
+        .run([=]() {
+            shared_resource.lock();
+            // Do something with shared resource
+        });
+```
+
+Internally `run(Callback<>)` would use a `Runner` to run the test in a
+background thread. What would be passed to such `Runner` is not the test
+instantiated on the heap, rather a dynamically allocated copy of it
+created using the `create_test_()` function that subclassess MUST therefore
+override. (The default implementation of such function returns an
+uninitialized `Var<NetTest>` which would throw `std::runtime_error`
+when the `Runner` would try to access the underlying pointer.)
+
+Also note that `run()` MAY just be syntactic sugar for `run(Callback<>)` and
+MAY therefore execute the test in a background thread using a `Runner`.
+
+If you want more control on how the test is executed, there is a lower
+level API, comprised by the `begin()` and `end()` methods; e.g.:
+
+```C++
+
+// Execute test using a specific reactor
+void execute_with(Var<Reactor> reactor, Callback<> cb) {
+    Var<NetTest> test(new FooTest);
+    test->options["foo"] = false;
+    test->output_filepath = "/tmp/file.json";
+    test->reactor = reactor;
+    test->begin([=]() {
+        test->end([=]() {
+            cb();
+        });
+    });
+
+// Or, execute test directly in main()
+int main(int argc, char **argv) {
+    /* initialize ... */
+
+    FooTest test;
+    test.options["foo"] = false;
+    test.output_filepath = "/tmp/file.json";
+
+    loop_with_initial_event([&test]() {
+        test.begin([&test]() {
+            test.end([]() {
+                // Do something, presumably break the loop
+            });
+        });
+    });
+}
+```
+
+These two methods, `begin()` and `end()` MUST be overrided by subclasses. Their
+default implementation just immediately call the callback passed as argument 
+to signal completion.
+
+A common error (at least, I make it quite often) is to attempt to run a test
+using the wrong `reactor` (typically, you should have used a specific reactor
+but you are using the default one instead). In such case, you would see the
+test starting but generating no events because the test itself is bound
+to a reactor that is not running.
 
 # CAVEATS
 
-It is the programmer's responsibility to make sure that the `NetTest`
-(or derived class) object does not exit scope until the callback passed
-to the `end()` function has been called. This can easily be achieved
-using a smart pointer and passing the `NetTest` to the `Runner` class that
-is designed to correctly manage the lifecycle of a test, e.g.:
+When you allocate `NetTest` on the stack and you execute it using the low
+level `begin()` and `end()` functions, it is your responsibility to ensure
+that the test object would be still alive until the final callback is
+called. In most cases, the most convenient strategy is to allocate the
+test on the heap using a smart pointer, as shown above.
 
-```C++
-    Var<NetTest> test(new SpecificTest(settings));
-    Runner::global()->run(test, [=]() {
-        warn("test complete");
-        // Do something else here...
-    });
-```
 
 # HISTORY
 
