@@ -11,7 +11,15 @@ namespace mk {
 
 Logger::Logger() {
     consumer_ = [](uint32_t level, const char *s) {
-        fprintf(stderr, "<%d> %s\n", level, s);
+        uint32_t verbosity = (level & MK_LOG_VERBOSITY_MASK);
+        if (verbosity <= MK_LOG_WARNING) {
+            fprintf(stdout, "warning: %s\n", s);
+        } else if (verbosity == MK_LOG_INFO) {
+            fprintf(stdout, "%s\n", s);
+        } else {
+            fprintf(stdout, "debug: %s\n", s);
+        }
+        fflush(stdout);
     };
 }
 
