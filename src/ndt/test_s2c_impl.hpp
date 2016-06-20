@@ -39,24 +39,51 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
                 logger->info("Starting download");
                 double begin = time_now();
                 Var<size_t> total(new size_t(0));
-                Var<double> previous(new double(0.0));
+                Var<double> previous_interval(new double(0.0));
+                Var<double> previous_recv(new double(0.0));
                 Var<size_t> count(new size_t(0));
+                Var<std::vector<double>> speed_samples(
+                        new std::vector<double>
+                );
                 txp->set_timeout(timeout);
-                *previous = begin;
-                logger->info("Speed: %lf s %lf kbit/s", 0.0, 0.0);
-                (*report_entry)["receiver_data"].push_back({0.0, 0.0});
+                *previous_interval = *previous_recv = begin;
+                logger->info("Time [s]   Down [kbit/s]   "
+                             "Link [kbit/s]   Samples");
+                logger->info("--------   -------------   "
+                             "-------------   -------");
+                logger->info("%8.5lf  %14.3lf  %14.3lf  %8lu",
+                             0.0, 0.0, 0.0, 0UL);
+                (*report_entry)["receiver_data"].push_back({
+                        0.0, 0.0, 0.0, 0
+                });
 
                 txp->on_data([=](Buffer data) {
+                    double now = time_now();
+                    double instant_speed = (data.length() * 8.0) / 1000
+                                                / (now - *previous_recv);
+                    *previous_recv = now;
+                    speed_samples->push_back(instant_speed);
                     *total += data.length();
-                    double ct = time_now();
                     *count += data.length();
-                    if (ct - *previous > 0.5) {
-                        double el = ct - begin;
-                        double x = (*count * 8) / 1000 / (ct - *previous);
+                    double elapsed = now - *previous_interval;
+                    if (elapsed > 0.5) {
+                        double total_elapsed = now - begin;
+                        double avg_speed = (*count * 8.0) / 1000 / elapsed;
                         *count = 0;
-                        *previous = ct;
-                        logger->info("Speed: %lf s %lf kbit/s", el, x);
-                        (*report_entry)["receiver_data"].push_back({el, x});
+                        *previous_interval = now;
+                        std::sort(speed_samples->begin(),
+                                  speed_samples->end());
+                        double median_speed = (*speed_samples)[
+                                speed_samples->size() >> 1
+                        ];
+                        logger->info("%8.5lf  %14.3lf  %14.3lf  %8lu",
+                                     total_elapsed, avg_speed, median_speed,
+                                     speed_samples->size());
+                        (*report_entry)["receiver_data"].push_back({
+                                total_elapsed, avg_speed, median_speed,
+                                speed_samples->size(),
+                        });
+                        speed_samples->clear();
                     }
                     // TODO: force close the connection after a given
                     // large amount of time has passed
