@@ -7,7 +7,20 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 # SYNOPSIS
 
 ```C++
-// TODO
+#include <measurement_kit/dns.hpp>
+
+namespace mk {
+namespace dns {
+
+void query(QueryClass dns_class,
+           QueryType dns_type,
+           std::string query_name,
+           Callback<Error, Message> callback,
+           Settings settings = {},
+           Var<Reactor> reactor = Reactor::global());
+
+} // namespace dns
+} // namespace mk
 ```
 
 # DESCRIPTION
@@ -15,49 +28,53 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 The DNS library allows you to issue DNS query and
 to receive the corresponding responses.
 
-The `Settings` passed to the query function can be the following:
+The only function define by this module is the `query()`
+function, that allows you to send DNS queries.
 
-- *dns/attempts*: how many attempts before erroring out (default is three)
+The `dns_class` argument indicates the query class. At least
+the following query classes are defined:
 
-- *dns/nameserver*: address (and optionally port) of the name server (if you
-  don't specify this, the default name server is used)
+- *QueryClass::IN*: this class represents the "internet" domain
 
-- *dns/randomize_case*: whether to [randomize request case to make DNS
-  poisoning more complex](https://lists.torproject.org/pipermail/tor-commits/2008-October/026025.html)
-  (by default this is not done)
+Note that you can also pass the query class as string; e.g.,
+the following would compile and run as expected:
 
-- *dns/timeout*: time after which we stop waiting for a response (by
-  default this is five seconds)
+```C++
+    dns::query("IN", ...);
+```
 
-You pass the `query()` function the type of query, the name to resolve, a
-callback to be called once the result of the query (either success or error) is
-know.
+The `dns_type` argument indicates the query type. The following
+query types are defined:
 
-The domain of the query must be `IN`. (Instead of specifying a string,
-e.g. `"IN"`, you can also explictly specify the corresponding query class
-id, e.g. `dns::QueryClassId::IN`.)
+- *QueryType::A*: the `query_name` argument must be a domain name and the result
+  would be the corresponding IPv4 address, if any.
 
-The type of query matches closely the query types made available
-by `evdns`. You can choose among the following:
+- *QueryType::AAAA*: the `query_name` argument must be a domain name and the result
+  would be the corresponding IPv6 address. if any.
 
-- `"A"`: resolve IPv4 address of domain
-- `"REVERSE_A"`: resolve domain of IPv4 address
-- `"AAAA"`: resolve IPv6 address of domain
-- `"REVERSE_AAAA"`: resolve domain of IPv6 address
-- `"PTR"`: perform reverse DNS resolution
+- *QueryType::PTR*: the `query_name` argument should be an IP address expressed
+  using the reverse `IN-ADDR` entry and the result would the corresponding
+  domain name, if any (see `EXAMPLES` section for examples).
 
-(Of course, instead of specifying the types as strings, e.g. `"A"` or `AAAA`, you
-can specify the corresponding query type, e.g. `QueryTypeId::A` or `QueryTypeId::AAAA`.)
+- *QueryType::REVERSE_A*: the `query_name` argument should be an IPv4 address and the
+  result would be the corresponding domain name, if any. This is a nonstandard
+  DNS query type and basically instructs the DNS library to create for you
+  the reverse `IN-ADDR` entry and issue a `PTR` query.
 
-The difference between `REVERSE_A`, `REVERSE_AAAA` and `PTR` is that
-`REVERSE_A` and `REVERSE_AAAA` take in input respectively an IPv4 and
-an IPv6 address, while for `PTR` you need to construct yourself the
-reversed IP address name to query.
+- *QueryType::REVERSE_AAAA*: same as `REVERSE_A` except that here the input shall be
+  a IPv6 address.
 
-In case of success, the error argument of the callback is passed an
-instance of `mk::NoError()`. Otherwise, the error that occurred is
-reported. Among all the possible errors, the following are defined by
-MeasurementKit DNS implementation:
+Note that you can alternatively the query type as strong; e.g. the following
+would also work as expected:
+
+```C++
+    dns::query("IN", "A", "www.google.com", ...);
+```
+
+The `callback` argument is a lambda to be called when the DNS response is available
+or an error occurs. In case of success, error would be equal to `NoError()`. Otherwise,
+the error that occurred is reported. Among all the possible errors, the following are
+defined by MeasurementKit DNS implementation:
 
 - `FormatError`: invalid response format
 - `ServerFailedError`:  server failure
@@ -71,10 +88,84 @@ MeasurementKit DNS implementation:
 - `CancelError`:  user cancelled query
 - `NoDataError`:  no data in the response
 
+In case of success, the `Message` argument passed to the callback would
+contain details on the response. The `Message` structure contains at least
+the following fields:
 
-The `Response` class holds the result of an async DNS `Query`. You do not
-typically instantiate a `Response` yourself, rather you receive an instance
-of `Response` in response to a DNS query.
+```C++
+class Message {
+  public:
+    double rtt = 0.0;
+    std::vector<Query> queries;
+    std::vector<Answer> answers;
+};
+```
+
+where: `rtt` is the time elapsed since issuing the query until receiving
+the response; `queries` is the list of queries issued; `answers` is the list
+of answers received.
+
+The `Query` class contains at least the following fields:
+
+```C++
+class Query {
+  public:
+    QueryType type;
+    QueryClass qclass;
+    uint32_t ttl = 0;
+    std::string name;
+};
+```
+
+where `type` is the type of the query, `qclass` is the class of the
+query, `ttl` is the time to live, and `name` is the name for which the
+query was issued.
+
+Instead, the `Answer` class contains at leas the following fields:
+
+```C++
+class Answer {
+  public:
+    QueryType type;
+    QueryClass qclass;
+    uint32_t ttl = 0;
+    std::string ipv4;             // For A records
+    std::string ipv6;             // For AAAA records
+    std::string hostname;         // For PTR, SOA and CNAME records
+    std::string responsible_name; // For SOA records
+    uint32_t serial_number;       // For SOA records
+    uint32_t refresh_interval;    // For SOA records
+    uint32_t retry_interval;      // For SOA records
+    uint32_t minimum_ttl;         // For SOA records
+    uint32_t expiration_limit;    // For SOA records
+};
+```
+
+where `type` and `qclass` represent respectively the query type and the
+query class, `ttl` is the response time to live, and the following fields
+are only set for specific query types.
+
+The optional `Settings` argument contains settings modifying the behavior of
+the DNS library. The following settings are available:
+
+- *dns/attempts*: how many attempts before erroring out (default is three)
+
+- *dns/nameserver*: address (and optionally port) of the name server to use. If you
+  don't specify this, the default name server is used. On Unix systems the default DNS
+  server is obtained parsing `/etc/resolv.conf`; on mobile devices where such file
+  is not available, the default DNS name server is `127.0.0.1` which typically is not
+  correct. Hence with mobile devices you should typically supply the DNS server
+  you would like to use.
+
+- *dns/randomize_case*: whether to [randomize request case to make DNS
+  poisoning more complex](https://lists.torproject.org/pipermail/tor-commits/2008-October/026025.html)
+  (by default this is not done)
+
+- *dns/timeout*: time after which we stop waiting for a response (by
+  default this is five seconds)
+
+The optional `reactor` argument is the reactor to use to issue the query
+and receive the corresponding response.
 
 # EXAMPLE
 
@@ -95,10 +186,9 @@ mk::dns::query(
         "AAAA",                                           // Type of query
         "nexa.polito.it",                                 // Name to resolve
         [](mk::Error error, mk::dns::Message message) {   // Callback
-            if (error) throw error;
-
-            // Return evdns status (this is mainly used internally)
-            int error_code = message.error_code;
+            if (error) {
+                throw error;
+            }
 
             // Get round trip time of the query
             double rtt = message.rtt;
@@ -116,6 +206,8 @@ mk::dns::query(
                 } else if (answer.type == dns::QueryTypeId::PTR) {
                     // Get the domain pointer in the case of PTR answers
                     std::string hostname = answer.hostname;
+                } else {
+                    // Nothing...
                 }
             }
         }, settings);
