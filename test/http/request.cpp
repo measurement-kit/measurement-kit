@@ -341,7 +341,14 @@ TEST_CASE("http::request_send() works as expected") {
                                  {"http/url", "http://www.google.com/"},
                              },
                              {}, "",
-                             [transport](Error error) {
+                             [transport](Error error, Var<Request> request) {
+                                 REQUIRE((request->method == "GET"));
+                                 REQUIRE((request->url.schema == "http"));
+                                 REQUIRE((request->url.address ==
+                                          "www.google.com"));
+                                 REQUIRE((request->url.port == 80));
+                                 REQUIRE((request->headers.size() == 0));
+                                 REQUIRE((request->body == ""));
                                  REQUIRE(!error);
                                  transport->close([]() { break_loop(); });
                              });
@@ -366,7 +373,7 @@ TEST_CASE("http::request_recv_response() works as expected") {
                         {"http/url", "http://www.google.com/"},
                     },
                     {}, "",
-                    [transport](Error error) {
+                    [transport](Error error, Var<Request>) {
                         REQUIRE(!error);
                         request_recv_response(
                             transport, [transport](Error e, Var<Response> r) {
@@ -519,7 +526,8 @@ TEST_CASE("http::request_send fails without url in settings") {
             [](Error error, Var<Transport> transport) {
                 REQUIRE(!error);
                 request_send(transport, {{"http/method", "GET"}}, {}, "",
-                             [transport](Error error) {
+                             [transport](Error error, Var<Request> request) {
+                                 REQUIRE(!request);
                                  REQUIRE(error == MissingUrlError());
                                  transport->close([]() { break_loop(); });
                              });
