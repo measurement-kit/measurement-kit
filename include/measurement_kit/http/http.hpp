@@ -71,11 +71,12 @@ using Headers = std::map<std::string, std::string>;
 
 class Request {
   public:
+    Var<Request> previous;
     std::string method;
     Url url;
+    std::string url_path;  // Allows to override `url.path` via Settings
     std::string protocol;
     Headers headers;
-    std::string path;
     std::string body;
 
     Request() {}
@@ -84,6 +85,7 @@ class Request {
 };
 
 struct Response {
+    Var<Request> request;
     std::string response_line;
     unsigned short http_major;
     unsigned short http_minor;
@@ -98,7 +100,7 @@ void request_connect(Settings, Callback<Error, Var<net::Transport>>,
                      Var<Logger> = Logger::global());
 
 void request_send(Var<net::Transport>, Settings, Headers, std::string,
-                  Callback<Error>);
+                  Callback<Error, Var<Request>>);
 
 void request_recv_response(Var<net::Transport>, Callback<Error, Var<Response>>,
                            Var<Reactor> = Reactor::global(),

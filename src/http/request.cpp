@@ -34,17 +34,17 @@ Error Request::init(Settings settings, Headers hdrs, std::string bd) {
     protocol = settings.get("http/http_version", std::string("HTTP/1.1"));
     method = settings.get("http/method", std::string("GET"));
     // XXX should we really distinguish between path and query here?
-    path = settings.get("http/path", std::string(""));
-    if (path != "" && path[0] != '/') {
-        path = "/" + path;
+    url_path = settings.get("http/path", std::string(""));
+    if (url_path != "" && url_path[0] != '/') {
+        url_path = "/" + url_path;
     }
     return NoError();
 }
 
 void Request::serialize(net::Buffer &buff) {
     buff << method << " ";
-    if (path != "") {
-        buff << path;
+    if (url_path != "") {
+        buff << url_path;
     } else {
         buff << url.pathquery;
     }
@@ -82,27 +82,18 @@ void request_connect(Settings settings, Callback<Error, Var<Transport>> txp,
 }
 
 void request_send(Var<Transport> txp, Settings settings, Headers headers,
-                  std::string body, Callback<Error> callback) {
-    Request request;
-    Error error = request.init(settings, headers, body);
+                  std::string body, Callback<Error, Var<Request>> callback) {
+    Var<Request> request(new Request);
+    Error error = request->init(settings, headers, body);
     if (error) {
-        callback(error);
+        callback(error, nullptr);
         return;
     }
-    // TODO: here we can simplify by using net::write()
-    txp->on_error([txp, callback](Error error) {
-        txp->on_error(nullptr);
-        txp->on_flush(nullptr);
-        callback(error);
-    });
-    txp->on_flush([txp, callback]() {
-        txp->on_error(nullptr);
-        txp->on_flush(nullptr);
-        callback(NoError());
-    });
     Buffer buff;
-    request.serialize(buff);
-    txp->write(buff);
+    request->serialize(buff);
+    net::write(txp, buff, [=](Error err) {
+        callback(err, request);
+    });
 }
 
 void request_recv_response(Var<Transport> txp,
@@ -147,12 +138,20 @@ void request_recv_response(Var<Transport> txp,
 void request_sendrecv(Var<Transport> txp, Settings settings, Headers headers,
                       std::string body, Callback<Error, Var<Response>> callback,
                       Var<Reactor> reactor, Var<Logger> logger) {
-    request_send(txp, settings, headers, body, [=](Error error) {
+    request_send(txp, settings, headers, body, [=](Error error,
+                 Var<Request> request) {
         if (error) {
             callback(error, nullptr);
             return;
         }
-        request_recv_response(txp, callback, reactor, logger);
+        request_recv_response(txp, [=](Error error, Var<Response> response) {
+            if (error) {
+                callback(error, nullptr);
+                return;
+            }
+            response->request = request;
+            callback(error, response);
+        }, reactor, logger);
     });
 }
 
