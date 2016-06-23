@@ -265,16 +265,6 @@ std::string unreverse_ipv4(std::string s) {
     return std::string(r.begin(), r.end());
 }
 
-// See <http://stackoverflow.com/questions/9435385/>
-std::list<std::string> split(std::string s, std::string pattern) {
-    // passing -1 as the submatch index parameter performs splitting
-    std::regex re{pattern};
-    std::sregex_token_iterator
-        first{s.begin(), s.end(), re, -1},
-        last;
-    return {first, last};
-}
-
 void dump_settings(Settings &s, std::string prefix, Var<Logger> logger) {
     logger->debug("%s: {", prefix.c_str());
     for (auto pair : s) {
