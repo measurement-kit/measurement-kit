@@ -56,6 +56,9 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
                 (*report_entry)["receiver_data"].push_back({
                         0.0, 0.0, 0.0, 0
                 });
+                (*report_entry)["raw_receiver_data"].push_back({
+                        0.0, 0
+                });
 
                 txp->on_data([=](Buffer data) {
                     double now = time_now();
@@ -65,6 +68,9 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
                     speed_samples->push_back(instant_speed);
                     *total += data.length();
                     *count += data.length();
+                    (*report_entry)["raw_receiver_data"].push_back({
+                        now - begin, data.length()
+                    });
                     double elapsed = now - *previous_interval;
                     if (elapsed > 0.5) {
                         double total_elapsed = now - begin;
