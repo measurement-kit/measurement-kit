@@ -13,7 +13,7 @@ namespace report {
 // A report entry. This is implemented using private inheritance from
 // nlohmann/json such that we are not exposing externally we are using
 // such json library to implement this class.
-class Entry : private nlohmann::json {
+class Entry : public nlohmann::json {
   public:
     using nlohmann::json::json;
 
@@ -27,14 +27,16 @@ class Entry : private nlohmann::json {
         }
     }
 
-    // Implementation of dict
-    Entry &operator=(Entry value);
-    template <typename K> Entry &operator[](const K &key) {
-        // The intent is to only accept string keys but apparently we need
-        // to use this template to forward to the real operator
-        return operator[](std::string(key));
+    template <typename K>
+    Entry &operator[](const K &key) {
+        try {
+          return static_cast<Entry &>(nlohmann::json::operator[](key));
+        } catch (std::domain_error &) {
+          throw JsonDomainError();
+        }
     }
-    Entry &operator[](std::string key);
+
+    static Entry parse(const std::string &s);
 
     // Implementation of list
     void push_back(Entry);
