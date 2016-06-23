@@ -13,11 +13,16 @@ void ip_lookup(Callback<Error, std::string> callback, Settings settings,
     ip_lookup_impl(callback, settings, reactor, logger);
 }
 
-static Error geoip_resolve_country (std::string ip, std::string path_country, json &node) { 
+void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
+                     Var<Reactor> reactor, Var<Logger> logger) {
+    resolver_lookup_impl(callback, settings, reactor, logger);
+}
+
+static Error geoip_resolve_country (std::string ip, std::string path_country, json &node) {
     GeoIP *gi;
     GeoIPLookup gl;
     memset (&gl, 0, sizeof(gl));
-    
+
     gi = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
     if (gi == nullptr) {
         return GenericError();
@@ -41,11 +46,11 @@ static Error geoip_resolve_country (std::string ip, std::string path_country, js
     return NoError();
 }
 
-static Error geoip_resolve_asn (std::string ip, std::string path_asn, json &node) { 
+static Error geoip_resolve_asn (std::string ip, std::string path_asn, json &node) {
     GeoIP *gi;
     GeoIPLookup gl;
     memset (&gl, 0, sizeof(gl));
-    
+
     gi = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
     if (gi == nullptr) {
         return GenericError();

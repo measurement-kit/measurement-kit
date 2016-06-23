@@ -38,6 +38,7 @@ void OoniTest::run_next_measurement(Callback<> cb) {
     main(next_input, options, [=](report::Entry test_keys) {
         report::Entry entry;
         entry["test_keys"] = test_keys;
+        entry["test_keys"]["client_resolver"] = resolver_ip;
         entry["input"] = next_input;
         entry["measurement_start_time"] =
             *mk::timestamp(&measurement_start_time);
@@ -54,6 +55,8 @@ void OoniTest::run_next_measurement(Callback<> cb) {
 }
 
 void OoniTest::geoip_lookup(Callback<> cb) {
+    // This is to ensure that when calling multiple times geoip_lookup we
+    // always reset the probe_ip, probe_asn and probe_cc values.
     probe_ip = "127.0.0.1";
     probe_asn = "AS0";
     probe_cc = "ZZ";
@@ -140,24 +143,31 @@ std::string OoniTest::generate_output_filepath() {
 void OoniTest::begin(Callback<> cb) {
     mk::utc_time_now(&test_start_time);
     geoip_lookup([=]() {
-        open_report();
-        if (needs_input) {
-            if (input_filepath == "") {
-                // TODO: allow to pass error to cb()
-                logger->warn("an input file is required");
-                cb();
-                return;
+        resolver_lookup([=](Error error, std::string resolver_ip_) {
+            if (!error) {
+                resolver_ip = resolver_ip_;
+            } else {
+                logger->debug("failed to lookup resolver ip");
             }
-            input_generator.reset(new std::ifstream(input_filepath));
-            if (!input_generator->good()) {
-                logger->warn("cannot read input file");
-                cb();
-                return;
+            open_report();
+            if (needs_input) {
+                if (input_filepath == "") {
+                    // TODO: allow to pass error to cb()
+                    logger->warn("an input file is required");
+                    cb();
+                    return;
+                }
+                input_generator.reset(new std::ifstream(input_filepath));
+                if (!input_generator->good()) {
+                    logger->warn("cannot read input file");
+                    cb();
+                    return;
+                }
+            } else {
+                input_generator.reset(new std::istringstream("\n"));
             }
-        } else {
-            input_generator.reset(new std::istringstream("\n"));
-        }
-        run_next_measurement(cb);
+            run_next_measurement(cb);
+        }, options, reactor, logger);
     });
 }
 

@@ -20,6 +20,10 @@ void ip_lookup(Callback<Error, std::string> callback, Settings settings = {},
                Var<Reactor> reactor = Reactor::global(),
                Var<Logger> logger = Logger::global());
 
+void resolver_lookup(Callback<Error, std::string> callback, Settings settings = {},
+                     Var<Reactor> reactor = Reactor::global(),
+                     Var<Logger> logger = Logger::global());
+
 ErrorOr<json> geoip(std::string ip, std::string path_country,
                     std::string path_asn);
 

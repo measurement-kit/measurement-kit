@@ -21,6 +21,7 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     std::string probe_ip = "127.0.0.1";
     std::string probe_asn = "AS0";
     std::string probe_cc = "ZZ";
+    std::string resolver_ip = "127.0.0.1";
     bool needs_input = false;
 
     OoniTest() : OoniTest("", Settings()) {}

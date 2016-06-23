@@ -54,6 +54,20 @@ static const std::set<std::string> COMMON_SERVER_HEADERS = {
   "x-varnish"
 };
 
+
+static const std::map<std::string, std::string> COMMON_CLIENT_HEADERS = {
+  {
+    "User-Agent",
+    "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36"
+  },
+  {
+    "Accept-Language", "en-US;q=0.8,en;q=0.5"
+  },
+  {
+    "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+  }
+};
+
 typedef std::vector<std::pair<std::string, int>> SocketList;
 
 // XXX maybe we want to move these to some utility namespace
@@ -181,7 +195,7 @@ static void compare_http_requests(Var<Entry> entry,
       idx++;
       continue;
     }
-    if (ctrl_title_words.size() < idx) {
+    if (((int) ctrl_title_words.size()) < idx) {
       (*entry)["titles_match"] = false;
       break;
     }
@@ -465,7 +479,7 @@ static void experiment_http_request(Var<Entry> entry,
         Settings options,
         Var<Reactor> reactor, Var<Logger> logger) {
 
-  http::Headers headers;
+  http::Headers headers = COMMON_CLIENT_HEADERS;
   std::string body;
   options["http/url"] = url;
 
@@ -571,8 +585,8 @@ static void experiment_dns_query(
 void web_connectivity(std::string input, Settings options, Callback<Var<Entry>> callback,
                  Var<Reactor> reactor, Var<Logger> logger) {
     Var<Entry> entry(new Entry);
-    // XXX
-    (*entry)["client_resolver"] = nullptr;
+    // This is set from ooni test
+    // (*entry)["client_resolver"] = nullptr;
     (*entry)["retries"] = nullptr;
 
     (*entry)["dns_consistency"] = nullptr;
