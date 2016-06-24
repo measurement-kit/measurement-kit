@@ -18,6 +18,18 @@ using namespace mk::net;
 
 */
 
+/*static*/ ErrorOr<Var<Request>> Request::make(Settings settings, Headers headers,
+                                               std::string body) {
+    Var<Request> request(new Request);
+    Error error = request->init(settings, headers, body);
+    // Note: the following cannot be simplified using short circuit
+    // evaluation because two different types are returned
+    if (error) {
+        return error;
+    }
+    return request;
+}
+
 Error Request::init(Settings settings, Headers hdrs, std::string bd) {
     headers = hdrs;
     body = bd;
@@ -83,21 +95,19 @@ void request_connect(Settings settings, Callback<Error, Var<Transport>> txp,
 
 void request_send(Var<Transport> txp, Settings settings, Headers headers,
                   std::string body, Callback<Error, Var<Request>> callback) {
-    Var<Request> request(new Request);
-    Error error = request->init(settings, headers, body);
-    if (error) {
-        callback(error, nullptr);
-        return;
-    }
-    request_send2(request, txp, callback);
+    request_maybe_send(Request::make(settings, headers, body), txp, callback);
 }
 
-void request_send2(Var<Request> request, Var<Transport> txp,
-                   Callback<Error, Var<Request>> callback) {
+void request_maybe_send(ErrorOr<Var<Request>> request, Var<Transport> txp,
+                        Callback<Error, Var<Request>> callback) {
+    if (!request) {
+        callback(request.as_error(), nullptr);
+        return;
+    }
     Buffer buff;
-    request->serialize(buff);
+    (*request)->serialize(buff);
     net::write(txp, buff, [=](Error err) {
-        callback(err, request);
+        callback(err, *request);
     });
 }
 
@@ -143,19 +153,14 @@ void request_recv_response(Var<Transport> txp,
 void request_sendrecv(Var<Transport> txp, Settings settings, Headers headers,
                       std::string body, Callback<Error, Var<Response>> callback,
                       Var<Reactor> reactor, Var<Logger> logger) {
-    Var<Request> request(new Request);
-    Error error = request->init(settings, headers, body);
-    if (error) {
-        callback(error, nullptr);
-        return;
-    }
-    request_sendrecv2(request, txp, callback, reactor, logger);
+    request_maybe_sendrecv(Request::make(settings, headers, body), txp,
+                           callback, reactor, logger);
 }
 
-void request_sendrecv2(Var<Request> request, Var<Transport> txp,
-                       Callback<Error, Var<Response>> callback,
-                       Var<Reactor> reactor, Var<Logger> logger) {
-    request_send2(request, txp, [=](Error error, Var<Request> request) {
+void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
+                            Callback<Error, Var<Response>> callback,
+                            Var<Reactor> reactor, Var<Logger> logger) {
+    request_maybe_send(request, txp, [=](Error error, Var<Request> request) {
         if (error) {
             callback(error, nullptr);
             return;
