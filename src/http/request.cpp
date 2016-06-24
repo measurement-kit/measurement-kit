@@ -89,6 +89,11 @@ void request_send(Var<Transport> txp, Settings settings, Headers headers,
         callback(error, nullptr);
         return;
     }
+    request_send2(request, txp, callback);
+}
+
+void request_send2(Var<Request> request, Var<Transport> txp,
+                   Callback<Error, Var<Request>> callback) {
     Buffer buff;
     request->serialize(buff);
     net::write(txp, buff, [=](Error err) {
@@ -138,8 +143,19 @@ void request_recv_response(Var<Transport> txp,
 void request_sendrecv(Var<Transport> txp, Settings settings, Headers headers,
                       std::string body, Callback<Error, Var<Response>> callback,
                       Var<Reactor> reactor, Var<Logger> logger) {
-    request_send(txp, settings, headers, body, [=](Error error,
-                 Var<Request> request) {
+    Var<Request> request(new Request);
+    Error error = request->init(settings, headers, body);
+    if (error) {
+        callback(error, nullptr);
+        return;
+    }
+    request_sendrecv2(request, txp, callback, reactor, logger);
+}
+
+void request_sendrecv2(Var<Request> request, Var<Transport> txp,
+                       Callback<Error, Var<Response>> callback,
+                       Var<Reactor> reactor, Var<Logger> logger) {
+    request_send2(request, txp, [=](Error error, Var<Request> request) {
         if (error) {
             callback(error, nullptr);
             return;
