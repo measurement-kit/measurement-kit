@@ -18,73 +18,94 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
     resolver_lookup_impl(callback, settings, reactor, logger);
 }
 
-static Error geoip_resolve_country (std::string ip, std::string path_country, json &node) {
-    GeoIP *gi;
-    GeoIPLookup gl;
-    memset (&gl, 0, sizeof(gl));
-
-    gi = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
-    if (gi == nullptr) {
-        return GenericError();
+IPLocation::IPLocation(std::string path_country, std::string path_asn) {
+    if (path_asn != "") {
+        gi_asn = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
     }
-
-    const char *result;
-    result = GeoIP_country_code_by_name_gl(gi, ip.c_str(), &gl);
-    if (result == nullptr) {
-        GeoIP_delete(gi);
-        return GenericError();
+    if (path_country != "") {
+        gi_country = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
     }
-    node["country_code"] = result;
-
-    result = GeoIP_country_name_by_name_gl(gi, ip.c_str(), &gl);
-    if (result == nullptr) {
-        GeoIP_delete(gi);
-        return GenericError();
-    }
-    node["country_name"] = result;
-    GeoIP_delete(gi);
-    return NoError();
 }
 
-static Error geoip_resolve_asn (std::string ip, std::string path_asn, json &node) {
-    GeoIP *gi;
-    GeoIPLookup gl;
-    memset (&gl, 0, sizeof(gl));
+IPLocation::~IPLocation() {
+    if (gi_asn != nullptr) {
+        GeoIP_delete(gi_asn);
+    }
+    if (gi_country != nullptr) {
+        GeoIP_delete(gi_country);
+    }
+}
 
-    gi = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
-    if (gi == nullptr) {
+ErrorOr<std::string> IPLocation::resolve_country_code(std::string ip) {
+    if (gi_country == nullptr) {
         return GenericError();
     }
+    GeoIPLookup gl;
+    memset(&gl, 0, sizeof(gl));
+
+    const char *result;
+    result = GeoIP_country_code_by_name_gl(gi_country, ip.c_str(), &gl);
+    if (result == nullptr) {
+        return GenericError();
+    }
+    std::string country_code = result;
+    return country_code;
+
+}
+
+ErrorOr<std::string> IPLocation::resolve_country_name(std::string ip) {
+    if (gi_country == nullptr) {
+        return GenericError();
+    }
+    GeoIPLookup gl;
+    memset(&gl, 0, sizeof(gl));
+
+    const char *result;
+    result = GeoIP_country_name_by_name_gl(gi_country, ip.c_str(), &gl);
+    if (result == nullptr) {
+        return GenericError();
+    }
+    std::string country_name = result;
+    return country_name;
+}
+
+ErrorOr<std::string> IPLocation::resolve_asn(std::string ip) {
+    if (gi_asn == nullptr) {
+        return GenericError();
+    }
+    GeoIPLookup gl;
+    memset(&gl, 0, sizeof(gl));
+
     char *res;
-    res = GeoIP_name_by_name_gl(gi, ip.c_str(), &gl);
+    res = GeoIP_name_by_name_gl(gi_asn, ip.c_str(), &gl);
     if (res == nullptr) {
-        GeoIP_delete(gi);
         return GenericError();
     }
-    node["asn"] = res;
-    node["asn"] = split(node["asn"]).front(); // We only want ASXXXX
+    std::string asn = res;
+    asn = split(asn).front(); // We only want ASXX
     free(res);
-    GeoIP_delete(gi);
-    return NoError();
+    return asn;
 }
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,
                     std::string path_asn) {
-    json node{
-        // Set sane values such that we should not have errors accessing
-        // output even when lookup may fail for current database
-        {"country_code", "ZZ"},
-        {"country_name", "ZZ"},
-        {"asn", "AS0"},
-    };
-    Error err = geoip_resolve_country (ip, path_country, node);
-    if (err) {
-        return err;
+    IPLocation ip_location(path_country, path_asn);
+    ErrorOr<std::string> country_code = ip_location.resolve_country_code(ip);
+    if (!country_code) {
+        return GenericError();
     }
-    err = geoip_resolve_asn (ip, path_asn, node);
-    if (err) {
-        return err;
+    ErrorOr<std::string> country_name = ip_location.resolve_country_name(ip);
+    if (!country_name) {
+        return GenericError();
     }
+    ErrorOr<std::string> asn = ip_location.resolve_asn(ip);
+    if (!asn) {
+        return GenericError();
+    }
+    json node;
+    node["country_code"] = country_code.as_value();
+    node["country_name"] = country_name.as_value();
+    node["asn"] = asn.as_value();
     return node;
 }
 

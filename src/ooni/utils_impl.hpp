@@ -61,7 +61,7 @@ void resolver_lookup_impl(Callback<Error, std::string> callback,
           }
         } else {
           logger->debug("failed to lookup resolver ip address");
-          callback(error, nullptr);
+          callback(error, "");
           return;
         }
       }, settings, reactor);

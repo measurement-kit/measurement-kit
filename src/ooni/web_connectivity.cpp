@@ -8,6 +8,7 @@
 #include <measurement_kit/net/transport.hpp>
 
 #include "src/common/utils.hpp"
+#include "src/ooni/utils.hpp"
 
 #include <set>
 #include <regex>
@@ -206,8 +207,9 @@ static void compare_http_requests(Var<Entry> entry,
 
 static void compare_dns_queries(Var<Entry> entry,
                          std::vector<std::string> experiment_addresses,
-                         Entry control) {
+                         Entry control, Settings options) {
 
+  Var<Logger> logger = Logger::global();
   // When the controls fails in the same way as the experiment we consider the
   // DNS queries to be consistent.
   // XXX ensure the failure messages are aligned between ooniprobe and MK
@@ -254,25 +256,27 @@ static void compare_dns_queries(Var<Entry> entry,
       return;
   }
 
-  // XXX to do this we should refactor the geoip lookup method to avoid
-  // re-loading the geoip files, but have some sort of caching in them.
-  // Moreover the lookup for the location of the geoip files should perhaps be
-  // stored inside of some global variable.
   std::set<std::string> exp_asns;
   std::set<std::string> ctrl_asns;
-  // geoip = GeoIP()
-  // for (auto exp_addr : exp_addresses) {
-  //   std::string asn = geoip.lookup_asn(exp_addr);
-  //   if (asn != "AS0") {
-  //     exp_asns.insert("AS0");
-  //   }
-  // }
-  // for (auto ctrl_addr : ctrl_addresses) {
-  //   std::string asn = geoip.lookup_asn(ctrl_addr);
-  //   if (asn != "AS0") {
-  //     ctrl_asns.insert(asn);
-  //   }
-  // }
+
+  std::string asn_p =
+      options.get("geoip_asn_path", std::string{});
+  logger->debug("Creating..");
+  IPLocation ip_location("", asn_p);
+  for (auto exp_addr : exp_addresses) {
+    logger->debug("expaddr");
+    ErrorOr<std::string> asn = ip_location.resolve_asn(exp_addr);
+    if (asn && asn.as_value() != "AS0") {
+      exp_asns.insert(asn.as_value());
+    }
+  }
+  logger->debug("control");
+  for (auto ctrl_addr : ctrl_addresses) {
+    ErrorOr<std::string> asn = ip_location.resolve_asn(ctrl_addr);
+    if (asn && asn.as_value() != "AS0") {
+      ctrl_asns.insert(asn.as_value());
+    }
+  }
   std::set<std::string> common_asns;
   std::set_intersection(exp_asns.begin(),
                         exp_asns.end(),
@@ -320,7 +324,7 @@ static bool compare_tcp_connect(Var<Entry> entry,
 
 static void compare_control_experiment(
     Var<Entry> entry, std::vector<std::string> addresses,
-    Var<Logger> logger) {
+    Settings options, Var<Logger> logger) {
     if ((*entry)["control_failure"] != nullptr) {
       logger->warn("web_connectivity: skipping control comparison due to failure");
       return;
@@ -344,7 +348,8 @@ static void compare_control_experiment(
     compare_dns_queries(
       entry,
       addresses,
-      (*entry)["control"]["dns"]
+      (*entry)["control"]["dns"],
+      options
     );
 
     logger->debug("web_connectivity: comparing tcp_connect");
@@ -381,10 +386,6 @@ static void compare_control_experiment(
     }
 
     logger->debug("web_connectivity: determining blocking reason");
-
-    logger->debug("web_connectivity: dns_consistency %s", dns_consistency.c_str());
-    logger->debug("web_connectivity: exp_http_failure %s", exp_http_failure.c_str());
-    logger->debug("web_connectivity: ctrl_http_failure %s", ctrl_http_failure.c_str());
 
     if (dns_consistency == "consistent" &&
         tcp_connect_success == false &&
@@ -574,16 +575,19 @@ static void experiment_dns_query(
           logger->debug("web_connectivity: experiment_dns_query got response");
           // XXX add error handling
           for (auto answer : message.answers) {
-            // XXX need to change the query function to support passing
-            // along the error and add support for CNAME.
-            addresses.push_back(answer.ipv4);
+            if (answer.ipv4 != "") {
+              addresses.push_back(answer.ipv4);
+            } else if (answer.hostname != "") {
+              addresses.push_back(answer.ipv4);
+            }
           }
           callback(NoError(), addresses);
-        }, options, reactor, logger); // XXX check if we need a good options
+        }, options, reactor, logger);
 }
 
-void web_connectivity(std::string input, Settings options, Callback<Var<Entry>> callback,
-                 Var<Reactor> reactor, Var<Logger> logger) {
+void web_connectivity(std::string input, Settings options,
+                      Callback<Var<Entry>> callback,
+                      Var<Reactor> reactor, Var<Logger> logger) {
     Var<Entry> entry(new Entry);
     // This is set from ooni test
     // (*entry)["client_resolver"] = nullptr;
@@ -641,7 +645,7 @@ void web_connectivity(std::string input, Settings options, Callback<Var<Entry>> 
           control_request(entry, socket_list, input, [=](Error err) {
 
             logger->info("web_connectivity: comparing control with experiment");
-            compare_control_experiment(entry, addresses, logger);
+            compare_control_experiment(entry, addresses, options, logger);
             callback(entry);
 
           }, options, reactor, logger); // end control_request
