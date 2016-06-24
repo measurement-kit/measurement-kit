@@ -32,6 +32,10 @@ MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(6), HttpRequestFailedError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(7), HeaderParserInternalError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(8), InvalidMaxRedirectsError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(9), InvalidRedirectUrlError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(10), EmptyLocationError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(11), TooManyRedirectsError, "")
 
 /*
  _   _      _
@@ -51,6 +55,8 @@ class Url {
     std::string path;
     std::string query;
     std::string pathquery;
+
+    std::string str();
 };
 
 Url parse_url(std::string url);
@@ -71,7 +77,6 @@ using Headers = std::map<std::string, std::string>;
 
 class Request {
   public:
-    Var<Request> previous;
     std::string method;
     Url url;
     std::string url_path;  // Allows to override `url.path` via Settings
@@ -88,6 +93,7 @@ class Request {
 
 struct Response {
     Var<Request> request;
+    Var<Response> previous;
     std::string response_line;
     unsigned short http_major;
     unsigned short http_minor;
@@ -127,27 +133,28 @@ void request_maybe_sendrecv(ErrorOr<Var<Request>>, Var<net::Transport>,
  * For settings the following options are defined:
  *
  *     {
- *       {"http/follow_redirects", boolean},
+ *       {"http/max_redirects", integer (default is zero)},
  *       {"http/url", std::string},
  *       {"http/ignore_body", boolean},
  *       {"http/method", "GET|DELETE|PUT|POST|HEAD|..."},
  *       {"http/http_version", "HTTP/1.1"},
  *       {"http/path", by default is taken from the url}
  *     }
- *
- * Currently `http/follow_redirects` is not supported.
  */
 
 void request(Settings, Headers, std::string, Callback<Error, Var<Response>>,
-             Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
+             Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global(),
+             Var<Response> previous = nullptr, int nredirects = 0);
 
 inline void get(std::string url, Callback<Error, Var<Response>> cb,
                 Headers headers = {}, Settings settings = {},
                 Var<Reactor> reactor = Reactor::global(),
-                Var<Logger> lp = Logger::global()) {
+                Var<Logger> lp = Logger::global(),
+                Var<Response> previous = nullptr,
+                int nredirects = 0) {
     settings["http/method"] = "GET";
     settings["http/url"] = url;
-    request(settings, headers, "", cb, reactor, lp);
+    request(settings, headers, "", cb, reactor, lp, previous, nredirects);
 }
 
 } // namespace http
