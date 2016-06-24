@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "src/http/request_impl.hpp"
+#include "src/common/utils.hpp"
 
 namespace mk {
 namespace http {
@@ -178,7 +179,15 @@ void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
 
 void request(Settings settings, Headers headers, std::string body,
              Callback<Error, Var<Response>> callback, Var<Reactor> reactor,
-             Var<Logger> logger) {
+             Var<Logger> logger, Var<Response> previous, int num_redirs) {
+    dump_settings(settings, "http::request", logger);
+    ErrorOr<int> max_redirects = settings.get_noexcept(
+        "http/max_redirects", 0
+    );
+    if (!max_redirects) {
+        callback(InvalidMaxRedirectsError(max_redirects.as_error()), nullptr);
+        return;
+    }
     request_connect(
         settings,
         [=](Error err, Var<Transport> txp) {
@@ -188,9 +197,46 @@ void request(Settings settings, Headers headers, std::string body,
             }
             request_sendrecv(
                 txp, settings, headers, body,
-                [callback, txp](Error error, Var<Response> response) {
-                    txp->close([callback, error, response]() {
-                        callback(error, response);
+                [=](Error error, Var<Response> response) {
+                    txp->close([=]() {
+                        if (error) {
+                            callback(error, nullptr);
+                            return;
+                        }
+                        response->previous = previous;
+                        if (response->status_code / 100 == 3) {
+                            logger->debug("following redirect...");
+                            std::string loc = response->headers["Location"];
+                            if (loc == "") {
+                                callback(EmptyLocationError(), nullptr);
+                                return;
+                            }
+                            ErrorOr<Url> url;
+                            if (loc[0] == '/') {
+                                url = response->request->url;
+                                url->pathquery = loc;
+                            } else {
+                                url = parse_url_noexcept(loc);
+                            }
+                            if (!url) {
+                                callback(InvalidRedirectUrlError(
+                                         url.as_error()), nullptr);
+                                return;
+                            }
+                            Settings new_settings = settings;
+                            new_settings["http/url"] = url->str();
+                            logger->debug("redir url: %s", url->str().c_str());
+                            if (num_redirs >= *max_redirects) {
+                                callback(TooManyRedirectsError(), nullptr);
+                                return;
+                            }
+                            reactor->call_soon([=]() {
+                                request(new_settings, headers, body, callback,
+                                    reactor, logger, response, num_redirs + 1);
+                            });
+                            return;
+                        }
+                        callback(NoError(), response);
                     });
                 },
                 reactor, logger);

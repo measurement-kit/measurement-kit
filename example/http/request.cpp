@@ -13,20 +13,24 @@
 using namespace mk;
 
 static const char *kv_usage =
-    "usage: ./example/http/request [-v] [-b body] [-m method] url\n";
+    "usage: ./example/http/request [-v] [-b body] [-m method]\n"
+    "                              [-R max-redirect] url\n";
 
 int main(int argc, char **argv) {
 
+    Settings settings;
     std::string body;
     char ch;
-    std::string method = "GET";
-    while ((ch = getopt(argc, argv, "b:m:v")) != -1) {
+    while ((ch = getopt(argc, argv, "b:m:R:v")) != -1) {
         switch (ch) {
         case 'b':
             body = optarg;
             break;
         case 'm':
-            method = optarg;
+            settings["http/method"] = optarg;
+            break;
+        case 'R':
+            settings["http/max_redirects"] = lexical_cast<int>(optarg);
             break;
         case 'v':
             increase_verbosity();
@@ -42,19 +46,17 @@ int main(int argc, char **argv) {
         std::cout << kv_usage;
         exit(1);
     }
-    std::string url = argv[0];
+    settings["http/url"] = argv[0];
 
     http::Headers headers;
-    loop_with_initial_event([&body, &headers, &method, &url]() {
+    loop_with_initial_event([&]() {
         http::request(
-            {
-                {"http/method", method}, {"http/url", url},
-            },
+            settings,
             headers,
             body,
             [](Error error, Var<http::Response> response) {
                 if (error) {
-                    std::cout << "Error: " << (int)error << "\n";
+                    std::cout << "Error: " << error.code << "\n";
                     break_loop();
                     return;
                 }
