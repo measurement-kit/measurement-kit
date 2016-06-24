@@ -102,6 +102,10 @@ void request_connect(Settings, Callback<Error, Var<net::Transport>>,
 void request_send(Var<net::Transport>, Settings, Headers, std::string,
                   Callback<Error, Var<Request>>);
 
+// Same as above except that the Request is passed in explicitly
+void request_send2(Var<Request>, Var<net::Transport>,
+                   Callback<Error, Var<Request>>);
+
 void request_recv_response(Var<net::Transport>, Callback<Error, Var<Response>>,
                            Var<Reactor> = Reactor::global(),
                            Var<Logger> = Logger::global());
@@ -110,6 +114,12 @@ void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
                       Callback<Error, Var<Response>>,
                       Var<Reactor> = Reactor::global(),
                       Var<Logger> = Logger::global());
+
+// Same as above except that the Request is passed in explicitly
+void request_sendrecv2(Var<Request>, Var<net::Transport>,
+                       Callback<Error, Var<Response>>,
+                       Var<Reactor> = Reactor::global(),
+                       Var<Logger> = Logger::global());
 
 /*
  * For settings the following options are defined:
