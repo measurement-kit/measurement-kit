@@ -129,9 +129,11 @@ static void compare_http_requests(Var<Entry> entry,
 
   // Verify that the status codes match
   logger->debug("web_connectivity: comparing status codes");
+
+  // We ignore status code matching when the server returns an error in the
+  // control.
+  (*entry)["status_code_match"] = true;
   if (((int) control["status_code"])/100 != 5) {
-    // We ignore status code matching when the server returns an error in the
-    // control.
     if (((int) control["status_code"]) == ((int) experiment_response["code"])) {
       (*entry)["status_code_match"] = true;
     } else {
@@ -191,16 +193,13 @@ static void compare_http_requests(Var<Entry> entry,
   exp_title_words = split<std::vector<std::string>>(experiment_title, " ");
   ctrl_title_words = split<std::vector<std::string>>(control["title"], " ");
   int idx = 0;
+  (*entry)["title_match"] = (experiment_title == control["title"]);
   for (auto exp_word : exp_title_words) {
     if (exp_word.length() < 5) {
       idx++;
       continue;
     }
-    if (((int) ctrl_title_words.size()) < idx) {
-      (*entry)["titles_match"] = false;
-      break;
-    }
-    (*entry)["titles_match"] = (bool) (exp_word == ctrl_title_words[idx]);
+    (*entry)["title_match"] = (bool) (exp_word == ctrl_title_words[idx]);
     break;
   }
 }
@@ -293,8 +292,7 @@ static void compare_dns_queries(Var<Entry> entry,
   (*entry)["dns_consistency"] = "inconsistent";
 }
 
-static bool compare_tcp_connect(Var<Entry> entry,
-        Entry experiment_queries, Entry control) {
+static bool compare_tcp_connect(Var<Entry> entry, Entry control) {
   bool success = true;
   int idx = 0;
   for (auto result : (*entry)["tcp_connect"]) {
@@ -323,6 +321,7 @@ static bool compare_tcp_connect(Var<Entry> entry,
 }
 
 static void compare_control_experiment(
+    std::string input,
     Var<Entry> entry, std::vector<std::string> addresses,
     Settings options, Var<Logger> logger) {
     if ((*entry)["control_failure"] != nullptr) {
@@ -355,7 +354,6 @@ static void compare_control_experiment(
     logger->debug("web_connectivity: comparing tcp_connect");
     bool tcp_connect_success = compare_tcp_connect(
         entry,
-        (*entry)["queries"],
         (*entry)["control"]["tcp_connect"]
     );
 
@@ -419,21 +417,21 @@ static void compare_control_experiment(
     }
     if ((*entry)["blocking"] != nullptr) {
       std::string blocking = (*entry)["blocking"];
-      logger->info("web_connectivity: Blocking detected due to %s",
-                   blocking.c_str());
+      logger->info("web_connectivity: BLOCKING detected due to: %s on %s",
+                   blocking.c_str(), input.c_str());
     } else {
-      logger->info("web_connectivity: No blocking detected");
+      logger->info("web_connectivity: no blocking detected");
     }
 }
 
 static void control_request(Var<Entry> entry,
         SocketList socket_list, std::string url,
         Callback<Error> callback,
-        Settings options,
-        Var<Reactor> reactor, Var<Logger> logger) {
+        Settings options, Var<Logger> logger) {
     Settings request_settings;
     http::Headers headers;
     Entry request;
+    request["tcp_connect"] = Entry::array();
     for (auto socket : socket_list) {
       // Formats the sockets as IP:PORT
       std::ostringstream ss;
@@ -453,9 +451,11 @@ static void control_request(Var<Entry> entry,
     headers["Content-Type"] = "application/json";
 
     if (options["backend/type"] == "cloudfront") {
-      // XXX set the appropriate headers to support cloud-fronting.
+      // TODO set the appropriate headers to support cloud-fronting.
     }
 
+    logger->debug("web_connectivity: performing control request to %s",
+                  options["backend"].c_str());
     http::request(request_settings, headers, body,
             [=](Error error, Var<http::Response> response) {
       if (!error) {
@@ -502,6 +502,10 @@ static void experiment_tcp_connect(Var<Entry> entry,
 
   int socket_count = sockets.size();
   Var<int> sockets_tested(new int(0));
+  // XXX this is very ghetto
+  if (socket_count == 0) {
+    cb(NoError());
+  }
 
   auto handle_connect = [=](std::string ip, int port) {
     return [=](Error err, Var<net::Transport> txp) {
@@ -573,7 +577,10 @@ static void experiment_dns_query(
         [=](Error err, dns::Message message) {
           std::vector<std::string> addresses;
           logger->debug("web_connectivity: experiment_dns_query got response");
-          // XXX add error handling
+          if (err) {
+            callback(err, addresses);
+            return;
+          }
           for (auto answer : message.answers) {
             if (answer.ipv4 != "") {
               addresses.push_back(answer.ipv4);
@@ -588,6 +595,7 @@ static void experiment_dns_query(
 void web_connectivity(std::string input, Settings options,
                       Callback<Var<Entry>> callback,
                       Var<Reactor> reactor, Var<Logger> logger) {
+    options["http/max_redirects"] = 20;
     Var<Entry> entry(new Entry);
     // This is set from ooni test
     // (*entry)["client_resolver"] = nullptr;
@@ -645,10 +653,10 @@ void web_connectivity(std::string input, Settings options,
           control_request(entry, socket_list, input, [=](Error err) {
 
             logger->info("web_connectivity: comparing control with experiment");
-            compare_control_experiment(entry, addresses, options, logger);
+            compare_control_experiment(input, entry, addresses, options, logger);
             callback(entry);
 
-          }, options, reactor, logger); // end control_request
+          }, options, logger); // end control_request
 
         }, options, reactor, logger); // end http_request
 
