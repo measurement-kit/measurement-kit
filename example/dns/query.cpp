@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
         dns::query(query_class.data(), query_type.data(), domain,
             [&query_type](Error e, dns::Message m) {
                 if (e) {
-                    std::cout << "Error: " << (int)e << "\n";
+                    std::cout << "Error: " << e.code << "\n";
                     break_loop();
                     return;
                 }

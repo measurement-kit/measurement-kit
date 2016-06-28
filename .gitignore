@@ -103,7 +103,6 @@ test/net/transport
 test/ooni/collector_client
 test/ooni/dns_injection
 test/ooni/http_invalid_request_line
-test/ooni/ooni_test
 test/ooni/tcp_connect
 test/ooni/templates
 test/ooni/utils
