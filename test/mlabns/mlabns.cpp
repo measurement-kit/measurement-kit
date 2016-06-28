@@ -121,7 +121,8 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
 
 static void get_debug_error(std::string, Callback<Error, Var<http::Response>> cb,
                             http::Headers, Settings, Var<Reactor>,
-                            Var<Logger>) {
+                            Var<Logger>,
+                            Var<http::Response>, int) {
     cb(MockedError(), nullptr);
 }
 
@@ -147,7 +148,8 @@ TEST_CASE(
 
 static void get_debug_invalid_status_code(std::string, Callback<Error, Var<http::Response>> cb,
                                           http::Headers, Settings,
-                                          Var<Reactor>, Var<Logger>) {
+                                          Var<Reactor>, Var<Logger>,
+                                          Var<http::Response>, int) {
     Var<http::Response> response(new http::Response);
     response->status_code = 500;
     cb(NoError(), response);
@@ -174,7 +176,8 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
 
 static void get_debug_invalid_response(std::string, Callback<Error, Var<http::Response>> cb,
                                        http::Headers, Settings,
-                                       Var<Reactor>, Var<Logger>) {
+                                       Var<Reactor>, Var<Logger>,
+                                       Var<http::Response>, int) {
     Var<http::Response> response(new http::Response);
     response->status_code = 200;
     response->body = "alfj9882//234j<<<384982";
@@ -204,7 +207,8 @@ static void get_debug_invalid_uncomplete_json(std::string,
                                               Callback<Error, Var<http::Response>> cb,
                                               http::Headers,
                                               Settings, Var<Reactor>,
-                                              Var<Logger>) {
+                                              Var<Logger>, Var<http::Response>,
+                                              int) {
     Var<http::Response> response(new http::Response);
     response->status_code = 200;
     // This json does not contain the country field
@@ -240,7 +244,8 @@ static void get_debug_json_with_unexpected_type(std::string,
                                                 Callback<Error, Var<http::Response>> cb,
                                                 http::Headers,
                                                 Settings, Var<Reactor>,
-                                                Var<Logger>) {
+                                                Var<Logger>,
+                                                Var<http::Response>, int) {
     Var<http::Response> response(new http::Response);
     response->status_code = 200;
     // IP is a int rather than being a list
