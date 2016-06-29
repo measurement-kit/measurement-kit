@@ -1,5 +1,5 @@
 # NAME
-SettingsEntry -- Generic scalar type
+SettingsEntry &mdash; Generic scalar type
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
