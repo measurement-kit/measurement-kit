@@ -186,12 +186,13 @@ dns::query(
             double rtt = message.rtt;
             for (auto answer : message.answers) {
                 int ttl = answer.ttl;
+                std::string r;
                 if (answer.type == "A") {
-                    std::string ipv4 = answer.ipv4;
+                    r = answer.ipv4;
                 } else if (answer.type == "AAAA") {
-                    std::string ipv6 = answer.ipv6;
+                    r = answer.ipv6;
                 } else if (answer.type == "PTR") {
-                    std::string hostname = answer.hostname;
+                    r = answer.hostname;
                 } else {
                     continue;
                 }
