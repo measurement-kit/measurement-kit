@@ -50,7 +50,7 @@ void mk::http::request_sendrecv(mk::Var<mk::net::Transport> txp,
 
 # STABILITY
 
-2 - Stable
+1 - Experimental
 
 # DESCRIPTION
 
