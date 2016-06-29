@@ -60,6 +60,10 @@ mk::http::request({
     }, "THIS IS THE BODY");
 ```
 
+# STABILITY
+
+2 - Stable
+
 # DESCRIPTION
 
 The `http::request()` function allows you to issue HTTP requests and
