@@ -1,5 +1,5 @@
 # NAME
-Var -- Shared-pointer with null pointer check
+Var &mdash; Shared-pointer with null pointer check
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
