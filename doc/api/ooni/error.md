@@ -1,5 +1,5 @@
 # NAME
-error -- OONI errors
+error &mdash; OONI errors
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -19,4 +19,4 @@ This header contains OONI specific errors.
 
 # HISTORY
 
-The `ooni/error.hpp` header appeared in MeasurementKit 0.2.0.
+The `error` submodule appeared in MeasurementKit 0.2.0.
