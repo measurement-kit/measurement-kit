@@ -1,3 +1,10 @@
+# MeasurementKit 0.2.0 [2016-06-30]
+
+- autogen.sh: with -n do not use the network
+- fix net/connect timeout
+- update documentation for v0.2.0
+- bump version to v0.2.0
+
 # MeasurementKit 0.2.0-beta.2 [2016-06-19]
 
 - http/request_serializer: allow custom path
