@@ -1,5 +1,5 @@
 # NAME
-Reactor -- Dispatcher of I/O events
+Reactor &mdash; Dispatcher of I/O events
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
