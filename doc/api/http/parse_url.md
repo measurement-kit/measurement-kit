@@ -34,9 +34,9 @@ class Url {
 
 On error one of the following exceptions could be thrown:
 
-- `UrlParserError`: error in URL parser
-- `MissingUrlSchemaError`: missing schema in parsed URL
-- `MissingUrlHostError`: missing host in parsed URL
+- `mk::http::UrlParserError`: error in URL parser
+- `mk::http::MissingUrlSchemaError`: missing schema in parsed URL
+- `mk::http::MissingUrlHostError`: missing host in parsed URL
 
 The `parse_url_noexcept()` is equal to `parse_url()` except that rather
 than throwing an exception of error it returns a `ErrorOr` wrapper.
