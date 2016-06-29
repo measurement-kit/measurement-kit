@@ -31,7 +31,7 @@ Note that you can also pass the query class as string; e.g.,
 the following would compile and run as expected:
 
 ```C++
-    dns::query("IN", ...);
+    mk::dns::query("IN", ...);
 ```
 
 The `dns_type` argument indicates the query type. The following
@@ -59,7 +59,7 @@ Note that you can alternatively the query type as strong; e.g. the following
 would also work as expected:
 
 ```C++
-    dns::query("IN", "A", "www.google.com", ...);
+    mk::dns::query("IN", "A", "www.google.com", ...);
 ```
 
 The `callback` argument is a lambda to be called when the DNS response is available
