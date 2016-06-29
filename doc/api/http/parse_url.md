@@ -1,5 +1,5 @@
 # NAME
-http &mdash; HTTP module
+parse_url &mdash; URL parsing
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -8,56 +8,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/http.hpp>
 
-// Parsing of URL (throws exception on error)
-http::Url url = http::parse_url("http://www.google.com/");
-
-// Same as above but using a maybe
-Maybe<http::Url> url = http::parse_url_noexcept("http://www.kernel.org/");
-
-// For sending a simple GET request you could use
-mk::http::get("http://nexa.polito.it/",
-    [](mk::Error err, mk::http::Response resp) {
-        if (err) {
-            throw err;
-        }
-        // TODO: Process the response
-    });
-
-// For sending a simple request request you could use
-mk::http::request("HEAD", "http://nexa.polito.it/",
-    [](mk::Error err, mk::http::Response resp) {
-        if (err) {
-            throw err;
-        }
-        // TODO: Process the response
-    });
-
-// Minimal invocation of request()
-mk::http::request({
-        "http/url" : "http://nexa.polito.it/",
-    }, [](mk::Error err, mk::http::Response resp) {
-        if (err) {
-            throw err;
-        }
-        // TODO: Process the response
-    });
-
-// Invocation of request() with all optional arguments specified
-mk::http::request({
-        "http/follow_redirects" : "yes",       // default is no
-        "http/url" : "http://nexa.polito.it/", // must be specified
-        "http/method" : "PUT",                 // default is GET
-        "http/path" : "/robots.txt",           // default is to use URL
-        "http_version" : "HTTP/1.0"       // default is HTTP/1.1
-    }, [](mk::Error err, mk::http::Response resp) {
-        if (err) {
-            throw err;
-        }
-        // TODO: Process the response
-    }, {
-        {"Content-Type", "text/plain"},
-        {"User-Agent", "Antani/1.0"}
-    }, "THIS IS THE BODY");
+mk::http::Url mk::http::parse_url(std::string url);
+mk::ErrorOr<mk::http::Url> mk::http::parse_url_noexcept(std::string url);
 ```
 
 # STABILITY
@@ -66,80 +18,29 @@ mk::http::request({
 
 # DESCRIPTION
 
-The `http::request()` function allows you to issue HTTP requests and
-to receive the corresponding responses. It receives the following arguments:
+The `parse_url()` function parses the `url` argument into a `Url` structure:
 
-- *settings*: Settings that configure the http implementation to send a
-  specific HTTP request; available settings are:
+```
+class Url {
+  public:
+    std::string schema;
+    std::string address;
+    int port = 80;
+    std::string path;
+    std::string query;
+    std::string pathquery;
+};
+```
 
-    - *follow_redirects*: if it set to yes, then the client
-      will follow redirects (this is currently not implemented)
+On error one of the following exceptions could be thrown:
 
-    - *http/url*: the URL to use
-
-    - *http/method*: the method to use (default: "GET")
-
-    - *http/path*: path to use (if not specified the one inside
-       the URL is used instead)
-
-    - *http/http_version*: specify HTTP version (otherwise
-       `HTTP/1.1 is used)
-
-- *callback*: Function called when either a response is received
-  or an error occurs
-
-- *headers*: Optional headers object that specifies the HTTP headers
-  to be passed along with the request
-
-- *body*: Optional body for the request
-
-Beware that, in case of early error, the callback MAY be called
-immediately by the `request()` method.
-
-In case of success, the error argument of the callback is passed an
-instance of `mk::NoError()`. Otherwise, the error that occurred is
-reported. Among all the possible errors, the following are defined by
-MeasurementKit HTTP implementation:
-
-- `UpgradeError`: received unexpected UPGRADE message
-- `ParserError`: error in HTTP parser
 - `UrlParserError`: error in URL parser
 - `MissingUrlSchemaError`: missing schema in parsed URL
 - `MissingUrlHostError`: missing host in parsed URL
 
-HTTP headers are represented by the `http::Headers` typedef that
-currently is alias for `std::map<std::string, std::string>`.
-
-The HTTP response object returned by the callback contains the
-following fields:
-
-```C++
-struct Response {
-    std::string response_line;
-    unsigned short http_major;
-    unsigned short http_minor;
-    unsigned int status_code;
-    std::string reason;
-    Headers headers;
-    std::string body;
-};
-```
-
-The HTTP url object returned by `parse_url()` is as follows:
-
-```
-/// Represents a URL.
-class Url {
-  public:
-    std::string schema;    /// URL schema
-    std::string address;   /// URL address
-    std::string port;      /// URL port
-    std::string path;      /// URL path
-    std::string query;     /// URL query
-    std::string pathquery; /// URL path followed by optional query
-};
-```
+The `parse_url_noexcept()` is equal to `parse_url()` except that rather
+than throwing an exception of error it returns a `ErrorOr` wrapper.
 
 # HISTORY
 
-The `http` module appeared in MeasurementKit 0.1.0.
+The `parse_url` module appeared in MeasurementKit 0.2.0.
