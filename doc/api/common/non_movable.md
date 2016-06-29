@@ -1,5 +1,5 @@
 # NAME
-NonMovable -- Forbids movability
+NonMovable &mdash; Forbids movability
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
