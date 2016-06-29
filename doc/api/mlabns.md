@@ -97,4 +97,4 @@ mlabns::query(
 
 # HISTORY
 
-The `mlabns` library appeared in MeasurementKit 0.2.0.
+The `mlabns` module appeared in MeasurementKit 0.2.0.
