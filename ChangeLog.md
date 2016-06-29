@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # MeasurementKit 0.2.0-beta.2 [2016-06-19]
 
 - http/request_serializer: allow custom path
