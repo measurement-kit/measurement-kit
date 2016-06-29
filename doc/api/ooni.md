@@ -1,5 +1,5 @@
 # NAME
-ooni -- OONI tests library
+ooni &mdash; OONI tests
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -15,9 +15,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # DESCRIPTION
 
-The `ooni` libraries contains OONI tests.
-
-This library contains the following modules:
+The `ooni` module contains the following submodules:
 
 - [collector_client](ooni/collector_client.md): routines to interact with OONI's collector client
 - [dns_injection](ooni/dns_injection.md): OONI's DNS injection test
