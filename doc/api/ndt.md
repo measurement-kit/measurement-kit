@@ -84,13 +84,16 @@ arguments have the same semantic as their `run()` equivalents.
 
 # EXAMPLE
 
+Runs NDT test in the context of the default runner and breaks out of the event loop
+when the NDT test is complete, whatever the test result.
+
 ```C++
 #include <measurement_kit/ndt.hpp>
 
 using namespace mk;
 
 mk::loop_with_initial_event([]() {
-    ndt::run([]() { break_loop(); });
+    ndt::run([](Error /*err*/) { break_loop(); });
 });
 ```
 
