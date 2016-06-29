@@ -1,5 +1,5 @@
 # NAME
-report &mdash; Tests results
+report &mdash; Results of a test
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -9,15 +9,11 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/report.hpp>
 ```
 
-# STABILITY
-
-1 - Experimental
-
 # DESCRIPTION
 
 The `report` module contains the following submodules:
 
-- [entry](report/entry.md): contains the results of a test case
+- [entry](report/entry.md): contains the results of a single test case
 - [file reporter](report/file_reporter.md): writes entries on disk
 
 # HISTORY
