@@ -39,7 +39,7 @@ mk::ooni::HttpInvalidRequestLine()
     .run();
 
 // Run async test
-mk::ooni::DnsInjection()
+mk::ooni::HttpInvalidRequestLine()
     .set_options("backend", "http://127.0.0.1/")
     .set_input_filepath("test/fixtures/hosts.txt")
     .set_output_filepath("results.json")
