@@ -25,27 +25,27 @@ void mk::http::get(std::string url,
 
 void mk::http::request_connect(mk::Settings settings,
                                mk::Callback<mk::Error, mk::Var<mk::net::Transport>> callback,
-                               mk::Var<mk::Reactor> = mk::Reactor::global(),
-                               mk::Var<mk::Logger> = mk::Logger::global());
+                               mk::Var<mk::Reactor> reactor = mk::Reactor::global(),
+                               mk::Var<mk::Logger> logger = mk::Logger::global());
 
 void mk::http::request_send(mk::Var<mk::net::Transport> txp,
                             mk::Settings settings,
                             mk::http::Headers headers,
                             std::string body,
-                            mk::Callback<mk::Error>);
+                            mk::Callback<mk::Error> callback);
 
 void mk::http::request_recv_response(mk::Var<mk::net::Transport> txp,
                                      mk::Callback<mk::Error, mk::Var<mk::http::Response>> callback,
-                                     mk::Var<mk::Reactor> = mk::Reactor::global(),
-                                     mk::Var<Logger> = mk::Logger::global());
+                                     mk::Var<mk::Reactor> reactor = mk::Reactor::global(),
+                                     mk::Var<Logger> logger = mk::Logger::global());
 
 void mk::http::request_sendrecv(mk::Var<mk::net::Transport> txp,
                                 mk::Settings settings,
                                 mk::http::Headers headers,
                                 std::string body,
                                 mk::Callback<mk::Error, mk::Var<mk::http::Response>> callback,
-                                mk::Var<mk::Reactor> = mk::Reactor::global(),
-                                mk::Var<mk::Logger> = mk::Logger::global());
+                                mk::Var<mk::Reactor> reactor = mk::Reactor::global(),
+                                mk::Var<mk::Logger> logger = mk::Logger::global());
 ```
 
 # STABILITY
