@@ -19,11 +19,8 @@ void mk::dns::query(mk::dns::QueryClass dns_class,
 
 # DESCRIPTION
 
-The DNS library allows you to issue DNS query and
-to receive the corresponding responses.
-
-The only function defined by this library is the `query()`
-function, that allows you to send DNS queries.
+The `query()` function, that allows you to send DNS queries
+and receive the corresponding responses.
 
 The `dns_class` argument indicates the query class. At least
 the following query classes are defined:
