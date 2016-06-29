@@ -66,7 +66,7 @@ to be written into a socket. It MAY be implemented using libevent's `evbuffer`.
 The constructors allow to initialize, respectively, an empty `Buffer`, a
 buffer from an existing libevent's `evbuffer` (this operation MAY be zero
 copy if the `Buffer` is implemented using libevent's `evbuffer`), a C++
-string, and a C string.
+string, and a C style buffer (i.e. `void *` and `size_t`).
 
 There are insertion and extraction operators from/to respectively a libevent's
 `evbuffer` and a Buffer. Insertion and extraction to/from `Buffer` is always
