@@ -5,7 +5,7 @@
 MeasurementKit is a library that implements open network measurement methodologies
 (performance, censorship, etc.) and targets mobile platforms (Android and iOS).
 
-It is meant to be embeded by third party applications with specific network measurement
+It is meant to be embedded by third party applications with specific network measurement
 needs and/or to be used by researchers as a basis to implement novel tools.
 
 Currently it implements the following high-level tests:
