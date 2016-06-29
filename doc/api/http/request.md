@@ -96,7 +96,7 @@ matter to this function are the following:
 - *http/url*: use to find out the address to connect to and whether to connect
   using TCP (if schema is `http`) or SSL (if schema is `https`). Additionally, if
   schema is `httpo` (for `HTTP onion`), this function MAY set SOCKS5 proxy settings
-  such as a local running instance of `tor` is used.
+  ot use locally running instance of `tor`.
 
 - *net/tor_socks_port*: if this setting is present, this function would pass
   `127.0.0.1:${net/tor_socks_port}` as SOCKS5 proxy to `net/connect()`.
