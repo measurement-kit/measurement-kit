@@ -170,7 +170,7 @@ using namespace mk;
 Settings settings({
     {"dns/nameserver", "8.8.8.8:53"},  // Set the name server IP
     {"dns/attempts", 1},               // How many attempts before erroring out
-    {"dns/timeout", 3.1415 },          // How many seconds before timeout
+    {"dns/timeout", 3.1415},           // How many seconds before timeout
     {"dns/randomize_case", true},      // Whether to randomize request case
 });
 
