@@ -1,5 +1,5 @@
 # NAME
-templates -- OONI test templates
+templates &mdash; OONI test templates
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -15,8 +15,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # DESCRIPTION
 
-This header contains OONI test templates.
+This submodule contains OONI test templates. They are currently undocumented.
 
 # HISTORY
 
-The `ooni/templates.hpp` header appeared in MeasurementKit 0.2.0.
+The `templates` submodule appeared in MeasurementKit 0.2.0.
