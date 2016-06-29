@@ -58,15 +58,15 @@ available.
 
 The `run()` function runs a NDT test and calls the `callback` specified as its first
 argument when done, passing it the error that occurred &mdash; or `NoError()` in case
-of success. The behavior of the function may be specified by passing it the
+of success. The behavior of the function may be futher specified by passing it the
 following `settings`:
 
-- *address*: address (or domain name) of the NDT server. If this argument is not
+- *"address"*: address (or domain name) of the NDT server. If this argument is not
   specified, mlabns is used to find out a suitable server.
 
-- *port*: port of the NDT server as integer. Only used if *address* is specified.
+- *"port"*: port of the NDT server as integer. Only used if *address* is specified.
 
-- *test_suite*: integer mask indicating which tests to run among all the available
+- *"test_suite"*: integer mask indicating which tests to run among all the available
   tests as defined by the following `define`s:
 
 ```C++
@@ -81,6 +81,18 @@ an optional `logger`.
 The `run_with_specific_server()` function is a wrapper that sets *address* and *port*
 in its settings according to its first two arguments and then calls `run()`. All other
 arguments have the same semantic as their `run()` equivalents.
+
+# EXAMPLE
+
+```C++
+#include <measurement_kit/ndt.hpp>
+
+using namespace mk;
+
+mk::loop_with_initial_event([]() {
+    ndt::run([]() { break_loop(); });
+});
+```
 
 # BUGS
 
