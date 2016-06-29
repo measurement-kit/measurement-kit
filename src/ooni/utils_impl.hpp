@@ -39,7 +39,7 @@ void ip_lookup_impl(Callback<Error, std::string> callback, Settings settings = {
                 }
                 callback(NoError(), m[1]);
             },
-            {}, settings, reactor, logger);
+            {}, settings, reactor, logger, nullptr, 0);
 }
 
 } // namespace ooni

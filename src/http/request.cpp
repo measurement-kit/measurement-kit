@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "src/http/request_impl.hpp"
+#include "src/common/utils.hpp"
 
 namespace mk {
 namespace http {
@@ -17,6 +18,18 @@ using namespace mk::net;
  \___|_|\__,_|___/___/
 
 */
+
+/*static*/ ErrorOr<Var<Request>> Request::make(Settings settings, Headers headers,
+                                               std::string body) {
+    Var<Request> request(new Request);
+    Error error = request->init(settings, headers, body);
+    // Note: the following cannot be simplified using short circuit
+    // evaluation because two different types are returned
+    if (error) {
+        return error;
+    }
+    return request;
+}
 
 Error Request::init(Settings settings, Headers hdrs, std::string bd) {
     headers = hdrs;
@@ -34,17 +47,17 @@ Error Request::init(Settings settings, Headers hdrs, std::string bd) {
     protocol = settings.get("http/http_version", std::string("HTTP/1.1"));
     method = settings.get("http/method", std::string("GET"));
     // XXX should we really distinguish between path and query here?
-    path = settings.get("http/path", std::string(""));
-    if (path != "" && path[0] != '/') {
-        path = "/" + path;
+    url_path = settings.get("http/path", std::string(""));
+    if (url_path != "" && url_path[0] != '/') {
+        url_path = "/" + url_path;
     }
     return NoError();
 }
 
 void Request::serialize(net::Buffer &buff) {
     buff << method << " ";
-    if (path != "") {
-        buff << path;
+    if (url_path != "") {
+        buff << url_path;
     } else {
         buff << url.pathquery;
     }
@@ -82,27 +95,21 @@ void request_connect(Settings settings, Callback<Error, Var<Transport>> txp,
 }
 
 void request_send(Var<Transport> txp, Settings settings, Headers headers,
-                  std::string body, Callback<Error> callback) {
-    Request request;
-    Error error = request.init(settings, headers, body);
-    if (error) {
-        callback(error);
+                  std::string body, Callback<Error, Var<Request>> callback) {
+    request_maybe_send(Request::make(settings, headers, body), txp, callback);
+}
+
+void request_maybe_send(ErrorOr<Var<Request>> request, Var<Transport> txp,
+                        Callback<Error, Var<Request>> callback) {
+    if (!request) {
+        callback(request.as_error(), nullptr);
         return;
     }
-    // TODO: here we can simplify by using net::write()
-    txp->on_error([txp, callback](Error error) {
-        txp->on_error(nullptr);
-        txp->on_flush(nullptr);
-        callback(error);
-    });
-    txp->on_flush([txp, callback]() {
-        txp->on_error(nullptr);
-        txp->on_flush(nullptr);
-        callback(NoError());
-    });
     Buffer buff;
-    request.serialize(buff);
-    txp->write(buff);
+    (*request)->serialize(buff);
+    net::write(txp, buff, [=](Error err) {
+        callback(err, *request);
+    });
 }
 
 void request_recv_response(Var<Transport> txp,
@@ -147,18 +154,40 @@ void request_recv_response(Var<Transport> txp,
 void request_sendrecv(Var<Transport> txp, Settings settings, Headers headers,
                       std::string body, Callback<Error, Var<Response>> callback,
                       Var<Reactor> reactor, Var<Logger> logger) {
-    request_send(txp, settings, headers, body, [=](Error error) {
+    request_maybe_sendrecv(Request::make(settings, headers, body), txp,
+                           callback, reactor, logger);
+}
+
+void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
+                            Callback<Error, Var<Response>> callback,
+                            Var<Reactor> reactor, Var<Logger> logger) {
+    request_maybe_send(request, txp, [=](Error error, Var<Request> request) {
         if (error) {
             callback(error, nullptr);
             return;
         }
-        request_recv_response(txp, callback, reactor, logger);
+        request_recv_response(txp, [=](Error error, Var<Response> response) {
+            if (error) {
+                callback(error, nullptr);
+                return;
+            }
+            response->request = request;
+            callback(error, response);
+        }, reactor, logger);
     });
 }
 
 void request(Settings settings, Headers headers, std::string body,
              Callback<Error, Var<Response>> callback, Var<Reactor> reactor,
-             Var<Logger> logger) {
+             Var<Logger> logger, Var<Response> previous, int num_redirs) {
+    dump_settings(settings, "http::request", logger);
+    ErrorOr<int> max_redirects = settings.get_noexcept(
+        "http/max_redirects", 0
+    );
+    if (!max_redirects) {
+        callback(InvalidMaxRedirectsError(max_redirects.as_error()), nullptr);
+        return;
+    }
     request_connect(
         settings,
         [=](Error err, Var<Transport> txp) {
@@ -168,9 +197,46 @@ void request(Settings settings, Headers headers, std::string body,
             }
             request_sendrecv(
                 txp, settings, headers, body,
-                [callback, txp](Error error, Var<Response> response) {
-                    txp->close([callback, error, response]() {
-                        callback(error, response);
+                [=](Error error, Var<Response> response) {
+                    txp->close([=]() {
+                        if (error) {
+                            callback(error, nullptr);
+                            return;
+                        }
+                        response->previous = previous;
+                        if (response->status_code / 100 == 3) {
+                            logger->debug("following redirect...");
+                            std::string loc = response->headers["Location"];
+                            if (loc == "") {
+                                callback(EmptyLocationError(), nullptr);
+                                return;
+                            }
+                            ErrorOr<Url> url;
+                            if (loc[0] == '/') { 
+                                url = response->request->url;
+                                url->pathquery = loc;
+                            } else {
+                                url = parse_url_noexcept(loc);
+                            }
+                            if (!url) {
+                                callback(InvalidRedirectUrlError(
+                                         url.as_error()), nullptr);
+                                return;
+                            }
+                            Settings new_settings = settings;
+                            new_settings["http/url"] = url->str();
+                            logger->debug("redir url: %s", url->str().c_str());
+                            if (num_redirs >= *max_redirects) {
+                                callback(TooManyRedirectsError(), nullptr);
+                                return;
+                            }
+                            reactor->call_soon([=]() {
+                                request(new_settings, headers, body, callback,
+                                    reactor, logger, response, num_redirs + 1);
+                            });
+                            return;
+                        }
+                        callback(NoError(), response);
                     });
                 },
                 reactor, logger);
