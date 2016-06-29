@@ -249,7 +249,7 @@ We can now compile (and link) the code using the following command:
 Then create a file named INPUT and paste inside it this content:
 
 ```
-measurement-kitgithub.io
+measurement-kit.github.io
 nexa.polito.it
 ooni.torproject.org
 ```
