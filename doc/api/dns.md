@@ -146,7 +146,7 @@ the `query` function. The following settings are available:
   don't specify this, the default name server is used. On Unix systems the default DNS
   server is obtained parsing `/etc/resolv.conf`; on mobile devices where such file
   is not available, the default DNS name server is `127.0.0.1` which typically is not
-  correct. Hence with mobile devices you should typically supply the DNS server
+  correct. Hence with mobile devices you SHOULD typically supply the DNS server
   you would like to use.
 
 - *dns/randomize_case*: whether to [randomize request case to make DNS
