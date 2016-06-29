@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
 }
 ```
 
-Next we want to run OONI DNSInjection test on all the remaining arguments,
+Next we want to run OONI DnsInjection test on all the remaining arguments,
 using as backend the specified backend, or the default one. We will iterate
 over all the remaining command line options and launch an instance of the
 DNS Injection test for each file. All these tests will run in parallel and
@@ -178,7 +178,7 @@ completion status of tests we will use a `volatile int` variable.
 ```C++
     volatile int running = 0;
     for (; argc > 0; --argc, ++argv, ++running) {
-        mk::ooni::DnsInjectionTest()
+        mk::ooni::DnsInjection()
             .set_backend(backend)
             .set_input_file_path(argv[0])
             .set_verbose(verbose)
@@ -231,7 +231,7 @@ int main(int argc, char **argv) {
 
     volatile int running = 0;
     for (; argc > 0; --argc, ++argv, ++running) {
-        mk::ooni::DnsInjectionTest()
+        mk::ooni::DnsInjection()
             .set_backend(backend)
             .set_input_file_path(argv[0])
             .set_verbose(verbose)
