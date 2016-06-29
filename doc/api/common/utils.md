@@ -1,5 +1,5 @@
 # NAME
-utils -- Utility functions
+utils &mdash; Utility functions
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
