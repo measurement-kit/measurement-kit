@@ -11,8 +11,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 namespace mk {
 namespace ooni {
 
-class DnsInjection : public OoniTest {
-};
+class DnsInjection : public OoniTest {};
 
 } // namespace ooni
 } // namespace mk
@@ -20,7 +19,12 @@ class DnsInjection : public OoniTest {
 
 # DESCRIPTION
 
-The `DnsInjection` class allows to run OONI dns-injection test.
+The `DnsInjection` class allows to run OONI dns-injection test. In addition
+to `OoniTest`, this class honours the following options:
+
+- *"backend"* (string): address and port (separated by colon) of the server where
+  a DNS server is *not* actually running such that, if we receive a response, such
+  response has necessarily been injected.
 
 # EXAMPLE
 
