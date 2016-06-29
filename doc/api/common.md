@@ -1,5 +1,5 @@
 # NAME
-common &mdash; common functionality using by other modules
+common &mdash; common functionality used by other modules
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
