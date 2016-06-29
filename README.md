@@ -143,7 +143,8 @@ is `/opt/local/include/event.h` and that `libevent.a` is
 - to force-compile the libevent distributed along with MeasurementKit, use
 
 ```
-    ./configure --with-libevent=builtin
+    ./build/dependency libevent          # Build and install libevent in `./builtin`
+    ./configure --with-libevent=builtin  # Use what you have just built
 ```
 
 ### How to test MeasurementKit on a Unix-like system
