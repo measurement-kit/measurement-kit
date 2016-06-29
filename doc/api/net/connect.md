@@ -1,5 +1,5 @@
 # NAME
-connect -- Routines to connect to remote hosts
+connect &mdash; Routines to connect to remote hosts
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
