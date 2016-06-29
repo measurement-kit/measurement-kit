@@ -17,6 +17,10 @@ void mk::dns::query(mk::dns::QueryClassIdOrString dns_class,
                     mk::Var<mk::Reactor> reactor = mk::Reactor::global());
 ```
 
+# STABILITY
+
+2 - Stable
+
 # DESCRIPTION
 
 The `query()` function, that allows you to send DNS queries
