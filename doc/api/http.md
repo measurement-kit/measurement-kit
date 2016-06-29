@@ -9,10 +9,6 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/http.hpp>
 ```
 
-# STABILITY
-
-2 - Stable
-
 # DESCRIPTION
 
 The `http` module contains HTTP related functionality. It is currently
