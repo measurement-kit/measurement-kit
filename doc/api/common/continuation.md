@@ -1,5 +1,5 @@
 # NAME
-Continuation -- Syntactic sugar for functions that resume a paused function.
+Continuation &mdash; Syntactic sugar for functions that resume a paused function.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -23,10 +23,6 @@ using Continuation = std::function<void(Callback<T...>)>;
 
 The `Continuation` alias allows to more compactly express a function that
 resumes another function that has paused waiting for explicit continuation.
-
-# EXAMPLE
-
-See `example/common/continuation.cpp`
 
 # HISTORY
 
