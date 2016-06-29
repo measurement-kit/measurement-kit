@@ -87,7 +87,12 @@ mlabns::query(
             std::cout << "< site: " << reply.site << "\n";
             std::cout << "< country: " << reply.country << "\n";
             /* ... */
-        }, settings);
+        },
+        {
+            {"mlabns/metro", "ath"},
+            {"mlabns/policy", "metro"},
+            {"mlabns/family", "ipv4"},
+        });
 ```
 
 # HISTORY
