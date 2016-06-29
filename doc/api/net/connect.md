@@ -41,6 +41,26 @@ failed. In doing that, `connect()` would give preference to IPv4 addresses over
 IPv6 addresses. Conversely, if `address` is already an IPv4 or IPv6 address, this
 function would not attempt to resolve it and would try to connect it directly.
 
+The behavior of `connect()` and of `Transport` s created using `connect()` can be
+modified using the following `settings`:
+
+- *net/ca_bundle_path* (string): path of the CA bundle to be used to verify
+  SSL certificates. The default value is selected by `./configure` inspecting
+  the local system when compiling. For mobile devices, the default is the
+  empty string; i.e. you must provide a sensible value yourself.
+
+- *net/dumb_transport*: if this key is present a dumb transport is created (i.e. a
+  transport that is not connected to any socket).
+
+- *net/socks5_proxy* (string): address and port (separated by colon) of the SOCKS5
+  proxy to be used for establishing the requested connection (this feature is
+  still experimental as of v0.2.0).
+
+- *net/ssl* (bool): whether to establish a SSL connection (default: false).
+
+- *net/timeout* (double): timeout for connect and I/O operations (default: `5.0` for
+  connecting and `30.0` for the established connection).
+
 To provide insights into what went wrong and what went right during the connect
 attempt, the `Error` returned by `connect()` contains as `context` an instance of the
 following class
