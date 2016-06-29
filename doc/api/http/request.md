@@ -156,48 +156,15 @@ class Response {
 ```C++
 #include <measurement_kit/http.hpp>
 
-// Parsing of URL (throws exception on error)
-http::Url url = http::parse_url("http://www.google.com/");
+using namespace mk;
 
-// Same as above but using a maybe
-Maybe<http::Url> url = http::parse_url_noexcept("http://www.kernel.org/");
-
-// For sending a simple GET request you could use
-mk::http::get("http://nexa.polito.it/",
-    [](mk::Error err, mk::http::Response resp) {
-        if (err) {
-            throw err;
-        }
-        // TODO: Process the response
-    });
-
-// For sending a simple request request you could use
-mk::http::request("HEAD", "http://nexa.polito.it/",
-    [](mk::Error err, mk::http::Response resp) {
-        if (err) {
-            throw err;
-        }
-        // TODO: Process the response
-    });
-
-// Minimal invocation of request()
-mk::http::request({
-        "http/url" : "http://nexa.polito.it/",
-    }, [](mk::Error err, mk::http::Response resp) {
-        if (err) {
-            throw err;
-        }
-        // TODO: Process the response
-    });
-
-// Invocation of request() with all optional arguments specified
-mk::http::request({
+http::request({
         "http/follow_redirects" : "yes",       // default is no
         "http/url" : "http://nexa.polito.it/", // must be specified
         "http/method" : "PUT",                 // default is GET
-        "http/path" : "/robots.txt",           // default is to use URL
-        "http_version" : "HTTP/1.0"       // default is HTTP/1.1
-    }, [](mk::Error err, mk::http::Response resp) {
+        "http/path" : "/robots.txt",           // default is to use URL's path
+        "http/http_version" : "HTTP/1.0"       // default is HTTP/1.1
+    }, [](Error err, http::Response resp) {
         if (err) {
             throw err;
         }
