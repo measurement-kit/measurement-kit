@@ -17,8 +17,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 The `report` module contains the following submodules:
 
-- [entry](report/entry.md)
-- [file reporter](report/file_reporter.md)
+- [entry](report/entry.md): contains the results of a test case
+- [file reporter](report/file_reporter.md): writes entries on disk
 
 # HISTORY
 
