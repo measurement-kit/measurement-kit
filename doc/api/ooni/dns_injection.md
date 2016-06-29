@@ -20,7 +20,7 @@ class DnsInjection : public OoniTest {
 
 # DESCRIPTION
 
-The `DnsInjectionTest` class allows to run OONI dns-injection test.
+The `DnsInjection` class allows to run OONI dns-injection test.
 
 # EXAMPLE
 
