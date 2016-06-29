@@ -1,5 +1,5 @@
 # NAME
-net -- Low-level networking library
+net &mdash; Networking module
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -15,9 +15,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # DESCRIPTION
 
-The `net` libraries contains low level networking functionality.
-
-This library contains the following modules:
+The `net` module contains the following networking functionality:
 
 - [buffer](net/buffer.md): Buffer for incoming/outgoing data
 - [connect](net/connect.md): Functions to establish connections
