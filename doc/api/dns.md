@@ -164,8 +164,10 @@ and receive the corresponding response.
 ```C++
 #include <measurement_kit/dns.hpp>
 
+using namespace mk;
+
 // Constructs settings to be passed to the query function
-mk::Settings settings({
+Settings settings({
     {"dns/nameserver", "8.8.8.8:53"},  // Set the name server IP
     {"dns/attempts", 1},               // How many attempts before erroring out
     {"dns/timeout", 3.1415 },          // How many seconds before timeout
@@ -173,11 +175,11 @@ mk::Settings settings({
 });
 
 // Issue an async DNS query
-mk::dns::query(
+dns::query(
         "IN",                                             // Domain of the query
         "AAAA",                                           // Type of query
         "nexa.polito.it",                                 // Name to resolve
-        [](mk::Error error, mk::dns::Message message) {   // Callback
+        [](Error error, dns::Message message) {           // Callback
             if (error) {
                 throw error;
             }
@@ -189,13 +191,13 @@ mk::dns::query(
                 // Get time to live of the answer
                 int ttl = answer.ttl;
 
-                if (answer.type == dns::QueryTypeId::A) {
+                if (answer.type == "A") {
                     // Get the IPv4 address in the case of A answers
                     std::string ipv4 = answer.ipv4;
-                } else if (answer.type == dns::QueryTypeId::AAAA) {
+                } else if (answer.type == "AAAA") {
                     // Get the IPv6 address in the case of AAAA answers
                     std::string ipv6 = answer.ipv6;
-                } else if (answer.type == dns::QueryTypeId::PTR) {
+                } else if (answer.type == "PTR") {
                     // Get the domain pointer in the case of PTR answers
                     std::string hostname = answer.hostname;
                 } else {
@@ -205,11 +207,6 @@ mk::dns::query(
         }, settings);
 ```
 
-# SEE ALSO
-
-For a list of `evdns` status codes and a list of evdns types, please refer
-to the [evdns implementation](https://github.com/libevent/libevent/blob/master/include/event2/dns.h).
-
 # HISTORY
 
-The `mk::dns` library appeared in MeasurementKit 0.1.0.
+The DNS module appeared in MeasurementKit 0.1.0.
