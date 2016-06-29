@@ -66,6 +66,10 @@ The `run_with_specific_server()` function is a wrapper that sets *address* and *
 in its settings according to its first two arguments and then calls `run()`. All other
 arguments have the same semantic as their `run()` equivalents.
 
+# BUGS
+
+Only NDT's download and upload tests are implemented.
+
 # HISTORY
 
 The `ndt` module appeared in MeasurementKit 0.2.0.
