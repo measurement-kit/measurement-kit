@@ -1,5 +1,5 @@
 # NAME
-common &mdash; common code
+common &mdash; common functionality using by other modules
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -11,10 +11,10 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # DESCRIPTION
 
-The `common` libraries contains common functionality in MeasurementKit
+The `common` module contains common functionality in MeasurementKit
 that can all be pulled by including the `common.hpp` header.
 
-This library contains the following modules:
+This module contains the following submodules:
 
 - [callback](common/callback.md): alias for callback functions
 - [continuation](common/continuation.md): function to restart a paused function (i.e. a simple coroutine)
