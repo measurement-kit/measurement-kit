@@ -44,13 +44,14 @@ query types are defined:
   would be the corresponding IPv6 address. if any.
 
 - *QueryTypeId::PTR*: the `query_name` argument should be an IP address expressed
-  using the reverse `IN-ADDR` notation and the result would the corresponding
+  using the reverse `IN-ADDR` representation and the result would the corresponding
   domain name, if any (see `EXAMPLES` section for examples).
 
 - *QueryTypeId::REVERSE_A*: the `query_name` argument should be an IPv4 address and the
   result would be the corresponding domain name, if any. This is a nonstandard
   DNS query type and basically instructs the DNS library to create for you
-  the reverse `IN-ADDR` entry and issue a `PTR` query.
+  the reverse `IN-ADDR` representation of the `query_name` field and issue a `PTR`
+  query.
 
 - *QueryTypeId::REVERSE_AAAA*: same as `REVERSE_A` except that here the input shall be
   a IPv6 address.
