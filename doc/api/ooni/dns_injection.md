@@ -24,7 +24,7 @@ The `DnsInjectionTest` class allows to run OONI dns-injection test.
 
 # EXAMPLE
 
-```
+```C++
 // Run sync test
 mk::ooni::DnsInjection()
     .set_options("backend", "127.0.0.1:53")
