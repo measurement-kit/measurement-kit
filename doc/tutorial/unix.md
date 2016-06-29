@@ -59,13 +59,8 @@ https://github.com/measurement-kit/measurement-kit/blob/master/README.md)
 to check whether the dependencies changed since this tutorial was
 written. If so, please let us know.
 
-By default, if dependencies are not found in the host system, Measurement
-Kit will use a bundled copy of such dependencies. Instead, if they are
-available on host host system, they are used. In the latter case the build
-process is much faster, because less code needs to be compiled.
-
-The `configure` script will warn you if a dependency is missing on the
-host system and a bundled dependency is being used instead.
+The `configure` script will fail if a dependency is missing on the
+host system and tell you how you could install it.
 
 To start the `configure` script run:
 
