@@ -209,7 +209,7 @@ use `dispatch_async` to dispatch the message when we are done.
 
 ```Objective-C
     NSString *message = @"message-0xdeadidea";
-    mk::ooni::TcpConnectTest()
+    mk::ooni::TcpConnect()
         .increase_verbosity()
         .set_options("port", 80)
         .set_options("dns/nameserver", "8.8.8.8")
@@ -295,7 +295,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     NSString *message = @"message-0xdeadidea";
     NSMutableArray *logs = [[NSMutableArray alloc] init];
     NSLock *mtx = [[NSLock alloc] init];
-    mk::ooni::TcpConnectTest()
+    mk::ooni::TcpConnect()
         .increase_verbosity()
         .set_options("port", 80)
         .set_options("dns/nameserver", "8.8.8.8")
