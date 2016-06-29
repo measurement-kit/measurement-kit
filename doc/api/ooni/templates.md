@@ -28,7 +28,7 @@ void mk::ooni::tcp_connect(Settings settings, Callback<Error, Var<net::Transport
 
 # STABILITY
 
-2 - Stable
+1 - Experimental
 
 # DESCRIPTION
 
