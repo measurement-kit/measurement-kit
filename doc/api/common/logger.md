@@ -1,5 +1,5 @@
 # NAME
-Logger -- Log messages processor
+Logger &mdash; Log messages processor
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
