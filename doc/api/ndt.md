@@ -40,7 +40,7 @@ void mk::ndt::run_with_specific_server(std::string address,
 
 The `NdtTest` class is a subclass of `mk::NetTest` that runs a NDT test.
 
-The `run()` function rusn a NDT test and calls the `callback` specified as its first
+The `run()` function runs a NDT test and calls the `callback` specified as its first
 argument when done, passing it the error that occurred &mdash; or `NoError()` in case
 of success. The behavior of the function may be specified by passing it the
 following `settings`:
