@@ -1,5 +1,5 @@
 # NAME
-traceroute -- Traceroute library
+traceroute &mdash; Traceroute module
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -15,7 +15,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # DESCRIPTION
 
-The `traceroute` library contains the following modules:
+The `traceroute` module contains the following submodules:
 
 - [android](traceroute/android.md): Code to run traceroute for Android
 - [error](traceroute/error.md): Traceroute specific errors
