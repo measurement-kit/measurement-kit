@@ -41,16 +41,20 @@ the `.xcodeproj` file. There, create a file called `Podfile` and write
 inside it the following content:
 
 ```
-pod 'measurement_kit'
+target '<YOUR-TARGET-NAME-HERE>' do
+    pod 'measurement_kit'
+end
 ```
 
 (Instead, if you want to install measurement_kit directly from its
 git repository, write the following inside the `Podfile`:
 
 ```
-pod 'measurement_kit',
-  :git => 'https://github.com/measurement-kit/measurement-kit.git',
-  :branch => 'master'
+target '<YOUR-TARGET-NAME-HERE>' do
+    pod 'measurement_kit',
+        :git => 'https://github.com/measurement-kit/measurement-kit.git',
+        :branch => 'master'
+end
 ```
 )
 
