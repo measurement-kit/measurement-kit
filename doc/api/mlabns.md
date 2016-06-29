@@ -28,8 +28,8 @@ passed as the first argument and the reply passed as second argument. You can al
 the following, optional settings:
 
 - *mlabns/policy*: one of `"random"`, `"metro"`, or `"country`". The random policy asks mlabns
-  to return a random server for the specified tool. The metro policy asks a server close to
-  the city code passed as *mlabns/metro*. The country policy asks to to return a suitable server
+  to return a random server for the specified tool. The metro policy asks mlabns a server close to
+  the city code passed as *mlabns/metro*. The country policy asks mlabns to return a suitable server
   in the country where the requesting client is located.
 
 - *mlabns/metro*: used together with *mlabns/policy* equal to *metro*, this setting specifies
