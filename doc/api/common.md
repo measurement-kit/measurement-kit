@@ -1,5 +1,5 @@
 # NAME
-common &mdash; common functionality library
+common &mdash; common library
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
