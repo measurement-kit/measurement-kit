@@ -97,7 +97,7 @@ class Message {
 };
 ```
 
-where: `rtt` is the time elapsed since issuing the query until receiving
+where `rtt` is the time elapsed since issuing the query until receiving
 the response; `queries` is the list of queries issued; `answers` is the list
 of answers received.
 
@@ -117,7 +117,7 @@ where `type` is the type of the query, `qclass` is the class of the
 query, `ttl` is the time to live, and `name` is the name for which the
 query was issued.
 
-Instead, the `Answer` class contains at least the following fields:
+The `Answer` class contains at least the following fields:
 
 ```C++
 class Answer {
