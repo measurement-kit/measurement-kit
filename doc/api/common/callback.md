@@ -1,5 +1,5 @@
 # NAME
-Callback -- Syntactic sugar for writing callbacks.
+Callback &mdash; Syntactic sugar for writing callbacks.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
