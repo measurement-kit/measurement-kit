@@ -142,4 +142,4 @@ class Url {
 
 # HISTORY
 
-The `mk::http` library appeared in MeasurementKit 0.1.0.
+The `http` module appeared in MeasurementKit 0.1.0.
