@@ -1,5 +1,5 @@
 # NAME
-Error -- A network error.
+Error &mdash; A network error.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
