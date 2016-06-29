@@ -1,5 +1,5 @@
 # NAME
-ErrorOr -- Maybe-like object containing type or error.
+ErrorOr &mdash; Maybe-like object containing type or error.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
