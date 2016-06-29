@@ -1,5 +1,5 @@
 # NAME
-http &mdash; HTTP module
+request &mdash; issue HTTP requests
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -142,4 +142,4 @@ class Url {
 
 # HISTORY
 
-The `http` module appeared in MeasurementKit 0.1.0.
+The `request` module appeared in MeasurementKit 0.2.0.
