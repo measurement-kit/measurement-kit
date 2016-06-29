@@ -44,7 +44,7 @@ query types are defined:
   would be the corresponding IPv6 address. if any.
 
 - *QueryTypeId::PTR*: the `query_name` argument should be an IP address expressed
-  using the reverse `IN-ADDR` entry and the result would the corresponding
+  using the reverse `IN-ADDR` notation and the result would the corresponding
   domain name, if any (see `EXAMPLES` section for examples).
 
 - *QueryTypeId::REVERSE_A*: the `query_name` argument should be an IPv4 address and the
