@@ -25,7 +25,7 @@ and receive the corresponding responses.
 The `dns_class` argument indicates the query class. At least
 the following query classes are defined:
 
-- *QueryClass::IN*: this class represents the "internet" domain
+- *QueryClassId::IN*: this class represents the "internet" domain
 
 Note that you can also pass the query class as string; e.g.,
 the following would compile and run as expected:
@@ -37,22 +37,22 @@ the following would compile and run as expected:
 The `dns_type` argument indicates the query type. The following
 query types are defined:
 
-- *QueryType::A*: the `query_name` argument must be a domain name and the result
+- *QueryTypeId::A*: the `query_name` argument must be a domain name and the result
   would be the corresponding IPv4 address, if any.
 
-- *QueryType::AAAA*: the `query_name` argument must be a domain name and the result
+- *QueryTypeId::AAAA*: the `query_name` argument must be a domain name and the result
   would be the corresponding IPv6 address. if any.
 
-- *QueryType::PTR*: the `query_name` argument should be an IP address expressed
+- *QueryTypeId::PTR*: the `query_name` argument should be an IP address expressed
   using the reverse `IN-ADDR` entry and the result would the corresponding
   domain name, if any (see `EXAMPLES` section for examples).
 
-- *QueryType::REVERSE_A*: the `query_name` argument should be an IPv4 address and the
+- *QueryTypeId::REVERSE_A*: the `query_name` argument should be an IPv4 address and the
   result would be the corresponding domain name, if any. This is a nonstandard
   DNS query type and basically instructs the DNS library to create for you
   the reverse `IN-ADDR` entry and issue a `PTR` query.
 
-- *QueryType::REVERSE_AAAA*: same as `REVERSE_A` except that here the input shall be
+- *QueryTypeId::REVERSE_AAAA*: same as `REVERSE_A` except that here the input shall be
   a IPv6 address.
 
 Note that you can alternatively the query type as strong; e.g. the following
