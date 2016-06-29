@@ -32,7 +32,6 @@ void mk::ooni::close_report(Var<net::Transport> txp, std::string report_id,
         Callback<Error> callback,
         Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global());
-
 ```
 
 # STABILITY
@@ -49,8 +48,28 @@ The `submit_report()` function submits the report at `filepath` using the collec
 identifier by `collector_base_url` and calls `callback` when done. You can also
 optionally specify `settings`, a `reactor`, and a `logger`.
 
-The other functions in this module (as shown above) allow finer grained control
-over the interaction with the backend. They are currently undocumented.
+The `connect()` function connects to the address specified by the *"collector_base_url*"
+setting and calls `callback` when done. Optional `reactor` and `logger` could also be
+passed to this function.
+
+The `create_report()` function takes in input the first entry of a report and a
+transport connected to a collector, and creates the corresponding report on
+the collector. The `callback` function is called when done. Optional `settings`,
+`reactor` and `logger` can be specified. Beware that this function only creates the
+report but does not submit the actual `entry` to the report; only the specific
+metadata contained in `entry` would be used and submitted by this function. The
+callback returns as first argument the error that occureed &mdash; or `NoError()`
+&mdash; and as second argument the report-id identifying the report.
+
+The `update_report()` function takes in input a `entry`, a `txp` transport
+connected to a collector and a `report_id`, and updates the corresponding report
+by submitting the given report entry. The `callback` function is called when
+done. Optional `settings`, `reactor` and `logger` can be specified.
+
+The `close_report()` function takes in input a `txp` transport
+connected to a collector and a `report_id`, and closes the corresponding
+report. The `callback` function is called when
+done. Optional `settings`, `reactor` and `logger` can be specified.
 
 # HISTORY
 
