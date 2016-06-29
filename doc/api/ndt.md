@@ -97,6 +97,9 @@ mk::loop_with_initial_event([]() {
 });
 ```
 
+You can also achieve the same results more compactly and in a more abstract way by using
+the `mk::NetTest` interface as shown above.
+
 # BUGS
 
 Only NDT's download and upload tests are implemented.
