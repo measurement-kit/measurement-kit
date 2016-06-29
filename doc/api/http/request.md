@@ -24,7 +24,7 @@ void mk::http::get(std::string url,
                    mk::Var<mk::Logger> = mk::Logger::global());
 
 void mk::http::request_connect(mk::Settings settings,
-                               mk::Callback<mk::Error, mk::Var<mk::net::Transport>>,
+                               mk::Callback<mk::Error, mk::Var<mk::net::Transport>> callback,
                                mk::Var<mk::Reactor> = mk::Reactor::global(),
                                mk::Var<mk::Logger> = mk::Logger::global());
 
