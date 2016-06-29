@@ -1,5 +1,5 @@
 # NAME
-mlabns &mdash; module for querying mlab name service
+mlabns &mdash; module for querying mlab name service (mlabns)
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
