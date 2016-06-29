@@ -15,7 +15,10 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # DESCRIPTION
 
-The `report` module contains code to manage tests results.
+The `report` module contains the following submodules:
+
+- [entry](report/entry.md)
+- [file reporter](report/file_reporter.md)
 
 # HISTORY
 
