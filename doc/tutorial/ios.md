@@ -126,8 +126,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 We have basically just added `measurement_kit/ooni.hpp` header to the
 auto-generated file. Such header contains all MeasurementKit definitions
 useful to run OONI tests. Then, try to build the project to ensure that
-everything works. We have also added `measurement_kit/common.hpp` that
-contains functionality that we will need later.
+everything works.
 
 To implement the test, we need to add more code to the currently-empty
 implementation of `didFinishLaunchingWithOptions`. To do that, we need to
@@ -137,54 +136,8 @@ The tcp-connect tests is a test that attempts to connect to a list of
 domain names of IP addresses. And measures, for each domain name or IP
 address, whether the connection suceeded or not.
 
-The first thing we need to tell Measurement Kit is the address of the
-DNS resolver currently used by the device. To do this, modify the
-`didFinishLaunchingWithOptions` method such that it looks like this:
-
-```Objective-C
-- (BOOL)application:(UIApplication *)application
-didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    BOOL result = NO;
-    res_state res = nullptr;
-    do {
-
-        // Copy DNS resolver(s) from device
-        res = (res_state) malloc(sizeof(struct __res_state));
-        if (res == nullptr) break;
-        if (res_ninit(res) != 0) break;
-        mk::clear_nameservers();
-        for (int i = 0; i < res->nscount; ++i) {
-            char addr[INET_ADDRSTRLEN];
-            if (inet_ntop(AF_INET, &res->nsaddr_list[i].sin_addr, addr,
-                          sizeof (addr)) == nullptr) {
-                continue;
-            }
-            mk::add_nameserver(addr);
-            NSLog(@"adding DNS resolver: %s", addr);
-        }
-        free(res);
-        res = nullptr;
-
-        // TODO: more code here
-
-        result = YES;
-    } while (0);
-    if (res) free(res);
-    return result;
-}
-```
-
-This will query the device for the available DNS servers and configure them
-as resolvers for Measurement Kit. For this code to work, you also need to add
-`libresolv.tdb` to the list of frameworks of your project. And you also
-need to add the following headers to `AppDelegate.mm`:
-
-```Objective-C
-#include <arpa/inet.h>
-#include <ifaddrs.h>
-#include <resolv.h>
-#include <dns.h>
-```
+The first step would be to gather the device DNS resolver. For the sake of
+simplicity, here we're going to use `8.8.8.8` as a resolver.
 
 As a second step, you need to add to the application a file telling the
 tcp-connect test which hosts to test. To this end, create a new file named
@@ -209,18 +162,19 @@ just below the TODO comment indicated above:
         NSBundle *bundle = [NSBundle mainBundle];
         NSString *path = [bundle pathForResource:@"inputs" ofType:@"txt"];
         const char *input_path = [path UTF8String];
-        NSLog(@"path of input file: %s", input_path);
+        NSLog(@"path of input file: %@", path);
 ```
 
 We are now ready to invoke the tcp-connect test. Add the following code
 just below the code you just added:
 
 ```Objective-C
-        mk::ooni::TcpConnectTest()
-            .set_verbose(true)
-            .set_port("80")
-            .set_input_file_path(input_path)
-            .run();
+    mk::ooni::TcpConnect()
+        .increase_verbosity()
+        .set_options("port", 80)
+        .set_options("dns/nameserver", "8.8.8.8")
+        .set_input_filepath(input_path)
+        .run();
 ```
 
 This will run the tcp-connect test in synchronous mode. That is, the current
@@ -234,14 +188,15 @@ the test in the background and notify us when done) we can modify the code
 above as follows:
 
 ```Objective-C
-        mk::ooni::TcpConnectTest()
-            .set_verbose(true)
-            .set_port("80")
-            .set_input_file_path(input_path)
-            .run([]() {
-                // TODO This code runs in a background thread and is
-                // called when the tcp-connect test is complete
-            });
+    mk::ooni::TcpConnect()
+        .increase_verbosity()
+        .set_options("port", 80)
+        .set_options("dns/nameserver", "8.8.8.8")
+        .set_input_filepath(input_path)
+        .run([]() {
+            // TODO This code runs in a background thread and is
+            // called when the tcp-connect test is complete
+        });
 ```
 
 Basically, the C++11 lambda passed to `run()` is called from a background
@@ -253,18 +208,20 @@ lambda capture list to retain a reference to `message`. And finally let's
 use `dispatch_async` to dispatch the message when we are done.
 
 ```Objective-C
-        NSString *message = @"message-0xdeadidea";
-        mk::ooni::TcpConnectTest()
-            .set_verbose(true)
-            .set_port("80")
-            .set_input_file_path(input_path)
-            .run([message]() {
-                // Caution: code called from a background thread
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    NSLog(@"test complete: %@", message);
-                });
+    NSString *message = @"message-0xdeadidea";
+    mk::ooni::TcpConnectTest()
+        .increase_verbosity()
+        .set_options("port", 80)
+        .set_options("dns/nameserver", "8.8.8.8")
+        .set_input_filepath(input_path)
+        .run([message]() {
+            // Caution: code called from a background thread
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"test complete: %@", message);
             });
-        NSLog(@"test in progress: %@", message);
+        });
+
+    NSLog(@"test in progress: %@", message);
 ```
 
 The "test in progress" message is there so that it's clear from the logs
@@ -276,32 +233,34 @@ into an array, which will be printed once the test is complete. This simulates
 the case where you store separate logs for different tests.
 
 ```Objective-C
-        NSString *message = @"message-0xdeadidea";
-        NSMutableArray *logs = [[NSMutableArray alloc] init];
-        NSLock *mtx = [[NSLock alloc] init];
-        mk::ooni::TcpConnectTest()
-            .set_verbose(true)
-            .set_port("80")
-            .set_input_file_path(input_path)
-            .on_log([logs, mtx](const char *s) {
-                // Caution: code called from a background thread
-                // Caution: `s` points to a static buffer, so I must copy it
+    NSString *message = @"message-0xdeadidea";
+    NSMutableArray *logs = [[NSMutableArray alloc] init];
+    NSLock *mtx = [[NSLock alloc] init];
+    mk::ooni::TcpConnect()
+        .increase_verbosity()
+        .set_options("port", 80)
+        .set_options("dns/nameserver", "8.8.8.8")
+        .set_input_filepath(input_path)
+        .on_log([logs, mtx](const char *s) {
+            // Caution: code called from a background thread
+            // Caution: `s` points to a static buffer, so I must copy it
+            [mtx lock];
+            [logs addObject:[NSString stringWithUTF8String:s]];
+            [mtx unlock];
+        })
+        .run([message, logs, mtx]() {
+            // Caution: code called from a background thread
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"test complete: %@", message);
                 [mtx lock];
-                [logs addObject:[NSString stringWithUTF8String:s]];
+                for (NSString *line in logs) {
+                    NSLog(@"> %@", line);
+                }
                 [mtx unlock];
-            })
-            .run([message, logs, mtx]() {
-                // Caution: code called from a background thread
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    NSLog(@"test complete: %@", message);
-                    [mtx lock];
-                    for (NSString *line in logs) {
-                        NSLog(@"> %@", line);
-                    }
-                    [mtx unlock];
-                });
             });
-        NSLog(@"test in progress: %@", message);
+        });
+
+    NSLog(@"test in progress: %@", message);
 ```
 
 I've also added a lock to ensure that the logs object is always accessed
@@ -316,13 +275,7 @@ The final example code is the following:
 
 ```Objective-C
 #import "AppDelegate.h"
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni.hpp>
-
-#include <arpa/inet.h>
-#include <ifaddrs.h>
-#include <resolv.h>
-#include <dns.h>
 
 @interface AppDelegate ()
 
@@ -332,64 +285,42 @@ The final example code is the following:
 
 - (BOOL)application:(UIApplication *)application
 didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    BOOL result = NO;
-    res_state res = nullptr;
-    do {
 
-        // Copy DNS resolver(s) from device
-        res = (res_state) malloc(sizeof(struct __res_state));
-        if (res == nullptr) break;
-        if (res_ninit(res) != 0) break;
-        mk::clear_nameservers();
-        for (int i = 0; i < res->nscount; ++i) {
-            char addr[INET_ADDRSTRLEN];
-            if (inet_ntop(AF_INET, &res->nsaddr_list[i].sin_addr, addr,
-                          sizeof (addr)) == nullptr) {
-                continue;
-            }
-            mk::add_nameserver(addr);
-            NSLog(@"adding DNS resolver: %s", addr);
-        }
-        free(res);
-        res = nullptr;
+    // Get path of input file:
+    NSBundle *bundle = [NSBundle mainBundle];
+    NSString *path = [bundle pathForResource:@"inputs" ofType:@"txt"];
+    const char *input_path = [path UTF8String];
+    NSLog(@"path of input file: %s", input_path);
 
-        // Get path of input file:
-        NSBundle *bundle = [NSBundle mainBundle];
-        NSString *path = [bundle pathForResource:@"inputs" ofType:@"txt"];
-        const char *input_path = [path UTF8String];
-        NSLog(@"path of input file: %s", input_path);
-
-        NSString *message = @"message-0xdeadidea";
-        NSMutableArray *logs = [[NSMutableArray alloc] init];
-        NSLock *mtx = [[NSLock alloc] init];
-        mk::ooni::TcpConnectTest()
-            .set_verbose(true)
-            .set_port("80")
-            .set_input_file_path(input_path)
-            .on_log([logs, mtx](const char *s) {
-                // Caution: code called from a background thread
-                // Caution: `s` points to a static buffer, so I must copy it
+    NSString *message = @"message-0xdeadidea";
+    NSMutableArray *logs = [[NSMutableArray alloc] init];
+    NSLock *mtx = [[NSLock alloc] init];
+    mk::ooni::TcpConnectTest()
+        .increase_verbosity()
+        .set_options("port", 80)
+        .set_options("dns/nameserver", "8.8.8.8")
+        .set_input_filepath(input_path)
+        .on_log([logs, mtx](const char *s) {
+            // Caution: code called from a background thread
+            // Caution: `s` points to a static buffer, so I must copy it
+            [mtx lock];
+            [logs addObject:[NSString stringWithUTF8String:s]];
+            [mtx unlock];
+        })
+        .run([message, logs, mtx]() {
+            // Caution: code called from a background thread
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSLog(@"test complete: %@", message);
                 [mtx lock];
-                [logs addObject:[NSString stringWithUTF8String:s]];
+                for (NSString *line in logs) {
+                    NSLog(@"> %@", line);
+                }
                 [mtx unlock];
-            })
-            .run([message, logs, mtx]() {
-                // Caution: code called from a background thread
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    NSLog(@"test complete: %@", message);
-                    [mtx lock];
-                    for (NSString *line in logs) {
-                        NSLog(@"> %@", line);
-                    }
-                    [mtx unlock];
-                });
             });
-        NSLog(@"test in progress: %@", message);
+        });
 
-        result = YES;
-    } while (0);
-    if (res) free(res);
-    return result;
+    NSLog(@"test in progress: %@", message);
+    return YES;
 }
 
 // more code here...
