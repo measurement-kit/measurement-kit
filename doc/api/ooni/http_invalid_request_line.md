@@ -11,8 +11,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 namespace mk {
 namespace ooni {
 
-class HttpInvalidRequestLine : public OoniTest {
-};
+class HttpInvalidRequestLine : public OoniTest {};
 
 } // namespace ooni
 } // namespace mk
@@ -21,7 +20,12 @@ class HttpInvalidRequestLine : public OoniTest {
 # DESCRIPTION
 
 The `HttpInvalidRequestLine` class allows to run OONI
-http-invalid-request-line test.
+http-invalid-request-line test. In addition
+to `OoniTest`, this class honours the following options:
+
+- *"backend"* (string): URL of the server where an `echo`
+  backend is running, such that we can evaluate what is
+  echoed back and search for tampering.
 
 # EXAMPLE
 
