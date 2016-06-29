@@ -1,5 +1,5 @@
 # NAME
-mk::http -- MeasurementKit HTTP library
+http &mdash; HTTP module
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
