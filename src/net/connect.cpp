@@ -235,7 +235,10 @@ void connect(std::string address, int port,
         socks5_connect(address, port, settings, callback, reactor, logger);
         return;
     }
-    double timeout = settings.get("net/timeout", 30.0);
+    if (settings.find("net/timeout") == settings.end()) {
+        settings["net/timeout"] = 5.0;
+    }
+    double timeout = settings["net/timeout"].as<double>();
     connect_logic(
         address, port,
         [=](Error err, Var<ConnectResult> r) {
