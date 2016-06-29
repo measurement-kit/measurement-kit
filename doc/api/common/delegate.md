@@ -1,5 +1,5 @@
 # NAME
-Delegate -- Function that can modify itself when used as a method.
+Delegate &mdash; Function that can modify itself when used as a method.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -64,10 +64,6 @@ The bool operator returns true if the underlying function is callable and false
 if attempting to call the delegate would raise `std::bad_function_call`.
 
 The call operator allows to call the `Delegate`.
-
-# EXAMPLE
-
-See `example/common/delegate.cpp`.
 
 # HISTORY
 
