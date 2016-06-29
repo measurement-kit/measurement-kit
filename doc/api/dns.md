@@ -1,5 +1,5 @@
 # NAME
-dns -- MeasurementKit DNS library
+dns &mdash; DNS module
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
