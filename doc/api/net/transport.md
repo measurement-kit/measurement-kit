@@ -1,5 +1,5 @@
 # NAME
-Transport -- TCP-like connection
+Transport &mdash; TCP-like connection
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
