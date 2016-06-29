@@ -2,10 +2,10 @@ machine:
   services:
     - docker
 
-general:
-  branches:
-    ignore:
-      - /^doc\/.*$/
+#general:
+#  branches:
+#    ignore:
+#      - /^doc\/.*$/
 
 test:
   override:

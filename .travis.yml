@@ -1,8 +1,8 @@
 language: cpp
 
-branches:
-  except:
-    - /^doc\/.*$/
+#branches:
+#  except:
+#    - /^doc\/.*$/
 
 install:
     - if [ "$VER" != ""  ]; then
