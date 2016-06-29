@@ -26,6 +26,8 @@ to `OoniTest`, this class honours the following options:
   a DNS server is *not* actually running such that, if we receive a response, such
   response has necessarily been injected.
 
+Also, this test requires an input file.
+
 # EXAMPLE
 
 ```C++
