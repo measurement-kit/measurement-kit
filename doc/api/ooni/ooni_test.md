@@ -63,7 +63,6 @@ The algorithm followed by `end()` is the following:
 - close the report
 - submit the report to collector
 - callback
-- 
 
 The `OoniTest` class honours the following settings:
 
@@ -83,4 +82,4 @@ The `OoniTest` class honours the following settings:
 
 # HISTORY
 
-The `templates` submodule appeared in MeasurementKit 0.2.0.
+The `OoniTest` class appeared in MeasurementKit 0.2.0.
