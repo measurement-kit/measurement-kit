@@ -193,8 +193,9 @@ dns::query(
                 } else if (answer.type == "PTR") {
                     std::string hostname = answer.hostname;
                 } else {
-                    /* nothing */ ;
+                    continue;
                 }
+                /* ... */
             }
         }, settings);
 ```
