@@ -42,6 +42,8 @@ The `NdtTest` class is a subclass of `mk::NetTest` that runs a NDT test. Hence y
 can run a NDT test as follows:
 
 ```C++
+#include <measurement_kit/ndt.hpp>
+
 using namespace mk::ndt;
 
 NdtTest()
@@ -50,8 +52,9 @@ NdtTest()
     .run();
 ```
 
-(See the documentation of `mk::NetTest` for more information on how to run a NetTest
-and on what options are available.)
+More options than the one displayed above are available; see the documentation of
+`mk::NetTest` for more information on how to run a NetTest and on what options are
+available.
 
 The `run()` function runs a NDT test and calls the `callback` specified as its first
 argument when done, passing it the error that occurred &mdash; or `NoError()` in case
