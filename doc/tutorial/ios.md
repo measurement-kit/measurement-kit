@@ -40,7 +40,7 @@ Then, you shall use the terminal and `cd` to the directory containing
 the `.xcodeproj` file. There, create a file called `Podfile` and write
 inside it the following content:
 
-```
+```ruby
 target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit'
 end
@@ -49,7 +49,7 @@ end
 (Instead, if you want to install measurement_kit directly from its
 git repository, write the following inside the `Podfile`:
 
-```
+```ruby
 target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit',
         :git => 'https://github.com/measurement-kit/measurement-kit.git',
