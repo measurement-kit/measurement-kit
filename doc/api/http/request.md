@@ -80,6 +80,10 @@ as input the `url` argument and `http/method` as `GET`. Unlike `request()` you c
 set the body, because `GET` requests SHOULD NOT carry a body. All other arguments
 have equal semantic.
 
+Both `request()` and `get()` support `SSL` if the URL schema is `https`. Also, both
+functions close the established connection when the response is received. To implement
+keep-alive semantic, use the following, lower-level functions.
+
 The `request_connect()` function establishes a TCP (and possibly SSL) connection
 towards an HTTP (or HTTPS) server. It uses as input the specified `settings`
 and, when done, it invokes `callback` with the error that occurred &mdash; or
