@@ -9,18 +9,12 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/dns.hpp>
 
-namespace mk {
-namespace dns {
-
-void query(QueryClass dns_class,
-           QueryType dns_type,
-           std::string query_name,
-           Callback<Error, Message> callback,
-           Settings settings = {},
-           Var<Reactor> reactor = Reactor::global());
-
-} // namespace dns
-} // namespace mk
+void mk::dns::query(mk::dns::QueryClass dns_class,
+                    mk::dns::QueryType dns_type,
+                    std::string query_name,
+                    mk::Callback<mk::Error, mk::dns::Message> callback,
+                    mk::Settings settings = {},
+                    mk::Var<mk::Reactor> reactor = mk::Reactor::global());
 ```
 
 # DESCRIPTION
