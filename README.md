@@ -118,6 +118,11 @@ The vanilla build process is the following:
     ./configure
     make
 
+To tell make to produce less output (as in the Linux kernel
+build process) run:
+
+    make V=0
+
 You can also force `./configure` to select dependencies available
 at specific directories using the following flags:
 
@@ -153,11 +158,6 @@ Once you have built MeasurementKit, to compile and run the unit
 test programs, run:
 
     make check
-
-To tell make to produce less output (as in the Linux kernel
-build process) run:
-
-    make V=0
 
 ### How to build MeasurementKit on Android
 
