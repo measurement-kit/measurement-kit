@@ -1,5 +1,5 @@
 # NAME
-ext -- external functionality library
+ext &mdash; module containing third parties' code
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
