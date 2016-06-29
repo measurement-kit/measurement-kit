@@ -110,4 +110,5 @@ the `readn()` function with `n` equal to `1`.
 
 # HISTORY
 
-The `Transport` class appeared in MeasurementKit 0.1.0.
+The `Transport` class appeared in MeasurementKit 0.1.0. The `read()`, `readn()`,
+and `write()` functions were added in v0.2.0.
