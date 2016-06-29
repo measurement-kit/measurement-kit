@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include "src/dns/query.hpp"
+#include "src/dns/query_impl.hpp"
 #include <measurement_kit/dns.hpp>
 
 using namespace mk;
@@ -130,21 +130,21 @@ TEST_CASE("throw error with ntop conversion error") {
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
-    query_debug<::evdns_base_free, null_resolver>(
+    query_impl<::evdns_base_free, null_resolver>(
         "IN", "A", "www.google.com",
         [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
         Reactor::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
-    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
+    query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
         "IN", "AAAA", "github.com",
         [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
         Reactor::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
-    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, null_resolver_reverse>(
         "IN", "REVERSE_A", "8.8.8.8",
         [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
@@ -152,7 +152,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
-    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 null_resolver_reverse>(
         "IN", "REVERSE_AAAA", "::1",
@@ -161,14 +161,14 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
 }
 
 TEST_CASE("dns::query deals with inet_pton returning 0") {
-    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_A", "8.8.8.8",
         [](Error e, Message) { REQUIRE(e == InvalidIPv4AddressError()); }, {},
         Reactor::global());
 
-    query_debug<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_AAAA", "::1",

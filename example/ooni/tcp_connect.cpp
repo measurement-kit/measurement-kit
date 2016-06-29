@@ -33,11 +33,11 @@ int main(int argc, char **argv) {
                   << "\n";
         exit(1);
     }
-    mk::ooni::TcpConnectTest()
+    mk::ooni::TcpConnect()
         .set_options("port", port)
         .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
         .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
-        .set_input_file_path(argv[0])
+        .set_input_filepath(argv[0])
         .set_verbosity(verbosity)
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();

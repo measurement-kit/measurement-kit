@@ -13,7 +13,7 @@
 using namespace mk;
 
 static void run_http_invalid_request_line(Runner &runner) {
-    runner.run_test(ooni::HttpInvalidRequestLineTest()
+    runner.run_test(ooni::HttpInvalidRequestLine()
                        .set_options("backend", "http://nexa.polito.it/")
                        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
                        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
@@ -22,37 +22,37 @@ static void run_http_invalid_request_line(Runner &runner) {
                        })
                        .create_test_(),
                    [](Var<NetTest> test) {
-                       mk::debug("test complete: %llu", test->identifier());
+                       mk::debug("test complete: %p", (void *)test.get());
                    });
 }
 
 static void run_dns_injection(Runner &runner) {
-    runner.run_test(ooni::DnsInjectionTest()
+    runner.run_test(ooni::DnsInjection()
                        .set_options("backend", "8.8.8.8:53")
                        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
                        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
-                       .set_input_file_path("test/fixtures/hosts.txt")
+                       .set_input_filepath("test/fixtures/hosts.txt")
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #3: %s\n", s);
                        })
                        .create_test_(),
                    [](Var<NetTest> test) {
-                       mk::debug("test complete: %llu", test->identifier());
+                       mk::debug("test complete: %p", (void *)test.get());
                    });
 }
 
 static void run_tcp_connect(Runner &runner) {
-    runner.run_test(ooni::TcpConnectTest()
+    runner.run_test(ooni::TcpConnect()
                        .set_options("port", "80")
                        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
                        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
-                       .set_input_file_path("test/fixtures/hosts.txt")
+                       .set_input_filepath("test/fixtures/hosts.txt")
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #4: %s\n", s);
                        })
                        .create_test_(),
                    [](Var<NetTest> test) {
-                       mk::debug("test complete: %llu", test->identifier());
+                       mk::debug("test complete: %p", (void *)test.get());
                    });
 }
 

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MeasurementKit 0.2.0-beta.2 [2016-06-19]
 
 - http/request_serializer: allow custom path
@@ -10,7 +11,8 @@
 
 # MeasurementKit 0.2.0-beta.1 [2016-06-08]
 
-- ip_lookup(): allow custom settings, reactor, and logger (required by Android app)
+- `ip_lookup()`: allow custom settings, reactor, and logger (required
+   by Android app)
 
 # MeasurementKit 0.2.0-beta [2016-06-07]
 

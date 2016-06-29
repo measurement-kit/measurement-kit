@@ -15,6 +15,8 @@ MK_DEFINE_ERR(MK_ERR_OONI(2), MissingCollectorBaseUrlError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(3), CannotOpenReportError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(4), MissingMandatoryKeyError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(5), InvalidMandatoryValueError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(6), MissingRequiredHostError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(7), MissingRequiredUrlError, "")
 
 } // namespace mk
 } // namespace ooni

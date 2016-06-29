@@ -41,18 +41,16 @@ class NetTest {
         reactor->call_soon(func);
     }
 
-    unsigned long long identifier() { return (unsigned long long)this; }
-
     NetTest() {}
     NetTest(Settings o) : options(o) {}
     NetTest(std::string i, Settings o) : options(o), input_filepath(i) {}
     virtual ~NetTest();
 
-    NetTest &set_input_file_path(std::string s) {
+    NetTest &set_input_filepath(std::string s) {
         input_filepath = s;
         return *this;
     }
-    NetTest &set_output_file_path(std::string s) {
+    NetTest &set_output_filepath(std::string s) {
         output_filepath = s;
         return *this;
     }
@@ -80,28 +78,6 @@ class NetTest {
     std::string input_filepath;
     std::string output_filepath;
 };
-
-// Note: until we properly unify tests as seen through the DSL (for example,
-// DnsInjectionTest) and tests meant to run (DNSInjectionTestImpl), when using
-// the DSL style creation it would not be possible to run the tests.
-//
-// Ideally, in the future, this would change and it would be possible to
-// create a test class and either schedule it for running on the runner or
-// just directly run it using ->begin() and ->end().
-//
-// For NDT, it is already like this. For OONI, not yet.
-#define MK_DECLARE_TEST_DSL(_name_)                                            \
-    class _name_ : public mk::NetTest {                                        \
-      public:                                                                  \
-        Var<NetTest> create_test_() override;                                  \
-      private:                                                                 \
-        void begin(Callback<>) override {                                      \
-            throw std::runtime_error("not yet implemented");                   \
-        }                                                                      \
-        void end(Callback<>) override {                                        \
-            throw std::runtime_error("not yet implemented");                   \
-        }                                                                      \
-    };
 
 } // namespace mk
 #endif

@@ -2,9 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <future>
 #include <measurement_kit/common.hpp>
 #include <thread>
-#include <future>
 
 namespace mk {
 
@@ -28,22 +28,23 @@ void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
         running = true;
     }
     active += 1;
-    debug("runner: scheduling %llu", test->identifier());
+    debug("runner: scheduling %p", (void *)test.get());
     reactor->call_soon([=]() {
-        debug("runner: starting %llu", test->identifier());
+        debug("runner: starting %p", (void *)test.get());
         test->begin([=]() {
-            debug("runner: ending %llu", test->identifier());
+            debug("runner: ending %p", (void *)test.get());
             test->end([=]() {
-                debug("runner: cleaning-up %llu", test->identifier());
+                debug("runner: cleaning-up %p", (void *)test.get());
                 // For robustness, delay the final callback to the beginning of
-                // next I/O cycle to prevent possible user after frees. This could
-                // happen because, in our current position on the stack, we have
-                // been called by `NetTest` code that may use `this` after calling
-                // the callback. But this would be a problem because `test` is
-                // most likely to be destroyed after `fn()` returns. This, when
-                // unwinding the stack, the use after free would happen.
+                // next I/O cycle to prevent possible user after frees. This
+                // could happen because, in our current position on the stack,
+                // we have been called by `NetTest` code that may use `this`
+                // after calling the callback. But this would be a problem
+                // because `test` is most likely to be destroyed after `fn()`
+                // returns. This, when unwinding the stack, the use after free
+                // would happen.
                 reactor->call_soon([=]() {
-                    debug("runner: callbacking %llu", test->identifier());
+                    debug("runner: callbacking %p", (void *)test.get());
                     active -= 1;
                     debug("runner: #active tasks: %d", (int)active);
                     fn(test);

@@ -14,20 +14,23 @@ using namespace mk;
 using namespace mk::net;
 
 static const char *kv_usage =
-        "usage: ./example/net/connect [-Tv] [-p port] domain\n";
+        "usage: ./example/net/connect [-Tv] [-p port] [-t timeout] domain\n";
 
 int main(int argc, char **argv) {
 
     int port = 80;
     Settings settings;
     char ch;
-    while ((ch = getopt(argc, argv, "p:Tv")) != -1) {
+    while ((ch = getopt(argc, argv, "p:Tt:v")) != -1) {
         switch (ch) {
         case 'p':
             port = lexical_cast<int>(optarg);
             break;
         case 'T':
             settings["net/socks5_proxy"] = "127.0.0.1:9050";
+            break;
+        case 't':
+            settings["net/timeout"] = lexical_cast<double>(optarg);
             break;
         case 'v':
             increase_verbosity();
@@ -46,7 +49,7 @@ int main(int argc, char **argv) {
 
     loop_with_initial_event([&domain, &port, &settings]() {
         connect(domain, port, [](Error err, Var<Transport> txp) {
-            std::cout << "Overall connect result: " << (int)err << "\n";
+            std::cout << "Overall connect result: " << err.code << "\n";
             Var<ConnectResult> cr = err.context.as<ConnectResult>();
             if (!cr) {
                 std::cout << "No connection information\n";
@@ -65,7 +68,7 @@ int main(int argc, char **argv) {
                 }
                 std::cout << "errors returned by the various connects:\n";
                 for (auto e : cr->connect_result) {
-                    std::cout << "    - " << (int)e << "\n";
+                    std::cout << "    - " << e.code << "\n";
                 }
                 std::cout << "bufferevent address used internally: "
                         << cr->connected_bev << "\n";
