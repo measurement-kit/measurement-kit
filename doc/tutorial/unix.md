@@ -77,12 +77,7 @@ the standard super-verbose build process.
 If also this step succeeds, you may want to run Measurement Kit tests
 to make sure that everything was compiled correctly. To do so, run:
 
-    make check-am V=0
-
-(We prefer `check-am` over `check` because we do not want to also run the
-dependencies tests, in case builtin dependencies were used. Also note that
-some tests requiring network connectivity may fail due to transient
-network errors, even though that is not so common.)
+    make check V=0
 
 As a final step, to install Measurement Kit under `/usr/local`, you need
 to become *root* and type:
