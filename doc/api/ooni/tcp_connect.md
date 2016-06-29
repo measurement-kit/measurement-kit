@@ -11,8 +11,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 namespace mk {
 namespace ooni {
 
-class TcpConnect : public OoniTest {
-};
+class TcpConnect : public OoniTest {};
 
 } // namespace ooni
 } // namespace mk
@@ -20,7 +19,12 @@ class TcpConnect : public OoniTest {
 
 # DESCRIPTION
 
-The `TcpConnect` class allows to run OONI tcp-connect test.
+The `TcpConnect` class allows to run OONI tcp-connect test. In addition
+to `OoniTest`, this class honours the following options:
+
+- *"port"* (int): port to connect to.
+
+Also, this test requires an input file.
 
 # EXAMPLE
 
