@@ -20,7 +20,7 @@ mk::ErrorOr<mk::http::Url> mk::http::parse_url_noexcept(std::string url);
 
 The `parse_url()` function parses the `url` argument into a `Url` structure:
 
-```
+```C++
 class Url {
   public:
     std::string schema;
