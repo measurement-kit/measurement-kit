@@ -10,7 +10,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 class Entry : private nlohmann::json {
   public:
-    using nlohmann::json;
+    using nlohmann::json::json;
 
     static Entry array();
     template <typename T> operator ErrorOr<T>();
