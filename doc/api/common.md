@@ -11,10 +11,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # DESCRIPTION
 
-The `common` module contains common functionality in MeasurementKit
-that can all be pulled by including the `common.hpp` header.
-
-This module contains the following submodules:
+The `common` module contains contains the following submodules:
 
 - [callback](common/callback.md): alias for writing callback functions more compactly
 - [continuation](common/continuation.md): type of function used to restart a function that paused
