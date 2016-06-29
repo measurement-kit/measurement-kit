@@ -1,5 +1,5 @@
 # NAME
-version -- MeasurementKit version
+version &mdash; MeasurementKit version
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
