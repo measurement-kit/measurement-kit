@@ -11,6 +11,9 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # DESCRIPTION
 
+In OONI, a test consists of one or more test cases. Each test case produces as
+result an entry. All such entries make a report.
+
 The `report` module contains the following submodules:
 
 - [entry](report/entry.md): contains the results of a single test case
