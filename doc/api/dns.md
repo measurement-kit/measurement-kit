@@ -138,7 +138,7 @@ query class, `ttl` is the response time to live, and the following fields
 are only set for specific query types.
 
 The optional `Settings` argument contains settings modifying the behavior of
-the DNS library. The following settings are available:
+the `query` function. The following settings are available:
 
 - *dns/attempts*: how many attempts before erroring out (default is three)
 
