@@ -1,5 +1,5 @@
 # NAME
-Buffer - Buffer containing data.
+Buffer &mdash; Buffer containing data.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
