@@ -1,5 +1,5 @@
 # NAME
-Settings -- Map from string to scalar type
+Settings &mdash; Map from string to scalar type
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
