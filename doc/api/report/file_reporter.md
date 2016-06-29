@@ -1,5 +1,5 @@
 # NAME
-report &mdash; Tests results
+file_reporter &mdash; Writes report on a file
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
