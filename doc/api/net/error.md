@@ -8,7 +8,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/net.hpp>
 
-mk::Error error = mk::net::EOFError();
+// ERROR CODES DEFINED IN <measurement_kit/net/error.hpp>
 ```
 
 # DESCRIPTION
