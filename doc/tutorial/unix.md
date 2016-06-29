@@ -52,7 +52,6 @@ Measurement Kit depends at build time on other pieces of software. At the
 moment of writing this tutorial, it depends on:
 
 - [libevent](https://github.com/libevent/libevent)
-- [json](https://github.com/nlohmann/json)
 - [geoip](https://github.com/maxmind/geoip-api-c)
 
 You may want to check the most recent version of [README.md](
@@ -60,13 +59,8 @@ https://github.com/measurement-kit/measurement-kit/blob/master/README.md)
 to check whether the dependencies changed since this tutorial was
 written. If so, please let us know.
 
-By default, if dependencies are not found in the host system, Measurement
-Kit will use a bundled copy of such dependencies. Instead, if they are
-available on host host system, they are used. In the latter case the build
-process is much faster, because less code needs to be compiled.
-
-The `configure` script will warn you if a dependency is missing on the
-host system and a bundled dependency is being used instead.
+The `configure` script will fail if a dependency is missing on the
+host system and tell you how you could install it.
 
 To start the `configure` script run:
 
@@ -83,12 +77,7 @@ the standard super-verbose build process.
 If also this step succeeds, you may want to run Measurement Kit tests
 to make sure that everything was compiled correctly. To do so, run:
 
-    make check-am V=0
-
-(We prefer `check-am` over `check` because we do not want to also run the
-dependencies tests, in case builtin dependencies were used. Also note that
-some tests requiring network connectivity may fail due to transient
-network errors, even though that is not so common.)
+    make check V=0
 
 As a final step, to install Measurement Kit under `/usr/local`, you need
 to become *root* and type:
@@ -154,7 +143,7 @@ arguments) the program should print an help message.
 int main(int argc, char **argv) {
     const char *backend = "8.8.8.1:53";
     const char *progname = argv[0];
-    int verbose = 0;
+    int verbose = MK_LOG_INFO;
     int chr;
 
     while ((chr = getopt(argc, argv, "b:v")) >= 0) {
@@ -163,7 +152,7 @@ int main(int argc, char **argv) {
             backend = optarg;
             break;
         case 'v':
-            verbose = 1;
+            verbose = MK_LOG_DEBUG;
             break;
         default:
             printf("usage: %s [-v] [-b backend] input-file [...]\n", progname);
@@ -179,7 +168,7 @@ int main(int argc, char **argv) {
 }
 ```
 
-Next we want to run OONI DNSInjection test on all the remaining arguments,
+Next we want to run OONI DnsInjection test on all the remaining arguments,
 using as backend the specified backend, or the default one. We will iterate
 over all the remaining command line options and launch an instance of the
 DNS Injection test for each file. All these tests will run in parallel and
@@ -189,10 +178,10 @@ completion status of tests we will use a `volatile int` variable.
 ```C++
     volatile int running = 0;
     for (; argc > 0; --argc, ++argv, ++running) {
-        mk::ooni::DnsInjectionTest()
-            .set_backend(backend)
-            .set_input_file_path(argv[0])
-            .set_verbose(verbose)
+        mk::ooni::DnsInjection()
+            .set_options("backend", backend)
+            .set_input_filepath(argv[0])
+            .set_verbosity(verbose)
             .run([&running]() { --running; });
     }
 ```
@@ -217,7 +206,7 @@ Putting everything together:
 int main(int argc, char **argv) {
     const char *backend = "8.8.8.1:53";
     const char *progname = argv[0];
-    int verbose = 0;
+    int verbose = MK_LOG_INFO;
     int chr;
 
     while ((chr = getopt(argc, argv, "b:v")) >= 0) {
@@ -226,7 +215,7 @@ int main(int argc, char **argv) {
             backend = optarg;
             break;
         case 'v':
-            verbose = 1;
+            verbose = MK_LOG_DEBUG;
             break;
         default:
             printf("usage: %s [-v] [-b backend] input-file [...]\n", progname);
@@ -242,10 +231,10 @@ int main(int argc, char **argv) {
 
     volatile int running = 0;
     for (; argc > 0; --argc, ++argv, ++running) {
-        mk::ooni::DnsInjectionTest()
-            .set_backend(backend)
-            .set_input_file_path(argv[0])
-            .set_verbose(verbose)
+        mk::ooni::DnsInjection()
+            .set_options("backend", backend)
+            .set_input_filepath(argv[0])
+            .set_verbosity(verbose)
             .run([&running]() { --running; });
     }
 
@@ -260,7 +249,7 @@ We can now compile (and link) the code using the following command:
 Then create a file named INPUT and paste inside it this content:
 
 ```
-measurement-kitgithub.io
+measurement-kit.github.io
 nexa.polito.it
 ooni.torproject.org
 ```

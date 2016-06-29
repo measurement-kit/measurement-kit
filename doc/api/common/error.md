@@ -1,5 +1,5 @@
 # NAME
-Error -- Represent and handle errors.
+Error &mdash; Represent and handle errors.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -42,15 +42,18 @@ class Error : public std::exception {
             this->reason += " ";                            \
             this->reason += s;                              \
         }                                                   \
-    }
+    };
 
-MK_DEFINE_ERR(0, NoError, "");
-MK_DEFINE_ERR(1, GenericError, "");
-MK_DEFINE_ERR(2, NotInitializedError, "");
-MK_DEFINE_ERR(3, ValueError, "");
-MK_DEFINE_ERR(4, MockedError, "");
-MK_DEFINE_ERR(5, JsonParseError, "");
-MK_DEFINE_ERR(6, JsonKeyError, "");
+MK_DEFINE_ERR(0, NoError, "")
+MK_DEFINE_ERR(1, GenericError, "")
+MK_DEFINE_ERR(2, NotInitializedError, "")
+MK_DEFINE_ERR(3, ValueError, "")
+MK_DEFINE_ERR(4, MockedError, "")
+MK_DEFINE_ERR(5, JsonParseError, "")
+MK_DEFINE_ERR(6, JsonKeyError, "")
+MK_DEFINE_ERR(7, JsonDomainError, "")
+MK_DEFINE_ERR(8, FileEofError, "")
+MK_DEFINE_ERR(9, FileIoError, "")
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)
@@ -58,6 +61,8 @@ MK_DEFINE_ERR(6, JsonKeyError, "");
 #define MK_ERR_TRACEROUTE(x) (4000 + x)
 #define MK_ERR_MLABNS(x) (5000 + x)
 #define MK_ERR_OONI(x) (6000 + x)
+#define MK_ERR_REPORT(x) (7000 + x)
+#define MK_ERR_NDT(x) (8000 + x)
 
 }
 ```
@@ -102,7 +107,7 @@ as in the following snippet of code:
 The equality and inequality operators allow to compare errors with error codes and
 with errors. Currently, the comparison is *only* performed on the grounds of the
 error code, hence different error classes having the same error code would be equal,
-as show in the following snippet of code:
+as shown in the following snippet of code:
 
 ```C++
     MK_DEFINE_ERR(7, FooError, "");
@@ -117,7 +122,7 @@ MAY be different from the error stored in the `reason` field.
 The `Var<ErrorContext> context` field is a shared smart pointer (see `Var`) that MAY
 store the error context in specific cases. The typical pattern for accessing such error
 context involves three steps: making sure that the context is not `nullptr`, casting
-the base error class to the specific expected class, and making sure that the case did
+the base error class to the specific expected class, and making sure that the cast did
 not fail, again checking whether the context is not `nullptr`. For example:
 
 ```C++
@@ -187,9 +192,24 @@ defined by the `measurement_kit/common.hpp` header:
 - 4,000 for the *traceroute* lib
 - 5,000 for the *mlabns* lib
 - 6,000 for the *ooni* lib
+- 7,000 for the *report* lib
+- 8,000 for the *ndt* lib
+
+# BUGS
+
+Since the only integral value to which `Error` could be converted is `bool` there
+are odd cases where the following statement:
+
+```C++
+    REQUIRE(err == SomeError());
+```
+
+may fail because the two errors are different but `Catch` may still print as
+reason for the failed error `1 == 1` because both classes evaluate to `true` (i.e. `1`)
+even though they internally contain two different errors.
 
 # HISTORY
 
 The `Error` class appeared in MeasurementKit 0.1.0. The `ErrorContext` class, the
-`MK_DEFINE_ERR` macro, and the macros to compute absolute offsets all appeared
+`MK_DEFINE_ERR` macro, and the macros to compute absolute error codes all appeared
 in MeasurementKit 0.2.0.
