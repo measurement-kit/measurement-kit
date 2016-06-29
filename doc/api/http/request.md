@@ -80,6 +80,33 @@ as input the `url` argument and `http/method` as `GET`. Unlike `request()` you c
 set the body, because `GET` requests SHOULD NOT carry a body. All other arguments
 have equal semantic.
 
+The `request_connect()` function establishes a TCP (and possibly SSL) connection
+towards an HTTP (or HTTPS) server. It uses as input the specified `settings`
+and, when done, it invokes `callback` with the error that occurred &mdash; or
+`NoError()` &mdash; as the first argument and the connected transport wrapped by
+a `Var` as the second argument. In case of error, the transport SHOULD be `nullptr`.
+You can also specify an optional `reactor` and `logger`. The `settings` that
+matter to this function are the following:
+
+- *http/url*: use to find out the address to connect to and whether to connect
+  using TCP (if schema is `http`) or SSL (if schema is `https`). Additionally, if
+  schema is `httpo` (for `HTTP onion`), this function MAY set SOCKS5 proxy settings
+  such as a local running instance of `tor` is used.
+
+- *net/tor_socks_port*: if this setting is present, this function would pass
+  `127.0.0.1:${net/tor_socks_port}` as SOCKS5 proxy to `net/connect()`.
+
+- *net/socks5_proxy*: if this setting is present and *net/tor_socks_port* is
+  not present, then this setting is passed verbatim to `net/connect()`.
+
+- all other settings that matter to `net/connect()`.
+
+The `request_send()` function send an HTTP request asynchronously over the `txp`
+transport, using `settings`, `headers`, and `body` to construct the request,
+and calls `callback` when done. The settings that matter to this function are
+`http/url`, `http/http_version`, `http/method`, and `http/path` &mdash; all
+already described above. The callback receives the error that occurred or
+`NoError()` in case of success.
 
 
 - *callback*: Function called when either a response is received
