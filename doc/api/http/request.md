@@ -80,7 +80,8 @@ as input the `url` argument and `http/method` as `GET`. Unlike `request()` you c
 set the body, because `GET` requests SHOULD NOT carry a body. All other arguments
 have equal semantic.
 
-Both `request()` and `get()` support `SSL` if the URL schema is `https`. Also, both
+Both `request()` and `get()` support `SSL` if the URL schema is `https` and SOCKS5
+proxying as described below for `request_connect()`. Also, both
 functions close the established connection when the response is received. To implement
 keep-alive semantic, use the following, lower-level functions.
 
