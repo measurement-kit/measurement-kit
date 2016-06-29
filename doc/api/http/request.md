@@ -66,7 +66,7 @@ The `request()` function issues the asynchronous `HTTP` request specified by the
 
 - *http/method*: the method to use (default: "GET")
 
-- *http/http_version*: specify HTTP version (otherwise `HTTP/1.1 is used)
+- *http/http_version*: specify HTTP version (otherwise `HTTP/1.1` is used)
 
 - *http/path*: path to use (if not specified the one inside the URL is used instead)
 
