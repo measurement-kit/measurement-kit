@@ -143,7 +143,7 @@ arguments) the program should print an help message.
 int main(int argc, char **argv) {
     const char *backend = "8.8.8.1:53";
     const char *progname = argv[0];
-    int verbose = 0;
+    int verbose = MK_LOG_INFO;
     int chr;
 
     while ((chr = getopt(argc, argv, "b:v")) >= 0) {
@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
             backend = optarg;
             break;
         case 'v':
-            verbose = 1;
+            verbose = MK_LOG_DEBUG;
             break;
         default:
             printf("usage: %s [-v] [-b backend] input-file [...]\n", progname);
@@ -179,9 +179,9 @@ completion status of tests we will use a `volatile int` variable.
     volatile int running = 0;
     for (; argc > 0; --argc, ++argv, ++running) {
         mk::ooni::DnsInjection()
-            .set_backend(backend)
-            .set_input_file_path(argv[0])
-            .set_verbose(verbose)
+            .set_options("backend", backend)
+            .set_input_filepath(argv[0])
+            .set_verbosity(verbose)
             .run([&running]() { --running; });
     }
 ```
@@ -206,7 +206,7 @@ Putting everything together:
 int main(int argc, char **argv) {
     const char *backend = "8.8.8.1:53";
     const char *progname = argv[0];
-    int verbose = 0;
+    int verbose = MK_LOG_INFO;
     int chr;
 
     while ((chr = getopt(argc, argv, "b:v")) >= 0) {
@@ -215,7 +215,7 @@ int main(int argc, char **argv) {
             backend = optarg;
             break;
         case 'v':
-            verbose = 1;
+            verbose = MK_LOG_DEBUG;
             break;
         default:
             printf("usage: %s [-v] [-b backend] input-file [...]\n", progname);
@@ -232,9 +232,9 @@ int main(int argc, char **argv) {
     volatile int running = 0;
     for (; argc > 0; --argc, ++argv, ++running) {
         mk::ooni::DnsInjection()
-            .set_backend(backend)
-            .set_input_file_path(argv[0])
-            .set_verbose(verbose)
+            .set_options("backend", backend)
+            .set_input_filepath(argv[0])
+            .set_verbosity(verbose)
             .run([&running]() { --running; });
     }
 
