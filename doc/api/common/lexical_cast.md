@@ -1,5 +1,5 @@
 # NAME
-lexical_cast -- Smart cast between different types.
+lexical_cast &mdash; Smart cast between different types.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
