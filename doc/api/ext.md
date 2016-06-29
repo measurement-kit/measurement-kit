@@ -6,7 +6,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
-// DO NOT INCLUDE THIS MODULE DIRECTLY
+// DO NOT INCLUDE THIS HEADER FILE DIRECTLY
+/*#include <measurement_kit/ext.hpp>*/
 ```
 
 # STABILITY
@@ -17,8 +18,6 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 The `ext` module contains functionality implemented in headers
 provided by third parties.
-
-Do not include this header directly.
 
 # HISTORY
 
