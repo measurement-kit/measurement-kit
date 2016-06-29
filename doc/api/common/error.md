@@ -1,5 +1,5 @@
 # NAME
-Error -- Represent and handle errors.
+Error &mdash; Represent and handle errors.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
