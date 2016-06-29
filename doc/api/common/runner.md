@@ -1,5 +1,5 @@
 # NAME
-Async -- run tests asynchronously.
+Runner &mdash; run tests managing their lifecycle.
 
 # LIBRARY
 MeasurementKit (libmeasurement\_kit, -lmeasurement\_kit).
@@ -7,67 +7,43 @@ MeasurementKit (libmeasurement\_kit, -lmeasurement\_kit).
 # SYNOPSIS
 ```C++
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/foo.hpp>
 
-mk::Async *async = new mk::Async;
+namespace mk {
 
-void on_run_test() {
-    SharedPointer<mk::Foo::Test> test = std::make_shared<mk::Foo::Test>(
-        // Test configuration params
-    );
-    test->set_verbose(1);
-    test->on_log([](const char *log_line) {
-        // Caution: str points to a static buffer, make sure you copy
-        // its content if you plan to use it at a later time
-        // Caution: this callback is called from a background thread
-    });
-    async->run_test(test, [](SharedPointer<mk::NetTest> test) {
-        // Do something with the terminated test
-        // Caution: this callback is called from a background thread
-    });
-}
+class Runner {
+  public:
+    static Var<Runner> global();
+    void run(Var<NetTest> test, Callback<Var<NetTest>> callback);
+};
 
-// Tell async to break out of the event loop as soon as possible
-// Note: this function returns immediately
-async->break_loop();
-
-// Wait for async to break out of the event loop
-while (!async->empty()) {
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 ```
 
+# STABILITY
+
+1 - Experimental
+
 # DESCRIPTION
 
-`Async` allows the App programmer to run MeasurementKit tests
-in a background thread of execution.
+The `Runner` class runs tests in a background thread of executing
+managing the lifecycle of tests. Typically, the code uses the global
+`Runner`, accessible using the `global()` method.
 
-The `Async` object itself should be allocated on the heap to guarantee
-that it has the same lifecycle of the App.
+The `run()` method receives a `Var<NetTest>` as its first argument and
+a callback as its second argument. The test is scheduled for running
+and the callback is called when the test is done.
 
-To schedule a test to run asynchronously, do the following:
+Since the callback will be called from a background thread, make sure
+you lock any shared resources before proceeding as in
 
-1. allocate the test object on the heap using `std::make_shared<T>`
-
-2. (optional) tell the test to produce verbose messages using
-   its `set_verbose` method
-
-3. (optional) tell the test where you want its logs to be sent, by providing
-   a log-line C++11 lambda. Be careful that the `const char *` pointer you
-   receive is a pointer to a static buffer. Thus, make sure you copy the
-   content over if you plan to use it later. Be careful that the log-line
-   lambda will be called from a background thread context.
-
-4. call `run_test` to schedule the test for execution, by providing a
-   test-complete C++11 lambda. Be careful that the test-complete C++11
-   lambda will be called from a background thread context.
-
-If you need to quickly interrupt the I/O loop running in the background
-thread, use `break_loop`. This method sets a flag telling the I/O loop to
-break as soon as possible and then returns. Afterwards, periodically
-call `empty()` to identify the moment in which no tests are running (and
-hence the moment in which the background thread is stopped).
+```C++
+    Runner::global()->run(test, [=](Var<NetTest>) {
+        shared_resource.lock();
+        // Now use the shared resource
+    });
+```
 
 # HISTORY
 
-The `Async` class appeared in MeasurementKit 0.1.0.
+The `Async` class appeared in MeasurementKit 0.1.0. It was renamed
+`Runner` in MeasurementKit 0.2.0.

@@ -1,5 +1,5 @@
 # NAME
-ErrorOr -- Maybe-like object containing type or error.
+ErrorOr &mdash; Maybe-like object containing type or error.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -12,6 +12,7 @@ namespace mk {
 
 template <typename T> class ErrorOr {
   public:
+    ErrorOr();
     ErrorOr(T);
     ErrorOr(Error);
 
@@ -49,9 +50,25 @@ as shown in the following snippet:
     }
     use_result(*res);
 ```
+The first form of the constructor creates an `ErrorOr` object initialized
+with error equal to `NotInitializedError`. This constructor allows
+to write code like the following:
 
-The first form of the constructor initializes the `ErrorOr` template
-with a value. The second form of the constructor initialized the `ErrorOr`
+```C++
+    ErrorOr<Result> res;
+    // ...
+    
+    /* Note that until assigned:
+    
+    REQUIRE_THROWS_AS(*res, NotInitializedError());
+    REQUIRE(res.as_error() == NotInitializedError()); */
+    
+    // ...
+    res = some_operation();
+```
+
+The second form of the constructor initializes the `ErrorOr` template
+with a value. The third form of the constructor initialized the `ErrorOr`
 template with an error.
 
 The `operator bool()` method returns true if the underlying error object
@@ -62,8 +79,8 @@ The `as_value()` method returns a reference to the (possibly `const`)
 underlying value, if the `ErrorOr` contains a value; otherwise, the
 contained error is thrown.
 
-The `as_error()` method returns the error field. Calling this method is
-always safe, regardless of whether the `ErrorOr` contains an error or
+The `as_error()` method returns the error field. Calling this method never
+throws, regardless of whether the `ErrorOr` contains an error or
 a value. This method is typically called to access the underlying error
 once `operator bool()` has been used to ascertain that the `ErrorOr`
 contains an error, as shown in the above snippet.

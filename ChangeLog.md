@@ -1,3 +1,13 @@
+# MeasurementKit 0.2.0-beta.2 [2016-06-19]
+
+- http/request_serializer: allow custom path
+- refactoring and small fixes
+- common/net_test: removed misleading identifier() function
+- common/utils: export time related utils functions
+- ooni: merge DSL and Impl tests, use functions to implement tests (#677)
+- ooni: avoid collisions in test file names
+- common/net_test: file_path => filepath
+
 # MeasurementKit 0.2.0-beta.1 [2016-06-08]
 
 - `ip_lookup()`: allow custom settings, reactor, and logger (required

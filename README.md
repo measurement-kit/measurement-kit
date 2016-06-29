@@ -5,7 +5,7 @@
 MeasurementKit is a library that implements open network measurement methodologies
 (performance, censorship, etc.) and targets mobile platforms (Android and iOS).
 
-It is meant to be embedeed by third party applications with specific network measurement
+It is meant to be embeded by third party applications with specific network measurement
 needs and/or to be used by researchers as a basis to implement novel tools.
 
 Currently it implements the following high-level tests:
@@ -118,6 +118,11 @@ The vanilla build process is the following:
     ./configure
     make
 
+To tell make to produce less output (as in the Linux kernel
+build process) run:
+
+    make V=0
+
 You can also force `./configure` to select dependencies available
 at specific directories using the following flags:
 
@@ -143,7 +148,8 @@ is `/opt/local/include/event.h` and that `libevent.a` is
 - to force-compile the libevent distributed along with MeasurementKit, use
 
 ```
-    ./configure --with-libevent=builtin
+    ./build/dependency libevent          # Build and install libevent in `./builtin`
+    ./configure --with-libevent=builtin  # Use what you have just built
 ```
 
 ### How to test MeasurementKit on a Unix-like system
@@ -152,11 +158,6 @@ Once you have built MeasurementKit, to compile and run the unit
 test programs, run:
 
     make check
-
-To tell make to produce less output (as in the Linux kernel
-build process) run:
-
-    make V=0
 
 ### How to build MeasurementKit on Android
 
@@ -177,20 +178,32 @@ system where Xcode and its command line tools have been installed:
 The CocoaPods podspec has not been submitted yet, but you can already use
 it in your project adding this line in your Podfile:
 
+```ruby
+target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit',
       :git => 'https://github.com/measurement-kit/measurement-kit.git'
+end
+```
 
 You can use a specific branch, e.g.:
 
+```ruby
+target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit',
       :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :branch => 'branch-name'
+end
+```
 
 Similarly, you can use a specific tag, e.g.:
 
+```ruby
+target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit', 
       :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :tag => 'v0.x.y'
+end
+```
 
 Then type `pod install` and open `.xcworkspace` file (beware not to open the
 `.xcodeproj` file instead, because that alone won't compile).
@@ -208,9 +221,9 @@ of the same thread that called *run*).
 #include <measurement_kit/ooni.hpp>
 
 // Run sync test
-mk::ooni::HttpInvalidRequestLineTest()
+mk::ooni::HttpInvalidRequestLine()
     .set_options("backend", "http://127.0.0.1/")
-    .set_verbose()
+    .increase_verbosity()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
         // Process incoming log line
@@ -226,9 +239,9 @@ the callback passed as argument to *run* is invoked when the test completed.
 
 ```C++
 // Run async test
-mk::ooni::HttpInvalidRequestLineTest()
+mk::ooni::HttpInvalidRequestLine()
     .set_options("backend", "http://127.0.0.1/")
-    .set_verbose()
+    .increase_verbosity()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
         // Process incoming log line
@@ -245,5 +258,4 @@ In both cases, you need to be careful inside the callbacks, because in general
 they may be called from background threads.
 
 You can find documentation of MeasurementKit C++ API in the
-[doc/api](https://github.com/measurement-kit/measurement-kit/tree/master/doc/api)
-folder of the repository.
+[doc/api](doc/api) folder of the repository.
