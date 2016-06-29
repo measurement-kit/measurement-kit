@@ -113,7 +113,7 @@ where `type` is the type of the query, `qclass` is the class of the
 query, `ttl` is the time to live, and `name` is the name for which the
 query was issued.
 
-Instead, the `Answer` class contains at leas the following fields:
+Instead, the `Answer` class contains at least the following fields:
 
 ```C++
 class Answer {
