@@ -1,5 +1,5 @@
 # NAME
-NetTest -- Base network test class
+NetTest &mdash; Base network test class
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
