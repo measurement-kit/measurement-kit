@@ -142,22 +142,22 @@ query class, `ttl` is the response time to live, and the following fields
 are only set for specific query types.
 
 The optional `Settings` argument contains settings modifying the behavior of
-the `query` function. The following settings are available:
+the `query` function. The following setting keys are available:
 
-- *dns/attempts*: how many attempts before erroring out (default is three)
+- *"dns/attempts"*: how many attempts before erroring out (default is three)
 
-- *dns/nameserver*: address (and optionally port) of the name server to use. If you
+- *"dns/nameserver"*: address (and optionally port) of the name server to use. If you
   don't specify this, the default name server is used. On Unix systems the default DNS
   server is obtained parsing `/etc/resolv.conf`; on mobile devices where such file
   is not available, the default DNS name server is `127.0.0.1` which typically is not
   correct. Hence with mobile devices you SHOULD typically supply the DNS server
   you would like to use.
 
-- *dns/randomize_case*: whether to [randomize request case to make DNS
+- *"dns/randomize_case"*: whether to [randomize request case to make DNS
   poisoning more complex](https://lists.torproject.org/pipermail/tor-commits/2008-October/026025.html)
   (by default this is not done)
 
-- *dns/timeout*: time after which we stop waiting for a response (by
+- *"dns/timeout"*: time after which we stop waiting for a response (by
   default this is five seconds)
 
 The optional `reactor` argument is the reactor to use to issue the query
