@@ -107,7 +107,7 @@ to decide whether special actions should be carried out. For example:
 ```C++
     std::string data = buffer.peek(4);
     if (data.size() < 4) {
-        return -1; /* I.e. hard error */
+        return -2; /* I.e. try again */
     }
     if (data == "HELO") {
         std::string helo = buffer.read(HELO_MESSAGE_LENGTH);
