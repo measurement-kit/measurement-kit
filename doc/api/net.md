@@ -9,10 +9,6 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/net.hpp>
 ```
 
-# STABILITY
-
-2 - Stable
-
 # DESCRIPTION
 
 The `net` module contains the following networking functionality:
@@ -24,4 +20,4 @@ The `net` module contains the following networking functionality:
 
 # HISTORY
 
-The `net` library appeared in MeasurementKit 0.1.0.
+The `net` module appeared in MeasurementKit 0.1.0.
