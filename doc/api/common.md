@@ -34,4 +34,4 @@ The `common` module contains contains the following submodules:
 
 # HISTORY
 
-The `common` library appeared in MeasurementKit 0.1.0.
+The `common` module appeared in MeasurementKit 0.1.0.
