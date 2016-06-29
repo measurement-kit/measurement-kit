@@ -27,16 +27,16 @@ function called when done, with an error &mdash; or `NoError()` in case of succe
 passed as the first argument and the reply passed as second argument. You can also pass
 the following, optional settings:
 
-- *mlabns/policy*: one of `"random"`, `"metro"`, or `"country`". The random policy asks mlabns
+- *"mlabns/policy"*: one of `"random"`, `"metro"`, or `"country`". The random policy asks mlabns
   to return a random server for the specified tool. The metro policy asks mlabns a server close to
   the city code passed as *mlabns/metro*. The country policy asks mlabns to return a suitable server
   in the country where the requesting client is located.
 
-- *mlabns/metro*: used together with *mlabns/policy* equal to *metro*, this setting specifies
+- *"mlabns/metro"*: used together with *mlabns/policy* equal to *metro*, this setting specifies
   which city should the returned server be close to. For example, *ath* (for Athens) or *trn* (for
   Turin).
 
-- *mlabns/family*: when this setting is unspecified, mlabns returns results valid for both IPv4
+- *"mlabns/family"*: when this setting is unspecified, mlabns returns results valid for both IPv4
   and IPv6. Set *mlabns/family* to *ipv4* or *ipv6* to restrict the results respectively only
   to IPv4 or IPv6.
 
@@ -62,6 +62,33 @@ In addition to `NoError()`, the following errors could be returned by the callba
 - *mk::mlabns::InvalidAddressFamilyError*: you passed in an invalid address family setting
 - *mk::mlabns::InvalidMetroError*: you passed in an invalid metro setting
 - *mk::mlabns::InvalidToolNameError*: you passed in an invalid tool name
+
+# EXAMPLE
+
+```C++
+#include <iostream>
+#include <measurement_kit/mlabns.hpp>
+
+using namespace mk;
+
+mlabns::query(
+        "ndt", [](Error error, mlabns::Reply reply) {
+            if (error) {
+                throw error;
+            }
+            std::cout << "< city: " << reply.city << "\n";
+            std::cout << "< url: " << reply.url << "\n";
+            std::cout << "< ip: [\n";
+            for (auto s : reply.ip) {
+                std::cout << "<  " << s << "\n";
+            }
+            std::cout << "< ]\n";
+            std::cout << "< fqdn: " << reply.fqdn << "\n";
+            std::cout << "< site: " << reply.site << "\n";
+            std::cout << "< country: " << reply.country << "\n";
+            /* ... */
+        }, settings);
+```
 
 # HISTORY
 
