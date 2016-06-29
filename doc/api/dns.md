@@ -60,7 +60,7 @@ query types are defined:
 - *QueryTypeId::REVERSE_AAAA*: same as `REVERSE_A` except that here the input shall be
   a IPv6 address.
 
-Note that you can alternatively the query type as strong; e.g. the following
+Note that you can also pass the query type as string; e.g. the following
 would also work as expected:
 
 ```C++
