@@ -9,8 +9,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/dns.hpp>
 
-void mk::dns::query(mk::dns::QueryClass dns_class,
-                    mk::dns::QueryType dns_type,
+void mk::dns::query(mk::dns::QueryClassIdOrString dns_class,
+                    mk::dns::QueryTypeIdOrString dns_type,
                     std::string query_name,
                     mk::Callback<mk::Error, mk::dns::Message> callback,
                     mk::Settings settings = {},
