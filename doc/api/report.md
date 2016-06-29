@@ -1,5 +1,5 @@
 # NAME
-report -- Tests results management library
+report &mdash; Tests results
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -15,8 +15,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # DESCRIPTION
 
-The `report` library contains code to manage tests results.
+The `report` module contains code to manage tests results.
 
 # HISTORY
 
-The `report` library appeared in MeasurementKit 0.2.0.
+The `report` module appeared in MeasurementKit 0.2.0.
