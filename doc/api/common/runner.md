@@ -1,5 +1,5 @@
 # NAME
-Runner -- run tests managing their lifecycle.
+Runner &mdash; run tests managing their lifecycle.
 
 # LIBRARY
 MeasurementKit (libmeasurement\_kit, -lmeasurement\_kit).
