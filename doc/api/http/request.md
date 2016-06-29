@@ -108,37 +108,35 @@ and calls `callback` when done. The settings that matter to this function are
 already described above. The callback receives the error that occurred or
 `NoError()` in case of success.
 
+The `request_recv_response()` function receives an HTTP response asynchronously
+using the `txp` transport and calling `callback` when done. You can optionally
+specify a `reactor` and a `logger` to use. On error, the callback receives it as
+its first argument; otherwise, the first argument is `NoError()` and the second
+argument is the received HTTP response wrapped by a `Var`.
 
-- *callback*: Function called when either a response is received
-  or an error occurs
+The `request_sendrecv()` function combines the `request_send()` and the
+`request_recv_response()` functions into a single call.
 
-- *headers*: Optional headers object that specifies the HTTP headers
-  to be passed along with the request
-
-- *body*: Optional body for the request
-
-Beware that, in case of early error, the callback MAY be called
-immediately by the `request()` method.
-
-In case of success, the error argument of the callback is passed an
-instance of `mk::NoError()`. Otherwise, the error that occurred is
-reported. Among all the possible errors, the following are defined by
-MeasurementKit HTTP implementation:
+Beware that, in case of early error, the callback MAY be called immediately
+by any of the above functions. The following errors may occurr:
 
 - `UpgradeError`: received unexpected UPGRADE message
 - `ParserError`: error in HTTP parser
 - `UrlParserError`: error in URL parser
 - `MissingUrlSchemaError`: missing schema in parsed URL
 - `MissingUrlHostError`: missing host in parsed URL
+- `MissingUrlError`: no URL was passed to a function that required it
+- `HttpRequestFailedError`: the response status code indicates an HTTP error (e.g. `404`)
+- `HeaderParserInternalError`: the response headers parser encountered an error
 
 HTTP headers are represented by the `http::Headers` typedef that
 currently is alias for `std::map<std::string, std::string>`.
 
-The HTTP response object returned by the callback contains the
-following fields:
+The HTTP response object returned by several callbacks is like:
 
 ```C++
-struct Response {
+class Response {
+  public:
     std::string response_line;
     unsigned short http_major;
     unsigned short http_minor;
@@ -146,21 +144,6 @@ struct Response {
     std::string reason;
     Headers headers;
     std::string body;
-};
-```
-
-The HTTP url object returned by `parse_url()` is as follows:
-
-```
-/// Represents a URL.
-class Url {
-  public:
-    std::string schema;    /// URL schema
-    std::string address;   /// URL address
-    std::string port;      /// URL port
-    std::string path;      /// URL path
-    std::string query;     /// URL query
-    std::string pathquery; /// URL path followed by optional query
 };
 ```
 
@@ -219,6 +202,16 @@ mk::http::request({
         {"User-Agent", "Antani/1.0"}
     }, "THIS IS THE BODY");
 ```
+
+# BUGS
+
+- It is not possible to search HTTP headers in a case insensitive fashion
+
+- The `Response::response_line` field is always empty
+
+- The `http/ignore_body` setting is not implemented
+
+- The `http/follow_redirects` setting is not implemented
 
 # HISTORY
 
