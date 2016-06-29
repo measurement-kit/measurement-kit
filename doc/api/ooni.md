@@ -9,10 +9,6 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/ooni.hpp>
 ```
 
-# STABILITY
-
-2 - Stable
-
 # DESCRIPTION
 
 The `ooni` module contains the following submodules:
@@ -27,4 +23,4 @@ The `ooni` module contains the following submodules:
 
 # HISTORY
 
-The `ooni` library appeared in MeasurementKit 0.1.0.
+The `ooni` module appeared in MeasurementKit 0.1.0.
