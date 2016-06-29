@@ -27,6 +27,8 @@ to `OoniTest`, this class honours the following options:
   backend is running, such that we can evaluate what is
   echoed back and search for tampering.
 
+This test does not require an input file.
+
 # EXAMPLE
 
 ```C++
