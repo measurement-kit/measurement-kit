@@ -221,9 +221,9 @@ of the same thread that called *run*).
 #include <measurement_kit/ooni.hpp>
 
 // Run sync test
-mk::ooni::HttpInvalidRequestLineTest()
+mk::ooni::HttpInvalidRequestLine()
     .set_options("backend", "http://127.0.0.1/")
-    .set_verbose()
+    .increase_verbosity()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
         // Process incoming log line
@@ -239,9 +239,9 @@ the callback passed as argument to *run* is invoked when the test completed.
 
 ```C++
 // Run async test
-mk::ooni::HttpInvalidRequestLineTest()
+mk::ooni::HttpInvalidRequestLine()
     .set_options("backend", "http://127.0.0.1/")
-    .set_verbose()
+    .increase_verbosity()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
         // Process incoming log line
@@ -258,5 +258,4 @@ In both cases, you need to be careful inside the callbacks, because in general
 they may be called from background threads.
 
 You can find documentation of MeasurementKit C++ API in the
-[doc/api](https://github.com/measurement-kit/measurement-kit/tree/master/doc/api)
-folder of the repository.
+[doc/api](doc/api) folder of the repository.
