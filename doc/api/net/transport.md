@@ -8,87 +8,105 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/net.hpp>
 
-// Alternative syntax for connecting the transport
-net::connect("www.google.com", 80, [](Error error, Transport transport) {
-    // Do something with transport
-});
+namespace mk {
+namespace net {
 
-auto maybe_transport = net::connect({
-    {"address", "www.google.com"},
-    {"port", "80"}
-});
-if (!maybe_transport) throw maybe_transport.as_error();
-auto transport = maybe_transport.as_value();
-// Use transport...
+class Transport {
+  public:
+    virtual void emit_connect() = 0;
+    virtual void emit_data(Buffer buf) = 0;
+    virtual void emit_flush() = 0;
+    virtual void emit_error(Error err) = 0;
 
-transport.on_connect([]() {
-    /* connection established */
-});
-transport.on_data([](mk::net::Buffer buff) {
-    /* data received */
-});
-transport.on_flush([]() {
-    /* all queued data was sent */
-});
-transport.on_error([](mk::Error error) {
-    /* handle error that occurred */
-});
+    virtual void on_connect(std::function<void()>) = 0;
+    virtual void on_data(std::function<void(Buffer)>) = 0;
+    virtual void on_flush(std::function<void()>) = 0;
+    virtual void on_error(std::function<void(Error)>) = 0;
 
-transport.set_timeout(7.14);
-transport.clear_timeout();
+    virtual void record_received_data() = 0;
+    virtual void dont_record_received_data() = 0;
+    virtual Buffer &received_data() = 0;
+    virtual void record_sent_data() = 0;
+    virtual void dont_record_sent_data() = 0;
+    virtual Buffer &sent_data() = 0;
 
-mk::net::Buffer buff;
-transport.send("sassaroli", 5);
-transport.send(std::string("sassaroli"));
-transport.send(buff);
+    virtual void set_timeout(double) = 0;
+    virtual void clear_timeout() = 0;
 
-transport.close();
+    virtual void write(const void *, size_t) = 0;
+    virtual void write(std::string) = 0;
+    virtual void write(Buffer) = 0;
 
-std::string s = transport.socks5_address();  // empty string if no proxy
-std::string s = transport.socks5_port();     // ditto
+    virtual void close(std::function<void()>) = 0;
 
-/* event emitters: */
-mk::net::Buffer buffer;
-transport.emit_connect();
-transport.emit_data(buffer);
-transport.emit_flush();
-transport.emit_error(mk::net::EOFError());
+    virtual std::string socks5_address() = 0;
+    virtual std::string socks5_port() = 0;
+};
+
+} // namespace net
+} // namespace mk
+
+void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
+
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
+           Var<Reactor> reactor = Reactor::global());
+
+void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
+          Var<Reactor> reactor = Reactor::global());
+
 ```
 
 # DESCRIPTION
 
 The `Transport` is a TCP like connection to another endpoint. You typically
-construct a transport using the `net::connect()` factory method, which accepts
-the following options:
+construct a transport using the `net::connect()` factory method.
 
-- *address*: address or domain name to connect to
+A `Transport` is an event emitter class, meaning that it defines functions to
+emit and intercept specific events. The following events are defined:
 
-- *dumb_transport*: if specified tells the factory method to create a dumb
-transport not connected to any endpoint and only suitable for debugging (default:
-unspecified)
+- *connect*: emitted when the connection is established (this is currently only
+  used when you connect a SOCKS5 transport)
+- *data*: emitted when data was received from the network
+- *flush*: emitted when the output buffer is empty
+- *error*: emitted when a error occurs
 
-- *family*: could be one of the following:
+By default the handlers of all these events are empty (i.e. they do nothing
+when they are called).
 
-    - *PF_INET*: only resolve and use IPv4 addresses
+In addition the `Transport` also allows to record the received and the sent data,
+and to set and clear the I/O timeout.
 
-    - *PF_INET6*: only resolve and use IPv6 addresses
+The `write()` family of methods allow to write respectively a C style buffer, a
+C++ string, and a `Buffer` object. All these functions fill the send buffer, and
+a corresponding *flush* event would be emitted when it is empty.
 
-    - *PF_UNSPEC*: try with IPv4 first and if it fails then try with IPv6
-      (this is the default)
+The `close()` method initiates a close operation. The callback passed as first
+argument would be called when the `Transport` have been actually closed. We
+recommend always making sure that a `Transport` has been closed before continuing,
+as shown in the following snippet:
 
-    - *PF_UNSPEC6*: try with IPv6 first and if it fails then try with IPv4
+```C++
+/* Some code */
+transport->close([=]() {
+    /* Continuation code after transport was closed */
+});
+```
 
-- *port*: port to connect to
+Failure to do so MAY result in memory errors, since it is an underlying assumption
+of MeasurementKit code that the `Var<Transport>` object would only exit from the
+scope after the `Transport` itself has actually been closed.
 
-- *socks5_proxy*: string specifying which SOCKS5 proxy to use, with
-address and port separated by a colon (default: unspecified)
+The `socks5_address()` and `socks5_port()` methods return respectively the SOCKS5
+address and port being used, if any. Otherwise the empty string is returned.
 
-- *timeout*: timeout for I/O operations (default: 30 s)
+The `write()` function is syntactic sugar that schedules an asynchronous write
+operation on a transport and calls the provided callback when either an error
+occurs or the underlying buffer has been flushed.
 
-# BUGS
-
-Options can only be specified as strings. It would be nice to allow for them
-to be either string or numbers, depending on their semantic.
+The `readn()` function is syntactic sugar that starts an asynchronous read
+operation on a transport and only returns whether either `n` bytes have been
+read or an error occurred. The `read()` function is a wrapper that calls
+the `readn()` function with `n` equal to `1`.
 
 # HISTORY
 
