@@ -39,7 +39,7 @@ On error one of the following exceptions could be thrown:
 - `mk::http::MissingUrlHostError`: missing host in parsed URL
 
 The `parse_url_noexcept()` is equal to `parse_url()` except that rather
-than throwing an exception of error it returns a `ErrorOr` wrapper.
+than throwing an exception of error it returns an `ErrorOr` wrapper.
 
 # HISTORY
 
