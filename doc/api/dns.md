@@ -23,7 +23,7 @@ void mk::dns::query(mk::dns::QueryClass dns_class,
 
 # DESCRIPTION
 
-The `query()` function, that allows you to send DNS queries
+The `query()` function allows you to send DNS queries
 and receive the corresponding responses.
 
 The `dns_class` argument indicates the query class. At least
