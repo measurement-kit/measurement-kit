@@ -9,19 +9,19 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/http.hpp>
 
-void mk::http::get(std::string url,
-                   mk::Callback<mk::Error, mk::Var<mk::http::Response>> callback,
-                   mk::http::Headers headers = {},
-                   mk::Settings settings = {},
-                   mk::Var<mk::Reactor> reactor = mk::Reactor::global(),
-                   mk::Var<mk::Logger> = mk::Logger::global());
-
 void mk::http::request(mk::Settings settings,
                        mk::http::Headers headers,
                        std::string body,
                        mk::Callback<mk::Error, mk::Var<mk::http::Response>> callback,
                        mk::Var<mk::Reactor> reactor = mk::Reactor::global(),
                        mk::Var<mk::Logger> = mk::Logger::global());
+
+void mk::http::get(std::string url,
+                   mk::Callback<mk::Error, mk::Var<mk::http::Response>> callback,
+                   mk::http::Headers headers = {},
+                   mk::Settings settings = {},
+                   mk::Var<mk::Reactor> reactor = mk::Reactor::global(),
+                   mk::Var<mk::Logger> = mk::Logger::global());
 
 void mk::http::request_connect(mk::Settings settings,
                                mk::Callback<mk::Error, mk::Var<mk::net::Transport>>,
@@ -54,24 +54,33 @@ void mk::http::request_sendrecv(mk::Var<mk::net::Transport> txp,
 
 # DESCRIPTION
 
-The `http::request()` function allows you to issue HTTP requests and
-to receive the corresponding responses. It receives the following arguments:
+The `request()` function issues the asynchronous `HTTP` request specified by the
+`settings` argument. The following settings are available:
 
-- *settings*: Settings that configure the http implementation to send a
-  specific HTTP request; available settings are:
+- *http/follow_redirects*: if it set to yes, then the client will follow redirects
+  (this is currently not implemented)
 
-    - *follow_redirects*: if it set to yes, then the client
-      will follow redirects (this is currently not implemented)
+- *http/url*: the URL to use
 
-    - *http/url*: the URL to use
+- *http/ignore_body*: does not save response body (this is currently not implemented)
 
-    - *http/method*: the method to use (default: "GET")
+- *http/method*: the method to use (default: "GET")
 
-    - *http/path*: path to use (if not specified the one inside
-       the URL is used instead)
+- *http/http_version*: specify HTTP version (otherwise `HTTP/1.1 is used)
 
-    - *http/http_version*: specify HTTP version (otherwise
-       `HTTP/1.1 is used)
+- *http/path*: path to use (if not specified the one inside the URL is used instead)
+
+The `body` argument is either the request body or an empty string to send no request
+body. The `callback` function is called when done; it receives the error that occurred
+&mdash; or `NoError()` &mdash; as first argument and the `Response` as second argument.
+Optionally you can also specify the `reactor` and the `logger` to be used.
+
+The `get()` function is a wrapper for `request()` that sets for you `http/url` using
+as input the `url` argument and `http/method` as `GET`. Unlike `request()` you cannot
+set the body, because `GET` requests SHOULD NOT carry a body. All other arguments
+have equal semantic.
+
+
 
 - *callback*: Function called when either a response is received
   or an error occurs
