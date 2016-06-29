@@ -106,7 +106,6 @@ your `AppDelegate.mm` file such that it looks like this:
 
 ```Objective-C
 #import "AppDelegate.h"
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni.hpp>
 
 @interface AppDelegate ()
