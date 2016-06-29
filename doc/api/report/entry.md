@@ -8,6 +8,9 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/report.hpp>
 
+namespace mk {
+namespace report {
+
 class Entry : private nlohmann::json {
   public:
     using nlohmann::json::json;
@@ -25,6 +28,9 @@ class Entry : private nlohmann::json {
     bool operator==(std::nullptr_t right);
     bool operator!=(std::nullptr_t right);
 };
+
+} // namespace report
+} // namespace mk
 ```
 
 # STABILITY
