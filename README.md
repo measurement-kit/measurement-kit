@@ -178,20 +178,32 @@ system where Xcode and its command line tools have been installed:
 The CocoaPods podspec has not been submitted yet, but you can already use
 it in your project adding this line in your Podfile:
 
+```ruby
+target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit',
       :git => 'https://github.com/measurement-kit/measurement-kit.git'
+end
+```
 
 You can use a specific branch, e.g.:
 
+```ruby
+target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit',
       :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :branch => 'branch-name'
+end
+```
 
 Similarly, you can use a specific tag, e.g.:
 
+```ruby
+target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit', 
       :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :tag => 'v0.x.y'
+end
+```
 
 Then type `pod install` and open `.xcworkspace` file (beware not to open the
 `.xcodeproj` file instead, because that alone won't compile).
