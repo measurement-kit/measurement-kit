@@ -1,5 +1,5 @@
 # NAME
-NonCopyable -- Forbids copyability
+NonCopyable &mdash; Forbids copyability
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
