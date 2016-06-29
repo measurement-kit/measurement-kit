@@ -159,11 +159,11 @@ class Response {
 using namespace mk;
 
 http::request({
-        "http/follow_redirects" : "yes",       // default is no
-        "http/url" : "http://nexa.polito.it/", // must be specified
-        "http/method" : "PUT",                 // default is GET
-        "http/path" : "/robots.txt",           // default is to use URL's path
-        "http/http_version" : "HTTP/1.0"       // default is HTTP/1.1
+        {"http/follow_redirects", "yes"},       // default is no
+        {"http/url", "http://nexa.polito.it/"}, // must be specified
+        {"http/method", "PUT"},                 // default is GET
+        {"http/path", "/robots.txt"},           // default is to use URL's path
+        {"http/http_version", "HTTP/1.0"},      // default is HTTP/1.1
     }, [](Error err, http::Response resp) {
         if (err) {
             throw err;
