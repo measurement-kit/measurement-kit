@@ -1,5 +1,5 @@
 # NAME
-Mock -- Macros to help mocking functions in regress tests
+Mock &mdash; Macros to help mocking functions in regress tests
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
