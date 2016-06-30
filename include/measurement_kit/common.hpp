@@ -4,6 +4,7 @@
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/continuation.hpp>
 #include <measurement_kit/common/delegate.hpp>
+#include <measurement_kit/common/easy.h>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/error_or.hpp>
 #include <measurement_kit/common/lexical_cast.hpp>
