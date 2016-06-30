@@ -1,5 +1,5 @@
 # NAME
-lexical_cast -- Smart cast between different types.
+lexical_cast &mdash; Smart cast between different types.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -10,11 +10,9 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 namespace mk {
 
-template <typename To, typename From>
-To lexical_cast(From f);
+template <typename To, typename From> To lexical_cast(From f);
 
-template <typename To, typename From>
-ErrorOr<To> lexical_cast_noexcept(From f);
+template <typename To, typename From> ErrorOr<To> lexical_cast_noexcept(From f);
 
 }
 ```

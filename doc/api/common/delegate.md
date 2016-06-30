@@ -1,5 +1,5 @@
 # NAME
-Delegate -- Callback function that can modify itself.
+Delegate &mdash; Function that can modify itself when used as a method.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -26,7 +26,7 @@ template <typename T> class Delegate_ {
 };
 
 template <typename... T>
-using Delegate = Delegate_<void(T...);
+using Delegate = Delegate_<void(T...)>;
 
 }
 ```
@@ -52,7 +52,7 @@ not possible to initialize the `Delegate` using the lambda or the function.
 
 The assignment operators allow to reassign the underlying function wrapped by
 a `Delegate`. It is safe to call these operators to override the function that
-the `Delegate` wraps from within the body of such function itself. The function
+the `Delegate` wraps from within the body of the delegate itself. The function
 assignment operator overrides the underlying function with a newly specified
 `std::function<>`. The templated assignment operator overrides the underlying
 function with a lambda expression. The `nullptr` assignment operator resets
@@ -64,37 +64,6 @@ The bool operator returns true if the underlying function is callable and false
 if attempting to call the delegate would raise `std::bad_function_call`.
 
 The call operator allows to call the `Delegate`.
-
-# EXAMPLE
-
-```C++
-#include <measurement_kit/common.hpp>
-
-using namespace mk;
-
-class Emitter {
-  public:
-    void on(Callback<> cb) { func_ = cb; }
-    void emit() { func_(); }
-
-  private:
-    //Callback<> func_; // Using callback here leads to use after free
-    Delegate<> func_;
-};
-
-int main() {
-    Emitter emitter;
-    loop_with_initial_event([&emitter]() {
-        emitter.on([&emitter]() {
-            emitter.on([&emitter]() {
-                break_loop();
-            });
-            emitter.emit();
-        });
-        emitter.emit();
-    });
-}
-```
 
 # HISTORY
 
