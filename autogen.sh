@@ -3,7 +3,7 @@
 set -e
 export LC_ALL=C  # Stable sorting regardless of the locale
 
-no_download=
+no_download=""
 if [ "$1" = "-n" ]; then
     no_download=1
 fi
@@ -81,7 +81,7 @@ gen_executables() {
 }
 
 get_repo() {
-    if [ "$no_download" == "1" ]; then
+    if [ "$no_download" = "1" ]; then
         return
     fi
     echo ""
