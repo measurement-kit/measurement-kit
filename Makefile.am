@@ -12,6 +12,7 @@ LIBMEASUREMENT_KIT_W_FLAGS = -Wall -Wextra -pedantic
 VERSION_INFO = -release @VERSION@ -version-info 0
 AM_CFLAGS = $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
 AM_CXXFLAGS = $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
+AM_LDFLAGS = -llua
 
 lib_LTLIBRARIES               = libmeasurement_kit.la
 libmeasurement_kit_la_LDFLAGS = -version-info $(VERSION_INFO)
