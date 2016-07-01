@@ -85,15 +85,10 @@ get_repo() {
         return
     fi
     echo ""
-    echo "> $3 (from github.com/$1)"
+    echo "> $3 (from github.com/$1 at $2)"
     branch=$4
-    [ -z "$branch" ] && branch=master
-    if [ ! -d src/ext/$3 ]; then
-        git clone --depth 50 -b $branch https://github.com/$1 src/ext/$3
-    else
-        (cd src/ext/$3 && git checkout $branch && git pull)
-    fi
-    (cd src/ext/$3 && git checkout $2)
+    rm -rf src/ext/$3
+    git clone --depth 1 --single-branch -b $2 https://github.com/$1 src/ext/$3
     echo ""
 }
 
