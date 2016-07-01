@@ -63,6 +63,7 @@ m4/*.m4
 missing
 site
 src/ext/Catch/
+src/ext/ChaiScript
 src/ext/http-parser/
 src/ext/json/
 stamp-h1
