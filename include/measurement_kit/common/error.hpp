@@ -22,6 +22,8 @@ class Error : public std::exception {
                 : child(c), code(e), reason(ooe) {
         if (code != 0 && reason == "") {
             reason = "unknown_failure " + std::to_string(code);
+        } else if (reason == "") {
+            reason = "no_error";
         }
     }
 
@@ -35,7 +37,7 @@ class Error : public std::exception {
     bool operator!=(int n) const { return code != n; }
     bool operator!=(Error e) const { return code != e.code; }
 
-    std::string as_ooni_error() { return reason; }
+    const std::string as_ooni_error() const { return reason; }
 
     Var<ErrorContext> context;
     Var<Error> child;

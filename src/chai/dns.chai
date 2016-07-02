@@ -1,3 +1,4 @@
+
 def dns_query(qclass, qtype, query, settings) {
   return [
     "dns_query",
@@ -10,12 +11,16 @@ def dns_query(qclass, qtype, query, settings) {
 
 var settings = [
   "dns/nameserver": "8.8.8.8:53",
-  "dns/timeout": 1.0,
+  "dns/timeout": 0.33,
   "dns/attempts": 1
 ]
 
-yield_from([
+var result = yield_from([
   dns_query("IN", "A", "www.google.com", settings),
   dns_query("IN", "A", "www.torproject.org", settings),
   dns_query("IN", "A", "nexa.polito.it", settings)
 ])
+
+for (var i = 0; i < result.size; ++i) {
+  print(result[i]);
+}

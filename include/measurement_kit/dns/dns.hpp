@@ -69,8 +69,8 @@ class QueryClass {
     QueryClass(QueryClassId id = QueryClassId::IN) : id_(id) {}
 
     /// Constructor with string
-    QueryClass(const char *x) {
-        std::string str(x);
+    template <typename T> QueryClass(T input) {
+        std::string str{input};
         if (str == "IN")
             id_ = QueryClassId::IN;
         else if (str == "CS")
@@ -92,6 +92,13 @@ class QueryClass {
     /// Cast to query class id
     operator QueryClassId() const { return id_; }
 
+    const std::string str() const {
+        if (id_ == QueryClassId::IN) {
+            return "IN";
+        }
+        return ""; // XXX
+    }
+
   private:
     QueryClassId id_;
 };
@@ -103,8 +110,8 @@ class QueryType {
     QueryType(QueryTypeId id = QueryTypeId::A) : id_(id) {}
 
     /// Constructor with string
-    QueryType(const char *x) {
-        std::string str(x);
+    template <typename T> QueryType(T input) {
+        std::string str{input};
         if (str == "A")
             id_ = QueryTypeId::A;
         else if (str == "NS")
@@ -155,6 +162,19 @@ class QueryType {
 
     /// Cast to query class id
     operator QueryTypeId() const { return id_; }
+
+    const std::string str() const {
+        if (id_ == QueryTypeId::A) {
+            return "A";
+        }
+        if (id_ == QueryTypeId::AAAA) {
+            return "AAAA";
+        }
+        if (id_ == QueryTypeId::PTR) {
+            return "PTR";
+        }
+        return ""; // XXX
+    }
 
   private:
     QueryTypeId id_;
