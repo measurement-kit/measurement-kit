@@ -63,15 +63,19 @@ def dns_query(qclass, qtype, query, settings) {
 }
 
 var settings = [
-    "dns/nameserver": "8.8.8.8:53",
-    "dns/timeout": 0.33,
-    "dns/attempts": 1
+    "dns/nameserver": "8.8.8.8:53"
 ]
 
 var result = yield_from([
     dns_query("IN", "A", "www.google.com", settings),
     dns_query("IN", "A", "www.torproject.org", settings),
-    dns_query("IN", "A", "nexa.polito.it", settings)
+    dns_query("IN", "A", "nexa.polito.it", settings),
+    dns_query("IN", "AAAA", "www.neubot.org", settings),
+    dns_query("IN", "A", "www.neubot.org", [
+        "dns/nameserver": "8.8.8.1:53",
+        "dns/timeout": 0.33,
+        "dns/attempts": 1
+    ])
 ])
 
 for (var i = 0; i < result.size; ++i) {
