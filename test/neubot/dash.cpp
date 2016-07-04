@@ -8,7 +8,7 @@ using namespace mk::neubot::negotiate;
 
 TEST_CASE("Test without negotiation") {
     run_impl(
-        [](Error error) { REQUIRE(error); }, {
+        [](Error error) { REQUIRE(!error); }, {
             "negotiate", "false"
         },
         Reactor::global(), Logger::global()
