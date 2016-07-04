@@ -60,7 +60,7 @@ static inline void loop_request(Var<Transport> transport, int speed_kbit,
     settings["http/path"] = path;
     double saved_times = mk::time_now();
 
-    http::request_send(
+    request_send(
         transport, settings,
         {
             {"Authorization", auth},

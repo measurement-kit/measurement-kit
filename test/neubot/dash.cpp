@@ -6,6 +6,15 @@
 
 using namespace mk::neubot::negotiate;
 
+TEST_CASE("Test without negotiation") {
+    run_impl(
+        [](Error error) { REQUIRE(error); }, {
+            "negotiate", "false"
+        },
+        Reactor::global(), Logger::global()
+    );
+}
+
 static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
                  Var<Reactor>, Var<Logger>) {
     cb(MockedError(), {});
