@@ -13,7 +13,7 @@ static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
 
 TEST_CASE("run() deals with mlab-ns query error") {
     run_impl<fail>(
-        [](Error err) { REQUIRE(err == MlabnsQueryError()); }, {},
+        [](Error err) { REQUIRE(err); }, {},
         Logger::global(), Reactor::global());
 }
 
