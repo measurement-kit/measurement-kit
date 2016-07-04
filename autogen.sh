@@ -3,6 +3,11 @@
 set -e
 export LC_ALL=C  # Stable sorting regardless of the locale
 
+no_download=""
+if [ "$1" = "-n" ]; then
+    no_download=1
+fi
+
 slug() {
     echo $(echo $1|tr '/-' '_'|sed 's/^include_measurement_kit/mk/g')
 }
@@ -76,6 +81,9 @@ gen_executables() {
 }
 
 get_repo() {
+    if [ "$no_download" = "1" ]; then
+        return
+    fi
     echo ""
     echo "> $3 (from github.com/$1)"
     branch=$4
@@ -90,6 +98,9 @@ get_repo() {
 }
 
 get_geoipdb() {
+    if [ "$no_download" = "1" ]; then
+        return
+    fi
     echo ""
     base=https://download.maxmind.com/download/geoip/database
     if [ ! -f "test/fixtures/GeoIP.dat" ]; then

@@ -96,31 +96,45 @@ void OoniTest::geoip_lookup(Callback<> cb) {
 }
 
 void OoniTest::open_report() {
-    if (output_filepath == "") {
-        output_filepath = generate_output_file_path();
-    }
     file_report.test_name = test_name;
     file_report.test_version = test_version;
     file_report.test_start_time = test_start_time;
 
     file_report.options = options;
-    file_report.filename = output_filepath;
 
     file_report.probe_ip = probe_ip;
     file_report.probe_cc = probe_cc;
     file_report.probe_asn = probe_asn;
 
+    if (output_filepath == "") {
+        output_filepath = generate_output_filepath();
+    }
+    file_report.filename = output_filepath;
     file_report.open();
 }
 
-std::string OoniTest::generate_output_file_path() {
-    std::string filename;
-    char buffer[100];
-    strftime(buffer, sizeof(buffer), "%FT%H%M%SZ", &test_start_time);
-    std::string iso_8601_date(buffer);
-    filename = "report-" + test_name + "-";
-    filename += iso_8601_date + ".json";
-    return filename;
+std::string OoniTest::generate_output_filepath() {
+    int idx = 0;
+    std::stringstream filename;
+    while (true) {
+        filename.str("");
+        filename.clear();
+
+        char timestamp[100];
+        strftime(timestamp, sizeof(timestamp), "%FT%H%M%SZ", &test_start_time);
+        filename << "report-" << test_name << "-";
+        filename << timestamp << "-" << idx << ".json";
+
+        std::ifstream output_file(filename.str().c_str());
+        // If a file called this way already exists we increase the counter by 1.
+        if (output_file.good()) {
+            output_file.close();
+            idx++;
+            continue;
+        }
+        break;
+    }
+    return filename.str();
 }
 
 void OoniTest::begin(Callback<> cb) {

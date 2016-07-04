@@ -1,5 +1,5 @@
 # NAME
-Constraints -- Constraints on copyability and movability
+NonCopyable &mdash; Forbids copyability
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -9,27 +9,42 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/common.hpp>
 
 namespace mk {
-namespace foobar {
 
-class Foo : public NonCopyable {};
+class NonCopyable {
+  public:
+    NonCopyable(NonCopyable &) = delete;
+    NonCopyable &operator=(NonCopyable &) = delete;
+};
 
-class Bar : public NonMovable {};
-
-class FooBar : public NonCopyable, public NonMovable {};
-
-}
 }
 ```
 
 # DESCRIPTION
 
-Constraints are used to restrict copyability and/or movability of
-classes. You should in general forbid copyability when you hold
-low-level pointers that should be `free()`d just once. You should
-forbid movability for example when under the hood the object's
-`this` is passed to a C callback as an opaque pointer, thus binding
-the specific value of `this` to the registered low-level callback.
+Forbids copyability. You should in general
+forbid copyability when you hold low-level pointers that should
+be `free()`d just once. To do this, just inherit from
+`NonCopyable` as in:
+
+```C++
+/* Here inheriting from NonCopyable you guarantee that you cannot make
+   by mistake copies of the raw pointer `bar`. Doing that would cause
+   `delete` to be called more than once, which is a memory error. */
+public class Foo : public mk::NonCopyable {
+  public:
+    Foo() {
+        bar = new Bar;
+    }
+    
+    ~Foo() {
+        delete bar;
+    }
+  private:
+    Bar *bar = nullptr;
+};
+```
+
 
 # HISTORY
 
-`NonCopyable` and `NonMovable` appeared in MeasurementKit 0.1.0.
+`NonCopyable` appeared in MeasurementKit 0.1.0.

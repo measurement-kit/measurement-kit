@@ -51,7 +51,7 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     void run_next_measurement(Callback<>);
     void geoip_lookup(Callback<>);
     void open_report();
-    std::string generate_output_file_path();
+    std::string generate_output_filepath();
 };
 
 } // namespace mk
