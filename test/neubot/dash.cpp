@@ -2,18 +2,9 @@
 
 #include "src/ext/Catch/single_include/catch.hpp"
 #include <measurement_kit/neubot.hpp>
-#include <src/neubot/negotiate_impl.hpp>
+#include "src/neubot/negotiate_impl.hpp"
 
 using namespace mk::neubot::negotiate;
-
-TEST_CASE("Test without negotiation") {
-    run_impl(
-        [](Error error) { REQUIRE(error); }, {
-            {"negotiate", "false"},
-        },
-        Reactor::global(), Logger::global()
-    );
-}
 
 static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
                  Var<Reactor>, Var<Logger>) {
@@ -26,6 +17,27 @@ TEST_CASE("run() deals with mlab-ns query error") {
         Reactor::global(), Logger::global()
     );
 }
+
+static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers,
+                                            std::string,
+                                            Callback<Error, Var<http::Response>>,
+                                            Var<Reactor> = Reactor::global(),
+                                            Var<Logger> = Logger::global()) {
+    Var<http::Response> response(new http::Response);
+    response->status_code = 200;
+    response->body = "{\"unchoked\": \"0\"}";
+    cb(NoError(), response);
+}
+
+TEST_CASE("Server doesn't allow authentication") {
+
+    loop_negotiate<receive_no_authentication_key>(
+        [](Error error) { REQUIRE(error == TooManyNegotiationsError()); }, {},
+        Reactor::global(), Logger::global()
+    );
+}
+
+
 
 TEST_CASE("Test works as expected") {
     loop_with_initial_event([=]() {

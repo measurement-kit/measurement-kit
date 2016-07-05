@@ -55,7 +55,8 @@ static inline void collect(Var<Transport> transport, Callback<Error> cb,
         reactor, logger);
 }
 
-static inline void loop_negotiate(Var<Transport> transport, Callback<Error> cb,
+template <MK_MOCK_NAMESPACE(http, request_sendrecv)>
+void loop_negotiate(Var<Transport> transport, Callback<Error> cb,
                                       Settings settings, Var<Reactor> reactor,
                                       Var<Logger> logger, int iteration = 0) {
 
