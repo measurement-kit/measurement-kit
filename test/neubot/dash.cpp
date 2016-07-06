@@ -26,13 +26,13 @@ static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers
     Var<http::Response> response(new http::Response);
     response->status_code = 200;
     response->body = "{\"unchoked\": 0}";
-    cb(NoError(), response);
+    cb(mk::neubot::TooManyNegotiationsError(), response);
 }
 
 TEST_CASE("Server doesn't allow authentication") {
 
     loop_negotiate<receive_no_authentication_key>( nullptr,
-        [](Error error) { REQUIRE(mk::neubot::TooManyNegotiationsError()); }, {},
+        [](Error error) { REQUIRE(error == mk::neubot::TooManyNegotiationsError()); }, {},
         Reactor::global(), Logger::global()
     );
 }
