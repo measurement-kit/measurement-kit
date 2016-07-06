@@ -19,9 +19,10 @@ function dns_query_all(nameserver, qname)
     pprint(err, result)
 end
 
-mk.async(function ()
-    dns_query_all("8.8.8.8:53", "nexa.polito.it")
-end)
-mk.async(function ()
-    dns_query_all("8.8.8.8:53", "ooni.torproject.org")
-end)
+mk.async(
+    function ()
+        dns_query_all("8.8.8.8:53", "nexa.polito.it")
+    end,
+    function ()
+        dns_query_all("8.8.8.8:53", "ooni.torproject.org")
+    end)

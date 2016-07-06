@@ -6,8 +6,13 @@ mk = (function ()
     local self = {}
     self.coroutines = {}
 
-    self.async = function (func)
-        self.coroutines[coroutine.create(func)] = true
+    self.async = function (...)
+        if (type(...) == "function") then
+            return self.async({...})
+        end
+        for _, func in ipairs(...) do
+            self.coroutines[coroutine.create(func)] = true
+        end
     end
 
     self._call_cxx = function (dispatch)
