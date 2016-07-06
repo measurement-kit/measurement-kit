@@ -20,7 +20,7 @@ TEST_CASE("run() deals with mlab-ns query error") {
 
 static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers,
                                             std::string,
-                                            Callback<Error, Var<http::Response>>,
+                                            Callback<Error, Var<http::Response>> cb,
                                             Var<Reactor> = Reactor::global(),
                                             Var<Logger> = Logger::global()) {
     Var<http::Response> response(new http::Response);
@@ -32,7 +32,7 @@ static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers
 TEST_CASE("Server doesn't allow authentication") {
 
     loop_negotiate<receive_no_authentication_key>( nullptr,
-        [](Error error) { REQUIRE(error == TooManyNegotiationsError()); }, {},
+        [](Error error) { REQUIRE(error == mk::neubot::TooManyNegotiationsError()); }, {},
         Reactor::global(), Logger::global()
     );
 }
