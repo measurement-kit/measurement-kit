@@ -5,11 +5,11 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <measurement_kit/script.hpp>
+#include <measurement_kit/lua_engine.hpp>
 #include <string>
 #include <unistd.h>
 
-static const char *kv_usage = "usage: ./example/script/lua [-v] path\n";
+static const char *kv_usage = "usage: ./example/lua_engine/run [-v] path\n";
 
 int main(int argc, char **argv) {
 
@@ -30,5 +30,5 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    mk::script::run_lua(argv[0]);
+    mk::lua_engine::run(argv[0]);
 }
