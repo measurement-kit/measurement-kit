@@ -25,7 +25,7 @@ gen_headers() {
         echo "#endif"                                                     >> $hh
     done
 
-    echo "$(slug $1)_includedir = $1"
+    echo "$(slug $1)_includedir = \${prefix}/$1"
     echo "$(slug $1)_include_HEADERS = # Empty"
     for name in `ls $1`; do
         if [ ! -d $1/$name ]; then
