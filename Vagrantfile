@@ -12,6 +12,7 @@ Vagrant.configure(2) do |config|
       echo "1. vagrant ssh"
       echo "2. cd /mk"
       echo "3. ./build/vagrant/jessie64"
+      echo "4. sudo make install"
     SHELL
   end
 end
