@@ -1,3 +1,11 @@
+# MeasurementKit 0.2.1 [2016-07-08]
+
+- use jessie64 rather than trusty64 in Vagrant file to make
+  sure we work on debian stable
+- make sure autogen.sh works ok on jessie64
+- fix a bug that prevented headers to be installed when $DESTDIR
+  wasn't specified
+
 # MeasurementKit 0.2.0 [2016-06-30]
 
 - autogen.sh: with -n do not use the network
