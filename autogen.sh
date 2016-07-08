@@ -3,7 +3,7 @@
 set -e
 export LC_ALL=C  # Stable sorting regardless of the locale
 
-no_download=""
+no_download=0
 if [ "$1" = "-n" ]; then
     no_download=1
 fi
@@ -25,7 +25,7 @@ gen_headers() {
         echo "#endif"                                                     >> $hh
     done
 
-    echo "$(slug $1)_includedir = $1"
+    echo "$(slug $1)_includedir = \${prefix}/$1"
     echo "$(slug $1)_include_HEADERS = # Empty"
     for name in `ls $1`; do
         if [ ! -d $1/$name ]; then
@@ -81,7 +81,7 @@ gen_executables() {
 }
 
 get_repo() {
-    if [ "$no_download" = "1" ]; then
+    if [ $no_download -eq 1 ]; then
         return
     fi
     echo ""
@@ -93,7 +93,7 @@ get_repo() {
 }
 
 get_geoipdb() {
-    if [ "$no_download" = "1" ]; then
+    if [ $no_download -eq 1 ]; then
         return
     fi
     echo ""
