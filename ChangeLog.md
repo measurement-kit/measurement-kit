@@ -1,3 +1,10 @@
+# MeasurementKit 0.2.2 [2016-07-08]
+
+- document v0.2.1 release (I forgot to do that)
+- properly bump version number (again, I forgot to do that)
+- add script to automate release tasks
+- and document v0.2.2 release
+
 # MeasurementKit 0.2.1 [2016-07-08]
 
 - use jessie64 rather than trusty64 in Vagrant file to make
