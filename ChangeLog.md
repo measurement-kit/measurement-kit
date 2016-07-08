@@ -1,3 +1,8 @@
+# MeasurementKit 0.2.4 [2016-07-08]
+
+- Makefile.am: fix -release and -version-info flags
+- bump path version number
+
 # MeasurementKit 0.2.3 [2016-07-08]
 
 - make sure podspec uses up-to-date version number
