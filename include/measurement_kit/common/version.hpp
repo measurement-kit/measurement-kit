@@ -6,6 +6,6 @@
 #define MEASUREMENT_KIT_COMMON_VERSION_HPP
 
 // Note: we use semantic versioning (see: http://semver.org/)
-#define MEASUREMENT_KIT_VERSION "0.2.2"
+#define MEASUREMENT_KIT_VERSION "0.2.3"
 
 #endif

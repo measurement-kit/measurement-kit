@@ -7,8 +7,11 @@ fi
 old_version=$1
 new_version=$2
 for file in configure.ac doc/api/common/version.md doc/index.md \
-            include/measurement_kit/common/version.hpp; do
-    sed -i "s/$old_version/$new_version/g" $file
+            include/measurement_kit/common/version.hpp \
+            measurement_kit.podspec; do
+    cp $file $file.old
+    sed "s/$old_version/$new_version/g" $file.old > $file
+    rm $file.old
 done
 mv ChangeLog.md ChangeLog.md.old
 echo "# MeasurementKit $new_version [`date +%Y-%m-%d`]" > ChangeLog.md

@@ -8,7 +8,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
-#define MEASUREMENT_KIT_VERSION "0.2.2"
+#define MEASUREMENT_KIT_VERSION "0.2.3"
 
 ```
 
@@ -23,4 +23,4 @@ the programmer to know MeasurementKit version number.
 
 # HISTORY
 
-The `version.hpp` header appeared in MeasurementKit 0.2.2.
+The `version.hpp` header appeared in MeasurementKit 0.2.0.
