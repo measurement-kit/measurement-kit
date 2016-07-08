@@ -1,3 +1,8 @@
+# MeasurementKit 0.2.3 [2016-07-08]
+
+- make sure podspec uses up-to-date version number
+- bump version number to v0.2.3
+
 # MeasurementKit 0.2.2 [2016-07-08]
 
 - document v0.2.1 release (I forgot to do that)
