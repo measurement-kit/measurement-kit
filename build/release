@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+if [ $# -ne 2 ]; then
+    echo "usage: $0 old-version new-version" 1>&2
+    exit 1
+fi
+old_version=$1
+new_version=$2
+for file in configure.ac doc/api/common/version.md doc/index.md \
+            include/measurement_kit/common/version.hpp; do
+    sed -i "s/$old_version/$new_version/g" $file
+done
+mv ChangeLog.md ChangeLog.md.old
+echo "# MeasurementKit $new_version [`date +%Y-%m-%d`]" > ChangeLog.md
+echo "" >> ChangeLog.md
+cat ChangeLog.md.old >> ChangeLog.md
+rm ChangeLog.md.old
