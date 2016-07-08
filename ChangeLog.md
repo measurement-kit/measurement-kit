@@ -2,6 +2,7 @@
 
 - Makefile.am: fix -release and -version-info flags
 - bump path version number
+- Add script to generate source package
 
 # MeasurementKit 0.2.3 [2016-07-08]
 

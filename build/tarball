@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+if [ $# -ne 1 ]; then
+    echo "usage: $0 tag" 1>&2
+    exit 1
+fi
+tag=$1
+if echo $tag | grep -q '^v'; then
+    v=`echo $tag | sed 's/^v//g'`
+else
+    v=$tag
+fi
+git archive --prefix=measurement-kit-$v/ $tag > _mk.tgz
+tar -xf _mk.tgz
+rm _mk.tgz
+cd measurement-kit-$v
+./autogen.sh
+cd ..
+tar -czf measurement-kit-$v.tar.gz measurement-kit-$v
+gpg2 -u 7733D95B -b --armor measurement-kit-$v.tar.gz
