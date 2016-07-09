@@ -22,6 +22,7 @@ void coroutine_impl(std::string address, int port,
     logger->debug("ndt: connect ...");
     net_connect_many(
         address, port, 1 /* i.e. like before but with new algorithm */,
+        //address, port, 4 /*XXX*/,
         [=](Error err, std::vector<Var<Transport>> txp_list) {
             logger->debug("ndt: connect ... %d", (int)err);
             if (err) {
