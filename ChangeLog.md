@@ -1,9 +1,10 @@
-# MeasurementKit 0.2.4 [2016-07-09]
+# MeasurementKit 0.2.4 [2016-07-10]
 
 - Makefile.am: fix -release and -version-info flags
 - bump path version number
 - Add script to generate source package
 - Use https collector by default
+- Fix NDT example usage string
 
 # MeasurementKit 0.2.3 [2016-07-08]
 
