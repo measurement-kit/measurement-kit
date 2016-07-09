@@ -10,7 +10,7 @@ namespace mk {
 namespace ndt {
 namespace test_s2c {
 
-template <MK_MOCK_NAMESPACE(net, connect)>
+template <MK_MOCK_NAMESPACE(net, connect_many)>
 void coroutine_impl(std::string address, int port,
                     Callback<Error, Continuation<Error, double>> cb,
                     double timeout, Settings settings, Var<Logger> logger,
@@ -20,9 +20,9 @@ void coroutine_impl(std::string address, int port,
 
     // The coroutine connects to the remote endpoint and then pauses
     logger->debug("ndt: connect ...");
-    net_connect(
-        address, port,
-        [=](Error err, Var<Transport> txp) {
+    net_connect_many(
+        address, port, 1 /* i.e. like before but with new algorithm */,
+        [=](Error err, std::vector<Var<Transport>> txp_list) {
             logger->debug("ndt: connect ... %d", (int)err);
             if (err) {
                 cb(err, nullptr);
@@ -39,40 +39,59 @@ void coroutine_impl(std::string address, int port,
                 Var<size_t> total(new size_t(0));
                 Var<double> previous(new double(0.0));
                 Var<size_t> count(new size_t(0));
-                txp->set_timeout(timeout);
+                Var<size_t> num_completed{new size_t{0}};
+                size_t num_flows = txp_list.size();
 
-                txp->on_data([=](Buffer data) {
-                    if (*begin == 0.0) {
-                        *begin = *previous = time_now();
-                    }
-                    *total += data.length();
-                    double ct = time_now();
-                    *count += data.length();
-                    if (ct - *previous > 0.5) {
-                        double x = (*count * 8) / 1000 / (ct - *previous);
-                        *count = 0;
-                        *previous = ct;
-                        logger->info("Speed: %.2f kbit/s", x);
-                    }
-                    // TODO: force close the connection after a given
-                    // large amount of time has passed
-                });
+                for (auto txp : txp_list) {
+                    txp->set_timeout(timeout);
 
-                txp->on_error([=](Error err) {
-                    logger->info("Ending download (%d)", (int)err);
-                    double elapsed_time = time_now() - *begin;
-                    logger->debug("ndt: elapsed %lf", elapsed_time);
-                    logger->debug("ndt: total %lu", (unsigned long)*total);
-                    double speed = 0.0;
-                    if (err == EofError()) {
-                        if (elapsed_time > 0.0) {
-                            speed = *total * 8.0 / 1000.0 / elapsed_time;
+                    txp->on_data([=](Buffer data) {
+                        if (*begin == 0.0) {
+                            *begin = *previous = time_now();
                         }
-                        err = NoError();
-                    }
-                    logger->info("S2C speed %lf kbit/s", speed);
-                    txp->close([=]() { cb(err, speed); });
-                });
+                        *total += data.length();
+                        double ct = time_now();
+                        *count += data.length();
+                        if (ct - *previous > 0.5) {
+                            double x = (*count * 8) / 1000 / (ct - *previous);
+                            *count = 0;
+                            *previous = ct;
+                            logger->info("Speed: %.2f kbit/s", x);
+                        }
+                        // TODO: force close the connection after a given
+                        // large amount of time has passed
+                    });
+
+                    txp->on_error([=](Error err) {
+                        logger->info("Ending download (%d)", err.code);
+                        if (err == EofError()) {
+                            err = NoError();
+                        }
+                        txp->close([=]() {
+                            ++(*num_completed);
+                            // Note: in this callback we cannot reference
+                            // txp_list or txp because that would keep
+                            // alive txp indefinitely, so we use the num_flows
+                            // variable instead (note that this means that
+                            // the `=` only copies what you use, a thing that
+                            // I was totally unaware of!)
+                            if (*num_completed < num_flows) {
+                                return;
+                            }
+                            double elapsed_time = time_now() - *begin;
+                            logger->debug("ndt: elapsed %lf", elapsed_time);
+                            logger->debug("ndt: total %lu", (unsigned long)*total);
+                            double speed = 0.0;
+                            if (elapsed_time > 0.0) {
+                                speed = *total * 8.0 / 1000.0 / elapsed_time;
+                            }
+                            logger->info("S2C speed %lf kbit/s", speed);
+                            // XXX We need to define what we consider
+                            // error when we have parallel flows
+                            cb((num_flows == 1) ? err : NoError(), speed);
+                        });
+                    });
+                }
             });
         },
         settings, logger, reactor);
