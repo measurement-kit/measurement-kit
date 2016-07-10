@@ -39,6 +39,17 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     void set_timeout(double timeout) override {
         timeval tv, *tvp = mk::timeval_init(&tv, timeout);
+        bufferevent *underlying = bufferevent_get_underlying(this->bev);
+        if (underlying) {
+            // When we have a underlying bufferevent (i.e., a socket) set the
+            // timeout to it rather than to the outer buffer because we have
+            // seen running a long download that setting the timeout of the SSL
+            // bufferevent leads to interrupted download due to timeout.
+            if (bufferevent_set_timeouts(underlying, tvp, tvp) != 0) {
+                throw std::runtime_error("cannot set timeout");
+            }
+            return;
+        }
         if (bufferevent_set_timeouts(this->bev, tvp, tvp) != 0) {
             throw std::runtime_error("cannot set timeout");
         }
