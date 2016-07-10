@@ -58,8 +58,7 @@ modified using the following `settings`:
 
 - *"net/ssl"* (bool): whether to establish a SSL connection (default: false).
 
-- *"net/timeout"* (double): timeout for connect and I/O operations (default: `5.0` for
-  connecting and `30.0` for the established connection).
+- *"net/timeout"* (double): timeout for connect and I/O operations (default: `5.0` seconds).
 
 To provide insights into what went wrong and what went right during the connect
 attempt, the `Error` returned by `connect()` contains as `context` an instance of the
