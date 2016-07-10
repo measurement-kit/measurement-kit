@@ -14,7 +14,7 @@ AM_CFLAGS = $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
 AM_CXXFLAGS = $(LIBMEASUREMENT_KIT_W_FLAGS) $(LIBMEASUREMENT_KIT_I_FLAGS)
 
 lib_LTLIBRARIES               = libmeasurement_kit.la
-libmeasurement_kit_la_LDFLAGS = -version-info $(VERSION_INFO)
+libmeasurement_kit_la_LDFLAGS = $(VERSION_INFO)
 libmeasurement_kit_la_SOURCES = # Empty
 
 noinst_PROGRAMS    = # Empty
