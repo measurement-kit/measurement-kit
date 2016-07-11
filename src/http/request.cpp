@@ -75,6 +75,11 @@ void Request::serialize(net::Buffer &buff) {
         buff << "Content-Length: " << std::to_string(body.length()) << "\r\n";
     }
     buff << "\r\n";
+    for (auto s: mk::split(buff.peek(), "\r\n")) {
+        // TODO: break API, bump minor, pass Var<Logger> to this function
+        // such that this log message is printed with the correct logger
+        debug("> %s", s.c_str());
+    }
     if (body != "") {
         buff << body;
     }
