@@ -193,6 +193,8 @@ TEST_CASE("dns::query deals with invalid PTR name") {
           [](Error e, Message) { REQUIRE(e == InvalidNameForPTRError()); });
 }
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 // Integration (or regress?) tests for dns::query.
 //
 // They generally need connectivity and are automatically skipped if
@@ -291,3 +293,5 @@ TEST_CASE("The system resolver works as expected") {
               });
     });
 }
+
+#endif

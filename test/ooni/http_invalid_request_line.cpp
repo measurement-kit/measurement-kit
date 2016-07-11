@@ -13,6 +13,8 @@
 
 using namespace mk;
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE("The HTTP Invalid Request Line test should run") {
     Settings options;
     options["backend"] = "http://213.138.109.232/";
@@ -78,6 +80,8 @@ TEST_CASE("Asynchronous http-invalid-request-line test") {
         std::cout << s << "\n";
 }
 
+#endif
+
 TEST_CASE("Make sure that set_output_path() works") {
     auto instance = ooni::HttpInvalidRequestLine()
                         .set_output_filepath("foo.txt")
@@ -85,6 +89,8 @@ TEST_CASE("Make sure that set_output_path() works") {
     auto ptr = static_cast<ooni::OoniTest *>(instance.get());
     REQUIRE(ptr->output_filepath == "foo.txt");
 }
+
+#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Make sure that it can pass options to the other levels") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
@@ -108,3 +114,5 @@ TEST_CASE("Make sure that the test can deal with an invalid backend") {
     for (auto &s : *logs)
         std::cout << s << "\n";
 }
+
+#endif
