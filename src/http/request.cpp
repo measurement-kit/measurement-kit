@@ -151,15 +151,6 @@ void request_recv_response(Var<Transport> txp,
             // we don't want this function to call ->emit_error()
             *prevent_emit = true;
             try {
-                if (err.context) {
-                    Var<LingeringData> ld = err.context.as<LingeringData>();
-                    if (!!ld) {
-                        logger->debug("Processing data recv'd along with EOF");
-                        parser->feed(ld->buffer);
-                    } else {
-                        logger->warn("Received unexpected error context");
-                    }
-                }
                 logger->debug("Now passing EOF to parser");
                 parser->eof();
             } catch (Error &second_error) {

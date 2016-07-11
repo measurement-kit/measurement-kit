@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <event2/buffer.h>
 #include <event2/dns.h>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
@@ -50,23 +51,12 @@ void Connection::handle_event_(short what) {
     logger->debug("connection: got bufferevent event: %d", what);
 
     if (what & BEV_EVENT_EOF) {
-        Error error = EofError();
-        Buffer buff(bufferevent_get_input(bev));
-        if (buff.length() > 0) {
-            /*
-             * Note: this is the case where SSL receives premature EOF and
-             * delivers it _before_ data. We steal input data to provide it
-             * along with EOF but we cannot avoid libevent generating a
-             * data event for zero bytes data just afterwards. This should
-             * be the "data" even you should see after this log message.
-             */
-            logger->debug("Got EOF with data lingering in input buffer");
-            Var<LingeringData> ld(new LingeringData);
-            ld->buffer = buff;
-            error.context = ld;
-            // FALLTHRU
+        auto input = bufferevent_get_input(bev);
+        if (evbuffer_get_length(input) > 0) {
+            logger->debug("Suppress EOF with data lingering in input buffer");
+            return;
         }
-        emit_error(error);
+        emit_error(EofError());
         return;
     }
 

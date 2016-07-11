@@ -38,11 +38,6 @@ MK_DEFINE_ERR(MK_ERR_NET(22), NotEnoughDataError, "")
 MK_DEFINE_ERR(MK_ERR_NET(23), MissingCaBundlePathError, "")
 MK_DEFINE_ERR(MK_ERR_NET(24), BrokenPipeError, "")
 
-class LingeringData : public ErrorContext {
-  public:
-    Buffer buffer;
-};
-
 } // namespace net
 } // namespace mk
 #endif
