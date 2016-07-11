@@ -15,7 +15,7 @@ using namespace mk;
 using namespace mk::ndt;
 
 static const char *kv_usage =
-    "usage: ./example/net/ndt [-v] [-C /path/to/ca.bundle] [-p port] "
+    "usage: ./example/net/ndt [-v] [-C /path/to/ca.bundle] [-p port]\n"
     "                         [-T download|none|upload] [host]\n";
 
 int main(int argc, char **argv) {

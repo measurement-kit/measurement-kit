@@ -3,7 +3,7 @@
 set -e
 export LC_ALL=C  # Stable sorting regardless of the locale
 
-no_download=""
+no_download=0
 if [ "$1" = "-n" ]; then
     no_download=1
 fi
@@ -25,7 +25,7 @@ gen_headers() {
         echo "#endif"                                                     >> $hh
     done
 
-    echo "$(slug $1)_includedir = $1"
+    echo "$(slug $1)_includedir = \${prefix}/$1"
     echo "$(slug $1)_include_HEADERS = # Empty"
     for name in `ls $1`; do
         if [ ! -d $1/$name ]; then
@@ -81,24 +81,19 @@ gen_executables() {
 }
 
 get_repo() {
-    if [ "$no_download" = "1" ]; then
+    if [ $no_download -eq 1 ]; then
         return
     fi
     echo ""
-    echo "> $3 (from github.com/$1)"
+    echo "> $3 (from github.com/$1 at $2)"
     branch=$4
-    [ -z "$branch" ] && branch=master
-    if [ ! -d src/ext/$3 ]; then
-        git clone --depth 50 -b $branch https://github.com/$1 src/ext/$3
-    else
-        (cd src/ext/$3 && git checkout $branch && git pull)
-    fi
-    (cd src/ext/$3 && git checkout $2)
+    rm -rf src/ext/$3
+    git clone --depth 1 --single-branch -b $2 https://github.com/$1 src/ext/$3
     echo ""
 }
 
 get_geoipdb() {
-    if [ "$no_download" = "1" ]; then
+    if [ $no_download -eq 1 ]; then
         return
     fi
     echo ""
