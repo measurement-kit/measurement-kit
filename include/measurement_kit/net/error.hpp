@@ -6,6 +6,7 @@
 #define MEASUREMENT_KIT_NET_ERROR_HPP
 
 #include <measurement_kit/common/error.hpp>
+#include <measurement_kit/net/buffer.hpp>
 
 namespace mk {
 namespace net {
@@ -36,6 +37,11 @@ MK_DEFINE_ERR(MK_ERR_NET(21), SslError, "ssl_error")
 MK_DEFINE_ERR(MK_ERR_NET(22), NotEnoughDataError, "")
 MK_DEFINE_ERR(MK_ERR_NET(23), MissingCaBundlePathError, "")
 MK_DEFINE_ERR(MK_ERR_NET(24), BrokenPipeError, "")
+
+class LingeringData : public ErrorContext {
+  public:
+    Buffer buffer;
+};
 
 } // namespace net
 } // namespace mk

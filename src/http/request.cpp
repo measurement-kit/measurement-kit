@@ -136,12 +136,24 @@ void request_recv_response(Var<Transport> txp,
         txp->emit_error(NoError());
     });
     txp->on_error([=](Error err) {
+        logger->debug("Received error %d on connection", err.code);
         if (err == EofError()) {
             // Calling parser->on_eof() could trigger parser->on_end() and
             // we don't want this function to call ->emit_error()
             *prevent_emit = true;
+            if (err.context) {
+                Var<LingeringData> ld = err.context.as<LingeringData>();
+                if (!!ld) {
+                    logger->debug("Processing data receiving along with EOF");
+                    parser->feed(ld->buffer);
+                } else {
+                    logger->warn("Received unexpected error context");
+                }
+            }
+            logger->debug("Now passing EOF to parser");
             parser->eof();
         }
+        logger->debug("Now reacting to delivered error %d", err.code);
         txp->on_error(nullptr);
         txp->on_data(nullptr);
         reactor->call_soon([=]() {

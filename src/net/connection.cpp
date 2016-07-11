@@ -47,9 +47,26 @@ void Connection::handle_write_() {
 }
 
 void Connection::handle_event_(short what) {
+    logger->debug("connection: got bufferevent event: %d", what);
 
     if (what & BEV_EVENT_EOF) {
-        emit_error(EofError());
+        Error error = EofError();
+        Buffer buff(bufferevent_get_input(bev));
+        if (buff.length() > 0) {
+            /*
+             * Note: this is the case where SSL receives premature EOF and
+             * delivers it _before_ data. We steal input data to provide it
+             * along with EOF but we cannot avoid libevent generating a
+             * data event for zero bytes data just afterwards. This should
+             * be the "data" even you should see after this log message.
+             */
+            logger->debug("Got EOF with data lingering in input buffer");
+            Var<LingeringData> ld(new LingeringData);
+            ld->buffer = buff;
+            error.context = ld;
+            // FALLTHRU
+        }
+        emit_error(error);
         return;
     }
 
