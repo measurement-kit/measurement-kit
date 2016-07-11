@@ -97,9 +97,9 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         sst << "HTTP/" << response_.http_major << "." << response_.http_minor
             << " " << response_.status_code << " " << response_.reason;
         response_.response_line = sst.str();
-        logger_->debug("> %s", response_.response_line.c_str());
+        logger_->debug("< %s", response_.response_line.c_str());
         for (auto kv : response_.headers) {
-            logger_->debug("> %s: %s", kv.first.c_str(), kv.second.c_str());
+            logger_->debug("< %s: %s", kv.first.c_str(), kv.second.c_str());
         }
         if (response_fn_) {
             response_fn_(response_);
