@@ -36,6 +36,13 @@ void Connection::handle_read_() {
         emit_data(buff);
     } catch (Error &error) {
         emit_error(error);
+        return;
+    }
+    if (suppressed_eof) {
+        suppressed_eof = false;
+        logger->debug("Deliver previously suppressed EOF");
+        emit_error(EofError());
+        return;
     }
 }
 
@@ -54,6 +61,7 @@ void Connection::handle_event_(short what) {
         auto input = bufferevent_get_input(bev);
         if (evbuffer_get_length(input) > 0) {
             logger->debug("Suppress EOF with data lingering in input buffer");
+            suppressed_eof = true;
             return;
         }
         emit_error(EofError());
