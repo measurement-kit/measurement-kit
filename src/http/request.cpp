@@ -66,7 +66,8 @@ void Request::serialize(net::Buffer &buff) {
         buff << kv.first << ": " << kv.second << "\r\n";
     }
     buff << "Host: " << url.address;
-    if (url.port != 80) {
+    if ((url.schema == "http" and url.port != 80) or
+         (url.schema == "https" and url.port != 443)) {
         buff << ":";
         buff << std::to_string(url.port);
     }
