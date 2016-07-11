@@ -125,7 +125,10 @@ void request_recv_response(Var<Transport> txp,
     Var<Response> response(new Response);
     Var<bool> prevent_emit(new bool(false));
 
+    // Note: any parser error at this point is an exception catched by the
+    // connection code and routed to the error handler function below
     txp->on_data([=](Buffer data) { parser->feed(data); });
+
     parser->on_response([=](Response r) { *response = r; });
 
     // TODO: here we should honour the `ignore_body` setting
@@ -147,17 +150,23 @@ void request_recv_response(Var<Transport> txp,
             // Calling parser->on_eof() could trigger parser->on_end() and
             // we don't want this function to call ->emit_error()
             *prevent_emit = true;
-            if (err.context) {
-                Var<LingeringData> ld = err.context.as<LingeringData>();
-                if (!!ld) {
-                    logger->debug("Processing data receiving along with EOF");
-                    parser->feed(ld->buffer);
-                } else {
-                    logger->warn("Received unexpected error context");
+            try {
+                if (err.context) {
+                    Var<LingeringData> ld = err.context.as<LingeringData>();
+                    if (!!ld) {
+                        logger->debug("Processing data recv'd along with EOF");
+                        parser->feed(ld->buffer);
+                    } else {
+                        logger->warn("Received unexpected error context");
+                    }
                 }
+                logger->debug("Now passing EOF to parser");
+                parser->eof();
+            } catch (Error &second_error) {
+                logger->warn("Parsing error at EOF: %d", second_error.code);
+                err = second_error;
+                // FALLTHRU
             }
-            logger->debug("Now passing EOF to parser");
-            parser->eof();
         }
         logger->debug("Now reacting to delivered error %d", err.code);
         txp->on_error(nullptr);

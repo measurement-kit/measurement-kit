@@ -165,9 +165,6 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         prev_ = cur;
     }
 
-    // XXX parse() and parser_execute() should return Error
-    // and should be tagged with warn_unused_result
-
     void parse() {
         size_t total = 0;
         buffer_.for_each([&](const void *p, size_t n) {
