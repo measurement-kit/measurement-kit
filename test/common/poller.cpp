@@ -26,7 +26,6 @@ static void event_base_free_mock(event_base *p) {
 }
 
 TEST_CASE("Constructor") {
-
     SECTION("We deal with evthread_use_pthreads() failure") {
         // Since here we syntethize a different template, this should be
         // the time where we create the singleton()

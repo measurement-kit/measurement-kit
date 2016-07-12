@@ -123,6 +123,8 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
                  |___/
 */
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE("connect_base works with ipv4") {
     loop_with_initial_event_and_connectivity([]() {
         connect_base("130.192.16.172", 80,
@@ -471,3 +473,5 @@ TEST_CASE("net::connect() works in case of error") {
                 {{"net/timeout", 5.0}});
     });
 }
+
+#endif

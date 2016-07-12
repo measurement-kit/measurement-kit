@@ -7,6 +7,8 @@
 
 #include "src/ooni/utils_impl.hpp"
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE("ip lookup works") {
     mk::loop_with_initial_event_and_connectivity([]() {
         mk::ooni::ip_lookup([](mk::Error err, std::string) {
@@ -15,6 +17,8 @@ TEST_CASE("ip lookup works") {
         });
     });
 }
+
+#endif
 
 TEST_CASE("geoip works") {
     mk::ErrorOr<json> json = mk::ooni::geoip(

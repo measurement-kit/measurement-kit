@@ -94,7 +94,7 @@ TEST_CASE("run() deals with invalid port error") {
 
 static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
                  Var<Reactor>, Var<Logger>) {
-    cb(MockedError(), {});
+    cb(MockedError(), mlabns::Reply());
 }
 
 TEST_CASE("run() deals with mlab-ns query error") {
@@ -112,6 +112,8 @@ TEST_CASE("run() deals with mlab-ns query error") {
                  |___/
 */
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE("NDT test run() should work") {
     loop_with_initial_event([]() {
         set_verbosity(MK_LOG_INFO);
@@ -121,3 +123,5 @@ TEST_CASE("NDT test run() should work") {
         });
     });
 }
+
+#endif

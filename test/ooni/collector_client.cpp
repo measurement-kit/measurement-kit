@@ -432,6 +432,8 @@ TEST_CASE("submit_report() deals with collector_create_report error") {
                  |___/
 */
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE("The collector client works as expected") {
     loop_with_initial_event([=]() {
         collector::submit_report("test/fixtures/report.json",
@@ -442,3 +444,5 @@ TEST_CASE("The collector client works as expected") {
                                  });
     });
 }
+
+#endif
