@@ -7,11 +7,11 @@
 namespace mk {
 namespace ndt {
 
-void NdtTest::begin(Callback<> cb) {
-    ndt::run([=](Error) { cb(); }, options, logger, reactor);
+void NdtTest::begin(Callback<Error> cb) {
+    ndt::run([=](Error error) { cb(error); }, options, logger, reactor);
 }
 
-void NdtTest::end(Callback<> cb) { cb(); }
+void NdtTest::end(Callback<Error> cb) { cb(NoError()); }
 
 Var<NetTest> NdtTest::create_test_() {
     NdtTest *test = new NdtTest;
