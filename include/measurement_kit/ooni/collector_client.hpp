@@ -15,7 +15,7 @@ namespace collector {
     To submit a file report, pass it to `submit_report()`:
 */
 
-#define MK_OONI_DEFAULT_COLLECTOR_URL "https://a.collector.ooni.io"
+#define MK_OONI_DEFAULT_COLLECTOR_URL "https://a.collector.test.ooni.io"
 
 std::string default_collector_url();
 
