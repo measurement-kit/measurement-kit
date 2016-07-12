@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 #define CATCH_CONFIG_MAIN
 
 #include "src/ext/Catch/single_include/catch.hpp"
@@ -30,3 +32,7 @@ TEST_CASE("Running the NDT test using begin / end works") {
         });
     });
 }
+
+#else
+int main(){}
+#endif

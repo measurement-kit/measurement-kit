@@ -13,6 +13,8 @@
 
 using namespace mk;
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE(
     "The DNS Injection test should run with an input file of DNS hostnames") {
     Settings options;
@@ -57,6 +59,8 @@ TEST_CASE("Asynchronous dns-injection test") {
     for (auto &s : *logs)
         std::cout << s << "\n";
 }
+
+#endif
 
 TEST_CASE("Make sure that set_output_path() works") {
     auto instance = ooni::DnsInjection()

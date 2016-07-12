@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 /// Tests Android traceroute prober
 
 // This is meant to run on Android but can run on all Linux systems
@@ -97,5 +99,9 @@ TEST_CASE("Check whether it works when destination sends reply") {
 }
 
 #else
-int main() { return 0; }
+int main(){}
+#endif
+
+#else
+int main(){}
 #endif
