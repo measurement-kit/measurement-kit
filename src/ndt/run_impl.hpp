@@ -17,7 +17,7 @@ template <Phase connect, Phase send_login, Phase recv_and_ignore_kickoff,
           Phase wait_in_queue, Phase recv_version, Phase recv_tests_id,
           Phase run_tests, Phase recv_results_and_logout, Phase wait_close,
           Cleanup disconnect_and_callback>
-void run_with_specific_server_impl(std::string address, int port,
+void run_with_specific_server_impl(Var<Entry> entry, std::string address, int port,
                                    Callback<Error> callback, Settings settings,
                                    Var<Logger> logger, Var<Reactor> reactor) {
 
@@ -28,6 +28,7 @@ void run_with_specific_server_impl(std::string address, int port,
     Var<Context> ctx(new Context);
     ctx->address = address;
     ctx->callback = callback;
+    ctx->entry = entry;
     ctx->logger = logger;
     ctx->reactor = reactor;
     ctx->port = port;
@@ -38,6 +39,12 @@ void run_with_specific_server_impl(std::string address, int port,
     ctx->test_suite |= settings.get("test_suite", TEST_C2S|TEST_S2C);
 
     dump_settings(ctx->settings, "ndt", ctx->logger);
+
+    // Initialize entry keys that may be set by this routine
+    (*ctx->entry)["receiver_data"] = Entry::array();
+    (*ctx->entry)["web100_data"] = Entry::object();
+    (*ctx->entry)["summary_data"] = Entry::object();
+    (*ctx->entry)["test_suite"] = ctx->test_suite;
 
     // The following code implements this sequence diagram:
     // https://raw.githubusercontent.com/wiki/ndt-project/ndt/NDTProtocol.images/ndt_10.png
@@ -88,7 +95,7 @@ void run_with_specific_server_impl(std::string address, int port,
 }
 
 template <MK_MOCK(run_with_specific_server), MK_MOCK_NAMESPACE(mlabns, query)>
-void run_impl(Callback<Error> callback, Settings settings, Var<Logger> logger,
+void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings, Var<Logger> logger,
               Var<Reactor> reactor) {
     ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
     if (!port) {
@@ -97,7 +104,7 @@ void run_impl(Callback<Error> callback, Settings settings, Var<Logger> logger,
     }
     std::string address = settings.get<std::string>("address", "");
     if (address != "") {
-        run_with_specific_server(address, *port, callback, settings, logger,
+        run_with_specific_server(entry, address, *port, callback, settings, logger,
                                  reactor);
         return;
     }
@@ -107,7 +114,7 @@ void run_impl(Callback<Error> callback, Settings settings, Var<Logger> logger,
                          callback(MlabnsQueryError(err));
                          return;
                      }
-                     run_with_specific_server(reply.fqdn, *port, callback,
+                     run_with_specific_server(entry, reply.fqdn, *port, callback,
                                               settings, logger, reactor);
                  },
                  settings, reactor, logger);

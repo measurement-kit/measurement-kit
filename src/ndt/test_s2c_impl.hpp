@@ -10,8 +10,10 @@ namespace mk {
 namespace ndt {
 namespace test_s2c {
 
+using namespace mk::report;
+
 template <MK_MOCK_NAMESPACE(net, connect_many)>
-void coroutine_impl(std::string address, int port,
+void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
                     Callback<Error, Continuation<Error, double>> cb,
                     double timeout, Settings settings, Var<Logger> logger,
                     Var<Reactor> reactor) {
@@ -36,28 +38,30 @@ void coroutine_impl(std::string address, int port,
                 // The coroutine is resumed and receives data
                 logger->debug("ndt: resume coroutine");
                 logger->info("Starting download");
-                Var<double> begin(new double(0.0));
+                double begin = time_now();
                 Var<size_t> total(new size_t(0));
                 Var<double> previous(new double(0.0));
                 Var<size_t> count(new size_t(0));
                 Var<size_t> num_completed{new size_t{0}};
                 size_t num_flows = txp_list.size();
+                *previous = begin;
+                logger->info("Speed: %lf s %lf kbit/s", 0.0, 0.0);
+                (*report_entry)["receiver_data"].push_back({0.0, 0.0});
 
                 for (auto txp : txp_list) {
                     txp->set_timeout(timeout);
 
                     txp->on_data([=](Buffer data) {
-                        if (*begin == 0.0) {
-                            *begin = *previous = time_now();
-                        }
                         *total += data.length();
                         double ct = time_now();
                         *count += data.length();
                         if (ct - *previous > 0.5) {
+                            double el = ct - begin;
                             double x = (*count * 8) / 1000 / (ct - *previous);
                             *count = 0;
                             *previous = ct;
-                            logger->info("Speed: %.2f kbit/s", x);
+                            logger->info("Speed: %lf s %lf kbit/s", el, x);
+                            (*report_entry)["receiver_data"].push_back({el, x});
                         }
                         // TODO: force close the connection after a given
                         // large amount of time has passed
@@ -79,7 +83,7 @@ void coroutine_impl(std::string address, int port,
                             if (*num_completed < num_flows) {
                                 return;
                             }
-                            double elapsed_time = time_now() - *begin;
+                            double elapsed_time = time_now() - begin;
                             logger->debug("ndt: elapsed %lf", elapsed_time);
                             logger->debug("ndt: total %lu", (unsigned long)*total);
                             double speed = 0.0;
@@ -118,9 +122,8 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         for (auto e : split(s, "\n")) {
             if (e != "") {
-                // This should be info because there are Web100
-                // variables containing RTT and other useful metrics
-                ctx->logger->info("%s", e.c_str());
+                ctx->logger->debug("%s", e.c_str());
+                messages::add_to_report(ctx->entry, "web100_data", e);
             }
         }
         // XXX: Here we can loop forever
@@ -157,7 +160,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start s2c coroutine ...");
         coroutine(
-            ctx->address, *port,
+            ctx->entry, ctx->address, *port,
             [=](Error err, Continuation<Error, double> cc) {
                 ctx->logger->debug("ndt: start s2c coroutine ... %d", (int)err);
                 if (err) {

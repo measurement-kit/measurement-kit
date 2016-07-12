@@ -4,22 +4,24 @@
 #ifndef MEASUREMENT_KIT_NDT_RUN_HPP
 #define MEASUREMENT_KIT_NDT_RUN_HPP
 
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/report.hpp>
 
 namespace mk {
 namespace ndt {
+
+using namespace mk::report;
 
 // By default we pass MK_NDT_UPLOAD|MK_NDT_DOWNLOAD as settings["test_suite"]
 // but you can tweak that by only requesting a single phase.
 #define MK_NDT_UPLOAD 2
 #define MK_NDT_DOWNLOAD 4
 
-void run_with_specific_server(std::string address, int port,
+void run_with_specific_server(Var<Entry> entry, std::string address, int port,
                               Callback<Error> callback, Settings settings = {},
                               Var<Logger> logger = Logger::global(),
                               Var<Reactor> reactor = Reactor::global());
 
-void run(Callback<Error> callback, Settings settings = {},
+void run(Var<Entry> entry, Callback<Error> callback, Settings settings = {},
          Var<Logger> logger = Logger::global(),
          Var<Reactor> reactor = Reactor::global());
 
