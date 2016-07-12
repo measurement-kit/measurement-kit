@@ -137,6 +137,9 @@ void request_recv_response(Var<Transport> txp,
     // TODO: we should improve the parser such that the transport forwards the
     // "error" event to it and then the parser does the right thing, so that the
     // code becomes less "twisted" here.
+    //
+    // XXX actually trying to do that could make things worse as we have
+    // seen in #690; we should refactor this code with care.
 
     parser->on_end([=]() {
         if (*prevent_emit == true) {
