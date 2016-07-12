@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
@@ -92,3 +94,7 @@ TEST_CASE("Nothing strange happens if no thread is bound to Runner") {
     Runner runner;
     REQUIRE(runner.empty()); // Mainly to avoid unused variable warning
 }
+
+#else
+int main(){}
+#endif

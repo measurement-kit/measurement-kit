@@ -9,19 +9,18 @@
 namespace mk {
 namespace ooni {
 
-void OoniTest::run_next_measurement(Callback<> cb) {
+void OoniTest::run_next_measurement(Callback<Error> cb) {
     logger->debug("net_test: running next measurement");
     std::string next_input;
     std::getline(*input_generator, next_input);
     if (input_generator->eof()) {
         logger->debug("net_test: reached end of input");
-        cb();
+        cb(NoError());
         return;
     }
     if (!input_generator->good()) {
         logger->warn("net_test: I/O error reading input");
-        // TODO: allow to pass error to callback
-        cb();
+        cb(FileIoError());
         return;
     }
 
@@ -47,7 +46,11 @@ void OoniTest::run_next_measurement(Callback<> cb) {
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
-        file_report.write_entry(entry);
+        Error error = file_report.write_entry(entry);
+        if (error) {
+            cb(error);
+            return;
+        }
         logger->debug("net_test: written entry");
 
         reactor->call_soon([=]() { run_next_measurement(cb); });
@@ -98,7 +101,7 @@ void OoniTest::geoip_lookup(Callback<> cb) {
         options, reactor, logger);
 }
 
-void OoniTest::open_report() {
+Error OoniTest::open_report() {
     file_report.test_name = test_name;
     file_report.test_version = test_version;
     file_report.test_start_time = test_start_time;
@@ -113,7 +116,7 @@ void OoniTest::open_report() {
         output_filepath = generate_output_filepath();
     }
     file_report.filename = output_filepath;
-    file_report.open();
+    return file_report.open();
 }
 
 std::string OoniTest::generate_output_filepath() {
@@ -129,7 +132,7 @@ std::string OoniTest::generate_output_filepath() {
         filename << timestamp << "-" << idx << ".json";
 
         std::ifstream output_file(filename.str().c_str());
-        // If a file called this way already exists we increase the counter by 1.
+        // If a file called this way already exists we increment the counter
         if (output_file.good()) {
             output_file.close();
             idx++;
@@ -140,7 +143,7 @@ std::string OoniTest::generate_output_filepath() {
     return filename.str();
 }
 
-void OoniTest::begin(Callback<> cb) {
+void OoniTest::begin(Callback<Error> cb) {
     mk::utc_time_now(&test_start_time);
     geoip_lookup([=]() {
         resolver_lookup([=](Error error, std::string resolver_ip_) {
@@ -149,18 +152,21 @@ void OoniTest::begin(Callback<> cb) {
             } else {
                 logger->debug("failed to lookup resolver ip");
             }
-            open_report();
+            error = open_report();
+            if (error) {
+                cb(error);
+                return;
+            }
             if (needs_input) {
                 if (input_filepath == "") {
-                    // TODO: allow to pass error to cb()
                     logger->warn("an input file is required");
-                    cb();
+                    cb(MissingRequiredInputFileError());
                     return;
                 }
                 input_generator.reset(new std::ifstream(input_filepath));
                 if (!input_generator->good()) {
                     logger->warn("cannot read input file");
-                    cb();
+                    cb(CannotOpenInputFileError());
                     return;
                 }
             } else {
@@ -171,12 +177,16 @@ void OoniTest::begin(Callback<> cb) {
     });
 }
 
-void OoniTest::end(Callback<> cb) {
-    file_report.close();
+void OoniTest::end(Callback<Error> cb) {
+    Error error = file_report.close();
+    if (error) {
+        cb(error);
+        return;
+    }
     collector::submit_report(
         output_filepath,
         options.get("collector_base_url", collector::default_collector_url()),
-        [=](Error) { cb(); }, options, reactor, logger);
+        [=](Error error) { cb(error); }, options, reactor, logger);
 }
 
 } // namespace ooni

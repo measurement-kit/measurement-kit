@@ -13,6 +13,8 @@
 
 using namespace mk;
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE(
     "The DNS Injection test should run with an input file of DNS hostnames") {
     Settings options;
@@ -20,8 +22,9 @@ TEST_CASE(
     options["dns/timeout"] = 0.1;
     ooni::DnsInjection dns_injection("test/fixtures/hosts.txt", options);
     loop_with_initial_event_and_connectivity([&]() {
+        // TODO: handle errors?
         dns_injection.begin(
-            [&]() { dns_injection.end([]() { break_loop(); }); });
+            [&](Error) { dns_injection.end([](Error) { break_loop(); }); });
     });
 }
 
@@ -56,6 +59,8 @@ TEST_CASE("Asynchronous dns-injection test") {
     for (auto &s : *logs)
         std::cout << s << "\n";
 }
+
+#endif
 
 TEST_CASE("Make sure that set_output_path() works") {
     auto instance = ooni::DnsInjection()

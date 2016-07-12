@@ -33,8 +33,8 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     OoniTest(std::string f, Settings o) : NetTest(f, o),
         test_name("net_test"), test_version("0.0.1") {}
 
-    void begin(Callback<>) override;
-    void end(Callback<>) override;
+    void begin(Callback<Error>) override;
+    void end(Callback<Error>) override;
 
   protected:
     // Functions that derived classes SHOULD override
@@ -49,9 +49,9 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     tm test_start_time;
     Var<std::istream> input_generator;
 
-    void run_next_measurement(Callback<>);
+    void run_next_measurement(Callback<Error>);
     void geoip_lookup(Callback<>);
-    void open_report();
+    Error open_report() __attribute__((warn_unused_result));
     std::string generate_output_filepath();
 };
 

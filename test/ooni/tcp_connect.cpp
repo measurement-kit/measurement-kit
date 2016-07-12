@@ -14,6 +14,8 @@
 
 using namespace mk;
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE(
     "The TCP connect test should run with an input file of DNS hostnames") {
     ooni::TcpConnect tcp_connect("test/fixtures/hosts.txt",
@@ -21,7 +23,9 @@ TEST_CASE(
                                    {"port", "80"},
                                });
     loop_with_initial_event_and_connectivity([&]() {
-        tcp_connect.begin([&]() { tcp_connect.end([]() { break_loop(); }); });
+        tcp_connect.begin([&](Error) {
+            tcp_connect.end([](Error) { break_loop(); });
+        });
     });
 }
 
@@ -33,7 +37,9 @@ TEST_CASE("The TCP connect test should fail with an invalid dns resolver") {
                                 {"dns/attempts", 1},
                                 {"dns/timeout", 0.0001}});
     loop_with_initial_event([&]() {
-        tcp_connect.begin([&]() { tcp_connect.end([]() { break_loop(); }); });
+        tcp_connect.begin([&](Error) {
+            tcp_connect.end([](Error) { break_loop(); });
+        });
     });
 }
 
@@ -67,6 +73,8 @@ TEST_CASE("Asynchronous tcp-connect test") {
         std::cout << s << "\n";
 }
 
+#endif
+
 TEST_CASE("Make sure that set_output_path() works") {
     auto instance = ooni::TcpConnect()
                         // Note: must also set valid input file path otherwise
@@ -78,6 +86,8 @@ TEST_CASE("Make sure that set_output_path() works") {
     auto ptr = static_cast<ooni::OoniTest *>(instance.get());
     REQUIRE(ptr->output_filepath == "foo.txt");
 }
+
+#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("The test should fail with an invalid dns") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
@@ -92,3 +102,5 @@ TEST_CASE("The test should fail with an invalid dns") {
     for (auto &s : *logs)
         std::cout << s << "\n";
 }
+
+#endif

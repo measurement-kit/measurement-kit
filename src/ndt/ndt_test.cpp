@@ -7,11 +7,27 @@
 namespace mk {
 namespace ndt {
 
-void NdtTest::begin(Callback<> cb) {
-    ndt::run([=](Error) { cb(); }, options, logger, reactor);
+using namespace mk::report;
+
+NdtTest::NdtTest(Settings s) : OoniTest("", s) {
+    options["save_real_probe_ip"] = true;
+    test_name = "ndt";
+    test_version = "0.0.1";
 }
 
-void NdtTest::end(Callback<> cb) { cb(); }
+void NdtTest::main(std::string, Settings settings, Callback<Entry> cb) {
+    Var<Entry> entry(new Entry);
+    (*entry)["failure"] = nullptr;
+    // Note: `options` is the class attribute and `settings` is instead a
+    // possibly modified copy of the `options` object
+    ndt::run(entry, [=](Error error) {
+        if (error) {
+            (*entry)["failure"] = error.as_ooni_error();
+        }
+        // XXX The callback should probably take a Var<Entry>
+        cb(*entry);
+    }, settings, logger, reactor);
+}
 
 Var<NetTest> NdtTest::create_test_() {
     NdtTest *test = new NdtTest;

@@ -16,6 +16,30 @@ namespace report {
     return entry;
 }
 
+/* static */ Entry Entry::object() {
+    Entry entry;
+    // Manually construct an empty object by pushing
+    // a value and then removing it
+    entry["foo"] = "bar";
+    entry.erase("foo");
+    return entry;
+}
+
+Entry &Entry::operator=(Entry value) {
+    nlohmann::json::operator=(value);
+    return *this;
+}
+
+Entry &Entry::operator[](std::string key) {
+    // Note: out_of_range could not happen because operator[] returns
+    // a null json object if the accessed key is missing
+    try {
+        return static_cast<Entry &>(nlohmann::json::operator[](key));
+    } catch (std::domain_error &) {
+        throw JsonDomainError();
+    }
+}
+
 void Entry::push_back(Entry value) {
     try {
         nlohmann::json::push_back(value);

@@ -31,9 +31,11 @@ void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
     debug("runner: scheduling %p", (void *)test.get());
     reactor->call_soon([=]() {
         debug("runner: starting %p", (void *)test.get());
-        test->begin([=]() {
+        test->begin([=](Error) {
+            // TODO: do not ignore the error
             debug("runner: ending %p", (void *)test.get());
-            test->end([=]() {
+            test->end([=](Error) {
+                // TODO: do not ignore the error
                 debug("runner: cleaning-up %p", (void *)test.get());
                 // For robustness, delay the final callback to the beginning of
                 // next I/O cycle to prevent possible user after frees. This
