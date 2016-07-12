@@ -1,5 +1,5 @@
 # NAME
-Callback -- Syntactic sugar for writing callbacks.
+Callback &mdash; Syntactic sugar for writing callbacks.
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -10,8 +10,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 namespace mk {
 
-template<typename... T>
-using Callback<T...> = std::function<void(T...)>;
+template<typename... T> using Callback<T...> = std::function<void(T...)>;
 
 }
 ```
@@ -23,31 +22,6 @@ using Callback<T...> = std::function<void(T...)>;
 
 The `Callback` alias allows to more compactly writing callbacks and SHOULD be
 used to indicate one-shot callbacks instead of `std::function<T>`.
-
-# EXAMPLE
-
-```C++
-#include <measurement_kit/common.hpp>
-
-using namespace mk;
-
-static void slow_operation(Callback<Error> cb) {
-    debug("slow operation ...");
-    call_later(1.0, [=]() {
-        debug("slow operation ... done");
-        cb(NoError());
-    });
-}
-
-int main() {
-    loop_with_initial_event([=]() {
-        set_verbose(MK_LOG_DEBUG);
-        slow_operation([=]() {
-            break_loop();
-        });
-    });
-}
-```
 
 # HISTORY
 

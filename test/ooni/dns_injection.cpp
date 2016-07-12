@@ -33,7 +33,7 @@ TEST_CASE("Synchronous dns-injection test") {
         .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
         .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
         .set_options("dns/timeout", "0.1")
-        .set_input_file_path("test/fixtures/hosts.txt")
+        .set_input_filepath("test/fixtures/hosts.txt")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs)
@@ -48,7 +48,7 @@ TEST_CASE("Asynchronous dns-injection test") {
         .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
         .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
         .set_options("dns/timeout", "0.1")
-        .set_input_file_path("test/fixtures/hosts.txt")
+        .set_input_filepath("test/fixtures/hosts.txt")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run([&]() { done = true; });
     do {
@@ -63,8 +63,8 @@ TEST_CASE("Make sure that set_output_path() works") {
                         // Note: must also set valid input file path otherwise
                         // the constructor
                         // called inside create_test_() throws an exception
-                        .set_input_file_path("test/fixtures/hosts.txt")
-                        .set_output_file_path("foo.txt")
+                        .set_input_filepath("test/fixtures/hosts.txt")
+                        .set_output_filepath("foo.txt")
                         .create_test_();
     auto ptr = static_cast<ooni::OoniTest *>(instance.get());
     REQUIRE(ptr->output_filepath == "foo.txt");

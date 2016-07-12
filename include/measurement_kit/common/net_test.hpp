@@ -46,11 +46,11 @@ class NetTest {
     NetTest(std::string i, Settings o) : options(o), input_filepath(i) {}
     virtual ~NetTest();
 
-    NetTest &set_input_file_path(std::string s) {
+    NetTest &set_input_filepath(std::string s) {
         input_filepath = s;
         return *this;
     }
-    NetTest &set_output_file_path(std::string s) {
+    NetTest &set_output_filepath(std::string s) {
         output_filepath = s;
         return *this;
     }

@@ -1,3 +1,48 @@
+# MeasurementKit 0.2.4 [2016-07-10]
+
+- Makefile.am: fix -release and -version-info flags
+- bump path version number
+- Add script to generate source package
+- Use https collector by default
+- Fix NDT example usage string
+
+# MeasurementKit 0.2.3 [2016-07-08]
+
+- make sure podspec uses up-to-date version number
+- bump version number to v0.2.3
+
+# MeasurementKit 0.2.2 [2016-07-08]
+
+- document v0.2.1 release (I forgot to do that)
+- properly bump version number (again, I forgot to do that)
+- add script to automate release tasks
+- and document v0.2.2 release
+
+# MeasurementKit 0.2.1 [2016-07-08]
+
+- use jessie64 rather than trusty64 in Vagrant file to make
+  sure we work on debian stable
+- make sure autogen.sh works ok on jessie64
+- fix a bug that prevented headers to be installed when $DESTDIR
+  wasn't specified
+
+# MeasurementKit 0.2.0 [2016-06-30]
+
+- autogen.sh: with -n do not use the network
+- fix net/connect timeout
+- update documentation for v0.2.0
+- bump version to v0.2.0
+
+# MeasurementKit 0.2.0-beta.2 [2016-06-19]
+
+- http/request_serializer: allow custom path
+- refactoring and small fixes
+- common/net_test: removed misleading identifier() function
+- common/utils: export time related utils functions
+- ooni: merge DSL and Impl tests, use functions to implement tests (#677)
+- ooni: avoid collisions in test file names
+- common/net_test: file_path => filepath
+
 # MeasurementKit 0.2.0-beta.1 [2016-06-08]
 
 - `ip_lookup()`: allow custom settings, reactor, and logger (required
