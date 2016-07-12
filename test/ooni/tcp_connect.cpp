@@ -23,7 +23,9 @@ TEST_CASE(
                                    {"port", "80"},
                                });
     loop_with_initial_event_and_connectivity([&]() {
-        tcp_connect.begin([&]() { tcp_connect.end([]() { break_loop(); }); });
+        tcp_connect.begin([&](Error) {
+            tcp_connect.end([](Error) { break_loop(); });
+        });
     });
 }
 
@@ -35,7 +37,9 @@ TEST_CASE("The TCP connect test should fail with an invalid dns resolver") {
                                 {"dns/attempts", 1},
                                 {"dns/timeout", 0.0001}});
     loop_with_initial_event([&]() {
-        tcp_connect.begin([&]() { tcp_connect.end([]() { break_loop(); }); });
+        tcp_connect.begin([&](Error) {
+            tcp_connect.end([](Error) { break_loop(); });
+        });
     });
 }
 

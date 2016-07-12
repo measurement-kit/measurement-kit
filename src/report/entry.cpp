@@ -16,6 +16,15 @@ namespace report {
     return entry;
 }
 
+/* static */ Entry Entry::object() {
+    Entry entry;
+    // Manually construct an empty object by pushing
+    // a value and then removing it
+    entry["foo"] = "bar";
+    entry.erase("foo");
+    return entry;
+}
+
 Entry &Entry::operator=(Entry value) {
     nlohmann::json::operator=(value);
     return *this;

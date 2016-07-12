@@ -8,7 +8,7 @@
 namespace mk {
 namespace ndt {
 
-void run_with_specific_server(std::string address, int port,
+void run_with_specific_server(Var<Entry> entry, std::string address, int port,
                               Callback<Error> callback, Settings settings,
                               Var<Logger> logger, Var<Reactor> reactor) {
     run_with_specific_server_impl<
@@ -16,13 +16,13 @@ void run_with_specific_server(std::string address, int port,
         protocol::recv_and_ignore_kickoff, protocol::wait_in_queue,
         protocol::recv_version, protocol::recv_tests_id, protocol::run_tests,
         protocol::recv_results_and_logout, protocol::wait_close,
-        protocol::disconnect_and_callback>(address, port, callback, settings,
+        protocol::disconnect_and_callback>(entry, address, port, callback, settings,
                                            logger, reactor);
 }
 
-void run(Callback<Error> callback, Settings settings, Var<Logger> logger,
+void run(Var<Entry> entry, Callback<Error> callback, Settings settings, Var<Logger> logger,
          Var<Reactor> reactor) {
-    run_impl(callback, settings, logger, reactor);
+    run_impl(entry, callback, settings, logger, reactor);
 }
 
 } // namespace mk
