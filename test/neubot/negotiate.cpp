@@ -65,5 +65,6 @@ TEST_CASE("Test works as expected") {
             REQUIRE(!error);
             break_loop();
         });
+        
     });
 }
