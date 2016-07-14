@@ -50,8 +50,8 @@ static void receive_invalid_status_code(Var<net::Transport>, Settings, Headers,
     cb(NoError(), response);
 }
 
-TEST_CASE("Server doesn't allow authentication") {
-
+TEST_CASE("Make sure that an error is passed to callback if the response "
+          "status is not 200") {
     loop_negotiate<receive_invalid_status_code>( nullptr,
         [](Error error) { REQUIRE(error); }, {},
         Reactor::global(), Logger::global()
