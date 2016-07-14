@@ -35,7 +35,7 @@ static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers
 TEST_CASE("Server doesn't allow authentication") {
 
     loop_negotiate<receive_no_authentication_key>( nullptr,
-        [](Error error) { REQUIRE(error == TooManyNegotiationsError()); }, {},
+        [](Error error) { REQUIRE(error == mk::neubot::TooManyNegotiationsError()); }, {},
         Reactor::global(), Logger::global()
     );
 }
@@ -65,6 +65,6 @@ TEST_CASE("Test works as expected") {
             REQUIRE(!error);
             break_loop();
         });
-        
+
     });
 }
