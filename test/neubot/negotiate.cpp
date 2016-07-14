@@ -29,13 +29,13 @@ static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers
                     "\"authorization\": \"antani\", "
                     "\"queue_pos\": \"1\", "
                     "\"real_address\": \"0.0.0.0\"}";
-    cb(mk::neubot::TooManyNegotiationsError(), response);
+    cb(MockedError(), response);
 }
 
 TEST_CASE("Server doesn't allow authentication") {
 
     loop_negotiate<receive_no_authentication_key>( nullptr,
-        [](Error error) { REQUIRE(error == mk::neubot::TooManyNegotiationsError()); }, {},
+        [](Error error) { REQUIRE(error); }, {},
         Reactor::global(), Logger::global()
     );
 }
