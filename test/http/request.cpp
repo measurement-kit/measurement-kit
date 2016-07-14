@@ -16,6 +16,8 @@ using namespace mk;
 using namespace mk::net;
 using namespace mk::http;
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 // Either tor was running and hence everything should be OK, or tor was
 // not running and hence connect() to socks port must have failed.
 static inline bool check_error_after_tor(Error e) {
@@ -35,6 +37,8 @@ static std::string md5(std::string s) {
     }
     return retval;
 }
+
+#endif
 
 /*
       _
@@ -108,6 +112,8 @@ TEST_CASE("HTTP Request class works as expected with explicit path") {
 |_|\___/ \__, |_|\___|
          |___/
 */
+
+#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request works as expected") {
     loop_with_initial_event_and_connectivity([]() {
@@ -234,6 +240,8 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
     REQUIRE(called == 1);
 }
 
+#endif // ENABLE_INTEGRATION_TESTS
+
 #define SOCKS_PORT_IS(port)                                                    \
     static void socks_port_is_##port(                                          \
         std::string, int, Callback<Error, Var<Transport>>, Settings settings,  \
@@ -328,6 +336,8 @@ TEST_CASE("http::request_connect_impl() works for normal connections") {
                              });
     });
 }
+
+#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_send() works as expected") {
     loop_with_initial_event_and_connectivity([]() {
@@ -491,6 +501,8 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
             });
     });
 }
+
+#endif // ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl fails without an url") {
     loop_with_initial_event_and_connectivity([]() {

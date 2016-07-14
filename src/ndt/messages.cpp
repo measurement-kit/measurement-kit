@@ -52,6 +52,28 @@ void write_noasync(Var<Context> ctx, Buffer buff) {
     ctx->txp->write(buff);
 }
 
+Error add_to_report(Var<Entry> entry, std::string key, std::string item) {
+    std::list<std::string> list = split(item, ":");
+    if (list.size() != 2) {
+        return GenericError(); /* XXX use more specific error */
+    }
+    // XXX: We should make sure that we remove leading and trailing whitespaces
+    std::string variable = list.front();
+    std::string value = list.back();
+    ErrorOr<long> as_long = lexical_cast_noexcept<long>(value);
+    if (!!as_long) {
+        (*entry)[key][variable] = *as_long;
+        return NoError();
+    }
+    ErrorOr<double> as_double = lexical_cast_noexcept<double>(value);
+    if (!!as_double) {
+        (*entry)[key][variable] = *as_double;
+        return NoError();
+    }
+    (*entry)[key][variable] = value;
+    return NoError();
+}
+
 } // namespace messages
 } // namespace ndt
 } // namespace mk

@@ -4,16 +4,20 @@
 #ifndef MEASUREMENT_KIT_NDT_NDT_TEST_HPP
 #define MEASUREMENT_KIT_NDT_NDT_TEST_HPP
 
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace ndt {
 
-class NdtTest : public NetTest {
+using namespace mk::ooni;
+using namespace mk::report;
+
+class NdtTest : public OoniTest {
   public:
-    using NetTest::NetTest;
-    void begin(Callback<>) override;
-    void end(Callback<>) override;
+    NdtTest() : NdtTest(Settings()) {}
+    NdtTest(Settings s);
+  protected:
+    void main(std::string, Settings, Callback<Entry>) override;
     Var<NetTest> create_test_() override;
 };
 

@@ -18,8 +18,9 @@ static void failure(std::string, int, Callback<Error, Var<Transport>> cb,
 }
 
 TEST_CASE("coroutine() is robust to connect error") {
+    Var<Entry> entry{new Entry};
     test_s2c::coroutine_impl<failure>(
-        "www.google.com", 3301,
+        entry, "www.google.com", 3301,
         [](Error err, Continuation<Error, double>) {
             REQUIRE(err == MockedError());
         },
@@ -116,7 +117,7 @@ static void success(Var<Context>, Callback<Error, uint8_t, std::string> cb,
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
-static void failure(std::string, int,
+static void failure(Var<Entry>, std::string, int,
                     Callback<Error, Continuation<Error, double>> cb, double,
                     Settings, Var<Logger>, Var<Reactor>) {
     cb(MockedError(), [](Callback<Error, double>) {
@@ -137,7 +138,7 @@ static void test_prepare(Var<Context>,
 }
 
 static void
-connect_but_fail_later(std::string, int,
+connect_but_fail_later(Var<Entry>, std::string, int,
                        Callback<Error, Continuation<Error, double>> cb, double,
                        Settings, Var<Logger>, Var<Reactor>) {
     cb(NoError(), [](Callback<Error, double> cb) { cb(MockedError(), 0.0); });
@@ -166,7 +167,7 @@ TEST_CASE("run() deals with coroutine terminating with error") {
         ctx, [](Error err) { REQUIRE(err == MockedError()); });
 }
 
-static void coro_ok(std::string, int,
+static void coro_ok(Var<Entry>, std::string, int,
                     Callback<Error, Continuation<Error, double>> cb, double,
                     Settings, Var<Logger>, Var<Reactor>) {
     cb(NoError(), [](Callback<Error, double> cb) { cb(NoError(), 0.0); });

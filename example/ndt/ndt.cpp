@@ -60,5 +60,8 @@ int main(int argc, char **argv) {
         test.set_options("address", argv[0]);
     }
 
-    test.run();
+    test
+        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
+        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
+        .run();
 }
