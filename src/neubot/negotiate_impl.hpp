@@ -45,7 +45,7 @@ static inline void collect(Var<Transport> transport, Callback<Error> cb,
         [=](Error error, Var<Response> res) {
             if (error || (res->status_code != 200)) {
                 logger -> warn("Error: %d", (int) error);
-                cb(error);
+                cb(HttpRequestFailedError());
                 return;
             }
 
@@ -87,7 +87,7 @@ void loop_negotiate(Var<Transport> transport, Callback<Error> cb,
         [=](Error error, Var<Response> res) {
             if (error || (res->status_code != 200)) {
                 std::cout << "Error: " << (int)error;
-                cb(error);
+                cb(HttpRequestFailedError());
                 return;
             }
 

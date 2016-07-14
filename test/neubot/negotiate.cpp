@@ -35,7 +35,7 @@ static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers
 TEST_CASE("Server doesn't allow authentication") {
 
     loop_negotiate<receive_no_authentication_key>( nullptr,
-        [](Error error) { REQUIRE(error); }, {},
+        [](Error error) { REQUIRE(error == TooManyNegotiationsError()); }, {},
         Reactor::global(), Logger::global()
     );
 }
@@ -53,7 +53,7 @@ static void receive_invalid_status_code(Var<net::Transport>, Settings, Headers,
 TEST_CASE("Make sure that an error is passed to callback if the response "
           "status is not 200") {
     loop_negotiate<receive_invalid_status_code>( nullptr,
-        [](Error error) { REQUIRE(error); }, {},
+        [](Error error) { REQUIRE(error == http::HttpRequestFailedError()); }, {},
         Reactor::global(), Logger::global()
     );
 }
