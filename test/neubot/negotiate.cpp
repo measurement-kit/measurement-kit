@@ -25,7 +25,10 @@ static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers
                                             Var<Logger> = Logger::global()) {
     Var<http::Response> response(new http::Response);
     response->status_code = 200;
-    response->body = "{\"unchoked\": 0}";
+    response->body = "{\"unchoked\": 0, "
+                    "\"authorization\": \"antani\", "
+                    "\"queue_pos\": \"1\", "
+                    "\"real_address\": \"0.0.0.0\"}";
     cb(mk::neubot::TooManyNegotiationsError(), response);
 }
 
