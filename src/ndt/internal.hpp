@@ -44,6 +44,8 @@
 #define TEST_SFW 8
 #define TEST_STATUS 16
 #define TEST_META 32
+//#define TEST_C2S_EXT 64
+#define TEST_S2C_EXT 128
 
 #define KICKOFF_MESSAGE "123456 654321"
 #define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
@@ -192,7 +194,22 @@ void run(Var<Context> ctx, Callback<Error> callback);
 */
 namespace test_s2c {
 
-void coroutine(Var<Entry> report_entry, std::string address, int port,
+struct Params {
+    int port = -1;
+    double duration = 10.0;      // ignored by our implementation
+    bool snaps_enabled = false;  // we always take snaps, never report them
+    double snaps_delay = 0.5;
+    double snaps_offeset = 0.0;  // ignored by our implementation
+    int num_streams = 1;
+
+    Params(){}
+
+    // This constructor only sets the port and all the other settings
+    // instead remain at their default value
+    Params(int port) : port(port) {}
+};
+
+void coroutine(Var<Entry> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb,
                double timeout = 10.0, Settings settings = {},
                Var<Logger> logger = Logger::global(),

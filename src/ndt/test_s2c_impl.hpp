@@ -13,7 +13,7 @@ namespace test_s2c {
 using namespace mk::report;
 
 template <MK_MOCK_NAMESPACE(net, connect_many)>
-void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
+void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                     Callback<Error, Continuation<Error, double>> cb,
                     double timeout, Settings settings, Var<Logger> logger,
                     Var<Reactor> reactor) {
@@ -23,15 +23,14 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
     // The coroutine connects to the remote endpoint and then pauses
     logger->debug("ndt: connect ...");
     net_connect_many(
-        address, port, 1 /* i.e. like before but with new algorithm */,
-        //address, port, 4 /*XXX*/,
+        address, params.port, params.num_streams,
         [=](Error err, std::vector<Var<Transport>> txp_list) {
             logger->debug("ndt: connect ... %d", (int)err);
             if (err) {
                 cb(err, nullptr);
                 return;
             }
-            logger->info("Connected to %s:%d", address.c_str(), port);
+            logger->info("Connected to %s:%d", address.c_str(), params.port);
             logger->debug("ndt: suspend coroutine");
             cb(NoError(), [=](Callback<Error, double> cb) {
 
@@ -55,7 +54,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
                         *total += data.length();
                         double ct = time_now();
                         *count += data.length();
-                        if (ct - *previous > 0.5) {
+                        if (ct - *previous > params.snaps_delay) {
                             double el = ct - begin;
                             double x = (*count * 8) / 1000 / (ct - *previous);
                             *count = 0;
@@ -142,7 +141,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
     messages_read_msg_first(ctx, [=](Error err, uint8_t type, std::string s) {
-        ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
+        ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", err.code);
         if (err) {
             callback(ReadingTestPrepareError(err));
             return;
@@ -151,16 +150,57 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
             callback(NotTestPrepareError());
             return;
         }
-        ErrorOr<int> port = lexical_cast_noexcept<int>(s);
+        Params params;
+        std::vector<std::string> vec = split<std::vector<std::string>>(s);
+        ErrorOr<int> port = lexical_cast_noexcept<int>(vec[0]);
         if (!port || *port < 0 || *port > 65535) {
+            ctx->logger->warn("Received invalid port: %s", vec[0].c_str());
             callback(InvalidPortError());
             return;
         }
+        params.port = *port;
+        // Here we are being liberal; in theory we should only accept these
+        // extra parameters when the test is S2C_EXT
+        if (vec.size() >= 2) {
+            ErrorOr<double> duration = lexical_cast_noexcept<double>(vec[1]);
+            if (!duration or *duration < 0 or *duration > 60000.0) {
+                ctx->logger->warn("Received invalid duration: %s",
+                                  vec[1].c_str());
+                callback(InvalidDurationError());
+                return;
+            }
+            params.duration = *duration / 1000.0;
+        }
+        ctx->logger->debug("Duration: %f s", params.duration);
+        ctx->logger->debug("Snaps-enabled: /* ignored */"); // TODO: implement
+        if (vec.size() >= 4) {
+            ErrorOr<double> snaps_delay = lexical_cast_noexcept<double>(vec[3]);
+            if (!snaps_delay or *snaps_delay < 250.0) {
+                ctx->logger->warn("Received invalid snaps-delay: %s",
+                                  vec[3].c_str());
+                callback(InvalidSnapsDelayError());
+                return;
+            }
+            params.snaps_delay = *snaps_delay / 1000.0;
+        }
+        ctx->logger->debug("Snaps-delay: %f s", params.snaps_delay);
+        ctx->logger->debug("Snaps-offset: /* ignored */"); // TODO: implement
+        if (vec.size() >= 6) {
+            ErrorOr<int> num_streams = lexical_cast_noexcept<int>(vec[5]);
+            if (!num_streams or *num_streams < 1 or *num_streams > 8) {
+                ctx->logger->warn("Received invalid num-streams: %s",
+                                  vec[5].c_str());
+                callback(InvalidNumStreamsError());
+                return;
+            }
+            params.num_streams = *num_streams;
+        }
+        ctx->logger->debug("Num-streams: %d", params.num_streams);
 
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start s2c coroutine ...");
         coroutine(
-            ctx->entry, ctx->address, *port,
+            ctx->entry, ctx->address, params,
             [=](Error err, Continuation<Error, double> cc) {
                 ctx->logger->debug("ndt: start s2c coroutine ... %d", (int)err);
                 if (err) {
