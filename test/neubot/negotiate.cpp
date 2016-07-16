@@ -4,6 +4,7 @@
 #include <measurement_kit/neubot.hpp>
 #include "src/neubot/negotiate_impl.hpp"
 
+using namespace mk;
 using namespace mk::neubot::negotiate;
 
 static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
@@ -35,7 +36,7 @@ TEST_CASE("run() deals with mlab-ns query error") {
 TEST_CASE("Server doesn't allow authentication") {
 
     loop_negotiate( nullptr,
-        [](Error error) { REQUIRE(mk::neubot::TooManyNegotiationsError()); }, {},
+        [](Error error) { REQUIRE(error == neubot::TooManyNegotiationsError()); }, {},
         Reactor::global(), Logger::global(), 600
     );
 }
