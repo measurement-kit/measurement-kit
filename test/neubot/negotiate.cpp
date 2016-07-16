@@ -36,7 +36,7 @@ TEST_CASE("run() deals with mlab-ns query error") {
 TEST_CASE("Server doesn't allow authentication") {
 
     loop_negotiate( nullptr,
-        [](Error error) { REQUIRE(error == neubot::TooManyNegotiationsError()); }, {},
+        [](Error error) { REQUIRE(error); }, {},
         Reactor::global(), Logger::global(), 600
     );
 }
@@ -54,7 +54,7 @@ static void receive_invalid_status_code(Var<net::Transport>, Settings, Headers,
 TEST_CASE("Make sure that an error is passed to callback if the response "
           "status is not 200") {
     loop_negotiate<receive_invalid_status_code>( nullptr,
-        [](Error error) { REQUIRE(error == http::HttpRequestFailedError()); }, {},
+        [](Error error) { REQUIRE(error); }, {},
         Reactor::global(), Logger::global(), 0
     );
 }
