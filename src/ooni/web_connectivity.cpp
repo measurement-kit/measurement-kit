@@ -505,6 +505,7 @@ static void experiment_tcp_connect(Var<Entry> entry,
   // XXX this is very ghetto
   if (socket_count == 0) {
     cb(NoError());
+    return;
   }
 
   auto handle_connect = [=](std::string ip, int port) {
