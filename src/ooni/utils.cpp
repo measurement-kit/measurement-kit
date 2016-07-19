@@ -2,6 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include "src/ooni/utils_impl.hpp"
 #include "src/common/utils.hpp"
 
@@ -107,6 +112,44 @@ ErrorOr<json> geoip(std::string ip, std::string path_country,
     node["country_name"] = country_name.as_value();
     node["asn"] = asn.as_value();
     return node;
+}
+
+std::string extract_html_title(std::string body) {
+  std::regex TITLE_REGEXP("<title>([\\s\\S]*?)</title>", std::regex::icase);
+  std::smatch match;
+
+  if (std::regex_search(body, match, TITLE_REGEXP) && match.size() > 1) {
+    return match.str(1);
+  }
+  return "";
+}
+
+bool is_private_ipv4_addr(const std::string &ipv4_addr) {
+  std::regex IPV4_PRIV_ADDR(
+      "(^127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "(^192\\.168\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "(^10\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}))|"
+      "(^172\\.1[6-9]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "(^172\\.2[0-9]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "(^172\\.3[0-1]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "localhost"
+  );
+  std::smatch match;
+
+  if (std::regex_search(ipv4_addr, match, IPV4_PRIV_ADDR) && match.size() > 1) {
+    return true;
+  }
+  return false;
+}
+
+bool is_ip_addr(const std::string &ip_addr) {
+    struct sockaddr_in sa;
+    struct sockaddr_in6 sa6;
+    if ((inet_pton(AF_INET, ip_addr.c_str(), &(sa.sin_addr)) == 1) ||
+        (inet_pton(AF_INET6, ip_addr.c_str(), &(sa6.sin6_addr)) == 1)) {
+        return true;
+    }
+    return false;
 }
 
 } // namespace ooni

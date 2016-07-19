@@ -46,6 +46,13 @@ class IPLocation {
 ErrorOr<json> geoip(std::string ip, std::string path_country,
                     std::string path_asn);
 
+std::string extract_html_title(std::string body);
+
+bool is_private_ipv4_addr(const std::string &ipv4_addr);
+
+// Returns true if it's a ipv4 or ipv6 ip address
+bool is_ip_addr(const std::string &ip_addr);
+
 } // namespace ooni
 } // namespace mk
 #endif

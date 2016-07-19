@@ -9,6 +9,7 @@
 
 #include "src/common/utils.hpp"
 #include "src/ooni/utils.hpp"
+#include "src/ooni/constants.hpp"
 
 #include <set>
 #include <regex>
@@ -25,80 +26,7 @@ namespace ooni {
 
 using namespace mk::report;
 
-// These are very common server headers that we don't consider when checking
-// between control and experiment.
-static const std::set<std::string> COMMON_SERVER_HEADERS = {
-  "date",
-  "content-type",
-  "server",
-  "cache-control",
-  "vary",
-  "set-cookie",
-  "location",
-  "expires",
-  "x-powered-by",
-  "content-encoding",
-  "last-modified",
-  "accept-ranges",
-  "pragma",
-  "x-frame-options",
-  "etag",
-  "x-content-type-options",
-  "age",
-  "via",
-  "p3p",
-  "x-xss-protection",
-  "content-language",
-  "cf-ray",
-  "strict-transport-security",
-  "link",
-  "x-varnish"
-};
-
-
-static const std::map<std::string, std::string> COMMON_CLIENT_HEADERS = {
-  {
-    "User-Agent",
-    "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36"
-  },
-  {
-    "Accept-Language", "en-US;q=0.8,en;q=0.5"
-  },
-  {
-    "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-  }
-};
-
 typedef std::vector<std::pair<std::string, int>> SocketList;
-
-// XXX maybe we want to move these to some utility namespace
-static std::string extract_html_title(std::string body) {
-  std::regex TITLE_REGEXP("<title>([\\s\\S]*?)</title>", std::regex::icase);
-  std::smatch match;
-
-  if (std::regex_search(body, match, TITLE_REGEXP) && match.size() > 1) {
-    return match.str(1);
-  }
-  return "";
-}
-
-static bool is_private_ipv4_addr(const std::string &ipv4_addr) {
-  std::regex IPV4_PRIV_ADDR(
-      "(^127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "(^192\\.168\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "(^10\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}))|"
-      "(^172\\.1[6-9]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "(^172\\.2[0-9]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "(^172\\.3[0-1]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "localhost"
-  );
-  std::smatch match;
-
-  if (std::regex_search(ipv4_addr, match, IPV4_PRIV_ADDR) && match.size() > 1) {
-    return true;
-  }
-  return false;
-}
 
 static void compare_http_requests(Var<Entry> entry,
                                   Entry experiment_response,
@@ -172,8 +100,8 @@ static void compare_http_requests(Var<Entry> entry,
 
     std::set_difference(intersection.begin(),
                         intersection.end(),
-                        COMMON_SERVER_HEADERS.begin(),
-                        COMMON_SERVER_HEADERS.end(),
+                        constants::COMMON_SERVER_HEADERS.begin(),
+                        constants::COMMON_SERVER_HEADERS.end(),
                         std::inserter(uncommon_intersection,
                           uncommon_intersection.begin()));
 
@@ -480,7 +408,7 @@ static void experiment_http_request(Var<Entry> entry,
         Settings options,
         Var<Reactor> reactor, Var<Logger> logger) {
 
-  http::Headers headers = COMMON_CLIENT_HEADERS;
+  http::Headers headers = constants::COMMON_CLIENT_HEADERS;
   std::string body;
   options["http/url"] = url;
 
@@ -574,10 +502,18 @@ static void experiment_dns_query(
         Settings options,
         Var<Reactor> reactor, Var<Logger> logger) {
 
+  if (is_ip_addr(hostname)) {
+    // Don't perform DNS resolutions if it's an IP address
+    std::vector<std::string> addresses;
+    addresses.push_back(hostname);
+    callback(NoError(), addresses);
+    return;
+  }
+
   templates::dns_query(entry, "A", "IN", hostname, nameserver,
         [=](Error err, dns::Message message) {
-          std::vector<std::string> addresses;
           logger->debug("web_connectivity: experiment_dns_query got response");
+          std::vector<std::string> addresses;
           if (err) {
             callback(err, addresses);
             return;
@@ -627,10 +563,8 @@ void web_connectivity(std::string input, Settings options,
       return;
     }
 
-    // XXX check if this hostname is actually a hostname and not an IP
     std::string hostname = url->address;
-    // XXX we probably want to do like ooni and use the system resolver
-    std::string nameserver = options["nameserver"];
+    std::string nameserver = options["dns/nameserver"];
 
     logger->info("web_connectivity: starting dns_query for %s", hostname.c_str());
 
