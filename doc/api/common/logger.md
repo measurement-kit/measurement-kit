@@ -17,6 +17,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #define MK_LOG_DEBUG2 3
 #define MK_LOG_VERBOSITY_MASK 31
 
+#define MK_LOG_JSON 32 ///< log message is a valid JSON document
+
 namespace mk {
 
 class Logger : public NonCopyable, public NonMovable {
@@ -35,6 +37,8 @@ class Logger : public NonCopyable, public NonMovable {
 
     void on_log(Delegate<uint32_t, const char *> fn);
 
+    void set_logfile(std::string path);
+
     static Var<Logger> global();
 };
 
@@ -50,6 +54,8 @@ void increase_verbosity();
 uint32_t get_verbosity();
 
 void on_log(Delegate<uint32_t, const char *> fn);
+
+void set_logfile(std::string path);
 
 }
 ```
@@ -88,16 +94,23 @@ The `on_log` method allow to either set or reset the function called
 for each logging message. Such function is a delegate (i.e. the delegate
 body can safely change the delegate itself) and takes in input the
 verbosity level of the message and the message itself. The default log
-function prints on the standard error output the log level as integer
-enclosed by angular braces, followed by the formatted log message string.
-For example:
+function prints on the standard error output the severity (unless the
+severity is INFO, in which case nothing is printed) followed by the log
+message. For example:
+```
+warning: A warning message
+A info message
+debug: A debug message
+debug: A debug2 message
+```
 
-```
-<0> A warning message
-<1> A info message
-<2> A debug message
-<3> A debug2 message
-```
+To disable the log callback, pass `nullptr` to it.
+
+The `set_logfile` method instructs the logger to write a copy of each log
+message into the specified log file. Setting the logfile has no impact on
+logs written using `on_log` and *viceversa*. By default no log file is
+specified. It is legal (albeit useless) to have a logger not attached to
+any log file and whose `on_log` callback is `nullptr`.
 
 The `global()` factory returns the default logger.
 
