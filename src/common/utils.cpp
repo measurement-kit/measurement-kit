@@ -284,7 +284,7 @@ void dump_settings(Settings &s, std::string prefix, Var<Logger> logger) {
     logger->debug("%s: }", prefix.c_str());
 }
 
-// Adpated from <http://code.activestate.com/recipes/511478/>
+// Adapted from <http://code.activestate.com/recipes/511478/>
 double percentile(std::vector<double> v, double percent) {
     if (v.size() <= 0) {
         throw std::runtime_error("zero length vector");
