@@ -2,7 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/ext.hpp>
 #include <stdio.h>
 
 namespace mk {
@@ -11,6 +12,17 @@ namespace mk {
 
 Logger::Logger() {
     consumer_ = [](uint32_t level, const char *s) {
+        std::string message;
+        if ((level & MK_LOG_JSON)) {
+            try {
+                message = nlohmann::json::parse(s).dump(4);
+                s = message.c_str();
+            } catch (std::exception &) {
+                fprintf(stderr, "warning: logger cannot parse json message\n");
+                /* suppress */ ;
+            }
+            /* FALLTHROUGH */
+        }
         uint32_t verbosity = (level & MK_LOG_VERBOSITY_MASK);
         if (verbosity <= MK_LOG_WARNING) {
             fprintf(stderr, "warning: %s\n", s);

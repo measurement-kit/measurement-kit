@@ -43,7 +43,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
                 Var<size_t> count(new size_t(0));
                 txp->set_timeout(timeout);
                 *previous = begin;
-                logger->info("Speed: %lf s %lf kbit/s", 0.0, 0.0);
+                log_speed(logger, "download-speed", 0.0, 0.0);
                 (*report_entry)["receiver_data"].push_back({0.0, 0.0});
 
                 txp->on_data([=](Buffer data) {
@@ -55,7 +55,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
                         double x = (*count * 8) / 1000 / (ct - *previous);
                         *count = 0;
                         *previous = ct;
-                        logger->info("Speed: %lf s %lf kbit/s", el, x);
+                        log_speed(logger, "download-speed", el, x);
                         (*report_entry)["receiver_data"].push_back({el, x});
                     }
                     // TODO: force close the connection after a given
