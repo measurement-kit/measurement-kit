@@ -25,7 +25,8 @@ namespace mk {
 namespace neubot {
 namespace dash {
 
-static inline void loop_request(Var<Transport> transport, int speed_kbit,
+template <MK_MOCK_NAMESPACE(http, request_sendrecv)>
+void loop_request(Var<Transport> transport, int speed_kbit,
                                 Callback<Error, Var<Entry>> cb,
                                 Var<Entry> measurements, std::string auth,
                                 Settings settings, Var<Reactor> reactor,

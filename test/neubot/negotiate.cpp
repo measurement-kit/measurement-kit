@@ -18,8 +18,19 @@ TEST_CASE("Test works as expected") {
 
     });
 }
+
 #endif
 
+TEST_CASE("Test works without negotiation") {
+    Settings settings;
+    settings["url"] = "";
+    settings["negotiate"] = "false";
+
+    run_impl(
+        [](Error error) { REQUIRE(!error); }, settings,
+        Reactor::global(), Logger::global()
+    );
+}
 
 static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
                  Var<Reactor>, Var<Logger>) {
@@ -33,7 +44,7 @@ TEST_CASE("run() deals with mlab-ns query error") {
     );
 }
 
-static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers,
+/*static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers,
                                             std::string,
                                             Callback<Error, Var<http::Response>> cb,
                                             Var<Reactor> = Reactor::global(),
@@ -45,13 +56,13 @@ static void receive_no_authentication_key(Var<net::Transport>, Settings, Headers
                     "\"queue_pos\": 1, "
                     "\"real_address\": \"0.0.0.0\"}";
     cb(NoError(), response);
-}
+}*/
 
-TEST_CASE("Too many negotiations", "[xx]") {
+TEST_CASE("Too many negotiations") {
     Var<net::Transport> emitter(new net::Emitter);
-    loop_negotiate<receive_no_authentication_key>( emitter,
-        [](Error error) { REQUIRE(error); }, {},
-        Reactor::global(), Logger::global()
+    loop_negotiate( emitter,
+        [](Error error) { REQUIRE(error == mk::neubot::TooManyNegotiationsError()); }, {},
+        Reactor::global(), Logger::global(), 600
     );
 }
 
@@ -72,4 +83,14 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
         [](Error error) { REQUIRE(error == HttpRequestFailedError()); }, {},
         Reactor::global(), Logger::global()
     );
+}
+
+static void collect_receive_invalid_status_code(Var<net::Transport>, Settings, Headers,
+                                            std::string,
+                                            Callback<Error, Var<http::Response>> cb,
+                                            Var<Reactor> = Reactor::global(),
+                                            Var<Logger> = Logger::global()) {
+    Var<http::Response> response(new http::Response);
+    response->status_code = 500;
+    cb(NoError(), response);
 }
