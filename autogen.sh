@@ -102,6 +102,10 @@ get_geoipdb() {
         wget -q $base/GeoLiteCountry/GeoIP.dat.gz -O test/fixtures/GeoIP.dat.gz
         gzip -d test/fixtures/GeoIP.dat.gz
     fi
+    if [ ! -f "test/fixtures/GeoLiteCity.dat" ]; then
+        wget -q $base/GeoLiteCity.dat.gz -O test/fixtures/GeoLiteCity.dat.gz
+        gzip -d test/fixtures/GeoLiteCity.dat.gz
+    fi
     if [ ! -f "test/fixtures/GeoIPASNum.dat" ]; then
         wget -q $base/asnum/GeoIPASNum.dat.gz -O test/fixtures/GeoIPASNum.dat.gz
         gzip -d test/fixtures/GeoIPASNum.dat.gz
@@ -111,6 +115,7 @@ get_geoipdb() {
 grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
 echo test/fixtures/GeoIP.dat >> .gitignore.new
 echo test/fixtures/GeoIPASNum.dat >> .gitignore.new
+echo test/fixtures/GeoLiteCity.dat >> .gitignore.new
 mv .gitignore.new .gitignore
 
 echo "* Generating include.am"
