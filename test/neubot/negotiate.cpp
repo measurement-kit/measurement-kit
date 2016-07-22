@@ -34,9 +34,8 @@ TEST_CASE("run() deals with mlab-ns query error") {
 }*/
 
 TEST_CASE("Too many negotiations") {
-
     loop_negotiate( nullptr,
-        [](Error error) { REQUIRE(error == ); }, {},
+        [](Error error) { REQUIRE(error); }, {},
         Reactor::global(), Logger::global(), 600
     );
 }

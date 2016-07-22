@@ -10,7 +10,6 @@
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/neubot.hpp>
 #include <measurement_kit/mlabns.hpp>
-
 #include <stdlib.h>
 #include <string>
 #include <unistd.h>
@@ -69,14 +68,11 @@ void loop_negotiate(Var<Transport> transport, Callback<Error> cb,
     settings["http/path"] = "/negotiate/dash";
     settings["http/method"] = "POST";
 
-
     if (iteration > DASH_MAX_NEGOTIATION) {
         std::cout << "Too many negotiations\n";
         transport->close([=]() { cb(TooManyNegotiationsError()); });
         return;
     };
-
-
 
     request_sendrecv(
         transport, settings,
