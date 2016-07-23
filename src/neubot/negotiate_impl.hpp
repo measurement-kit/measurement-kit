@@ -27,7 +27,8 @@ namespace mk {
 namespace neubot {
 namespace negotiate {
 
-static inline void collect(Var<Transport> transport, Callback<Error> cb,
+template <MK_MOCK_NAMESPACE(http, request_sendrecv)>
+void collect(Var<Transport> transport, Callback<Error> cb,
                            std::string auth, Var<Entry> measurements,
                            Settings settings, Var<Reactor> reactor,
                            Var<Logger> logger) {
