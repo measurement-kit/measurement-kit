@@ -4,14 +4,14 @@
 #include "src/common/utils.hpp"
 #include <functional>
 #include <iostream>
+#include <measurement_kit/common.hpp>
+#include <measurement_kit/http.hpp>
+#include <measurement_kit/mlabns.hpp>
+#include <measurement_kit/neubot.hpp>
+#include <measurement_kit/report.hpp>
 #include <stdlib.h>
 #include <string>
 #include <unistd.h>
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/report.hpp>
-#include <measurement_kit/http.hpp>
-#include <measurement_kit/neubot.hpp>
-#include <measurement_kit/mlabns.hpp>
 
 #define DASH_MAX_ITERATION 15
 #define DASH_SECONDS 2
@@ -25,19 +25,17 @@ namespace mk {
 namespace neubot {
 namespace dash {
 
-template <MK_MOCK_NAMESPACE(http, request_sendrecv)>
+template <MK_MOCK_NAMESPACE(http, request_send)>
 void loop_request(Var<Transport> transport, int speed_kbit,
-                                Callback<Error, Var<Entry>> cb,
-                                Var<Entry> measurements, std::string auth,
-                                Settings settings, Var<Reactor> reactor,
-                                Var<Logger> logger, int iteration = 1) {
+                  Callback<Error, Var<Entry>> cb, Var<Entry> measurements,
+                  std::string auth, Settings settings, Var<Reactor> reactor,
+                  Var<Logger> logger, int iteration = 1) {
 
     int rate_index = 0;
     static const int DASH_RATES[] = {100,  150,  200,  250,  300,   400,  500,
-                        700,  900,  1200, 1500, 2000,  2500, 3000,
-                        4000, 5000, 6000, 7000, 10000, 20000};
-    static const int sizeofrates = (int) (sizeof(DASH_RATES) /
-                                        sizeof(int));
+                                     700,  900,  1200, 1500, 2000,  2500, 3000,
+                                     4000, 5000, 6000, 7000, 10000, 20000};
+    static const int sizeofrates = (int)(sizeof(DASH_RATES) / sizeof(int));
     std::string path = "/dash/download/";
 
     if (iteration > DASH_MAX_ITERATION) {
@@ -47,7 +45,7 @@ void loop_request(Var<Transport> transport, int speed_kbit,
 
     // Bisect
     while ((DASH_RATES[rate_index] < speed_kbit) &&
-        (rate_index < sizeofrates)) {
+           (rate_index < sizeofrates)) {
         rate_index++;
     }
     rate_index -= 1;
@@ -69,7 +67,7 @@ void loop_request(Var<Transport> transport, int speed_kbit,
         "",
         [=](Error error) {
             if (error) {
-                logger -> warn("Error: %d", (int) error);
+                logger->warn("Error: %d", (int)error);
                 cb(error, nullptr);
                 return;
             }
@@ -78,7 +76,7 @@ void loop_request(Var<Transport> transport, int speed_kbit,
                 transport,
                 [=](Error error, Var<Response> res) {
                     if (error) {
-                        logger -> warn("Error: %d", (int) error);
+                        logger->warn("Error: %d", (int)error);
                         cb(error, nullptr);
                         return;
                     }
@@ -88,7 +86,7 @@ void loop_request(Var<Transport> transport, int speed_kbit,
                     double time_elapsed = new_times - saved_times;
 
                     if (time_elapsed < 0) {
-                        logger -> warn("Time elapsed can't be negative");
+                        logger->warn("Time elapsed can't be negative");
                         cb(NegativeTimeError(), nullptr);
                         return;
                     }
@@ -110,8 +108,7 @@ void loop_request(Var<Transport> transport, int speed_kbit,
                             //{"request_ticks", self.saved_ticks}
                             //{"timestamp", mk::time_now}
                             //{"uuid", self.conf.get("uuid")}
-                            {"version",  MEASUREMENT_KIT_VERSION}
-                        };
+                            {"version", MEASUREMENT_KIT_VERSION}};
                         measurements->push_back(result);
                     }
 
@@ -131,19 +128,19 @@ void loop_request(Var<Transport> transport, int speed_kbit,
                         }
                     }
 
-                    reactor -> call_soon([=]() {
+                    reactor->call_soon([=]() {
                         loop_request(transport, s_k, cb, measurements, auth,
-                                 settings, reactor, logger, iteration + 1);
-                             });
+                                     settings, reactor, logger, iteration + 1);
+                    });
 
                 },
                 reactor, logger);
         });
 }
 
-static inline void run_impl(Settings settings, Callback<Error, Var<Entry>> cb,
-                            std::string auth, Var<Reactor> reactor,
-                            Var<Logger> logger) {
+template <MK_MOCK_NAMESPACE(http, request_connect)>
+void run_impl(Settings settings, Callback<Error, Var<Entry>> cb,
+              std::string auth, Var<Reactor> reactor, Var<Logger> logger) {
     settings["http/path"] = "";
     settings["http/method"] = "GET";
 
@@ -151,15 +148,15 @@ static inline void run_impl(Settings settings, Callback<Error, Var<Entry>> cb,
                     [=](Error error, Var<Transport> transport) {
 
                         if (error) {
-                            logger -> warn("Error: %d", (int) error);
+                            logger->warn("Error: %d", (int)error);
                             cb(error, nullptr);
                             return;
                         }
 
                         Var<Entry> measurements(new Entry);
 
-                        loop_request(transport, 100, cb, measurements,
-                                     auth, settings, reactor, logger);
+                        loop_request(transport, 100, cb, measurements, auth,
+                                     settings, reactor, logger);
 
                         return;
                     },
