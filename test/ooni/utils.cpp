@@ -22,9 +22,11 @@ TEST_CASE("ip lookup works") {
 
 TEST_CASE("geoip works") {
     mk::ErrorOr<json> json = mk::ooni::geoip(
-        "8.8.8.8", "test/fixtures/GeoIP.dat", "test/fixtures/GeoIPASNum.dat");
+        "8.8.8.8", "test/fixtures/GeoIP.dat", "test/fixtures/GeoIPASNum.dat",
+        "test/fixtures/GeoLiteCity.dat");
     REQUIRE(!!json);
     REQUIRE(((*json)["asn"] == std::string{"AS15169"}));
     REQUIRE(((*json)["country_code"] == std::string{"US"}));
     REQUIRE(((*json)["country_name"] == std::string{"United States"}));
+    REQUIRE(((*json)["city_name"] == std::string{"Mountain View"}));
 }

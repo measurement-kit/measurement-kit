@@ -5,6 +5,7 @@
 #define SRC_OONI_UTILS_HPP
 
 #include <GeoIP.h>
+#include <GeoIPCity.h>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
@@ -21,7 +22,7 @@ void ip_lookup(Callback<Error, std::string> callback, Settings settings = {},
                Var<Logger> logger = Logger::global());
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,
-                    std::string path_asn);
+                    std::string path_asn, std::string path_city = "");
 
 } // namespace ooni
 } // namespace mk

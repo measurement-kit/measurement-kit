@@ -41,6 +41,28 @@ static Error geoip_resolve_country (std::string ip, std::string path_country, js
     return NoError();
 }
 
+static Error geoip_resolve_city (std::string ip, std::string path_city, json &node) {
+    GeoIP *gi;
+    GeoIPLookup gl;
+    GeoIPRecord *gir;
+    memset (&gl, 0, sizeof(gl));
+
+    gi = GeoIP_open(path_city.c_str(), GEOIP_MEMORY_CACHE);
+    if (gi == nullptr) {
+        return GenericError();
+    }
+
+    gir = GeoIP_record_by_name(gi, ip.c_str());
+    if (gir == nullptr) {
+        GeoIP_delete(gi);
+        return GenericError();
+    }
+    node["city_name"] = gir->city;
+    GeoIPRecord_delete(gir);
+    GeoIP_delete(gi);
+    return NoError();
+}
+
 static Error geoip_resolve_asn (std::string ip, std::string path_asn, json &node) { 
     GeoIP *gi;
     GeoIPLookup gl;
@@ -64,12 +86,13 @@ static Error geoip_resolve_asn (std::string ip, std::string path_asn, json &node
 }
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,
-                    std::string path_asn) {
+                    std::string path_asn, std::string path_city) {
     json node{
         // Set sane values such that we should not have errors accessing
         // output even when lookup may fail for current database
         {"country_code", "ZZ"},
         {"country_name", "ZZ"},
+        {"city_name", "ZZ"},
         {"asn", "AS0"},
     };
     Error err = geoip_resolve_country (ip, path_country, node);
@@ -79,6 +102,12 @@ ErrorOr<json> geoip(std::string ip, std::string path_country,
     err = geoip_resolve_asn (ip, path_asn, node);
     if (err) {
         return err;
+    }
+    if (path_city != "") {
+        err = geoip_resolve_city (ip, path_city, node);
+        if (err) {
+            return err;
+        }
     }
     return node;
 }
