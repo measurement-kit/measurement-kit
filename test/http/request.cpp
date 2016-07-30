@@ -53,7 +53,7 @@ TEST_CASE("HTTP Request class works as expected") {
     Request request;
     request.init(
         {
-            {"http/follow_redirects", "yes"},
+            {"http/max_redirects", 2},
             {"http/url",
              "http://www.example.com/antani?clacsonato=yes#melandri"},
             {"http/ignore_body", "yes"},
@@ -80,7 +80,7 @@ TEST_CASE("HTTP Request class works as expected with explicit path") {
     Request request;
     request.init(
         {
-            {"http/follow_redirects", "yes"},
+            {"http/max_redirects", 2},
             {"http/url",
              "http://www.example.com/antani?clacsonato=yes#melandri"},
             {"http/path", "/antani?amicimiei"},
@@ -504,6 +504,31 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
                     REQUIRE(md5(response->body) ==
                             "efa2a8f1ba8a6335a8d696f91de69737");
                 }
+                break_loop();
+            });
+    });
+}
+
+TEST_CASE("http::request() correctly follows redirects") {
+    loop_with_initial_event_and_connectivity([]() {
+        request(
+            {
+                {"http/url", "http://fsrn.org"},
+                {"http/max_redirects", 32},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "",
+            [](Error error, Var<Response> response) {
+                REQUIRE(!error);
+                REQUIRE(response->status_code == 200);
+                REQUIRE(response->request->url.schema == "https");
+                REQUIRE(response->request->url.address == "fsrn.org");
+                REQUIRE(response->previous->status_code == 302);
+                REQUIRE(response->previous->request->url.schema == "http");
+                REQUIRE(response->previous->request->url.address == "fsrn.org");
+                REQUIRE(!response->previous->previous);
                 break_loop();
             });
     });
