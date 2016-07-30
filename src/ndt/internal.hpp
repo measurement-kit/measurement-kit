@@ -218,10 +218,8 @@ inline void log_speed(Var<Logger> logger, std::string type,
                       double elapsed, double speed) {
     logger->log(MK_LOG_JSON | MK_LOG_INFO, R"xx({
             "type": "%s",
-            "elapsed": %lf,
-            "elapsed_unit": "s",
-            "speed": %lf,
-            "speed_unit": "kbit/s"
+            "elapsed": [%lf, "s"],
+            "speed": [%lf, "kbit/s"]
         })xx", type.c_str(), elapsed, speed);
 }
 
