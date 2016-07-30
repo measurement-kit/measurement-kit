@@ -19,7 +19,7 @@ Logger::Logger() {
                 s = message.c_str();
             } catch (std::exception &) {
                 fprintf(stderr, "warning: logger cannot parse json message\n");
-                /* suppress */ ;
+                return;
             }
             /* FALLTHROUGH */
         }
