@@ -26,6 +26,7 @@ class Entry : public nlohmann::json {
         }
     }
 
+    // Implementation of dict
     template <typename K>
     Entry &operator[](const K &key) {
         try {
