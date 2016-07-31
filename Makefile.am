@@ -7,6 +7,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 LIBMEASUREMENT_KIT_I_FLAGS = -I $(top_srcdir)/include
 LIBMEASUREMENT_KIT_I_FLAGS += -I $(top_srcdir)/src
+LIBMEASUREMENT_KIT_I_FLAGS += -I $(top_srcdir)/src/ext/ChaiScript/include
 LIBMEASUREMENT_KIT_W_FLAGS = -Wall -Wextra -pedantic
 
 VERSION_INFO = -release @VERSION@ -version-info 0

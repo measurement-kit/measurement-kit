@@ -1,0 +1,83 @@
+
+def Error::to_string() {
+    return this.reason
+}
+
+def DnsMessage::to_string() {
+    var repr = "["
+    repr += to_string(this.error_code)
+    repr += ", "
+    repr += to_string(this.rtt)
+    repr += ", ["
+    for (var i = 0; i < this.queries.size(); ++i) {
+        repr += "["
+        var e := this.queries[i]
+        repr += e.type.str()
+        repr += ", "
+        repr += e.qclass.str()
+        repr += ", "
+        repr += e.name
+        repr += "]"
+        if (i < this.queries.size() - 1) {
+            repr += ", "
+        }
+    }
+    repr += "], ["
+    for (var i = 0; i < this.answers.size(); ++i) {
+        repr += "["
+        var e := this.answers[i]
+        repr += e.type.str()
+        repr += ", "
+        repr += e.qclass.str()
+        repr += ", "
+        repr += to_string(e.code)
+        repr += ", "
+        repr += to_string(e.ttl)
+        repr += ", "
+        if (e.type.str() == "A") {
+            repr += e.ipv4
+        } else if (e.type.str() == "AAAA") {
+            repr += e.ipv6
+        } else if (e.type.str() == "PTR") {
+            repr += e.hostname
+        } else {
+            repr += "XX"
+        }
+        repr += "]"
+        if (i < this.answers.size() - 1) {
+            repr += ", "
+        }
+    }
+    repr += "]]"
+    return repr
+}
+
+def dns_query(qclass, qtype, query, settings) {
+    return [
+        "dns_query",
+        qclass,
+        qtype,
+        query,
+        settings
+    ]
+}
+
+var settings = [
+    "dns/nameserver": "8.8.8.8:53"
+]
+
+var result = yield_from([
+    dns_query("IN", "A", "www.google.com", settings),
+    dns_query("IN", "A", "www.torproject.org", settings),
+    dns_query("IN", "A", "nexa.polito.it", settings),
+    dns_query("IN", "AAAA", "www.neubot.org", settings),
+    dns_query("IN", "A", "www.neubot.org", [
+        "dns/nameserver": "8.8.8.1:53",
+        "dns/timeout": 0.33,
+        "dns/attempts": 1
+    ])
+])
+
+for (var i = 0; i < result.size; ++i) {
+    print(result[i])
+}
