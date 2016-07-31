@@ -564,7 +564,7 @@ void web_connectivity(std::string input, Settings options,
     }
 
     std::string hostname = url->address;
-    std::string nameserver = options["dns/nameserver"];
+    std::string nameserver = options["nameserver"];
 
     logger->info("web_connectivity: starting dns_query for %s", hostname.c_str());
 
