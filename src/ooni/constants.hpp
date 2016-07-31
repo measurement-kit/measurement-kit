@@ -11,7 +11,7 @@ namespace mk {
 namespace ooni {
 namespace constants {
 
-  // These are very common server headers that we don't consider when checking
+// These are very common server headers that we don't consider when checking
 // between control and experiment.
 const std::set<std::string> COMMON_SERVER_HEADERS = {
   "date",
