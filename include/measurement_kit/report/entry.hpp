@@ -27,12 +27,11 @@ class Entry : public nlohmann::json {
     }
 
     // Implementation of dict
-    template <typename K>
-    Entry &operator[](const K &key) {
+    template <typename K> Entry &operator[](const K &key) {
         try {
-          return static_cast<Entry &>(nlohmann::json::operator[](key));
+            return static_cast<Entry &>(nlohmann::json::operator[](key));
         } catch (std::domain_error &) {
-          throw JsonDomainError();
+            throw JsonDomainError();
         }
     }
 
