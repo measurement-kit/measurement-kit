@@ -10,9 +10,7 @@
 namespace mk {
 namespace report {
 
-// A report entry. This is implemented using private inheritance from
-// nlohmann/json such that we are not exposing externally we are using
-// such json library to implement this class.
+// A report entry.
 class Entry : public nlohmann::json {
   public:
     using nlohmann::json::json;
