@@ -487,7 +487,7 @@ static void experiment_tcp_connect(Var<Entry> entry,
       Settings connect_options;
       connect_options["host"] = address;
       connect_options["port"] = port;
-      connect_options["net/timeout"] = 0.2;
+      connect_options["net/timeout"] = 10.0;
       templates::tcp_connect(connect_options,
                              handle_connect(address, port),
                              reactor, logger);
