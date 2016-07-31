@@ -1,3 +1,9 @@
+# MeasurementKit 0.2.6 [2016-07-31]
+
+- Use OONI's default collector
+- Update ChangeLog
+- Bump patch version number
+
 # MeasurementKit 0.2.5 [2016-07-13]
 
 - Allow to `./configure --disable-integration-tests`

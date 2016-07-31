@@ -1,4 +1,4 @@
-Welcome to Measurement Kit **v0.2.5** documentation!
+Welcome to Measurement Kit **v0.2.6** documentation!
 
 # How to generate documentation
 
