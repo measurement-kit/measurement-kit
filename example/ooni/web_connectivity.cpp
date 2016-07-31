@@ -7,6 +7,8 @@
 #include <string>
 #include <unistd.h>
 
+#define USAGE "usage: %s [-v] [-b backend] [-n nameserver] file_name\n"
+
 int main(int argc, char **argv) {
     std::string backend = "https://a.collector.test.ooni.io:4444";
     std::string nameserver = "8.8.8.8";
@@ -14,7 +16,7 @@ int main(int argc, char **argv) {
     uint32_t verbosity = 0;
     char ch;
 
-    while ((ch = getopt(argc, argv, "b:v")) != -1) {
+    while ((ch = getopt(argc, argv, "b:n:v")) != -1) {
         switch (ch) {
         case 'b':
             backend = optarg;
@@ -26,16 +28,14 @@ int main(int argc, char **argv) {
             ++verbosity;
             break;
         default:
-            std::cout << "Usage: " << name << " [-v] [-b backend] [-n nameserver] file_name"
-                      << "\n";
+            fprintf(stderr, USAGE, name.c_str());
             exit(1);
         }
     }
     argc -= optind;
     argv += optind;
     if (argc != 1) {
-        std::cout << "Usage: " << name << " [-v] [-b backend] file_name"
-                  << "\n";
+        fprintf(stderr, USAGE, name.c_str());
         exit(1);
     }
 
