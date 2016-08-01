@@ -177,6 +177,11 @@ int main() {
 }
 ```
 
+# BUGS
+
+If the logfile could not be open, or written, the error is silently
+discarded (i.e. no exceptions thrown, no return values).
+
 # HISTORY
 
 The `Logger` class appeared in MeasurementKit 0.1.0.
