@@ -5,6 +5,7 @@
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
 #include <cstdint>
+#include <fstream>
 #include <measurement_kit/common/delegate.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
@@ -43,6 +44,8 @@ class Logger : public NonCopyable, public NonMovable {
 
     void on_log(Delegate<uint32_t, const char *> fn) { consumer_ = fn; }
 
+    void set_logfile(std::string fpath);
+
     static Var<Logger> global() {
         static Var<Logger> singleton(new Logger);
         return singleton;
@@ -53,6 +56,7 @@ class Logger : public NonCopyable, public NonMovable {
     uint32_t verbosity_ = MK_LOG_WARNING;
     char buffer_[32768];
     std::mutex mutex_;
+    std::ofstream ofile_;
 
     Logger();
 };
@@ -68,6 +72,10 @@ inline uint32_t get_verbosity() { return Logger::global()->get_verbosity(); }
 
 inline void on_log(Delegate<uint32_t, const char *> fn) {
     Logger::global()->on_log(fn);
+}
+
+inline void set_logfile(std::string path) {
+    Logger::global()->set_logfile(path);
 }
 
 } // namespace mk
