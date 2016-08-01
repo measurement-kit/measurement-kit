@@ -62,6 +62,10 @@ class NetTest {
         options[key] = value;
         return *this;
     }
+    NetTest &on_entry(Callback<std::string> cb) {
+        entry_cb = cb;
+        return *this;
+    }
 
     virtual Var<NetTest> create_test_() {
         // You must override this in subclasses to create the actual
@@ -77,6 +81,7 @@ class NetTest {
     Settings options;
     std::string input_filepath;
     std::string output_filepath;
+    Callback<std::string> entry_cb;
 };
 
 } // namespace mk

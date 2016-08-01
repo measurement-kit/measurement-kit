@@ -51,6 +51,9 @@ void OoniTest::run_next_measurement(Callback<Error> cb) {
             cb(error);
             return;
         }
+        if (entry_cb) {
+            entry_cb(entry.dump());
+        }
         logger->debug("net_test: written entry");
 
         reactor->call_soon([=]() { run_next_measurement(cb); });
