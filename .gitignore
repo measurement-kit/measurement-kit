@@ -78,6 +78,7 @@ test/common/runner
 test/common/settings
 test/common/utils
 test/common/var
+test/common/version
 test/dns/defines
 test/dns/error
 test/dns/query
