@@ -415,6 +415,7 @@ static void experiment_http_request(Var<Entry> entry,
   logger->debug("Requesting url %s", url.c_str());
   templates::http_request(entry, options, headers, body, [=](Error err,
               Var<http::Response> response) {
+    // TODO: here we are ignoring the response... does it make sense?
     if (err) {
       (*entry)["http_experiment_failure"] = err.as_ooni_error();
       cb(err);
@@ -577,6 +578,9 @@ void web_connectivity(std::string input, Settings options,
       for (auto addr : addresses) {
         socket_list.push_back(std::make_pair(addr, url->port));
       }
+
+      // TODO: is this correct here to ignore errors? Not changing the
+      // code until it's clear it make sense to ignore them
 
       experiment_tcp_connect(entry, socket_list, [=](Error err){
 
