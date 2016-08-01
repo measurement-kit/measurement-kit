@@ -6,6 +6,7 @@
 #define MEASUREMENT_KIT_NET_ERROR_HPP
 
 #include <measurement_kit/common/error.hpp>
+#include <measurement_kit/net/buffer.hpp>
 
 namespace mk {
 namespace net {
@@ -13,8 +14,8 @@ namespace net {
 MK_DEFINE_ERR(MK_ERR_NET(0), EofError, "")
 MK_DEFINE_ERR(MK_ERR_NET(1), TimeoutError, "generic_timeout_error")
 MK_DEFINE_ERR(MK_ERR_NET(2), SocketError, "")
-MK_DEFINE_ERR(MK_ERR_NET(3), ConnectFailedError, "")
-MK_DEFINE_ERR(MK_ERR_NET(4), DnsGenericError, "")
+MK_DEFINE_ERR(MK_ERR_NET(3), ConnectFailedError, "connect_error")
+MK_DEFINE_ERR(MK_ERR_NET(4), DnsGenericError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_NET(5), BadSocksVersionError, "socks_error")
 MK_DEFINE_ERR(MK_ERR_NET(6), SocksAddressTooLongError, "")
 MK_DEFINE_ERR(MK_ERR_NET(7), SocksInvalidPortError, "")

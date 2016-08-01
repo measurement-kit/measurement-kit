@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <event2/buffer.h>
 #include <event2/dns.h>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
@@ -35,6 +36,13 @@ void Connection::handle_read_() {
         emit_data(buff);
     } catch (Error &error) {
         emit_error(error);
+        return;
+    }
+    if (suppressed_eof) {
+        suppressed_eof = false;
+        logger->debug("Deliver previously suppressed EOF");
+        emit_error(EofError());
+        return;
     }
 }
 
@@ -47,8 +55,15 @@ void Connection::handle_write_() {
 }
 
 void Connection::handle_event_(short what) {
+    logger->debug("connection: got bufferevent event: %d", what);
 
     if (what & BEV_EVENT_EOF) {
+        auto input = bufferevent_get_input(bev);
+        if (evbuffer_get_length(input) > 0) {
+            logger->debug("Suppress EOF with data lingering in input buffer");
+            suppressed_eof = true;
+            return;
+        }
         emit_error(EofError());
         return;
     }

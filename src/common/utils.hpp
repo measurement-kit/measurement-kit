@@ -37,8 +37,6 @@ std::string random_str_uppercase(size_t length);
 std::string unreverse_ipv6(std::string s);
 std::string unreverse_ipv4(std::string s);
 
-std::list<std::string> split(std::string s, std::string pattern = "\\s+");
-
 void dump_settings(Settings &s, std::string prefix, Var<Logger> logger);
 
 double percentile(std::vector<double> v, double percent);
