@@ -35,6 +35,7 @@ Var<NetTest> DnsInjection::create_test_() {
     test->logger = logger;
     test->reactor = reactor;
     test->output_filepath = output_filepath;
+    test->entry_cb = entry_cb;
     return Var<NetTest>(test);
 }
 

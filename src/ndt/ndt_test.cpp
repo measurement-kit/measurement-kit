@@ -74,6 +74,7 @@ Var<NetTest> NdtTest::create_test_() {
     test->options = options;
     test->input_filepath = input_filepath;
     test->output_filepath = output_filepath;
+    test->entry_cb = entry_cb;
     return Var<NetTest>(test);
 }
 
