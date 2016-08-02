@@ -1,3 +1,10 @@
+# MeasurementKit 0.2.7 [2016-08-02]
+
+- By default don't use OONI collector but the testing collector to avoid
+  submitting integration tests results as OONI tests
+- Update ChangeLog
+- Bump patch version number
+
 # MeasurementKit 0.2.6 [2016-07-31]
 
 - Use OONI's default collector
