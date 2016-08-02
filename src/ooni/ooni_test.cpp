@@ -188,7 +188,12 @@ void OoniTest::end(Callback<Error> cb) {
     }
     collector::submit_report(
         output_filepath,
-        options.get("collector_base_url", collector::default_collector_url()),
+        options.get(
+            // Note: by default we use the testing collector URL because otherwise
+            // testing runs would be collected creating noise and using resources
+            "collector_base_url",
+            collector::testing_collector_url()
+        ),
         [=](Error error) { cb(error); }, options, reactor, logger);
 }
 
