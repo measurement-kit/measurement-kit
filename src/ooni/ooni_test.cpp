@@ -194,7 +194,7 @@ void OoniTest::end(Callback<Error> cb) {
             "collector_base_url",
             collector::testing_collector_url()
         ),
-        [=](Error) { cb(); }, options, reactor, logger);
+        [=](Error error) { cb(error); }, options, reactor, logger);
 }
 
 } // namespace ooni
