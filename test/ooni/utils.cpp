@@ -30,6 +30,12 @@ TEST_CASE("geoip works") {
     REQUIRE(((*json)["country_name"] == std::string{"United States"}));
 }
 
+TEST_CASE("geoip can handle an invalid database") {
+    mk::ErrorOr<json> json = mk::ooni::geoip(
+        "8.8.8.8", "test/fixtures/GeoIPinvalid.dat", "invalid_path.dat");
+    REQUIRE(json.as_error() == mk::ooni::InvalidGeoIPDatabase());
+}
+
 TEST_CASE("is_ip_addr works on ipv4") {
     REQUIRE(mk::ooni::is_ip_addr("127.0.0.1") == true);
 }
