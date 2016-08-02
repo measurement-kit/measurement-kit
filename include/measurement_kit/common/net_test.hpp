@@ -62,7 +62,7 @@ class NetTest {
         options[key] = value;
         return *this;
     }
-    NetTest &on_entry(Callback<std::string> cb) {
+    NetTest &on_entry(Delegate<std::string> cb) {
         entry_cb = cb;
         return *this;
     }
@@ -81,7 +81,7 @@ class NetTest {
     Settings options;
     std::string input_filepath;
     std::string output_filepath;
-    Callback<std::string> entry_cb;
+    Delegate<std::string> entry_cb;
 };
 
 } // namespace mk
