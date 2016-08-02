@@ -37,6 +37,38 @@ TEST_CASE("Make sure that on_entry() works") {
     });
 }
 
+TEST_CASE("Make sure that on_begin() works") {
+    bool ok = false;
+    ooni::OoniTest test;
+    loop_with_initial_event([&]() {
+        test.on_begin([&]() {
+            ok = true;
+        })
+        .begin([&](Error) {
+            test.end([&](Error) {
+                break_loop();
+            });
+        });
+    });
+    REQUIRE(ok);
+}
+
+TEST_CASE("Make sure that on_end() works") {
+    bool ok = false;
+    ooni::OoniTest test;
+    loop_with_initial_event([&]() {
+        test.on_end([&]() {
+            ok = true;
+        })
+        .begin([&](Error) {
+            test.end([&](Error) {
+                break_loop();
+            });
+        });
+    });
+    REQUIRE(ok);
+}
+
 #else
 int main() {}
 #endif

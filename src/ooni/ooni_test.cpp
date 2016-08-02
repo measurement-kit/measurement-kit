@@ -147,6 +147,9 @@ std::string OoniTest::generate_output_filepath() {
 }
 
 void OoniTest::begin(Callback<Error> cb) {
+    if (begin_cb) {
+        begin_cb();
+    }
     mk::utc_time_now(&test_start_time);
     geoip_lookup([=]() {
         resolver_lookup([=](Error error, std::string resolver_ip_) {
@@ -181,6 +184,9 @@ void OoniTest::begin(Callback<Error> cb) {
 }
 
 void OoniTest::end(Callback<Error> cb) {
+    if (end_cb) {
+        end_cb();
+    }
     Error error = file_report.close();
     if (error) {
         cb(error);
