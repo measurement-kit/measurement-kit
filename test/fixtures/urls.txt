@@ -1,0 +1,10 @@
+http://torproject.org
+http://ooni.nu
+http://neubot.org
+http://archive.org
+http://creativecommons.org
+http://cyber.law.harvard.edu
+http://duckduckgo.com
+http://netflix.com
+http://nmap.org
+http://www.emule.com

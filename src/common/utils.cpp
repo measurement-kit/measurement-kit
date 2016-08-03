@@ -274,4 +274,21 @@ void dump_settings(Settings &s, std::string prefix, Var<Logger> logger) {
     logger->debug("%s: }", prefix.c_str());
 }
 
+// Adapted from <http://code.activestate.com/recipes/511478/>
+double percentile(std::vector<double> v, double percent) {
+    if (v.size() <= 0) {
+        throw std::runtime_error("zero length vector");
+    }
+    std::sort(v.begin(), v.end());
+    auto pivot = (v.size() - 1) * percent;
+    auto pivot_floor = floor(pivot);
+    auto pivot_ceil = ceil(pivot);
+    if (pivot_floor == pivot_ceil) {
+        return v[int(pivot)];
+    }
+    auto val0 = v[int(pivot_floor)] * (pivot_ceil - pivot);
+    auto val1 = v[int(pivot_ceil)] * (pivot - pivot_floor);
+    return val0 + val1;
+}
+
 } // namespace mk

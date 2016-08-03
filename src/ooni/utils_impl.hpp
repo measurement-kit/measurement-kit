@@ -9,6 +9,7 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
+#include <measurement_kit/dns.hpp>
 #include <regex>
 #include <string>
 
@@ -39,7 +40,31 @@ void ip_lookup_impl(Callback<Error, std::string> callback, Settings settings = {
                 }
                 callback(NoError(), m[1]);
             },
-            {}, settings, reactor, logger);
+            {}, settings, reactor, logger, nullptr, 0);
+}
+
+template <MK_MOCK_NAMESPACE(dns, query)>
+void resolver_lookup_impl(Callback<Error, std::string> callback,
+                          Settings settings = {},
+                          Var<Reactor> reactor = Reactor::global(),
+                          Var<Logger> logger = Logger::global()) {
+  dns_query("IN", "A", "whoami.akamai.net",
+      [=](Error error, dns::Message message) {
+        if (!error) {
+          for (auto answer : message.answers) {
+            if (answer.ipv4 != "") {
+              logger->debug("ip address of resolver is %s",
+                            answer.ipv4.c_str());
+              callback(NoError(), answer.ipv4);
+              return;
+            }
+          }
+        } else {
+          logger->debug("failed to lookup resolver ip address");
+          callback(error, "");
+          return;
+        }
+      }, settings, reactor);
 }
 
 } // namespace ooni

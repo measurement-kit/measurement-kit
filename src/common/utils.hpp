@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <string>
 #include <unistd.h>
+#include <vector>
 
 struct sockaddr_storage;
 struct timeval;
@@ -37,6 +38,12 @@ std::string unreverse_ipv6(std::string s);
 std::string unreverse_ipv4(std::string s);
 
 void dump_settings(Settings &s, std::string prefix, Var<Logger> logger);
+
+double percentile(std::vector<double> v, double percent);
+
+inline double median(std::vector<double> v) {
+    return percentile(v, 0.5);
+}
 
 } // namespace mk
 #endif

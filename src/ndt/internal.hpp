@@ -221,6 +221,25 @@ void run(Var<Context> ctx, Callback<Error> callback);
 
 } // namespace test_s2c
 
+/*
+ _   _ _   _ _
+| | | | |_(_) |___
+| | | | __| | / __|
+| |_| | |_| | \__ \
+ \___/ \__|_|_|___/
+
+    Useful functions used by all modules.
+*/
+
+inline void log_speed(Var<Logger> logger, std::string type,
+                      double elapsed, double speed) {
+    logger->log(MK_LOG_JSON | MK_LOG_INFO, R"xx({
+            "type": "%s",
+            "elapsed": [%lf, "s"],
+            "speed": [%lf, "kbit/s"]
+        })xx", type.c_str(), elapsed, speed);
+}
+
 } // namespace mk
 } // namespace ndt
 #endif

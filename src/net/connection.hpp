@@ -86,6 +86,7 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     Var<Reactor> reactor = Reactor::global();
     bool isclosed = false;
     std::function<void()> close_cb;
+    bool suppressed_eof = false;
 };
 
 } // namespace net

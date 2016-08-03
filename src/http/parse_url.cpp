@@ -55,5 +55,23 @@ ErrorOr<Url> parse_url_noexcept(std::string url) {
     }
 }
 
+std::string Url::str() {
+    std::stringstream sst;
+    sst << schema;
+    sst << "://";
+    sst << address;
+    if ((schema == "http" and port != 80) or
+        (schema == "https" and port != 443)) {
+        sst << ":";
+        sst << port;
+    }
+    if (pathquery != "") {
+        sst << pathquery;
+    } else {
+        sst << "/";
+    }
+    return sst.str();
+}
+
 } // namespace http
 } // namespace mk

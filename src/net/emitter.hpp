@@ -15,24 +15,42 @@ class Emitter : public Transport {
   public:
     void emit_connect() override {
         logger->log(MK_LOG_DEBUG2, "emitter: emit 'connect' event");
+        if (!do_connect) {
+            logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
+            return;
+        }
         do_connect();
     }
 
     void emit_data(Buffer data) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: emit 'data' event");
+        logger->log(MK_LOG_DEBUG2, "emitter: emit 'data' event "
+                    "(num_bytes = %lu)", data.length());
         if (do_record_received_data) {
             received_data_record.write(data.peek());
+        }
+        if (!do_data) {
+            logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
+            return;
         }
         do_data(data);
     }
 
     void emit_flush() override {
         logger->log(MK_LOG_DEBUG2, "emitter: emit 'flush' event");
+        if (!do_flush) {
+            logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
+            return;
+        }
         do_flush();
     }
 
     void emit_error(Error err) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: emit 'error' event");
+        logger->log(MK_LOG_DEBUG2, "emitter: emit 'error' event "
+                    "(error.code = %d)", err.code);
+        if (!do_error) {
+            logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
+            return;
+        }
         do_error(err);
     }
 
@@ -41,12 +59,14 @@ class Emitter : public Transport {
     ~Emitter() override;
 
     void on_connect(std::function<void()> fn) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: register 'connect' handler");
+        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'connect' handler",
+                    (fn != nullptr) ? "" : "un");
         do_connect = fn;
     }
 
     void on_data(std::function<void(Buffer)> fn) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: register 'data' handler");
+        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'data' handler",
+                    (fn != nullptr) ? "" : "un");
         if (fn) {
             enable_read();
         } else {
@@ -59,12 +79,14 @@ class Emitter : public Transport {
     virtual void disable_read() {}
 
     void on_flush(std::function<void()> fn) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: register 'flush' handler");
+        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'flush' handler",
+                    (fn != nullptr) ? "" : "un");
         do_flush = fn;
     }
 
     void on_error(std::function<void(Error)> fn) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: register 'error' handler");
+        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'error' handler",
+                    (fn != nullptr) ? "" : "un");
         do_error = fn;
     }
 

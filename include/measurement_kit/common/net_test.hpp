@@ -62,6 +62,18 @@ class NetTest {
         options[key] = value;
         return *this;
     }
+    NetTest &on_entry(Delegate<std::string> cb) {
+        entry_cb = cb;
+        return *this;
+    }
+    NetTest &on_begin(Delegate<> cb) {
+        begin_cb = cb;
+        return *this;
+    }
+    NetTest &on_end(Delegate<> cb) {
+        end_cb = cb;
+        return *this;
+    }
 
     virtual Var<NetTest> create_test_() {
         // You must override this in subclasses to create the actual
@@ -77,6 +89,9 @@ class NetTest {
     Settings options;
     std::string input_filepath;
     std::string output_filepath;
+    Delegate<std::string> entry_cb;
+    Delegate<> begin_cb;
+    Delegate<> end_cb;
 };
 
 } // namespace mk

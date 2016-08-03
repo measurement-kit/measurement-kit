@@ -106,6 +106,10 @@ std::string default_collector_url() {
     return MK_OONI_DEFAULT_COLLECTOR_URL;
 }
 
+std::string testing_collector_url() {
+    return MK_OONI_TESTING_COLLECTOR_URL;
+}
+
 } // namespace collector
 } // namespace mk
 } // namespace ooni

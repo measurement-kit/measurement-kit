@@ -9,6 +9,8 @@
 
 #include <string>
 
+using namespace mk;
+
 TEST_CASE("By default the logger is quiet") {
     std::string buffer;
 
@@ -53,4 +55,41 @@ TEST_CASE("Verbosity can be further increased") {
     mk::info("Foo");
 
     REQUIRE(buffer == "Antani\nFoo\n");
+}
+
+TEST_CASE("We can log on a logfile") {
+    {
+        Var<Logger> logger = Logger::make();
+        logger->set_logfile("logfile.log");
+        logger->set_verbosity(MK_LOG_DEBUG);
+        logger->on_log(nullptr);
+        logger->warn("foo");
+        logger->warn("foobar");
+        logger->warn("bar");
+    }
+    std::ifstream file("logfile.log");
+    std::string line;
+    std::string whole_file;
+    while ((std::getline(file, line))) {
+        whole_file += line;
+        whole_file += "\n";
+    }
+    REQUIRE(whole_file == "foo\nfoobar\nbar\n");
+}
+
+TEST_CASE("A logger without file and without callback works") {
+    Var<Logger> logger = Logger::make();
+    logger->set_verbosity(MK_LOG_DEBUG);
+    logger->on_log(nullptr);
+    logger->warn("foo");
+    logger->warn("foobar");
+}
+
+TEST_CASE("The logger's EOF handler works") {
+    auto called = false;
+    {
+        Var<Logger> logger = Logger::make();
+        logger->on_eof([&]() { called = true; });
+    }
+    REQUIRE(called);
 }

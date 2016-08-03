@@ -37,6 +37,7 @@ void OoniTest::run_next_measurement(Callback<Error> cb) {
     main(next_input, options, [=](report::Entry test_keys) {
         report::Entry entry;
         entry["test_keys"] = test_keys;
+        entry["test_keys"]["client_resolver"] = resolver_ip;
         entry["input"] = next_input;
         entry["measurement_start_time"] =
             *mk::timestamp(&measurement_start_time);
@@ -50,6 +51,9 @@ void OoniTest::run_next_measurement(Callback<Error> cb) {
             cb(error);
             return;
         }
+        if (entry_cb) {
+            entry_cb(entry.dump());
+        }
         logger->debug("net_test: written entry");
 
         reactor->call_soon([=]() { run_next_measurement(cb); });
@@ -57,6 +61,8 @@ void OoniTest::run_next_measurement(Callback<Error> cb) {
 }
 
 void OoniTest::geoip_lookup(Callback<> cb) {
+    // This is to ensure that when calling multiple times geoip_lookup we
+    // always reset the probe_ip, probe_asn and probe_cc values.
     probe_ip = "127.0.0.1";
     probe_asn = "AS0";
     probe_cc = "ZZ";
@@ -141,33 +147,46 @@ std::string OoniTest::generate_output_filepath() {
 }
 
 void OoniTest::begin(Callback<Error> cb) {
+    if (begin_cb) {
+        begin_cb();
+    }
     mk::utc_time_now(&test_start_time);
     geoip_lookup([=]() {
-        Error error = open_report();
-        if (error) {
-            cb(error);
-            return;
-        }
-        if (needs_input) {
-            if (input_filepath == "") {
-                logger->warn("an input file is required");
-                cb(MissingRequiredInputFileError());
+        resolver_lookup([=](Error error, std::string resolver_ip_) {
+            if (!error) {
+                resolver_ip = resolver_ip_;
+            } else {
+                logger->debug("failed to lookup resolver ip");
+            }
+            error = open_report();
+            if (error) {
+                cb(error);
                 return;
             }
-            input_generator.reset(new std::ifstream(input_filepath));
-            if (!input_generator->good()) {
-                logger->warn("cannot read input file");
-                cb(CannotOpenInputFileError());
-                return;
+            if (needs_input) {
+                if (input_filepath == "") {
+                    logger->warn("an input file is required");
+                    cb(MissingRequiredInputFileError());
+                    return;
+                }
+                input_generator.reset(new std::ifstream(input_filepath));
+                if (!input_generator->good()) {
+                    logger->warn("cannot read input file");
+                    cb(CannotOpenInputFileError());
+                    return;
+                }
+            } else {
+                input_generator.reset(new std::istringstream("\n"));
             }
-        } else {
-            input_generator.reset(new std::istringstream("\n"));
-        }
-        run_next_measurement(cb);
+            run_next_measurement(cb);
+        }, options, reactor, logger);
     });
 }
 
 void OoniTest::end(Callback<Error> cb) {
+    if (end_cb) {
+        end_cb();
+    }
     Error error = file_report.close();
     if (error) {
         cb(error);
@@ -175,7 +194,12 @@ void OoniTest::end(Callback<Error> cb) {
     }
     collector::submit_report(
         output_filepath,
-        options.get("collector_base_url", collector::default_collector_url()),
+        options.get(
+            // Note: by default we use the testing collector URL because otherwise
+            // testing runs would be collected creating noise and using resources
+            "collector_base_url",
+            collector::testing_collector_url()
+        ),
         [=](Error error) { cb(error); }, options, reactor, logger);
 }
 
