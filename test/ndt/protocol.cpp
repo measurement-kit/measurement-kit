@@ -105,6 +105,42 @@ TEST_CASE("wait_in_queue() deals with invalid wait time") {
         ctx, [](Error err) { REQUIRE(err == InvalidSrvQueueMessageError()); });
 }
 
+static void s_fault(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                    Var<Reactor> = Reactor::global()) {
+    cb(NoError(), SRV_QUEUE, #SRV_QUEUE_SERVER_FAULT);
+}
+
+TEST_CASE("wait_in_queue() deals with server-fault wait time") {
+    Var<Context> ctx(new Context);
+    protocol::wait_in_queue_impl<s_fault>(ctx, [](Error err) {
+        REQUIRE(err == QueueServerFaultError());
+    });
+}
+
+static void s_busy(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                   Var<Reactor> = Reactor::global()) {
+    cb(NoError(), SRV_QUEUE, #SRV_QUEUE_SERVER_BUSY);
+}
+
+TEST_CASE("wait_in_queue() deals with server-busy wait time") {
+    Var<Context> ctx(new Context);
+    protocol::wait_in_queue_impl<s_busy>(ctx, [](Error err) {
+        REQUIRE(err == QueueServerBusyError());
+    });
+}
+
+static void s_busy60s(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                      Var<Reactor> = Reactor::global()) {
+    cb(NoError(), SRV_QUEUE, #SRV_QUEUE_SERVER_BUSY_60s);
+}
+
+TEST_CASE("wait_in_queue() deals with server-busy-60s wait time") {
+    Var<Context> ctx(new Context);
+    protocol::wait_in_queue_impl<s_busy60s>(ctx, [](Error err) {
+        REQUIRE(err == QueueServerBusyError());
+    });
+}
+
 static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb,
                     Var<Reactor> = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "1");
@@ -113,6 +149,18 @@ static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 TEST_CASE("wait_in_queue() deals with nonzero wait time") {
     Var<Context> ctx(new Context);
     protocol::wait_in_queue_impl<nonzero>(ctx, [](Error err) {
+        REQUIRE(err == UnhandledSrvQueueMessageError());
+    });
+}
+
+static void heartbeat(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                      Var<Reactor> = Reactor::global()) {
+    cb(NoError(), SRV_QUEUE, #SRV_QUEUE_HEARTBEAT);
+}
+
+TEST_CASE("wait_in_queue() deals with heartbeat wait time") {
+    Var<Context> ctx(new Context);
+    protocol::wait_in_queue_impl<heartbeat>(ctx, [](Error err) {
         REQUIRE(err == UnhandledSrvQueueMessageError());
     });
 }
