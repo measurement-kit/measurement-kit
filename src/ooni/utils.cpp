@@ -2,6 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include "src/ooni/utils_impl.hpp"
 #include "src/common/utils.hpp"
 
@@ -13,74 +18,138 @@ void ip_lookup(Callback<Error, std::string> callback, Settings settings,
     ip_lookup_impl(callback, settings, reactor, logger);
 }
 
-static Error geoip_resolve_country (std::string ip, std::string path_country, json &node) { 
-    GeoIP *gi;
-    GeoIPLookup gl;
-    memset (&gl, 0, sizeof(gl));
-    
-    gi = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
-    if (gi == nullptr) {
-        return GenericError();
-    }
-
-    const char *result;
-    result = GeoIP_country_code_by_name_gl(gi, ip.c_str(), &gl);
-    if (result == nullptr) {
-        GeoIP_delete(gi);
-        return GenericError();
-    }
-    node["country_code"] = result;
-
-    result = GeoIP_country_name_by_name_gl(gi, ip.c_str(), &gl);
-    if (result == nullptr) {
-        GeoIP_delete(gi);
-        return GenericError();
-    }
-    node["country_name"] = result;
-    GeoIP_delete(gi);
-    return NoError();
+void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
+                     Var<Reactor> reactor, Var<Logger> logger) {
+    resolver_lookup_impl(callback, settings, reactor, logger);
 }
 
-static Error geoip_resolve_asn (std::string ip, std::string path_asn, json &node) { 
-    GeoIP *gi;
+IPLocation::IPLocation(std::string path_country, std::string path_asn) {
+    if (path_asn != "") {
+        gi_asn = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
+    }
+    if (path_country != "") {
+        gi_country = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
+    }
+}
+
+IPLocation::~IPLocation() {
+    if (gi_asn != nullptr) {
+        GeoIP_delete(gi_asn);
+    }
+    if (gi_country != nullptr) {
+        GeoIP_delete(gi_country);
+    }
+}
+
+ErrorOr<std::string> IPLocation::resolve_country_code(std::string ip) {
+    if (gi_country == nullptr) {
+        return GenericError();
+    }
     GeoIPLookup gl;
-    memset (&gl, 0, sizeof(gl));
-    
-    gi = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
-    if (gi == nullptr) {
+    memset(&gl, 0, sizeof(gl));
+
+    const char *result;
+    result = GeoIP_country_code_by_name_gl(gi_country, ip.c_str(), &gl);
+    if (result == nullptr) {
         return GenericError();
     }
+    std::string country_code = result;
+    return country_code;
+
+}
+
+ErrorOr<std::string> IPLocation::resolve_country_name(std::string ip) {
+    if (gi_country == nullptr) {
+        return GenericError();
+    }
+    GeoIPLookup gl;
+    memset(&gl, 0, sizeof(gl));
+
+    const char *result;
+    result = GeoIP_country_name_by_name_gl(gi_country, ip.c_str(), &gl);
+    if (result == nullptr) {
+        return GenericError();
+    }
+    std::string country_name = result;
+    return country_name;
+}
+
+ErrorOr<std::string> IPLocation::resolve_asn(std::string ip) {
+    if (gi_asn == nullptr) {
+        return GenericError();
+    }
+    GeoIPLookup gl;
+    memset(&gl, 0, sizeof(gl));
+
     char *res;
-    res = GeoIP_name_by_name_gl(gi, ip.c_str(), &gl);
+    res = GeoIP_name_by_name_gl(gi_asn, ip.c_str(), &gl);
     if (res == nullptr) {
-        GeoIP_delete(gi);
         return GenericError();
     }
-    node["asn"] = res;
-    node["asn"] = split(node["asn"]).front(); // We only want ASXXXX
+    std::string asn = res;
+    asn = split(asn).front(); // We only want ASXX
     free(res);
-    GeoIP_delete(gi);
-    return NoError();
+    return asn;
 }
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,
                     std::string path_asn) {
-    json node{
-        // Set sane values such that we should not have errors accessing
-        // output even when lookup may fail for current database
-        {"country_code", "ZZ"},
-        {"country_name", "ZZ"},
-        {"asn", "AS0"},
-    };
-    Error err = geoip_resolve_country (ip, path_country, node);
-    if (err) {
-        return err;
+    IPLocation ip_location(path_country, path_asn);
+    ErrorOr<std::string> country_code = ip_location.resolve_country_code(ip);
+    if (!country_code) {
+        return GenericError();
     }
-    err = geoip_resolve_asn (ip, path_asn, node);
-    if (err) {
-        return err;
+    ErrorOr<std::string> country_name = ip_location.resolve_country_name(ip);
+    if (!country_name) {
+        return GenericError();
     }
+    ErrorOr<std::string> asn = ip_location.resolve_asn(ip);
+    if (!asn) {
+        return GenericError();
+    }
+    json node;
+    node["country_code"] = country_code.as_value();
+    node["country_name"] = country_name.as_value();
+    node["asn"] = asn.as_value();
     return node;
+}
+
+std::string extract_html_title(std::string body) {
+  std::regex TITLE_REGEXP("<title>([\\s\\S]*?)</title>", std::regex::icase);
+  std::smatch match;
+
+  if (std::regex_search(body, match, TITLE_REGEXP) && match.size() > 1) {
+    return match.str(1);
+  }
+  return "";
+}
+
+bool is_private_ipv4_addr(const std::string &ipv4_addr) {
+  std::regex IPV4_PRIV_ADDR(
+      "(^127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "(^192\\.168\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "(^10\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "(^172\\.1[6-9]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "(^172\\.2[0-9]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "(^172\\.3[0-1]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
+      "localhost"
+  );
+  std::smatch match;
+
+  if (std::regex_search(ipv4_addr, match, IPV4_PRIV_ADDR) && match.size() > 1) {
+    return true;
+  }
+  return false;
+}
+
+bool is_ip_addr(const std::string &ip_addr) {
+    struct sockaddr_in sa;
+    struct sockaddr_in6 sa6;
+    if ((inet_pton(AF_INET, ip_addr.c_str(), &(sa.sin_addr)) == 1) ||
+        (inet_pton(AF_INET6, ip_addr.c_str(), &(sa6.sin6_addr)) == 1)) {
+        return true;
+    }
+    return false;
 }
 
 } // namespace ooni

@@ -21,6 +21,7 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     std::string probe_ip = "127.0.0.1";
     std::string probe_asn = "AS0";
     std::string probe_cc = "ZZ";
+    std::string resolver_ip = "127.0.0.1";
     bool needs_input = false;
 
     OoniTest() : OoniTest("", Settings()) {}
@@ -30,7 +31,7 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     OoniTest(std::string f) : OoniTest(f, Settings()) {}
 
     OoniTest(std::string f, Settings o) : NetTest(f, o),
-        test_name("net_test"), test_version("0.0.1") {}
+        test_name("ooni_test"), test_version("0.0.1") {}
 
     void begin(Callback<Error>) override;
     void end(Callback<Error>) override;
