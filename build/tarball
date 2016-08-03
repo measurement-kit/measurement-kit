@@ -10,11 +10,20 @@ if echo $tag | grep -q '^v'; then
 else
     v=$tag
 fi
+# Nested directories so we're sure also install-sh is installed because it
+# is not found in the parent or parent parent directory
 git archive --prefix=measurement-kit-$v/ $tag > _mk.tgz
-tar -xf _mk.tgz
-rm _mk.tgz
-cd measurement-kit-$v
-./autogen.sh
-cd ..
-tar -czf measurement-kit-$v.tar.gz measurement-kit-$v
-gpg2 -u 7733D95B -b --armor measurement-kit-$v.tar.gz
+install -d a/b/c
+(
+    cd a/b/c
+    tar -xf ../../../_mk.tgz
+    rm ../../../_mk.tgz
+    cd measurement-kit-$v
+    ./autogen.sh
+    cd ..
+    tar -czf measurement-kit-$v.tar.gz measurement-kit-$v
+    gpg2 -u 7733D95B -b --armor measurement-kit-$v.tar.gz
+)
+mv a/b/c/measurement-kit-$v.tar.gz.asc .
+mv a/b/c/measurement-kit-$v.tar.gz .
+rm -rf a/b/c
