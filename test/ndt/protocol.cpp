@@ -141,7 +141,41 @@ TEST_CASE("wait_in_queue() deals with server-busy-60s wait time") {
     });
 }
 
-#if 0
+static void heartbeat(Var<Context>, Callback<Error, uint8_t, std::string> cb,
+                      Var<Reactor> = Reactor::global()) {
+    cb(NoError(), SRV_QUEUE, "9990" /* SRV_QUEUE_HEARTBEAT */);
+}
+
+static ErrorOr<Buffer> success_format_msg_waiting() {
+    return NoError();
+}
+
+static bool check_whether_we_write_flag = false;
+static void check_whether_we_write(Var<Context>, Buffer) {
+    check_whether_we_write_flag = true;
+}
+
+TEST_CASE("wait_in_queue() deals with heartbeat wait time") {
+    Var<Context> ctx(new Context);
+    protocol::wait_in_queue_impl<heartbeat, success_format_msg_waiting,
+                                 check_whether_we_write>(ctx, [](Error) {
+        REQUIRE(false /* should not be called */);
+    });
+    REQUIRE(check_whether_we_write_flag);
+}
+
+static ErrorOr<Buffer> failure_format_msg_waiting() {
+    return MockedError();
+}
+
+TEST_CASE("wait_in_queue() deals with format_msg_waiting_error") {
+    Var<Context> ctx(new Context);
+    protocol::wait_in_queue_impl<heartbeat, failure_format_msg_waiting>
+                                 (ctx, [](Error err) {
+        REQUIRE((err == FormatMsgWaitingError()));
+    });
+}
+
 static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb,
                     Var<Reactor> = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "1");
@@ -149,23 +183,10 @@ static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("wait_in_queue() deals with nonzero wait time") {
     Var<Context> ctx(new Context);
-    protocol::wait_in_queue_impl<nonzero>(ctx, [](Error err) {
-        REQUIRE(err == UnhandledSrvQueueMessageError());
+    protocol::wait_in_queue_impl<nonzero>(ctx, [](Error) {
+        REQUIRE(false /* should not be called */);
     });
 }
-
-static void heartbeat(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                      Var<Reactor> = Reactor::global()) {
-    cb(NoError(), SRV_QUEUE, "9990" /* SRV_QUEUE_HEARTBEAT */);
-}
-
-TEST_CASE("wait_in_queue() deals with heartbeat wait time") {
-    Var<Context> ctx(new Context);
-    protocol::wait_in_queue_impl<heartbeat>(ctx, [](Error err) {
-        REQUIRE(err == UnhandledSrvQueueMessageError());
-    });
-}
-#endif
 
 TEST_CASE("recv_version() deals with read() error") {
     Var<Context> ctx(new Context);
