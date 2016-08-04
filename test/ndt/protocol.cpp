@@ -175,6 +175,7 @@ static void check_whether_we_write(Var<Context>, Buffer) {
 TEST_CASE("wait_in_queue() deals with heartbeat wait time") {
     Var<Context> ctx(new Context);
     call_soon_called_flag = false;
+    check_whether_we_write_flag = false;
     protocol::wait_in_queue_impl<heartbeat, success_format_msg_waiting,
                                  check_whether_we_write, call_soon_called>(
                                  ctx, [](Error) {
