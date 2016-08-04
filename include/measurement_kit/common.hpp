@@ -6,6 +6,7 @@
 #include <measurement_kit/common/delegate.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/error_or.hpp>
+#include <measurement_kit/common/fmap.hpp>
 #include <measurement_kit/common/lexical_cast.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/mock.hpp>
