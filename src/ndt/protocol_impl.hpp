@@ -119,7 +119,8 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
             reactor_call_soon(ctx->reactor, [=]() {
                 wait_in_queue_impl<messages_read_msg,
                                    messages_format_msg_waiting,
-                                   messages_write_noasync>(ctx, callback);
+                                   messages_write_noasync,
+                                   reactor_call_soon>(ctx, callback);
             });
             return;
         }
