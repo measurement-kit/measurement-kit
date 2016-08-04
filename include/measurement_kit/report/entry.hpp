@@ -40,7 +40,7 @@ class Entry : public nlohmann::json {
     // Implementation of list
     void push_back(Entry);
 
-    std::string dump();
+    std::string dump() const;
 
     bool operator==(std::nullptr_t right);
     bool operator!=(std::nullptr_t right);

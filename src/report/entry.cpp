@@ -33,7 +33,7 @@ void Entry::push_back(Entry value) {
     }
 }
 
-std::string Entry::dump() {
+std::string Entry::dump() const {
     return nlohmann::json::dump();
 }
 

@@ -46,17 +46,18 @@ void OoniTest::run_next_measurement(Callback<Error> cb) {
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
-        Error error = file_report.write_entry(entry);
-        if (error) {
-            cb(error);
-            return;
-        }
         if (entry_cb) {
             entry_cb(entry.dump());
         }
-        logger->debug("net_test: written entry");
+        report.write_entry(entry, [=](Error error) {
+            if (error) {
+                cb(error);
+                return;
+            }
+            logger->debug("net_test: written entry");
 
-        reactor->call_soon([=]() { run_next_measurement(cb); });
+            reactor->call_soon([=]() { run_next_measurement(cb); });
+        });
     });
 }
 
@@ -104,22 +105,22 @@ void OoniTest::geoip_lookup(Callback<> cb) {
         options, reactor, logger);
 }
 
-Error OoniTest::open_report() {
-    file_report.test_name = test_name;
-    file_report.test_version = test_version;
-    file_report.test_start_time = test_start_time;
+void OoniTest::open_report(Callback<Error> callback) {
+    report.test_name = test_name;
+    report.test_version = test_version;
+    report.test_start_time = test_start_time;
 
-    file_report.options = options;
+    report.options = options;
 
-    file_report.probe_ip = probe_ip;
-    file_report.probe_cc = probe_cc;
-    file_report.probe_asn = probe_asn;
+    report.probe_ip = probe_ip;
+    report.probe_cc = probe_cc;
+    report.probe_asn = probe_asn;
 
     if (output_filepath == "") {
         output_filepath = generate_output_filepath();
     }
-    file_report.filename = output_filepath;
-    return file_report.open();
+    report.add_reporter(FileReporter::make(output_filepath));
+    report.open(callback);
 }
 
 std::string OoniTest::generate_output_filepath() {
@@ -158,27 +159,28 @@ void OoniTest::begin(Callback<Error> cb) {
             } else {
                 logger->debug("failed to lookup resolver ip");
             }
-            error = open_report();
-            if (error) {
-                cb(error);
-                return;
-            }
-            if (needs_input) {
-                if (input_filepath == "") {
-                    logger->warn("an input file is required");
-                    cb(MissingRequiredInputFileError());
+            open_report([=](Error error) {
+                if (error) {
+                    cb(error);
                     return;
                 }
-                input_generator.reset(new std::ifstream(input_filepath));
-                if (!input_generator->good()) {
-                    logger->warn("cannot read input file");
-                    cb(CannotOpenInputFileError());
-                    return;
+                if (needs_input) {
+                    if (input_filepath == "") {
+                        logger->warn("an input file is required");
+                        cb(MissingRequiredInputFileError());
+                        return;
+                    }
+                    input_generator.reset(new std::ifstream(input_filepath));
+                    if (!input_generator->good()) {
+                        logger->warn("cannot read input file");
+                        cb(CannotOpenInputFileError());
+                        return;
+                    }
+                } else {
+                    input_generator.reset(new std::istringstream("\n"));
                 }
-            } else {
-                input_generator.reset(new std::istringstream("\n"));
-            }
-            run_next_measurement(cb);
+                run_next_measurement(cb);
+            });
         }, options, reactor, logger);
     });
 }
@@ -187,11 +189,10 @@ void OoniTest::end(Callback<Error> cb) {
     if (end_cb) {
         end_cb();
     }
-    Error error = file_report.close();
-    if (error) {
-        cb(error);
-        return;
-    }
+    report.close(cb);
+
+    // FIXME: this code needs to be re-implemented as a reporter...
+#if 0
     collector::submit_report(
         output_filepath,
         options.get(
@@ -201,6 +202,7 @@ void OoniTest::end(Callback<Error> cb) {
             collector::testing_collector_url()
         ),
         [=](Error error) { cb(error); }, options, reactor, logger);
+#endif
 }
 
 } // namespace ooni

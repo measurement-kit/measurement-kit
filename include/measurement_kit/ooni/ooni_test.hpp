@@ -45,13 +45,13 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     }
 
   private:
-    report::FileReporter file_report;
+    report::Report report;
     tm test_start_time;
     Var<std::istream> input_generator;
 
     void run_next_measurement(Callback<Error>);
     void geoip_lookup(Callback<>);
-    Error open_report() __attribute__((warn_unused_result));
+    void open_report(Callback<Error>);
     std::string generate_output_filepath();
 };
 
