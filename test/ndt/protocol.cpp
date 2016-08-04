@@ -168,6 +168,7 @@ static ErrorOr<Buffer> success_format_msg_waiting() {
 
 static bool check_whether_we_write_flag = false;
 static void check_whether_we_write(Var<Context>, Buffer) {
+    REQUIRE(!check_whether_we_write_flag);
     check_whether_we_write_flag = true;
 }
 
