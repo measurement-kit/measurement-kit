@@ -71,7 +71,8 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
 
 template <MK_MOCK_NAMESPACE(messages, read_msg),
           MK_MOCK_NAMESPACE(messages, format_msg_waiting),
-          MK_MOCK_NAMESPACE(messages, write_noasync)>
+          MK_MOCK_NAMESPACE(messages, write_noasync),
+          MK_MOCK(reactor_call_soon)>
 void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait in queue ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
@@ -115,7 +116,7 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
                                   *wait_time);
             }
             // TODO: in theory the server can keep us in queue forever...
-            ctx->reactor->call_soon([=]() {
+            reactor_call_soon(ctx->reactor, [=]() {
                 wait_in_queue_impl<messages_read_msg,
                                    messages_format_msg_waiting,
                                    messages_write_noasync>(ctx, callback);

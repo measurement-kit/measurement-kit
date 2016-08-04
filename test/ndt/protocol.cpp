@@ -105,6 +105,10 @@ TEST_CASE("wait_in_queue() deals with invalid wait time") {
         ctx, [](Error err) { REQUIRE(err == InvalidSrvQueueMessageError()); });
 }
 
+static void call_soon_not_called(Var<Reactor>, Callback<>) {
+    REQUIRE(false /* should not happen */);
+}
+
 static void s_fault(Var<Context>, Callback<Error, uint8_t, std::string> cb,
                     Var<Reactor> = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "9977" /* SRV_QUEUE_SERVER_FAULT */);
@@ -112,7 +116,9 @@ static void s_fault(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("wait_in_queue() deals with server-fault wait time") {
     Var<Context> ctx(new Context);
-    protocol::wait_in_queue_impl<s_fault>(ctx, [](Error err) {
+    protocol::wait_in_queue_impl<s_fault, messages::format_msg_waiting,
+                                 messages::write_noasync, call_soon_not_called>
+                                 (ctx, [](Error err) {
         REQUIRE(err == QueueServerFaultError());
     });
 }
@@ -124,7 +130,9 @@ static void s_busy(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("wait_in_queue() deals with server-busy wait time") {
     Var<Context> ctx(new Context);
-    protocol::wait_in_queue_impl<s_busy>(ctx, [](Error err) {
+    protocol::wait_in_queue_impl<s_busy, messages::format_msg_waiting,
+                                 messages::write_noasync, call_soon_not_called>(
+                                 ctx, [](Error err) {
         REQUIRE(err == QueueServerBusyError());
     });
 }
@@ -136,9 +144,17 @@ static void s_busy60s(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("wait_in_queue() deals with server-busy-60s wait time") {
     Var<Context> ctx(new Context);
-    protocol::wait_in_queue_impl<s_busy60s>(ctx, [](Error err) {
+    protocol::wait_in_queue_impl<s_busy60s, messages::format_msg_waiting,
+                                 messages::write_noasync, call_soon_not_called>(
+                                 ctx, [](Error err) {
         REQUIRE(err == QueueServerBusyError());
     });
+}
+
+static bool call_soon_called_flag = false;
+static void call_soon_called(Var<Reactor>, Callback<>) {
+    REQUIRE(!call_soon_called_flag);
+    call_soon_called_flag = true;
 }
 
 static void heartbeat(Var<Context>, Callback<Error, uint8_t, std::string> cb,
@@ -157,11 +173,14 @@ static void check_whether_we_write(Var<Context>, Buffer) {
 
 TEST_CASE("wait_in_queue() deals with heartbeat wait time") {
     Var<Context> ctx(new Context);
+    call_soon_called_flag = false;
     protocol::wait_in_queue_impl<heartbeat, success_format_msg_waiting,
-                                 check_whether_we_write>(ctx, [](Error) {
+                                 check_whether_we_write, call_soon_called>(
+                                 ctx, [](Error) {
         REQUIRE(false /* should not be called */);
     });
     REQUIRE(check_whether_we_write_flag);
+    REQUIRE(call_soon_called_flag);
 }
 
 static ErrorOr<Buffer> failure_format_msg_waiting() {
@@ -170,7 +189,8 @@ static ErrorOr<Buffer> failure_format_msg_waiting() {
 
 TEST_CASE("wait_in_queue() deals with format_msg_waiting_error") {
     Var<Context> ctx(new Context);
-    protocol::wait_in_queue_impl<heartbeat, failure_format_msg_waiting>
+    protocol::wait_in_queue_impl<heartbeat, failure_format_msg_waiting,
+                                 messages::write_noasync, call_soon_not_called>
                                  (ctx, [](Error err) {
         REQUIRE((err == FormatMsgWaitingError()));
     });
@@ -183,9 +203,13 @@ static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("wait_in_queue() deals with nonzero wait time") {
     Var<Context> ctx(new Context);
-    protocol::wait_in_queue_impl<nonzero>(ctx, [](Error) {
+    call_soon_called_flag = false;
+    protocol::wait_in_queue_impl<nonzero, messages::format_msg_waiting,
+                                 messages::write_noasync, call_soon_called>(
+                                 ctx, [](Error) {
         REQUIRE(false /* should not be called */);
     });
+    REQUIRE(call_soon_called_flag);
 }
 
 TEST_CASE("recv_version() deals with read() error") {
