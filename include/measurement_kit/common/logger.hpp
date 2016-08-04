@@ -44,11 +44,19 @@ class Logger : public NonCopyable, public NonMovable {
 
     void on_log(Delegate<uint32_t, const char *> fn) { consumer_ = fn; }
 
+    void on_eof(Delegate<> fn) { eof_handler_ = fn; }
+
     void set_logfile(std::string fpath);
 
     static Var<Logger> global() {
         static Var<Logger> singleton(new Logger);
         return singleton;
+    }
+
+    ~Logger() {
+        if (eof_handler_) {
+            eof_handler_();
+        }
     }
 
   private:
@@ -57,6 +65,7 @@ class Logger : public NonCopyable, public NonMovable {
     char buffer_[32768];
     std::mutex mutex_;
     std::ofstream ofile_;
+    Delegate<> eof_handler_;
 
     Logger();
 };

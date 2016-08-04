@@ -84,3 +84,12 @@ TEST_CASE("A logger without file and without callback works") {
     logger->warn("foo");
     logger->warn("foobar");
 }
+
+TEST_CASE("The logger's EOF handler works") {
+    auto called = false;
+    {
+        Var<Logger> logger = Logger::make();
+        logger->on_eof([&]() { called = true; });
+    }
+    REQUIRE(called);
+}

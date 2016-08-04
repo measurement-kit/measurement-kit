@@ -31,7 +31,7 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     OoniTest(std::string f) : OoniTest(f, Settings()) {}
 
     OoniTest(std::string f, Settings o) : NetTest(f, o),
-        test_name("net_test"), test_version("0.0.1") {}
+        test_name("ooni_test"), test_version("0.0.1") {}
 
     void begin(Callback<Error>) override;
     void end(Callback<Error>) override;
