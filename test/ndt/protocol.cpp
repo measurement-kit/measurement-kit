@@ -107,7 +107,7 @@ TEST_CASE("wait_in_queue() deals with invalid wait time") {
 
 static void s_fault(Var<Context>, Callback<Error, uint8_t, std::string> cb,
                     Var<Reactor> = Reactor::global()) {
-    cb(NoError(), SRV_QUEUE, #SRV_QUEUE_SERVER_FAULT);
+    cb(NoError(), SRV_QUEUE, "9977" /* SRV_QUEUE_SERVER_FAULT */);
 }
 
 TEST_CASE("wait_in_queue() deals with server-fault wait time") {
@@ -119,7 +119,7 @@ TEST_CASE("wait_in_queue() deals with server-fault wait time") {
 
 static void s_busy(Var<Context>, Callback<Error, uint8_t, std::string> cb,
                    Var<Reactor> = Reactor::global()) {
-    cb(NoError(), SRV_QUEUE, #SRV_QUEUE_SERVER_BUSY);
+    cb(NoError(), SRV_QUEUE, "9987" /* SRV_QUEUE_SERVER_BUSY */);
 }
 
 TEST_CASE("wait_in_queue() deals with server-busy wait time") {
@@ -131,7 +131,7 @@ TEST_CASE("wait_in_queue() deals with server-busy wait time") {
 
 static void s_busy60s(Var<Context>, Callback<Error, uint8_t, std::string> cb,
                       Var<Reactor> = Reactor::global()) {
-    cb(NoError(), SRV_QUEUE, #SRV_QUEUE_SERVER_BUSY_60s);
+    cb(NoError(), SRV_QUEUE, "9999" /* SRV_QUEUE_SERVER_BUSY_60s */);
 }
 
 TEST_CASE("wait_in_queue() deals with server-busy-60s wait time") {
@@ -141,6 +141,7 @@ TEST_CASE("wait_in_queue() deals with server-busy-60s wait time") {
     });
 }
 
+#if 0
 static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb,
                     Var<Reactor> = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "1");
@@ -155,7 +156,7 @@ TEST_CASE("wait_in_queue() deals with nonzero wait time") {
 
 static void heartbeat(Var<Context>, Callback<Error, uint8_t, std::string> cb,
                       Var<Reactor> = Reactor::global()) {
-    cb(NoError(), SRV_QUEUE, #SRV_QUEUE_HEARTBEAT);
+    cb(NoError(), SRV_QUEUE, "9990" /* SRV_QUEUE_HEARTBEAT */);
 }
 
 TEST_CASE("wait_in_queue() deals with heartbeat wait time") {
@@ -164,6 +165,7 @@ TEST_CASE("wait_in_queue() deals with heartbeat wait time") {
         REQUIRE(err == UnhandledSrvQueueMessageError());
     });
 }
+#endif
 
 TEST_CASE("recv_version() deals with read() error") {
     Var<Context> ctx(new Context);
