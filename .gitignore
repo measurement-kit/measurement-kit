@@ -72,7 +72,9 @@ test/common/continuation
 test/common/delegate
 test/common/error
 test/common/error_or
+test/common/fmap
 test/common/logger
+test/common/parallel
 test/common/poller
 test/common/runner
 test/common/settings
