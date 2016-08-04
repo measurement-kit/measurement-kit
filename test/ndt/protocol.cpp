@@ -214,6 +214,25 @@ TEST_CASE("wait_in_queue() deals with nonzero wait time") {
     REQUIRE(call_soon_called_flag);
 }
 
+static void queued_then_whitelisted(Var<Context>,
+        Callback<Error, uint8_t, std::string> cb,
+        Var<Reactor> = Reactor::global()) {
+    static int state = 2;
+    REQUIRE(state >= 0);
+    cb(NoError(), SRV_QUEUE, std::to_string(state).c_str());
+    --state;
+}
+
+TEST_CASE("wait_in_queue() reschedules itself until we are white listed") {
+    Var<Context> ctx(new Context);
+    loop_with_initial_event([&]() {
+        protocol::wait_in_queue_impl<queued_then_whitelisted>(ctx, [](Error e) {
+            REQUIRE((e == NoError()));
+            break_loop();
+        });
+    });
+}
+
 TEST_CASE("recv_version() deals with read() error") {
     Var<Context> ctx(new Context);
     protocol::recv_version_impl<fail>(ctx, [](Error err) {
