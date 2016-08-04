@@ -5,6 +5,7 @@
 #define MEASUREMENT_KIT_COMMON_REACTOR_HPP
 
 #include <functional>
+#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/var.hpp>
 
 struct event_base;
