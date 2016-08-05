@@ -23,9 +23,9 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
     resolver_lookup_impl(callback, settings, reactor, logger);
 }
 
-IPLocation::IPLocation(std::string path_country, std::string path_asn) {
-    _path_asn = path_asn;
-    _path_country = path_country;
+IPLocation::IPLocation(std::string path_country_, std::string path_asn_) {
+    path_asn = path_asn_;
+    path_country = path_country_;
 }
 
 IPLocation::~IPLocation() {
@@ -39,9 +39,9 @@ IPLocation::~IPLocation() {
 
 ErrorOr<std::string> IPLocation::resolve_country_code(std::string ip) {
     if (gi_country == nullptr) {
-        gi_country = GeoIP_open(_path_country.c_str(), GEOIP_MEMORY_CACHE);
+        gi_country = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_country == nullptr) {
-            return InvalidGeoIPDatabase();
+            return CannotOpenGeoIpCountryDatabase();
         }
     }
     GeoIPLookup gl;
@@ -59,9 +59,9 @@ ErrorOr<std::string> IPLocation::resolve_country_code(std::string ip) {
 
 ErrorOr<std::string> IPLocation::resolve_country_name(std::string ip) {
     if (gi_country == nullptr) {
-        gi_country = GeoIP_open(_path_country.c_str(), GEOIP_MEMORY_CACHE);
+        gi_country = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_country == nullptr) {
-            return InvalidGeoIPDatabase();
+            return CannotOpenGeoIpCountryDatabase();
         }
     }
     GeoIPLookup gl;
@@ -78,9 +78,9 @@ ErrorOr<std::string> IPLocation::resolve_country_name(std::string ip) {
 
 ErrorOr<std::string> IPLocation::resolve_asn(std::string ip) {
     if (gi_asn == nullptr) {
-        gi_asn = GeoIP_open(_path_asn.c_str(), GEOIP_MEMORY_CACHE);
+        gi_asn = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_asn == nullptr) {
-            return InvalidGeoIPDatabase();
+            return CannotOpenGeoIpAsnDatabase();
         }
     }
     GeoIPLookup gl;

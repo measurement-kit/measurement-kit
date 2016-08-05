@@ -38,8 +38,8 @@ class IPLocation {
       ErrorOr<std::string> resolve_asn(std::string ip);
 
     private:
-      std::string _path_country = "";
-      std::string _path_asn = "";
+      std::string path_country = "";
+      std::string path_asn = "";
       GeoIP *gi_asn = nullptr;
       GeoIP *gi_country = nullptr;
       Var<Logger> logger = Logger::make();
