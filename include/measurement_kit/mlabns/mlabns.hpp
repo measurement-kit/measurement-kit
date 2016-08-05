@@ -19,6 +19,8 @@ MK_DEFINE_ERR(MK_ERR_MLABNS(0), InvalidPolicyError, "")
 MK_DEFINE_ERR(MK_ERR_MLABNS(1), InvalidAddressFamilyError, "")
 MK_DEFINE_ERR(MK_ERR_MLABNS(2), InvalidMetroError, "")
 MK_DEFINE_ERR(MK_ERR_MLABNS(3), InvalidToolNameError, "")
+MK_DEFINE_ERR(MK_ERR_MLABNS(4), TooManyNegotiationsError, "")
+MK_DEFINE_ERR(MK_ERR_MLABNS(5), NegativeTimeError, "")
 
 /// Reply to mlab-ns query.
 class Reply {
