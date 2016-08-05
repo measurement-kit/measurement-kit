@@ -120,6 +120,7 @@ void OoniTest::open_report(Callback<Error> callback) {
         output_filepath = generate_output_filepath();
     }
     report.add_reporter(FileReporter::make(output_filepath));
+    report.add_reporter(OoniReporter::make(*this));
     report.open(callback);
 }
 
@@ -190,19 +191,6 @@ void OoniTest::end(Callback<Error> cb) {
         end_cb();
     }
     report.close(cb);
-
-    // FIXME: this code needs to be re-implemented as a reporter...
-#if 0
-    collector::submit_report(
-        output_filepath,
-        options.get(
-            // Note: by default we use the testing collector URL because otherwise
-            // testing runs would be collected creating noise and using resources
-            "collector_base_url",
-            collector::testing_collector_url()
-        ),
-        [=](Error error) { cb(error); }, options, reactor, logger);
-#endif
 }
 
 } // namespace ooni

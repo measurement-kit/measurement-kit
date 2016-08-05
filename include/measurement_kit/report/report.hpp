@@ -34,7 +34,9 @@ class Report {
 
     void add_reporter(Var<BaseReporter> reporter);
 
-    void fill_entry(Entry &entry);
+    void fill_entry(Entry &entry) const;
+
+    Entry get_dummy_entry() const;
 
     void open(Callback<Error> callback);
 

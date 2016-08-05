@@ -12,9 +12,9 @@ namespace report {
 
 class FileReporter : public BaseReporter {
   public:
-    static Var<FileReporter> make(std::string filename);
+    static Var<BaseReporter> make(std::string filename);
 
-    Continuation<Error> open() override;
+    Continuation<Error> open(const Report &report) override;
     Continuation<Error> write_entry(const Entry &entry) override;
     Continuation<Error> close() override;
 

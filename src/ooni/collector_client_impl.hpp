@@ -215,12 +215,8 @@ template <MK_MOCK_NAMESPACE(collector, post)>
 void close_report_impl(Var<Transport> transport, std::string report_id,
                        Callback<Error> callback, Settings settings,
                        Var<Reactor> reactor, Var<Logger> logger) {
-    // Here we log at level INFO so we can save one extra lambda
-    // below to just tell the user how closing report went
-    logger->info("closing report...");
     collector_post(transport, "/report/" + report_id + "/close", "",
                    [=](Error err, nlohmann::json) {
-                       logger->info("closing report... %d", err.code);
                        callback(err);
                    },
                    settings, reactor, logger);

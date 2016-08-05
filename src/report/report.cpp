@@ -17,7 +17,7 @@ void Report::add_reporter(Var<BaseReporter> reporter) {
     reporters_.push_back(reporter);
 }
 
-void Report::fill_entry(Entry &entry) {
+void Report::fill_entry(Entry &entry) const {
     entry["test_name"] = test_name;
     entry["test_version"] = test_version;
     entry["test_start_time"] = *mk::timestamp(&test_start_time);
@@ -30,6 +30,12 @@ void Report::fill_entry(Entry &entry) {
     entry["data_format_version"] = data_format_version;
 }
 
+Entry Report::get_dummy_entry() const {
+    Entry entry;
+    fill_entry(entry);
+    return entry;
+}
+
 #define FMAP mk::fmap<Var<BaseReporter>, Continuation<Error>>
 
 void Report::open(Callback<Error> callback) {
@@ -38,8 +44,8 @@ void Report::open(Callback<Error> callback) {
         return;
     }
     openned_ = true;
-    mk::parallel(FMAP(reporters_, [](Var<BaseReporter> r) {
-        return r->open();
+    mk::parallel(FMAP(reporters_, [=](Var<BaseReporter> r) {
+        return r->open(*this);
     }), callback);
 }
 

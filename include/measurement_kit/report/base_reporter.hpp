@@ -10,11 +10,13 @@
 namespace mk {
 namespace report {
 
+class Report;
+
 class BaseReporter {
   public:
     virtual ~BaseReporter();
 
-    virtual Continuation<Error> open() = 0;
+    virtual Continuation<Error> open(const Report &report) = 0;
 
     virtual Continuation<Error> write_entry(const Entry &entry) = 0;
 

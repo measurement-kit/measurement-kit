@@ -20,13 +20,13 @@ static Error map_error(std::ofstream &file) {
     return GenericError();
 }
 
-/* static */ Var<FileReporter> FileReporter::make(std::string s) {
-    Var<FileReporter> file_reporter(new FileReporter);
-    file_reporter->filename = s;
-    return file_reporter;
+/* static */ Var<BaseReporter> FileReporter::make(std::string s) {
+    Var<FileReporter> reporter(new FileReporter);
+    reporter->filename = s;
+    return reporter;
 }
 
-Continuation<Error> FileReporter::open() {
+Continuation<Error> FileReporter::open(const Report &) {
     return [=](Callback<Error> cb) {
         file.open(filename);
         if (!file.good()) {
