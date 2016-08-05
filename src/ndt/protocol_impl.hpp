@@ -124,6 +124,7 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
             });
             return;
         }
+        ctx->logger->info("Authorized to run the test");
         callback(NoError());
     }, ctx->reactor);
 }
