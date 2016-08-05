@@ -33,8 +33,7 @@ void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
     logger->debug("net_test: calling setup");
     setup(next_input);
 
-    logger->debug("net_test: running with input %s", index,
-                  next_input.c_str());
+    logger->debug("net_test: running with input %s", next_input.c_str());
     main(next_input, options, [=](report::Entry test_keys) {
         report::Entry entry;
         entry["test_keys"] = test_keys;
