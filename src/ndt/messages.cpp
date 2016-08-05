@@ -25,8 +25,7 @@ void read_msg(Var<Context> ctx, Callback<Error, uint8_t, std::string> cb,
 }
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests) {
-    return format_any(MSG_EXTENDED_LOGIN,
-                      json{
+    return format_any(MSG_EXTENDED_LOGIN, json{
                           {"msg", MSG_NDT_VERSION},
                           {"tests", lexical_cast<std::string>((int)tests)},
                       });
@@ -34,12 +33,14 @@ ErrorOr<Buffer> format_msg_extended_login(unsigned char tests) {
 
 ErrorOr<Buffer> format_test_msg(std::string s) {
     return format_any(TEST_MSG, json{
-                                    {"msg", s},
-                                });
+                          {"msg", s},
+                      });
 }
 
 ErrorOr<Buffer> format_msg_waiting() {
-    return format_any(MSG_WAITING, json{});
+    return format_any(MSG_WAITING, json{
+                          {"msg", ""},
+                      });
 }
 
 void write(Var<Context> ctx, Buffer buff, Callback<Error> cb) {
