@@ -37,7 +37,7 @@
 
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include "src/common/utils.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include <measurement_kit/traceroute/android.hpp>
 #include <measurement_kit/traceroute/error.hpp>
 #include <measurement_kit/traceroute/interface.hpp>
