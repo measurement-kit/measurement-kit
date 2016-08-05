@@ -52,6 +52,7 @@ example/net/connect
 example/net/discard
 example/net/listen
 example/net/transport
+example/neubot/dash
 example/ooni/dns_injection
 example/ooni/http_invalid_request_line
 example/ooni/oonireport
@@ -105,6 +106,8 @@ test/net/emitter
 test/net/evbuffer
 test/net/socks5
 test/net/transport
+test/neubot/dash
+test/neubot/negotiate
 test/ooni/collector_client
 test/ooni/dns_injection
 test/ooni/http_invalid_request_line
