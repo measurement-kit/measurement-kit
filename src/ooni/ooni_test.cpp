@@ -46,13 +46,14 @@ void OoniTest::run_next_measurement(Callback<Error> cb) {
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
-        if (entry_cb) {
-            entry_cb(entry.dump());
-        }
+        report.fill_entry(entry);
         report.write_entry(entry, [=](Error error) {
             if (error) {
                 cb(error);
                 return;
+            }
+            if (entry_cb) {
+                entry_cb(entry.dump());
             }
             logger->debug("net_test: written entry");
 

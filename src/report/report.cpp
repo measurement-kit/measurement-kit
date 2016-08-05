@@ -58,7 +58,6 @@ void Report::write_entry(Entry &entry, Callback<Error> callback) {
         callback(ReportAlreadyClosed());
         return;
     }
-    fill_entry(entry);
     mk::parallel(FMAP(reporters_, [=](Var<BaseReporter> r) {
         return r->write_entry(entry);
     }), callback);

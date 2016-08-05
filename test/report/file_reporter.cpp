@@ -48,6 +48,7 @@ TEST_CASE(
         mk::report::Entry entry;
         entry["input"] = input;
         entry["antani"] = "fuffa";
+        report.fill_entry(entry);
         report.open([&](Error err) {
             REQUIRE(!err);
             report.write_entry(entry, [&](Error err) {
