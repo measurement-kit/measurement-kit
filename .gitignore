@@ -63,9 +63,8 @@ ltmain.sh
 m4/*.m4
 missing
 site
-src/ext/Catch/
-src/ext/http-parser/
-src/ext/json/
+src/libmeasurement_kit/ext/Catch/
+src/libmeasurement_kit/ext/http-parser/
 stamp-h1
 test-driver
 test/common/continuation
