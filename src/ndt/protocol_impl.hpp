@@ -158,7 +158,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
         func = test_c2s_run;
     } else if (*num == TEST_META) {
         func = test_meta_run;
-    } else if (*num == TEST_S2C) {
+    } else if (*num == TEST_S2C or *num == TEST_S2C_EXT) {
         func = test_s2c_run;
     } else {
         /* nothing */

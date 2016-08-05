@@ -16,7 +16,7 @@ using namespace mk::ndt;
 
 static const char *kv_usage =
     "usage: ./example/net/ndt [-v] [-C /path/to/ca.bundle] [-p port]\n"
-    "                         [-T download|none|upload] [host]\n";
+    "                         [-T download|download-ext|none|upload] [host]\n";
 
 int main(int argc, char **argv) {
 
@@ -33,6 +33,8 @@ int main(int argc, char **argv) {
         case 'T':
             if (strcmp(optarg, "download") == 0) {
                 test.set_options("test_suite", MK_NDT_DOWNLOAD);
+            } else if (strcmp(optarg, "download-ext") == 0) {
+                test.set_options("test_suite", MK_NDT_DOWNLOAD_EXT);
             } else if (strcmp(optarg, "none") == 0) {
                 test.set_options("test_suite", 0);
             } else if (strcmp(optarg, "upload") == 0) {
