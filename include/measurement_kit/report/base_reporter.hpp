@@ -12,13 +12,13 @@ namespace report {
 
 class BaseReporter {
   public:
-    virtual ~BaseReporter() {}
+    virtual ~BaseReporter();
 
-    virtual Continuation<Error> open();
+    virtual Continuation<Error> open() = 0;
 
-    virtual Continuation<Error> write_entry(const Entry &entry);
+    virtual Continuation<Error> write_entry(const Entry &entry) = 0;
 
-    virtual Continuation<Error> close();
+    virtual Continuation<Error> close() = 0;
 };
 
 } // namespace report
