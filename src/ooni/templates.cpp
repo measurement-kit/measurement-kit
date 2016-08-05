@@ -82,8 +82,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
         settings, headers, body,
         [=](Error error, Var<http::Response> response) {
             Entry rr;
-            rr["request"]["headers"] =
-                std::map<std::string, std::string>(headers);
+            rr["request"]["headers"] = headers;
             rr["request"]["body"] = body;
             rr["request"]["url"] = settings.at("http/url").c_str();
             rr["request"]["method"] = settings.at("http/method").c_str();
@@ -92,8 +91,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
             rr["method"] = settings.at("http/method").c_str();
 
             if (!error) {
-                rr["response"]["headers"] =
-                    std::map<std::string, std::string>(response->headers);
+                rr["response"]["headers"] = response->headers;
                 rr["response"]["body"] = response->body;
                 rr["response"]["response_line"] = response->response_line;
                 rr["response"]["code"] = response->status_code;
