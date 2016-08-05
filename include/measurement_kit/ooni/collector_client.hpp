@@ -40,14 +40,27 @@ void create_report(Var<net::Transport>, report::Entry,
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
+void connect_and_create_report(report::Entry, Callback<Error, std::string>,
+                               Settings = {}, Var<Reactor> = Reactor::global(),
+                               Var<Logger> = Logger::global());
+
 void update_report(Var<net::Transport>, std::string report_id, report::Entry,
                    Callback<Error>, Settings = {},
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
+void connect_and_update_report(std::string report_id, report::Entry,
+                               Callback<Error>, Settings = {},
+                               Var<Reactor> = Reactor::global(),
+                               Var<Logger> = Logger::global());
+
 void close_report(Var<net::Transport>, std::string report_id, Callback<Error>,
                   Settings = {}, Var<Reactor> = Reactor::global(),
                   Var<Logger> = Logger::global());
+
+void connect_and_close_report(std::string report_id, Callback<Error>,
+                              Settings = {}, Var<Reactor> = Reactor::global(),
+                              Var<Logger> = Logger::global());
 
 } // namespace collector
 } // namespace mk
