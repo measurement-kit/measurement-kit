@@ -75,6 +75,7 @@ test/common/error_or
 test/common/fmap
 test/common/logger
 test/common/poller
+test/common/range
 test/common/runner
 test/common/settings
 test/common/utils
