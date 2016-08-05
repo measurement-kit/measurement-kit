@@ -29,6 +29,12 @@ continuation's callbacks succeeded, `ParallelOperationError` otherwise. Check
 the `child_errors` field of the `Error` passed to `cb` to know whether each
 continuation failed (and why) or succeeded.
 
+# BUGS
+
+The `parallel` implementation assumes that all the continuations would run
+in the same thread, therefore the state used to decide when all continuations
+have completed is not thread safe.
+
 # HISTORY
 
 The `parallel` function appeared in MeasurementKit 0.3.0.
