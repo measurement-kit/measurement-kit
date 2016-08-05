@@ -69,7 +69,10 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     }, ctx->reactor);
 }
 
-template <MK_MOCK_NAMESPACE(messages, read_msg)>
+template <MK_MOCK_NAMESPACE(messages, read_msg),
+          MK_MOCK_NAMESPACE(messages, format_msg_waiting),
+          MK_MOCK_NAMESPACE(messages, write_noasync),
+          MK_MOCK(reactor_call_soon)>
 void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait in queue ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
@@ -87,10 +90,38 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
             callback(InvalidSrvQueueMessageError(wait_time.as_error()));
             return;
         }
-        ctx->logger->info("Wait time before test starts: %d", *wait_time);
-        // XXX Simplified implementation
         if (*wait_time > 0) {
-            callback(UnhandledSrvQueueMessageError());
+            if (*wait_time == SRV_QUEUE_SERVER_FAULT) {
+                ctx->logger->warn("Server fault; aborting test");
+                callback(QueueServerFaultError());
+                return;
+            }
+            if (*wait_time == SRV_QUEUE_SERVER_BUSY or
+                *wait_time == SRV_QUEUE_SERVER_BUSY_60s) {
+                // Original NDT does exit(0) in both of these cases
+                ctx->logger->warn("Server busy; aborting test");
+                callback(QueueServerBusyError());
+                return;
+            }
+            if (*wait_time == SRV_QUEUE_HEARTBEAT) {
+                ctx->logger->info("Got HEARTBEAT message; responding...");
+                ErrorOr<Buffer> buff = messages_format_msg_waiting();
+                if (!buff) {
+                    callback(FormatMsgWaitingError(buff.as_error()));
+                    return;
+                }
+                messages_write_noasync(ctx, *buff);
+            } else {
+                ctx->logger->info("Number of clients in queue: %d",
+                                  *wait_time);
+            }
+            // TODO: in theory the server can keep us in queue forever...
+            reactor_call_soon(ctx->reactor, [=]() {
+                wait_in_queue_impl<messages_read_msg,
+                                   messages_format_msg_waiting,
+                                   messages_write_noasync,
+                                   reactor_call_soon>(ctx, callback);
+            });
             return;
         }
         callback(NoError());

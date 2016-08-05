@@ -20,7 +20,7 @@ MK_DEFINE_ERR(MK_ERR_NDT( 7), InvalidKickoffMessageError, "")
 MK_DEFINE_ERR(MK_ERR_NDT( 8), ReadingSrvQueueMessageError, "")
 MK_DEFINE_ERR(MK_ERR_NDT( 9), NotSrvQueueMessageError, "")
 MK_DEFINE_ERR(MK_ERR_NDT(10), InvalidSrvQueueMessageError, "")
-MK_DEFINE_ERR(MK_ERR_NDT(11), UnhandledSrvQueueMessageError, "")
+MK_DEFINE_ERR(MK_ERR_NDT(11), QueueServerFaultError, "")
 MK_DEFINE_ERR(MK_ERR_NDT(12), ReadingServerVersionMessageError, "")
 MK_DEFINE_ERR(MK_ERR_NDT(13), NotServerVersionMessageError, "")
 MK_DEFINE_ERR(MK_ERR_NDT(14), ReadingTestsIdMessageError, "")
@@ -52,6 +52,8 @@ MK_DEFINE_ERR(MK_ERR_NDT(39), WritingTestMsgError, "")
 MK_DEFINE_ERR(MK_ERR_NDT(40), InvalidDurationError, "")
 MK_DEFINE_ERR(MK_ERR_NDT(41), InvalidSnapsDelayError, "")
 MK_DEFINE_ERR(MK_ERR_NDT(42), InvalidNumStreamsError, "")
+MK_DEFINE_ERR(MK_ERR_NDT(43), QueueServerBusyError, "")
+MK_DEFINE_ERR(MK_ERR_NDT(44), FormatMsgWaitingError, "")
 
 } // namespace ndt
 } // namespace mk
