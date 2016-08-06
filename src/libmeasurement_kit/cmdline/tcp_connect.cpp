@@ -2,50 +2,54 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/ooni.hpp>
 #include <iostream>
 #include <string>
 #include <unistd.h>
 
-#define USAGE "usage: %s [-v] [-b backend] [-n nameserver] file_name\n"
+namespace mk {
+namespace cmdline {
+namespace tcp_connect {
 
-int main(int argc, char **argv) {
-    std::string backend = "https://a.collector.test.ooni.io:4444";
-    std::string nameserver = "8.8.8.8";
+int main(const char *, int argc, char **argv) {
+    std::string port = "80";
     std::string name = argv[0];
     uint32_t verbosity = 0;
     char ch;
-
-    while ((ch = getopt(argc, argv, "b:n:v")) != -1) {
+    while ((ch = getopt(argc, argv, "p:v")) != -1) {
         switch (ch) {
-        case 'b':
-            backend = optarg;
-            break;
-        case 'n':
-            nameserver = optarg;
+        case 'p':
+            port = std::string(optarg);
             break;
         case 'v':
             ++verbosity;
             break;
         default:
-            fprintf(stderr, USAGE, name.c_str());
+            std::cout << "Usage: " << name << " [-v] [-p port] file_name"
+                      << "\n";
             exit(1);
         }
     }
     argc -= optind;
     argv += optind;
     if (argc != 1) {
-        fprintf(stderr, USAGE, name.c_str());
+        std::cout << "Usage: " << name << " [-v] [-p port] file_name"
+                  << "\n";
         exit(1);
     }
-
-    mk::ooni::WebConnectivity()
-        .set_options("backend", backend)
-        .set_options("nameserver", nameserver)
+    mk::ooni::TcpConnect()
+        .set_options("port", port)
         .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
         .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
-        .set_verbosity(verbosity)
         .set_input_filepath(argv[0])
+        .set_verbosity(verbosity)
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
+
+    return 0;
 }
+
+} // namespace tcp_connect
+} // namespace cmdline
+} // namespace mk

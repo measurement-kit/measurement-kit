@@ -4,19 +4,22 @@
 
 #include <functional>
 #include <iostream>
+#include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
 #include <stdlib.h>
 #include <string>
 #include <unistd.h>
 
-using namespace mk;
+namespace mk {
+namespace cmdline {
+namespace http_request {
 
 static const char *kv_usage =
-    "usage: ./example/http/request [-v] [-b body] [-m method]\n"
-    "                              [-R max-redirect] url\n";
+    "usage: measurement_kit http_request [-v] [-b body] [-m method]\n"
+    "                                    [-R max-redirect] url\n";
 
-int main(int argc, char **argv) {
+int main(const char *, int argc, char **argv) {
 
     Settings settings;
     std::string body;
@@ -68,4 +71,10 @@ int main(int argc, char **argv) {
                 break_loop();
             });
     });
+
+    return 0;
 }
+
+} // namespace http_request
+} // namespace cmdline
+} // namespace mk

@@ -2,22 +2,21 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// This example shows usage of `mlabns::query()`
-//
-
 #include <functional>
 #include <iostream>
+#include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/mlabns.hpp>
 #include <stdlib.h>
 #include <string>
 #include <unistd.h>
 
-using namespace mk;
+namespace mk {
+namespace cmdline {
+namespace mlabns {
 
 static const char *kv_usage =
-    "usage: ./example/mlabns/query [-46v] [-C /path/to/ca/bundle] [-m metro]\n"
+    "usage: measurement_kit mlabns [-46v] [-C /path/to/ca/bundle] [-m metro]\n"
     "                              [-p policy] ndt|neubot|ooni|...\n";
 
 static void print_setting(Settings &settings, std::string key) {
@@ -26,7 +25,7 @@ static void print_setting(Settings &settings, std::string key) {
     std::cout << "> " << key << ": " << value << "\n";
 }
 
-int main(int argc, char **argv) {
+int main(const char *, int argc, char **argv) {
 
     char ch;
     Settings settings;
@@ -68,8 +67,8 @@ int main(int argc, char **argv) {
     std::cout << "> tool: " << tool << "\n";
 
     loop_with_initial_event([=]() {
-        mlabns::query(
-            tool, [](Error error, mlabns::Reply reply) {
+        mk::mlabns::query(
+            tool, [](Error error, mk::mlabns::Reply reply) {
                 if (error) {
                     std::cout << "< error: " << (int)error << "\n";
                     break_loop();
@@ -88,4 +87,10 @@ int main(int argc, char **argv) {
                 break_loop();
             }, settings);
     });
+
+    return 0;
 }
+
+} // namespace mlabns
+} // namespace cmdline
+} // namespace mk
