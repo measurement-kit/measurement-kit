@@ -65,7 +65,7 @@ void loop_request(Var<Transport> transport, int speed_kbit,
             {"Authorization", auth},
         },
         "",
-        [=](Error error) {
+        [=](Error error, Var<Request> req) {
             if (error) {
                 logger->warn("Error: %d", (int)error);
                 cb(error, nullptr);
@@ -80,6 +80,7 @@ void loop_request(Var<Transport> transport, int speed_kbit,
                         cb(error, nullptr);
                         return;
                     }
+                    res->request = req;
 
                     double new_times = mk::time_now();
                     float length = res->body.length();

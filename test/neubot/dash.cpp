@@ -24,8 +24,8 @@ TEST_CASE("Make sure that an error is passed to callback if the client "
 }
 
 static void fail_to_send(Var<net::Transport>, Settings, Headers, std::string,
-                         Callback<Error> cb) {
-    cb(MockedError());
+                         Callback<Error, Var<Request>> cb) {
+    cb(MockedError(), nullptr);
 }
 
 TEST_CASE("Make sure that an error is passed to callback if the client "
