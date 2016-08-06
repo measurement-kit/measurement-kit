@@ -31,7 +31,7 @@ continuation failed (and why) or succeeded.
 
 # BUGS
 
-The `parallel` implementation assumes that all the continuations would run
+The `parallel` implementation assumes that all the continuations will run
 in the same thread, therefore the state used to decide when all continuations
 have completed is not thread safe.
 
