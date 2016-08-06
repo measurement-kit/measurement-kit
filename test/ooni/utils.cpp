@@ -32,16 +32,22 @@ TEST_CASE("geoip works") {
     REQUIRE(((*json)["city_name"] == std::string{"Mountain View"}));
 }
 
-TEST_CASE("geoip returns an error if it can't open the country database") {
-    mk::ErrorOr<json> json = mk::ooni::geoip(
-        "8.8.8.8", "test/fixtures/GeoIPinvalid.dat", "invalid_path.dat");
-    REQUIRE(json.as_error() == mk::ooni::CannotOpenGeoIpCountryDatabase());
+TEST_CASE("IPLocation::resolve_countr_code() deals with nonexistent database") {
+    mk::ooni::IPLocation ipl("invalid.dat", "invalid.dat");
+    REQUIRE((ipl.resolve_country_code("8.8.8.8").as_error()
+             == mk::ooni::CannotOpenGeoIpCountryDatabase()));
 }
 
-TEST_CASE("geoip returns an error if it can't open the asn database") {
-    mk::ErrorOr<json> json = mk::ooni::geoip(
-        "8.8.8.8", "test/fixtures/GeoIPinvalid.dat", "invalid_path.dat");
-    REQUIRE(json.as_error() == mk::ooni::CannotOpenGeoIpAsnDatabase());
+TEST_CASE("IPLocation::resolve_countr_name() deals with nonexistent database") {
+    mk::ooni::IPLocation ipl("invalid.dat", "invalid.dat");
+    REQUIRE((ipl.resolve_country_name("8.8.8.8").as_error()
+             == mk::ooni::CannotOpenGeoIpCountryDatabase()));
+}
+
+TEST_CASE("IPLocation::resolve_asn() deals with nonexistent database") {
+    mk::ooni::IPLocation ipl("invalid.dat", "invalid.dat");
+    REQUIRE((ipl.resolve_asn("8.8.8.8").as_error()
+             == mk::ooni::CannotOpenGeoIpAsnDatabase()));
 }
 
 TEST_CASE("is_ip_addr works on ipv4") {
