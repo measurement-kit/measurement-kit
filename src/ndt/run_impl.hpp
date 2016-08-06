@@ -45,6 +45,8 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
     (*ctx->entry)["web100_data"] = Entry::object();
     (*ctx->entry)["summary_data"] = Entry::object();
     (*ctx->entry)["test_suite"] = ctx->test_suite;
+    (*ctx->entry)["server_address"] = address;
+    (*ctx->entry)["server_port"] = port;
 
     // The following code implements this sequence diagram:
     // https://raw.githubusercontent.com/wiki/ndt-project/ndt/NDTProtocol.images/ndt_10.png
