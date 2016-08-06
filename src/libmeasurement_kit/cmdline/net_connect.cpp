@@ -4,19 +4,23 @@
 
 #include <functional>
 #include <iostream>
+#include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
 #include <stdlib.h>
 #include <string>
 #include <unistd.h>
 
-using namespace mk;
+namespace mk {
+namespace cmdline {
+namespace net_connect {
+
 using namespace mk::net;
 
 static const char *kv_usage =
         "usage: ./example/net/connect [-Tv] [-p port] [-t timeout] domain\n";
 
-int main(int argc, char **argv) {
+int main(const char *, int argc, char **argv) {
 
     int port = 80;
     Settings settings;
@@ -82,4 +86,10 @@ int main(int argc, char **argv) {
             }
         }, settings);
     });
+
+    return 0;
 }
+
+} // namespace net_connect
+} // namespace cmdline
+} // namespace mk

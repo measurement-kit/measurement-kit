@@ -6,19 +6,23 @@
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ndt.hpp>
 #include <string>
 #include <unistd.h>
 
-using namespace mk;
+namespace mk {
+namespace cmdline {
+namespace ndt {
+
 using namespace mk::ndt;
 
 static const char *kv_usage =
-    "usage: ./example/net/ndt [-v] [-C /path/to/ca.bundle] [-p port]\n"
+    "usage: measurement_kit ndt [-v] [-C /path/to/ca.bundle] [-p port]\n"
     "                         [-T download|download-ext|none|upload] [host]\n";
 
-int main(int argc, char **argv) {
+int main(const char *, int argc, char **argv) {
 
     NdtTest test;
     char ch;
@@ -66,4 +70,10 @@ int main(int argc, char **argv) {
         .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
         .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
         .run();
+
+    return 0;
 }
+
+} // namespace ndt
+} // namespace cmdline
+} // namespace mk

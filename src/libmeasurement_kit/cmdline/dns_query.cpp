@@ -2,24 +2,23 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// This example shows how to use dns::query()
-//
-
 #include <functional>
 #include <iostream>
+#include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/dns.hpp>
 #include <stdlib.h>
 #include <string>
 #include <unistd.h>
 
-using namespace mk;
+namespace mk {
+namespace cmdline {
+namespace dns_query {
 
 static const char *kv_usage =
-    "usage: ./example/dns/query [-v] [-c class] [-t type] domain\n";
+    "usage: measurement_kit dns_query [-v] [-c class] [-t type] domain\n";
 
-int main(int argc, char **argv) {
+int main(const char *, int argc, char **argv) {
 
     std::string query_class = "IN";
     char ch;
@@ -57,8 +56,8 @@ int main(int argc, char **argv) {
                     break_loop();
                     return;
                 }
-		for (auto &s : m.answers) {
-                    if (query_type == "A"){
+                for (auto &s : m.answers) {
+                    if (query_type == "A") {
                         std::cout << s.ipv4 << "\n";
                     } else if (query_type == "AAAA") {
                         std::cout << s.ipv6 << "\n";
@@ -69,4 +68,10 @@ int main(int argc, char **argv) {
                 break_loop();
             });
     });
+
+    return 0;
 }
+
+} // namespace dns_query
+} // namespace cmdline
+} // namespace mk

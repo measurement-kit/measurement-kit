@@ -2,10 +2,15 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/ooni.hpp>
 #include <iostream>
 #include <string>
 #include <unistd.h>
+
+namespace mk {
+namespace cmdline {
+namespace oonireport {
 
 #define USAGE "oonireport [-v] [-c collector-base-url] filepath [...]" 
 
@@ -27,7 +32,7 @@ static void upload_report(std::string url, int index, char **argv) {
     });
 }
 
-int main(int argc, char **argv) {
+int main(const char *, int argc, char **argv) {
     std::string url = collector::default_collector_url();
     int ch;
 
@@ -50,4 +55,10 @@ int main(int argc, char **argv) {
     loop_with_initial_event([&]() {
         upload_report(url, 0, argv);
     });
+
+    return 0;
 }
+
+} // namespace oonireport
+} // namespace cmdline
+} // namespace mk

@@ -2,26 +2,32 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/ooni.hpp>
 #include <iostream>
 #include <string>
 #include <unistd.h>
 
-int main(int argc, char **argv) {
-    std::string port = "80";
+namespace mk {
+namespace cmdline {
+namespace dns_injection {
+
+int main(const char *, int argc, char **argv) {
+    std::string backend = "8.8.8.1";
     std::string name = argv[0];
     uint32_t verbosity = 0;
     char ch;
-    while ((ch = getopt(argc, argv, "p:v")) != -1) {
+
+    while ((ch = getopt(argc, argv, "b:v")) != -1) {
         switch (ch) {
-        case 'p':
-            port = std::string(optarg);
+        case 'b':
+            backend = optarg;
             break;
         case 'v':
             ++verbosity;
             break;
         default:
-            std::cout << "Usage: " << name << " [-v] [-p port] file_name"
+            std::cout << "Usage: " << name << " [-v] [-b backend] file_name"
                       << "\n";
             exit(1);
         }
@@ -29,16 +35,23 @@ int main(int argc, char **argv) {
     argc -= optind;
     argv += optind;
     if (argc != 1) {
-        std::cout << "Usage: " << name << " [-v] [-p port] file_name"
+        std::cout << "Usage: " << name << " [-v] [-b backend] file_name"
                   << "\n";
         exit(1);
     }
-    mk::ooni::TcpConnect()
-        .set_options("port", port)
+
+    mk::ooni::DnsInjection()
+        .set_options("backend", backend)
         .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
         .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
-        .set_input_filepath(argv[0])
         .set_verbosity(verbosity)
+        .set_input_filepath(argv[0])
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
+
+    return 0;
 }
+
+} // namespace dns_injection
+} // namespace cmdline
+} // namespace mk
