@@ -221,7 +221,8 @@ void coroutine(Var<Entry> report_entry, std::string address, Params params,
                Var<Logger> logger = Logger::global(),
                Var<Reactor> reactor = Reactor::global());
 
-void finalizing_test(Var<Context> ctx, Callback<Error> callback);
+void finalizing_test(Var<Context> ctx, Var<Entry> cur_entry,
+                     Callback<Error> callback);
 
 void run(Var<Context> ctx, Callback<Error> callback);
 
