@@ -16,8 +16,9 @@ void coroutine(Var<Entry> report_entry, std::string address, Params params,
     coroutine_impl(report_entry, address, params, cb, timeout, settings, logger, reactor);
 }
 
-void finalizing_test(Var<Context> ctx, Callback<Error> callback) {
-    finalizing_test_impl(ctx, callback);
+void finalizing_test(Var<Context> ctx, Var<Entry> cur_entry,
+                     Callback<Error> callback) {
+    finalizing_test_impl(ctx, cur_entry, callback);
 }
 
 void run(Var<Context> ctx, Callback<Error> callback) {

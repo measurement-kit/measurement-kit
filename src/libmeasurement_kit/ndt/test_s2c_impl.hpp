@@ -108,7 +108,8 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
 }
 
 template <MK_MOCK_NAMESPACE(messages, read_msg)>
-void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
+void finalizing_test_impl(Var<Context> ctx, Var<Entry> cur_entry,
+                          Callback<Error> callback) {
 
     ctx->logger->debug("ndt: recv TEST_MSG ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
@@ -118,6 +119,9 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         if (type == TEST_FINALIZE) {
+            // Okay, now that we've reached the final state, we can append
+            // the current entry to the entry of the whole NDT test
+            (*ctx->entry)["test_s2c"].push_back(*cur_entry);
             callback(NoError());
             return;
         }
@@ -128,11 +132,11 @@ void finalizing_test_impl(Var<Context> ctx, Callback<Error> callback) {
         for (auto e : split(s, "\n")) {
             if (e != "") {
                 ctx->logger->debug("%s", e.c_str());
-                messages::add_to_report(ctx->entry, "web100_data", e);
+                messages::add_to_report(cur_entry, "web100_data", e);
             }
         }
         // XXX: Here we can loop forever
-        finalizing_test_impl<messages_read_msg>(ctx, callback);
+        finalizing_test_impl<messages_read_msg>(ctx, cur_entry, callback);
     }, ctx->reactor);
 }
 
@@ -203,10 +207,12 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->debug("Num-streams: %d", params.num_streams);
 
+        Var<Entry> cur_entry(new Entry);
+
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start s2c coroutine ...");
         coroutine(
-            ctx->entry, ctx->address, params,
+            cur_entry, ctx->address, params,
             [=](Error err, Continuation<Error, double> cc) {
                 ctx->logger->debug("ndt: start s2c coroutine ... %d", (int)err);
                 if (err) {
@@ -273,7 +279,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                                 }
 
                                 // We enter into the final state of this test
-                                finalizing_test(ctx, callback);
+                                finalizing_test(ctx, cur_entry, callback);
                             });
                         }, ctx->reactor);
                     });
