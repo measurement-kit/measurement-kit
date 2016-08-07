@@ -237,13 +237,14 @@ void run(Var<Context> ctx, Callback<Error> callback);
     Useful functions used by all modules.
 */
 
-inline void log_speed(Var<Logger> logger, std::string type,
+inline void log_speed(Var<Logger> logger, std::string type, int num_streams,
                       double elapsed, double speed) {
     logger->log(MK_LOG_JSON | MK_LOG_INFO, R"xx({
             "type": "%s",
             "elapsed": [%lf, "s"],
+            "num_streams": %d,
             "speed": [%lf, "kbit/s"]
-        })xx", type.c_str(), elapsed, speed);
+        })xx", type.c_str(), elapsed, num_streams, speed);
 }
 
 } // namespace mk

@@ -44,7 +44,8 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                 Var<size_t> num_completed{new size_t{0}};
                 size_t num_flows = txp_list.size();
                 *previous = begin;
-                log_speed(logger, "download-speed", 0.0, 0.0);
+                log_speed(logger, "download-speed", params.num_streams,
+                          0.0, 0.0);
                 Var<Entry> run_entry(new Entry);
                 (*run_entry)["params"]["num_streams"] = params.num_streams;
                 (*run_entry)["params"]["snaps_delay"] = params.snaps_delay;
@@ -62,7 +63,8 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                             double x = (*count * 8) / 1000 / (ct - *previous);
                             *count = 0;
                             *previous = ct;
-                            log_speed(logger, "download-speed", el, x);
+                            log_speed(logger, "download-speed",
+                                      params.num_streams, el, x);
                             (*run_entry)["receiver_data"].push_back({el, x});
                         }
                         // TODO: force close the connection after a given
