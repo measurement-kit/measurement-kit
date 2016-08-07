@@ -46,10 +46,9 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                 *previous = begin;
                 log_speed(logger, "download-speed", params.num_streams,
                           0.0, 0.0);
-                Var<Entry> run_entry(new Entry);
-                (*run_entry)["params"]["num_streams"] = params.num_streams;
-                (*run_entry)["params"]["snaps_delay"] = params.snaps_delay;
-                (*run_entry)["receiver_data"].push_back({0.0, 0.0});
+                (*report_entry)["params"]["num_streams"] = params.num_streams;
+                (*report_entry)["params"]["snaps_delay"] = params.snaps_delay;
+                (*report_entry)["receiver_data"].push_back({0.0, 0.0});
 
                 for (auto txp : txp_list) {
                     txp->set_timeout(timeout);
@@ -65,7 +64,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                             *previous = ct;
                             log_speed(logger, "download-speed",
                                       params.num_streams, el, x);
-                            (*run_entry)["receiver_data"].push_back({el, x});
+                            (*report_entry)["receiver_data"].push_back({el, x});
                         }
                         // TODO: force close the connection after a given
                         // large amount of time has passed
@@ -95,7 +94,6 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                                 speed = *total * 8.0 / 1000.0 / elapsed_time;
                             }
                             logger->info("S2C speed %lf kbit/s", speed);
-                            (*report_entry)["s2c_test"].push_back(*run_entry);
                             // XXX We need to define what we consider
                             // error when we have parallel flows
                             cb((num_flows == 1) ? err : NoError(), speed);
