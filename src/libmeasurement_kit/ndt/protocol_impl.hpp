@@ -143,6 +143,7 @@ void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         ctx->logger->info("Got server version: %s", s.c_str());
+        (*ctx->entry)["server_version"] = s;
         // TODO: validate the server version?
         callback(NoError());
     }, ctx->reactor);
