@@ -206,6 +206,9 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
         ctx->logger->debug("Num-streams: %d", params.num_streams);
 
         Var<Entry> cur_entry(new Entry);
+        (*cur_entry)["web100_data"] = Entry::object();
+        (*cur_entry)["params"] = Entry::object();
+        (*cur_entry)["receiver_data"] = Entry::array();
 
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start s2c coroutine ...");
