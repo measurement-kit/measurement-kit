@@ -30,6 +30,12 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                 cb(err, nullptr);
                 return;
             }
+            ErrorOr<std::vector<double>> ctimes = net::get_connect_times(err);
+            if (!ctimes) {
+                (*report_entry)["connect_times"] = Entry::array();
+            } else {
+                (*report_entry)["connect_times"] = *ctimes;
+            }
             logger->info("Connected to %s:%d", address.c_str(), params.port);
             logger->debug("ndt: suspend coroutine");
             cb(NoError(), [=](Callback<Error, double> cb) {
