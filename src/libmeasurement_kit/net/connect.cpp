@@ -287,5 +287,25 @@ void connect(std::string address, int port,
         settings, reactor, logger);
 }
 
+ErrorOr<double> get_connect_time(Error err) {
+    Var<ConnectResult> cr = err.context.as<ConnectResult>();
+    if (!cr) {
+        return GenericError();
+    }
+    return cr->connect_time;
+}
+
+ErrorOr<std::vector<double>> get_connect_times(Error err) {
+    Var<ConnectManyResult> cmr = err.context.as<ConnectManyResult>();
+    if (!cmr) {
+        return GenericError();
+    }
+    std::vector<double> connect_times;
+    for (auto &cr: cmr->results) {
+        connect_times.push_back(cr->connect_time);
+    }
+    return connect_times;
+}
+
 } // namespace net
 } // namespace mk

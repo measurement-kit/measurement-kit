@@ -29,6 +29,9 @@ struct ConnectResult : public ErrorContext {
     bufferevent *connected_bev = nullptr;
 };
 
+// Convert error returned by connect() in connect_time
+ErrorOr<double> get_connect_time(Error error);
+
 void connect(std::string address, int port,
              Callback<Error, Var<Transport>> callback,
              Settings settings = {},
@@ -38,6 +41,9 @@ void connect(std::string address, int port,
 struct ConnectManyResult : public ErrorContext {
     std::vector<Var<ConnectResult>> results;
 };
+
+// Convert error returned by connect_many() into connect_times vector
+ErrorOr<std::vector<double>> get_connect_times(Error error);
 
 using ConnectManyCb = Callback<Error, std::vector<Var<Transport>>>;
 
