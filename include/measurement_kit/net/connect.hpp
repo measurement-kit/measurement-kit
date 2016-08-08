@@ -25,6 +25,7 @@ struct ResolveHostnameResult {
 struct ConnectResult : public ErrorContext {
     ResolveHostnameResult resolve_result;
     std::vector<Error> connect_result;
+    double connect_time = 0.0;
     bufferevent *connected_bev = nullptr;
 };
 
@@ -33,6 +34,10 @@ void connect(std::string address, int port,
              Settings settings = {},
              Var<Logger> logger = Logger::global(),
              Var<Reactor> reactor = Reactor::global());
+
+struct ConnectManyResult : public ErrorContext {
+    std::vector<Var<ConnectResult>> results;
+};
 
 using ConnectManyCb = Callback<Error, std::vector<Var<Transport>>>;
 
