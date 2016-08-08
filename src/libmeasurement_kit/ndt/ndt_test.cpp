@@ -25,10 +25,10 @@ static void log_summary(Var<Logger> logger, Var<Entry> entry) {
         };
         root["failure"] = (*entry)["failure"];
         for (auto measurement: (*entry)["test_s2c"]) {
-            logger->warn("%s", measurement.dump().c_str());
             nlohmann::json child;
             child["num_streams"] = measurement["params"]["num_streams"];
-            child["ping"] = {
+            child["connect_times"] = measurement["connect_times"];
+            child["min_rtt"] = {
                 measurement["web100_data"]["MinRTT"],
                 "ms"
             };
