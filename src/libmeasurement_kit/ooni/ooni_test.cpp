@@ -53,7 +53,7 @@ void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
                 return;
             }
             if (entry_cb) {
-                entry_cb(entry.dump());
+                entry_cb(entry.dump(4));
             }
             logger->debug("net_test: written entry");
 
