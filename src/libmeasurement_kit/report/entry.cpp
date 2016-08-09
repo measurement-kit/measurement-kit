@@ -33,8 +33,8 @@ void Entry::push_back(Entry value) {
     }
 }
 
-std::string Entry::dump() {
-    return nlohmann::json::dump();
+std::string Entry::dump(const int indent) const {
+    return nlohmann::json::dump(indent);
 }
 
 Entry Entry::parse(const std::string &s) {
