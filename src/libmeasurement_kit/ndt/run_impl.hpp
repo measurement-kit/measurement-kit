@@ -45,7 +45,6 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
     (*ctx->entry)["test_suite"] = ctx->test_suite;
     (*ctx->entry)["server_address"] = address;
     (*ctx->entry)["server_port"] = port;
-    (*ctx->entry)["data_format_version"] = "2.0.0";
 
     // The following code implements this sequence diagram:
     // https://raw.githubusercontent.com/wiki/ndt-project/ndt/NDTProtocol.images/ndt_10.png
