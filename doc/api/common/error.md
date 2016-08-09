@@ -29,7 +29,7 @@ class Error : public std::exception {
     std::string as_ooni_error();
 
     Var<ErrorContext> context;
-    Var<Error> child;
+    std::vector<Var<Error>> child_errors;
     int code = 0;
     std::string reason;
 };
@@ -140,12 +140,12 @@ not fail, again checking whether the context is not `nullptr`. For example:
     });
 ```
 
-The `Var<Error> child` field is a smart pointer that MAY be set to indicate
-that the current error was provoked by another underlying error. This should
-allow the programmer to properly layer errors. Thus, one could learn that, say, a
-specific call to an API failed, and that the reason why that failed was that
-it was not possible to establish a network connection, and that the reason
-why that was not possible is that the DNS failed.
+The `child_errors` field is vector of smart pointers that MAY be set to
+indicate that the current error was triggered by one or more underlying errors.
+This should allow the programmer to properly layer errors. Thus, one could
+learn that, say, a specific call to an API failed, and that the reason why that
+failed was that it was not possible to establish a network connection, and
+that the reason why that was not possible is that the DNS lookup failed.
 
 The `code` and `reason` fields are, respectively, the integer error code
 uniquely identifying the error and the related textual description. The latter

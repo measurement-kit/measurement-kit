@@ -93,6 +93,14 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         response_.http_major = parser_.http_major;
         response_.status_code = parser_.status_code;
         response_.http_minor = parser_.http_minor;
+        std::stringstream sst;
+        sst << "HTTP/" << response_.http_major << "." << response_.http_minor
+            << " " << response_.status_code << " " << response_.reason;
+        response_.response_line = sst.str();
+        logger_->debug("< %s", response_.response_line.c_str());
+        for (auto kv : response_.headers) {
+            logger_->debug("< %s: %s", kv.first.c_str(), kv.second.c_str());
+        }
         if (response_fn_) {
             response_fn_(response_);
         }
@@ -156,9 +164,6 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         }
         prev_ = cur;
     }
-
-    // XXX parse() and parser_execute() should return Error
-    // and should be tagged with warn_unused_result
 
     void parse() {
         size_t total = 0;

@@ -65,7 +65,9 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
         callback(query.as_error(), Reply());
         return;
     }
-    std::string url = "https://mlab-ns.appspot.com/";
+    std::string url = settings.get("mlabns/base_url", std::string{
+                                       "https://mlab-ns.appspot.com/"
+                                   });
     std::regex valid_tool("^[a-z]+$");
     if (!std::regex_match(tool, valid_tool)) {
         callback(InvalidToolNameError(), Reply());
@@ -109,7 +111,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
             logger->info("mlabns says to use %s", reply.fqdn.c_str());
             callback(NoError(), reply);
         },
-        {}, settings, reactor, logger);
+        {}, settings, reactor, logger, nullptr, 0);
 }
 
 } // namespace mlabns

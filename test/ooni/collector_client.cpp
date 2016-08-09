@@ -87,7 +87,7 @@ static void fail(Var<Transport>, Settings, Headers, std::string,
 }
 
 const static Settings SETTINGS = {
-    {"collector_base_url", collector::default_collector_url()},
+    {"collector_base_url", collector::testing_collector_url()},
 };
 
 TEST_CASE("collector::post deals with network error") {
@@ -437,7 +437,7 @@ TEST_CASE("submit_report() deals with collector_create_report error") {
 TEST_CASE("The collector client works as expected") {
     loop_with_initial_event([=]() {
         collector::submit_report("test/fixtures/report.json",
-                                 collector::default_collector_url(),
+                                 collector::testing_collector_url(),
                                  [=](Error err) {
                                      REQUIRE(err == NoError());
                                      break_loop();

@@ -19,7 +19,7 @@ Logger::Logger() {
                 s = message.c_str();
             } catch (std::exception &) {
                 fprintf(stderr, "warning: logger cannot parse json message\n");
-                /* suppress */ ;
+                return;
             }
             /* FALLTHROUGH */
         }
@@ -35,7 +35,7 @@ Logger::Logger() {
 }
 
 void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
-    if (!consumer_) {
+    if (!consumer_ and !ofile_.is_open()) {
         return;
     }
     std::lock_guard<std::mutex> lock(mutex_);
@@ -46,7 +46,13 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
     if (res < 0 || (unsigned int)res >= sizeof(buffer_)) {
         return;
     }
-    consumer_(level, buffer_);
+    if (consumer_) {
+        consumer_(level, buffer_);
+    }
+    if (ofile_) {
+        ofile_ << buffer_ << "\n";
+        // TODO: suppose here write fails... what do we want to do?
+    }
 }
 
 #define XX(_logger_, _level_)                                                  \
@@ -76,6 +82,11 @@ void Logger::increase_verbosity() {
     if (verbosity_ < MK_LOG_VERBOSITY_MASK) {
         ++verbosity_;
     }
+}
+
+void Logger::set_logfile(std::string path) {
+    ofile_ = std::ofstream(path);
+    // TODO: what to do if we cannot open the logfile? return error?
 }
 
 } // namespace mk

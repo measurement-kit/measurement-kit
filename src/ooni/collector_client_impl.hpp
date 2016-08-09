@@ -57,6 +57,10 @@ void post_impl(Var<Transport> transport, std::string append_to_url,
                                   callback(err, nullptr);
                                   return;
                               }
+                              logger->debug("Response status code: %d",
+                                            response->status_code);
+                              logger->debug("Response reason: %s",
+                                            response->reason.c_str());
                               if (response->status_code / 100 != 2) {
                                   callback(HttpRequestFailedError(), nullptr);
                                   return;

@@ -57,8 +57,7 @@ void mk::http::request_sendrecv(mk::Var<mk::net::Transport> txp,
 The `request()` function issues the asynchronous `HTTP` request specified by the
 `settings` argument. The following settings are available:
 
-- *http/follow_redirects*: if it set to yes, then the client will follow redirects
-  (this is currently not implemented)
+- *http/max_redirects*: maximum number of redirects to follow, defaults to zero
 
 - *http/url*: the URL to use
 
@@ -159,7 +158,7 @@ class Response {
 using namespace mk;
 
 http::request({
-        {"http/follow_redirects", "yes"},       // default is no
+        {"http/max_redirects", 16},             // default is 0
         {"http/url", "http://nexa.polito.it/"}, // must be specified
         {"http/method", "PUT"},                 // default is GET
         {"http/path", "/robots.txt"},           // default is to use URL's path
@@ -182,8 +181,6 @@ http::request({
 - The `Response::response_line` field is always empty
 
 - The `http/ignore_body` setting is not implemented
-
-- The `http/follow_redirects` setting is not implemented
 
 # HISTORY
 
