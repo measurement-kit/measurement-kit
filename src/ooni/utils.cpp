@@ -23,14 +23,18 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
     resolver_lookup_impl(callback, settings, reactor, logger);
 }
 
-IPLocation::IPLocation(std::string path_country_, std::string path_asn_) {
+IPLocation::IPLocation(std::string path_country_, std::string path_asn_, std::string path_city_) {
     path_asn = path_asn_;
     path_country = path_country_;
+    path_city = path_city_;
 }
 
 IPLocation::~IPLocation() {
     if (gi_asn != nullptr) {
         GeoIP_delete(gi_asn);
+    }
+    if (gi_city != nullptr) {
+        GeoIP_delete(gi_city);
     }
     if (gi_country != nullptr) {
         GeoIP_delete(gi_country);
@@ -76,26 +80,25 @@ ErrorOr<std::string> IPLocation::resolve_country_name(std::string ip) {
     return country_name;
 }
 
-static Error geoip_resolve_city (std::string ip, std::string path_city, json &node) {
-    GeoIP *gi;
+ErrorOr<std::string> IPLocation::resolve_city_name(std::string ip) {
+    if (gi_city == nullptr) {
+        gi_city = GeoIP_open(path_city.c_str(), GEOIP_MEMORY_CACHE);
+        if (gi_country == nullptr) {
+            return CannotOpenGeoIpCityDatabase();
+        }
+    }
     GeoIPLookup gl;
     GeoIPRecord *gir;
     memset (&gl, 0, sizeof(gl));
 
-    gi = GeoIP_open(path_city.c_str(), GEOIP_MEMORY_CACHE);
-    if (gi == nullptr) {
-        return GenericError();
-    }
-
-    gir = GeoIP_record_by_name(gi, ip.c_str());
+    gir = GeoIP_record_by_name(gi_city, ip.c_str());
     if (gir == nullptr) {
-        GeoIP_delete(gi);
+        GeoIP_delete(gi_city);
         return GenericError();
     }
-    node["city_name"] = gir->city;
+	std::string result = gir->city;
     GeoIPRecord_delete(gir);
-    GeoIP_delete(gi);
-    return NoError();
+    return result;
 }
 
 ErrorOr<std::string> IPLocation::resolve_asn(std::string ip) {
@@ -121,28 +124,22 @@ ErrorOr<std::string> IPLocation::resolve_asn(std::string ip) {
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,
                     std::string path_asn, std::string path_city) {
-    json node{
-        // Set sane values such that we should not have errors accessing
-        // output even when lookup may fail for current database
-        {"country_code", "ZZ"},
-        {"country_name", "ZZ"},
-        {"city_name", "ZZ"},
-        {"asn", "AS0"},
-    };
-    Error err = geoip_resolve_country (ip, path_country, node);
-    if (err) {
-        return err;
+    IPLocation ip_location(path_country, path_asn, path_city);
+    ErrorOr<std::string> country_code = ip_location.resolve_country_code(ip);
+    if (!country_code) {
+        return country_code.as_error();
     }
     ErrorOr<std::string> country_name = ip_location.resolve_country_name(ip);
     if (!country_name) {
         return country_name.as_error();
     }
-    if (path_city != "") {
-        err = geoip_resolve_city (ip, path_city, node);
-        if (err) {
-            return err;
-        }
-    }
+	ErrorOr<std::string> city_name;
+	if (path_city != "") {
+		city_name = ip_location.resolve_city_name(ip);
+		if (!city_name) {
+			return city_name.as_error();
+		}
+	}
     ErrorOr<std::string> asn = ip_location.resolve_asn(ip);
     if (!asn) {
         return asn.as_error();
@@ -151,6 +148,9 @@ ErrorOr<json> geoip(std::string ip, std::string path_country,
     node["country_code"] = country_code.as_value();
     node["country_name"] = country_name.as_value();
     node["asn"] = asn.as_value();
+	if (path_city != "") {
+		node["city_name"] = city_name.as_value();
+	}
     return node;
 }
 

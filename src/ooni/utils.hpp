@@ -28,7 +28,7 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings = 
 
 class IPLocation {
     public:
-      IPLocation(std::string path_country, std::string path_asn);
+      IPLocation(std::string path_country, std::string path_asn, std::string path_city = "");
 
       ~IPLocation();
 
@@ -36,13 +36,17 @@ class IPLocation {
 
       ErrorOr<std::string> resolve_country_name(std::string ip);
 
+      ErrorOr<std::string> resolve_city_name(std::string ip);
+
       ErrorOr<std::string> resolve_asn(std::string ip);
 
     private:
       std::string path_country = "";
       std::string path_asn = "";
+      std::string path_city = "";
       GeoIP *gi_asn = nullptr;
       GeoIP *gi_country = nullptr;
+      GeoIP *gi_city = nullptr;
       Var<Logger> logger = Logger::make();
 
 };
