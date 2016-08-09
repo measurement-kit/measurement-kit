@@ -32,13 +32,13 @@ class IPLocation {
 
       ~IPLocation();
 
-      ErrorOr<std::string> resolve_country_code(std::string ip);
+      ErrorOr<std::string> resolve_country_code(std::string ip, Var<Logger> logger = Logger::make());
 
-      ErrorOr<std::string> resolve_country_name(std::string ip);
+      ErrorOr<std::string> resolve_country_name(std::string ip, Var<Logger> logger = Logger::make());
 
-      ErrorOr<std::string> resolve_city_name(std::string ip);
+      ErrorOr<std::string> resolve_city_name(std::string ip, Var<Logger> logger = Logger::make());
 
-      ErrorOr<std::string> resolve_asn(std::string ip);
+      ErrorOr<std::string> resolve_asn(std::string ip, Var<Logger> logger = Logger::make());
 
     private:
       std::string path_country = "";
@@ -47,7 +47,6 @@ class IPLocation {
       GeoIP *gi_asn = nullptr;
       GeoIP *gi_country = nullptr;
       GeoIP *gi_city = nullptr;
-      Var<Logger> logger = Logger::make();
 
 };
 
