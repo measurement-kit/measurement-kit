@@ -141,11 +141,11 @@ not fail, again checking whether the context is not `nullptr`. For example:
 ```
 
 The `child_errors` field is vector of smart pointers that MAY be set to
-indicate that the current error was provoked by one or more underlying errors
+indicate that the current error was triggered by one or more underlying errors.
 This should allow the programmer to properly layer errors. Thus, one could
 learn that, say, a specific call to an API failed, and that the reason why that
 failed was that it was not possible to establish a network connection, and
-that the reason why that was not possible is that the DNS failed.
+that the reason why that was not possible is that the DNS lookup failed.
 
 The `code` and `reason` fields are, respectively, the integer error code
 uniquely identifying the error and the related textual description. The latter
