@@ -20,6 +20,8 @@
 *.so.*
 *.swp
 *.trs
+/build/android/jni/conf
+/build/android/jni/spec
 .DS_Store
 .deps
 .dirstamp
