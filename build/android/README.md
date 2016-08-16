@@ -33,7 +33,7 @@ available for Android. If you run the script without arguments, it will
 print the options it accepts and the available Android architectures for
 which you can cross compile:
 
-    $ ./library.sh
+    $ ./library
     [prints usage]
 
 To cross-compile for all available architectures you need to tell the
