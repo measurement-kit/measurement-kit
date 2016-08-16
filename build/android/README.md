@@ -70,8 +70,4 @@ latter cross-compiles MeasurementKit for the selected arch.
 
 Run this command to create the final archive:
 
-    $ ./archive-library.sh
-
-Then use GPG to sign the release and publish it on GitHub:
-
-    $ gpg --sign --armor -b $tarball
+    $ ./archive-library
