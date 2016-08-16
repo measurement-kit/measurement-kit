@@ -36,3 +36,8 @@ done
 # Install spec so we know what version was used to build the archive
 install -d $ANDROIDDIR/jni/spec
 install -m644 $BUILDDIR/spec/$SPEC $ANDROIDDIR/jni/spec/$SPEC
+
+# Log the path to the NDK dir as a proxy of NDK version
+install -d $ANDROIDDIR/jni/conf
+install -m644 /dev/null $ANDROIDDIR/jni/conf/ndk-dir
+echo ${NDK_DIR} > $ANDROIDDIR/jni/conf/ndk-dir
