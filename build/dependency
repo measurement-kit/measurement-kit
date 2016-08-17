@@ -49,14 +49,21 @@ if [ ! -d third_party/cache/$pkg_name ]; then
     if [ ! -z "$pkg_tag" ]; then
         git checkout tags/$pkg_tag
     fi
+    if [ -d ../../../build/patch/pre-autogen/$pkg_name ]; then
+        for diff in `ls ../../../build/patch/pre-autogen/$pkg_name`; do
+            cp ../../../build/patch/pre-autogen/$pkg_name/$diff .
+            git apply -v $diff
+            rm $diff
+        done
+    fi
     if [ -x ./autogen.sh ]; then
         ./autogen.sh
     elif [ -f ./configure.ac ]; then
         autoreconf -i
     fi
-    if [ -d ../../../build/patch/$pkg_name ]; then
-        for diff in `ls ../../../build/patch/$pkg_name`; do
-            cp ../../../build/patch/$pkg_name/$diff .
+    if [ -d ../../../build/patch/post-autogen/$pkg_name ]; then
+        for diff in `ls ../../../build/patch/post-autogen/$pkg_name`; do
+            cp ../../../build/patch/post-autogen/$pkg_name/$diff .
             git apply -v $diff
             rm $diff
         done
