@@ -20,14 +20,14 @@
 *.so.*
 *.swp
 *.trs
-/build/android/jni/conf
-/build/android/jni/spec
 .DS_Store
 .deps
 .dirstamp
 .libs
 .vagrant
 /*.json
+/build/android/jni/conf
+/build/android/jni/spec
 /include.am
 /tmp
 Makefile
