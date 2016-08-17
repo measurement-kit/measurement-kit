@@ -6,15 +6,15 @@ Subject: [PATCH] Don't use unavailable TCP and UDP sysctls on iOS
 See <https://github.com/libressl-portable/openbsd/pull/67>
 
 ---
- src/lib/libcrypto/crypto/getentropy_osx.c | 11 +++++++++++
+ crypto/compat/getentropy_osx.c | 11 +++++++++++
  1 file changed, 11 insertions(+)
 
-diff --git a/src/lib/libcrypto/crypto/getentropy_osx.c b/src/lib/libcrypto/crypto/getentropy_osx.c
-index 82bb3bf..0762034 100644
---- a/src/lib/libcrypto/crypto/getentropy_osx.c
-+++ b/src/lib/libcrypto/crypto/getentropy_osx.c
+diff --git a/crypto/compat/getentropy_osx.c b/crypto/compat/getentropy_osx.c
+index 2bc8115..aa77f52 100644
+--- a/crypto/compat/getentropy_osx.c
++++ b/crypto/compat/getentropy_osx.c
 @@ -20,6 +20,7 @@
-  * http://man.openbsd.org/getentropy.2
+  * http://www.openbsd.org/cgi-bin/man.cgi/OpenBSD-current/man2/getentropy.2
   */
  
 +#include <TargetConditionals.h>
@@ -40,7 +40,7 @@ index 82bb3bf..0762034 100644
  #include <CommonCrypto/CommonDigest.h>
  #define SHA512_Update(a, b, c)	(CC_SHA512_Update((a), (b), (c)))
  #define SHA512_Init(xxx) (CC_SHA512_Init((xxx)))
-@@ -207,9 +212,11 @@ getentropy_urandom(void *buf, size_t len)
+@@ -207,9 +212,11 @@ nodevrandom:
  	return (-1);
  }
  
