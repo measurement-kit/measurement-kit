@@ -10,7 +10,7 @@ install:
       fi;
     - ARG="-q --with-geoip=builtin"
     - if [ "$COVERAGE" = "true" ]; then
-        export CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;
+        ARG="$ARG --coverage"
         pip install --user cpp-coveralls;
       fi
     - ./autogen.sh
