@@ -26,7 +26,7 @@ for ARCH in $ALL_ARCHS; do
     echo ""
     echo "Cross compiling $SPEC for arch ${ARCH}"
     if [ ! -d $ANDROIDDIR/toolchain/${ARCH}-${API} ]; then
-        $ANDROIDDIR/scripts/make_toolchain.sh ${NDK_DIR} ${ARCH} ${API}
+        $ANDROIDDIR/make-toolchain ${NDK_DIR} ${ARCH} ${API}
     fi
     $ANDROIDDIR/cross ${ARCH} ${API} $BUILDDIR/dependency $SPEC
 done

@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+ROOTDIR=$(cd `dirname "$0"` && pwd -P)
+
+echo "Downloading and verifying precompiled dependencies from github"
+(
+    set -e # just in case
+    cd $ROOTDIR
+    DEPS_URL=https://github.com/measurement-kit/measurement-kit-deps/releases/download/2016-08-16/ios-dependencies-20160817T184020Z.tgz
+    DEPS_FILE=$(basename $DEPS_URL)
+    curl --progress-bar -LO $DEPS_URL
+    curl --progress-bar -LO $DEPS_URL.asc
+    gpg2 --verify $DEPS_FILE.asc
+    tar -xzf $DEPS_FILE
+    rm $DEPS_FILE $DEPS_FILE.asc
+)
+
+$ROOTDIR/dependency embedded-mk
+$ROOTDIR/build-frameworks

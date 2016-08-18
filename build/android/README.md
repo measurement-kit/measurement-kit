@@ -60,11 +60,12 @@ you followed the instructions for Linux, you should have written instead:
     $ ./library $HOME/Android/android-ndk-r10e/ [options...]
 
 This script is implemented by two helper scripts respectively called
-`./scripts/make_toolchain.sh` and `./scripts/build_arch.sh`. The former
+`./make-toolchain` and `./dependency`. The former
 [creates a standalone cross-toolchain](
 http://www.kandroid.org/ndk/docs/STANDALONE-TOOLCHAIN.html)
 for a specific Android arch. The
-latter cross-compiles MeasurementKit for the selected arch.
+latter cross-compiles for the selected arch and when passed the `embedded-mk`
+argument, it cross-compiles MeasurementKit.
 
 ## Create the final archive
 
