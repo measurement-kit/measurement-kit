@@ -4,143 +4,165 @@
 #ifndef MEASUREMENT_KIT_HTTP_HTTP_HPP
 #define MEASUREMENT_KIT_HTTP_HTTP_HPP
 
-#include <functional>
+// Documentation: doc/api/http.md
+
 #include <map>
 #include <measurement_kit/common.hpp>
-#include <set>
+#include <measurement_kit/net.hpp>
 #include <string>
+#include <strings.h>
 
 namespace mk {
 namespace http {
 
-/// Received UPGRADE request error.
-class UpgradeError : public Error {
-  public:
-    UpgradeError (): Error(3000, "unknown_error 3000") {};
-};
+/*
+ _____
+| ____|_ __ _ __ ___  _ __ ___
+|  _| | '__| '__/ _ \| '__/ __|
+| |___| |  | | | (_) | |  \__ \
+|_____|_|  |_|  \___/|_|  |___/
 
-/// Parse error occurred.
-class ParserError : public Error {
-  public:
-    ParserError() : Error(3001, "unknown_error 3001") {};
-};
+    Error codes in the HTTP module.
+*/
 
-/// Url Parse error occurred.
-class UrlParserError : public Error {
-  public:
-    UrlParserError() : Error(3002, "unknown_error 3002") {};
-};
+MK_DEFINE_ERR(MK_ERR_HTTP(0), UpgradeError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(1), ParserError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(2), UrlParserError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(6), HttpRequestFailedError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(7), HeaderParserInternalError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(8), InvalidMaxRedirectsError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(9), InvalidRedirectUrlError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(10), EmptyLocationError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(11), TooManyRedirectsError, "")
 
-/// Missing Url Schema error occurred.
-class MissingUrlSchemaError : public Error {
-  public:
-    MissingUrlSchemaError() : Error(3003, "unknown_error 3003") {};
-};
+/*
+ _   _      _
+| | | |_ __| |
+| | | | '__| |
+| |_| | |  | |
+ \___/|_|  |_|
 
-/// Missing Url Host error occurred.
-class MissingUrlHostError : public Error {
-  public:
-    MissingUrlHostError() : Error(3004, "unknown_error 3004") {};
-};
+    Code to parse URLs.
+*/
 
-class MissingUrlError : public Error {
-  public:
-    MissingUrlError() : Error(3005, "unknown_error 3005") {};
-};
-
-/// HTTP headers.
-typedef std::map<std::string, std::string> Headers;
-
-/// HTTP response.
-struct Response {
-    std::string response_line; ///< Original HTTP response line.
-    unsigned short http_major; ///< HTTP major version number.
-    unsigned short http_minor; ///< HTTP minor version number.
-    unsigned int status_code;  ///< HTTP status code.
-    std::string reason;        ///< HTTP reason string.
-    Headers headers;           ///< Response headers.
-    std::string body;          ///< Response body.
-};
-
-/// Type of callback called on error or when response is complete.
-typedef Callback<Response> RequestCallback;
-
-// Forward declaration of internally used class.
-class Request;
-
-/// Send HTTP request and receive response.
-/// \param settings Settings for HTTP request.
-/// \param cb Callback called when complete or on error.
-/// \param headers Optional HTTP request headers.
-/// \param body Optional HTTP request body.
-/// \param lp Optional logger.
-/// \param pol Optional poller.
-void request(Settings settings, RequestCallback cb, Headers headers = {},
-             std::string body = "", Logger *lp = Logger::global(),
-             Poller *pol = Poller::global());
-
-// Signature of the old http::Client ->request method, widely used
-inline void request(Settings settings, Headers headers, std::string body,
-        RequestCallback cb, Logger *lp = Logger::global(),
-        Poller *pol = Poller::global()) {
-    request(settings, cb, headers, body, lp, pol);
-}
-
-/// Represents a URL.
 class Url {
   public:
-    std::string schema;    /// URL schema
-    std::string address;   /// URL address
-    int port = 80;         /// URL port
-    std::string path;      /// URL path
-    std::string query;     /// URL query
-    std::string pathquery; /// URL path followed by optional query
+    std::string schema;
+    std::string address;
+    int port = 80;
+    std::string path;
+    std::string query;
+    std::string pathquery;
+
+    std::string str();
 };
 
-/// Parses a URL.
-/// \param url Input URL you want to parse.
-/// \return The parsed URL.
-/// \throw Exception on failure.
 Url parse_url(std::string url);
-
-/// Parses a URL without throwing an exception on failure.
-/// \param url Input URL you want to parse..
-/// \return An error (on failure) or the parsed URL.
 ErrorOr<Url> parse_url_noexcept(std::string url);
 
-/// Send HTTP GET and receive response.
-/// \param url URL to send request to.
-/// \param settings Settings for HTTP request.
-/// \param cb Callback called when complete or on error.
-/// \param headers Optional HTTP request headers.
-/// \param body Optional HTTP request body.
-/// \param lp Optional logger.
-/// \param pol Optional poller.
-inline void get(std::string url, RequestCallback cb,
-                Headers headers = {}, std::string body = "",
-                Settings settings = {}, Logger *lp = Logger::global(),
-                Poller *pol = Poller::global()) {
-    settings["method"] = "GET";
-    settings["url"] = url;
-    request(settings, cb, headers, body, lp, pol);
-}
+/*
+                                _
+ _ __ ___  __ _ _   _  ___  ___| |_
+| '__/ _ \/ _` | | | |/ _ \/ __| __|
+| | |  __/ (_| | |_| |  __/\__ \ |_
+|_|  \___|\__, |\__,_|\___||___/\__|
+             |_|
 
-/// Send HTTP request and receive response.
-/// \param method Method to use.
-/// \param url URL to send request to.
-/// \param settings Settings for HTTP request.
-/// \param cb Callback called when complete or on error.
-/// \param headers Optional HTTP request headers.
-/// \param body Optional HTTP request body.
-/// \param lp Optional logger.
-/// \param pol Optional poller.
-inline void request(std::string method, std::string url, RequestCallback cb,
-                    Headers headers = {}, std::string body = "",
-                    Settings settings = {}, Logger *lp = Logger::global(),
-                    Poller *pol = Poller::global()) {
-    settings["method"] = method;
-    settings["url"] = url;
-    request(settings, cb, headers, body, lp, pol);
+    HTTP request and response structs, logic to make requests.
+*/
+
+class HeadersComparator {
+  public:
+    bool operator() (const std::string &l, const std::string &r) const {
+        return strcasecmp(l.c_str(), r.c_str()) < 0;
+    }
+};
+
+using Headers = std::map<std::string, std::string, HeadersComparator>;
+
+class Request {
+  public:
+    std::string method;
+    Url url;
+    std::string url_path;  // Allows to override `url.path` via Settings
+    std::string protocol;
+    Headers headers;
+    std::string body;
+
+    Request() {}
+    Error init(Settings, Headers, std::string);
+    void serialize(net::Buffer &);
+
+    static ErrorOr<Var<Request>> make(Settings, Headers, std::string);
+};
+
+struct Response {
+    Var<Request> request;
+    Var<Response> previous;
+    std::string response_line;
+    unsigned short http_major;
+    unsigned short http_minor;
+    unsigned int status_code;
+    std::string reason;
+    Headers headers;
+    std::string body;
+};
+
+void request_connect(Settings, Callback<Error, Var<net::Transport>>,
+                     Var<Reactor> = Reactor::global(),
+                     Var<Logger> = Logger::global());
+
+void request_send(Var<net::Transport>, Settings, Headers, std::string,
+                  Callback<Error, Var<Request>>);
+
+// Same as above except that the optional Request is passed in explicitly
+void request_maybe_send(ErrorOr<Var<Request>>, Var<net::Transport>,
+                        Callback<Error, Var<Request>>);
+
+void request_recv_response(Var<net::Transport>, Callback<Error, Var<Response>>,
+                           Var<Reactor> = Reactor::global(),
+                           Var<Logger> = Logger::global());
+
+void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
+                      Callback<Error, Var<Response>>,
+                      Var<Reactor> = Reactor::global(),
+                      Var<Logger> = Logger::global());
+
+// Same as above except that the optional Request is passed in explicitly
+void request_maybe_sendrecv(ErrorOr<Var<Request>>, Var<net::Transport>,
+                            Callback<Error, Var<Response>>,
+                            Var<Reactor> = Reactor::global(),
+                            Var<Logger> = Logger::global());
+
+/*
+ * For settings the following options are defined:
+ *
+ *     {
+ *       {"http/max_redirects", integer (default is zero)},
+ *       {"http/url", std::string},
+ *       {"http/ignore_body", boolean},
+ *       {"http/method", "GET|DELETE|PUT|POST|HEAD|..."},
+ *       {"http/http_version", "HTTP/1.1"},
+ *       {"http/path", by default is taken from the url}
+ *     }
+ */
+
+void request(Settings, Headers, std::string, Callback<Error, Var<Response>>,
+             Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global(),
+             Var<Response> previous = nullptr, int nredirects = 0);
+
+inline void get(std::string url, Callback<Error, Var<Response>> cb,
+                Headers headers = {}, Settings settings = {},
+                Var<Reactor> reactor = Reactor::global(),
+                Var<Logger> lp = Logger::global(),
+                Var<Response> previous = nullptr,
+                int nredirects = 0) {
+    settings["http/method"] = "GET";
+    settings["http/url"] = url;
+    request(settings, headers, "", cb, reactor, lp, previous, nredirects);
 }
 
 } // namespace http

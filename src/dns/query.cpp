@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/dns/query.hpp"
+#include "src/dns/query_impl.hpp"
 struct evdns_base;
 
 namespace mk {
@@ -17,9 +17,9 @@ extern "C" {
 }
 
 void query (QueryClass dns_class, QueryType dns_type,
-        std::string name, Callback<Message> cb,
-        Settings settings, Poller *poller) {
-    query_debug (dns_class, dns_type, name, cb, settings, poller);
+        std::string name, Callback<Error, Message> cb,
+        Settings settings, Var<Reactor> reactor) {
+    query_impl (dns_class, dns_type, name, cb, settings, reactor);
 }
 
 } // namespace dns

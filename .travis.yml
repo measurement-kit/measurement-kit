@@ -1,41 +1,37 @@
 language: cpp
 
+#branches:
+#  except:
+#    - /^doc\/.*$/
+
 install:
     - if [ "$VER" != ""  ]; then
           export CXX="$CXX-$VER" CC="$CC-$VER";
       fi;
-    - ARG="-q --with-jansson=builtin --with-libmaxminddb=builtin"
+    - ARG="-q --with-geoip=builtin"
     - if [ "$COVERAGE" = "true" ]; then
         export CFLAGS=--coverage CXXFLAGS=--coverage LDFLAGS=--coverage;
         pip install --user cpp-coveralls;
       fi
-    - if [ "$VALGRIND" = "true" ]; then
-        ARG="$ARG --disable-shared";
-      fi
     - ./autogen.sh
-    - ./build/dependency libmaxminddb
-    - ./build/dependency jansson
+    - ./build/dependency geoip
 
-# Only measure coverage with clang for now because I cannot manage to
-# convince coveralls to find all sources when using gcc-4.8 and gcov-4.8
-# (For more context see measurement-kit/measurement-kit#255)
 script:
     - if [ "$BUILD_TYPE" = "ios" ]; then
         ./mobile/ios/scripts/build.sh;
       else
         ./configure $ARG && make -j2 V=0;
       fi
-    - if [ "$VALGRIND" = "true" ]; then
-        make run-valgrind;
-      elif [ "$BUILD_TYPE" != "ios" ]; then
+    - if [ "$BUILD_TYPE" != "ios" ]; then
         make -j2 check-am V=0;
       fi
 
 # Silence gcov standard output since it produces way too much output
 after_success:
     - if [ "$COVERAGE" = "true" ]; then
-        coveralls --gcov /usr/bin/gcov-4.6 --exclude src/ext
-                  --exclude example > /dev/null;
+        coveralls --gcov /usr/bin/gcov-5 --exclude src/ext -b .
+                  --exclude example --exclude third_party
+                  --exclude include/measurement_kit/ext > /dev/null;
       fi
 
 after_failure:
@@ -47,33 +43,19 @@ matrix:
   include:
 
     - sudo: false
-      compiler: clang-3.6
-      env: OS="12.04" VALGRIND=true VER=3.6
+      compiler: gcc-5
+      env: COVERAGE=true VER=5
       addons:
         apt:
           packages:
-            - clang-3.6
-            - llvm-3.6-dev
-            - valgrind
+            - g++-5
+            - gcc-5
           sources:
-            - llvm-toolchain-precise-3.6
-            - ubuntu-toolchain-r-test
-
-    - sudo: false
-      compiler: clang-3.6
-      env: OS="12.04" COVERAGE=true VER=3.6
-      addons:
-        apt:
-          packages:
-            - clang-3.6
-            - llvm-3.6-dev
-          sources:
-            - llvm-toolchain-precise-3.6
             - ubuntu-toolchain-r-test
 
     - sudo: false
       compiler: g++-5
-      env: OS="12.04" VER=5
+      env: VER=5
       addons:
         apt:
           packages:

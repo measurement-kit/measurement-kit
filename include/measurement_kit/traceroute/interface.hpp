@@ -37,7 +37,7 @@
 // Disable for non Linux until we figure out how to build on iOS
 #ifdef __linux__
 
-#include <measurement_kit/common/poller.hpp>
+#include <measurement_kit/common/reactor.hpp>
 
 #include <functional>
 #include <memory>
@@ -136,7 +136,7 @@ template <class Impl> class Prober : public ProberInterface {
     /// \param evbase Event base to use (optional)
     /// \throws Exception on error
     Prober(bool use_ipv4, int port,
-           event_base *evbase = mk::get_global_event_base()) {
+           event_base *evbase = Reactor::global()->get_event_base()) {
         impl_.reset(new Impl(use_ipv4, port, evbase));
     }
 

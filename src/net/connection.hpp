@@ -21,9 +21,9 @@ namespace net {
 class Connection : public Emitter, public NonMovable, public NonCopyable {
   public:
     static Var<Transport> make(bufferevent *bev,
-                               Poller *poller = Poller::global(),
-                               Logger *logger = Logger::global()) {
-        Connection *conn = new Connection(bev, poller, logger);
+                               Var<Reactor> reactor = Reactor::global(),
+                               Var<Logger> logger = Logger::global()) {
+        Connection *conn = new Connection(bev, reactor, logger);
         conn->self = Var<Transport>(conn);
         return conn->self;
     }
@@ -39,6 +39,17 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     void set_timeout(double timeout) override {
         timeval tv, *tvp = mk::timeval_init(&tv, timeout);
+        bufferevent *underlying = bufferevent_get_underlying(this->bev);
+        if (underlying) {
+            // When we have a underlying bufferevent (i.e., a socket) set the
+            // timeout to it rather than to the outer buffer because we have
+            // seen running a long download that setting the timeout of the SSL
+            // bufferevent leads to interrupted download due to timeout.
+            if (bufferevent_set_timeouts(underlying, tvp, tvp) != 0) {
+                throw std::runtime_error("cannot set timeout");
+            }
+            return;
+        }
         if (bufferevent_set_timeouts(this->bev, tvp, tvp) != 0) {
             throw std::runtime_error("cannot set timeout");
         }
@@ -67,14 +78,15 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     void handle_write_();
 
   private:
-    Connection(bufferevent *bev, Poller * = Poller::global(),
-               Logger * = Logger::global());
+    Connection(bufferevent *bev, Var<Reactor> = Reactor::global(),
+               Var<Logger> = Logger::global());
 
     bufferevent *bev = nullptr;
     Var<Transport> self;
-    Poller *poller = Poller::global();
+    Var<Reactor> reactor = Reactor::global();
     bool isclosed = false;
     std::function<void()> close_cb;
+    bool suppressed_eof = false;
 };
 
 } // namespace net

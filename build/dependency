@@ -40,30 +40,42 @@ if [ -x build/spec/$1 ]; then
 fi
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
-if [ ! -d third_party/.cache/$pkg_name ]; then
-    git clone $pkg_clone_flags $pkg_repository third_party/.cache/$pkg_name
+if [ ! -d third_party/cache/$pkg_name ]; then
+    git clone $pkg_clone_flags $pkg_repository third_party/cache/$pkg_name
+    cd third_party/cache/$pkg_name
+    if [ ! -z "$pkg_branch" ]; then
+        git checkout $pkg_branch
+    fi
+    if [ ! -z "$pkg_tag" ]; then
+        git checkout tags/$pkg_tag
+    fi
+    if [ -d ../../../build/patch/pre-autogen/$pkg_name ]; then
+        for diff in `ls ../../../build/patch/pre-autogen/$pkg_name`; do
+            cp ../../../build/patch/pre-autogen/$pkg_name/$diff .
+            git apply -v $diff
+            rm $diff
+        done
+    fi
+    if [ -x ./autogen.sh ]; then
+        ./autogen.sh
+    elif [ -f ./configure.ac ]; then
+        autoreconf -i
+    fi
+    if [ -d ../../../build/patch/post-autogen/$pkg_name ]; then
+        for diff in `ls ../../../build/patch/post-autogen/$pkg_name`; do
+            cp ../../../build/patch/post-autogen/$pkg_name/$diff .
+            git apply -v $diff
+            rm $diff
+        done
+    fi
+    cd ../../../ # back to where we were
 fi
-rm -rf third_party/$pkg_name
-cp -R third_party/.cache/$pkg_name third_party/$pkg_name
-cd third_party/$pkg_name
-if [ ! -z "$pkg_branch" ]; then
-    git checkout $pkg_branch
+if [ ! -d third_party/build/ ]; then
+    mkdir third_party/build/
 fi
-if [ ! -z "$pkg_tag" ]; then
-    git checkout tags/$pkg_tag
-fi
-if [ -d ../../build/patch/$pkg_name ]; then
-    for diff in `ls ../../build/patch/$pkg_name`; do
-        cp ../../build/patch/$pkg_name/$diff .
-        git apply -v $diff
-        rm $diff
-    done
-fi
-if [ -x ./autogen.sh ]; then
-    ./autogen.sh
-elif [ -f ./configure.ac ]; then
-    autoreconf -i
-fi
+rm -rf third_party/build/$pkg_name
+cp -R third_party/cache/$pkg_name third_party/build/$pkg_name
+cd third_party/build/$pkg_name
 if [ -x ./configure ]; then
     ./configure --prefix=$pkg_prefix $pkg_configure_flags
 elif [ -f ./CMakeLists.txt ]; then

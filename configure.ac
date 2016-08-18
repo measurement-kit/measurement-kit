@@ -3,7 +3,7 @@
 # information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.2.0-alpha, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.3.0-dev, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -17,6 +17,10 @@ AM_CONDITIONAL([BUILD_TESTS], [test "yes" = "yes"])  # for now, build always
 
 AC_CANONICAL_HOST
 AC_PROG_INSTALL
+AC_PROG_CXX
+
+MK_AM_ENABLE_EXAMPLES
+MK_AM_ENABLE_INTEGRATION_TESTS
 
 # Must be before AC_PROG_CXX (see http://stackoverflow.com/questions/11703709)
 MK_AM_ENABLE_COVERAGE
@@ -29,19 +33,16 @@ CFLAGS="$CFLAGS -pthread"
 CXXFLAGS="$CXXFLAGS -pthread"
 LDFLAGS="$LDFLAGS -pthread"
 
-# checks for programs
-AC_PROG_CC
-AC_PROG_CXX
-
-echo ""
 MK_AM_OPENSSL
 MK_AM_LIBEVENT
-MK_AM_JANSSON
-MK_AM_LIBMAXMINDDB
+MK_AM_GEOIP
 
 # checks for header files
 # checks for types
 # checks for structures
+
+# checks for ca-bundle
+MK_CHECK_CA_BUNDLE
 
 # checks for compiler characteristics
 

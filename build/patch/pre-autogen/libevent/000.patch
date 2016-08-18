@@ -1,0 +1,116 @@
+diff --git a/.gitignore b/.gitignore
+index e22684b..bf9d85c 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -94,3 +94,6 @@ TAGS
+ /test/test-weof
+ /test/test-changelist
+ 
++.travis.yml
++.DS_Store
++test-driver
+diff --git a/.travis.yml b/.travis.yml
+new file mode 100644
+index 0000000..4c2880c
+--- /dev/null
++++ b/.travis.yml
+@@ -0,0 +1,6 @@
++language: c
++install: autoreconf -i
++script: ./configure && make -j2 V=0 && make -j2 check V=0
++compiler:
++  - clang
++  - gcc
+diff --git a/Makefile.am b/Makefile.am
+index ad815d9..babd653 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -86,10 +86,6 @@ VERSION_INFO = 6:10:1
+ # is user-visible, and so we can pretty much guarantee that release
+ # series won't be binary-compatible.
+ 
+-if INSTALL_LIBEVENT
+-dist_bin_SCRIPTS = event_rpcgen.py
+-endif
+-
+ pkgconfigdir=$(libdir)/pkgconfig
+ LIBEVENT_PKGCONFIG=libevent.pc libevent_core.pc libevent_extra.pc
+ 
+@@ -122,12 +118,11 @@ endif
+ 
+ if INSTALL_LIBEVENT
+ lib_LTLIBRARIES = $(LIBEVENT_LIBS_LA)
+-pkgconfig_DATA = $(LIBEVENT_PKGCONFIG)
+ else
+ noinst_LTLIBRARIES =  $(LIBEVENT_LIBS_LA)
+ endif
+ 
+-SUBDIRS = . include sample test
++SUBDIRS = . include
+ 
+ if BUILD_WIN32
+ 
+diff --git a/configure.ac b/configure.ac
+index 51725d6..86da55e 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -290,7 +290,7 @@ AC_HEADER_TIME
+ 
+ dnl Checks for library functions.
+ AC_CHECK_FUNCS([gettimeofday vasprintf fcntl clock_gettime strtok_r strsep])
+-AC_CHECK_FUNCS([getnameinfo strlcpy inet_ntop inet_pton signal sigaction strtoll inet_aton pipe eventfd sendfile mmap splice arc4random arc4random_buf issetugid geteuid getegid getprotobynumber setenv unsetenv putenv sysctl])
++AC_CHECK_FUNCS([getnameinfo strlcpy inet_ntop inet_pton signal sigaction strtoll inet_aton pipe eventfd sendfile mmap splice arc4random arc4random_buf arc4random_addrandom issetugid geteuid getegid getprotobynumber setenv unsetenv putenv sysctl])
+ AC_CHECK_FUNCS([umask])
+ 
+ AC_CACHE_CHECK(
+diff --git a/evutil_rand.c b/evutil_rand.c
+index 284341c..5b8b0a6 100644
+--- a/evutil_rand.c
++++ b/evutil_rand.c
+@@ -65,7 +65,8 @@ static void
+ ev_arc4random_buf(void *buf, size_t n)
+ {
+ #if defined(_EVENT_HAVE_ARC4RANDOM_BUF) && !defined(__APPLE__)
+-	return arc4random_buf(buf, n);
++	arc4random_buf(buf, n);
++	return;
+ #else
+ 	unsigned char *b = buf;
+ 
+@@ -80,7 +81,8 @@ ev_arc4random_buf(void *buf, size_t n)
+ 		void (*tptr)(void *,size_t) =
+ 		    (void (*)(void*,size_t))arc4random_buf;
+ 		if (tptr != NULL) {
+-			return arc4random_buf(buf, n);
++			arc4random_buf(buf, n);
++			return;
+ 		}
+ 	}
+ #endif
+@@ -163,6 +165,16 @@ ev_arc4random_buf(void *buf, size_t n)
+ 	arc4random_buf(buf, n);
+ }
+ 
++/*
++ * The arc4random included in libevent implements arc4random_addrandom().
++ *
++ * OpenBSD libc/crypt/arc4random.c migrated to ChaCha20 since 1.25 and
++ * have removed arc4random_addrandom() since 1.26. Since then, other libcs
++ * followed suit (e.g. Android's own libc). But libevent's arc4random.c
++ * copy still implement arc4random_addrandom().
++ */
++#define _EVENT_HAVE_ARC4RANDOM_ADDRANDOM 1
++
+ #endif /* } !_EVENT_HAVE_ARC4RANDOM */
+ 
+ void
+@@ -174,7 +186,8 @@ evutil_secure_rng_get_bytes(void *buf, size_t n)
+ void
+ evutil_secure_rng_add_bytes(const char *buf, size_t n)
+ {
++#if defined _EVENT_HAVE_ARC4RANDOM_ADDRANDOM
+ 	arc4random_addrandom((unsigned char*)buf,
+ 	    n>(size_t)INT_MAX ? INT_MAX : (int)n);
++#endif
+ }
+-

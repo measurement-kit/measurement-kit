@@ -1,5 +1,5 @@
 # NAME
-Var -- Shared-pointer with JavaScript-var-like semantic
+Var &mdash; Shared-pointer with null pointer check
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -8,17 +8,25 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
-// Construct as a shared_ptr<T>
+namespace mk {
 
-mk::Var<T> p;                         // pointer is nullptr
-mk::Var<T> p(new T());                // construct from raw pointer
+template typename<T> class Var : public std::shared_ptr<T> {
+  public:
+    Var(T ptr);
+    Var();
+    void reset(T *ptr);
+    T *get();
+    T *operator->() const;
+    T &operator*() const;
+    template <typename R> Var<R> as();
+};
 
-// The three overriden operations
-
-T *rawptr = p.get();     // Get pointer value or raise
-p->foo();                // Call T::foo() or raise
-T value = *p;            // Return pointed value or raise
+}
 ```
+
+# STABILITY
+
+2 - Stable
 
 # DESCRIPTION
 
@@ -27,29 +35,26 @@ standard library `std::shared_ptr<T>` template. It reimplements common
 `std::shared_ptr<T>` operations by checking that the pointee is not
 `nullptr`. Otherwise, a runtime exception is raised.
 
-Whenever possible RAII should be used within MeasurementKit to guarantee
-resources deallocation. In the few specific cases in which a pointer is
-needed instead, a `Var<T>` should be used to guarantee that the
-impact of programming errors (i.e. null pointers) is low.
+The first form of the constructor *owns* `ptr` and manages its life
+cycle. The second form of the constructor initializes to `nullptr` the
+internal pointer; attempting to dereference a `Var<>` initialized
+by this form of the constructor raises a `std::runtime_error`.
 
-It is safe to construct (or to assign) a `Var<T>` from an
-`std::shared_ptr<T>`. In fact `Var<T>` is implemented overriding
-the three basic operations of `std::shared_ptr<T>`.
+The `reset()` method releases the previously pointed object and then
+*owns* the object pointed by `ptr` and manages its life cycle. It is legal
+to pass `nullptr` to this function; in such case further attempts to
+access the pointee would result in `std::runtime_error` being raised.
 
-# BUGS
+The `get()` and `operator->()` methods return the pointee if non null and
+throw `std::runtime_error` otherwise.
 
-Since `Var<T>` overrides `std::shared_ptr<T>` and since it is
-meant to be used as a class (not as a pointer or as a reference), one should
-remember not to add attributes to `Var<T>` implementation. This
-guarantees that the following:
+The `operator*()` method returns a reference to `*ptr` where `ptr` is the
+pointee if the pointee is non null and throws `std::runtime_error` otherwise.
 
-```C++
-mk::Var<T> p = std::make_shared<T>();
-```
-
-does not result in object slicing (i.e. in the construction of a
-`Var<T>` with possibly uninitialized attributes).
+The `as()` method casts the pointee to type `R` if possible. If conversion
+is not possible, the returned `Var<>` would point to a null pointer and hence
+attempting to dereference it would result in `std::runtime_error`.
 
 # HISTORY
 
-The `Var` class appeared in MeasurementKit 0.1.0.
+The `Var` template class appeared in MeasurementKit 0.1.0.

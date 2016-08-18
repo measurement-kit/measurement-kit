@@ -2,18 +2,18 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "src/http/response_parser.hpp"
+#include "ext/http-parser/http_parser.h"
 #include <functional>
 #include <map>
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/net.hpp>
 #include <measurement_kit/http.hpp>
-#include <stdexcept>
-#include <string>
+#include <measurement_kit/net.hpp>
 #include <stddef.h>
+#include <stdexcept>
 #include <string.h>
+#include <string>
 #include <type_traits>
-#include "src/http/response_parser.hpp"
-#include "ext/http-parser/http_parser.h"
 
 extern "C" {
 
@@ -51,7 +51,7 @@ static int cb_message_complete(http_parser *p) {
 namespace mk {
 namespace http {
 
-ResponseParserNg::ResponseParserNg(Logger *logger) {
+ResponseParserNg::ResponseParserNg(Var<Logger> logger) {
     logger_ = logger;
     http_parser_settings_init(&settings_);
     settings_.on_message_begin = cb_message_begin;

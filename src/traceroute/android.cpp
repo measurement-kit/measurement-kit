@@ -65,7 +65,7 @@ struct event_base;
 namespace mk {
 namespace traceroute {
 
-AndroidProber::AndroidProber(bool a, int port, event_base *c, Logger *l)
+AndroidProber::AndroidProber(bool a, int port, event_base *c, Var<Logger> l)
     : use_ipv4_(a), evbase_(c), port_(port), logger(l) {}
 
 void AndroidProber::init() {

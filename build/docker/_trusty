@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+REPOROOT=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
+$REPOROOT/build/docker/script/setup ubuntu:trusty $(basename $0)

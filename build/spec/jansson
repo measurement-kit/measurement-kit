@@ -1,3 +1,0 @@
-pkg_name=jansson
-pkg_repository=https://github.com/akheron/$pkg_name
-pkg_branch=v2.7-52-ge44b223

@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+./build/docker/script/run gcc-jessie autogen configure \
+    make make_check finalize

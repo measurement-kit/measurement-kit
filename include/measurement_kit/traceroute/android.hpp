@@ -70,8 +70,8 @@ class AndroidProber : public NonCopyable,
     /// \param evbase Event base to use (optional)
     AndroidProber(
         bool use_ipv4, int port,
-        event_base *evbase = mk::get_global_event_base(),
-        Logger *logger = Logger::global());
+        event_base *evbase = Reactor::global()->get_event_base(),
+        Var<Logger> logger = Logger::global());
 
     /// Destructor
     ~AndroidProber() { cleanup(); }
@@ -97,11 +97,11 @@ class AndroidProber : public NonCopyable,
     event_base *evbase_ = nullptr; ///< event base
     event *evp_ = nullptr;         ///< event pointer
     int port_ = 0;                 ///< socket port
-    Logger *logger = Logger::global();///< logger
+    Var<Logger> logger = Logger::global();///< logger
 
-    SafelyOverridableFunc<void(ProbeResult)> result_cb_;  ///< on result callback
-    SafelyOverridableFunc<void()> timeout_cb_;            ///< on timeout callback
-    SafelyOverridableFunc<void(Error)> error_cb_;         ///< on error callback
+    Delegate<ProbeResult> result_cb_;  ///< on result callback
+    Delegate<> timeout_cb_;            ///< on timeout callback
+    Delegate<Error> error_cb_;         ///< on error callback
 
     /// Call this when you don't receive a response within timeout
     void on_timeout() { probe_pending_ = false; }

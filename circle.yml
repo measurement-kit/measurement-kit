@@ -1,0 +1,12 @@
+machine:
+  services:
+    - docker
+
+#general:
+#  branches:
+#    ignore:
+#      - /^doc\/.*$/
+
+test:
+  override:
+    - ./build/docker/valgrind-clang

@@ -36,13 +36,13 @@ int main(int argc, char **argv) {
     while ((ch = getopt(argc, argv, "P:Sv")) != -1) {
         switch (ch) {
         case 'P':
-            settings["socks5_proxy"] = optarg;
+            settings["net/socks5_proxy"] = optarg;
             break;
         case 'S':
-            settings["ssl"] = true;
+            settings["net/ssl"] = true;
             break;
         case 'v':
-            set_verbose(1);
+            increase_verbosity();
             break;
         default:
             std::cout << kv_usage;

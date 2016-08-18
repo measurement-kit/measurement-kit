@@ -1,9 +1,0 @@
-#!/bin/sh
-set -e
-if [ -f Makefile ]; then
-    make distclean
-fi
-./autogen.sh
-./configure --with-libmaxminddb=builtin
-make V=0
-make check V=0

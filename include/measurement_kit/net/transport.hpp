@@ -4,18 +4,14 @@
 #ifndef MEASUREMENT_KIT_NET_TRANSPORT_HPP
 #define MEASUREMENT_KIT_NET_TRANSPORT_HPP
 
-#include <functional>
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/dns.hpp>
 #include <measurement_kit/net/buffer.hpp>
 #include <stddef.h>
-#include <string>
-#include <vector>
-
-namespace mk {
 
 // Forward declaration
-class Error;
+struct bufferevent;
 
+namespace mk {
 namespace net {
 
 class Transport {
@@ -53,18 +49,20 @@ class Transport {
     virtual std::string socks5_port() = 0;
 };
 
-void connect(std::string address, int port,
-             Callback<Var<Transport>> callback,
-             Settings settings = {},
-             Logger *logger = Logger::global(),
-             Poller *poller = Poller::global());
+/*
+ *  Syntactic sugar when you need only to write or read (vis a vis Transport,
+ *  required when you need read and write at the same time).
+ */
 
-using ConnectManyCb = Callback<std::vector<Var<Transport>>>;
+void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
 
-void connect_many(std::string address, int port, int num,
-        ConnectManyCb callback, Settings settings = {},
-        Logger *logger = Logger::global(),
-        Poller *poller = Poller::global());
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
+           Var<Reactor> reactor = Reactor::global());
+
+inline void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
+                 Var<Reactor> reactor = Reactor::global()) {
+    readn(t, buff, 1, callback, reactor);
+}
 
 } // namespace net
 } // namespace mk

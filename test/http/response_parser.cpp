@@ -5,10 +5,8 @@
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/http.hpp>
-
 #include "src/http/response_parser.hpp"
+#include <measurement_kit/http.hpp>
 
 using namespace mk;
 using namespace mk::net;

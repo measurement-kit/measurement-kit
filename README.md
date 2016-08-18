@@ -1,15 +1,18 @@
 # MeasurementKit
 
-[![Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit)
-[![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=master&service=github)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master)
+[![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit) [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=master&service=github)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/master/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/master) [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit)
 
 MeasurementKit is a library that implements open network measurement methodologies
 (performance, censorship, etc.) and targets mobile platforms (Android and iOS).
 
-It is meant to be embedeed by third party applications with specific network measurement
+It is meant to be embedded by third party applications with specific network measurement
 needs and/or to be used by researchers as a basis to implement novel tools.
 
 Currently it implements the following high-level tests:
+
+- [OONI](https://ooni.torproject.org/)'s [Web Connectivity](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-017-web-connectivity.md) test
+
+- the [network diagnostic tool](https://github.com/ndt-project/ndt/wiki/NDTTestMethodology) network performance test
 
 - [OONI](https://ooni.torproject.org/)'s [DNS Injection](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-012-dns-injection.md) test
 
@@ -26,21 +29,21 @@ tests. More in detail it currently implements:
 - [DNS client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/dns/dns.hpp) (with which you can resolve and reverse-resolve A and AAAA
   records using arbitrary name servers)
 
-- [HTTP client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/http.hpp) (with which you can send HTTP/1.1 requests and receive
+- [HTTP client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/http/http.hpp) (with which you can send HTTP/1.1 requests and receive
   and parse the corresponding responses)
 
 - [traceroute for Android](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/traceroute/android.hpp) (with which you can send individual traceroute
   probes with a specified payload and TTL)
 
-- [mlab-ns client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/mlabns.hpp) (with which you can interact with Measurement Lab backend to know the server with which to run tests)
+- [mlab-ns client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/mlabns/mlabns.hpp) (with which you can interact with Measurement Lab backend to know the server with which to run tests)
+
+- the functionality to communicate with the [OONI collector](https://github.com/TheTorProject/ooni-backend)
 
 In the short term we plan to add to MeasurementKit:
 
-- the [network diagnostic tool](https://github.com/ndt-project/ndt/wiki/NDTTestMethodology) network performance test
-
 - Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
 
-- the functionality to communicate with the [OONI backend](https://github.com/TheTorProject/ooni-backend)
+- the functionality to communicate with the [OONI bouncer](https://github.com/TheTorProject/ooni-backend)
 
 - more OONI tests
 
@@ -49,7 +52,7 @@ such as [uTP](https://github.com/bittorrent/libutp), and traceroute for iOS.
 
 The following index illustrates the content of the remainder of this file:
 
-- [How to clone the repositorty](#how-to-clone-the-repository)
+- [How to clone the repository](#how-to-clone-the-repository)
 - [How to test a specific branch](#how-to-test-a-specific-branch)
 - [How to build MeasurementKit](#how-to-build-measurementkit)
   - [How to build MeasurementKit on a Unix-like system](#how-to-build-measurementkit-on-a-unix-like-system)
@@ -85,7 +88,7 @@ Then proceed with the instruction to build and test MeasurementKit.
 To build, MeasurementKit needs:
 
 - a C90 compiler (such as gcc or clang)
-- a C++11 compiler (such as g++ or clang++)
+- a C++11 compiler (such as g++ >= 4.9 or clang++ >= 3.6)
 - autoconf, automake, and libtool
 - a Unix environment (such as Linux or MacOS)
 
@@ -104,8 +107,7 @@ MeasurementKit also depends on the following projects (which
 are only conditionally compiled as explained below):
 
 - [libevent](https://github.com/libevent/libevent)
-- [jansson](https://github.com/akheron/jansson)
-- [libmaxminddb](https://github.com/maxmind/libmaxminddb)
+- [geoip](https://github.com/maxmind/geoip-api-c)
 
 The `./configure` script should check whether all
 the dependencies are in place and should configure the compilers
@@ -118,17 +120,19 @@ The vanilla build process is the following:
     ./configure
     make
 
+To tell make to produce less output (as in the Linux kernel
+build process) run:
+
+    make V=0
+
 You can also force `./configure` to select dependencies available
 at specific directories using the following flags:
 
 - `--with-libevent=PREFIX` that tells `./configure` to use the
 libevent library and headers installed at PREFIX
 
-- `--with-jansson=PREFIX` that tells `./configure` to use the
-jansson library and headers installed at PREFIX
-
-- `--with-libmaxminddb=PREFIX` that tells `./configure` to use the
-libmaxminddb library and headers installed at PREFIX
+- `--with-geoip=PREFIX` that tells `./configure` to use the
+geoip library and headers installed at PREFIX
 
 In all the above cases you can also specify PREFIX equal to
 `builtin` to force `./configure` to use builtin sources.
@@ -146,7 +150,8 @@ is `/opt/local/include/event.h` and that `libevent.a` is
 - to force-compile the libevent distributed along with MeasurementKit, use
 
 ```
-    ./configure --with-libevent=builtin
+    ./build/dependency libevent          # Build and install libevent in `./builtin`
+    ./configure --with-libevent=builtin  # Use what you have just built
 ```
 
 ### How to test MeasurementKit on a Unix-like system
@@ -155,11 +160,6 @@ Once you have built MeasurementKit, to compile and run the unit
 test programs, run:
 
     make check
-
-To tell make to produce less output (as in the Linux kernel
-build process) run:
-
-    make V=0
 
 ### How to build MeasurementKit on Android
 
@@ -172,7 +172,7 @@ To compile and use MeasurementKit for iOS, do the following on a MacOSX
 system where Xcode and its command line tools have been installed:
 
 ```
-./build/ios/scripts/build.sh
+./build/ios/library
 ```
 
 ### How to add MeasurementKit to an Xcode project.
@@ -180,20 +180,32 @@ system where Xcode and its command line tools have been installed:
 The CocoaPods podspec has not been submitted yet, but you can already use
 it in your project adding this line in your Podfile:
 
+```ruby
+target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit',
       :git => 'https://github.com/measurement-kit/measurement-kit.git'
+end
+```
 
 You can use a specific branch, e.g.:
 
+```ruby
+target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit',
-      :git => 'https://github.com/measurement-kit/measurement-kit.git'
+      :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :branch => 'branch-name'
+end
+```
 
 Similarly, you can use a specific tag, e.g.:
 
+```ruby
+target '<YOUR-TARGET-NAME-HERE>' do
     pod 'measurement_kit', 
-      :git => 'https://github.com/measurement-kit/measurement-kit.git'
+      :git => 'https://github.com/measurement-kit/measurement-kit.git',
       :tag => 'v0.x.y'
+end
+```
 
 Then type `pod install` and open `.xcworkspace` file (beware not to open the
 `.xcodeproj` file instead, because that alone won't compile).
@@ -211,9 +223,9 @@ of the same thread that called *run*).
 #include <measurement_kit/ooni.hpp>
 
 // Run sync test
-mk::ooni::HttpInvalidRequestLineTest()
-    .set_backend("http://127.0.0.1/")
-    .set_verbose()
+mk::ooni::HttpInvalidRequestLine()
+    .set_options("backend", "http://127.0.0.1/")
+    .increase_verbosity()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
         // Process incoming log line
@@ -229,9 +241,9 @@ the callback passed as argument to *run* is invoked when the test completed.
 
 ```C++
 // Run async test
-mk::ooni::HttpInvalidRequestLineTest()
-    .set_backend("http://127.0.0.1/")
-    .set_verbose()
+mk::ooni::HttpInvalidRequestLine()
+    .set_options("backend", "http://127.0.0.1/")
+    .increase_verbosity()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
         // Process incoming log line
@@ -248,5 +260,4 @@ In both cases, you need to be careful inside the callbacks, because in general
 they may be called from background threads.
 
 You can find documentation of MeasurementKit C++ API in the
-[doc/api](https://github.com/measurement-kit/measurement-kit/tree/master/doc/api)
-folder of the repository.
+[doc/api](doc/api) folder of the repository.

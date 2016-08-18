@@ -1,0 +1,51 @@
+#!/bin/sh
+set -e
+
+if [ $# -lt 2 ]; then
+    echo "$0 iphonesimulator i386|x86_64 [command [args...]]" 1>&2
+    echo "$0 iphoneos armv7|armv7s|arm64 [command [args...]]" 1>&2
+    exit 1
+fi
+
+PLATFORM=$1
+shift
+ARCH=$1
+shift
+
+echo ""
+echo "Cross compiling for $PLATFORM and $ARCH"
+
+MINIOSVERSION="7.1"
+if [ "$PLATFORM" = "iphoneos" ]; then
+    EXTRA_CONFIG="--host=arm-apple-darwin14 --target=arm-apple-darwin14 --disable-shared"
+    MINVERSION="-miphoneos-version-min=$MINIOSVERSION"
+elif [ "$ARCH" = "i386" ]; then
+    EXTRA_CONFIG="--host=i386-apple-darwin14 --target=i386-apple-darwin14 --disable-shared"
+    MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
+elif [ "$ARCH" = "x86_64" ]; then
+    EXTRA_CONFIG="--host=x86_64-apple-darwin14 --target=x86_64-apple-darwin14 --disable-shared"
+    MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
+else
+    echo "$0: unsupported configuration" 1>&2
+    exit 1
+fi
+
+ROOTDIR=$(cd $(dirname $0) && pwd -P)
+SOURCEDIR="$ROOTDIR/../../"
+DESTDIR="$ROOTDIR/tmp/${PLATFORM}/${ARCH}/"
+
+export CC="$(xcrun -find -sdk ${PLATFORM} cc)"
+export CXX="$(xcrun -find -sdk ${PLATFORM} g++)"
+export CPPFLAGS="-arch ${ARCH} -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export CFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export CXXFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export LDFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+
+export pkg_configure_flags="$EXTRA_CONFIG -q"
+export pkg_prefix="$DESTDIR"
+
+if [ $# -gt 0 ]; then
+    $@
+else
+    env
+fi

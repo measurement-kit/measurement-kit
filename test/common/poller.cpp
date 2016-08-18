@@ -2,151 +2,135 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// Tests for src/common/poller.cpp's Poller()
-//
-
 #define CATCH_CONFIG_MAIN
 #include "src/ext/Catch/single_include/catch.hpp"
 
 #include <measurement_kit/common.hpp>
-#include "src/common/check_connectivity.hpp"
 #include "src/common/utils.hpp"
-#include "src/common/libs_impl.hpp"
-
-#include <event2/dns.h>
-
-#include <functional>
-#include <new>
-#include <stdexcept>
+#include "src/common/poller.hpp"
 
 using namespace mk;
 
+static int fail_int() { return -1; }
+static event_base *fail_evbase() { return nullptr; }
+
+static int fail(int, const struct sigaction *, struct sigaction *) {
+    return -1;
+}
+
+static bool event_base_free_called = false;
+static void event_base_free_mock(event_base *p) {
+    REQUIRE(!event_base_free_called);
+    event_base_free(p);
+    event_base_free_called = true;
+}
+
 TEST_CASE("Constructor") {
-
-    SECTION("We deal with event_base_new() failure") {
-        auto libs = Libs();
-
-        libs.event_base_new = [](void) { return ((event_base *)nullptr); };
-
-        auto bad_alloc_fired = false;
-        try {
-            Poller poller(&libs);
-        } catch (std::bad_alloc &) {
-            bad_alloc_fired = true;
-        }
-
-        REQUIRE(bad_alloc_fired);
+    SECTION("We deal with evthread_use_pthreads() failure") {
+        // Since here we syntethize a different template, this should be
+        // the time where we create the singleton()
+        Poller poller(nullptr);
+        REQUIRE_THROWS(poller.init_<fail_int>());
     }
 
-    SECTION("We deal with evdns_base_new() failure") {
-        auto libs = Libs();
+    SECTION("We deal with sigaction() failure") {
+        Poller poller(nullptr);
+        REQUIRE_THROWS((poller.init_<evthread_use_pthreads, fail>()));
+    }
 
-        auto event_base_free_fired = false;
-
-        libs.event_base_free = [&event_base_free_fired](event_base *b) {
-            event_base_free_fired = true;
-            ::event_base_free(b);
-        };
-        libs.evdns_base_new =
-            [](event_base *, int) { return ((evdns_base *)nullptr); };
-
-        auto bad_alloc_fired = false;
-        try {
-            Poller poller(&libs);
-        } catch (std::bad_alloc &) {
-            bad_alloc_fired = true;
-        }
-
-        REQUIRE(bad_alloc_fired);
-        REQUIRE(event_base_free_fired);
+    SECTION("We deal with event_base_new() failure") {
+        Poller poller(nullptr);
+        REQUIRE_THROWS((poller.init_<evthread_use_pthreads, sigaction,
+                                     fail_evbase>()));
     }
 }
 
 TEST_CASE("The destructor works properly") {
+    {
+        Poller poller(nullptr);
+        poller.init_<evthread_use_pthreads, sigaction, event_base_new,
+                     event_base_free_mock>();
+    }
+    REQUIRE(event_base_free_called);
+}
 
-    auto libs = Libs();
+static int fail(event_base *, evutil_socket_t, short, event_callback_fn,
+                void *, const timeval *) {
+    return -1;
+}
 
-    auto event_base_free_fired = false;
-    auto evdns_base_free_fired = false;
+TEST_CASE("call_later() deals with event_base_once() failure") {
+    Poller poller;
+    REQUIRE_THROWS((poller.call_later_impl<fail>(1.0, [](){})));
+}
 
-    libs.event_base_free = [&event_base_free_fired](event_base *b) {
-        event_base_free_fired = true;
-        ::event_base_free(b);
-    };
-    libs.evdns_base_free = [&evdns_base_free_fired](evdns_base *b, int opt) {
-        evdns_base_free_fired = true;
-        ::evdns_base_free(b, opt);
-    };
+static event *fail(struct event_base *, evutil_socket_t, short,
+                   event_callback_fn, void *) {
+    return nullptr;
+}
 
-    { Poller poller(&libs); }
+static bool event_free_called = false;
+static void event_free_mock(event *p) {
+    REQUIRE(!event_free_called);
+    event_free(p);
+    event_free_called = true;
+}
 
-    REQUIRE(event_base_free_fired);
-    REQUIRE(evdns_base_free_fired);
+static int fail(event *, const timeval *) {
+    return -1;
+}
+
+static int fail(event_base *) {
+    return -1;
+}
+
+static int returns_one(event_base *) {
+    return 1;
 }
 
 TEST_CASE("poller.loop() works properly in corner cases") {
 
+    SECTION("We deal with event_new() failure") {
+        Poller poller;
+        REQUIRE_THROWS(poller.loop_impl<fail>());
+    }
+
+    SECTION("We free the periodic event") {
+        Poller poller;
+        poller.call_later(1.0, [&poller]() { poller.break_loop(); });
+        poller.loop_impl<event_new, event_free_mock>();
+        REQUIRE(event_free_called);
+    }
+
+    SECTION("We deal with event_add() failure") {
+        Poller poller;
+        REQUIRE_THROWS((poller.loop_impl<event_new, event_free, fail>()));
+    }
+
     SECTION("We deal with event_base_dispatch() returning -1") {
-        Libs libs;
-
-        libs.event_base_dispatch = [](event_base *) { return (-1); };
-
-        Poller poller1(&libs);
-
-        auto runtime_error_fired = false;
-        try {
-            poller1.loop();
-        } catch (std::runtime_error &) {
-            runtime_error_fired = true;
-        }
-
-        REQUIRE(runtime_error_fired);
+        Poller poller;
+        REQUIRE_THROWS((poller.loop_impl<event_new, event_free,
+                                         event_add, fail>()));
     }
 
-    SECTION("We deal with event_base_dispatch() returning 1") {
-        Libs libs;
-
-        libs.event_base_dispatch = [](event_base *) { return (1); };
-        Poller poller2(&libs);
-        poller2.loop();
+    SECTION("We do not throw when event_base_dispatch() returs 1") {
+        Poller poller;
+        poller.loop_impl<event_new, event_free, event_add, returns_one>();
     }
+}
+
+static int fail(event_base *, int) {
+    return -1;
+}
+
+TEST_CASE("poller.loop_once() deals with libevent failures") {
+    Poller poller;
+    REQUIRE_THROWS(poller.loop_once_impl<fail>());
 }
 
 TEST_CASE("poller.break_loop() works properly") {
-    Libs libs;
-
-    libs.event_base_loopbreak = [](event_base *) { return (-1); };
-
-    Poller poller(&libs);
-
-    auto runtime_error_fired = false;
-    try {
-        poller.break_loop();
-    } catch (std::runtime_error &) {
-        runtime_error_fired = true;
-    }
-
-    REQUIRE(runtime_error_fired);
-}
-
-TEST_CASE("We can clear all name servers and then issue a query") {
-    if (CheckConnectivity::is_down()) {
-        return;
-    }
-    mk::clear_nameservers();
-    REQUIRE(mk::count_nameservers() == 0);
-    mk::add_nameserver("8.8.8.8");
-    REQUIRE(evdns_base_resolve_ipv4(
-        get_global_evdns_base(), "www.polito.it", DNS_QUERY_NO_SEARCH,
-        [](int result, char type, int count, int ttl, void *, void *) {
-            REQUIRE(result == DNS_ERR_NONE);
-            REQUIRE(type == DNS_IPv4_A);
-            REQUIRE(count > 0);
-            REQUIRE(ttl > 0);
-            mk::break_loop();
-        }, nullptr) != nullptr);
-    mk::loop();
+    Poller poller;
+    REQUIRE_THROWS(poller.break_loop_impl<fail>());
 }
 
 TEST_CASE("poller.call_soon() works") {

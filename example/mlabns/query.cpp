@@ -17,28 +17,38 @@
 using namespace mk;
 
 static const char *kv_usage =
-    "usage: ./example/mlabns/query [-46v] [-m metro] [-p policy] tool\n";
+    "usage: ./example/mlabns/query [-46v] [-C /path/to/ca/bundle] [-m metro]\n"
+    "                              [-p policy] ndt|neubot|ooni|...\n";
+
+static void print_setting(Settings &settings, std::string key) {
+    key = "mlabns/" + key;
+    std::string value = settings.get<std::string>(key, "");
+    std::cout << "> " << key << ": " << value << "\n";
+}
 
 int main(int argc, char **argv) {
 
     char ch;
-    mlabns::Query query;
-    while ((ch = getopt(argc, argv, "46m:p:v")) != -1) {
+    Settings settings;
+    while ((ch = getopt(argc, argv, "46C:m:p:v")) != -1) {
         switch (ch) {
         case '4':
-            query.address_family = "ipv4";
+            settings["mlabns/address_family"] = "ipv4";
             break;
         case '6':
-            query.address_family = "ipv6";
+            settings["mlabns/address_family"] = "ipv6";
+            break;
+        case 'C':
+            settings["net/ca_bundle_path"] = optarg;
             break;
         case 'm':
-            query.metro = optarg;
+            settings["mlabns/metro"] = optarg;
             break;
         case 'p':
-            query.policy = optarg;
+            settings["mlabns/policy"] = optarg;
             break;
         case 'v':
-            set_verbose(1);
+            increase_verbosity();
             break;
         default:
             std::cout << kv_usage;
@@ -52,18 +62,17 @@ int main(int argc, char **argv) {
         exit(1);
     }
     std::string tool = argv[0];
-    std::cout << "> address_family: " << query.address_family << "\n";
-    std::cout << "> metro: " << query.metro << "\n";
-    std::cout << "> policy: " << query.policy << "\n";
+    print_setting(settings, "address_family");
+    print_setting(settings, "metro");
+    print_setting(settings, "policy");
     std::cout << "> tool: " << tool << "\n";
 
-    Poller *poller = Poller::global();
-    poller->call_soon([&poller, &query, &tool]() {
+    loop_with_initial_event([=]() {
         mlabns::query(
-            tool, [&poller](Error error, mlabns::Reply reply) {
+            tool, [](Error error, mlabns::Reply reply) {
                 if (error) {
                     std::cout << "< error: " << (int)error << "\n";
-                    poller->break_loop();
+                    break_loop();
                     return;
                 }
                 std::cout << "< city: " << reply.city << "\n";
@@ -76,8 +85,7 @@ int main(int argc, char **argv) {
                 std::cout << "< fqdn: " << reply.fqdn << "\n";
                 std::cout << "< site: " << reply.site << "\n";
                 std::cout << "< country: " << reply.country << "\n";
-                poller->break_loop();
-            }, query);
+                break_loop();
+            }, settings);
     });
-    poller->loop();
 }

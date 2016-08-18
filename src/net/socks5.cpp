@@ -8,14 +8,14 @@
 namespace mk {
 namespace net {
 
-Socks5::Socks5(Var<Transport> tx, Settings s, Poller *, Logger *lp)
+Socks5::Socks5(Var<Transport> tx, Settings s, Var<Reactor>, Var<Logger> lp)
     : Emitter(lp), settings(s), conn(tx),
-      proxy_address(settings["socks5_address"]),
-      proxy_port(settings["socks5_port"]) {
+      proxy_address(settings["net/socks5_address"]),
+      proxy_port(settings["net/socks5_port"]) {
     socks5_connect_();
 }
 
-Buffer socks5_format_auth_request(Logger *logger) {
+Buffer socks5_format_auth_request(Var<Logger> logger) {
     Buffer out;
     out.write_uint8(5); // Version
     out.write_uint8(1); // Number of methods
@@ -26,7 +26,7 @@ Buffer socks5_format_auth_request(Logger *logger) {
     return out;
 }
 
-ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, Logger *logger) {
+ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, Var<Logger> logger) {
     auto readbuf = buffer.readn(2);
     if (readbuf == "") {
         return false; // Try again after next recv()
@@ -42,7 +42,7 @@ ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, Logger *logger) {
     return true;
 }
 
-ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Logger *logger) {
+ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Var<Logger> logger) {
     Buffer out;
 
     out.write_uint8(5); // Version
@@ -55,7 +55,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Logger *logger)
     logger->debug("socks5: >> Reserved (0)");
     logger->debug("socks5: >> ATYPE_DOMAINNAME (3)");
 
-    auto address = settings["address"];
+    auto address = settings["net/address"];
 
     if (address.length() > 255) {
         return SocksAddressTooLongError();
@@ -66,7 +66,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Logger *logger)
     logger->debug("socks5: >> domain len=%d", (uint8_t)address.length());
     logger->debug("socks5: >> domain str=%s", address.c_str());
 
-    int portnum = settings["port"].as<int>();
+    int portnum = settings["net/port"].as<int>();
     if (portnum < 0 || portnum > 65535) {
         return SocksInvalidPortError();
     }
@@ -77,7 +77,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Logger *logger)
     return out;
 }
 
-ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Logger *logger) {
+ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Var<Logger> logger) {
     if (buffer.length() < 5) {
         return false; // Try again after next recv()
     }
@@ -121,10 +121,10 @@ ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Logger *logger) {
 }
 
 void socks5_connect(std::string address, int port, Settings settings,
-        Callback<Var<Transport>> callback,
-        Poller *poller, Logger *logger) {
+        Callback<Error, Var<Transport>> callback,
+        Var<Reactor> reactor, Var<Logger> logger) {
 
-    auto proxy = settings["socks5_proxy"];
+    auto proxy = settings["net/socks5_proxy"];
     auto pos = proxy.find(":");
     if (pos == std::string::npos) {
         throw std::runtime_error("invalid argument");
@@ -132,31 +132,35 @@ void socks5_connect(std::string address, int port, Settings settings,
     auto proxy_address = proxy.substr(0, pos);
     auto proxy_port = proxy.substr(pos + 1);
 
-    settings["address"] = address;
-    settings["port"] = port;
+    settings["net/address"] = address;
+    settings["net/port"] = port;
 
-    connect(proxy_address, lexical_cast<int>(proxy_port),
-            [=](ConnectResult r) {
-                if (r.overall_error) {
-                    callback(r.overall_error, nullptr);
+    connect_logic(proxy_address, lexical_cast<int>(proxy_port),
+            [=](Error err, Var<ConnectResult> r) {
+                if (err) {
+                    err.context = r;
+                    callback(err, nullptr);
                     return;
                 }
-                Var<Transport> txp = Connection::make(r.connected_bev,
-                                                      poller, logger);
+                Var<Transport> txp = Connection::make(r->connected_bev,
+                                                      reactor, logger);
                 Var<Transport> socks5(
-                        new Socks5(txp, settings, poller, logger));
+                        new Socks5(txp, settings, reactor, logger));
                 socks5->on_connect([=]() {
                     socks5->on_connect(nullptr);
                     socks5->on_error(nullptr);
-                    callback(NoError(), socks5);
+                    Error error = NoError();
+                    error.context = r;
+                    callback(error, socks5);
                 });
                 socks5->on_error([=](Error error) {
                     socks5->on_connect(nullptr);
                     socks5->on_error(nullptr);
+                    error.context = r;
                     callback(error, nullptr);
                 });
             },
-            settings.get("timeo", 10.0), poller, logger);
+            settings, reactor, logger);
 }
 
 void Socks5::socks5_connect_() {

@@ -2,10 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-//
-// This example shows how to use http::request()
-//
-
 #include <functional>
 #include <iostream>
 #include <measurement_kit/common.hpp>
@@ -17,23 +13,27 @@
 using namespace mk;
 
 static const char *kv_usage =
-    "usage: ./example/http/request [-v] [-b body] [-m method] url\n";
+    "usage: ./example/http/request [-v] [-b body] [-m method]\n"
+    "                              [-R max-redirect] url\n";
 
 int main(int argc, char **argv) {
 
+    Settings settings;
     std::string body;
     char ch;
-    std::string method = "GET";
-    while ((ch = getopt(argc, argv, "b:m:v")) != -1) {
+    while ((ch = getopt(argc, argv, "b:m:R:v")) != -1) {
         switch (ch) {
         case 'b':
             body = optarg;
             break;
         case 'm':
-            method = optarg;
+            settings["http/method"] = optarg;
+            break;
+        case 'R':
+            settings["http/max_redirects"] = lexical_cast<int>(optarg);
             break;
         case 'v':
-            set_verbose(1);
+            increase_verbosity();
             break;
         default:
             std::cout << kv_usage;
@@ -46,29 +46,26 @@ int main(int argc, char **argv) {
         std::cout << kv_usage;
         exit(1);
     }
-    std::string url = argv[0];
+    settings["http/url"] = argv[0];
 
     http::Headers headers;
-    Poller *poller = Poller::global();
-    poller->call_soon([&body, &headers, &method, &poller, &url]() {
+    loop_with_initial_event([&]() {
         http::request(
-            {
-                {"method", method}, {"url", url},
-            },
-            [&poller](Error error, http::Response response) {
+            settings,
+            headers,
+            body,
+            [](Error error, Var<http::Response> response) {
                 if (error) {
-                    std::cout << "Error: " << (int)error << "\n";
-                    poller->break_loop();
+                    std::cout << "Error: " << error.code << "\n";
+                    break_loop();
                     return;
                 }
-                std::cout << response.response_line << "\n";
-                for (auto &pair : response.headers) {
+                std::cout << response->response_line << "\n";
+                for (auto &pair : response->headers) {
                     std::cout << pair.first << ": " << pair.second << "\n";
                 }
-                std::cout << "\n" << response.body << "\n";
-                poller->break_loop();
-            },
-            headers, body);
+                std::cout << "\n" << response->body << "\n";
+                break_loop();
+            });
     });
-    poller->loop();
 }
