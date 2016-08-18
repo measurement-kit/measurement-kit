@@ -77,14 +77,12 @@ export RANLIB=${TOOL_PATH}-ranlib
 export STRIP=${TOOL_PATH}-strip
 
 export CPPFLAGS="${CPPFLAGS} --sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_TOOLCHAIN}/include"
-export LDFLAGS="${LDFLAGS} --sysroot=${SYSROOT} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib"
-export LIBS="${LIBS} -lc++_static -latomic -lm"
+export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib -lc++_static -latomic -lm"
 
 BUILDDIR="${ROOTDIR}/jni/${DESTDIR_NAME}"
 
 export pkg_configure_flags="--host=${ARCH} --disable-shared $CONFIG_EXTRA"
 export pkg_prefix=${BUILDDIR}
-export pkg_cmake_flags="-DBUILD_SHARED_LIBS=OFF -DCMAKE_AR=${AR} -DCMAKE_RANLIB=${RANLIB}"
 
 if [ $# -gt 0 ]; then
     $@
