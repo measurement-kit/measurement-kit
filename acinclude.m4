@@ -23,7 +23,7 @@ AC_DEFUN([MK_AM_DISABLE_EXAMPLES], [
   AM_CONDITIONAL([BUILD_EXAMPLES], [test "$enable_examples" = "yes"])
 ])
 
-AC_DEFUN([MK_AM_ENABLE_INTEGRATION_TESTS], [
+AC_DEFUN([MK_AM_DISABLE_INTEGRATION_TESTS], [
   AC_ARG_ENABLE([integration-tests],
     AS_HELP_STRING([--disable-integration-tests, skip building of integration tests]),
                    [], [CPPFLAGS="$CPPFLAGS -DENABLE_INTEGRATION_TESTS"])

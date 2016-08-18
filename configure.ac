@@ -17,16 +17,15 @@ AM_CONDITIONAL([BUILD_TESTS], [test "yes" = "yes"])  # for now, build always
 
 AC_CANONICAL_HOST
 AC_PROG_INSTALL
-AC_PROG_CXX
-
-MK_AM_ENABLE_EXAMPLES
-MK_AM_ENABLE_INTEGRATION_TESTS
 
 # Must be before AC_PROG_CXX (see http://stackoverflow.com/questions/11703709)
 MK_AM_ENABLE_COVERAGE
 MK_AM_ADD_COVERAGE_FLAGS_IF_NEEDED
 MK_AM_DISABLE_EXAMPLES
-MK_AM_DISABLE_TESTS
+MK_AM_DISABLE_INTEGRATION_TESTS
+
+# See above comment
+AC_PROG_CXX
 
 # Must set -pthread before testing for -levent_pthreads
 CFLAGS="$CFLAGS -pthread"
