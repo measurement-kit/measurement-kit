@@ -8,7 +8,7 @@ install:
     - if [ "$VER" != ""  ]; then
           export CXX="$CXX-$VER" CC="$CC-$VER";
       fi;
-    - if [ "$COVERAGE" = "--coverage" ]; then
+    - if [ "$COVERAGE" = "--enable-coverage" ]; then
         pip install --user cpp-coveralls;
       fi
     - ./autogen.sh
@@ -26,7 +26,7 @@ script:
 
 # Silence gcov standard output since it produces way too much output
 after_success:
-    - if [ "$COVERAGE" = "--coverage" ]; then
+    - if [ "$COVERAGE" = "--enable-coverage" ]; then
         coveralls --gcov /usr/bin/gcov-5 --exclude src/ext -b .
                   --exclude example --exclude third_party
                   --exclude include/measurement_kit/ext > /dev/null;
@@ -42,7 +42,7 @@ matrix:
 
     - sudo: false
       compiler: g++-5
-      env: COVERAGE=--coverage VER=5
+      env: COVERAGE=--enable-coverage VER=5
       addons:
         apt:
           packages:
