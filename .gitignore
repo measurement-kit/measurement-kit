@@ -26,6 +26,8 @@
 .libs
 .vagrant
 /*.json
+/build/android/jni/conf
+/build/android/jni/spec
 /include.am
 /tmp
 Makefile
