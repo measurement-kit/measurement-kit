@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
     :tag => "v#{s.version}"
   }
   s.prepare_command = <<-CMD
-    ./build/ios/scripts/build.sh
+    ./build/ios/library
   CMD
   s.platform = :ios, "7.1"
   s.vendored_framework = "build/ios/Frameworks/*.framework"

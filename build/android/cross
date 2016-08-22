@@ -77,7 +77,8 @@ export RANLIB=${TOOL_PATH}-ranlib
 export STRIP=${TOOL_PATH}-strip
 
 export CPPFLAGS="${CPPFLAGS} --sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_TOOLCHAIN}/include"
-export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib -lc++_static -latomic -lm"
+export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib"
+export LIBS="-lc++_static -latomic -lm"
 
 BUILDDIR="${ROOTDIR}/jni/${DESTDIR_NAME}"
 
