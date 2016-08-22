@@ -39,6 +39,10 @@ toplevel directory:
 
     ./autogen.sh
 
+In addition to generating `configure`, this script also generates the
+`include.am` file that contains the rules to build measurement-kit,
+the example programs, and the test programs.
+
 At this point you are ready to *configure* Measurement Kit to build
 on your system. The bare minimum requirements to built it are a C++11
 compiler, a C90 compiler, make (not necessarily GNU make), a C++ standard
@@ -85,8 +89,12 @@ to become *root* and type:
     make install
 
 This will install Measurement Kit headers under `/usr/local/include` and
-Measurement Kit libraries under `/usr/local/lib`. If bundled dependencies
-were compiled, they would be installed under `/usr/local` as well.
+Measurement Kit libraries under `/usr/local/lib`. If you compiled a dependency
+using the `./build/dependency` script, this dependency would not be installed
+and Measurement Kit is not going to work. Of course, it is quite easy to go
+inside the dependency sources (look inside the `third_party` folder created by
+`./build/dependency`) and adjust the configuration such that it installs
+inside `/usr/local`. But, at least for now, this step shall be done manually.
 
 On Linux you may need to update the dynamic linker after you have installed
 to `/usr/local`, running the following command as root:

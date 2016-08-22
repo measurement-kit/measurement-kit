@@ -35,7 +35,7 @@ Logger::Logger() {
 }
 
 void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
-    if (!consumer_ and !ofile_.is_open()) {
+    if (!consumer_ and !ofile_) {
         return;
     }
     std::lock_guard<std::mutex> lock(mutex_);
@@ -50,7 +50,7 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
         consumer_(level, buffer_);
     }
     if (ofile_) {
-        ofile_ << buffer_ << "\n";
+        *ofile_ << buffer_ << "\n";
         // TODO: suppose here write fails... what do we want to do?
     }
 }
@@ -85,7 +85,7 @@ void Logger::increase_verbosity() {
 }
 
 void Logger::set_logfile(std::string path) {
-    ofile_ = std::ofstream(path);
+    ofile_.reset(new std::ofstream(path));
     // TODO: what to do if we cannot open the logfile? return error?
 }
 

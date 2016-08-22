@@ -8,6 +8,7 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
+#include <measurement_kit/ooni/error.hpp>
 #include <regex>
 #include <string>
 
@@ -37,6 +38,8 @@ class IPLocation {
       ErrorOr<std::string> resolve_asn(std::string ip);
 
     private:
+      std::string path_country = "";
+      std::string path_asn = "";
       GeoIP *gi_asn = nullptr;
       GeoIP *gi_country = nullptr;
       Var<Logger> logger = Logger::make();
