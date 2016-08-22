@@ -26,6 +26,8 @@
 .libs
 .vagrant
 /*.json
+/build/android/jni/conf
+/build/android/jni/spec
 /include.am
 /tmp
 Makefile
@@ -72,8 +74,11 @@ test/common/continuation
 test/common/delegate
 test/common/error
 test/common/error_or
+test/common/fmap
 test/common/logger
+test/common/parallel
 test/common/poller
+test/common/range
 test/common/runner
 test/common/settings
 test/common/utils
@@ -84,6 +89,7 @@ test/dns/error
 test/dns/query
 test/fixtures/GeoIP.dat
 test/fixtures/GeoIPASNum.dat
+test/http/headers
 test/http/parse_url
 test/http/request
 test/http/response_parser

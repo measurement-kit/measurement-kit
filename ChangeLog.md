@@ -1,3 +1,8 @@
+# MeasurementKit 0.2.8 [2016-08-18]
+
+- Updated dependencies
+- Many improvements and changes in cross build scripts
+
 # MeasurementKit 0.2.7 [2016-08-02]
 
 - By default don't use OONI collector but the testing collector to avoid
