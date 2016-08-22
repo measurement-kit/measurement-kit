@@ -48,6 +48,7 @@ configure
 depcomp
 example/dns/query
 example/http/request
+example/lua_engine/run
 example/mlabns/query
 example/ndt/ndt
 example/net/connect
