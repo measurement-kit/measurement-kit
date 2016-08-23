@@ -42,10 +42,12 @@ IPLocation::~IPLocation() {
     }
 }
 
-ErrorOr<std::string> IPLocation::resolve_country_code(std::string ip) {
+ErrorOr<std::string> IPLocation::resolve_country_code(std::string ip,
+                                                      Var<Logger> logger) {
     if (gi_country == nullptr) {
         gi_country = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_country == nullptr) {
+            logger->warn("IPLocation: cannot open geoip country database");
             return CannotOpenGeoIpCountryDatabase();
         }
     }
@@ -59,13 +61,14 @@ ErrorOr<std::string> IPLocation::resolve_country_code(std::string ip) {
     }
     std::string country_code = result;
     return country_code;
-
 }
 
-ErrorOr<std::string> IPLocation::resolve_country_name(std::string ip) {
+ErrorOr<std::string> IPLocation::resolve_country_name(std::string ip,
+                                                      Var<Logger> logger) {
     if (gi_country == nullptr) {
         gi_country = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_country == nullptr) {
+            logger->warn("IPLocation: cannot open geoip country database");
             return CannotOpenGeoIpCountryDatabase();
         }
     }
@@ -81,10 +84,12 @@ ErrorOr<std::string> IPLocation::resolve_country_name(std::string ip) {
     return country_name;
 }
 
-ErrorOr<std::string> IPLocation::resolve_city_name(std::string ip) {
+ErrorOr<std::string> IPLocation::resolve_city_name(std::string ip,
+                                                   Var<Logger> logger) {
     if (gi_city == nullptr) {
         gi_city = GeoIP_open(path_city.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_country == nullptr) {
+            logger->warn("IPLocation: cannot open geoip city database");
             return CannotOpenGeoIpCityDatabase();
         }
     }
@@ -100,10 +105,12 @@ ErrorOr<std::string> IPLocation::resolve_city_name(std::string ip) {
     return result;
 }
 
-ErrorOr<std::string> IPLocation::resolve_asn(std::string ip) {
+ErrorOr<std::string> IPLocation::resolve_asn(std::string ip,
+                                             Var<Logger> logger) {
     if (gi_asn == nullptr) {
         gi_asn = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_asn == nullptr) {
+            logger->warn("IPLocation: cannot open geoip asn database");
             return CannotOpenGeoIpAsnDatabase();
         }
     }
