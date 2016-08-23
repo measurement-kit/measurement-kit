@@ -64,7 +64,7 @@ class Logger : public NonCopyable, public NonMovable {
     uint32_t verbosity_ = MK_LOG_WARNING;
     char buffer_[32768];
     std::mutex mutex_;
-    std::ofstream ofile_;
+    Var<std::ofstream> ofile_;
     Delegate<> eof_handler_;
 
     Logger();
