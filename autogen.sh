@@ -103,6 +103,10 @@ get_geoipdb() {
         wget -q $base/GeoLiteCountry/GeoIP.dat.gz -O test/fixtures/GeoIP.dat.gz
         gzip -d test/fixtures/GeoIP.dat.gz
     fi
+    if [ ! -f "test/fixtures/GeoLiteCity.dat" ]; then
+        wget -q $base/GeoLiteCity.dat.gz -O test/fixtures/GeoLiteCity.dat.gz
+        gzip -d test/fixtures/GeoLiteCity.dat.gz
+    fi
     if [ ! -f "test/fixtures/GeoIPASNum.dat" ]; then
         wget -q $base/asnum/GeoIPASNum.dat.gz -O test/fixtures/GeoIPASNum.dat.gz
         gzip -d test/fixtures/GeoIPASNum.dat.gz
@@ -112,6 +116,7 @@ get_geoipdb() {
 grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
 echo test/fixtures/GeoIP.dat >> .gitignore.new
 echo test/fixtures/GeoIPASNum.dat >> .gitignore.new
+echo test/fixtures/GeoLiteCity.dat >> .gitignore.new
 mv .gitignore.new .gitignore
 
 echo "* Generating include.am"
@@ -127,7 +132,7 @@ echo "* Updating .gitignore"
 sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
 
-echo "* Fetching dependencies that are build in any case"
+echo "* Fetching dependencies that are built in any case"
 get_repo nodejs/http-parser v2.7.1 http-parser
 get_repo philsquared/Catch v1.5.6 Catch
 

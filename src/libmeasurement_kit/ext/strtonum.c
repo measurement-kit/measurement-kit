@@ -64,3 +64,4 @@ measurement_kit_strtonum(const char *numstr, long long minval, long long maxval,
 
 	return (ll);
 }
+/*DEF_WEAK(strtonum);*/

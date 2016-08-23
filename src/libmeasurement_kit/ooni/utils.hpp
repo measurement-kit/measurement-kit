@@ -5,6 +5,7 @@
 #define SRC_OONI_UTILS_HPP
 
 #include <GeoIP.h>
+#include <GeoIPCity.h>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
@@ -21,33 +22,40 @@ void ip_lookup(Callback<Error, std::string> callback, Settings settings = {},
                Var<Reactor> reactor = Reactor::global(),
                Var<Logger> logger = Logger::global());
 
-void resolver_lookup(Callback<Error, std::string> callback, Settings settings = {},
+void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
                      Var<Reactor> reactor = Reactor::global(),
                      Var<Logger> logger = Logger::global());
 
 class IPLocation {
-    public:
-      IPLocation(std::string path_country, std::string path_asn);
+  public:
+    IPLocation(std::string path_country, std::string path_asn,
+               std::string path_city = "");
 
-      ~IPLocation();
+    ~IPLocation();
 
-      ErrorOr<std::string> resolve_country_code(std::string ip);
+    ErrorOr<std::string>
+    resolve_country_code(std::string ip, Var<Logger> = Logger::global());
 
-      ErrorOr<std::string> resolve_country_name(std::string ip);
+    ErrorOr<std::string>
+    resolve_country_name(std::string ip, Var<Logger> = Logger::global());
 
-      ErrorOr<std::string> resolve_asn(std::string ip);
+    ErrorOr<std::string>
+    resolve_city_name(std::string ip, Var<Logger> = Logger::global());
 
-    private:
-      std::string path_country = "";
-      std::string path_asn = "";
-      GeoIP *gi_asn = nullptr;
-      GeoIP *gi_country = nullptr;
-      Var<Logger> logger = Logger::make();
+    ErrorOr<std::string>
+    resolve_asn(std::string ip, Var<Logger> = Logger::global());
 
+  private:
+    std::string path_country = "";
+    std::string path_asn = "";
+    std::string path_city = "";
+    GeoIP *gi_asn = nullptr;
+    GeoIP *gi_country = nullptr;
+    GeoIP *gi_city = nullptr;
 };
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,
-                    std::string path_asn);
+                    std::string path_asn, std::string path_city = "");
 
 std::string extract_html_title(std::string body);
 
