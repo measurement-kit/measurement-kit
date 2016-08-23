@@ -1,4 +1,0 @@
-libmeasurement_kit_la_SOURCES += \
-    src/ext/strtonum.c \
-    src/ext/http-parser/http_parser.c \
-    src/ext/tls_verify.c
