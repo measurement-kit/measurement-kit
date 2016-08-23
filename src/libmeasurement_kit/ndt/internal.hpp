@@ -57,6 +57,11 @@
 
 #define TEST_C2S_DURATION 10.0
 
+#define SRV_QUEUE_HEARTBEAT 9990
+#define SRV_QUEUE_SERVER_FAULT 9977
+#define SRV_QUEUE_SERVER_BUSY 9987
+#define SRV_QUEUE_SERVER_BUSY_60s 9999
+
 namespace mk {
 namespace ndt {
 
@@ -113,6 +118,7 @@ void read_msg(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback,
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests);
 ErrorOr<Buffer> format_test_msg(std::string s);
+ErrorOr<Buffer> format_msg_waiting();
 
 void write(Var<Context>, Buffer, Callback<Error>);
 void write_noasync(Var<Context>, Buffer);

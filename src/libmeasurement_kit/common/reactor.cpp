@@ -18,4 +18,8 @@ void loop_with_initial_event_and_connectivity(std::function<void()> cb) {
     }
 }
 
+void reactor_call_soon(Var<Reactor> reactor, Callback<> callback) {
+    reactor->call_soon(callback);
+}
+
 } // namespace mk
