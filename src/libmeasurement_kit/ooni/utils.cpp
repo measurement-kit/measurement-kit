@@ -129,13 +129,13 @@ ErrorOr<json> geoip(std::string ip, std::string path_country,
     if (!country_name) {
         return country_name.as_error();
     }
-	ErrorOr<std::string> city_name;
-	if (path_city != "") {
-		city_name = ip_location.resolve_city_name(ip);
-		if (!city_name) {
-			return city_name.as_error();
-		}
-	}
+    ErrorOr<std::string> city_name;
+    if (path_city != "") {
+        city_name = ip_location.resolve_city_name(ip);
+        if (!city_name) {
+            return city_name.as_error();
+        }
+    }
     ErrorOr<std::string> asn = ip_location.resolve_asn(ip);
     if (!asn) {
         return asn.as_error();
@@ -144,9 +144,9 @@ ErrorOr<json> geoip(std::string ip, std::string path_country,
     node["country_code"] = country_code.as_value();
     node["country_name"] = country_name.as_value();
     node["asn"] = asn.as_value();
-	if (path_city != "") {
-		node["city_name"] = city_name.as_value();
-	}
+    if (path_city != "") {
+        node["city_name"] = city_name.as_value();
+    }
     return node;
 }
 
