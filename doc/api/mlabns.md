@@ -27,6 +27,8 @@ function called when done, with an error &mdash; or `NoError()` in case of succe
 passed as the first argument and the reply passed as second argument. You can also pass
 the following, optional settings:
 
+- *"mlabns/base_url"*: base URL of the mlab-ns service. By default this URL is `https://mlab-ns.appspot.com/`.
+
 - *"mlabns/policy"*: one of `"random"`, `"metro"`, or `"country`". The random policy asks mlabns
   to return a random server for the specified tool. The metro policy asks mlabns a server close to
   the city code passed as *mlabns/metro*. The country policy asks mlabns to return a suitable server

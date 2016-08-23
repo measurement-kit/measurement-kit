@@ -10,6 +10,7 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
 #include <string>
+#include <strings.h>
 
 namespace mk {
 namespace http {
@@ -73,7 +74,14 @@ ErrorOr<Url> parse_url_noexcept(std::string url);
     HTTP request and response structs, logic to make requests.
 */
 
-using Headers = std::map<std::string, std::string>;
+class HeadersComparator {
+  public:
+    bool operator() (const std::string &l, const std::string &r) const {
+        return strcasecmp(l.c_str(), r.c_str()) < 0;
+    }
+};
+
+using Headers = std::map<std::string, std::string, HeadersComparator>;
 
 class Request {
   public:
