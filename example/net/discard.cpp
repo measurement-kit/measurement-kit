@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/net/listen.hpp"
+#include "src/libmeasurement_kit/net/listen.hpp"
 #include <functional>
 #include <iostream>
 #include <measurement_kit/common.hpp>

@@ -5,6 +5,7 @@
 #define MEASUREMENT_KIT_COMMON_REACTOR_HPP
 
 #include <functional>
+#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/var.hpp>
 
 struct event_base;
@@ -31,6 +32,10 @@ class Reactor {
         return singleton;
     }
 };
+
+// This function is just a wrapper for `reactor->call_soon` but is useful
+// in the regress tests because it can be passed as a template argument
+void reactor_call_soon(Var<Reactor> reactor, Callback<> cb);
 
 inline void call_soon(std::function<void()> cb) {
     Reactor::global()->call_soon(cb);
