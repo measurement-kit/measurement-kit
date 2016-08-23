@@ -97,7 +97,7 @@ ErrorOr<std::string> IPLocation::resolve_city_name(std::string ip) {
         GeoIP_delete(gi_city);
         return GenericError();
     }
-	std::string result = gir->city;
+    std::string result = gir->city;
     GeoIPRecord_delete(gir);
     return result;
 }
