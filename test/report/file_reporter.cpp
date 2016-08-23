@@ -3,12 +3,12 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/ext/Catch/single_include/catch.hpp"
+#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
 
 #include <ctime>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/report.hpp>
-#include "src/common/utils.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 
 using namespace mk::report;
 using namespace mk;
