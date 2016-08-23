@@ -23,7 +23,8 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
     resolver_lookup_impl(callback, settings, reactor, logger);
 }
 
-IPLocation::IPLocation(std::string path_country_, std::string path_asn_, std::string path_city_) {
+IPLocation::IPLocation(std::string path_country_, std::string path_asn_,
+                       std::string path_city_) {
     path_asn = path_asn_;
     path_country = path_country_;
     path_city = path_city_;
