@@ -88,9 +88,7 @@ ErrorOr<std::string> IPLocation::resolve_city_name(std::string ip) {
             return CannotOpenGeoIpCityDatabase();
         }
     }
-    GeoIPLookup gl;
     GeoIPRecord *gir;
-    memset (&gl, 0, sizeof(gl));
 
     gir = GeoIP_record_by_name(gi_city, ip.c_str());
     if (gir == nullptr) {
