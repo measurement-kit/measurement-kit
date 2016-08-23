@@ -172,7 +172,7 @@ To compile and use MeasurementKit for iOS, do the following on a MacOSX
 system where Xcode and its command line tools have been installed:
 
 ```
-./build/ios/scripts/build.sh
+./build/ios/library
 ```
 
 ### How to add MeasurementKit to an Xcode project.

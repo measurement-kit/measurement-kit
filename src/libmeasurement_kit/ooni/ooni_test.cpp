@@ -92,9 +92,13 @@ void OoniTest::geoip_lookup(Callback<> cb) {
                         // better to let the exception unwind than just print
                         // a warning, because the former is easier to notice
                         // and therefore fix during development
-                        probe_asn = (*res)["asn"];
+                        if (options.get("save_real_probe_asn", true)) {
+                            probe_asn = (*res)["asn"];
+                        }
                         logger->info("probe_asn: %s", probe_asn.c_str());
-                        probe_cc = (*res)["country_code"];
+                        if (options.get("save_real_probe_cc", true)) {
+                            probe_cc = (*res)["country_code"];
+                        }
                         logger->info("probe_cc: %s", probe_cc.c_str());
                     }
                 }

@@ -7,6 +7,7 @@
 #include <exception>
 #include <measurement_kit/common/var.hpp>
 #include <string>
+#include <vector>
 
 namespace mk {
 
@@ -18,10 +19,12 @@ class Error : public std::exception {
     Error(int e) : Error(e, "", nullptr) {}
     Error(int e, std::string ooe) : Error(e, ooe, nullptr) {}
 
-    Error(int e, std::string ooe, Var<Error> c)
-                : child(c), code(e), reason(ooe) {
+    Error(int e, std::string ooe, Var<Error> c) : code(e), reason(ooe) {
         if (code != 0 && reason == "") {
             reason = "unknown_failure " + std::to_string(code);
+        }
+        if (c) {
+            child_errors.push_back(c);
         }
     }
 
@@ -38,7 +41,7 @@ class Error : public std::exception {
     std::string as_ooni_error() { return reason; }
 
     Var<ErrorContext> context;
-    Var<Error> child;
+    std::vector<Var<Error>> child_errors;
     int code = 0;
     std::string reason;
 };
@@ -64,6 +67,7 @@ MK_DEFINE_ERR(6, JsonKeyError, "")
 MK_DEFINE_ERR(7, JsonDomainError, "")
 MK_DEFINE_ERR(8, FileEofError, "")
 MK_DEFINE_ERR(9, FileIoError, "")
+MK_DEFINE_ERR(10, ParallelOperationError, "")
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)

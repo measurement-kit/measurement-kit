@@ -1,4 +1,5 @@
-#!/bin/sh -e
+#!/bin/sh
+set -e
 
 if [ $# -ne 3 ]; then
     echo "Usage: $0 NDK_DIR ARCH API" 1>&2
@@ -10,7 +11,7 @@ if [ $# -ne 3 ]; then
     exit 1
 fi
 
-ROOTDIR=$(cd $(dirname $0)/.. && pwd -P)
+ROOTDIR=$(cd $(dirname $0) && pwd -P)
 
 NDK_DIR=$1
 ARCH=$2

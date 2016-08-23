@@ -26,6 +26,8 @@
 .libs
 .vagrant
 /*.json
+/build/android/jni/conf
+/build/android/jni/spec
 /include.am
 /tmp
 Makefile
@@ -64,7 +66,9 @@ test/common/error
 test/common/error_or
 test/common/fmap
 test/common/logger
+test/common/parallel
 test/common/poller
+test/common/range
 test/common/runner
 test/common/settings
 test/common/utils

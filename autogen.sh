@@ -127,9 +127,9 @@ echo "* Updating .gitignore"
 sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
 
-echo "* Fetching dependencies that are build in any case"
-get_repo nodejs/http-parser v2.7.0 http-parser
-get_repo philsquared/Catch v1.5.0 Catch
+echo "* Fetching dependencies that are built in any case"
+get_repo nodejs/http-parser v2.7.1 http-parser
+get_repo philsquared/Catch v1.5.6 Catch
 
 echo "* Fetching geoip database"
 get_geoipdb
