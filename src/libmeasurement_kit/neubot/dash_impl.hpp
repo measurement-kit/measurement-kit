@@ -1,7 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#include "src/common/utils.hpp"
+
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include <functional>
 #include <iostream>
 #include <measurement_kit/common.hpp>

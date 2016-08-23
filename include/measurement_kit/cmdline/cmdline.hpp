@@ -9,6 +9,10 @@ namespace cmdline {
 
 // The main of specific modules:
 
+namespace dash {
+int main(const char *progname, int argc, char **argv);
+}
+
 namespace dns_injection {
 int main(const char *progname, int argc, char **argv);
 }
