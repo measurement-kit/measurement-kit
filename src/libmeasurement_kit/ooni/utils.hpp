@@ -22,33 +22,30 @@ void ip_lookup(Callback<Error, std::string> callback, Settings settings = {},
                Var<Reactor> reactor = Reactor::global(),
                Var<Logger> logger = Logger::global());
 
-void resolver_lookup(Callback<Error, std::string> callback, Settings settings = {},
+void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
                      Var<Reactor> reactor = Reactor::global(),
                      Var<Logger> logger = Logger::global());
 
 class IPLocation {
-    public:
-      IPLocation(std::string path_country, std::string path_asn, std::string path_city = "");
+  public:
+    IPLocation(std::string path_country, std::string path_asn,
+               std::string path_city = "");
 
-      ~IPLocation();
+    ~IPLocation();
 
-      ErrorOr<std::string> resolve_country_code(std::string ip);
+    ErrorOr<std::string> resolve_country_code(std::string ip);
+    ErrorOr<std::string> resolve_country_name(std::string ip);
+    ErrorOr<std::string> resolve_city_name(std::string ip);
+    ErrorOr<std::string> resolve_asn(std::string ip);
 
-      ErrorOr<std::string> resolve_country_name(std::string ip);
-
-      ErrorOr<std::string> resolve_city_name(std::string ip);
-
-      ErrorOr<std::string> resolve_asn(std::string ip);
-
-    private:
-      std::string path_country = "";
-      std::string path_asn = "";
-      std::string path_city = "";
-      GeoIP *gi_asn = nullptr;
-      GeoIP *gi_country = nullptr;
-      GeoIP *gi_city = nullptr;
-      Var<Logger> logger = Logger::make();
-
+  private:
+    std::string path_country = "";
+    std::string path_asn = "";
+    std::string path_city = "";
+    GeoIP *gi_asn = nullptr;
+    GeoIP *gi_country = nullptr;
+    GeoIP *gi_city = nullptr;
+    Var<Logger> logger = Logger::make();
 };
 
 ErrorOr<json> geoip(std::string ip, std::string path_country,
