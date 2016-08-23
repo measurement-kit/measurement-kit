@@ -92,7 +92,10 @@ ErrorOr<std::string> IPLocation::resolve_city_name(std::string ip) {
     if (gir == nullptr) {
         return GenericError();
     }
-    std::string result = gir->city;
+    std::string result;
+    if (gir->city != nullptr) {
+        result = gir->city;
+    }
     GeoIPRecord_delete(gir);
     return result;
 }
