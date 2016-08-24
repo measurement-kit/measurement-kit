@@ -19,11 +19,11 @@ class SslContext : public NonCopyable, public NonMovable {
     ErrorOr<SSL *> get_client_ssl(std::string hostname);
 
     ~SslContext();
-    SslContext() {}
 
     static ErrorOr<Var<SslContext>> make(std::string ca_bundle_path);
 
   private:
+    SslContext() {}
     Error init(std::string ca_bundle_path);
 
     std::string ca_bundle_path; // Used to decide whether to recreate singleton
