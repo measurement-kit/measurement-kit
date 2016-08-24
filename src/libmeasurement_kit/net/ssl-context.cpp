@@ -10,25 +10,23 @@
 #include <iostream>
 #include <measurement_kit/net.hpp>
 #include "src/libmeasurement_kit/net/ssl-context.hpp"
-#include "config.h"
 
 namespace mk {
 namespace net {
 
-SSL *SslContext::get_client_ssl(std::string hostname) {
+ErrorOr<SSL *> SslContext::get_client_ssl(std::string hostname) {
     SSL *ssl = SSL_new(ctx);
     if (ssl == nullptr) {
         warn("ssl: failed to call SSL_new");
-        throw std::runtime_error("SSL_new() failed");
+        return SslNewError();
     }
-
     SSL_set_tlsext_host_name(ssl, hostname.c_str());
     return ssl;
 }
 
-void SslContext::init(std::string ca_bundle_path) {
-    static bool ssl_initialized = false;
+Error SslContext::init(std::string ca_bundle_path) {
 
+    static bool ssl_initialized = false;
     if (!ssl_initialized) {
         SSL_library_init();
         ERR_load_crypto_strings();
@@ -39,44 +37,42 @@ void SslContext::init(std::string ca_bundle_path) {
 
     debug("ssl: creating ssl context with bundle %s", ca_bundle_path.c_str());
 
+    if (ca_bundle_path == "") {
+        return MissingCaBundlePathError();
+    }
+
     ctx = SSL_CTX_new(TLSv1_client_method());
     if (ctx == nullptr) {
         debug("ssl: failed to create SSL_CTX");
-        throw std::runtime_error("Failed to create SSL_CTX");
+        return SslCtxNewError();
     }
 
     if (SSL_CTX_load_verify_locations(ctx, ca_bundle_path.c_str(), NULL) != 1) {
         debug("ssl: failed to load verify location");
-        throw std::runtime_error("Failed to load verify location");
-    };
-
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
-}
-
-Var<SslContext> SslContext::global() {
-    static Var<SslContext> singleton(new SslContext);
-    return singleton;
-}
-
-SslContext::SslContext() {
-    std::string ca_bundle_path;
-    Var<Settings> global_settings = Settings::global();
-    if (global_settings->find("net/ca_bundle_path") != global_settings->end()) {
-        ca_bundle_path = (*global_settings)["net/ca_bundle_path"];
-    } else {
-    #ifdef MK_CA_BUNDLE
-        ca_bundle_path = MK_CA_BUNDLE;
-    #else 
-        warn("ssl: failed to find ca_bundle");
-        throw MissingCaBundlePathError();
-    #endif
+        // Note: no need to free `ctx` because it is owned by the `this` and
+        // therefore will be destroyed when object exits the scope
+        return SslCtxLoadVerifyLocationsError();
     }
 
-    init(ca_bundle_path);
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
+    this->ca_bundle_path = ca_bundle_path;
+    return NoError();
 }
 
-SslContext::SslContext(std::string ca_bundle_path) {
-    init(ca_bundle_path);
+/*static */ ErrorOr<Var<SslContext>> SslContext::make(std::string path) {
+    static Var<SslContext> singleton;
+    // We basically cache the last created context and we reuse it if the path
+    // has not been changed, otherwise we create a new context
+    if (!singleton or singleton->ca_bundle_path != path) {
+        singleton.reset(new SslContext);
+        Error err = singleton->init(path);
+        if (err) {
+            singleton.reset(); // Basically: "this is Sparta!"
+            return err;
+        }
+        /* FALLTHROUGH */
+    }
+    return singleton;
 }
 
 SslContext::~SslContext() {
