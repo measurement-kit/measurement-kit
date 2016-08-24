@@ -23,7 +23,7 @@ int main(const char *, int argc, char **argv) {
 
     Settings settings;
     std::string body;
-    char ch;
+    int ch;
     while ((ch = getopt(argc, argv, "b:m:R:v")) != -1) {
         switch (ch) {
         case 'b':
