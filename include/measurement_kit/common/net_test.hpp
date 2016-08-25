@@ -54,6 +54,10 @@ class NetTest {
         output_filepath = s;
         return *this;
     }
+    NetTest &set_error_filepath(std::string s) {
+        logger->set_logfile(s);
+        return *this;
+    }
     NetTest &set_reactor(Var<Reactor> r) {
         reactor = r;
         return *this;
