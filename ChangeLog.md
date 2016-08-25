@@ -1,3 +1,11 @@
+# MeasurementKit 0.3.0-alpha.1 [2016-08-25]
+
+- fix type of `getopt()` return value
+- fix build for Android
+- improve docs
+- `net_test.hpp`: add `set_error_filepath()`
+- change Android output archive name to be `measurement_kit-$version-android_jni${optional_build_version}.tag.bz2`
+
 # MeasurementKit 0.3.0-alpha [2016-08-24]
 
 - Add command line interface and also build binary executable
