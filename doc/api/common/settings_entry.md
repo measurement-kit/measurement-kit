@@ -45,6 +45,10 @@ rather than throwing exception on error.
 Since `std::stringstream` represents `true` using `1` and `false` using `0`, the
 commonly established semantic that any nonzero value is `true` does not hold.
 
+Additionally, this means that the string `"true"` is not going to be parsed
+as a true value and likewise `"false"` is not going to be parsed as a false
+value. This behavior is not what one whould expect.
+
 # HISTORY
 
 The `SettingsEntry` class appeared in MeasurementKit 0.2.0.
