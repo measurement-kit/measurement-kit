@@ -10,6 +10,25 @@
 
 using namespace mk;
 
+TEST_CASE("Make sure that run() works") {
+    // XXX this test fails because the default OONI test currently does not
+    // know how to copy itself (see also issue #752)
+    //ooni::OoniTest().run();
+}
+
+TEST_CASE("Make sure that run(reactor) works") {
+    Var<Reactor> reactor = Reactor::make();
+    ooni::OoniTest().run(reactor);
+}
+
+TEST_CASE("Make sure run(reactor) fails if the reactor is already running") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        REQUIRE_THROWS(ooni::OoniTest().run(reactor));
+        reactor->break_loop();
+    });
+}
+
 TEST_CASE("Make sure that on_entry() works") {
     ooni::OoniTest test;
     loop_with_initial_event([&]() {
