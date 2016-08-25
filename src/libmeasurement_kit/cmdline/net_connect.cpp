@@ -24,7 +24,7 @@ int main(const char *, int argc, char **argv) {
 
     int port = 80;
     Settings settings;
-    char ch;
+    int ch;
     while ((ch = getopt(argc, argv, "p:Tt:v")) != -1) {
         switch (ch) {
         case 'p':
