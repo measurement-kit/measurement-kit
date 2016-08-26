@@ -26,7 +26,7 @@ int main(const char *, int argc, char **argv) {
 
     NdtTest test;
     int test_suite = 0;
-    char ch;
+    int ch;
     while ((ch = getopt(argc, argv, "C:p:T:v")) != -1) {
         switch (ch) {
         case 'C':

@@ -21,7 +21,7 @@ static const char *kv_usage =
 int main(const char *, int argc, char **argv) {
 
     std::string query_class = "IN";
-    char ch;
+    int ch;
     std::string query_type = "A";
     while ((ch = getopt(argc, argv, "c:t:v")) != -1) {
         switch (ch) {
