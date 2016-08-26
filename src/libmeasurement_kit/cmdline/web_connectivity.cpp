@@ -19,7 +19,7 @@ int main(const char *, int argc, char **argv) {
     std::string nameserver = "8.8.8.8";
     std::string name = argv[0];
     uint32_t verbosity = 0;
-    char ch;
+    int ch;
 
     while ((ch = getopt(argc, argv, "b:n:v")) != -1) {
         switch (ch) {
