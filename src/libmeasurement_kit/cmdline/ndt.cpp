@@ -25,7 +25,6 @@ static const char *kv_usage =
 int main(const char *, int argc, char **argv) {
 
     NdtTest test;
-    int test_suite = 0;
     int ch;
     int test_suite = 0;
     while ((ch = getopt(argc, argv, "C:p:T:v")) != -1) {

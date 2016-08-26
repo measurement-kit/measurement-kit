@@ -19,8 +19,8 @@ MK_DEFINE_ERR(MK_ERR_OONI(6), MissingRequiredHostError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(7), MissingRequiredUrlError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(8), MissingReportId, "")
 MK_DEFINE_ERR(MK_ERR_OONI(9), CannotOpenGeoIpCountryDatabase, "")
-MK_DEFINE_ERR(MK_ERR_OONI(10), CannotOpenGeoIpAsnDatabase, "")
-MK_DEFINE_ERR(MK_ERR_OONI(11), CannotOpenGeoIpCityDatabase, "")
+MK_DEFINE_ERR(MK_ERR_OONI(10), CannotOpenGeoIpCityDatabase, "")
+MK_DEFINE_ERR(MK_ERR_OONI(11), CannotOpenGeoIpAsnDatabase, "")
 
 } // namespace mk
 } // namespace ooni
