@@ -16,7 +16,7 @@ int main(const char *, int argc, char **argv) {
     std::string backend = "8.8.8.1";
     std::string name = argv[0];
     uint32_t verbosity = 0;
-    char ch;
+    int ch;
 
     while ((ch = getopt(argc, argv, "b:v")) != -1) {
         switch (ch) {

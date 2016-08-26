@@ -16,7 +16,7 @@ int main(const char *, int argc, char **argv) {
     std::string port = "80";
     std::string name = argv[0];
     uint32_t verbosity = 0;
-    char ch;
+    int ch;
     while ((ch = getopt(argc, argv, "p:v")) != -1) {
         switch (ch) {
         case 'p':

@@ -27,7 +27,7 @@ static void print_setting(Settings &settings, std::string key) {
 
 int main(const char *, int argc, char **argv) {
 
-    char ch;
+    int ch;
     Settings settings;
     while ((ch = getopt(argc, argv, "46C:m:p:v")) != -1) {
         switch (ch) {

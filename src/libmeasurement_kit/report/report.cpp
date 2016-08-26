@@ -39,36 +39,18 @@ Entry Report::get_dummy_entry() const {
 #define FMAP mk::fmap<Var<BaseReporter>, Continuation<Error>>
 
 void Report::open(Callback<Error> callback) {
-    if (openned_) {
-        callback(ReportAlreadyOpen());
-        return;
-    }
-    openned_ = true;
     mk::parallel(FMAP(reporters_, [=](Var<BaseReporter> r) {
         return r->open(*this);
     }), callback);
 }
 
 void Report::write_entry(Entry &entry, Callback<Error> callback) {
-    if (!openned_) {
-        callback(ReportNotOpen());
-        return;
-    }
-    if (closed_) {
-        callback(ReportAlreadyClosed());
-        return;
-    }
     mk::parallel(FMAP(reporters_, [=](Var<BaseReporter> r) {
         return r->write_entry(entry);
     }), callback);
 }
 
 void Report::close(Callback<Error> callback) {
-    if (closed_) {
-        callback(ReportAlreadyClosed());
-        return;
-    }
-    closed_ = true;
     mk::parallel(FMAP(reporters_, [](Var<BaseReporter> r) {
         return r->close();
     }), callback);

@@ -47,16 +47,15 @@ void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
         teardown(next_input);
 
         report.fill_entry(entry);
+        if (entry_cb) {
+            entry_cb(entry.dump());
+        }
         report.write_entry(entry, [=](Error error) {
             if (error) {
                 cb(error);
                 return;
             }
-            if (entry_cb) {
-                entry_cb(entry.dump());
-            }
             logger->debug("net_test: written entry");
-
             reactor->call_soon([=]() { run_next_measurement(index, cb); });
         });
     });

@@ -16,7 +16,7 @@ int main(const char *, int argc, char **argv) {
     std::string backend = "http://213.138.109.232/";
     uint32_t verbosity = 0;
     std::string name = argv[0];
-    char ch;
+    int ch;
 
     while ((ch = getopt(argc, argv, "b:v")) != -1) {
         switch (ch) {
