@@ -4,7 +4,7 @@
 #ifndef SRC_NDT_TEST_C2S_IMPL_HPP
 #define SRC_NDT_TEST_C2S_IMPL_HPP
 
-#include "src/libmeasurement_kit/ndt/internal.hpp"
+#include "internal.hpp"
 
 namespace mk {
 namespace ndt {

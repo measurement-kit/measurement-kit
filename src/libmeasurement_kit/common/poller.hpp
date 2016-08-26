@@ -4,7 +4,7 @@
 #ifndef SRC_COMMON_POLLER_HPP
 #define SRC_COMMON_POLLER_HPP
 
-#include "src/libmeasurement_kit/common/utils.hpp"
+#include "utils.hpp"
 #include <csignal>
 #include <cstring>
 #include <event2/event.h>

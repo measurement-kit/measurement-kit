@@ -4,7 +4,7 @@
 #ifndef SRC_NDT_RUN_IMPL_HPP
 #define SRC_NDT_RUN_IMPL_HPP
 
-#include "src/libmeasurement_kit/ndt/internal.hpp"
+#include "internal.hpp"
 #include <measurement_kit/mlabns.hpp>
 
 namespace mk {

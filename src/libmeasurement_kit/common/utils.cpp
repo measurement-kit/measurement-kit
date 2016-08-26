@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include "src/libmeasurement_kit/ext/strtonum.h"
+#include "utils.hpp"
+#include "../ext/strtonum.h"
 #include <algorithm>
 #include <arpa/inet.h>
 #include <ctype.h>

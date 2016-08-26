@@ -11,7 +11,7 @@
 #include <memory>                              // for unique_ptr
 #include <stdexcept>                           // for runtime_error
 #include <string>                              // for string, basic_string
-#include "src/libmeasurement_kit/net/evbuffer.hpp"
+#include "evbuffer.hpp"
 
 namespace mk {
 namespace net {

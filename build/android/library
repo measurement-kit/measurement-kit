@@ -42,4 +42,4 @@ echo "Downloading and verifying precompiled dependencies from github"
     rm $DEPS_FILE $DEPS_FILE.asc
 )
 
-$ROOTDIR/dependency $NDK_DIR embedded-mk "$@"
+#$ROOTDIR/dependency $NDK_DIR embedded-mk "$@"

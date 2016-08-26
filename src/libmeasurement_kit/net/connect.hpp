@@ -4,10 +4,10 @@
 #ifndef SRC_NET_CONNECT_HPP
 #define SRC_NET_CONNECT_HPP
 
-#include "src/libmeasurement_kit/ext/tls_internal.h"
+#include "../ext/tls_internal.h"
 
 #include <event2/util.h>
-#include "src/libmeasurement_kit/common/utils.hpp"
+#include "../common/utils.hpp"
 #include <arpa/inet.h>
 #include <event2/bufferevent.h>
 #include <event2/util.h>
