@@ -4,8 +4,8 @@
 #ifndef SRC_NET_LISTEN_HPP
 #define SRC_NET_LISTEN_HPP
 
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include "src/libmeasurement_kit/net/connection.hpp"
+#include "../common/utils.hpp"
+#include "connection.hpp"
 #include <event2/bufferevent.h>
 #include <event2/listener.h>
 #include <event2/util.h>

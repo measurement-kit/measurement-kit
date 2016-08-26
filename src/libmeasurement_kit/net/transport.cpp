@@ -4,11 +4,11 @@
 
 #include <cassert>
 #include <measurement_kit/net.hpp>
-#include "src/libmeasurement_kit/net/connect.hpp"
-#include "src/libmeasurement_kit/net/connection.hpp"
-#include "src/libmeasurement_kit/net/emitter.hpp"
-#include "src/libmeasurement_kit/net/socks5.hpp"
-#include "src/libmeasurement_kit/net/ssl-context.hpp"
+#include "connect.hpp"
+#include "connection.hpp"
+#include "emitter.hpp"
+#include "socks5.hpp"
+#include "ssl-context.hpp"
 
 namespace mk {
 namespace net {

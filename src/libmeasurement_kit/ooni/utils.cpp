@@ -7,8 +7,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "src/libmeasurement_kit/ooni/utils_impl.hpp"
-#include "src/libmeasurement_kit/common/utils.hpp"
+#include "utils_impl.hpp"
+#include "../common/utils.hpp"
 
 namespace mk {
 namespace ooni {

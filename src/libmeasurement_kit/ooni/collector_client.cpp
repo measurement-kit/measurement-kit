@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/ooni/collector_client_impl.hpp"
+#include "collector_client_impl.hpp"
 #include <regex>
 
 namespace mk {

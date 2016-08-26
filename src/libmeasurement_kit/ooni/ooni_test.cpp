@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include "src/libmeasurement_kit/ooni/utils.hpp"
+#include "../common/utils.hpp"
+#include "utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
