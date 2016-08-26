@@ -6,12 +6,13 @@
 
 #include <ctime>
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/report/base_reporter.hpp>
 #include <measurement_kit/report/entry.hpp>
 #include <vector>
 
 namespace mk {
 namespace report {
+
+class BaseReporter; // Forward decl.
 
 class Report {
   public:
@@ -46,8 +47,6 @@ class Report {
 
   private:
     std::vector<Var<BaseReporter>> reporters_;
-    bool closed_ = false;
-    bool openned_ = false;
 };
 
 } // namespace report

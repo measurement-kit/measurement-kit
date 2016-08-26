@@ -9,12 +9,13 @@
 namespace mk {
 namespace report {
 
-MK_DEFINE_ERR(MK_ERR_REPORT(0), ReportAlreadyOpen, "")
-MK_DEFINE_ERR(MK_ERR_REPORT(1), ReportNotOpen, "")
-MK_DEFINE_ERR(MK_ERR_REPORT(2), ReportAlreadyClosed, "")
+MK_DEFINE_ERR(MK_ERR_REPORT(0), ReportAlreadyOpenError, "")
+MK_DEFINE_ERR(MK_ERR_REPORT(1), ReportNotOpenError, "")
+MK_DEFINE_ERR(MK_ERR_REPORT(2), ReportAlreadyClosedError, "")
 MK_DEFINE_ERR(MK_ERR_REPORT(3), ReportEofError, "")
 MK_DEFINE_ERR(MK_ERR_REPORT(4), ReportIoError, "")
 MK_DEFINE_ERR(MK_ERR_REPORT(5), ReportLogicalError, "")
+MK_DEFINE_ERR(MK_ERR_REPORT(6), DuplicateEntrySubmitError, "")
 
 } // namespace report
 } // namespace mk
