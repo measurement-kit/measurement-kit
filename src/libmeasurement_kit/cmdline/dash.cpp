@@ -22,7 +22,7 @@ static const char *kv_usage = "usage: %s dash [-vn] [-a address]\n";
 int main(const char *progname, int argc, char **argv) {
     Settings settings;
 
-    for (char ch; (ch = getopt(argc, argv, "a:vn")) != -1; ) {
+    for (int ch; (ch = getopt(argc, argv, "a:vn")) != -1; ) {
         switch (ch) {
         case 'a':
             settings["url"] = optarg;
