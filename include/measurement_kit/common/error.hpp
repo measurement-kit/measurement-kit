@@ -40,6 +40,11 @@ class Error : public std::exception {
 
     std::string as_ooni_error() { return reason; }
 
+    void add_child_error(const Error &err) {
+        Var<Error> container(new Error(err));
+        child_errors.push_back(container);
+    }
+
     Var<ErrorContext> context;
     std::vector<Var<Error>> child_errors;
     int code = 0;
