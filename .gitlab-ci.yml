@@ -3,8 +3,10 @@ valgrind-gcc:
   script: ./build/docker/script/run valgrind-gcc
   only:
     - master
+    - feature/dash
 valgrind-clang:
   image: ubuntu:xenial
   script: ./build/docker/script/run valgrind-clang
   only:
     - master
+    - feature/dash
