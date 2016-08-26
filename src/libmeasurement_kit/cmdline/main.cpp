@@ -21,6 +21,7 @@ static const struct {
     const char *mod_name;
     int (*mod_func)(const char *, int, char **);
 } modules[] = {
+    XX(dash),
     XX(dns_injection),
     XX(dns_query),
     XX(http_invalid_request_line),

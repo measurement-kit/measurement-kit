@@ -205,9 +205,7 @@ void run_impl(Callback<Error> cb, Settings settings, Var<Reactor> reactor,
                         },
                         reactor, logger);
 
-    });
-
-    return;
+    }, settings);
 }
 
 } // namespace negotiate
