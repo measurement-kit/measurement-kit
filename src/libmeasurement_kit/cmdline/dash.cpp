@@ -14,9 +14,7 @@ namespace dash {
 #define USAGE "usage: %s dash [-vn] [hostname]\n"
 
 int main(const char *progname, int argc, char **argv) {
-    Settings settings{
-        {"mlabns/base_url", "http://mlab-ns.appspot.com/"},
-    };
+    Settings settings;
     for (int ch; (ch = getopt(argc, argv, "vn")) != -1; ) {
         switch (ch) {
         case 'n':
