@@ -31,7 +31,7 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
 namespace mk {
 namespace net {
 
-void connect_first_of(std::vector<std::string> addresses, int port,
+void connect_first_of(Var<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings,
                       Var<Reactor> reactor, Var<Logger> logger, size_t index,
                       Var<std::vector<Error>> errors) {
@@ -39,22 +39,23 @@ void connect_first_of(std::vector<std::string> addresses, int port,
     if (!errors) {
         errors.reset(new std::vector<Error>());
     }
-    if (index >= addresses.size()) {
+    if (index >= result->resolve_result.addresses.size()) {
         logger->debug("connect_first_of all addresses failed");
         cb(*errors, nullptr);
         return;
     }
     double timeout = settings.get("net/timeout", 30.0);
-    connect_base(addresses[index], port,
-                 [=](Error err, bufferevent *bev) {
+    connect_base(result->resolve_result.addresses[index], port,
+                 [=](Error err, bufferevent *bev, double connect_time) {
                      errors->push_back(err);
                      if (err) {
                          logger->debug("connect_first_of failure");
-                         connect_first_of(addresses, port, cb, settings,
+                         connect_first_of(result, port, cb, settings,
                                           reactor, logger, index + 1, errors);
                          return;
                      }
                      logger->debug("connect_first_of success");
+                     result->connect_time = connect_time;
                      cb(*errors, bev);
                  },
                  timeout, reactor, logger);
@@ -135,7 +136,7 @@ void connect_logic(std::string hostname, int port,
                          }
 
                          connect_first_of(
-                             result->resolve_result.addresses, port,
+                             result, port,
                              [=](std::vector<Error> e, bufferevent *b) {
                                  result->connect_result = e;
                                  result->connected_bev = b;
@@ -284,6 +285,26 @@ void connect(std::string address, int port,
             callback(err, txp);
         },
         settings, reactor, logger);
+}
+
+ErrorOr<double> get_connect_time(Error err) {
+    Var<ConnectResult> cr = err.context.as<ConnectResult>();
+    if (!cr) {
+        return GenericError();
+    }
+    return cr->connect_time;
+}
+
+ErrorOr<std::vector<double>> get_connect_times(Error err) {
+    Var<ConnectManyResult> cmr = err.context.as<ConnectManyResult>();
+    if (!cmr) {
+        return GenericError();
+    }
+    std::vector<double> connect_times;
+    for (auto &cr: cmr->results) {
+        connect_times.push_back(cr->connect_time);
+    }
+    return connect_times;
 }
 
 } // namespace net
