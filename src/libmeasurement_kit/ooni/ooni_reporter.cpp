@@ -24,8 +24,8 @@ OoniReporter::OoniReporter(const OoniTest &parent) {
     return reporter;
 }
 
-Continuation<Error> OoniReporter::open(const Report &report) {
-    return [=](Callback<Error> cb) {
+Continuation<Error> OoniReporter::open(Report report) {
+    return do_open_([=](Callback<Error> cb) {
         logger->info("Opening report...");
         collector::connect_and_create_report(
                 report.get_dummy_entry(),
@@ -40,11 +40,11 @@ Continuation<Error> OoniReporter::open(const Report &report) {
                 settings,
                 reactor,
                 logger);
-    };
+    });
 }
 
-Continuation<Error> OoniReporter::write_entry(const Entry &entry) {
-    return [=](Callback<Error> cb) {
+Continuation<Error> OoniReporter::write_entry(Entry entry) {
+    return do_write_entry_(entry, [=](Callback<Error> cb) {
         if (report_id == "") {
             logger->warn("ooni_reporter: missing report ID");
             cb(MissingReportId());
@@ -61,11 +61,11 @@ Continuation<Error> OoniReporter::write_entry(const Entry &entry) {
                                              settings,
                                              reactor,
                                              logger);
-    };
+    });
 }
 
 Continuation<Error> OoniReporter::close() {
-    return [=](Callback<Error> cb) {
+    return do_close_([=](Callback<Error> cb) {
         if (report_id == "") {
             logger->warn("ooni_reporter: missing report ID");
             cb(MissingReportId());
@@ -82,7 +82,7 @@ Continuation<Error> OoniReporter::close() {
                                             settings,
                                             reactor,
                                             logger);
-    };
+    });
 }
 
 } // namespace ooni

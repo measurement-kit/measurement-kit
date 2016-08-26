@@ -13,8 +13,8 @@ class OoniReporter : public BaseReporter {
   public:
     static Var<BaseReporter> make(const OoniTest &ooni_test);
 
-    Continuation<Error> open(const Report &report) override;
-    Continuation<Error> write_entry(const Entry &entry) override;
+    Continuation<Error> open(Report report) override;
+    Continuation<Error> write_entry(Entry entry) override;
     Continuation<Error> close() override;
 
     ~OoniReporter() override {}

@@ -5,6 +5,7 @@
 #define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
 #include <measurement_kit/common.hpp>
+#include <measurement_kit/report/report.hpp>
 #include <measurement_kit/report/entry.hpp>
 
 namespace mk {
@@ -12,15 +13,38 @@ namespace report {
 
 class Report;
 
-class BaseReporter {
+class BaseReporter : public NonCopyable, public NonMovable {
   public:
+    static Var<BaseReporter> make();
+
     virtual ~BaseReporter();
 
-    virtual Continuation<Error> open(const Report &report) = 0;
+    virtual Continuation<Error> open(Report) {
+        return do_open_([=](Callback<Error> cb) { cb(NoError()); });
+    }
 
-    virtual Continuation<Error> write_entry(const Entry &entry) = 0;
+    virtual Continuation<Error> write_entry(Entry e) {
+        return do_write_entry_(e, [=](Callback<Error> cb) { cb(NoError()); });
+    }
 
-    virtual Continuation<Error> close() = 0;
+    virtual Continuation<Error> close() {
+        return do_close_([=](Callback<Error> cb) { cb(NoError()); });
+    }
+
+  protected:
+    BaseReporter() {}
+
+    Continuation<Error> do_open_(Continuation<Error> cc);
+
+    Continuation<Error> do_write_entry_(Entry, Continuation<Error> cc);
+
+    Continuation<Error> do_close_(Continuation<Error> cc);
+
+  private:
+
+    bool openned_ = false;
+    bool closed_ = false;
+    std::string prev_entry_;
 };
 
 } // namespace report

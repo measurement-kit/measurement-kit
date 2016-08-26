@@ -26,38 +26,37 @@ static Error map_error(std::ofstream &file) {
     return reporter;
 }
 
-Continuation<Error> FileReporter::open(const Report &) {
-    return [=](Callback<Error> cb) {
+Continuation<Error> FileReporter::open(Report) {
+    return do_open_([=](Callback<Error> cb) {
         file.open(filename);
         if (!file.good()) {
             cb(map_error(file));
             return;
         }
         cb(NoError());
-    };
+    });
 }
 
-Continuation<Error> FileReporter::write_entry(const Entry &entry) {
-    std::string s = entry.dump();
-    return [=](Callback<Error> cb) {
-        file << s << std::endl;
+Continuation<Error> FileReporter::write_entry(Entry entry) {
+    return do_write_entry_(entry, [=](Callback<Error> cb) {
+        file << entry.dump() << std::endl;
         if (!file.good()) {
             cb(map_error(file));
             return;
         }
         cb(NoError());
-    };
+    });
 }
 
 Continuation<Error> FileReporter::close() {
-    return [=](Callback<Error> cb) {
+    return do_close_([=](Callback<Error> cb) {
         file.close();
         if (!file.good()) {
             cb(map_error(file));
             return;
         }
         cb(NoError());
-    };
+    });
 }
 
 } // namespace report
