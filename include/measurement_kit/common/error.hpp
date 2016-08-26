@@ -45,6 +45,21 @@ class Error : public std::exception {
         child_errors.push_back(container);
     }
 
+    std::string explain() {
+        std::string s;
+        s += "{";
+        s += reason;
+        s += "}";
+        if (child_errors.size() > 0) {
+            s += " [";
+            for (auto &e : child_errors) {
+                s += e->explain();
+            }
+            s += "]";
+        }
+        return s;
+    }
+
     Var<ErrorContext> context;
     std::vector<Var<Error>> child_errors;
     int code = 0;
