@@ -5,7 +5,7 @@
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/ooni.hpp>
 
-#include "src/libmeasurement_kit/common/utils.hpp"
+#include "../common/utils.hpp"
 
 namespace mk {
 namespace ooni {

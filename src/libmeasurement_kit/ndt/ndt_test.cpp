@@ -4,7 +4,7 @@
 
 #include <measurement_kit/ndt.hpp>
 #include <measurement_kit/ext.hpp>
-#include "src/libmeasurement_kit/common/utils.hpp"
+#include "../common/utils.hpp"
 
 namespace mk {
 namespace ndt {
