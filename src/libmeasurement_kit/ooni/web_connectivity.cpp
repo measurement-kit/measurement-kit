@@ -7,9 +7,9 @@
 
 #include <measurement_kit/net/transport.hpp>
 
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include "src/libmeasurement_kit/ooni/utils.hpp"
-#include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "../common/utils.hpp"
+#include "../ooni/utils.hpp"
+#include "../ooni/constants.hpp"
 
 #include <set>
 #include <regex>

@@ -4,7 +4,7 @@
 #ifndef SRC_HTTP_REQUEST_HPP
 #define SRC_HTTP_REQUEST_HPP
 
-#include "src/libmeasurement_kit/http/response_parser.hpp"
+#include "../http/response_parser.hpp"
 #include <measurement_kit/http.hpp>
 
 namespace mk {

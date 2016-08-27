@@ -8,7 +8,7 @@
 #include <event2/event.h>
 #include <event2/dns.h>
 
-#include "src/libmeasurement_kit/common/check_connectivity.hpp"
+#include "../common/check_connectivity.hpp"
 #include <measurement_kit/common/logger.hpp>
 
 namespace mk {

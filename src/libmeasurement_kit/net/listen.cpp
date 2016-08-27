@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/net/listen.hpp"
-#include "src/libmeasurement_kit/net/connection.hpp"
+#include "../net/listen.hpp"
+#include "../net/connection.hpp"
 
 using namespace mk;
 using namespace mk::net;
