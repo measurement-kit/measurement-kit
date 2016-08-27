@@ -32,6 +32,7 @@ TEST_CASE("Test works without negotiation") {
 #endif
 #endif
 
+#if 0
 static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
                  Var<Reactor>, Var<Logger>) {
     cb(MockedError(), {});
@@ -111,3 +112,4 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
         [](Error error) { REQUIRE(error == HttpRequestFailedError()); }, "",
         entry, {}, Reactor::global(), Logger::global());
 }
+#endif
