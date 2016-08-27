@@ -158,9 +158,4 @@ for depname in `ls build/spec/|grep -v all`; do
 done
 echo ""
 echo "If any of these dependencies is missing, the './configure' script shall"
-echo "stop and tell you how you could install it. Note that you can compile"
-echo "any of these dependencies using the './build/dependency' script'. So, to"
-echo "install e.g. libevent, type:"
-echo ""
-echo "./build/dependency libevent"
-echo ""
+echo "stop and tell you how you could install it."
