@@ -10,7 +10,10 @@
 #include <iostream>
 #include <measurement_kit/net.hpp>
 #include "../net/ssl-context.hpp"
+
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 namespace mk {
 namespace net {
