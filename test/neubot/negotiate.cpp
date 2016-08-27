@@ -9,7 +9,9 @@
 using namespace mk;
 using namespace mk::neubot::negotiate;
 
-#ifdef ENABLE_INTEGRATION_TESTS
+//#ifdef ENABLE_INTEGRATION_TESTS
+#if 0
+
 TEST_CASE("Test works as expected") {
     loop_with_initial_event([=]() {
         run([=](Error error) {
@@ -19,8 +21,6 @@ TEST_CASE("Test works as expected") {
     });
 }
 
-#endif
-
 TEST_CASE("Test works without negotiation") {
     Settings settings;
     settings["url"] = "";
@@ -29,6 +29,8 @@ TEST_CASE("Test works without negotiation") {
     run_impl([](Error error) { REQUIRE(!error); }, settings, Reactor::global(),
              Logger::global());
 }
+
+#endif
 
 static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
                  Var<Reactor>, Var<Logger>) {
