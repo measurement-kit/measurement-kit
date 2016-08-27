@@ -63,7 +63,10 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                         *total += data.length();
                         double ct = time_now();
                         *count += data.length();
-                        if (ct - *previous > params.snaps_delay) {
+                        if (ct - *previous > params.snaps_delay and
+                            *num_completed == 0) {
+                            // Note: we stop printing the speed when at least
+                            // one connection has terminated the test
                             double el = ct - begin;
                             double x = (*count * 8) / 1000 / (ct - *previous);
                             *count = 0;
