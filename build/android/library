@@ -31,5 +31,5 @@ echo "Building the library"
     echo ""                                                          >> $imk
     gen_sources LOCAL_SRC_FILES src/libmeasurement_kit "../../../"   >> $imk
     cd ./build/android/jni
-    ndk-build NDK_LIBS_OUT=./jniLibs $pkg_ndkbuild_flags
+    ndk-build NDK_LIBS_OUT=../jniLibs $pkg_ndkbuild_flags
 )
