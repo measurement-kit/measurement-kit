@@ -25,8 +25,14 @@ TEST_CASE("Test works without negotiation") {
     settings["url"] = "";
     settings["negotiate"] = "false";
 
-    run_impl([](Error error) { REQUIRE(!error); }, settings, Reactor::global(),
-             Logger::global());
+    // XXX how could this test work in the real world?
+    loop_with_initial_event([=]() {
+        run_impl([](Error error) {
+                     REQUIRE(!error);
+                     break_loop();
+                 },
+                 settings, Reactor::global(), Logger::global());
+    });
 }
 #endif
 
