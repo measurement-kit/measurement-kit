@@ -42,4 +42,9 @@ echo "Downloading and verifying precompiled dependencies from github"
     rm $DEPS_FILE $DEPS_FILE.asc
 )
 
-#$ROOTDIR/dependency $NDK_DIR embedded-mk "$@"
+echo "Building the library"
+(
+    set -e # just in case
+    cd $ROOTDIR
+    ndk-build
+)
