@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/net/socks5.hpp"
-#include "src/libmeasurement_kit/net/connect.hpp"
+#include "../net/socks5.hpp"
+#include "../net/connect.hpp"
 
 namespace mk {
 namespace net {

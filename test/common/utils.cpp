@@ -3,11 +3,11 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
 
 #include <cctype>
 #include <measurement_kit/common.hpp>
-#include "src/libmeasurement_kit/common/utils.hpp"
+#include "../src/libmeasurement_kit/common/utils.hpp"
 
 TEST_CASE("We are NOT using the default random seed") {
     // Note: the default random generator shall be seeded using 1 unless

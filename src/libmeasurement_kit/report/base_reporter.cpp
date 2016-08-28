@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include <measurement_kit/report.hpp>
+#include "../common/utils.hpp"
 
 namespace mk {
 namespace report {
