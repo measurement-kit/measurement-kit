@@ -5,7 +5,7 @@
 #define SRC_NET_CONNECTION_HPP
 
 #include "../common/utils.hpp"
-#include "emitter.hpp"
+#include "../net/emitter.hpp"
 #include <event2/bufferevent.h>
 #include <event2/event.h>
 #include <list>

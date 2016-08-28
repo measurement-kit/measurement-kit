@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "check_connectivity.hpp"
-#include "poller.hpp"
+#include "../common/check_connectivity.hpp"
+#include "../common/poller.hpp"
 #include <measurement_kit/common.hpp>
 
 namespace mk {

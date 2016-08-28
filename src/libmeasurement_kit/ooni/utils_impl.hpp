@@ -4,7 +4,7 @@
 #ifndef SRC_OONI_UTILS_IMPL_HPP
 #define SRC_OONI_UTILS_IMPL_HPP
 
-#include "utils.hpp"
+#include "../ooni/utils.hpp"
 #include <GeoIP.h>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>

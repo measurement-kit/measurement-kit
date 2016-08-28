@@ -2,10 +2,10 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "connect_impl.hpp"
-#include "emitter.hpp"
-#include "socks5.hpp"
-#include "ssl-context.hpp"
+#include "../net/connect_impl.hpp"
+#include "../net/emitter.hpp"
+#include "../net/socks5.hpp"
+#include "../net/ssl-context.hpp"
 #include <cassert>
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/dns.hpp>

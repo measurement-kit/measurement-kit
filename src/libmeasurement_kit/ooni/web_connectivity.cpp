@@ -8,8 +8,8 @@
 #include <measurement_kit/net/transport.hpp>
 
 #include "../common/utils.hpp"
-#include "utils.hpp"
-#include "constants.hpp"
+#include "../ooni/utils.hpp"
+#include "../ooni/constants.hpp"
 
 #include <set>
 #include <regex>

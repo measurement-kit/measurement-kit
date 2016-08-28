@@ -2,8 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "query_impl.hpp"
-
+#include "../dns/query_impl.hpp"
 struct evdns_base;
 
 namespace mk {

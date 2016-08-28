@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include "../common/utils.hpp"
-#include "utils.hpp"
+#include "../ooni/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {

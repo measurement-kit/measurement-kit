@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "mlabns_impl.hpp"
+#include "../mlabns/mlabns_impl.hpp"
 
 namespace mk {
 namespace mlabns {

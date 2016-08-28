@@ -4,7 +4,7 @@
 #ifndef SRC_NDT_MESSAGES_IMPL_HPP
 #define SRC_NDT_MESSAGES_IMPL_HPP
 
-#include "internal.hpp"
+#include "../ndt/internal.hpp"
 #include <cassert>
 
 namespace mk {

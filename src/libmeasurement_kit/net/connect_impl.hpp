@@ -5,7 +5,7 @@
 #define SRC_NET_CONNECT_IMPL_HPP
 
 #include "../common/utils.hpp"
-#include "connect.hpp"
+#include "../net/connect.hpp"
 #include <arpa/inet.h>
 #include <event2/bufferevent.h>
 #include <event2/util.h>

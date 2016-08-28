@@ -10,7 +10,7 @@
 #include <measurement_kit/net.hpp>
 #include <new>
 #include <stdlib.h>
-#include "connection.hpp"
+#include "../net/connection.hpp"
 
 extern "C" {
 
