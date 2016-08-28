@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+gen_sources() {
+    for name in `ls $2`; do
+        if [ ! -d $2/$name ]; then
+            if echo $name | grep -q '\.c[p]*$'; then
+                echo "$1 += $3$2/$name"
+            fi
+        fi
+    done
+    for name in `ls $2`; do
+        if [ -d $2/$name ]; then
+            if [ "$2/$name" = "src/libmeasurement_kit/ext" ]; then
+                continue  # do not descend into external sources
+            fi
+            gen_sources $1 $2/$name $3
+        fi
+    done
+}
