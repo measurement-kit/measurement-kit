@@ -41,7 +41,7 @@ class Report {
 
     void open(Callback<Error> callback);
 
-    void write_entry(Entry &entry, Callback<Error> callback);
+    void write_entry(Entry entry, Callback<Error> callback);
 
     void close(Callback<Error> callback);
 
