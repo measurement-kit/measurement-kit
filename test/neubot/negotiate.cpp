@@ -20,7 +20,6 @@ TEST_CASE("Test works as expected") {
     });
 }
 
-#if 0
 TEST_CASE("Test works without negotiation") {
     Settings settings;
     settings["url"] = "";
@@ -29,7 +28,6 @@ TEST_CASE("Test works without negotiation") {
     run_impl([](Error error) { REQUIRE(!error); }, settings, Reactor::global(),
              Logger::global());
 }
-#endif
 #endif
 
 #if 0
