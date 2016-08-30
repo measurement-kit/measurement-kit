@@ -4,7 +4,7 @@
 
 #include <cstring>
 #include <measurement_kit/report.hpp>
-#include "src/libmeasurement_kit/common/utils.hpp"
+#include "../common/utils.hpp"
 
 namespace mk {
 namespace report {

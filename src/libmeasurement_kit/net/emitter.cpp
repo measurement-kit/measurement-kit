@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/net/emitter.hpp"
+#include "../net/emitter.hpp"
 
 namespace mk {
 namespace net {
