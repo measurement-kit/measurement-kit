@@ -4,9 +4,9 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "src/libmeasurement_kit/common/check_connectivity.hpp"
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
-#include "src/libmeasurement_kit/http/request_impl.hpp"
+#include "../src/libmeasurement_kit/common/check_connectivity.hpp"
+#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/http/request_impl.hpp"
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>

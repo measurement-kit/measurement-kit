@@ -6,7 +6,7 @@
 
 #include <measurement_kit/dns.hpp>
 
-#include "src/libmeasurement_kit/common/utils.hpp"
+#include "../common/utils.hpp"
 #include <measurement_kit/common.hpp>
 
 #include <event2/dns.h>
