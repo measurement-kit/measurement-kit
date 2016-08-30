@@ -4,8 +4,8 @@
 #ifndef SRC_NET_CONNECT_IMPL_HPP
 #define SRC_NET_CONNECT_IMPL_HPP
 
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include "src/libmeasurement_kit/net/connect.hpp"
+#include "../common/utils.hpp"
+#include "../net/connect.hpp"
 #include <arpa/inet.h>
 #include <event2/bufferevent.h>
 #include <event2/util.h>

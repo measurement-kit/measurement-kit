@@ -6,7 +6,6 @@ AUTOMAKE_OPTIONS = foreign 1.9 subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 
 LIBMEASUREMENT_KIT_I_FLAGS = -I $(top_srcdir)/include
-LIBMEASUREMENT_KIT_I_FLAGS += -I $(top_srcdir)/src/libmeasurement_kit
 LIBMEASUREMENT_KIT_W_FLAGS = -Wall -Wextra -pedantic
 
 VERSION_INFO = -release @VERSION@ -version-info 0

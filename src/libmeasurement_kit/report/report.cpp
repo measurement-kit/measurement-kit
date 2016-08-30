@@ -44,7 +44,7 @@ void Report::open(Callback<Error> callback) {
     }), callback);
 }
 
-void Report::write_entry(Entry &entry, Callback<Error> callback) {
+void Report::write_entry(Entry entry, Callback<Error> callback) {
     mk::parallel(FMAP(reporters_, [=](Var<BaseReporter> r) {
         return r->write_entry(entry);
     }), callback);

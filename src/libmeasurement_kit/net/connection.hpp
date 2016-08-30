@@ -4,8 +4,8 @@
 #ifndef SRC_NET_CONNECTION_HPP
 #define SRC_NET_CONNECTION_HPP
 
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include "src/libmeasurement_kit/net/emitter.hpp"
+#include "../common/utils.hpp"
+#include "../net/emitter.hpp"
 #include <event2/bufferevent.h>
 #include <event2/event.h>
 #include <list>

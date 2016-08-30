@@ -146,14 +146,29 @@ TEST_CASE("The write_entry() method works correctly") {
         REQUIRE(err.child_errors[0]->code == ReportNotOpenError().code);
         report.open([&](Error err) {
             REQUIRE(!err);
+            entry["foobar"] = 1;
             report.write_entry(entry, [&](Error err) {
                 REQUIRE(!err);
+                REQUIRE(err.child_errors.size() == 1);
+                REQUIRE(err.child_errors[0]->code == NoError().code);
+                REQUIRE(err.child_errors[0]->child_errors.size() == 0);
+                entry["foobar"] = 2;
                 report.write_entry(entry, [&](Error err) {
                     REQUIRE(!err);
+                    REQUIRE(err.child_errors.size() == 1);
+                    REQUIRE(err.child_errors[0]->code == NoError().code);
+                    REQUIRE(err.child_errors[0]->child_errors.size() == 0);
+                    entry["foobar"] = 3;
                     report.write_entry(entry, [&](Error err) {
                         REQUIRE(!err);
                         report.close([&](Error err) {
                             REQUIRE(!err);
+                            REQUIRE(err.child_errors.size() == 1);
+                            REQUIRE(
+                                err.child_errors[0]->code == NoError().code);
+                            REQUIRE(
+                                err.child_errors[0]->child_errors.size() == 0);
+                            entry["foobar"] = 4;
                             report.write_entry(entry, [&](Error err) {
                                 REQUIRE(err.code ==
                                         ParallelOperationError().code);
