@@ -3,10 +3,19 @@
 set -e
 export LC_ALL=C  # Stable sorting regardless of the locale
 
-no_download=0
-if [ "$1" = "-n" ]; then
-    no_download=1
-fi
+no_deps=0
+no_geoip=0
+while [ $# -gt 0 ]; do
+    opt=$1; shift
+    if [ "$opt" = "--no-deps" ]; then
+        no_deps=1
+    elif [ "$opt" = "--no-geoip" ]; then
+        no_geoip=1
+    else
+        echo "usage: $0 [--no-deps|--no-geoip]" 1>&2
+        exit 1
+    fi
+done
 
 slug() {
     echo $(echo $1|tr '/-' '_'|sed 's/^include_measurement_kit/mk/g')
@@ -81,7 +90,7 @@ gen_executables() {
 }
 
 get_repo() {
-    if [ $no_download -eq 1 ]; then
+    if [ $no_deps -eq 1 ]; then
         return
     fi
     echo ""
@@ -94,21 +103,21 @@ get_repo() {
 }
 
 get_geoipdb() {
-    if [ $no_download -eq 1 ]; then
+    if [ $no_geoip -eq 1 ]; then
         return
     fi
-    echo ""
+    echo "* Fetching geoip database"
     base=https://download.maxmind.com/download/geoip/database
     if [ ! -f "test/fixtures/GeoIP.dat" ]; then
-        wget -q $base/GeoLiteCountry/GeoIP.dat.gz -O test/fixtures/GeoIP.dat.gz
+        wget $base/GeoLiteCountry/GeoIP.dat.gz -O test/fixtures/GeoIP.dat.gz
         gzip -d test/fixtures/GeoIP.dat.gz
     fi
     if [ ! -f "test/fixtures/GeoLiteCity.dat" ]; then
-        wget -q $base/GeoLiteCity.dat.gz -O test/fixtures/GeoLiteCity.dat.gz
+        wget $base/GeoLiteCity.dat.gz -O test/fixtures/GeoLiteCity.dat.gz
         gzip -d test/fixtures/GeoLiteCity.dat.gz
     fi
     if [ ! -f "test/fixtures/GeoIPASNum.dat" ]; then
-        wget -q $base/asnum/GeoIPASNum.dat.gz -O test/fixtures/GeoIPASNum.dat.gz
+        wget $base/asnum/GeoIPASNum.dat.gz -O test/fixtures/GeoIPASNum.dat.gz
         gzip -d test/fixtures/GeoIPASNum.dat.gz
     fi
 }
@@ -132,11 +141,9 @@ echo "* Updating .gitignore"
 sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
 
-echo "* Fetching dependencies that are built in any case"
 get_repo nodejs/http-parser v2.7.1 http-parser
 get_repo philsquared/Catch v1.5.6 Catch
 
-echo "* Fetching geoip database"
 get_geoipdb
 
 echo "* Running 'autoreconf -i'"
