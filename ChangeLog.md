@@ -1,3 +1,41 @@
+# MeasurementKit 0.3.0-beta [2016-08-31]
+
+- autogen.sh: don't list embedded-mk as dependency (#796)
+- teach acinclude.m4 to use brew's OpenSSL (#797)
+- sketch out cmake build system (mainly for Windows) (#798)
+- implement incremental ooni collector (#765)
+- run OONI tests in parallel (#768)
+
+# MeasurementKit 0.3.0-alpha.1 [2016-08-25]
+
+- fix type of `getopt()` return value
+- fix build for Android
+- improve docs
+- `net_test.hpp`: add `set_error_filepath()`
+- change Android output archive name to be `measurement_kit-$version-android_jni${optional_build_version}.tag.bz2`
+
+# MeasurementKit 0.3.0-alpha [2016-08-24]
+
+- Add command line interface and also build binary executable
+- Add OONI's web connectivity test
+- Improve NDT test implementation: add support for waiting in queue, convert NDT into a real OONI test, fix way in which speed is measured
+- `error.hpp`: allows to add an error a list of child errors
+- add `fmap.hpp`: allows to map() over a vector
+- `logger.hpp`: add EOF handler and allow to write logs on logfile, allow code to specify that the log message is in JSON format
+- `net_test.hpp`: pass error to begin() and end(), add `on_entry` handler, add handlers for entering into `begin` and `end` states
+- add `parallel.hpp`: allows to run functions in parallel and terminates only when all parallel functions have terminated (this interface is single threaded, not multi threaded, thus parallelism is only achieved when one function pauses waiting for I/O)
+- add `range.hpp`: to generate numbers in a given range (such as in Python)
+- `version.hpp`: add function to get library version
+- `http.hpp`: implement following redirection and case-insensitive headers search
+- `report/entry.hpp` now derives from nlohmann/json using public inheritance rather than private inheritance
+- Update nlohmann/json.hpp to v2.0.2
+- Update `tls_verify.c` to v1.15
+- mlabns: allow to specify alternative mlabns base url
+- net: add workarounds for when libevent's SSL bufferevents emit EOF before emitting data received before EOF, make emitter code more robust
+- ooni: it is now possible to avoid saving autonomous system number and country code, add code to lookup the real IP address of the resolver, refactor code to use GeoIP APIs
+- Update external dependencies versions
+- Minor changes and bug fixes
+
 # MeasurementKit 0.2.8 [2016-08-18]
 
 - Updated dependencies

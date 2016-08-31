@@ -2,14 +2,14 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include "src/libmeasurement_kit/ooni/utils.hpp"
+#include "../common/utils.hpp"
+#include "../ooni/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace ooni {
 
-void OoniTest::run_next_measurement(Callback<Error> cb) {
+void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
     logger->debug("net_test: running next measurement");
     std::string next_input;
     std::getline(*input_generator, next_input);
@@ -46,17 +46,18 @@ void OoniTest::run_next_measurement(Callback<Error> cb) {
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
-        Error error = file_report.write_entry(entry);
-        if (error) {
-            cb(error);
-            return;
-        }
+        report.fill_entry(entry);
         if (entry_cb) {
             entry_cb(entry.dump());
         }
-        logger->debug("net_test: written entry");
-
-        reactor->call_soon([=]() { run_next_measurement(cb); });
+        report.write_entry(entry, [=](Error error) {
+            if (error) {
+                cb(error);
+                return;
+            }
+            logger->debug("net_test: written entry");
+            reactor->call_soon([=]() { run_next_measurement(index, cb); });
+        });
     });
 }
 
@@ -108,22 +109,23 @@ void OoniTest::geoip_lookup(Callback<> cb) {
         options, reactor, logger);
 }
 
-Error OoniTest::open_report() {
-    file_report.test_name = test_name;
-    file_report.test_version = test_version;
-    file_report.test_start_time = test_start_time;
+void OoniTest::open_report(Callback<Error> callback) {
+    report.test_name = test_name;
+    report.test_version = test_version;
+    report.test_start_time = test_start_time;
 
-    file_report.options = options;
+    report.options = options;
 
-    file_report.probe_ip = probe_ip;
-    file_report.probe_cc = probe_cc;
-    file_report.probe_asn = probe_asn;
+    report.probe_ip = probe_ip;
+    report.probe_cc = probe_cc;
+    report.probe_asn = probe_asn;
 
     if (output_filepath == "") {
         output_filepath = generate_output_filepath();
     }
-    file_report.filename = output_filepath;
-    return file_report.open();
+    report.add_reporter(FileReporter::make(output_filepath));
+    report.add_reporter(OoniReporter::make(*this));
+    report.open(callback);
 }
 
 std::string OoniTest::generate_output_filepath() {
@@ -162,27 +164,39 @@ void OoniTest::begin(Callback<Error> cb) {
             } else {
                 logger->debug("failed to lookup resolver ip");
             }
-            error = open_report();
-            if (error) {
-                cb(error);
-                return;
-            }
-            if (needs_input) {
-                if (input_filepath == "") {
-                    logger->warn("an input file is required");
-                    cb(MissingRequiredInputFileError());
+            open_report([=](Error error) {
+                if (error) {
+                    cb(error);
                     return;
                 }
-                input_generator.reset(new std::ifstream(input_filepath));
-                if (!input_generator->good()) {
-                    logger->warn("cannot read input file");
-                    cb(CannotOpenInputFileError());
-                    return;
+                if (needs_input) {
+                    if (input_filepath == "") {
+                        logger->warn("an input file is required");
+                        cb(MissingRequiredInputFileError());
+                        return;
+                    }
+                    input_generator.reset(new std::ifstream(input_filepath));
+                    if (!input_generator->good()) {
+                        logger->warn("cannot read input file");
+                        cb(CannotOpenInputFileError());
+                        return;
+                    }
+                } else {
+                    input_generator.reset(new std::istringstream("\n"));
                 }
-            } else {
-                input_generator.reset(new std::istringstream("\n"));
-            }
-            run_next_measurement(cb);
+
+                // Run `parallelism` measurements in parallel
+                mk::parallel(
+                    mk::fmap<size_t, Continuation<Error>>(
+                        mk::range<size_t>(options.get("parallelism", 3)),
+                        [=](size_t index) {
+                            return [=](Callback<Error> cb) {
+                                run_next_measurement(index, cb);
+                            };
+                        }),
+                    cb);
+
+            });
         }, options, reactor, logger);
     });
 }
@@ -191,20 +205,7 @@ void OoniTest::end(Callback<Error> cb) {
     if (end_cb) {
         end_cb();
     }
-    Error error = file_report.close();
-    if (error) {
-        cb(error);
-        return;
-    }
-    collector::submit_report(
-        output_filepath,
-        options.get(
-            // Note: by default we use the testing collector URL because otherwise
-            // testing runs would be collected creating noise and using resources
-            "collector_base_url",
-            collector::testing_collector_url()
-        ),
-        [=](Error error) { cb(error); }, options, reactor, logger);
+    report.close(cb);
 }
 
 } // namespace ooni

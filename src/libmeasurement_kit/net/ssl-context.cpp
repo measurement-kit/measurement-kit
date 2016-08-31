@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <measurement_kit/net.hpp>
-#include "src/libmeasurement_kit/net/ssl-context.hpp"
+#include "../net/ssl-context.hpp"
 
 namespace mk {
 namespace net {

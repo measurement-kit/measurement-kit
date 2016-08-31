@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/ooni/collector_client_impl.hpp"
+#include "../ooni/collector_client_impl.hpp"
 #include <regex>
 
 namespace mk {
@@ -60,6 +60,13 @@ void create_report(Var<Transport> transport, Entry entry,
     create_report_impl(transport, entry, callback, settings, reactor, logger);
 }
 
+void connect_and_create_report(report::Entry entry,
+                               Callback<Error, std::string> callback,
+                               Settings settings, Var<Reactor> reactor,
+                               Var<Logger> logger) {
+    connect_and_create_report_impl(entry, callback, settings, reactor, logger);
+}
+
 void update_report(Var<Transport> transport, std::string report_id, Entry entry,
                    Callback<Error> callback, Settings settings,
                    Var<Reactor> reactor, Var<Logger> logger) {
@@ -67,11 +74,25 @@ void update_report(Var<Transport> transport, std::string report_id, Entry entry,
                        logger);
 }
 
+void connect_and_update_report(std::string report_id, report::Entry entry,
+                               Callback<Error> callback, Settings settings,
+                               Var<Reactor> reactor, Var<Logger> logger) {
+    connect_and_update_report_impl(report_id, entry, callback, settings,
+                                   reactor, logger);
+}
+
 void close_report(Var<Transport> transport, std::string report_id,
                   Callback<Error> callback, Settings settings,
                   Var<Reactor> reactor, Var<Logger> logger) {
     close_report_impl(transport, report_id, callback, settings, reactor,
                       logger);
+}
+
+void connect_and_close_report(std::string report_id, Callback<Error> callback,
+                              Settings settings, Var<Reactor> reactor,
+                              Var<Logger> logger) {
+    connect_and_close_report_impl(report_id, callback, settings, reactor,
+                                  logger);
 }
 
 ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger) {

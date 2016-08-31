@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/ext/http-parser/http_parser.h"
+#include "../ext/http-parser/http_parser.h"
 #include <measurement_kit/http.hpp>
 
 namespace mk {

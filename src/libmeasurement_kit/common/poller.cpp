@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/common/poller.hpp"
+#include "../common/poller.hpp"
 
 // Using `extern "C"` for C callbacks is recommended by C++ FAQs.
 // See <https://isocpp.org/wiki/faq/pointers-to-members#memfnptr-vs-fnptr>.

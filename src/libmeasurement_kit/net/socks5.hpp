@@ -4,8 +4,8 @@
 #ifndef SRC_NET_SOCKS5_HPP
 #define SRC_NET_SOCKS5_HPP
 
-#include "src/libmeasurement_kit/net/connection.hpp"
-#include "src/libmeasurement_kit/net/emitter.hpp"
+#include "../net/connection.hpp"
+#include "../net/emitter.hpp"
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
 

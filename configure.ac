@@ -3,7 +3,7 @@
 # information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.3.0-dev, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.4.0-dev, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -21,6 +21,7 @@ AC_PROG_INSTALL
 # Must be before AC_PROG_CXX (see http://stackoverflow.com/questions/11703709)
 MK_AM_ENABLE_COVERAGE
 MK_AM_ADD_COVERAGE_FLAGS_IF_NEEDED
+MK_AM_DISABLE_BINARIES
 MK_AM_DISABLE_EXAMPLES
 MK_AM_DISABLE_INTEGRATION_TESTS
 
