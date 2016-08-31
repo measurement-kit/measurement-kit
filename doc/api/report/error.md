@@ -44,7 +44,7 @@ sense to do so in order to make code idempotent. For example, if you call
 `open` on a `BaseReporter` that is already open, the result would be `NoError`
 rather than `ReportAlreadyOpenError`. This is to guarantee idempotence when
 you a have a `Report` with many `BaseReporter`s registered and you want to
-be able to retry `open` after if failed only on some `BaseReporters.
+be able to retry `open` after if failed only on some `BaseReporters`.
 
 To detect the case where, e.g., `open` was called twice, you should check
 for the child errors of the returned no error. For example:
