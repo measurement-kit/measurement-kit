@@ -1,3 +1,7 @@
+# MeasurementKit 0.2.9 [2016-08-31]
+
+- Make sure install.sh is included when we build release
+
 # MeasurementKit 0.2.8 [2016-08-18]
 
 - Updated dependencies
