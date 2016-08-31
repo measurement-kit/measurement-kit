@@ -64,3 +64,16 @@ TEST_CASE("The defined-error constructor with string works") {
     REQUIRE(ex.as_ooni_error() == "example error antani");
     REQUIRE(ex.reason == "example error antani");
 }
+
+TEST_CASE("The add_child_error() method works") {
+    Error err;
+    ExampleError ex{"antani"};
+    MockedError merr;
+    err.add_child_error(ex);
+    err.add_child_error(merr);
+    REQUIRE((err.child_errors.size() == 2));
+    REQUIRE((err.child_errors[0]->code == ExampleError().code));
+    REQUIRE((err.child_errors[0]->reason == "example error antani"));
+    REQUIRE((err.child_errors[1]->code == MockedError().code));
+    REQUIRE((err.child_errors[1]->reason == "unknown_failure 4"));
+}

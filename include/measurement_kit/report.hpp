@@ -5,4 +5,5 @@
 #include <measurement_kit/report/entry.hpp>
 #include <measurement_kit/report/error.hpp>
 #include <measurement_kit/report/file_reporter.hpp>
+#include <measurement_kit/report/report.hpp>
 #endif

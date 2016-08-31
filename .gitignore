@@ -107,8 +107,8 @@ test/ooni/tcp_connect
 test/ooni/templates
 test/ooni/utils
 test/ooni/web_connectivity
-test/report/base_reporter
 test/report/entry
 test/report/file_reporter
+test/report/report
 test/traceroute/android
 third_party/
