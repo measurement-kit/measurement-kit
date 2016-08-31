@@ -153,6 +153,25 @@ void create_report_impl(Var<Transport> transport, Entry entry,
                    settings, reactor, logger);
 }
 
+template <MK_MOCK_NAMESPACE(collector, connect),
+          MK_MOCK_NAMESPACE(collector, create_report)>
+void connect_and_create_report_impl(report::Entry entry,
+                                    Callback<Error, std::string> callback,
+                                    Settings settings, Var<Reactor> reactor,
+                                    Var<Logger> logger) {
+    collector_connect(settings, [=](Error error, Var<Transport> txp) {
+        if (error) {
+            callback(error, "");
+            return;
+        }
+        collector_create_report(txp, entry, [=](Error error, std::string rid) {
+            txp->close([=]() {
+                callback(error, rid);
+            });
+        }, settings, reactor, logger);
+    }, reactor, logger);
+}
+
 template <MK_MOCK_NAMESPACE(collector, post)>
 void update_report_impl(Var<Transport> transport, std::string report_id,
                         Entry entry, Callback<Error> callback,
@@ -173,19 +192,53 @@ void update_report_impl(Var<Transport> transport, std::string report_id,
                    settings, reactor, logger);
 }
 
+template <MK_MOCK_NAMESPACE(collector, connect),
+          MK_MOCK_NAMESPACE(collector, update_report)>
+void connect_and_update_report_impl(std::string report_id, report::Entry entry,
+                                    Callback<Error> callback,
+                                    Settings settings, Var<Reactor> reactor,
+                                    Var<Logger> logger) {
+    collector_connect(settings, [=](Error error, Var<Transport> txp) {
+        if (error) {
+            callback(error);
+            return;
+        }
+        collector_update_report(txp, report_id, entry, [=](Error error) {
+            txp->close([=]() {
+                callback(error);
+            });
+        }, settings, reactor, logger);
+    }, reactor, logger);
+}
+
 template <MK_MOCK_NAMESPACE(collector, post)>
 void close_report_impl(Var<Transport> transport, std::string report_id,
                        Callback<Error> callback, Settings settings,
                        Var<Reactor> reactor, Var<Logger> logger) {
-    // Here we log at level INFO so we can save one extra lambda
-    // below to just tell the user how closing report went
-    logger->info("closing report...");
     collector_post(transport, "/report/" + report_id + "/close", "",
                    [=](Error err, nlohmann::json) {
-                       logger->info("closing report... %d", err.code);
                        callback(err);
                    },
                    settings, reactor, logger);
+}
+
+template <MK_MOCK_NAMESPACE(collector, connect),
+          MK_MOCK_NAMESPACE(collector, close_report)>
+void connect_and_close_report_impl(std::string report_id,
+                                   Callback<Error> callback,
+                                   Settings settings, Var<Reactor> reactor,
+                                   Var<Logger> logger) {
+    collector_connect(settings, [=](Error error, Var<Transport> txp) {
+        if (error) {
+            callback(error);
+            return;
+        }
+        collector_close_report(txp, report_id, [=](Error error) {
+            txp->close([=]() {
+                callback(error);
+            });
+        }, settings, reactor, logger);
+    }, reactor, logger);
 }
 
 ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger);
