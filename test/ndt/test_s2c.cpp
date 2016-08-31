@@ -12,9 +12,9 @@ using namespace mk;
 using namespace mk::ndt;
 using json = nlohmann::json;
 
-static void failure(std::string, int, int, ConnectManyCb callback,
+static void failure(std::string, int, Callback<Error, Var<Transport>> cb,
                     Settings, Var<Logger>, Var<Reactor>) {
-    callback(MockedError(), {});
+    cb(MockedError(), nullptr);
 }
 
 TEST_CASE("coroutine() is robust to connect error") {
@@ -117,7 +117,7 @@ static void success(Var<Context>, Callback<Error, uint8_t, std::string> cb,
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
-static void failure(Var<Entry>, std::string, test_s2c::Params,
+static void failure(Var<Entry>, std::string, int,
                     Callback<Error, Continuation<Error, double>> cb, double,
                     Settings, Var<Logger>, Var<Reactor>) {
     cb(MockedError(), [](Callback<Error, double>) {
@@ -138,7 +138,7 @@ static void test_prepare(Var<Context>,
 }
 
 static void
-connect_but_fail_later(Var<Entry>, std::string, test_s2c::Params,
+connect_but_fail_later(Var<Entry>, std::string, int,
                        Callback<Error, Continuation<Error, double>> cb, double,
                        Settings, Var<Logger>, Var<Reactor>) {
     cb(NoError(), [](Callback<Error, double> cb) { cb(MockedError(), 0.0); });
@@ -167,7 +167,7 @@ TEST_CASE("run() deals with coroutine terminating with error") {
         ctx, [](Error err) { REQUIRE(err == MockedError()); });
 }
 
-static void coro_ok(Var<Entry>, std::string, test_s2c::Params,
+static void coro_ok(Var<Entry>, std::string, int,
                     Callback<Error, Continuation<Error, double>> cb, double,
                     Settings, Var<Logger>, Var<Reactor>) {
     cb(NoError(), [](Callback<Error, double> cb) { cb(NoError(), 0.0); });

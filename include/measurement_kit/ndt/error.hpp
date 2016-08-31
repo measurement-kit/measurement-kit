@@ -49,11 +49,8 @@ MK_DEFINE_ERR(MK_ERR_NDT(36), SerializingFinalMetaError, "")
 MK_DEFINE_ERR(MK_ERR_NDT(37), WritingMetaError, "")
 MK_DEFINE_ERR(MK_ERR_NDT(38), SerializingTestMsgError, "")
 MK_DEFINE_ERR(MK_ERR_NDT(39), WritingTestMsgError, "")
-MK_DEFINE_ERR(MK_ERR_NDT(40), InvalidDurationError, "")
-MK_DEFINE_ERR(MK_ERR_NDT(41), InvalidSnapsDelayError, "")
-MK_DEFINE_ERR(MK_ERR_NDT(42), InvalidNumStreamsError, "")
-MK_DEFINE_ERR(MK_ERR_NDT(43), QueueServerBusyError, "")
-MK_DEFINE_ERR(MK_ERR_NDT(44), FormatMsgWaitingError, "")
+MK_DEFINE_ERR(MK_ERR_NDT(40), QueueServerBusyError, "")
+MK_DEFINE_ERR(MK_ERR_NDT(41), FormatMsgWaitingError, "")
 
 } // namespace ndt
 } // namespace mk

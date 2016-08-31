@@ -9,7 +9,7 @@
 namespace mk {
 namespace ooni {
 
-void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
+void OoniTest::run_next_measurement(Callback<Error> cb) {
     logger->debug("net_test: running next measurement");
     std::string next_input;
     std::getline(*input_generator, next_input);
@@ -48,7 +48,7 @@ void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
 
         report.fill_entry(entry);
         if (entry_cb) {
-            entry_cb(entry.dump(4));
+            entry_cb(entry.dump());
         }
         report.write_entry(entry, [=](Error error) {
             if (error) {
@@ -56,7 +56,7 @@ void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
                 return;
             }
             logger->debug("net_test: written entry");
-            reactor->call_soon([=]() { run_next_measurement(index, cb); });
+            reactor->call_soon([=]() { run_next_measurement(cb); });
         });
     });
 }
@@ -184,18 +184,7 @@ void OoniTest::begin(Callback<Error> cb) {
                 } else {
                     input_generator.reset(new std::istringstream("\n"));
                 }
-
-                // Run `parallelism` measurements in parallel
-                mk::parallel(
-                    mk::fmap<size_t, Continuation<Error>>(
-                        mk::range<size_t>(options.get("parallelism", 3)),
-                        [=](size_t index) {
-                            return [=](Callback<Error> cb) {
-                                run_next_measurement(index, cb);
-                            };
-                        }),
-                    cb);
-
+                run_next_measurement(cb);
             });
         }, options, reactor, logger);
     });

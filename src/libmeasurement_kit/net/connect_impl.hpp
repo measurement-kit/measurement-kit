@@ -28,8 +28,7 @@ template <MK_MOCK(evutil_parse_sockaddr_port), MK_MOCK(bufferevent_socket_new),
           MK_MOCK(bufferevent_set_timeouts),
           MK_MOCK(bufferevent_socket_connect)>
 void connect_base(std::string address, int port,
-                  Callback<Error, bufferevent *, double> cb,
-                  double timeout = 10.0,
+                  Callback<Error, bufferevent *> cb, double timeout = 10.0,
                   Var<Reactor> reactor = Reactor::global(),
                   Var<Logger> logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
@@ -42,7 +41,7 @@ void connect_base(std::string address, int port,
     int salen = sizeof storage;
 
     if (evutil_parse_sockaddr_port(endpoint.c_str(), saddr, &salen) != 0) {
-        cb(GenericError(), nullptr, 0.0);
+        cb(GenericError(), nullptr);
         return;
     }
 
@@ -58,11 +57,9 @@ void connect_base(std::string address, int port,
         throw GenericError(); // This should not happen
     }
 
-    double begin = mk::time_now();
-
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
         bufferevent_free(bev);
-        cb(GenericError(), nullptr, 0.0);
+        cb(GenericError(), nullptr);
         return;
     }
 
@@ -70,15 +67,13 @@ void connect_base(std::string address, int port,
     // NOTE: In case of `new` failure we let the stack unwind
     bufferevent_setcb(
         bev, nullptr, nullptr, mk_bufferevent_on_event,
-        new Callback<Error, bufferevent *>([=](Error err, bufferevent *bev) {
+        new Callback<Error, bufferevent *>([cb](Error err, bufferevent *bev) {
             if (err) {
                 bufferevent_free(bev);
-                cb(err, nullptr, 0.0);
+                cb(err, nullptr);
                 return;
             }
-            double elapsed = mk::time_now() - begin;
-            logger->debug("connect time: %f", elapsed);
-            cb(err, bev, elapsed);
+            cb(err, bev);
         }));
 }
 
@@ -87,9 +82,7 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
     // Implementation note: this function connects sequentially, which
     // is slower but also much simpler to implement and verify
     if (ctx->left <= 0) {
-        Error err = NoError();
-        err.context = ctx->result;
-        ctx->callback(err, ctx->connections);
+        ctx->callback(NoError(), ctx->connections);
         return;
     }
     net_connect(ctx->address, ctx->port,
@@ -98,11 +91,7 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
                         ctx->callback(err, ctx->connections);
                         return;
                     }
-                    Var<ConnectResult> cr = err.context.as<ConnectResult>();
-                    if (!!cr) {
-                        ctx->result->results.push_back(cr);
-                    }
-                    ctx->connections.push_back(std::move(txp));
+                    ctx->connections.push_back(txp);
                     --ctx->left;
                     connect_many_impl<net_connect>(ctx);
                 },
@@ -121,7 +110,6 @@ connect_many_make(std::string address, int port, int count,
     ctx->settings = settings;
     ctx->logger = logger;
     ctx->reactor = reactor;
-    ctx->result.reset(new ConnectManyResult);
     return ctx;
 }
 

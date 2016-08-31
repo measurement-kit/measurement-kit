@@ -143,7 +143,6 @@ void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
         ctx->logger->info("Got server version: %s", s.c_str());
-        (*ctx->entry)["server_version"] = s;
         // TODO: validate the server version?
         callback(NoError());
     }, ctx->reactor);
@@ -191,7 +190,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
         func = test_c2s_run;
     } else if (*num == TEST_META) {
         func = test_meta_run;
-    } else if (*num == TEST_S2C or *num == TEST_S2C_EXT) {
+    } else if (*num == TEST_S2C) {
         func = test_s2c_run;
     } else {
         /* nothing */
