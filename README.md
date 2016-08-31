@@ -129,7 +129,7 @@ Note that, if you downloaded the release tarball, GeoIP databases are not
 included in the tarball. However, they are useful for running regress tests.
 To get them, run the following command:
 
-    ./build/get-geip
+    ./build/get-geoip
 
 To tell make to produce less output (as in the Linux kernel
 build process) run:
