@@ -16,19 +16,17 @@ namespace net {
 
 class SslContext : public NonCopyable, public NonMovable {
   public:
-    SSL *get_client_ssl(std::string hostname);
+    ErrorOr<SSL *> get_client_ssl(std::string hostname);
 
     ~SslContext();
 
-    SslContext(std::string ca_bundle_path);
-
-    SslContext();
-
-    static Var<SslContext> global();
+    static ErrorOr<Var<SslContext>> make(std::string ca_bundle_path);
 
   private:
-    void init(std::string ca_bundle_path);
+    SslContext() {}
+    Error init(std::string ca_bundle_path);
 
+    std::string ca_bundle_path; // Used to decide whether to recreate singleton
     ssl_ctx_st *ctx = nullptr;
 };
 
