@@ -34,8 +34,9 @@ static void failure(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("finalizing_test() deals with read_msg() error") {
     Var<Context> ctx(new Context);
+    Var<Entry> entry(new Entry);
     test_s2c::finalizing_test_impl<failure>(
-        ctx, [](Error err) { REQUIRE(err == ReadingTestMsgError()); });
+        ctx, entry, [](Error err) { REQUIRE(err == ReadingTestMsgError()); });
 }
 
 static void invalid(Var<Context>, Callback<Error, uint8_t, std::string> cb,
@@ -45,8 +46,9 @@ static void invalid(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("finalizing_test() deals with receiving invalid message") {
     Var<Context> ctx(new Context);
+    Var<Entry> entry(new Entry);
     test_s2c::finalizing_test_impl<invalid>(
-        ctx, [](Error err) { REQUIRE(err == NotTestMsgError()); });
+        ctx, entry, [](Error err) { REQUIRE(err == NotTestMsgError()); });
 }
 
 // XXX: static test function with a state is not good
@@ -62,8 +64,10 @@ static void empty(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("finalizing_test() deals with receiving invalid json") {
     Var<Context> ctx(new Context);
+    ctx->entry.reset(new Entry);  // Required for when we reach TEST_FINALIZE
+    Var<Entry> entry(new Entry);
     test_s2c::finalizing_test_impl<empty>(
-        ctx, [](Error err) { REQUIRE(err == NoError()); });
+        ctx, entry, [](Error err) { REQUIRE(err == NoError()); });
 }
 
 TEST_CASE("run() deals with messages::read() failure") {
