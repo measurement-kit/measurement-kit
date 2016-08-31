@@ -3,6 +3,8 @@
 set -e
 export LC_ALL=C  # Stable sorting regardless of the locale
 
+. build/autogen.d/geoip
+
 no_deps=0
 no_geoip=0
 while [ $# -gt 0 ]; do
@@ -106,20 +108,7 @@ get_geoipdb() {
     if [ $no_geoip -eq 1 ]; then
         return
     fi
-    echo "* Fetching geoip database"
-    base=https://download.maxmind.com/download/geoip/database
-    if [ ! -f "test/fixtures/GeoIP.dat" ]; then
-        wget $base/GeoLiteCountry/GeoIP.dat.gz -O test/fixtures/GeoIP.dat.gz
-        gzip -d test/fixtures/GeoIP.dat.gz
-    fi
-    if [ ! -f "test/fixtures/GeoLiteCity.dat" ]; then
-        wget $base/GeoLiteCity.dat.gz -O test/fixtures/GeoLiteCity.dat.gz
-        gzip -d test/fixtures/GeoLiteCity.dat.gz
-    fi
-    if [ ! -f "test/fixtures/GeoIPASNum.dat" ]; then
-        wget $base/asnum/GeoIPASNum.dat.gz -O test/fixtures/GeoIPASNum.dat.gz
-        gzip -d test/fixtures/GeoIPASNum.dat.gz
-    fi
+    autogen_get_geoip
 }
 
 grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
