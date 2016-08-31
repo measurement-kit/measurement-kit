@@ -30,7 +30,7 @@ static int fail(const char *, sockaddr *, int *) { return -1; }
 TEST_CASE("connect_base deals with evutil_parse_sockaddr_port error") {
     loop_with_initial_event([]() {
         connect_base<fail>("130.192.16.172", 80,
-                           [](Error e, bufferevent *b) {
+                           [](Error e, bufferevent *b, double) {
                                REQUIRE(e);
                                REQUIRE(b == nullptr);
                                break_loop();
@@ -73,7 +73,7 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
         connect_base<::evutil_parse_sockaddr_port, ::bufferevent_socket_new,
                      bufferevent_set_timeouts, fail>(
             "130.192.16.172", 80,
-            [](Error e, bufferevent *b) {
+            [](Error e, bufferevent *b, double) {
                 REQUIRE(e);
                 REQUIRE(b == nullptr);
                 break_loop();
@@ -128,7 +128,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
 TEST_CASE("connect_base works with ipv4") {
     loop_with_initial_event_and_connectivity([]() {
         connect_base("130.192.16.172", 80,
-                     [](Error err, bufferevent *bev) {
+                     [](Error err, bufferevent *bev, double) {
                          REQUIRE(!err);
                          REQUIRE(bev);
                          ::bufferevent_free(bev);
@@ -145,7 +145,7 @@ static bool check_error(Error err) {
 TEST_CASE("connect_base works with ipv4 and closed port") {
     loop_with_initial_event_and_connectivity([]() {
         connect_base("130.192.16.172", 81,
-                     [](Error err, bufferevent *bev) {
+                     [](Error err, bufferevent *bev, double) {
                          REQUIRE(check_error(err));
                          REQUIRE(bev == nullptr);
                          break_loop();
@@ -157,7 +157,7 @@ TEST_CASE("connect_base works with ipv4 and closed port") {
 TEST_CASE("connect_base works with ipv4 and timeout") {
     loop_with_initial_event_and_connectivity([]() {
         connect_base("130.192.16.172", 80,
-                     [](Error err, bufferevent *bev) {
+                     [](Error err, bufferevent *bev, double) {
                          REQUIRE(err == TimeoutError());
                          REQUIRE(bev == nullptr);
                          break_loop();
@@ -169,7 +169,7 @@ TEST_CASE("connect_base works with ipv4 and timeout") {
 TEST_CASE("connect_base works with ipv6") {
     loop_with_initial_event_and_connectivity([]() {
         connect_base("2a00:1450:4001:801::1004", 80,
-                     [](Error err, bufferevent *bev) {
+                     [](Error err, bufferevent *bev, double) {
                          if (err) {
                              REQUIRE(err);
                              REQUIRE(bev == nullptr);
@@ -185,8 +185,9 @@ TEST_CASE("connect_base works with ipv6") {
 }
 
 TEST_CASE("connect_first_of works with empty vector") {
-    loop_with_initial_event_and_connectivity([]() {
-        connect_first_of({}, 80,
+    Var<ConnectResult> result(new ConnectResult);
+    loop_with_initial_event_and_connectivity([=]() {
+        connect_first_of(result, 80,
                          [](std::vector<Error> errors, bufferevent *bev) {
                              REQUIRE(errors.size() == 0);
                              REQUIRE(bev == nullptr);
@@ -197,11 +198,13 @@ TEST_CASE("connect_first_of works with empty vector") {
 }
 
 TEST_CASE("connect_first_of works when all connect fail") {
-    loop_with_initial_event_and_connectivity([]() {
+    Var<ConnectResult> result(new ConnectResult);
+    result->resolve_result.addresses = {
+        "130.192.16.172", "130.192.16.172", "130.192.16.172",
+    };
+    loop_with_initial_event_and_connectivity([=]() {
         connect_first_of(
-            {
-                "130.192.16.172", "130.192.16.172", "130.192.16.172",
-            },
+            result,
             80,
             [](std::vector<Error> errors, bufferevent *bev) {
                 REQUIRE(errors.size() == 3);
@@ -216,11 +219,13 @@ TEST_CASE("connect_first_of works when all connect fail") {
 }
 
 TEST_CASE("connect_first_of works when a connect succeeds") {
-    loop_with_initial_event_and_connectivity([]() {
+    Var<ConnectResult> result(new ConnectResult);
+    result->resolve_result.addresses = {
+        "130.192.16.172", "130.192.16.172", "130.192.16.172",
+    };
+    loop_with_initial_event_and_connectivity([=]() {
         connect_first_of(
-            {
-                "130.192.16.172", "130.192.16.172", "130.192.16.172",
-            },
+            result,
             80,
             [](std::vector<Error> errors, bufferevent *bev) {
                 REQUIRE(errors.size() == 1);

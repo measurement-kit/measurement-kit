@@ -15,37 +15,42 @@ using namespace mk::report;
 NdtTest::NdtTest(Settings s) : OoniTest("", s) {
     options["save_real_probe_ip"] = true;
     test_name = "ndt";
-    test_version = "0.0.1";
+    test_version = "0.0.2";
 }
 
-static void log_summary(Var<Logger> logger, Var<Entry> entry_) {
+static void log_summary(Var<Logger> logger, Var<Entry> entry) {
     try {
-        json entry = json::parse(entry_->dump()); /* XXX */
-        nlohmann::json node{
+        nlohmann::json root{
             {"type", "summary"},
         };
-        node["failure"] = entry["failure"];
-        node["ping"] = {
-            entry["web100_data"]["MinRTT"],
-            "ms"
-        };
-        std::vector<double> speeds;
-        for (auto e: entry["receiver_data"]) {
-            speeds.push_back(e[1]);
+        root["failure"] = (*entry)["failure"];
+        for (auto measurement: (*entry)["test_s2c"]) {
+            nlohmann::json child;
+            child["num_streams"] = measurement["params"]["num_streams"];
+            child["connect_times"] = measurement["connect_times"];
+            child["min_rtt"] = {
+                measurement["web100_data"]["MinRTT"],
+                "ms"
+            };
+            std::vector<double> speeds;
+            for (auto e: measurement["receiver_data"]) {
+                speeds.push_back(e[1]);
+            }
+            child["median_speed"] = {
+                percentile(speeds, 0.5),
+                "kbit/s"
+            };
+            child["10_percentile_speed"] = {
+                percentile(speeds, 0.1),
+                "kbit/s"
+            };
+            child["90_percentile_speed"] = {
+                percentile(speeds, 0.9),
+                "kbit/s"
+            };
+            root["test_s2c"].push_back(child);
         }
-        node["median_speed"] = {
-            percentile(speeds, 0.5),
-            "kbit/s"
-        };
-        node["10_percentile_speed"] = {
-            percentile(speeds, 0.1),
-            "kbit/s"
-        };
-        node["90_percentile_speed"] = {
-            percentile(speeds, 0.9),
-            "kbit/s"
-        };
-        logger->log(MK_LOG_INFO | MK_LOG_JSON, "%s", node.dump().c_str());
+        logger->log(MK_LOG_INFO | MK_LOG_JSON, "%s", root.dump().c_str());
     } catch (const std::exception &e) {
         logger->warn("could not write NDT test summary: %s", e.what());
         /* suppress */ ;
