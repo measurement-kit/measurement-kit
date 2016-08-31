@@ -114,11 +114,22 @@ the dependencies are in place and should configure the compilers
 properly. If a dependency is not found, `./configure` will
 stop and tell you how you could install the dependency.
 
-The vanilla build process is the following:
+If you cloned the git repository, the vanilla build process is the following:
 
     ./autogen.sh
     ./configure
     make
+
+Otherwise, if you downloaded the release tarball, it should suffice:
+
+    ./configure
+    make
+
+Note that, if you downloaded the release tarball, GeoIP databases are not
+included in the tarball. However, they are useful for running regress tests.
+To get them, run the following command:
+
+    ./build/get-geip
 
 To tell make to produce less output (as in the Linux kernel
 build process) run:
