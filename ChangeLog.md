@@ -1,3 +1,10 @@
+# MeasurementKit 0.3.0-beta [2016-08-31]
+
+- autogen.sh: don't list embedded-mk as dependency (#796)
+- teach acinclude.m4 to use brew's OpenSSL (#797)
+- sketch out cmake build system (mainly for Windows) (#798)
+- implement incremental ooni collector (#765)
+
 # MeasurementKit 0.3.0-alpha.1 [2016-08-25]
 
 - fix type of `getopt()` return value
