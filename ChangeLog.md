@@ -6,6 +6,10 @@
 - implement incremental ooni collector (#765)
 - run OONI tests in parallel (#768)
 
+# MeasurementKit 0.2.9 [2016-08-31]
+
+- Make sure install.sh is included when we build release
+
 # MeasurementKit 0.3.0-alpha.1 [2016-08-25]
 
 - fix type of `getopt()` return value
