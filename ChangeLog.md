@@ -1,3 +1,9 @@
+# MeasurementKit 0.3.0-beta.1 [2016-09-01]
+
+- Improve .gitignore
+- Merge stable branch into release/v0.3.0 branch
+- Fix build with --disable-integration-tests
+
 # MeasurementKit 0.3.0-beta [2016-08-31]
 
 - autogen.sh: don't list embedded-mk as dependency (#796)
