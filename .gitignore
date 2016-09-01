@@ -32,6 +32,7 @@
 /example/net/listen
 /example/net/transport
 /include.am
+/measurement_kit
 /test/common/continuation
 /test/common/delegate
 /test/common/error
@@ -104,7 +105,6 @@ install-sh
 libtool
 ltmain.sh
 m4/*.m4
-measurement_kit
 missing
 site
 src/libmeasurement_kit/ext/Catch/
