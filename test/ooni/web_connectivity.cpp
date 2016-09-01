@@ -21,4 +21,6 @@ TEST_CASE("Synchronous web connectivity test") {
         .run();
 }
 
+#else
+int main() {}
 #endif
