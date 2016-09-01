@@ -43,38 +43,32 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                 // The coroutine is resumed and receives data
                 logger->debug("ndt: resume coroutine");
                 logger->info("Starting download");
-                double begin = time_now();
-                Var<size_t> total(new size_t(0));
-                Var<double> previous(new double(0.0));
-                Var<size_t> count(new size_t(0));
+                Var<MeasureSpeed> average(new MeasureSpeed);
+                Var<MeasureSpeed> snaps(new MeasureSpeed(params.snaps_delay));
                 Var<size_t> num_completed{new size_t{0}};
                 size_t num_flows = txp_list.size();
-                *previous = begin;
                 log_speed(logger, "download-speed", params.num_streams,
                           0.0, 0.0);
                 (*report_entry)["params"]["num_streams"] = params.num_streams;
                 (*report_entry)["params"]["snaps_delay"] = params.snaps_delay;
-                (*report_entry)["receiver_data"].push_back({0.0, 0.0});
 
                 for (auto txp : txp_list) {
                     txp->set_timeout(timeout);
 
                     txp->on_data([=](Buffer data) {
-                        *total += data.length();
+                        average->total += data.length();
+                        snaps->total += data.length();
                         double ct = time_now();
-                        *count += data.length();
-                        if (ct - *previous > params.snaps_delay and
-                            *num_completed == 0) {
+                        snaps->maybe_speed(ct, [&](double el, double x) {
                             // Note: we stop printing the speed when at least
                             // one connection has terminated the test
-                            double el = ct - begin;
-                            double x = (*count * 8) / 1000 / (ct - *previous);
-                            *count = 0;
-                            *previous = ct;
+                            if (*num_completed != 0) {
+                                return;
+                            }
                             log_speed(logger, "download-speed",
                                       params.num_streams, el, x);
                             (*report_entry)["receiver_data"].push_back({el, x});
-                        }
+                        });
                         // TODO: force close the connection after a given
                         // large amount of time has passed
                     });
@@ -95,13 +89,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                             if (*num_completed < num_flows) {
                                 return;
                             }
-                            double elapsed_time = time_now() - begin;
-                            logger->debug("ndt: elapsed %lf", elapsed_time);
-                            logger->debug("ndt: total %lu", (unsigned long)*total);
-                            double speed = 0.0;
-                            if (elapsed_time > 0.0) {
-                                speed = *total * 8.0 / 1000.0 / elapsed_time;
-                            }
+                            double speed = average->speed();
                             logger->info("S2C speed %lf kbit/s", speed);
                             // XXX We need to define what we consider
                             // error when we have parallel flows
