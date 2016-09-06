@@ -28,6 +28,11 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
 
 class IPLocation {
   public:
+    static Var<IPLocation> memoized(std::string path_country,
+                                    std::string path_asn,
+                                    std::string path_city,
+                                    Var<Logger> = Logger::global());
+
     IPLocation(std::string path_country, std::string path_asn,
                std::string path_city = "");
 
@@ -53,9 +58,6 @@ class IPLocation {
     GeoIP *gi_country = nullptr;
     GeoIP *gi_city = nullptr;
 };
-
-ErrorOr<json> geoip(std::string ip, std::string path_country,
-                    std::string path_asn, std::string path_city = "");
 
 std::string extract_html_title(std::string body);
 

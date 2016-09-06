@@ -23,6 +23,31 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
     resolver_lookup_impl(callback, settings, reactor, logger);
 }
 
+/* static */ Var<IPLocation> IPLocation::memoized(std::string country,
+                                                  std::string asn,
+                                                  std::string city,
+                                                  Var<Logger> logger) {
+
+    // Typically we only need to refer to a single country, a single asn,
+    // a single city database, hence memoize last openned instances
+
+    static Var<IPLocation> s_instance;
+    static std::string s_country;
+    static std::string s_asn;
+    static std::string s_city;
+
+    if (!s_instance or country != s_country or asn != s_asn or city != s_city) {
+        logger->debug("geoip: open with '%s', '%s', '%s'", country.c_str(),
+                      asn.c_str(), city.c_str());
+        s_instance.reset(new IPLocation(country, asn, city));
+        s_country = country;
+        s_asn = asn;
+        s_city = city;
+    }
+
+    return s_instance;
+}
+
 IPLocation::IPLocation(std::string path_country_, std::string path_asn_,
                        std::string path_city_) {
     path_asn = path_asn_;
@@ -126,38 +151,6 @@ ErrorOr<std::string> IPLocation::resolve_asn(std::string ip,
     asn = split(asn).front(); // We only want ASXX
     free(res);
     return asn;
-}
-
-ErrorOr<json> geoip(std::string ip, std::string path_country,
-                    std::string path_asn, std::string path_city) {
-    IPLocation ip_location(path_country, path_asn, path_city);
-    ErrorOr<std::string> country_code = ip_location.resolve_country_code(ip);
-    if (!country_code) {
-        return country_code.as_error();
-    }
-    ErrorOr<std::string> country_name = ip_location.resolve_country_name(ip);
-    if (!country_name) {
-        return country_name.as_error();
-    }
-    ErrorOr<std::string> city_name;
-    if (path_city != "") {
-        city_name = ip_location.resolve_city_name(ip);
-        if (!city_name) {
-            return city_name.as_error();
-        }
-    }
-    ErrorOr<std::string> asn = ip_location.resolve_asn(ip);
-    if (!asn) {
-        return asn.as_error();
-    }
-    json node;
-    node["country_code"] = country_code.as_value();
-    node["country_name"] = country_name.as_value();
-    node["asn"] = asn.as_value();
-    if (path_city != "") {
-        node["city_name"] = city_name.as_value();
-    }
-    return node;
 }
 
 std::string extract_html_title(std::string body) {

@@ -22,14 +22,16 @@ TEST_CASE("ip lookup works") {
 #endif
 
 TEST_CASE("geoip works") {
-    mk::ErrorOr<json> json = mk::ooni::geoip(
-        "8.8.8.8", "test/fixtures/GeoIP.dat", "test/fixtures/GeoIPASNum.dat",
-        "test/fixtures/GeoLiteCity.dat");
-    REQUIRE(!!json);
-    REQUIRE(((*json)["asn"] == std::string{"AS15169"}));
-    REQUIRE(((*json)["country_code"] == std::string{"US"}));
-    REQUIRE(((*json)["country_name"] == std::string{"United States"}));
-    REQUIRE(((*json)["city_name"] == std::string{"Mountain View"}));
+    auto gi = mk::ooni::IPLocation::memoized( "test/fixtures/GeoIP.dat",
+            "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat");
+    auto asn = gi->resolve_asn("8.8.8.8");
+    auto cname = gi->resolve_country_name("8.8.8.8");
+    auto cc = gi->resolve_country_code("8.8.8.8");
+    auto city = gi->resolve_city_name("8.8.8.8");
+    REQUIRE(*asn == std::string{"AS15169"});
+    REQUIRE(*cc == std::string{"US"});
+    REQUIRE(*cname == std::string{"United States"});
+    REQUIRE(*city == std::string{"Mountain View"});
 }
 
 TEST_CASE("IPLocation::resolve_countr_code() deals with nonexistent database") {

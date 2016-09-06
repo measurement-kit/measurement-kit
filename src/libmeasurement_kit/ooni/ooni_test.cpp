@@ -69,6 +69,7 @@ void OoniTest::geoip_lookup(Callback<> cb) {
     probe_cc = "ZZ";
     ip_lookup(
         [=](Error err, std::string ip) {
+            // TODO: refactor to use the if-err-then-cb-and-return style
             if (err) {
                 logger->warn("ip_lookup() failed: error code: %d", err.code);
             } else {
@@ -77,30 +78,26 @@ void OoniTest::geoip_lookup(Callback<> cb) {
                     logger->debug("saving user's real ip on user's request");
                     probe_ip = ip;
                 }
-                std::string country_p =
-                    options.get("geoip_country_path", std::string{});
-                std::string asn_p =
-                    options.get("geoip_asn_path", std::string{});
-                if (country_p == "" or asn_p == "") {
+                auto cntry_p = options.get("geoip_country_path", std::string{});
+                auto asn_p = options.get("geoip_asn_path", std::string{});
+                if (cntry_p == "" or asn_p == "") {
                     logger->warn("geoip files not configured; skipping");
                 } else {
-                    ErrorOr<nlohmann::json> res = geoip(ip, country_p, asn_p);
-                    if (!!res) {
-                        logger->debug("GeoIP result: %s", res->dump().c_str());
-                        // Since `geoip()` sets defaults before querying, the
-                        // following accesses of json should not fail unless for
-                        // programmer error after refactoring. In that case,
-                        // better to let the exception unwind than just print
-                        // a warning, because the former is easier to notice
-                        // and therefore fix during development
+                    auto gi = IPLocation::memoized(cntry_p, asn_p, "", logger);
+                    ErrorOr<std::string> s;
+                    s = gi->resolve_asn(ip);
+                    if (!!s) {
+                        logger->info("probe_asn: %s", s->c_str());
                         if (options.get("save_real_probe_asn", true)) {
-                            probe_asn = (*res)["asn"];
+                            probe_asn = *s;
                         }
-                        logger->info("probe_asn: %s", probe_asn.c_str());
+                    }
+                    s = gi->resolve_country_code(ip);
+                    if (!!s) {
+                        logger->info("probe_cc: %s", s->c_str());
                         if (options.get("save_real_probe_cc", true)) {
-                            probe_cc = (*res)["country_code"];
+                            probe_cc = *s;
                         }
-                        logger->info("probe_cc: %s", probe_cc.c_str());
                     }
                 }
             }
