@@ -19,17 +19,20 @@ namespace ndt {
 using namespace mk::ndt;
 
 static const char *kv_usage =
-    "usage: measurement_kit ndt [-v] [-C /path/to/ca.bundle] [-p port]\n"
+    "usage: measurement_kit ndt [-nv] [-C /path/to/ca.bundle] [-p port]\n"
     "                           [-T download|none|upload] [host]\n";
 
 int main(const char *, int argc, char **argv) {
 
     NdtTest test;
     int ch;
-    while ((ch = getopt(argc, argv, "C:p:T:v")) != -1) {
+    while ((ch = getopt(argc, argv, "C:np:T:v")) != -1) {
         switch (ch) {
         case 'C':
             test.set_options("net/ca_bundle_path", optarg);
+            break;
+        case 'n':
+            test.set_options("no_collector", true);
             break;
         case 'p':
             test.set_options("port", optarg);
