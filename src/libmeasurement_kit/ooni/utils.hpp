@@ -26,18 +26,12 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
                      Var<Reactor> reactor = Reactor::global(),
                      Var<Logger> logger = Logger::global());
 
-class IPLocation {
+class IpLocation : public NonCopyable, public NonMovable {
   public:
-    static Var<IPLocation> memoized(std::string path_country,
-                                    std::string path_asn,
-                                    std::string path_city,
-                                    Var<Logger> = Logger::global(),
-                                    bool *first_open = nullptr);
-
-    IPLocation(std::string path_country, std::string path_asn,
+    IpLocation(std::string path_country, std::string path_asn,
                std::string path_city = "");
 
-    ~IPLocation();
+    ~IpLocation();
 
     ErrorOr<std::string>
     resolve_country_code(std::string ip, Var<Logger> = Logger::global());
@@ -51,13 +45,30 @@ class IPLocation {
     ErrorOr<std::string>
     resolve_asn(std::string ip, Var<Logger> = Logger::global());
 
-  private:
     std::string path_country = "";
     std::string path_asn = "";
     std::string path_city = "";
+
+  private:
     GeoIP *gi_asn = nullptr;
     GeoIP *gi_country = nullptr;
     GeoIP *gi_city = nullptr;
+};
+
+class IpLocationProxy {
+  public:
+    static Var<IpLocationProxy> global();
+
+    Var<IpLocation> open(std::string path_country,
+                         std::string path_asn,
+                         std::string path_city,
+                         Var<Logger> logger = Logger::global(),
+                         bool *first_open = nullptr);
+
+    void close();
+
+  private:
+    Var<IpLocation> instance;
 };
 
 std::string extract_html_title(std::string body);

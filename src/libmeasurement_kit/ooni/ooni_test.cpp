@@ -83,7 +83,8 @@ void OoniTest::geoip_lookup(Callback<> cb) {
                 if (cntry_p == "" or asn_p == "") {
                     logger->warn("geoip files not configured; skipping");
                 } else {
-                    auto gi = IPLocation::memoized(cntry_p, asn_p, "", logger);
+                    auto gi = IpLocationProxy::global()->open(
+                                cntry_p, asn_p, "", logger);
                     ErrorOr<std::string> s;
                     s = gi->resolve_asn(ip);
                     if (!!s) {
