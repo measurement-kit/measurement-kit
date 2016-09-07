@@ -31,7 +31,8 @@ class IPLocation {
     static Var<IPLocation> memoized(std::string path_country,
                                     std::string path_asn,
                                     std::string path_city,
-                                    Var<Logger> = Logger::global());
+                                    Var<Logger> = Logger::global(),
+                                    bool *first_open = nullptr);
 
     IPLocation(std::string path_country, std::string path_asn,
                std::string path_city = "");

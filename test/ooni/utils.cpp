@@ -22,7 +22,7 @@ TEST_CASE("ip lookup works") {
 #endif
 
 TEST_CASE("geoip works") {
-    auto gi = mk::ooni::IPLocation::memoized( "test/fixtures/GeoIP.dat",
+    auto gi = mk::ooni::IPLocation::memoized("test/fixtures/GeoIP.dat",
             "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat");
     auto asn = gi->resolve_asn("130.192.91.231");
     auto cname = gi->resolve_country_name("130.192.91.231");
@@ -32,6 +32,34 @@ TEST_CASE("geoip works") {
     REQUIRE(*cc == std::string{"IT"});
     REQUIRE(*cname == std::string{"Italy"});
     REQUIRE(*city == std::string{"Turin"});
+}
+
+TEST_CASE("geoip memoization works") {
+    // Open twice. The second time it MUST NOT be first open
+    auto gi = mk::ooni::IPLocation::memoized("test/fixtures/GeoIP.dat",
+            "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat",
+            mk::Logger::global(), nullptr);
+    bool first_open;
+
+    first_open = true;
+    gi = mk::ooni::IPLocation::memoized("test/fixtures/GeoIP.dat",
+            "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat",
+            mk::Logger::global(), &first_open);
+    REQUIRE(first_open == false);
+
+    // Repeat two more times to make sure behavior is consistent
+
+    first_open = true;
+    gi = mk::ooni::IPLocation::memoized("test/fixtures/GeoIP.dat",
+            "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat",
+            mk::Logger::global(), &first_open);
+    REQUIRE(first_open == false);
+
+    first_open = true;
+    gi = mk::ooni::IPLocation::memoized("test/fixtures/GeoIP.dat",
+            "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat",
+            mk::Logger::global(), &first_open);
+    REQUIRE(first_open == false);
 }
 
 TEST_CASE("IPLocation::resolve_countr_code() deals with nonexistent database") {

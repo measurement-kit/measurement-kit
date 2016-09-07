@@ -26,7 +26,8 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
 /* static */ Var<IPLocation> IPLocation::memoized(std::string country,
                                                   std::string asn,
                                                   std::string city,
-                                                  Var<Logger> logger) {
+                                                  Var<Logger> logger,
+                                                  bool *first_open) {
 
     // Typically we only need to refer to a single country, a single asn,
     // a single city database, hence memoize last openned instances
@@ -43,6 +44,11 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
         s_country = country;
         s_asn = asn;
         s_city = city;
+        if (first_open != nullptr) {
+            *first_open = true;
+        }
+    } else if (first_open != nullptr) {
+        *first_open = false;
     }
 
     return s_instance;
