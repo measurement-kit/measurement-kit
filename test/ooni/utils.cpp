@@ -24,14 +24,14 @@ TEST_CASE("ip lookup works") {
 TEST_CASE("geoip works") {
     auto gi = mk::ooni::IPLocation::memoized( "test/fixtures/GeoIP.dat",
             "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat");
-    auto asn = gi->resolve_asn("8.8.8.8");
-    auto cname = gi->resolve_country_name("8.8.8.8");
-    auto cc = gi->resolve_country_code("8.8.8.8");
-    auto city = gi->resolve_city_name("8.8.8.8");
-    REQUIRE(*asn == std::string{"AS15169"});
-    REQUIRE(*cc == std::string{"US"});
-    REQUIRE(*cname == std::string{"United States"});
-    REQUIRE(*city == std::string{"Mountain View"});
+    auto asn = gi->resolve_asn("130.192.91.231");
+    auto cname = gi->resolve_country_name("130.192.91.231");
+    auto cc = gi->resolve_country_code("130.192.91.231");
+    auto city = gi->resolve_city_name("130.192.91.231");
+    REQUIRE(*asn == std::string{"AS137"});
+    REQUIRE(*cc == std::string{"IT"});
+    REQUIRE(*cname == std::string{"Italy"});
+    REQUIRE(*city == std::string{"Turin"});
 }
 
 TEST_CASE("IPLocation::resolve_countr_code() deals with nonexistent database") {
