@@ -32,15 +32,16 @@ int main(const char *, int argc, char **argv) {
     argc -= optind, argv += optind;
 
     loop_with_initial_event([&]() {
-        resources::get_latest_release_url([&](Error error, std::string url) {
-            if (error) {
-                fprintf(stderr, "error: %s\n", error.explain().c_str());
+        mk::ooni::resources::get_latest_release_url(
+            [&](Error error, std::string url) {
+                if (error) {
+                    fprintf(stderr, "error: %s\n", error.explain().c_str());
+                    break_loop();
+                    return;
+                }
+                fprintf(stderr, "latest: %s\n", url.c_str());
                 break_loop();
-                return;
-            }
-            fprintf(stderr, "latest: %s\n", url.c_str());
-            break_loop();
-        });
+            });
     });
 
     return 0;
