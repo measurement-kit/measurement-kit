@@ -135,7 +135,9 @@ void OoniTest::open_report(Callback<Error> callback) {
     if (output_filepath == "") {
         output_filepath = generate_output_filepath();
     }
-    report.add_reporter(FileReporter::make(output_filepath));
+    if (options.find("no_file_report") == options.end()) {
+        report.add_reporter(FileReporter::make(output_filepath));
+    }
     if (options.find("no_collector") == options.end()) {
         report.add_reporter(OoniReporter::make(*this));
     }
