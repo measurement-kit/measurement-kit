@@ -13,9 +13,9 @@ namespace resources {
 using namespace mk::http;
 
 template <MK_MOCK_NAMESPACE(http, get)>
-void get_latest_release_url_impl(Callback<Error, std::string> callback,
-                                 Settings settings, Var<Reactor> reactor,
-                                 Var<Logger> logger) {
+void get_latest_release_impl(Callback<Error, std::string> callback,
+                             Settings settings, Var<Reactor> reactor,
+                             Var<Logger> logger) {
     std::string url =
         "https://github.com/OpenObservatory/ooni-resources/releases/latest";
     http_get(url, [=](Error error, Var<Response> response) {
@@ -38,6 +38,38 @@ void get_latest_release_url_impl(Callback<Error, std::string> callback,
             },
             ""
         ));
+    }, {}, settings, reactor, logger, nullptr, 0);
+}
+
+template <MK_MOCK_NAMESPACE(http, get)>
+void get_manifest_as_json_impl(
+        std::string latest, Callback<Error, nlohmann::json> callback,
+        Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+    std::string url{
+      "https://github.com/OpenObservatory/ooni-resources/releases/download/"
+    };
+    url += latest;
+    url += "/manifest.json";
+    if (settings.find("http/max_redirects") == settings.end()) {
+        settings["http/max_redirects"] = 4;
+    }
+    http_get(url, [=](Error error, Var<Response> response) {
+        nlohmann::json result;
+        if (error) {
+            callback(error, result);
+            return;
+        }
+        if (response->status_code != 200) {
+            callback(GenericError() /* XXX */, result);
+            return;
+        }
+        try {
+            result = nlohmann::json::parse(response->body);
+        } catch (const std::invalid_argument &) {
+            callback(GenericError() /* XXX */, result);
+            return;
+        }
+        callback(NoError(), result);
     }, {}, settings, reactor, logger, nullptr, 0);
 }
 
