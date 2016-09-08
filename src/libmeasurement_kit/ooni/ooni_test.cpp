@@ -9,10 +9,13 @@
 namespace mk {
 namespace ooni {
 
-void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
+void OoniTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
+                                    size_t num_entries,
+                                    Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
     std::string next_input;
     std::getline(*input_generator, next_input);
+
     if (input_generator->eof()) {
         logger->debug("net_test: reached end of input");
         cb(NoError());
@@ -23,6 +26,13 @@ void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
         cb(FileIoError());
         return;
     }
+
+    double prog = 0.0;
+    if (num_entries > 0) {
+        prog = *current_entry / (double)num_entries;
+    }
+    *current_entry += 1;
+    logger->log(MK_LOG_INFO|MK_LOG_JSON, "{\"progress\": %f}", prog);
 
     logger->debug("net_test: creating entry");
     struct tm measurement_start_time;
@@ -56,7 +66,9 @@ void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
                 return;
             }
             logger->debug("net_test: written entry");
-            reactor->call_soon([=]() { run_next_measurement(index, cb); });
+            reactor->call_soon([=]() {
+                run_next_measurement(thread_id, cb, num_entries, current_entry);
+            });
         });
     });
 }
@@ -171,6 +183,7 @@ void OoniTest::begin(Callback<Error> cb) {
                     cb(error);
                     return;
                 }
+                size_t num_entries = 0;
                 if (needs_input) {
                     if (input_filepath == "") {
                         logger->warn("an input file is required");
@@ -183,17 +196,37 @@ void OoniTest::begin(Callback<Error> cb) {
                         cb(CannotOpenInputFileError());
                         return;
                     }
+
+                    // Count the number of entries
+                    std::string next_input;
+                    while ((std::getline(*input_generator, next_input))) {
+                        num_entries += 1;
+                    }
+                    if (!input_generator->eof()) {
+                        logger->warn("cannot read input file");
+                        cb(FileIoError());
+                        return;
+                    }
+                    // See http://stackoverflow.com/questions/5750485
+                    //  and http://stackoverflow.com/questions/28331017
+                    input_generator->clear();
+                    input_generator->seekg(0);
+
                 } else {
                     input_generator.reset(new std::istringstream("\n"));
+                    num_entries = 1;
                 }
 
+
                 // Run `parallelism` measurements in parallel
+                Var<size_t> current_entry(new size_t(0));
                 mk::parallel(
                     mk::fmap<size_t, Continuation<Error>>(
                         mk::range<size_t>(options.get("parallelism", 3)),
-                        [=](size_t index) {
+                        [=](size_t thread_id) {
                             return [=](Callback<Error> cb) {
-                                run_next_measurement(index, cb);
+                                run_next_measurement(thread_id, cb, num_entries,
+                                                     current_entry);
                             };
                         }),
                     cb);
