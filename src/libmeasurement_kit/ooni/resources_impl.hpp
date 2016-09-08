@@ -4,6 +4,7 @@
 
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/ooni.hpp>
+#include <regex>
 
 namespace mk {
 namespace ooni {
@@ -30,7 +31,13 @@ void get_latest_release_url_impl(Callback<Error, std::string> callback,
             callback(GenericError() /* XXX */, "");
             return;
         }
-        callback(NoError(), response->headers["location"]);
+        callback(NoError(), std::regex_replace(
+            response->headers["location"],
+            std::regex{
+              "^https://github.com/OpenObservatory/ooni-resources/releases/tag/"
+            },
+            ""
+        ));
     }, {}, settings, reactor, logger, nullptr, 0);
 }
 
