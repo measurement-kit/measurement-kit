@@ -104,7 +104,7 @@ void get_resources_for_country_impl(
                 return;
             }
             std::string cc = entry["country_code"];
-            if (cc != country and cc != "ALL") {
+            if (country != cc and country != "ALL") {
                 callback(NoError()); // Nothing to be done for this entry
                 return;
             }
