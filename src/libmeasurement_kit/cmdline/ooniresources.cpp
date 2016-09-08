@@ -39,7 +39,6 @@ int main(const char *, int argc, char **argv) {
                     break_loop();
                     return;
                 }
-                fprintf(stderr, "latest: %s\n", latest.c_str());
                 mk::ooni::resources::get_manifest_as_json(
                     latest,
                     [=](Error error, nlohmann::json manifest) {
@@ -49,7 +48,6 @@ int main(const char *, int argc, char **argv) {
                             break_loop();
                             return;
                         }
-                        fprintf(stderr, "%s\n", manifest.dump(4).c_str());
                         mk::ooni::resources::get_resources_for_country(
                                 latest, manifest, "ALL",
                                 [=](Error error) {
@@ -59,7 +57,6 @@ int main(const char *, int argc, char **argv) {
                                         break_loop();
                                         return;
                                     }
-                                    fprintf(stderr, "success\n");
                                     break_loop();
                                 });
                     });

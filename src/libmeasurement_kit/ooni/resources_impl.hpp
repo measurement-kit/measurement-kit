@@ -32,13 +32,15 @@ void get_latest_release_impl(Callback<Error, std::string> callback,
             callback(GenericError() /* XXX */, "");
             return;
         }
-        callback(NoError(), std::regex_replace(
+        std::string v = std::regex_replace(
             response->headers["location"],
             std::regex{
               "^https://github.com/OpenObservatory/ooni-resources/releases/tag/"
             },
             ""
-        ));
+        );
+        logger->info("ooniresources: latest resources version: %s", v.c_str());
+        callback(NoError(), v);
     }, {}, settings, reactor, logger, nullptr, 0);
 }
 
@@ -70,6 +72,7 @@ void get_manifest_as_json_impl(
             callback(GenericError() /* XXX */, result);
             return;
         }
+        logger->info("ooniresources: downloaded manifest");
         callback(NoError(), result);
     }, {}, settings, reactor, logger, nullptr, 0);
 }
@@ -134,14 +137,17 @@ void get_resources_for_country_impl(
                     return;
                 }
                 // TODO: validate SHA256
+                logger->info("ooniresources: downloaded %s", path.c_str());
                 std::ofstream ofile(path);
                 ofile << response->body;
                 ofile.close();
+                // TODO: check for I/O errors?
                 callback(NoError());
             }, {}, settings, reactor, logger, nullptr, 0);
         });
     }
-    mk::parallel(input, callback, 2);
+    logger->info("ooniresources: downloading resources... be patient...");
+    mk::parallel(input, callback, 4);
 }
 
 } // namespace resources
