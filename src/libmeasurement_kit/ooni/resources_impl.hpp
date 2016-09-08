@@ -141,7 +141,7 @@ void get_resources_for_country_impl(
             }, {}, settings, reactor, logger, nullptr, 0);
         });
     }
-    mk::parallel(input, callback);
+    mk::parallel(input, callback, 2);
 }
 
 } // namespace resources
