@@ -14,8 +14,8 @@ TEST_CASE("Synchronous web connectivity test") {
     set_verbosity(14);
     ooni::WebConnectivity()
         .set_options("backend", "https://a.collector.test.ooni.io:4444")
-        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
-        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
+        .set_options("geoip_country_path", "GeoIP.dat")
+        .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_options("nameserver", "8.8.8.8")
         .set_input_filepath("test/fixtures/urls.txt")
         .run();

@@ -68,8 +68,8 @@ int main(const char *, int argc, char **argv) {
     }
 
     test
-        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
-        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
+        .set_options("geoip_country_path", "GeoIP.dat")
+        .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .run();
 
     return 0;
