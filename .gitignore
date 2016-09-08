@@ -36,6 +36,8 @@ __venv__
 aclocal.m4
 autom4te.cache/
 builtin/
+/maxmind-geoip.*.dat*
+/citizenlab-test-lists.*.csv
 compile
 config.guess
 config.h
