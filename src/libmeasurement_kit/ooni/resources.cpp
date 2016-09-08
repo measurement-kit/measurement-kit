@@ -19,6 +19,17 @@ void get_manifest_as_json(
     get_manifest_as_json_impl(latest, cb, settings, reactor, logger);
 }
 
+void get_resources_for_country(std::string version,
+                               nlohmann::json manifest,
+                               std::string country,
+                               Callback<Error> callback,
+                               Settings settings,
+                               Var<Reactor> reactor,
+                               Var<Logger> logger) {
+    get_resources_for_country_impl(version, manifest, country, callback,
+                                   settings, reactor, logger);
+}
+
 } // namespace resources
 } // namespace mk
 } // namespace ooni

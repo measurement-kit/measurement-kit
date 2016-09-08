@@ -22,6 +22,14 @@ void get_manifest_as_json(std::string version,
                           Var<Reactor> reactor = Reactor::global(),
                           Var<Logger> logger = Logger::global());
 
+void get_resources_for_country(std::string latest,
+                               nlohmann::json manifest,
+                               std::string country,
+                               Callback<Error> callback,
+                               Settings settings = {},
+                               Var<Reactor> reactor = Reactor::global(),
+                               Var<Logger> logger = Logger::global());
+
 } // namespace resources
 } // namespace mk
 } // namespace ooni

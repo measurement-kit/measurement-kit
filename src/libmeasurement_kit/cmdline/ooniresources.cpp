@@ -31,9 +31,9 @@ int main(const char *, int argc, char **argv) {
     }
     argc -= optind, argv += optind;
 
-    loop_with_initial_event([&]() {
+    loop_with_initial_event([=]() {
         mk::ooni::resources::get_latest_release(
-            [&](Error error, std::string latest) {
+            [=](Error error, std::string latest) {
                 if (error) {
                     fprintf(stderr, "error: %s\n", error.explain().c_str());
                     break_loop();
@@ -42,7 +42,7 @@ int main(const char *, int argc, char **argv) {
                 fprintf(stderr, "latest: %s\n", latest.c_str());
                 mk::ooni::resources::get_manifest_as_json(
                     latest,
-                    [&](Error error, nlohmann::json manifest) {
+                    [=](Error error, nlohmann::json manifest) {
                         if (error) {
                             fprintf(stderr, "error: %s\n",
                                     error.explain().c_str());
@@ -50,7 +50,18 @@ int main(const char *, int argc, char **argv) {
                             return;
                         }
                         fprintf(stderr, "%s\n", manifest.dump(4).c_str());
-                        break_loop();
+                        mk::ooni::resources::get_resources_for_country(
+                                latest, manifest, "ALL",
+                                [=](Error error) {
+                                    if (error) {
+                                        fprintf(stderr, "error: %s\n",
+                                            error.explain().c_str());
+                                        break_loop();
+                                        return;
+                                    }
+                                    fprintf(stderr, "success\n");
+                                    break_loop();
+                                });
                     });
             });
     });
