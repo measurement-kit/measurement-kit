@@ -53,7 +53,7 @@ install-sh
 libtool
 ltmain.sh
 m4/*.m4
-measurement_kit
+/measurement_kit
 missing
 site
 src/libmeasurement_kit/ext/Catch/
