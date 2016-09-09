@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include "../http/response_parser.hpp"
-#include "../ext/http-parser/http_parser.h"
+#include "../ext/http_parser.h"
 #include <functional>
 #include <map>
 #include <measurement_kit/common.hpp>

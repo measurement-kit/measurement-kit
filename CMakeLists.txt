@@ -15,14 +15,39 @@ file(
      "src/libmeasurement_kit/*/*.cpp"
     )
 
+add_definitions(-DMK_CA_BUNDLE="mk-ca-bundle.pem")
+
 if(APPLE)
   set(openssl_include_path /usr/local/Cellar/openssl/1.0.2h_1/include)
+  set(osx_extra_libs event_pthreads event_openssl)
+  set(osx_link_path /usr/local/Cellar/openssl/1.0.2h_1/lib)
 endif()
 
-add_library(measurement_kit STATIC ${sources})
+if(MSVC)
+  set(msvc_include_path ${CMAKE_SOURCE_DIR}/build/windows64/include)
+  set(msvc_link_path ${CMAKE_SOURCE_DIR}/build/windows64/lib)
+endif()
+
+add_library(measurement_kit_static STATIC ${sources})
 target_include_directories(
-                           measurement_kit
+                           measurement_kit_static
                            PUBLIC
                            ${openssl_include_path}
+                           ${msvc_include_path}
                            ${CMAKE_SOURCE_DIR}/include
                           )
+
+link_directories(${msvc_link_path} ${osx_link_path})
+add_executable(
+	       measurement_kit
+	       ${CMAKE_SOURCE_DIR}/src/measurement_kit/main.cpp
+	      )
+target_link_libraries(
+                      measurement_kit
+		      geoip
+		      crypto
+		      ssl
+		      event
+		      ${osx_extra_libs}
+		      measurement_kit_static
+		     )
