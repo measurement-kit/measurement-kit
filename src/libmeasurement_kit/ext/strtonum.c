@@ -19,6 +19,8 @@
 
 #include "strtonum.h"
 #ifdef HAVE_STRTONUM
+void mk_strtonum_unused() {}
+#else
 
 #include <errno.h>
 #include <limits.h>
@@ -68,6 +70,4 @@ mk_strtonum(const char *numstr, long long minval, long long maxval,
 }
 /*DEF_WEAK(strtonum);*/
 
-#else
-static unsigned long long mk_strtonum_unused;
 #endif
