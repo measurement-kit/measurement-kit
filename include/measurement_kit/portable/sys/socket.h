@@ -6,7 +6,10 @@
 
 #ifdef _WIN32
 
-/* TODO */
+/*
+ * 1. Pull the definition of `socklen_t`.
+ */
+#include <ws2tcpip.h>
 
 #else
 
