@@ -6,7 +6,10 @@
 
 #ifdef _WIN32
 
-/* TODO */
+/*
+ * 1. Pull `struct timeval`.
+ */
+#include <winsock2.h>
 
 #else
 
