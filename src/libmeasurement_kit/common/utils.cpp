@@ -71,7 +71,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen,
 int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
                  const char *address, const char *port) {
     const char *errstr;
-    int _port = (int)measurement_kit_strtonum(port, 0, 65535, &errstr);
+    int _port = (int)mk_strtonum(port, 0, 65535, &errstr);
     if (errstr != nullptr) {
         warn("utils:storage_init: invalid port");
         return -1;

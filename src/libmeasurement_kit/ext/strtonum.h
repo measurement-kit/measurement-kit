@@ -6,13 +6,16 @@
 extern "C" {
 #endif
 
-/*
- * TODO: this function should be only compiled if the system does not
- * already provide its own strtonum().
- */
-long long measurement_kit_strtonum(const char *, long long, long long,
-                          const char **);
+long long mk_strtonum(const char *, long long, long long, const char **);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_STRTONUM
+#define mk_strtonum strtonum
 #endif

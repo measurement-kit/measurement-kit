@@ -36,6 +36,12 @@ AC_DEFUN([MK_AM_DISABLE_INTEGRATION_TESTS], [
                    [], [CPPFLAGS="$CPPFLAGS -DENABLE_INTEGRATION_TESTS"])
 ])
 
+AC_DEFUN([MK_AM_CHECK_LIBC_FUNCS], [
+  AC_CHECK_FUNCS([ \
+    strtonum \
+  ])
+])
+
 AC_DEFUN([MK_AM_LIBEVENT], [
 
   AC_ARG_WITH([libevent],
