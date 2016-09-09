@@ -1,17 +1,13 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_OONI_UTILS_HPP
-#define SRC_OONI_UTILS_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_OONI_UTILS_HPP
+#define SRC_LIBMEASUREMENT_KIT_OONI_UTILS_HPP
+
+#include <measurement_kit/ooni.hpp>
 
 #include <GeoIP.h>
 #include <GeoIPCity.h>
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/ext.hpp>
-#include <measurement_kit/http.hpp>
-#include <measurement_kit/ooni/error.hpp>
-#include <regex>
-#include <string>
 
 using json = nlohmann::json;
 

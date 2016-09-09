@@ -7,6 +7,7 @@
 
 #include "../src/libmeasurement_kit/common/check_connectivity.hpp"
 #include <measurement_kit/net.hpp>
+
 using namespace mk;
 using namespace mk::net;
 

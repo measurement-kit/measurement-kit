@@ -4,16 +4,9 @@
 
 #include "../http/response_parser.hpp"
 #include "../ext/http_parser.h"
-#include <functional>
-#include <map>
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/http.hpp>
-#include <measurement_kit/net.hpp>
+
 #include <stddef.h>
-#include <stdexcept>
 #include <string.h>
-#include <string>
-#include <type_traits>
 
 extern "C" {
 

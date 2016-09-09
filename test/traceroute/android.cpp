@@ -12,8 +12,9 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <iostream>
 #include <measurement_kit/traceroute.hpp>
+
+#include <iostream>
 
 using namespace mk::traceroute;
 using namespace mk;

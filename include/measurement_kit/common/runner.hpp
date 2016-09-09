@@ -4,10 +4,9 @@
 #ifndef MEASUREMENT_KIT_COMMON_RUNNER_HPP
 #define MEASUREMENT_KIT_COMMON_RUNNER_HPP
 
-#include <atomic>
-#include <functional>
 #include <measurement_kit/common/reactor.hpp>
-#include <measurement_kit/common/var.hpp>
+
+#include <atomic>
 #include <string>
 #include <thread>
 

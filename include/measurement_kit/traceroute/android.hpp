@@ -40,9 +40,6 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/traceroute/interface.hpp>
 
-#include <functional>
-#include <string>
-
 #include <time.h>
 
 struct event;

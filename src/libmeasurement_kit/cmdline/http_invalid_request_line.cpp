@@ -4,9 +4,11 @@
 
 #include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/ooni.hpp>
-#include <iostream>
-#include <string>
+
+#include <stdlib.h>
 #include <unistd.h>
+
+#include <iostream>
 
 namespace mk {
 namespace cmdline {

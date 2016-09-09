@@ -5,10 +5,9 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <ctime>
-#include <measurement_kit/ext.hpp>
-#include <measurement_kit/report.hpp>
 #include "../src/libmeasurement_kit/common/utils.hpp"
+
+#include <measurement_kit/report.hpp>
 
 using namespace mk::report;
 using namespace mk;

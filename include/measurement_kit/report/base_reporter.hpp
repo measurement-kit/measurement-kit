@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 #define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/report/report.hpp>
 #include <measurement_kit/report/entry.hpp>
 

@@ -6,7 +6,6 @@
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include "../src/libmeasurement_kit/dns/query_impl.hpp"
-#include <measurement_kit/dns.hpp>
 
 using namespace mk;
 using namespace mk::dns;

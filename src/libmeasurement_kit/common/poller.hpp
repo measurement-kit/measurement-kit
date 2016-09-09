@@ -1,17 +1,17 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_COMMON_POLLER_HPP
-#define SRC_COMMON_POLLER_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_COMMON_POLLER_HPP
+#define SRC_LIBMEASUREMENT_KIT_COMMON_POLLER_HPP
 
 #include "../common/utils.hpp"
+
+#include <measurement_kit/common.hpp>
+
 #include <csignal>
 #include <cstring>
 #include <event2/event.h>
 #include <event2/thread.h>
-#include <functional>
-#include <measurement_kit/common.hpp>
-#include <stdexcept>
 
 extern "C" {
 

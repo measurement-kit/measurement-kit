@@ -6,7 +6,6 @@
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include "../src/libmeasurement_kit/ooni/utils_impl.hpp"
-#include "../src/libmeasurement_kit/ooni/utils.hpp"
 
 #ifdef ENABLE_INTEGRATION_TESTS
 

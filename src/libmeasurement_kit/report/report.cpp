@@ -2,9 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <cstring>
-#include <measurement_kit/report.hpp>
 #include "../common/utils.hpp"
+
+#include <measurement_kit/report.hpp>
 
 namespace mk {
 namespace report {

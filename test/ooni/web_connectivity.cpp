@@ -4,8 +4,8 @@
 
 #ifdef ENABLE_INTEGRATION_TESTS
 #define CATCH_CONFIG_MAIN
-
 #include "../src/libmeasurement_kit/ext/catch.hpp"
+
 #include <measurement_kit/ooni.hpp>
 
 using namespace mk;

@@ -6,7 +6,7 @@
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include "../src/libmeasurement_kit/net/evbuffer.hpp"
-#include <event2/buffer.h>
+
 #include <measurement_kit/net.hpp>
 
 using namespace mk;

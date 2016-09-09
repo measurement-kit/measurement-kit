@@ -4,8 +4,8 @@
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
-#include <exception>
 #include <measurement_kit/common/var.hpp>
+
 #include <string>
 #include <vector>
 

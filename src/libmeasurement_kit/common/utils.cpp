@@ -4,23 +4,14 @@
 
 #include "../common/utils.hpp"
 #include "../ext/strtonum.h"
-#include <algorithm>
-#include <arpa/inet.h>
+
 #include <ctype.h>
-#include <deque>
-#include <event2/util.h>
 #include <math.h>
-#include <netinet/in.h>
-#include <cstddef>
-#include <cstring>
-#include <regex>
-#include <stdint.h>
 #include <stdlib.h>
-#include <string>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/time.h>
 #include <time.h>
+
+#include <deque>
+#include <cstring>
 
 #define MEASUREMENT_KIT_SOCKET_INVALID -1
 

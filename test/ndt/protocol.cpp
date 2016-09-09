@@ -7,7 +7,6 @@
 
 #include "../src/libmeasurement_kit/ndt/protocol_impl.hpp"
 #include "../src/libmeasurement_kit/net/emitter.hpp"
-#include <measurement_kit/ndt.hpp>
 
 using namespace mk;
 using namespace mk::ndt;

@@ -6,7 +6,6 @@
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include "../src/libmeasurement_kit/http/response_parser.hpp"
-#include <measurement_kit/http.hpp>
 
 using namespace mk;
 using namespace mk::net;

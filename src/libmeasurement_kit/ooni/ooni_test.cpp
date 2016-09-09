@@ -4,7 +4,6 @@
 
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace ooni {

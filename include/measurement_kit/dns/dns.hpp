@@ -4,10 +4,6 @@
 #ifndef MEASUREMENT_KIT_DNS_DNS_HPP
 #define MEASUREMENT_KIT_DNS_DNS_HPP
 
-#include <stdexcept>
-#include <string>
-#include <vector>
-
 #include <measurement_kit/common.hpp>
 
 struct evdns_base; // Internally we use evdns

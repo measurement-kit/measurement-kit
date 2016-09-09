@@ -2,15 +2,16 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <arpa/inet.h>
-#include <errno.h>
+#include "../net/connection.hpp"
+
+#include <measurement_kit/net.hpp>
+
 #include <event2/buffer.h>
 #include <event2/dns.h>
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/net.hpp>
+
+#include <errno.h>
 #include <new>
 #include <stdlib.h>
-#include "../net/connection.hpp"
 
 extern "C" {
 

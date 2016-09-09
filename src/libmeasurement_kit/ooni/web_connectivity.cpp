@@ -2,22 +2,13 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/http.hpp>
-#include <measurement_kit/ooni.hpp>
-
-#include <measurement_kit/net/transport.hpp>
-
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
 #include "../ooni/constants.hpp"
 
 #include <set>
-#include <regex>
 #include <cctype>
-#include <string>
-#include <iostream>
 #include <algorithm>
-#include <unistd.h>
 
 #define BODY_PROPORTION_FACTOR 0.7
 

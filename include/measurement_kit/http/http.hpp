@@ -6,11 +6,7 @@
 
 // Documentation: doc/api/http.md
 
-#include <map>
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
-#include <string>
-#include <strings.h>
 
 namespace mk {
 namespace http {
