@@ -80,19 +80,6 @@ gen_executables() {
     done
 }
 
-get_repo() {
-    if [ $no_download -eq 1 ]; then
-        return
-    fi
-    echo ""
-    echo "> $3 (from github.com/$1 at $2)"
-    branch=$4
-    rm -rf src/libmeasurement_kit/ext/$3
-    git clone --depth 1 --single-branch -b $2 https://github.com/$1 \
-                    src/libmeasurement_kit/ext/$3
-    echo ""
-}
-
 get_geoipdb() {
     if [ $no_download -eq 1 ]; then
         return
@@ -131,10 +118,6 @@ gen_executables ALL_TESTS test BUILD_TESTS                       >> include.am
 echo "* Updating .gitignore"
 sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
-
-echo "* Fetching dependencies that are built in any case"
-get_repo nodejs/http-parser v2.7.1 http-parser
-get_repo philsquared/Catch v1.5.6 Catch
 
 echo "* Fetching geoip database"
 get_geoipdb
