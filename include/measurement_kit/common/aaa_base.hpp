@@ -6,18 +6,15 @@
 
 // Portability definition and headers
 
-#ifdef _MSC_VER
-# define __attribute__(x) /* nothing */
-#endif
+#include <measurement_kit/portable/private/macros.h>
+#include <measurement_kit/portable/sys/types.h>
 
-#include <sys/types.h>
+#include <measurement_kit/portable/netinet/in.h>
+#include <measurement_kit/portable/arpa/inet.h>
+#include <measurement_kit/portable/sys/socket.h>
+#include <measurement_kit/portable/sys/time.h>
 
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-
-#include <strings.h>
-#include <unistd.h>
+#include <measurement_kit/portable/strings.h>
+#include <measurement_kit/portable/unistd.h>
 
 #endif
