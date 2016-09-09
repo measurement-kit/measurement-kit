@@ -4,7 +4,7 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 #include "../src/libmeasurement_kit/net/emitter.hpp"
 #include "../src/libmeasurement_kit/ooni/collector_client_impl.hpp"
 #include <measurement_kit/ooni.hpp>

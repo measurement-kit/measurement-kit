@@ -6,7 +6,7 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 #include <measurement_kit/ndt.hpp>
 
 using namespace mk::ndt;
