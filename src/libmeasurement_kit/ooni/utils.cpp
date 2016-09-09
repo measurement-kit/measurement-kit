@@ -48,7 +48,7 @@ ErrorOr<std::string> IPLocation::resolve_country_code(std::string ip,
         gi_country = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_country == nullptr) {
             logger->warn("IPLocation: cannot open geoip country database");
-            return CannotOpenGeoIpCountryDatabase();
+            return CannotOpenGeoIpCountryDatabaseError();
         }
     }
     GeoIPLookup gl;
@@ -69,7 +69,7 @@ ErrorOr<std::string> IPLocation::resolve_country_name(std::string ip,
         gi_country = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_country == nullptr) {
             logger->warn("IPLocation: cannot open geoip country database");
-            return CannotOpenGeoIpCountryDatabase();
+            return CannotOpenGeoIpCountryDatabaseError();
         }
     }
     GeoIPLookup gl;
@@ -90,7 +90,7 @@ ErrorOr<std::string> IPLocation::resolve_city_name(std::string ip,
         gi_city = GeoIP_open(path_city.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_country == nullptr) {
             logger->warn("IPLocation: cannot open geoip city database");
-            return CannotOpenGeoIpCityDatabase();
+            return CannotOpenGeoIpCityDatabaseError();
         }
     }
     GeoIPRecord *gir = GeoIP_record_by_name(gi_city, ip.c_str());
@@ -111,7 +111,7 @@ ErrorOr<std::string> IPLocation::resolve_asn(std::string ip,
         gi_asn = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
         if (gi_asn == nullptr) {
             logger->warn("IPLocation: cannot open geoip asn database");
-            return CannotOpenGeoIpAsnDatabase();
+            return CannotOpenGeoIpAsnDatabaseError();
         }
     }
     GeoIPLookup gl;

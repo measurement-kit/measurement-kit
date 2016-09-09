@@ -35,19 +35,19 @@ TEST_CASE("geoip works") {
 TEST_CASE("IPLocation::resolve_countr_code() deals with nonexistent database") {
     mk::ooni::IPLocation ipl("invalid.dat", "invalid.dat");
     REQUIRE((ipl.resolve_country_code("8.8.8.8").as_error()
-             == mk::ooni::CannotOpenGeoIpCountryDatabase()));
+             == mk::ooni::CannotOpenGeoIpCountryDatabaseError()));
 }
 
 TEST_CASE("IPLocation::resolve_countr_name() deals with nonexistent database") {
     mk::ooni::IPLocation ipl("invalid.dat", "invalid.dat");
     REQUIRE((ipl.resolve_country_name("8.8.8.8").as_error()
-             == mk::ooni::CannotOpenGeoIpCountryDatabase()));
+             == mk::ooni::CannotOpenGeoIpCountryDatabaseError()));
 }
 
 TEST_CASE("IPLocation::resolve_asn() deals with nonexistent database") {
     mk::ooni::IPLocation ipl("invalid.dat", "invalid.dat");
     REQUIRE((ipl.resolve_asn("8.8.8.8").as_error()
-             == mk::ooni::CannotOpenGeoIpAsnDatabase()));
+             == mk::ooni::CannotOpenGeoIpAsnDatabaseError()));
 }
 
 TEST_CASE("is_ip_addr works on ipv4") {
