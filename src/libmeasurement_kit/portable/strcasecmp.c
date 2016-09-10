@@ -74,7 +74,7 @@ static const u_char charmap[] = {
 };
 
 int
-strcasecmp(const char *s1, const char *s2)
+mk_strcasecmp(const char *s1, const char *s2)
 {
 	const u_char *cm = charmap;
 	const u_char *us1 = (const u_char *)s1;
@@ -85,10 +85,10 @@ strcasecmp(const char *s1, const char *s2)
 			return (0);
 	return (cm[*us1] - cm[*--us2]);
 }
-DEF_WEAK(strcasecmp);
+//DEF_WEAK(strcasecmp);
 
 int
-strncasecmp(const char *s1, const char *s2, size_t n)
+mkp_strncasecmp(const char *s1, const char *s2, size_t n)
 {
 	if (n != 0) {
 		const u_char *cm = charmap;
@@ -104,4 +104,4 @@ strncasecmp(const char *s1, const char *s2, size_t n)
 	}
 	return (0);
 }
-DEF_WEAK(strncasecmp);
+//DEF_WEAK(strncasecmp);
