@@ -203,7 +203,7 @@ static inline void dns_callback(int code, char type, int count, int ttl,
         } else {
             context->callback(NoError(), context->message);
         }
-    } catch (const Error& e) {
+    } catch (const Error &) {
         // suppress Error exceptions because we don't want this kind
         // of exception to terminate the program
     }
