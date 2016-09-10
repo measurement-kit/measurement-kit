@@ -47,8 +47,8 @@ timeval *timeval_init(timeval *tv, double delta) {
     if (delta < 0) {
         return nullptr;
     }
-    tv->tv_sec = (time_t)floor(delta);
-    tv->tv_usec = (suseconds_t)((delta - floor(delta)) * 1000000);
+    tv->tv_sec = floor(delta);
+    tv->tv_usec = ((delta - floor(delta)) * 1000000);
     return tv;
 }
 
