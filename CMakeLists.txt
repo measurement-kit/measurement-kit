@@ -39,7 +39,7 @@ target_include_directories(
 
 if(MSVC)
   set(libevent_static_lib_name libevent)
-  set(mscv_extra_libs ws2_32)
+  set(msvc_extra_libs ws2_32)
 else()
   set(libevent_static_lib_name event)
 endif()
