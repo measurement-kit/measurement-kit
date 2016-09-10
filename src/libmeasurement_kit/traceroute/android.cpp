@@ -46,7 +46,6 @@
 
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 
 struct event_base;
 

@@ -6,7 +6,6 @@
 #include <measurement_kit/http.hpp>
 
 #include <stdlib.h>
-#include <unistd.h>
 
 #include <iostream>
 
