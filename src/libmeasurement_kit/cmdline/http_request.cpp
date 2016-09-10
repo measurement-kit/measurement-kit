@@ -5,8 +5,6 @@
 #include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/http.hpp>
 
-#include <stdlib.h>
-
 #include <iostream>
 
 namespace mk {

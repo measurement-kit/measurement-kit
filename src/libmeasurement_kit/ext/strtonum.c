@@ -24,7 +24,6 @@ void mk_strtonum_unused() {}
 
 #include <errno.h>
 #include <limits.h>
-#include <stdlib.h>
 
 #define	INVALID		1
 #define	TOOSMALL	2

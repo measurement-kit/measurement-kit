@@ -7,7 +7,6 @@
 
 #include <ctype.h>
 #include <math.h>
-#include <stdlib.h>
 
 #include <deque>
 #include <cstring>

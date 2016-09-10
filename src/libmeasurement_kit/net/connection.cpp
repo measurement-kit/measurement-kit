@@ -11,7 +11,6 @@
 
 #include <errno.h>
 #include <new>
-#include <stdlib.h>
 
 extern "C" {
 

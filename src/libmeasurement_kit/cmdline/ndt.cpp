@@ -5,7 +5,6 @@
 #include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/ndt.hpp>
 
-#include <stdlib.h>
 #include <string.h>
 
 #include <iostream>
