@@ -68,9 +68,9 @@ struct option {
 extern "C" {
 #endif
 
-int	getopt_long(int, char * const *, const char *,
+int	mkp_getopt_long(int, char * const *, const char *,
 	const struct option *, int *);
-int	getopt_long_only(int, char * const *, const char *,
+int	mkp_getopt_long_only(int, char * const *, const char *,
 	const struct option *, int *);
 
 #ifdef __cplusplus

@@ -3,27 +3,16 @@
  * err.h compatibility shim
  */
 
-#ifdef HAVE_ERR_H
-
-#include_next <err.h>
-
-#else
-
-#ifndef LIBCRYPTOCOMPAT_ERR_H
-#define LIBCRYPTOCOMPAT_ERR_H
+#include <measurement_kit/portable/err.h>
+#include <measurement_kit/portable/stdlib.h>
 
 #include <errno.h>
 #include <stdarg.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-static inline void
-err(int eval, const char *fmt, ...)
+void
+mkp_err(int eval, const char *fmt, ...)
 {
 	int sverrno = errno;
 	va_list ap;
@@ -38,8 +27,8 @@ err(int eval, const char *fmt, ...)
 	va_end(ap);
 }
 
-static inline void
-errx(int eval, const char *fmt, ...)
+void
+mkp_errx(int eval, const char *fmt, ...)
 {
 	va_list ap;
 
@@ -51,8 +40,8 @@ errx(int eval, const char *fmt, ...)
 	va_end(ap);
 }
 
-static inline void
-warn(const char *fmt, ...)
+void
+mkp_warn(const char *fmt, ...)
 {
 	int sverrno = errno;
 	va_list ap;
@@ -66,8 +55,8 @@ warn(const char *fmt, ...)
 	va_end(ap);
 }
 
-static inline void
-warnx(const char *fmt, ...)
+void
+mkp_warnx(const char *fmt, ...)
 {
 	va_list ap;
 
@@ -77,11 +66,3 @@ warnx(const char *fmt, ...)
 	fprintf(stderr, "\n");
 	va_end(ap);
 }
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
-
-#endif

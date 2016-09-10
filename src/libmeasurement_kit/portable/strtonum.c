@@ -17,11 +17,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "strtonum.h"
-#ifdef HAVE_STRTONUM
-void mk_strtonum_unused() {}
-#else
-
 #include <errno.h>
 #include <limits.h>
 
@@ -30,7 +25,7 @@ void mk_strtonum_unused() {}
 #define	TOOLARGE	3
 
 long long
-mk_strtonum(const char *numstr, long long minval, long long maxval,
+mkp_strtonum(const char *numstr, long long minval, long long maxval,
     const char **errstrp)
 {
 	long long ll = 0;
@@ -68,5 +63,3 @@ mk_strtonum(const char *numstr, long long minval, long long maxval,
 	return (ll);
 }
 /*DEF_WEAK(strtonum);*/
-
-#endif
