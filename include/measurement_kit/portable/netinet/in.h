@@ -9,13 +9,12 @@
 /*
  * 1. Pull `struct in_addr`.
  */
- #include <winsock2.h>
+#include <winsock2.h>
 
 /*
  * 1. Pull `struct in6_addr`.
  */
-
- #include<ws2tcpip.h>
+#include<ws2tcpip.h>
 
 #else
 
