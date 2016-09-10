@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "../portable/api.h"
+
 #include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/dns.hpp>
 
@@ -19,13 +21,13 @@ int main(const char *, int argc, char **argv) {
     std::string query_class = "IN";
     int ch;
     std::string query_type = "A";
-    while ((ch = getopt(argc, argv, "c:t:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "c:t:v")) != -1) {
         switch (ch) {
         case 'c':
-            query_class = optarg;
+            query_class = mkp_optarg;
             break;
         case 't':
-            query_type = optarg;
+            query_type = mkp_optarg;
             break;
         case 'v':
             increase_verbosity();
@@ -35,8 +37,8 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= optind;
-    argv += optind;
+    argc -= mkp_optind;
+    argv += mkp_optind;
     if (argc != 1) {
         std::cout << kv_usage;
         exit(1);

@@ -73,7 +73,7 @@ ErrorOr<Url> parse_url_noexcept(std::string url);
 class HeadersComparator {
   public:
     bool operator() (const std::string &l, const std::string &r) const {
-        return strcasecmp(l.c_str(), r.c_str()) < 0;
+        return mk::strcasecmp_wrapper(l.c_str(), r.c_str()) < 0;
     }
 };
 

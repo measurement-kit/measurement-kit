@@ -52,9 +52,6 @@ gen_sources() {
     done
     for name in `ls $2`; do
         if [ -d $2/$name ]; then
-            if [ "$2/$name" = "src/libmeasurement_kit/ext" ]; then
-                continue  # do not descend into external sources
-            fi
             gen_sources $1 $2/$name
         fi
     done

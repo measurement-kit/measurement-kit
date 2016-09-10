@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "../portable/api.h"
 #include "../common/utils.hpp"
-#include "../ext/strtonum.h"
 
 #include <ctype.h>
 #include <math.h>
@@ -31,7 +31,9 @@ double time_now() {
 void utc_time_now(struct tm *utc) {
     time_t tv;
     tv = time(nullptr);
-    gmtime_r(&tv, utc);
+    if (mkp_gmtime_r(&tv, utc) == nullptr) {
+        throw std::runtime_error("mkp_gmtime_r() failed");
+    }
 }
 
 ErrorOr<std::string> timestamp(const struct tm *t) {
@@ -69,7 +71,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen,
 int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
                  const char *address, const char *port) {
     const char *errstr;
-    int _port = (int)mk_strtonum(port, 0, 65535, &errstr);
+    int _port = (int)mkp_strtonum(port, 0, 65535, &errstr);
     if (errstr != nullptr) {
         warn("utils:storage_init: invalid port");
         return -1;
@@ -278,6 +280,10 @@ double percentile(std::vector<double> v, double percent) {
     auto val0 = v[int(pivot_floor)] * (pivot_ceil - pivot);
     auto val1 = v[int(pivot_ceil)] * (pivot - pivot_floor);
     return val0 + val1;
+}
+
+int strcasecmp_wrapper(const char *s, const char *r) {
+    return mkp_strcasecmp(s, r);
 }
 
 } // namespace mk

@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "../portable/api.h"
+
 #include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/http.hpp>
 
@@ -20,16 +22,16 @@ int main(const char *, int argc, char **argv) {
     Settings settings;
     std::string body;
     int ch;
-    while ((ch = getopt(argc, argv, "b:m:R:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "b:m:R:v")) != -1) {
         switch (ch) {
         case 'b':
-            body = optarg;
+            body = mkp_optarg;
             break;
         case 'm':
-            settings["http/method"] = optarg;
+            settings["http/method"] = mkp_optarg;
             break;
         case 'R':
-            settings["http/max_redirects"] = lexical_cast<int>(optarg);
+            settings["http/max_redirects"] = lexical_cast<int>(mkp_optarg);
             break;
         case 'v':
             increase_verbosity();
@@ -39,8 +41,8 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= optind;
-    argv += optind;
+    argc -= mkp_optind;
+    argv += mkp_optind;
     if (argc != 1) {
         std::cout << kv_usage;
         exit(1);

@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "../portable/api.h"
+
 #include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/ndt.hpp>
 
@@ -23,26 +25,26 @@ int main(const char *, int argc, char **argv) {
 
     NdtTest test;
     int ch;
-    while ((ch = getopt(argc, argv, "C:np:T:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "C:np:T:v")) != -1) {
         switch (ch) {
         case 'C':
-            test.set_options("net/ca_bundle_path", optarg);
+            test.set_options("net/ca_bundle_path", mkp_optarg);
             break;
         case 'n':
             test.set_options("no_collector", true);
             break;
         case 'p':
-            test.set_options("port", optarg);
+            test.set_options("port", mkp_optarg);
             break;
         case 'T':
-            if (strcmp(optarg, "download") == 0) {
+            if (strcmp(mkp_optarg, "download") == 0) {
                 test.set_options("test_suite", MK_NDT_DOWNLOAD);
-            } else if (strcmp(optarg, "none") == 0) {
+            } else if (strcmp(mkp_optarg, "none") == 0) {
                 test.set_options("test_suite", 0);
-            } else if (strcmp(optarg, "upload") == 0) {
+            } else if (strcmp(mkp_optarg, "upload") == 0) {
                 test.set_options("test_suite", MK_NDT_UPLOAD);
             } else {
-                warn("invalid parameter for -T option: %s", optarg);
+                warn("invalid parameter for -T option: %s", mkp_optarg);
                 exit(1);
             }
             break;
@@ -54,8 +56,8 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= optind;
-    argv += optind;
+    argc -= mkp_optind;
+    argv += mkp_optind;
 
     if (argc > 1) {
         std::cout << kv_usage;
