@@ -15,16 +15,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/socket.h>
-
-#include <arpa/inet.h>
-#include <netinet/in.h>
-
-#include <string.h>
+#include "tls_internal.h"
 
 #include <openssl/x509v3.h>
 
-#include "tls_internal.h"
+#include <measurement_kit/portable/sys/socket.h>
+
+#include <measurement_kit/portable/arpa/inet.h>
+
+#include <string.h>
 
 static int tls_match_name(const char *cert_name, const char *name);
 static int tls_check_subject_altname(struct tls *ctx, X509 *cert,
