@@ -37,6 +37,12 @@ target_include_directories(
                            ${CMAKE_SOURCE_DIR}/include
                           )
 
+if(MSVC)
+  set(libevent_static_lib_name libevent)
+else()
+  set(libevent_static_lib_name event)
+endif()
+
 link_directories(${msvc_link_path} ${osx_link_path})
 add_executable(
 	       measurement_kit
@@ -47,7 +53,7 @@ target_link_libraries(
 		      geoip
 		      crypto
 		      ssl
-		      event
+		      ${libevent_static_lib_name}
 		      ${osx_extra_libs}
 		      measurement_kit_static
 		     )
