@@ -13,11 +13,12 @@
 #include <measurement_kit/portable/sys/socket.h>
 #include <measurement_kit/portable/sys/time.h>
 
+#include <measurement_kit/portable/err.h>
 #include <measurement_kit/portable/strings.h>
 #include <measurement_kit/portable/unistd.h>
 
-// Note: this is a standard header but still there are bits of it that
-// are implemented differently under Windows (i.e. gmtime_r)
+// Note: standard headers with non-standard additions
+#include <measurement_kit/portable/stdlib.h>
 #include <measurement_kit/portable/time.h>
 
 // Include ciso646 to make sure we have `and`, `or`, etc
