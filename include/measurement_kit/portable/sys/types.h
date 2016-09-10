@@ -5,12 +5,9 @@
 #define MEASUREMENT_KIT_PORTABLE_SYS_TYPES_H
 
 #ifdef _WIN32
-
-/* TODO */
-
+#include <measurement_kit/portable/_windows.h>
 #else
-
 #include <sys/types.h>
-
 #endif
+
 #endif

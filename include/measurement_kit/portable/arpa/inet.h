@@ -5,12 +5,9 @@
 #define MEASUREMENT_KIT_PORTABLE_ARPA_INET_H
 
 #ifdef _WIN32
-
-/* TODO */
-
+#include <measurement_kit/portable/_windows.h>
 #else
-
 #include <arpa/inet.h>
-
 #endif
+
 #endif

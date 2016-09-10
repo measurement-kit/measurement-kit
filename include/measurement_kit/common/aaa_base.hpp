@@ -6,7 +6,6 @@
 
 // Portability definition and headers
 
-#include <measurement_kit/portable/private/macros.h>
 #include <measurement_kit/portable/sys/types.h>
 
 #include <measurement_kit/portable/netinet/in.h>

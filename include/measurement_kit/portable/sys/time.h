@@ -5,11 +5,10 @@
 #define MEASUREMENT_KIT_PORTABLE_SYS_TIME_H
 
 #ifdef _WIN32
-
-/*
- * 1. Pull `struct timeval`.
- */
-#include <winsock2.h>
+#include <measurement_kit/portable/_windows.h>
+#else
+#include <sys/time.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,11 +18,5 @@ int gettimeofday(struct timeval *tvp, void *tzp);
 
 #ifdef __cplusplus
 }
-#endif
-
-#else
-
-#include <sys/time.h>
-
 #endif
 #endif
