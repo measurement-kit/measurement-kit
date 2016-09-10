@@ -23,6 +23,8 @@
 
 #include <measurement_kit/portable/arpa/inet.h>
 
+#include <measurement_kit/portable/strings.h>
+
 #include <string.h>
 
 static int tls_match_name(const char *cert_name, const char *name);
