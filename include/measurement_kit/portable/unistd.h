@@ -4,7 +4,9 @@
 #ifndef MEASUREMENT_KIT_PORTABLE_UNISTD_H
 #define MEASUREMENT_KIT_PORTABLE_UNISTD_H
 
-#ifdef _WIN32
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,11 +22,5 @@ int getopt(int argc, char *const argv[], const char *optstring);
 
 #ifdef __cplusplus
 }
-#endif
-
-#else
-
-#include <unistd.h>
-
 #endif
 #endif
