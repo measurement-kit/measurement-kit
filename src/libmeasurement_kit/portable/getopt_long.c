@@ -208,7 +208,7 @@ parse_long_options(char * const *nargv, const char *options,
 	if (!exact_match && second_partial_match) {
 		/* ambiguous abbreviation */
 		if (PRINT_ERROR)
-			warnx(ambig, (int)current_argv_len, current_argv);
+			mkp_warnx(ambig, (int)current_argv_len, current_argv);
 		mkp_optopt = 0;
 		return (BADCH);
 	}
@@ -216,7 +216,7 @@ parse_long_options(char * const *nargv, const char *options,
 		if (long_options[match].has_arg == no_argument
 		    && has_equal) {
 			if (PRINT_ERROR)
-				warnx(noarg, (int)current_argv_len,
+				mkp_warnx(noarg, (int)current_argv_len,
 				     current_argv);
 			/*
 			 * XXX: GNU sets mkp_optopt to val regardless of flag
@@ -246,7 +246,7 @@ parse_long_options(char * const *nargv, const char *options,
 			 * should be generated.
 			 */
 			if (PRINT_ERROR)
-				warnx(recargstring,
+				mkp_warnx(recargstring,
 				    current_argv);
 			/*
 			 * XXX: GNU sets mkp_optopt to val regardless of flag
@@ -264,7 +264,7 @@ parse_long_options(char * const *nargv, const char *options,
 			return (-1);
 		}
 		if (PRINT_ERROR)
-			warnx(illoptstring, current_argv);
+			mkp_warnx(illoptstring, current_argv);
 		mkp_optopt = 0;
 		return (BADCH);
 	}
@@ -426,7 +426,7 @@ start:
 		if (!*place)
 			++mkp_optind;
 		if (PRINT_ERROR)
-			warnx(illoptchar, optchar);
+			mkp_warnx(illoptchar, optchar);
 		mkp_optopt = optchar;
 		return (BADCH);
 	}
@@ -437,7 +437,7 @@ start:
 		else if (++mkp_optind >= nargc) {	/* no arg */
 			place = EMSG;
 			if (PRINT_ERROR)
-				warnx(recargchar, optchar);
+				mkp_warnx(recargchar, optchar);
 			mkp_optopt = optchar;
 			return (BADARG);
 		} else				/* white space */
@@ -458,7 +458,7 @@ start:
 			if (++mkp_optind >= nargc) {	/* no arg */
 				place = EMSG;
 				if (PRINT_ERROR)
-					warnx(recargchar, optchar);
+					mkp_warnx(recargchar, optchar);
 				mkp_optopt = optchar;
 				return (BADARG);
 			} else
