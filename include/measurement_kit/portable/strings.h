@@ -14,9 +14,15 @@ extern "C" {
 
 int strcasecmp(const char *s1, const char *s2);
 
-// XXX
-int mkp_platform_strcasecmp(const char *s1, const char *s2);
+int strncasecmp(const char *s1, const char *s2, size_t n);
 
+#ifdef MKP_STRINGS_VISIBLE
+
+int mkp_strcasecmp(const char *s1, const char *s2);
+
+int mkp_strncasecmp(const char *s1, const char *s2, size_t n);
+
+#endif
 #ifdef __cplusplus
 }
 #endif

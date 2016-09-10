@@ -39,8 +39,9 @@
 
 #ifndef MEASUREMENT_KIT_PORTABLE_GETOPT_H
 #define MEASUREMENT_KIT_PORTABLE_GETOPT_H
-
-#include <measurement_kit/portable/unistd.h>
+#ifndef _WIN32
+#include <getopt.h>
+#else
 
 /*
  * GNU-like getopt_long()/getopt_long_only() with 4.4BSD optreset extension.
@@ -63,18 +64,30 @@ struct option {
 	/* if flag not NULL, value to set *flag to; else return value */
 	int val;
 };
+#endif /* !WIN32 / WIN32 */
+
+#include <measurement_kit/portable/_getopt_base.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int	mkp_getopt_long(int, char * const *, const char *,
-	const struct option *, int *);
-int	mkp_getopt_long_only(int, char * const *, const char *,
-	const struct option *, int *);
+int getopt_long(int nargc, char * const *nargv, const char *options,
+                const struct option *long_options, int *idx);
 
+int getopt_long_only(int nargc, char * const *nargv, const char *options,
+                     const struct option *long_options, int *idx);
+
+#ifdef MKP_GETOPT_VISIBLE
+
+int mkp_getopt_long(int nargc, char * const *nargv, const char *options,
+                    const struct option *long_options, int *idx);
+
+int mkp_getopt_long_only(int nargc, char * const *nargv, const char *options,
+                         const struct option *long_options, int *idx);
+
+#endif
 #ifdef __cplusplus
 }
 #endif
- 
 #endif /* !MEASUREMENT_KIT_PORTABLE_GETOPT_H */

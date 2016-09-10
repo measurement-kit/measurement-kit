@@ -8,19 +8,6 @@
 #include <unistd.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <measurement_kit/portable/_getopt_base.h>
 
-extern char *optarg;
-extern int optind;
-extern int optopt;
-extern int opterr;
-extern int optreset;
-
-int getopt(int argc, char *const argv[], const char *optstring);
-
-#ifdef __cplusplus
-}
-#endif
 #endif

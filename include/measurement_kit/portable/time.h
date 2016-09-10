@@ -15,6 +15,11 @@ extern "C" {
  */
 struct tm *gmtime_r(const time_t *clock, struct tm *result);
 
+#ifdef MKP_TIME_VISIBLE
+
+struct tm *mkp_gmtime_r(const time_t *clock, struct tm *result);
+
+#endif
 #ifdef __cplusplus
 }
 #endif
