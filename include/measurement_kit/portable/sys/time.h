@@ -11,6 +11,8 @@
  */
 #include <winsock2.h>
 
+int gettimeofday(struct timeval *tvp, void *tzp);
+
 #else
 
 #include <sys/time.h>

@@ -45,7 +45,6 @@
 #include <sys/uio.h>
 
 #include <string.h>
-#include <time.h>
 
 struct event_base;
 

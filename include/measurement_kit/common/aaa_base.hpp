@@ -17,6 +17,10 @@
 #include <measurement_kit/portable/strings.h>
 #include <measurement_kit/portable/unistd.h>
 
+// Note: this is a standard header but still there are bits of it that
+// are implemented differently under Windows (i.e. gmtime_r)
+#include <measurement_kit/portable/time.h>
+
 // Include ciso646 to make sure we have `and`, `or`, etc
 #include <ciso646>
 

@@ -8,7 +8,6 @@
 #include <ctype.h>
 #include <math.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include <deque>
 #include <cstring>
