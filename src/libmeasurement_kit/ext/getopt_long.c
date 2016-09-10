@@ -49,7 +49,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <err.h>
+#include <measurement_kit/portable/err.h>
 #include <errno.h>
 #include <getopt.h>
 #include <stdlib.h>
