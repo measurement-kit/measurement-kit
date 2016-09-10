@@ -17,4 +17,7 @@
 #include <measurement_kit/portable/strings.h>
 #include <measurement_kit/portable/unistd.h>
 
+// Include ciso646 to make sure we have `and`, `or`, etc
+#include <ciso646>
+
 #endif
