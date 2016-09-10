@@ -51,7 +51,6 @@
 
 #include <measurement_kit/portable/err.h>
 #include <errno.h>
-#include <getopt.h>
 #include <stdlib.h>
 #include <string.h>
 
