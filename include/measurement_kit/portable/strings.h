@@ -12,9 +12,11 @@
 extern "C" {
 #endif
 
+#ifdef _WIN32
 int strcasecmp(const char *s1, const char *s2);
 
 int strncasecmp(const char *s1, const char *s2, size_t n);
+#endif
 
 #ifdef MKP_STRINGS_VISIBLE
 

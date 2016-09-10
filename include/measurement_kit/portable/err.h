@@ -8,10 +8,12 @@
 extern "C" {
 #endif
 
+#ifdef _WIN32
 void err(int eval, const char *fmt, ...);
 void errx(int eval, const char *fmt, ...);
 void warn(const char *fmt, ...);
 void warnx(const char *fmt, ...);
+#endif
 
 #ifdef MKP_ERR_VISIBLE
 void mkp_err(int eval, const char *fmt, ...);

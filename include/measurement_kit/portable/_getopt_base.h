@@ -8,6 +8,7 @@
 extern "C" {
 #endif
 
+#ifdef _WIN32
 extern char *optarg;
 extern int optind;
 extern int optopt;
@@ -15,6 +16,7 @@ extern int opterr;
 extern int optreset;
 
 int getopt(int argc, char *const argv[], const char *optstring);
+#endif
 
 /*
  * This header should be included either by unistd.h or by getopt.h.

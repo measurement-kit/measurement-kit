@@ -72,11 +72,13 @@ struct option {
 extern "C" {
 #endif
 
+#ifdef _WIN32
 int getopt_long(int nargc, char * const *nargv, const char *options,
                 const struct option *long_options, int *idx);
 
 int getopt_long_only(int nargc, char * const *nargv, const char *options,
                      const struct option *long_options, int *idx);
+#endif
 
 #ifdef MKP_GETOPT_VISIBLE
 

@@ -6,9 +6,6 @@
 
 #ifdef _WIN32
 #include <measurement_kit/portable/_windows.h>
-#else
-#include <sys/time.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,5 +15,8 @@ int gettimeofday(struct timeval *tvp, void *tzp);
 
 #ifdef __cplusplus
 }
+#endif
+#else
+#include <sys/time.h>
 #endif
 #endif
