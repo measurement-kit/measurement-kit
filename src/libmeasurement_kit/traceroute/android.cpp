@@ -33,7 +33,10 @@
 /// Android implementation of prober
 
 // This is meant to run on Android but can run on all Linux systems
-#ifdef __linux__
+#ifndef __linux__
+void mk_traceroute_android_unused();
+void mk_traceroute_android_unused() {}
+#else
 
 #include "../common/utils.hpp"
 

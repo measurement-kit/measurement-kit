@@ -33,7 +33,10 @@
 /// Implementation of traceroute interface
 
 // Disable for non Linux until we figure out how to build on iOS
-#ifdef __linux__
+#ifndef __linux__
+void mk_traceroute_interface_unused();
+void mk_traceroute_interface_unused() {}
+#else
 
 #include <measurement_kit/traceroute.hpp>
 
