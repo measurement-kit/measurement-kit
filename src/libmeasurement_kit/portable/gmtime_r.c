@@ -2,8 +2,7 @@
  * Public domain.
  */
 
-#include <measurement_kit/portable/time.h>
-#include <stddef.h>
+#include "../portable/internal.h"
 
 struct tm *mkp_gmtime_r(const time_t *clock, struct tm *result) {
     /*

@@ -14,6 +14,9 @@ extern "C" {
 
 int strcasecmp(const char *s1, const char *s2);
 
+// XXX
+int mkp_platform_strcasecmp(const char *s1, const char *s2);
+
 #ifdef __cplusplus
 }
 #endif

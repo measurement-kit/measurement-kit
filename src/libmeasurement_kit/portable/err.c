@@ -3,13 +3,7 @@
  * err.h compatibility shim
  */
 
-#include <measurement_kit/portable/err.h>
-#include <measurement_kit/portable/stdlib.h>
-
-#include <errno.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
+#include "../portable/internal.h"
 
 void
 mkp_err(int eval, const char *fmt, ...)

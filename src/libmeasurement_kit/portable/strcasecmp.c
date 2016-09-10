@@ -29,7 +29,7 @@
  * SUCH DAMAGE.
  */
 
-#include <string.h>
+#include "../portable/internal.h"
 
 typedef unsigned char u_char;
 
@@ -74,7 +74,7 @@ static const u_char charmap[] = {
 };
 
 int
-mk_strcasecmp(const char *s1, const char *s2)
+mkp_strcasecmp(const char *s1, const char *s2)
 {
 	const u_char *cm = charmap;
 	const u_char *us1 = (const u_char *)s1;

@@ -49,13 +49,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "getopt.h"
-
-#include <measurement_kit/portable/err.h>
-#include <measurement_kit/portable/stdlib.h>
-
-#include <errno.h>
-#include <string.h>
+#include "../portable/internal.h"
 
 int	mkp_opterr = 1;		/* if error message should be printed */
 int	mkp_optind = 1;		/* index into parent argv vector */

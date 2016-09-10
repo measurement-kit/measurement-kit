@@ -17,8 +17,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <errno.h>
-#include <limits.h>
+#include "../portable/internal.h"
 
 #define	INVALID		1
 #define	TOOSMALL	2
