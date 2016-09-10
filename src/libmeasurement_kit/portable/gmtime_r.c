@@ -15,6 +15,10 @@ struct tm *gmtime_r(const time_t *clock, struct tm *result) {
     if (result == NULL) {
         return NULL;
     }
-    *result = gmtime(clock);
+    struct tm *rval = gmtime(clock);
+    if (rval == NULL) {
+        return NULL;
+    }
+    *result = *rval;
     return result;
 }
