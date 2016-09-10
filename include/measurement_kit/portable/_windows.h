@@ -4,8 +4,8 @@
 #ifndef MEASUREMENT_KIT_PORTABLE__WINDOWS_H
 #define MEASUREMENT_KIT_PORTABLE__WINDOWS_H
 
-#include <winsock.h>
 #include <ws2tcpip.h>
+#include <winsock.h>
 
 #ifdef _MSC_VER
 # define __attribute__(x) /* nothing */
