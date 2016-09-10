@@ -51,6 +51,13 @@ template <
         if (sigaction(SIGPIPE, &sa, nullptr) != 0) {
             throw std::runtime_error("sigaction() failed");
         }
+#else
+        WSADATA wsa_data;
+        WORD version = MAKEWORD(2, 2);
+        memset(&wsa_data, 0, sizeof (wsa_data));
+        if (WSAStartup(version, &wsa_data) != 0) {
+            throw std::runtime_error("WSAStartup() failed");
+        }
 #endif
     }
 
