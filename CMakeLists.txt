@@ -39,6 +39,7 @@ target_include_directories(
 
 if(MSVC)
   set(libevent_static_lib_name libevent)
+  set(mscv_extra_libs ws2_32)
 else()
   set(libevent_static_lib_name event)
 endif()
@@ -55,5 +56,6 @@ target_link_libraries(
 		      ssl
 		      ${libevent_static_lib_name}
 		      ${osx_extra_libs}
+		      ${msvc_extra_libs}
 		      measurement_kit_static
 		     )
