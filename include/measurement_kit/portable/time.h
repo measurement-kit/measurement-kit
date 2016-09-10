@@ -6,8 +6,6 @@
 
 #include <time.h>
 
-#ifdef _WIN32
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,7 +17,5 @@ struct tm *gmtime_r(const time_t *clock, struct tm *result);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif
 #endif
