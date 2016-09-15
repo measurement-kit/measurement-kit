@@ -20,6 +20,8 @@ install -d a/b/c
     rm ../../../_mk.tgz
     cd measurement-kit-$v
     ./autogen.sh
+    find . -depth -type d -name .git -exec rm -rf {} \;
+    rm -rf *.dat # do not distribute geoip
     cd ..
     tar -czf measurement-kit-$v.tar.gz measurement-kit-$v
     gpg2 -u 7733D95B -b --armor measurement-kit-$v.tar.gz
