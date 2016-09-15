@@ -1,3 +1,12 @@
+# MeasurementKit 0.3.0-beta.2 [2016-09-15]
+
+- ooni: allow to disable collector
+- geoip: skip compiling binaries
+- ooni: count entries and emit progress
+- ooni: allow to optionally avoid writing reports to disk
+- http: put geoip databases in current working dir
+- *: make sure all errors are named Error
+
 # MeasurementKit 0.3.0-beta.1 [2016-09-01]
 
 - Improve .gitignore
