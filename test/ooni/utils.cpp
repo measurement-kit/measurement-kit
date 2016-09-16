@@ -22,12 +22,22 @@ TEST_CASE("ip lookup works") {
 #endif
 
 TEST_CASE("geoip works") {
-    auto gi = mk::ooni::IpLocationProxy::global()->open("test/fixtures/GeoIP.dat",
-            "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat");
-    auto asn = gi->resolve_asn("130.192.91.231");
-    auto cname = gi->resolve_country_name("130.192.91.231");
-    auto cc = gi->resolve_country_code("130.192.91.231");
-    auto city = gi->resolve_city_name("130.192.91.231");
+    auto asn = mk::ooni::GeoipCache::global()->resolve_asn(
+            "test/fixtures/GeoIPASNum.dat",
+            "130.192.91.231"
+    );
+    auto cname = mk::ooni::GeoipCache::global()->resolve_country_name(
+            "test/fixtures/GeoIP.dat",
+            "130.192.91.231"
+    );
+    auto cc = mk::ooni::GeoipCache::global()->resolve_country_code(
+            "test/fixtures/GeoIP.dat",
+            "130.192.91.231"
+    );
+    auto city = mk::ooni::GeoipCache::global()->resolve_city_name(
+            "test/fixtures/GeoLiteCity.dat",
+            "130.192.91.231"
+    );
     REQUIRE(*asn == std::string{"AS137"});
     REQUIRE(*cc == std::string{"IT"});
     REQUIRE(*cname == std::string{"Italy"});
@@ -35,68 +45,67 @@ TEST_CASE("geoip works") {
 }
 
 TEST_CASE("geoip memoization works") {
+    mk::ooni::GeoipCache::global()->invalidate(); // Start clean
+
     // Open more then once. After the first open we should not really open.
-    auto gi = mk::ooni::IpLocationProxy::global()->open("test/fixtures/GeoIP.dat",
-            "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat",
-            mk::Logger::global(), nullptr);
+    auto gi = mk::ooni::GeoipCache::global()->get(
+        "test/fixtures/GeoIP.dat");
     bool first_open;
 
     first_open = true;
-    gi = mk::ooni::IpLocationProxy::global()->open("test/fixtures/GeoIP.dat",
-            "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat",
-            mk::Logger::global(), &first_open);
+    gi = mk::ooni::GeoipCache::global()->get(
+        "test/fixtures/GeoIP.dat", first_open);
     REQUIRE(first_open == false);
 
     // Repeat two more times to make sure behavior is consistent
 
     first_open = true;
-    gi = mk::ooni::IpLocationProxy::global()->open("test/fixtures/GeoIP.dat",
-            "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat",
-            mk::Logger::global(), &first_open);
+    gi = mk::ooni::GeoipCache::global()->get(
+        "test/fixtures/GeoIP.dat", first_open);
     REQUIRE(first_open == false);
 
     first_open = true;
-    gi = mk::ooni::IpLocationProxy::global()->open("test/fixtures/GeoIP.dat",
-            "test/fixtures/GeoIPASNum.dat", "test/fixtures/GeoLiteCity.dat",
-            mk::Logger::global(), &first_open);
+    gi = mk::ooni::GeoipCache::global()->get(
+        "test/fixtures/GeoIP.dat", first_open);
     REQUIRE(first_open == false);
 
     // Make sure that, if we change at least one file name, we reopen all
 
     first_open = false;
-    gi = mk::ooni::IpLocationProxy::global()->open("test/fixtures/GeoIP.dat",
-            "test/fixtures/GeoIPASNum.dat", "",
-            mk::Logger::global(), &first_open);
+    gi = mk::ooni::GeoipCache::global()->get(
+        "test/fixtures/GeoLiteCity.dat", first_open);
     REQUIRE(first_open == true);
 
     // Make sure that, if we close, then of course we reopen
 
-    mk::ooni::IpLocationProxy::global()->close();
+    mk::ooni::GeoipCache::global()->invalidate();
 
     first_open = false;
-    gi = mk::ooni::IpLocationProxy::global()->open("test/fixtures/GeoIP.dat",
-            "test/fixtures/GeoIPASNum.dat", "",
-            mk::Logger::global(), &first_open);
+    gi = mk::ooni::GeoipCache::global()->get(
+        "test/fixtures/GeoLiteCity.dat", first_open);
     REQUIRE(first_open == true);
 
 }
 
 TEST_CASE("IpLocation::resolve_countr_code() deals with nonexistent database") {
-    mk::ooni::IpLocation ipl("invalid.dat", "invalid.dat");
-    REQUIRE((ipl.resolve_country_code("8.8.8.8").as_error()
-             == mk::ooni::CannotOpenGeoIpCountryDatabase()));
+    REQUIRE((mk::ooni::GeoipCache::global()->resolve_country_code(
+                    "invalid.dat", "8.8.8.8"
+                ).as_error()
+             == mk::ooni::GeoipDatabaseOpenError()));
 }
 
 TEST_CASE("IpLocation::resolve_countr_name() deals with nonexistent database") {
-    mk::ooni::IpLocation ipl("invalid.dat", "invalid.dat");
-    REQUIRE((ipl.resolve_country_name("8.8.8.8").as_error()
-             == mk::ooni::CannotOpenGeoIpCountryDatabase()));
+    REQUIRE((mk::ooni::GeoipCache::global()->resolve_country_name(
+                    "invalid.dat", "8.8.8.8"
+                ).as_error()
+             == mk::ooni::GeoipDatabaseOpenError()));
 }
 
 TEST_CASE("IpLocation::resolve_asn() deals with nonexistent database") {
-    mk::ooni::IpLocation ipl("invalid.dat", "invalid.dat");
-    REQUIRE((ipl.resolve_asn("8.8.8.8").as_error()
-             == mk::ooni::CannotOpenGeoIpAsnDatabase()));
+    REQUIRE((mk::ooni::GeoipCache::global()->resolve_asn(
+                    "invalid.dat", "8.8.8.8"
+                ).as_error()
+             == mk::ooni::GeoipDatabaseOpenError()));
 }
 
 TEST_CASE("is_ip_addr works on ipv4") {

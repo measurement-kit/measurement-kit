@@ -26,12 +26,9 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
                      Var<Reactor> reactor = Reactor::global(),
                      Var<Logger> logger = Logger::global());
 
-class IpLocation : public NonCopyable, public NonMovable {
+class GeoipDatabase {
   public:
-    IpLocation(std::string path_country, std::string path_asn,
-               std::string path_city = "");
-
-    ~IpLocation();
+    GeoipDatabase(std::string path) : path(path) {}
 
     ErrorOr<std::string>
     resolve_country_code(std::string ip, Var<Logger> = Logger::global());
@@ -45,30 +42,69 @@ class IpLocation : public NonCopyable, public NonMovable {
     ErrorOr<std::string>
     resolve_asn(std::string ip, Var<Logger> = Logger::global());
 
-    std::string path_country = "";
-    std::string path_asn = "";
-    std::string path_city = "";
+    std::string path;
 
   private:
-    GeoIP *gi_asn = nullptr;
-    GeoIP *gi_country = nullptr;
-    GeoIP *gi_city = nullptr;
+    ErrorOr<std::string>
+    with_open_database_do(std::function<ErrorOr<std::string>()> action,
+                          Var<Logger> logger);
+
+    Var<GeoIP> db;
 };
 
-class IpLocationProxy {
+class GeoipCache {
   public:
-    static Var<IpLocationProxy> global();
+    static Var<GeoipCache> global();
 
-    Var<IpLocation> open(std::string path_country,
-                         std::string path_asn,
-                         std::string path_city,
-                         Var<Logger> logger = Logger::global(),
-                         bool *first_open = nullptr);
+    Var<GeoipDatabase> get(std::string path, bool &did_open);
 
-    void close();
+    Var<GeoipDatabase> get(std::string path) {
+        bool did_open = false;
+        return get(path, did_open);
+    }
+
+    // After you update resources you want to invalidate the cache
+    // such that new databases are loaded on next query
+    void invalidate() {
+        instances.clear();
+    }
+
+    ErrorOr<std::string>
+    resolve_country_code(std::string path, std::string ip,
+                         Var<Logger> logger = Logger::global()) {
+        logger->debug("resolve country code '%s' using '%s'",
+                      ip.c_str(), path.c_str());
+        return get(path)->resolve_country_code(ip, logger);
+    }
+
+    ErrorOr<std::string>
+    resolve_country_name(std::string path, std::string ip,
+                         Var<Logger> logger = Logger::global()) {
+        logger->debug("resolve country name '%s' using '%s'",
+                      ip.c_str(), path.c_str());
+        return get(path)->resolve_country_name(ip, logger);
+    }
+
+    ErrorOr<std::string>
+    resolve_city_name(std::string path, std::string ip,
+                      Var<Logger> logger = Logger::global()) {
+        logger->debug("resolve city code '%s' using '%s'",
+                      ip.c_str(), path.c_str());
+        return get(path)->resolve_city_name(ip, logger);
+    }
+
+    ErrorOr<std::string>
+    resolve_asn(std::string path, std::string ip,
+                Var<Logger> logger = Logger::global()) {
+        logger->debug("resolve asn '%s' using '%s'",
+                      ip.c_str(), path.c_str());
+        return get(path)->resolve_asn(ip, logger);
+    }
+
+    size_t max_size = 3;
 
   private:
-    Var<IpLocation> instance;
+    std::map<std::string, Var<GeoipDatabase>> instances;
 };
 
 std::string extract_html_title(std::string body);

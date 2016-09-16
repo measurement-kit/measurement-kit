@@ -23,141 +23,103 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
     resolver_lookup_impl(callback, settings, reactor, logger);
 }
 
-/* static */ Var<IpLocationProxy> IpLocationProxy::global() {
-    static Var<IpLocationProxy> singleton(new IpLocationProxy);
+/* static */ Var<GeoipCache> GeoipCache::global() {
+    static Var<GeoipCache> singleton(new GeoipCache);
     return singleton;
 }
 
-Var<IpLocation> IpLocationProxy::open(std::string country, std::string asn,
-                                      std::string city, Var<Logger> logger,
-                                      bool *first_open) {
+Var<GeoipDatabase> GeoipCache::get(std::string path, bool &did_open) {
+    if (instances.find(path) != instances.end()) {
+        did_open = false;
+        return instances.at(path);
+    }
+    did_open = true;
+    if (instances.size() > max_size) {
+        instances.erase(std::prev(instances.end()));
+    }
+    instances[path] = Var<GeoipDatabase>(new GeoipDatabase(path));
+    return instances[path];
+}
 
-    // Typically we only need to refer to a single country, a single asn,
-    // a single city database, hence memoize last openned instances
-
-    if (!instance or country != instance->path_country
-                  or asn != instance->path_asn
-                  or city != instance->path_city) {
-        logger->debug("geoip: open with '%s', '%s', '%s'", country.c_str(),
-                      asn.c_str(), city.c_str());
-        instance.reset(new IpLocation(country, asn, city));
-        if (first_open != nullptr) {
-            *first_open = true;
+ErrorOr<std::string> GeoipDatabase::with_open_database_do(
+        std::function<ErrorOr<std::string>()> action,
+        Var<Logger> logger) {
+    if (!db) {
+        db.reset(GeoIP_open(path.c_str(), GEOIP_MEMORY_CACHE),
+                 [](GeoIP *pointer) {
+                    if (pointer) {
+                        GeoIP_delete(pointer);
+                    }
+                 });
+        if (!db) {
+            logger->warn("cannot open geoip database: %s", path.c_str());
+            return GeoipDatabaseOpenError();
         }
-    } else if (first_open != nullptr) {
-        *first_open = false;
+        // FALLTHROUGH
     }
-
-    return instance;
+    return action();
 }
 
-void IpLocationProxy::close() {
-    instance.reset();
-}
-
-IpLocation::IpLocation(std::string path_country_, std::string path_asn_,
-                       std::string path_city_) {
-    path_asn = path_asn_;
-    path_country = path_country_;
-    path_city = path_city_;
-}
-
-IpLocation::~IpLocation() {
-    if (gi_asn != nullptr) {
-        GeoIP_delete(gi_asn);
-    }
-    if (gi_city != nullptr) {
-        GeoIP_delete(gi_city);
-    }
-    if (gi_country != nullptr) {
-        GeoIP_delete(gi_country);
-    }
-}
-
-ErrorOr<std::string> IpLocation::resolve_country_code(std::string ip,
-                                                      Var<Logger> logger) {
-    if (gi_country == nullptr) {
-        gi_country = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
-        if (gi_country == nullptr) {
-            logger->warn("IpLocation: cannot open geoip country database");
-            return CannotOpenGeoIpCountryDatabase();
+ErrorOr<std::string> GeoipDatabase::resolve_country_code(
+            std::string ip, Var<Logger> logger) {
+    return with_open_database_do([=]() -> ErrorOr<std::string> {
+        GeoIPLookup gl;
+        memset(&gl, 0, sizeof(gl));
+        const char *result;
+        result = GeoIP_country_code_by_name_gl(db.get(), ip.c_str(), &gl);
+        if (result == nullptr) {
+            return GeoipCountryCodeLookupError();
         }
-    }
-    GeoIPLookup gl;
-    memset(&gl, 0, sizeof(gl));
-
-    const char *result;
-    result = GeoIP_country_code_by_name_gl(gi_country, ip.c_str(), &gl);
-    if (result == nullptr) {
-        return GenericError();
-    }
-    std::string country_code = result;
-    return country_code;
+        std::string country_code = result;
+        return country_code;
+    }, logger);
 }
 
-ErrorOr<std::string> IpLocation::resolve_country_name(std::string ip,
-                                                      Var<Logger> logger) {
-    if (gi_country == nullptr) {
-        gi_country = GeoIP_open(path_country.c_str(), GEOIP_MEMORY_CACHE);
-        if (gi_country == nullptr) {
-            logger->warn("IpLocation: cannot open geoip country database");
-            return CannotOpenGeoIpCountryDatabase();
+ErrorOr<std::string> GeoipDatabase::resolve_country_name(
+            std::string ip, Var<Logger> logger) {
+    return with_open_database_do([=]() -> ErrorOr<std::string> {
+        GeoIPLookup gl;
+        memset(&gl, 0, sizeof(gl));
+        const char *result;
+        result = GeoIP_country_name_by_name_gl(db.get(), ip.c_str(), &gl);
+        if (result == nullptr) {
+            return GeoipCountryNameLookupError();
         }
-    }
-    GeoIPLookup gl;
-    memset(&gl, 0, sizeof(gl));
-
-    const char *result;
-    result = GeoIP_country_name_by_name_gl(gi_country, ip.c_str(), &gl);
-    if (result == nullptr) {
-        return GenericError();
-    }
-    std::string country_name = result;
-    return country_name;
+        std::string country_name = result;
+        return country_name;
+    }, logger);
 }
 
-ErrorOr<std::string> IpLocation::resolve_city_name(std::string ip,
-                                                   Var<Logger> logger) {
-    if (gi_city == nullptr) {
-        gi_city = GeoIP_open(path_city.c_str(), GEOIP_MEMORY_CACHE);
-        if (gi_country == nullptr) {
-            logger->warn("IpLocation: cannot open geoip city database");
-            return CannotOpenGeoIpCityDatabase();
+ErrorOr<std::string> GeoipDatabase::resolve_city_name(
+            std::string ip, Var<Logger> logger) {
+    return with_open_database_do([=]() -> ErrorOr<std::string> {
+        GeoIPRecord *gir = GeoIP_record_by_name(db.get(), ip.c_str());
+        if (gir == nullptr) {
+            return GeoipCityLookupError();
         }
-    }
-    GeoIPRecord *gir = GeoIP_record_by_name(gi_city, ip.c_str());
-    if (gir == nullptr) {
-        return GenericError();
-    }
-    std::string result;
-    if (gir->city != nullptr) {
-        result = gir->city;
-    }
-    GeoIPRecord_delete(gir);
-    return result;
+        std::string result;
+        if (gir->city != nullptr) {
+            result = gir->city;
+        }
+        GeoIPRecord_delete(gir);
+        return result;
+    }, logger);
 }
 
-ErrorOr<std::string> IpLocation::resolve_asn(std::string ip,
+ErrorOr<std::string> GeoipDatabase::resolve_asn(std::string ip,
                                              Var<Logger> logger) {
-    if (gi_asn == nullptr) {
-        gi_asn = GeoIP_open(path_asn.c_str(), GEOIP_MEMORY_CACHE);
-        if (gi_asn == nullptr) {
-            logger->warn("IpLocation: cannot open geoip asn database");
-            return CannotOpenGeoIpAsnDatabase();
+    return with_open_database_do([=]() -> ErrorOr<std::string> {
+        GeoIPLookup gl;
+        memset(&gl, 0, sizeof(gl));
+        char *res = GeoIP_name_by_name_gl(db.get(), ip.c_str(), &gl);
+        if (res == nullptr) {
+            return GeoipAsnLookupError();
         }
-    }
-    GeoIPLookup gl;
-    memset(&gl, 0, sizeof(gl));
-
-    char *res;
-    res = GeoIP_name_by_name_gl(gi_asn, ip.c_str(), &gl);
-    if (res == nullptr) {
-        return GenericError();
-    }
-    std::string asn = res;
-    asn = split(asn).front(); // We only want ASXX
-    free(res);
-    return asn;
+        std::string asn = res;
+        asn = split(asn).front(); // We only want ASXX
+        free(res);
+        return asn;
+    }, logger);
 }
 
 std::string extract_html_title(std::string body) {
