@@ -23,19 +23,19 @@ TEST_CASE("ip lookup works") {
 
 TEST_CASE("geoip works") {
     auto asn = mk::ooni::GeoipCache::global()->resolve_asn(
-            "test/fixtures/GeoIPASNum.dat",
+            "GeoIPASNum.dat",
             "130.192.91.231"
     );
     auto cname = mk::ooni::GeoipCache::global()->resolve_country_name(
-            "test/fixtures/GeoIP.dat",
+            "GeoIP.dat",
             "130.192.91.231"
     );
     auto cc = mk::ooni::GeoipCache::global()->resolve_country_code(
-            "test/fixtures/GeoIP.dat",
+            "GeoIP.dat",
             "130.192.91.231"
     );
     auto city = mk::ooni::GeoipCache::global()->resolve_city_name(
-            "test/fixtures/GeoLiteCity.dat",
+            "GeoLiteCity.dat",
             "130.192.91.231"
     );
     REQUIRE(*asn == std::string{"AS137"});
@@ -49,31 +49,31 @@ TEST_CASE("geoip memoization works") {
 
     // Open more then once. After the first open we should not really open.
     auto gi = mk::ooni::GeoipCache::global()->get(
-        "test/fixtures/GeoIP.dat");
+        "GeoIP.dat");
     bool first_open;
 
     first_open = true;
     gi = mk::ooni::GeoipCache::global()->get(
-        "test/fixtures/GeoIP.dat", first_open);
+        "GeoIP.dat", first_open);
     REQUIRE(first_open == false);
 
     // Repeat two more times to make sure behavior is consistent
 
     first_open = true;
     gi = mk::ooni::GeoipCache::global()->get(
-        "test/fixtures/GeoIP.dat", first_open);
+        "GeoIP.dat", first_open);
     REQUIRE(first_open == false);
 
     first_open = true;
     gi = mk::ooni::GeoipCache::global()->get(
-        "test/fixtures/GeoIP.dat", first_open);
+        "GeoIP.dat", first_open);
     REQUIRE(first_open == false);
 
     // Make sure that, if we change at least one file name, we reopen all
 
     first_open = false;
     gi = mk::ooni::GeoipCache::global()->get(
-        "test/fixtures/GeoLiteCity.dat", first_open);
+        "GeoLiteCity.dat", first_open);
     REQUIRE(first_open == true);
 
     // Make sure that, if we close, then of course we reopen
@@ -82,7 +82,7 @@ TEST_CASE("geoip memoization works") {
 
     first_open = false;
     gi = mk::ooni::GeoipCache::global()->get(
-        "test/fixtures/GeoLiteCity.dat", first_open);
+        "GeoLiteCity.dat", first_open);
     REQUIRE(first_open == true);
 
 }

@@ -94,7 +94,7 @@ class Request {
 
     Request() {}
     Error init(Settings, Headers, std::string);
-    void serialize(net::Buffer &);
+    void serialize(net::Buffer &, Var<Logger> logger = Logger::global());
 
     static ErrorOr<Var<Request>> make(Settings, Headers, std::string);
 };

@@ -46,8 +46,8 @@ int main(const char *, int argc, char **argv) {
 
     test
         .set_options("backend", backend)
-        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
-        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
+        .set_options("geoip_country_path", "GeoIP.dat")
+        .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_verbosity(verbosity)
         .set_input_filepath(argv[0])
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
