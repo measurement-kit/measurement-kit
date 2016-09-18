@@ -10,6 +10,7 @@
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/ooni/error.hpp>
+#include <measurement_kit/ooni/utils.hpp>
 #include <regex>
 #include <string>
 
@@ -17,14 +18,6 @@ using json = nlohmann::json;
 
 namespace mk {
 namespace ooni {
-
-void ip_lookup(Callback<Error, std::string> callback, Settings settings = {},
-               Var<Reactor> reactor = Reactor::global(),
-               Var<Logger> logger = Logger::global());
-
-void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
-                     Var<Reactor> reactor = Reactor::global(),
-                     Var<Logger> logger = Logger::global());
 
 class GeoipDatabase {
   public:
