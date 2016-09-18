@@ -94,6 +94,8 @@ class GeoipCache {
         return get(path)->resolve_asn(ip, logger);
     }
 
+    // This means we cache up to 3 GeoIP database handles, based on filepath and
+    // expire them in FIFO order.
     size_t max_size = 3;
 
   private:
