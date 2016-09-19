@@ -189,7 +189,8 @@ static void compare_dns_queries(Var<Entry> entry,
   std::string asn_p =
       options.get("geoip_asn_path", std::string{});
   logger->debug("Creating..");
-  IPLocation ip_location("", asn_p);
+  // TODO: perhaps here we could use GeoipCache::global()
+  GeoipDatabase ip_location(asn_p);
   for (auto exp_addr : exp_addresses) {
     logger->debug("expaddr");
     ErrorOr<std::string> asn = ip_location.resolve_asn(exp_addr);

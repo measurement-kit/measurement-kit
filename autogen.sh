@@ -78,7 +78,7 @@ gen_executables() {
                 echo "if $3"
                 echo "    $1 += $2/$bin_name"
                 echo "endif"
-                echo "$2/$bin_name" >> .gitignore
+                echo "/$2/$bin_name" >> .gitignore
                 echo "$(slug $2/$bin_name)_SOURCES = $2/$name"
                 echo "$(slug $2/$bin_name)_LDADD = libmeasurement_kit.la"
             fi
@@ -112,9 +112,9 @@ get_geoipdb() {
 }
 
 grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
-echo test/fixtures/GeoIP.dat >> .gitignore.new
-echo test/fixtures/GeoIPASNum.dat >> .gitignore.new
-echo test/fixtures/GeoLiteCity.dat >> .gitignore.new
+echo /GeoIP.dat >> .gitignore.new
+echo /GeoIPASNum.dat >> .gitignore.new
+echo /GeoLiteCity.dat >> .gitignore.new
 mv .gitignore.new .gitignore
 
 echo "* Generating include.am"

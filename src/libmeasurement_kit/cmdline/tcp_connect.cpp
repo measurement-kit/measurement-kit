@@ -16,17 +16,21 @@ int main(const char *, int argc, char **argv) {
     std::string port = "80";
     std::string name = argv[0];
     uint32_t verbosity = 0;
+    mk::ooni::TcpConnect test;
     int ch;
-    while ((ch = getopt(argc, argv, "p:v")) != -1) {
+    while ((ch = getopt(argc, argv, "np:v")) != -1) {
         switch (ch) {
         case 'p':
             port = std::string(optarg);
+            break;
+        case 'n':
+            test.set_options("no_collector", true);
             break;
         case 'v':
             ++verbosity;
             break;
         default:
-            std::cout << "Usage: " << name << " [-v] [-p port] file_name"
+            std::cout << "Usage: " << name << " [-nv] [-p port] file_name"
                       << "\n";
             exit(1);
         }
@@ -34,14 +38,14 @@ int main(const char *, int argc, char **argv) {
     argc -= optind;
     argv += optind;
     if (argc != 1) {
-        std::cout << "Usage: " << name << " [-v] [-p port] file_name"
+        std::cout << "Usage: " << name << " [-nv] [-p port] file_name"
                   << "\n";
         exit(1);
     }
-    mk::ooni::TcpConnect()
+    test
         .set_options("port", port)
-        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
-        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
+        .set_options("geoip_country_path", "GeoIP.dat")
+        .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_input_filepath(argv[0])
         .set_verbosity(verbosity)
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })

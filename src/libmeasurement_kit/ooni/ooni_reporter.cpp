@@ -47,7 +47,7 @@ Continuation<Error> OoniReporter::write_entry(Entry entry) {
     return do_write_entry_(entry, [=](Callback<Error> cb) {
         if (report_id == "") {
             logger->warn("ooni_reporter: missing report ID");
-            cb(MissingReportId());
+            cb(MissingReportIdError());
             return;
         }
         logger->info("Submitting entry...");
@@ -68,7 +68,7 @@ Continuation<Error> OoniReporter::close() {
     return do_close_([=](Callback<Error> cb) {
         if (report_id == "") {
             logger->warn("ooni_reporter: missing report ID");
-            cb(MissingReportId());
+            cb(MissingReportIdError());
             return;
         }
         logger->info("Closing report...");

@@ -1,3 +1,25 @@
+# MeasurementKit 0.3.0-beta.3 [2016-09-19]
+
+- ooni: refactor geoip to cache openned databases (#809)
+- reduce tarball size by not shipping geoip
+- ooni: allow caller to set probe_{ip,asn,cc} (#816)
+- ooni: fix regress by changing collector-url
+
+# MeasurementKit 0.3.0-beta.2 [2016-09-15]
+
+- ooni: allow to disable collector
+- geoip: skip compiling binaries
+- ooni: count entries and emit progress
+- ooni: allow to optionally avoid writing reports to disk
+- http: put geoip databases in current working dir
+- *: make sure all errors are named Error
+
+# MeasurementKit 0.3.0-beta.1 [2016-09-01]
+
+- Improve .gitignore
+- Merge stable branch into release/v0.3.0 branch
+- Fix build with --disable-integration-tests
+
 # MeasurementKit 0.3.0-beta [2016-08-31]
 
 - autogen.sh: don't list embedded-mk as dependency (#796)
@@ -5,6 +27,10 @@
 - sketch out cmake build system (mainly for Windows) (#798)
 - implement incremental ooni collector (#765)
 - run OONI tests in parallel (#768)
+
+# MeasurementKit 0.2.9 [2016-08-31]
+
+- Make sure install.sh is included when we build release
 
 # MeasurementKit 0.3.0-alpha.1 [2016-08-25]
 
