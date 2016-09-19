@@ -16,7 +16,7 @@ namespace collector {
 */
 
 #define MK_OONI_DEFAULT_COLLECTOR_URL "https://a.collector.ooni.io:4441"
-#define MK_OONI_TESTING_COLLECTOR_URL "https://a.collector.test.ooni.io"
+#define MK_OONI_TESTING_COLLECTOR_URL "https://b.collector.test.ooni.io"
 
 std::string default_collector_url();
 std::string testing_collector_url();
