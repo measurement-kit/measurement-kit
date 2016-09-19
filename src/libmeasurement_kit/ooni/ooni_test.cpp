@@ -84,12 +84,27 @@ void OoniTest::geoip_lookup(Callback<> cb) {
     auto save_ip = options.get("save_real_probe_ip", false);
     auto save_asn = options.get("save_real_probe_asn", true);
     auto save_cc = options.get("save_real_probe_cc", true);
-    auto country_path = options.get("geoip_country_path", std::string{});
-    auto asn_path = options.get("geoip_asn_path", std::string{});
+
+    // This code block allows the caller to override probe variables
+    if (save_ip and options.find("probe_ip") != options.end()) {
+        probe_ip = options.at("probe_ip");
+        save_ip = false; // We already have it, don't look it up and save it
+    }
+    if (save_asn and options.find("probe_asn") != options.end()) {
+        probe_asn = options.at("probe_asn");
+        save_asn = false; // Ditto
+    }
+    if (save_cc and options.find("probe_cc") != options.end()) {
+        probe_cc = options.at("probe_cc");
+        save_cc = false; // Ditto
+    }
+
+    // No need to perform further lookups if we don't need to save anything
     if (not save_ip and not save_asn and not save_cc) {
         cb();
         return;
     }
+
     ip_lookup(
         [=](Error err, std::string ip) {
             if (err) {
@@ -102,6 +117,9 @@ void OoniTest::geoip_lookup(Callback<> cb) {
                 logger->debug("saving user's real ip on user's request");
                 probe_ip = ip;
             }
+
+            auto country_path = options.get("geoip_country_path",
+                                            std::string{});
             if (save_cc and country_path != "") {
                 try {
                     probe_cc = *GeoipCache::global()
@@ -113,6 +131,8 @@ void OoniTest::geoip_lookup(Callback<> cb) {
             } else if (country_path == "") {
                 logger->warn("geoip_country_path is not set");
             }
+
+            auto asn_path = options.get("geoip_asn_path", std::string{});
             if (save_asn and asn_path != "") {
                 try {
                     probe_asn = *GeoipCache::global()
@@ -124,6 +144,7 @@ void OoniTest::geoip_lookup(Callback<> cb) {
             } else if (asn_path == "") {
                 logger->warn("geoip_asn_path is not set");
             }
+
             cb();
         },
         options, reactor, logger);
