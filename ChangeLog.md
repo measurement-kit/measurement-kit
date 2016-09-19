@@ -1,3 +1,10 @@
+# MeasurementKit 0.3.0-beta.3 [2016-09-19]
+
+- ooni: refactor geoip to cache openned databases (#809)
+- reduce tarball size by not shipping geoip
+- ooni: allow caller to set probe_{ip,asn,cc} (#816)
+- ooni: fix regress by changing collector-url
+
 # MeasurementKit 0.3.0-beta.2 [2016-09-15]
 
 - ooni: allow to disable collector
