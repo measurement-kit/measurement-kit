@@ -32,8 +32,8 @@ TEST_CASE("Synchronous dns-injection test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
     ooni::DnsInjection()
         .set_options("backend", "8.8.8.1:53")
-        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
-        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
+        .set_options("geoip_country_path", "GeoIP.dat")
+        .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_options("dns/timeout", "0.1")
         .set_input_filepath("test/fixtures/hosts.txt")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
@@ -47,8 +47,8 @@ TEST_CASE("Asynchronous dns-injection test") {
     bool done = false;
     ooni::DnsInjection()
         .set_options("backend", "8.8.8.1:53")
-        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
-        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
+        .set_options("geoip_country_path", "GeoIP.dat")
+        .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_options("dns/timeout", "0.1")
         .set_input_filepath("test/fixtures/hosts.txt")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })

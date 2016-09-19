@@ -54,7 +54,7 @@ Error Request::init(Settings settings, Headers hdrs, std::string bd) {
     return NoError();
 }
 
-void Request::serialize(net::Buffer &buff) {
+void Request::serialize(net::Buffer &buff, Var<Logger> logger) {
     buff << method << " ";
     if (url_path != "") {
         buff << url_path;
@@ -77,9 +77,7 @@ void Request::serialize(net::Buffer &buff) {
     }
     buff << "\r\n";
     for (auto s: mk::split(buff.peek(), "\r\n")) {
-        // TODO: break API, bump minor, pass Var<Logger> to this function
-        // such that this log message is printed with the correct logger
-        debug("> %s", s.c_str());
+        logger->debug("> %s", s.c_str());
     }
     if (body != "") {
         buff << body;
