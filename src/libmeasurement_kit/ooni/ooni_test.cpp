@@ -74,47 +74,55 @@ void OoniTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
 }
 
 void OoniTest::geoip_lookup(Callback<> cb) {
+
     // This is to ensure that when calling multiple times geoip_lookup we
     // always reset the probe_ip, probe_asn and probe_cc values.
     probe_ip = "127.0.0.1";
     probe_asn = "AS0";
     probe_cc = "ZZ";
+
+    auto save_ip = options.get("save_real_probe_ip", false);
+    auto save_asn = options.get("save_real_probe_asn", true);
+    auto save_cc = options.get("save_real_probe_cc", true);
+    auto country_path = options.get("geoip_country_path", std::string{});
+    auto asn_path = options.get("geoip_asn_path", std::string{});
+    if (not save_ip and not save_asn and not save_cc) {
+        cb();
+        return;
+    }
     ip_lookup(
         [=](Error err, std::string ip) {
             if (err) {
                 logger->warn("ip_lookup() failed: error code: %d", err.code);
-            } else {
-                logger->info("probe ip: %s", ip.c_str());
-                if (options.get("save_real_probe_ip", false)) {
-                    logger->debug("saving user's real ip on user's request");
-                    probe_ip = ip;
+                cb();
+                return;
+            }
+            logger->info("probe ip: %s", ip.c_str());
+            if (save_ip) {
+                logger->debug("saving user's real ip on user's request");
+                probe_ip = ip;
+            }
+            if (save_cc and country_path != "") {
+                try {
+                    probe_cc = *GeoipCache::global()
+                       ->resolve_country_code(country_path, ip, logger);
+                } catch (const Error &err) {
+                    logger->warn("cannot lookup country code: %s",
+                                 err.explain().c_str());
                 }
-                std::string country_p =
-                    options.get("geoip_country_path", std::string{});
-                std::string asn_p =
-                    options.get("geoip_asn_path", std::string{});
-                if (country_p == "" or asn_p == "") {
-                    logger->warn("geoip files not configured; skipping");
-                } else {
-                    ErrorOr<nlohmann::json> res = geoip(ip, country_p, asn_p);
-                    if (!!res) {
-                        logger->debug("GeoIP result: %s", res->dump().c_str());
-                        // Since `geoip()` sets defaults before querying, the
-                        // following accesses of json should not fail unless for
-                        // programmer error after refactoring. In that case,
-                        // better to let the exception unwind than just print
-                        // a warning, because the former is easier to notice
-                        // and therefore fix during development
-                        if (options.get("save_real_probe_asn", true)) {
-                            probe_asn = (*res)["asn"];
-                        }
-                        logger->info("probe_asn: %s", probe_asn.c_str());
-                        if (options.get("save_real_probe_cc", true)) {
-                            probe_cc = (*res)["country_code"];
-                        }
-                        logger->info("probe_cc: %s", probe_cc.c_str());
-                    }
+            } else if (country_path == "") {
+                logger->warn("geoip_country_path is not set");
+            }
+            if (save_asn and asn_path != "") {
+                try {
+                    probe_asn = *GeoipCache::global()
+                        ->resolve_asn(asn_path, ip, logger);
+                } catch (const Error &err) {
+                    logger->warn("cannot lookup asn: %s",
+                                 err.explain().c_str());
                 }
+            } else if (asn_path == "") {
+                logger->warn("geoip_asn_path is not set");
             }
             cb();
         },
