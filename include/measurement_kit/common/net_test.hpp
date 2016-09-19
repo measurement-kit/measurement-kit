@@ -30,15 +30,15 @@ class NetTest {
         return *this;
     }
 
-    virtual void begin(Callback<> func) {
+    virtual void begin(Callback<Error> func) {
         // You must override this on subclasses to actually start
         // running the test you're interested to run
-        reactor->call_soon(func);
+        reactor->call_soon([=]() { func(NoError()); });
     }
-    virtual void end(Callback<> func) {
+    virtual void end(Callback<Error> func) {
         // You must override this on subclasses to actually terminate
         // running the test (i.e. send results to collector)
-        reactor->call_soon(func);
+        reactor->call_soon([=]() { func(NoError()); });
     }
 
     NetTest() {}
@@ -54,12 +54,28 @@ class NetTest {
         output_filepath = s;
         return *this;
     }
+    NetTest &set_error_filepath(std::string s) {
+        logger->set_logfile(s);
+        return *this;
+    }
     NetTest &set_reactor(Var<Reactor> r) {
         reactor = r;
         return *this;
     }
     template <typename T> NetTest &set_options(std::string key, T value) {
         options[key] = value;
+        return *this;
+    }
+    NetTest &on_entry(Delegate<std::string> cb) {
+        entry_cb = cb;
+        return *this;
+    }
+    NetTest &on_begin(Delegate<> cb) {
+        begin_cb = cb;
+        return *this;
+    }
+    NetTest &on_end(Delegate<> cb) {
+        end_cb = cb;
         return *this;
     }
 
@@ -77,6 +93,9 @@ class NetTest {
     Settings options;
     std::string input_filepath;
     std::string output_filepath;
+    Delegate<std::string> entry_cb;
+    Delegate<> begin_cb;
+    Delegate<> end_cb;
 };
 
 } // namespace mk

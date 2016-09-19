@@ -10,13 +10,15 @@ needs and/or to be used by researchers as a basis to implement novel tools.
 
 Currently it implements the following high-level tests:
 
+- [OONI](https://ooni.torproject.org/)'s [Web Connectivity](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-017-web-connectivity.md) test
+
+- the [network diagnostic tool](https://github.com/ndt-project/ndt/wiki/NDTTestMethodology) network performance test
+
 - [OONI](https://ooni.torproject.org/)'s [DNS Injection](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-012-dns-injection.md) test
 
 - [OONI](https://ooni.torproject.org/)'s [HTTP Invalid Request Line](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-007-http-invalid-request-line.md) test
 
 - [OONI](https://ooni.torproject.org/)'s [TCP Connect](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-008-tcpconnect.md) test
-
-- the [network diagnostic tool](https://github.com/ndt-project/ndt/wiki/NDTTestMethodology) network performance test
 
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:

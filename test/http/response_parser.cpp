@@ -3,9 +3,9 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
 
-#include "src/http/response_parser.hpp"
+#include "../src/libmeasurement_kit/http/response_parser.hpp"
 #include <measurement_kit/http.hpp>
 
 using namespace mk;

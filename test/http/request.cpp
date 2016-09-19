@@ -4,9 +4,9 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "src/common/check_connectivity.hpp"
-#include "src/ext/Catch/single_include/catch.hpp"
-#include "src/http/request_impl.hpp"
+#include "../src/libmeasurement_kit/common/check_connectivity.hpp"
+#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/http/request_impl.hpp"
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
@@ -53,7 +53,7 @@ TEST_CASE("HTTP Request class works as expected") {
     Request request;
     request.init(
         {
-            {"http/follow_redirects", "yes"},
+            {"http/max_redirects", 2},
             {"http/url",
              "http://www.example.com/antani?clacsonato=yes#melandri"},
             {"http/ignore_body", "yes"},
@@ -80,7 +80,7 @@ TEST_CASE("HTTP Request class works as expected with explicit path") {
     Request request;
     request.init(
         {
-            {"http/follow_redirects", "yes"},
+            {"http/max_redirects", 2},
             {"http/url",
              "http://www.example.com/antani?clacsonato=yes#melandri"},
             {"http/path", "/antani?amicimiei"},
@@ -351,7 +351,14 @@ TEST_CASE("http::request_send() works as expected") {
                                  {"http/url", "http://www.google.com/"},
                              },
                              {}, "",
-                             [transport](Error error) {
+                             [transport](Error error, Var<Request> request) {
+                                 REQUIRE((request->method == "GET"));
+                                 REQUIRE((request->url.schema == "http"));
+                                 REQUIRE((request->url.address ==
+                                          "www.google.com"));
+                                 REQUIRE((request->url.port == 80));
+                                 REQUIRE((request->headers.size() == 0));
+                                 REQUIRE((request->body == ""));
                                  REQUIRE(!error);
                                  transport->close([]() { break_loop(); });
                              });
@@ -376,7 +383,7 @@ TEST_CASE("http::request_recv_response() works as expected") {
                         {"http/url", "http://www.google.com/"},
                     },
                     {}, "",
-                    [transport](Error error) {
+                    [transport](Error error, Var<Request>) {
                         REQUIRE(!error);
                         request_recv_response(
                             transport, [transport](Error e, Var<Response> r) {
@@ -502,6 +509,31 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
     });
 }
 
+TEST_CASE("http::request() correctly follows redirects") {
+    loop_with_initial_event_and_connectivity([]() {
+        request(
+            {
+                {"http/url", "http://fsrn.org"},
+                {"http/max_redirects", 32},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "",
+            [](Error error, Var<Response> response) {
+                REQUIRE(!error);
+                REQUIRE(response->status_code == 200);
+                REQUIRE(response->request->url.schema == "https");
+                REQUIRE(response->request->url.address == "fsrn.org");
+                REQUIRE(response->previous->status_code == 302);
+                REQUIRE(response->previous->request->url.schema == "http");
+                REQUIRE(response->previous->request->url.address == "fsrn.org");
+                REQUIRE(!response->previous->previous);
+                break_loop();
+            });
+    });
+}
+
 #endif // ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl fails without an url") {
@@ -531,7 +563,8 @@ TEST_CASE("http::request_send fails without url in settings") {
             [](Error error, Var<Transport> transport) {
                 REQUIRE(!error);
                 request_send(transport, {{"http/method", "GET"}}, {}, "",
-                             [transport](Error error) {
+                             [transport](Error error, Var<Request> request) {
+                                 REQUIRE(!request);
                                  REQUIRE(error == MissingUrlError());
                                  transport->close([]() { break_loop(); });
                              });

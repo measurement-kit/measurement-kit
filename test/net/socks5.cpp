@@ -4,8 +4,8 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "src/net/socks5.hpp"
-#include "src/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/net/socks5.hpp"
+#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
 #include <measurement_kit/net.hpp>
 using namespace mk;
 using namespace mk::net;

@@ -2,14 +2,35 @@ dnl Part of measurement-kit <https://measurement-kit.github.io/>.
 dnl Measurement-kit is free software. See AUTHORS and LICENSE for more
 dnl information on the copying conditions.
 
-AC_DEFUN([MK_AM_ENABLE_EXAMPLES], [
+AC_DEFUN([MK_AM_ENABLE_COVERAGE], [
+  AC_ARG_ENABLE([coverage],
+    AS_HELP_STRING([--enable-coverage, build for coverage]),
+      [enable_coverage=yes], [])
+])
+
+AC_DEFUN([MK_AM_ADD_COVERAGE_FLAGS_IF_NEEDED], [
+  if test "$enable_coverage" = "yes"; then
+    CFLAGS="--coverage $CFLAGS"
+    CXXFLAGS="--coverage $CXXFLAGS"
+    LDFLAGS="--coverage $LDFLAGS"
+  fi
+])
+
+AC_DEFUN([MK_AM_DISABLE_EXAMPLES], [
   AC_ARG_ENABLE([examples],
     AS_HELP_STRING([--disable-examples, skip building of examples programs]),
                    [], [enable_examples=yes])
   AM_CONDITIONAL([BUILD_EXAMPLES], [test "$enable_examples" = "yes"])
 ])
 
-AC_DEFUN([MK_AM_ENABLE_INTEGRATION_TESTS], [
+AC_DEFUN([MK_AM_DISABLE_BINARIES], [
+  AC_ARG_ENABLE([binaries],
+    AS_HELP_STRING([--disable-binaries, skip building of binary programs]),
+                   [], [enable_binaries=yes])
+  AM_CONDITIONAL([BUILD_BINARIES], [test "$enable_binaries" = "yes"])
+])
+
+AC_DEFUN([MK_AM_DISABLE_INTEGRATION_TESTS], [
   AC_ARG_ENABLE([integration-tests],
     AS_HELP_STRING([--disable-integration-tests, skip building of integration tests]),
                    [], [CPPFLAGS="$CPPFLAGS -DENABLE_INTEGRATION_TESTS"])
@@ -79,7 +100,15 @@ AC_DEFUN([MK_AM_OPENSSL], [
                 CPPFLAGS="$CPPFLAGS -I$withval/include"
                 LDFLAGS="$LDFLAGS -L$withval/lib"
               ],
-              [])
+              [
+	        if test -d /usr/local/Cellar/openssl; then
+		  AC_MSG_WARN([Using the OpenSSL installed via brew...])
+		  mk_openssl_v=`ls /usr/local/Cellar/openssl|tail -n1`
+		  mk_openssl_d="/usr/local/Cellar/openssl/$mk_openssl_v"
+		  CPPFLAGS="$CPPFLAGS -I$mk_openssl_d/include"
+		  LDFLAGS="$LDFLAGS -L$mk_openssl_d/lib"
+		fi
+	      ])
 
   mk_not_found=""
   AC_CHECK_HEADERS(openssl/ssl.h, [], [mk_not_found=1])

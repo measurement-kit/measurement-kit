@@ -6,7 +6,7 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "src/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
 #include <measurement_kit/ndt.hpp>
 
 using namespace mk::ndt;
@@ -24,8 +24,9 @@ TEST_CASE("Running the NDT test using begin / end works") {
     test->reactor = reactor;
     test->set_verbosity(MK_LOG_INFO);
     reactor->loop_with_initial_event([&]() {
-        test->begin([=]() {
-            test->end([=]() {
+        // TODO: do not ignore errors here, perhaps
+        test->begin([=](Error) {
+            test->end([=](Error) {
                 reactor->break_loop();
             });
         });
