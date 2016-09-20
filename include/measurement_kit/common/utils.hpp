@@ -4,18 +4,18 @@
 #ifndef MEASUREMENT_KIT_COMMON_UTILS_HPP
 #define MEASUREMENT_KIT_COMMON_UTILS_HPP
 
-#include <sys/time.h>
+#include <measurement_kit/common/aaa_base.hpp>
 #include <measurement_kit/common/error_or.hpp>
+
 #include <list>
-#include <string>
 #include <regex>
 
 namespace mk {
 
 void timeval_now(timeval *);
 double time_now();
-void utc_time_now(struct tm *);
-ErrorOr<std::string> timestamp(const struct tm *);
+void utc_time_now(tm *);
+ErrorOr<std::string> timestamp(const tm *);
 timeval *timeval_init(timeval *, double);
 
 template <typename T=std::list<std::string>>
@@ -28,7 +28,6 @@ T split(std::string s, std::string pattern = "\\s+") {
         last;
     return {first, last};
 }
-
 
 } // namespace mk
 #endif
