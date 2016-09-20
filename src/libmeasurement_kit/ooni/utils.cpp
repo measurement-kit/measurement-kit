@@ -2,11 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 #include "../ooni/utils_impl.hpp"
 #include "../common/utils.hpp"
 

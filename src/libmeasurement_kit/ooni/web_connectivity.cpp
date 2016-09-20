@@ -2,22 +2,13 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/http.hpp>
-#include <measurement_kit/ooni.hpp>
-
-#include <measurement_kit/net/transport.hpp>
-
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
 #include "../ooni/constants.hpp"
 
 #include <set>
-#include <regex>
 #include <cctype>
-#include <string>
-#include <iostream>
 #include <algorithm>
-#include <unistd.h>
 
 #define BODY_PROPORTION_FACTOR 0.7
 
@@ -44,8 +35,10 @@ static void compare_http_requests(Var<Entry> entry,
   } else if (ctrl_length == 0 || exp_length == 0) {
     body_proportion = 0;
   } else {
-    body_proportion = (float) std::min(ctrl_length, exp_length) /
-                      (float) std::max(ctrl_length, exp_length);
+    // Parentheses around `std::min` and `std::max` to bypass the fact that
+    // windows.h defines the `min` and `max` symbols as macros
+    body_proportion = (float) (std::min)(ctrl_length, exp_length) /
+                      (float) (std::max)(ctrl_length, exp_length);
   }
   logger->debug("web_connectivity: body proportion %f", body_proportion);
 
