@@ -28,9 +28,6 @@ if you are fixing a bug you could name it `bug/1234`.
 Create your branch from `master` like so:
 
 ```
-git checkout master
-git fetch upstream
-git merge upstream master
 git checkout -b mybranch
 ```
 
