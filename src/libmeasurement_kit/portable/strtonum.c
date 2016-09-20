@@ -17,6 +17,9 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <errno.h>
+#include <limits.h>
+
 #include <measurement_kit/portable/stdlib.h>
 
 #ifdef _HAVE_CONFIG_H

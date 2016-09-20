@@ -4,7 +4,7 @@
 #ifndef MEASUREMENT_KIT_PORTABLE__GETOPT_H
 #define MEASUREMENT_KIT_PORTABLE__GETOPT_H
 
-#if (!defined MEASUREMENT_KIT_PORTABLE_UNIST_H && \
+#if (!defined MEASUREMENT_KIT_PORTABLE_UNISTD_H && \
      !defined MEASUREMENT_KIT_PORTABLE_GETOPT_H)
 # error "measurement_kit/portable/_getopt.h included from unknown header"
 #endif

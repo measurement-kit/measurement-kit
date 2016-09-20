@@ -72,7 +72,7 @@ ErrorOr<Url> parse_url_noexcept(std::string url);
 
 class HeadersComparator {
   public:
-    bool operator() (const std::string &l, const std::string &r);
+    bool operator() (const std::string &l, const std::string &r) const;
 };
 
 using Headers = std::map<std::string, std::string, HeadersComparator>;

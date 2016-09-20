@@ -30,8 +30,8 @@ double time_now() {
 void utc_time_now(struct tm *utc) {
     time_t tv;
     tv = time(nullptr);
-    if (mkp_gmtime_r(&tv, utc) == nullptr) {
-        throw std::runtime_error("mkp_gmtime_r() failed");
+    if (gmtime_r(&tv, utc) == nullptr) {
+        throw std::runtime_error("gmtime_r() failed");
     }
 }
 
@@ -279,10 +279,6 @@ double percentile(std::vector<double> v, double percent) {
     auto val0 = v[int(pivot_floor)] * (pivot_ceil - pivot);
     auto val1 = v[int(pivot_ceil)] * (pivot - pivot_floor);
     return val0 + val1;
-}
-
-int strcasecmp_wrapper(const char *s, const char *r) {
-    return mkp_strcasecmp(s, r);
 }
 
 } // namespace mk
