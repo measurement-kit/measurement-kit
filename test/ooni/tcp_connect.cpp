@@ -48,8 +48,8 @@ TEST_CASE("Synchronous tcp-connect test") {
     ooni::TcpConnect()
         .set_options("port", "80")
         .set_input_filepath("test/fixtures/hosts.txt")
-        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
-        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
+        .set_options("geoip_country_path", "GeoIP.dat")
+        .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
     for (auto &s : *logs)
@@ -61,8 +61,8 @@ TEST_CASE("Asynchronous tcp-connect test") {
     bool done = false;
     ooni::TcpConnect()
         .set_options("port", "80")
-        .set_options("geoip_country_path", "test/fixtures/GeoIP.dat")
-        .set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat")
+        .set_options("geoip_country_path", "GeoIP.dat")
+        .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_input_filepath("test/fixtures/hosts.txt")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run([&done]() { done = true; });

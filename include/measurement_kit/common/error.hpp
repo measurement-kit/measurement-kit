@@ -45,7 +45,7 @@ class Error : public std::exception {
         child_errors.push_back(container);
     }
 
-    std::string explain() {
+    std::string explain() const {
         std::string s;
         s += "{";
         s += reason;
