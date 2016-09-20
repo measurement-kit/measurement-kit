@@ -26,6 +26,8 @@
 # include "config.h"
 #endif
 
+#ifndef HAVE_STRTONUM
+
 #define	INVALID		1
 #define	TOOSMALL	2
 #define	TOOLARGE	3
@@ -70,7 +72,6 @@ mkp_strtonum_(const char *numstr, long long minval, long long maxval,
 }
 /*DEF_WEAK(strtonum);*/
 
-#ifndef HAVE_STRTONUM
 # define strtonum mkp_strtonum_
 #endif
 
