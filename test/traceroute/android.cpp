@@ -10,10 +10,11 @@
 #ifdef __linux__
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
+
+#include <measurement_kit/traceroute.hpp>
 
 #include <iostream>
-#include <measurement_kit/traceroute.hpp>
 
 using namespace mk::traceroute;
 using namespace mk;
