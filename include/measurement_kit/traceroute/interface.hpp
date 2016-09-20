@@ -37,14 +37,7 @@
 // Disable for non Linux until we figure out how to build on iOS
 #ifdef __linux__
 
-#include <measurement_kit/common/reactor.hpp>
-
-#include <functional>
-#include <memory>
-#include <stdexcept>
-#include <string>
-
-#include <sys/types.h>
+#include <measurement_kit/common.hpp>
 
 // Forward declarations
 struct event_base;

@@ -1,29 +1,19 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_DNS_QUERY_IMPL_HPP
-#define SRC_DNS_QUERY_IMPL_HPP
-
-#include <measurement_kit/dns.hpp>
+#ifndef SRC_LIBMEASUREMENT_KIT_DNS_QUERY_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_DNS_QUERY_IMPL_HPP
 
 #include "../common/utils.hpp"
-#include <measurement_kit/common.hpp>
+
+#include <measurement_kit/dns.hpp>
 
 #include <event2/dns.h>
 
 #include <cassert>
-#include <functional>
-#include <iosfwd>
-#include <map>
 #include <new>
-#include <stdexcept>
 #include <limits.h>
-#include <string>
 #include <type_traits>
-
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
 
 extern "C" {
 void handle_resolve(
@@ -123,7 +113,7 @@ static inline std::vector<Answer> build_answers_evdns(
         Answer answer;
         answer.code = code;
         answer.ttl = ttl;
-        answer.type = QueryTypeId::PTR;
+        answer.type = "PTR";
         // Note: cast magic copied from libevent regress tests
         answer.hostname = std::string(*(char **)addresses);
         logger->debug("dns: adding %s", answer.hostname.c_str());
@@ -162,10 +152,10 @@ static inline std::vector<Answer> build_answers_evdns(
                 answer.ttl = ttl;
                 if (family == PF_INET) {
                     answer.ipv4 = string;
-                    answer.type = QueryTypeId::A;
+                    answer.type = "A";
                 } else if (family == PF_INET6) {
                     answer.ipv6 = string;
-                    answer.type = QueryTypeId::AAAA;
+                    answer.type = "AAAA";
                 }
                 logger->debug("dns: adding '%s'", string);
                 answers.push_back(answer);
@@ -213,7 +203,7 @@ static inline void dns_callback(int code, char type, int count, int ttl,
         } else {
             context->callback(NoError(), context->message);
         }
-    } catch (const Error& e) {
+    } catch (const Error &) {
         // suppress Error exceptions because we don't want this kind
         // of exception to terminate the program
     }
@@ -240,20 +230,20 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
         throw; // Let this propagate as we can do nothing
     }
 
-    if (dns_class != QueryClassId::IN) {
+    if (dns_class != "IN") {
         evdns_base_free(base, 1);
         cb(UnsupportedClassError(), nullptr);
         return;
     }
 
     // Allow PTR queries
-    if (dns_type == QueryTypeId::PTR) {
+    if (dns_type == "PTR") {
         std::string s;
         if ((s = mk::unreverse_ipv4(name)) != "") {
-            dns_type = QueryTypeId::REVERSE_A;
+            dns_type = "REVERSE_A";
             name = s;
         } else if ((s = mk::unreverse_ipv6(name)) != "") {
-            dns_type = QueryTypeId::REVERSE_AAAA;
+            dns_type = "REVERSE_AAAA";
             name = s;
         } else {
             evdns_base_free(base, 1);
@@ -283,7 +273,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     // cancel pending evdns requests and uses the `cancelled`
     // variable to keep track of cancelled requests.
     //
-    if (dns_type == QueryTypeId::A) {
+    if (dns_type == "A") {
         QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_ipv4(base, name.c_str(), DNS_QUERY_NO_SEARCH,
                     handle_resolve,
@@ -294,7 +284,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
         return;
     }
 
-    if (dns_type == QueryTypeId::AAAA) {
+    if (dns_type == "AAAA") {
         QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_ipv6(base, name.c_str(), DNS_QUERY_NO_SEARCH,
                     handle_resolve,
@@ -305,7 +295,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
         return;
     }
 
-    if (dns_type == QueryTypeId::REVERSE_A) {
+    if (dns_type == "REVERSE_A") {
         in_addr netaddr;
         if (inet_pton(AF_INET, name.c_str(), &netaddr) != 1) {
             evdns_base_free(base, 1);
@@ -323,7 +313,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
         return;
     }
 
-    if (dns_type == QueryTypeId::REVERSE_AAAA) {
+    if (dns_type == "REVERSE_AAAA") {
         in6_addr netaddr;
         if (inet_pton(AF_INET6, name.c_str(), &netaddr) != 1) {
             evdns_base_free(base, 1);

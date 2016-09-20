@@ -2,9 +2,10 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <stdio.h>
+
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
-#include <stdio.h>
 
 namespace mk {
 

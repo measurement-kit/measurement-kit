@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_NDT_PROTOCOL_IMPL_HPP
-#define SRC_NDT_PROTOCOL_IMPL_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NDT_PROTOCOL_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_NDT_PROTOCOL_IMPL_HPP
 
 #include "../ndt/internal.hpp"
 

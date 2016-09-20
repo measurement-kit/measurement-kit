@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+
+cd build/windows64
+
+repo=measurement-kit/measurement-kit-deps
+version=2016-08-16
+file_name=windows64-dependencies-20160909145800.tgz
+url=https://github.com/$repo/releases/download/$version/$file_name
+
+wget $url $url.asc
+gpg2 --verify $file_name.asc
+
+tar -xzf $file_name
+mv dist/build/windows64/include .
+mv dist/build/windows64/lib .
+rm -rf dist $file_name $file_name.asc

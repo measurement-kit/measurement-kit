@@ -17,18 +17,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <errno.h>
-#include <limits.h>
-#include <stdlib.h>
-
-#include "strtonum.h"
+#include "../portable/internal.h"
 
 #define	INVALID		1
 #define	TOOSMALL	2
 #define	TOOLARGE	3
 
 long long
-measurement_kit_strtonum(const char *numstr, long long minval, long long maxval,
+mkp_strtonum(const char *numstr, long long minval, long long maxval,
     const char **errstrp)
 {
 	long long ll = 0;

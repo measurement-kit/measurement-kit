@@ -2,14 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <functional>
-#include <iostream>
+#include "../portable/api.h"
+
 #include <measurement_kit/cmdline.hpp>
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
-#include <stdlib.h>
-#include <string>
-#include <unistd.h>
+
+#include <iostream>
 
 namespace mk {
 namespace cmdline {
@@ -25,16 +23,16 @@ int main(const char *, int argc, char **argv) {
     int port = 80;
     Settings settings;
     int ch;
-    while ((ch = getopt(argc, argv, "p:Tt:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "p:Tt:v")) != -1) {
         switch (ch) {
         case 'p':
-            port = lexical_cast<int>(optarg);
+            port = lexical_cast<int>(mkp_optarg);
             break;
         case 'T':
             settings["net/socks5_proxy"] = "127.0.0.1:9050";
             break;
         case 't':
-            settings["net/timeout"] = lexical_cast<double>(optarg);
+            settings["net/timeout"] = lexical_cast<double>(mkp_optarg);
             break;
         case 'v':
             increase_verbosity();
@@ -44,7 +42,7 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= optind, argv += optind;
+    argc -= mkp_optind, argv += mkp_optind;
     if (argc != 1) {
         std::cout << kv_usage;
         exit(1);

@@ -2,11 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "../portable/api.h"
+
 #include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/ooni.hpp>
+
 #include <iostream>
-#include <string>
-#include <unistd.h>
 
 namespace mk {
 namespace cmdline {
@@ -36,10 +37,10 @@ int main(const char *, int argc, char **argv) {
     std::string url = collector::default_collector_url();
     int ch;
 
-    while ((ch = getopt(argc, argv, "c:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "c:v")) != -1) {
         switch (ch) {
         case 'c':
-            url = optarg;
+            url = mkp_optarg;
             break;
         case 'v':
             increase_verbosity();
@@ -49,8 +50,8 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= optind;
-    argv += optind;
+    argc -= mkp_optind;
+    argv += mkp_optind;
 
     loop_with_initial_event([&]() {
         upload_report(url, 0, argv);
