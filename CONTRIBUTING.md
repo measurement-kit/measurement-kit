@@ -4,6 +4,9 @@ MeasurementKit is a Free and Open Source software project that welcomes new cont
 
 ## How to contribute code
 
+For guidelines on what coding style we follow refer to the [coding style document]
+(/doc/coding-style.md).
+
 ### 1. Fork
 
 You should first create a fork of measurement-kit by clicking on the fork button and
