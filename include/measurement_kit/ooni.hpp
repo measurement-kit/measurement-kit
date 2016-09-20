@@ -9,6 +9,5 @@
 #include <measurement_kit/ooni/ooni_test.hpp>
 #include <measurement_kit/ooni/tcp_connect.hpp>
 #include <measurement_kit/ooni/templates.hpp>
-#include <measurement_kit/ooni/utils.hpp>
 #include <measurement_kit/ooni/web_connectivity.hpp>
 #endif
