@@ -3,10 +3,18 @@
 set -e
 export LC_ALL=C  # Stable sorting regardless of the locale
 
-no_download=0
-if [ "$1" = "-n" ]; then
-    no_download=1
-fi
+. build/autogen.d/geoip
+
+no_geoip=0
+while [ $# -gt 0 ]; do
+    opt=$1; shift
+    if [ "$opt" = "--no-geoip" -o "$opt" = "-n" ]; then
+        no_geoip=1
+    else
+        echo "usage: $0 [-n|--no-geoip]" 1>&2
+        exit 1
+    fi
+done
 
 slug() {
     echo $(echo $1|tr '/-' '_'|sed 's/^include_measurement_kit/mk/g')
@@ -79,25 +87,6 @@ gen_executables() {
     done
 }
 
-get_geoipdb() {
-    if [ $no_download -eq 1 ]; then
-        return
-    fi
-    base=https://download.maxmind.com/download/geoip/database
-    if [ ! -f "GeoIP.dat" ]; then
-        wget -q $base/GeoLiteCountry/GeoIP.dat.gz -O GeoIP.dat.gz
-        gzip -d GeoIP.dat.gz
-    fi
-    if [ ! -f "GeoLiteCity.dat" ]; then
-        wget -q $base/GeoLiteCity.dat.gz -O GeoLiteCity.dat.gz
-        gzip -d GeoLiteCity.dat.gz
-    fi
-    if [ ! -f "GeoIPASNum.dat" ]; then
-        wget -q $base/asnum/GeoIPASNum.dat.gz -O GeoIPASNum.dat.gz
-        gzip -d GeoIPASNum.dat.gz
-    fi
-}
-
 grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
 echo /GeoIP.dat >> .gitignore.new
 echo /GeoIPASNum.dat >> .gitignore.new
@@ -118,8 +107,9 @@ echo "* Updating .gitignore"
 sort -u .gitignore > .gitignore.new
 mv .gitignore.new .gitignore
 
-echo "* Fetching geoip database"
-get_geoipdb
+if [ $no_geoip -ne 1 ]; then
+    autogen_get_geoip
+fi
 
 echo "* Running 'autoreconf -i'"
 autoreconf -i
