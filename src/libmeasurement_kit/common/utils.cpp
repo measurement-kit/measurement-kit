@@ -3,24 +3,12 @@
 // information on the copying conditions.
 
 #include "../common/utils.hpp"
-#include "../ext/strtonum.h"
-#include <algorithm>
-#include <arpa/inet.h>
+
 #include <ctype.h>
-#include <deque>
-#include <event2/util.h>
 #include <math.h>
-#include <netinet/in.h>
-#include <cstddef>
+
+#include <deque>
 #include <cstring>
-#include <regex>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <time.h>
 
 #define MEASUREMENT_KIT_SOCKET_INVALID -1
 
@@ -80,7 +68,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen,
 int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
                  const char *address, const char *port) {
     const char *errstr;
-    int _port = (int)measurement_kit_strtonum(port, 0, 65535, &errstr);
+    int _port = (int)mkp_strtonum(port, 0, 65535, &errstr);
     if (errstr != nullptr) {
         warn("utils:storage_init: invalid port");
         return -1;
