@@ -1,29 +1,19 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_DNS_QUERY_IMPL_HPP
-#define SRC_DNS_QUERY_IMPL_HPP
-
-#include <measurement_kit/dns.hpp>
+#ifndef SRC_LIBMEASUREMENT_KIT_DNS_QUERY_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_DNS_QUERY_IMPL_HPP
 
 #include "../common/utils.hpp"
-#include <measurement_kit/common.hpp>
+
+#include <measurement_kit/dns.hpp>
 
 #include <event2/dns.h>
 
 #include <cassert>
-#include <functional>
-#include <iosfwd>
-#include <map>
 #include <new>
-#include <stdexcept>
 #include <limits.h>
-#include <string>
 #include <type_traits>
-
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
 
 extern "C" {
 void handle_resolve(
@@ -213,7 +203,7 @@ static inline void dns_callback(int code, char type, int count, int ttl,
         } else {
             context->callback(NoError(), context->message);
         }
-    } catch (const Error& e) {
+    } catch (const Error &) {
         // suppress Error exceptions because we don't want this kind
         // of exception to terminate the program
     }
