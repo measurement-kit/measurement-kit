@@ -10,5 +10,6 @@
 #include <measurement_kit/ooni/resources.hpp>
 #include <measurement_kit/ooni/tcp_connect.hpp>
 #include <measurement_kit/ooni/templates.hpp>
+#include <measurement_kit/ooni/utils.hpp>
 #include <measurement_kit/ooni/web_connectivity.hpp>
 #endif
