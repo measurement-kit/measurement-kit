@@ -20,7 +20,7 @@ class Entry : public nlohmann::json {
 
     template <typename T> operator ErrorOr<T>() {
         try {
-            return get<T>();
+            return nlohmann::json::operator T();
         } catch (std::domain_error &) {
             return JsonDomainError();
         }
