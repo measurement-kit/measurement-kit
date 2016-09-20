@@ -60,8 +60,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Var<Logger> log
     if (address.length() > 255) {
         return SocksAddressTooLongError();
     }
-    // Note: cast to `uint8_t` safe because check is just above
-    out.write_uint8((uint8_t)address.length()); // Len
+    out.write_uint8(address.length());            // Len
     out.write(address.c_str(), address.length()); // String
 
     logger->debug("socks5: >> domain len=%d", (uint8_t)address.length());
