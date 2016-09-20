@@ -10,9 +10,6 @@
 using namespace mk;
 using namespace mk::dns;
 
-// XXX The value of these tests is greatly reduced after class and type
-// have become just standard strings
-
 TEST_CASE("QueryClass works as expected") {
     QueryClass qclass("IN");
     REQUIRE(qclass != "CH");
