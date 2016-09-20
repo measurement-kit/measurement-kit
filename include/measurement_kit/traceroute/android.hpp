@@ -40,11 +40,6 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/traceroute/interface.hpp>
 
-#include <functional>
-#include <string>
-
-#include <time.h>
-
 struct event;
 struct event_base;
 struct sock_extended_err;

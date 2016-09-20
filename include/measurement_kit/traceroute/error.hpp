@@ -5,7 +5,7 @@
 #ifndef MEASUREMENT_KIT_TRACEROUTE_ERROR_HPP
 #define MEASUREMENT_KIT_TRACEROUTE_ERROR_HPP
 
-#include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common.hpp>
 
 namespace mk {
 namespace traceroute {
