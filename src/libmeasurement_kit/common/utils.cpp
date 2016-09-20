@@ -3,12 +3,24 @@
 // information on the copying conditions.
 
 #include "../common/utils.hpp"
-
+#include "../ext/strtonum.h"
+#include <algorithm>
+#include <arpa/inet.h>
 #include <ctype.h>
-#include <math.h>
-
 #include <deque>
+#include <event2/util.h>
+#include <math.h>
+#include <netinet/in.h>
+#include <cstddef>
 #include <cstring>
+#include <regex>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <time.h>
 
 #define MEASUREMENT_KIT_SOCKET_INVALID -1
 
@@ -30,9 +42,7 @@ double time_now() {
 void utc_time_now(struct tm *utc) {
     time_t tv;
     tv = time(nullptr);
-    if (gmtime_r(&tv, utc) == nullptr) {
-        throw std::runtime_error("gmtime_r() failed");
-    }
+    gmtime_r(&tv, utc);
 }
 
 ErrorOr<std::string> timestamp(const struct tm *t) {
@@ -47,8 +57,8 @@ timeval *timeval_init(timeval *tv, double delta) {
     if (delta < 0) {
         return nullptr;
     }
-    tv->tv_sec = floor(delta);
-    tv->tv_usec = ((delta - floor(delta)) * 1000000);
+    tv->tv_sec = (time_t)floor(delta);
+    tv->tv_usec = (suseconds_t)((delta - floor(delta)) * 1000000);
     return tv;
 }
 
@@ -70,7 +80,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen,
 int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
                  const char *address, const char *port) {
     const char *errstr;
-    int _port = (int)mkp_strtonum(port, 0, 65535, &errstr);
+    int _port = (int)measurement_kit_strtonum(port, 0, 65535, &errstr);
     if (errstr != nullptr) {
         warn("utils:storage_init: invalid port");
         return -1;
