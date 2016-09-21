@@ -2,14 +2,10 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <functional>
-#include <iostream>
 #include <measurement_kit/cmdline.hpp>
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/mlabns.hpp>
-#include <stdlib.h>
-#include <string>
-#include <unistd.h>
+
+#include <iostream>
 
 namespace mk {
 namespace cmdline {
@@ -29,7 +25,7 @@ int main(const char *, int argc, char **argv) {
 
     int ch;
     Settings settings;
-    while ((ch = getopt(argc, argv, "46C:m:p:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "46C:m:p:v")) != -1) {
         switch (ch) {
         case '4':
             settings["mlabns/address_family"] = "ipv4";
@@ -38,13 +34,13 @@ int main(const char *, int argc, char **argv) {
             settings["mlabns/address_family"] = "ipv6";
             break;
         case 'C':
-            settings["net/ca_bundle_path"] = optarg;
+            settings["net/ca_bundle_path"] = mkp_optarg;
             break;
         case 'm':
-            settings["mlabns/metro"] = optarg;
+            settings["mlabns/metro"] = mkp_optarg;
             break;
         case 'p':
-            settings["mlabns/policy"] = optarg;
+            settings["mlabns/policy"] = mkp_optarg;
             break;
         case 'v':
             increase_verbosity();
@@ -54,8 +50,8 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= optind;
-    argv += optind;
+    argc -= mkp_optind;
+    argv += mkp_optind;
     if (argc != 1) {
         std::cout << kv_usage;
         exit(1);

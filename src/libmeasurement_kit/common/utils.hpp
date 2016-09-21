@@ -1,16 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_COMMON_UTILS_HPP
-#define SRC_COMMON_UTILS_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_COMMON_UTILS_HPP
+#define SRC_LIBMEASUREMENT_KIT_COMMON_UTILS_HPP
+
+#include <measurement_kit/common.hpp>
 
 #include <event2/util.h>
-#include <list>
-#include <measurement_kit/common.hpp>
-#include <stddef.h>
-#include <string>
-#include <unistd.h>
-#include <vector>
 
 struct sockaddr_storage;
 struct timeval;
