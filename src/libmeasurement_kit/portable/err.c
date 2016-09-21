@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 /*
  * Public domain
  * err.h compatibility shim
@@ -60,3 +62,8 @@ mkp_warnx(const char *fmt, ...)
 	fprintf(stderr, "\n");
 	va_end(ap);
 }
+
+#else
+void src_libmeasurement_kit_portable_err_unused(void);
+void src_libmeasurement_kit_portable_err_unused(void) {}
+#endif

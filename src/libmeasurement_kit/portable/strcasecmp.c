@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 /*	$OpenBSD: strcasecmp.c,v 1.6 2005/08/08 08:05:37 espie Exp $	*/
 
 /*
@@ -105,3 +107,8 @@ mkp_strncasecmp(const char *s1, const char *s2, size_t n)
 	return (0);
 }
 //DEF_WEAK(strncasecmp);
+
+#else
+void src_libmeasurement_kit_portable_strcasecmp_unused(void);
+void src_libmeasurement_kit_portable_strcasecmp_unused(void) {}
+#endif

@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 /*
  * Public domain.
  */
@@ -21,3 +23,8 @@ struct tm *mkp_gmtime_r(const time_t *clock, struct tm *result) {
     *result = *rval;
     return result;
 }
+
+#else
+void src_libmeasurement_kit_portable_gmtime_r_unused(void);
+void src_libmeasurement_kit_portable_gmtime_r_unused(void) {}
+#endif

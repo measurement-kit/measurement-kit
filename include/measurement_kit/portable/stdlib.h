@@ -10,14 +10,14 @@
 extern "C" {
 #endif
 
-long long strtonum(const char *, long long, long long, const char **);
-
-#ifdef MKP_STDLIB_VISIBLE
-
-long long mkp_strtonum(const char *numstr, long long minval, long long maxval,
+/* strtonum() function is not defined under many C libraries but is defined
+   e.g. by OpenBSD. Therefore we have our own wrapper that will call the sys
+   strtonum() if available and otherwise use a replacement. */
+long long mkp_strtonum(const char *numstr,
+                       long long minval,
+                       long long maxval,
                        const char **errstrp);
 
-#endif
 #ifdef __cplusplus
 }
 #endif

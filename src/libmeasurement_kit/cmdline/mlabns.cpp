@@ -2,8 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../portable/api.h"
-
 #include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/mlabns.hpp>
 

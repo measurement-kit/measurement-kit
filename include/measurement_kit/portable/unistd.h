@@ -1,5 +1,5 @@
 /*
- * Public domain
+ * Public domain.
  */
 #ifndef MEASUREMENT_KIT_PORTABLE_UNISTD_H
 #define MEASUREMENT_KIT_PORTABLE_UNISTD_H
@@ -8,6 +8,6 @@
 #include <unistd.h>
 #endif
 
-#include <measurement_kit/portable/_getopt_base.h>
+#include <measurement_kit/portable/_getopt.h>
 
 #endif

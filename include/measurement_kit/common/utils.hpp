@@ -29,7 +29,5 @@ T split(std::string s, std::string pattern = "\\s+") {
     return {first, last};
 }
 
-int strcasecmp_wrapper(const char *, const char *);
-
 } // namespace mk
 #endif

@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 /*	$OpenBSD: getopt_long.c,v 1.28 2015/09/19 04:02:21 guenther Exp $	*/
 /*	$NetBSD: getopt_long.c,v 1.15 2002/01/31 22:43:40 tv Exp $	*/
 
@@ -517,3 +519,8 @@ mkp_getopt_long_only(int nargc, char * const *nargv, const char *options,
 	return (getopt_internal(nargc, nargv, options, long_options, idx,
 	    FLAG_PERMUTE|FLAG_LONGONLY));
 }
+
+#else
+void src_libmeasurement_kit_portable_getopt_long_unused(void);
+void src_libmeasurement_kit_portable_getopt_long_unused(void) {}
+#endif

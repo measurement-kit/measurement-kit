@@ -1,3 +1,5 @@
+#ifdef _WIN32
+
 /*	$OpenBSD: strtonum.c,v 1.7 2013/04/17 18:40:58 tedu Exp $	*/
 
 /*
@@ -17,7 +19,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../portable/internal.h"
+#include <errno.h>
+#include <limits.h>
+
+#include <measurement_kit/portable/stdlib.h>
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #define	INVALID		1
 #define	TOOSMALL	2
@@ -62,3 +71,8 @@ mkp_strtonum(const char *numstr, long long minval, long long maxval,
 	return (ll);
 }
 /*DEF_WEAK(strtonum);*/
+
+#else
+void src_libmeasurement_kit_portable_strtonum_unused(void);
+void src_libmeasurement_kit_portable_strtonum_unused(void) {}
+#endif

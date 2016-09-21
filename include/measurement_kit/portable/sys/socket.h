@@ -1,5 +1,5 @@
 /*
- * Public domain
+ * Public domain.
  */
 #ifndef MEASUREMENT_KIT_PORTABLE_SYS_SOCKET_H
 #define MEASUREMENT_KIT_PORTABLE_SYS_SOCKET_H

@@ -1,5 +1,5 @@
 /*
- * Public domain
+ * Public domain.
  */
 #ifndef MEASUREMENT_KIT_PORTABLE_SYS_TIME_H
 #define MEASUREMENT_KIT_PORTABLE_SYS_TIME_H
@@ -16,7 +16,9 @@ int gettimeofday(struct timeval *tvp, void *tzp);
 #ifdef __cplusplus
 }
 #endif
+
 #else
 #include <sys/time.h>
 #endif
+
 #endif
