@@ -30,6 +30,7 @@ static const struct {
     XX(ndt),
     XX(net_connect),
     XX(oonireport),
+    XX(scripting),
     XX(tcp_connect),
     XX(web_connectivity),
     {"--help", help},
