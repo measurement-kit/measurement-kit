@@ -3,12 +3,9 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include "../src/libmeasurement_kit/mlabns/mlabns_impl.hpp"
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/http.hpp>
-#include <measurement_kit/mlabns.hpp>
 
 using namespace mk;
 

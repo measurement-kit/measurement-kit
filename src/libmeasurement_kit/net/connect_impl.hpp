@@ -1,19 +1,17 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_NET_CONNECT_IMPL_HPP
-#define SRC_NET_CONNECT_IMPL_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NET_CONNECT_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_NET_CONNECT_IMPL_HPP
 
 #include "../common/utils.hpp"
 #include "../net/connect.hpp"
-#include <arpa/inet.h>
-#include <event2/bufferevent.h>
-#include <event2/util.h>
+
 #include <measurement_kit/net.hpp>
+
+#include <event2/bufferevent.h>
+
 #include <sstream>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <vector>
 
 struct bufferevent;
 

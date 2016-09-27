@@ -4,14 +4,10 @@
 #ifndef MEASUREMENT_KIT_COMMON_NET_TEST_HPP
 #define MEASUREMENT_KIT_COMMON_NET_TEST_HPP
 
-#include <cstdint>
-#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/delegate.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/reactor.hpp>
 #include <measurement_kit/common/settings.hpp>
-#include <string>
 
 namespace mk {
 

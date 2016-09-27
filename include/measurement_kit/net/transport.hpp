@@ -4,12 +4,7 @@
 #ifndef MEASUREMENT_KIT_NET_TRANSPORT_HPP
 #define MEASUREMENT_KIT_NET_TRANSPORT_HPP
 
-#include <measurement_kit/dns.hpp>
 #include <measurement_kit/net/buffer.hpp>
-#include <stddef.h>
-
-// Forward declaration
-struct bufferevent;
 
 namespace mk {
 namespace net {

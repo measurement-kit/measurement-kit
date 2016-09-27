@@ -2,11 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <event2/dns.h>
-#include <measurement_kit/dns.hpp>
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/report.hpp>
-#include <sstream>
+
+#include <event2/dns.h>
 
 namespace mk {
 namespace ooni {
