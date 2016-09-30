@@ -10,7 +10,7 @@ namespace mk {
 
 Runner::Runner() {}
 
-void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
+void Runner::run(Callback<Continuation<>> kickoff) {
     if (!running) {
         std::promise<bool> promise;
         std::future<bool> future = promise.get_future();
@@ -28,27 +28,36 @@ void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
         running = true;
     }
     active += 1;
-    debug("runner: scheduling %p", (void *)test.get());
+    int task_id = active;
+    debug("runner: scheduling %d", task_id);
     reactor->call_soon([=]() {
-        debug("runner: starting %p", (void *)test.get());
+        debug("runner: starting %d", task_id);
+        kickoff([=](Callback<> end) {
+            debug("runner: ending %d", task_id);
+            // For robustness, delay the final callback to the beginning of
+            // next I/O cycle to prevent possible user after frees. This
+            // could happen because, in our current position on the stack,
+            // we have been called by `NetTest` code that may use `this`
+            // after calling the callback. But this would be a problem
+            // because `test` is most likely to be destroyed after `fn()`
+            // returns. This, when unwinding the stack, the use after free
+            // would happen.
+            reactor->call_soon([=]() {
+                debug("runner: callbacking %d", task_id);
+                active -= 1;
+                end();
+            });
+        });
+    });
+}
+
+void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
+    run([=](Continuation<> complete) {
         test->begin([=](Error) {
             // TODO: do not ignore the error
-            debug("runner: ending %p", (void *)test.get());
             test->end([=](Error) {
                 // TODO: do not ignore the error
-                debug("runner: cleaning-up %p", (void *)test.get());
-                // For robustness, delay the final callback to the beginning of
-                // next I/O cycle to prevent possible user after frees. This
-                // could happen because, in our current position on the stack,
-                // we have been called by `NetTest` code that may use `this`
-                // after calling the callback. But this would be a problem
-                // because `test` is most likely to be destroyed after `fn()`
-                // returns. This, when unwinding the stack, the use after free
-                // would happen.
-                reactor->call_soon([=]() {
-                    debug("runner: callbacking %p", (void *)test.get());
-                    active -= 1;
-                    debug("runner: #active tasks: %d", (int)active);
+                complete([=]() {
                     fn(test);
                 });
             });

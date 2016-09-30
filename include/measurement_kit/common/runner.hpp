@@ -18,6 +18,7 @@ class Runner {
   public:
     Runner();
     void run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> func);
+    void run(Callback<Continuation<>> begin);
     void break_loop();
     bool empty();
     void join();
