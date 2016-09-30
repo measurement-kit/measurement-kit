@@ -36,6 +36,11 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
 
     void begin(Callback<Error>) override;
     void end(Callback<Error>) override;
+    void run_with_input(std::string input, Callback<std::string> cb) override {
+        main(input, options, [=](report::Entry entry) {
+            cb(entry.dump(4));
+        });
+    }
 
   protected:
     // Functions that derived classes SHOULD override
