@@ -86,8 +86,8 @@ TEST_CASE("The destructor work as expected if the thread was already joined") {
     while (!runner.empty()) {
         sleep(1);
     }
-    runner.break_loop();
-    runner.join();
+    runner.break_loop_();
+    runner.join_();
 }
 
 TEST_CASE("Nothing strange happens if no thread is bound to Runner") {
