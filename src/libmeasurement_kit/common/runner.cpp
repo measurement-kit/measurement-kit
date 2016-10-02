@@ -15,6 +15,10 @@ void Runner::run(Callback<Continuation<>> kickoff) {
     // Lock mutex to make sure that a single thread at a time can call
     // us, so to avoid issues with concurrent invocations.
     std::lock_guard<std::mutex> lock(run_mutex);
+    run_unlocked_(kickoff);
+}
+
+void Runner::run_unlocked_(Callback<Continuation<>> kickoff) {
     assert(active >= 0);
     if (active == 0 and running) {
         this->break_loop();  // Just in case but in theory not needed

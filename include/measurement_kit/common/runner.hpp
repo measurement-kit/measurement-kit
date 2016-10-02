@@ -33,6 +33,8 @@ class Runner {
     std::mutex run_mutex;
     std::atomic<bool> running{false};
     std::thread thread;
+
+    void run_unlocked_(Callback<Continuation<>> begin);
 };
 
 } // namespace mk
