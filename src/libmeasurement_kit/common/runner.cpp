@@ -21,8 +21,8 @@ void Runner::run(Callback<Continuation<>> kickoff) {
 void Runner::run_unlocked_(Callback<Continuation<>> kickoff) {
     assert(active >= 0);
     if (active == 0 and running) {
-        this->break_loop();  // Just in case but in theory not needed
-        this->join();        // Should set `running = false`
+        break_loop_();  // Just in case but in theory not needed
+        join_();        // Should set `running = false`
         assert(not running);
     }
     if (not running) {
@@ -63,7 +63,7 @@ void Runner::run_unlocked_(Callback<Continuation<>> kickoff) {
                 if (active == 0) {
                     // Interrupt the event loop. The thread will be joined
                     // by the destructor or by next `run` invocation.
-                    this->break_loop();
+                    break_loop_();
                 }
                 end();
             });
@@ -85,11 +85,11 @@ void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
     });
 }
 
-void Runner::break_loop() { reactor->break_loop(); }
+void Runner::break_loop_() { reactor->break_loop(); }
 
 bool Runner::empty() { return active == 0; }
 
-void Runner::join() {
+void Runner::join_() {
     if (running) {
         thread.join();
         running = false;
@@ -99,8 +99,8 @@ void Runner::join() {
 Runner::~Runner() {
     // WARNING: This MUST be here to make sure we break the loop before we
     // stop the thread. Not doing that leads to undefined behavior.
-    break_loop();
-    join();
+    break_loop_();
+    join_();
 }
 
 /*static*/ Var<Runner> Runner::global() {
