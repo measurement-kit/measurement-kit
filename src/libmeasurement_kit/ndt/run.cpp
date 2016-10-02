@@ -3,7 +3,6 @@
 // information on the copying conditions.
 
 #include "../ndt/run_impl.hpp"
-#include <measurement_kit/mlabns.hpp>
 
 namespace mk {
 namespace ndt {

@@ -1,11 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_OONI_CONSTANTS_HPP
-#define SRC_OONI_CONSTANTS_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_OONI_CONSTANTS_HPP
+#define SRC_LIBMEASUREMENT_KIT_OONI_CONSTANTS_HPP
+
+#include <measurement_kit/http.hpp>
 
 #include <set>
-#include <measurement_kit/http.hpp>
 
 namespace mk {
 namespace ooni {

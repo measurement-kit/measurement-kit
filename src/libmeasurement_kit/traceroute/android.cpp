@@ -33,32 +33,21 @@
 /// Android implementation of prober
 
 // This is meant to run on Android but can run on all Linux systems
-#ifdef __linux__
+#ifndef __linux__
+void mk_traceroute_android_unused();
+void mk_traceroute_android_unused() {}
+#else
 
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/logger.hpp>
 #include "../common/utils.hpp"
-#include <measurement_kit/traceroute/android.hpp>
-#include <measurement_kit/traceroute/error.hpp>
-#include <measurement_kit/traceroute/interface.hpp>
+
+#include <measurement_kit/traceroute.hpp>
 
 #include <event2/event.h>
 
-#include <arpa/inet.h>
 #include <linux/errqueue.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/time.h>
 #include <sys/uio.h>
 
-#include <functional>
-#include <stdexcept>
-#include <string>
-
-#include <stdint.h>
 #include <string.h>
-#include <time.h>
-#include <unistd.h>
 
 struct event_base;
 

@@ -26,7 +26,6 @@ noinst_PROGRAMS    = # Empty
 ALL_TESTS          = # Empty
 
 include include.am
-include src/libmeasurement_kit/ext/include.am
 
 TESTS = $(ALL_TESTS)
 check_PROGRAMS = $(ALL_TESTS)
