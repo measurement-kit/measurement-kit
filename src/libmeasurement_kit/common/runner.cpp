@@ -71,7 +71,7 @@ void Runner::run_unlocked_(Callback<Continuation<>> kickoff) {
     });
 }
 
-void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
+void Runner::run_test(Var<NetTest> test, Callback<Var<NetTest>> fn) {
     run([=](Continuation<> complete) {
         test->begin([=](Error) {
             // TODO: do not ignore the error
