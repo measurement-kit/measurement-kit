@@ -4,6 +4,7 @@
 
 #include <measurement_kit/common.hpp>
 
+#include <cassert>
 #include <future>
 
 namespace mk {
@@ -11,7 +12,16 @@ namespace mk {
 Runner::Runner() {}
 
 void Runner::run(Callback<Continuation<>> kickoff) {
-    if (!running) {
+    // Lock mutex to make sure that a single thread at a time can call
+    // us, so to avoid issues with concurrent invocations.
+    std::lock_guard<std::mutex> lock(run_mutex);
+    assert(active >= 0);
+    if (active == 0 and running) {
+        this->break_loop();  // Just in case but in theory not needed
+        this->join();        // Should set `running = false`
+        assert(not running);
+    }
+    if (not running) {
         std::promise<bool> promise;
         std::future<bool> future = promise.get_future();
         // WARNING: below we're passing `this` to the thread, which means that
@@ -45,6 +55,12 @@ void Runner::run(Callback<Continuation<>> kickoff) {
             reactor->call_soon([=]() {
                 debug("runner: callbacking %d", task_id);
                 active -= 1;
+                assert(active >= 0);
+                if (active == 0) {
+                    // Interrupt the event loop. The thread will be joined
+                    // by the destructor or by next `run` invocation.
+                    this->break_loop();
+                }
                 end();
             });
         });

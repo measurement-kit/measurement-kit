@@ -30,6 +30,7 @@ class Runner {
 
   private:
     std::atomic<int> active{0};
+    std::mutex run_mutex;
     std::atomic<bool> running{false};
     std::thread thread;
 };
