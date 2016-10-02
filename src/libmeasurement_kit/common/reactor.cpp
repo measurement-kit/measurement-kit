@@ -4,7 +4,6 @@
 
 #include "../common/check_connectivity.hpp"
 #include "../common/poller.hpp"
-#include <measurement_kit/common.hpp>
 
 namespace mk {
 

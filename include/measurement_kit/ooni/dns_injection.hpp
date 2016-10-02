@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
 #define MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
 
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni/ooni_test.hpp>
 #include <measurement_kit/report.hpp>
 

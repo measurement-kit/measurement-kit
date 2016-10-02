@@ -4,8 +4,9 @@
 #ifndef MEASUREMENT_KIT_OONI_TEST_HPP
 #define MEASUREMENT_KIT_OONI_TEST_HPP
 
-#include <ctime>
 #include <measurement_kit/report.hpp>
+
+#include <ctime>
 #include <sstream>
 
 namespace mk {

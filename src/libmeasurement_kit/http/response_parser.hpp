@@ -1,19 +1,13 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_HTTP_RESPONSE_PARSER_HPP
-#define SRC_HTTP_RESPONSE_PARSER_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_HTTP_RESPONSE_PARSER_HPP
+#define SRC_LIBMEASUREMENT_KIT_HTTP_RESPONSE_PARSER_HPP
 
-#include "../ext/http-parser/http_parser.h"
-#include <measurement_kit/common.hpp>
+#include "../ext/http_parser.h"
+
 #include <measurement_kit/http.hpp>
-#include <measurement_kit/net.hpp>
 
-#include <functional>
-#include <iosfwd>
-#include <map>
-#include <stdexcept>
-#include <string>
 #include <type_traits>
 
 namespace mk {

@@ -5,8 +5,8 @@
 #ifndef SRC_EXT_TLS_INTERNAL_H
 #define SRC_EXT_TLS_INTERNAL_H
 
+#include <measurement_kit/portable/netinet/in.h>
 #include <openssl/x509.h>
-#include <netinet/in.h>
 
 struct tls {
     char *errmsg;

@@ -1,19 +1,16 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_NET_CONNECTION_HPP
-#define SRC_NET_CONNECTION_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NET_CONNECTION_HPP
+#define SRC_LIBMEASUREMENT_KIT_NET_CONNECTION_HPP
 
 #include "../common/utils.hpp"
 #include "../net/emitter.hpp"
+
+#include <measurement_kit/net.hpp>
+
 #include <event2/bufferevent.h>
 #include <event2/event.h>
-#include <list>
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/dns.hpp>
-#include <measurement_kit/net.hpp>
-#include <stdexcept>
-#include <string.h>
 
 namespace mk {
 namespace net {

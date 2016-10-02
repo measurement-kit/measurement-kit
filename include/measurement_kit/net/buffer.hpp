@@ -4,14 +4,8 @@
 #ifndef MEASUREMENT_KIT_NET_BUFFER_HPP
 #define MEASUREMENT_KIT_NET_BUFFER_HPP
 
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-#include <functional>
 #include <measurement_kit/common.hpp>
-#include <stdexcept>
-#include <string>
-#include <tuple>
+
 struct evbuffer;
 
 namespace mk {

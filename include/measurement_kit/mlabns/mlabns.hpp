@@ -4,13 +4,7 @@
 #ifndef MEASUREMENT_KIT_MLABNS_MLABNS_HPP
 #define MEASUREMENT_KIT_MLABNS_MLABNS_HPP
 
-#include <cstddef>
-#include <functional>
-#include <initializer_list>
 #include <measurement_kit/common.hpp>
-#include <string>
-#include <utility>
-#include <vector>
 
 namespace mk {
 namespace mlabns {

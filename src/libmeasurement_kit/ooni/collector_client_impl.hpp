@@ -1,13 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_OONI_COLLECTOR_CLIENT_IMPL_HPP
-#define SRC_OONI_COLLECTOR_CLIENT_IMPL_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_OONI_COLLECTOR_CLIENT_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_OONI_COLLECTOR_CLIENT_IMPL_HPP
 
 // This file implements the OONI collector client protocol
 // See <https://github.com/TheTorProject/ooni-spec/blob/master/oonib.md>
 
-#include <fstream>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/ooni.hpp>
 

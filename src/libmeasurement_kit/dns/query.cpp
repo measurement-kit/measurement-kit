@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "../dns/query_impl.hpp"
+
 struct evdns_base;
 
 namespace mk {
