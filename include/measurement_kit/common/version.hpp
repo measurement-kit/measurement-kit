@@ -7,7 +7,7 @@
 #include <string>
 
 // Note: we use semantic versioning (see: http://semver.org/)
-#define MEASUREMENT_KIT_VERSION "0.4.0-dev"
+#define MEASUREMENT_KIT_VERSION "0.3.0"
 
 namespace mk {
 
