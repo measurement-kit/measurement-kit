@@ -26,7 +26,7 @@ class DnsInjection : public OoniTest {
     }
 
     void main(std::string input, Settings options,
-              Callback<report::Entry> cb) override {
+              Callback<Entry> cb) override {
         dns_injection(input, options, [=](Var<Entry> entry) {
             cb(*entry);
         }, reactor, logger);

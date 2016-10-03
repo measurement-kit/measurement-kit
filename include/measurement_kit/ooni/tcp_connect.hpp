@@ -26,8 +26,8 @@ class TcpConnect : public OoniTest {
     }
 
     void main(std::string input, Settings options,
-              Callback<report::Entry> cb) override {
-        tcp_connect(input, options, [=](Var<report::Entry> entry) {
+              Callback<Entry> cb) override {
+        tcp_connect(input, options, [=](Var<Entry> entry) {
             cb(*entry);
         }, reactor, logger);
     }
