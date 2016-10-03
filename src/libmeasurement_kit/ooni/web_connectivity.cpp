@@ -35,8 +35,10 @@ static void compare_http_requests(Var<Entry> entry,
   } else if (ctrl_length == 0 || exp_length == 0) {
     body_proportion = 0;
   } else {
-    body_proportion = (float) std::min(ctrl_length, exp_length) /
-                      (float) std::max(ctrl_length, exp_length);
+    // Parentheses around `std::min` and `std::max` to bypass the fact that
+    // windows.h defines the `min` and `max` symbols as macros
+    body_proportion = (float) (std::min)(ctrl_length, exp_length) /
+                      (float) (std::max)(ctrl_length, exp_length);
   }
   logger->debug("web_connectivity: body proportion %f", body_proportion);
 

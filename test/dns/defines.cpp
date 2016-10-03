@@ -10,43 +10,40 @@
 using namespace mk;
 using namespace mk::dns;
 
+// XXX The value of these tests is greatly reduced after class and type
+// have become just standard strings
+
 TEST_CASE("QueryClass works as expected") {
-    QueryClass qclass(QueryClassId::IN);
-    QueryClassId id = qclass;
-    REQUIRE(id == QueryClassId::IN);
-    REQUIRE(qclass != QueryClassId::CH);
-    REQUIRE(qclass == QueryClassId::IN);
-    REQUIRE(QueryClass("IN") == QueryClassId::IN);
-    REQUIRE(QueryClass("CS") == QueryClassId::CS);
-    REQUIRE(QueryClass("CH") == QueryClassId::CH);
-    REQUIRE(QueryClass("HS") == QueryClassId::HS);
-    REQUIRE_THROWS(QueryClass("ANTANI"));
+    QueryClass qclass("IN");
+    REQUIRE(qclass != "CH");
+    REQUIRE(qclass == "IN");
+    REQUIRE(QueryClass("IN") == "IN");
+    REQUIRE(QueryClass("CS") == "CS");
+    REQUIRE(QueryClass("CH") == "CH");
+    REQUIRE(QueryClass("HS") == "HS");
 }
 
 TEST_CASE("QueryType works as expected") {
-    QueryType qclass(QueryTypeId::A);
-    QueryTypeId id = qclass;
-    REQUIRE(id == QueryTypeId::A);
-    REQUIRE(qclass != QueryTypeId::AAAA);
-    REQUIRE(qclass == QueryTypeId::A);
-    REQUIRE(QueryType("A") == QueryTypeId::A);
-    REQUIRE(QueryType("NS") == QueryTypeId::NS);
-    REQUIRE(QueryType("MD") == QueryTypeId::MD);
-    REQUIRE(QueryType("MF") == QueryTypeId::MF);
-    REQUIRE(QueryType("CNAME") == QueryTypeId::CNAME);
-    REQUIRE(QueryType("SOA") == QueryTypeId::SOA);
-    REQUIRE(QueryType("MB") == QueryTypeId::MB);
-    REQUIRE(QueryType("MG") == QueryTypeId::MG);
-    REQUIRE(QueryType("MR") == QueryTypeId::MR);
-    REQUIRE(QueryType("NUL") == QueryTypeId::NUL);
-    REQUIRE(QueryType("WKS") == QueryTypeId::WKS);
-    REQUIRE(QueryType("PTR") == QueryTypeId::PTR);
-    REQUIRE(QueryType("HINFO") == QueryTypeId::HINFO);
-    REQUIRE(QueryType("MINFO") == QueryTypeId::MINFO);
-    REQUIRE(QueryType("MX") == QueryTypeId::MX);
-    REQUIRE(QueryType("TXT") == QueryTypeId::TXT);
-    REQUIRE(QueryType("AAAA") == QueryTypeId::AAAA);
-    REQUIRE(QueryType("REVERSE_A") == QueryTypeId::REVERSE_A);
-    REQUIRE(QueryType("REVERSE_AAAA") == QueryTypeId::REVERSE_AAAA);
-    REQUIRE_THROWS(QueryType("ANTANI"));
+    QueryType qclass("A");
+    REQUIRE(qclass != "AAAA");
+    REQUIRE(qclass == "A");
+    REQUIRE(QueryType("A") == "A");
+    REQUIRE(QueryType("NS") == "NS");
+    REQUIRE(QueryType("MD") == "MD");
+    REQUIRE(QueryType("MF") == "MF");
+    REQUIRE(QueryType("CNAME") == "CNAME");
+    REQUIRE(QueryType("SOA") == "SOA");
+    REQUIRE(QueryType("MB") == "MB");
+    REQUIRE(QueryType("MG") == "MG");
+    REQUIRE(QueryType("MR") == "MR");
+    REQUIRE(QueryType("NUL") == "NUL");
+    REQUIRE(QueryType("WKS") == "WKS");
+    REQUIRE(QueryType("PTR") == "PTR");
+    REQUIRE(QueryType("HINFO") == "HINFO");
+    REQUIRE(QueryType("MINFO") == "MINFO");
+    REQUIRE(QueryType("MX") == "MX");
+    REQUIRE(QueryType("TXT") == "TXT");
+    REQUIRE(QueryType("AAAA") == "AAAA");
+    REQUIRE(QueryType("REVERSE_A") == "REVERSE_A");
+    REQUIRE(QueryType("REVERSE_AAAA") == "REVERSE_AAAA");
 }

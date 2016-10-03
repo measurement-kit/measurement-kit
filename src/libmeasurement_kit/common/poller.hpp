@@ -21,24 +21,54 @@ void mk_do_periodic_cb(evutil_socket_t, short, void *ptr);
 } // extern "C"
 namespace mk {
 
-template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction)>
-class MkLibrarySingleton {
+#ifdef _WIN32
+# define mk_use_platform_threads evthread_use_windows_threads
+#else
+# define mk_use_platform_threads evthread_use_pthreads
+#endif
+
+template <
+    MK_MOCK(mk_use_platform_threads)
+#ifndef _WIN32
+    , MK_MOCK(sigaction)
+#endif
+> class MkLibrarySingleton {
   private:
     MkLibrarySingleton() {
-        if (evthread_use_pthreads() != 0) {
-            throw std::runtime_error("evthread_use_pthreads() failed");
+        if (mk_use_platform_threads() != 0) {
+            throw std::runtime_error("mk_use_platform_threads() failed");
         }
+        /*
+         *     "Under Winsock, the SIGPIPE/EPIPE functionality does
+         *      not exist at  all"
+         *
+         * - https://tangentsoft.net/wskfaq/articles/bsd-compatibility.html
+         */
+#ifndef _WIN32
         struct sigaction sa;
         memset(&sa, 0, sizeof (sa));
         sa.sa_handler = SIG_IGN;
         if (sigaction(SIGPIPE, &sa, nullptr) != 0) {
             throw std::runtime_error("sigaction() failed");
         }
+#else
+        WSADATA wsa_data;
+        WORD version = MAKEWORD(2, 2);
+        memset(&wsa_data, 0, sizeof (wsa_data));
+        if (WSAStartup(version, &wsa_data) != 0) {
+            throw std::runtime_error("WSAStartup() failed");
+        }
+#endif
     }
 
   public:
     static void ensure() {
-        static MkLibrarySingleton<evthread_use_pthreads, sigaction> singleton;
+        static MkLibrarySingleton<
+                mk_use_platform_threads
+#ifndef _WIN32
+                , sigaction
+#endif
+            > singleton;
     }
 };
 
@@ -51,10 +81,19 @@ class Poller : public Reactor {
     // hence two constructors: the normal one that calls `init_()` and the
     // one receiving `nullptr` as argument which does not call `init_()` such
     // that we can call this template function in regress tests.
-    template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction),
-              MK_MOCK(event_base_new), MK_MOCK(event_base_free)>
-    void init_() {
-        MkLibrarySingleton<evthread_use_pthreads, sigaction>::ensure();
+    template <
+        MK_MOCK(mk_use_platform_threads),
+#ifndef _WIN32
+        MK_MOCK(sigaction),
+#endif
+        MK_MOCK(event_base_new), MK_MOCK(event_base_free)
+    > void init_() {
+        MkLibrarySingleton<
+                mk_use_platform_threads
+#ifndef _WIN32
+                , sigaction
+#endif
+            >::ensure();
         base_ = Var<event_base>(event_base_new(), [](event_base *p) {
             if (p != nullptr) {
                 event_base_free(p);
