@@ -4,8 +4,8 @@
 #ifdef ENABLE_INTEGRATION_TESTS
 
 #define CATCH_CONFIG_MAIN
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
 #include <measurement_kit/ooni.hpp>
 
 using namespace mk;
@@ -71,8 +71,8 @@ TEST_CASE("Make sure that on_end() works") {
 
 TEST_CASE("Ensure we do not save too much information by default") {
     ooni::OoniTest test;
-    test.set_options("geoip_country_path", "test/fixtures/GeoIP.dat");
-    test.set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat");
+    test.set_options("geoip_country_path", "GeoIP.dat");
+    test.set_options("geoip_asn_path", "GeoIPASNum.dat");
     loop_with_initial_event([&]() {
         test.on_entry([](std::string s) {
             nlohmann::json entry = nlohmann::json::parse(s);
@@ -91,8 +91,8 @@ TEST_CASE("Ensure we do not save too much information by default") {
 
 TEST_CASE("Ensure we can save IP address if we want") {
     ooni::OoniTest test;
-    test.set_options("geoip_country_path", "test/fixtures/GeoIP.dat");
-    test.set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat");
+    test.set_options("geoip_country_path", "GeoIP.dat");
+    test.set_options("geoip_asn_path", "GeoIPASNum.dat");
     test.set_options("save_real_probe_ip", true);
     loop_with_initial_event([&]() {
         test.on_entry([](std::string s) {
@@ -112,8 +112,8 @@ TEST_CASE("Ensure we can save IP address if we want") {
 
 TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
     ooni::OoniTest test;
-    test.set_options("geoip_country_path", "test/fixtures/GeoIP.dat");
-    test.set_options("geoip_asn_path", "test/fixtures/GeoIPASNum.dat");
+    test.set_options("geoip_country_path", "GeoIP.dat");
+    test.set_options("geoip_asn_path", "GeoIPASNum.dat");
     test.set_options("save_real_probe_cc", false);
     test.set_options("save_real_probe_asn", false);
     loop_with_initial_event([&]() {

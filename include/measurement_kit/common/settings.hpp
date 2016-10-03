@@ -4,9 +4,9 @@
 #ifndef MEASUREMENT_KIT_COMMON_SETTINGS_HPP
 #define MEASUREMENT_KIT_COMMON_SETTINGS_HPP
 
-#include <map>
 #include <measurement_kit/common/settings_entry.hpp>
-#include <string>
+
+#include <map>
 
 namespace mk {
 

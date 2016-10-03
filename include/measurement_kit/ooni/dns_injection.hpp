@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
 #define MEASUREMENT_KIT_OONI_DNS_INJECTION_HPP
 
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni/ooni_test.hpp>
 #include <measurement_kit/report.hpp>
 
@@ -27,7 +26,7 @@ class DnsInjection : public OoniTest {
     }
 
     void main(std::string input, Settings options,
-              Callback<report::Entry> cb) override {
+              Callback<Entry> cb) override {
         dns_injection(input, options, [=](Var<Entry> entry) {
             cb(*entry);
         }, reactor, logger);

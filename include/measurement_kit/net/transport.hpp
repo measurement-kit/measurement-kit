@@ -4,12 +4,7 @@
 #ifndef MEASUREMENT_KIT_NET_TRANSPORT_HPP
 #define MEASUREMENT_KIT_NET_TRANSPORT_HPP
 
-#include <measurement_kit/dns.hpp>
 #include <measurement_kit/net/buffer.hpp>
-#include <stddef.h>
-
-// Forward declaration
-struct bufferevent;
 
 namespace mk {
 namespace net {
@@ -23,10 +18,10 @@ class Transport {
 
     virtual ~Transport() {}
 
-    virtual void on_connect(std::function<void()>) = 0;
-    virtual void on_data(std::function<void(Buffer)>) = 0;
-    virtual void on_flush(std::function<void()>) = 0;
-    virtual void on_error(std::function<void(Error)>) = 0;
+    virtual void on_connect(Callback<>) = 0;
+    virtual void on_data(Callback<Buffer>) = 0;
+    virtual void on_flush(Callback<>) = 0;
+    virtual void on_error(Callback<Error>) = 0;
 
     virtual void record_received_data() = 0;
     virtual void dont_record_received_data() = 0;
@@ -43,7 +38,7 @@ class Transport {
     virtual void write(std::string) = 0;
     virtual void write(Buffer) = 0;
 
-    virtual void close(std::function<void()>) = 0;
+    virtual void close(Callback<>) = 0;
 
     virtual std::string socks5_address() = 0;
     virtual std::string socks5_port() = 0;
@@ -59,10 +54,8 @@ void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
 void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
            Var<Reactor> reactor = Reactor::global());
 
-inline void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
-                 Var<Reactor> reactor = Reactor::global()) {
-    readn(t, buff, 1, callback, reactor);
-}
+void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
+          Var<Reactor> reactor = Reactor::global());
 
 } // namespace net
 } // namespace mk

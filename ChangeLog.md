@@ -1,3 +1,52 @@
+# MeasurementKit 0.3.2 [2016-10-03]
+
+- `ooni_test`: continue even if we cannot submit an entry
+- for testing use the discarding https collector deployed on heroku
+- clanups and other small changes
+- update android and ios to compile using latest dependencies
+
+# MeasurementKit 0.3.1 [2016-10-03]
+
+- update dependencies (yes, I was optimistic yesterday)
+
+# MeasurementKit 0.3.0 [2016-10-02]
+
+We are now entering in stable land. There are some outstanding issues
+like making sure dependencies are up to date and that documentation is
+in sync with code, but we can take care of those in subsequent patch
+releases, if needed. We have been testing this version of MK for quite
+a while now, and it really looks like good.
+
+Compared to previous 0.3.0-beta.3, this release includes some goodies
+from master that are very inlikely to impact on stability. Namely:
+
+- flesh out basic contribution guide (#819)
+- backport simple portability changes from #820 (#821)
+- report: allow to pretty print entry (#825)
+- very lite refactoring of runner (#826)
+
+# MeasurementKit 0.3.0-beta.3 [2016-09-19]
+
+- ooni: refactor geoip to cache openned databases (#809)
+- reduce tarball size by not shipping geoip
+- ooni: allow caller to set probe_{ip,asn,cc} (#816)
+- ooni: fix regress by changing collector-url
+
+# MeasurementKit 0.3.0-beta.2 [2016-09-15]
+
+- ooni: allow to disable collector
+- geoip: skip compiling binaries
+- ooni: count entries and emit progress
+- ooni: allow to optionally avoid writing reports to disk
+- http: put geoip databases in current working dir
+- *: make sure all errors are named Error
+
+# MeasurementKit 0.3.0-beta.1 [2016-09-01]
+
+- Improve .gitignore
+- Merge stable branch into release/v0.3.0 branch
+- Fix build with --disable-integration-tests
+
 # MeasurementKit 0.3.0-beta [2016-08-31]
 
 - autogen.sh: don't list embedded-mk as dependency (#796)
@@ -5,6 +54,10 @@
 - sketch out cmake build system (mainly for Windows) (#798)
 - implement incremental ooni collector (#765)
 - run OONI tests in parallel (#768)
+
+# MeasurementKit 0.2.9 [2016-08-31]
+
+- Make sure install.sh is included when we build release
 
 # MeasurementKit 0.3.0-alpha.1 [2016-08-25]
 

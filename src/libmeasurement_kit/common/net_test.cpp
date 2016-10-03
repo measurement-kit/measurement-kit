@@ -2,11 +2,10 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <chrono>
-#include <functional>
 #include <measurement_kit/common.hpp>
+
+#include <chrono>
 #include <ratio>
-#include <thread>
 #include <future>
 
 namespace mk {

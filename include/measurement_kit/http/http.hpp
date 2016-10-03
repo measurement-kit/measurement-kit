@@ -6,11 +6,7 @@
 
 // Documentation: doc/api/http.md
 
-#include <map>
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
-#include <string>
-#include <strings.h>
 
 namespace mk {
 namespace http {
@@ -76,9 +72,7 @@ ErrorOr<Url> parse_url_noexcept(std::string url);
 
 class HeadersComparator {
   public:
-    bool operator() (const std::string &l, const std::string &r) const {
-        return strcasecmp(l.c_str(), r.c_str()) < 0;
-    }
+    bool operator() (const std::string &l, const std::string &r) const;
 };
 
 using Headers = std::map<std::string, std::string, HeadersComparator>;
@@ -94,7 +88,7 @@ class Request {
 
     Request() {}
     Error init(Settings, Headers, std::string);
-    void serialize(net::Buffer &);
+    void serialize(net::Buffer &, Var<Logger> logger = Logger::global());
 
     static ErrorOr<Var<Request>> make(Settings, Headers, std::string);
 };

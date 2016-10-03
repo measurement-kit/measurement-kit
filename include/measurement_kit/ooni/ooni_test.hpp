@@ -4,12 +4,15 @@
 #ifndef MEASUREMENT_KIT_OONI_TEST_HPP
 #define MEASUREMENT_KIT_OONI_TEST_HPP
 
-#include <ctime>
 #include <measurement_kit/report.hpp>
+
+#include <ctime>
 #include <sstream>
 
 namespace mk {
 namespace ooni {
+
+using namespace mk::report;
 
 class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     // Note: here we make the reasonable assumption that the owner of this
@@ -40,16 +43,17 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     // Functions that derived classes SHOULD override
     virtual void setup(std::string) {}
     virtual void teardown(std::string) {}
-    virtual void main(std::string, Settings, Callback<report::Entry> cb) {
-        reactor->call_soon([=]() { cb(report::Entry{}); });
+    virtual void main(std::string, Settings, Callback<Entry> cb) {
+        reactor->call_soon([=]() { cb(Entry{}); });
     }
 
   private:
-    report::Report report;
+    Report report;
     tm test_start_time;
     Var<std::istream> input_generator;
 
-    void run_next_measurement(size_t, Callback<Error>);
+    void run_next_measurement(size_t, Callback<Error>, size_t,
+                              Var<size_t>);
     void geoip_lookup(Callback<>);
     void open_report(Callback<Error>);
     std::string generate_output_filepath();

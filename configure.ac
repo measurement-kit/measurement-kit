@@ -3,7 +3,7 @@
 # information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.3.0-beta, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.4.0-dev, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -33,6 +33,7 @@ CFLAGS="$CFLAGS -pthread"
 CXXFLAGS="$CXXFLAGS -pthread"
 LDFLAGS="$LDFLAGS -pthread"
 
+MK_AM_CHECK_LIBC_FUNCS
 MK_AM_OPENSSL
 MK_AM_LIBEVENT
 MK_AM_GEOIP

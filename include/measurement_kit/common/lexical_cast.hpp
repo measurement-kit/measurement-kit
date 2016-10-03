@@ -4,8 +4,8 @@
 #ifndef MEASUREMENT_KIT_COMMON_LEXICAL_CAST_HPP
 #define MEASUREMENT_KIT_COMMON_LEXICAL_CAST_HPP
 
-#include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/error_or.hpp>
+
 #include <sstream>
 
 namespace mk {

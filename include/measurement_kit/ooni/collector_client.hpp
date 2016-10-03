@@ -11,15 +11,25 @@ namespace mk {
 namespace ooni {
 namespace collector {
 
+using namespace mk::report;
+
 /*
-    To submit a file report, pass it to `submit_report()`:
+    To submit a file report, use one of the following collectors. By default
+    the library uses the `testing` collector which is a HTTPS service running
+    on Heroku that discards all the input it receives.
 */
 
-#define MK_OONI_DEFAULT_COLLECTOR_URL "https://a.collector.ooni.io:4441"
-#define MK_OONI_TESTING_COLLECTOR_URL "https://a.collector.test.ooni.io"
+#define MK_OONI_PRODUCTION_COLLECTOR_URL "https://a.collector.ooni.io:4441"
+#define MK_OONI_TESTING_COLLECTOR_URL "https://measurement-kit-collector.herokuapp.com"
 
-std::string default_collector_url();
+std::string production_collector_url();
 std::string testing_collector_url();
+
+// Backward compatibility for the v0.3.x series
+#define MK_OONI_DEFAULT_COLLECTOR_URL MK_OONI_PRODUCTION_COLLECTOR_URL
+inline std::string default_collector_url() {
+    return production_collector_url();
+}
 
 void submit_report(std::string filepath, std::string collector_base_url,
                    Callback<Error> callback, Settings conf = {},
@@ -35,21 +45,21 @@ void submit_report(std::string filepath, std::string collector_base_url,
 void connect(Settings, Callback<Error, Var<net::Transport>>,
              Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
-void create_report(Var<net::Transport>, report::Entry,
+void create_report(Var<net::Transport>, Entry,
                    Callback<Error, std::string>, Settings = {},
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
-void connect_and_create_report(report::Entry, Callback<Error, std::string>,
+void connect_and_create_report(Entry, Callback<Error, std::string>,
                                Settings = {}, Var<Reactor> = Reactor::global(),
                                Var<Logger> = Logger::global());
 
-void update_report(Var<net::Transport>, std::string report_id, report::Entry,
+void update_report(Var<net::Transport>, std::string report_id, Entry,
                    Callback<Error>, Settings = {},
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
-void connect_and_update_report(std::string report_id, report::Entry,
+void connect_and_update_report(std::string report_id, Entry,
                                Callback<Error>, Settings = {},
                                Var<Reactor> = Reactor::global(),
                                Var<Logger> = Logger::global());

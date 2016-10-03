@@ -4,12 +4,14 @@
 #ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
-#include <cstdint>
-#include <fstream>
+#include <measurement_kit/common/aaa_base.hpp>
 #include <measurement_kit/common/delegate.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/var.hpp>
+
+#include <cstdint>
+#include <fstream>
 #include <mutex>
 #include <stdarg.h>
 
@@ -21,7 +23,7 @@
 #define MK_LOG_DEBUG2 3
 #define MK_LOG_VERBOSITY_MASK 31
 
-#define MK_LOG_JSON 32 ///< Information encoded as JSON
+#define MK_LOG_JSON 32 // Information encoded as JSON
 
 namespace mk {
 

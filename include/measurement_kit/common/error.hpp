@@ -4,8 +4,8 @@
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
-#include <exception>
 #include <measurement_kit/common/var.hpp>
+
 #include <string>
 #include <vector>
 
@@ -45,7 +45,7 @@ class Error : public std::exception {
         child_errors.push_back(container);
     }
 
-    std::string explain() {
+    std::string explain() const {
         std::string s;
         s += "{";
         s += reason;

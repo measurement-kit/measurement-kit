@@ -4,15 +4,17 @@
 
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace ooni {
 
-void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
+void OoniTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
+                                    size_t num_entries,
+                                    Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
     std::string next_input;
     std::getline(*input_generator, next_input);
+
     if (input_generator->eof()) {
         logger->debug("net_test: reached end of input");
         cb(NoError());
@@ -23,6 +25,13 @@ void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
         cb(FileIoError());
         return;
     }
+
+    double prog = 0.0;
+    if (num_entries > 0) {
+        prog = *current_entry / (double)num_entries;
+    }
+    *current_entry += 1;
+    logger->log(MK_LOG_INFO|MK_LOG_JSON, "{\"progress\": %f}", prog);
 
     logger->debug("net_test: creating entry");
     struct tm measurement_start_time;
@@ -52,58 +61,91 @@ void OoniTest::run_next_measurement(size_t index, Callback<Error> cb) {
         }
         report.write_entry(entry, [=](Error error) {
             if (error) {
-                cb(error);
-                return;
+                logger->warn("cannot write entry");
+                // Note: continue running measurements in this case because a
+                // transient collector failure MUST NOT stop running tests
+            } else {
+                logger->debug("net_test: written entry");
             }
-            logger->debug("net_test: written entry");
-            reactor->call_soon([=]() { run_next_measurement(index, cb); });
+            reactor->call_soon([=]() {
+                run_next_measurement(thread_id, cb, num_entries, current_entry);
+            });
         });
     });
 }
 
 void OoniTest::geoip_lookup(Callback<> cb) {
+
     // This is to ensure that when calling multiple times geoip_lookup we
     // always reset the probe_ip, probe_asn and probe_cc values.
     probe_ip = "127.0.0.1";
     probe_asn = "AS0";
     probe_cc = "ZZ";
+
+    auto save_ip = options.get("save_real_probe_ip", false);
+    auto save_asn = options.get("save_real_probe_asn", true);
+    auto save_cc = options.get("save_real_probe_cc", true);
+
+    // This code block allows the caller to override probe variables
+    if (save_ip and options.find("probe_ip") != options.end()) {
+        probe_ip = options.at("probe_ip");
+        save_ip = false; // We already have it, don't look it up and save it
+    }
+    if (save_asn and options.find("probe_asn") != options.end()) {
+        probe_asn = options.at("probe_asn");
+        save_asn = false; // Ditto
+    }
+    if (save_cc and options.find("probe_cc") != options.end()) {
+        probe_cc = options.at("probe_cc");
+        save_cc = false; // Ditto
+    }
+
+    // No need to perform further lookups if we don't need to save anything
+    if (not save_ip and not save_asn and not save_cc) {
+        cb();
+        return;
+    }
+
     ip_lookup(
         [=](Error err, std::string ip) {
             if (err) {
                 logger->warn("ip_lookup() failed: error code: %d", err.code);
-            } else {
-                logger->info("probe ip: %s", ip.c_str());
-                if (options.get("save_real_probe_ip", false)) {
-                    logger->debug("saving user's real ip on user's request");
-                    probe_ip = ip;
-                }
-                std::string country_p =
-                    options.get("geoip_country_path", std::string{});
-                std::string asn_p =
-                    options.get("geoip_asn_path", std::string{});
-                if (country_p == "" or asn_p == "") {
-                    logger->warn("geoip files not configured; skipping");
-                } else {
-                    ErrorOr<nlohmann::json> res = geoip(ip, country_p, asn_p);
-                    if (!!res) {
-                        logger->debug("GeoIP result: %s", res->dump().c_str());
-                        // Since `geoip()` sets defaults before querying, the
-                        // following accesses of json should not fail unless for
-                        // programmer error after refactoring. In that case,
-                        // better to let the exception unwind than just print
-                        // a warning, because the former is easier to notice
-                        // and therefore fix during development
-                        if (options.get("save_real_probe_asn", true)) {
-                            probe_asn = (*res)["asn"];
-                        }
-                        logger->info("probe_asn: %s", probe_asn.c_str());
-                        if (options.get("save_real_probe_cc", true)) {
-                            probe_cc = (*res)["country_code"];
-                        }
-                        logger->info("probe_cc: %s", probe_cc.c_str());
-                    }
-                }
+                cb();
+                return;
             }
+            logger->info("probe ip: %s", ip.c_str());
+            if (save_ip) {
+                logger->debug("saving user's real ip on user's request");
+                probe_ip = ip;
+            }
+
+            auto country_path = options.get("geoip_country_path",
+                                            std::string{});
+            if (save_cc and country_path != "") {
+                try {
+                    probe_cc = *GeoipCache::global()
+                       ->resolve_country_code(country_path, ip, logger);
+                } catch (const Error &err) {
+                    logger->warn("cannot lookup country code: %s",
+                                 err.explain().c_str());
+                }
+            } else if (country_path == "") {
+                logger->warn("geoip_country_path is not set");
+            }
+
+            auto asn_path = options.get("geoip_asn_path", std::string{});
+            if (save_asn and asn_path != "") {
+                try {
+                    probe_asn = *GeoipCache::global()
+                        ->resolve_asn(asn_path, ip, logger);
+                } catch (const Error &err) {
+                    logger->warn("cannot lookup asn: %s",
+                                 err.explain().c_str());
+                }
+            } else if (asn_path == "") {
+                logger->warn("geoip_asn_path is not set");
+            }
+
             cb();
         },
         options, reactor, logger);
@@ -123,8 +165,12 @@ void OoniTest::open_report(Callback<Error> callback) {
     if (output_filepath == "") {
         output_filepath = generate_output_filepath();
     }
-    report.add_reporter(FileReporter::make(output_filepath));
-    report.add_reporter(OoniReporter::make(*this));
+    if (options.find("no_file_report") == options.end()) {
+        report.add_reporter(FileReporter::make(output_filepath));
+    }
+    if (options.find("no_collector") == options.end()) {
+        report.add_reporter(OoniReporter::make(*this));
+    }
     report.open(callback);
 }
 
@@ -169,6 +215,7 @@ void OoniTest::begin(Callback<Error> cb) {
                     cb(error);
                     return;
                 }
+                size_t num_entries = 0;
                 if (needs_input) {
                     if (input_filepath == "") {
                         logger->warn("an input file is required");
@@ -181,17 +228,37 @@ void OoniTest::begin(Callback<Error> cb) {
                         cb(CannotOpenInputFileError());
                         return;
                     }
+
+                    // Count the number of entries
+                    std::string next_input;
+                    while ((std::getline(*input_generator, next_input))) {
+                        num_entries += 1;
+                    }
+                    if (!input_generator->eof()) {
+                        logger->warn("cannot read input file");
+                        cb(FileIoError());
+                        return;
+                    }
+                    // See http://stackoverflow.com/questions/5750485
+                    //  and http://stackoverflow.com/questions/28331017
+                    input_generator->clear();
+                    input_generator->seekg(0);
+
                 } else {
                     input_generator.reset(new std::istringstream("\n"));
+                    num_entries = 1;
                 }
 
+
                 // Run `parallelism` measurements in parallel
+                Var<size_t> current_entry(new size_t(0));
                 mk::parallel(
                     mk::fmap<size_t, Continuation<Error>>(
                         mk::range<size_t>(options.get("parallelism", 3)),
-                        [=](size_t index) {
+                        [=](size_t thread_id) {
                             return [=](Callback<Error> cb) {
-                                run_next_measurement(index, cb);
+                                run_next_measurement(thread_id, cb, num_entries,
+                                                     current_entry);
                             };
                         }),
                     cb);
