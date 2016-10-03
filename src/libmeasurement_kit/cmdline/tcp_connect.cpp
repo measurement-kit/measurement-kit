@@ -4,9 +4,8 @@
 
 #include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/ooni.hpp>
+
 #include <iostream>
-#include <string>
-#include <unistd.h>
 
 namespace mk {
 namespace cmdline {
@@ -18,10 +17,10 @@ int main(const char *, int argc, char **argv) {
     uint32_t verbosity = 0;
     mk::ooni::TcpConnect test;
     int ch;
-    while ((ch = getopt(argc, argv, "np:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "np:v")) != -1) {
         switch (ch) {
         case 'p':
-            port = std::string(optarg);
+            port = std::string(mkp_optarg);
             break;
         case 'n':
             test.set_options("no_collector", true);
@@ -35,8 +34,8 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= optind;
-    argv += optind;
+    argc -= mkp_optind;
+    argv += mkp_optind;
     if (argc != 1) {
         std::cout << "Usage: " << name << " [-nv] [-p port] file_name"
                   << "\n";

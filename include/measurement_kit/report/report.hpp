@@ -4,10 +4,10 @@
 #ifndef MEASUREMENT_KIT_REPORT_REPORT_HPP
 #define MEASUREMENT_KIT_REPORT_REPORT_HPP
 
-#include <ctime>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/report/entry.hpp>
-#include <vector>
+
+#include <ctime>
 
 namespace mk {
 namespace report {

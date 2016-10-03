@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_OONI_TEMPLATES_HPP
 #define MEASUREMENT_KIT_OONI_TEMPLATES_HPP
 
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/report.hpp>
 

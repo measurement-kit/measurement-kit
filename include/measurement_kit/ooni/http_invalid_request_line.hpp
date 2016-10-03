@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
 #define MEASUREMENT_KIT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
 
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni/ooni_test.hpp>
 #include <measurement_kit/report.hpp>
 
@@ -13,7 +12,7 @@ namespace ooni {
 
 using namespace mk::report;
 
-void http_invalid_request_line(Settings, Callback<Var<report::Entry>>,
+void http_invalid_request_line(Settings, Callback<Var<Entry>>,
                                Var<Reactor> = Reactor::global(),
                                Var<Logger> = Logger::global());
 
@@ -25,9 +24,8 @@ class HttpInvalidRequestLine : public OoniTest {
         test_version = "0.0.1";
     }
 
-    void main(std::string, Settings options,
-              Callback<report::Entry> cb) override {
-        http_invalid_request_line(options, [=](Var<report::Entry> e) {
+    void main(std::string, Settings options, Callback<Entry> cb) override {
+        http_invalid_request_line(options, [=](Var<Entry> e) {
              cb(*e);
         }, reactor, logger);
     }

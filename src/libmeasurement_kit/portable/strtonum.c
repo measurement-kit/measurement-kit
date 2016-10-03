@@ -19,16 +19,21 @@
 
 #include <errno.h>
 #include <limits.h>
-#include <stdlib.h>
 
-#include "strtonum.h"
+#include <measurement_kit/portable/stdlib.h>
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#ifndef HAVE_STRTONUM
 
 #define	INVALID		1
 #define	TOOSMALL	2
 #define	TOOLARGE	3
 
-long long
-measurement_kit_strtonum(const char *numstr, long long minval, long long maxval,
+static inline long long
+mkp_strtonum_(const char *numstr, long long minval, long long maxval,
     const char **errstrp)
 {
 	long long ll = 0;
@@ -66,3 +71,13 @@ measurement_kit_strtonum(const char *numstr, long long minval, long long maxval,
 	return (ll);
 }
 /*DEF_WEAK(strtonum);*/
+
+# define strtonum mkp_strtonum_
+#endif
+
+long long
+mkp_strtonum(const char *numstr, long long minval, long long maxval,
+    const char **errstrp)
+{
+    return strtonum(numstr, minval, maxval, errstrp);
+}

@@ -5,7 +5,7 @@
 #ifdef ENABLE_INTEGRATION_TESTS
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni.hpp>
@@ -86,8 +86,8 @@ TEST_CASE("The destructor work as expected if the thread was already joined") {
     while (!runner.empty()) {
         sleep(1);
     }
-    runner.break_loop();
-    runner.join();
+    runner.break_loop_();
+    runner.join_();
 }
 
 TEST_CASE("Nothing strange happens if no thread is bound to Runner") {

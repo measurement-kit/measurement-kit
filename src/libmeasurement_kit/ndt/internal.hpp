@@ -1,19 +1,17 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_NDT_INTERNAL_HPP
-#define SRC_NDT_INTERNAL_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NDT_INTERNAL_HPP
+#define SRC_LIBMEASUREMENT_KIT_NDT_INTERNAL_HPP
 
 // This implementation targets v3.7.0 of the NDT protocol
 // See <https://github.com/ndt-project/ndt/wiki/NDTProtocol>
 
 #include "../common/utils.hpp"
-#include <list>
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/ext/json.hpp>
+
+#include <measurement_kit/ext.hpp>
 #include <measurement_kit/ndt.hpp>
 #include <measurement_kit/net.hpp>
-#include <string>
 
 /*
  ____        __ _       _ _   _
