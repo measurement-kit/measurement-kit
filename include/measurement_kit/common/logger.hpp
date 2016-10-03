@@ -23,7 +23,7 @@
 #define MK_LOG_DEBUG2 3
 #define MK_LOG_VERBOSITY_MASK 31
 
-#define MK_LOG_JSON 32 ///< Information encoded as JSON
+#define MK_LOG_JSON 32 // Information encoded as JSON
 
 namespace mk {
 

@@ -1,3 +1,10 @@
+# MeasurementKit 0.3.2 [2016-10-03]
+
+- `ooni_test`: continue even if we cannot submit an entry
+- for testing use the discarding https collector deployed on heroku
+- clanups and other small changes
+- update android and ios to compile using latest dependencies
+
 # MeasurementKit 0.3.1 [2016-10-03]
 
 - update dependencies (yes, I was optimistic yesterday)
