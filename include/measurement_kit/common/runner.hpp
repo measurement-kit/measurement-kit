@@ -18,17 +18,23 @@ class Runner {
   public:
     Runner();
     void run_test(Var<NetTest> test, Callback<Var<NetTest>> func);
+    void run(Callback<Continuation<>> begin);
     void break_loop_();
     bool empty();
     void join_();
     ~Runner();
     static Var<Runner> global();
 
+    // Globally accessible attribute that other classes can use
+    Var<Reactor> reactor = Reactor::global();
+
   private:
     std::atomic<int> active{0};
-    Var<Reactor> reactor = Reactor::global();
+    std::mutex run_mutex;
     std::atomic<bool> running{false};
     std::thread thread;
+
+    void run_unlocked_(Callback<Continuation<>> begin);
 };
 
 } // namespace mk
