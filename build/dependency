@@ -24,6 +24,22 @@ Examples:
 EOF
 }
 
+pkg_configure() {
+    if [ -x ./configure ]; then
+        ./configure --prefix=$pkg_prefix $pkg_configure_flags
+    elif [ -f ./CMakeLists.txt ]; then
+        cmake -D CMAKE_INSTALL_PREFIX=$pkg_prefix $pkg_cmake_flags .
+    fi
+}
+
+pkg_make() {
+    make $pkg_make_flags
+}
+
+pkg_make_install() {
+    $pkg_sudo make $pkg_make_install_flags install
+}
+
 set -e
 if [ $# -ne 1 ]; then
     print_usage
@@ -82,10 +98,9 @@ fi
 rm -rf third_party/build/$pkg_name
 cp -R third_party/cache/$pkg_name third_party/build/$pkg_name
 cd third_party/build/$pkg_name
-if [ -x ./configure ]; then
-    ./configure --prefix=$pkg_prefix $pkg_configure_flags
-elif [ -f ./CMakeLists.txt ]; then
-    cmake -D CMAKE_INSTALL_PREFIX=$pkg_prefix $pkg_cmake_flags .
+if [ -z "$pkg_steps" ]; then
+    pkg_steps="configure make make_install"
 fi
-make $pkg_make_flags
-$pkg_sudo make $pkg_make_install_flags install
+for step in $pkg_steps; do
+    pkg_$step
+done
