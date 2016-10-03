@@ -122,8 +122,8 @@ void submit_report(std::string filepath, std::string collector_base_url,
                        logger);
 }
 
-std::string default_collector_url() {
-    return MK_OONI_DEFAULT_COLLECTOR_URL;
+std::string production_collector_url() {
+    return MK_OONI_PRODUCTION_COLLECTOR_URL;
 }
 
 std::string testing_collector_url() {

@@ -33,7 +33,7 @@ echo "Downloading and verifying precompiled dependencies from github"
 (
     set -e # just in case
     cd $ROOTDIR
-    DEPS_URL=https://github.com/measurement-kit/measurement-kit-deps/releases/download/2016-08-16/android-dependencies-20160816T182928Z.tgz
+    DEPS_URL=https://github.com/measurement-kit/measurement-kit-deps/releases/download/2016-10-03/android-dependencies-20161003T225928Z.tgz
     DEPS_FILE=$(basename $DEPS_URL)
     curl --progress-bar -LO $DEPS_URL
     curl --progress-bar -LO $DEPS_URL.asc
