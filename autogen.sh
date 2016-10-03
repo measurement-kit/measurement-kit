@@ -123,11 +123,9 @@ echo ""
 echo "The './configure' script shall also check for external dependencies. "
 echo "MeasurementKit external dependencies are:"
 echo ""
-for depname in `ls build/spec/|grep -v all`; do
-    if [ "$depname" != "embedded-mk" ]; then
-        echo "    - $depname"
-    fi
-done
+echo "    - GeoIP"
+echo "    - openssl / libressl"
+echo "    - libevent"
 echo ""
 echo "If any of these dependencies is missing, the './configure' script shall"
 echo "stop and tell you how you could install it."
