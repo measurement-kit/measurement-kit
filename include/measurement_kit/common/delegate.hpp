@@ -9,6 +9,10 @@
 
 namespace mk {
 
+// Implementation note: this class could also have been written as a subclass
+// of function but I, er, was not able to write it like so because I do not
+// know enough about templates syntax, plus it's not totally clear to me what
+// would be the proper way to wrap `swap` and `assign`.
 template <typename T> class Delegate_ {
   public:
     Delegate_() {}
@@ -31,7 +35,7 @@ template <typename T> class Delegate_ {
         orig(std::forward<Args>(args)...);
     }
 
-  protected:
+  private:
     std::function<T> func;
 };
 
