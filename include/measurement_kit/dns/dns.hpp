@@ -6,10 +6,7 @@
 
 #include <measurement_kit/common.hpp>
 
-struct evdns_base; // Internally we use evdns
-
 namespace mk {
-
 namespace dns {
 
 MK_DEFINE_ERR(MK_ERR_DNS(0), FormatError, "dns_lookup_error")
@@ -36,56 +33,55 @@ using QueryType = std::string;
 using QueryClass = std::string;
 
 class Answer {
-    public:
-        QueryType type;
-        QueryClass qclass;
+  public:
+    QueryType type;
+    QueryClass qclass;
 
-        int code = 0;
+    int code = 0;
 
-        uint32_t ttl = 0;
+    uint32_t ttl = 0;
 
-        std::string name;
+    std::string name;
 
-        std::string ipv4; ///< For A records
-        std::string ipv6; ///< For AAAA records
+    std::string ipv4; ///< For A records
+    std::string ipv6; ///< For AAAA records
 
-        std::string hostname; ///< For PTR, SOA and CNAME records
+    std::string hostname; ///< For PTR, SOA and CNAME records
 
-        std::string responsible_name; ///< For SOA records
-        uint32_t serial_number; ///< For SOA records
-        uint32_t refresh_interval; ///< For SOA records
-        uint32_t retry_interval; ///< For SOA records
-        uint32_t minimum_ttl; ///< For SOA records
-        uint32_t expiration_limit; ///< For SOA records
+    std::string responsible_name; ///< For SOA records
+    uint32_t serial_number;       ///< For SOA records
+    uint32_t refresh_interval;    ///< For SOA records
+    uint32_t retry_interval;      ///< For SOA records
+    uint32_t minimum_ttl;         ///< For SOA records
+    uint32_t expiration_limit;    ///< For SOA records
 };
 
 class Query {
-    public:
-        QueryType type;
-        QueryClass qclass;
+  public:
+    QueryType type;
+    QueryClass qclass;
 
-        uint32_t ttl = 0;
+    uint32_t ttl = 0;
 
-        std::string name;
+    std::string name;
 };
 
 class Message {
-    public:
-        Message() {};
-        Message(std::nullptr_t) {};
+  public:
+    Message(){};
+    Message(std::nullptr_t){};
 
-        double rtt = 0.0;
+    double rtt = 0.0;
 
-        int error_code = 66;
+    int error_code = 66;
 
-        std::vector<Answer> answers;
-        std::vector<Query> queries;
+    std::vector<Answer> answers;
+    std::vector<Query> queries;
 };
 
 /// Perform a single DNS query
 void query(QueryClass dns_class, QueryType dns_type, std::string name,
-           Callback<Error, Message> func,
-           Settings settings = {},
+           Callback<Error, Message> func, Settings settings = {},
            Var<Reactor> reactor = Reactor::global());
 
 } // namespace dns
