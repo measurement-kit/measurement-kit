@@ -6,10 +6,7 @@
 
 #include <measurement_kit/common.hpp>
 
-struct evdns_base; // Internally we use evdns
-
 namespace mk {
-
 namespace dns {
 
 MK_DEFINE_ERR(MK_ERR_DNS(0), FormatError, "dns_lookup_error")
