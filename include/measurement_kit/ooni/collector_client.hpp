@@ -12,14 +12,22 @@ namespace ooni {
 namespace collector {
 
 /*
-    To submit a file report, pass it to `submit_report()`:
+    To submit a file report, use one of the following collectors. By default
+    the library uses the `testing` collector which is a HTTPS service running
+    on Heroku that discards all the input it receives.
 */
 
-#define MK_OONI_DEFAULT_COLLECTOR_URL "https://a.collector.ooni.io:4441"
-#define MK_OONI_TESTING_COLLECTOR_URL "https://b.collector.test.ooni.io:4441"
+#define MK_OONI_PRODUCTION_COLLECTOR_URL "https://a.collector.ooni.io:4441"
+#define MK_OONI_TESTING_COLLECTOR_URL "https://measurement-kit-collector.herokuapp.com"
 
-std::string default_collector_url();
+std::string production_collector_url();
 std::string testing_collector_url();
+
+// Backward compatibility for the v0.3.x series
+#define MK_OONI_DEFAULT_COLLECTOR_URL MK_OONI_PRODUCTION_COLLECTOR_URL
+inline std::string default_collector_url() {
+    return production_collector_url();
+}
 
 void submit_report(std::string filepath, std::string collector_base_url,
                    Callback<Error> callback, Settings conf = {},
