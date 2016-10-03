@@ -1,3 +1,7 @@
+# MeasurementKit 0.3.1 [2016-10-03]
+
+- update dependencies (yes, I was optimistic yesterday)
+
 # MeasurementKit 0.3.0 [2016-10-02]
 
 We are now entering in stable land. There are some outstanding issues
