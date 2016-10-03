@@ -45,6 +45,12 @@ if [ ! -d third_party/cache/$pkg_name ]; then
     cd third_party/cache/$pkg_name
     if [ ! -z "$pkg_branch" ]; then
         git checkout $pkg_branch
+        if [ -z "$pkg_commit" ]; then
+            # Mainly because this allows us to know which commit was the
+            # tip of the branch when we compiled a dependency
+            echo "FATAL: 'pkg_branch' now requires also 'pkg_commit'" 1>&2
+            exit 1
+        fi
     fi
     if [ ! -z "$pkg_tag" ]; then
         git checkout tags/$pkg_tag
