@@ -4,14 +4,16 @@
 
 #include <measurement_kit/common.hpp>
 
+#include <cassert>
 #include <future>
 
 namespace mk {
 
 Runner::Runner() {}
 
-void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
-    if (!running) {
+void Runner::run_test(Var<NetTest> test, Callback<Var<NetTest>> fn) {
+    assert(active >= 0);
+    if (not running) {
         std::promise<bool> promise;
         std::future<bool> future = promise.get_future();
         // WARNING: below we're passing `this` to the thread, which means that
@@ -56,11 +58,11 @@ void Runner::run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> fn) {
     });
 }
 
-void Runner::break_loop() { reactor->break_loop(); }
+void Runner::break_loop_() { reactor->break_loop(); }
 
 bool Runner::empty() { return active == 0; }
 
-void Runner::join() {
+void Runner::join_() {
     if (running) {
         thread.join();
         running = false;
@@ -70,8 +72,8 @@ void Runner::join() {
 Runner::~Runner() {
     // WARNING: This MUST be here to make sure we break the loop before we
     // stop the thread. Not doing that leads to undefined behavior.
-    break_loop();
-    join();
+    break_loop_();
+    join_();
 }
 
 /*static*/ Var<Runner> Runner::global() {

@@ -53,5 +53,10 @@ void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
     });
 }
 
+void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
+          Var<Reactor> reactor) {
+    readn(t, buff, 1, callback, reactor);
+}
+
 } // namespace net
 } // namespace mk

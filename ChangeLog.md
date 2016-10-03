@@ -1,3 +1,30 @@
+# MeasurementKit 0.3.2 [2016-10-03]
+
+- `ooni_test`: continue even if we cannot submit an entry
+- for testing use the discarding https collector deployed on heroku
+- clanups and other small changes
+- update android and ios to compile using latest dependencies
+
+# MeasurementKit 0.3.1 [2016-10-03]
+
+- update dependencies (yes, I was optimistic yesterday)
+
+# MeasurementKit 0.3.0 [2016-10-02]
+
+We are now entering in stable land. There are some outstanding issues
+like making sure dependencies are up to date and that documentation is
+in sync with code, but we can take care of those in subsequent patch
+releases, if needed. We have been testing this version of MK for quite
+a while now, and it really looks like good.
+
+Compared to previous 0.3.0-beta.3, this release includes some goodies
+from master that are very inlikely to impact on stability. Namely:
+
+- flesh out basic contribution guide (#819)
+- backport simple portability changes from #820 (#821)
+- report: allow to pretty print entry (#825)
+- very lite refactoring of runner (#826)
+
 # MeasurementKit 0.3.0-beta.3 [2016-09-19]
 
 - ooni: refactor geoip to cache openned databases (#809)
