@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_OONI_WEB_CONNECTIVITY_HPP
 #define MEASUREMENT_KIT_OONI_WEB_CONNECTIVITY_HPP
 
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/ooni/ooni_test.hpp>
 #include <measurement_kit/report.hpp>
 
@@ -14,7 +13,7 @@ namespace ooni {
 using namespace mk::report;
 
 void web_connectivity(std::string input, Settings,
-                      Callback<Var<report::Entry>>,
+                      Callback<Var<Entry>>,
                       Var<Reactor> = Reactor::global(),
                       Var<Logger> = Logger::global());
 
@@ -29,8 +28,8 @@ class WebConnectivity : public OoniTest {
     }
 
     void main(std::string input, Settings options,
-              Callback<report::Entry> cb) override {
-        web_connectivity(input, options, [=](Var<report::Entry> e) {
+              Callback<Entry> cb) override {
+        web_connectivity(input, options, [=](Var<Entry> e) {
              cb(*e);
         }, reactor, logger);
     }

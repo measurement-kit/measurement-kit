@@ -4,9 +4,8 @@
 
 #include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/ooni.hpp>
+
 #include <iostream>
-#include <string>
-#include <unistd.h>
 
 namespace mk {
 namespace cmdline {
@@ -22,13 +21,13 @@ int main(const char *, int argc, char **argv) {
     mk::ooni::WebConnectivity test;
     int ch;
 
-    while ((ch = getopt(argc, argv, "b:N:nv")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "b:N:nv")) != -1) {
         switch (ch) {
         case 'b':
-            backend = optarg;
+            backend = mkp_optarg;
             break;
         case 'N':
-            nameserver = optarg;
+            nameserver = mkp_optarg;
             break;
         case 'n':
             test.set_options("no_collector", true);
@@ -41,8 +40,8 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= optind;
-    argv += optind;
+    argc -= mkp_optind;
+    argv += mkp_optind;
     if (argc != 1) {
         fprintf(stderr, USAGE, name.c_str());
         exit(1);

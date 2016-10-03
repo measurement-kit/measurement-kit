@@ -4,10 +4,9 @@
 #ifndef MEASUREMENT_KIT_COMMON_RUNNER_HPP
 #define MEASUREMENT_KIT_COMMON_RUNNER_HPP
 
-#include <atomic>
-#include <functional>
 #include <measurement_kit/common/reactor.hpp>
-#include <measurement_kit/common/var.hpp>
+
+#include <atomic>
 #include <string>
 #include <thread>
 
@@ -18,10 +17,10 @@ class NetTest;
 class Runner {
   public:
     Runner();
-    void run_test(Var<NetTest> test, std::function<void(Var<NetTest>)> func);
-    void break_loop();
+    void run_test(Var<NetTest> test, Callback<Var<NetTest>> func);
+    void break_loop_();
     bool empty();
-    void join();
+    void join_();
     ~Runner();
     static Var<Runner> global();
 

@@ -1,12 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-
 #ifndef MEASUREMENT_KIT_NET_ERROR_HPP
 #define MEASUREMENT_KIT_NET_ERROR_HPP
 
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/net/buffer.hpp>
+#include <measurement_kit/common.hpp>
 
 namespace mk {
 namespace net {

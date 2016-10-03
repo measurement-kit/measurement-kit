@@ -2,14 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <stdexcept>
-#include <new>
+#include "../common/check_connectivity.hpp"
 
 #include <event2/event.h>
 #include <event2/dns.h>
 
-#include "../common/check_connectivity.hpp"
-#include <measurement_kit/common/logger.hpp>
+#include <new>
 
 namespace mk {
 

@@ -1,12 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_NET_EVBUFFER_HPP
-#define SRC_NET_EVBUFFER_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NET_EVBUFFER_HPP
+#define SRC_LIBMEASUREMENT_KIT_NET_EVBUFFER_HPP
+
+#include <measurement_kit/common.hpp>
 
 #include <event2/buffer.h>
-#include <measurement_kit/common.hpp>
-#include <memory>
 
 namespace mk {
 namespace net {

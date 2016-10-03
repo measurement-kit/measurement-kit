@@ -4,7 +4,6 @@
 
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace ooni {
@@ -62,10 +61,12 @@ void OoniTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
         }
         report.write_entry(entry, [=](Error error) {
             if (error) {
-                cb(error);
-                return;
+                logger->warn("cannot write entry");
+                // Note: continue running measurements in this case because a
+                // transient collector failure MUST NOT stop running tests
+            } else {
+                logger->debug("net_test: written entry");
             }
-            logger->debug("net_test: written entry");
             reactor->call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
             });
