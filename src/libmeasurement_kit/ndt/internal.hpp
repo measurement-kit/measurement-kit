@@ -202,7 +202,7 @@ struct Params {
     int port = -1;
     double duration = 10.0;      // ignored by our implementation
     bool snaps_enabled = false;  // we always take snaps, never report them
-    double snaps_delay = 0.5;
+    double snaps_delay = 0.5;    // we ignore what is sent by the server
     double snaps_offeset = 0.0;  // ignored by our implementation
     int num_streams = 1;
 

@@ -44,8 +44,8 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                 logger->debug("ndt: resume coroutine");
                 logger->info("Starting download");
                 Var<MeasureSpeed> average(new MeasureSpeed);
-                Var<MeasureSpeed> snaps(new MeasureSpeed(params.snaps_delay));
-                Var<MeasureSpeed> fine_grained(new MeasureSpeed(1.0/30.0));
+                // Note: we parse but ignore the server's snap delay
+                Var<MeasureSpeed> snaps(new MeasureSpeed(0.5));
                 Var<size_t> num_completed{new size_t{0}};
                 size_t num_flows = txp_list.size();
                 log_speed(logger, "download-speed", params.num_streams,
@@ -59,7 +59,6 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                     txp->on_data([=](Buffer data) {
                         average->total += data.length();
                         snaps->total += data.length();
-                        fine_grained->total += data.length();
                         double ct = time_now();
                         // Note: we stop printing the speed when at least
                         // one connection has terminated the test
@@ -69,13 +68,6 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                                           params.num_streams, el, x);
                                 (*report_entry)["receiver_data"].push_back({el, x});
                             });
-                            fine_grained->maybe_speed(
-                                ct, [&](double el, double x) {
-                                    (*report_entry)[
-                                    "fine_grained_receiver_data"].push_back({
-                                        el, x
-                                    });
-                                });
                         }
                         // TODO: force close the connection after a given
                         // large amount of time has passed
