@@ -42,6 +42,7 @@
 /test/common/error_or
 /test/common/fmap
 /test/common/logger
+/test/common/measure_speed
 /test/common/parallel
 /test/common/poller
 /test/common/range
