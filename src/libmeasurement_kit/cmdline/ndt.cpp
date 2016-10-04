@@ -36,13 +36,13 @@ int main(const char *, int argc, char **argv) {
             test.set_options("port", mkp_optarg);
             break;
         case 'T':
-            if (strcmp(optarg, "download") == 0) {
+            if (strcmp(mkp_optarg, "download") == 0) {
                 test_suite |= MK_NDT_DOWNLOAD;
-            } else if (strcmp(optarg, "download-ext") == 0) {
+            } else if (strcmp(mkp_optarg, "download-ext") == 0) {
                 test_suite |= MK_NDT_DOWNLOAD_EXT;
-            } else if (strcmp(optarg, "none") == 0) {
+            } else if (strcmp(mkp_optarg, "none") == 0) {
                 test_suite = 0;
-            } else if (strcmp(optarg, "upload") == 0) {
+            } else if (strcmp(mkp_optarg, "upload") == 0) {
                 test_suite |= MK_NDT_UPLOAD;
             } else {
                 warn("invalid parameter for -T option: %s", mkp_optarg);
