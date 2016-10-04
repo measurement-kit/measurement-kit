@@ -23,7 +23,7 @@ int main(const char *, int argc, char **argv) {
 
     NdtTest test;
     int ch;
-    int test_suite = 0;
+    int test_suite = -1;
     while ((ch = mkp_getopt(argc, argv, "C:np:T:v")) != -1) {
         switch (ch) {
         case 'C':
@@ -62,7 +62,7 @@ int main(const char *, int argc, char **argv) {
 
     // If the user expressed preference force test suite, otherwise the
     // code would use the default test suite (download|upload).
-    if (test_suite != 0) {
+    if (test_suite != -1) {
         test.set_options("test_suite", test_suite);
     }
 
