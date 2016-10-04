@@ -16,8 +16,8 @@ namespace ndt {
 using namespace mk::ndt;
 
 static const char *kv_usage =
-    "usage: measurement_kit ndt [-nv] [-C /path/to/ca.bundle] [-p port]\n"
-    "                           [-T download|download-ext|none|upload] [host]\n";
+  "usage: measurement_kit ndt [-nv] [-C /path/to/ca.bundle] [-p port]\n"
+  "                           [-T download|download-ext|none|upload] [host]\n";
 
 int main(const char *, int argc, char **argv) {
 
