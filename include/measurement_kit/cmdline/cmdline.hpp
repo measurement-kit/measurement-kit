@@ -41,6 +41,10 @@ namespace oonireport {
 int main(const char *progname, int argc, char **argv);
 }
 
+namespace ooniresources {
+int main(const char *progname, int argc, char **argv);
+}
+
 namespace tcp_connect {
 int main(const char *progname, int argc, char **argv);
 }
