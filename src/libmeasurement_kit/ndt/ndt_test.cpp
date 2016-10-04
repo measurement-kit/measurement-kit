@@ -17,45 +17,6 @@ NdtTest::NdtTest(Settings s) : OoniTest("", s) {
     test_version = "0.0.3";
 }
 
-static void log_summary(Var<Logger> logger, Var<Entry> entry) {
-    try {
-        nlohmann::json root{
-            {"type", "summary"},
-        };
-        root["failure"] = (*entry)["failure"];
-        for (auto measurement: (*entry)["test_s2c"]) {
-            nlohmann::json child;
-            child["num_streams"] = measurement["params"]["num_streams"];
-            child["connect_times"] = measurement["connect_times"];
-            child["min_rtt"] = {
-                measurement["web100_data"]["MinRTT"],
-                "ms"
-            };
-            std::vector<double> speeds;
-            for (auto e: measurement["receiver_data"]) {
-                speeds.push_back(e[1]);
-            }
-            child["median_speed"] = {
-                percentile(speeds, 0.5),
-                "kbit/s"
-            };
-            child["10_percentile_speed"] = {
-                percentile(speeds, 0.1),
-                "kbit/s"
-            };
-            child["90_percentile_speed"] = {
-                percentile(speeds, 0.9),
-                "kbit/s"
-            };
-            root["test_s2c"].push_back(child);
-        }
-        logger->log(MK_LOG_INFO | MK_LOG_JSON, "%s", root.dump().c_str());
-    } catch (const std::exception &e) {
-        logger->warn("could not write NDT test summary: %s", e.what());
-        /* suppress */ ;
-    }
-}
-
 void NdtTest::main(std::string, Settings settings, Callback<Entry> cb) {
     Var<Entry> entry(new Entry);
     (*entry)["failure"] = nullptr;
@@ -65,7 +26,6 @@ void NdtTest::main(std::string, Settings settings, Callback<Entry> cb) {
         if (error) {
             (*entry)["failure"] = error.as_ooni_error();
         }
-        log_summary(logger, entry);
         // XXX The callback should probably take a Var<Entry>
         cb(*entry);
     }, settings, logger, reactor);
