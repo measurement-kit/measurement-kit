@@ -2,7 +2,7 @@
 set -e
 
 autogen_get_geoip() {
-    echo "* Fetching geoip database"
+    echo "* Fetching geoip databases"
     base=https://download.maxmind.com/download/geoip/database
     if [ ! -f "GeoIP.dat" ]; then
         wget $base/GeoLiteCountry/GeoIP.dat.gz -O GeoIP.dat.gz

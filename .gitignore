@@ -31,10 +31,12 @@
 /GeoLiteCity.dat
 /build/android/jni/conf
 /build/android/jni/spec
+/citizenlab-test-lists.*.csv
 /example/net/discard
 /example/net/listen
 /example/net/transport
 /include.am
+/maxmind-geoip.*.dat*
 /measurement_kit
 /test/common/continuation
 /test/common/delegate
@@ -42,6 +44,7 @@
 /test/common/error_or
 /test/common/fmap
 /test/common/logger
+/test/common/measure_speed
 /test/common/parallel
 /test/common/poller
 /test/common/range

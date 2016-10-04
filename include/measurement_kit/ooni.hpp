@@ -7,6 +7,8 @@
 #include <measurement_kit/ooni/http_invalid_request_line.hpp>
 #include <measurement_kit/ooni/ooni_reporter.hpp>
 #include <measurement_kit/ooni/ooni_test.hpp>
+#include <measurement_kit/ooni/resources.hpp>
+#include <measurement_kit/ooni/scriptable.hpp>
 #include <measurement_kit/ooni/tcp_connect.hpp>
 #include <measurement_kit/ooni/templates.hpp>
 #include <measurement_kit/ooni/utils.hpp>

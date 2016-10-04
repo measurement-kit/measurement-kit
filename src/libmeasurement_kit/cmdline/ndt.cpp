@@ -16,13 +16,14 @@ namespace ndt {
 using namespace mk::ndt;
 
 static const char *kv_usage =
-    "usage: measurement_kit ndt [-nv] [-C /path/to/ca.bundle] [-p port]\n"
-    "                           [-T download|none|upload] [host]\n";
+  "usage: measurement_kit ndt [-nv] [-C /path/to/ca.bundle] [-p port]\n"
+  "                           [-T download|download-ext|none|upload] [host]\n";
 
 int main(const char *, int argc, char **argv) {
 
     NdtTest test;
     int ch;
+    int test_suite = 0;
     while ((ch = mkp_getopt(argc, argv, "C:np:T:v")) != -1) {
         switch (ch) {
         case 'C':
@@ -36,11 +37,13 @@ int main(const char *, int argc, char **argv) {
             break;
         case 'T':
             if (strcmp(mkp_optarg, "download") == 0) {
-                test.set_options("test_suite", MK_NDT_DOWNLOAD);
+                test_suite |= MK_NDT_DOWNLOAD;
+            } else if (strcmp(mkp_optarg, "download-ext") == 0) {
+                test_suite |= MK_NDT_DOWNLOAD_EXT;
             } else if (strcmp(mkp_optarg, "none") == 0) {
-                test.set_options("test_suite", 0);
+                test_suite = 0;
             } else if (strcmp(mkp_optarg, "upload") == 0) {
-                test.set_options("test_suite", MK_NDT_UPLOAD);
+                test_suite |= MK_NDT_UPLOAD;
             } else {
                 warn("invalid parameter for -T option: %s", mkp_optarg);
                 exit(1);
@@ -56,6 +59,12 @@ int main(const char *, int argc, char **argv) {
     }
     argc -= mkp_optind;
     argv += mkp_optind;
+
+    // If the user expressed preference force test suite, otherwise the
+    // code would use the default test suite (download|upload).
+    if (test_suite != 0) {
+        test.set_options("test_suite", test_suite);
+    }
 
     if (argc > 1) {
         std::cout << kv_usage;

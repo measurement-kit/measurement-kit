@@ -57,7 +57,7 @@ void OoniTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
 
         report.fill_entry(entry);
         if (entry_cb) {
-            entry_cb(entry.dump());
+            entry_cb(entry.dump(4));
         }
         report.write_entry(entry, [=](Error error) {
             if (error) {

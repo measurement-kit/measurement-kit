@@ -4,4 +4,5 @@
 #include <measurement_kit/ndt/error.hpp>
 #include <measurement_kit/ndt/ndt_test.hpp>
 #include <measurement_kit/ndt/run.hpp>
+#include <measurement_kit/ndt/scriptable.hpp>
 #endif
