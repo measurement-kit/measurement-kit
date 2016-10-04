@@ -14,7 +14,7 @@ using namespace mk::report;
 NdtTest::NdtTest(Settings s) : OoniTest("", s) {
     options["save_real_probe_ip"] = true;
     test_name = "ndt";
-    test_version = "0.0.3";
+    test_version = "0.0.4";
 }
 
 void NdtTest::main(std::string, Settings settings, Callback<Entry> cb) {
