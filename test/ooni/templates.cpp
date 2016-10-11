@@ -18,11 +18,11 @@ TEST_CASE("dns query template works as expected") {
         Var<Entry> entry(new Entry);
         templates::dns_query(
             entry, "A", "IN", "nexa.polito.it", "8.8.8.8:53",
-            [=](Error err, dns::Message) {
+            [=](Error err, Var<dns::Message>) {
                 REQUIRE(!err);
                 templates::dns_query(
                     entry, "A", "IN", "nexa.polito.it", "8.8.8.1:53",
-                    [=](Error err, dns::Message) {
+                    [=](Error err, Var<dns::Message>) {
                         REQUIRE(!!err);
                         nlohmann::json answers;
                         nlohmann::json root;
