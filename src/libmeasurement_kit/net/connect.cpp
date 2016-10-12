@@ -95,9 +95,8 @@ void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
                [=](Error err, Var<dns::Message> resp) {
                    logger->debug("resolve_hostname: ipv4... done");
                    result->ipv4_err = err;
-                   if (resp != nullptr)
-                       result->ipv4_reply = *resp;
                    if (!err) {
+                       result->ipv4_reply = *resp;
                        for (dns::Answer answer : resp->answers) {
                            result->addresses.push_back(answer.ipv4);
                        }
@@ -108,9 +107,8 @@ void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
                        [=](Error err, Var<dns::Message> resp) {
                            logger->debug("resolve_hostname: ipv6... done");
                            result->ipv6_err = err;
-                           if (resp != nullptr)
-                              result->ipv6_reply = *resp;
                            if (!err) {
+                               result->ipv6_reply = *resp;
                                for (dns::Answer answer : resp->answers) {
                                    result->addresses.push_back(answer.ipv6);
                                }
