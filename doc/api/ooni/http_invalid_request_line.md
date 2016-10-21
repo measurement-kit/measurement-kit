@@ -36,7 +36,7 @@ This test does not require an input file.
 mk::ooni::HttpInvalidRequestLine()
     .set_options("backend", "http://127.0.0.1/")
     .set_input_filepath("test/fixtures/hosts.txt")
-    .set_output_filepath("results.json")
+    .set_output_filepath("results.njson")
     .increase_verbosity()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
@@ -48,7 +48,7 @@ mk::ooni::HttpInvalidRequestLine()
 mk::ooni::HttpInvalidRequestLine()
     .set_options("backend", "http://127.0.0.1/")
     .set_input_filepath("test/fixtures/hosts.txt")
-    .set_output_filepath("results.json")
+    .set_output_filepath("results.njson")
     .increase_verbosity()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
