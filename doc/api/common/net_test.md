@@ -67,7 +67,7 @@ These attributes could either be set directly as in
 ```C++
     FooTest test;
     test.options["foo"] = false;
-    test.output_filepath = "/tmp/file.json";
+    test.output_filepath = "/tmp/file.njson";
 ```
 
 Or they could be set using setters leading to a domain-specific-language
@@ -76,7 +76,7 @@ style of initialization of tests, e.g.:
 ```C++
     FooTest test = FooTest()
         .set_options("foo", false)
-        .set_output_filepath("/tmp/file.json");
+        .set_output_filepath("/tmp/file.njson");
 ```
 
 The domain-specific-language initialization style could be combined with the
@@ -86,7 +86,7 @@ in a very compact and declarative way:
 ```C++
     FooTest()
         .set_options("foo", false)
-        .set_options("/tmp/file.json")
+        .set_options("/tmp/file.njson")
         .run();
 ```
 
@@ -99,7 +99,7 @@ callback; that is:
 ```C++
     FooTest()
         .set_options("foo", false)
-        .set_options("/tmp/file.json")
+        .set_options("/tmp/file.njson")
         .run([=]() {
             shared_resource.lock();
             // Do something with shared resource
@@ -127,7 +127,7 @@ level API, comprised by the `begin()` and `end()` methods; e.g.:
 void execute_with(Var<Reactor> reactor, Callback<> cb) {
     Var<NetTest> test(new FooTest);
     test->options["foo"] = false;
-    test->output_filepath = "/tmp/file.json";
+    test->output_filepath = "/tmp/file.njson";
     test->reactor = reactor;
     test->begin([=]() {
         test->end([=]() {
@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
 
     FooTest test;
     test.options["foo"] = false;
-    test.output_filepath = "/tmp/file.json";
+    test.output_filepath = "/tmp/file.njson";
 
     loop_with_initial_event([&test]() {
         test.begin([&test]() {

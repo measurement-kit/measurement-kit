@@ -184,7 +184,7 @@ std::string OoniTest::generate_output_filepath() {
         char timestamp[100];
         strftime(timestamp, sizeof(timestamp), "%FT%H%M%SZ", &test_start_time);
         filename << "report-" << test_name << "-";
-        filename << timestamp << "-" << idx << ".json";
+        filename << timestamp << "-" << idx << ".njson";
 
         std::ifstream output_file(filename.str().c_str());
         // If a file called this way already exists we increment the counter
