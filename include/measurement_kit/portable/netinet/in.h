@@ -4,7 +4,9 @@
 #ifndef MEASUREMENT_KIT_PORTABLE_NETINET_IN_H
 #define MEASUREMENT_KIT_PORTABLE_NETINET_IN_H
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <measurement_kit/portable/_windows.h>
+#else
 #include <netinet/in.h>
 #endif
 

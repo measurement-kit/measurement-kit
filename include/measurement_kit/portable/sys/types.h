@@ -4,7 +4,9 @@
 #ifndef MEASUREMENT_KIT_PORTABLE_SYS_TYPES_H
 #define MEASUREMENT_KIT_PORTABLE_SYS_TYPES_H
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <measurement_kit/portable/_windows.h>
+#else
 #include <sys/types.h>
 #endif
 

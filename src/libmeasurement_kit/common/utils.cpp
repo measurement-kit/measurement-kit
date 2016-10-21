@@ -30,7 +30,9 @@ double time_now() {
 void utc_time_now(struct tm *utc) {
     time_t tv;
     tv = time(nullptr);
-    gmtime_r(&tv, utc);
+    if (mkp_gmtime_r(&tv, utc) == nullptr) {
+        throw std::runtime_error("mkp_gmtime_r() failed");
+    }
 }
 
 ErrorOr<std::string> timestamp(const struct tm *t) {
@@ -45,8 +47,8 @@ timeval *timeval_init(timeval *tv, double delta) {
     if (delta < 0) {
         return nullptr;
     }
-    tv->tv_sec = (time_t)floor(delta);
-    tv->tv_usec = (suseconds_t)((delta - floor(delta)) * 1000000);
+    tv->tv_sec = floor(delta);
+    tv->tv_usec = ((delta - floor(delta)) * 1000000);
     return tv;
 }
 
@@ -277,6 +279,10 @@ double percentile(std::vector<double> v, double percent) {
     auto val0 = v[int(pivot_floor)] * (pivot_ceil - pivot);
     auto val1 = v[int(pivot_ceil)] * (pivot - pivot_floor);
     return val0 + val1;
+}
+
+int strcasecmp_wrapper(const char *s, const char *r) {
+    return mkp_strcasecmp(s, r);
 }
 
 } // namespace mk
