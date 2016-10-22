@@ -16,12 +16,14 @@ void dns_injection(std::string input, Settings options, Callback<Var<Entry>> cb,
     Var<Entry> entry(new Entry);
     (*entry)["injected"] = nullptr;
     templates::dns_query(entry, "A", "IN", input, options["backend"],
-                         [=](Error, Var<dns::Message> message) {
+                         [=](Error err, Var<dns::Message> message) {
                              logger->debug("dns_injection: got response");
-                             if (message->error_code == DNS_ERR_NONE) {
-                                 (*entry)["injected"] = true;
-                             } else {
-                                 (*entry)["injected"] = false;
+                             if (!err) {
+                                 if (message->error_code == DNS_ERR_NONE) {
+                                     (*entry)["injected"] = true;
+                                 } else {
+                                     (*entry)["injected"] = false;
+                                 }
                              }
                              cb(entry);
                          },
