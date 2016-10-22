@@ -22,8 +22,10 @@ void dns_injection(std::string input, Settings options, Callback<Var<Entry>> cb,
                                  if (message->error_code == DNS_ERR_NONE) {
                                      (*entry)["injected"] = true;
                                  } else {
-                                     (*entry)["injected"] = false;
+                                    // This should never happen
                                  }
+                             } else {
+                                 (*entry)["injected"] = false;
                              }
                              cb(entry);
                          },
