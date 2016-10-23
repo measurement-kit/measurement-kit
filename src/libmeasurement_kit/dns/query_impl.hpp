@@ -215,7 +215,7 @@ template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
         MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
 void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
         Callback<Error, Message> cb, Settings settings,
-        Var<Reactor> reactor) {
+        Var<Reactor> reactor, Var<Logger> logger) {
 
     Message message;
     Query query;
@@ -274,6 +274,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     // variable to keep track of cancelled requests.
     //
     if (dns_type == QueryTypeId::A) {
+        logger->debug("dns query: IN A %s", name.c_str());
         QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_ipv4(base, name.c_str(), DNS_QUERY_NO_SEARCH,
                     handle_resolve,
@@ -285,6 +286,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     }
 
     if (dns_type == QueryTypeId::AAAA) {
+        logger->debug("dns query: IN AAAA %s", name.c_str());
         QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_ipv6(base, name.c_str(), DNS_QUERY_NO_SEARCH,
                     handle_resolve,
@@ -296,6 +298,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     }
 
     if (dns_type == QueryTypeId::REVERSE_A) {
+        logger->debug("dns query: IN REVERSE_A %s", name.c_str());
         in_addr netaddr;
         if (inet_pton(AF_INET, name.c_str(), &netaddr) != 1) {
             evdns_base_free(base, 1);
@@ -314,6 +317,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     }
 
     if (dns_type == QueryTypeId::REVERSE_AAAA) {
+        logger->debug("dns query: IN REVERSE_AAAA %s", name.c_str());
         in6_addr netaddr;
         if (inet_pton(AF_INET6, name.c_str(), &netaddr) != 1) {
             evdns_base_free(base, 1);
