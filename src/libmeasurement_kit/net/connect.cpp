@@ -236,7 +236,7 @@ void connect(std::string address, int port,
         return;
     }
     if (settings.find("net/timeout") == settings.end()) {
-        settings["net/timeout"] = 5.0;
+        settings["net/timeout"] = 30.0;
     }
     double timeout = settings["net/timeout"].as<double>();
     connect_logic(

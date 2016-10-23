@@ -339,8 +339,10 @@ static void compare_control_experiment(
       std::string blocking = (*entry)["blocking"];
       logger->info("web_connectivity: BLOCKING detected due to: %s on %s",
                    blocking.c_str(), input.c_str());
+      (*entry)["accessible"] = false;
     } else {
       logger->info("web_connectivity: no blocking detected");
+      (*entry)["accessible"] = true;
     }
 }
 
