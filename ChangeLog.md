@@ -1,3 +1,9 @@
+# MeasurementKit 0.3.3 [2016-10-23]
+
+- `connect.cpp`: increase default net/timeout (#872)
+- `web_connectivity`: set the accessible key (#871)
+- Make `no_collector`/`no_file_report` really usable (#859)
+
 # MeasurementKit 0.3.2 [2016-10-03]
 
 - `ooni_test`: continue even if we cannot submit an entry
