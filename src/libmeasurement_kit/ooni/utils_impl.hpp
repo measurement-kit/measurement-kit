@@ -57,7 +57,7 @@ void resolver_lookup_impl(Callback<Error, std::string> callback,
           callback(error, "");
           return;
         }
-      }, settings, reactor);
+      }, settings, reactor, logger);
 }
 
 } // namespace ooni
