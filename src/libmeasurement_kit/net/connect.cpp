@@ -97,24 +97,24 @@ void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
     logger->debug("resolve_hostname: ipv4...");
 
     dns::query("IN", "A", hostname,
-               [=](Error err, dns::Message resp) {
+               [=](Error err, Var<dns::Message> resp) {
                    logger->debug("resolve_hostname: ipv4... done");
                    result->ipv4_err = err;
-                   result->ipv4_reply = resp;
                    if (!err) {
-                       for (dns::Answer answer : resp.answers) {
+                       result->ipv4_reply = *resp;
+                       for (dns::Answer answer : resp->answers) {
                            result->addresses.push_back(answer.ipv4);
                        }
                    }
                    logger->debug("resolve_hostname: ipv6...");
                    dns::query(
                        "IN", "AAAA", hostname,
-                       [=](Error err, dns::Message resp) {
+                       [=](Error err, Var<dns::Message> resp) {
                            logger->debug("resolve_hostname: ipv6... done");
                            result->ipv6_err = err;
-                           result->ipv6_reply = resp;
                            if (!err) {
-                               for (dns::Answer answer : resp.answers) {
+                               result->ipv6_reply = *resp;
+                               for (dns::Answer answer : resp->answers) {
                                    result->addresses.push_back(answer.ipv6);
                                }
                            }
@@ -241,7 +241,7 @@ void connect(std::string address, int port,
         return;
     }
     if (settings.find("net/timeout") == settings.end()) {
-        settings["net/timeout"] = 5.0;
+        settings["net/timeout"] = 30.0;
     }
     double timeout = settings["net/timeout"].as<double>();
     connect_logic(

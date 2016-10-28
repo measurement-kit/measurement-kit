@@ -33,7 +33,7 @@ Also, this test requires an input file.
 mk::ooni::TcpConnect()
     .set_options("port", 80)
     .set_input_filepath("test/fixtures/hosts.txt")
-    .set_output_filepath("results.json")
+    .set_output_filepath("results.njson")
     .increase_verbosity()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks
@@ -45,7 +45,7 @@ mk::ooni::TcpConnect()
 mk::ooni::TcpConnect()
     .set_options("port", 80)
     .set_input_filepath("test/fixtures/hosts.txt")
-    .set_output_filepath("results.json")
+    .set_output_filepath("results.njson")
     .increase_verbosity()
     .on_log([](const char *s) {
         // If needed, acquire the proper locks

@@ -203,8 +203,9 @@ class Message {
 
 /// Perform a single DNS query
 void query(QueryClass dns_class, QueryType dns_type, std::string name,
-           Callback<Error, Message> func, Settings settings = {},
-           Var<Reactor> reactor = Reactor::global());
+           Callback<Error, Var<Message>> func, Settings settings = {},
+           Var<Reactor> reactor = Reactor::global(),
+           Var<Logger> logger = Logger::global());
 
 } // namespace dns
 } // namespace mk
