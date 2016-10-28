@@ -23,7 +23,8 @@ int main(const char *, int argc, char **argv) {
 
     NdtTest test;
     int ch;
-    int test_suite = -1;
+    int test_suite = 0;
+    int use_default_test_suite = true;
     while ((ch = mkp_getopt(argc, argv, "C:np:T:v")) != -1) {
         switch (ch) {
         case 'C':
@@ -36,6 +37,7 @@ int main(const char *, int argc, char **argv) {
             test.set_options("port", mkp_optarg);
             break;
         case 'T':
+            use_default_test_suite = false;
             if (strcmp(mkp_optarg, "download") == 0) {
                 test_suite |= MK_NDT_DOWNLOAD;
             } else if (strcmp(mkp_optarg, "download-ext") == 0) {
@@ -62,7 +64,7 @@ int main(const char *, int argc, char **argv) {
 
     // If the user expressed preference force test suite, otherwise the
     // code would use the default test suite (download|upload).
-    if (test_suite != -1) {
+    if (!use_default_test_suite) {
         test.set_options("test_suite", test_suite);
     }
 
