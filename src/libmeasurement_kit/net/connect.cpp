@@ -2,10 +2,15 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#ifdef HAVE_CONFIG_H
+#include "config.h" // For MK_CA_BUNDLE
+#endif
+
 #include "../net/connect_impl.hpp"
 #include "../net/emitter.hpp"
 #include "../net/socks5.hpp"
 #include "../net/ssl-context.hpp"
+
 #include <cassert>
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/dns.hpp>
@@ -248,17 +253,32 @@ void connect(std::string address, int port,
                 return;
             }
             if (settings.find("net/ssl") != settings.end()) {
-                Var<SslContext> ssl_context;
+                std::string cbp
+#ifdef MK_CA_BUNDLE
+                    = MK_CA_BUNDLE
+#endif
+                ;
                 if (settings.find("net/ca_bundle_path") != settings.end()) {
-                    logger->debug("ssl: using custom ca_bundle_path");
-                    ssl_context = Var<SslContext>(
-                        new SslContext(settings.at("net/ca_bundle_path")));
-                } else {
-                    logger->debug("ssl: using default context");
-                    ssl_context = SslContext::global();
+                    cbp = settings.at("net/ca_bundle_path");
                 }
-                connect_ssl(r->connected_bev,
-                            ssl_context->get_client_ssl(address), address,
+                logger->debug("ca_bundle_path: %s", cbp.c_str());
+                ErrorOr<Var<SslContext>> ssl_context = SslContext::make(cbp);
+                if (!ssl_context) {
+                    Error err = ssl_context.as_error();
+                    err.context = r;
+                    bufferevent_free(r->connected_bev);
+                    callback(err, nullptr);
+                    return;
+                }
+                ErrorOr<SSL *> cssl = (*ssl_context)->get_client_ssl(address);
+                if (!cssl) {
+                    Error err = cssl.as_error();
+                    err.context = r;
+                    bufferevent_free(r->connected_bev);
+                    callback(err, nullptr);
+                    return;
+                }
+                connect_ssl(r->connected_bev, *cssl, address,
                             [r, callback, timeout, ssl_context, reactor,
                              logger](Error err, bufferevent *bev) {
                                 if (err) {
