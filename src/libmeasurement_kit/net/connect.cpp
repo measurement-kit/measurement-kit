@@ -2,10 +2,15 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#ifdef HAVE_CONFIG_H
+#include "config.h" // For MK_CA_BUNDLE
+#endif
+
 #include "../net/connect_impl.hpp"
 #include "../net/emitter.hpp"
 #include "../net/socks5.hpp"
 #include "../net/ssl-context.hpp"
+
 #include <cassert>
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/dns.hpp>
@@ -93,24 +98,24 @@ void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
     logger->debug("resolve_hostname: ipv4...");
 
     dns::query("IN", "A", hostname,
-               [=](Error err, dns::Message resp) {
+               [=](Error err, Var<dns::Message> resp) {
                    logger->debug("resolve_hostname: ipv4... done");
                    result->ipv4_err = err;
-                   result->ipv4_reply = resp;
                    if (!err) {
-                       for (dns::Answer answer : resp.answers) {
+                       result->ipv4_reply = *resp;
+                       for (dns::Answer answer : resp->answers) {
                            result->addresses.push_back(answer.ipv4);
                        }
                    }
                    logger->debug("resolve_hostname: ipv6...");
                    dns::query(
                        "IN", "AAAA", hostname,
-                       [=](Error err, dns::Message resp) {
+                       [=](Error err, Var<dns::Message> resp) {
                            logger->debug("resolve_hostname: ipv6... done");
                            result->ipv6_err = err;
-                           result->ipv6_reply = resp;
                            if (!err) {
-                               for (dns::Answer answer : resp.answers) {
+                               result->ipv6_reply = *resp;
+                               for (dns::Answer answer : resp->answers) {
                                    result->addresses.push_back(answer.ipv6);
                                }
                            }
@@ -237,7 +242,7 @@ void connect(std::string address, int port,
         return;
     }
     if (settings.find("net/timeout") == settings.end()) {
-        settings["net/timeout"] = 5.0;
+        settings["net/timeout"] = 30.0;
     }
     double timeout = settings["net/timeout"].as<double>();
     connect_logic(
@@ -249,17 +254,32 @@ void connect(std::string address, int port,
                 return;
             }
             if (settings.find("net/ssl") != settings.end()) {
-                Var<SslContext> ssl_context;
+                std::string cbp
+#ifdef MK_CA_BUNDLE
+                    = MK_CA_BUNDLE
+#endif
+                ;
                 if (settings.find("net/ca_bundle_path") != settings.end()) {
-                    logger->debug("ssl: using custom ca_bundle_path");
-                    ssl_context = Var<SslContext>(
-                        new SslContext(settings.at("net/ca_bundle_path")));
-                } else {
-                    logger->debug("ssl: using default context");
-                    ssl_context = SslContext::global();
+                    cbp = settings.at("net/ca_bundle_path");
                 }
-                connect_ssl(r->connected_bev,
-                            ssl_context->get_client_ssl(address), address,
+                logger->debug("ca_bundle_path: %s", cbp.c_str());
+                ErrorOr<Var<SslContext>> ssl_context = SslContext::make(cbp);
+                if (!ssl_context) {
+                    Error err = ssl_context.as_error();
+                    err.context = r;
+                    bufferevent_free(r->connected_bev);
+                    callback(err, nullptr);
+                    return;
+                }
+                ErrorOr<SSL *> cssl = (*ssl_context)->get_client_ssl(address);
+                if (!cssl) {
+                    Error err = cssl.as_error();
+                    err.context = r;
+                    bufferevent_free(r->connected_bev);
+                    callback(err, nullptr);
+                    return;
+                }
+                connect_ssl(r->connected_bev, *cssl, address,
                             [r, callback, timeout, ssl_context, reactor,
                              logger](Error err, bufferevent *bev) {
                                 if (err) {

@@ -436,7 +436,7 @@ TEST_CASE("submit_report() deals with collector_create_report error") {
 
 TEST_CASE("The collector client works as expected") {
     loop_with_initial_event([=]() {
-        collector::submit_report("test/fixtures/report.json",
+        collector::submit_report("test/fixtures/report.njson",
                                  collector::testing_collector_url(),
                                  [=](Error err) {
                                      REQUIRE(err == NoError());

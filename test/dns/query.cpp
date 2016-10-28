@@ -131,23 +131,23 @@ TEST_CASE("throw error with ntop conversion error") {
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
     query_impl<::evdns_base_free, null_resolver>(
         "IN", "A", "www.google.com",
-        [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global());
+        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
     query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
         "IN", "AAAA", "github.com",
-        [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global());
+        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
     query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, null_resolver_reverse>(
         "IN", "REVERSE_A", "8.8.8.8",
-        [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global());
+        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
@@ -155,8 +155,9 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 null_resolver_reverse>(
         "IN", "REVERSE_AAAA", "::1",
-        [](Error e, Message) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global());
+
+        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query deals with inet_pton returning 0") {
@@ -164,32 +165,33 @@ TEST_CASE("dns::query deals with inet_pton returning 0") {
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_A", "8.8.8.8",
-        [](Error e, Message) { REQUIRE(e == InvalidIPv4AddressError()); }, {},
-        Reactor::global());
+
+        [](Error e, Var<Message>) { REQUIRE(e == InvalidIPv4AddressError()); }, {},
+        Reactor::global(), Logger::global());
 
     query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_AAAA", "::1",
-        [](Error e, Message) { REQUIRE(e == InvalidIPv6AddressError()); }, {},
-        Reactor::global());
+        [](Error e, Var<Message>) { REQUIRE(e == InvalidIPv6AddressError()); }, {},
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query raises if the query is unsupported") {
     query("IN", "MX", "www.neubot.org",
-          [](Error e, Message) { REQUIRE(e == UnsupportedTypeError()); });
+          [](Error e, Var<Message>) { REQUIRE(e == UnsupportedTypeError()); });
 }
 
 TEST_CASE("dns::query raises if the class is unsupported") {
     query("CS", "A", "www.neubot.org",
-          [](Error e, Message) { REQUIRE(e == UnsupportedClassError()); });
+          [](Error e, Var<Message>) { REQUIRE(e == UnsupportedClassError()); });
 }
 
 TEST_CASE("dns::query deals with invalid PTR name") {
     // This should be enough to see the failure, more tests for the
     // parser for PTR addresses are in test/common/utils.cpp
     query("IN", "PTR", "xx",
-          [](Error e, Message) { REQUIRE(e == InvalidNameForPTRError()); });
+          [](Error e, Var<Message>) { REQUIRE(e == InvalidNameForPTRError()); });
 }
 
 #ifdef ENABLE_INTEGRATION_TESTS
@@ -208,53 +210,53 @@ TEST_CASE("The system resolver works as expected") {
     //
 
     loop_with_initial_event_and_connectivity([]() {
-        query("IN", "A", "www.neubot.org", [](Error e, Message message) {
+        query("IN", "A", "www.neubot.org", [](Error e, Var<Message> message) {
             REQUIRE(!e);
-            REQUIRE(message.error_code == DNS_ERR_NONE);
-            REQUIRE(message.answers.size() == 1);
-            REQUIRE(message.answers[0].ipv4 == "130.192.16.172");
-            REQUIRE(message.rtt > 0.0);
-            REQUIRE(message.answers[0].ttl > 0);
+            REQUIRE(message->error_code == DNS_ERR_NONE);
+            REQUIRE(message->answers.size() == 1);
+            REQUIRE(message->answers[0].ipv4 == "130.192.16.172");
+            REQUIRE(message->rtt > 0.0);
+            REQUIRE(message->answers[0].ttl > 0);
             break_loop();
         });
     });
 
     loop_with_initial_event_and_connectivity([]() {
         query(
-            "IN", "REVERSE_A", "130.192.16.172", [](Error e, Message message) {
+            "IN", "REVERSE_A", "130.192.16.172", [](Error e, Var<Message> message) {
                 REQUIRE(!e);
-                REQUIRE(message.error_code == DNS_ERR_NONE);
-                REQUIRE(message.answers.size() == 1);
-                REQUIRE(message.answers[0].hostname == "server-nexa.polito.it");
-                REQUIRE(message.rtt > 0.0);
-                REQUIRE(message.answers[0].ttl > 0);
+                REQUIRE(message->error_code == DNS_ERR_NONE);
+                REQUIRE(message->answers.size() == 1);
+                REQUIRE(message->answers[0].hostname == "server-nexa.polito.it");
+                REQUIRE(message->rtt > 0.0);
+                REQUIRE(message->answers[0].ttl > 0);
                 break_loop();
             });
     });
 
     loop_with_initial_event_and_connectivity([]() {
         query("IN", "PTR", "172.16.192.130.in-addr.arpa.", [](Error e,
-                                                              Message message) {
+                                                             Var<Message> message) {
             REQUIRE(!e);
-            REQUIRE(message.error_code == DNS_ERR_NONE);
-            REQUIRE(message.answers.size() == 1);
-            REQUIRE(message.answers[0].hostname == "server-nexa.polito.it");
-            REQUIRE(message.rtt > 0.0);
-            REQUIRE(message.answers[0].ttl > 0);
+            REQUIRE(message->error_code == DNS_ERR_NONE);
+            REQUIRE(message->answers.size() == 1);
+            REQUIRE(message->answers[0].hostname == "server-nexa.polito.it");
+            REQUIRE(message->rtt > 0.0);
+            REQUIRE(message->answers[0].ttl > 0);
             break_loop();
         });
     });
 
     loop_with_initial_event_and_connectivity([]() {
         query("IN", "AAAA", "ooni.torproject.org",
-              [](Error e, Message message) {
+              [](Error e, Var<Message> message) {
                   REQUIRE(!e);
-                  REQUIRE(message.error_code == DNS_ERR_NONE);
-                  REQUIRE(message.answers.size() > 0);
-                  REQUIRE(message.rtt > 0.0);
-                  REQUIRE(message.answers[0].ttl > 0);
+                  REQUIRE(message->error_code == DNS_ERR_NONE);
+                  REQUIRE(message->answers.size() > 0);
+                  REQUIRE(message->rtt > 0.0);
+                  REQUIRE(message->answers[0].ttl > 0);
                   auto found = false;
-                  for (auto answer : message.answers) {
+                  for (auto answer : message->answers) {
                       if (answer.ipv6 == "2001:858:2:2:aabb::563b:1e28" or
                           answer.ipv6 == "2001:858:2:2:aabb:0:563b:1e28") {
                           found = true;
@@ -267,13 +269,13 @@ TEST_CASE("The system resolver works as expected") {
 
     loop_with_initial_event_and_connectivity([]() {
         query("IN", "REVERSE_AAAA", "2001:858:2:2:aabb::563b:1e28",
-              [](Error e, Message message) {
+              [](Error e, Var<Message> message) {
                   REQUIRE(!e);
-                  REQUIRE(message.error_code == DNS_ERR_NONE);
-                  REQUIRE(message.answers.size() == 1);
-                  REQUIRE(message.answers[0].hostname == "nova.torproject.org");
-                  REQUIRE(message.rtt > 0.0);
-                  REQUIRE(message.answers[0].ttl > 0);
+                  REQUIRE(message->error_code == DNS_ERR_NONE);
+                  REQUIRE(message->answers.size() == 1);
+                  REQUIRE(message->answers[0].hostname == "nova.torproject.org");
+                  REQUIRE(message->rtt > 0.0);
+                  REQUIRE(message->answers[0].ttl > 0);
                   break_loop();
               });
     });
@@ -281,13 +283,13 @@ TEST_CASE("The system resolver works as expected") {
     loop_with_initial_event_and_connectivity([]() {
         query("IN", "PTR", "8.2.e.1.b.3.6.5.0.0.0.0.b.b.a.a.2.0.0.0.2.0.0.0.8."
                            "5.8.0.1.0.0.2.ip6.arpa",
-              [](Error e, Message message) {
+              [](Error e, Var<Message> message) {
                   REQUIRE(!e);
-                  REQUIRE(message.error_code == DNS_ERR_NONE);
-                  REQUIRE(message.answers.size() == 1);
-                  REQUIRE(message.answers[0].hostname == "nova.torproject.org");
-                  REQUIRE(message.rtt > 0.0);
-                  REQUIRE(message.answers[0].ttl > 0);
+                  REQUIRE(message->error_code == DNS_ERR_NONE);
+                  REQUIRE(message->answers.size() == 1);
+                  REQUIRE(message->answers[0].hostname == "nova.torproject.org");
+                  REQUIRE(message->rtt > 0.0);
+                  REQUIRE(message->answers[0].ttl > 0);
                   break_loop();
               });
     });

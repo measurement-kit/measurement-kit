@@ -18,9 +18,10 @@ extern "C" {
 }
 
 void query (QueryClass dns_class, QueryType dns_type,
-        std::string name, Callback<Error, Message> cb,
-        Settings settings, Var<Reactor> reactor) {
-    query_impl (dns_class, dns_type, name, cb, settings, reactor);
+        std::string name, Callback<Error, Var<Message>> cb,
+        Settings settings, Var<Reactor> reactor,
+        Var<Logger> logger) {
+    query_impl (dns_class, dns_type, name, cb, settings, reactor, logger);
 }
 
 } // namespace dns

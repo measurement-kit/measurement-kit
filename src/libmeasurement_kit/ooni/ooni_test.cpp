@@ -165,10 +165,10 @@ void OoniTest::open_report(Callback<Error> callback) {
     if (output_filepath == "") {
         output_filepath = generate_output_filepath();
     }
-    if (options.find("no_file_report") == options.end()) {
+    if (!options.get("no_file_report", false)) {
         report.add_reporter(FileReporter::make(output_filepath));
     }
-    if (options.find("no_collector") == options.end()) {
+    if (!options.get("no_collector", false)) {
         report.add_reporter(OoniReporter::make(*this));
     }
     report.open(callback);
@@ -184,7 +184,7 @@ std::string OoniTest::generate_output_filepath() {
         char timestamp[100];
         strftime(timestamp, sizeof(timestamp), "%FT%H%M%SZ", &test_start_time);
         filename << "report-" << test_name << "-";
-        filename << timestamp << "-" << idx << ".json";
+        filename << timestamp << "-" << idx << ".njson";
 
         std::ifstream output_file(filename.str().c_str());
         // If a file called this way already exists we increment the counter

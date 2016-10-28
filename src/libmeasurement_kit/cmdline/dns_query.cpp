@@ -46,13 +46,13 @@ int main(const char *, int argc, char **argv) {
     loop_with_initial_event([&query_class, &query_type, &domain]() {
         std::cout << query_class << " " << query_type << "\n";
         dns::query(query_class.data(), query_type.data(), domain,
-            [&query_type](Error e, dns::Message m) {
+            [&query_type](Error e, Var<dns::Message> m) {
                 if (e) {
                     std::cout << "Error: " << e.code << "\n";
                     break_loop();
                     return;
                 }
-                for (auto &s : m.answers) {
+                for (auto &s : m->answers) {
                     if (query_type == "A") {
                         std::cout << s.ipv4 << "\n";
                     } else if (query_type == "AAAA") {
