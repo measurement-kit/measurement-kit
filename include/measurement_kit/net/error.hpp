@@ -35,6 +35,9 @@ MK_DEFINE_ERR(MK_ERR_NET(21), SslError, "ssl_error")
 MK_DEFINE_ERR(MK_ERR_NET(22), NotEnoughDataError, "")
 MK_DEFINE_ERR(MK_ERR_NET(23), MissingCaBundlePathError, "")
 MK_DEFINE_ERR(MK_ERR_NET(24), BrokenPipeError, "")
+MK_DEFINE_ERR(MK_ERR_NET(25), SslNewError, "")
+MK_DEFINE_ERR(MK_ERR_NET(26), SslCtxNewError, "")
+MK_DEFINE_ERR(MK_ERR_NET(27), SslCtxLoadVerifyLocationsError, "")
 
 } // namespace net
 } // namespace mk
