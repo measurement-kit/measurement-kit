@@ -36,11 +36,11 @@ class QueryContext : public NonMovable, public NonCopyable {
 
     evdns_base *base = nullptr;
 
-    Message message;
-    Callback<Error, Message> callback;
+    Var<Message> message;
+    Callback<Error, Var<Message>> callback;
 
     QueryContext(
-            evdns_base *b, Callback<Error, Message> c, Message m) {
+            evdns_base *b, Callback<Error, Var<Message>> c, Var<Message> m) {
         base = b;
         callback = c;
         message = m;
@@ -176,7 +176,7 @@ static inline std::vector<Answer> build_answers_evdns(
 
 static inline void dns_callback(int code, char type, int count, int ttl,
         void *addresses, QueryContext *context) {
-    context->message.error_code = code;
+    context->message->error_code = code;
 
     switch (code) {
     case DNS_ERR_NONE:
@@ -187,18 +187,18 @@ static inline void dns_callback(int code, char type, int count, int ttl,
     case DNS_ERR_REFUSED:
     case DNS_ERR_TRUNCATED:
     case DNS_ERR_NODATA:
-        context->message.rtt = mk::time_now() - context->ticks;
+        context->message->rtt = mk::time_now() - context->ticks;
         break;
     default:
-        context->message.rtt = 0.0;
+        context->message->rtt = 0.0;
         break;
     }
 
-    context->message.answers =
+    context->message->answers =
             build_answers_evdns(code, type, count, ttl, addresses);
     try {
-        if (context->message.error_code != DNS_ERR_NONE) {
-            context->callback(mk::dns::dns_error(context->message.error_code),
+        if (context->message->error_code != DNS_ERR_NONE) {
+            context->callback(mk::dns::dns_error(context->message->error_code),
                     context->message);
         } else {
             context->callback(NoError(), context->message);
@@ -214,10 +214,10 @@ template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
         MK_MOCK(evdns_base_resolve_ipv6), MK_MOCK(evdns_base_resolve_reverse),
         MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
 void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
-        Callback<Error, Message> cb, Settings settings,
+        Callback<Error, Var<Message>> cb, Settings settings,
         Var<Reactor> reactor, Var<Logger> logger) {
 
-    Message message;
+    Var<Message> message(new Message);
     Query query;
     evdns_base *base;
 
@@ -255,7 +255,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     query.type = dns_type;
     query.qclass = dns_class;
     query.name = name;
-    message.queries.push_back(query);
+    message->queries.push_back(query);
 
     //
     // Note: evdns_base_resolve_xxx() return a evdns_request

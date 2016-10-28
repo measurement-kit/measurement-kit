@@ -42,9 +42,9 @@ void resolver_lookup_impl(Callback<Error, std::string> callback,
                           Var<Reactor> reactor = Reactor::global(),
                           Var<Logger> logger = Logger::global()) {
   dns_query("IN", "A", "whoami.akamai.net",
-      [=](Error error, dns::Message message) {
+      [=](Error error, Var<dns::Message> message) {
         if (!error) {
-          for (auto answer : message.answers) {
+          for (auto answer : message->answers) {
             if (answer.ipv4 != "") {
               logger->debug("ip address of resolver is %s",
                             answer.ipv4.c_str());

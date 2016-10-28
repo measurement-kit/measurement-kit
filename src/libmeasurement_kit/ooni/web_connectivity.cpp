@@ -506,14 +506,14 @@ static void experiment_dns_query(
   }
 
   templates::dns_query(entry, "A", "IN", hostname, nameserver,
-        [=](Error err, dns::Message message) {
+        [=](Error err, Var<dns::Message> message) {
           logger->debug("web_connectivity: experiment_dns_query got response");
           std::vector<std::string> addresses;
           if (err) {
             callback(err, addresses);
             return;
           }
-          for (auto answer : message.answers) {
+          for (auto answer : message->answers) {
             if (answer.ipv4 != "") {
               addresses.push_back(answer.ipv4);
             } else if (answer.hostname != "") {

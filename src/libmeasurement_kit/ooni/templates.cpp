@@ -14,7 +14,7 @@ using namespace mk::report;
 
 void dns_query(Var<Entry> entry, dns::QueryType query_type,
                dns::QueryClass query_class, std::string query_name,
-               std::string nameserver, Callback<Error, dns::Message> cb,
+               std::string nameserver, Callback<Error, Var<dns::Message>> cb,
                Settings options, Var<Reactor> reactor, Var<Logger> logger) {
 
     int resolver_port;
@@ -31,7 +31,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
     options["dns/attempts"] = 1;
 
     dns::query(query_class, query_type, query_name,
-               [=](Error error, dns::Message message) {
+               [=](Error error, Var<dns::Message> message) {
                    logger->debug("dns_test: got response!");
                    Entry query_entry;
                    query_entry["resolver_hostname"] = resolver_hostname;
@@ -43,7 +43,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                        query_entry["hostname"] = query_name;
                    }
                    if (!error) {
-                       for (auto answer : message.answers) {
+                       for (auto answer : message->answers) {
                            if (query_type == dns::QueryTypeId::A) {
                                query_entry["answers"].push_back(
                                    {{"ttl", answer.ttl},
