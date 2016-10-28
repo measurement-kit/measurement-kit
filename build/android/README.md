@@ -52,11 +52,11 @@ To cross-compile you need to tell the script where did you install the NDK
 and which dependency `spec` you want to build. For example, on MacOS you can use
 the following command line:
 
-    $ ./dependency /usr/local/Cellar/android-ndk/r10e/ all 
+    $ ./dependency ~/Library/Android/sdk/ndk-bundle/ndk-build all 
 
 to build all the MeasurementKit dependencies. Or
 
-    $ ./dependency /usr/local/Cellar/android-ndk/r10e/ libevent
+    $ ./dependency ~/Library/Android/sdk/ndk-bundle/ndk-build libevent
 
 to build just libevent. 
 
