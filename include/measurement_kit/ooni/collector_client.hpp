@@ -20,7 +20,7 @@ using namespace mk::report;
 */
 
 #define MK_OONI_PRODUCTION_COLLECTOR_URL "https://a.collector.ooni.io:4441"
-#define MK_OONI_TESTING_COLLECTOR_URL "https://measurement-kit-collector.herokuapp.com"
+#define MK_OONI_TESTING_COLLECTOR_URL "https://b.collector.test.ooni.io:4441"
 
 std::string production_collector_url();
 std::string testing_collector_url();

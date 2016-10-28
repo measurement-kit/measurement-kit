@@ -21,54 +21,46 @@ run the downloaded file to unpack the NDK:
 
 ### On MacOS using brew
 
-Just type the following:
+You can install it with brew. Just type the following:
 
     $ brew install android-ndk
 
-## Cross compiling MeasurementKit for Android
+but from our experience we recommend to [install it using Android studio](
+https://developer.android.com/ndk/guides/index.html#download-ndk)
+since this is the most reliable way to get a working ndk-build.
+On macOS, Android studio installs the ndk-build at 
+`~/Library/Android/sdk/ndk-bundle/ndk-build`.
 
-The `./library` script allows to create the required custom
-toolchains and to cross-compile MeasurementKit for all the architectures
+## Cross compiling MeasurementKit dependencies for Android
+
+To cross compile MeasurementKit for Android use
+the instructions contained in 
+[this repository](https://github.com/measurement-kit/measurement-kit-android).
+
+The scripts contained in this folder are useful to build the dependencies.
+
+The `./dependency` script allows to create the required custom
+toolchains and to cross-compile the dependencies for all the architectures
 available for Android. If you run the script without arguments, it will
 print the options it accepts and the available Android architectures for
 which you can cross compile:
 
-    $ ./library
-    [prints usage]
+    $ ./dependency
+    usage: ./build/android/dependency NDK_DIR spec
 
-To cross-compile for all available architectures you need to tell the
-script where did you install the NDK. For example, on MacOS you can use
+To cross-compile you need to tell the script where did you install the NDK
+and which dependency `spec` you want to build. For example, on MacOS you can use
 the following command line:
 
-    $ ./library /usr/local/Cellar/android-ndk/r10e/
+    $ ./dependency ~/Library/Android/sdk/ndk-bundle/ndk-build all 
 
-The above command compiles for Android with API 21. You can compile
-for another API by providing the API number as the second argument on
-the command line:
+to build all the MeasurementKit dependencies. Or
 
-    $ ./library /usr/local/Cellar/android-ndk/r10e/ 20
+    $ ./dependency ~/Library/Android/sdk/ndk-bundle/ndk-build libevent
 
-If you want to compile only for a specific architecture, add it before
-the API number on the command line:
-
-    $ ./library /usr/local/Cellar/android-ndk/r10e/ \
-                         arm-linux-androideabi 20
+to build just libevent. 
 
 In the above examples we have shown the path to the Android NDK on MacOS. If
 you followed the instructions for Linux, you should have written instead:
 
-    $ ./library $HOME/Android/android-ndk-r10e/ [options...]
-
-This script is implemented by two helper scripts respectively called
-`./make-toolchain` and `./dependency`. The former
-[creates a standalone cross-toolchain](
-http://www.kandroid.org/ndk/docs/STANDALONE-TOOLCHAIN.html)
-for a specific Android arch. The
-latter cross-compiles for the selected arch and when passed the `embedded-mk`
-argument, it cross-compiles MeasurementKit.
-
-## Create the final archive
-
-Run this command to create the final archive:
-
-    $ ./archive-library
+    $ ./dependency $HOME/Android/android-ndk-r10e/ [spec]

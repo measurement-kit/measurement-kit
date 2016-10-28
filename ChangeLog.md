@@ -1,3 +1,9 @@
+# MeasurementKit 0.3.4 [2016-10-28]
+
+- switch test collector to b.collector.test.ooni.io (#880)
+- remove `./build/android/library` (#870)
+- fixing `web_connectivity` bug #867
+
 # MeasurementKit 0.3.3 [2016-10-23]
 
 - `connect.cpp`: increase default net/timeout (#872)
