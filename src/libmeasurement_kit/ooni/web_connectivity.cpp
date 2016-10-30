@@ -343,6 +343,7 @@ static void compare_control_experiment(
     } else {
       logger->info("web_connectivity: no blocking detected");
       (*entry)["accessible"] = true;
+      (*entry)["blocking"] = false;
     }
 }
 
