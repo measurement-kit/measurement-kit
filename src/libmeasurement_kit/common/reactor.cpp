@@ -13,6 +13,15 @@ namespace mk {
 
 Reactor::~Reactor() {}
 
+void Reactor::call_soon(Callback<> cb) {
+    call_later(0.0, cb);
+}
+
+void Reactor::loop_with_initial_event(Callback<> cb) {
+    call_soon(cb);
+    loop();
+}
+
 /*static*/ Var<Reactor> Reactor::global() {
     static Var<Reactor> singleton = make();
     return singleton;

@@ -24,10 +24,6 @@ void mk_do_periodic_cb(evutil_socket_t, short, void *ptr) {
 namespace mk {
 namespace libevent {
 
-void Poller::call_soon(std::function<void()> cb) {
-    call_later(-1.0, cb);
-}
-
 void Poller::call_later(double timeo, std::function<void()> cb) {
     call_later_impl(timeo, cb);
 }
