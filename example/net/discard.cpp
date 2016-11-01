@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/net/listen.hpp"
+#include "src/libmeasurement_kit/libevent/listen.hpp"
 #include <functional>
 #include <iostream>
 #include <measurement_kit/common.hpp>
@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 using namespace mk;
+using namespace mk::libevent;
 using namespace mk::net;
 
 static const char *kv_usage = "usage: ./example/net/discard [-v] [-p port]\n";
