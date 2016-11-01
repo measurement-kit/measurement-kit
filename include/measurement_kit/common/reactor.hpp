@@ -14,7 +14,7 @@ namespace mk {
 class Reactor {
   public:
     static Var<Reactor> make();
-    virtual ~Reactor() {}
+    virtual ~Reactor();
 
     virtual void call_soon(Callback<> cb) = 0;
     virtual void call_later(double, Callback<> cb) = 0;
@@ -26,35 +26,17 @@ class Reactor {
 
     virtual event_base *get_event_base() = 0;
 
-    static Var<Reactor> global() {
-        static Var<Reactor> singleton = make();
-        return singleton;
-    }
+    static Var<Reactor> global();
 };
 
-// This function is just a wrapper for `reactor->call_soon` but is useful
-// in the regress tests because it can be passed as a template argument
-void reactor_call_soon(Var<Reactor> reactor, Callback<> cb);
-
-inline void call_soon(Callback<> cb) {
-    Reactor::global()->call_soon(cb);
-}
-
-inline void call_later(double t, Callback<> cb) {
-    Reactor::global()->call_later(t, cb);
-}
-
-inline void loop_with_initial_event(Callback<> cb) {
-    Reactor::global()->loop_with_initial_event(cb);
-}
+void call_soon(Callback<>, Var<Reactor> = Reactor::global());
+void call_later(double, Callback<>, Var<Reactor> = Reactor::global());
+void loop_with_initial_event(Callback<>, Var<Reactor> = Reactor::global());
+void loop(Var<Reactor> = Reactor::global());
+void loop_once(Var<Reactor> = Reactor::global());
+void break_loop(Var<Reactor> = Reactor::global());
 
 void loop_with_initial_event_and_connectivity(Callback<> cb);
-
-inline void loop() { Reactor::global()->loop(); }
-
-inline void loop_once() { Reactor::global()->loop_once(); }
-
-inline void break_loop() { Reactor::global()->break_loop(); }
 
 } // namespace mk
 #endif
