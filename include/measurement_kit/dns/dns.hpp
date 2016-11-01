@@ -27,8 +27,6 @@ MK_DEFINE_ERR(MK_ERR_DNS(14), InvalidNameForPTRError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(15), ResolverError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(16), UnsupportedTypeError, "")
 
-Error dns_error(int code); ///< Map evdns code to proper error
-
 /// Available query classes id
 enum class QueryClassId { IN, CS, CH, HS };
 
