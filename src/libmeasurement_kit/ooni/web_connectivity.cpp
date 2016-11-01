@@ -350,8 +350,14 @@ static void compare_control_experiment(
 static void control_request(Var<Entry> entry,
         SocketList socket_list, std::string url,
         Callback<Error> callback,
-        Settings options, Var<Logger> logger) {
-    Settings request_settings;
+        Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+
+    // Implementation note: this function uses (and modifies) the settings
+    // passed by the caller because such object is passed by copy and we
+    // need to add options to a number of options already set by the caller
+    // and it would not be wise to remember to copy them one by one (also
+    // considering that from time to time we add new options)
+
     http::Headers headers;
     Entry request;
     request["tcp_connect"] = Entry::array();
@@ -369,17 +375,17 @@ static void control_request(Var<Entry> entry,
     request["http_request"] = url;
     std::string body = request.dump();
 
-    request_settings["http/url"] = options["backend"];
-    request_settings["http/method"] = "POST";
+    settings["http/url"] = settings["backend"];
+    settings["http/method"] = "POST";
     headers["Content-Type"] = "application/json";
 
-    if (options["backend/type"] == "cloudfront") {
+    if (settings["backend/type"] == "cloudfront") {
       // TODO set the appropriate headers to support cloud-fronting.
     }
 
     logger->debug("web_connectivity: performing control request to %s",
-                  options["backend"].c_str());
-    http::request(request_settings, headers, body,
+                  settings["backend"].c_str());
+    http::request(settings, headers, body,
             [=](Error error, Var<http::Response> response) {
       if (!error) {
         try {
@@ -395,7 +401,7 @@ static void control_request(Var<Entry> entry,
       (*entry)["control_failure"] = error.as_ooni_error();
       callback(error);
       return;
-    });
+    }, reactor, logger);
 }
 
 static void experiment_http_request(Var<Entry> entry,
@@ -590,7 +596,7 @@ void web_connectivity(std::string input, Settings options,
             compare_control_experiment(input, entry, addresses, options, logger);
             callback(entry);
 
-          }, options, logger); // end control_request
+          }, options, reactor, logger); // end control_request
 
         }, options, reactor, logger); // end http_request
 
