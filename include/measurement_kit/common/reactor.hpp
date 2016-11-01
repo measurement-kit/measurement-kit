@@ -28,6 +28,13 @@ class Reactor {
     // Deprecated in v0.4.x, will be removed in v0.5.x
     virtual event_base *get_event_base() = 0;
 
+    // Introduced as aliases in v0.4.x
+    void run_with_initial_event(Callback<> cb) {
+        loop_with_initial_event(cb);
+    }
+    void run() { loop(); }
+    void stop() { break_loop(); }
+
     static Var<Reactor> global();
 };
 
@@ -37,6 +44,18 @@ void loop_with_initial_event(Callback<>, Var<Reactor> = Reactor::global());
 void loop(Var<Reactor> = Reactor::global());
 void loop_once(Var<Reactor> = Reactor::global());
 void break_loop(Var<Reactor> = Reactor::global());
+
+// Introduced as aliases in v0.4.x
+inline void run_with_initial_event(Callback<> callback,
+        Var<Reactor> reactor = Reactor::global()) {
+    loop_with_initial_event(callback, reactor);
+}
+inline void run(Var<Reactor> reactor = Reactor::global()) {
+    loop(reactor);
+}
+inline void stop(Var<Reactor> reactor = Reactor::global()) {
+    break_loop(reactor);
+}
 
 } // namespace mk
 #endif
