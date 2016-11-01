@@ -350,7 +350,7 @@ static void compare_control_experiment(
 static void control_request(Var<Entry> entry,
         SocketList socket_list, std::string url,
         Callback<Error> callback,
-        Settings options, Var<Logger> logger) {
+        Settings options, Var<Reactor> reactor, Var<Logger> logger) {
     Settings request_settings;
     http::Headers headers;
     Entry request;
@@ -395,7 +395,7 @@ static void control_request(Var<Entry> entry,
       (*entry)["control_failure"] = error.as_ooni_error();
       callback(error);
       return;
-    });
+    }, reactor, logger);
 }
 
 static void experiment_http_request(Var<Entry> entry,
@@ -590,7 +590,7 @@ void web_connectivity(std::string input, Settings options,
             compare_control_experiment(input, entry, addresses, options, logger);
             callback(entry);
 
-          }, options, logger); // end control_request
+          }, options, reactor, logger); // end control_request
 
         }, options, reactor, logger); // end http_request
 
