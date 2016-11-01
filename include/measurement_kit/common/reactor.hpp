@@ -7,6 +7,7 @@
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/var.hpp>
 
+// Deprecated in v0.4.x, will be removed in v0.5.x
 struct event_base;
 
 namespace mk {
@@ -24,6 +25,7 @@ class Reactor {
     virtual void loop_once() = 0;
     virtual void break_loop() = 0;
 
+    // Deprecated in v0.4.x, will be removed in v0.5.x
     virtual event_base *get_event_base() = 0;
 
     static Var<Reactor> global();
