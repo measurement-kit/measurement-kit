@@ -373,6 +373,10 @@ static void control_request(Var<Entry> entry,
     request_settings["http/method"] = "POST";
     headers["Content-Type"] = "application/json";
 
+    if (options.find("dns/nameserver") != options.end()) {
+        request_settings["dns/nameserver"] = options["dns/nameserver"];
+    }
+
     if (options["backend/type"] == "cloudfront") {
       // TODO set the appropriate headers to support cloud-fronting.
     }
