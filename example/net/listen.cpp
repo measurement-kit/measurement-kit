@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 
     loop_with_initial_event([&addr, &port]() {
         listen4(addr, port, [](bufferevent *bev) {
-            Var<Transport> transport = Connection::make(bev);
+            Var<Transport> transport = libevent::Connection::make(bev);
             transport->on_data([transport](Buffer data) {
                 transport->write(data);
             });

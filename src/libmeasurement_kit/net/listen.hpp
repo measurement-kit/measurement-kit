@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_LISTEN_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_LISTEN_HPP
 
-#include "../net/connection.hpp"
+#include "../libevent/connection.hpp"
 
 #include <measurement_kit/net.hpp>
 

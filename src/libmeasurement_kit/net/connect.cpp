@@ -11,6 +11,8 @@
 #include "../net/socks5.hpp"
 #include "../net/ssl-context.hpp"
 
+#include "../libevent/connection.hpp"
+
 #include <cassert>
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/dns.hpp>
@@ -287,7 +289,8 @@ void connect(std::string address, int port,
                                     return;
                                 }
                                 Var<Transport> txp =
-                                    Connection::make(bev, reactor, logger);
+                                    libevent::Connection::make(
+                                        bev, reactor, logger);
                                 txp->set_timeout(timeout);
                                 assert(err == NoError());
                                 err.context = r;
@@ -297,7 +300,7 @@ void connect(std::string address, int port,
                 return;
             }
             Var<Transport> txp =
-                Connection::make(r->connected_bev, reactor, logger);
+                libevent::Connection::make(r->connected_bev, reactor, logger);
             txp->set_timeout(timeout);
             assert(err == NoError());
             err.context = r;

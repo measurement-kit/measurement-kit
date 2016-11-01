@@ -3,7 +3,6 @@
 // information on the copying conditions.
 
 #include "../net/listen.hpp"
-#include "../net/connection.hpp"
 
 using namespace mk;
 using namespace mk::net;

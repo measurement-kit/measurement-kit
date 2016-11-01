@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../net/connection.hpp"
+#include "../libevent/connection.hpp"
 
 #include <measurement_kit/net.hpp>
 
@@ -15,20 +15,22 @@
 extern "C" {
 
 static void handle_libevent_read(bufferevent *, void *opaque) {
-    static_cast<mk::net::Connection *>(opaque)->handle_read_();
+    static_cast<mk::libevent::Connection *>(opaque)->handle_read_();
 }
 
 static void handle_libevent_write(bufferevent *, void *opaque) {
-    static_cast<mk::net::Connection *>(opaque)->handle_write_();
+    static_cast<mk::libevent::Connection *>(opaque)->handle_write_();
 }
 
 static void handle_libevent_event(bufferevent *, short what, void *opaque) {
-    static_cast<mk::net::Connection *>(opaque)->handle_event_(what);
+    static_cast<mk::libevent::Connection *>(opaque)->handle_event_(what);
 }
 
 } // extern "C"
 namespace mk {
-namespace net {
+namespace libevent {
+
+using namespace mk::net;
 
 void Connection::handle_read_() {
     Buffer buff(bufferevent_get_input(bev));
@@ -111,5 +113,5 @@ void Connection::close(std::function<void()> cb) {
     });
 }
 
-} // namespace net
+} // namespace libevent
 } // namespace mk
