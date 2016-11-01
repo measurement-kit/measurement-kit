@@ -2,7 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../common/check_connectivity.hpp"
 #include "../libevent/poller.hpp"
 
 namespace mk {
@@ -25,14 +24,6 @@ void Reactor::loop_with_initial_event(Callback<> cb) {
 /*static*/ Var<Reactor> Reactor::global() {
     static Var<Reactor> singleton = make();
     return singleton;
-}
-
-void loop_with_initial_event_and_connectivity(std::function<void()> cb) {
-    if (!CheckConnectivity::is_down()) {
-        loop_with_initial_event(cb);
-    } else {
-        warn("Test skipped because network is down");
-    }
 }
 
 void call_soon(Callback<> callback, Var<Reactor> reactor) {

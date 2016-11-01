@@ -210,7 +210,7 @@ TEST_CASE("The system resolver works as expected") {
     // response fields from the system resolver.
     //
 
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         query("IN", "A", "www.neubot.org", [](Error e, Var<Message> message) {
             REQUIRE(!e);
             REQUIRE(message->error_code == DNS_ERR_NONE);
@@ -222,7 +222,7 @@ TEST_CASE("The system resolver works as expected") {
         });
     });
 
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         query(
             "IN", "REVERSE_A", "130.192.16.172", [](Error e, Var<Message> message) {
                 REQUIRE(!e);
@@ -235,7 +235,7 @@ TEST_CASE("The system resolver works as expected") {
             });
     });
 
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         query("IN", "PTR", "172.16.192.130.in-addr.arpa.", [](Error e,
                                                              Var<Message> message) {
             REQUIRE(!e);
@@ -248,7 +248,7 @@ TEST_CASE("The system resolver works as expected") {
         });
     });
 
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         query("IN", "AAAA", "ooni.torproject.org",
               [](Error e, Var<Message> message) {
                   REQUIRE(!e);
@@ -268,7 +268,7 @@ TEST_CASE("The system resolver works as expected") {
               });
     });
 
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         query("IN", "REVERSE_AAAA", "2001:858:2:2:aabb::563b:1e28",
               [](Error e, Var<Message> message) {
                   REQUIRE(!e);
@@ -281,7 +281,7 @@ TEST_CASE("The system resolver works as expected") {
               });
     });
 
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         query("IN", "PTR", "8.2.e.1.b.3.6.5.0.0.0.0.b.b.a.a.2.0.0.0.2.0.0.0.8."
                            "5.8.0.1.0.0.2.ip6.arpa",
               [](Error e, Var<Message> message) {
