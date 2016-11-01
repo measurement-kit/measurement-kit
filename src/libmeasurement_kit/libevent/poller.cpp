@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../common/poller.hpp"
+#include "../libevent/poller.hpp"
 
 // Using `extern "C"` for C callbacks is recommended by C++ FAQs.
 // See <https://isocpp.org/wiki/faq/pointers-to-members#memfnptr-vs-fnptr>.
@@ -15,13 +15,14 @@ void mk_call_soon_cb(evutil_socket_t, short, void *p) {
 }
 
 void mk_do_periodic_cb(evutil_socket_t, short, void *ptr) {
-    mk::Poller *poller = static_cast<mk::Poller *>(ptr);
+    mk::libevent::Poller *poller = static_cast<mk::libevent::Poller *>(ptr);
     poller->handle_periodic_();
 }
 
 } // extern "C"
 
 namespace mk {
+namespace libevent {
 
 void Poller::call_soon(std::function<void()> cb) {
     call_later(-1.0, cb);
@@ -47,4 +48,5 @@ void Poller::on_periodic_(std::function<void(Poller *)> cb) {
     periodic_cb_ = cb;
 }
 
+} // namespace libevent
 } // namespace mk

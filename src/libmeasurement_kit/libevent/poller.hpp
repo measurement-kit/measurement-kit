@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_LIBMEASUREMENT_KIT_COMMON_POLLER_HPP
-#define SRC_LIBMEASUREMENT_KIT_COMMON_POLLER_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_LIBEVENT_POLLER_HPP
+#define SRC_LIBMEASUREMENT_KIT_LIBEVENT_POLLER_HPP
 
 #include "../common/utils.hpp"
 
@@ -20,6 +20,7 @@ void mk_do_periodic_cb(evutil_socket_t, short, void *ptr);
 
 } // extern "C"
 namespace mk {
+namespace libevent {
 
 template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction)>
 class MkLibrarySingleton {
@@ -153,5 +154,6 @@ class Poller : public Reactor {
     Delegate<Poller *> periodic_cb_;
 };
 
+} // namespace libevent
 } // namespace mk
 #endif

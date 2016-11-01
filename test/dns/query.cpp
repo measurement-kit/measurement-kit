@@ -5,10 +5,11 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/dns/query_impl.hpp"
+#include "../src/libmeasurement_kit/libevent/dns_impl.hpp"
 
 using namespace mk;
 using namespace mk::dns;
+using namespace mk::libevent; // TODO: should split the tests
 
 // Now testing query()
 static evdns_request *null_resolver(evdns_base *, const char *, int,

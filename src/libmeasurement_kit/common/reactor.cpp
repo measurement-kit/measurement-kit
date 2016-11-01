@@ -3,11 +3,13 @@
 // information on the copying conditions.
 
 #include "../common/check_connectivity.hpp"
-#include "../common/poller.hpp"
+#include "../libevent/poller.hpp"
 
 namespace mk {
 
-/*static*/ Var<Reactor> Reactor::make() { return Var<Reactor>(new Poller); }
+/*static*/ Var<Reactor> Reactor::make() {
+    return Var<Reactor>(new libevent::Poller);
+}
 
 void loop_with_initial_event_and_connectivity(std::function<void()> cb) {
     if (!CheckConnectivity::is_down()) {

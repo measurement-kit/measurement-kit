@@ -5,6 +5,8 @@
 #include "../net/socks5.hpp"
 #include "../net/connect.hpp"
 
+#include "../libevent/connection.hpp"
+
 namespace mk {
 namespace net {
 
@@ -142,8 +144,8 @@ void socks5_connect(std::string address, int port, Settings settings,
                     callback(err, nullptr);
                     return;
                 }
-                Var<Transport> txp = Connection::make(r->connected_bev,
-                                                      reactor, logger);
+                Var<Transport> txp = libevent::Connection::make(
+                        r->connected_bev, reactor, logger);
                 Var<Transport> socks5(
                         new Socks5(txp, settings, reactor, logger));
                 socks5->on_connect([=]() {

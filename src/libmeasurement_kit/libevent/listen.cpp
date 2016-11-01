@@ -2,11 +2,10 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../net/listen.hpp"
-#include "../net/connection.hpp"
+#include "../libevent/listen.hpp"
 
 using namespace mk;
-using namespace mk::net;
+using namespace mk::libevent;
 
 extern "C" {
 
