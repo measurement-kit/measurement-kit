@@ -33,8 +33,6 @@
 /build/android/jni/spec
 /example/libevent/discard
 /example/libevent/listen
-/example/net/discard
-/example/net/listen
 /example/net/transport
 /include.am
 /measurement_kit
@@ -45,7 +43,6 @@
 /test/common/fmap
 /test/common/logger
 /test/common/parallel
-/test/common/poller
 /test/common/range
 /test/common/runner
 /test/common/settings
@@ -53,7 +50,6 @@
 /test/common/var
 /test/common/version
 /test/dns/defines
-/test/dns/error
 /test/dns/query
 /test/http/headers
 /test/http/parse_url
@@ -72,7 +68,6 @@
 /test/ndt/test_s2c
 /test/net/buffer
 /test/net/connect
-/test/net/connection
 /test/net/emitter
 /test/net/evbuffer
 /test/net/socks5

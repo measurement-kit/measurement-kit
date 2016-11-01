@@ -87,7 +87,7 @@ gen_executables() {
     done
 }
 
-grep -v -E "^(test|example){1}/.*" .gitignore > .gitignore.new
+grep -v -E "^/(test|example){1}/.*" .gitignore > .gitignore.new
 echo /GeoIP.dat >> .gitignore.new
 echo /GeoIPASNum.dat >> .gitignore.new
 echo /GeoLiteCity.dat >> .gitignore.new
