@@ -11,6 +11,13 @@ namespace mk {
     return Var<Reactor>(new libevent::Poller);
 }
 
+Reactor::~Reactor() {}
+
+/*static*/ Var<Reactor> Reactor::global() {
+    static Var<Reactor> singleton = make();
+    return singleton;
+}
+
 void loop_with_initial_event_and_connectivity(std::function<void()> cb) {
     if (!CheckConnectivity::is_down()) {
         loop_with_initial_event(cb);
@@ -19,8 +26,28 @@ void loop_with_initial_event_and_connectivity(std::function<void()> cb) {
     }
 }
 
-void reactor_call_soon(Var<Reactor> reactor, Callback<> callback) {
+void call_soon(Callback<> callback, Var<Reactor> reactor) {
     reactor->call_soon(callback);
+}
+
+void call_later(double delta, Callback<> callback, Var<Reactor> reactor) {
+    reactor->call_later(delta, callback);
+}
+
+void loop_with_initial_event(Callback<> callback, Var<Reactor> reactor) {
+    reactor->loop_with_initial_event(callback);
+}
+
+void loop(Var<Reactor> reactor) {
+    reactor->loop();
+}
+
+void loop_once(Var<Reactor> reactor) {
+    reactor->loop_once();
+}
+
+void break_loop(Var<Reactor> reactor) {
+    reactor->break_loop();
 }
 
 } // namespace mk
