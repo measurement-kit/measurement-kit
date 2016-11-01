@@ -7,9 +7,10 @@
 
 #include <measurement_kit/common.hpp>
 #include "../src/libmeasurement_kit/common/utils.hpp"
-#include "../src/libmeasurement_kit/common/poller.hpp"
+#include "../src/libmeasurement_kit/libevent/poller.hpp"
 
 using namespace mk;
+using namespace mk::libevent;
 
 static int fail_int() { return -1; }
 static event_base *fail_evbase() { return nullptr; }
@@ -134,7 +135,7 @@ TEST_CASE("poller.break_loop() works properly") {
 }
 
 TEST_CASE("poller.call_soon() works") {
-    mk::Poller poller;
+    Poller poller;
     auto now = mk::time_now();
     poller.call_soon([&poller]() { poller.break_loop(); });
     poller.loop();
@@ -142,7 +143,7 @@ TEST_CASE("poller.call_soon() works") {
 }
 
 TEST_CASE("poller.call_later() works") {
-    mk::Poller poller;
+    Poller poller;
     auto now = mk::time_now();
     poller.call_later(3.14, [&poller]() { poller.break_loop(); });
     poller.loop();
@@ -150,7 +151,7 @@ TEST_CASE("poller.call_later() works") {
 }
 
 TEST_CASE("The periodic event is fired when we call loop()") {
-    mk::Poller poller;
+    Poller poller;
     unsigned int count = 0;
     poller.on_periodic_([&count](Poller *poller) {
         if (++count < 3) {
