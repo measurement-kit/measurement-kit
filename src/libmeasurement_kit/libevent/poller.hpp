@@ -71,11 +71,6 @@ class Poller : public Reactor {
 
     event_base *get_event_base() override { return base_.get(); }
 
-    /// Call the function at the beginning of next I/O loop.
-    /// \param cb The function to be called soon.
-    /// \throw Error if the underlying libevent call fails.
-    void call_soon(std::function<void()> cb) override;
-
     template <MK_MOCK(event_base_once)>
     void call_later_impl(double timeo, std::function<void()> cb) {
         timeval tv, *tvp = timeval_init(&tv, timeo);
@@ -88,11 +83,6 @@ class Poller : public Reactor {
     }
 
     void call_later(double timeo, std::function<void()> cb) override;
-
-    void loop_with_initial_event(std::function<void()> cb) override {
-        call_soon(cb);
-        loop();
-    }
 
     template<MK_MOCK(event_new), MK_MOCK(event_free), MK_MOCK(event_add),
              MK_MOCK(event_base_dispatch)>

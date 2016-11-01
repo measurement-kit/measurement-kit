@@ -16,10 +16,10 @@ class Reactor {
     static Var<Reactor> make();
     virtual ~Reactor();
 
-    virtual void call_soon(Callback<> cb) = 0;
+    void call_soon(Callback<> cb);
     virtual void call_later(double, Callback<> cb) = 0;
 
-    virtual void loop_with_initial_event(Callback<> cb) = 0;
+    void loop_with_initial_event(Callback<> cb);
     virtual void loop() = 0;
     virtual void loop_once() = 0;
     virtual void break_loop() = 0;
