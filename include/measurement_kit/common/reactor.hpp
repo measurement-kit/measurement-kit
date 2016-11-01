@@ -36,7 +36,5 @@ void loop(Var<Reactor> = Reactor::global());
 void loop_once(Var<Reactor> = Reactor::global());
 void break_loop(Var<Reactor> = Reactor::global());
 
-void loop_with_initial_event_and_connectivity(Callback<> cb);
-
 } // namespace mk
 #endif

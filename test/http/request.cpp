@@ -5,7 +5,6 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/common/check_connectivity.hpp"
 #include "../src/libmeasurement_kit/http/request_impl.hpp"
 
 #include <measurement_kit/ext.hpp>
@@ -116,7 +115,7 @@ TEST_CASE("HTTP Request class works as expected with explicit path") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request works as expected") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request(
             {
                 {"http/url",
@@ -139,7 +138,7 @@ TEST_CASE("http::request works as expected") {
 }
 
 TEST_CASE("http::request() works using HTTPS") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request({{"http/url",
                   "https://didattica.polito.it/tesi/SaperComunicare.pdf"},
                  {"http/method", "GET"},
@@ -160,7 +159,7 @@ TEST_CASE("http::request() works using HTTPS") {
 }
 
 TEST_CASE("http::request() works as expected over Tor") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request(
             {
                 {"http/url",
@@ -187,7 +186,7 @@ TEST_CASE("http::request() works as expected over Tor") {
 }
 
 TEST_CASE("http::request correctly receives errors") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request(
             {
                 {"http/url", "http://nexa.polito.it:81/robots.txt"},
@@ -211,7 +210,7 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
           "indicates body END") {
     auto called = 0;
 
-    loop_with_initial_event_and_connectivity([&]() {
+    loop_with_initial_event([&]() {
         connect("nexa.polito.it", 80,
                 [&](Error err, Var<Transport> transport) {
                     REQUIRE(!err);
@@ -327,7 +326,7 @@ TEST_CASE("http::request() callback is called if input URL parsing fails") {
 }
 
 TEST_CASE("http::request_connect_impl() works for normal connections") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request_connect_impl({{"http/url", "http://www.google.com/robots.txt"}},
                              [](Error error, Var<Transport> transport) {
                                  REQUIRE(!error);
@@ -340,7 +339,7 @@ TEST_CASE("http::request_connect_impl() works for normal connections") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_send() works as expected") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request_connect_impl(
             {{"http/url", "http://www.google.com/"}},
             [](Error error, Var<Transport> transport) {
@@ -371,7 +370,7 @@ static inline bool status_code_ok(int code) {
 }
 
 TEST_CASE("http::request_recv_response() works as expected") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request_connect_impl(
             {{"http/url", "http://www.google.com/"}},
             [](Error error, Var<Transport> transport) {
@@ -398,7 +397,7 @@ TEST_CASE("http::request_recv_response() works as expected") {
 }
 
 TEST_CASE("http::request_sendrecv() works as expected") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request_connect_impl(
             {{"http/url", "http://www.google.com/"}},
             [](Error error, Var<Transport> transport) {
@@ -420,7 +419,7 @@ TEST_CASE("http::request_sendrecv() works as expected") {
 }
 
 TEST_CASE("http::request_sendrecv() works for multiple requests") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request_connect_impl(
             {{"http/url", "http://www.google.com/"}},
             [](Error error, Var<Transport> transport) {
@@ -456,7 +455,7 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
 }
 
 TEST_CASE("http::request() works as expected using httpo URLs") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request(
             {
                 {"http/url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
@@ -484,7 +483,7 @@ TEST_CASE("http::request() works as expected using httpo URLs") {
 }
 
 TEST_CASE("http::request() works as expected using tor_socks_port") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request(
             {
                 {"http/url",
@@ -510,7 +509,7 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
 }
 
 TEST_CASE("http::request() correctly follows redirects") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request(
             {
                 {"http/url", "http://fsrn.org"},
@@ -537,7 +536,7 @@ TEST_CASE("http::request() correctly follows redirects") {
 #endif // ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl fails without an url") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request_connect_impl({},
                              [](Error error, Var<Transport>) {
                                  REQUIRE(error == MissingUrlError());
@@ -547,7 +546,7 @@ TEST_CASE("http::request_connect_impl fails without an url") {
 }
 
 TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request_connect_impl({{"http/url", ">*7\n\n"}},
                              [](Error error, Var<Transport>) {
                                  REQUIRE(error == UrlParserError());
@@ -557,7 +556,7 @@ TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
 }
 
 TEST_CASE("http::request_send fails without url in settings") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request_connect_impl(
             {{"http/url", "http://www.google.com/"}},
             [](Error error, Var<Transport> transport) {
@@ -573,7 +572,7 @@ TEST_CASE("http::request_send fails without url in settings") {
 }
 
 TEST_CASE("http::request() fails if fails request_send()") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         request({{"http/method", "GET"}}, {}, "",
                 [](Error error, Var<Response>) {
                     REQUIRE(error);

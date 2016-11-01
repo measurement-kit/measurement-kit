@@ -10,7 +10,7 @@
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("ip lookup works") {
-    mk::loop_with_initial_event_and_connectivity([]() {
+    mk::loop_with_initial_event([]() {
         mk::ooni::ip_lookup([](mk::Error err, std::string) {
             REQUIRE(err == mk::NoError());
             mk::break_loop();
