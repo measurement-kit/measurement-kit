@@ -15,7 +15,7 @@ using namespace mk;
 using namespace mk::libevent;
 using namespace mk::net;
 
-static const char *kv_usage = "usage: ./example/net/listen [-v] [-p port]\n";
+static const char *kv_usage = "usage: ./example/libevent/listen [-v] [-p port]\n";
 
 int main(int argc, char **argv) {
 
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 
     loop_with_initial_event([&addr, &port]() {
         listen4(addr, port, [](bufferevent *bev) {
-            Var<Transport> transport = libevent::Connection::make(bev);
+            Var<Transport> transport = Connection::make(bev);
             transport->on_data([transport](Buffer data) {
                 transport->write(data);
             });
