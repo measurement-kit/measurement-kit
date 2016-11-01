@@ -9,9 +9,9 @@
 #include "../net/connect_impl.hpp"
 #include "../net/emitter.hpp"
 #include "../net/socks5.hpp"
-#include "../net/ssl-context.hpp"
 
 #include "../libevent/connection.hpp"
+#include "../libevent/ssl_context.hpp"
 
 #include <cassert>
 #include <event2/bufferevent_ssl.h>
@@ -37,6 +37,8 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
 
 namespace mk {
 namespace net {
+
+using namespace mk::libevent;
 
 void connect_first_of(std::vector<std::string> addresses, int port,
                       ConnectFirstOfCb cb, Settings settings,

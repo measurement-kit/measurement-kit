@@ -14,6 +14,8 @@
 namespace mk {
 namespace libevent {
 
+using namespace mk::net;
+
 ErrorOr<SSL *> SslContext::get_client_ssl(std::string hostname) {
     SSL *ssl = SSL_new(ctx);
     if (ssl == nullptr) {

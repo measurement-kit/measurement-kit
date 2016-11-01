@@ -7,7 +7,6 @@
 #include "../net/connect.hpp"
 #include "../net/emitter.hpp"
 #include "../net/socks5.hpp"
-#include "../net/ssl-context.hpp"
 
 namespace mk {
 namespace net {
