@@ -38,7 +38,7 @@ check_PROGRAMS = $(ALL_TESTS)
 # See http://ansuz.sooke.bc.ca/entry/233
 #
 
-VALGRIND = $(LIBTOOL)xx --mode=execute valgrind --trace-children=yes             \
+VALGRIND = $(LIBTOOL) --mode=execute valgrind --trace-children=yes             \
   --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all    \
   --suppressions=build/valgrind/openssl.supp
 
