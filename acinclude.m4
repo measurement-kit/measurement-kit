@@ -177,7 +177,7 @@ AC_DEFUN([MK_AM_OPENSSL], [
   [AC_MSG_RESULT([yes])],
   [
     AC_MSG_RESULT([no])
-    if test /usr/local/Cellar/openssl; then
+    if test -d /usr/local/Cellar/openssl; then
       AC_MSG_WARN([MacOS ships an old system-wide OpenSSL but you seem to])
       AC_MSG_WARN([have a new version installed with brew.])
       AC_MSG_WARN([So, you should try adding this flag to configure:])
