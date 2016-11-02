@@ -30,7 +30,7 @@ include include.am
 TESTS = $(ALL_TESTS)
 check_PROGRAMS = $(ALL_TESTS)
 
-VALGRIND = $(LIBTOOL) --mode=execute valgrind --trace-children=yes             \
+VALGRIND = $(LIBTOOL)xx --mode=execute valgrind --trace-children=yes             \
   --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all    \
   --suppressions=build/valgrind/openssl.supp
 
