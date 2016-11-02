@@ -11,8 +11,12 @@ install:
     - if [ "$COVERAGE" = "--enable-coverage" ]; then
         pip install --user cpp-coveralls;
       fi
+    - export pkg_make_flags="V=0 -j2"
+    - export pkg_configure_flags="--quiet --disable-shared"
     - ./autogen.sh
     - ./build/dependency geoip
+    - ./build/dependency libressl
+    - ./build/dependency libevent
 
 script:
     - if [ "$DOCKER" != "" ]; then
@@ -43,14 +47,6 @@ after_failure:
 
 matrix:
   include:
-
-    - sudo: false
-      compiler: clang
-      env: DOCKER=clang
-      addons:
-        apt:
-          packages:
-            - docker
 
     - sudo: false
       compiler: g++-5
