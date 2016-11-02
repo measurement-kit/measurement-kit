@@ -47,6 +47,10 @@ matrix:
     - sudo: false
       compiler: clang
       env: DOCKER=clang
+      addons:
+        apt:
+          packages:
+            - docker
 
     - sudo: false
       compiler: g++-5
