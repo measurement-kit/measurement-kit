@@ -11,6 +11,9 @@ script:
     - export pkg_make_flags="V=0 -j3"
     - export pkg_configure_flags="--quiet --disable-static"
     - export LD_RUN_PATH=$TRAVIS_BUILD_DIR/builtin
+    # So, here we build our dependencies because it doesn't take too much time,
+    # because travis uses 12.04 with very old libs which cause many warnings
+    # with the also very old valgrind available:
     - ./build/dependency geoip
     - ./build/dependency libressl
     - ./build/dependency libevent
