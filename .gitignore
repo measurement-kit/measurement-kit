@@ -36,6 +36,7 @@
 /example/net/transport
 /include.am
 /measurement_kit
+/test-driver
 /test/common/continuation
 /test/common/delegate
 /test/common/error
@@ -110,5 +111,4 @@ site
 src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/
 stamp-h1
-test-driver
 third_party/
