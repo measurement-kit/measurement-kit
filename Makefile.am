@@ -39,8 +39,7 @@ check_PROGRAMS = $(ALL_TESTS)
 #
 
 VALGRIND = $(LIBTOOL) --mode=execute valgrind --trace-children=yes             \
-  --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all    \
-  --suppressions=build/valgrind/openssl.supp
+  --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all
 
 check-am-valgrind:
 	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND)'
