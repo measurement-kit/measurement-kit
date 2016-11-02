@@ -30,6 +30,14 @@ include include.am
 TESTS = $(ALL_TESTS)
 check_PROGRAMS = $(ALL_TESTS)
 
+#
+# Running tests through Valgrind by abusing of the LOG_COMPILER feature
+# which is enabled by automake < 1.14 only when parallel tests are forced,
+# so you now see why they are enabled explicitly in configure.ac
+#
+# See http://ansuz.sooke.bc.ca/entry/233
+#
+
 VALGRIND = $(LIBTOOL)xx --mode=execute valgrind --trace-children=yes             \
   --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all    \
   --suppressions=build/valgrind/openssl.supp
