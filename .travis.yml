@@ -23,13 +23,13 @@ script:
     - ./configure $pkg_configure_flags --with-geoip=builtin
         --with-openssl=builtin --with-libevent=builtin $COVERAGE
     - make $pkg_make_flags
-    - make $pkg_make_flags check
+    - make $pkg_make_flags check LOG_COMPILER='./libtool --mode=execute valgrind --error-exitcode=1'
     - echo make $pkg_make_flags check-am
 
 # Silence gcov standard output since it produces way too much output
 after_success:
     - if [ "$COVERAGE" = "--enable-coverage" ]; then
-        coveralls --gcov /usr/bin/gcov-5 --exclude src/libmeasurement_kit/ext
+        coveralls --gcov /usr/bin/gcov-6 --exclude src/libmeasurement_kit/ext
                   -b .  --exclude example --exclude third_party
                   --exclude include/measurement_kit/ext
                   --exclude src/libmeasurement_kit/cmdline > /dev/null;
@@ -44,26 +44,24 @@ matrix:
   include:
 
     - sudo: false
-      compiler: g++-5
-      env: COVERAGE=--enable-coverage VER=5
-           LOG_COMPILER='./libtool --mode=execute valgrind --error-exitcode=1'
+      compiler: g++-6
+      env: COVERAGE=--enable-coverage VER=6
       addons:
         apt:
           packages:
-            - g++-5
-            - gcc-5
+            - g++-6
+            - gcc-6
           sources:
             - ubuntu-toolchain-r-test
 
     - sudo: false
-      compiler: g++-5
-      env: VER=5
-           LOG_COMPILER='./libtool --mode=execute valgrind --error-exitcode=1'
+      compiler: g++-6
+      env: VER=6
       addons:
         apt:
           packages:
-            - g++-5
-            - gcc-5
+            - g++-6
+            - gcc-6
             - valgrind
           sources:
             - ubuntu-toolchain-r-test
