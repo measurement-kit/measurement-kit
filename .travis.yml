@@ -24,6 +24,7 @@ script:
         --with-openssl=builtin --with-libevent=builtin $COVERAGE
     - make $pkg_make_flags
     - cp build/valgrind/test-driver .
+    - rm test-driver
     - make $pkg_make_flags check
     - echo make $pkg_make_flags check-am
 
