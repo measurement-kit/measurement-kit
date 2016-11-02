@@ -6,6 +6,8 @@
 
 #include <measurement_kit/net/error.hpp>
 
+#include <cassert>
+
 // Using `extern "C"` for C callbacks is recommended by C++ FAQs.
 // See <https://isocpp.org/wiki/faq/pointers-to-members#memfnptr-vs-fnptr>.
 extern "C" {
@@ -25,6 +27,7 @@ void mk_pollfd_cb(evutil_socket_t, short evflags, void *p) {
     auto cbp = static_cast<mk::Callback<mk::Error, short> *>(p);
     mk::Error err = mk::NoError();
     short flags = 0;
+    assert((evflags & (EV_TIMEOUT|EV_READ|EV_WRITE)) != 0);
     if ((evflags & EV_TIMEOUT) != 0) {
         err = mk::net::TimeoutError();
     }
