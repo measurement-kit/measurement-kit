@@ -12,5 +12,5 @@
    fun:_ZN2mk8libevent6Poller4loopEv
    fun:_ZN2mk7Reactor23loop_with_initial_eventESt8functionIFvvEE
    fun:_ZN2mk23loop_with_initial_eventESt8functionIFvvEENS_3VarINS_7ReactorEEE
-   fun:_ZL31____C_A_T_C_H____T_E_S_T____413v
+   fun:_ZL31____C_A_T_C_H____T_E_S_T____418v
 }
