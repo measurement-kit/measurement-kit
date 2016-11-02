@@ -28,6 +28,7 @@ script:
       else
         ./configure --with-geoip=$TRAVIS_BUILD_DIR/builtin --with-openssl=$TRAVIS_BUILD_DIR/builtin --with-libevent=$TRAVIS_BUILD_DIR/builtin $COVERAGE && make -j2 V=0;
       fi
+    - cat config.log
     - if [ "$BUILD_TYPE" != "ios" ]; then
         make -j2 check-am V=0;
       fi
