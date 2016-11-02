@@ -37,12 +37,22 @@ check_PROGRAMS = $(ALL_TESTS)
 #
 # See http://ansuz.sooke.bc.ca/entry/233
 #
+# On travis-ci we need on specific suppression for a memory warning that I
+# honestly don't understand but that doesn't appear when building using docker
+# on circle-ci and gitlab (BTW docker on travis using valgrind was odd since
+# there were tons of errors unlike seen on every other docker and so I decided
+# it was wiser avoding docker on travis). On other platforms (including my
+# own docker on VoidLinux) no suppression file is needed.
+#
+# See https://travis-ci.org/measurement-kit/measurement-kit/jobs/172742411#L2131
+#
 
 VALGRIND = $(LIBTOOL) --mode=execute valgrind --trace-children=yes             \
-  --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all    \
-  --suppressions=build/valgrind/openssl.supp
+  --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all
+
+VALGRIND_TRAVIS = $(VALGRIND) --suppressions=build/valgrind/openssl.supp
 
 check-am-valgrind:
+	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND_TRAVIS)'
+run-valgrind:
 	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND)'
-
-run-valgrind: check-am-valgrind
