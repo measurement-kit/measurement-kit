@@ -1,7 +1,0 @@
-#!/bin/sh
-set -e
-ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
-cd $ROOTDIR/build/android
-version=`git describe --tags`-android_jni
-tar -cjf measurement_kit-$version.tar.bz2 jni/
-gpg2 -u 7733D95B -b --armor measurement_kit-$version.tar.bz2

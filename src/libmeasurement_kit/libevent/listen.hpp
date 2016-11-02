@@ -1,10 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_LIBMEASUREMENT_KIT_NET_LISTEN_HPP
-#define SRC_LIBMEASUREMENT_KIT_NET_LISTEN_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_LIBEVENT_LISTEN_HPP
+#define SRC_LIBMEASUREMENT_KIT_LIBEVENT_LISTEN_HPP
 
-#include "../net/connection.hpp"
+#include "../libevent/connection.hpp"
 
 #include <measurement_kit/net.hpp>
 
@@ -17,7 +17,7 @@ void mk_listener_cb(evconnlistener *sl, evutil_socket_t s, sockaddr *saddr,
 
 } // extern "C"
 namespace mk {
-namespace net {
+namespace libevent {
 
 typedef std::function<void(bufferevent *)> ListenCb;
 typedef std::function<void(evutil_socket_t)> ListenInternalCb;
@@ -48,10 +48,10 @@ inline void listen4(std::string address, int port, ListenCb cb) {
             (sockaddr *)&storage, salen);
     if (sl == nullptr) {
         delete cbp;
-        throw EvconnlistenerNewBindError();
+        throw net::EvconnlistenerNewBindError();
     }
 }
 
-} // namespace mk
+} // namespace libevent
 } // namespace net
 #endif

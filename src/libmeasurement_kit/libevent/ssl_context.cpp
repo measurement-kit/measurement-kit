@@ -9,10 +9,12 @@
 #include <stdexcept>
 #include <iostream>
 #include <measurement_kit/net.hpp>
-#include "../net/ssl-context.hpp"
+#include "../libevent/ssl_context.hpp"
 
 namespace mk {
-namespace net {
+namespace libevent {
+
+using namespace mk::net;
 
 ErrorOr<SSL *> SslContext::get_client_ssl(std::string hostname) {
     SSL *ssl = SSL_new(ctx);
@@ -79,6 +81,6 @@ SslContext::~SslContext() {
     SSL_CTX_free(ctx);
 }
 
-} // namespace net
+} // namespace libevent
 } // namespace mk
 

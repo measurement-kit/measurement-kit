@@ -1,3 +1,14 @@
+# MeasurementKit 0.3.5 [2016-11-01]
+
+- a few `web_connectivity` fixes (#880, #889, #890)
+- fix progress in emitted progress json (#886)
+
+# MeasurementKit 0.3.4 [2016-10-28]
+
+- switch test collector to b.collector.test.ooni.io (#880)
+- remove `./build/android/library` (#870)
+- fixing `web_connectivity` bug #867
+
 # MeasurementKit 0.3.3 [2016-10-23]
 
 - `connect.cpp`: increase default net/timeout (#872)

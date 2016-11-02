@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_LIBMEASUREMENT_KIT_NET_CONNECTION_HPP
-#define SRC_LIBMEASUREMENT_KIT_NET_CONNECTION_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_LIBEVENT_CONNECTION_HPP
+#define SRC_LIBMEASUREMENT_KIT_LIBEVENT_CONNECTION_HPP
 
 #include "../common/utils.hpp"
 #include "../net/emitter.hpp"
@@ -13,7 +13,9 @@
 #include <event2/event.h>
 
 namespace mk {
-namespace net {
+namespace libevent {
+
+using namespace mk::net;
 
 class Connection : public Emitter, public NonMovable, public NonCopyable {
   public:
@@ -86,6 +88,6 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
     bool suppressed_eof = false;
 };
 
-} // namespace net
+} // namespace libevent
 } // namespace mk
 #endif

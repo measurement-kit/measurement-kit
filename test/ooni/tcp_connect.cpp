@@ -20,7 +20,7 @@ TEST_CASE(
                                {
                                    {"port", "80"},
                                });
-    loop_with_initial_event_and_connectivity([&]() {
+    loop_with_initial_event([&]() {
         tcp_connect.begin([&](Error) {
             tcp_connect.end([](Error) { break_loop(); });
         });

@@ -31,7 +31,8 @@ void OoniTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
         prog = *current_entry / (double)num_entries;
     }
     *current_entry += 1;
-    logger->log(MK_LOG_INFO|MK_LOG_JSON, "{\"progress\": %f}", prog);
+    logger->log(MK_LOG_INFO|MK_LOG_JSON,
+        "{\"progress\": %f, \"type\": \"progress\"}", prog);
 
     logger->debug("net_test: creating entry");
     struct tm measurement_start_time;

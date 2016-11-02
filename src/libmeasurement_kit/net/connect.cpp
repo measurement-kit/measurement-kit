@@ -9,7 +9,9 @@
 #include "../net/connect_impl.hpp"
 #include "../net/emitter.hpp"
 #include "../net/socks5.hpp"
-#include "../net/ssl-context.hpp"
+
+#include "../libevent/connection.hpp"
+#include "../libevent/ssl_context.hpp"
 
 #include <cassert>
 #include <event2/bufferevent_ssl.h>
@@ -35,6 +37,8 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
 
 namespace mk {
 namespace net {
+
+using namespace mk::libevent;
 
 void connect_first_of(Var<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings,
@@ -288,7 +292,8 @@ void connect(std::string address, int port,
                                     return;
                                 }
                                 Var<Transport> txp =
-                                    Connection::make(bev, reactor, logger);
+                                    libevent::Connection::make(
+                                        bev, reactor, logger);
                                 txp->set_timeout(timeout);
                                 assert(err == NoError());
                                 err.context = r;
@@ -298,7 +303,7 @@ void connect(std::string address, int port,
                 return;
             }
             Var<Transport> txp =
-                Connection::make(r->connected_bev, reactor, logger);
+                libevent::Connection::make(r->connected_bev, reactor, logger);
             txp->set_timeout(timeout);
             assert(err == NoError());
             err.context = r;

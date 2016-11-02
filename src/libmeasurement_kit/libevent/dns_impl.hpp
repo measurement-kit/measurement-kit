@@ -5,8 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_DNS_QUERY_IMPL_HPP
 
 #include "../common/utils.hpp"
-
-#include <measurement_kit/dns.hpp>
+#include "../libevent/dns.hpp"
 
 #include <event2/dns.h>
 
@@ -22,7 +21,9 @@ void handle_resolve(
 
 struct evdns_base;
 namespace mk {
-namespace dns {
+namespace libevent {
+
+using namespace mk::dns;
 
 class QueryContext : public NonMovable, public NonCopyable {
   public:
@@ -198,7 +199,7 @@ static inline void dns_callback(int code, char type, int count, int ttl,
             build_answers_evdns(code, type, count, ttl, addresses);
     try {
         if (context->message->error_code != DNS_ERR_NONE) {
-            context->callback(mk::dns::dns_error(context->message->error_code),
+            context->callback(dns_error(context->message->error_code),
                     context->message);
         } else {
             context->callback(NoError(), context->message);
@@ -340,6 +341,6 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     cb(UnsupportedTypeError(), nullptr);
 }
 
-} // namespace dns
+} // namespace libevent
 } // namespace mk
 #endif
