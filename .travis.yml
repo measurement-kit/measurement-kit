@@ -48,6 +48,7 @@ matrix:
     - sudo: false
       compiler: g++-5
       env: COVERAGE=--enable-coverage VER=5
+           LOG_COMPILER='./libtool --mode=execute valgrind --error-exitcode=1'
       addons:
         apt:
           packages:
@@ -59,6 +60,7 @@ matrix:
     - sudo: false
       compiler: g++-5
       env: VER=5
+           LOG_COMPILER='./libtool --mode=execute valgrind --error-exitcode=1'
       addons:
         apt:
           packages:
