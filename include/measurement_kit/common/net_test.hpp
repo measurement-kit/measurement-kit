@@ -81,6 +81,10 @@ class NetTest {
         return Var<NetTest>{nullptr};
     }
 
+    virtual void run_with_input(std::string, Callback<std::string> cb) {
+        reactor->call_soon([=]() { cb(""); });
+    }
+
     void run();
     void run(Callback<> func);
 
