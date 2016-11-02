@@ -15,6 +15,9 @@ install:
     - ./build/dependency geoip
 
 script:
+    - if [ "$DOCKER" != "" ]; then
+        ./build/docker/$DOCKER;
+      fi
     - if [ "$BUILD_TYPE" = "ios" ]; then
         ./mobile/ios/scripts/build.sh;
       else
@@ -40,6 +43,10 @@ after_failure:
 
 matrix:
   include:
+
+    - sudo: false
+      compiler: clang
+      env: DOCKER=clang
 
     - sudo: false
       compiler: g++-5
