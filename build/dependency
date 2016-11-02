@@ -44,6 +44,10 @@ pkg_make_install() {
     $pkg_sudo make $pkg_make_install_flags install
 }
 
+pkg_none() {
+    echo "- no action"
+}
+
 set -e
 if [ $# -ne 1 ]; then
     print_usage

@@ -9,18 +9,6 @@ index e22684b..bf9d85c 100644
 +.travis.yml
 +.DS_Store
 +test-driver
-diff --git a/.travis.yml b/.travis.yml
-new file mode 100644
-index 0000000..4c2880c
---- /dev/null
-+++ b/.travis.yml
-@@ -0,0 +1,6 @@
-+language: c
-+install: autoreconf -i
-+script: ./configure && make -j2 V=0 && make -j2 check V=0
-+compiler:
-+  - clang
-+  - gcc
 diff --git a/Makefile.am b/Makefile.am
 index ad815d9..babd653 100644
 --- a/Makefile.am
@@ -51,10 +39,20 @@ index ad815d9..babd653 100644
  if BUILD_WIN32
  
 diff --git a/configure.ac b/configure.ac
-index 51725d6..86da55e 100644
+index 51725d6..349bd31 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -290,7 +290,7 @@ AC_HEADER_TIME
+@@ -11,7 +11,8 @@ AC_INIT(event.c)
+ 
+ AC_CONFIG_MACRO_DIR([m4])
+ 
+-AM_INIT_AUTOMAKE(libevent,2.0.22-stable)
++AM_INIT_AUTOMAKE([libevent,2.0.22-stable foreign])
++AM_MAINTAINER_MODE([enable])
+ AC_CONFIG_HEADERS(config.h)
+ AC_DEFINE(NUMERIC_VERSION, 0x02001600, [Numeric representation of the version])
+ 
+@@ -290,7 +291,7 @@ AC_HEADER_TIME
  
  dnl Checks for library functions.
  AC_CHECK_FUNCS([gettimeofday vasprintf fcntl clock_gettime strtok_r strsep])

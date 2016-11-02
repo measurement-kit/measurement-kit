@@ -14,3 +14,17 @@ index ad9b1ea..28c35c0 100644
  
  pkgconfigdir = $(libdir)/pkgconfig/
  nodist_pkgconfig_DATA = geoip.pc
+diff --git a/configure.ac b/configure.ac
+index a56e744..c760815 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -5,7 +5,8 @@ AC_INIT([GeoIP], [1.6.9],[support@maxmind.com],[GeoIP])
+ AC_CONFIG_AUX_DIR([.])
+ AC_CONFIG_SRCDIR([libGeoIP/GeoIP.c])
+ AC_CONFIG_MACRO_DIR([m4])
+-AM_INIT_AUTOMAKE(1.10.0)
++AM_INIT_AUTOMAKE([1.10.0 foreign])
++AM_MAINTAINER_MODE([enable])
+ AC_GNU_SOURCE
+ GEOIP_VERSION_INFO=`echo $VERSION | awk -F. '{ printf "%d:%d:%d", $1+$2, $3, $2 }'`
+ AC_SUBST(GEOIP_VERSION_INFO)
