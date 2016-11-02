@@ -15,7 +15,7 @@ AC_CONFIG_MACRO_DIR([m4])
 # wasn't honouring the LOG_COMPILER definition in the Makefile.
 #
 # Force parallel tests to make sure we can run tests through Valgrind.
-AM_INIT_AUTOMAKE([parallel-tests 0.11])
+AM_INIT_AUTOMAKE([parallel-tests 1.11])
 
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 LT_INIT
