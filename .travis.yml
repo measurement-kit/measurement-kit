@@ -17,20 +17,16 @@ script:
     - export pkg_make_flags="V=0 -j2"
     - export pkg_configure_flags="--quiet --disable-static"
     - export LD_RUN_PATH=$TRAVIS_BUILD_DIR/builtin
-    - wget https://github.com/measurement-kit/measurement-kit-deps/releases/download/2016-10-03/sources-20161102T102300Z.tgz
-    - tar -xzf sources-20161102T102300Z.tgz
+    - wget https://github.com/measurement-kit/measurement-kit-deps/releases/download/2016-10-03/sources-20161003T111300Z.tgz
+    - tar -xzf sources-20161003T111300Z.tgz
     - ./build/dependency geoip
     - ./build/dependency libressl
     - ./build/dependency libevent
-    - if [ "$BUILD_TYPE" = "ios" ]; then
-        ./mobile/ios/scripts/build.sh;
-      else
-        ./configure --with-geoip=$TRAVIS_BUILD_DIR/builtin --with-openssl=$TRAVIS_BUILD_DIR/builtin --with-libevent=$TRAVIS_BUILD_DIR/builtin $COVERAGE && make -j2 V=0;
-      fi
-    - make run-valgrind
-    - if [ "$BUILD_TYPE" != "ios" ]; then
-        make -j2 check-am V=0;
-      fi
+    - ./configure $pkg_configure_flags --with-geoip=builtin
+        --with-openssl=builtin --with-libevent=builtin $COVERAGE
+    - make $pkg_make_flags
+    - make $pkg_make_flags run-valgrind
+    - echo make $pkg_make_flags check-am
 
 # Silence gcov standard output since it produces way too much output
 after_success:
@@ -68,5 +64,6 @@ matrix:
           packages:
             - g++-5
             - gcc-5
+            - valgrind
           sources:
             - ubuntu-toolchain-r-test
