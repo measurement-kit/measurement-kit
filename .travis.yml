@@ -11,18 +11,17 @@ install:
     - if [ "$COVERAGE" = "--enable-coverage" ]; then
         pip install --user cpp-coveralls;
       fi
+    - ./autogen.sh
+
+script:
     - export pkg_make_flags="V=0 -j2"
     - export pkg_configure_flags="--quiet --disable-static"
     - export LD_RUN_PATH=$TRAVIS_BUILD_DIR/builtin
-    - ./autogen.sh
+    - wget https://github.com/measurement-kit/measurement-kit-deps/releases/download/2016-10-03/sources-20161102T102300Z.tgz
+    - tar -xzf sources-20161102T102300Z.tgz
     - ./build/dependency geoip
     - ./build/dependency libressl
     - ./build/dependency libevent
-
-script:
-    - if [ "$DOCKER" != "" ]; then
-        ./build/docker/$DOCKER;
-      fi
     - if [ "$BUILD_TYPE" = "ios" ]; then
         ./mobile/ios/scripts/build.sh;
       else
