@@ -24,6 +24,7 @@ script:
         --with-openssl=builtin --with-libevent=builtin $COVERAGE
     - make $pkg_make_flags
     - make $pkg_make_flags check-am-valgrind
+    - cat test/common/continuation.log
     - echo make $pkg_make_flags check-am
 
 # Silence gcov standard output since it produces way too much output
