@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+topdir=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
+if [ ! -x $topdir/test-driver ]; then
+  echo "fatal: missing $topdir/test-driver" 1>&2
+  exit 1
+fi
+if [ ! -x $topdir/libtool ]; then
+  echo "fatal: missing $topdir/libtool" 1>&2
+  exit 1
+fi
+options=""
+while [ $# -gt 0 ]; do
+  case $1 in
+    -*)
+      options="$options $1"
+      shift
+      ;;
+    *)
+      break
+  esac
+done
+$topdir/test-driver $options                                                   \
+  $topdir/libtool --mode=execute                                               \
+    valgrind --error-exitcode=1 --leak-check=yes --gen-suppressions=all        \
+      --suppressions=$topdir/build/valgrind/openssl.supp "$@"

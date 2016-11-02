@@ -17,8 +17,6 @@ script:
     - export pkg_make_flags="V=0 -j2"
     - export pkg_configure_flags="--quiet --disable-static"
     - export LD_RUN_PATH=$TRAVIS_BUILD_DIR/builtin
-    - wget https://github.com/measurement-kit/measurement-kit-deps/releases/download/2016-10-03/sources-20161003T111300Z.tgz
-    - tar -xzf sources-20161003T111300Z.tgz
     - ./build/dependency geoip
     - ./build/dependency libressl
     - ./build/dependency libevent

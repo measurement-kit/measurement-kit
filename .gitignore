@@ -110,5 +110,5 @@ site
 src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/
 stamp-h1
-test-driver
+/test-driver
 third_party/
