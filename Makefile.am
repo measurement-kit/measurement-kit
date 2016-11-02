@@ -30,20 +30,11 @@ include include.am
 TESTS = $(ALL_TESTS)
 check_PROGRAMS = $(ALL_TESTS)
 
-VALGRIND = valgrind --trace-children=yes --error-exitcode=1                    \
-                    --dsymutil=yes --leak-check=yes --gen-suppressions=all     \
-                    --suppressions=build/valgrind/openssl.supp
+VALGRIND = $(LIBTOOL) --mode=execute valgrind --trace-children=yes             \
+  --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all    \
+  --suppressions=build/valgrind/openssl.supp
 
-run-valgrind: $(check_PROGRAMS)
-	                                                                       \
-	for test_name in $(TESTS); do                                          \
-	  echo "";                                                             \
-	  if ! $(VALGRIND) $$test_name; then                                   \
-	    failed="$$test_name $$failed";                                     \
-	  fi;                                                                  \
-	done;                                                                  \
-	if test "$$failed" != ""; then                                         \
-	  echo "";                                                             \
-	  echo "failed tests: $$failed";                                       \
-	  exit 1;                                                              \
-	fi
+check-am-valgrind: $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND)'
+
+run-valgrind: check-am-valgrind
