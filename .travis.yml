@@ -43,7 +43,8 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
 
-    - sudo: false
+    - sudo: required
+      dist: trusty
       compiler: gcc-6
       env: CXX_NAME=g++-6 CC_NAME=gcc-6 VALGRIND=-valgrind
       addons:
