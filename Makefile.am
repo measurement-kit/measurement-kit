@@ -35,6 +35,6 @@ VALGRIND = $(LIBTOOL)xx --mode=execute valgrind --trace-children=yes            
   --suppressions=build/valgrind/openssl.supp
 
 check-am-valgrind:
-	LOG_COMPILER='$(VALGRIND)' $(MAKE) $(AM_MAKEFLAGS) check-am
+	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND)'
 
 run-valgrind: check-am-valgrind
