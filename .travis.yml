@@ -23,7 +23,7 @@ script:
     - ./configure $pkg_configure_flags --with-geoip=builtin
         --with-openssl=builtin --with-libevent=builtin $COVERAGE
     - make $pkg_make_flags
-    - make $pkg_make_flags run-valgrind
+    - make $pkg_make_flags check LOG_DRIVER=$TRAVIS_BUILD_DIR/build/valgrind/test-driver
     - echo make $pkg_make_flags check-am
 
 # Silence gcov standard output since it produces way too much output
