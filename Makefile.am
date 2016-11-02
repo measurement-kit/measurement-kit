@@ -37,6 +37,8 @@ check_PROGRAMS = $(ALL_TESTS)
 #
 # See http://ansuz.sooke.bc.ca/entry/233
 #
+# (Yes, of course this means valgrind runs in parallel -- i.e. faster.)
+#
 # On travis-ci we need on specific suppression for a memory warning that I
 # honestly don't understand but that doesn't appear when building using docker
 # on circle-ci and gitlab (BTW docker on travis using valgrind was odd since
