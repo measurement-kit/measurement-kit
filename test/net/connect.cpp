@@ -203,7 +203,7 @@ TEST_CASE("connect_first_of works when all connect fail") {
     result->resolve_result.addresses = {
         "130.192.16.172", "130.192.16.172", "130.192.16.172",
     };
-    loop_with_initial_event([]() {
+    loop_with_initial_event([&]() {
         connect_first_of(
             result,
             80,
@@ -224,7 +224,7 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
     result->resolve_result.addresses = {
         "130.192.16.172", "130.192.16.172", "130.192.16.172",
     };
-    loop_with_initial_event([]() {
+    loop_with_initial_event([&]() {
         connect_first_of(
             result,
             80,
