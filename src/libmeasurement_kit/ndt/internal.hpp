@@ -8,6 +8,7 @@
 // See <https://github.com/ndt-project/ndt/wiki/NDTProtocol>
 
 #include "../common/utils.hpp"
+#include "measure_speed.hpp"
 
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/ndt.hpp>
@@ -42,6 +43,8 @@
 #define TEST_SFW 8
 #define TEST_STATUS 16
 #define TEST_META 32
+//#define TEST_C2S_EXT 64
+#define TEST_S2C_EXT 128
 
 #define KICKOFF_MESSAGE "123456 654321"
 #define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
@@ -196,13 +199,29 @@ void run(Var<Context> ctx, Callback<Error> callback);
 */
 namespace test_s2c {
 
-void coroutine(Var<Entry> report_entry, std::string address, int port,
+struct Params {
+    int port = -1;
+    double duration = 10.0;      // ignored by our implementation
+    bool snaps_enabled = false;  // we always take snaps, never report them
+    double snaps_delay = 0.5;    // we ignore what is sent by the server
+    double snaps_offeset = 0.0;  // ignored by our implementation
+    int num_streams = 1;
+
+    Params(){}
+
+    // This constructor only sets the port and all the other settings
+    // instead remain at their default value
+    Params(int port) : port(port) {}
+};
+
+void coroutine(Var<Entry> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb,
                double timeout = 10.0, Settings settings = {},
                Var<Logger> logger = Logger::global(),
                Var<Reactor> reactor = Reactor::global());
 
-void finalizing_test(Var<Context> ctx, Callback<Error> callback);
+void finalizing_test(Var<Context> ctx, Var<Entry> cur_entry,
+                     Callback<Error> callback);
 
 void run(Var<Context> ctx, Callback<Error> callback);
 
@@ -218,13 +237,14 @@ void run(Var<Context> ctx, Callback<Error> callback);
     Useful functions used by all modules.
 */
 
-inline void log_speed(Var<Logger> logger, std::string type,
+inline void log_speed(Var<Logger> logger, std::string type, int num_streams,
                       double elapsed, double speed) {
     logger->log(MK_LOG_JSON | MK_LOG_INFO, R"xx({
             "type": "%s",
             "elapsed": [%lf, "s"],
+            "num_streams": %d,
             "speed": [%lf, "kbit/s"]
-        })xx", type.c_str(), elapsed, speed);
+        })xx", type.c_str(), elapsed, num_streams, speed);
 }
 
 } // namespace mk

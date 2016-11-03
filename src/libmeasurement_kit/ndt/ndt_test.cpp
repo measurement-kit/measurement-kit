@@ -14,41 +14,7 @@ using namespace mk::report;
 NdtTest::NdtTest(Settings s) : OoniTest("", s) {
     options["save_real_probe_ip"] = true;
     test_name = "ndt";
-    test_version = "0.0.1";
-}
-
-static void log_summary(Var<Logger> logger, Var<Entry> entry_) {
-    try {
-        json entry = json::parse(entry_->dump()); /* XXX */
-        nlohmann::json node{
-            {"type", "summary"},
-        };
-        node["failure"] = entry["failure"];
-        node["ping"] = {
-            entry["web100_data"]["MinRTT"],
-            "ms"
-        };
-        std::vector<double> speeds;
-        for (auto e: entry["receiver_data"]) {
-            speeds.push_back(e[1]);
-        }
-        node["median_speed"] = {
-            percentile(speeds, 0.5),
-            "kbit/s"
-        };
-        node["10_percentile_speed"] = {
-            percentile(speeds, 0.1),
-            "kbit/s"
-        };
-        node["90_percentile_speed"] = {
-            percentile(speeds, 0.9),
-            "kbit/s"
-        };
-        logger->log(MK_LOG_INFO | MK_LOG_JSON, "%s", node.dump().c_str());
-    } catch (const std::exception &e) {
-        logger->warn("could not write NDT test summary: %s", e.what());
-        /* suppress */ ;
-    }
+    test_version = "0.0.4";
 }
 
 void NdtTest::main(std::string, Settings settings, Callback<Entry> cb) {
@@ -60,7 +26,6 @@ void NdtTest::main(std::string, Settings settings, Callback<Entry> cb) {
         if (error) {
             (*entry)["failure"] = error.as_ooni_error();
         }
-        log_summary(logger, entry);
         // XXX The callback should probably take a Var<Entry>
         cb(*entry);
     }, settings, logger, reactor);

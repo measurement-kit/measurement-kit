@@ -60,6 +60,7 @@
 /test/libevent/dns_error
 /test/libevent/poller
 /test/mlabns/mlabns
+/test/ndt/measure_speed
 /test/ndt/messages
 /test/ndt/ndt_test
 /test/ndt/protocol
