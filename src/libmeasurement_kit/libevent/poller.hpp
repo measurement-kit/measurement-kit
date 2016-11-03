@@ -20,6 +20,7 @@ class Poller : public Reactor {
     void loop() override;
     void loop_once() override;
     void break_loop() override;
+    void pollfd(socket_t, short, Callback<Error, short>, double) override;
 
     // BEGIN internal functions used to test periodic event functionality
     void handle_periodic_();

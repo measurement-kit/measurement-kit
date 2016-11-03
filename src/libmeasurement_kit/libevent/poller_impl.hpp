@@ -18,6 +18,7 @@ extern "C" {
 
 void mk_call_later_cb(evutil_socket_t, short, void *p);
 void mk_loop_periodic_cb(evutil_socket_t, short, void *ptr);
+void mk_pollfd_cb(evutil_socket_t, short, void *p);
 
 } // extern "C"
 namespace mk {
@@ -60,10 +61,10 @@ Var<event_base> poller_alloc_evbase() {
 
 template <MK_MOCK(event_base_once)>
 void poller_call_later(Var<event_base> base, double timeo, Callback<> cb) {
-    timeval tv, *tvp = timeval_init(&tv, timeo);
+    timeval tv;
     auto cbp = new Callback<>(cb);
     if (event_base_once(base.get(), -1, EV_TIMEOUT, mk_call_later_cb, cbp,
-                        tvp) != 0) {
+                        timeval_init(&tv, timeo)) != 0) {
         delete cbp;
         throw std::runtime_error("event_base_once() failed");
     }
@@ -119,6 +120,29 @@ template <MK_MOCK(event_base_loopbreak)>
 void poller_break_loop(Var<event_base> base) {
     if (event_base_loopbreak(base.get()) != 0) {
         throw std::runtime_error("event_base_loopbreak() failed");
+    }
+}
+
+template <MK_MOCK(event_base_once)>
+void poller_pollfd(
+        Var<event_base> base,
+        socket_t sockfd,
+        short events,
+        Callback<Error, short> callback,
+        double timeo) {
+    timeval tv;
+    short evflags = EV_TIMEOUT;
+    if ((events & MK_POLLIN) != 0) {
+        evflags |= EV_READ;
+    }
+    if ((events & MK_POLLOUT) != 0) {
+        evflags |= EV_WRITE;
+    }
+    auto cbp = new Callback<Error, short>(callback);
+    if (event_base_once(base.get(), sockfd, evflags, mk_pollfd_cb, cbp,
+                        timeval_init(&tv, timeo)) != 0) {
+        delete cbp;
+        throw std::runtime_error("event_base_once() failed");
     }
 }
 
