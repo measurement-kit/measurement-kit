@@ -36,6 +36,7 @@
 /example/net/transport
 /include.am
 /measurement_kit
+/test-driver
 /test/common/continuation
 /test/common/delegate
 /test/common/error
@@ -59,6 +60,7 @@
 /test/libevent/dns_error
 /test/libevent/poller
 /test/mlabns/mlabns
+/test/ndt/measure_speed
 /test/ndt/messages
 /test/ndt/ndt_test
 /test/ndt/protocol
@@ -110,5 +112,4 @@ site
 src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/
 stamp-h1
-test-driver
 third_party/

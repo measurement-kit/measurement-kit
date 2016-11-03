@@ -43,28 +43,22 @@ void coroutine_impl(std::string address, int port, double runtime,
                     logger->debug("ndt: suspend coroutine");
                     cb(NoError(), [=](Callback<Error> cb) {
                         double begin = time_now();
-                        Var<double> previous(new double(begin));
-                        Var<size_t> count(new size_t(0));
+                        Var<MeasureSpeed> snap(new MeasureSpeed(0.5));
                         logger->debug("ndt: resume coroutine");
                         logger->info("Starting upload");
-                        log_speed(logger, "upload-speed", 0.0, 0.0);
                         txp->set_timeout(timeout);
                         txp->on_flush([=]() {
                             double now = time_now();
-                            if (now - *previous > 0.5) {
-                                double el = now - begin;
-                                double x = (*count * 8) / 1000 / (now - *previous);
-                                *previous = now;
-                                *count = 0;
-                                log_speed(logger, "upload-speed", el, x);
-                            }
+                            snap->maybe_speed(now, [&](double el, double x) {
+                                log_speed(logger, "upload-speed", 1, el, x);
+                            });
                             if (now - begin > runtime) {
                                 logger->info("Elapsed enough time");
                                 txp->emit_error(NoError());
                                 return;
                             }
                             txp->write(str.data(), str.size());
-                            *count += str.size();
+                            snap->total += str.size();
                         });
                         txp->on_error([=](Error err) {
                             logger->info("Ending upload (%d)", (int)err);
