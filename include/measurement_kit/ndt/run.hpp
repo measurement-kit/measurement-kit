@@ -17,7 +17,7 @@ using namespace mk::report;
 // define all defines here and there just redefine?
 #define MK_NDT_UPLOAD 2
 #define MK_NDT_DOWNLOAD 4
-//#define MK_NDT_UPLOAD_EXT 64
+//#define MK_NDT_UPLOAD_EXT 64 // not implemented
 #define MK_NDT_DOWNLOAD_EXT 128
 
 void run_with_specific_server(Var<Entry> entry, std::string address, int port,
