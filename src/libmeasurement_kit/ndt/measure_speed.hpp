@@ -1,13 +1,14 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_MEASURE_SPEED_HPP
-#define MEASUREMENT_KIT_COMMON_MEASURE_SPEED_HPP
+#ifndef MEASUREMENT_KIT_NDT_MEASURE_SPEED_HPP
+#define MEASUREMENT_KIT_NDT_MEASURE_SPEED_HPP
 
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/utils.hpp>
 
 namespace mk {
+namespace ndt {
 
 class MeasureSpeed {
   public:
@@ -50,5 +51,6 @@ class MeasureSpeed {
     }
 };
 
+} // namespace ndt
 } // namespace mk
 #endif

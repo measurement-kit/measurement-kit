@@ -6,8 +6,10 @@
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include <measurement_kit/common.hpp>
+#include "../src/libmeasurement_kit/ndt/measure_speed.hpp"
 
 using namespace mk;
+using namespace mk::ndt;
 
 TEST_CASE("The constructor with snap-delay works as expected") {
     MeasureSpeed msp(42.0);

@@ -10,7 +10,6 @@
 #include <measurement_kit/common/fmap.hpp>
 #include <measurement_kit/common/lexical_cast.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/measure_speed.hpp>
 #include <measurement_kit/common/mock.hpp>
 #include <measurement_kit/common/net_test.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
