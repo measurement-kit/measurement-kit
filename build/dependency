@@ -26,18 +26,26 @@ EOF
 
 pkg_configure() {
     if [ -x ./configure ]; then
+        echo "- ./configure --prefix=$pkg_prefix $pkg_configure_flags"
         ./configure --prefix=$pkg_prefix $pkg_configure_flags
     elif [ -f ./CMakeLists.txt ]; then
+        echo "- cmake -D CMAKE_INSTALL_PREFIX=$pkg_prefix $pkg_cmake_flags ."
         cmake -D CMAKE_INSTALL_PREFIX=$pkg_prefix $pkg_cmake_flags .
     fi
 }
 
 pkg_make() {
+    echo "- make $pkg_make_flags"
     make $pkg_make_flags
 }
 
 pkg_make_install() {
+    echo "- $pkg_sudo make $pkg_make_install_flags install"
     $pkg_sudo make $pkg_make_install_flags install
+}
+
+pkg_none() {
+    echo "- no action"
 }
 
 set -e
@@ -102,5 +110,8 @@ if [ -z "$pkg_steps" ]; then
     pkg_steps="configure make make_install"
 fi
 for step in $pkg_steps; do
+    echo ""
+    echo "* $step"
     pkg_$step
 done
+echo ""
