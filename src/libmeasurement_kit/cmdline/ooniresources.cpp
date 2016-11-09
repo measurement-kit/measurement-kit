@@ -18,7 +18,7 @@ using namespace mk;
 
 int main(const char *, int argc, char **argv) {
 
-    for (int ch; (ch = getopt(argc, argv, "c:v")) != -1; ) {
+    for (int ch; (ch = getopt(argc, argv, "v")) != -1; ) {
         switch (ch) {
         case 'v':
             increase_verbosity();
