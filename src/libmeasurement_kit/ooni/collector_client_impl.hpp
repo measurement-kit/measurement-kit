@@ -9,6 +9,7 @@
 
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/http.hpp>
 
 namespace mk {
 namespace ooni {
@@ -35,15 +36,24 @@ template <MK_MOCK_NAMESPACE(http, request_sendrecv)>
 void post_impl(Var<Transport> transport, std::string append_to_url,
                std::string body, Callback<Error, nlohmann::json> callback,
                Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+    std::string url = "";
+    Headers headers;
     if (settings.find("collector_base_url") == settings.end()) {
         callback(MissingCollectorBaseUrlError(), nullptr);
         return;
     }
-    std::string url = settings["collector_base_url"];
+    if (settings.find("collector_front_domain") != settings.end()) {
+        mk::http::Url base_url = mk::http::parse_url(settings["collector_base_url"]);
+        url = "https://";
+        url += settings["collector_front_domain"];
+        url += base_url.path; // XXX should we do more?
+        headers["Host"] = base_url.address; // XXX this is confusing that it's called address
+    } else {
+        url = settings["collector_base_url"];
+    }
     url += append_to_url;
     settings["http/url"] = url;
     settings["http/method"] = "POST";
-    Headers headers;
     if (body != "") {
         headers["Content-Type"] = "application/json";
     }
@@ -95,11 +105,20 @@ Error valid_entry(Entry entry);
 template <MK_MOCK_NAMESPACE(http, request_connect)>
 void connect_impl(Settings settings, Callback<Error, Var<Transport>> callback,
                   Var<Reactor> reactor, Var<Logger> logger) {
+    std::string url;
     if (settings.find("collector_base_url") == settings.end()) {
         callback(MissingCollectorBaseUrlError(), nullptr);
         return;
     }
-    settings["http/url"] = settings.at("collector_base_url");
+    if (settings.find("collector_front_domain") != settings.end()) {
+        mk::http::Url base_url = mk::http::parse_url(settings["collector_base_url"]);
+        url = "https://";
+        url += settings["collector_front_domain"];
+        url += base_url.path;
+    } else {
+        url = settings["collector_base_url"];
+    }
+    settings["http/url"] = url;
     http_request_connect(settings, callback, reactor, logger);
 }
 
@@ -289,6 +308,7 @@ template <MK_MOCK_NAMESPACE(collector, get_next_entry),
           MK_MOCK_NAMESPACE(collector, connect),
           MK_MOCK_NAMESPACE(collector, create_report)>
 void submit_report_impl(std::string filepath, std::string collector_base_url,
+                        std::string collector_front_domain,
                         Callback<Error> callback, Settings settings,
                         Var<Reactor> reactor, Var<Logger> logger) {
 
@@ -304,6 +324,9 @@ void submit_report_impl(std::string filepath, std::string collector_base_url,
     }
 
     settings["collector_base_url"] = collector_base_url;
+    if (collector_front_domain != "") {
+        settings["collector_front_domain"] = collector_front_domain;
+    }
     logger->info("connecting to collector %s...", collector_base_url.c_str());
     collector_connect(
         settings,

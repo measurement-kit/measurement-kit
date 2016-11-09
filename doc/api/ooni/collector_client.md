@@ -15,6 +15,12 @@ void mk::ooni::submit_report(std::string filepath, std::string collector_base_ur
         Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global());
 
+void mk::ooni::submit_report(std::string filepath, std::string collector_base_url,
+        std::string collector_front_domain,
+        Callback<Error> callback, Settings settings = {},
+        Var<Reactor> reactor = Reactor::global(),
+        Var<Logger> logger = Logger::global());
+
 void mk::ooni::connect(Settings settings, Callback<Error, Var<net::Transport>> callback,
         Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global());
 
@@ -47,6 +53,21 @@ The `default_collector_url()` function returns the default collector URL.
 The `submit_report()` function submits the report at `filepath` using the collector
 identifier by `collector_base_url` and calls `callback` when done. You can also
 optionally specify `settings`, a `reactor`, and a `logger`.
+It is possible to submit reports via cloudfronting by specifying
+`collector_front_domain`. In this case a connection will be opened to
+`collector_front_domain` and the `Host` header will be set to point to the domain
+contained inside of `collector_base_url`.
+
+For example if you want to use cloudfronting via `a0.awsstatic.com` to
+speak to the canonical ooni bouncer (`https://das0y2z2ribx3.cloudfront.net`),
+you should do:
+
+```
+collector::submit_report("/path/to/report", "https://das0y2z2ribx3.cloudfront.net",
+    "a0.awsstatic.com", [=](Error err) {
+            // Handle errors
+});
+```
 
 The `connect()` function connects to the address specified by the *"collector_base_url*"
 setting and calls `callback` when done. Optional `reactor` and `logger` could also be

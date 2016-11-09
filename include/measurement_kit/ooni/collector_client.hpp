@@ -36,6 +36,12 @@ void submit_report(std::string filepath, std::string collector_base_url,
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
+void submit_report(std::string filepath, std::string collector_base_url,
+                   std::string collector_front_domain,
+                   Callback<Error> callback, Settings conf = {},
+                   Var<Reactor> = Reactor::global(),
+                   Var<Logger> = Logger::global());
+
 /*
     The following APIs are used to implement `submit_report()` and could
     also be the basic bricks to open report at the beginning, update during
