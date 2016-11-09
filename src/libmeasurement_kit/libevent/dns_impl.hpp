@@ -5,8 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_DNS_QUERY_IMPL_HPP
 
 #include "../common/utils.hpp"
-
-#include <measurement_kit/dns.hpp>
+#include "../libevent/dns.hpp"
 
 #include <event2/dns.h>
 
@@ -22,7 +21,9 @@ void handle_resolve(
 
 struct evdns_base;
 namespace mk {
-namespace dns {
+namespace libevent {
+
+using namespace mk::dns;
 
 class QueryContext : public NonMovable, public NonCopyable {
   public:
@@ -36,11 +37,11 @@ class QueryContext : public NonMovable, public NonCopyable {
 
     evdns_base *base = nullptr;
 
-    Message message;
-    Callback<Error, Message> callback;
+    Var<Message> message;
+    Callback<Error, Var<Message>> callback;
 
     QueryContext(
-            evdns_base *b, Callback<Error, Message> c, Message m) {
+            evdns_base *b, Callback<Error, Var<Message>> c, Var<Message> m) {
         base = b;
         callback = c;
         message = m;
@@ -176,7 +177,7 @@ static inline std::vector<Answer> build_answers_evdns(
 
 static inline void dns_callback(int code, char type, int count, int ttl,
         void *addresses, QueryContext *context) {
-    context->message.error_code = code;
+    context->message->error_code = code;
 
     switch (code) {
     case DNS_ERR_NONE:
@@ -187,18 +188,18 @@ static inline void dns_callback(int code, char type, int count, int ttl,
     case DNS_ERR_REFUSED:
     case DNS_ERR_TRUNCATED:
     case DNS_ERR_NODATA:
-        context->message.rtt = mk::time_now() - context->ticks;
+        context->message->rtt = mk::time_now() - context->ticks;
         break;
     default:
-        context->message.rtt = 0.0;
+        context->message->rtt = 0.0;
         break;
     }
 
-    context->message.answers =
+    context->message->answers =
             build_answers_evdns(code, type, count, ttl, addresses);
     try {
-        if (context->message.error_code != DNS_ERR_NONE) {
-            context->callback(mk::dns::dns_error(context->message.error_code),
+        if (context->message->error_code != DNS_ERR_NONE) {
+            context->callback(dns_error(context->message->error_code),
                     context->message);
         } else {
             context->callback(NoError(), context->message);
@@ -214,10 +215,10 @@ template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
         MK_MOCK(evdns_base_resolve_ipv6), MK_MOCK(evdns_base_resolve_reverse),
         MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
 void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
-        Callback<Error, Message> cb, Settings settings,
-        Var<Reactor> reactor) {
+        Callback<Error, Var<Message>> cb, Settings settings,
+        Var<Reactor> reactor, Var<Logger> logger) {
 
-    Message message;
+    Var<Message> message(new Message);
     Query query;
     evdns_base *base;
 
@@ -255,7 +256,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     query.type = dns_type;
     query.qclass = dns_class;
     query.name = name;
-    message.queries.push_back(query);
+    message->queries.push_back(query);
 
     //
     // Note: evdns_base_resolve_xxx() return a evdns_request
@@ -274,6 +275,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     // variable to keep track of cancelled requests.
     //
     if (dns_type == QueryTypeId::A) {
+        logger->debug("dns query: IN A %s", name.c_str());
         QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_ipv4(base, name.c_str(), DNS_QUERY_NO_SEARCH,
                     handle_resolve,
@@ -285,6 +287,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     }
 
     if (dns_type == QueryTypeId::AAAA) {
+        logger->debug("dns query: IN AAAA %s", name.c_str());
         QueryContext *context = new QueryContext(base, cb, message);
         if (evdns_base_resolve_ipv6(base, name.c_str(), DNS_QUERY_NO_SEARCH,
                     handle_resolve,
@@ -296,6 +299,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     }
 
     if (dns_type == QueryTypeId::REVERSE_A) {
+        logger->debug("dns query: IN REVERSE_A %s", name.c_str());
         in_addr netaddr;
         if (inet_pton(AF_INET, name.c_str(), &netaddr) != 1) {
             evdns_base_free(base, 1);
@@ -314,6 +318,7 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     }
 
     if (dns_type == QueryTypeId::REVERSE_AAAA) {
+        logger->debug("dns query: IN REVERSE_AAAA %s", name.c_str());
         in6_addr netaddr;
         if (inet_pton(AF_INET6, name.c_str(), &netaddr) != 1) {
             evdns_base_free(base, 1);
@@ -336,6 +341,6 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     cb(UnsupportedTypeError(), nullptr);
 }
 
-} // namespace dns
+} // namespace libevent
 } // namespace mk
 #endif

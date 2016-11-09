@@ -5,10 +5,8 @@
 #include <cassert>
 #include <measurement_kit/net.hpp>
 #include "../net/connect.hpp"
-#include "../net/connection.hpp"
 #include "../net/emitter.hpp"
 #include "../net/socks5.hpp"
-#include "../net/ssl-context.hpp"
 
 namespace mk {
 namespace net {

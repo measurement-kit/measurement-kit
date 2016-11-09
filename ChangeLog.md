@@ -1,3 +1,20 @@
+# MeasurementKit 0.3.5 [2016-11-01]
+
+- a few `web_connectivity` fixes (#880, #889, #890)
+- fix progress in emitted progress json (#886)
+
+# MeasurementKit 0.3.4 [2016-10-28]
+
+- switch test collector to b.collector.test.ooni.io (#880)
+- remove `./build/android/library` (#870)
+- fixing `web_connectivity` bug #867
+
+# MeasurementKit 0.3.3 [2016-10-23]
+
+- `connect.cpp`: increase default net/timeout (#872)
+- `web_connectivity`: set the accessible key (#871)
+- Make `no_collector`/`no_file_report` really usable (#859)
+
 # MeasurementKit 0.3.2 [2016-10-03]
 
 - `ooni_test`: continue even if we cannot submit an entry

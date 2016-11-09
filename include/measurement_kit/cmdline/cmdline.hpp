@@ -7,55 +7,30 @@
 namespace mk {
 namespace cmdline {
 
+#define XX(_namespace_) \
+namespace _namespace_ { \
+int main(const char *progname, int argc, char **argv); \
+}
+
 // The main of specific modules:
 
-namespace dns_injection {
-int main(const char *progname, int argc, char **argv);
-}
-
-namespace dns_query {
-int main(const char *progname, int argc, char **argv);
-}
-
-namespace http_invalid_request_line {
-int main(const char *progname, int argc, char **argv);
-}
-
-namespace http_request {
-int main(const char *progname, int argc, char **argv);
-}
-
-namespace mlabns {
-int main(const char *progname, int argc, char **argv);
-}
-
-namespace ndt {
-int main(const char *progname, int argc, char **argv);
-}
-
-namespace net_connect {
-int main(const char *progname, int argc, char **argv);
-}
-
-namespace oonireport {
-int main(const char *progname, int argc, char **argv);
-}
-
-namespace ooniresources {
-int main(const char *progname, int argc, char **argv);
-}
-
-namespace tcp_connect {
-int main(const char *progname, int argc, char **argv);
-}
-
-namespace web_connectivity {
-int main(const char *progname, int argc, char **argv);
-}
+XX(dns_injection)
+XX(dns_query)
+XX(http_invalid_request_line)
+XX(http_request)
+XX(mlabns)
+XX(ndt)
+XX(net_connect)
+XX(oonireport)
+XX(ooniresources)
+XX(tcp_connect)
+XX(web_connectivity)
 
 // The toplevel main():
 
 int main(const char *progname, int argc, char **argv);
+
+#undef XX
 
 } // namespace cmdline
 } // namespace mk

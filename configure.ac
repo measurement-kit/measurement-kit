@@ -8,7 +8,15 @@ AC_INIT(measurement_kit, 0.4.0-dev, bassosimone@gmail.com)
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE
+
+# Travis uses Ubuntu 12.04 where the default automake was 1.11 in which
+# by default tests were run in serial mode; as such, the LOG_COMPILER hack
+# used to run tests using Valgrind was not working because automake 1.11
+# wasn't honouring the LOG_COMPILER definition in the Makefile.
+#
+# Force parallel tests to make sure we can run tests through Valgrind.
+AM_INIT_AUTOMAKE([parallel-tests 1.11])
+
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 LT_INIT
 AC_CONFIG_HEADERS([config.h])
@@ -29,9 +37,11 @@ MK_AM_DISABLE_INTEGRATION_TESTS
 AC_PROG_CXX
 
 # Must set -pthread before testing for -levent_pthreads
-CFLAGS="$CFLAGS -pthread"
-CXXFLAGS="$CXXFLAGS -pthread"
-LDFLAGS="$LDFLAGS -pthread"
+if test "`uname`" != "Darwin"; then
+  CFLAGS="$CFLAGS -pthread"
+  CXXFLAGS="$CXXFLAGS -pthread"
+  LDFLAGS="$LDFLAGS -pthread"
+fi
 
 MK_AM_CHECK_LIBC_FUNCS
 MK_AM_OPENSSL

@@ -27,8 +27,6 @@ MK_DEFINE_ERR(MK_ERR_DNS(14), InvalidNameForPTRError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(15), ResolverError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(16), UnsupportedTypeError, "")
 
-Error dns_error(int code); ///< Map evdns code to proper error
-
 /// Available query classes id
 enum class QueryClassId { IN, CS, CH, HS };
 
@@ -203,8 +201,9 @@ class Message {
 
 /// Perform a single DNS query
 void query(QueryClass dns_class, QueryType dns_type, std::string name,
-           Callback<Error, Message> func, Settings settings = {},
-           Var<Reactor> reactor = Reactor::global());
+           Callback<Error, Var<Message>> func, Settings settings = {},
+           Var<Reactor> reactor = Reactor::global(),
+           Var<Logger> logger = Logger::global());
 
 } // namespace dns
 } // namespace mk

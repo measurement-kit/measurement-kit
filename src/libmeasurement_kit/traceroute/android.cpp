@@ -40,29 +40,25 @@ void mk_traceroute_android_unused() {}
 
 #include "../common/utils.hpp"
 
+#include <measurement_kit/net.hpp>
 #include <measurement_kit/traceroute.hpp>
-
-#include <event2/event.h>
 
 #include <linux/errqueue.h>
 #include <sys/uio.h>
 
 #include <string.h>
 
-struct event_base;
-
 namespace mk {
 namespace traceroute {
 
-AndroidProber::AndroidProber(bool a, int port, event_base *c, Var<Logger> l)
-    : use_ipv4_(a), evbase_(c), port_(port), logger(l) {}
+AndroidProber::AndroidProber(bool a, int port, Var<Reactor> r, Var<Logger> l)
+    : use_ipv4_(a), reactor(r), port_(port), logger(l) {}
 
 void AndroidProber::init() {
 
-    if (sockfd_ >= 0 && evp_ != nullptr)
+    if (sockfd_ >= 0) {
         return;
-    else if (sockfd_ >= 0 || evp_ != nullptr)
-        throw std::runtime_error("Objects not properly initialized.");
+    }
 
     sockaddr_storage ss;
     socklen_t sslen;
@@ -70,7 +66,7 @@ void AndroidProber::init() {
     const int val = 1;
 
     logger->debug("AndroidProber(%d, %d, %p) => %p", use_ipv4_, port_,
-              (void *)evbase_, (void *)this);
+              (void *)reactor.get(), (void *)this);
 
     if (use_ipv4_) {
         level_sock = SOL_IP;
@@ -111,14 +107,6 @@ void AndroidProber::init() {
         error_cb_(BindError());
         return;
     }
-
-    // Note: since here we use `this`, object cannot be copied/moved
-    if ((evp_ = event_new(evbase_, sockfd_, EV_READ, event_callback, this)) ==
-        NULL) {
-        cleanup();
-        error_cb_(EventNewError());
-        return;
-    }
 }
 
 void AndroidProber::send_probe(std::string addr, int port, int ttl,
@@ -127,7 +115,6 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
     int ipproto, ip_ttl, family;
     sockaddr_storage ss;
     socklen_t sslen;
-    timeval tv;
 
     init();
 
@@ -184,10 +171,10 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
         return;
     }
 
-    if (event_add(evp_, mk::timeval_init(&tv, timeout)) != 0) {
-        error_cb_(EventAddError());
-        return;
-    }
+    // Note: we bind this, which makes this object non copyable or movable
+    reactor->pollfd(sockfd_, MK_POLLIN, [this](Error err, short flags) {
+        event_callback(err, flags);
+    }, timeout);
 
     probe_pending_ = true;
 }
@@ -351,27 +338,27 @@ double AndroidProber::calculate_rtt(struct timespec end,
     return rtt_ms;
 }
 
-void AndroidProber::event_callback(int, short event, void *opaque) {
-    AndroidProber *prober = static_cast<AndroidProber *>(opaque);
+void AndroidProber::event_callback(Error err, short flags) {
 
-    prober->logger->debug("event_callback(_, %d, %p)", event, opaque);
+    logger->debug("event_callback(%d, %d)", err.code, flags);
 
-    if ((event & EV_TIMEOUT) != 0) {
-        prober->on_timeout();
-        prober->timeout_cb_();
+    if (err == net::TimeoutError()) {
+        on_timeout();
+        timeout_cb_();
 
-    } else if ((event & EV_READ) != 0) {
+    } else if (!err && (flags & MK_POLLIN) != 0) {
         ProbeResult result;
         try {
-            result = prober->on_socket_readable();
+            result = on_socket_readable();
         } catch (Error &error) {
-            prober->error_cb_(error);
+            error_cb_(error);
             return;
         }
-        prober->result_cb_(result);
+        result_cb_(result);
 
-    } else
+    } else {
         throw std::runtime_error("Unexpected event error");
+    }
 }
 
 void AndroidProber::cleanup() {
@@ -379,11 +366,6 @@ void AndroidProber::cleanup() {
     if (sockfd_ >= 0) {
         ::close(sockfd_);
         sockfd_ = -1;
-    }
-    // Note: we don't own evbase_
-    if (evp_ != nullptr) {
-        event_free(evp_);
-        evp_ = NULL;
     }
 }
 

@@ -5,9 +5,9 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/net/connection.hpp"
+#include "../src/libmeasurement_kit/libevent/connection.hpp"
 
 using namespace mk;
-using namespace mk::net;
+using namespace mk::libevent;
 
 // TODO: Write tests for the Connection class

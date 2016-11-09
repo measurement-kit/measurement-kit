@@ -2,12 +2,14 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/dns.hpp>
+#include "../libevent/dns.hpp"
 
 #include <event2/dns.h>
 
 namespace mk {
-namespace dns {
+namespace libevent {
+
+using namespace mk::dns;
 
 Error dns_error(int code) {
     Error err;
@@ -81,5 +83,5 @@ Error dns_error(int code) {
     return err;
 }
 
-} // namespace dns
+} // namespace libevent
 } // namespace mk

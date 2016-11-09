@@ -5,7 +5,6 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/common/check_connectivity.hpp"
 #include <measurement_kit/net.hpp>
 
 using namespace mk;
