@@ -118,7 +118,18 @@ ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger) {
 void submit_report(std::string filepath, std::string collector_base_url,
                    Callback<Error> callback, Settings conf,
                    Var<Reactor> reactor, Var<Logger> logger) {
-    submit_report_impl(filepath, collector_base_url, callback, conf, reactor,
+    submit_report_impl(filepath, collector_base_url, "",
+                       callback, conf, reactor,
+                       logger);
+}
+
+void submit_report(std::string filepath, std::string collector_base_url,
+                   std::string collector_front_domain,
+                   Callback<Error> callback, Settings conf,
+                   Var<Reactor> reactor, Var<Logger> logger) {
+    submit_report_impl(filepath, collector_base_url,
+                       collector_front_domain,
+                       callback, conf, reactor,
                        logger);
 }
 
