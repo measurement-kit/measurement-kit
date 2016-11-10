@@ -81,7 +81,18 @@ class NetTest {
         return Var<NetTest>{nullptr};
     }
 
+    // Run in the current thread using the specified `Reactor`, whose event
+    // loop is started and terminated when the test is done.
+    //
+    // Throws an error if the reactor is already running.
+    void run(Var<Reactor> r);
+
+    // Run in a background thread using the default `Runner` and block until
+    // we reach the end of this test
     void run();
+
+    // Run in the background using the default `Runner` and call the
+    // specified callback when test is done
     void run(Callback<> func);
 
     Var<Logger> logger = Logger::make();
