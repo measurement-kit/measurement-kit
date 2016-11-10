@@ -14,6 +14,8 @@
 #include <limits.h>
 #include <type_traits>
 
+#define MAX_DNS_NAMESERVER 4
+
 extern "C" {
 void handle_resolve(
         int code, char type, int count, int ttl, void *addresses, void *opaque);
@@ -64,7 +66,16 @@ static inline evdns_base *create_evdns_base(
         if (evdns_base_nameserver_ip_add(
                     base, settings["dns/nameserver"].c_str()) != 0) {
             evdns_base_free(base, 1);
-            throw std::runtime_error("Cannot set server address");
+            throw std::runtime_error("Cannot set dns nameserver address");
+        }
+        for (int i=1; i<MAX_DNS_NAMESERVER; i++) {
+            if (settings.find("dns/nameserver"+i) != settings.end()) {
+                if (evdns_base_nameserver_ip_add(
+                            base, settings["dns/nameserver"+i].c_str()) != 0) {
+                    evdns_base_free(base, 1);
+                    throw std::runtime_error("Cannot set dns nameserver address");
+                }
+            }
         }
     } else if ((base = evdns_base_new(evb, 1)) == nullptr) {
         throw std::bad_alloc();
