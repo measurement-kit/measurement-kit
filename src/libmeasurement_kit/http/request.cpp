@@ -223,7 +223,8 @@ void request(Settings settings, Headers headers, std::string body,
                             return;
                         }
                         response->previous = previous;
-                        if (response->status_code / 100 == 3) {
+                        if (response->status_code / 100 == 3 and
+                            *max_redirects > 0) {
                             logger->debug("following redirect...");
                             std::string loc = response->headers["Location"];
                             if (loc == "") {
