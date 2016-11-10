@@ -40,7 +40,7 @@ class QueryContext : public NonMovable, public NonCopyable {
     Var<Message> message;
     Callback<Error, Var<Message>> callback;
 
-    Var<Logger> logger;
+    Var<Logger> logger = Logger::global();
 
     QueryContext(
             evdns_base *b, Callback<Error, Var<Message>> c,
