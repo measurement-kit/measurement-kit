@@ -68,10 +68,10 @@ static inline evdns_base *create_evdns_base(
             evdns_base_free(base, 1);
             throw std::runtime_error("Cannot set dns nameserver address");
         }
-        for (int i=1; i<MAX_DNS_NAMESERVER; i++) {
-            if (settings.find("dns/nameserver"+i) != settings.end()) {
+        for (int i=1; i<MAX_DNS_NAMESERVER; i++) {
+            if (settings.find("dns/nameserver" + std::to_string(i)) != settings.end()) {
                 if (evdns_base_nameserver_ip_add(
-                            base, settings["dns/nameserver"+i].c_str()) != 0) {
+                            base, settings["dns/nameserver" + std::to_string(i)].c_str()) != 0) {
                     evdns_base_free(base, 1);
                     throw std::runtime_error("Cannot set dns nameserver address");
                 }
