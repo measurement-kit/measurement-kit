@@ -40,12 +40,16 @@ class QueryContext : public NonMovable, public NonCopyable {
     Var<Message> message;
     Callback<Error, Var<Message>> callback;
 
+    Var<Logger> logger;
+
     QueryContext(
-            evdns_base *b, Callback<Error, Var<Message>> c, Var<Message> m) {
+            evdns_base *b, Callback<Error, Var<Message>> c,
+            Var<Message> m, Var<Logger> l = Logger::global()) {
         base = b;
         callback = c;
         message = m;
         ticks = mk::time_now();
+        logger = l;
     }
 };
 
@@ -99,9 +103,10 @@ static inline evdns_base *create_evdns_base(
 
 template <MK_MOCK(inet_ntop)>
 static inline std::vector<Answer> build_answers_evdns(
-        int code, char type, int count, int ttl, void *addresses) {
+        int code, char type, int count, int ttl, void *addresses,
+        Var<Logger> logger = Logger::global()) {
 
-    Var<Logger> logger = Logger::global();
+
 
     std::vector<Answer> answers;
 
@@ -196,7 +201,7 @@ static inline void dns_callback(int code, char type, int count, int ttl,
     }
 
     context->message->answers =
-            build_answers_evdns(code, type, count, ttl, addresses);
+            build_answers_evdns(code, type, count, ttl, addresses, context->logger);
     try {
         if (context->message->error_code != DNS_ERR_NONE) {
             context->callback(dns_error(context->message->error_code),
