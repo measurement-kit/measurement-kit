@@ -12,18 +12,23 @@ namespace cmdline {
 namespace dns_query {
 
 static const char *kv_usage =
-    "usage: measurement_kit dns_query [-N nameserver] [-v] [-c class] [-t type] domain\n";
+    "usage: measurement_kit dns_query [-v] [-c class] [-E engine]\n"
+    "                                 [-N nameserver] [-t type] domain\n";
 
 int main(const char *, int argc, char **argv) {
 
     std::string nameserver = "";
+    std::string engine = "";
     std::string query_class = "IN";
     int ch;
     std::string query_type = "A";
-    while ((ch = mkp_getopt(argc, argv, "c:N:t:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "c:E:N:t:v")) != -1) {
         switch (ch) {
         case 'c':
             query_class = mkp_optarg;
+            break;
+        case 'E':
+            engine = mkp_optarg;
             break;
         case 'N':
             nameserver = mkp_optarg;
@@ -50,6 +55,9 @@ int main(const char *, int argc, char **argv) {
     Settings settings;
     if (nameserver != "") {
         settings["dns/nameserver"] = nameserver;
+    }
+    if (engine != "") {
+        settings["dns/engine"] = engine;
     }
 
     loop_with_initial_event([&query_class, &query_type, &domain, &settings]() {

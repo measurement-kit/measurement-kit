@@ -16,7 +16,7 @@ void query(
         Settings settings,
         Var<Reactor> reactor,
         Var<Logger> logger) {
-    std::string engine = settings.get("engine", std::string{"libevent"});
+    std::string engine = settings.get("dns/engine", std::string{"libevent"});
     if (engine == "cares") {
         cares::query(dns_class, dns_type, name, cb, settings, reactor, logger);
         return;
