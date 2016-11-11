@@ -57,6 +57,7 @@ static inline void resolve_async(ResolverContext *ctx) {
                             &(ctx->servinfo));
     if (error) {
         // check the error variable and return the correct error
+        ctx->logger->warn(std::string(gai_strerror(error));
         ctx->reactor->call_soon(
             [callback]() { callback(ResolverError(), nullptr); });
         delete ctx;
@@ -102,8 +103,6 @@ static inline void resolve_async(ResolverContext *ctx) {
         answers.push_back(answer);
     }
     ctx->message->answers = answers;
-    // It's safe to dealloc ctx if we are passing Var<Mesassage> to the
-    // callback?
     message_copy = ctx->message;
     ctx->reactor->call_soon(
         [callback, message_copy]() { callback(NoError(), message_copy); });
@@ -117,7 +116,6 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
     ResolverContext *ctx = new ResolverContext(dns_class, dns_type, name, cb,
                                                settings, reactor, logger);
     Query query;
-    // initialize message in the constructor
     ctx->hints.ai_flags = AI_ADDRCONFIG;
     ctx->hints.ai_socktype = SOCK_STREAM;
     ctx->hints.ai_protocol = 0;
@@ -146,7 +144,7 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
     ctx->message->queries.push_back(query);
 
     std::thread res_thread(resolve_async, ctx);
-    /// XXX study if there is a better way to mantain a reference to the thread
+    /// XXX study a way to mantain a reference to the thread
     res_thread.detach();
 }
 
