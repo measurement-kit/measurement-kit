@@ -570,8 +570,15 @@ void web_connectivity(std::string input, Settings options,
 
     logger->info("web_connectivity: starting dns_query for %s", hostname.c_str());
 
+    // TODO: is this correct here to continue on errors?
+
     experiment_dns_query(entry, hostname, nameserver, [=](Error err,
               std::vector<std::string> addresses) {
+
+      if (err) {
+        logger->debug("web_connectivity: dns-query error: %s",
+                      err.explain().c_str());
+      }
 
       logger->info("web_connectivity: starting tcp_connect");
 
@@ -580,17 +587,29 @@ void web_connectivity(std::string input, Settings options,
         socket_list.push_back(std::make_pair(addr, url->port));
       }
 
-      // TODO: is this correct here to ignore errors? Not changing the
-      // code until it's clear it make sense to ignore them
-
       experiment_tcp_connect(entry, socket_list, [=](Error err){
+
+        if (err) {
+          logger->debug("web_connectivity: tcp-connect error: %s",
+                        err.explain().c_str());
+        }
 
         logger->info("web_connectivity: starting http_request to %s",
                      input.c_str());
         experiment_http_request(entry, input, [=](Error err){
 
+          if (err) {
+            logger->debug("web_connectivity: http-request error: %s",
+                          err.explain().c_str());
+          }
+
           logger->info("web_connectivity: doing control request");
           control_request(entry, socket_list, input, [=](Error err) {
+
+            if (err) {
+              logger->debug("web_connectivity: control-request error: %s",
+                            err.explain().c_str());
+            }
 
             logger->info("web_connectivity: comparing control with experiment");
             compare_control_experiment(input, entry, addresses, options, logger);
