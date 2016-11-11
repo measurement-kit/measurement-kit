@@ -1,12 +1,14 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
+#ifndef SRC_LIBMEASUREMENT_KIT_DNS_QUERY_HPP
+#define SRC_LIBMEASUREMENT_KIT_DNS_QUERY_HPP
 
-#include "../dns/query.hpp"
 #include "../libevent/dns.hpp"
 
 namespace mk {
 namespace dns {
+namespace cares {
 
 void query(
         QueryClass dns_class,
@@ -15,14 +17,9 @@ void query(
         Callback<Error, Var<Message>> cb,
         Settings settings,
         Var<Reactor> reactor,
-        Var<Logger> logger) {
-    std::string engine = settings.get("engine", std::string{"libevent"});
-    if (engine == "cares") {
-        cares::query(dns_class, dns_type, name, cb, settings, reactor, logger);
-        return;
-    }
-    libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);
-}
+        Var<Logger> logger);
 
+} // namespace cares
 } // namespace dns
 } // namespace mk
+#endif
