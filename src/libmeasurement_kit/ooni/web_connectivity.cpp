@@ -385,6 +385,9 @@ static void control_request(Var<Entry> entry,
 
     logger->debug("web_connectivity: performing control request to %s",
                   settings["backend"].c_str());
+
+    mk::dump_settings(settings, "web_connectivity", logger);
+
     http::request(settings, headers, body,
             [=](Error error, Var<http::Response> response) {
       if (!error) {
