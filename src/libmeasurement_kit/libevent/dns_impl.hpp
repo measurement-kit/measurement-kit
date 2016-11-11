@@ -11,6 +11,7 @@
 
 #include <cassert>
 #include <new>
+#include <memory>
 #include <limits.h>
 #include <type_traits>
 
@@ -53,37 +54,66 @@ class QueryContext : public NonMovable, public NonCopyable {
     }
 };
 
+struct evdns_base_deleter {
+    void operator()(evdns_base* p) {
+        constexpr int fail_requests = 1;
+        evdns_base_free(p, fail_requests);
+    }
+};
+
+struct evaddrinfo_deleter {
+    void operator()(evutil_addrinfo* p) {
+        evutil_freeaddrinfo(p);
+    }
+};
+
+using evdns_base_uptr = std::unique_ptr<evdns_base, evdns_base_deleter>;
+using evaddrinfo_uptr = std::unique_ptr<evutil_addrinfo, evaddrinfo_deleter>;
+
 template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_ip_add),
         MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *create_evdns_base(
         Settings settings, Var<Reactor> reactor = Reactor::global()) {
 
-    evdns_base *base;
     event_base *evb = reactor->get_event_base();
-
-    if (settings.find("dns/nameserver") != settings.end()) {
-        if ((base = evdns_base_new(evb, 0)) == nullptr) {
-            throw std::bad_alloc();
-        }
-        if (evdns_base_nameserver_ip_add(
-                    base, settings["dns/nameserver"].c_str()) != 0) {
-            evdns_base_free(base, 1);
-            throw std::runtime_error("Cannot set server address");
-        }
-    } else if ((base = evdns_base_new(evb, 1)) == nullptr) {
+    const int initialize_nameservers = settings.count("dns/nameserver") ? 0 : 1;
+    evdns_base_uptr base(evdns_base_new(evb, initialize_nameservers));
+    if (!base) {
         throw std::bad_alloc();
+    }
+
+    if (settings.count("dns/nameserver")) {
+        // libevent can't handle link-local IPv6 nameserver in
+        // evdns_base_nameserver_ip_add, and there is no way to parse alike
+        // addresses in platform-independent way, so that's why getaddrinfo().
+        // fe80::227:22ff:fe45:3a92%wlan0 -- Android
+        // fe80::227:22ff:fe45:3a92%wlp1s0 -- Ubuntu Linux
+        evutil_addrinfo hints = { };
+        hints.ai_family = PF_UNSPEC;
+        hints.ai_flags = EVUTIL_AI_NUMERICSERV | EVUTIL_AI_NUMERICHOST;
+        hints.ai_socktype = SOCK_DGRAM;
+        evutil_addrinfo *res = nullptr;
+        const int eaierr = evutil_getaddrinfo(settings["dns/nameserver"].c_str(), "53", &hints, &res);
+        evaddrinfo_uptr ai(res);
+        if (eaierr) {
+            throw std::runtime_error(std::string("Cannot parse server address: ") + evutil_gai_strerror(eaierr));
+        }
+
+        constexpr unsigned unused = 0; // libevent API does not use it :-/
+        const int nserr = evdns_base_nameserver_sockaddr_add(base.get(), ai->ai_addr, ai->ai_addrlen, unused);
+        if (nserr != 0) {
+            throw std::runtime_error("Cannot set server address: " + std::to_string(nserr));
+        }
     }
 
     if (settings.find("dns/attempts") != settings.end() &&
             evdns_base_set_option(
-                    base, "attempts", settings["dns/attempts"].c_str()) != 0) {
-        evdns_base_free(base, 1);
+                    base.get(), "attempts", settings["dns/attempts"].c_str()) != 0) {
         throw std::runtime_error("Cannot set 'attempts' option");
     }
     if (settings.find("dns/timeout") != settings.end() &&
             evdns_base_set_option(
-                    base, "timeout", settings["dns/timeout"].c_str()) != 0) {
-        evdns_base_free(base, 1);
+                    base.get(), "timeout", settings["dns/timeout"].c_str()) != 0) {
         throw std::runtime_error("Cannot set 'timeout' option");
     }
 
@@ -93,12 +123,11 @@ static inline evdns_base *create_evdns_base(
     if (settings.find("dns/randomize_case") != settings.end()) {
         randomiz = settings["dns/randomize_case"];
     }
-    if (evdns_base_set_option(base, "randomize-case", randomiz.c_str()) != 0) {
-        evdns_base_free(base, 1);
+    if (evdns_base_set_option(base.get(), "randomize-case", randomiz.c_str()) != 0) {
         throw std::runtime_error("Cannot set 'randomize-case' option");
     }
 
-    return base;
+    return base.release();
 }
 
 template <MK_MOCK(inet_ntop)>
