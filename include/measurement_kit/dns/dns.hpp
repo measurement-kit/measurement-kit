@@ -26,6 +26,7 @@ MK_DEFINE_ERR(MK_ERR_DNS(13), UnsupportedClassError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(14), InvalidNameForPTRError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(15), ResolverError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(16), UnsupportedTypeError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(17), InvalidDnsEngine, "")
 
 /// Available query classes id
 enum class QueryClassId { IN, CS, CH, HS };
