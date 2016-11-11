@@ -12,17 +12,21 @@ namespace cmdline {
 namespace dns_query {
 
 static const char *kv_usage =
-    "usage: measurement_kit dns_query [-v] [-c class] [-t type] domain\n";
+    "usage: measurement_kit dns_query [-N nameserver] [-v] [-c class] [-t type] domain\n";
 
 int main(const char *, int argc, char **argv) {
 
+    std::string nameserver = "";
     std::string query_class = "IN";
     int ch;
     std::string query_type = "A";
-    while ((ch = mkp_getopt(argc, argv, "c:t:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "c:N:t:v")) != -1) {
         switch (ch) {
         case 'c':
             query_class = mkp_optarg;
+            break;
+        case 'N':
+            nameserver = mkp_optarg;
             break;
         case 't':
             query_type = mkp_optarg;
@@ -43,7 +47,12 @@ int main(const char *, int argc, char **argv) {
     }
     std::string domain = argv[0];
 
-    loop_with_initial_event([&query_class, &query_type, &domain]() {
+    Settings settings;
+    if (nameserver != "") {
+        settings["dns/nameserver"] = nameserver;
+    }
+
+    loop_with_initial_event([&query_class, &query_type, &domain, &settings]() {
         std::cout << query_class << " " << query_type << "\n";
         dns::query(query_class.data(), query_type.data(), domain,
             [&query_type](Error e, Var<dns::Message> m) {
@@ -62,7 +71,7 @@ int main(const char *, int argc, char **argv) {
                     }
                 }
                 break_loop();
-            });
+            }, settings);
     });
 
     return 0;
