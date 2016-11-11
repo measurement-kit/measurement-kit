@@ -57,7 +57,7 @@ static inline void resolve_async(ResolverContext *ctx) {
                             &(ctx->servinfo));
     if (error) {
         // check the error variable and return the correct error
-        ctx->logger->warn(std::string(gai_strerror(error));
+        ctx->logger->warn(gai_strerror(error));
         ctx->reactor->call_soon(
             [callback]() { callback(ResolverError(), nullptr); });
         delete ctx;
