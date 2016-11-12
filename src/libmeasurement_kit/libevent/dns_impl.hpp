@@ -70,8 +70,8 @@ struct evaddrinfo_deleter {
 using evdns_base_uptr = std::unique_ptr<evdns_base, evdns_base_deleter>;
 using evaddrinfo_uptr = std::unique_ptr<evutil_addrinfo, evaddrinfo_deleter>;
 
-template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_ip_add),
-        MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_set_option)>
+template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_sockaddr_add),
+        typename evdns_base_uptr = evdns_base_uptr, MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *create_evdns_base(
         Settings settings, Var<Reactor> reactor = Reactor::global()) {
 
