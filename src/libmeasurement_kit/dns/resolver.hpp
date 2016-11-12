@@ -4,14 +4,13 @@
 
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/dns.hpp>
+#include <measurement_kit/portable/sys/socket.h>
+#include <measurement_kit/portable/sys/types.h>
 
 #include <assert.h>
+#include <future>
 
-#include <thread>
-/// XXX use versions compatible with windows
 #include <netdb.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 
 namespace mk {
 namespace dns {
@@ -140,9 +139,7 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
 
     ctx->message->queries.push_back(query);
 
-    std::thread res_thread(resolve_async, ctx);
-    /// XXX study a way to mantain a reference to the thread
-    res_thread.detach();
+    std::async(std::launch::async, resolve_async, ctx);
 }
 
 } // namespace dns
