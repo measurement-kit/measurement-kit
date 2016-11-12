@@ -50,7 +50,8 @@ class ResolverContext {
 };
 
 template<MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
-static inline void resolve_async(ResolverContext *ctx) {
+static inline void resolve_async(ResolverContext *context) {
+    std::unique_ptr<ResolverContext> ctx(context);
     Callback<Error, Var<Message>> callback = ctx->cb;
     Var<Message> message_copy;
 
@@ -61,7 +62,6 @@ static inline void resolve_async(ResolverContext *ctx) {
         ctx->logger->warn(gai_strerror(error));
         ctx->reactor->call_soon(
             [callback]() { callback(ResolverError(), nullptr); });
-        delete ctx;
         return;
     }
 
@@ -83,7 +83,6 @@ static inline void resolve_async(ResolverContext *ctx) {
         } else {
             ctx->reactor->call_soon(
                 [callback]() { callback(ResolverError(), nullptr); });
-            delete ctx;
             return;
         }
         if (inet_ntop(p->ai_family, addr_ptr, address, sizeof(address)) ==
@@ -102,7 +101,6 @@ static inline void resolve_async(ResolverContext *ctx) {
     message_copy = ctx->message;
     ctx->reactor->call_soon(
         [callback, message_copy]() { callback(NoError(), message_copy); });
-    delete ctx;
 }
 
 template<MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
