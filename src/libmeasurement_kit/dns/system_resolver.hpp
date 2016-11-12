@@ -110,8 +110,8 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
                             std::string name, Callback<Error, Var<Message>> cb,
                             Settings settings, Var<Reactor> reactor,
                             Var<Logger> logger) {
-    ResolverContext *ctx = new ResolverContext(dns_class, dns_type, name, cb,
-                                               settings, reactor, logger);
+    std::unique_ptr<ResolverContext> ctx(new ResolverContext(dns_class, dns_type, name, cb,
+                                               settings, reactor, logger));
     Query query;
     ctx->hints.ai_flags = AI_ADDRCONFIG;
     ctx->hints.ai_socktype = SOCK_STREAM;
@@ -120,7 +120,6 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
         reactor->call_soon([=]() {
             cb(UnsupportedClassError(), nullptr);
         });
-        delete ctx;
         return;
     }
 
@@ -132,7 +131,6 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
         reactor->call_soon([=]() {
             cb(UnsupportedClassError(), nullptr);
         });
-        delete ctx;
         return;
     }
 
@@ -142,7 +140,7 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
 
     ctx->message->queries.push_back(query);
 
-    std::async(std::launch::async, resolve_async<getaddrinfo, inet_ntop>, ctx);
+    std::async(std::launch::async, resolve_async<getaddrinfo, inet_ntop>, ctx.release());
 }
 
 } // namespace dns
