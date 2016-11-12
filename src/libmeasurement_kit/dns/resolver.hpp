@@ -2,12 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/portable/sys/socket.h>
 #include <measurement_kit/portable/sys/types.h>
 
-#include <assert.h>
+#include <cassert>
 #include <future>
 
 #include <netdb.h>
