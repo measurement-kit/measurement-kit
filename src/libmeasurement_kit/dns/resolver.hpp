@@ -124,7 +124,9 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
     ctx->hints.ai_next = NULL;
 
     if (dns_class != QueryClassId::IN) {
-        cb(UnsupportedClassError(), nullptr);
+        reactor->call_soon([=]() {
+            cb(UnsupportedClassError(), nullptr);
+        });
         return;
     }
 
@@ -133,7 +135,9 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
     } else if (dns_type == QueryTypeId::AAAA) {
         ctx->hints.ai_family = AF_INET6;
     } else {
-        cb(UnsupportedTypeError(), nullptr);
+        reactor->call_soon([=]() {
+            cb(UnsupportedClassError(), nullptr);
+        });
         return;
     }
 
