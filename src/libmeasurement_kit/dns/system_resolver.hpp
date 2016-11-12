@@ -49,6 +49,7 @@ class ResolverContext {
     }
 };
 
+template<MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
 static inline void resolve_async(ResolverContext *ctx) {
     Callback<Error, Var<Message>> callback = ctx->cb;
     Var<Message> message_copy;
@@ -104,6 +105,7 @@ static inline void resolve_async(ResolverContext *ctx) {
     delete ctx;
 }
 
+template<MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
 inline void system_resolver(QueryClass dns_class, QueryType dns_type,
                             std::string name, Callback<Error, Var<Message>> cb,
                             Settings settings, Var<Reactor> reactor,
@@ -118,6 +120,7 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
         reactor->call_soon([=]() {
             cb(UnsupportedClassError(), nullptr);
         });
+        delete ctx;
         return;
     }
 
@@ -129,6 +132,7 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
         reactor->call_soon([=]() {
             cb(UnsupportedClassError(), nullptr);
         });
+        delete ctx;
         return;
     }
 
@@ -138,7 +142,7 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
 
     ctx->message->queries.push_back(query);
 
-    std::async(std::launch::async, resolve_async, ctx);
+    std::async(std::launch::async, resolve_async<getaddrinfo, inet_ntop>, ctx);
 }
 
 } // namespace dns
