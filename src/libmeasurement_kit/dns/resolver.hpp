@@ -5,6 +5,8 @@
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/dns.hpp>
 
+#include <assert.h>
+
 #include <thread>
 /// XXX use versions compatible with windows
 #include <netdb.h>
@@ -24,8 +26,8 @@ class ResolverContext {
     Var<Reactor> reactor;
     Var<Logger> logger;
 
-    struct addrinfo hints;
-    struct addrinfo *servinfo = nullptr;
+    addrinfo hints;
+    addrinfo *servinfo = nullptr;
 
     Var<Message> message{new Message};
 
@@ -52,7 +54,6 @@ class ResolverContext {
 static inline void resolve_async(ResolverContext *ctx) {
     Callback<Error, Var<Message>> callback = ctx->cb;
     Var<Message> message_copy;
-    struct addrinfo *p;
 
     int error = getaddrinfo(ctx->name.c_str(), nullptr, &(ctx->hints),
                             &(ctx->servinfo));
@@ -65,26 +66,21 @@ static inline void resolve_async(ResolverContext *ctx) {
         return;
     }
 
-    if (ctx->servinfo == nullptr) {
-        ctx->reactor->call_soon(
-            [callback]() { callback(ResolverError(), nullptr); });
-        delete ctx;
-        return;
-    }
+    assert(ctx->servinfo != nullptr);
 
     void *addr_ptr;
     char address[128];
     std::vector<Answer> answers;
-    for (p = ctx->servinfo; p != nullptr; p = p->ai_next) {
+    for (addrinfo *p = ctx->servinfo; p != nullptr; p = p->ai_next) {
         Answer answer;
         answer.name = ctx->name;
         answer.qclass = ctx->dns_class;
         if (p->ai_family == AF_INET) {
             answer.type = QueryTypeId::A;
-            addr_ptr = &((struct sockaddr_in *)p->ai_addr)->sin_addr;
+            addr_ptr = &((sockaddr_in *)p->ai_addr)->sin_addr;
         } else if (p->ai_family == AF_INET6) {
             answer.type = QueryTypeId::AAAA;
-            addr_ptr = &((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
+            addr_ptr = &((sockaddr_in6 *)p->ai_addr)->sin6_addr;
         } else {
             ctx->reactor->call_soon(
                 [callback]() { callback(ResolverError(), nullptr); });
@@ -119,10 +115,6 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
     Query query;
     ctx->hints.ai_flags = AI_ADDRCONFIG;
     ctx->hints.ai_socktype = SOCK_STREAM;
-    ctx->hints.ai_protocol = 0;
-    ctx->hints.ai_canonname = NULL;
-    ctx->hints.ai_addr = NULL;
-    ctx->hints.ai_next = NULL;
 
     if (dns_class != QueryClassId::IN) {
         reactor->call_soon([=]() {
@@ -132,7 +124,7 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
     }
 
     if (dns_type == QueryTypeId::A) {
-        ctx->hints.ai_family = AF_UNSPEC;
+        ctx->hints.ai_family = AF_INET;
     } else if (dns_type == QueryTypeId::AAAA) {
         ctx->hints.ai_family = AF_INET6;
     } else {
