@@ -5,6 +5,8 @@
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/portable/sys/socket.h>
 #include <measurement_kit/portable/sys/types.h>
+#include <measurement_kit/portable/netdb.h>
+
 
 #include <cassert>
 #include <future>
