@@ -82,7 +82,7 @@ static inline evdns_base *create_evdns_base(
         throw std::bad_alloc();
     }
 
-    if (settings.count("dns/nameserver")) {
+    if (!initialize_nameservers) {
         // libevent can't handle link-local IPv6 nameserver in
         // evdns_base_nameserver_ip_add, and there is no way to parse alike
         // addresses in platform-independent way, so that's why getaddrinfo().
@@ -93,7 +93,11 @@ static inline evdns_base *create_evdns_base(
         hints.ai_flags = EVUTIL_AI_NUMERICSERV | EVUTIL_AI_NUMERICHOST;
         hints.ai_socktype = SOCK_DGRAM;
         evutil_addrinfo *res = nullptr;
-        const int eaierr = evutil_getaddrinfo(settings["dns/nameserver"].c_str(), "53", &hints, &res);
+        std::string port{"53"};
+        if (settings.count("dns/port")) {
+            port = settings["dns/port"];
+        }
+        const int eaierr = evutil_getaddrinfo(settings["dns/nameserver"].c_str(), port.c_str(), &hints, &res);
         evaddrinfo_uptr ai(res);
         if (eaierr) {
             throw std::runtime_error(std::string("Cannot parse server address: ") + evutil_gai_strerror(eaierr));

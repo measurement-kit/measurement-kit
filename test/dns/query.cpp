@@ -68,6 +68,14 @@ TEST_CASE("throw error while fails evdns_base_new") {
         std::bad_alloc);
 }
 
+TEST_CASE("throw error on literal port") {
+    // NB: dns/port=128000 just overflows uint16
+    REQUIRE_THROWS_AS(
+        (create_evdns_base(
+            {{"dns/nameserver", "8.8.8.8"}, {"dns/port", "domain"}}, Reactor::global())),
+        std::runtime_error);
+}
+
 TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, null_evdns_base_nameserver_sockaddr_add,
