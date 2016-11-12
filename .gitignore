@@ -52,7 +52,7 @@
 /test/common/version
 /test/dns/defines
 /test/dns/query
-/test/dns/resolver
+/test/dns/system_resolver
 /test/http/headers
 /test/http/parse_url
 /test/http/request
