@@ -126,7 +126,7 @@ tls_check_subject_altname(struct tls *ctx, X509 *cert, const char *name)
 				data = ASN1_STRING_data(altname->d.dNSName);
 				len = ASN1_STRING_length(altname->d.dNSName);
 
-				if (len < 0 || (size_t)len != strlen(data)) {
+				if (len < 0 || (size_t)len != strlen((char *)data)) {
 					tls_set_errorx(ctx,
 					    "error verifying name '%s': "
 					    "NUL byte in subjectAltName, "
@@ -141,7 +141,7 @@ tls_check_subject_altname(struct tls *ctx, X509 *cert, const char *name)
 				 * " " is a legal domain name, but that
 				 * dNSName must be rejected.
 				 */
-				if (strcmp(data, " ") == 0) {
+				if (strcmp((char *)data, " ") == 0) {
 					tls_set_error(ctx,
 					    "error verifying name '%s': "
 					    "a dNSName of \" \" must not be "
@@ -150,7 +150,7 @@ tls_check_subject_altname(struct tls *ctx, X509 *cert, const char *name)
 					break;
 				}
 
-				if (tls_match_name(data, name) == 0) {
+				if (tls_match_name((char *)data, name) == 0) {
 					rv = 0;
 					break;
 				}
