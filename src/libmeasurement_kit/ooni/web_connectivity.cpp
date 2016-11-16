@@ -418,8 +418,7 @@ static void experiment_http_request(Var<Entry> entry,
 
   logger->debug("Requesting url %s", url.c_str());
   templates::http_request(entry, options, headers, body, [=](Error err,
-              Var<http::Response> response) {
-    // TODO: here we are ignoring the response... does it make sense?
+              Var<http::Response> /*response*/) {
     if (err) {
       (*entry)["http_experiment_failure"] = err.as_ooni_error();
       cb(err);

@@ -29,9 +29,11 @@ MK_AM_DISABLE_INTEGRATION_TESTS
 AC_PROG_CXX
 
 # Must set -pthread before testing for -levent_pthreads
-CFLAGS="$CFLAGS -pthread"
-CXXFLAGS="$CXXFLAGS -pthread"
-LDFLAGS="$LDFLAGS -pthread"
+if test "`uname`" != "Darwin"; then
+  CFLAGS="$CFLAGS -pthread"
+  CXXFLAGS="$CXXFLAGS -pthread"
+  LDFLAGS="$LDFLAGS -pthread"
+fi
 
 MK_AM_CHECK_LIBC_FUNCS
 MK_AM_OPENSSL
