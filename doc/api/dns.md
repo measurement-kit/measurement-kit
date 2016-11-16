@@ -175,6 +175,7 @@ using namespace mk;
 
 Settings settings({
     {"dns/nameserver", "8.8.8.8"},
+    {"dns/port", 53},
     {"dns/attempts", 1},
     {"dns/timeout", 3.1415},
     {"dns/randomize_case", true},
