@@ -8,5 +8,4 @@
 #include <netdb.h>
 #endif
 
-
 #endif
