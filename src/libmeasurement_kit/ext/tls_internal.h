@@ -44,6 +44,6 @@ tls_set_errorx(struct tls *ctx, const char *errmsg, ...) {
     (void)errmsg;
     /* do nothing */ ;
 }
-#define tls_set_error(ctx, errmsg, name) tls_set_errorx
+#define tls_set_error tls_set_errorx
 
 #endif /* SRC_EXT_TLS_INTERNAL_H */
