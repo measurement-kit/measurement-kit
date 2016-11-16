@@ -139,8 +139,6 @@ static inline std::vector<Answer> build_answers_evdns(
         int code, char type, int count, int ttl, void *addresses,
         Var<Logger> logger = Logger::global()) {
 
-
-
     std::vector<Answer> answers;
 
     if (code != DNS_ERR_NONE) {
