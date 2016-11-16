@@ -385,6 +385,9 @@ static void control_request(Var<Entry> entry,
 
     logger->debug("web_connectivity: performing control request to %s",
                   settings["backend"].c_str());
+
+    mk::dump_settings(settings, "web_connectivity", logger);
+
     http::request(settings, headers, body,
             [=](Error error, Var<http::Response> response) {
       if (!error) {
@@ -415,8 +418,7 @@ static void experiment_http_request(Var<Entry> entry,
 
   logger->debug("Requesting url %s", url.c_str());
   templates::http_request(entry, options, headers, body, [=](Error err,
-              Var<http::Response> response) {
-    // TODO: here we are ignoring the response... does it make sense?
+              Var<http::Response> /*response*/) {
     if (err) {
       (*entry)["http_experiment_failure"] = err.as_ooni_error();
       cb(err);
@@ -570,8 +572,15 @@ void web_connectivity(std::string input, Settings options,
 
     logger->info("web_connectivity: starting dns_query for %s", hostname.c_str());
 
+    // TODO: is this correct here to continue on errors?
+
     experiment_dns_query(entry, hostname, nameserver, [=](Error err,
               std::vector<std::string> addresses) {
+
+      if (err) {
+        logger->debug("web_connectivity: dns-query error: %s",
+                      err.explain().c_str());
+      }
 
       logger->info("web_connectivity: starting tcp_connect");
 
@@ -580,17 +589,29 @@ void web_connectivity(std::string input, Settings options,
         socket_list.push_back(std::make_pair(addr, url->port));
       }
 
-      // TODO: is this correct here to ignore errors? Not changing the
-      // code until it's clear it make sense to ignore them
-
       experiment_tcp_connect(entry, socket_list, [=](Error err){
+
+        if (err) {
+          logger->debug("web_connectivity: tcp-connect error: %s",
+                        err.explain().c_str());
+        }
 
         logger->info("web_connectivity: starting http_request to %s",
                      input.c_str());
         experiment_http_request(entry, input, [=](Error err){
 
+          if (err) {
+            logger->debug("web_connectivity: http-request error: %s",
+                          err.explain().c_str());
+          }
+
           logger->info("web_connectivity: doing control request");
           control_request(entry, socket_list, input, [=](Error err) {
+
+            if (err) {
+              logger->debug("web_connectivity: control-request error: %s",
+                            err.explain().c_str());
+            }
 
             logger->info("web_connectivity: comparing control with experiment");
             compare_control_experiment(input, entry, addresses, options, logger);
