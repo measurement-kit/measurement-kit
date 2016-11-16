@@ -44,6 +44,19 @@ Continuation<Error> OoniReporter::open(Report report) {
 }
 
 Continuation<Error> OoniReporter::write_entry(Entry entry) {
+    /*
+     * Unconditionally overwrite the `report_id` field with what was
+     * passed us by the server, which should be authoritative.
+     *
+     * This action must be performed here rather than below because in
+     * the lambda context `entry` would be read only.
+     *
+     * Note that `entry` is passed by copy so changing it has no
+     * effect outside of this function.
+     */
+    entry["report_id"] = report_id;
+
+    // Register action for when we will be asked to write the entry
     return do_write_entry_(entry, [=](Callback<Error> cb) {
         if (report_id == "") {
             logger->warn("ooni_reporter: missing report ID");
