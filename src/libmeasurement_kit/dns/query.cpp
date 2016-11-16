@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include "../libevent/dns.hpp"
-#include "system_resolver.hpp"
+#include "../dns/system_resolver.hpp"
 
 namespace mk {
 namespace dns {
