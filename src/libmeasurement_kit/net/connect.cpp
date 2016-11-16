@@ -156,9 +156,13 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                  Var<Logger> logger) {
     logger->debug("connect ssl...");
 
+    // Perhaps DEFER not needed on SSL but setting it won't hurt. See
+    // the similar comment in connect_impl.hpp for rationale.
+    static const int flags = BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS;
+
     auto bev = bufferevent_openssl_filter_new(
         reactor->get_event_base(), orig_bev, ssl, BUFFEREVENT_SSL_CONNECTING,
-        BEV_OPT_CLOSE_ON_FREE);
+        flags);
     if (bev == nullptr) {
         bufferevent_free(orig_bev);
         cb(GenericError(), nullptr);

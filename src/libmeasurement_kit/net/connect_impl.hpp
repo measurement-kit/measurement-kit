@@ -43,9 +43,25 @@ void connect_base(std::string address, int port,
         return;
     }
 
+    /*
+     *  Rationale for deferring callbacks:
+     *
+     *  When using IOCP on Windows, the kernel calls callbacks when selected
+     *  events occur (i.e., there is no loop that guarantees callbacks run in
+     *  the same thread); set DEFER_CALLBACKS to tell libevent to serialize
+     *  bufferevent's callbacks into the event loop to avoid creating MT issues
+     *  in code that otherwise (on Unices) is single threaded.
+     *
+     *  Yes, the current implementation forces serializing the callbacks also
+     *  on Unix where this wouldn't be needed thus adding some overhead. For
+     *  uniformity, I am for serializing for all platforms and then, if we see
+     *  that there's too much overhead, to only enable that on Windows.
+     */
+    static const int flags = BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS;
+
     bufferevent *bev;
     if ((bev = bufferevent_socket_new(reactor->get_event_base(), -1,
-                                      BEV_OPT_CLOSE_ON_FREE)) == nullptr) {
+                                      flags)) == nullptr) {
         throw GenericError(); // This should not happen
     }
 
