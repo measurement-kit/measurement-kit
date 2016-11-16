@@ -22,9 +22,7 @@ void query(
     } else if (engine == "system") {
         system_resolver(dns_class, dns_type, name, cb, settings, reactor, logger);
     } else {
-        reactor->call_soon([cb]() {
-            cb(InvalidDnsEngine(), nullptr);
-        });
+        reactor->call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
     }
 }
 
