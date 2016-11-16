@@ -7,7 +7,6 @@
 #include <measurement_kit/portable/sys/types.h>
 #include <measurement_kit/portable/netdb.h>
 
-
 #include <cassert>
 #include <future>
 
