@@ -13,9 +13,7 @@
 #include <measurement_kit/portable/sys/socket.h>
 #include <measurement_kit/portable/sys/time.h>
 
-#include <measurement_kit/portable/err.h>
 #include <measurement_kit/portable/strings.h>
-#include <measurement_kit/portable/unistd.h>
 
 // Note: standard headers with non-standard additions
 #include <measurement_kit/portable/stdlib.h>
