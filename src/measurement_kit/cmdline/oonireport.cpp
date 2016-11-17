@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/cmdline.hpp>
+#include "../cmdline/cmdline.hpp"
 #include <measurement_kit/ooni.hpp>
 
 #include <iostream>
@@ -32,7 +32,7 @@ static void upload_report(std::string url, int index, char **argv) {
 }
 
 int main(const char *, int argc, char **argv) {
-    std::string url = collector::default_collector_url();
+    std::string url = collector::production_collector_url();
     int ch;
 
     while ((ch = mkp_getopt(argc, argv, "c:v")) != -1) {

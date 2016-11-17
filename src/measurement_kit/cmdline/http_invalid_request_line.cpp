@@ -2,25 +2,26 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/cmdline.hpp>
+#include "../cmdline/cmdline.hpp"
 #include <measurement_kit/ooni.hpp>
 
 #include <iostream>
 
 namespace mk {
 namespace cmdline {
-namespace tcp_connect {
+namespace http_invalid_request_line {
 
 int main(const char *, int argc, char **argv) {
-    std::string port = "80";
-    std::string name = argv[0];
+    std::string backend = "http://213.138.109.232/";
     uint32_t verbosity = 0;
-    mk::ooni::TcpConnect test;
+    std::string name = argv[0];
+    mk::ooni::HttpInvalidRequestLine test;
     int ch;
-    while ((ch = mkp_getopt(argc, argv, "np:v")) != -1) {
+
+    while ((ch = mkp_getopt(argc, argv, "b:nv")) != -1) {
         switch (ch) {
-        case 'p':
-            port = std::string(mkp_optarg);
+        case 'b':
+            backend = mkp_optarg;
             break;
         case 'n':
             test.set_options("no_collector", true);
@@ -29,23 +30,23 @@ int main(const char *, int argc, char **argv) {
             ++verbosity;
             break;
         default:
-            std::cout << "Usage: " << name << " [-nv] [-p port] file_name"
+            std::cout << "Usage: " << name << " [-nv] [-b backend]"
                       << "\n";
             exit(1);
         }
     }
     argc -= mkp_optind;
     argv += mkp_optind;
-    if (argc != 1) {
-        std::cout << "Usage: " << name << " [-nv] [-p port] file_name"
+    if (argc != 0) {
+        std::cout << "Usage: " << name << " [-nv] [-b backend]"
                   << "\n";
         exit(1);
     }
+
     test
-        .set_options("port", port)
+        .set_options("backend", backend)
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
-        .set_input_filepath(argv[0])
         .set_verbosity(verbosity)
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
@@ -53,6 +54,6 @@ int main(const char *, int argc, char **argv) {
     return 0;
 }
 
-} // namespace tcp_connect
+} // namespace http_invalid_request_line
 } // namespace cmdline
 } // namespace mk

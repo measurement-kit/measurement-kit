@@ -31,8 +31,10 @@ inline void listen4(std::string address, int port, ListenCb cb) {
     }
 
     auto cbp = new ListenInternalCb([cb](evutil_socket_t so) {
+        // See similar comment in connect_impl.hpp for DEFER rationale
+        static const int flgs = BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS;
         bufferevent *bev = bufferevent_socket_new(
-                Reactor::global()->get_event_base(), so, BEV_OPT_CLOSE_ON_FREE);
+                Reactor::global()->get_event_base(), so, flgs);
         if (bev == nullptr) {
             (void)evutil_closesocket(so);
             return;
