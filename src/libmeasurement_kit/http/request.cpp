@@ -141,6 +141,12 @@ void request_recv_response(Var<Transport> txp,
 
     txp->on_data([=](Buffer data) {
         Error err = parser->feed(data);
+        if (err == PausedAfterParsingHeadersError()) {
+            // This is where one could process the response headers and then
+            // get subsequent body chunks in streaming fashion. We do not use
+            // this feature here and we immediately restart the parser.
+            err = parser->parse();
+        }
         if (err == ParsingHeadersInProgressError() or
             err == ParsingBodyInProgressError()) {
             // We are not done yet

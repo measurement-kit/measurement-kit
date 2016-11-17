@@ -8,6 +8,7 @@
 
 #include <measurement_kit/http.hpp>
 
+#include <cassert>
 #include <type_traits>
 
 namespace mk {
@@ -40,7 +41,8 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     }
 
     Error eof() {
-        Error err = parser_execute(nullptr, 0).as_error();
+        size_t count = 0;
+        Error err = parser_execute(nullptr, 0, count);
         if (err) {
             logger_->debug("http: parser failed at EOF: %s",
                            err.explain().c_str());
@@ -93,8 +95,9 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         for (auto kv : response.headers) {
             logger_->debug("< %s: %s", kv.first.c_str(), kv.second.c_str());
         }
-        parser_state_error_ = ParsingBodyInProgressError();
-        // TODO: pause right here to allow streaming parser
+        logger_->log(MK_LOG_DEBUG2, "http: paused after parsing headers");
+        http_parser_pause(&parser_, 1);
+        parser_state_error_ = PausedAfterParsingHeadersError();
         return 0;
     }
 
@@ -158,17 +161,18 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         prev_ = cur;
     }
 
+    // TODO: move this function along with other public functions
+  public:
     Error parse() {
         size_t total = 0;
         Error err = NoError();
         buffer_.for_each([&](const void *p, size_t n) {
-            ErrorOr<size_t> count = parser_execute(p, n);
-            if (!count) {
-                err = count.as_error();
-                return false;
-            }
-            total += *count;
-            return true;
+            size_t count = 0;
+            err = parser_execute(p, n, count);
+            logger_->log(MK_LOG_DEBUG2, "http: parsed = %ld, err = %s",
+                         count, err.explain().c_str());
+            total += count;
+            return !err;
         });
         buffer_.discard(total);
         if (err) {
@@ -178,16 +182,23 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         return parser_state_error_;
     }
 
-    ErrorOr<size_t> parser_execute(const void *p, size_t n) {
-        const char *s = (const char *)p;
-        size_t x = http_parser_execute(&parser_, &settings_, s, n);
+  private:
+    Error parser_execute(const void *p, size_t n, size_t &rv) {
+        if (parser_state_error_ == PausedAfterParsingHeadersError()) {
+            logger_->log(MK_LOG_DEBUG2, "http: resuming parsing after headers");
+            parser_state_error_ = ParsingBodyInProgressError();
+            http_parser_pause(&parser_, 0);
+            // FALLTHROUGH
+        }
+        rv = http_parser_execute(&parser_, &settings_, (const char *)p, n);
         if (parser_.upgrade) {
             return UpgradeError();
         }
-        if (x != n) {
+        assert(rv <= n);
+        if (rv < n) {
             return map_parser_error_();
         }
-        return n;
+        return NoError();
     }
 
     Error map_parser_error_() {
@@ -235,6 +246,13 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         case HPE_STRICT:
             return ParserStrictModeAssertionError();
         case HPE_PAUSED:
+            /*
+             * If the parser is paused for a specific reason, use the more
+             * specific reason instead of using the generic reason.
+             */
+            if (parser_state_error_ == PausedAfterParsingHeadersError()) {
+                return parser_state_error_;
+            }
             return ParserPausedError();
         default:
             // FALLTHROUGH
