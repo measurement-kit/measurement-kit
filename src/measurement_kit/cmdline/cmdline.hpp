@@ -1,15 +1,19 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_CMDLINE_MAIN_HPP
-#define MEASUREMENT_KIT_CMDLINE_MAIN_HPP
+#ifndef SRC_MEASUREMENT_KIT_CMDLINE_MAIN_HPP
+#define SRC_MEASUREMENT_KIT_CMDLINE_MAIN_HPP
+
+#include "../../measurement_kit/portable/err.h"
+#include "../../measurement_kit/portable/getopt.h"
+#include "../../measurement_kit/portable/unistd.h"
 
 namespace mk {
 namespace cmdline {
 
-#define XX(_namespace_) \
-namespace _namespace_ { \
-int main(const char *progname, int argc, char **argv); \
+#define XX(_namespace_)                                                        \
+namespace _namespace_ {                                                        \
+int main(const char *progname, int argc, char **argv);                         \
 }
 
 // The main of specific modules:

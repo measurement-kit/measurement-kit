@@ -2,32 +2,25 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/cmdline.hpp>
+#include "../cmdline/cmdline.hpp"
 #include <measurement_kit/ooni.hpp>
 
 #include <iostream>
 
 namespace mk {
 namespace cmdline {
-namespace web_connectivity {
-
-#define USAGE "usage: %s [-nv] [-b backend] [-N nameserver] file_name\n"
+namespace tcp_connect {
 
 int main(const char *, int argc, char **argv) {
-    std::string backend = "https://a.collector.test.ooni.io:4444";
-    std::string nameserver = "8.8.8.8";
+    std::string port = "80";
     std::string name = argv[0];
     uint32_t verbosity = 0;
-    mk::ooni::WebConnectivity test;
+    mk::ooni::TcpConnect test;
     int ch;
-
-    while ((ch = mkp_getopt(argc, argv, "b:N:nv")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "np:v")) != -1) {
         switch (ch) {
-        case 'b':
-            backend = mkp_optarg;
-            break;
-        case 'N':
-            nameserver = mkp_optarg;
+        case 'p':
+            port = std::string(mkp_optarg);
             break;
         case 'n':
             test.set_options("no_collector", true);
@@ -36,30 +29,30 @@ int main(const char *, int argc, char **argv) {
             ++verbosity;
             break;
         default:
-            fprintf(stderr, USAGE, name.c_str());
+            std::cout << "Usage: " << name << " [-nv] [-p port] file_name"
+                      << "\n";
             exit(1);
         }
     }
     argc -= mkp_optind;
     argv += mkp_optind;
     if (argc != 1) {
-        fprintf(stderr, USAGE, name.c_str());
+        std::cout << "Usage: " << name << " [-nv] [-p port] file_name"
+                  << "\n";
         exit(1);
     }
-
     test
-        .set_options("backend", backend)
-        .set_options("nameserver", nameserver)
+        .set_options("port", port)
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
-        .set_verbosity(verbosity)
         .set_input_filepath(argv[0])
+        .set_verbosity(verbosity)
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
 
     return 0;
 }
 
-} // namespace web_connectivity
+} // namespace tcp_connect
 } // namespace cmdline
 } // namespace mk

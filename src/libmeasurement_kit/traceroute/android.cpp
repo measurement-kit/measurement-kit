@@ -47,6 +47,7 @@ void mk_traceroute_android_unused() {}
 #include <sys/uio.h>
 
 #include <string.h>
+#include <unistd.h>
 
 namespace mk {
 namespace traceroute {
