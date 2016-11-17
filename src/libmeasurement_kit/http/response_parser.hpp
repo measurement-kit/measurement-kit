@@ -24,46 +24,44 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
   public:
     ResponseParserNg(Var<Logger> = Logger::global());
 
-    void on_begin(std::function<void()> fn) { begin_fn_ = fn; }
-
-    void on_response(std::function<void(Response)> fn) { response_fn_ = fn; }
-
-    void on_body(std::function<void(std::string)> fn) { body_fn_ = fn; }
-
-    void on_end(std::function<void()> fn) { end_fn_ = fn; }
-
-    void feed(Buffer &data) {
+    Error feed(Buffer &data) {
         buffer_ << data;
-        parse();
+        return parse();
     }
 
-    void feed(std::string data) {
+    Error feed(std::string data) {
         buffer_ << data;
-        parse();
+        return parse();
     }
 
-    void feed(const char c) {
+    Error feed(const char c) {
         buffer_.write((const void *)&c, 1);
-        parse();
+        return parse();
     }
 
-    void eof() { parser_execute(nullptr, 0); }
+    Error eof() {
+        Error err = parser_execute(nullptr, 0).as_error();
+        if (err) {
+            logger_->debug("http: parser failed at EOF: %s",
+                           err.explain().c_str());
+            return err;
+        }
+        return parser_state_error_;
+    }
 
     int do_message_begin_() {
         logger_->log(MK_LOG_DEBUG2, "http: BEGIN");
-        response_ = Response();
+        response = Response();
         prev_ = HeaderParserState::NOTHING;
         field_ = "";
         value_ = "";
-        if (begin_fn_) {
-            begin_fn_();
-        }
+        parser_state_error_ = ParsingHeadersInProgressError();
         return 0;
     }
 
     int do_status_(const char *s, size_t n) {
         logger_->log(MK_LOG_DEBUG2, "http: STATUS");
-        response_.reason.append(s, n);
+        response.reason.append(s, n);
         return 0;
     }
 
@@ -82,54 +80,55 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     int do_headers_complete_() {
         logger_->log(MK_LOG_DEBUG2, "http: HEADERS_COMPLETE");
         if (field_ != "") { // Also copy last header
-            response_.headers[field_] = value_;
+            response.headers[field_] = value_;
         }
-        response_.http_major = parser_.http_major;
-        response_.status_code = parser_.status_code;
-        response_.http_minor = parser_.http_minor;
+        response.http_major = parser_.http_major;
+        response.status_code = parser_.status_code;
+        response.http_minor = parser_.http_minor;
         std::stringstream sst;
-        sst << "HTTP/" << response_.http_major << "." << response_.http_minor
-            << " " << response_.status_code << " " << response_.reason;
-        response_.response_line = sst.str();
-        logger_->debug("< %s", response_.response_line.c_str());
-        for (auto kv : response_.headers) {
+        sst << "HTTP/" << response.http_major << "." << response.http_minor
+            << " " << response.status_code << " " << response.reason;
+        response.response_line = sst.str();
+        logger_->debug("< %s", response.response_line.c_str());
+        for (auto kv : response.headers) {
             logger_->debug("< %s: %s", kv.first.c_str(), kv.second.c_str());
         }
-        if (response_fn_) {
-            response_fn_(response_);
-        }
+        parser_state_error_ = ParsingBodyInProgressError();
+        // TODO: pause right here to allow streaming parser
         return 0;
     }
 
     int do_body_(const char *s, size_t n) {
         logger_->log(MK_LOG_DEBUG2, "http: BODY");
-        if (body_fn_) {
-            body_fn_(std::string(s, n));
-        }
+        // TODO: allow to skip the body
+        response.body += std::string(s, n);
         return 0;
     }
 
     int do_message_complete_() {
         logger_->log(MK_LOG_DEBUG2, "http: END");
-        if (end_fn_) {
-            end_fn_();
-        }
+        /*
+         * Pause the parser such that further data, e.g. another response, is
+         * not parsed overwriting what has been parsed so far.
+         *
+         * XXX explain how this should work.
+         */
+        http_parser_pause(&parser_, 1);
+        parser_state_error_ = NoError();
         return 0;
     }
 
-  private:
-    Delegate<> begin_fn_;
-    Delegate<Response> response_fn_;
-    Delegate<std::string> body_fn_;
-    Delegate<> end_fn_;
+    // Variables that you can access to fetch parsers' results
+    Response response;
 
+  private:
     Var<Logger> logger_ = Logger::global();
     http_parser parser_;
     http_parser_settings settings_;
     Buffer buffer_;
+    Error parser_state_error_ = ParsingHeadersInProgressError();
 
     // Variables used during parsing
-    Response response_;
     HeaderParserState prev_ = HeaderParserState::NOTHING;
     std::string field_;
     std::string value_;
@@ -145,7 +144,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         if (prev_ == HPS::NOTHING && cur == HPS::FIELD) {
             field_ = std::string(s, n);
         } else if (prev_ == HPS::VALUE && cur == HPS::FIELD) {
-            response_.headers[field_] = value_;
+            response.headers[field_] = value_;
             field_ = std::string(s, n);
         } else if (prev_ == HPS::FIELD && cur == HPS::FIELD) {
             field_.append(s, n);
@@ -159,23 +158,34 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         prev_ = cur;
     }
 
-    void parse() {
+    Error parse() {
         size_t total = 0;
+        Error err = NoError();
         buffer_.for_each([&](const void *p, size_t n) {
-            total += parser_execute(p, n);
+            ErrorOr<size_t> count = parser_execute(p, n);
+            if (!count) {
+                err = count.as_error();
+                return false;
+            }
+            total += *count;
             return true;
         });
         buffer_.discard(total);
+        if (err) {
+            logger_->debug("http: parser failed: %s", err.explain().c_str());
+            return err;
+        }
+        return parser_state_error_;
     }
 
-    size_t parser_execute(const void *p, size_t n) {
-        size_t x =
-            http_parser_execute(&parser_, &settings_, (const char *)p, n);
+    ErrorOr<size_t> parser_execute(const void *p, size_t n) {
+        const char *s = (const char *)p;
+        size_t x = http_parser_execute(&parser_, &settings_, s, n);
         if (parser_.upgrade) {
-            throw UpgradeError();
+            return UpgradeError();
         }
         if (x != n) {
-            throw ParserError();
+            return ParserError();
         }
         return n;
     }

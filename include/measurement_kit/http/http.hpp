@@ -33,6 +33,8 @@ MK_DEFINE_ERR(MK_ERR_HTTP(8), InvalidMaxRedirectsError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(9), InvalidRedirectUrlError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(10), EmptyLocationError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(11), TooManyRedirectsError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(12), ParsingHeadersInProgressError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(13), ParsingBodyInProgressError, "")
 
 /*
  _   _      _
