@@ -14,7 +14,7 @@ using namespace mk::net;
 using json = nlohmann::json;
 
 static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
-                 Var<Logger>, Var<Reactor>) {
+                 Var<Reactor>, Var<Logger>) {
     cb(MockedError(), nullptr);
 }
 

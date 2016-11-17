@@ -37,8 +37,8 @@ ErrorOr<double> get_connect_time(Error error);
 void connect(std::string address, int port,
              Callback<Error, Var<Transport>> callback,
              Settings settings = {},
-             Var<Logger> logger = Logger::global(),
-             Var<Reactor> reactor = Reactor::global());
+             Var<Reactor> reactor = Reactor::global(),
+             Var<Logger> logger = Logger::global());
 
 struct ConnectManyResult : public ErrorContext {
     std::vector<Var<ConnectResult>> results;
@@ -51,8 +51,8 @@ using ConnectManyCb = Callback<Error, std::vector<Var<Transport>>>;
 
 void connect_many(std::string address, int port, int num,
         ConnectManyCb callback, Settings settings = {},
-        Var<Logger> logger = Logger::global(),
-        Var<Reactor> reactor = Reactor::global());
+        Var<Reactor> reactor = Reactor::global(),
+        Var<Logger> logger = Logger::global());
 
 } // namespace net
 } // namespace mk

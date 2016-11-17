@@ -114,7 +114,7 @@ void tcp_connect(Settings options, Callback<Error, Var<net::Transport>> cb,
         cb(MissingRequiredHostError(), nullptr);
         return;
     }
-    net::connect(options["host"], *port, cb, options, logger, reactor);
+    net::connect(options["host"], *port, cb, options, reactor, logger);
 }
 
 } // namespace templates

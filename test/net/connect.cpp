@@ -84,7 +84,7 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
 }
 
 static void success(std::string, int, Callback<Error, Var<Transport>> cb,
-                    Settings, Var<Logger> logger, Var<Reactor>) {
+                    Settings, Var<Reactor>, Var<Logger> logger) {
     cb(NoError(), Var<Transport>(new Emitter(logger)));
 }
 
@@ -95,12 +95,12 @@ TEST_CASE("net::connect_many() correctly handles net::connect() success") {
                               REQUIRE(!err);
                               REQUIRE(conns.size() == 3);
                           },
-                          {}, Logger::global(), Reactor::global());
+                          {}, Reactor::global(), Logger::global());
     connect_many_impl<success>(ctx);
 }
 
 static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
-                 Var<Logger>, Var<Reactor>) {
+                 Var<Reactor>, Var<Logger>) {
     cb(GenericError(), Var<Transport>(nullptr));
 }
 
@@ -111,7 +111,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
                               REQUIRE(err);
                               REQUIRE(conns.size() == 0);
                           },
-                          {}, Logger::global(), Reactor::global());
+                          {}, Reactor::global(), Logger::global());
     connect_many_impl<fail>(ctx);
 }
 
@@ -362,7 +362,7 @@ TEST_CASE("net::connect() works with a custom reactor") {
                     txp->close([&]() { reactor->break_loop(); });
                     ok = true;
                 },
-                {}, Logger::global(), reactor);
+                {}, reactor, Logger::global());
     });
     REQUIRE(ok);
 }
