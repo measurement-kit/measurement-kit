@@ -25,12 +25,6 @@ using namespace mk::report;
 std::string production_collector_url();
 std::string testing_collector_url();
 
-// Backward compatibility for the v0.3.x series
-#define MK_OONI_DEFAULT_COLLECTOR_URL MK_OONI_PRODUCTION_COLLECTOR_URL
-inline std::string default_collector_url() {
-    return production_collector_url();
-}
-
 void submit_report(std::string filepath, std::string collector_base_url,
                    Callback<Error> callback, Settings conf = {},
                    Var<Reactor> = Reactor::global(),
