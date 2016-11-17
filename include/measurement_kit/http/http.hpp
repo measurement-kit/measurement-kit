@@ -22,7 +22,7 @@ namespace http {
 */
 
 MK_DEFINE_ERR(MK_ERR_HTTP(0), UpgradeError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(1), ParserError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(1), GenericParserError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(2), UrlParserError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "")
@@ -35,6 +35,28 @@ MK_DEFINE_ERR(MK_ERR_HTTP(10), EmptyLocationError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(11), TooManyRedirectsError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(12), ParsingHeadersInProgressError, "")
 MK_DEFINE_ERR(MK_ERR_HTTP(13), ParsingBodyInProgressError, "")
+
+MK_DEFINE_ERR(MK_ERR_HTTP(14), ParserInvalidEofStateError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(15), ParserHeaderOverflowError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(16), ParserClosedConnectionError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(17), ParserInvalidVersionError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(18), ParserInvalidStatusError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(19), ParserInvalidMethodError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(20), ParserInvalidUrlError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(21), ParserInvalidHostError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(22), ParserInvalidPortError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(23), ParserInvalidPathError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(24), ParserInvalidQueryStringError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(25), ParserInvalidFragmentError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(26), ParserLfExpectedError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(27), ParserInvalidHeaderTokenError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(28), ParserInvalidContentLengthError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(29), ParserUnexpectedContentLengthError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(30), ParserInvalidChunkSizeError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(31), ParserInvalidConstantError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(32), ParserInvalidInternalStateError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(33), ParserStrictModeAssertionError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(34), ParserPausedError, "")
 
 /*
  _   _      _
