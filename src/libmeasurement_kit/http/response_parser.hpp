@@ -25,6 +25,9 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
   public:
     ResponseParserNg(Var<Logger> = Logger::global());
 
+    // TODO: Now that `parse()` is public, it would probably be more clean
+    // to rename `feed()` to `feed_and_parse()`.
+
     Error feed(Buffer &data) {
         buffer_ << data;
         return parse();
