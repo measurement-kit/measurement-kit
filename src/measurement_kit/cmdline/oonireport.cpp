@@ -32,7 +32,7 @@ static void upload_report(std::string url, int index, char **argv) {
 }
 
 int main(const char *, int argc, char **argv) {
-    std::string url = collector::default_collector_url();
+    std::string url = collector::production_collector_url();
     int ch;
 
     while ((ch = mkp_getopt(argc, argv, "c:v")) != -1) {
