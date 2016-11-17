@@ -165,8 +165,8 @@ namespace test_c2s {
 
 void coroutine(std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
-               Settings settings = {}, Var<Logger> logger = Logger::global(),
-               Var<Reactor> reactor = Reactor::global());
+               Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
+               Var<Logger> logger = Logger::global());
 
 void run(Var<Context> ctx, Callback<Error> callback);
 
@@ -217,8 +217,8 @@ struct Params {
 void coroutine(Var<Entry> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb,
                double timeout = 10.0, Settings settings = {},
-               Var<Logger> logger = Logger::global(),
-               Var<Reactor> reactor = Reactor::global());
+               Var<Reactor> reactor = Reactor::global(),
+               Var<Logger> logger = Logger::global());
 
 void finalizing_test(Var<Context> ctx, Var<Entry> cur_entry,
                      Callback<Error> callback);

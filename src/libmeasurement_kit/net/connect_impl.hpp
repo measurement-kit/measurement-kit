@@ -120,21 +120,21 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
                     --ctx->left;
                     connect_many_impl<net_connect>(ctx);
                 },
-                ctx->settings, ctx->logger, ctx->reactor);
+                ctx->settings, ctx->reactor, ctx->logger);
 }
 
 static inline Var<ConnectManyCtx>
 connect_many_make(std::string address, int port, int count,
-                  ConnectManyCb callback, Settings settings, Var<Logger> logger,
-                  Var<Reactor> reactor) {
+                  ConnectManyCb callback, Settings settings,
+                  Var<Reactor> reactor, Var<Logger> logger) {
     Var<ConnectManyCtx> ctx(new ConnectManyCtx);
     ctx->left = count;
     ctx->callback = callback;
     ctx->address = address;
     ctx->port = port;
     ctx->settings = settings;
-    ctx->logger = logger;
     ctx->reactor = reactor;
+    ctx->logger = logger;
     ctx->result.reset(new ConnectManyResult);
     return ctx;
 }

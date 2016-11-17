@@ -26,7 +26,7 @@ void connect_impl(Var<Context> ctx, Callback<Error> callback) {
                                       ctx->address.c_str(), ctx->port);
                     callback(NoError());
                 },
-                ctx->settings, ctx->logger, ctx->reactor);
+                ctx->settings, ctx->reactor, ctx->logger);
 }
 
 template <MK_MOCK_NAMESPACE(messages, format_msg_extended_login),
