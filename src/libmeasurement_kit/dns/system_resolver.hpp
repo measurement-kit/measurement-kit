@@ -112,7 +112,7 @@ inline void system_resolver(QueryClass dns_class, QueryType dns_type,
     std::unique_ptr<ResolverContext> ctx(new ResolverContext(dns_class, dns_type, name, cb,
                                                settings, reactor, logger));
     Query query;
-    ctx->hints.ai_flags = AI_ADDRCONFIG;
+    ctx->hints.ai_flags = AI_ALL;
     ctx->hints.ai_socktype = SOCK_STREAM;
 
     if (dns_class != QueryClassId::IN) {
