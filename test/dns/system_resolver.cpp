@@ -81,7 +81,7 @@ TEST_CASE("the system resolver is able to resolve an ipv6 address") {
                     REQUIRE(message->answers.size() > 0);
                     auto found = false;
                     for (auto answer : message->answers) {
-                        if (answer.ipv6 == "2a00:1450:4001:815::200e") {
+                        if (answer.ipv6 == "2a00:1450:4001:812::200e") {
                                 found = true;
                         }
                     }
