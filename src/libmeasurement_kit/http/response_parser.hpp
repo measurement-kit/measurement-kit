@@ -99,6 +99,15 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
             logger_->debug("< %s: %s", kv.first.c_str(), kv.second.c_str());
         }
         logger_->log(MK_LOG_DEBUG2, "http: paused after parsing headers");
+        /*
+         * Temporarily pause the parser such that we exit early from the parser
+         * loop and the caller knows we've reached end of headers and can then
+         * resume parsing in a streaming fashion. Currently unused by the caller
+         * but certainly potentially useful with large bodies.
+         *
+         * Note that resuming is automatic next time you call `parse()` when the
+         * parser state "error" has the value set below.
+         */
         http_parser_pause(&parser_, 1);
         parser_state_error_ = PausedAfterParsingHeadersError();
         return 0;
@@ -116,8 +125,6 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         /*
          * Pause the parser such that further data, e.g. another response, is
          * not parsed overwriting what has been parsed so far.
-         *
-         * XXX explain how this should work.
          */
         http_parser_pause(&parser_, 1);
         parser_state_error_ = NoError();
@@ -174,6 +181,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
             err = parser_execute(p, n, count);
             logger_->log(MK_LOG_DEBUG2, "http: parsed = %ld, err = %s",
                          count, err.explain().c_str());
+            assert(count <= n); /* For robustness */
             total += count;
             return !err;
         });
@@ -201,6 +209,12 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         if (rv < n) {
             return map_parser_error_();
         }
+        /*
+         * (Perhaps obvious) note: this means the parser successfully parsed
+         * the current chunk but in case there are not errors here the real
+         * error that `parse()` returns is `parser_state_error` that may tell
+         * the user for example that more data is required.
+         */
         return NoError();
     }
 
