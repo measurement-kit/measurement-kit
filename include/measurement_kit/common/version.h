@@ -4,14 +4,16 @@
 #ifndef MEASUREMENT_KIT_COMMON_VERSION_HPP
 #define MEASUREMENT_KIT_COMMON_VERSION_HPP
 
-#include <string>
-
 // Note: we use semantic versioning (see: http://semver.org/)
 #define MEASUREMENT_KIT_VERSION "0.4.0-dev"
 
-namespace mk {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-std::string library_version();
+const char *mk_version(void);
 
+#ifdef __cplusplus
 } // namespace mk
+#endif
 #endif
