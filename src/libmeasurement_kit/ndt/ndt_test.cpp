@@ -28,7 +28,7 @@ void NdtTest::main(std::string, Settings settings, Callback<Entry> cb) {
         }
         // XXX The callback should probably take a Var<Entry>
         cb(*entry);
-    }, settings, logger, reactor);
+    }, settings, reactor, logger);
 }
 
 Var<NetTest> NdtTest::create_test_() {
