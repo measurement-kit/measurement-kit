@@ -37,14 +37,16 @@
 #define MSG_WAITING 10
 #define MSG_EXTENDED_LOGIN 11
 
-#define TEST_MID 1
+// Those are the original defines of NDT. I'd rather use them in the
+// implementation rather than using our define names.
+#define TEST_MID MK_NDT_MIDDLEBOX
 #define TEST_C2S MK_NDT_UPLOAD
 #define TEST_S2C MK_NDT_DOWNLOAD
-#define TEST_SFW 8
-#define TEST_STATUS 16
-#define TEST_META 32
-//#define TEST_C2S_EXT 64
-#define TEST_S2C_EXT 128
+#define TEST_SFW MK_NDT_SIMPLE_FIREWALL
+#define TEST_STATUS MK_NDT_STATUS
+#define TEST_META MK_NDT_META
+#define TEST_C2S_EXT MK_NDT_UPLOAD_EXT
+#define TEST_S2C_EXT MK_NDT_DOWNLOAD_EXT
 
 #define KICKOFF_MESSAGE "123456 654321"
 #define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
