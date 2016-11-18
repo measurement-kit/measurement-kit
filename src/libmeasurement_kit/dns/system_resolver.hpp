@@ -21,7 +21,6 @@ class ResolverContext {
     Var<Logger> logger;
 
     addrinfo hints;
-    addrinfo *servinfo = nullptr;
 
     Var<Message> message{new Message};
 
@@ -38,35 +37,32 @@ class ResolverContext {
         memset(&hints, 0, sizeof(hints));
     }
 
-    ~ResolverContext() {
-        if (servinfo != nullptr) {
-            freeaddrinfo(servinfo);
-        }
-    }
 };
 
 template<MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
-static inline void resolve_async(ResolverContext *context) {
+void resolve_async(ResolverContext *context) {
     std::unique_ptr<ResolverContext> ctx(context);
     Callback<Error, Var<Message>> callback = ctx->cb;
-    Var<Message> message_copy;
+    Var<Message> message = ctx->message;
+    addrinfo *servinfo_p;
 
-    int error = getaddrinfo(ctx->name.c_str(), nullptr, &(ctx->hints),
-                            &(ctx->servinfo));
+    int error = getaddrinfo(ctx->name.c_str(), nullptr, &ctx->hints,
+                                               &servinfo_p);
+    std::unique_ptr<addrinfo, std::function<void(addrinfo *)>> servinfo
+                        (servinfo_p, [](addrinfo * servinfo) { freeaddrinfo(servinfo); });
     if (error) {
         // check the error variable and return the correct error
-        ctx->logger->warn(gai_strerror(error));
+        ctx->logger->warn("getaddrinfo failed: %s", gai_strerror(error));
         ctx->reactor->call_soon(
             [callback]() { callback(ResolverError(), nullptr); });
         return;
     }
 
-    assert(ctx->servinfo != nullptr);
+    assert(servinfo != nullptr);
 
     void *addr_ptr;
     char address[128];
-    std::vector<Answer> answers;
-    for (addrinfo *p = ctx->servinfo; p != nullptr; p = p->ai_next) {
+    for (addrinfo *p = servinfo.get(); p != nullptr; p = p->ai_next) {
         Answer answer;
         answer.name = ctx->name;
         answer.qclass = ctx->dns_class;
@@ -82,7 +78,7 @@ static inline void resolve_async(ResolverContext *context) {
             return;
         }
         if (inet_ntop(p->ai_family, addr_ptr, address, sizeof(address)) ==
-            NULL) {
+            nullptr) {
             ctx->logger->warn("dns: unexpected inet_ntop failure");
             throw std::runtime_error("Unexpected inet_ntop failure");
         }
@@ -91,16 +87,13 @@ static inline void resolve_async(ResolverContext *context) {
         } else if (p->ai_family == AF_INET6) {
             answer.ipv6 = std::string(address);
         }
-        answers.push_back(answer);
+        message->answers.push_back(answer);
     }
-    ctx->message->answers = answers;
-    message_copy = ctx->message;
-    ctx->reactor->call_soon(
-        [callback, message_copy]() { callback(NoError(), message_copy); });
+    ctx->reactor->call_soon([=]() { callback(NoError(), message); });
 }
 
 template<MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
-inline void system_resolver(QueryClass dns_class, QueryType dns_type,
+void system_resolver(QueryClass dns_class, QueryType dns_type,
                             std::string name, Callback<Error, Var<Message>> cb,
                             Settings settings, Var<Reactor> reactor,
                             Var<Logger> logger) {
