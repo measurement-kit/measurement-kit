@@ -10,10 +10,8 @@
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
-
 void web_connectivity(std::string input, Settings,
-                      Callback<Var<Entry>>,
+                      Callback<Var<report::Entry>>,
                       Var<Reactor> = Reactor::global(),
                       Var<Logger> = Logger::global());
 
@@ -28,8 +26,8 @@ class WebConnectivity : public OoniTest {
     }
 
     void main(std::string input, Settings options,
-              Callback<Entry> cb) override {
-        web_connectivity(input, options, [=](Var<Entry> e) {
+              Callback<report::Entry> cb) override {
+        web_connectivity(input, options, [=](Var<report::Entry> e) {
              cb(*e);
         }, reactor, logger);
     }

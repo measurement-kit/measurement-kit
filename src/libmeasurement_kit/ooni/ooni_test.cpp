@@ -8,6 +8,8 @@
 namespace mk {
 namespace ooni {
 
+using namespace mk::report;
+
 void OoniTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
                                     Var<size_t> current_entry) {

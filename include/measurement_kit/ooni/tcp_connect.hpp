@@ -10,9 +10,7 @@
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
-
-void tcp_connect(std::string, Settings, Callback<Var<Entry>>,
+void tcp_connect(std::string, Settings, Callback<Var<report::Entry>>,
                  Var<Reactor> = Reactor::global(),
                  Var<Logger> = Logger::global());
 
@@ -26,8 +24,8 @@ class TcpConnect : public OoniTest {
     }
 
     void main(std::string input, Settings options,
-              Callback<Entry> cb) override {
-        tcp_connect(input, options, [=](Var<Entry> entry) {
+              Callback<report::Entry> cb) override {
+        tcp_connect(input, options, [=](Var<report::Entry> entry) {
             cb(*entry);
         }, reactor, logger);
     }

@@ -10,9 +10,7 @@
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
-
-void http_invalid_request_line(Settings, Callback<Var<Entry>>,
+void http_invalid_request_line(Settings, Callback<Var<report::Entry>>,
                                Var<Reactor> = Reactor::global(),
                                Var<Logger> = Logger::global());
 
@@ -24,8 +22,8 @@ class HttpInvalidRequestLine : public OoniTest {
         test_version = "0.0.1";
     }
 
-    void main(std::string, Settings options, Callback<Entry> cb) override {
-        http_invalid_request_line(options, [=](Var<Entry> e) {
+    void main(std::string, Settings options, Callback<report::Entry> cb) override {
+        http_invalid_request_line(options, [=](Var<report::Entry> e) {
              cb(*e);
         }, reactor, logger);
     }

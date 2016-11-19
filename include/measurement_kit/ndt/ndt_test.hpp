@@ -9,15 +9,12 @@
 namespace mk {
 namespace ndt {
 
-using namespace mk::ooni;
-using namespace mk::report;
-
-class NdtTest : public OoniTest {
+class NdtTest : public ooni::OoniTest {
   public:
     NdtTest() : NdtTest(Settings()) {}
     NdtTest(Settings s);
   protected:
-    void main(std::string, Settings, Callback<Entry>) override;
+    void main(std::string, Settings, Callback<report::Entry>) override;
     Var<NetTest> create_test_() override;
 };
 
