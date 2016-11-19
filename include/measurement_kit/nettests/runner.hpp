@@ -1,16 +1,17 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_RUNNER_HPP
-#define MEASUREMENT_KIT_COMMON_RUNNER_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_RUNNER_HPP
+#define MEASUREMENT_KIT_NETTESTS_RUNNER_HPP
 
-#include <measurement_kit/common/reactor.hpp>
+#include <measurement_kit/common.hpp>
 
 #include <atomic>
 #include <string>
 #include <thread>
 
 namespace mk {
+namespace nettests {
 
 class NetTest;
 
@@ -31,5 +32,6 @@ class Runner {
     std::thread thread;
 };
 
+} // namespace nettests
 } // namespace mk
 #endif

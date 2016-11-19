@@ -1,16 +1,19 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_OONI_TEST_HPP
-#define MEASUREMENT_KIT_OONI_TEST_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_OONI_TEST_HPP
+#define MEASUREMENT_KIT_NETTESTS_OONI_TEST_HPP
 
+// TODO: merge this and ooni-test
+
+#include <measurement_kit/nettests/net_test.hpp>
 #include <measurement_kit/report.hpp>
 
 #include <ctime>
 #include <sstream>
 
 namespace mk {
-namespace ooni {
+namespace nettests {
 
 class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     // Note: here we make the reasonable assumption that the owner of this
@@ -57,6 +60,6 @@ class OoniTest : public NetTest, public NonCopyable, public NonMovable {
     std::string generate_output_filepath();
 };
 
+} // namespace nettests
 } // namespace mk
-} // namespace ooni
 #endif

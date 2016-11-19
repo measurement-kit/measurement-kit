@@ -45,7 +45,6 @@
 /test/common/logger
 /test/common/parallel
 /test/common/range
-/test/common/runner
 /test/common/settings
 /test/common/utils
 /test/common/var
@@ -76,10 +75,11 @@
 /test/nettests/dns_injection
 /test/nettests/http_invalid_request_line
 /test/nettests/ndt_test
+/test/nettests/ooni_test
+/test/nettests/runner
 /test/nettests/tcp_connect
 /test/nettests/web_connectivity
 /test/ooni/collector_client
-/test/ooni/ooni_test
 /test/ooni/templates
 /test/ooni/utils
 /test/report/entry

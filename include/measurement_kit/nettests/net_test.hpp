@@ -1,15 +1,13 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_NET_TEST_HPP
-#define MEASUREMENT_KIT_COMMON_NET_TEST_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_NET_TEST_HPP
+#define MEASUREMENT_KIT_NETTESTS_NET_TEST_HPP
 
-#include <measurement_kit/common/delegate.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/reactor.hpp>
-#include <measurement_kit/common/settings.hpp>
+#include <measurement_kit/common.hpp>
 
 namespace mk {
+namespace nettests {
 
 class NetTest {
   public:
@@ -94,5 +92,6 @@ class NetTest {
     Delegate<> end_cb;
 };
 
+} // namespace nettests
 } // namespace mk
 #endif

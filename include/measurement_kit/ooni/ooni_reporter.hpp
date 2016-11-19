@@ -4,15 +4,19 @@
 #ifndef MEASUREMENT_KIT_OONI_OONI_REPORTER_HPP
 #define MEASUREMENT_KIT_OONI_OONI_REPORTER_HPP
 
-#include <measurement_kit/ooni/ooni_test.hpp>
 #include <measurement_kit/report.hpp>
 
 namespace mk {
+
+namespace nettests {
+class OoniTest;  /* XXX violation of layers */
+}
+
 namespace ooni {
 
 class OoniReporter : public report::BaseReporter {
   public:
-    static Var<BaseReporter> make(const OoniTest &ooni_test);
+    static Var<BaseReporter> make(const nettests::OoniTest &ooni_test);
 
     Continuation<Error> open(report::Report report) override;
     Continuation<Error> write_entry(report::Entry entry) override;
@@ -21,7 +25,7 @@ class OoniReporter : public report::BaseReporter {
     ~OoniReporter() override {}
 
   private:
-    OoniReporter(const OoniTest &ooni_test);
+    OoniReporter(const nettests::OoniTest &ooni_test);
 
     Var<Reactor> reactor = Reactor::global();
     Var<Logger> logger = Logger::global();

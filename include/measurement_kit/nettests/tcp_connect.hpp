@@ -1,16 +1,16 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_NETTESTS_OONI_TCP_CONNECT_HPP
-#define MEASUREMENT_KIT_NETTESTS_OONI_TCP_CONNECT_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_TCP_CONNECT_HPP
+#define MEASUREMENT_KIT_NETTESTS_TCP_CONNECT_HPP
 
+#include <measurement_kit/nettests/ooni_test.hpp>
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/report.hpp>
 
 namespace mk {
 namespace nettests {
 
-class TcpConnect : public ooni::OoniTest {
+class TcpConnect : public OoniTest {
   public:
     TcpConnect() : TcpConnect("", {}) {}
     TcpConnect(std::string f, Settings o) : OoniTest(f, o) {

@@ -1,16 +1,16 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_NETTESTS_OONI_DNS_INJECTION_HPP
-#define MEASUREMENT_KIT_NETTESTS_OONI_DNS_INJECTION_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_DNS_INJECTION_HPP
+#define MEASUREMENT_KIT_NETTESTS_DNS_INJECTION_HPP
 
+#include <measurement_kit/nettests/ooni_test.hpp>
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/report.hpp>
 
 namespace mk {
 namespace nettests {
 
-class DnsInjection : public ooni::OoniTest {
+class DnsInjection : public OoniTest {
   public:
     DnsInjection() : DnsInjection("", {}) {}
     DnsInjection(std::string f, Settings o) : OoniTest(f, o) {

@@ -2,13 +2,16 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <measurement_kit/nettests.hpp>
+
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
 
 namespace mk {
-namespace ooni {
+namespace nettests {
 
 using namespace mk::report;
+using namespace mk::ooni;
 
 void OoniTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
@@ -278,5 +281,5 @@ void OoniTest::end(Callback<Error> cb) {
     report.close(cb);
 }
 
-} // namespace ooni
+} // namespace nettests
 } // namespace mk

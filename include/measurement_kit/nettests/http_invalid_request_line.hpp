@@ -1,16 +1,16 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_NETTESTS_OONI_HTTP_INVALID_REQUEST_LINE_HPP
-#define MEASUREMENT_KIT_NETTESTS_OONI_HTTP_INVALID_REQUEST_LINE_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_HTTP_INVALID_REQUEST_LINE_HPP
+#define MEASUREMENT_KIT_NETTESTS_HTTP_INVALID_REQUEST_LINE_HPP
 
+#include <measurement_kit/nettests/ooni_test.hpp>
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/report.hpp>
 
 namespace mk {
 namespace nettests {
 
-class HttpInvalidRequestLine : public ooni::OoniTest {
+class HttpInvalidRequestLine : public OoniTest {
   public:
     HttpInvalidRequestLine() : HttpInvalidRequestLine({}) {}
     HttpInvalidRequestLine(Settings o) : OoniTest("", o) {
