@@ -9,12 +9,12 @@
 namespace mk {
 namespace ooni {
 
-class OoniReporter : public BaseReporter {
+class OoniReporter : public report::BaseReporter {
   public:
     static Var<BaseReporter> make(const OoniTest &ooni_test);
 
-    Continuation<Error> open(Report report) override;
-    Continuation<Error> write_entry(Entry entry) override;
+    Continuation<Error> open(report::Report report) override;
+    Continuation<Error> write_entry(report::Entry entry) override;
     Continuation<Error> close() override;
 
     ~OoniReporter() override {}

@@ -7,6 +7,8 @@
 namespace mk {
 namespace ooni {
 
+using namespace mk::report;
+
 OoniReporter::OoniReporter(const OoniTest &parent) {
     settings = parent.options; // Copy the parent's settings
     logger = parent.logger;

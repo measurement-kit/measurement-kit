@@ -11,8 +11,6 @@ namespace mk {
 namespace ooni {
 namespace collector {
 
-using namespace mk::report;
-
 /*
     To submit a file report, use one of the following collectors. By default
     the library uses the `testing` collector which is a HTTPS service running
@@ -45,21 +43,21 @@ void submit_report(std::string filepath, std::string collector_base_url,
 void connect(Settings, Callback<Error, Var<net::Transport>>,
              Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
-void create_report(Var<net::Transport>, Entry,
+void create_report(Var<net::Transport>, report::Entry,
                    Callback<Error, std::string>, Settings = {},
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
-void connect_and_create_report(Entry, Callback<Error, std::string>,
+void connect_and_create_report(report::Entry, Callback<Error, std::string>,
                                Settings = {}, Var<Reactor> = Reactor::global(),
                                Var<Logger> = Logger::global());
 
-void update_report(Var<net::Transport>, std::string report_id, Entry,
+void update_report(Var<net::Transport>, std::string report_id, report::Entry,
                    Callback<Error>, Settings = {},
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
-void connect_and_update_report(std::string report_id, Entry,
+void connect_and_update_report(std::string report_id, report::Entry,
                                Callback<Error>, Settings = {},
                                Var<Reactor> = Reactor::global(),
                                Var<Logger> = Logger::global());
