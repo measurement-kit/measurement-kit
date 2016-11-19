@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/ooni.hpp>
+#include <measurement_kit/nettests.hpp>
 
 #include <chrono>
 #include <iostream>
@@ -19,7 +19,7 @@ TEST_CASE(
     Settings options;
     options["backend"] = "8.8.8.1:53";
     options["dns/timeout"] = 0.1;
-    ooni::DnsInjection dns_injection("test/fixtures/hosts.txt", options);
+    nettests::DnsInjection dns_injection("test/fixtures/hosts.txt", options);
     loop_with_initial_event([&]() {
         // TODO: handle errors?
         dns_injection.begin(
@@ -29,7 +29,7 @@ TEST_CASE(
 
 TEST_CASE("Synchronous dns-injection test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
-    ooni::DnsInjection()
+    nettests::DnsInjection()
         .set_options("backend", "8.8.8.1:53")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -44,7 +44,7 @@ TEST_CASE("Synchronous dns-injection test") {
 TEST_CASE("Asynchronous dns-injection test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
     bool done = false;
-    ooni::DnsInjection()
+    nettests::DnsInjection()
         .set_options("backend", "8.8.8.1:53")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -62,7 +62,7 @@ TEST_CASE("Asynchronous dns-injection test") {
 #endif
 
 TEST_CASE("Make sure that set_output_path() works") {
-    auto instance = ooni::DnsInjection()
+    auto instance = nettests::DnsInjection()
                         // Note: must also set valid input file path otherwise
                         // the constructor
                         // called inside create_test_() throws an exception

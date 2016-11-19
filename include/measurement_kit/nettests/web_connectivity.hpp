@@ -1,21 +1,16 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_OONI_WEB_CONNECTIVITY_HPP
-#define MEASUREMENT_KIT_OONI_WEB_CONNECTIVITY_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_OONI_WEB_CONNECTIVITY_HPP
+#define MEASUREMENT_KIT_NETTESTS_OONI_WEB_CONNECTIVITY_HPP
 
-#include <measurement_kit/ooni/ooni_test.hpp>
+#include <measurement_kit/ooni.hpp>
 #include <measurement_kit/report.hpp>
 
 namespace mk {
-namespace ooni {
+namespace nettests {
 
-void web_connectivity(std::string input, Settings,
-                      Callback<Var<report::Entry>>,
-                      Var<Reactor> = Reactor::global(),
-                      Var<Logger> = Logger::global());
-
-class WebConnectivity : public OoniTest {
+class WebConnectivity : public ooni::OoniTest {
   public:
     WebConnectivity() : WebConnectivity("", {}) {}
 
@@ -27,7 +22,7 @@ class WebConnectivity : public OoniTest {
 
     void main(std::string input, Settings options,
               Callback<report::Entry> cb) override {
-        web_connectivity(input, options, [=](Var<report::Entry> e) {
+        ooni::web_connectivity(input, options, [=](Var<report::Entry> e) {
              cb(*e);
         }, reactor, logger);
     }
@@ -35,6 +30,6 @@ class WebConnectivity : public OoniTest {
     Var<NetTest> create_test_() override;
 };
 
-} // namespace ooni
+} // namespace nettests
 } // namespace mk
 #endif

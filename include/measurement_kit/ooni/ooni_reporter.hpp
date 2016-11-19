@@ -4,6 +4,7 @@
 #ifndef MEASUREMENT_KIT_OONI_OONI_REPORTER_HPP
 #define MEASUREMENT_KIT_OONI_OONI_REPORTER_HPP
 
+#include <measurement_kit/ooni/ooni_test.hpp>
 #include <measurement_kit/report.hpp>
 
 namespace mk {

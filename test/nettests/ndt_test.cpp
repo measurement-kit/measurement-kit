@@ -7,9 +7,9 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/ndt.hpp>
+#include <measurement_kit/nettests.hpp>
 
-using namespace mk::ndt;
+using namespace mk::nettests;
 using namespace mk;
 
 TEST_CASE("The NDT test DSL works") {

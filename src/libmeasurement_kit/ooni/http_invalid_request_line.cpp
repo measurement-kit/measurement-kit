@@ -112,16 +112,5 @@ void http_invalid_request_line(Settings options,
         handle_response, options, reactor, logger);
 }
 
-Var<NetTest> HttpInvalidRequestLine::create_test_() {
-    HttpInvalidRequestLine *test = new HttpInvalidRequestLine(options);
-    test->logger = logger;
-    test->reactor = reactor;
-    test->output_filepath = output_filepath;
-    test->entry_cb = entry_cb;
-    test->begin_cb = begin_cb;
-    test->end_cb = end_cb;
-    return Var<NetTest>(test);
-}
-
 } // namespace ooni
 } // namespace mk

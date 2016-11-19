@@ -62,7 +62,6 @@
 /test/mlabns/mlabns
 /test/ndt/measure_speed
 /test/ndt/messages
-/test/ndt/ndt_test
 /test/ndt/protocol
 /test/ndt/run
 /test/ndt/test_c2s
@@ -74,14 +73,15 @@
 /test/net/evbuffer
 /test/net/socks5
 /test/net/transport
+/test/nettests/dns_injection
+/test/nettests/http_invalid_request_line
+/test/nettests/ndt_test
+/test/nettests/tcp_connect
+/test/nettests/web_connectivity
 /test/ooni/collector_client
-/test/ooni/dns_injection
-/test/ooni/http_invalid_request_line
 /test/ooni/ooni_test
-/test/ooni/tcp_connect
 /test/ooni/templates
 /test/ooni/utils
-/test/ooni/web_connectivity
 /test/report/entry
 /test/report/file_reporter
 /test/report/report

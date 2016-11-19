@@ -1,20 +1,16 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_OONI_TCP_CONNECT_HPP
-#define MEASUREMENT_KIT_OONI_TCP_CONNECT_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_OONI_TCP_CONNECT_HPP
+#define MEASUREMENT_KIT_NETTESTS_OONI_TCP_CONNECT_HPP
 
-#include <measurement_kit/ooni/ooni_test.hpp>
+#include <measurement_kit/ooni.hpp>
 #include <measurement_kit/report.hpp>
 
 namespace mk {
-namespace ooni {
+namespace nettests {
 
-void tcp_connect(std::string, Settings, Callback<Var<report::Entry>>,
-                 Var<Reactor> = Reactor::global(),
-                 Var<Logger> = Logger::global());
-
-class TcpConnect : public OoniTest {
+class TcpConnect : public ooni::OoniTest {
   public:
     TcpConnect() : TcpConnect("", {}) {}
     TcpConnect(std::string f, Settings o) : OoniTest(f, o) {
@@ -25,7 +21,7 @@ class TcpConnect : public OoniTest {
 
     void main(std::string input, Settings options,
               Callback<report::Entry> cb) override {
-        tcp_connect(input, options, [=](Var<report::Entry> entry) {
+        ooni::tcp_connect(input, options, [=](Var<report::Entry> entry) {
             cb(*entry);
         }, reactor, logger);
     }
@@ -33,6 +29,6 @@ class TcpConnect : public OoniTest {
     Var<NetTest> create_test_() override;
 };
 
-} // namespace ooni
+} // namespace nettests
 } // namespace mk
 #endif

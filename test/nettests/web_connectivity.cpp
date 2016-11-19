@@ -6,13 +6,13 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/ooni.hpp>
+#include <measurement_kit/nettests.hpp>
 
 using namespace mk;
 
 TEST_CASE("Synchronous web connectivity test") {
     set_verbosity(14);
-    ooni::WebConnectivity()
+    nettests::WebConnectivity()
         .set_options("backend", "https://a.collector.test.ooni.io:4444")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
