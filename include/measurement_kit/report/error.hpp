@@ -16,6 +16,7 @@ MK_DEFINE_ERR(MK_ERR_REPORT(3), ReportEofError, "")
 MK_DEFINE_ERR(MK_ERR_REPORT(4), ReportIoError, "")
 MK_DEFINE_ERR(MK_ERR_REPORT(5), ReportLogicalError, "")
 MK_DEFINE_ERR(MK_ERR_REPORT(6), DuplicateEntrySubmitError, "")
+MK_DEFINE_ERR(MK_ERR_REPORT(7), MissingReportIdError, "")
 
 } // namespace report
 } // namespace mk
