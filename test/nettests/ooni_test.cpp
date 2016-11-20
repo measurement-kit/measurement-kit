@@ -6,12 +6,12 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/ooni.hpp>
+#include <measurement_kit/nettests.hpp>
 
 using namespace mk;
 
 TEST_CASE("Make sure that on_entry() works") {
-    ooni::OoniTest test;
+    nettests::OoniTest test;
     loop_with_initial_event([&]() {
         test.on_entry([](std::string s) {
             nlohmann::json entry = nlohmann::json::parse(s);
@@ -39,7 +39,7 @@ TEST_CASE("Make sure that on_entry() works") {
 
 TEST_CASE("Make sure that on_begin() works") {
     bool ok = false;
-    ooni::OoniTest test;
+    nettests::OoniTest test;
     loop_with_initial_event([&]() {
         test.on_begin([&]() {
             ok = true;
@@ -55,7 +55,7 @@ TEST_CASE("Make sure that on_begin() works") {
 
 TEST_CASE("Make sure that on_end() works") {
     bool ok = false;
-    ooni::OoniTest test;
+    nettests::OoniTest test;
     loop_with_initial_event([&]() {
         test.on_end([&]() {
             ok = true;
@@ -70,7 +70,7 @@ TEST_CASE("Make sure that on_end() works") {
 }
 
 TEST_CASE("Ensure we do not save too much information by default") {
-    ooni::OoniTest test;
+    nettests::OoniTest test;
     test.set_options("geoip_country_path", "GeoIP.dat");
     test.set_options("geoip_asn_path", "GeoIPASNum.dat");
     loop_with_initial_event([&]() {
@@ -90,7 +90,7 @@ TEST_CASE("Ensure we do not save too much information by default") {
 }
 
 TEST_CASE("Ensure we can save IP address if we want") {
-    ooni::OoniTest test;
+    nettests::OoniTest test;
     test.set_options("geoip_country_path", "GeoIP.dat");
     test.set_options("geoip_asn_path", "GeoIPASNum.dat");
     test.set_options("save_real_probe_ip", true);
@@ -111,7 +111,7 @@ TEST_CASE("Ensure we can save IP address if we want") {
 }
 
 TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
-    ooni::OoniTest test;
+    nettests::OoniTest test;
     test.set_options("geoip_country_path", "GeoIP.dat");
     test.set_options("geoip_asn_path", "GeoIPASNum.dat");
     test.set_options("save_real_probe_cc", false);

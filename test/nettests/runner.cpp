@@ -13,8 +13,9 @@
 #include <unistd.h>
 
 using namespace mk;
+using namespace mk::nettests;
 
-static void run_http_invalid_request_line(Runner &runner) {
+static void run_http_invalid_request_line(nettests::Runner &runner) {
     runner.run_test(nettests::HttpInvalidRequestLine()
                        .set_options("backend", "http://nexa.polito.it/")
                        .set_options("geoip_country_path", "GeoIP.dat")
@@ -28,7 +29,7 @@ static void run_http_invalid_request_line(Runner &runner) {
                    });
 }
 
-static void run_dns_injection(Runner &runner) {
+static void run_dns_injection(nettests::Runner &runner) {
     runner.run_test(nettests::DnsInjection()
                        .set_options("backend", "8.8.8.8:53")
                        .set_options("geoip_country_path", "GeoIP.dat")
@@ -43,7 +44,7 @@ static void run_dns_injection(Runner &runner) {
                    });
 }
 
-static void run_tcp_connect(Runner &runner) {
+static void run_tcp_connect(nettests::Runner &runner) {
     runner.run_test(nettests::TcpConnect()
                        .set_options("port", "80")
                        .set_options("geoip_country_path", "GeoIP.dat")
@@ -60,7 +61,7 @@ static void run_tcp_connect(Runner &runner) {
 
 TEST_CASE("The runner engine works as expected") {
 
-    Runner runner;
+    nettests::Runner runner;
 
     for (int i = 0; i < 4; ++i) {
         mk::debug("do another iteration of tests");
@@ -80,7 +81,7 @@ TEST_CASE("The runner engine works as expected") {
 }
 
 TEST_CASE("The destructor work as expected if the thread was already joined") {
-    Runner runner;
+    nettests::Runner runner;
     run_dns_injection(runner);
     run_dns_injection(runner);
     while (!runner.empty()) {
@@ -91,7 +92,7 @@ TEST_CASE("The destructor work as expected if the thread was already joined") {
 }
 
 TEST_CASE("Nothing strange happens if no thread is bound to Runner") {
-    Runner runner;
+    nettests::Runner runner;
     REQUIRE(runner.empty()); // Mainly to avoid unused variable warning
 }
 
