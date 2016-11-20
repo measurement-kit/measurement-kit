@@ -16,7 +16,7 @@ using namespace mk;
 using namespace mk::nettests;
 
 static void run_http_invalid_request_line(nettests::Runner &runner) {
-    runner.run_test(nettests::HttpInvalidRequestLine()
+    runner.start_test(nettests::HttpInvalidRequestLineTest()
                        .set_options("backend", "http://nexa.polito.it/")
                        .set_options("geoip_country_path", "GeoIP.dat")
                        .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -30,7 +30,7 @@ static void run_http_invalid_request_line(nettests::Runner &runner) {
 }
 
 static void run_dns_injection(nettests::Runner &runner) {
-    runner.run_test(nettests::DnsInjection()
+    runner.start_test(nettests::DnsInjectionTest()
                        .set_options("backend", "8.8.8.8:53")
                        .set_options("geoip_country_path", "GeoIP.dat")
                        .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -45,7 +45,7 @@ static void run_dns_injection(nettests::Runner &runner) {
 }
 
 static void run_tcp_connect(nettests::Runner &runner) {
-    runner.run_test(nettests::TcpConnect()
+    runner.start_test(nettests::TcpConnectTest()
                        .set_options("port", "80")
                        .set_options("geoip_country_path", "GeoIP.dat")
                        .set_options("geoip_asn_path", "GeoIPASNum.dat")

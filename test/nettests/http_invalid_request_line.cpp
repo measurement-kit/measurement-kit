@@ -16,7 +16,7 @@ using namespace mk;
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("The HTTP Invalid Request Line test should run") {
-    auto http_invalid_request_line = nettests::HttpInvalidRequestLine{}
+    auto http_invalid_request_line = nettests::HttpInvalidRequestLineTest{}
         .set_options("backend", "http://213.138.109.232/")
         .runnable;
     loop_with_initial_event([&]() {
@@ -29,7 +29,7 @@ TEST_CASE("The HTTP Invalid Request Line test should run") {
 
 TEST_CASE(
     "The HTTP Invalid Request Line can manage a failure while connecting") {
-    auto http_invalid_request_line = nettests::HttpInvalidRequestLine{}
+    auto http_invalid_request_line = nettests::HttpInvalidRequestLineTest{}
         .set_options("backend", "http://213.138.109.232/")
         .set_options("dns/nameserver", "8.8.8.1")
         .set_options("dns/timeout", 0.1)
@@ -43,7 +43,7 @@ TEST_CASE(
 
 TEST_CASE("Synchronous http-invalid-request-line test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
-    nettests::HttpInvalidRequestLine()
+    nettests::HttpInvalidRequestLineTest()
         .set_options("backend", "http://213.138.109.232/")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -55,7 +55,7 @@ TEST_CASE("Synchronous http-invalid-request-line test") {
 
 TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
-    nettests::HttpInvalidRequestLine()
+    nettests::HttpInvalidRequestLineTest()
         .set_options("backend",
                      "http://data.neubot.org/") // Let's troll Davide!
         .set_options("geoip_country_path", "GeoIP.dat")
@@ -69,12 +69,12 @@ TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
 TEST_CASE("Asynchronous http-invalid-request-line test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
     bool done = false;
-    nettests::HttpInvalidRequestLine()
+    nettests::HttpInvalidRequestLineTest()
         .set_options("backend", "http://213.138.109.232/")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
-        .run([&done]() { done = true; });
+        .start([&done]() { done = true; });
     do {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     } while (!done);
@@ -85,7 +85,7 @@ TEST_CASE("Asynchronous http-invalid-request-line test") {
 #endif
 
 TEST_CASE("Make sure that set_output_path() works") {
-    auto runnable = nettests::HttpInvalidRequestLine{}
+    auto runnable = nettests::HttpInvalidRequestLineTest{}
                         .set_output_filepath("foo.txt")
                         .runnable;
     REQUIRE(runnable->output_filepath == "foo.txt");
@@ -95,7 +95,7 @@ TEST_CASE("Make sure that set_output_path() works") {
 
 TEST_CASE("Make sure that it can pass options to the other levels") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
-    nettests::HttpInvalidRequestLine()
+    nettests::HttpInvalidRequestLineTest()
         .set_options("backend", "http://nexacenter.org")
         .set_options("dns/nameserver", "8.8.8.1")
         .set_options("dns/timeout", "0.1")
@@ -108,7 +108,7 @@ TEST_CASE("Make sure that it can pass options to the other levels") {
 
 TEST_CASE("Make sure that the test can deal with an invalid backend") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
-    nettests::HttpInvalidRequestLine()
+    nettests::HttpInvalidRequestLineTest()
         .set_options("backend", "nexacenter.org")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();

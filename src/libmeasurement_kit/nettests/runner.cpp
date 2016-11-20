@@ -21,7 +21,7 @@ struct RunnerCtx {
 
 Runner::Runner() { ctx_.reset(new RunnerCtx); }
 
-void Runner::run_test(Var<Runnable> test, Callback<Var<Runnable>> fn) {
+void Runner::start_test(Var<Runnable> test, Callback<Var<Runnable>> fn) {
     assert(ctx_->active >= 0);
     if (not ctx_->running) {
         std::promise<bool> promise;

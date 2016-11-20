@@ -69,12 +69,12 @@ void BaseTest::run() {
     // a dedicated reactor, but the code is not yet ready for that.
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    run([&promise]() { promise.set_value(true);});
+    start([&promise]() { promise.set_value(true);});
     future.wait();
 }
 
-void BaseTest::run(Callback<> callback) {
-    Runner::global()->run_test(runnable, [=](Var<Runnable>) { callback(); });
+void BaseTest::start(Callback<> callback) {
+    Runner::global()->start_test(runnable, [=](Var<Runnable>) { callback(); });
 }
 
 } // namespace nettests

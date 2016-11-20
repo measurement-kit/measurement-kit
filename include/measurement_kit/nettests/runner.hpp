@@ -13,7 +13,7 @@ struct RunnerCtx;
 class Runner {
   public:
     Runner();
-    void run_test(Var<Runnable> test, Callback<Var<Runnable>> func);
+    void start_test(Var<Runnable> test, Callback<Var<Runnable>> func);
     void break_loop_();
     bool empty();
     void join_();

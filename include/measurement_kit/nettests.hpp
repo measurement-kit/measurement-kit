@@ -4,7 +4,7 @@
 #include <measurement_kit/nettests/base_test.hpp>
 #include <measurement_kit/nettests/dns_injection.hpp>
 #include <measurement_kit/nettests/http_invalid_request_line.hpp>
-#include <measurement_kit/nettests/ndt_test.hpp>
+#include <measurement_kit/nettests/ndt.hpp>
 #include <measurement_kit/nettests/runnable.hpp>
 #include <measurement_kit/nettests/runner.hpp>
 #include <measurement_kit/nettests/tcp_connect.hpp>

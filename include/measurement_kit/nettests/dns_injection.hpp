@@ -9,9 +9,9 @@
 namespace mk {
 namespace nettests {
 
-class DnsInjection : public BaseTest {
+class DnsInjectionTest : public BaseTest {
   public:
-    DnsInjection();
+    DnsInjectionTest();
 };
 
 class DnsInjectionRunnable : public Runnable {

@@ -8,7 +8,7 @@
 namespace mk {
 namespace nettests {
 
-DnsInjection::DnsInjection() : BaseTest() {
+DnsInjectionTest::DnsInjectionTest() : BaseTest() {
     runnable.reset(new DnsInjectionRunnable);
     runnable->test_name = "dns_injection";
     runnable->test_version = "0.0.1";

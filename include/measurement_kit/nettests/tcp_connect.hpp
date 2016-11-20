@@ -9,9 +9,9 @@
 namespace mk {
 namespace nettests {
 
-class TcpConnect : public BaseTest {
+class TcpConnectTest : public BaseTest {
   public:
-    TcpConnect();
+    TcpConnectTest();
 };
 
 class TcpConnectRunnable : public Runnable {

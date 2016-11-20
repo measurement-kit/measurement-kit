@@ -15,6 +15,12 @@ using namespace mk::ooni;
 
 Runnable::~Runnable() {}
 
+void Runnable::setup(std::string) {}
+void Runnable::teardown(std::string) {}
+void Runnable::main(std::string, Settings, Callback<report::Entry> cb) {
+    reactor->call_soon([=]() { cb(report::Entry{}); });
+}
+
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
                                     Var<size_t> current_entry) {

@@ -38,19 +38,16 @@ class Runnable : public NonCopyable, public NonMovable {
 
   protected:
     // Functions that derived classes SHOULD override
-    virtual void setup(std::string) {}
-    virtual void teardown(std::string) {}
-    virtual void main(std::string, Settings, Callback<report::Entry> cb) {
-        reactor->call_soon([=]() { cb(report::Entry{}); });
-    }
+    virtual void setup(std::string);
+    virtual void teardown(std::string);
+    virtual void main(std::string, Settings, Callback<report::Entry>);
 
   private:
     report::Report report;
     tm test_start_time;
     Var<std::istream> input_generator;
 
-    void run_next_measurement(size_t, Callback<Error>, size_t,
-                              Var<size_t>);
+    void run_next_measurement(size_t, Callback<Error>, size_t, Var<size_t>);
     void geoip_lookup(Callback<>);
     void open_report(Callback<Error>);
     std::string generate_output_filepath();

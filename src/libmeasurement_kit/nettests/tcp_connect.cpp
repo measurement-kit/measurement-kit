@@ -8,7 +8,7 @@
 namespace mk {
 namespace nettests {
 
-TcpConnect::TcpConnect() : BaseTest() {
+TcpConnectTest::TcpConnectTest() : BaseTest() {
     runnable.reset(new TcpConnectRunnable);
     runnable->test_name = "tcp_connect";
     runnable->test_version = "0.0.1";
