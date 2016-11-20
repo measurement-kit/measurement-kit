@@ -6,14 +6,14 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 # SYNOPSIS
 ```C++
-#include <measurement_kit/ooni.hpp>
+#include <measurement_kit/nettests.hpp>
 
 namespace mk {
-namespace ooni {
+namespace nettests {
 
 class HttpInvalidRequestLine : public OoniTest {};
 
-} // namespace ooni
+} // namespace nettests
 } // namespace mk
 ```
 
@@ -68,4 +68,5 @@ to acquire the proper locks before manipulating shared objects.
 
 # HISTORY
 
-The `HttpInvalidRequestLine` class appeared in MeasurementKit 0.1.0.
+The `HttpInvalidRequestLine` class appeared in MeasurementKit 0.1.0. It
+was moved from the `ooni` to the `nettests` namespace in v0.4.0.
