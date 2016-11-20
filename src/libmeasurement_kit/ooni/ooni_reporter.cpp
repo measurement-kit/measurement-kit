@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/nettests/ooni_test.hpp> /* XXX */
+#include <measurement_kit/nettests/net_test.hpp> /* XXX */
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
@@ -11,7 +11,7 @@ namespace ooni {
 using namespace mk::report;
 using namespace mk::nettests;
 
-OoniReporter::OoniReporter(const OoniTest &parent) {
+OoniReporter::OoniReporter(const NetTest &parent) {
     settings = parent.options; // Copy the parent's settings
     logger = parent.logger;
     reactor = parent.reactor;
@@ -23,7 +23,7 @@ OoniReporter::OoniReporter(const OoniTest &parent) {
     logger->info("Using collector: %s", settings["collector_base_url"].c_str());
 }
 
-/* static */ Var<BaseReporter> OoniReporter::make(const OoniTest &parent) {
+/* static */ Var<BaseReporter> OoniReporter::make(const NetTest &parent) {
     Var<OoniReporter> reporter(new OoniReporter(parent));
     return reporter;
 }

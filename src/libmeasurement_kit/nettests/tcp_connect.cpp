@@ -10,7 +10,7 @@ namespace nettests {
 
 TcpConnect::TcpConnect() : TcpConnect("", {}) {}
 
-TcpConnect::TcpConnect(std::string f, Settings o) : OoniTest(f, o) {
+TcpConnect::TcpConnect(std::string f, Settings o) : NetTest(f, o) {
     test_name = "tcp_connect";
     test_version = "0.0.1";
     needs_input = true;

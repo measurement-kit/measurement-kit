@@ -7,13 +7,18 @@
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
 
+/*
+    This file contains the implementation of the logic of NetTest. We may
+    refactor it and merge it inside net_test.cpp in the future.
+*/
+
 namespace mk {
 namespace nettests {
 
 using namespace mk::report;
 using namespace mk::ooni;
 
-void OoniTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
+void NetTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
                                     Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
@@ -80,7 +85,7 @@ void OoniTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
     });
 }
 
-void OoniTest::geoip_lookup(Callback<> cb) {
+void NetTest::geoip_lookup(Callback<> cb) {
 
     // This is to ensure that when calling multiple times geoip_lookup we
     // always reset the probe_ip, probe_asn and probe_cc values.
@@ -157,7 +162,7 @@ void OoniTest::geoip_lookup(Callback<> cb) {
         options, reactor, logger);
 }
 
-void OoniTest::open_report(Callback<Error> callback) {
+void NetTest::open_report(Callback<Error> callback) {
     report.test_name = test_name;
     report.test_version = test_version;
     report.test_start_time = test_start_time;
@@ -180,7 +185,7 @@ void OoniTest::open_report(Callback<Error> callback) {
     report.open(callback);
 }
 
-std::string OoniTest::generate_output_filepath() {
+std::string NetTest::generate_output_filepath() {
     int idx = 0;
     std::stringstream filename;
     while (true) {
@@ -204,7 +209,7 @@ std::string OoniTest::generate_output_filepath() {
     return filename.str();
 }
 
-void OoniTest::begin(Callback<Error> cb) {
+void NetTest::begin(Callback<Error> cb) {
     if (begin_cb) {
         begin_cb();
     }
@@ -274,7 +279,7 @@ void OoniTest::begin(Callback<Error> cb) {
     });
 }
 
-void OoniTest::end(Callback<Error> cb) {
+void NetTest::end(Callback<Error> cb) {
     if (end_cb) {
         end_cb();
     }

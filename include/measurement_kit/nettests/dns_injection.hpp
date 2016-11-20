@@ -4,12 +4,12 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_DNS_INJECTION_HPP
 #define MEASUREMENT_KIT_NETTESTS_DNS_INJECTION_HPP
 
-#include <measurement_kit/nettests/ooni_test.hpp>
+#include <measurement_kit/nettests/net_test.hpp>
 
 namespace mk {
 namespace nettests {
 
-class DnsInjection : public OoniTest {
+class DnsInjection : public NetTest {
   public:
     DnsInjection();
     DnsInjection(std::string f, Settings o);
