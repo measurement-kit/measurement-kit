@@ -3,11 +3,10 @@
 // information on the copying conditions.
 
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/report.hpp>
 
 namespace mk {
-namespace ooni {
-
-using namespace mk::report;
+namespace report {
 
 OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
     settings = s;
@@ -16,7 +15,8 @@ OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
     if (settings.find("collector_base_url") == settings.end()) {
         // Note: by default we use the testing collector URL because otherwise
         // testing runs would be collected creating noise and using resources
-        settings["collector_base_url"] = collector::testing_collector_url();
+        settings["collector_base_url"] =
+            ooni::collector::testing_collector_url();
     }
     logger->info("Using collector: %s", settings["collector_base_url"].c_str());
 }
@@ -30,7 +30,7 @@ OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
 Continuation<Error> OoniReporter::open(Report report) {
     return do_open_([=](Callback<Error> cb) {
         logger->info("Opening report...");
-        collector::connect_and_create_report(
+        ooni::collector::connect_and_create_report(
                 report.get_dummy_entry(),
                 [=](Error error, std::string report_id) {
                     logger->info("Opening report... %d", error.code);
@@ -67,7 +67,7 @@ Continuation<Error> OoniReporter::write_entry(Entry entry) {
             return;
         }
         logger->info("Submitting entry...");
-        collector::connect_and_update_report(report_id, entry,
+        ooni::collector::connect_and_update_report(report_id, entry,
                                              [=](Error e) {
                                                  logger->info(
                                                      "Submitting entry... %d",
@@ -88,7 +88,7 @@ Continuation<Error> OoniReporter::close() {
             return;
         }
         logger->info("Closing report...");
-        collector::connect_and_close_report(report_id,
+        ooni::collector::connect_and_close_report(report_id,
                                             [=](Error e) {
                                                 logger->info(
                                                     "Closing report... %d",
@@ -101,5 +101,5 @@ Continuation<Error> OoniReporter::close() {
     });
 }
 
-} // namespace ooni
+} // namespace report
 } // namespace mk

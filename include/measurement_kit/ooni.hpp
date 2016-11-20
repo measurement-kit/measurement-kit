@@ -4,7 +4,6 @@
 #include <measurement_kit/ooni/collector_client.hpp>
 #include <measurement_kit/ooni/error.hpp>
 #include <measurement_kit/ooni/nettests.hpp>
-#include <measurement_kit/ooni/ooni_reporter.hpp>
 #include <measurement_kit/ooni/templates.hpp>
 #include <measurement_kit/ooni/utils.hpp>
 #endif
