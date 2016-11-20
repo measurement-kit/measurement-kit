@@ -7,16 +7,11 @@
 #include <measurement_kit/report.hpp>
 
 namespace mk {
-
-namespace nettests {
-class NetTest;  /* XXX violation of layers */
-}
-
 namespace ooni {
 
 class OoniReporter : public report::BaseReporter {
   public:
-    static Var<BaseReporter> make(const nettests::NetTest &ooni_test);
+    static Var<BaseReporter> make(Settings, Var<Reactor>, Var<Logger>);
 
     Continuation<Error> open(report::Report report) override;
     Continuation<Error> write_entry(report::Entry entry) override;
@@ -25,7 +20,7 @@ class OoniReporter : public report::BaseReporter {
     ~OoniReporter() override {}
 
   private:
-    OoniReporter(const nettests::NetTest &ooni_test);
+    OoniReporter(Settings, Var<Reactor>, Var<Logger>);
 
     Var<Reactor> reactor = Reactor::global();
     Var<Logger> logger = Logger::global();

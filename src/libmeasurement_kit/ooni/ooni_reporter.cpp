@@ -11,10 +11,11 @@ namespace ooni {
 using namespace mk::report;
 using namespace mk::nettests;
 
-OoniReporter::OoniReporter(const NetTest &parent) {
-    settings = parent.options; // Copy the parent's settings
-    logger = parent.logger;
-    reactor = parent.reactor;
+OoniReporter::OoniReporter(Settings settings, Var<Reactor> reactor,
+                           Var<Logger> logger) {
+    this->settings = settings;
+    this->reactor = reactor;
+    this->logger = logger;
     if (settings.find("collector_base_url") == settings.end()) {
         // Note: by default we use the testing collector URL because otherwise
         // testing runs would be collected creating noise and using resources
@@ -23,8 +24,9 @@ OoniReporter::OoniReporter(const NetTest &parent) {
     logger->info("Using collector: %s", settings["collector_base_url"].c_str());
 }
 
-/* static */ Var<BaseReporter> OoniReporter::make(const NetTest &parent) {
-    Var<OoniReporter> reporter(new OoniReporter(parent));
+/* static */ Var<BaseReporter> OoniReporter::make(Settings settings,
+        Var<Reactor> reactor, Var<Logger> logger) {
+    Var<OoniReporter> reporter(new OoniReporter(settings, reactor, logger));
     return reporter;
 }
 

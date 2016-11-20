@@ -180,7 +180,7 @@ void NetTest::open_report(Callback<Error> callback) {
         report.add_reporter(FileReporter::make(output_filepath));
     }
     if (!options.get("no_collector", false)) {
-        report.add_reporter(OoniReporter::make(*this));
+        report.add_reporter(OoniReporter::make(options, reactor, logger));
     }
     report.open(callback);
 }
