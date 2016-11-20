@@ -11,73 +11,32 @@ namespace nettests {
 
 class NetTest {
   public:
-    NetTest &on_log(Delegate<uint32_t, const char *> func) {
-        logger->on_log(func);
-        return *this;
-    }
-    NetTest &set_verbosity(uint32_t level) {
-        logger->set_verbosity(level);
-        return *this;
-    }
-    NetTest &increase_verbosity() {
-        logger->increase_verbosity();
-        return *this;
-    }
+    NetTest &on_log(Delegate<uint32_t, const char *>);
+    NetTest &set_verbosity(uint32_t);
+    NetTest &increase_verbosity();
+    virtual void begin(Callback<Error>);
+    virtual void end(Callback<Error>);
 
-    virtual void begin(Callback<Error> func) {
-        // You must override this on subclasses to actually start
-        // running the test you're interested to run
-        reactor->call_soon([=]() { func(NoError()); });
-    }
-    virtual void end(Callback<Error> func) {
-        // You must override this on subclasses to actually terminate
-        // running the test (i.e. send results to collector)
-        reactor->call_soon([=]() { func(NoError()); });
-    }
-
-    NetTest() {}
-    NetTest(Settings o) : options(o) {}
-    NetTest(std::string i, Settings o) : options(o), input_filepath(i) {}
+    NetTest();
+    NetTest(Settings);
+    NetTest(std::string, Settings);
     virtual ~NetTest();
 
-    NetTest &set_input_filepath(std::string s) {
-        input_filepath = s;
-        return *this;
-    }
-    NetTest &set_output_filepath(std::string s) {
-        output_filepath = s;
-        return *this;
-    }
-    NetTest &set_error_filepath(std::string s) {
-        logger->set_logfile(s);
-        return *this;
-    }
-    NetTest &set_reactor(Var<Reactor> r) {
-        reactor = r;
-        return *this;
-    }
+    NetTest &set_input_filepath(std::string);
+    NetTest &set_output_filepath(std::string);
+    NetTest &set_error_filepath(std::string);
+    NetTest &set_reactor(Var<Reactor>);
+
     template <typename T> NetTest &set_options(std::string key, T value) {
         options[key] = value;
         return *this;
     }
-    NetTest &on_entry(Delegate<std::string> cb) {
-        entry_cb = cb;
-        return *this;
-    }
-    NetTest &on_begin(Delegate<> cb) {
-        begin_cb = cb;
-        return *this;
-    }
-    NetTest &on_end(Delegate<> cb) {
-        end_cb = cb;
-        return *this;
-    }
 
-    virtual Var<NetTest> create_test_() {
-        // You must override this in subclasses to create the actual
-        // instance of the test you would like to run on a runner
-        return Var<NetTest>{nullptr};
-    }
+    NetTest &on_entry(Delegate<std::string>);
+    NetTest &on_begin(Delegate<>);
+    NetTest &on_end(Delegate<> cb);
+
+    virtual Var<NetTest> create_test_();
 
     void run();
     void run(Callback<> func);
