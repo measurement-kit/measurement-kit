@@ -9,9 +9,9 @@
 namespace mk {
 namespace nettests {
 
-class HttpInvalidRequestLine : public BaseTest {
+class HttpInvalidRequestLineTest : public BaseTest {
   public:
-    HttpInvalidRequestLine();
+    HttpInvalidRequestLineTest();
 };
 
 class HttpInvalidRequestLineRunnable : public Runnable {

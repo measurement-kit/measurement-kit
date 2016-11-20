@@ -17,7 +17,7 @@ using namespace mk;
 
 TEST_CASE(
     "The DNS Injection test should run with an input file of DNS hostnames") {
-    auto dns_injection = nettests::DnsInjection{}
+    auto dns_injection = nettests::DnsInjectionTest{}
         .set_input_filepath("test/fixtures/hosts.txt")
         .set_options("backend", "8.8.8.1:53")
         .set_options("dns/timeout", 0.1)
@@ -31,7 +31,7 @@ TEST_CASE(
 
 TEST_CASE("Synchronous dns-injection test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
-    nettests::DnsInjection()
+    nettests::DnsInjectionTest()
         .set_options("backend", "8.8.8.1:53")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -46,14 +46,14 @@ TEST_CASE("Synchronous dns-injection test") {
 TEST_CASE("Asynchronous dns-injection test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
     bool done = false;
-    nettests::DnsInjection()
+    nettests::DnsInjectionTest()
         .set_options("backend", "8.8.8.1:53")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_options("dns/timeout", "0.1")
         .set_input_filepath("test/fixtures/hosts.txt")
         .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
-        .run([&]() { done = true; });
+        .start([&]() { done = true; });
     do {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     } while (!done);
@@ -64,7 +64,7 @@ TEST_CASE("Asynchronous dns-injection test") {
 #endif
 
 TEST_CASE("Make sure that set_output_path() works") {
-    auto runnable = nettests::DnsInjection()
+    auto runnable = nettests::DnsInjectionTest()
                         // Note: must also set valid input file path otherwise
                         // the constructor
                         // called inside create_test_() throws an exception

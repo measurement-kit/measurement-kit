@@ -8,7 +8,7 @@
 namespace mk {
 namespace nettests {
 
-WebConnectivity::WebConnectivity() : BaseTest() {
+WebConnectivityTest::WebConnectivityTest() : BaseTest() {
     runnable.reset(new WebConnectivityRunnable);
     runnable->test_name = "web_connectivity";
     runnable->test_version = "0.0.1";

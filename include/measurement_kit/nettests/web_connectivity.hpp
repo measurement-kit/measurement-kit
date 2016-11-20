@@ -9,9 +9,9 @@
 namespace mk {
 namespace nettests {
 
-class WebConnectivity : public BaseTest {
+class WebConnectivityTest : public BaseTest {
   public:
-    WebConnectivity();
+    WebConnectivityTest();
 };
 
 class WebConnectivityRunnable : public Runnable {

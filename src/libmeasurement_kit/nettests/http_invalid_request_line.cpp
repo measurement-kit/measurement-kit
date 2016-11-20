@@ -8,7 +8,7 @@
 namespace mk {
 namespace nettests {
 
-HttpInvalidRequestLine::HttpInvalidRequestLine() : BaseTest() {
+HttpInvalidRequestLineTest::HttpInvalidRequestLineTest() : BaseTest() {
     runnable.reset(new HttpInvalidRequestLineRunnable);
     runnable->test_name = "http_invalid_request_line";
     runnable->test_version = "0.0.1";

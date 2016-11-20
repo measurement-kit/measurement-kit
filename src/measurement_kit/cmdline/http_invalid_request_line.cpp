@@ -15,7 +15,7 @@ int main(const char *, int argc, char **argv) {
     std::string backend = "http://213.138.109.232/";
     uint32_t verbosity = 0;
     std::string name = argv[0];
-    mk::nettests::HttpInvalidRequestLine test;
+    mk::nettests::HttpInvalidRequestLineTest test;
     int ch;
 
     while ((ch = mkp_getopt(argc, argv, "b:nv")) != -1) {

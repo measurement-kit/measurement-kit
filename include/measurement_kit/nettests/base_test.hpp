@@ -34,7 +34,7 @@ class BaseTest {
     BaseTest &on_end(Delegate<> cb);
 
     void run();
-    void run(Callback<> func);
+    void start(Callback<> func);
 
     Var<Runnable> runnable;
 };
