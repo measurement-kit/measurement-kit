@@ -4,10 +4,10 @@
 #ifndef MEASUREMENT_KIT_OONI_OONI_REPORTER_HPP
 #define MEASUREMENT_KIT_OONI_OONI_REPORTER_HPP
 
-#include <measurement_kit/report.hpp>
+#include <measurement_kit/report/base_reporter.hpp>
 
 namespace mk {
-namespace ooni {
+namespace report {
 
 class OoniReporter : public report::BaseReporter {
   public:
@@ -28,6 +28,6 @@ class OoniReporter : public report::BaseReporter {
     std::string report_id;
 };
 
-} // namespace ooni
+} // namespace report
 } // namespace mk
 #endif
