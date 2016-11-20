@@ -76,8 +76,11 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         report.write_entry(entry, [=](Error error) {
             if (error) {
                 logger->warn("cannot write entry");
-                // Note: continue running measurements in this case because a
-                // transient collector failure MUST NOT stop running tests
+                // XXX ignoring errors until we implement retry
+                if (not options.get("ignore_write_entry_error", true)) {
+                    cb(error);
+                    return;
+                }
             } else {
                 logger->debug("net_test: written entry");
             }
@@ -225,7 +228,9 @@ void Runnable::begin(Callback<Error> cb) {
                 logger->debug("failed to lookup resolver ip");
             }
             open_report([=](Error error) {
-                if (error) {
+                // XXX ignoring errors until we implement retry
+                if (error and not options.get(
+                        "ignore_open_report_error", true)) {
                     cb(error);
                     return;
                 }

@@ -28,8 +28,8 @@ class Runnable : public NonCopyable, public NonMovable {
     Delegate<> begin_cb;
     Delegate<> end_cb;
 
-    std::string test_name;
-    std::string test_version;
+    std::string test_name = "ooni_test";
+    std::string test_version = "0.0.1";
     std::string probe_ip = "127.0.0.1";
     std::string probe_asn = "AS0";
     std::string probe_cc = "ZZ";
