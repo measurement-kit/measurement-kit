@@ -5,28 +5,15 @@
 #define MEASUREMENT_KIT_NETTESTS_WEB_CONNECTIVITY_HPP
 
 #include <measurement_kit/nettests/ooni_test.hpp>
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
 
 class WebConnectivity : public OoniTest {
   public:
-    WebConnectivity() : WebConnectivity("", {}) {}
-
-    WebConnectivity(std::string f, Settings o) : OoniTest(f, o) {
-        test_name = "web_connectivity";
-        test_version = "0.0.1";
-        needs_input = true;
-    }
-
-    void main(std::string input, Settings options,
-              Callback<report::Entry> cb) override {
-        ooni::web_connectivity(input, options, [=](Var<report::Entry> e) {
-             cb(*e);
-        }, reactor, logger);
-    }
-
+    WebConnectivity();
+    WebConnectivity(std::string, Settings);
+    void main(std::string, Settings, Callback<report::Entry>) override;
     Var<NetTest> create_test_() override;
 };
 

@@ -11,8 +11,8 @@ namespace nettests {
 
 class NdtTest : public OoniTest {
   public:
-    NdtTest() : NdtTest(Settings()) {}
-    NdtTest(Settings s);
+    NdtTest();
+    NdtTest(Settings);
   protected:
     void main(std::string, Settings, Callback<report::Entry>) override;
     Var<NetTest> create_test_() override;

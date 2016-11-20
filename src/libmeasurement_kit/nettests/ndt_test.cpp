@@ -8,6 +8,8 @@
 namespace mk {
 namespace nettests {
 
+NdtTest::NdtTest() : NdtTest({}) {}
+
 NdtTest::NdtTest(Settings s) : OoniTest("", s) {
     options["save_real_probe_ip"] = true;
     test_name = "ndt";

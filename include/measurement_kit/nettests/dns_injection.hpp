@@ -5,27 +5,15 @@
 #define MEASUREMENT_KIT_NETTESTS_DNS_INJECTION_HPP
 
 #include <measurement_kit/nettests/ooni_test.hpp>
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
 
 class DnsInjection : public OoniTest {
   public:
-    DnsInjection() : DnsInjection("", {}) {}
-    DnsInjection(std::string f, Settings o) : OoniTest(f, o) {
-        test_name = "dns_injection";
-        test_version = "0.0.1";
-        needs_input = true;
-    }
-
-    void main(std::string input, Settings options,
-              Callback<report::Entry> cb) override {
-        ooni::dns_injection(input, options, [=](Var<report::Entry> entry) {
-            cb(*entry);
-        }, reactor, logger);
-    }
-
+    DnsInjection();
+    DnsInjection(std::string f, Settings o);
+    void main(std::string, Settings, Callback<report::Entry>) override;
     Var<NetTest> create_test_() override;
 };
 
