@@ -6,14 +6,10 @@
 
 #include <measurement_kit/common.hpp>
 
-#include <atomic>
-#include <string>
-#include <thread>
-
 namespace mk {
 namespace nettests {
-
 class NetTest;
+struct RunnerCtx;
 
 class Runner {
   public:
@@ -26,10 +22,7 @@ class Runner {
     static Var<Runner> global();
 
   private:
-    std::atomic<int> active{0};
-    Var<Reactor> reactor = Reactor::global();
-    std::atomic<bool> running{false};
-    std::thread thread;
+    Var<RunnerCtx> ctx_;
 };
 
 } // namespace nettests

@@ -4,35 +4,44 @@
 
 #include <measurement_kit/nettests.hpp>
 
+#include <atomic>
 #include <cassert>
 #include <future>
+#include <thread>
 
 namespace mk {
 namespace nettests {
 
-Runner::Runner() {}
+struct RunnerCtx {
+    std::atomic<int> active{0};
+    Var<Reactor> reactor = Reactor::global();
+    std::atomic<bool> running{false};
+    std::thread thread;
+};
+
+Runner::Runner() { ctx_.reset(new RunnerCtx); }
 
 void Runner::run_test(Var<NetTest> test, Callback<Var<NetTest>> fn) {
-    assert(active >= 0);
-    if (not running) {
+    assert(ctx_->active >= 0);
+    if (not ctx_->running) {
         std::promise<bool> promise;
         std::future<bool> future = promise.get_future();
         // WARNING: below we're passing `this` to the thread, which means that
         // the destructor MUST wait the thread. Otherwise, when the thread dies
         // many strange things could happen (I have seen SIGABRT).
         debug("runner: starting reactor in background...");
-        thread = std::thread([&promise, this]() {
-            reactor->loop_with_initial_event([&promise]() {
+        ctx_->thread = std::thread([&promise, this]() {
+            ctx_->reactor->loop_with_initial_event([&promise]() {
                 debug("runner: starting reactor in background... ok");
                 promise.set_value(true);
             });
         });
         future.wait();
-        running = true;
+        ctx_->running = true;
     }
-    active += 1;
+    ctx_->active += 1;
     debug("runner: scheduling %p", (void *)test.get());
-    reactor->call_soon([=]() {
+    ctx_->reactor->call_soon([=]() {
         debug("runner: starting %p", (void *)test.get());
         test->begin([=](Error) {
             // TODO: do not ignore the error
@@ -48,10 +57,10 @@ void Runner::run_test(Var<NetTest> test, Callback<Var<NetTest>> fn) {
                 // because `test` is most likely to be destroyed after `fn()`
                 // returns. This, when unwinding the stack, the use after free
                 // would happen.
-                reactor->call_soon([=]() {
+                ctx_->reactor->call_soon([=]() {
                     debug("runner: callbacking %p", (void *)test.get());
-                    active -= 1;
-                    debug("runner: #active tasks: %d", (int)active);
+                    ctx_->active -= 1;
+                    debug("runner: #active tasks: %d", (int)ctx_->active);
                     fn(test);
                 });
             });
@@ -59,14 +68,14 @@ void Runner::run_test(Var<NetTest> test, Callback<Var<NetTest>> fn) {
     });
 }
 
-void Runner::break_loop_() { reactor->break_loop(); }
+void Runner::break_loop_() { ctx_->reactor->break_loop(); }
 
-bool Runner::empty() { return active == 0; }
+bool Runner::empty() { return ctx_->active == 0; }
 
 void Runner::join_() {
-    if (running) {
-        thread.join();
-        running = false;
+    if (ctx_->running) {
+        ctx_->thread.join();
+        ctx_->running = false;
     }
 }
 
