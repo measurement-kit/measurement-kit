@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/ooni.hpp>
+#include <measurement_kit/nettests.hpp>
 
 #include <chrono>
 #include <iostream>
@@ -16,7 +16,7 @@ using namespace mk;
 
 TEST_CASE(
     "The TCP connect test should run with an input file of DNS hostnames") {
-    ooni::TcpConnect tcp_connect("test/fixtures/hosts.txt",
+    nettests::TcpConnect tcp_connect("test/fixtures/hosts.txt",
                                {
                                    {"port", "80"},
                                });
@@ -28,7 +28,7 @@ TEST_CASE(
 }
 
 TEST_CASE("The TCP connect test should fail with an invalid dns resolver") {
-    ooni::TcpConnect tcp_connect("test/fixtures/hosts.txt",
+    nettests::TcpConnect tcp_connect("test/fixtures/hosts.txt",
                                {{"host", "nexacenter.org"},
                                 {"port", "80"},
                                 {"dns/nameserver", "8.8.8.1"},
@@ -43,7 +43,7 @@ TEST_CASE("The TCP connect test should fail with an invalid dns resolver") {
 
 TEST_CASE("Synchronous tcp-connect test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
-    ooni::TcpConnect()
+    nettests::TcpConnect()
         .set_options("port", "80")
         .set_input_filepath("test/fixtures/hosts.txt")
         .set_options("geoip_country_path", "GeoIP.dat")
@@ -57,7 +57,7 @@ TEST_CASE("Synchronous tcp-connect test") {
 TEST_CASE("Asynchronous tcp-connect test") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
     bool done = false;
-    ooni::TcpConnect()
+    nettests::TcpConnect()
         .set_options("port", "80")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -74,14 +74,14 @@ TEST_CASE("Asynchronous tcp-connect test") {
 #endif
 
 TEST_CASE("Make sure that set_output_path() works") {
-    auto instance = ooni::TcpConnect()
+    auto instance = nettests::TcpConnect()
                         // Note: must also set valid input file path otherwise
                         // the constructor
                         // called inside create_test_() throws an exception
                         .set_input_filepath("test/fixtures/hosts.txt")
                         .set_output_filepath("foo.txt")
                         .create_test_();
-    auto ptr = static_cast<ooni::OoniTest *>(instance.get());
+    auto ptr = static_cast<nettests::OoniTest *>(instance.get());
     REQUIRE(ptr->output_filepath == "foo.txt");
 }
 
@@ -89,7 +89,7 @@ TEST_CASE("Make sure that set_output_path() works") {
 
 TEST_CASE("The test should fail with an invalid dns") {
     Var<std::list<std::string>> logs(new std::list<std::string>);
-    ooni::TcpConnect()
+    nettests::TcpConnect()
         .set_options("port", "80")
         .set_options("dns/nameserver", "8.8.8.1")
         .set_options("dns/attempts", "1")

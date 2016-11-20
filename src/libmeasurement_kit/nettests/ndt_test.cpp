@@ -2,14 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../common/utils.hpp"
+#include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ndt.hpp>
 
 namespace mk {
-namespace ndt {
-
-using json = nlohmann::json;
-using namespace mk::report;
+namespace nettests {
 
 NdtTest::NdtTest(Settings s) : OoniTest("", s) {
     options["save_real_probe_ip"] = true;
@@ -17,8 +14,8 @@ NdtTest::NdtTest(Settings s) : OoniTest("", s) {
     test_version = "0.0.4";
 }
 
-void NdtTest::main(std::string, Settings settings, Callback<Entry> cb) {
-    Var<Entry> entry(new Entry);
+void NdtTest::main(std::string, Settings settings, Callback<report::Entry> cb) {
+    Var<report::Entry> entry(new report::Entry);
     (*entry)["failure"] = nullptr;
     // Note: `options` is the class attribute and `settings` is instead a
     // possibly modified copy of the `options` object
@@ -26,7 +23,7 @@ void NdtTest::main(std::string, Settings settings, Callback<Entry> cb) {
         if (error) {
             (*entry)["failure"] = error.as_ooni_error();
         }
-        // XXX The callback should probably take a Var<Entry>
+        // XXX The callback should probably take a Var<report::Entry>
         cb(*entry);
     }, settings, reactor, logger);
 }
@@ -44,5 +41,5 @@ Var<NetTest> NdtTest::create_test_() {
     return Var<NetTest>(test);
 }
 
+} // namespace nettests
 } // namespace mk
-} // namespace ndt

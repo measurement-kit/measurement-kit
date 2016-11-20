@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "../cmdline/cmdline.hpp"
+#include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ndt.hpp>
 
 #include <string.h>
@@ -13,7 +14,7 @@ namespace mk {
 namespace cmdline {
 namespace ndt {
 
-using namespace mk::ndt;
+using namespace mk::nettests;
 
 static const char *kv_usage =
   "usage: measurement_kit ndt [-nv] [-C /path/to/ca.bundle] [-p port]\n"

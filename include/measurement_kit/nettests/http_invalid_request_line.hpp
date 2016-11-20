@@ -1,18 +1,14 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
-#define MEASUREMENT_KIT_OONI_HTTP_INVALID_REQUEST_LINE_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_HTTP_INVALID_REQUEST_LINE_HPP
+#define MEASUREMENT_KIT_NETTESTS_HTTP_INVALID_REQUEST_LINE_HPP
 
-#include <measurement_kit/ooni/ooni_test.hpp>
-#include <measurement_kit/report.hpp>
+#include <measurement_kit/nettests/ooni_test.hpp>
+#include <measurement_kit/ooni.hpp>
 
 namespace mk {
-namespace ooni {
-
-void http_invalid_request_line(Settings, Callback<Var<report::Entry>>,
-                               Var<Reactor> = Reactor::global(),
-                               Var<Logger> = Logger::global());
+namespace nettests {
 
 class HttpInvalidRequestLine : public OoniTest {
   public:
@@ -23,7 +19,7 @@ class HttpInvalidRequestLine : public OoniTest {
     }
 
     void main(std::string, Settings options, Callback<report::Entry> cb) override {
-        http_invalid_request_line(options, [=](Var<report::Entry> e) {
+        ooni::http_invalid_request_line(options, [=](Var<report::Entry> e) {
              cb(*e);
         }, reactor, logger);
     }
@@ -31,6 +27,6 @@ class HttpInvalidRequestLine : public OoniTest {
     Var<NetTest> create_test_() override;
 };
 
-} // namespace ooni
+} // namespace nettests
 } // namespace mk
 #endif

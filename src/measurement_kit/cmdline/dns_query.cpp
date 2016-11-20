@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include "../cmdline/cmdline.hpp"
-#include <measurement_kit/dns.hpp>
+#include <measurement_kit/nettests.hpp>
 
 #include <iostream>
 

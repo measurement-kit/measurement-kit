@@ -7,7 +7,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 # SYNOPSIS
 
 ```C++
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/nettests.hpp>
 
 class NetTest : public NonCopyable, public NonMovable {
   public:
@@ -174,4 +174,5 @@ test on the heap using a smart pointer, as shown above.
 
 # HISTORY
 
-The `NetTest` class appeared in MeasurementKit 0.1.0.
+The `NetTest` class appeared in MeasurementKit 0.1.0 in the `common`
+namespace. It was moved in the `nettests` namespace in 0.4.0.

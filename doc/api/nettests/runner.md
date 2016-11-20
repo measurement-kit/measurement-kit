@@ -6,9 +6,10 @@ MeasurementKit (libmeasurement\_kit, -lmeasurement\_kit).
 
 # SYNOPSIS
 ```C++
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/nettests.hpp>
 
 namespace mk {
+namespace nettests {
 
 class Runner {
   public:
@@ -16,7 +17,7 @@ class Runner {
     void run(Var<NetTest> test, Callback<Var<NetTest>> callback);
 };
 
-}
+}}
 ```
 
 # STABILITY
@@ -46,4 +47,5 @@ you lock any shared resources before proceeding as in
 # HISTORY
 
 The `Async` class appeared in MeasurementKit 0.1.0. It was renamed
-`Runner` in MeasurementKit 0.2.0.
+`Runner` in MeasurementKit 0.2.0. It was moved from the `common` to
+the `nettests` namespace in MeasurementKit 0.4.0.

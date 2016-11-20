@@ -2,13 +2,14 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/nettests.hpp>
 
 #include <chrono>
 #include <ratio>
 #include <future>
 
 namespace mk {
+namespace nettests {
 
 void NetTest::run() {
     // XXX Ideally it would be best to run this in the current thread with
@@ -26,4 +27,5 @@ void NetTest::run(std::function<void()> callback) {
 
 NetTest::~NetTest() {}
 
+} // namespace nettests
 } // namespace mk

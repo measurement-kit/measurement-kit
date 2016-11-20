@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include "../cmdline/cmdline.hpp"
-#include <measurement_kit/ooni.hpp>
+#include <measurement_kit/nettests.hpp>
 
 #include <iostream>
 
@@ -18,7 +18,7 @@ int main(const char *, int argc, char **argv) {
     std::string nameserver = "8.8.8.8";
     std::string name = argv[0];
     uint32_t verbosity = 0;
-    mk::ooni::WebConnectivity test;
+    mk::nettests::WebConnectivity test;
     int ch;
 
     while ((ch = mkp_getopt(argc, argv, "b:N:nv")) != -1) {

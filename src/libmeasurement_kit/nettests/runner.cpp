@@ -2,12 +2,13 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/nettests.hpp>
 
 #include <cassert>
 #include <future>
 
 namespace mk {
+namespace nettests {
 
 Runner::Runner() {}
 
@@ -81,4 +82,5 @@ Runner::~Runner() {
     return singleton;
 }
 
+} // namespace nettests
 } // namespace mk
