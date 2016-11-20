@@ -9,11 +9,10 @@ namespace ooni {
 
 using namespace mk::report;
 
-OoniReporter::OoniReporter(Settings settings, Var<Reactor> reactor,
-                           Var<Logger> logger) {
-    this->settings = settings;
-    this->reactor = reactor;
-    this->logger = logger;
+OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
+    settings = s;
+    reactor = r;
+    logger = l;
     if (settings.find("collector_base_url") == settings.end()) {
         // Note: by default we use the testing collector URL because otherwise
         // testing runs would be collected creating noise and using resources
