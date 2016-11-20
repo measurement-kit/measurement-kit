@@ -3,9 +3,25 @@
 // information on the copying conditions.
 
 #include <measurement_kit/nettests.hpp>
+#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
+
+DnsInjection::DnsInjection() : DnsInjection("", {}) {}
+
+DnsInjection::DnsInjection(std::string f, Settings o) : OoniTest(f, o) {
+    test_name = "dns_injection";
+    test_version = "0.0.1";
+    needs_input = true;
+}
+
+void DnsInjection::main(std::string input, Settings options,
+                        Callback<report::Entry> cb) {
+    ooni::dns_injection(input, options, [=](Var<report::Entry> entry) {
+        cb(*entry);
+    }, reactor, logger);
+}
 
 Var<NetTest> DnsInjection::create_test_() {
     DnsInjection *test = new DnsInjection(input_filepath, options);

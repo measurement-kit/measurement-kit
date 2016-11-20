@@ -5,27 +5,15 @@
 #define MEASUREMENT_KIT_NETTESTS_TCP_CONNECT_HPP
 
 #include <measurement_kit/nettests/ooni_test.hpp>
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
 
 class TcpConnect : public OoniTest {
   public:
-    TcpConnect() : TcpConnect("", {}) {}
-    TcpConnect(std::string f, Settings o) : OoniTest(f, o) {
-        test_name = "tcp_connect";
-        test_version = "0.0.1";
-        needs_input = true;
-    }
-
-    void main(std::string input, Settings options,
-              Callback<report::Entry> cb) override {
-        ooni::tcp_connect(input, options, [=](Var<report::Entry> entry) {
-            cb(*entry);
-        }, reactor, logger);
-    }
-
+    TcpConnect();
+    TcpConnect(std::string, Settings);
+    void main(std::string, Settings, Callback<report::Entry>) override;
     Var<NetTest> create_test_() override;
 };
 

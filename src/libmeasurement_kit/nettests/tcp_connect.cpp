@@ -3,9 +3,25 @@
 // information on the copying conditions.
 
 #include <measurement_kit/nettests.hpp>
+#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
+
+TcpConnect::TcpConnect() : TcpConnect("", {}) {}
+
+TcpConnect::TcpConnect(std::string f, Settings o) : OoniTest(f, o) {
+    test_name = "tcp_connect";
+    test_version = "0.0.1";
+    needs_input = true;
+}
+
+void TcpConnect::main(std::string input, Settings options,
+                      Callback<report::Entry> cb) {
+    ooni::tcp_connect(input, options, [=](Var<report::Entry> entry) {
+        cb(*entry);
+    }, reactor, logger);
+}
 
 Var<NetTest> TcpConnect::create_test_() {
     TcpConnect *test = new TcpConnect(input_filepath, options);
