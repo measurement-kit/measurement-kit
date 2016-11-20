@@ -4,18 +4,19 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_NDT_TEST_HPP
 #define MEASUREMENT_KIT_NETTESTS_NDT_TEST_HPP
 
-#include <measurement_kit/nettests/net_test.hpp>
+#include <measurement_kit/nettests/base_test.hpp>
 
 namespace mk {
 namespace nettests {
 
-class NdtTest : public NetTest {
+class NdtTest : public BaseTest {
   public:
     NdtTest();
-    NdtTest(Settings);
-  protected:
+};
+
+class NdtRunnable : public Runnable {
+  public:
     void main(std::string, Settings, Callback<report::Entry>) override;
-    Var<NetTest> create_test_() override;
 };
 
 } // namespace nettests

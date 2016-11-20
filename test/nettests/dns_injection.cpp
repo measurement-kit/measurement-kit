@@ -17,14 +17,15 @@ using namespace mk;
 
 TEST_CASE(
     "The DNS Injection test should run with an input file of DNS hostnames") {
-    Settings options;
-    options["backend"] = "8.8.8.1:53";
-    options["dns/timeout"] = 0.1;
-    nettests::DnsInjection dns_injection("test/fixtures/hosts.txt", options);
+    auto dns_injection = nettests::DnsInjection{}
+        .set_input_filepath("test/fixtures/hosts.txt")
+        .set_options("backend", "8.8.8.1:53")
+        .set_options("dns/timeout", 0.1)
+        .runnable;
     loop_with_initial_event([&]() {
         // TODO: handle errors?
-        dns_injection.begin(
-            [&](Error) { dns_injection.end([](Error) { break_loop(); }); });
+        dns_injection->begin(
+            [&](Error) { dns_injection->end([](Error) { break_loop(); }); });
     });
 }
 
@@ -63,13 +64,12 @@ TEST_CASE("Asynchronous dns-injection test") {
 #endif
 
 TEST_CASE("Make sure that set_output_path() works") {
-    auto instance = nettests::DnsInjection()
+    auto runnable = nettests::DnsInjection()
                         // Note: must also set valid input file path otherwise
                         // the constructor
                         // called inside create_test_() throws an exception
                         .set_input_filepath("test/fixtures/hosts.txt")
                         .set_output_filepath("foo.txt")
-                        .create_test_();
-    auto ptr = static_cast<nettests::NetTest *>(instance.get());
-    REQUIRE(ptr->output_filepath == "foo.txt");
+                        .runnable;
+    REQUIRE(runnable->output_filepath == "foo.txt");
 }

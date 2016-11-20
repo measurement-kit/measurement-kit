@@ -21,7 +21,7 @@ struct RunnerCtx {
 
 Runner::Runner() { ctx_.reset(new RunnerCtx); }
 
-void Runner::run_test(Var<NetTest> test, Callback<Var<NetTest>> fn) {
+void Runner::run_test(Var<Runnable> test, Callback<Var<Runnable>> fn) {
     assert(ctx_->active >= 0);
     if (not ctx_->running) {
         std::promise<bool> promise;
@@ -52,7 +52,7 @@ void Runner::run_test(Var<NetTest> test, Callback<Var<NetTest>> fn) {
                 // For robustness, delay the final callback to the beginning of
                 // next I/O cycle to prevent possible user after frees. This
                 // could happen because, in our current position on the stack,
-                // we have been called by `NetTest` code that may use `this`
+                // we have been called by `Runnable` code that may use `this`
                 // after calling the callback. But this would be a problem
                 // because `test` is most likely to be destroyed after `fn()`
                 // returns. This, when unwinding the stack, the use after free

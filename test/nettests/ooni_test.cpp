@@ -11,9 +11,9 @@
 using namespace mk;
 
 TEST_CASE("Make sure that on_entry() works") {
-    nettests::NetTest test;
+    nettests::Runnable test;
     loop_with_initial_event([&]() {
-        test.on_entry([](std::string s) {
+        test.entry_cb = [](std::string s) {
             nlohmann::json entry = nlohmann::json::parse(s);
             REQUIRE((entry.at("data_format_version") == "0.2.0"));
             REQUIRE((entry.at("input") == ""));
@@ -28,8 +28,8 @@ TEST_CASE("Make sure that on_entry() works") {
             REQUIRE((static_cast<double>(entry.at("test_runtime")) > 0.0));
             REQUIRE((entry.at("test_start_time") != ""));
             REQUIRE((entry.at("test_version") != ""));
-        })
-        .begin([&](Error) {
+        };
+        test.begin([&](Error) {
             test.end([&](Error) {
                 break_loop();
             });
@@ -39,12 +39,12 @@ TEST_CASE("Make sure that on_entry() works") {
 
 TEST_CASE("Make sure that on_begin() works") {
     bool ok = false;
-    nettests::NetTest test;
+    nettests::Runnable test;
     loop_with_initial_event([&]() {
-        test.on_begin([&]() {
+        test.begin_cb = [&]() {
             ok = true;
-        })
-        .begin([&](Error) {
+        };
+        test.begin([&](Error) {
             test.end([&](Error) {
                 break_loop();
             });
@@ -55,12 +55,12 @@ TEST_CASE("Make sure that on_begin() works") {
 
 TEST_CASE("Make sure that on_end() works") {
     bool ok = false;
-    nettests::NetTest test;
+    nettests::Runnable test;
     loop_with_initial_event([&]() {
-        test.on_end([&]() {
+        test.end_cb = [&]() {
             ok = true;
-        })
-        .begin([&](Error) {
+        };
+        test.begin([&](Error) {
             test.end([&](Error) {
                 break_loop();
             });
@@ -70,18 +70,18 @@ TEST_CASE("Make sure that on_end() works") {
 }
 
 TEST_CASE("Ensure we do not save too much information by default") {
-    nettests::NetTest test;
-    test.set_options("geoip_country_path", "GeoIP.dat");
-    test.set_options("geoip_asn_path", "GeoIPASNum.dat");
+    nettests::Runnable test;
+    test.options["geoip_country_path"] = "GeoIP.dat";
+    test.options["geoip_asn_path"] = "GeoIPASNum.dat";
     loop_with_initial_event([&]() {
-        test.on_entry([](std::string s) {
+        test.entry_cb = [](std::string s) {
             nlohmann::json entry = nlohmann::json::parse(s);
             REQUIRE((entry.at("data_format_version") == "0.2.0"));
             REQUIRE((entry.at("probe_asn") != "AS0"));
             REQUIRE((entry.at("probe_cc") != "ZZ"));
             REQUIRE((entry.at("probe_ip") == "127.0.0.1"));
-        })
-        .begin([&](Error) {
+        };
+        test.begin([&](Error) {
             test.end([&](Error) {
                 break_loop();
             });
@@ -90,19 +90,19 @@ TEST_CASE("Ensure we do not save too much information by default") {
 }
 
 TEST_CASE("Ensure we can save IP address if we want") {
-    nettests::NetTest test;
-    test.set_options("geoip_country_path", "GeoIP.dat");
-    test.set_options("geoip_asn_path", "GeoIPASNum.dat");
-    test.set_options("save_real_probe_ip", true);
+    nettests::Runnable test;
+    test.options["geoip_country_path"] = "GeoIP.dat";
+    test.options["geoip_asn_path"] = "GeoIPASNum.dat";
+    test.options["save_real_probe_ip"] = true;
     loop_with_initial_event([&]() {
-        test.on_entry([](std::string s) {
+        test.entry_cb = [](std::string s) {
             nlohmann::json entry = nlohmann::json::parse(s);
             REQUIRE((entry.at("data_format_version") == "0.2.0"));
             REQUIRE((entry.at("probe_asn") != "AS0"));
             REQUIRE((entry.at("probe_cc") != "ZZ"));
             REQUIRE((entry.at("probe_ip") != "127.0.0.1"));
-        })
-        .begin([&](Error) {
+        };
+        test.begin([&](Error) {
             test.end([&](Error) {
                 break_loop();
             });
@@ -111,20 +111,20 @@ TEST_CASE("Ensure we can save IP address if we want") {
 }
 
 TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
-    nettests::NetTest test;
-    test.set_options("geoip_country_path", "GeoIP.dat");
-    test.set_options("geoip_asn_path", "GeoIPASNum.dat");
-    test.set_options("save_real_probe_cc", false);
-    test.set_options("save_real_probe_asn", false);
+    nettests::Runnable test;
+    test.options["geoip_country_path"] = "GeoIP.dat";
+    test.options["geoip_asn_path"] = "GeoIPASNum.dat";
+    test.options["save_real_probe_cc"] = false;
+    test.options["save_real_probe_asn"] = false;
     loop_with_initial_event([&]() {
-        test.on_entry([](std::string s) {
+        test.entry_cb = [](std::string s) {
             nlohmann::json entry = nlohmann::json::parse(s);
             REQUIRE((entry.at("data_format_version") == "0.2.0"));
             REQUIRE((entry.at("probe_asn") == "AS0"));
             REQUIRE((entry.at("probe_cc") == "ZZ"));
             REQUIRE((entry.at("probe_ip") == "127.0.0.1"));
-        })
-        .begin([&](Error) {
+        };
+        test.begin([&](Error) {
             test.end([&](Error) {
                 break_loop();
             });

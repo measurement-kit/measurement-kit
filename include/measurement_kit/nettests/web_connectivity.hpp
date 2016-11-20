@@ -4,17 +4,19 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_WEB_CONNECTIVITY_HPP
 #define MEASUREMENT_KIT_NETTESTS_WEB_CONNECTIVITY_HPP
 
-#include <measurement_kit/nettests/net_test.hpp>
+#include <measurement_kit/nettests/base_test.hpp>
 
 namespace mk {
 namespace nettests {
 
-class WebConnectivity : public NetTest {
+class WebConnectivity : public BaseTest {
   public:
     WebConnectivity();
-    WebConnectivity(std::string, Settings);
+};
+
+class WebConnectivityRunnable : public Runnable {
+  public:
     void main(std::string, Settings, Callback<report::Entry>) override;
-    Var<NetTest> create_test_() override;
 };
 
 } // namespace nettests

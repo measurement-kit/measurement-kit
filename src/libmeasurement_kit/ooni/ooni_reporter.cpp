@@ -2,14 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/nettests/net_test.hpp> /* XXX */
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace ooni {
 
 using namespace mk::report;
-using namespace mk::nettests;
 
 OoniReporter::OoniReporter(Settings settings, Var<Reactor> reactor,
                            Var<Logger> logger) {
