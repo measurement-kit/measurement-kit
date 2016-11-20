@@ -10,7 +10,7 @@ namespace nettests {
 
 DnsInjection::DnsInjection() : DnsInjection("", {}) {}
 
-DnsInjection::DnsInjection(std::string f, Settings o) : OoniTest(f, o) {
+DnsInjection::DnsInjection(std::string f, Settings o) : NetTest(f, o) {
     test_name = "dns_injection";
     test_version = "0.0.1";
     needs_input = true;

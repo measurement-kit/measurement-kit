@@ -10,7 +10,7 @@ namespace nettests {
 
 NdtTest::NdtTest() : NdtTest({}) {}
 
-NdtTest::NdtTest(Settings s) : OoniTest("", s) {
+NdtTest::NdtTest(Settings s) : NetTest("", s) {
     options["save_real_probe_ip"] = true;
     test_name = "ndt";
     test_version = "0.0.4";

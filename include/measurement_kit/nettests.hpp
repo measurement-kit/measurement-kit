@@ -5,7 +5,6 @@
 #include <measurement_kit/nettests/http_invalid_request_line.hpp>
 #include <measurement_kit/nettests/ndt_test.hpp>
 #include <measurement_kit/nettests/net_test.hpp>
-#include <measurement_kit/nettests/ooni_test.hpp>
 #include <measurement_kit/nettests/runner.hpp>
 #include <measurement_kit/nettests/tcp_connect.hpp>
 #include <measurement_kit/nettests/web_connectivity.hpp>

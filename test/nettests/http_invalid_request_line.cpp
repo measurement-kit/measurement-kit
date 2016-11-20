@@ -88,7 +88,7 @@ TEST_CASE("Make sure that set_output_path() works") {
     auto instance = nettests::HttpInvalidRequestLine()
                         .set_output_filepath("foo.txt")
                         .create_test_();
-    auto ptr = static_cast<nettests::OoniTest *>(instance.get());
+    auto ptr = static_cast<nettests::NetTest *>(instance.get());
     REQUIRE(ptr->output_filepath == "foo.txt");
 }
 

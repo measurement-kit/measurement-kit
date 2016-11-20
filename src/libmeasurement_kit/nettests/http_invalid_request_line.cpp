@@ -10,7 +10,7 @@ namespace nettests {
 
 HttpInvalidRequestLine::HttpInvalidRequestLine() : HttpInvalidRequestLine({}) {}
 
-HttpInvalidRequestLine::HttpInvalidRequestLine(Settings o) : OoniTest("", o) {
+HttpInvalidRequestLine::HttpInvalidRequestLine(Settings o) : NetTest("", o) {
     test_name = "http_invalid_request_line";
     test_version = "0.0.1";
 }

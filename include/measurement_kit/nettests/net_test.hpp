@@ -4,18 +4,26 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_NET_TEST_HPP
 #define MEASUREMENT_KIT_NETTESTS_NET_TEST_HPP
 
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/report.hpp>
+
+#include <ctime>
+#include <sstream>
 
 namespace mk {
 namespace nettests {
 
-class NetTest {
+class NetTest : public NonCopyable, public NonMovable {
+    // Note: here we make the reasonable assumption that the owner of this
+    // instance would keep it safe until the final callback is fired
+
   public:
     NetTest &on_log(Delegate<uint32_t, const char *>);
     NetTest &set_verbosity(uint32_t);
     NetTest &increase_verbosity();
-    virtual void begin(Callback<Error>);
-    virtual void end(Callback<Error>);
+
+    // Both implemented in ooni_test.cpp
+    void begin(Callback<Error>);
+    void end(Callback<Error>);
 
     NetTest();
     NetTest(Settings);
@@ -49,6 +57,35 @@ class NetTest {
     Delegate<std::string> entry_cb;
     Delegate<> begin_cb;
     Delegate<> end_cb;
+
+    std::string test_name;
+    std::string test_version;
+    std::string probe_ip = "127.0.0.1";
+    std::string probe_asn = "AS0";
+    std::string probe_cc = "ZZ";
+    std::string resolver_ip = "127.0.0.1";
+    bool needs_input = false;
+
+    // Everything from here on implemented in ooni_test.cpp:
+
+  protected:
+    // Functions that derived classes SHOULD override
+    virtual void setup(std::string) {}
+    virtual void teardown(std::string) {}
+    virtual void main(std::string, Settings, Callback<report::Entry> cb) {
+        reactor->call_soon([=]() { cb(report::Entry{}); });
+    }
+
+  private:
+    report::Report report;
+    tm test_start_time;
+    Var<std::istream> input_generator;
+
+    void run_next_measurement(size_t, Callback<Error>, size_t,
+                              Var<size_t>);
+    void geoip_lookup(Callback<>);
+    void open_report(Callback<Error>);
+    std::string generate_output_filepath();
 };
 
 } // namespace nettests

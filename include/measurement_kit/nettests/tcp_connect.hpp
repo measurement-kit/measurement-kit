@@ -4,12 +4,12 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_TCP_CONNECT_HPP
 #define MEASUREMENT_KIT_NETTESTS_TCP_CONNECT_HPP
 
-#include <measurement_kit/nettests/ooni_test.hpp>
+#include <measurement_kit/nettests/net_test.hpp>
 
 namespace mk {
 namespace nettests {
 
-class TcpConnect : public OoniTest {
+class TcpConnect : public NetTest {
   public:
     TcpConnect();
     TcpConnect(std::string, Settings);

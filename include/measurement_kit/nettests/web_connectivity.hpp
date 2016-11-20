@@ -4,12 +4,12 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_WEB_CONNECTIVITY_HPP
 #define MEASUREMENT_KIT_NETTESTS_WEB_CONNECTIVITY_HPP
 
-#include <measurement_kit/nettests/ooni_test.hpp>
+#include <measurement_kit/nettests/net_test.hpp>
 
 namespace mk {
 namespace nettests {
 
-class WebConnectivity : public OoniTest {
+class WebConnectivity : public NetTest {
   public:
     WebConnectivity();
     WebConnectivity(std::string, Settings);

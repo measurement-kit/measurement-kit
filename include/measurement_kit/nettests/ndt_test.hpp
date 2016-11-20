@@ -4,12 +4,12 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_NDT_TEST_HPP
 #define MEASUREMENT_KIT_NETTESTS_NDT_TEST_HPP
 
-#include <measurement_kit/nettests/ooni_test.hpp>
+#include <measurement_kit/nettests/net_test.hpp>
 
 namespace mk {
 namespace nettests {
 
-class NdtTest : public OoniTest {
+class NdtTest : public NetTest {
   public:
     NdtTest();
     NdtTest(Settings);

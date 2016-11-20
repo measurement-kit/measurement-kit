@@ -10,7 +10,7 @@ namespace nettests {
 
 WebConnectivity::WebConnectivity() : WebConnectivity("", {}) {}
 
-WebConnectivity::WebConnectivity(std::string f, Settings o) : OoniTest(f, o) {
+WebConnectivity::WebConnectivity(std::string f, Settings o) : NetTest(f, o) {
     test_name = "web_connectivity";
     test_version = "0.0.1";
     needs_input = true;

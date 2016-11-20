@@ -4,12 +4,12 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_HTTP_INVALID_REQUEST_LINE_HPP
 #define MEASUREMENT_KIT_NETTESTS_HTTP_INVALID_REQUEST_LINE_HPP
 
-#include <measurement_kit/nettests/ooni_test.hpp>
+#include <measurement_kit/nettests/net_test.hpp>
 
 namespace mk {
 namespace nettests {
 
-class HttpInvalidRequestLine : public OoniTest {
+class HttpInvalidRequestLine : public NetTest {
   public:
     HttpInvalidRequestLine();
     HttpInvalidRequestLine(Settings);
