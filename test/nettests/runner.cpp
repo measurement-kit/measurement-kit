@@ -23,8 +23,8 @@ static void run_http_invalid_request_line(nettests::Runner &runner) {
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #1: %s\n", s);
                        })
-                       .create_test_(),
-                   [](Var<NetTest> test) {
+                       .runnable,
+                   [](Var<Runnable> test) {
                        mk::debug("test complete: %p", (void *)test.get());
                    });
 }
@@ -38,8 +38,8 @@ static void run_dns_injection(nettests::Runner &runner) {
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #3: %s\n", s);
                        })
-                       .create_test_(),
-                   [](Var<NetTest> test) {
+                       .runnable,
+                   [](Var<Runnable> test) {
                        mk::debug("test complete: %p", (void *)test.get());
                    });
 }
@@ -53,8 +53,8 @@ static void run_tcp_connect(nettests::Runner &runner) {
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #4: %s\n", s);
                        })
-                       .create_test_(),
-                   [](Var<NetTest> test) {
+                       .runnable,
+                   [](Var<Runnable> test) {
                        mk::debug("test complete: %p", (void *)test.get());
                    });
 }

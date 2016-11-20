@@ -17,27 +17,29 @@ using namespace mk;
 
 TEST_CASE(
     "The TCP connect test should run with an input file of DNS hostnames") {
-    nettests::TcpConnect tcp_connect("test/fixtures/hosts.txt",
-                               {
-                                   {"port", "80"},
-                               });
+    auto tcp_connect = nettests::TcpConnect{}
+            .set_input_filepath("test/fixtures/hosts.txt")
+            .set_options("port", 80)
+            .runnable;
     loop_with_initial_event([&]() {
-        tcp_connect.begin([&](Error) {
-            tcp_connect.end([](Error) { break_loop(); });
+        tcp_connect->begin([&](Error) {
+            tcp_connect->end([](Error) { break_loop(); });
         });
     });
 }
 
 TEST_CASE("The TCP connect test should fail with an invalid dns resolver") {
-    nettests::TcpConnect tcp_connect("test/fixtures/hosts.txt",
-                               {{"host", "nexacenter.org"},
-                                {"port", "80"},
-                                {"dns/nameserver", "8.8.8.1"},
-                                {"dns/attempts", 1},
-                                {"dns/timeout", 0.0001}});
+    auto tcp_connect = nettests::TcpConnect{}
+            .set_input_filepath("test/fixtures/hosts.txt")
+            .set_options("host", "nexacenter.org")
+            .set_options("port", 80)
+            .set_options("dns/nameserver", "8.8.8.1")
+            .set_options("dns/attempts", 1)
+            .set_options("dns/timeout", 0.0001)
+            .runnable;
     loop_with_initial_event([&]() {
-        tcp_connect.begin([&](Error) {
-            tcp_connect.end([](Error) { break_loop(); });
+        tcp_connect->begin([&](Error) {
+            tcp_connect->end([](Error) { break_loop(); });
         });
     });
 }
@@ -81,9 +83,8 @@ TEST_CASE("Make sure that set_output_path() works") {
                         // called inside create_test_() throws an exception
                         .set_input_filepath("test/fixtures/hosts.txt")
                         .set_output_filepath("foo.txt")
-                        .create_test_();
-    auto ptr = static_cast<nettests::NetTest *>(instance.get());
-    REQUIRE(ptr->output_filepath == "foo.txt");
+                        .runnable;
+    REQUIRE(instance->output_filepath == "foo.txt");
 }
 
 #ifdef ENABLE_INTEGRATION_TESTS

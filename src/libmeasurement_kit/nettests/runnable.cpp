@@ -7,18 +7,15 @@
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
 
-/*
-    This file contains the implementation of the logic of NetTest. We may
-    refactor it and merge it inside net_test.cpp in the future.
-*/
-
 namespace mk {
 namespace nettests {
 
 using namespace mk::report;
 using namespace mk::ooni;
 
-void NetTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
+Runnable::~Runnable() {}
+
+void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
                                     Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
@@ -85,7 +82,7 @@ void NetTest::run_next_measurement(size_t thread_id, Callback<Error> cb,
     });
 }
 
-void NetTest::geoip_lookup(Callback<> cb) {
+void Runnable::geoip_lookup(Callback<> cb) {
 
     // This is to ensure that when calling multiple times geoip_lookup we
     // always reset the probe_ip, probe_asn and probe_cc values.
@@ -162,7 +159,7 @@ void NetTest::geoip_lookup(Callback<> cb) {
         options, reactor, logger);
 }
 
-void NetTest::open_report(Callback<Error> callback) {
+void Runnable::open_report(Callback<Error> callback) {
     report.test_name = test_name;
     report.test_version = test_version;
     report.test_start_time = test_start_time;
@@ -185,7 +182,7 @@ void NetTest::open_report(Callback<Error> callback) {
     report.open(callback);
 }
 
-std::string NetTest::generate_output_filepath() {
+std::string Runnable::generate_output_filepath() {
     int idx = 0;
     std::stringstream filename;
     while (true) {
@@ -209,7 +206,7 @@ std::string NetTest::generate_output_filepath() {
     return filename.str();
 }
 
-void NetTest::begin(Callback<Error> cb) {
+void Runnable::begin(Callback<Error> cb) {
     if (begin_cb) {
         begin_cb();
     }
@@ -279,7 +276,7 @@ void NetTest::begin(Callback<Error> cb) {
     });
 }
 
-void NetTest::end(Callback<Error> cb) {
+void Runnable::end(Callback<Error> cb) {
     if (end_cb) {
         end_cb();
     }

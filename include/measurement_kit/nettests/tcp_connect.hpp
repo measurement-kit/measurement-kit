@@ -4,17 +4,19 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_TCP_CONNECT_HPP
 #define MEASUREMENT_KIT_NETTESTS_TCP_CONNECT_HPP
 
-#include <measurement_kit/nettests/net_test.hpp>
+#include <measurement_kit/nettests/base_test.hpp>
 
 namespace mk {
 namespace nettests {
 
-class TcpConnect : public NetTest {
+class TcpConnect : public BaseTest {
   public:
     TcpConnect();
-    TcpConnect(std::string, Settings);
+};
+
+class TcpConnectRunnable : public Runnable {
+  public:
     void main(std::string, Settings, Callback<report::Entry>) override;
-    Var<NetTest> create_test_() override;
 };
 
 } // namespace nettests

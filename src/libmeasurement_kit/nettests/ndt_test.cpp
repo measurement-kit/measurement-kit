@@ -8,15 +8,15 @@
 namespace mk {
 namespace nettests {
 
-NdtTest::NdtTest() : NdtTest({}) {}
-
-NdtTest::NdtTest(Settings s) : NetTest("", s) {
-    options["save_real_probe_ip"] = true;
-    test_name = "ndt";
-    test_version = "0.0.4";
+NdtTest::NdtTest() : BaseTest() {
+    runnable.reset(new NdtRunnable);
+    runnable->options["save_real_probe_ip"] = true;
+    runnable->test_name = "ndt";
+    runnable->test_version = "0.0.4";
 }
 
-void NdtTest::main(std::string, Settings settings, Callback<report::Entry> cb) {
+void NdtRunnable::main(std::string, Settings settings,
+                       Callback<report::Entry> cb) {
     Var<report::Entry> entry(new report::Entry);
     (*entry)["failure"] = nullptr;
     // Note: `options` is the class attribute and `settings` is instead a
@@ -28,19 +28,6 @@ void NdtTest::main(std::string, Settings settings, Callback<report::Entry> cb) {
         // XXX The callback should probably take a Var<report::Entry>
         cb(*entry);
     }, settings, reactor, logger);
-}
-
-Var<NetTest> NdtTest::create_test_() {
-    NdtTest *test = new NdtTest;
-    test->logger = logger;
-    test->reactor = reactor;
-    test->options = options;
-    test->input_filepath = input_filepath;
-    test->output_filepath = output_filepath;
-    test->entry_cb = entry_cb;
-    test->begin_cb = begin_cb;
-    test->end_cb = end_cb;
-    return Var<NetTest>(test);
 }
 
 } // namespace nettests

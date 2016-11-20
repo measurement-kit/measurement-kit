@@ -20,13 +20,13 @@ TEST_CASE("Running the NDT test using begin / end works") {
     // XXX forced to use another reactor because the default one is already
     // used by the runner above and hence is busy!
     Var<Reactor> reactor = Reactor::make();
-    Var<NetTest> test{new NdtTest};
-    test->reactor = reactor;
-    test->set_verbosity(MK_LOG_INFO);
+    NdtTest test;
+    test.runnable->reactor = reactor;
+    test.set_verbosity(MK_LOG_INFO);
     reactor->loop_with_initial_event([&]() {
         // TODO: do not ignore errors here, perhaps
-        test->begin([=](Error) {
-            test->end([=](Error) {
+        test.runnable->begin([=](Error) {
+            test.runnable->end([=](Error) {
                 reactor->break_loop();
             });
         });

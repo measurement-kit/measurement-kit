@@ -16,27 +16,27 @@ using namespace mk;
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("The HTTP Invalid Request Line test should run") {
-    Settings options;
-    options["backend"] = "http://213.138.109.232/";
-    nettests::HttpInvalidRequestLine http_invalid_request_line(options);
+    auto http_invalid_request_line = nettests::HttpInvalidRequestLine{}
+        .set_options("backend", "http://213.138.109.232/")
+        .runnable;
     loop_with_initial_event([&]() {
         // TODO: handle errors?
-        http_invalid_request_line.begin([&](Error) {
-            http_invalid_request_line.end([](Error) { break_loop(); });
+        http_invalid_request_line->begin([&](Error) {
+            http_invalid_request_line->end([](Error) { break_loop(); });
         });
     });
 }
 
 TEST_CASE(
     "The HTTP Invalid Request Line can manage a failure while connecting") {
-    Settings options;
-    options["backend"] = "http://213.138.109.232/";
-    options["dns/nameserver"] = "8.8.8.1";
-    options["dns/timeout"] = 0.1;
-    nettests::HttpInvalidRequestLine http_invalid_request_line(options);
+    auto http_invalid_request_line = nettests::HttpInvalidRequestLine{}
+        .set_options("backend", "http://213.138.109.232/")
+        .set_options("dns/nameserver", "8.8.8.1")
+        .set_options("dns/timeout", 0.1)
+        .runnable;
     loop_with_initial_event([&]() {
-        http_invalid_request_line.begin([&](Error) {
-            http_invalid_request_line.end([](Error) { break_loop(); });
+        http_invalid_request_line->begin([&](Error) {
+            http_invalid_request_line->end([](Error) { break_loop(); });
         });
     });
 }
@@ -85,11 +85,10 @@ TEST_CASE("Asynchronous http-invalid-request-line test") {
 #endif
 
 TEST_CASE("Make sure that set_output_path() works") {
-    auto instance = nettests::HttpInvalidRequestLine()
+    auto runnable = nettests::HttpInvalidRequestLine{}
                         .set_output_filepath("foo.txt")
-                        .create_test_();
-    auto ptr = static_cast<nettests::NetTest *>(instance.get());
-    REQUIRE(ptr->output_filepath == "foo.txt");
+                        .runnable;
+    REQUIRE(runnable->output_filepath == "foo.txt");
 }
 
 #ifdef ENABLE_INTEGRATION_TESTS
