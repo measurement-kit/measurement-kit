@@ -26,17 +26,6 @@ NetTest &NetTest::increase_verbosity() {
     return *this;
 }
 
-void NetTest::begin(Callback<Error> func) {
-    // You must override this on subclasses to actually start
-    // running the test you're interested to run
-    reactor->call_soon([=]() { func(NoError()); });
-}
-void NetTest::end(Callback<Error> func) {
-    // You must override this on subclasses to actually terminate
-    // running the test (i.e. send results to collector)
-    reactor->call_soon([=]() { func(NoError()); });
-}
-
 NetTest::NetTest() {}
 NetTest::NetTest(Settings o) : options(o) {}
 NetTest::NetTest(std::string i, Settings o) : options(o), input_filepath(i) {}
