@@ -103,7 +103,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     std::unique_ptr<ResolverContext> ctx(new ResolverContext(
         dns_class, dns_type, name, cb, settings, reactor, logger));
     Query query;
-    ctx->hints.ai_flags = AI_ALL | AI_V4MAPPED | AI_CANONNAME;
+    ctx->hints.ai_flags = AI_ALL | AI_V4MAPPED;
     ctx->hints.ai_socktype = SOCK_STREAM;
 
     if (dns_class != QueryClassId::IN) {
@@ -115,6 +115,9 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
         ctx->hints.ai_family = AF_INET;
     } else if (dns_type == QueryTypeId::AAAA) {
         ctx->hints.ai_family = AF_INET6;
+    } else if (dns_type == QueryTypeId::CNAME) {
+        ctx->hints.ai_family = AF_UNSPEC;
+        ctx->hints.ai_flags |= AI_CANONNAME;
     } else {
         reactor->call_soon([=]() { cb(UnsupportedClassError(), nullptr); });
         return;
