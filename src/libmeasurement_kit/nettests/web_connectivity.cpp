@@ -16,10 +16,8 @@ WebConnectivityTest::WebConnectivityTest() : BaseTest() {
 }
 
 void WebConnectivityRunnable::main(std::string input, Settings options,
-                                   Callback<report::Entry> cb) {
-    ooni::web_connectivity(input, options, [=](Var<report::Entry> e) {
-         cb(*e);
-    }, reactor, logger);
+                                   Callback<Var<report::Entry>> cb) {
+    ooni::web_connectivity(input, options, cb, reactor, logger);
 }
 
 } // namespace nettests

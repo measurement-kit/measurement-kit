@@ -16,7 +16,7 @@ NdtTest::NdtTest() : BaseTest() {
 }
 
 void NdtRunnable::main(std::string, Settings settings,
-                       Callback<report::Entry> cb) {
+                       Callback<Var<report::Entry>> cb) {
     Var<report::Entry> entry(new report::Entry);
     (*entry)["failure"] = nullptr;
     // Note: `options` is the class attribute and `settings` is instead a
@@ -25,8 +25,7 @@ void NdtRunnable::main(std::string, Settings settings,
         if (error) {
             (*entry)["failure"] = error.as_ooni_error();
         }
-        // XXX The callback should probably take a Var<report::Entry>
-        cb(*entry);
+        cb(entry);
     }, settings, reactor, logger);
 }
 
