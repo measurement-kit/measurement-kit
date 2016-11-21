@@ -15,92 +15,28 @@ using namespace mk;
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
-TEST_CASE(
-    "The TCP connect test should run with an input file of DNS hostnames") {
-    auto tcp_connect = nettests::TcpConnectTest{}
-            .set_input_filepath("test/fixtures/hosts.txt")
-            .set_options("port", 80)
-            .runnable;
-    loop_with_initial_event([&]() {
-        tcp_connect->begin([&](Error) {
-            tcp_connect->end([](Error) { break_loop(); });
-        });
-    });
-}
-
-TEST_CASE("The TCP connect test should fail with an invalid dns resolver") {
-    auto tcp_connect = nettests::TcpConnectTest{}
-            .set_input_filepath("test/fixtures/hosts.txt")
-            .set_options("host", "nexacenter.org")
-            .set_options("port", 80)
-            .set_options("dns/nameserver", "8.8.8.1")
-            .set_options("dns/attempts", 1)
-            .set_options("dns/timeout", 0.0001)
-            .runnable;
-    loop_with_initial_event([&]() {
-        tcp_connect->begin([&](Error) {
-            tcp_connect->end([](Error) { break_loop(); });
-        });
-    });
-}
-
 TEST_CASE("Synchronous tcp-connect test") {
-    Var<std::list<std::string>> logs(new std::list<std::string>);
-    nettests::TcpConnectTest()
+    nettests::TcpConnectTest{}
         .set_options("port", "80")
         .set_input_filepath("test/fixtures/hosts.txt")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
-        .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
-    for (auto &s : *logs)
-        std::cout << s << "\n";
 }
 
 TEST_CASE("Asynchronous tcp-connect test") {
-    Var<std::list<std::string>> logs(new std::list<std::string>);
     bool done = false;
-    nettests::TcpConnectTest()
+    nettests::TcpConnectTest{}
         .set_options("port", "80")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_input_filepath("test/fixtures/hosts.txt")
-        .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .start([&done]() { done = true; });
     do {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     } while (!done);
-    for (auto &s : *logs)
-        std::cout << s << "\n";
 }
 
-#endif
-
-TEST_CASE("Make sure that set_output_path() works") {
-    auto instance = nettests::TcpConnectTest()
-                        // Note: must also set valid input file path otherwise
-                        // the constructor
-                        // called inside create_test_() throws an exception
-                        .set_input_filepath("test/fixtures/hosts.txt")
-                        .set_output_filepath("foo.txt")
-                        .runnable;
-    REQUIRE(instance->output_filepath == "foo.txt");
-}
-
-#ifdef ENABLE_INTEGRATION_TESTS
-
-TEST_CASE("The test should fail with an invalid dns") {
-    Var<std::list<std::string>> logs(new std::list<std::string>);
-    nettests::TcpConnectTest()
-        .set_options("port", "80")
-        .set_options("dns/nameserver", "8.8.8.1")
-        .set_options("dns/attempts", "1")
-        .set_options("dns/timeout", "0.001")
-        .set_input_filepath("test/fixtures/hosts.txt")
-        .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
-        .run();
-    for (auto &s : *logs)
-        std::cout << s << "\n";
-}
-
+#else
+int main() {}
 #endif

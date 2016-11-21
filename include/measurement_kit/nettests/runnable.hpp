@@ -20,7 +20,7 @@ class Runnable : public NonCopyable, public NonMovable {
     virtual ~Runnable();
 
     Var<Logger> logger = Logger::make();
-    Var<Reactor> reactor = Reactor::global();
+    Var<Reactor> reactor;  /* Left unspecified by purpose */
     Settings options;
     std::string input_filepath;
     std::string output_filepath;

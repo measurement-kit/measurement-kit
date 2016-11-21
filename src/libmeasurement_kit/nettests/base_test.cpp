@@ -4,9 +4,7 @@
 
 #include <measurement_kit/nettests.hpp>
 
-#include <chrono>
-#include <ratio>
-#include <future>
+#include <cassert>
 
 namespace mk {
 namespace nettests {
@@ -44,11 +42,6 @@ BaseTest &BaseTest::set_error_filepath(std::string s) {
     return *this;
 }
 
-BaseTest &BaseTest::set_reactor(Var<Reactor> r) {
-    runnable->reactor = r;
-    return *this;
-}
-
 BaseTest &BaseTest::on_entry(Delegate<std::string> cb) {
     runnable->entry_cb = cb;
     return *this;
@@ -65,12 +58,20 @@ BaseTest &BaseTest::on_end(Delegate<> cb) {
 }
 
 void BaseTest::run() {
-    // XXX Ideally it would be best to run this in the current thread with
-    // a dedicated reactor, but the code is not yet ready for that.
-    std::promise<bool> promise;
-    std::future<bool> future = promise.get_future();
-    start([&promise]() { promise.set_value(true);});
-    future.wait();
+    // Note: here we MUST point to a fresh reactor which we know for sure is
+    // not already being used otherwise we cannot run the test
+    assert(not runnable->reactor);
+    Var<Reactor> reactor = Reactor::make();
+    runnable->reactor = reactor;
+    reactor->loop_with_initial_event([&]() {
+        runnable->begin([&](Error) {
+            runnable->end([&](Error) {
+                reactor->call_soon([&]() {
+                    reactor->stop();
+                });
+            });
+        });
+    });
 }
 
 void BaseTest::start(Callback<> callback) {

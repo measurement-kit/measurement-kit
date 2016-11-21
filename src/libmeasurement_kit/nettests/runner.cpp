@@ -22,6 +22,10 @@ struct RunnerCtx {
 Runner::Runner() { ctx_.reset(new RunnerCtx); }
 
 void Runner::start_test(Var<Runnable> test, Callback<Var<Runnable>> fn) {
+    // Note: here we MUST force the runnable's reactor to be our reactor
+    // otherwise we cannot run the specified test...
+    assert(not test->reactor);
+    test->reactor = ctx_->reactor;
     assert(ctx_->active >= 0);
     if (not ctx_->running) {
         std::promise<bool> promise;

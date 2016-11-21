@@ -22,7 +22,6 @@ class BaseTest {
     BaseTest &set_input_filepath(std::string);
     BaseTest &set_output_filepath(std::string);
     BaseTest &set_error_filepath(std::string);
-    BaseTest &set_reactor(Var<Reactor>);
 
     template <typename T> BaseTest &set_options(std::string key, T value) {
         runnable->options[key] = value;

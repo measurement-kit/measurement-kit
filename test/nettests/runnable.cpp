@@ -12,6 +12,7 @@ using namespace mk;
 
 TEST_CASE("Make sure that on_entry() works") {
     nettests::Runnable test;
+    test.reactor = Reactor::global();
     loop_with_initial_event([&]() {
         test.entry_cb = [](std::string s) {
             nlohmann::json entry = nlohmann::json::parse(s);
@@ -40,6 +41,7 @@ TEST_CASE("Make sure that on_entry() works") {
 TEST_CASE("Make sure that on_begin() works") {
     bool ok = false;
     nettests::Runnable test;
+    test.reactor = Reactor::global();
     loop_with_initial_event([&]() {
         test.begin_cb = [&]() {
             ok = true;
@@ -56,6 +58,7 @@ TEST_CASE("Make sure that on_begin() works") {
 TEST_CASE("Make sure that on_end() works") {
     bool ok = false;
     nettests::Runnable test;
+    test.reactor = Reactor::global();
     loop_with_initial_event([&]() {
         test.end_cb = [&]() {
             ok = true;
@@ -71,6 +74,7 @@ TEST_CASE("Make sure that on_end() works") {
 
 TEST_CASE("Ensure we do not save too much information by default") {
     nettests::Runnable test;
+    test.reactor = Reactor::global();
     test.options["geoip_country_path"] = "GeoIP.dat";
     test.options["geoip_asn_path"] = "GeoIPASNum.dat";
     loop_with_initial_event([&]() {
@@ -91,6 +95,7 @@ TEST_CASE("Ensure we do not save too much information by default") {
 
 TEST_CASE("Ensure we can save IP address if we want") {
     nettests::Runnable test;
+    test.reactor = Reactor::global();
     test.options["geoip_country_path"] = "GeoIP.dat";
     test.options["geoip_asn_path"] = "GeoIPASNum.dat";
     test.options["save_real_probe_ip"] = true;
@@ -112,6 +117,7 @@ TEST_CASE("Ensure we can save IP address if we want") {
 
 TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
     nettests::Runnable test;
+    test.reactor = Reactor::global();
     test.options["geoip_country_path"] = "GeoIP.dat";
     test.options["geoip_asn_path"] = "GeoIPASNum.dat";
     test.options["save_real_probe_cc"] = false;
