@@ -18,7 +18,7 @@ class CountedReporter : public BaseReporter {
 
     ~CountedReporter() override;
 
-    Continuation<Error> open(Report) override {
+    Continuation<Error> open(Report &) override {
         return do_open_([=](Callback<Error> cb) {
             ++open_count;
             return cb(NoError());
@@ -54,7 +54,7 @@ class FailingReporter : public BaseReporter {
 
     ~FailingReporter() override;
 
-    Continuation<Error> open(Report) override {
+    Continuation<Error> open(Report & /*report*/) override {
         return do_open_([=](Callback<Error> cb) {
             if (open_count++ == 0) {
                 cb(MockedError());
@@ -175,13 +175,13 @@ TEST_CASE("The write_entry() method works correctly") {
                                 REQUIRE(err.child_errors.size() == 1);
                                 REQUIRE(err.child_errors[0]->code ==
                                         ReportAlreadyClosedError().code);
-                            });
+                            }, Logger::global());
                         });
-                    });
-                });
-            });
+                    }, Logger::global());
+                }, Logger::global());
+            }, Logger::global());
         });
-    });
+    }, Logger::global());
 }
 
 TEST_CASE("We can retry a partially successful write_entry()") {
@@ -209,8 +209,8 @@ TEST_CASE("We can retry a partially successful write_entry()") {
                 REQUIRE(err.child_errors[0]->child_errors[0]->code ==
                         DuplicateEntrySubmitError().code);
                 REQUIRE(err.child_errors[1]->code == NoError().code);
-            });
-        });
+            }, Logger::global());
+        }, Logger::global());
     });
     REQUIRE(counted_reporter->write_count == 1);
     REQUIRE(failing_reporter->write_count == 2);
