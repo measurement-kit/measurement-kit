@@ -55,10 +55,46 @@ void resolve_async(ResolverContext *context) {
                 freeaddrinfo(servinfo);
         });
     if (error) {
-        // check the error variable and return the correct error
         ctx->logger->warn("getaddrinfo failed: %s", gai_strerror(error));
-        ctx->reactor->call_soon(
-            [callback]() { callback(ResolverError(), nullptr); });
+        Error resolver_error;
+        switch (error) {
+        case EAI_AGAIN:
+            resolver_error = TemporaryFailure();
+            break;
+        case EAI_BADFLAGS:
+            resolver_error = InvalidFlagsValue();
+            break;
+        case EAI_BADHINTS:
+            resolver_error = InvalidHintsValue();
+            break;
+        case EAI_FAIL:
+            resolver_error = NonRecoverableFailure();
+            break;
+        case EAI_FAMILY:
+            resolver_error = NotSupportedAIFamily();
+            break;
+        case EAI_MEMORY:
+            resolver_error = MemoryAllocationFailure();
+            break;
+        case EAI_NONAME:
+            resolver_error = HostOrServiceNotProvidedOrNotKnown();
+            break;
+        case EAI_OVERFLOW:
+            resolver_error = ArgumentBufferOverflow();
+            break;
+        case EAI_PROTOCOL:
+            resolver_error = UnknownResolvedProtocol();
+            break;
+        case EAI_SERVICE:
+            resolver_error = NotSupportedServname();
+            break;
+        case EAI_SOCKTYPE:
+            resolver_error = NotSupportedAISocktype();
+            break;
+        default:
+            resolver_error = ResolverError();
+        }
+        ctx->reactor->call_soon([=]() { callback(resolver_error, nullptr); });
         return;
     }
     assert(servinfo != nullptr);
@@ -84,7 +120,8 @@ void resolve_async(ResolverContext *context) {
             nullptr) {
             ctx->logger->warn("dns: unexpected inet_ntop failure");
             ctx->reactor->call_soon(
-                [=]() { callback(ResolverError(), nullptr); });
+                [=]() { callback(InetNtopFailure(), nullptr); });
+            return;
         }
         if (p->ai_family == AF_INET) {
             answer.ipv4 = std::string(address);
@@ -119,7 +156,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
         ctx->hints.ai_family = AF_UNSPEC;
         ctx->hints.ai_flags |= AI_CANONNAME;
     } else {
-        reactor->call_soon([=]() { cb(UnsupportedClassError(), nullptr); });
+        reactor->call_soon([=]() { cb(UnsupportedTypeError(), nullptr); });
         return;
     }
 

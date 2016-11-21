@@ -28,6 +28,20 @@ MK_DEFINE_ERR(MK_ERR_DNS(15), ResolverError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(16), UnsupportedTypeError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(17), InvalidDnsEngine, "")
 
+// getaddrinfo errors
+MK_DEFINE_ERR(MK_ERR_DNS(18), TemporaryFailure, "")
+MK_DEFINE_ERR(MK_ERR_DNS(19), InvalidFlagsValue, "")
+MK_DEFINE_ERR(MK_ERR_DNS(20), InvalidHintsValue, "")
+MK_DEFINE_ERR(MK_ERR_DNS(21), NonRecoverableFailure, "")
+MK_DEFINE_ERR(MK_ERR_DNS(22), NotSupportedAIFamily, "")
+MK_DEFINE_ERR(MK_ERR_DNS(23), MemoryAllocationFailure, "")
+MK_DEFINE_ERR(MK_ERR_DNS(24), HostOrServiceNotProvidedOrNotKnown, "")
+MK_DEFINE_ERR(MK_ERR_DNS(25), ArgumentBufferOverflow, "")
+MK_DEFINE_ERR(MK_ERR_DNS(26), UnknownResolvedProtocol, "")
+MK_DEFINE_ERR(MK_ERR_DNS(27), NotSupportedServname, "")
+MK_DEFINE_ERR(MK_ERR_DNS(28), NotSupportedAISocktype, "")
+MK_DEFINE_ERR(MK_ERR_DNS(29), InetNtopFailure, "")
+
 /// Available query classes id
 enum class QueryClassId { IN, CS, CH, HS };
 
