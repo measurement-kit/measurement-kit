@@ -27,35 +27,35 @@ MK_DEFINE_ERR(MK_ERR_DNS(14), InvalidNameForPTRError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(15), ResolverError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(16), UnsupportedTypeError, "")
 
-enum class QueryClassId {
-    DNS_CLASS_INVALID = 0,
-    DNS_CLASS_IN,
-    DNS_CLASS_CS,
-    DNS_CLASS_CH,
-    DNS_CLASS_HS
+enum QueryClassId {
+    MK_DNS_CLASS_INVALID = 0,
+    MK_DNS_CLASS_IN,
+    MK_DNS_CLASS_CS,
+    MK_DNS_CLASS_CH,
+    MK_DNS_CLASS_HS
 };
 
-enum class QueryTypeId {
-    DNS_TYPE_INVALID = 0,
-    DNS_TYPE_A,
-    DNS_TYPE_NS,
-    DNS_TYPE_MD,
-    DNS_TYPE_MF,
-    DNS_TYPE_CNAME,
-    DNS_TYPE_SOA,
-    DNS_TYPE_MB,
-    DNS_TYPE_MG,
-    DNS_TYPE_MR,
-    DNS_TYPE_NUL,
-    DNS_TYPE_WKS,
-    DNS_TYPE_PTR,
-    DNS_TYPE_HINFO,
-    DNS_TYPE_MINFO,
-    DNS_TYPE_MX,
-    DNS_TYPE_TXT,
-    DNS_TYPE_AAAA,
-    DNS_TYPE_REVERSE_A,    // nonstandard
-    DNS_TYPE_REVERSE_AAAA  // nonstandard
+enum QueryTypeId {
+    MK_DNS_TYPE_INVALID = 0,
+    MK_DNS_TYPE_A,
+    MK_DNS_TYPE_NS,
+    MK_DNS_TYPE_MD,
+    MK_DNS_TYPE_MF,
+    MK_DNS_TYPE_CNAME,
+    MK_DNS_TYPE_SOA,
+    MK_DNS_TYPE_MB,
+    MK_DNS_TYPE_MG,
+    MK_DNS_TYPE_MR,
+    MK_DNS_TYPE_NUL,
+    MK_DNS_TYPE_WKS,
+    MK_DNS_TYPE_PTR,
+    MK_DNS_TYPE_HINFO,
+    MK_DNS_TYPE_MINFO,
+    MK_DNS_TYPE_MX,
+    MK_DNS_TYPE_TXT,
+    MK_DNS_TYPE_AAAA,
+    MK_DNS_TYPE_REVERSE_A,    // nonstandard
+    MK_DNS_TYPE_REVERSE_AAAA  // nonstandard
 };
 
 class QueryClass {

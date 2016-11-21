@@ -11,16 +11,16 @@ static struct ClassMapping {
     const char *s;
     QueryClassId id;
 } CLASS_MAPPING[] = {
-#define XX(nnn) {#nnn, QueryClassId::DNS_CLASS_ ## nnn}
+#define XX(nnn) {#nnn, MK_DNS_CLASS_ ## nnn}
     XX(IN),
     XX(CS),
     XX(CH),
     XX(HS),
-    {nullptr, QueryClassId::DNS_CLASS_INVALID}
+    {nullptr, MK_DNS_CLASS_INVALID}
 #undef XX
 };
 
-QueryClass::QueryClass() : id_(QueryClassId::DNS_CLASS_INVALID) {}
+QueryClass::QueryClass() : id_(MK_DNS_CLASS_INVALID) {}
 
 QueryClass::QueryClass(QueryClassId id) : id_(id) {}
 
@@ -50,7 +50,7 @@ static struct TypeMapping {
     const char *s;
     QueryTypeId id;
 } TYPE_MAPPING[] = {
-#define XX(nnn) {#nnn, QueryTypeId::DNS_TYPE_ ## nnn}
+#define XX(nnn) {#nnn, MK_DNS_TYPE_ ## nnn}
     XX(A),
     XX(NS),
     XX(MD),
@@ -70,11 +70,11 @@ static struct TypeMapping {
     XX(AAAA),
     XX(REVERSE_A),
     XX(REVERSE_AAAA),
-    {nullptr, QueryTypeId::DNS_TYPE_INVALID}
+    {nullptr, MK_DNS_TYPE_INVALID}
 #undef XX
 };
 
-QueryType::QueryType() : id_(QueryTypeId::DNS_TYPE_INVALID) {}
+QueryType::QueryType() : id_(MK_DNS_TYPE_INVALID) {}
 
 QueryType::QueryType(QueryTypeId id) : id_(id) {}
 
