@@ -16,7 +16,7 @@ class HttpInvalidRequestLineTest : public BaseTest {
 
 class HttpInvalidRequestLineRunnable : public Runnable {
   public:
-    void main(std::string, Settings, Callback<report::Entry>) override;
+    void main(std::string, Settings, Callback<Var<report::Entry>>) override;
 };
 
 } // namespace nettests

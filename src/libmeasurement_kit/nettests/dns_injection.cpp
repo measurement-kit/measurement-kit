@@ -16,10 +16,8 @@ DnsInjectionTest::DnsInjectionTest() : BaseTest() {
 }
 
 void DnsInjectionRunnable::main(std::string input, Settings options,
-                                Callback<report::Entry> cb) {
-    ooni::dns_injection(input, options, [=](Var<report::Entry> entry) {
-        cb(*entry);
-    }, reactor, logger);
+                                Callback<Var<report::Entry>> cb) {
+    ooni::dns_injection(input, options, cb, reactor, logger);
 }
 
 } // namespace nettests

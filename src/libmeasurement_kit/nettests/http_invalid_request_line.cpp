@@ -15,10 +15,8 @@ HttpInvalidRequestLineTest::HttpInvalidRequestLineTest() : BaseTest() {
 }
 
 void HttpInvalidRequestLineRunnable::main(std::string, Settings options,
-                                          Callback<report::Entry> cb) {
-    ooni::http_invalid_request_line(options, [=](Var<report::Entry> e) {
-         cb(*e);
-    }, reactor, logger);
+                                          Callback<Var<report::Entry>> cb) {
+    ooni::http_invalid_request_line(options, cb, reactor, logger);
 }
 
 } // namespace nettests

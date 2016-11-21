@@ -17,8 +17,8 @@ Runnable::~Runnable() {}
 
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}
-void Runnable::main(std::string, Settings, Callback<report::Entry> cb) {
-    reactor->call_soon([=]() { cb(report::Entry{}); });
+void Runnable::main(std::string, Settings, Callback<Var<report::Entry>> cb) {
+    reactor->call_soon([=]() { cb(Var<report::Entry>{new report::Entry}); });
 }
 
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
@@ -57,9 +57,9 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     setup(next_input);
 
     logger->debug("net_test: running with input %s", next_input.c_str());
-    main(next_input, options, [=](report::Entry test_keys) {
+    main(next_input, options, [=](Var<report::Entry> test_keys) {
         report::Entry entry;
-        entry["test_keys"] = test_keys;
+        entry["test_keys"] = *test_keys;
         entry["test_keys"]["client_resolver"] = resolver_ip;
         entry["input"] = next_input;
         entry["measurement_start_time"] =
