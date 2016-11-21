@@ -40,7 +40,7 @@ class Runnable : public NonCopyable, public NonMovable {
     // Functions that derived classes SHOULD override
     virtual void setup(std::string);
     virtual void teardown(std::string);
-    virtual void main(std::string, Settings, Callback<report::Entry>);
+    virtual void main(std::string, Settings, Callback<Var<report::Entry>>);
 
   private:
     report::Report report;
