@@ -64,9 +64,11 @@ void resolve_async(ResolverContext *context) {
         case EAI_BADFLAGS:
             resolver_error = InvalidFlagsValue();
             break;
+#ifdef EAI_BADHINTS  // Not always available
         case EAI_BADHINTS:
             resolver_error = InvalidHintsValue();
             break;
+#endif
         case EAI_FAIL:
             resolver_error = NonRecoverableFailure();
             break;
@@ -82,9 +84,11 @@ void resolve_async(ResolverContext *context) {
         case EAI_OVERFLOW:
             resolver_error = ArgumentBufferOverflow();
             break;
+#ifdef EAI_PROTOCOL  // Not always available
         case EAI_PROTOCOL:
             resolver_error = UnknownResolvedProtocol();
             break;
+#endif
         case EAI_SERVICE:
             resolver_error = NotSupportedServname();
             break;
