@@ -57,8 +57,8 @@ class ConnectManyCtx {
     std::string address;
     int port = 0;
     Settings settings;
-    Var<Logger> logger = Logger::global();
     Var<Reactor> reactor = Reactor::global();
+    Var<Logger> logger = Logger::global();
     Var<ConnectManyResult> result;
 };
 

@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include "../cmdline/cmdline.hpp"
-#include <measurement_kit/ooni.hpp>
+#include <measurement_kit/nettests.hpp>
 
 #include <iostream>
 
@@ -15,7 +15,7 @@ int main(const char *, int argc, char **argv) {
     std::string backend = "8.8.8.1";
     std::string name = argv[0];
     uint32_t verbosity = 0;
-    mk::ooni::DnsInjection test;
+    mk::nettests::DnsInjectionTest test;
     int ch;
 
     while ((ch = mkp_getopt(argc, argv, "b:nv")) != -1) {

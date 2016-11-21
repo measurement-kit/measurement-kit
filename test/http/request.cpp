@@ -244,13 +244,13 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
 #define SOCKS_PORT_IS(port)                                                    \
     static void socks_port_is_##port(                                          \
         std::string, int, Callback<Error, Var<Transport>>, Settings settings,  \
-        Var<Logger>, Var<Reactor>) {                                           \
+        Var<Reactor>, Var<Logger>) {                                           \
         REQUIRE(settings.at("net/socks5_proxy") == "127.0.0.1:" #port);        \
     }
 
 static void socks_port_is_empty(std::string, int,
                                 Callback<Error, Var<Transport>>,
-                                Settings settings, Var<Logger>, Var<Reactor>) {
+                                Settings settings, Var<Reactor>, Var<Logger>) {
     REQUIRE(settings.find("net/socks5_proxy") == settings.end());
 }
 
