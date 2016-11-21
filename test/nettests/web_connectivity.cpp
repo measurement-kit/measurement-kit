@@ -8,17 +8,34 @@
 
 #include <measurement_kit/nettests.hpp>
 
+#include <chrono>
+#include <iostream>
+#include <thread>
+
 using namespace mk;
 
 TEST_CASE("Synchronous web connectivity test") {
-    set_verbosity(14);
-    nettests::WebConnectivityTest()
+    nettests::WebConnectivityTest{}
         .set_options("backend", "https://a.collector.test.ooni.io:4444")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_options("nameserver", "8.8.8.8")
         .set_input_filepath("test/fixtures/urls.txt")
         .run();
+}
+
+TEST_CASE("Asynchronous web-connectivity test") {
+    bool done = false;
+    nettests::WebConnectivityTest{}
+        .set_options("backend", "https://a.collector.test.ooni.io:4444")
+        .set_options("geoip_country_path", "GeoIP.dat")
+        .set_options("geoip_asn_path", "GeoIPASNum.dat")
+        .set_options("nameserver", "8.8.8.8")
+        .set_input_filepath("test/fixtures/urls.txt")
+        .start([&done]() { done = true; });
+    do {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    } while (!done);
 }
 
 #else

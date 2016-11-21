@@ -15,59 +15,39 @@ using namespace mk;
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
-TEST_CASE(
-    "The DNS Injection test should run with an input file of DNS hostnames") {
-    auto dns_injection = nettests::DnsInjectionTest{}
-        .set_input_filepath("test/fixtures/hosts.txt")
-        .set_options("backend", "8.8.8.1:53")
-        .set_options("dns/timeout", 0.1)
-        .runnable;
-    loop_with_initial_event([&]() {
-        // TODO: handle errors?
-        dns_injection->begin(
-            [&](Error) { dns_injection->end([](Error) { break_loop(); }); });
-    });
-}
-
 TEST_CASE("Synchronous dns-injection test") {
-    Var<std::list<std::string>> logs(new std::list<std::string>);
-    nettests::DnsInjectionTest()
+    nettests::DnsInjectionTest{}
         .set_options("backend", "8.8.8.1:53")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_options("dns/timeout", "0.1")
         .set_input_filepath("test/fixtures/hosts.txt")
-        .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .run();
-    for (auto &s : *logs)
-        std::cout << s << "\n";
 }
 
 TEST_CASE("Asynchronous dns-injection test") {
-    Var<std::list<std::string>> logs(new std::list<std::string>);
     bool done = false;
-    nettests::DnsInjectionTest()
+    nettests::DnsInjectionTest{}
         .set_options("backend", "8.8.8.1:53")
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_options("dns/timeout", "0.1")
         .set_input_filepath("test/fixtures/hosts.txt")
-        .on_log([=](uint32_t, const char *s) { logs->push_back(s); })
         .start([&]() { done = true; });
     do {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     } while (!done);
-    for (auto &s : *logs)
-        std::cout << s << "\n";
 }
 
 #endif
 
-TEST_CASE("Make sure that set_output_path() works") {
-    auto runnable = nettests::DnsInjectionTest()
-                        // Note: must also set valid input file path otherwise
-                        // the constructor
-                        // called inside create_test_() throws an exception
+// Note: we don't repeat this test for every type of nettest
+TEST_CASE("Make sure that set_output_filepath() works") {
+    /*
+       Note: must also set valid input file path otherwise the constructor
+       called inside create_test_() throws an exception
+    */
+    auto runnable = nettests::DnsInjectionTest{}
                         .set_input_filepath("test/fixtures/hosts.txt")
                         .set_output_filepath("foo.txt")
                         .runnable;

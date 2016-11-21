@@ -7,16 +7,16 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/nettests.hpp>
 
-#include <unistd.h>
+#include <chrono>
+#include <iostream>
+#include <thread>
 
 using namespace mk;
-using namespace mk::nettests;
 
 static void run_http_invalid_request_line(nettests::Runner &runner) {
-    runner.start_test(nettests::HttpInvalidRequestLineTest()
+    runner.start_test(nettests::HttpInvalidRequestLineTest{}
                        .set_options("backend", "http://nexa.polito.it/")
                        .set_options("geoip_country_path", "GeoIP.dat")
                        .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -24,13 +24,13 @@ static void run_http_invalid_request_line(nettests::Runner &runner) {
                            (void)fprintf(stderr, "test #1: %s\n", s);
                        })
                        .runnable,
-                   [](Var<Runnable> test) {
+                   [](Var<nettests::Runnable> test) {
                        mk::debug("test complete: %p", (void *)test.get());
                    });
 }
 
 static void run_dns_injection(nettests::Runner &runner) {
-    runner.start_test(nettests::DnsInjectionTest()
+    runner.start_test(nettests::DnsInjectionTest{}
                        .set_options("backend", "8.8.8.8:53")
                        .set_options("geoip_country_path", "GeoIP.dat")
                        .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -39,13 +39,13 @@ static void run_dns_injection(nettests::Runner &runner) {
                            (void)fprintf(stderr, "test #3: %s\n", s);
                        })
                        .runnable,
-                   [](Var<Runnable> test) {
+                   [](Var<nettests::Runnable> test) {
                        mk::debug("test complete: %p", (void *)test.get());
                    });
 }
 
 static void run_tcp_connect(nettests::Runner &runner) {
-    runner.start_test(nettests::TcpConnectTest()
+    runner.start_test(nettests::TcpConnectTest{}
                        .set_options("port", "80")
                        .set_options("geoip_country_path", "GeoIP.dat")
                        .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -54,7 +54,7 @@ static void run_tcp_connect(nettests::Runner &runner) {
                            (void)fprintf(stderr, "test #4: %s\n", s);
                        })
                        .runnable,
-                   [](Var<Runnable> test) {
+                   [](Var<nettests::Runnable> test) {
                        mk::debug("test complete: %p", (void *)test.get());
                    });
 }
@@ -75,7 +75,7 @@ TEST_CASE("The runner engine works as expected") {
 
         // TODO Need to implement a better sync mechanism?
         while (!runner.empty()) {
-            sleep(1);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
 }
@@ -85,7 +85,7 @@ TEST_CASE("The destructor work as expected if the thread was already joined") {
     run_dns_injection(runner);
     run_dns_injection(runner);
     while (!runner.empty()) {
-        sleep(1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     runner.break_loop_();
     runner.join_();

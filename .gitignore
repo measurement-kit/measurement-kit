@@ -74,7 +74,7 @@
 /test/net/transport
 /test/nettests/dns_injection
 /test/nettests/http_invalid_request_line
-/test/nettests/ndt_test
+/test/nettests/ndt
 /test/nettests/runnable
 /test/nettests/runner
 /test/nettests/tcp_connect
