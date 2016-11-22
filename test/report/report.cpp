@@ -263,3 +263,32 @@ TEST_CASE("We can retry a partially successful close") {
     REQUIRE(counted_reporter->close_count == 1);
     REQUIRE(failing_reporter->close_count == 2);
 }
+
+class ReturningIdReporter : public BaseReporter {
+  public:
+    static Var<ReturningIdReporter> make() {
+        return Var<ReturningIdReporter>(new ReturningIdReporter);
+    }
+
+    ~ReturningIdReporter() override;
+
+    std::string get_report_id() override { return "xx"; }
+};
+
+ReturningIdReporter::~ReturningIdReporter() {}
+
+TEST_CASE(
+        "We return an error if multiple report-ids are returned by reporters") {
+    Report report;
+    report.add_reporter(ReturningIdReporter::make());
+    report.add_reporter(ReturningIdReporter::make());
+    report.open([&](Error err) {
+        REQUIRE(err.code == NoError().code);
+        Entry entry;
+        entry["foobar"] = 17;
+        entry["baz"] = "foobar";
+        report.write_entry(entry, [&](Error err) {
+            REQUIRE(err.code == MultipleReportIdsError().code);
+        }, Logger::global());
+    });
+}
