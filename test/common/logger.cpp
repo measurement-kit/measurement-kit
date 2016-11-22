@@ -93,3 +93,31 @@ TEST_CASE("The logger's EOF handler works") {
     }
     REQUIRE(called);
 }
+
+TEST_CASE("We pass MK_LOG_EVENT to logger if event-handler not set") {
+    Var<Logger> logger = Logger::make();
+    auto called = false;
+    logger->on_log([&](uint32_t v, const char *s) {
+        REQUIRE(v == (MK_LOG_WARNING|MK_LOG_EVENT));
+        REQUIRE(s == std::string{"{}"});
+        called = true;
+    });
+    logger->log(MK_LOG_WARNING|MK_LOG_EVENT, "{}");
+    REQUIRE(called);
+}
+
+TEST_CASE("We pass MK_LOG_EVENT only to event-handler if it is set") {
+    Var<Logger> logger = Logger::make();
+    auto log_called = false;
+    auto eh_called = false;
+    logger->on_log([&](uint32_t, const char *) {
+        log_called = true;
+    });
+    logger->on_event([&](const char *s) {
+        REQUIRE(s == std::string{"{}"});
+        eh_called = true;
+    });
+    logger->log(MK_LOG_WARNING|MK_LOG_EVENT, "{}");
+    REQUIRE(!log_called);
+    REQUIRE(eh_called);
+}

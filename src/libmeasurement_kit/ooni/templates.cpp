@@ -21,13 +21,15 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
     std::string resolver_hostname, nameserver_part;
     std::stringstream nameserver_ss(nameserver);
 
+    // TODO: Fix IPv6 `nameserver`, use google's [2001:4860:4860::8888]:53 for testing.
     std::getline(nameserver_ss, nameserver_part, ':');
     resolver_hostname = nameserver_part;
 
     std::getline(nameserver_ss, nameserver_part, ':');
     resolver_port = std::stoi(nameserver_part, nullptr);
 
-    options["dns/nameserver"] = nameserver;
+    options["dns/nameserver"] = resolver_hostname;
+    options["dns/port"] = resolver_port;
     options["dns/attempts"] = 1;
 
     dns::query(query_class, query_type, query_name,
