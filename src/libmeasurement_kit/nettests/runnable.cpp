@@ -86,7 +86,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
             reactor->call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
             });
-        });
+        }, logger);
     });
 }
 

@@ -13,7 +13,7 @@ class FileReporter : public BaseReporter {
   public:
     static Var<BaseReporter> make(std::string filename);
 
-    Continuation<Error> open(Report report) override;
+    Continuation<Error> open(Report &report) override;
     Continuation<Error> write_entry(Entry entry) override;
     Continuation<Error> close() override;
 
