@@ -38,6 +38,9 @@ class Logger : public NonCopyable, public NonMovable {
 
     void on_log(Delegate<uint32_t, const char *> fn);
     void on_event(Delegate<const char *> fn);
+    void on_progress(Delegate<double> fn);
+
+    void progress(double);
 
     void set_logfile(std::string path);
 
@@ -115,6 +118,11 @@ meaning that the log callback will not be called for them and they will
 not be written on the logfile. This behavior is meant to transition between
 when events where passed to the log callback and a future where they will
 be either ignored or passed to the event callback.
+
+The `set_progress` and `progress` methods allow respectively to register
+a callback called when the test makes some progress towards its end and to
+emit the test progress percentage. The test progress is an integer that
+varies between 0.0 (beginning) and end (1.0) of the test.
 
 The `set_logfile` method instructs the logger to write a copy of each log
 message into the specified log file. Setting the logfile has no impact on
