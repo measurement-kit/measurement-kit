@@ -111,10 +111,10 @@ void resolve_async(ResolverContext *context) {
         answer.qclass = ctx->dns_class;
         assert(p->ai_family == AF_INET or p->ai_family == AF_INET6);
         if (p->ai_family == AF_INET) {
-            answer.type = QueryTypeId::A;
+            answer.type = MK_DNS_TYPE_A;
             addr_ptr = &((sockaddr_in *)p->ai_addr)->sin_addr;
         } else if (p->ai_family == AF_INET6) {
-            answer.type = QueryTypeId::AAAA;
+            answer.type = MK_DNS_TYPE_AAAA;
             addr_ptr = &((sockaddr_in6 *)p->ai_addr)->sin6_addr;
         }
         if (p->ai_canonname != nullptr) {
@@ -147,16 +147,16 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     ctx->hints.ai_flags = AI_ALL | AI_V4MAPPED;
     ctx->hints.ai_socktype = SOCK_STREAM;
 
-    if (dns_class != QueryClassId::IN) {
+    if (dns_class != MK_DNS_CLASS_IN) {
         reactor->call_soon([=]() { cb(UnsupportedClassError(), nullptr); });
         return;
     }
 
-    if (dns_type == QueryTypeId::A) {
+    if (dns_type == MK_DNS_TYPE_A) {
         ctx->hints.ai_family = AF_INET;
-    } else if (dns_type == QueryTypeId::AAAA) {
+    } else if (dns_type == MK_DNS_TYPE_AAAA) {
         ctx->hints.ai_family = AF_INET6;
-    } else if (dns_type == QueryTypeId::CNAME) {
+    } else if (dns_type == MK_DNS_TYPE_CNAME) {
         ctx->hints.ai_family = AF_UNSPEC;
         ctx->hints.ai_flags |= AI_CANONNAME;
     } else {
