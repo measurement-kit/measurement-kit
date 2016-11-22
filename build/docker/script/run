@@ -31,6 +31,9 @@ subr_make_check() {
 }
 
 subr_finalize() {
+    if [ ./test-suite.log ]; then
+        cat ./test-suite.log
+    fi
     exit 0
 }
 
