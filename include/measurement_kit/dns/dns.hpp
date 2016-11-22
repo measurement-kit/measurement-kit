@@ -26,6 +26,21 @@ MK_DEFINE_ERR(MK_ERR_DNS(13), UnsupportedClassError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(14), InvalidNameForPTRError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(15), ResolverError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(16), UnsupportedTypeError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(17), InvalidDnsEngine, "")
+
+// getaddrinfo errors
+MK_DEFINE_ERR(MK_ERR_DNS(18), TemporaryFailureError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(19), InvalidFlagsValueError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(20), InvalidHintsValueError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(21), NonRecoverableFailureError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(22), NotSupportedAIFamilyError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(23), MemoryAllocationFailureError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(24), HostOrServiceNotProvidedOrNotKnownError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(25), ArgumentBufferOverflowError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(26), UnknownResolvedProtocolError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(27), NotSupportedServnameError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(28), NotSupportedAISocktypeError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(29), InetNtopFailureError, "")
 
 enum QueryClassId {
     MK_DNS_CLASS_INVALID = 0,
