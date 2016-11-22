@@ -19,7 +19,7 @@ template <Phase connect, Phase send_login, Phase recv_and_ignore_kickoff,
           Cleanup disconnect_and_callback>
 void run_with_specific_server_impl(Var<Entry> entry, std::string address, int port,
                                    Callback<Error> callback, Settings settings,
-                                   Var<Logger> logger, Var<Reactor> reactor) {
+                                   Var<Reactor> reactor, Var<Logger> logger) {
 
     // Note: this implementation is a template because that allows us to
     // easily change the functions implementing each phase of the protocol
@@ -95,8 +95,8 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
 }
 
 template <MK_MOCK(run_with_specific_server), MK_MOCK_NAMESPACE(mlabns, query)>
-void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings, Var<Logger> logger,
-              Var<Reactor> reactor) {
+void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings,
+              Var<Reactor> reactor, Var<Logger> logger) {
     ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
     if (!port) {
         callback(InvalidPortError(port.as_error()));
@@ -104,8 +104,8 @@ void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings, Var
     }
     std::string address = settings.get<std::string>("address", "");
     if (address != "") {
-        run_with_specific_server(entry, address, *port, callback, settings, logger,
-                                 reactor);
+        run_with_specific_server(entry, address, *port, callback, settings,
+                                 reactor, logger);
         return;
     }
     mlabns_query("ndt",
@@ -115,7 +115,7 @@ void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings, Var
                          return;
                      }
                      run_with_specific_server(entry, reply.fqdn, *port, callback,
-                                              settings, logger, reactor);
+                                              settings, reactor, logger);
                  },
                  settings, reactor, logger);
 }

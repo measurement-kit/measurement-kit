@@ -40,13 +40,13 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                    query_entry["resolver_port"] = resolver_port;
                    query_entry["failure"] = nullptr;
                    query_entry["answers"] = Entry::array();
-                   if (query_type == dns::QueryTypeId::A) {
+                   if (query_type == dns::MK_DNS_TYPE_A) {
                        query_entry["query_type"] = "A";
                        query_entry["hostname"] = query_name;
                    }
                    if (!error) {
                        for (auto answer : message->answers) {
-                           if (query_type == dns::QueryTypeId::A) {
+                           if (query_type == dns::MK_DNS_TYPE_A) {
                                query_entry["answers"].push_back(
                                    {{"ttl", answer.ttl},
                                     {"ipv4", answer.ipv4},
@@ -116,7 +116,7 @@ void tcp_connect(Settings options, Callback<Error, Var<net::Transport>> cb,
         cb(MissingRequiredHostError(), nullptr);
         return;
     }
-    net::connect(options["host"], *port, cb, options, logger, reactor);
+    net::connect(options["host"], *port, cb, options, reactor, logger);
 }
 
 } // namespace templates
