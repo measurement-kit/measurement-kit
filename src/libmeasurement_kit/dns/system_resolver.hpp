@@ -20,7 +20,7 @@ class ResolverContext {
     Var<Reactor> reactor;
     Var<Logger> logger;
 
-    addrinfo hints = {};
+    addrinfo hints;
 
     Var<Message> message{new Message};
 
@@ -34,6 +34,7 @@ class ResolverContext {
         settings = s;
         reactor = r;
         logger = l;
+        memset(&hints, 0, sizeof (hints));
     }
 };
 
@@ -119,6 +120,9 @@ void resolve_async(ResolverContext *context) {
         } else if (p->ai_family == AF_INET6) {
             answer.type = MK_DNS_TYPE_AAAA;
             addr_ptr = &((sockaddr_in6 *)p->ai_addr)->sin6_addr;
+        } else {
+            // Added branch to avoid g++ compiler warning
+            throw std::runtime_error("internal error");
         }
         if (p->ai_canonname != nullptr) {
             answer.hostname = p->ai_canonname;
