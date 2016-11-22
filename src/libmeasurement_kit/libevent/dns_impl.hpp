@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_DNS_QUERY_IMPL_HPP
 
 #include "../common/utils.hpp"
+#include "../net/utils.hpp"
 #include "../libevent/dns.hpp"
 
 #include <event2/dns.h>
@@ -276,10 +277,10 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
     // Allow PTR queries
     if (dns_type == MK_DNS_TYPE_PTR) {
         std::string s;
-        if ((s = mk::unreverse_ipv4(name)) != "") {
+        if ((s = net::unreverse_ipv4(name)) != "") {
             dns_type = MK_DNS_TYPE_REVERSE_A;
             name = s;
-        } else if ((s = mk::unreverse_ipv6(name)) != "") {
+        } else if ((s = net::unreverse_ipv6(name)) != "") {
             dns_type = MK_DNS_TYPE_REVERSE_AAAA;
             name = s;
         } else {
