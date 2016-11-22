@@ -27,13 +27,15 @@ subr_make() {
 }
 
 subr_make_check() {
-    make $make_flags check V=0
+    make $make_flags check V=0 || {
+        if [ -f ./test-suite.log ]; then
+            cat ./test-suite.log
+        fi
+        exit 1
+    }
 }
 
 subr_finalize() {
-    if [ ./test-suite.log ]; then
-        cat ./test-suite.log
-    fi
     exit 0
 }
 
