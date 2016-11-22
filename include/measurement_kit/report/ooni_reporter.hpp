@@ -9,15 +9,17 @@
 namespace mk {
 namespace report {
 
-class OoniReporter : public report::BaseReporter {
+class OoniReporter : public BaseReporter {
   public:
     static Var<BaseReporter> make(Settings, Var<Reactor>, Var<Logger>);
 
-    Continuation<Error> open(report::Report report) override;
-    Continuation<Error> write_entry(report::Entry entry) override;
+    Continuation<Error> open(Report &report) override;
+    Continuation<Error> write_entry(Entry entry) override;
     Continuation<Error> close() override;
 
     ~OoniReporter() override {}
+
+    std::string get_report_id() override;
 
   private:
     OoniReporter(Settings, Var<Reactor>, Var<Logger>);

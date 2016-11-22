@@ -27,16 +27,16 @@ OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
     return reporter;
 }
 
-Continuation<Error> OoniReporter::open(Report report) {
+Continuation<Error> OoniReporter::open(Report &report) {
     return do_open_([=](Callback<Error> cb) {
         logger->info("Opening report...");
         ooni::collector::connect_and_create_report(
                 report.get_dummy_entry(),
-                [=](Error error, std::string report_id) {
+                [=](Error error, std::string rid) {
                     logger->info("Opening report... %d", error.code);
                     if (not error) {
-                        logger->info("Report ID: %s", report_id.c_str());
-                        this->report_id = report_id;
+                        logger->info("Report ID: %s", rid.c_str());
+                        report_id = rid;
                     }
                     cb(error);
                 },
@@ -47,17 +47,6 @@ Continuation<Error> OoniReporter::open(Report report) {
 }
 
 Continuation<Error> OoniReporter::write_entry(Entry entry) {
-    /*
-     * Unconditionally overwrite the `report_id` field with what was
-     * passed us by the server, which should be authoritative.
-     *
-     * This action must be performed here rather than below because in
-     * the lambda context `entry` would be read only.
-     *
-     * Note that `entry` is passed by copy so changing it has no
-     * effect outside of this function.
-     */
-    entry["report_id"] = report_id;
 
     // Register action for when we will be asked to write the entry
     return do_write_entry_(entry, [=](Callback<Error> cb) {
@@ -99,6 +88,10 @@ Continuation<Error> OoniReporter::close() {
                                             reactor,
                                             logger);
     });
+}
+
+std::string OoniReporter::get_report_id() {
+    return report_id;
 }
 
 } // namespace report
