@@ -296,4 +296,23 @@ TEST_CASE("The system resolver works as expected") {
     });
 }
 
+TEST_CASE("The system resolver works as expected setting 2 invalid dns and 1 valid") {
+
+    loop_with_initial_event([]() {
+        query("IN", "A", "www.neubot.org", [](Error e, Var<Message> message) {
+            REQUIRE(!e);
+            REQUIRE(message->error_code == DNS_ERR_NONE);
+            REQUIRE(message->answers.size() == 1);
+            REQUIRE(message->answers[0].ipv4 == "130.192.16.172");
+            REQUIRE(message->rtt > 0.0);
+            REQUIRE(message->answers[0].ttl > 0);
+            break_loop();
+        }, {
+            {"dns/nameserver", "6.6.6.6"},
+            {"dns/nameserver1", "7.7.7.7"},
+            {"dns/nameserver2", "8.8.8.8"}
+           }
+        );
+    });
+}
 #endif
