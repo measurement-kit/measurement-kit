@@ -57,29 +57,38 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
 
     connect(ctx, [ctx](Error err) {
         TRAP_ERRORS(err);
+        ctx->logger->progress(0.1);
 
         send_login(ctx, [ctx](Error err) {
             TRAP_ERRORS(err);
+            ctx->logger->progress(0.2);
 
             recv_and_ignore_kickoff(ctx, [ctx](Error err) {
                 TRAP_ERRORS(err);
+                ctx->logger->progress(0.3);
 
                 wait_in_queue(ctx, [ctx](Error err) {
                     TRAP_ERRORS(err);
+                    ctx->logger->progress(0.4);
 
                     recv_version(ctx, [ctx](Error err) {
                         TRAP_ERRORS(err);
+                        ctx->logger->progress(0.5);
 
                         recv_tests_id(ctx, [ctx](Error err) {
                             TRAP_ERRORS(err);
+                            ctx->logger->progress(0.6);
 
                             run_tests(ctx, [ctx](Error err) {
                                 TRAP_ERRORS(err);
+                                // Progress printed by run_tests()
 
                                 recv_results_and_logout(ctx, [ctx](Error err) {
                                     TRAP_ERRORS(err);
+                                    ctx->logger->progress(0.8);
 
                                     wait_close(ctx, [ctx](Error err) {
+                                        ctx->logger->progress(0.9);
                                         disconnect_and_callback(ctx, err);
                                     });
                                 });

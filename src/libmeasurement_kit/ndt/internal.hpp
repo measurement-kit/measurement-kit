@@ -88,6 +88,8 @@ struct Context {
     Callback<Error> callback;
     Var<Entry> entry;
     std::list<std::string> granted_suite;
+    size_t granted_suite_count = 0;
+    size_t current_test_count = 0;
     Var<Logger> logger = Logger::global();
     int port = NDT_PORT;
     Var<Reactor> reactor = Reactor::global();

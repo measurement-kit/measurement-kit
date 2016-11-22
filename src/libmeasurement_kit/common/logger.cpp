@@ -93,9 +93,19 @@ void Logger::increase_verbosity() {
     }
 }
 
+void Logger::on_progress(Delegate<double> fn) {
+    progress_handler_ = fn;
+}
+
 void Logger::set_logfile(std::string path) {
     ofile_.reset(new std::ofstream(path));
     // TODO: what to do if we cannot open the logfile? return error?
+}
+
+void Logger::progress(double prog) {
+    if (progress_handler_) {
+        progress_handler_(prog);
+    }
 }
 
 } // namespace mk
