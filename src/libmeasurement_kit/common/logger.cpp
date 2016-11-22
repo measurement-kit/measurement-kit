@@ -47,6 +47,12 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
     if (res < 0 || (unsigned int)res >= sizeof(buffer_)) {
         return;
     }
+    // Since v0.4 we dispatch the MK_LOG_EVENT event to the proper handler
+    // if set, otherwise we fallthrough passing it to consumer_.
+    if (event_handler_ and (level & MK_LOG_EVENT) != 0) {
+        event_handler_(buffer_);
+        return;
+    }
     if (consumer_) {
         consumer_(level, buffer_);
     }
@@ -71,6 +77,8 @@ void Logger::log(uint32_t level, const char *fmt, ...) { XX(this, level); }
 void Logger::warn(const char *fmt, ...) { XX(this, MK_LOG_WARNING); }
 void Logger::info(const char *fmt, ...) { XX(this, MK_LOG_INFO); }
 void Logger::debug(const char *fmt, ...) { XX(this, MK_LOG_DEBUG); }
+
+void Logger::on_event(Delegate<const char *> f) { event_handler_ = f; }
 
 void log(uint32_t level, const char *fmt, ...) { XX(Logger::global(), level); }
 void warn(const char *fmt, ...) { XX(Logger::global(), MK_LOG_WARNING); }
