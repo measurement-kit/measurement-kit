@@ -12,7 +12,7 @@ using namespace mk::ndt;
 using json = nlohmann::json;
 
 static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
-                 Var<Logger>, Var<Reactor>) {
+                 Var<Reactor>, Var<Logger>) {
     cb(MockedError(), nullptr);
 }
 
@@ -20,7 +20,7 @@ TEST_CASE("coroutine() is robust to connect error") {
     test_c2s::coroutine_impl<fail>(
         "www.google.com", 3301, 10.0,
         [](Error err, Continuation<Error>) { REQUIRE(err == MockedError()); },
-        2.0, {}, Logger::global(), Reactor::global());
+        2.0, {}, Reactor::global(), Logger::global());
 }
 
 static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb,
@@ -87,7 +87,7 @@ static void test_prepare(Var<Context>,
 
 static void fail(std::string, int, double,
                  Callback<Error, Continuation<Error>> cb, double, Settings,
-                 Var<Logger>, Var<Reactor>) {
+                 Var<Reactor>, Var<Logger>) {
     cb(MockedError(), [](Callback<Error>) {
         REQUIRE(false); // should not happen
     });
@@ -101,8 +101,8 @@ TEST_CASE("run() deals with coroutine fail") {
 
 static void connect_but_fail_later(std::string, int, double,
                                    Callback<Error, Continuation<Error>> cb,
-                                   double, Settings, Var<Logger>,
-                                   Var<Reactor>) {
+                                   double, Settings, Var<Reactor>,
+                                   Var<Logger>) {
     cb(NoError(), [](Callback<Error> cb) { cb(MockedError()); });
 }
 
@@ -131,7 +131,7 @@ TEST_CASE("run() deals with coroutine terminating with error") {
 
 static void coro_ok(std::string, int, double,
                     Callback<Error, Continuation<Error>> cb, double, Settings,
-                    Var<Logger>, Var<Reactor>) {
+                    Var<Reactor>, Var<Logger>) {
     cb(NoError(), [](Callback<Error> cb) { cb(NoError()); });
 }
 

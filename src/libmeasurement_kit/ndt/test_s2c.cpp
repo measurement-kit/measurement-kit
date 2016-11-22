@@ -12,8 +12,10 @@ using namespace mk::report;
 
 void coroutine(Var<Entry> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb, double timeout,
-               Settings settings, Var<Logger> logger, Var<Reactor> reactor) {
-    coroutine_impl(report_entry, address, params, cb, timeout, settings, logger, reactor);
+               Settings settings, Var<Reactor> reactor,
+               Var<Logger> logger) {
+    coroutine_impl(report_entry, address, params, cb, timeout, settings,
+                   reactor, logger);
 }
 
 void finalizing_test(Var<Context> ctx, Var<Entry> cur_entry,

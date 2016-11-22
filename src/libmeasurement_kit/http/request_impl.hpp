@@ -41,7 +41,7 @@ void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
     } else if (url->schema == "https") {
         settings["net/ssl"] = true;
     }
-    net_connect(url->address, url->port, cb, settings, logger, reactor);
+    net_connect(url->address, url->port, cb, settings, reactor, logger);
 }
 
 } // namespace http

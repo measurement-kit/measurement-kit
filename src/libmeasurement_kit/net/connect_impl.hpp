@@ -44,9 +44,25 @@ void connect_base(std::string address, int port,
         return;
     }
 
+    /*
+     *  Rationale for deferring callbacks:
+     *
+     *  When using IOCP on Windows, the kernel calls callbacks when selected
+     *  events occur (i.e., there is no loop that guarantees callbacks run in
+     *  the same thread); set DEFER_CALLBACKS to tell libevent to serialize
+     *  bufferevent's callbacks into the event loop to avoid creating MT issues
+     *  in code that otherwise (on Unices) is single threaded.
+     *
+     *  Yes, the current implementation forces serializing the callbacks also
+     *  on Unix where this wouldn't be needed thus adding some overhead. For
+     *  uniformity, I am for serializing for all platforms and then, if we see
+     *  that there's too much overhead, to only enable that on Windows.
+     */
+    static const int flags = BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS;
+
     bufferevent *bev;
     if ((bev = bufferevent_socket_new(reactor->get_event_base(), -1,
-                                      BEV_OPT_CLOSE_ON_FREE)) == nullptr) {
+                                      flags)) == nullptr) {
         throw GenericError(); // This should not happen
     }
 
@@ -104,21 +120,21 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
                     --ctx->left;
                     connect_many_impl<net_connect>(ctx);
                 },
-                ctx->settings, ctx->logger, ctx->reactor);
+                ctx->settings, ctx->reactor, ctx->logger);
 }
 
 static inline Var<ConnectManyCtx>
 connect_many_make(std::string address, int port, int count,
-                  ConnectManyCb callback, Settings settings, Var<Logger> logger,
-                  Var<Reactor> reactor) {
+                  ConnectManyCb callback, Settings settings,
+                  Var<Reactor> reactor, Var<Logger> logger) {
     Var<ConnectManyCtx> ctx(new ConnectManyCtx);
     ctx->left = count;
     ctx->callback = callback;
     ctx->address = address;
     ctx->port = port;
     ctx->settings = settings;
-    ctx->logger = logger;
     ctx->reactor = reactor;
+    ctx->logger = logger;
     ctx->result.reset(new ConnectManyResult);
     return ctx;
 }

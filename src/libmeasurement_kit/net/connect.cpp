@@ -166,9 +166,13 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                  Var<Logger> logger) {
     logger->debug("connect ssl...");
 
+    // Perhaps DEFER not needed on SSL but setting it won't hurt. See
+    // the similar comment in connect_impl.hpp for rationale.
+    static const int flags = BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS;
+
     auto bev = bufferevent_openssl_filter_new(
         reactor->get_event_base(), orig_bev, ssl, BUFFEREVENT_SSL_CONNECTING,
-        BEV_OPT_CLOSE_ON_FREE);
+        flags);
     if (bev == nullptr) {
         bufferevent_free(orig_bev);
         cb(GenericError(), nullptr);
@@ -228,15 +232,15 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
 }
 
 void connect_many(std::string address, int port, int num,
-                  ConnectManyCb callback, Settings settings, Var<Logger> logger,
-                  Var<Reactor> reactor) {
+                  ConnectManyCb callback, Settings settings,
+                  Var<Reactor> reactor, Var<Logger> logger) {
     connect_many_impl<net::connect>(connect_many_make(
-        address, port, num, callback, settings, logger, reactor));
+        address, port, num, callback, settings, reactor, logger));
 }
 
 void connect(std::string address, int port,
              Callback<Error, Var<Transport>> callback, Settings settings,
-             Var<Logger> logger, Var<Reactor> reactor) {
+             Var<Reactor> reactor, Var<Logger> logger) {
     if (settings.find("net/dumb_transport") != settings.end()) {
         callback(NoError(), Var<Transport>(new Emitter(logger)));
         return;
