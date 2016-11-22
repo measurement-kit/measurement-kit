@@ -55,7 +55,11 @@ class Logger : public NonCopyable, public NonMovable {
 
     void on_event(Delegate<const char *> fn);
 
+    void on_progress(Delegate<double> fn);
+
     void set_logfile(std::string fpath);
+
+    void progress(double);
 
     static Var<Logger> global() {
         static Var<Logger> singleton(new Logger);
@@ -76,6 +80,7 @@ class Logger : public NonCopyable, public NonMovable {
     Var<std::ofstream> ofile_;
     Delegate<> eof_handler_;
     Delegate<const char *> event_handler_;
+    Delegate<double> progress_handler_;
 
     Logger();
 };

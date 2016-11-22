@@ -3,10 +3,12 @@
 // information on the copying conditions.
 
 #include "../cmdline/cmdline.hpp"
+#include <measurement_kit/ext/json.hpp>
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ndt.hpp>
 
 #include <string.h>
+#include <stdio.h>
 
 #include <iostream>
 
@@ -77,6 +79,9 @@ int main(const char *, int argc, char **argv) {
     }
 
     test
+        .on_progress([](double prog) {
+            printf("Progress: %.2f%%\n", prog * 100.0);
+        })
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .run();
