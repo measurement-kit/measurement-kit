@@ -52,21 +52,9 @@ check_PROGRAMS = $(ALL_TESTS)
 VALGRIND = $(LIBTOOL) --mode=execute valgrind --trace-children=yes             \
   --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all
 
-VALGRIND_TRAVIS = $(VALGRIND) --suppressions=build/valgrind/travis.supp
+VALGRIND_TRAVIS = $(VALGRIND) --suppressions=build/valgrind/openssl.supp
 
-run-valgrind-internal:
-	test -n "$(LOG_COMPILER)" && {                                         \
-	    echo "FATAL: LOG_COMPILER is not set." 1>&2;                       \
-	    exit 1;                                                            \
-	}
-	$(MAKE) $(AM_MAKEFLAGS) check-am || {                                  \
-	    if test -f ./test-suite.log; then                                  \
-	        cat ./test-suite.log;                                          \
-	    fi;                                                                \
-	    exit 1;                                                            \
-	}
 check-am-valgrind:
 	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND_TRAVIS)'
-run-valgrind-travis: check-am-valgrind
 run-valgrind:
 	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND)'
