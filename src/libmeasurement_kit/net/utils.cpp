@@ -166,5 +166,14 @@ std::string unreverse_ipv4(std::string s) {
     return std::string(r.begin(), r.end());
 }
 
+Error disable_nagle(socket_t sockfd) {
+    static const int disable = 1;
+    if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&disable,
+                   sizeof (disable)) != 0) {
+        return SystemError();
+    }
+    return NoError();
+}
+
 } // namespace net
 } // namespace mk

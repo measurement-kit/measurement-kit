@@ -9,6 +9,7 @@
 #include "../net/connect_impl.hpp"
 #include "../net/emitter.hpp"
 #include "../net/socks5.hpp"
+#include "../net/utils.hpp"
 
 #include "../libevent/connection.hpp"
 #include "../libevent/ssl_context.hpp"
@@ -153,7 +154,10 @@ void connect_logic(std::string hostname, int port,
                                      cb(ConnectFailedError(), result);
                                      return;
                                  }
-                                 cb(NoError(), result);
+                                 Error nagle_error = disable_nagle(
+                                    bufferevent_getfd(result->connected_bev);
+                                 );
+                                 cb(nagle_error, result);
                              },
                              settings, reactor, logger);
 
