@@ -20,7 +20,11 @@ using namespace mk::nettests;
 
 static const char *kv_usage =
   "usage: measurement_kit ndt [-nv] [-C /path/to/ca.bundle] [-p port]\n"
-  "                           [-T download|download-ext|none|upload] [host]\n";
+  "                           [-N tool_name] [-T phase] [host]\n"
+  "\n"
+  "Available tool names for mlab-ns: ndt, neubot (default: ndt)\n"
+  "Available phases: download, download-ext, none, upload\n"
+  "  (default: -T download -T upload)\n";
 
 int main(const char *, int argc, char **argv) {
 
@@ -28,10 +32,13 @@ int main(const char *, int argc, char **argv) {
     int ch;
     int test_suite = 0;
     int use_default_test_suite = true;
-    while ((ch = mkp_getopt(argc, argv, "C:np:T:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "C:nN:p:T:v")) != -1) {
         switch (ch) {
         case 'C':
             test.set_options("net/ca_bundle_path", mkp_optarg);
+            break;
+        case 'N':
+            test.set_options("mlabns_tool_name", mkp_optarg);
             break;
         case 'n':
             test.set_options("no_collector", true);
