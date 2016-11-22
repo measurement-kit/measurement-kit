@@ -26,7 +26,8 @@ inline void listen4(std::string address, int port, ListenCb cb) {
 
     sockaddr_storage storage;
     socklen_t salen;
-    if (storage_init(&storage, &salen, PF_INET, address.c_str(), port) != 0) {
+    if (net::storage_init(&storage, &salen, PF_INET, address.c_str(), port,
+                          Logger::global()) != 0) {
         throw ValueError();
     }
 

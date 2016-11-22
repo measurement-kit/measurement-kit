@@ -83,7 +83,7 @@ void AndroidProber::init() {
         family = AF_INET6;
     }
 
-    sockfd_ = mk::socket_create(family, SOCK_DGRAM, 0);
+    sockfd_ = mk::net::socket_create(family, SOCK_DGRAM, 0);
     if (sockfd_ == -1) {
         cleanup();
         error_cb_(SocketCreateError());
@@ -98,7 +98,7 @@ void AndroidProber::init() {
         return;
     }
 
-    if (mk::storage_init(&ss, &sslen, family, NULL, port_) != 0) {
+    if (mk::net::storage_init(&ss, &sslen, family, NULL, port_) != 0) {
         cleanup();
         error_cb_(StorageInitError());
         return;
@@ -148,7 +148,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
         return;
     }
 
-    if (mk::storage_init(&ss, &sslen, family, addr.c_str(), port) != 0) {
+    if (mk::net::storage_init(&ss, &sslen, family, addr.c_str(), port) != 0) {
         error_cb_(StorageInitError());
         return;
     }

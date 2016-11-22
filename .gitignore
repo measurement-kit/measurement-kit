@@ -73,6 +73,7 @@
 /test/net/evbuffer
 /test/net/socks5
 /test/net/transport
+/test/net/utils
 /test/nettests/dns_injection
 /test/nettests/http_invalid_request_line
 /test/nettests/ndt
