@@ -24,7 +24,7 @@ TEST_CASE("the system resolver can handle a getaddrinfo error") {
         system_resolver<null_getaddrinfo>(
             "IN", "A", "www.neubot.org",
             [](Error e, Var<Message>) {
-                REQUIRE(e == NonRecoverableFailure());
+                REQUIRE(e == NonRecoverableFailureError());
                 break_loop();
             },
             {}, Reactor::global(), Logger::global());
@@ -36,7 +36,7 @@ TEST_CASE("the system resolver can handle a inet_ntop error") {
         system_resolver<getaddrinfo, null_inet_ntop>(
             "IN", "A", "neubot.org",
             [](Error e, Var<Message>) {
-                REQUIRE(e == InetNtopFailure());
+                REQUIRE(e == InetNtopFailureError());
                 break_loop();
             },
             {}, Reactor::global(), Logger::global());
@@ -71,7 +71,8 @@ TEST_CASE("the system resolver returns an error with an invalid_site") {
     loop_with_initial_event([]() {
         system_resolver("IN", "A", "invalid_site",
                         [](Error e, Var<Message>) {
-                            REQUIRE(e == HostOrServiceNotProvidedOrNotKnown());
+                            REQUIRE(
+                                e == HostOrServiceNotProvidedOrNotKnownError());
                             break_loop();
                         },
                         {}, Reactor::global(), Logger::global());
@@ -117,7 +118,8 @@ TEST_CASE("the system resolver can handle errors with a CNAME query") {
     loop_with_initial_event([]() {
         system_resolver("IN", "CNAME", "invalid",
                         [](Error e, Var<Message>) {
-                            REQUIRE(e == HostOrServiceNotProvidedOrNotKnown());
+                            REQUIRE(e
+                                == HostOrServiceNotProvidedOrNotKnownError());
                             break_loop();
                         },
                         {}, Reactor::global(), Logger::global());

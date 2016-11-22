@@ -7,8 +7,6 @@
 #include <cassert>
 #include <future>
 
-#include <iostream>
-
 namespace mk {
 namespace dns {
 
@@ -22,7 +20,7 @@ class ResolverContext {
     Var<Reactor> reactor;
     Var<Logger> logger;
 
-    addrinfo hints;
+    addrinfo hints = {};
 
     Var<Message> message{new Message};
 
@@ -36,75 +34,80 @@ class ResolverContext {
         settings = s;
         reactor = r;
         logger = l;
-        memset(&hints, 0, sizeof(hints));
     }
 };
+
+class addrinfo_deleter {
+  public:
+    void operator()(addrinfo *ptr) {
+        if (ptr) {
+            freeaddrinfo(ptr);
+        }
+    }
+};
+using addrinfo_uptr = std::unique_ptr<addrinfo, addrinfo_deleter>;
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
 void resolve_async(ResolverContext *context) {
     std::unique_ptr<ResolverContext> ctx(context);
     Callback<Error, Var<Message>> callback = ctx->cb;
     Var<Message> message = ctx->message;
-    addrinfo *servinfo_p = nullptr;
+    addrinfo *sip = nullptr;
 
-    int error =
-        getaddrinfo(ctx->name.c_str(), nullptr, &ctx->hints, &servinfo_p);
-    std::unique_ptr<addrinfo, std::function<void(addrinfo *)>> servinfo(
-        servinfo_p, [](addrinfo *servinfo) {
-            if (servinfo != nullptr)
-                freeaddrinfo(servinfo);
-        });
+    int error = getaddrinfo(ctx->name.c_str(), nullptr, &ctx->hints, &sip);
     if (error) {
         ctx->logger->warn("getaddrinfo failed: %s", gai_strerror(error));
         Error resolver_error;
         switch (error) {
         case EAI_AGAIN:
-            resolver_error = TemporaryFailure();
+            resolver_error = TemporaryFailureError();
             break;
         case EAI_BADFLAGS:
-            resolver_error = InvalidFlagsValue();
+            resolver_error = InvalidFlagsValueError();
             break;
 #ifdef EAI_BADHINTS  // Not always available
         case EAI_BADHINTS:
-            resolver_error = InvalidHintsValue();
+            resolver_error = InvalidHintsValueError();
             break;
 #endif
         case EAI_FAIL:
-            resolver_error = NonRecoverableFailure();
+            resolver_error = NonRecoverableFailureError();
             break;
         case EAI_FAMILY:
-            resolver_error = NotSupportedAIFamily();
+            resolver_error = NotSupportedAIFamilyError();
             break;
         case EAI_MEMORY:
-            resolver_error = MemoryAllocationFailure();
+            resolver_error = MemoryAllocationFailureError();
             break;
         case EAI_NONAME:
-            resolver_error = HostOrServiceNotProvidedOrNotKnown();
+            resolver_error = HostOrServiceNotProvidedOrNotKnownError();
             break;
         case EAI_OVERFLOW:
-            resolver_error = ArgumentBufferOverflow();
+            resolver_error = ArgumentBufferOverflowError();
             break;
 #ifdef EAI_PROTOCOL  // Not always available
         case EAI_PROTOCOL:
-            resolver_error = UnknownResolvedProtocol();
+            resolver_error = UnknownResolvedProtocolError();
             break;
 #endif
         case EAI_SERVICE:
-            resolver_error = NotSupportedServname();
+            resolver_error = NotSupportedServnameError();
             break;
         case EAI_SOCKTYPE:
-            resolver_error = NotSupportedAISocktype();
+            resolver_error = NotSupportedAISocktypeError();
             break;
         default:
             resolver_error = ResolverError();
+            break;
         }
         ctx->reactor->call_soon([=]() { callback(resolver_error, nullptr); });
         return;
     }
-    assert(servinfo != nullptr);
+    assert(sip != nullptr);
+    addrinfo_uptr servinfo(sip);
 
     void *addr_ptr;
-    char address[128];
+    char abuf[128];
     for (addrinfo *p = servinfo.get(); p != nullptr; p = p->ai_next) {
         Answer answer;
         answer.name = ctx->name;
@@ -120,17 +123,16 @@ void resolve_async(ResolverContext *context) {
         if (p->ai_canonname != nullptr) {
             answer.hostname = p->ai_canonname;
         }
-        if (inet_ntop(p->ai_family, addr_ptr, address, sizeof(address)) ==
-            nullptr) {
+        if (inet_ntop(p->ai_family, addr_ptr, abuf, sizeof(abuf)) == nullptr) {
             ctx->logger->warn("dns: unexpected inet_ntop failure");
             ctx->reactor->call_soon(
-                [=]() { callback(InetNtopFailure(), nullptr); });
+                [=]() { callback(InetNtopFailureError(), nullptr); });
             return;
         }
         if (p->ai_family == AF_INET) {
-            answer.ipv4 = std::string(address);
+            answer.ipv4 = std::string(abuf);
         } else if (p->ai_family == AF_INET6) {
-            answer.ipv6 = std::string(address);
+            answer.ipv6 = std::string(abuf);
         }
         message->answers.push_back(answer);
     }
