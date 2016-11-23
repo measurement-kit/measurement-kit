@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
@@ -12,8 +14,6 @@
 #include <thread>
 
 using namespace mk;
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Synchronous http-invalid-request-line test") {
     nettests::HttpInvalidRequestLineTest{}
