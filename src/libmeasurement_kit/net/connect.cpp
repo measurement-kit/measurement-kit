@@ -155,7 +155,7 @@ void connect_logic(std::string hostname, int port,
                                      return;
                                  }
                                  Error nagle_error = disable_nagle(
-                                    bufferevent_getfd(result->connected_bev);
+                                    bufferevent_getfd(result->connected_bev)
                                  );
                                  cb(nagle_error, result);
                              },
