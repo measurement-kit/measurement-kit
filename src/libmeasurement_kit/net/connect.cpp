@@ -9,6 +9,7 @@
 #include "../net/connect_impl.hpp"
 #include "../net/emitter.hpp"
 #include "../net/socks5.hpp"
+#include "../net/utils.hpp"
 
 #include "../libevent/connection.hpp"
 #include "../libevent/ssl_context.hpp"
@@ -153,7 +154,10 @@ void connect_logic(std::string hostname, int port,
                                      cb(ConnectFailedError(), result);
                                      return;
                                  }
-                                 cb(NoError(), result);
+                                 Error nagle_error = disable_nagle(
+                                    bufferevent_getfd(result->connected_bev)
+                                 );
+                                 cb(nagle_error, result);
                              },
                              settings, reactor, logger);
 
@@ -232,15 +236,15 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
 }
 
 void connect_many(std::string address, int port, int num,
-                  ConnectManyCb callback, Settings settings, Var<Logger> logger,
-                  Var<Reactor> reactor) {
+                  ConnectManyCb callback, Settings settings,
+                  Var<Reactor> reactor, Var<Logger> logger) {
     connect_many_impl<net::connect>(connect_many_make(
-        address, port, num, callback, settings, logger, reactor));
+        address, port, num, callback, settings, reactor, logger));
 }
 
 void connect(std::string address, int port,
              Callback<Error, Var<Transport>> callback, Settings settings,
-             Var<Logger> logger, Var<Reactor> reactor) {
+             Var<Reactor> reactor, Var<Logger> logger) {
     if (settings.find("net/dumb_transport") != settings.end()) {
         callback(NoError(), Var<Transport>(new Emitter(logger)));
         return;

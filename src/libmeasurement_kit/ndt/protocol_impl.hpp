@@ -26,7 +26,7 @@ void connect_impl(Var<Context> ctx, Callback<Error> callback) {
                                       ctx->address.c_str(), ctx->port);
                     callback(NoError());
                 },
-                ctx->settings, ctx->logger, ctx->reactor);
+                ctx->settings, ctx->reactor, ctx->logger);
 }
 
 template <MK_MOCK_NAMESPACE(messages, format_msg_extended_login),
@@ -164,6 +164,7 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->info("Authorized tests: %s", s.c_str());
         ctx->granted_suite = split(s);
+        ctx->granted_suite_count = ctx->granted_suite.size();
         callback(NoError());
     }, ctx->reactor);
 }
@@ -175,6 +176,11 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     if (ctx->granted_suite.size() <= 0) {
         callback(NoError());
         return;
+    }
+
+    if (ctx->granted_suite_count > 0) {  // Defensive check
+        ctx->logger->progress(0.6 + (double)++ctx->current_test_count
+            / (double)ctx->granted_suite_count / 10.0);
     }
 
     std::string s = ctx->granted_suite.front();

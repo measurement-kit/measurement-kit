@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_LIBEVENT_LISTEN_HPP
 
 #include "../libevent/connection.hpp"
+#include "../net/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 
@@ -26,7 +27,8 @@ inline void listen4(std::string address, int port, ListenCb cb) {
 
     sockaddr_storage storage;
     socklen_t salen;
-    if (storage_init(&storage, &salen, PF_INET, address.c_str(), port) != 0) {
+    if (net::storage_init(&storage, &salen, PF_INET, address.c_str(), port,
+                          Logger::global()) != 0) {
         throw ValueError();
     }
 
@@ -37,6 +39,10 @@ inline void listen4(std::string address, int port, ListenCb cb) {
                 Reactor::global()->get_event_base(), so, flgs);
         if (bev == nullptr) {
             (void)evutil_closesocket(so);
+            return;
+        }
+        if (net::disable_nagle(so) != NoError()) {
+            bufferevent_free(bev);
             return;
         }
         cb(bev);

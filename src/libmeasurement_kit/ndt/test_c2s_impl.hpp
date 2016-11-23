@@ -13,8 +13,8 @@ namespace test_c2s {
 template <MK_MOCK_NAMESPACE(net, connect)>
 void coroutine_impl(std::string address, int port, double runtime,
                     Callback<Error, Continuation<Error>> cb, double timeout,
-                    Settings settings, Var<Logger> logger,
-                    Var<Reactor> reactor) {
+                    Settings settings, Var<Reactor> reactor,
+                    Var<Logger> logger) {
 
     // Performance note: This implementation does some string copies
     // when sending but in localhost testing this does not seem to be
@@ -71,7 +71,7 @@ void coroutine_impl(std::string address, int port, double runtime,
                         txp->write(str.data(), str.size());
                     });
                 },
-                settings, logger, reactor);
+                settings, reactor, logger);
 }
 
 template <MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, first),
@@ -178,7 +178,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                     });
                 }, ctx->reactor);
             },
-            ctx->timeout, ctx->settings, ctx->logger, ctx->reactor);
+            ctx->timeout, ctx->settings, ctx->reactor, ctx->logger);
     }, ctx->reactor);
 }
 

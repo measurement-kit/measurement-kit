@@ -17,7 +17,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #define MK_LOG_DEBUG2 3
 #define MK_LOG_VERBOSITY_MASK 31
 
-#define MK_LOG_JSON 32 ///< log message is a valid JSON document
+#define MK_LOG_EVENT 32          // Event occurred (encoded as JSON)
+#define MK_LOG_JSON MK_LOG_EVENT // Backward compat for v0.3.x
 
 namespace mk {
 
@@ -36,6 +37,10 @@ class Logger : public NonCopyable, public NonMovable {
     uint32_t get_verbosity();
 
     void on_log(Delegate<uint32_t, const char *> fn);
+    void on_event(Delegate<const char *> fn);
+    void on_progress(Delegate<double> fn);
+
+    void progress(double);
 
     void set_logfile(std::string path);
 
@@ -105,6 +110,19 @@ debug: A debug2 message
 ```
 
 To disable the log callback, pass `nullptr` to it.
+
+By default `MK_LOG_EVENT` messages are passed to the log callback. But you
+can route them to the event callback by specifying it using `on_event()`. In
+such case, those messages will be passed to the event callback only,
+meaning that the log callback will not be called for them and they will
+not be written on the logfile. This behavior is meant to transition between
+when events where passed to the log callback and a future where they will
+be either ignored or passed to the event callback.
+
+The `set_progress` and `progress` methods allow respectively to register
+a callback called when the test makes some progress towards its end and to
+emit the test progress percentage. The test progress is an integer that
+varies between 0.0 (beginning) and end (1.0) of the test.
 
 The `set_logfile` method instructs the logger to write a copy of each log
 message into the specified log file. Setting the logfile has no impact on

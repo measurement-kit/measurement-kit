@@ -31,6 +31,8 @@ class Report {
 
     Settings options;
 
+    std::string report_id; /* Set after open(), if possible */
+
     Report();
 
     void add_reporter(Var<BaseReporter> reporter);
@@ -41,7 +43,7 @@ class Report {
 
     void open(Callback<Error> callback);
 
-    void write_entry(Entry entry, Callback<Error> callback);
+    void write_entry(Entry entry, Callback<Error> callback, Var<Logger> logger);
 
     void close(Callback<Error> callback);
 
