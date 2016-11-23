@@ -57,6 +57,10 @@ MK_CHECK_CA_BUNDLE
 
 # checks for compiler characteristics
 
+CPPFLAGS="-I \$(top_srcdir)/include $CPPFLAGS"
+CFLAGS="-Wall -Wextra -pedantic $CFLAGS"
+CXXFLAGS="-Wall -Wextra -pedantic $CXXFLAGS"
+
 MK_AM_REQUIRE_C99
 MK_AM_REQUIRE_CXX11
 MK_AM_REQUIRE_CXX11_LIBCXX
