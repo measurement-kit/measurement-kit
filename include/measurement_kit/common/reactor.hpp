@@ -5,6 +5,7 @@
 #define MEASUREMENT_KIT_COMMON_REACTOR_HPP
 
 #include <measurement_kit/common/callback.hpp>
+#include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/socket.hpp>
 #include <measurement_kit/common/var.hpp>
 

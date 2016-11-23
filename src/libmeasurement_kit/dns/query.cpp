@@ -4,6 +4,7 @@
 
 #include "../dns/query.hpp"
 #include "../libevent/dns.hpp"
+#include "../dns/system_resolver.hpp"
 
 namespace mk {
 namespace dns {
@@ -16,12 +17,16 @@ void query(
         Settings settings,
         Var<Reactor> reactor,
         Var<Logger> logger) {
-    std::string engine = settings.get("dns/engine", std::string{"libevent"});
-    if (engine == "cares") {
+    std::string engine = settings.get("dns/engine", std::string("libevent"));
+    if (engine == "libevent") {
+        libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);
+    } else if (engine == "system") {
+        system_resolver(dns_class, dns_type, name, cb, settings, reactor, logger);
+    } else if (engine == "cares") {
         cares::query(dns_class, dns_type, name, cb, settings, reactor, logger);
-        return;
+    } else {
+        reactor->call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
     }
-    libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);
 }
 
 } // namespace dns

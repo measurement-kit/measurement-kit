@@ -19,7 +19,7 @@ template <Phase connect, Phase send_login, Phase recv_and_ignore_kickoff,
           Cleanup disconnect_and_callback>
 void run_with_specific_server_impl(Var<Entry> entry, std::string address, int port,
                                    Callback<Error> callback, Settings settings,
-                                   Var<Logger> logger, Var<Reactor> reactor) {
+                                   Var<Reactor> reactor, Var<Logger> logger) {
 
     // Note: this implementation is a template because that allows us to
     // easily change the functions implementing each phase of the protocol
@@ -57,29 +57,38 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
 
     connect(ctx, [ctx](Error err) {
         TRAP_ERRORS(err);
+        ctx->logger->progress(0.1);
 
         send_login(ctx, [ctx](Error err) {
             TRAP_ERRORS(err);
+            ctx->logger->progress(0.2);
 
             recv_and_ignore_kickoff(ctx, [ctx](Error err) {
                 TRAP_ERRORS(err);
+                ctx->logger->progress(0.3);
 
                 wait_in_queue(ctx, [ctx](Error err) {
                     TRAP_ERRORS(err);
+                    ctx->logger->progress(0.4);
 
                     recv_version(ctx, [ctx](Error err) {
                         TRAP_ERRORS(err);
+                        ctx->logger->progress(0.5);
 
                         recv_tests_id(ctx, [ctx](Error err) {
                             TRAP_ERRORS(err);
+                            ctx->logger->progress(0.6);
 
                             run_tests(ctx, [ctx](Error err) {
                                 TRAP_ERRORS(err);
+                                // Progress printed by run_tests()
 
                                 recv_results_and_logout(ctx, [ctx](Error err) {
                                     TRAP_ERRORS(err);
+                                    ctx->logger->progress(0.8);
 
                                     wait_close(ctx, [ctx](Error err) {
+                                        ctx->logger->progress(0.9);
                                         disconnect_and_callback(ctx, err);
                                     });
                                 });
@@ -95,8 +104,8 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
 }
 
 template <MK_MOCK(run_with_specific_server), MK_MOCK_NAMESPACE(mlabns, query)>
-void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings, Var<Logger> logger,
-              Var<Reactor> reactor) {
+void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings,
+              Var<Reactor> reactor, Var<Logger> logger) {
     ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
     if (!port) {
         callback(InvalidPortError(port.as_error()));
@@ -104,18 +113,18 @@ void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings, Var
     }
     std::string address = settings.get<std::string>("address", "");
     if (address != "") {
-        run_with_specific_server(entry, address, *port, callback, settings, logger,
-                                 reactor);
+        run_with_specific_server(entry, address, *port, callback, settings,
+                                 reactor, logger);
         return;
     }
-    mlabns_query("ndt",
+    mlabns_query(settings.get<std::string>("mlabns_tool_name", "ndt"),
                  [=](Error err, mlabns::Reply reply) {
                      if (err) {
                          callback(MlabnsQueryError(err));
                          return;
                      }
                      run_with_specific_server(entry, reply.fqdn, *port, callback,
-                                              settings, logger, reactor);
+                                              settings, reactor, logger);
                  },
                  settings, reactor, logger);
 }

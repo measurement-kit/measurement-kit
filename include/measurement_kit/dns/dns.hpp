@@ -26,148 +26,91 @@ MK_DEFINE_ERR(MK_ERR_DNS(13), UnsupportedClassError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(14), InvalidNameForPTRError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(15), ResolverError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(16), UnsupportedTypeError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(17), InvalidDnsEngine, "")
 
-/// Available query classes id
-enum class QueryClassId { IN, CS, CH, HS };
+// getaddrinfo errors
+MK_DEFINE_ERR(MK_ERR_DNS(18), TemporaryFailureError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(19), InvalidFlagsValueError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(20), InvalidHintsValueError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(21), NonRecoverableFailureError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(22), NotSupportedAIFamilyError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(23), MemoryAllocationFailureError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(24), HostOrServiceNotProvidedOrNotKnownError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(25), ArgumentBufferOverflowError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(26), UnknownResolvedProtocolError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(27), NotSupportedServnameError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(28), NotSupportedAISocktypeError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(29), InetNtopFailureError, "")
 
-/// Available query types id (REVERSE_A and REVERSE_AAAA are non standard)
-enum class QueryTypeId {
-    A,
-    NS,
-    MD,
-    MF,
-    CNAME,
-    SOA,
-    MB,
-    MG,
-    MR,
-    NUL,
-    WKS,
-    PTR,
-    HINFO,
-    MINFO,
-    MX,
-    TXT,
-    AAAA,
-    REVERSE_A,
-    REVERSE_AAAA
+enum QueryClassId {
+    MK_DNS_CLASS_INVALID = 0,
+    MK_DNS_CLASS_IN,
+    MK_DNS_CLASS_CS,
+    MK_DNS_CLASS_CH,
+    MK_DNS_CLASS_HS
 };
 
-/// Query class
+enum QueryTypeId {
+    MK_DNS_TYPE_INVALID = 0,
+    MK_DNS_TYPE_A,
+    MK_DNS_TYPE_NS,
+    MK_DNS_TYPE_MD,
+    MK_DNS_TYPE_MF,
+    MK_DNS_TYPE_CNAME,
+    MK_DNS_TYPE_SOA,
+    MK_DNS_TYPE_MB,
+    MK_DNS_TYPE_MG,
+    MK_DNS_TYPE_MR,
+    MK_DNS_TYPE_NUL,
+    MK_DNS_TYPE_WKS,
+    MK_DNS_TYPE_PTR,
+    MK_DNS_TYPE_HINFO,
+    MK_DNS_TYPE_MINFO,
+    MK_DNS_TYPE_MX,
+    MK_DNS_TYPE_TXT,
+    MK_DNS_TYPE_AAAA,
+    MK_DNS_TYPE_REVERSE_A,    // nonstandard
+    MK_DNS_TYPE_REVERSE_AAAA  // nonstandard
+};
+
 class QueryClass {
   public:
-    /// Constructor with id
-    QueryClass(QueryClassId id = QueryClassId::IN) : id_(id) {}
-
-    /// Constructor with string
-    QueryClass(const char *x) {
-        std::string str(x);
-        if (str == "IN")
-            id_ = QueryClassId::IN;
-        else if (str == "CS")
-            id_ = QueryClassId::CS;
-        else if (str == "CH")
-            id_ = QueryClassId::CH;
-        else if (str == "HS")
-            id_ = QueryClassId::HS;
-        else
-            throw std::runtime_error("invalid argument");
-    }
-
-    /// Equality operator
-    bool operator==(QueryClassId id) const { return id_ == id; }
-
-    /// Unequality operator
-    bool operator!=(QueryClassId id) const { return id_ != id; }
-
-    /// Cast to query class id
-    operator QueryClassId() const { return id_; }
+    QueryClass();
+    QueryClass(QueryClassId);
+    QueryClass(std::string);
+    QueryClass(const char *);
+    bool operator==(QueryClassId id) const;
+    bool operator!=(QueryClassId id) const;
+    operator QueryClassId() const;
 
   private:
     QueryClassId id_;
 };
 
-/// Query class
 class QueryType {
   public:
-    /// Constructor with id
-    QueryType(QueryTypeId id = QueryTypeId::A) : id_(id) {}
-
-    /// Constructor with string
-    QueryType(const char *x) {
-        std::string str(x);
-        if (str == "A")
-            id_ = QueryTypeId::A;
-        else if (str == "NS")
-            id_ = QueryTypeId::NS;
-        else if (str == "MD")
-            id_ = QueryTypeId::MD;
-        else if (str == "MF")
-            id_ = QueryTypeId::MF;
-        else if (str == "CNAME")
-            id_ = QueryTypeId::CNAME;
-        else if (str == "SOA")
-            id_ = QueryTypeId::SOA;
-        else if (str == "MB")
-            id_ = QueryTypeId::MB;
-        else if (str == "MG")
-            id_ = QueryTypeId::MG;
-        else if (str == "MR")
-            id_ = QueryTypeId::MR;
-        else if (str == "NUL")
-            id_ = QueryTypeId::NUL;
-        else if (str == "WKS")
-            id_ = QueryTypeId::WKS;
-        else if (str == "PTR")
-            id_ = QueryTypeId::PTR;
-        else if (str == "HINFO")
-            id_ = QueryTypeId::HINFO;
-        else if (str == "MINFO")
-            id_ = QueryTypeId::MINFO;
-        else if (str == "MX")
-            id_ = QueryTypeId::MX;
-        else if (str == "TXT")
-            id_ = QueryTypeId::TXT;
-        else if (str == "AAAA")
-            id_ = QueryTypeId::AAAA;
-        else if (str == "REVERSE_A")
-            id_ = QueryTypeId::REVERSE_A;
-        else if (str == "REVERSE_AAAA")
-            id_ = QueryTypeId::REVERSE_AAAA;
-        else
-            throw std::runtime_error("invalid argument");
-    }
-
-    /// Equality operator
-    bool operator==(QueryTypeId id) const { return id_ == id; }
-
-    /// Unequality operator
-    bool operator!=(QueryTypeId id) const { return id_ != id; }
-
-    /// Cast to query class id
-    operator QueryTypeId() const { return id_; }
+    QueryType();
+    QueryType(QueryTypeId id);
+    QueryType(std::string);
+    QueryType(const char *);
+    bool operator==(QueryTypeId id) const;
+    bool operator!=(QueryTypeId id) const;
+    operator QueryTypeId() const;
 
   private:
     QueryTypeId id_;
 };
 
 class Answer {
-
   public:
     QueryType type;
     QueryClass qclass;
-
     int code = 0;
-
     uint32_t ttl = 0;
-
     std::string name;
-
-    std::string ipv4; ///< For A records
-    std::string ipv6; ///< For AAAA records
-
-    std::string hostname; ///< For PTR, SOA and CNAME records
-
+    std::string ipv4;             ///< For A records
+    std::string ipv6;             ///< For AAAA records
+    std::string hostname;         ///< For PTR, SOA and CNAME records
     std::string responsible_name; ///< For SOA records
     uint32_t serial_number;       ///< For SOA records
     uint32_t refresh_interval;    ///< For SOA records
@@ -180,9 +123,7 @@ class Query {
   public:
     QueryType type;
     QueryClass qclass;
-
     uint32_t ttl = 0;
-
     std::string name;
 };
 
@@ -190,20 +131,21 @@ class Message {
   public:
     Message(){};
     Message(std::nullptr_t){};
-
     double rtt = 0.0;
-
-    int error_code = 66;
-
+    int error_code = 66 /* This is evdns's generic error */;
     std::vector<Answer> answers;
     std::vector<Query> queries;
 };
 
-/// Perform a single DNS query
-void query(QueryClass dns_class, QueryType dns_type, std::string name,
-           Callback<Error, Var<Message>> func, Settings settings = {},
-           Var<Reactor> reactor = Reactor::global(),
-           Var<Logger> logger = Logger::global());
+void query(
+        QueryClass dns_class,
+        QueryType dns_type,
+        std::string name,
+        Callback<Error, Var<Message>> func,
+        Settings settings = {},
+        Var<Reactor> reactor = Reactor::global(),
+        Var<Logger> logger = Logger::global()
+);
 
 } // namespace dns
 } // namespace mk

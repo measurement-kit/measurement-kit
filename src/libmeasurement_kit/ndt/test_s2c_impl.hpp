@@ -15,8 +15,8 @@ using namespace mk::report;
 template <MK_MOCK_NAMESPACE(net, connect_many)>
 void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                     Callback<Error, Continuation<Error, double>> cb,
-                    double timeout, Settings settings, Var<Logger> logger,
-                    Var<Reactor> reactor) {
+                    double timeout, Settings settings, Var<Reactor> reactor,
+                    Var<Logger> logger) {
 
     dump_settings(settings, "ndt/s2c", logger);
 
@@ -99,7 +99,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                 }
             });
         },
-        settings, logger, reactor);
+        settings, reactor, logger);
 }
 
 template <MK_MOCK_NAMESPACE(messages, read_msg)>
@@ -283,7 +283,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                     });
                 }, ctx->reactor);
             },
-            ctx->timeout, ctx->settings, ctx->logger, ctx->reactor);
+            ctx->timeout, ctx->settings, ctx->reactor, ctx->logger);
     }, ctx->reactor);
 }
 
