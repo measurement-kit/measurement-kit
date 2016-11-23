@@ -49,6 +49,8 @@ std::string unreverse_ipv6(std::string s);
 
 std::string unreverse_ipv4(std::string s);
 
+Error disable_nagle(socket_t);
+
 } // namespace net
 } // namespace mk
 #endif
