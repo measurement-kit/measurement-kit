@@ -36,7 +36,8 @@ static evdns_base *null_evdns_base_new(event_base *, int) {
     return (evdns_base *)nullptr;
 }
 
-static int null_evdns_base_nameserver_ip_add(evdns_base *, const char *) {
+static int null_evdns_base_nameserver_sockaddr_add(evdns_base *, const sockaddr *,
+                                                   ev_socklen_t, unsigned) {
     return -1;
 }
 
@@ -47,12 +48,15 @@ static int null_evdns_base_set_option_randomize(evdns_base *, const char *,
 
 #define BASE_FREE(name)                                                        \
     static bool base_free_##name##_flag = false;                               \
-    static void base_free_##name(struct evdns_base *base, int fail_requests) { \
-        ::evdns_base_free(base, fail_requests);                                \
-        base_free_##name##_flag = true;                                        \
-    }
+    struct evdns_base_##name##_deleter : private evdns_base_uptr::deleter_type { \
+        void operator()(evdns_base_uptr::pointer p) {                            \
+            evdns_base_uptr::deleter_type::operator()(p);                        \
+            base_free_##name##_flag = true;                                      \
+        }                                                                        \
+    };                                                                           \
+    using base_free_##name = std::unique_ptr<evdns_base_uptr::element_type, evdns_base_##name##_deleter>;
 
-BASE_FREE(evdns_base_nameserver_ip_add)
+BASE_FREE(evdns_base_nameserver_sockaddr_add)
 BASE_FREE(evdns_set_options_attempts)
 BASE_FREE(evdns_set_options_attempts_negative)
 BASE_FREE(evdns_set_options_timeout)
@@ -64,25 +68,33 @@ TEST_CASE("throw error while fails evdns_base_new") {
         std::bad_alloc);
 }
 
-TEST_CASE("throw error while fails evdns_base_nameserver_ip_add") {
+TEST_CASE("throw error on literal port") {
+    // NB: dns/port=128000 just overflows uint16
     REQUIRE_THROWS_AS(
-        (create_evdns_base<::evdns_base_new, null_evdns_base_nameserver_ip_add,
-                           base_free_evdns_base_nameserver_ip_add>(
-            {{"dns/nameserver", "nexa"}}, Reactor::global())),
+        (create_evdns_base(
+            {{"dns/nameserver", "8.8.8.8"}, {"dns/port", "domain"}}, Reactor::global())),
         std::runtime_error);
-    REQUIRE(base_free_evdns_base_nameserver_ip_add_flag);
 }
 
-TEST_CASE("throw error while fails evdns_base_nameserver_ip_add and base_new") {
+TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add") {
+    REQUIRE_THROWS_AS(
+        (create_evdns_base<::evdns_base_new, null_evdns_base_nameserver_sockaddr_add,
+                           base_free_evdns_base_nameserver_sockaddr_add>(
+            {{"dns/nameserver", "nexa"}}, Reactor::global())),
+        std::runtime_error);
+    REQUIRE(base_free_evdns_base_nameserver_sockaddr_add_flag);
+}
+
+TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add and base_new") {
     REQUIRE_THROWS_AS((create_evdns_base<null_evdns_base_new,
-                                         null_evdns_base_nameserver_ip_add>(
+                                         null_evdns_base_nameserver_sockaddr_add>(
                           {{"dns/nameserver", "nexa"}}, Reactor::global())),
                       std::bad_alloc);
 }
 
 TEST_CASE("throw error while fails evdns_set_options for attempts") {
     REQUIRE_THROWS_AS(
-        (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
+        (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_attempts>(
             {{"dns/attempts", "nexa"}}, Reactor::global())),
         std::runtime_error);
@@ -91,7 +103,7 @@ TEST_CASE("throw error while fails evdns_set_options for attempts") {
 
 TEST_CASE("throw error while fails evdns_set_options for timeout") {
     REQUIRE_THROWS_AS(
-        (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
+        (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_timeout>(
             {{"dns/attempts", "nexa"}}, Reactor::global())),
         std::runtime_error);
@@ -100,7 +112,7 @@ TEST_CASE("throw error while fails evdns_set_options for timeout") {
 
 TEST_CASE("throw error while fails evdns_set_options for negative attempts") {
     REQUIRE_THROWS_AS(
-        (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
+        (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_attempts_negative>(
             {{"dns/attempts", -1}}, Reactor::global())),
         std::runtime_error);
@@ -109,7 +121,7 @@ TEST_CASE("throw error while fails evdns_set_options for negative attempts") {
 
 TEST_CASE("throw error while fails evdns_set_options for randomize-case") {
     REQUIRE_THROWS_AS(
-        (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_ip_add,
+        (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_randomize,
                            null_evdns_base_set_option_randomize>(
             {{"dns/randomize_case", ""}}, Reactor::global())),

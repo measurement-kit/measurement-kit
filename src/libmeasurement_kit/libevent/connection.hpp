@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_LIBEVENT_CONNECTION_HPP
 #define SRC_LIBMEASUREMENT_KIT_LIBEVENT_CONNECTION_HPP
 
-#include "../common/utils.hpp"
+#include "../net/utils.hpp"
 #include "../net/emitter.hpp"
 
 #include <measurement_kit/net.hpp>

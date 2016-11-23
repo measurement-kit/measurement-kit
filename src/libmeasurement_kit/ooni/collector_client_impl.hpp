@@ -195,6 +195,25 @@ void update_report_impl(Var<Transport> transport, std::string report_id,
                         Entry entry, Callback<Error> callback,
                         Settings settings, Var<Reactor> reactor,
                         Var<Logger> logger) {
+
+    /*
+     * If needed, overwrite the `report_id` field with what was
+     * passed us by the server, which should be authoritative.
+     *
+     * Note that `entry` is passed by copy so changing it has no
+     * effect outside of this function.
+     *
+     * This action must be performed in addition to `valid_entry()`
+     * because that function does not check for report_id.
+     *
+     * We warn if `report_id` is not present because higher layers
+     * should already have set the report-id's value.
+     */
+    if (entry["report_id"] == nullptr) {
+        logger->warn("collector: forcing report_id which was not set");
+        entry["report_id"] = report_id;
+    }
+
     Error err = valid_entry(entry);
     if (err != NoError()) {
         callback(err);

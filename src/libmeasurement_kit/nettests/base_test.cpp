@@ -14,6 +14,16 @@ BaseTest &BaseTest::on_log(Delegate<uint32_t, const char *> func) {
     return *this;
 }
 
+BaseTest &BaseTest::on_event(Delegate<const char *> func) {
+    runnable->logger->on_event(func);
+    return *this;
+}
+
+BaseTest &BaseTest::on_progress(Delegate<double> func) {
+    runnable->logger->on_progress(func);
+    return *this;
+}
+
 BaseTest &BaseTest::set_verbosity(uint32_t level) {
     runnable->logger->set_verbosity(level);
     return *this;
