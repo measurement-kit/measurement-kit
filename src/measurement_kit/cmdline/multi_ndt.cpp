@@ -18,14 +18,19 @@ namespace multi_ndt {
 
 using namespace mk::nettests;
 
-static const char *kv_usage = "usage: measurement_kit multi_ndt [-v]\n";
+static const char *kv_usage =
+        "usage: measurement_kit multi_ndt [-v] [-m metro]\n";
 
 int main(const char *, int argc, char **argv) {
 
     MultiNdtTest test;
     int ch;
-    while ((ch = mkp_getopt(argc, argv, "v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "m:v")) != -1) {
         switch (ch) {
+        case 'm':
+            test.set_options("mlabns/policy", "metro");
+            test.set_options("mlabns/metro", mkp_optarg);
+            break;
         case 'v':
             test.increase_verbosity();
             break;
