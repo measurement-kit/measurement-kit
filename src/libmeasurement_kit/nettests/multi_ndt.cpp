@@ -42,7 +42,7 @@ static report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
 
     double sum = 0.0;
     for (auto &rtt: rtts) {
-        sum += rtt;
+        sum += rtt * 1000.0 /* To milliseconds! */;
     }
     return sum / rtts.size();  /* Division by zero excluded above */
 }
