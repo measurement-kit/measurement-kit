@@ -70,10 +70,12 @@ int main(const char *, int argc, char **argv) {
             printf("Fastest test: %s\n", fastest.c_str());
             printf("Download speed: %.2f kbit/s\n", download);
             printf("Ping: %.2f ms\n", ping);
+            auto web100 = doc["test_keys"]["single_stream"][
+                    "test_s2c"][0]["web100_data"];
             auto adv = doc["test_keys"]["advanced"];
             double AvgRTT = adv["AvgRTT"];
-            double MinRTT = adv["MinRTT"];
-            double MaxRTT = adv["MaxRTT"];
+            double MinRTT = web100["MinRTT"];
+            double MaxRTT = web100["MaxRTT"];
             printf("RTT (avg/min/max): %.1f/%.1f/%.1f ms\n",
                    AvgRTT, MinRTT, MaxRTT);
             double CongestionLimited = adv["CongestionLimited"];
@@ -81,18 +83,17 @@ int main(const char *, int argc, char **argv) {
             double SenderLimited = adv["SenderLimited"];
             printf("Limited (congestion/receiver/sender): %.2f/%.2f/%.2f\n",
                    CongestionLimited, ReceiverLimited, SenderLimited);
-            unsigned long MSS = adv["MSS"];
-            printf("MSS: %lu byte\n", MSS);
-            double PacketLoss = adv["PacketLoss"];
-            printf("Loss: %lf (%.3lf%%)\n", PacketLoss, PacketLoss * 100.0);
             double OutOfOrder = adv["OutOfOrder"];
             printf("OutOfOrder: %lf (%.3lf%%)\n",
                     OutOfOrder, OutOfOrder * 100.0);
-            unsigned long CongestionSignals = adv["CongestionSignals"];
-            unsigned long FastRetran = adv["FastRetran"];
-            unsigned long Timeouts = adv["Timeouts"];
-            printf("Congestion: #Signals: %lu; FastRetran: %lu; Timeo: %lu\n",
-                   CongestionSignals, FastRetran, Timeouts);
+            unsigned long MSS = web100["CurMSS"];
+            printf("MSS: %lu byte\n", MSS);
+            unsigned long FastRetran = web100["FastRetran"];
+            unsigned long Timeouts = web100["Timeouts"];
+            printf("Congestion: FastRetran: %lu; Timeo: %lu\n",
+                   FastRetran, Timeouts);
+            double PacketLoss = adv["PacketLoss"];
+            printf("Loss: %lf (%.3lf%%)\n", PacketLoss, PacketLoss * 100.0);
             printf("\n");
         })
         .set_options("geoip_country_path", "GeoIP.dat")

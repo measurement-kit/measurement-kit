@@ -145,7 +145,6 @@ static void compute_advanced_stats(report::Entry &entry) {
     if (PktsOut > 0.0) {
         PacketLoss = CongestionSignals / PktsOut;
     }
-    entry["advanced"]["CongestionSignals"] = CongestionSignals;
     entry["advanced"]["PacketLoss"] = PacketLoss;
 
     double DupAcksIn = test_s2c["web100_data"]["DupAcksIn"];
@@ -164,10 +163,6 @@ static void compute_advanced_stats(report::Entry &entry) {
     }
     entry["advanced"]["AvgRTT"] = AvgRTT;
 
-    entry["advanced"]["MinRTT"] = test_s2c["web100_data"]["MinRTT"];
-
-    entry["advanced"]["MaxRTT"] = test_s2c["web100_data"]["MaxRTT"];
-
     double CongestionLimited = 0.0;
     if (TotalTestTime > 0.0) {
         CongestionLimited = SndLimTimeCwnd / TotalTestTime;
@@ -185,10 +180,6 @@ static void compute_advanced_stats(report::Entry &entry) {
         SenderLimited = SndLimTimeSender / TotalTestTime;
     }
     entry["advanced"]["SenderLimited"] = SenderLimited;
-
-    entry["advanced"]["MSS"] = test_s2c["web100_data"]["CurMSS"];
-    entry["advanced"]["FastRetran"] = test_s2c["web100_data"]["FastRetran"];
-    entry["advanced"]["Timeouts"] = test_s2c["web100_data"]["Timeouts"];
 }
 
 void MultiNdtRunnable::main(std::string, Settings ndt_settings,
