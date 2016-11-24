@@ -70,8 +70,6 @@ int main(const char *, int argc, char **argv) {
             printf("Fastest test: %s\n", fastest.c_str());
             printf("Download speed: %.2f kbit/s\n", download);
             printf("Ping: %.2f ms\n", ping);
-            printf("\nAdvanced\n");
-            printf("--------\n");
             auto adv = doc["test_keys"]["advanced"];
             double AvgRTT = adv["AvgRTT"];
             double MinRTT = adv["MinRTT"];
