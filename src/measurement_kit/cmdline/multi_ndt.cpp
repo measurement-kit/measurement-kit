@@ -91,11 +91,10 @@ int main(const char *, int argc, char **argv) {
             printf("OutOfOrder: %lf (%.3lf%%)\n",
                     OutOfOrder, OutOfOrder * 100.0);
             unsigned long CongestionSignals = adv["CongestionSignals"];
-            printf("CongestionSignals: %lu\n", CongestionSignals);
             unsigned long FastRetran = adv["FastRetran"];
-            printf("FastRetran: %lu\n", FastRetran);
             unsigned long Timeouts = adv["Timeouts"];
-            printf("Timeouts: %lu\n", Timeouts);
+            printf("Congestion: #Signals: %lu; FastRetran: %lu; Timeo: %lu\n",
+                   CongestionSignals, FastRetran, Timeouts);
             printf("\n");
         })
         .set_options("geoip_country_path", "GeoIP.dat")
