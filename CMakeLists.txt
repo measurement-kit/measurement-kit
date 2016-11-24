@@ -9,6 +9,7 @@ cmake_minimum_required(VERSION 3.6)
 set(MK_GEOIP "${MK_GEOIP}" CACHE PATH "Path where geoip is installed")
 set(MK_LIBEVENT "${MK_LIBEVENT}" CACHE PATH "Path where libevent is installed")
 set(MK_OPENSSL "${MK_OPENSSL}" CACHE PATH "Path where openssl is installed")
+set(MK_CARES "${MK_CARES}" CACHE PATH "Path where c-ares is installed")
 
 # Compiler:
 
@@ -45,6 +46,10 @@ if(UNIX)
   if(NOT ("${MK_OPENSSL}" STREQUAL ""))
     list(APPEND MK_INCLUDE_DIRS "${MK_OPENSSL}/include")
     list(APPEND MK_LINK_DIRS "${MK_OPENSSL}/lib")
+  endif()
+  if(NOT ("${MK_CARES}" STREQUAL ""))
+    list(APPEND MK_INCLUDE_DIRS "${MK_CARES}/include")
+    list(APPEND MK_LINK_DIRS "${MK_CARES}/lib")
   endif()
 endif()
 
@@ -91,9 +96,18 @@ if(UNIX)
   CHECK_LIBRARY_EXISTS(event event_new "${MK_LIBEVENT}/lib" HAVE_LIBEVENT)
   set(CMAKE_REQUIRED_INCLUDES "")
 
+  # c-ares
+
+  set(CMAKE_REQUIRED_INCLUDES "${MK_INCLUDE_DIRS}")
+  CHECK_INCLUDE_FILES(ares.h HAVE_ARES_H)
+  CHECK_INCLUDE_FILES(ares_dns.h HAVE_ARES_DNS_H)
+  CHECK_LIBRARY_EXISTS(cares ares_parse_a_reply "${MK_CARES}/lib" HAVE_CARES)
+  set(CMAKE_REQUIRED_INCLUDES "")
+
   # XXX: here we should fail if something was not found!
 
-  list(APPEND MK_LIBS GeoIP crypto ssl event event_openssl event_pthreads)
+  list(APPEND MK_LIBS GeoIP crypto ssl event event_openssl event_pthreads
+       cares)
 endif()
 
 # Add targets

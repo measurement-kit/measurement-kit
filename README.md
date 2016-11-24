@@ -108,6 +108,9 @@ are only conditionally compiled as explained below):
 
 - [libevent](https://github.com/libevent/libevent)
 - [geoip](https://github.com/maxmind/geoip-api-c)
+- [c-ares](https://github.com/c-ares/c-ares)
+- [openssl](https://github.com/openssl/openssl) or
+  [libressl](https://github.com/libressl-portable/portable)
 
 The `./configure` script should check whether all
 the dependencies are in place and should configure the compilers

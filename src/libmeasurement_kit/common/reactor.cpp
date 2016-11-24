@@ -50,4 +50,9 @@ void break_loop(Var<Reactor> reactor) {
     reactor->break_loop();
 }
 
+void pollfd(socket_t sockfd, short events, Callback<Error, short> callback,
+            double timeout, Var<Reactor> reactor) {
+    reactor->pollfd(sockfd, events, callback, timeout);
+}
+
 } // namespace mk

@@ -20,6 +20,12 @@ Which is arguably faster than writing the following:
 */
 #define MK_MOCK(name_) decltype(name_) name_ = name_
 
+// Same as MK_MOCK but for the anonymous namespace
+#define MK_MOCK_ANONYMOUS_NAMESPACE(name_) decltype(::name_) name_ = ::name_
+
+// Same as MK_MOCK but with prefix
+#define MK_MOCK_PREFIX(prefix_, name_) decltype(name_) prefix_##_##name_ = name_
+
 // Same as MK_MOCK but with suffix
 #define MK_MOCK_SUFFIX(name_, suffix_) decltype(name_) name_##_##suffix_ = name_
 

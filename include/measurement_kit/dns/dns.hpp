@@ -42,6 +42,17 @@ MK_DEFINE_ERR(MK_ERR_DNS(27), NotSupportedServnameError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(28), NotSupportedAISocktypeError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(29), InetNtopFailureError, "")
 
+// c-ares errors
+MK_DEFINE_ERR(MK_ERR_DNS(30), SocketCreateError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(31), SetsockoptError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(32), IntegerOverflowError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(33), SendtoError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(34), PacketTruncatedError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(35), UnexpectedPollFlagsError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(36), SocketError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(37), UnexpectedShortReadError, "")
+
+// Note: these enums are consistent with the defines in arpa/nameser.h
 enum QueryClassId {
     MK_DNS_CLASS_INVALID = 0,
     MK_DNS_CLASS_IN,
@@ -50,27 +61,44 @@ enum QueryClassId {
     MK_DNS_CLASS_HS
 };
 
+// Note: these enums are consistent with the defines in arpa/nameser.h
 enum QueryTypeId {
     MK_DNS_TYPE_INVALID = 0,
     MK_DNS_TYPE_A,
     MK_DNS_TYPE_NS,
     MK_DNS_TYPE_MD,
     MK_DNS_TYPE_MF,
-    MK_DNS_TYPE_CNAME,
+    MK_DNS_TYPE_CNAME,   //  5
     MK_DNS_TYPE_SOA,
     MK_DNS_TYPE_MB,
     MK_DNS_TYPE_MG,
     MK_DNS_TYPE_MR,
-    MK_DNS_TYPE_NUL,
+    MK_DNS_TYPE_NUL,     // 10
     MK_DNS_TYPE_WKS,
     MK_DNS_TYPE_PTR,
     MK_DNS_TYPE_HINFO,
     MK_DNS_TYPE_MINFO,
-    MK_DNS_TYPE_MX,
+    MK_DNS_TYPE_MX,      // 15
     MK_DNS_TYPE_TXT,
+    MK_DNS_TYPE_RP,
+    MK_DNS_TYPE_AFSDB,
+    MK_DNS_TYPE_X25,
+    MK_DNS_TYPE_ISDN,    // 20
+    MK_DNS_TYPE_RT,
+    MK_DNS_TYPE_NSAP,
+    MK_DNS_TYPE_NSAP_RP,
+    MK_DNS_TYPE_SIG,
+    MK_DNS_TYPE_KEY,     // 25
+    MK_DNS_TYPE_PX,
+    MK_DNS_TYPE_GPOS,
     MK_DNS_TYPE_AAAA,
-    MK_DNS_TYPE_REVERSE_A,    // nonstandard
-    MK_DNS_TYPE_REVERSE_AAAA  // nonstandard
+    MK_DNS_TYPE_LOC,
+    MK_DNS_TYPE_NXT,     // 30
+
+    // TODO: map more DNS query types
+
+    MK_DNS_TYPE_REVERSE_A = 65530,   // nonstandard
+    MK_DNS_TYPE_REVERSE_AAAA = 65531 // nonstandard
 };
 
 class QueryClass {
