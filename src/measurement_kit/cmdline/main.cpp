@@ -27,6 +27,7 @@ static const struct {
     XX(http_invalid_request_line),
     XX(http_request),
     XX(mlabns),
+    XX(multi_ndt),
     XX(ndt),
     XX(net_connect),
     XX(oonireport),

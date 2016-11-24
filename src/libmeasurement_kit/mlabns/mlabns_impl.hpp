@@ -71,7 +71,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
     }
     url += tool;
     url += *query;
-    logger->info("query mlabns for tool %s", tool.c_str());
+    logger->debug("query mlabns for tool %s", tool.c_str());
     logger->debug("mlabns url: %s", url.c_str());
     http_get(url,
         [callback, logger](Error error, Var<http::Response> response) {
@@ -104,7 +104,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
                 callback(JsonDomainError(), Reply());
                 return;
             }
-            logger->info("mlabns says to use %s", reply.fqdn.c_str());
+            logger->info("Discovered mlab test server: %s", reply.fqdn.c_str());
             callback(NoError(), reply);
         },
         {}, settings, reactor, logger, nullptr, 0);

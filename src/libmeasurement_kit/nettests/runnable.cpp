@@ -44,7 +44,12 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         prog = *current_entry / (double)num_entries;
     }
     *current_entry += 1;
-    logger->progress(prog);
+    std::string description;
+    if (next_input != "") {
+        description += "Processing input: ";
+        description += next_input;
+        logger->progress(prog, description.c_str());
+    }
 
     logger->debug("net_test: creating entry");
     struct tm measurement_start_time;
@@ -129,7 +134,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
                 cb();
                 return;
             }
-            logger->info("probe ip: %s", ip.c_str());
+            logger->info("Your public IP address: %s", ip.c_str());
             if (save_ip) {
                 logger->debug("saving user's real ip on user's request");
                 probe_ip = ip;
@@ -145,6 +150,9 @@ void Runnable::geoip_lookup(Callback<> cb) {
                     logger->warn("cannot lookup country code: %s",
                                  err.explain().c_str());
                 }
+                if (probe_cc != "ZZ") {
+                    logger->info("Your country: %s", probe_cc.c_str());
+                }
             } else if (country_path == "") {
                 logger->warn("geoip_country_path is not set");
             }
@@ -157,6 +165,9 @@ void Runnable::geoip_lookup(Callback<> cb) {
                 } catch (const Error &err) {
                     logger->warn("cannot lookup asn: %s",
                                  err.explain().c_str());
+                }
+                if (probe_asn != "AS0") {
+                    logger->info("Your ISP identifier: %s", probe_asn.c_str());
                 }
             } else if (asn_path == "") {
                 logger->warn("geoip_asn_path is not set");
