@@ -2,7 +2,6 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <iostream>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/ooni.hpp>
@@ -19,7 +18,8 @@ struct Reply {
 };
 
 template <MK_MOCK_NAMESPACE(http, request)>
-inline void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
+inline void
+post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,
                     Callback<Error, Var<Reply>> cb, Settings settings,
                     Var<Reactor> reactor, Var<Logger> logger) {
@@ -38,10 +38,12 @@ inline void post_net_tests_impl(std::string base_bouncer_url, std::string test_n
     http_request(
         settings, {}, request.dump(),
         [=](Error e, Var<http::Response> resp) {
+            if (e) {
+                reactor->call_soon([=]() { cb(e, nullptr); });
+            }
             Var<Reply> reply(new Reply);
             try {
                 json response = json::parse(resp->body);
-
                 if (response.find("error") != response.end()) {
                     if (response["error"] == "collector-not-found") {
                         logger->warn(
@@ -49,11 +51,13 @@ inline void post_net_tests_impl(std::string base_bouncer_url, std::string test_n
                         reactor->call_soon([=]() {
                             cb(BouncerCollectorNotFoundError(), nullptr);
                         });
+                        return;
                     } else if (response["error"] == "invalid-request") {
                         logger->warn("invalid request sent to the bouncer");
                         reactor->call_soon([=]() {
                             cb(BouncerInvalidRequestError(), nullptr);
                         });
+                        return;
                     } else {
                         // I assume that if we receive a json with the key
                         // "error"
@@ -62,6 +66,7 @@ inline void post_net_tests_impl(std::string base_bouncer_url, std::string test_n
                         logger->warn("bouncer generic error");
                         reactor->call_soon(
                             [=]() { cb(BouncerGenericError(), nullptr); });
+                        return;
                     }
                 }
 
@@ -96,7 +101,6 @@ inline void post_net_tests_impl(std::string base_bouncer_url, std::string test_n
                     logger->warn(
                         "no https test helper found in bouncer response");
                     reactor->call_soon([=]() {
-                        // TODO introduce a specific error for this case
                         cb(MissingHttpsTestHelperError(), nullptr);
                     });
                 }
