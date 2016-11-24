@@ -128,6 +128,69 @@ static void compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
     entry["simple"] = selected;
 }
 
+static void compute_advanced_stats(report::Entry &entry) {
+    report::Entry test_s2c =
+        entry["single_stream"]["test_s2c"][0] /* We know it's just one entry */;
+
+    // See: https://github.com/ndt-project/ndt/wiki/NDTTestMethodology#computed-variables
+
+    double SndLimTimeRwin = test_s2c["web100_data"]["SndLimTimeRwin"];
+    double SndLimTimeCwnd = test_s2c["web100_data"]["SndLimTimeCwnd"];
+    double SndLimTimeSender = test_s2c["web100_data"]["SndLimTimeSender"];
+    double TotalTestTime = SndLimTimeRwin + SndLimTimeCwnd + SndLimTimeSender;
+
+    double CongestionSignals = test_s2c["web100_data"]["CongestionSignals"];
+    double PktsOut = test_s2c["web100_data"]["PktsOut"];
+    double PacketLoss = 0.0;
+    if (PktsOut > 0.0) {
+        PacketLoss = CongestionSignals / PktsOut;
+    }
+    entry["advanced"]["CongestionSignals"] = CongestionSignals;
+    entry["advanced"]["PacketLoss"] = PacketLoss;
+
+    double DupAcksIn = test_s2c["web100_data"]["DupAcksIn"];
+    double AckPktsIn = test_s2c["web100_data"]["AckPktsIn"];
+    double OutOfOrder = 0.0;
+    if (AckPktsIn > 0.0) {
+        OutOfOrder = DupAcksIn / AckPktsIn;
+    }
+    entry["advanced"]["OutOfOrder"] = OutOfOrder;
+
+    double SumRTT = test_s2c["web100_data"]["SumRTT"];
+    double CountRTT = test_s2c["web100_data"]["CountRTT"];
+    double AvgRTT = 0.0;
+    if (CountRTT > 0.0) {
+        AvgRTT = SumRTT / CountRTT;
+    }
+    entry["advanced"]["AvgRTT"] = AvgRTT;
+
+    entry["advanced"]["MinRTT"] = test_s2c["web100_data"]["MinRTT"];
+
+    entry["advanced"]["MaxRTT"] = test_s2c["web100_data"]["MaxRTT"];
+
+    double CongestionLimited = 0.0;
+    if (TotalTestTime > 0.0) {
+        CongestionLimited = SndLimTimeCwnd / TotalTestTime;
+    }
+    entry["advanced"]["CongestionLimited"] = CongestionLimited;
+
+    double ReceiverLimited = 0.0;
+    if (TotalTestTime > 0.0) {
+        ReceiverLimited = SndLimTimeRwin / TotalTestTime;
+    }
+    entry["advanced"]["ReceiverLimited"] = ReceiverLimited;
+
+    double SenderLimited = 0.0;
+    if (TotalTestTime > 0.0) {
+        SenderLimited = SndLimTimeSender / TotalTestTime;
+    }
+    entry["advanced"]["SenderLimited"] = SenderLimited;
+
+    entry["advanced"]["MSS"] = test_s2c["web100_data"]["CurMSS"];
+    entry["advanced"]["FastRetran"] = test_s2c["web100_data"]["FastRetran"];
+    entry["advanced"]["Timeouts"] = test_s2c["web100_data"]["Timeouts"];
+}
+
 void MultiNdtRunnable::main(std::string, Settings ndt_settings,
                             Callback<Var<report::Entry>> cb) {
     // Note: `options` is the class attribute and `settings` is instead a
@@ -168,7 +231,16 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
                 (*overall_entry)["failure"] = GenericError().as_ooni_error();
                 // FALLTHROUGH
             }
-            compute_simple_stats(*overall_entry, logger);
+            try {
+                compute_simple_stats(*overall_entry, logger);
+            } catch (const std::exception &) {
+                /* Just in case */ ;
+            }
+            try {
+                compute_advanced_stats(*overall_entry);
+            } catch (const std::exception &) {
+                /* Just in case */ ;
+            }
             cb(overall_entry);
         }, neubot_settings, reactor, logger);
     }, ndt_settings, reactor, logger);
