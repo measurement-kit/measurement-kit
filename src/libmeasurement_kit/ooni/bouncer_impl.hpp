@@ -45,7 +45,7 @@ post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
             try {
                 json response = json::parse(resp->body);
                 if (response.find("error") != response.end()) {
-                    if (response["error"] == "collector-not-found") {
+                    if (response["error"] == "collector-not-found") {
                         logger->warn(
                             "collector not found for the requested test");
                         reactor->call_soon([=]() {
