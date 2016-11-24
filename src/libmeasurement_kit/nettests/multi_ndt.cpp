@@ -141,6 +141,7 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
     ndt::run(ndt_entry, [=](Error error) {
         if (error) {
             (*ndt_entry)["failure"] = error.as_ooni_error();
+            logger->warn("Test failed: %s", error.explain().c_str());
             // FALLTHROUGH
         }
 
@@ -155,6 +156,7 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
             logger->progress(1.0, "Test completed");
             if (error) {
                 (*neubot_entry)["failure"] = error.as_ooni_error();
+                logger->warn("Test failed: %s", error.explain().c_str());
                 // FALLTHROUGH
             }
             Var<report::Entry> overall_entry(new report::Entry);
