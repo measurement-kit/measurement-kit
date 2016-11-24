@@ -75,7 +75,12 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
 
         report.fill_entry(entry);
         if (entry_cb) {
-            entry_cb(entry.dump(4));
+            try {
+                entry_cb(entry.dump(4));
+            } catch (const std::exception &exc) {
+                logger->warn("Unhandled exception in entry_cb(): %s",
+                             exc.what());
+            }
         }
         report.write_entry(entry, [=](Error error) {
             if (error) {

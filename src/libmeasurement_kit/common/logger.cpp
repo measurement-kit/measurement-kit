@@ -50,11 +50,19 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
     // Since v0.4 we dispatch the MK_LOG_EVENT event to the proper handler
     // if set, otherwise we fallthrough passing it to consumer_.
     if (event_handler_ and (level & MK_LOG_EVENT) != 0) {
-        event_handler_(buffer_);
+        try {
+            event_handler_(buffer_);
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
         return;
     }
     if (consumer_) {
-        consumer_(level, buffer_);
+        try {
+            consumer_(level, buffer_);
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
     }
     if (ofile_) {
         *ofile_ << buffer_ << "\n";
@@ -105,7 +113,11 @@ void Logger::set_logfile(std::string path) {
 void Logger::progress(double prog, const char *s) {
     if (progress_handler_) {
         prog = prog * progress_scale_ + progress_offset_;
-        progress_handler_(prog, s);
+        try {
+            progress_handler_(prog, s);
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
     }
 }
 
