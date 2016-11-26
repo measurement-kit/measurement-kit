@@ -22,7 +22,7 @@ ErrorOr<Var<addrinfo>> getaddrinfo_impl(const char *hostname, const char *port,
         logger->warn("getaddrinfo() failed: %s", gai_strerror(err));
         return eai_to_error(err);
     }
-    assert(ai != nullptr && ai->ai_next == nullptr);
+    assert(ai != nullptr);
     return Var<addrinfo>(ai, [](addrinfo *p) {
         if (p) {
             freeaddrinfo(p);
