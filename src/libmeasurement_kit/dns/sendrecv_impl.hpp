@@ -32,9 +32,8 @@ ErrorOr<Var<socket_t>> send_impl(std::string nameserver, std::string port,
         }
     }}; /* Guarantee cleanup */
 
-    static const int val = 1;
-    if (setsockopt(*sock, SOL_SOCKET, SO_REUSEADDR,
-                           &val, sizeof(val)) != 0) {
+    static const int on = 1;
+    if (setsockopt(*sock, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) != 0) {
         return SetsockoptError();
     }
     logger->debug("dns: set REUSEADDR option");
@@ -46,15 +45,16 @@ ErrorOr<Var<socket_t>> send_impl(std::string nameserver, std::string port,
     }
     Var<addrinfo> ainfo = *maybe_ainfo;
 
-    if (packet.size() > SSIZE_MAX) {
+    if (packet.size() > SSIZE_MAX) {    /* Defensive check */
         return IntegerOverflowError();
     }
     ssize_t sent_bytes = sendto(*sock, packet.data(), packet.size(), 0,
                                 ainfo->ai_addr, ainfo->ai_addrlen);
     logger->debug("dns: sendto() result: %lld", (long long)sent_bytes);
     if (sent_bytes < 0) {
-        return SendtoError();
+        return SendtoError();  /* TODO: map to errno (see #935) */
     }
+    // Cast safe because the negative case is excluded above
     if ((size_t)sent_bytes != packet.size()) {
         return PacketTruncatedError();
     }
@@ -67,14 +67,13 @@ void pollin_impl(Var<socket_t> sock, Callback<Error> callback,
                  Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
     reactor_pollfd(*sock, MK_POLLIN,
                    [=](Error err, short flags) {
-                       logger->debug("dns: pollfd() err: %s",
-                                     err.explain().c_str());
-                       logger->debug("dns: pollfd() flags: %d", flags);
+                       logger->debug("dns: pollfd() err=%s flags=%d",
+                                     err.explain().c_str(), flags);
                        if (err) {
                            callback(err);
                            return;
                        }
-                       if ((flags & MK_POLLIN) == 0) {
+                       if ((flags & MK_POLLIN) == 0) {    /* Defensive */
                            callback(UnexpectedPollFlagsError());
                            return;
                        }
@@ -85,15 +84,21 @@ void pollin_impl(Var<socket_t> sock, Callback<Error> callback,
 
 template <MK_MOCK_ANONYMOUS_NAMESPACE(recv)>
 ErrorOr<std::string> recv_impl(Var<socket_t> sock, Var<Logger> logger) {
-    char buffer[8000];
+    char buffer[8000]; /* "8k should be enough for everyone" (cit.) */
     ssize_t count = recv(*sock, buffer, sizeof(buffer), 0);
     logger->debug("dns: recv result: %lld", (long long)count);
     if (count < 0) {
         return SocketError();
     }
     if (count == 0) {
+        // At least, my understanding is that this should not happen
         return UnexpectedShortReadError();
     }
+    /*
+     * Note: here we're making a copy. I don't think we are _so_ concerned
+     * with performance in this module to care about it. Also, the packet
+     * is probably small (less than 1k) and so the copy is "cheap".
+     */
     return std::string{buffer, (size_t)count};
 }
 
@@ -101,6 +106,13 @@ template <MK_MOCK(send), MK_MOCK(pollin), MK_MOCK(recv)>
 void sendrecv_impl(std::string nameserver, std::string port, std::string packet,
                    Callback<Error, std::string> callback, Settings settings,
                    Var<Reactor> reactor, Var<Logger> logger) {
+    /*
+     * This `call_soon()` here is to _schedule_ the execution of the
+     * requested action and this make sure the callback is called _after_
+     * the `sendrecv_impl()` function returns. I am really pissed off
+     * when a callback is called before the function with which you did
+     * registered the callback returns: it increases complexity.
+     */
     reactor->call_soon([=]() {
         ErrorOr<Var<socket_t>> maybe_sock =
             send(nameserver, port, packet, logger);
@@ -111,6 +123,10 @@ void sendrecv_impl(std::string nameserver, std::string port, std::string packet,
         pollin(*maybe_sock,
                [=](Error error) {
                    if (error) {
+                       /*
+                        * TODO: if we ever want to implement retry for this
+                        * engine, this is probably the place to do it.
+                        */
                        callback(error, "");
                        return;
                    }

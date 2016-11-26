@@ -16,6 +16,11 @@ Error eai_to_error(int eai);
  * here could be that of using a `unique_ptr`. I tried to use it, but I've
  * noticed that ErrorOr constructor does not cope well with the std::move
  * needed to move around a unique_ptr, so stopped the experiment early.
+ *
+ * At the same time, MeasurementKit already uses Var<> in many places
+ * with the assumption that you will want to pass variables to lambdas
+ * using lambda closure; for this reason, it probably make sense to
+ * keep using Var<> here even though we're losing something in purity.
  */
 
 ErrorOr<Var<addrinfo>> getaddrinfo(const char *hostname, const char *port,

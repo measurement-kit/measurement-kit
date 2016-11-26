@@ -10,7 +10,9 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/common.hpp>
 
 #define MK_MOCK(name_) decltype(name_) name_ = name_
+#define MK_MOCK_ANONYMOUS_NAMESPACE(name_) decltype(::name_) name_ = ::name_
 #define MK_MOCK_SUFFIX(name_, suffix_) decltype(name_) name_##_##suffix_ = name_
+#define MK_MOCK_PREFIX(prefix_, name_) decltype(name_) prefix_##_##name_ = name_
 define MK_MOCK_NAMESPACE(ns_, name_)                                          \
     decltype(ns_::name_) ns_##_##name_ = ns_::name_
 #define MK_MOCK_NAMESPACE_SUFFIX(ns_, name_, suffix_)                          \
@@ -39,10 +41,20 @@ which is arguably faster than writing the following:
       ...
 ```
 
-`MK_MOCK_SUFFIX` is similar to `MOCK` but also takes a suffix that
+`MK_MOCK_ANONYMOUS_NAMESPACE` is just like `MK_MOCK`, except that it
+forces the function name to be in the anonymous namespace. This is handy
+when the function you want to mock is present both in the anonymous
+namespace and in some other namespace and the compiler is not able to
+guess which is the right function to mock.
+
+`MK_MOCK_SUFFIX` is similar to `MK_MOCK` but also takes a suffix that
 is appended to the function name within the template. This is useful
 when you want to distinguish the N-th and the N+1-th invocation of
 a function within another function.
+
+`MK_MOCK_PREFIX` is just like `MK_MOCK_SUFFIX` except it adds a
+prefix rather than a suffix (accordingly, compared to `MK_MOCK_SUFFIX`,
+macro arguments are inverted in `MK_MOCK_PREFIX`).
 
 The `MK_MOCK_NAMESPACE` and `MK_MOCK_NAMESPACE_SUFFIX` macros are
 equal to `MK_MOCK` and `MK_MOCK_SUFFIX` respectively, except that you

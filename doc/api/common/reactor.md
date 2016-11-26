@@ -21,6 +21,13 @@ class Reactor {
     void loop();
     void break_loop();
     void loop_with_initial_event(Callback<> func);
+
+    void pollfd(
+            socket_t sockfd,
+            short events,
+            Callback<Error, short> cb,
+            double timeout = -1.0
+    );
 }
 
 /* Functional interface (by default using the global reactor): */
@@ -45,9 +52,13 @@ void loop_with_initial_event(
         Var<Reactor> reactor = Reactor::global()
 );
 
-/* For regress tests: */
-
-void loop_with_initial_event_and_connectivity(Callback<> func);
+void pollfd(
+        socket_t sockfd,
+        short events,
+        Callback<Error, short> cb,
+        double timeout = -1.0,
+        Var<Reactor> reactor = Reactor::global()
+);
 ```
 
 # STABILITY
@@ -115,30 +126,34 @@ way, there is the guarantee that, even if `break_loop()` is called
 immediately because `action()` completes immediately, `break_loop()`
 always occurs *after* starting the loop and hence the loop is always interrupted.
 
-In `common/reactor.hpp` also define functions that have equal semantic to
+The `pollfd` function polls a specific file descriptor (indentified by the
+`socket_t` typedef that maps on `int` on UNIX and on `SOCKET` on Windows) for
+readability or writability. To specify to what event you are interested you
+pass as the `flags` argument a bitmask; valid flags that you can set in such
+bitmask are `MK_POLLIN` (to indicate you're interested in knowing when the
+socket has become readable or an error occurred) and `MK_POLLOUT` (to indicate
+when the socket has become writable or an error occurred). The `callback`
+argument is a function to be called when the socket state changes; it receives
+the error that occurred (or `NoError()`) as its first argument and a bitmask
+indicating the socket state as its second argument (again valid bits in the
+bitmask are `MK_POLLIN` and `MK_POLLOUT`). The fourth argument is the
+timeout; if this argument is negative, `pollfd` will wait "forever" until
+the socket state changes. Note that, altough in theory you can use it
+to implement nonblocking I/O for any kind of sockets, this function is
+meant for non-performance-sensitive operations, and you should use instead
+the `Transport` API when performance matters. The `Transport` API in fact
+will attempt to use the most high performance I/O method supported by
+the underlying nonblocking I/O library (as of v0.4, libevent) which may
+not be a select-like event loop; the `pollfd` function, instead, will
+always pass the socket to a select-like event loop. (In practice, this
+has an impact only on Windows systems.)
+
+`common/reactor.hpp` also defines functions that have equal semantic to
 `Reactor` methods but by default operate on the global reactor. For all these
 functions, it is however possible to pass a custom reactor as the last
-argument.
-
-The `loop_with_initial_event_and_connectivity()` is a function that
-only starts the event loop and calls the initial function when there
-is connectivity. This is used typically in tests to avoid running
-tests requiring the network when the network is not available. For
-example,
-
-```C++
-TEST_CASE("We can GET a specific URL") {
-    loop_with_initial_event_and_connectivity([]() {
-        /* We enter here only if we have working connectivity. Without this check for
-           connectivity, the test would fail, not because of an error in the code rather
-           because connectivity is missing. */
-        http::get("http://www.example.com", [](Error e, Var<http::Response>) {
-            REQUIRE(!e);
-            break_loop();
-        });
-    });
-}
-```
+argument. They are mainly useful in two cases: (1) when you want to
+implicitly use the default reactor; (2) for mocking reactor functions
+in regress tests.
 
 # HISTORY
 
