@@ -52,6 +52,7 @@
 /test/dns/defines
 /test/dns/getaddrinfo
 /test/dns/query
+/test/dns/sendrecv
 /test/dns/system_resolver
 /test/http/headers
 /test/http/parse_url

@@ -16,7 +16,8 @@ namespace dns {
 template <MK_MOCK_NAMESPACE(net, socket_create),
           MK_MOCK_ANONYMOUS_NAMESPACE(setsockopt),
           MK_MOCK(getaddrinfo_numeric_datagram),
-          MK_MOCK_ANONYMOUS_NAMESPACE(sendto)>
+          MK_MOCK_ANONYMOUS_NAMESPACE(sendto),
+          MK_MOCK_ANONYMOUS_NAMESPACE(evutil_closesocket)>
 ErrorOr<Var<socket_t>> send_impl(std::string nameserver, std::string port,
                                  std::string packet, Var<Logger> logger) {
 
@@ -27,7 +28,10 @@ ErrorOr<Var<socket_t>> send_impl(std::string nameserver, std::string port,
     }
     Var<socket_t> sock{new socket_t{fd_}, [](socket_t *fdesc) {
         if (fdesc != nullptr and *fdesc != -1) {
-            evutil_closesocket(*fdesc);
+            /*
+             * TODO: do we want to check whether `close()` fails?
+             */
+            (void)evutil_closesocket(*fdesc);  /* Use libevent's wrapper */
             delete fdesc;
         }
     }}; /* Guarantee cleanup */
@@ -85,10 +89,13 @@ void pollin_impl(Var<socket_t> sock, Callback<Error> callback,
 template <MK_MOCK_ANONYMOUS_NAMESPACE(recv)>
 ErrorOr<std::string> recv_impl(Var<socket_t> sock, Var<Logger> logger) {
     char buffer[8000]; /* "8k should be enough for everyone" (cit.) */
+    /*
+     * For now this is recv. Do we want recvfrom?
+     */
     ssize_t count = recv(*sock, buffer, sizeof(buffer), 0);
     logger->debug("dns: recv result: %lld", (long long)count);
     if (count < 0) {
-        return SocketError();
+        return RecvError();
     }
     if (count == 0) {
         // At least, my understanding is that this should not happen

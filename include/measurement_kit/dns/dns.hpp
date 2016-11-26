@@ -49,7 +49,7 @@ MK_DEFINE_ERR(MK_ERR_DNS(32), IntegerOverflowError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(33), SendtoError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(34), PacketTruncatedError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(35), UnexpectedPollFlagsError, "")
-MK_DEFINE_ERR(MK_ERR_DNS(36), SocketError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(36), RecvError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(37), UnexpectedShortReadError, "")
 
 // Note: these enums are consistent with the defines in arpa/nameser.h
