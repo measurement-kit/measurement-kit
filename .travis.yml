@@ -18,8 +18,10 @@ script:
     - ./build/dependency geoip
     - ./build/dependency libressl
     - ./build/dependency libevent
+    - ./build/dependency c-ares
     - ./configure $pkg_configure_flags --with-geoip=builtin
-        --with-openssl=builtin --with-libevent=builtin $COVERAGE
+        --with-openssl=builtin --with-libevent=builtin
+        --with-cares=builtin $COVERAGE
     - make $pkg_make_flags
     - make $pkg_make_flags check-am$VALGRIND
     - if [ -f test-suite.log ]; then cat test-suite.log; fi
