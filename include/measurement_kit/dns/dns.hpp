@@ -53,54 +53,42 @@ MK_DEFINE_ERR(MK_ERR_DNS(36), RecvError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(37), UnexpectedShortReadError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(38), NoSpaceForQueryError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(39), NoSpaceForHeaderError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(40), NoSpaceForResourceRecordError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(41), InetNtopError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(42), InvalidRecordLengthError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(43), NoSpaceForResourceRecordHeaderError, "")
 
 // Note: these enums are consistent with the defines in arpa/nameser.h
+#define MK_DNS_CLASSES                                                         \
+    XX(INVALID, 0),                                                            \
+    XX(IN, 1),                                                                 \
+    XX(CH, 3),                                                                 \
+    XX(HS, 4)
+
 enum QueryClassId {
-    MK_DNS_CLASS_INVALID = 0,
-    MK_DNS_CLASS_IN,
-    MK_DNS_CLASS_CS,
-    MK_DNS_CLASS_CH,
-    MK_DNS_CLASS_HS
+#define XX(codename, value) MK_DNS_CLASS_ ## codename = value
+    MK_DNS_CLASSES
+#undef XX
 };
 
 // Note: these enums are consistent with the defines in arpa/nameser.h
+#define MK_DNS_TYPES                                                           \
+    XX(INVALID, 0),                                                            \
+    XX(A, 1),                                                                  \
+    XX(NS, 2),                                                                 \
+    XX(CNAME, 5),                                                              \
+    XX(SOA, 6),                                                                \
+    XX(PTR, 12),                                                               \
+    XX(MX, 15),                                                                \
+    XX(TXT, 16),                                                               \
+    XX(AAAA, 28),                                                              \
+    XX(REVERSE_A, 65530), /* nonstandard! */                                   \
+    XX(REVERSE_AAAA, 65531) /* nonstandard! */
+
 enum QueryTypeId {
-    MK_DNS_TYPE_INVALID = 0,
-    MK_DNS_TYPE_A,
-    MK_DNS_TYPE_NS,
-    MK_DNS_TYPE_MD,
-    MK_DNS_TYPE_MF,
-    MK_DNS_TYPE_CNAME,   //  5
-    MK_DNS_TYPE_SOA,
-    MK_DNS_TYPE_MB,
-    MK_DNS_TYPE_MG,
-    MK_DNS_TYPE_MR,
-    MK_DNS_TYPE_NUL,     // 10
-    MK_DNS_TYPE_WKS,
-    MK_DNS_TYPE_PTR,
-    MK_DNS_TYPE_HINFO,
-    MK_DNS_TYPE_MINFO,
-    MK_DNS_TYPE_MX,      // 15
-    MK_DNS_TYPE_TXT,
-    MK_DNS_TYPE_RP,
-    MK_DNS_TYPE_AFSDB,
-    MK_DNS_TYPE_X25,
-    MK_DNS_TYPE_ISDN,    // 20
-    MK_DNS_TYPE_RT,
-    MK_DNS_TYPE_NSAP,
-    MK_DNS_TYPE_NSAP_RP,
-    MK_DNS_TYPE_SIG,
-    MK_DNS_TYPE_KEY,     // 25
-    MK_DNS_TYPE_PX,
-    MK_DNS_TYPE_GPOS,
-    MK_DNS_TYPE_AAAA,
-    MK_DNS_TYPE_LOC,
-    MK_DNS_TYPE_NXT,     // 30
-
-    // TODO: map more DNS query types
-
-    MK_DNS_TYPE_REVERSE_A = 65530,   // nonstandard
-    MK_DNS_TYPE_REVERSE_AAAA = 65531 // nonstandard
+#define XX(codename, value) MK_DNS_TYPE_ ## codename = value
+    MK_DNS_TYPES
+#undef XX
 };
 
 class QueryClass {
@@ -109,6 +97,11 @@ class QueryClass {
     QueryClass(QueryClassId);
     QueryClass(std::string);
     QueryClass(const char *);
+    QueryClass(int);
+    QueryClass &operator=(const QueryClass &);
+    QueryClass &operator=(std::string);
+    QueryClass &operator=(const char *);
+    QueryClass &operator=(int);
     bool operator==(QueryClassId id) const;
     bool operator!=(QueryClassId id) const;
     operator QueryClassId() const;
@@ -123,6 +116,11 @@ class QueryType {
     QueryType(QueryTypeId id);
     QueryType(std::string);
     QueryType(const char *);
+    QueryType(int);
+    QueryType &operator=(const QueryType &);
+    QueryType &operator=(std::string);
+    QueryType &operator=(const char *);
+    QueryType &operator=(int);
     bool operator==(QueryTypeId id) const;
     bool operator!=(QueryTypeId id) const;
     operator QueryTypeId() const;
@@ -137,6 +135,7 @@ class Answer {
     QueryClass aclass;
     int code = 0;
     uint32_t ttl = 0;
+    uint16_t dlen = 0;
     std::string name;
     std::string ipv4;             ///< For A records
     std::string ipv6;             ///< For AAAA records

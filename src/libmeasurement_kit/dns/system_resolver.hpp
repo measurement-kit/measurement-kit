@@ -112,7 +112,7 @@ void resolve_async(ResolverContext *context) {
     for (addrinfo *p = servinfo.get(); p != nullptr; p = p->ai_next) {
         Answer answer;
         answer.name = ctx->name;
-        answer.qclass = ctx->dns_class;
+        answer.aclass = ctx->dns_class;
         assert(p->ai_family == AF_INET or p->ai_family == AF_INET6);
         if (p->ai_family == AF_INET) {
             answer.type = MK_DNS_TYPE_A;

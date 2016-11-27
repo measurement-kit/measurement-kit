@@ -20,6 +20,11 @@
 #define SRC_LIBMEASUREMENT_KIT_DNS_PARSER_IMPL_HPP
 // Based on: https://github.com/c-ares/c-ares/blob/master/adig.c
 
+#include <cassert>
+
+#include <ares.h>
+#include <ares_dns.h> /* XXX make sure we check for this */
+
 #include "../dns/parser.hpp"
 
 namespace mk {
@@ -51,14 +56,19 @@ namespace dns {
  *
  * Where both the left and the right side of the last comparison are
  * guaranteed to be always positive by the previous checks.
+ *
+ * The cast is necessary because otherwise we would be comparing integers
+ * of potentially different signedness. And also the cast is valid because
+ * we have excluded cases where the difference is negative.
  */
 static inline bool valid_mem_region(const unsigned char *aptr, size_t off,
                                     const unsigned char *abuf, size_t alen) {
-    return aptr >= abuf and off <= alen and aptr - abuf <= alen - off;
+    return aptr >= abuf and off <= alen and
+        (unsigned long long)(aptr - abuf) <= (unsigned long long)(alen - off);
 }
 
 #define VALIDATE_APTR(aptr, abuf, alen)                                        \
-    assert(valid_mem_region(aptr, 0, abuf, len)
+    assert(valid_mem_region(aptr, 0, abuf, alen))
 
 /**
  * Parse the initial header of a packet.
@@ -73,7 +83,7 @@ static inline ErrorOr<const unsigned char *>
 parse_header(const unsigned char *aptr, const unsigned char *abuf, size_t alen,
              Var<Message> message, Var<Logger> logger) {
     if (!valid_mem_region(aptr, NS_HFIXEDSZ, abuf, alen)) {
-        logger->warning("dns: packet too short: no space for header");
+        logger->warn("dns: packet too short: no space for header");
         return NoSpaceForHeaderError();
     }
     message->qid = DNS_HEADER_QID(aptr);
@@ -149,6 +159,9 @@ template <MK_MOCK_SUFFIX(ares_expand_name, FOR_NAME),
 ErrorOr<const unsigned char *> parse_rr(const unsigned char *aptr,
                                         const unsigned char *abuf, size_t alen,
                                         Answer &answer, Var<Logger> logger) {
+    int status;
+    long len;
+    char *name;
     VALIDATE_APTR(aptr, abuf, alen);
     status = ares_expand_name_FOR_NAME(aptr, abuf, alen, &name, &len);
     if (status != ARES_SUCCESS) {
@@ -166,7 +179,7 @@ ErrorOr<const unsigned char *> parse_rr(const unsigned char *aptr,
     answer.type = DNS_RR_TYPE(aptr);
     answer.aclass = DNS_RR_CLASS(aptr);
     answer.ttl = DNS_RR_TTL(aptr);
-    answer.dlen = DNS_RR_DLEN(aptr);
+    answer.dlen = DNS_RR_LEN(aptr);
     aptr += NS_RRFIXEDSZ;
     if (!valid_mem_region(aptr, answer.dlen, abuf, alen)) {
         logger->warn("dns: packet too short: no space for RR");
@@ -188,7 +201,7 @@ ErrorOr<const unsigned char *> parse_rr(const unsigned char *aptr,
         ares_free_string(name);
         break;
     case MK_DNS_TYPE_A:
-        if (dlen != 4) {
+        if (answer.dlen != 4) {
             return InvalidRecordLengthError();
         }
         if (inet_ntop(AF_INET, aptr, addr, sizeof(addr)) == nullptr) {
@@ -197,7 +210,7 @@ ErrorOr<const unsigned char *> parse_rr(const unsigned char *aptr,
         answer.ipv4 = addr;
         break;
     case MK_DNS_TYPE_AAAA:
-        if (dlen != 16) {
+        if (answer.dlen != 16) {
             return InvalidRecordLengthError();
         }
         if (inet_ntop(AF_INET6, aptr, addr, sizeof(addr)) == nullptr) {
@@ -206,7 +219,7 @@ ErrorOr<const unsigned char *> parse_rr(const unsigned char *aptr,
         answer.ipv6 = addr;
         break;
     default:
-        logger->warn("dns: unsupported record type: %d", answer.type);
+        logger->warn("dns: unsupported record type: %d", (int)answer.type);
         break;
     }
 
@@ -247,6 +260,8 @@ Error parse_into_impl(Var<Message> message, std::string packet,
     XX(message->ancount, Answer, parse_rr, message->answers);
 
 #undef XX
+
+    return NoError();
 }
 
 } // namespace dns

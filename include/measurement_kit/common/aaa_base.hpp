@@ -11,6 +11,7 @@
 #include <measurement_kit/portable/netinet/in.h>
 #include <measurement_kit/portable/netinet/tcp.h>
 #include <measurement_kit/portable/arpa/inet.h>
+#include <measurement_kit/portable/arpa/nameser.h>
 #include <measurement_kit/portable/sys/socket.h>
 #include <measurement_kit/portable/sys/time.h>
 #include <measurement_kit/portable/netdb.h>
