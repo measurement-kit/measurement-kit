@@ -51,6 +51,8 @@ MK_DEFINE_ERR(MK_ERR_DNS(34), PacketTruncatedError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(35), UnexpectedPollFlagsError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(36), RecvError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(37), UnexpectedShortReadError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(38), NoSpaceForQueryError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(39), NoSpaceForHeaderError, "")
 
 // Note: these enums are consistent with the defines in arpa/nameser.h
 enum QueryClassId {
@@ -132,7 +134,7 @@ class QueryType {
 class Answer {
   public:
     QueryType type;
-    QueryClass qclass;
+    QueryClass aclass;
     int code = 0;
     uint32_t ttl = 0;
     std::string name;
@@ -159,10 +161,31 @@ class Message {
   public:
     Message(){};
     Message(std::nullptr_t){};
-    double rtt = 0.0;
+    double rtt = 0.0; /* XXX not honoured by the cares engine */
+
+    /*
+     * XXX The following field is a duplicate of rcode.
+     */
     int error_code = 66 /* This is evdns's generic error */;
-    std::vector<Answer> answers;
+
+    uint16_t qid;     ///< Query ID
+    bool qr;          ///< Query or response
+    char opcode;      ///< Operation code
+    bool aa;          ///< Authoritative answer
+    bool tc;          ///< Truncated content
+    bool rd;          ///< Recursion desired
+    bool ra;          ///< Recursion available
+    bool z;           ///< Zero
+    /* TODO: what about the answer authenticated bit? */
+    char rcode;       ///< Reply code
+    uint16_t qdcount; ///< Questions count
+    uint16_t ancount; ///< Answers count
+    uint16_t nscount; ///< Name server authority count
+    uint16_t arcount; ///< Additional records count
+
     std::vector<Query> queries;
+    std::vector<Answer> answers;
+    /* TODO: also support server authority and additional records */
 };
 
 void query(
