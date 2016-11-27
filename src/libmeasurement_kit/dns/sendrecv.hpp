@@ -9,6 +9,17 @@
 namespace mk {
 namespace dns {
 
+/*
+ * Note: this API is generic enough that we may want to use part of it
+ * to re-implement also parts of the Android traceroute code.
+ *
+ * In general, this API has very little to do with DNS and is more a
+ * UDP thing that can be useful to any piece of code that sends a UDP
+ * packet and waits for a response. So, perhaps, we may want to move
+ * at least the engine of it in `measurement_kit/net`. I'd do that
+ * when we need to share it, however, rather than doing it now.
+ */
+
 ErrorOr<Var<socket_t>> send(
         std::string nameserver,
         std::string port,
