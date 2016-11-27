@@ -165,15 +165,74 @@ TEST_CASE("dns::recv() handles recv() failure") {
     REQUIRE(maybe_str.as_error().code == dns::RecvError().code);
 }
 
-static ssize_t recv_fail(socket_t, void *, size_t, int) {
+static ssize_t recv_short_read(socket_t, void *, size_t, int) {
     return 0;
 }
 
 TEST_CASE("dns::recv() handles recv() short read") {
     Var<socket_t> sock{new socket_t{2}};
     ErrorOr<std::string> maybe_str =
-        dns::recv_impl<recv_fail>(sock, Logger::global());
+        dns::recv_impl<recv_short_read>(sock, Logger::global());
     REQUIRE(!maybe_str);
     REQUIRE(maybe_str.as_error().code == dns::UnexpectedShortReadError().code);
 }
 
+static ErrorOr<Var<socket_t>>
+send_fail(std::string, std::string, std::string, Var<Logger>) {
+    return MockedError();
+}
+
+TEST_CASE("dns::sendrecv() handles send() failure") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        mk::dns::sendrecv_impl<send_fail>(
+            "8.8.8.8", "53", "invalid", [=](Error error, std::string s) {
+                REQUIRE(error.code == MockedError().code);
+                REQUIRE(s == "");
+                reactor->break_loop();
+            }, {}, reactor, Logger::global());
+    });
+}
+
+static ErrorOr<Var<socket_t>>
+send_okay(std::string, std::string, std::string, Var<Logger>) {
+    return NoError();
+}
+
+static void pollin_fail(Var<socket_t>, Callback<Error> callback, Settings,
+                        Var<Reactor>, Var<Logger>) {
+    callback(MockedError());
+}
+
+TEST_CASE("dns::sendrecv() handles pollin() failure") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        mk::dns::sendrecv_impl<send_okay, pollin_fail>(
+            "8.8.8.8", "53", "invalid", [=](Error error, std::string s) {
+                REQUIRE(error.code == MockedError().code);
+                REQUIRE(s == "");
+                reactor->break_loop();
+            }, {}, reactor, Logger::global());
+    });
+}
+
+static void pollin_okay(Var<socket_t>, Callback<Error> callback, Settings,
+                        Var<Reactor>, Var<Logger>) {
+    callback(NoError());
+}
+
+static ErrorOr<std::string> recv_failure(Var<socket_t>, Var<Logger>) {
+    return MockedError();
+}
+
+TEST_CASE("dns::sendrecv() handles recv() failure") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        mk::dns::sendrecv_impl<send_okay, pollin_okay, recv_failure>(
+            "8.8.8.8", "53", "invalid", [=](Error error, std::string s) {
+                REQUIRE(error.code == MockedError().code);
+                REQUIRE(s == "");
+                reactor->break_loop();
+            }, {}, reactor, Logger::global());
+    });
+}
