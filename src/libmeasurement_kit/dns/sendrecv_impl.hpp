@@ -130,10 +130,6 @@ void sendrecv_impl(std::string nameserver, std::string port, std::string packet,
         pollin(*maybe_sock,
                [=](Error error) {
                    if (error) {
-                       /*
-                        * TODO: if we ever want to implement retry for this
-                        * engine, this is probably the place to do it.
-                        */
                        callback(error, "");
                        return;
                    }
