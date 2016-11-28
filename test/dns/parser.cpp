@@ -72,22 +72,6 @@ TEST_CASE("parse_header() works as expected") {
     }
 }
 
-TEST_CASE("map_ares_failure() works as expected") {
-
-    SECTION("For mapped error codes") {
-        REQUIRE(dns::map_ares_failure(ARES_SUCCESS).code == NoError().code);
-        REQUIRE(dns::map_ares_failure(ARES_EBADNAME).code ==
-                dns::MalformedEncodedDomainNameError().code);
-        REQUIRE(dns::map_ares_failure(ARES_ENOMEM).code ==
-                OutOfMemoryError().code);
-    }
-
-    SECTION("For non-mapped error codes") {
-        REQUIRE(dns::map_ares_failure(ARES_ETIMEOUT).code ==
-                GenericError().code);
-    }
-}
-
 static int ares_expand_name_fail(unsigned const char *, unsigned const char *,
                                  int, char **, long *) {
     return ARES_EBADNAME;
@@ -118,7 +102,7 @@ TEST_CASE("parse_question() works as expected") {
             pkt, pkt, sizeof(pkt) / sizeof(pkt[0]), query, Logger::global());
         REQUIRE(!mebbe);
         REQUIRE(mebbe.as_error().code ==
-                dns::MalformedEncodedDomainNameError().code);
+                dns::BadNameError().code);
     }
 
     SECTION("In case the packet is too short") {
@@ -201,7 +185,7 @@ TEST_CASE("parse_rr() works as expected") {
             Logger::global());
         REQUIRE(!mebbe);
         REQUIRE(mebbe.as_error().code ==
-                dns::MalformedEncodedDomainNameError().code);
+                dns::BadNameError().code);
     }
 
     SECTION("In case of short packet") {
@@ -285,7 +269,7 @@ TEST_CASE("parse_rr() works as expected") {
             Logger::global());
         REQUIRE(!mebbe);
         REQUIRE(mebbe.as_error().code ==
-                dns::MalformedEncodedDomainNameError().code);
+                dns::BadNameError().code);
     }
 
     SECTION("On valid RR of type PTR") {

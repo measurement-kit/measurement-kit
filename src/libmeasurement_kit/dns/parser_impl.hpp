@@ -25,6 +25,7 @@
 #include <ares.h>
 #include <ares_dns.h> /* XXX make sure we check for this */
 
+#include "../dns/ares_map_failure.hpp"
 #include "../dns/parser.hpp"
 
 namespace mk {
@@ -115,29 +116,6 @@ parse_header(const unsigned char *aptr, const unsigned char *abuf, size_t alen,
     return aptr;
 }
 
-static inline Error map_ares_failure(int status) {
-    /*
-     * Implementation note: for now we only map the error codes returned
-     * by the `ares_expand_name()` function, the only one we use.
-     */
-    Error err = GenericError();
-    switch (status) {
-    case ARES_SUCCESS:
-        err = NoError();
-        break;
-    case ARES_EBADNAME:
-        err = MalformedEncodedDomainNameError();
-        break;
-    case ARES_ENOMEM:
-        err = OutOfMemoryError();
-        break;
-    default:
-        /* NOTHING */
-        break;
-    }
-    return err;
-}
-
 /**
  * Parse the next question record in the message.
  * @param aptr Current pointer within packet.
@@ -156,7 +134,7 @@ parse_question_impl(const unsigned char *aptr, const unsigned char *abuf,
     long len = 0;
     int status = ares_expand_name(aptr, abuf, alen, &name, &len);
     if (status != ARES_SUCCESS) {
-        Error err = map_ares_failure(status);
+        Error err = ares_map_failure(status);
         logger->warn("dns: in question: cannot expand name: %s",
                      err.explain().c_str());
         return err;
@@ -196,7 +174,7 @@ ErrorOr<const unsigned char *> parse_rr_impl(
     VALIDATE_APTR(aptr, abuf, alen);
     status = ares_expand_name_FOR_NAME(aptr, abuf, alen, &name, &len);
     if (status != ARES_SUCCESS) {
-        Error err = map_ares_failure(status);
+        Error err = ares_map_failure(status);
         logger->warn("dns: in RR: cannot expand name: %s",
                      err.explain().c_str());
         return err;
@@ -226,7 +204,7 @@ ErrorOr<const unsigned char *> parse_rr_impl(
     case MK_DNS_TYPE_PTR:
         status = ares_expand_name_FOR_PTR(aptr, abuf, alen, &name, &len);
         if (status != ARES_SUCCESS) {
-            Error err = map_ares_failure(status);
+            Error err = ares_map_failure(status);
             logger->warn("dns: in PTR: cannot expand name: %s",
                          err.explain().c_str());
             return err;

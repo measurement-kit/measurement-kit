@@ -23,7 +23,7 @@ namespace dns {
 ErrorOr<Var<socket_t>> send(
         std::string nameserver,
         std::string port,
-        std::string packet,
+        std::vector<uint8_t> packet,
         Var<Logger> logger
 );
 
@@ -35,7 +35,7 @@ void pollin(
         Var<Logger> logger
 );
 
-ErrorOr<std::string> recv(
+ErrorOr<std::vector<uint8_t>> recv(
         Var<socket_t> sock,
         Var<Logger> logger
 );
@@ -43,8 +43,8 @@ ErrorOr<std::string> recv(
 void sendrecv(
         std::string nameserver,
         std::string port,
-        std::string packet,
-        Callback<Error, std::string> callback,
+        std::vector<uint8_t> packet,
+        Callback<Error, std::vector<uint8_t>> callback,
         Settings settings,
         Var<Reactor> reactor,
         Var<Logger> logger

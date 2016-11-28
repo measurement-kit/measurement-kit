@@ -49,11 +49,13 @@
 /test/common/utils
 /test/common/var
 /test/common/version
+/test/dns/ares_map_failure
 /test/dns/defines
 /test/dns/getaddrinfo
 /test/dns/parser
 /test/dns/query
 /test/dns/sendrecv
+/test/dns/serializer
 /test/dns/system_resolver
 /test/http/headers
 /test/http/parse_url

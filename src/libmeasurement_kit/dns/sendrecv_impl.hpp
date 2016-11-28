@@ -19,7 +19,8 @@ template <MK_MOCK_NAMESPACE(net, socket_create),
           MK_MOCK_ANONYMOUS_NAMESPACE(sendto),
           MK_MOCK_ANONYMOUS_NAMESPACE(evutil_closesocket)>
 ErrorOr<Var<socket_t>> send_impl(std::string nameserver, std::string port,
-                                 std::string packet, Var<Logger> logger) {
+                                 std::vector<uint8_t> packet,
+                                 Var<Logger> logger) {
 
     socket_t fd_ = net_socket_create(PF_INET, SOCK_DGRAM, 0, logger);
     logger->debug("dns: sockfd: %lld", (long long)fd_);
@@ -49,6 +50,9 @@ ErrorOr<Var<socket_t>> send_impl(std::string nameserver, std::string port,
     }
     Var<addrinfo> ainfo = *maybe_ainfo;
 
+    if (packet.size() == 0) {
+        return NoDataToSendError();
+    }
     if (packet.size() > SSIZE_MAX) {    /* Defensive check */
         return IntegerOverflowError();
     }
@@ -87,12 +91,14 @@ void pollin_impl(Var<socket_t> sock, Callback<Error> callback,
 }
 
 template <MK_MOCK_ANONYMOUS_NAMESPACE(recv)>
-ErrorOr<std::string> recv_impl(Var<socket_t> sock, Var<Logger> logger) {
-    char buffer[8000]; /* "8k should be enough for everyone" (cit.) */
+ErrorOr<std::vector<uint8_t>> recv_impl(Var<socket_t> sock,
+                                        Var<Logger> logger) {
+    std::vector<uint8_t> buffer;
+    buffer.resize(8000); /* "8k should be enough for everyone" (cit.) */
     /*
      * For now this is recv. Do we want recvfrom?
      */
-    ssize_t count = recv(*sock, buffer, sizeof(buffer), 0);
+    ssize_t count = recv(*sock, buffer.data(), buffer.size(), 0);
     logger->debug("dns: recv result: %lld", (long long)count);
     if (count < 0) {
         return RecvError();
@@ -106,13 +112,15 @@ ErrorOr<std::string> recv_impl(Var<socket_t> sock, Var<Logger> logger) {
      * with performance in this module to care about it. Also, the packet
      * is probably small (less than 1k) and so the copy is "cheap".
      */
-    return std::string{buffer, (size_t)count};
+    return buffer;
 }
 
 template <MK_MOCK(send), MK_MOCK(pollin), MK_MOCK(recv)>
-void sendrecv_impl(std::string nameserver, std::string port, std::string packet,
-                   Callback<Error, std::string> callback, Settings settings,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+void sendrecv_impl(std::string nameserver, std::string port,
+                   std::vector<uint8_t> packet,
+                   Callback<Error, std::vector<uint8_t>> callback,
+                   Settings settings, Var<Reactor> reactor,
+                   Var<Logger> logger) {
     /*
      * This `call_soon()` here is to _schedule_ the execution of the
      * requested action and this make sure the callback is called _after_
@@ -124,18 +132,19 @@ void sendrecv_impl(std::string nameserver, std::string port, std::string packet,
         ErrorOr<Var<socket_t>> maybe_sock =
             send(nameserver, port, packet, logger);
         if (!maybe_sock) {
-            callback(maybe_sock.as_error(), "");
+            callback(maybe_sock.as_error(), {});
             return;
         }
         pollin(*maybe_sock,
                [=](Error error) {
                    if (error) {
-                       callback(error, "");
+                       callback(error, {});
                        return;
                    }
-                   ErrorOr<std::string> maybe_buff = recv(*maybe_sock, logger);
+                   ErrorOr<std::vector<uint8_t>> maybe_buff =
+                       recv(*maybe_sock, logger);
                    if (!maybe_buff) {
-                       callback(maybe_buff.as_error(), "");
+                       callback(maybe_buff.as_error(), {});
                        return;
                    }
                    callback(NoError(), *maybe_buff);
