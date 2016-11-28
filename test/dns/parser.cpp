@@ -392,7 +392,7 @@ TEST_CASE("parse_into_impl() works as expected") {
     };
     // clang-format on
 
-    std::string pkt{(const char *)rr_any, sizeof(rr_any) / sizeof(rr_any[0])};
+    std::vector<uint8_t> pkt{rr_any, rr_any + sizeof(rr_any) / sizeof(rr_any[0])};
     Var<dns::Message> message{new dns::Message};
     Var<Logger> logger = Logger::global();
     Error err;
