@@ -87,8 +87,10 @@ if [ ! -d third_party/cache/$pkg_name ]; then
         done
     fi
     if [ -x ./autogen.sh ]; then
+        echo "- ./autogen.sh"
         ./autogen.sh
     elif [ -f ./configure.ac ]; then
+        echo "- autoreconf -i"
         autoreconf -i
     fi
     if [ -d ../../../build/patch/post-autogen/$pkg_name ]; then
