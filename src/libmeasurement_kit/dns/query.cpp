@@ -17,6 +17,7 @@ void query(
         Settings settings,
         Var<Reactor> reactor,
         Var<Logger> logger) {
+    // TODO: here is the place where we must defer callbacks
     std::string engine = settings.get("dns/engine", std::string("libevent"));
     if (engine == "libevent") {
         libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);

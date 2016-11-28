@@ -18,7 +18,7 @@ namespace dns {
  * presently a real concern.
  */
 
-Error parse_into(Var<Message> message, std::string packet,
+Error parse_into(Var<Message> message, std::vector<uint8_t> packet,
                  Var<Logger> logger);
 
 /*

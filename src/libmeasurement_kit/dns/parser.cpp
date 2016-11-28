@@ -19,7 +19,8 @@ ErrorOr<const unsigned char *> parse_rr(
     return parse_rr_impl(aptr,abuf, alen, answer, logger);
 }
 
-Error parse_into(Var<Message> message, std::string packet, Var<Logger> logger) {
+Error parse_into(Var<Message> message, std::vector<uint8_t> packet,
+                 Var<Logger> logger) {
     return parse_into_impl(message, packet, logger);
 }
 

@@ -50,6 +50,7 @@
 /test/common/var
 /test/common/version
 /test/dns/ares_map_failure
+/test/dns/cares_engine
 /test/dns/defines
 /test/dns/getaddrinfo
 /test/dns/parser

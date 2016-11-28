@@ -243,9 +243,9 @@ template <MK_MOCK(parse_header), MK_MOCK(parse_question),
           MK_MOCK_SUFFIX(parse_rr, ANSWERS),
           MK_MOCK_SUFFIX(parse_rr, AUTHORITY),
           MK_MOCK_SUFFIX(parse_rr, ADDITIONAL)>
-Error parse_into_impl(Var<Message> message, std::string packet,
+Error parse_into_impl(Var<Message> message, std::vector<uint8_t> packet,
                       Var<Logger> logger) {
-    const unsigned char *abuf = (const unsigned char *)packet.data();
+    const unsigned char *abuf = packet.data();
     const unsigned char *aptr = abuf;
     size_t alen = packet.size();
     ErrorOr<const unsigned char *> maybe_aptr;

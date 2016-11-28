@@ -6,6 +6,8 @@
 
 #include <event2/util.h>
 
+#include <measurement_kit/net.hpp>
+
 #include "../dns/getaddrinfo.hpp"
 #include "../dns/sendrecv.hpp"
 #include "../net/utils.hpp"
@@ -78,6 +80,18 @@ void pollin_impl(Var<socket_t> sock, Callback<Error> callback,
                        logger->debug("dns: pollfd() err=%s flags=%d",
                                      err.explain().c_str(), flags);
                        if (err) {
+                           /*
+                            * XXX: Here we need to convert a TimeoutError as
+                            * emitted by the `net` code to become a Timeout
+                            * Error as handled by `dns` code. I guess this is
+                            * the living proof that we should rationalize
+                            * errors before becoming mad (says the man that
+                            * spent 20' understanding why TimeoutError()
+                            * was different from TimeoutError() :-).
+                            */
+                           if (err == net::TimeoutError()) {
+                               err = TimeoutError(err);
+                           }
                            callback(err);
                            return;
                        }
@@ -121,36 +135,26 @@ void sendrecv_impl(std::string nameserver, std::string port,
                    Callback<Error, std::vector<uint8_t>> callback,
                    Settings settings, Var<Reactor> reactor,
                    Var<Logger> logger) {
-    /*
-     * This `call_soon()` here is to _schedule_ the execution of the
-     * requested action and this make sure the callback is called _after_
-     * the `sendrecv_impl()` function returns. I am really pissed off
-     * when a callback is called before the function with which you did
-     * registered the callback returns: it increases complexity.
-     */
-    reactor->call_soon([=]() {
-        ErrorOr<Var<socket_t>> maybe_sock =
-            send(nameserver, port, packet, logger);
-        if (!maybe_sock) {
-            callback(maybe_sock.as_error(), {});
-            return;
-        }
-        pollin(*maybe_sock,
-               [=](Error error) {
-                   if (error) {
-                       callback(error, {});
-                       return;
-                   }
-                   ErrorOr<std::vector<uint8_t>> maybe_buff =
-                       recv(*maybe_sock, logger);
-                   if (!maybe_buff) {
-                       callback(maybe_buff.as_error(), {});
-                       return;
-                   }
-                   callback(NoError(), *maybe_buff);
-               },
-               settings, reactor, logger);
-    });
+    ErrorOr<Var<socket_t>> maybe_sock = send(nameserver, port, packet, logger);
+    if (!maybe_sock) {
+        callback(maybe_sock.as_error(), {});
+        return;
+    }
+    pollin(*maybe_sock,
+           [=](Error error) {
+               if (error) {
+                   callback(error, {});
+                   return;
+               }
+               ErrorOr<std::vector<uint8_t>> maybe_buff =
+                   recv(*maybe_sock, logger);
+               if (!maybe_buff) {
+                   callback(maybe_buff.as_error(), {});
+                   return;
+               }
+               callback(NoError(), *maybe_buff);
+           },
+           settings, reactor, logger);
 }
 
 } // namespace dns

@@ -59,6 +59,11 @@ MK_DEFINE_ERR(MK_ERR_DNS(42), InvalidRecordLengthError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(43), NoSpaceForResourceRecordHeaderError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(44), BadNameError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(45), NoDataToSendError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(46), InvalidAttemptsOptionError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(47), InvalidQueryIdOptionError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(48), InvalidRecursionDesiredOptionError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(49), InvalidRandomizeCaseOptionError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(50), UnexpectedQueryIdError, "")
 
 // Note: these enums are consistent with the defines in arpa/nameser.h
 #define MK_DNS_CLASSES                                                         \
