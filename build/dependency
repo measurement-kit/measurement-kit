@@ -24,6 +24,16 @@ Examples:
 EOF
 }
 
+pkg_autoreconf() {
+    if [ -x ./autogen.sh ]; then
+        echo "- ./autogen.sh"
+        ./autogen.sh
+    elif [ -f ./configure.ac ]; then
+        echo "- autoreconf -i"
+        autoreconf -i
+    fi
+}
+
 pkg_configure() {
     if [ -x ./configure ]; then
         echo "- ./configure --prefix=$pkg_prefix $pkg_configure_flags"
@@ -86,13 +96,7 @@ if [ ! -d third_party/cache/$pkg_name ]; then
             rm $diff
         done
     fi
-    if [ -x ./autogen.sh ]; then
-        echo "- ./autogen.sh"
-        ./autogen.sh
-    elif [ -f ./configure.ac ]; then
-        echo "- autoreconf -i"
-        autoreconf -i
-    fi
+    pkg_autoreconf
     if [ -d ../../../build/patch/post-autogen/$pkg_name ]; then
         for diff in `ls ../../../build/patch/post-autogen/$pkg_name`; do
             cp ../../../build/patch/post-autogen/$pkg_name/$diff .
