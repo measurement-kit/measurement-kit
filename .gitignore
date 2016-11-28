@@ -51,6 +51,7 @@
 /test/common/version
 /test/dns/defines
 /test/dns/getaddrinfo
+/test/dns/parser
 /test/dns/query
 /test/dns/sendrecv
 /test/dns/system_resolver

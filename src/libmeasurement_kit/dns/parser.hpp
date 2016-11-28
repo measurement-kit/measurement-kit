@@ -21,6 +21,18 @@ namespace dns {
 Error parse_into(Var<Message> message, std::string packet,
                  Var<Logger> logger);
 
+/*
+ * Functions used to implement parse_into():
+ */
+
+ErrorOr<const unsigned char *>
+parse_question(const unsigned char *aptr, const unsigned char *abuf,
+               size_t alen, Query &query, Var<Logger> logger);
+
+ErrorOr<const unsigned char *> parse_rr(
+        const unsigned char *aptr, const unsigned char *abuf, size_t alen,
+        Answer &answer, Var<Logger> logger);
+
 } // namespace dns
 } // namespace mk
 #endif

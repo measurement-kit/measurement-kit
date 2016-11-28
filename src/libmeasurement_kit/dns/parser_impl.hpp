@@ -63,8 +63,19 @@ namespace dns {
  */
 static inline bool valid_mem_region(const unsigned char *aptr, size_t off,
                                     const unsigned char *abuf, size_t alen) {
-    return aptr >= abuf and off <= alen and
-        (unsigned long long)(aptr - abuf) <= (unsigned long long)(alen - off);
+    // Implementation note: checks reorganized to see through coverage
+    // that we're taking all the possible branches
+    if (not (aptr >= abuf)) {
+        return false;
+    }
+    if (not (off <= alen)) {
+        return false;
+    }
+    using ull = unsigned long long;
+    if (not ((ull)(aptr - abuf) <= (ull)(alen - off))) {
+        return false;
+    }
+    return true;
 }
 
 #define VALIDATE_APTR(aptr, abuf, alen)                                        \
@@ -105,7 +116,26 @@ parse_header(const unsigned char *aptr, const unsigned char *abuf, size_t alen,
 }
 
 static inline Error map_ares_failure(int status) {
-    return GenericError(); /* XXX */
+    /*
+     * Implementation note: for now we only map the error codes returned
+     * by the `ares_expand_name()` function, the only one we use.
+     */
+    Error err = GenericError();
+    switch (status) {
+    case ARES_SUCCESS:
+        err = NoError();
+        break;
+    case ARES_EBADNAME:
+        err = MalformedEncodedDomainNameError();
+        break;
+    case ARES_ENOMEM:
+        err = OutOfMemoryError();
+        break;
+    default:
+        /* NOTHING */
+        break;
+    }
+    return err;
 }
 
 /**
@@ -119,15 +149,16 @@ static inline Error map_ares_failure(int status) {
  */
 template <MK_MOCK(ares_expand_name), MK_MOCK(ares_free_string)>
 ErrorOr<const unsigned char *>
-parse_question(const unsigned char *aptr, const unsigned char *abuf,
-               size_t alen, Query &query, Var<Logger> logger) {
+parse_question_impl(const unsigned char *aptr, const unsigned char *abuf,
+                    size_t alen, Query &query, Var<Logger> logger) {
     VALIDATE_APTR(aptr, abuf, alen);
     char *name = nullptr;
     long len = 0;
     int status = ares_expand_name(aptr, abuf, alen, &name, &len);
     if (status != ARES_SUCCESS) {
         Error err = map_ares_failure(status);
-        logger->warn("dns: in question: cannot expand name: %s", err.what());
+        logger->warn("dns: in question: cannot expand name: %s",
+                     err.explain().c_str());
         return err;
     }
     aptr += len;
@@ -156,9 +187,9 @@ parse_question(const unsigned char *aptr, const unsigned char *abuf,
 template <MK_MOCK_SUFFIX(ares_expand_name, FOR_NAME),
           MK_MOCK_SUFFIX(ares_expand_name, FOR_PTR), MK_MOCK(inet_ntop),
           MK_MOCK(ares_free_string)>
-ErrorOr<const unsigned char *> parse_rr(const unsigned char *aptr,
-                                        const unsigned char *abuf, size_t alen,
-                                        Answer &answer, Var<Logger> logger) {
+ErrorOr<const unsigned char *> parse_rr_impl(
+        const unsigned char *aptr, const unsigned char *abuf, size_t alen,
+        Answer &answer, Var<Logger> logger) {
     int status;
     long len;
     char *name;
@@ -166,7 +197,8 @@ ErrorOr<const unsigned char *> parse_rr(const unsigned char *aptr,
     status = ares_expand_name_FOR_NAME(aptr, abuf, alen, &name, &len);
     if (status != ARES_SUCCESS) {
         Error err = map_ares_failure(status);
-        logger->warn("dns: in RR: cannot expand name: %s", err.what());
+        logger->warn("dns: in RR: cannot expand name: %s",
+                     err.explain().c_str());
         return err;
     }
     aptr += len;
@@ -190,11 +222,13 @@ ErrorOr<const unsigned char *> parse_rr(const unsigned char *aptr,
     char addr[46] = {};
     switch (answer.type) {
     case MK_DNS_TYPE_CNAME:
+    case MK_DNS_TYPE_NS:
     case MK_DNS_TYPE_PTR:
         status = ares_expand_name_FOR_PTR(aptr, abuf, alen, &name, &len);
         if (status != ARES_SUCCESS) {
             Error err = map_ares_failure(status);
-            logger->warn("dns: in PTR: cannot expand name: %s", err.what());
+            logger->warn("dns: in PTR: cannot expand name: %s",
+                         err.explain().c_str());
             return err;
         }
         answer.hostname = name;
@@ -227,7 +261,10 @@ ErrorOr<const unsigned char *> parse_rr(const unsigned char *aptr,
     return aptr;
 }
 
-template <MK_MOCK(parse_header)>
+template <MK_MOCK(parse_header), MK_MOCK(parse_question),
+          MK_MOCK_SUFFIX(parse_rr, ANSWERS),
+          MK_MOCK_SUFFIX(parse_rr, AUTHORITY),
+          MK_MOCK_SUFFIX(parse_rr, ADDITIONAL)>
 Error parse_into_impl(Var<Message> message, std::string packet,
                       Var<Logger> logger) {
     const unsigned char *abuf = (const unsigned char *)packet.data();
@@ -257,7 +294,9 @@ Error parse_into_impl(Var<Message> message, std::string packet,
     } while (0)
 
     XX(message->qdcount, Query, parse_question, message->queries);
-    XX(message->ancount, Answer, parse_rr, message->answers);
+    XX(message->ancount, Answer, parse_rr_ANSWERS, message->answers);
+    XX(message->nscount, Answer, parse_rr_AUTHORITY, message->authorities);
+    XX(message->arcount, Answer, parse_rr_ADDITIONAL, message->additionals);
 
 #undef XX
 

@@ -88,6 +88,7 @@ MK_DEFINE_ERR(7, JsonDomainError, "")
 MK_DEFINE_ERR(8, FileEofError, "")
 MK_DEFINE_ERR(9, FileIoError, "")
 MK_DEFINE_ERR(10, ParallelOperationError, "")
+MK_DEFINE_ERR(11, OutOfMemoryError, "")
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)

@@ -57,6 +57,7 @@ MK_DEFINE_ERR(MK_ERR_DNS(40), NoSpaceForResourceRecordError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(41), InetNtopError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(42), InvalidRecordLengthError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(43), NoSpaceForResourceRecordHeaderError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(44), MalformedEncodedDomainNameError, "")
 
 // Note: these enums are consistent with the defines in arpa/nameser.h
 #define MK_DNS_CLASSES                                                         \
@@ -184,7 +185,8 @@ class Message {
 
     std::vector<Query> queries;
     std::vector<Answer> answers;
-    /* TODO: also support server authority and additional records */
+    std::vector<Answer> authorities;
+    std::vector<Answer> additionals;
 };
 
 void query(
