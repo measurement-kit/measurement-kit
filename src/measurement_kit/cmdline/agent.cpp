@@ -21,6 +21,16 @@ namespace agent {
  */
 #define USAGE "usage: measurement_kit agent [-v] [-p port] passwd\n"
 
+class Context {
+  public:
+    bool authenticated = false;
+    Var<net::Buffer> buff{new net::Buffer};
+    Var<Logger> logger;
+    std::string passwd = "";
+    Var<Reactor> reactor;
+    Var<net::Transport> txp;
+};
+
 /**
  * Remove the next token from string.
  * @param s String to read token from, updated in output.
@@ -38,23 +48,20 @@ static ErrorOr<std::string> remove_next_token(std::string &s) {
 
 /**
  * Processes the AUTH command.
- * @param txp The connected transport.
- * @param authenticated Whether we're authenticated.
+ * @param ctx Client ctx.
  * @param line The remainder of the line.
- * @param passwd The password.
  */
-static void do_auth(Var<net::Transport> txp, Var<bool> authenticated,
-                    std::string &line, std::string passwd) {
-    if (line != passwd) {
-        mk::warn("passwords do not match ('%s' and '%s')", line.c_str(),
-                 passwd.c_str());
-        *authenticated = false;
-        txp->write("ERR unauthorized\r\n{}\r\n");
+static void do_auth(Var<Context> ctx, std::string &line) {
+    if (line != ctx->passwd) {
+        ctx->logger->warn("passwords do not match ('%s' and '%s')",
+                          line.c_str(), ctx->passwd.c_str());
+        ctx->authenticated = false;
+        ctx->txp->write("ERR unauthorized\r\n{}\r\n");
         return;
     }
-    mk::debug("passwords match; you are now authenticated");
-    *authenticated = true;
-    txp->write("OK\r\n{}\r\n");
+    ctx->logger->debug("passwords match; you are now authenticated");
+    ctx->authenticated = true;
+    ctx->txp->write("OK\r\n{}\r\n");
 }
 
 /**
@@ -103,69 +110,158 @@ static Error get_input_and_settings(const std::string &line, std::string &input,
 
 /**
  * RUNs the web_connectivity test.
- * @param txp The connected transport.
- * @param line The remainder of the line.
+ * @param ctx Client context.
+ * @param ln The remainder of the line.
+ * @param resume Callback.
  */
-static void do_web_connectivity(Var<net::Transport> txp,
-                                const std::string &line) {
+static void do_web_connectivity(Var<Context> ctx, const std::string &ln,
+                                Callback<> resume) {
 
     Settings options = {};
     std::string input = "";
 
-    if (get_input_and_settings(line, input, options) != NoError()) {
-        txp->write("ERR bad_request\r\n{}\r\n");
+    if (get_input_and_settings(ln, input, options) != NoError()) {
+        ctx->txp->write("ERR bad_request\r\n{}\r\n");
+        resume();
         return;
     }
     if (input == "") {
-        txp->write("ERR bad_request\r\n{}\r\n");
+        ctx->txp->write("ERR bad_request\r\n{}\r\n");
+        resume();
         return;
     }
 
-    /*
-     * TODO: allow to run this in a shared, background reactor. It is easy
-     * to do that, but I prefer to wait until it's clear we are going to use
-     * this approach to move forward with integrate MK into ooni-probe.
-     */
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
-        mk::debug("entering into nettest loop");
-        ooni::web_connectivity(input, options,
-                               [=](Var<report::Entry> entry) {
-                                   txp->write("OK\r\n");
-                                   txp->write(entry->dump());
-                                   txp->write("\r\n");
-                                   mk::debug("breaking out of nettest loop");
-                                   reactor->break_loop();
-                               },
-                               reactor);
-    });
-
-    mk::debug("out of loop; resuming REPL...");
+    ooni::web_connectivity(input, options,
+                           [=](Var<report::Entry> entry) {
+                               ctx->txp->write("OK\r\n");
+                               ctx->txp->write(entry->dump());
+                               ctx->txp->write("\r\n");
+                               resume();
+                           },
+                           ctx->reactor, ctx->logger);
 }
 
 /**
  * Processes the RUN command.
- * @param txp The connected transport.
- * @param authenticated Whether we're authenticated.
+ * @param ctx Client ctx.
  * @param line The remainder of the line.
+ * @param resume Callback.
  */
-static void do_run(Var<net::Transport> txp, std::string &line) {
+static void do_run(Var<Context> ctx, std::string &line, Callback<> resume) {
     ErrorOr<std::string> method = remove_next_token(line);
     if (!method) {
-        txp->write("ERR bad_request\r\n{}\r\n");
+        ctx->txp->write("ERR bad_request\r\n{}\r\n");
+        resume();
         return;
     }
     if (*method == "web_connectivity") {
-        do_web_connectivity(txp, line);
+        do_web_connectivity(ctx, line, resume);
         return;
     }
     /*
      * TODO add here more test helpers or more basic blocks
      */
-    txp->write("ERR not_found\r\n{}\r\n");
+    ctx->txp->write("ERR not_found\r\n{}\r\n");
+    resume();
+}
+
+/**
+ * Close connection with client.
+ * @remark Necessary to remove a self reference that prevents closing txp.
+ * @param ctx Client ctx.
+ */
+static void do_close_txp(Var<Context> ctx) {
+    Var<net::Transport> txp = ctx->txp;
+    ctx->txp = nullptr;
+    txp->close([=]() { ctx->logger->debug("connection with client closed"); });
+}
+
+/**
+ * Wait for more data coming from the client.
+ * @param ctx Client ctx.
+ * @param callback The callback.
+ */
+static void wait_for_more_data(Var<Context> ctx, Callback<> callback) {
+    net::read(ctx->txp, ctx->buff,
+              [=](Error error) {
+                  if (error) {
+                      ctx->logger->debug("error while reading: %s",
+                                         error.explain().c_str());
+                      do_close_txp(ctx);
+                      return;
+                  }
+                  callback();
+              },
+              ctx->reactor);
+}
+
+/**
+ * Serve requests coming from connected client.
+ * @param ctx Client context.
+ */
+static void serve(Var<Context> ctx) {
+    auto resume = [=]() { ctx->reactor->call_soon([=]() { serve(ctx); }); };
+
+    /*
+     * TODO Wish list for readline():
+     *
+     * 1. allow to read arbitrary long lines
+     *
+     * 2. use specific error rather than "" to signal
+     *    that you can need to read more from socket
+     *
+     * 3. (after 2) strip trailing \r\n
+     */
+    ErrorOr<std::string> maybe_line = ctx->buff->readline(10 * 1024 * 1024);
+    if (!maybe_line) {
+        do_close_txp(ctx);
+        return;
+    }
+    if (*maybe_line == "") {
+        wait_for_more_data(ctx, resume);
+        return;
+    }
+    static const std::regex re{"[\r\n]+$"};
+    *maybe_line = std::regex_replace(*maybe_line, re, "");
+
+    ErrorOr<std::string> cmd = remove_next_token(*maybe_line);
+    if (!cmd) {
+        ctx->logger->warn("invalid line: %s", maybe_line->c_str());
+        resume();
+        return;
+    }
+    ctx->logger->debug("command: %s", cmd->c_str());
+
+    if (*cmd == "AUTH") {
+        do_auth(ctx, *maybe_line);
+        resume();
+        return;
+    }
+
+    if (ctx->authenticated) {
+        if (*cmd == "RUN") {
+            do_run(ctx, *maybe_line, resume);
+            return;
+        }
+        // FALLTHROUGH
+    }
+
+    if (!ctx->authenticated) {
+        ctx->txp->write("ERR unauthorized\r\n{}\r\n");
+    } else {
+        ctx->txp->write("ERR not_found\r\n{}\r\n");
+    }
+    resume();
 }
 
 int main(const char *, int argc, char **argv) {
+    /*
+     * XXX: we must use the global reactor until listen4() is updated to
+     * support also non global reactors.
+     */
+    Var<Reactor> reactor = Reactor::global();
+    Var<Logger> logger = Logger::global();
+
     std::string passwd;
     int port = 9876;
     for (int ch; (ch = mkp_getopt(argc, argv, "p:v")) != -1;) {
@@ -174,7 +270,7 @@ int main(const char *, int argc, char **argv) {
             port = lexical_cast<int>(mkp_optarg);
             break;
         case 'v':
-            increase_verbosity();
+            logger->increase_verbosity();
             break;
         default:
             fprintf(stderr, "%s", USAGE);
@@ -188,58 +284,15 @@ int main(const char *, int argc, char **argv) {
     }
     passwd = argv[0];
 
-    loop_with_initial_event([=]() {
+    reactor->loop_with_initial_event([=]() {
         libevent::listen4("127.0.0.1", port, [=](bufferevent *bev) {
-            Var<net::Transport> txp = libevent::Connection::make(bev);
-            Var<net::Buffer> buff = net::Buffer::make();
-            Var<bool> authenticated{new bool{false}};
-            txp->on_error([=](Error err) {
-                mk::warn("Connection error: %s", err.explain().c_str());
-                txp->close([=]() { mk::debug("Connection lost"); });
-            });
-            txp->on_data([=](net::Buffer data) {
-                *buff << data;
-                for (;;) {
-
-                    /*
-                     * TODO Wish list for readline():
-                     *
-                     * 1. allow to read arbitrary long lines
-                     *
-                     * 2. use specific error rather than "" to signal
-                     *    that you can need to read more from socket
-                     *
-                     * 3. (after 2) strip trailing \r\n
-                     */
-                    ErrorOr<std::string> maybe_line =
-                        buff->readline(10 * 1024 * 1024);
-                    if (!maybe_line) {
-                        txp->close([=]() { mk::debug("Connection lost"); });
-                        return;
-                    }
-                    if (*maybe_line == "") {
-                        break; /* Try again after reading more */
-                    }
-                    static const std::regex re{"[\r\n]+$"};
-                    *maybe_line = std::regex_replace(*maybe_line, re, "");
-
-                    ErrorOr<std::string> cmd = remove_next_token(*maybe_line);
-                    if (!cmd) {
-                        mk::warn("invalid line");
-                        continue;
-                    }
-                    mk::debug("command: %s", cmd->c_str());
-                    if (*cmd == "AUTH") {
-                        do_auth(txp, authenticated, *maybe_line, passwd);
-                    } else if (!*authenticated) {
-                        txp->write("ERR unauthorized\r\n{}\r\n");
-                    } else if (*cmd == "RUN") {
-                        do_run(txp, *maybe_line);
-                    } else {
-                        txp->write("ERR not_found\r\n{}\r\n");
-                    }
-                }
-            });
+            logger->info("connection made from new client");
+            Var<Context> ctx{new Context};
+            ctx->txp = libevent::Connection::make(bev);
+            ctx->logger = logger;
+            ctx->reactor = reactor;
+            ctx->passwd = passwd;
+            serve(ctx);
         });
     });
 
