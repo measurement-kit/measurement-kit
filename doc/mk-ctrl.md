@@ -1,6 +1,7 @@
 # Measurement Kit ConTrol Protocol (MKCTP)
 
-The Measurement Kit Control Protocol (MKCTP) is used by clients to control a running Measurement Kit instance.
+The Measurement Kit Control Protocol (MKCTP) is used by clients to
+control a running Measurement Kit instance.
 
 The protocol is designed to be:
 
@@ -70,8 +71,9 @@ ERR some-error
 
 ## Replies
 
-Every reply returned by the control protocol MUST contain two rows. The first line is the eventual error produced by
-the command while the second line is the result encoded as a JSON string.
+Every reply returned by the control protocol MUST contain two rows.
+The first line is the eventual error produced by the command while
+the second line is the result encoded as a JSON string.
 
 In case of an error:
 

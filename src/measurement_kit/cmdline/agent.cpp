@@ -56,7 +56,7 @@ static void do_auth(Var<Context> ctx, std::string &line) {
         ctx->logger->warn("passwords do not match ('%s' and '%s')",
                           line.c_str(), ctx->passwd.c_str());
         ctx->authenticated = false;
-        ctx->txp->write("ERR unauthorized\r\n{}\r\n");
+        ctx->txp->write("ERR invalid-password\r\n{}\r\n");
         return;
     }
     ctx->logger->debug("passwords match; you are now authenticated");
@@ -121,12 +121,12 @@ static void do_web_connectivity(Var<Context> ctx, const std::string &ln,
     std::string input = "";
 
     if (get_input_and_settings(ln, input, options) != NoError()) {
-        ctx->txp->write("ERR bad_request\r\n{}\r\n");
+        ctx->txp->write("ERR bad-request\r\n{}\r\n");
         resume();
         return;
     }
     if (input == "") {
-        ctx->txp->write("ERR bad_request\r\n{}\r\n");
+        ctx->txp->write("ERR bad-request\r\n{}\r\n");
         resume();
         return;
     }
@@ -150,7 +150,7 @@ static void do_web_connectivity(Var<Context> ctx, const std::string &ln,
 static void do_run(Var<Context> ctx, std::string &line, Callback<> resume) {
     ErrorOr<std::string> method = remove_next_token(line);
     if (!method) {
-        ctx->txp->write("ERR bad_request\r\n{}\r\n");
+        ctx->txp->write("ERR bad-request\r\n{}\r\n");
         resume();
         return;
     }
@@ -161,7 +161,7 @@ static void do_run(Var<Context> ctx, std::string &line, Callback<> resume) {
     /*
      * TODO add here more test helpers or more basic blocks
      */
-    ctx->txp->write("ERR not_found\r\n{}\r\n");
+    ctx->txp->write("ERR not-found\r\n{}\r\n");
     resume();
 }
 
@@ -227,6 +227,7 @@ static void serve(Var<Context> ctx) {
     ErrorOr<std::string> cmd = remove_next_token(*maybe_line);
     if (!cmd) {
         ctx->logger->warn("invalid line: %s", maybe_line->c_str());
+        ctx->txp->write("ERR bad-request\r\n{}\r\n");
         resume();
         return;
     }
@@ -247,9 +248,9 @@ static void serve(Var<Context> ctx) {
     }
 
     if (!ctx->authenticated) {
-        ctx->txp->write("ERR unauthorized\r\n{}\r\n");
+        ctx->txp->write("ERR not-authenticated\r\n{}\r\n");
     } else {
-        ctx->txp->write("ERR not_found\r\n{}\r\n");
+        ctx->txp->write("ERR not-found\r\n{}\r\n");
     }
     resume();
 }
