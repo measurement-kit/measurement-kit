@@ -51,7 +51,7 @@ RUN nettest_name {'parameter1': 'value1', 'parameter2': 'value2'}
 For example:
 
 ```
-RUN web_connectivity {'url': 'http://google.com'}
+RUN web_connectivity {"input": "http://www.google.com", "settings": {"nameserver": "8.8.8.8:53", "dns/resolver": "system", "backend": "https://a.collector.test.ooni.io:4444"}}
 ```
 
 Upon successful execution of a test it will return the result as:
