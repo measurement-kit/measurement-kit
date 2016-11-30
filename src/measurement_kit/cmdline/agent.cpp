@@ -131,11 +131,14 @@ static void do_web_connectivity(Var<Context> ctx, const std::string &ln,
         return;
     }
 
+    ctx->logger->info("web connectivity for '%s'...", input.c_str());
     ooni::web_connectivity(input, options,
                            [=](Var<report::Entry> entry) {
                                ctx->txp->write("OK\r\n");
                                ctx->txp->write(entry->dump());
                                ctx->txp->write("\r\n");
+                               ctx->logger->info(
+                                   "web connectivity complete...");
                                resume();
                            },
                            ctx->reactor, ctx->logger);
@@ -173,7 +176,7 @@ static void do_run(Var<Context> ctx, std::string &line, Callback<> resume) {
 static void do_close_txp(Var<Context> ctx) {
     Var<net::Transport> txp = ctx->txp;
     ctx->txp = nullptr;
-    txp->close([=]() { ctx->logger->debug("connection with client closed"); });
+    txp->close([=]() { ctx->logger->info("connection closed"); });
 }
 
 /**
@@ -185,8 +188,10 @@ static void wait_for_more_data(Var<Context> ctx, Callback<> callback) {
     net::read(ctx->txp, ctx->buff,
               [=](Error error) {
                   if (error) {
-                      ctx->logger->debug("error while reading: %s",
-                                         error.explain().c_str());
+                      if (error != net::EofError()) {
+                          ctx->logger->warn("error while reading: %s",
+                                            error.explain().c_str());
+                      }
                       do_close_txp(ctx);
                       return;
                   }
@@ -214,6 +219,8 @@ static void serve(Var<Context> ctx) {
      */
     ErrorOr<std::string> maybe_line = ctx->buff->readline(10 * 1024 * 1024);
     if (!maybe_line) {
+        ctx->logger->warn("readline failed: %s",
+            maybe_line.as_error().explain().c_str());
         do_close_txp(ctx);
         return;
     }
@@ -287,7 +294,7 @@ int main(const char *, int argc, char **argv) {
 
     reactor->loop_with_initial_event([=]() {
         libevent::listen4("127.0.0.1", port, [=](bufferevent *bev) {
-            logger->info("connection made from new client");
+            logger->info("new client connected");
             Var<Context> ctx{new Context};
             ctx->txp = libevent::Connection::make(bev);
             ctx->logger = logger;

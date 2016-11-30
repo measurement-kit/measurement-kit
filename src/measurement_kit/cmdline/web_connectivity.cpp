@@ -14,7 +14,7 @@ namespace web_connectivity {
 #define USAGE "usage: %s [-nv] [-b backend] [-N nameserver] file_name\n"
 
 int main(const char *, int argc, char **argv) {
-    std::string backend = "https://a.collector.test.ooni.io:4444";
+    std::string backend = "https://a.web-connectivity.th.ooni.io:4442";
     std::string nameserver = "8.8.8.8";
     std::string name = argv[0];
     uint32_t verbosity = 0;
