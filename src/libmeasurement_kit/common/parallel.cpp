@@ -47,6 +47,13 @@ void parallel(std::vector<Continuation<Error>> input, Callback<Error> cb,
     if (parallelism <= 0) {
         parallelism = input.size();
     }
+    /*
+     * Possible improvement: use an atomic shared integer as opposed to
+     * using a counter to speed up the parallel process at the end, when
+     * some "threads" could terminate earlier than others.
+     *
+     * Enhancement suggested by @AntonioLangiu.
+     */
     for (size_t idx = 0; idx < parallelism; ++idx) {
         run(idx, input, cb, overall, completed, parallelism);
     }
