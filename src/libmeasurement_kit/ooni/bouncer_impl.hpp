@@ -15,11 +15,13 @@ namespace bouncer {
 struct Reply {
     std::string https_collector;
     std::string https_helper;
+
+    std::string cloudfront_collector;
+    std::string cloudfront_helper;
 };
 
 template <MK_MOCK_NAMESPACE(http, request)>
-inline void
-post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
+void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,
                     Callback<Error, Var<Reply>> cb, Settings settings,
                     Var<Reactor> reactor, Var<Logger> logger) {
@@ -34,12 +36,12 @@ post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
 
     settings["http/url"] = base_bouncer_url;
     settings["http/method"] = "POST";
-
     http_request(
         settings, {}, request.dump(),
         [=](Error e, Var<http::Response> resp) {
             if (e) {
                 reactor->call_soon([=]() { cb(e, nullptr); });
+                return;
             }
             Var<Reply> reply(new Reply);
             try {
@@ -52,57 +54,47 @@ post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                             cb(BouncerCollectorNotFoundError(), nullptr);
                         });
                         return;
-                    } else if (response["error"] == "invalid-request") {
+                    }
+                    if (response["error"] == "invalid-request") {
                         logger->warn("invalid request sent to the bouncer");
                         reactor->call_soon([=]() {
                             cb(BouncerInvalidRequestError(), nullptr);
                         });
                         return;
-                    } else {
-                        // I assume that if we receive a json with the key
-                        // "error"
-                        // then the json is not valid and we should not continue
-                        // to parse it
-                        logger->warn("bouncer generic error");
-                        reactor->call_soon(
-                            [=]() { cb(BouncerGenericError(), nullptr); });
-                        return;
                     }
+                    // I assume that if we receive a json with the key "error"
+                    // then the json has an unknown schema and we should not
+                    // continue to process it
+                    logger->warn("bouncer generic error");
+                    reactor->call_soon(
+                        [=]() { cb(BouncerGenericError(), nullptr); });
+                    return;
                 }
-
+                if (response["net-tests"].empty()) {
+                    logger->warn("generic bouncer error");
+                    reactor->call_soon([=]() {
+                            cb(BouncerTestHelperNotFoundError(), nullptr);
+                            });
+                    return;
+                }
                 auto collector_alternate =
                     response["net-tests"][0]["collector-alternate"];
-                bool collector_found = false;
                 for (auto collector : collector_alternate) {
                     if (collector["type"] == "https") {
                         reply->https_collector = collector["address"];
-                        collector_found = true;
-                        break;
+                    } else if (collector["type"] == "cloudfront") {
+                        reply->cloudfront_collector = collector["address"];
                     }
-                }
-                if (!collector_found) {
-                    logger->warn(
-                        "no https collector found in bouncer response");
-                    reactor->call_soon(
-                        [=]() { cb(MissingHttpsCollectorError(), nullptr); });
                 }
                 auto test_helpers_alternate =
                     response["net-tests"][0]["test-helpers-alternate"]
                             [test_name];
-                bool helper_found = false;
                 for (auto helper : test_helpers_alternate) {
                     if (helper["type"] == "https") {
-                        helper_found = true;
                         reply->https_helper = helper["address"];
-                        break;
+                    } else if (helper["type"] == "cloudfront") {
+                        reply->cloudfront_helper = helper["address"];
                     }
-                }
-                if (!helper_found) {
-                    logger->warn(
-                        "no https test helper found in bouncer response");
-                    reactor->call_soon([=]() {
-                        cb(MissingHttpsTestHelperError(), nullptr);
-                    });
                 }
             } catch (std::invalid_argument &) {
                 cb(JsonParseError(), nullptr);
