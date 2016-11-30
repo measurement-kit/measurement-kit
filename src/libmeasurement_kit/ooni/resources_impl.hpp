@@ -3,9 +3,12 @@
 // information on the copying conditions.
 
 #include <fstream>
+#include <regex>
+
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/ooni.hpp>
-#include <regex>
+
+#include "../common/utils.hpp"
 
 namespace mk {
 namespace ooni {
@@ -19,6 +22,12 @@ void get_latest_release_impl(Callback<Error, std::string> callback,
                              Var<Logger> logger) {
     std::string url =
         "https://github.com/OpenObservatory/ooni-resources/releases/latest";
+    /*
+     * Make sure we are not redirected because we need to read the URL
+     * to which github would like to redirect us.
+     */
+    settings["http/max_redirects"] = 0;
+    logger->info("Downloading latest version; please, be patient...");
     http_get(url, [=](Error error, Var<Response> response) {
         if (error) {
             callback(error, "");
@@ -39,7 +48,7 @@ void get_latest_release_impl(Callback<Error, std::string> callback,
             },
             ""
         );
-        logger->info("ooniresources: latest resources version: %s", v.c_str());
+        logger->info("Latest resources version: %s", v.c_str());
         callback(NoError(), v);
     }, {}, settings, reactor, logger, nullptr, 0);
 }
@@ -56,6 +65,7 @@ void get_manifest_as_json_impl(
     if (settings.find("http/max_redirects") == settings.end()) {
         settings["http/max_redirects"] = 4;
     }
+    logger->info("Downloading manifest; please, be patient...");
     http_get(url, [=](Error error, Var<Response> response) {
         nlohmann::json result;
         if (error) {
@@ -72,7 +82,7 @@ void get_manifest_as_json_impl(
             callback(GenericError() /* XXX */, result);
             return;
         }
-        logger->info("ooniresources: downloaded manifest");
+        logger->info("Downloaded manifest");
         callback(NoError(), result);
     }, {}, settings, reactor, logger, nullptr, 0);
 }
@@ -136,17 +146,32 @@ void get_resources_for_country_impl(
                     callback(GenericError() /* XXX */);
                     return;
                 }
-                // TODO: validate SHA256
-                logger->info("ooniresources: downloaded %s", path.c_str());
+                logger->info("Downloaded %s", path.c_str());
+                if (entry.find("sha256") == entry.end()) {
+                    callback(GenericError() /* XXX */);
+                    return;
+                }
+                if (sha256_of(response->body) != entry["sha256"]) {
+                    callback(GenericError() /* XXX */);
+                    return;
+                }
+                logger->info("Verified %s", path.c_str());
                 std::ofstream ofile(path);
                 ofile << response->body;
                 ofile.close();
-                // TODO: check for I/O errors?
+                /*
+                 * Note: bad() returns true if I/O fails.
+                 */
+                if (ofile.bad()) {
+                    callback(GenericError() /* XXX */);
+                    return;
+                }
+                logger->info("Written %s", path.c_str());
                 callback(NoError());
             }, {}, settings, reactor, logger, nullptr, 0);
         });
     }
-    logger->info("ooniresources: downloading resources... be patient...");
+    logger->info("Downloading resources; please, be patient...");
     mk::parallel(input, callback, 4);
 }
 
