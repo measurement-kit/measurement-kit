@@ -34,11 +34,11 @@ void get_latest_release_impl(Callback<Error, std::string> callback,
             return;
         }
         if (response->status_code / 100 != 3) {
-            callback(GenericError() /* XXX */, "");
+            callback(CannotGetResourcesVersionError(), "");
             return;
         }
         if (response->headers.find("location") == response->headers.end()) {
-            callback(GenericError() /* XXX */, "");
+            callback(MissingLocationHeaderError(), "");
             return;
         }
         std::string v = std::regex_replace(
@@ -73,13 +73,13 @@ void get_manifest_as_json_impl(
             return;
         }
         if (response->status_code != 200) {
-            callback(GenericError() /* XXX */, result);
+            callback(CannotGetResourcesManifestError(), result);
             return;
         }
         try {
             result = nlohmann::json::parse(response->body);
         } catch (const std::invalid_argument &) {
-            callback(GenericError() /* XXX */, result);
+            callback(JsonParseError(), result);
             return;
         }
         logger->info("Downloaded manifest");
@@ -93,11 +93,11 @@ void get_resources_for_country_impl(
         Callback<Error> callback, Settings settings, Var<Reactor> reactor,
         Var<Logger> logger) {
     if (!manifest.is_object()) {
-        callback(GenericError() /* XXX */);
+        callback(JsonDomainError());
         return;
     }
     if (manifest.find("resources") == manifest.end()) {
-        callback(GenericError() /* XXX */);
+        callback(JsonKeyError());
         return;
     }
     if (settings.find("http/max_redirects") == settings.end()) {
@@ -105,15 +105,17 @@ void get_resources_for_country_impl(
     }
     // TODO: do we need to cross validate latest?
     std::vector<Continuation<Error>> input;
-    // Note: MUST be entry and not &entry because we need a copy!
+    /*
+     * Important: MUST be entry and not &entry because we need a copy!
+     */
     for (auto entry: manifest["resources"]) {
         input.push_back([=](Callback<Error> callback) {
             if (!entry.is_object()) {
-                callback(GenericError() /* XXX */);
+                callback(JsonDomainError());
                 return;
             }
             if (entry.find("country_code") == entry.end()) {
-                callback(GenericError() /* XXX */);
+                callback(JsonKeyError());
                 return;
             }
             std::string cc = entry["country_code"];
@@ -122,7 +124,7 @@ void get_resources_for_country_impl(
                 return;
             }
             if (entry.find("path") == entry.end()) {
-                callback(GenericError() /* XXX */);
+                callback(JsonKeyError());
                 return;
             }
             std::string path = entry["path"];
@@ -143,16 +145,16 @@ void get_resources_for_country_impl(
                     return;
                 }
                 if (response->status_code != 200) {
-                    callback(GenericError() /* XXX */);
+                    callback(CannotGetResourceError());
                     return;
                 }
                 logger->info("Downloaded %s", path.c_str());
                 if (entry.find("sha256") == entry.end()) {
-                    callback(GenericError() /* XXX */);
+                    callback(JsonKeyError());
                     return;
                 }
                 if (sha256_of(response->body) != entry["sha256"]) {
-                    callback(GenericError() /* XXX */);
+                    callback(ResourceIntegrityError());
                     return;
                 }
                 logger->info("Verified %s", path.c_str());
@@ -163,7 +165,7 @@ void get_resources_for_country_impl(
                  * Note: bad() returns true if I/O fails.
                  */
                 if (ofile.bad()) {
-                    callback(GenericError() /* XXX */);
+                    callback(FileIoError());
                     return;
                 }
                 logger->info("Written %s", path.c_str());
