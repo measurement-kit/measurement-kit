@@ -19,7 +19,7 @@ BaseTest &BaseTest::on_event(Delegate<const char *> func) {
     return *this;
 }
 
-BaseTest &BaseTest::on_progress(Delegate<double> func) {
+BaseTest &BaseTest::on_progress(Delegate<double, const char *> func) {
     runnable->logger->on_progress(func);
     return *this;
 }
