@@ -12,12 +12,12 @@ using namespace mk;
 using namespace mk::ooni;
 using namespace mk::ooni::bouncer;
 
-void request_invalid(Settings, http::Headers, std::string,
+static void request_invalid(Settings, http::Headers, std::string,
                      Callback<Error, Var<http::Response>> cb,
                      Var<Reactor> = Reactor::global(),
                      Var<Logger> = Logger::global(),
-                     Var<http::Response>,
-                     int) {
+                     Var<http::Response> = nullptr,
+                     int = 0) {
     Var<http::Response> response(new http::Response());
     response->body = "{\"error\": \"invalid-request\"}";
     cb(NoError(), response);
@@ -32,7 +32,7 @@ TEST_CASE("The bouncer can handle an invalid request") {
                 REQUIRE(e == BouncerInvalidRequestError());
                 break_loop();
             },
-            {}, Reactor::global(), Logger::global(), nullptr, 0);
+            {}, Reactor::global(), Logger::global());
     });
 }
 
