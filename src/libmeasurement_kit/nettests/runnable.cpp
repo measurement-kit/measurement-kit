@@ -44,8 +44,8 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         prog = *current_entry / (double)num_entries;
     }
     *current_entry += 1;
-    std::string description;
     if (next_input != "") {
+        std::string description;
         description += "Processing input: ";
         description += next_input;
         logger->progress(prog, description.c_str());
@@ -80,12 +80,12 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
             } catch (const std::exception &exc) {
                 logger->warn("Unhandled exception in entry_cb(): %s",
                              exc.what());
+                /* FALLTHROUGH */
             }
         }
         report.write_entry(entry, [=](Error error) {
             if (error) {
                 logger->warn("cannot write entry");
-                // XXX ignoring errors until we implement retry
                 if (not options.get("ignore_write_entry_error", true)) {
                     cb(error);
                     return;
@@ -243,7 +243,6 @@ void Runnable::begin(Callback<Error> cb) {
                 logger->debug("failed to lookup resolver ip");
             }
             open_report([=](Error error) {
-                // XXX ignoring errors until we implement retry
                 if (error and not options.get(
                         "ignore_open_report_error", true)) {
                     cb(error);
