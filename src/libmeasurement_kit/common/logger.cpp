@@ -26,7 +26,7 @@ Logger::Logger() {
         }
         uint32_t verbosity = (level & MK_LOG_VERBOSITY_MASK);
         if (verbosity <= MK_LOG_WARNING) {
-            fprintf(stderr, "[W] %s\n", s);
+            fprintf(stderr, "[!] %s\n", s);
         } else if (verbosity == MK_LOG_INFO) {
             fprintf(stderr, "%s\n", s);
         } else {
