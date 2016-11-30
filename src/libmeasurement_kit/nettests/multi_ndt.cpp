@@ -16,6 +16,15 @@ MultiNdtTest::MultiNdtTest() : BaseTest() {
     runnable->test_version = "0.0.5";  /* Forked from `ndt` v0.0.4 */
 }
 
+/*
+ * Note: in the following function and other functions below we're going to
+ * take advantage of the fact that `Entry` is a JSON type, thus we are going
+ * to return, e.g., `nullptr` to indicate error and otherwise a double.
+ *
+ * This behavior is correct C++ because the constructor of `Entry` can take
+ * in input any valid JSON (`null`, numbers, strings, lists, objects).
+ */
+
 static report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
 
     try {
