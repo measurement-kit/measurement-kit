@@ -2,10 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/cmdline.hpp>
 #include <measurement_kit/ooni.hpp>
 #include <string>
 #include <unistd.h>
+
+#include "../cmdline/cmdline.hpp"
 
 namespace mk {
 namespace cmdline {
