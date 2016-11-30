@@ -92,6 +92,7 @@
 /test/report/report
 /test/traceroute/android
 /tmp
+/tor-bridges.tor-bridges-ip-port.csv
 Makefile
 Makefile.in
 __venv__
