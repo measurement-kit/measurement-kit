@@ -19,7 +19,7 @@ MultiNdtTest::MultiNdtTest() : BaseTest() {
 static report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
 
     try {
-        // Note: do static case to make sure it's convertible to a double
+        // Note: do static cast to make sure it's convertible to a double
         return static_cast<double>(test_s2c["web100_data"]["MinRTT"]);
     } catch (const std::exception &) {
         logger->warn("Cannot access Web100 data");
@@ -49,6 +49,12 @@ static report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
 
 static report::Entry compute_download_speed(report::Entry &test_s2c,
                                             Var<Logger> logger) {
+    /*
+     * This algorithm computes the speed in a way that is similar to the one
+     * implemented by OOKLA, as documented here:
+     *
+     *    http://www.ookla.com/support/a21110547/what-is-the-test-flow-and-methodology-for-the-speedtest
+     */
     try {
         std::vector<double> speeds;
         for (auto &x: test_s2c["receiver_data"]) {
@@ -83,7 +89,8 @@ static report::Entry compute_stats(report::Entry &root, std::string key,
     try {
         test_s2c = root[key]["test_s2c"][0] /* We know it's just one entry */;
     } catch (const std::exception &) {
-        logger->warn("cannot access root[\"%s\"][\"test_s2c\"]", key.c_str());
+        logger->warn("cannot access root[\"%s\"][\"test_s2c\"][0]",
+                     key.c_str());
         return nullptr;  /* Cannot compute this stat */
     }
     stats["ping"] = compute_ping(test_s2c, logger);
@@ -97,6 +104,9 @@ static void compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
     report::Entry multi = compute_stats(entry, "multi_stream", logger);
     report::Entry selected;
 
+    /*
+     * Here we basically pick up the fastest of the two tests.
+     */
     if (single["ping"] != nullptr and multi["ping"] != nullptr) {
         if (single["download"] != nullptr and multi["download"] != nullptr) {
             double singled = single["download"];
@@ -192,10 +202,10 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
     ndt_settings["test_suite"] = MK_NDT_DOWNLOAD;
     logger->progress(0.0, "Starting single-stream test");
     logger->set_progress_scale(0.5);
-    ndt::run(ndt_entry, [=](Error error) {
-        if (error) {
-            (*ndt_entry)["failure"] = error.as_ooni_error();
-            logger->warn("Test failed: %s", error.explain().c_str());
+    ndt::run(ndt_entry, [=](Error ndt_error) {
+        if (ndt_error) {
+            (*ndt_entry)["failure"] = ndt_error.as_ooni_error();
+            logger->warn("Test failed: %s", ndt_error.explain().c_str());
             // FALLTHROUGH
         }
 
@@ -206,20 +216,26 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
         neubot_settings["mlabns_tool_name"] = "neubot";
         logger->set_progress_offset(0.5);
         logger->progress(0.0, "Starting multi-stream test");
-        ndt::run(neubot_entry, [=](Error error) {
+        ndt::run(neubot_entry, [=](Error neubot_error) {
             logger->progress(1.0, "Test completed");
-            if (error) {
-                (*neubot_entry)["failure"] = error.as_ooni_error();
-                logger->warn("Test failed: %s", error.explain().c_str());
+            if (neubot_error) {
+                (*neubot_entry)["failure"] = neubot_error.as_ooni_error();
+                logger->warn("Test failed: %s", neubot_error.explain().c_str());
                 // FALLTHROUGH
             }
             Var<report::Entry> overall_entry(new report::Entry);
             (*overall_entry)["failure"] = nullptr;
             (*overall_entry)["multi_stream"] = *neubot_entry;
             (*overall_entry)["single_stream"] = *ndt_entry;
-            if ((*neubot_entry)["failure"] != nullptr or
-                (*ndt_entry)["failure"] != nullptr) {
-                (*overall_entry)["failure"] = GenericError().as_ooni_error();
+            if (ndt_error or neubot_error) {
+                Error overall_error = SequentialOperationError();
+                overall_error.child_errors.push_back(
+                    Var<Error>{new Error{ndt_error}}
+                );
+                overall_error.child_errors.push_back(
+                    Var<Error>{new Error{neubot_error}}
+                );
+                (*overall_entry)["failure"] = overall_error.as_ooni_error();
                 // FALLTHROUGH
             }
             try {

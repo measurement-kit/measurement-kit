@@ -59,7 +59,6 @@ int main(const char *, int argc, char **argv) {
                    speed, speed_unit.c_str());
         })
         .on_entry([](std::string s) {
-            // XXX add protection against exceptions in callbacks
             nlohmann::json doc = nlohmann::json::parse(s);
             auto simple = doc["test_keys"]["simple"];
             printf("\nTest summary\n");
@@ -70,6 +69,8 @@ int main(const char *, int argc, char **argv) {
             printf("Fastest test: %s\n", fastest.c_str());
             printf("Download speed: %.2f kbit/s\n", download);
             printf("Ping: %.2f ms\n", ping);
+            printf("\nAdvanced info (from single stream test)\n");
+            printf("---------------------------------------\n");
             auto web100 = doc["test_keys"]["single_stream"][
                     "test_s2c"][0]["web100_data"];
             auto adv = doc["test_keys"]["advanced"];
