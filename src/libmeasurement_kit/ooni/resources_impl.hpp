@@ -88,16 +88,16 @@ void get_manifest_as_json_impl(
 }
 
 template <MK_MOCK_NAMESPACE(http, get)>
-void get_resources_for_country_impl(
-        std::string latest, nlohmann::json manifest, std::string country,
-        Callback<Error> callback, Settings settings, Var<Reactor> reactor,
-        Var<Logger> logger) {
+void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
+                                    std::string country, Callback<Error> cb,
+                                    Settings settings, Var<Reactor> reactor,
+                                    Var<Logger> logger) {
     if (!manifest.is_object()) {
-        callback(JsonDomainError());
+        reactor->call_soon([=]() { cb(JsonDomainError()); });
         return;
     }
     if (manifest.find("resources") == manifest.end()) {
-        callback(JsonKeyError());
+        reactor->call_soon([=]() { cb(JsonKeyError()); });
         return;
     }
     if (settings.find("http/max_redirects") == settings.end()) {
@@ -108,73 +108,70 @@ void get_resources_for_country_impl(
     /*
      * Important: MUST be entry and not &entry because we need a copy!
      */
-    for (auto entry: manifest["resources"]) {
-        input.push_back([=](Callback<Error> callback) {
+    for (auto entry : manifest["resources"]) {
+        input.push_back([=](Callback<Error> cb) {
             if (!entry.is_object()) {
-                callback(JsonDomainError());
+                cb(JsonDomainError());
                 return;
             }
             if (entry.find("country_code") == entry.end()) {
-                callback(JsonKeyError());
+                cb(JsonKeyError());
                 return;
             }
             std::string cc = entry["country_code"];
             if (country != cc and country != "ALL") {
-                callback(NoError()); // Nothing to be done for this entry
+                cb(NoError()); // Nothing to be done for this entry
                 return;
             }
             if (entry.find("path") == entry.end()) {
-                callback(JsonKeyError());
+                cb(JsonKeyError());
                 return;
             }
             std::string path = entry["path"];
-            path = std::regex_replace(
-                path,
-                std::regex{"/"},
-                "."
-            );
-            std::string url{
-                "https://github.com/OpenObservatory/ooni-resources/releases/download/"
-            };
+            path = std::regex_replace(path, std::regex{"/"}, ".");
+            std::string url{"https://github.com/OpenObservatory/ooni-resources/"
+                            "releases/download/"};
             url += latest;
             url += "/";
             url += path;
-            http_get(url, [=](Error error, Var<Response> response) {
-                if (error) {
-                    callback(error);
-                    return;
-                }
-                if (response->status_code != 200) {
-                    callback(CannotGetResourceError());
-                    return;
-                }
-                logger->info("Downloaded %s", path.c_str());
-                if (entry.find("sha256") == entry.end()) {
-                    callback(JsonKeyError());
-                    return;
-                }
-                if (sha256_of(response->body) != entry["sha256"]) {
-                    callback(ResourceIntegrityError());
-                    return;
-                }
-                logger->info("Verified %s", path.c_str());
-                std::ofstream ofile(path);
-                ofile << response->body;
-                ofile.close();
-                /*
-                 * Note: bad() returns true if I/O fails.
-                 */
-                if (ofile.bad()) {
-                    callback(FileIoError());
-                    return;
-                }
-                logger->info("Written %s", path.c_str());
-                callback(NoError());
-            }, {}, settings, reactor, logger, nullptr, 0);
+            http_get(url,
+                     [=](Error error, Var<Response> response) {
+                         if (error) {
+                             cb(error);
+                             return;
+                         }
+                         if (response->status_code != 200) {
+                             cb(CannotGetResourceError());
+                             return;
+                         }
+                         logger->info("Downloaded %s", path.c_str());
+                         if (entry.find("sha256") == entry.end()) {
+                             cb(JsonKeyError());
+                             return;
+                         }
+                         if (sha256_of(response->body) != entry["sha256"]) {
+                             cb(ResourceIntegrityError());
+                             return;
+                         }
+                         logger->info("Verified %s", path.c_str());
+                         std::ofstream ofile(path);
+                         ofile << response->body;
+                         ofile.close();
+                         /*
+                          * Note: bad() returns true if I/O fails.
+                          */
+                         if (ofile.bad()) {
+                             cb(FileIoError());
+                             return;
+                         }
+                         logger->info("Written %s", path.c_str());
+                         cb(NoError());
+                     },
+                     {}, settings, reactor, logger, nullptr, 0);
         });
     }
     logger->info("Downloading resources; please, be patient...");
-    mk::parallel(input, callback, 4);
+    mk::parallel(input, cb, 4);
 }
 
 } // namespace resources

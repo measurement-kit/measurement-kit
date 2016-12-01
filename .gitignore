@@ -85,6 +85,7 @@
 /test/nettests/tcp_connect
 /test/nettests/web_connectivity
 /test/ooni/collector_client
+/test/ooni/resources
 /test/ooni/templates
 /test/ooni/utils
 /test/report/entry
