@@ -324,6 +324,7 @@ TEST_CASE("connect() fails when setting an invalid dns") {
                       },
                       {{"dns/nameserver", "8.8.8.1"},
                        {"dns/timeout", 0.001},
+                       {"dns/engine", "libevent"},
                        {"dns/attempts", 1}});
     });
 }
