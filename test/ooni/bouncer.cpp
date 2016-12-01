@@ -51,20 +51,6 @@ TEST_CASE("The bouncer can handle a collector not found response") {
     });
 }
 
-TEST_CASE("The bouncer can handle an invalid url") {
-    loop_with_initial_event([]() {
-        post_net_tests_impl(
-            "https://a.collector.ooni.io/bouncer/net-tests&antani",
-            "web-connectivity", "0.0.1", {"web-connectivity"},
-            [](Error e, Var<Reply>) {
-                // In this case the answer should be html and not json
-                REQUIRE(e == JsonParseError());
-                break_loop();
-            },
-            {}, Reactor::global(), Logger::global());
-    });
-}
-
 TEST_CASE("The bouncer works as expected") {
     loop_with_initial_event([]() {
         post_net_tests_impl(
