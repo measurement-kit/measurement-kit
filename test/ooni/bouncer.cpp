@@ -25,6 +25,7 @@ static void request_invalid(Settings, http::Headers, std::string,
 
 TEST_CASE("The bouncer can handle an invalid request") {
     loop_with_initial_event([]() {
+        // Mocked http request that returns an invalid-request
         post_net_tests_impl<request_invalid>(
             "https://a.collector.ooni.io/bouncer/net-tests", "web-connectivity",
             "0.0.1", {"web-connectivity"},
@@ -57,7 +58,6 @@ TEST_CASE("The bouncer works as expected") {
             "https://a.collector.ooni.io/bouncer/net-tests", "web-connectivity",
             "0.0.1", {"web-connectivity"},
             [](Error e, Var<Reply> reply) {
-
                 REQUIRE(!e);
                 REQUIRE(reply->https_collector ==
                         "https://a.collector.ooni.io:4441");
