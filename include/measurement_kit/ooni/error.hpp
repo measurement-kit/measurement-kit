@@ -22,10 +22,10 @@ MK_DEFINE_ERR(MK_ERR_OONI(9), GeoipCountryCodeLookupError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(10), GeoipCountryNameLookupError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(11), GeoipCityLookupError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(12), GeoipAsnLookupError, "")
-MK_DEFINE_ERR(MK_ERR_OONI(15), BouncerCollectorNotFoundError, "")
-MK_DEFINE_ERR(MK_ERR_OONI(16), BouncerTestHelperNotFoundError, "")
-MK_DEFINE_ERR(MK_ERR_OONI(17), BouncerInvalidRequestError, "")
-MK_DEFINE_ERR(MK_ERR_OONI(18), BouncerGenericError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(13), BouncerCollectorNotFoundError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(14), BouncerTestHelperNotFoundError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(15), BouncerInvalidRequestError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(16), BouncerGenericError, "")
 
 } // namespace mk
 } // namespace ooni
