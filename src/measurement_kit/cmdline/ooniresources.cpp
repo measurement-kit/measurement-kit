@@ -33,6 +33,7 @@ int main(const char *, int argc, char **argv) {
     argc -= optind, argv += optind;
 
     loop_with_initial_event([=]() {
+
         mk::ooni::resources::get_latest_release(
             [=](Error error, std::string latest) {
                 if (error) {
@@ -62,6 +63,7 @@ int main(const char *, int argc, char **argv) {
                                 });
                     });
             });
+
     });
 
     return 0;

@@ -98,3 +98,295 @@ TEST_CASE("get_manifest_as_json() works as expected") {
             {}, Reactor::global(), Logger::global());
     }
 }
+
+static void get_antani_body(std::string,
+                            Callback<Error, Var<http::Response>> cb,
+                            http::Headers, Settings, Var<Reactor>, Var<Logger>,
+                            Var<http::Response>, int) {
+    Var<http::Response> response{new http::Response};
+    response->status_code = 200;
+    response->body = "antani";
+    cb(NoError(), response);
+}
+
+static bool io_error(const std::ostream &) {
+    return true;
+}
+
+TEST_CASE("get_resources_for_country() works as expected") {
+
+    SECTION("When manifest is not an object") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            ooni::resources::get_resources_for_country_impl(
+                "6", nullptr, "IT",
+                [=](Error err) {
+                    REQUIRE(err.code == JsonDomainError().code);
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("When manifest does not contain a resources section") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            ooni::resources::get_resources_for_country_impl(
+                "6", nlohmann::json::object(), "IT",
+                [=](Error err) {
+                    REQUIRE(err.code == JsonKeyError().code);
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("When manifest resources are not objects") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            nlohmann::json root;
+            root["resources"].push_back(nullptr);
+            root["resources"].push_back(nullptr);
+            root["resources"].push_back(nullptr);
+            ooni::resources::get_resources_for_country_impl(
+                "6", root, "IT",
+                [=](Error err) {
+                    REQUIRE(err.code == ParallelOperationError().code);
+                    for (size_t i = 0; i < err.child_errors.size(); ++i) {
+                        REQUIRE(err.child_errors[i]->code ==
+                                JsonDomainError().code);
+                    }
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("When manifest resources do not contain the country key") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            nlohmann::json root;
+            root["resources"].push_back(nlohmann::json::object());
+            root["resources"].push_back(nlohmann::json::object());
+            root["resources"].push_back(nlohmann::json::object());
+            ooni::resources::get_resources_for_country_impl(
+                "6", root, "IT",
+                [=](Error err) {
+                    REQUIRE(err.code == ParallelOperationError().code);
+                    for (size_t i = 0; i < err.child_errors.size(); ++i) {
+                        REQUIRE(err.child_errors[i]->code ==
+                                JsonKeyError().code);
+                    }
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("When a specific country code is selected others are skipped") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            nlohmann::json root = R"({
+                "resources": [{
+                    "country_code": "IT"
+                }, {
+                    "country_code": "DE"
+                }, {
+                    "country_code": "FR"
+                }
+            ]})"_json;
+            ooni::resources::get_resources_for_country(
+                "6", root, "IT",
+                [=](Error err) {
+                    REQUIRE(err.code == ParallelOperationError().code);
+                    /*
+                     * JsonKeyError because `path` is missing.
+                     */
+                    REQUIRE(err.child_errors[0]->code == JsonKeyError().code);
+                    REQUIRE(err.child_errors[1]->code == NoError().code);
+                    REQUIRE(err.child_errors[2]->code == NoError().code);
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("The ALL selector selects all countries") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            nlohmann::json root = R"({
+                "resources": [{
+                    "country_code": "IT"
+                }, {
+                    "country_code": "DE"
+                }, {
+                    "country_code": "FR"
+                }
+            ]})"_json;
+            ooni::resources::get_resources_for_country(
+                "6", root, "ALL",
+                [=](Error err) {
+                    REQUIRE(err.code == ParallelOperationError().code);
+                    /*
+                     * JsonKeyError because `path` is missing.
+                     */
+                    REQUIRE(err.child_errors[0]->code == JsonKeyError().code);
+                    REQUIRE(err.child_errors[1]->code == JsonKeyError().code);
+                    REQUIRE(err.child_errors[2]->code == JsonKeyError().code);
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("Deals with HTTP GET errors") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            nlohmann::json root = R"({
+                "resources": [{
+                    "country_code": "IT",
+                    "path": "xx"
+                }, {
+                    "country_code": "DE",
+                    "path": "xx"
+                }, {
+                    "country_code": "FR",
+                    "path": "xx"
+                }
+            ]})"_json;
+            ooni::resources::get_resources_for_country_impl<get_fail>(
+                "6", root, "ALL",
+                [=](Error err) {
+                    REQUIRE(err.code == ParallelOperationError().code);
+                    REQUIRE(err.child_errors[0]->code == MockedError().code);
+                    REQUIRE(err.child_errors[1]->code == MockedError().code);
+                    REQUIRE(err.child_errors[2]->code == MockedError().code);
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("Deals with HTTP GET returning error") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            nlohmann::json root = R"({
+                "resources": [{
+                    "country_code": "IT",
+                    "path": "xx"
+                }, {
+                    "country_code": "DE",
+                    "path": "xx"
+                }, {
+                    "country_code": "FR",
+                    "path": "xx"
+                }
+            ]})"_json;
+            ooni::resources::get_resources_for_country_impl<get_500>(
+                "6", root, "ALL",
+                [=](Error err) {
+                    REQUIRE(err.code == ParallelOperationError().code);
+                    for (size_t i = 0; i < err.child_errors.size(); ++i) {
+                        REQUIRE(err.child_errors[i]->code ==
+                                ooni::CannotGetResourceError().code);
+                    }
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("Deals with missing sha256 keys in the manifest") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            nlohmann::json root = R"({
+                "resources": [{
+                    "country_code": "IT",
+                    "path": "xx"
+                }, {
+                    "country_code": "DE",
+                    "path": "xx"
+                }, {
+                    "country_code": "FR",
+                    "path": "xx"
+                }
+            ]})"_json;
+            ooni::resources::get_resources_for_country_impl<get_antani_body>(
+                "6", root, "ALL",
+                [=](Error err) {
+                    REQUIRE(err.code == ParallelOperationError().code);
+                    for (size_t i = 0; i < err.child_errors.size(); ++i) {
+                        REQUIRE(err.child_errors[i]->code ==
+                                JsonKeyError().code);
+                    }
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("Deals with invalid sha256 sums") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            nlohmann::json root = R"({
+                "resources": [{
+                    "country_code": "IT",
+                    "path": "xx",
+                    "sha256": "abc"
+                }, {
+                    "country_code": "DE",
+                    "path": "xx",
+                    "sha256": "abc"
+                }, {
+                    "country_code": "FR",
+                    "path": "xx",
+                    "sha256": "abc"
+                }
+            ]})"_json;
+            ooni::resources::get_resources_for_country_impl<get_antani_body>(
+                "6", root, "ALL",
+                [=](Error err) {
+                    REQUIRE(err.code == ParallelOperationError().code);
+                    for (size_t i = 0; i < err.child_errors.size(); ++i) {
+                        REQUIRE(err.child_errors[i]->code ==
+                                ooni::ResourceIntegrityError().code);
+                    }
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("Deals with write file I/O error") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            nlohmann::json root = R"({
+                "resources": [{
+                    "country_code": "IT",
+                    "path": "xx",
+                    "sha256": "b1dc5f0ba862fe3a1608d985ded3c5ed6b9a7418db186d9e6e6201794f59ba54"
+                }, {
+                    "country_code": "DE",
+                    "path": "xx",
+                    "sha256": "b1dc5f0ba862fe3a1608d985ded3c5ed6b9a7418db186d9e6e6201794f59ba54"
+                }, {
+                    "country_code": "FR",
+                    "path": "xx",
+                    "sha256": "b1dc5f0ba862fe3a1608d985ded3c5ed6b9a7418db186d9e6e6201794f59ba54"
+                }
+            ]})"_json;
+            ooni::resources::get_resources_for_country_impl<get_antani_body,
+                                                            io_error>(
+                "6", root, "ALL",
+                [=](Error err) {
+                    REQUIRE(err.code == ParallelOperationError().code);
+                    for (size_t i = 0; i < err.child_errors.size(); ++i) {
+                        REQUIRE(err.child_errors[i]->code ==
+                                FileIoError().code);
+                    }
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+}

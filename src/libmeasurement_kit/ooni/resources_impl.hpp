@@ -87,7 +87,11 @@ void get_manifest_as_json_impl(
     }, {}, settings, reactor, logger, nullptr, 0);
 }
 
-template <MK_MOCK_NAMESPACE(http, get)>
+static inline bool ostream_bad(const std::ostream &s) {
+    return s.bad();
+}
+
+template <MK_MOCK_NAMESPACE(http, get), MK_MOCK(ostream_bad)>
 void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
                                     std::string country, Callback<Error> cb,
                                     Settings settings, Var<Reactor> reactor,
@@ -160,7 +164,7 @@ void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
                          /*
                           * Note: bad() returns true if I/O fails.
                           */
-                         if (ofile.bad()) {
+                         if (ostream_bad(ofile)) {
                              cb(FileIoError());
                              return;
                          }
