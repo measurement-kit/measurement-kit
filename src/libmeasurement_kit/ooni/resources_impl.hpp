@@ -178,6 +178,23 @@ void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
     mk::parallel(input, cb, 4);
 }
 
+template <MK_MOCK(get_manifest_as_json), MK_MOCK(get_resources_for_country)>
+void get_resources_impl(std::string latest, std::string country,
+                        Callback<Error> callback, Settings settings,
+                        Var<Reactor> reactor, Var<Logger> logger) {
+    get_manifest_as_json(latest,
+                         [=](Error error, nlohmann::json manifest) {
+                             if (error) {
+                                 callback(error);
+                                 return;
+                             }
+                             get_resources_for_country(
+                                 latest, manifest, country, callback, settings,
+                                 reactor, logger);
+                         },
+                         settings, reactor, logger);
+}
+
 } // namespace resources
 } // namespace mk
 } // namespace ooni

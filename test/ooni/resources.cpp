@@ -390,3 +390,69 @@ TEST_CASE("get_resources_for_country() works as expected") {
         });
     }
 }
+
+static void get_manifest_as_json_fail(std::string,
+                                      Callback<Error, nlohmann::json> callback,
+                                      Settings, Var<Reactor>, Var<Logger>) {
+    callback(MockedError(), nullptr);
+}
+
+static void get_manifest_as_json_okay(std::string,
+                                      Callback<Error, nlohmann::json> callback,
+                                      Settings, Var<Reactor>, Var<Logger>) {
+    callback(NoError(), nullptr);
+}
+
+static void get_resources_for_country_fail(std::string, nlohmann::json,
+                                           std::string,
+                                           Callback<Error> callback, Settings,
+                                           Var<Reactor>, Var<Logger>) {
+    callback(MockedError());
+}
+
+TEST_CASE("get_resources() works as expected") {
+
+    SECTION("When get_manifest_as_json() fails") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            ooni::resources::get_resources_impl<get_manifest_as_json_fail>(
+                "6", "IT",
+                [=](Error error) {
+                    REQUIRE(error.code == MockedError().code);
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+    SECTION("When get_resources_for_country() fails") {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            ooni::resources::get_resources_impl<get_manifest_as_json_okay,
+                                                get_resources_for_country_fail>(
+                "6", "IT",
+                [=](Error error) {
+                    REQUIRE(error.code == MockedError().code);
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
+    }
+
+#ifdef ENABLE_INTEGRATION_TESTS
+    SECTION("Integration test") {
+        Var<Reactor> reactor = Reactor::make();
+        Var<Logger> logger = Logger::global();
+        logger->set_verbosity(MK_LOG_INFO);
+        reactor->loop_with_initial_event([=]() {
+            ooni::resources::get_resources("6", "ALL",
+                                           [=](Error error) {
+                                               REQUIRE(error.code ==
+                                                       NoError().code);
+                                               reactor->break_loop();
+                                           },
+                                           {}, reactor, logger);
+        });
+    }
+#endif
+}

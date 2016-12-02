@@ -30,6 +30,12 @@ void get_resources_for_country(std::string version,
                                    settings, reactor, logger);
 }
 
+void get_resources(std::string latest, std::string country,
+                   Callback<Error> callback, Settings settings,
+                   Var<Reactor> reactor, Var<Logger> logger) {
+    get_resources_impl(latest, country, callback, settings, reactor, logger);
+}
+
 } // namespace resources
 } // namespace mk
 } // namespace ooni

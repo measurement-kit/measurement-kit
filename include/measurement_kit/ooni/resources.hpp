@@ -30,6 +30,11 @@ void get_resources_for_country(std::string latest,
                                Var<Reactor> reactor = Reactor::global(),
                                Var<Logger> logger = Logger::global());
 
+void get_resources(std::string latest, std::string country,
+                   Callback<Error> callback, Settings settings = {},
+                   Var<Reactor> reactor = Reactor::global(),
+                   Var<Logger> logger = Logger::global());
+
 } // namespace resources
 } // namespace mk
 } // namespace ooni
