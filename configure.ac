@@ -3,7 +3,7 @@
 # information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.3.8, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.3.9, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -34,12 +34,6 @@ if test "`uname`" != "Darwin"; then
   CFLAGS="$CFLAGS -pthread"
   CXXFLAGS="$CXXFLAGS -pthread"
   LDFLAGS="$LDFLAGS -pthread"
-fi
-
-# On my macOS at least `/usr/local` is not in -I and -L (odd...)
-if test "`uname`" = "Darwin"; then
-  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-  LDFLAGS="$LDFLAGS -L/usr/local/lib"
 fi
 
 MK_AM_CHECK_LIBC_FUNCS
