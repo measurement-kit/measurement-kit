@@ -1,3 +1,7 @@
+# MeasurementKit 0.3.7 [2016-12-02]
+
+- Allow to quickly disable traceroute
+
 # MeasurementKit 0.3.6 [2016-12-01]
 
 - http/request: don't redirect if `*max_request <= 0` (#908)
