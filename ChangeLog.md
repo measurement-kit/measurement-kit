@@ -1,3 +1,7 @@
+# MeasurementKit 0.3.9 [2016-12-04]
+
+- Revert "Add workaround for macOS"
+
 # MeasurementKit 0.3.8 [2016-12-04]
 
 - Make sure --disable-traceroute actually works

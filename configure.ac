@@ -44,12 +44,6 @@ if test "`uname`" != "Darwin"; then
   LDFLAGS="$LDFLAGS -pthread"
 fi
 
-# On my macOS at least `/usr/local` is not in -I and -L (odd...)
-if test "`uname`" = "Darwin"; then
-  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-  LDFLAGS="$LDFLAGS -L/usr/local/lib"
-fi
-
 MK_AM_CHECK_LIBC_FUNCS
 MK_AM_OPENSSL
 MK_AM_LIBEVENT
