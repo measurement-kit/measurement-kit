@@ -1,3 +1,9 @@
 pkg_name=apr
 pkg_repository=https://github.com/apache/apr.git
 pkg_tag=1.5.2
+pkg_configure_flags="--disable-posix-shm $pkg_configure_flags"
+
+pkg_make() {
+    make tools/gen_test_char CC="cc" CFLAGS="-Wall" CPPFLAGS="" LDFLAGS=""
+    make $pkg_make_flags
+}
