@@ -27,6 +27,7 @@ XX(multi_ndt)
 XX(ndt)
 XX(net_connect)
 XX(oonireport)
+XX(ooniresources)
 XX(tcp_connect)
 XX(web_connectivity)
 

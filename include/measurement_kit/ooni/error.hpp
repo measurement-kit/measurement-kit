@@ -22,6 +22,10 @@ MK_DEFINE_ERR(MK_ERR_OONI(9), GeoipCountryCodeLookupError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(10), GeoipCountryNameLookupError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(11), GeoipCityLookupError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(12), GeoipAsnLookupError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(13), CannotGetResourcesVersionError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(14), CannotGetResourcesManifestError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(15), CannotGetResourceError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(16), ResourceIntegrityError, "")
 
 } // namespace mk
 } // namespace ooni
