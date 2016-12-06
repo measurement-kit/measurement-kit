@@ -36,6 +36,6 @@ install -d $ANDROIDDIR/jni/spec
 install -m644 $BUILDDIR/spec/$SPEC $ANDROIDDIR/jni/spec/$SPEC
 
 # Log the path to the NDK dir as a proxy of NDK version
-install -d $ANDROIDDIR/jni/conf
-install -m644 /dev/null $ANDROIDDIR/jni/conf/ndk-dir
-echo ${NDK_DIR} > $ANDROIDDIR/jni/conf/ndk-dir
+install -d $ANDROIDDIR/jni/conf/$SPEC
+install -m644 /dev/null $ANDROIDDIR/jni/conf/$SPEC/ndk-dir
+echo ${NDK_DIR} > $ANDROIDDIR/jni/conf/$SPEC/ndk-dir

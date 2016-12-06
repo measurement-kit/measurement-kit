@@ -37,7 +37,8 @@ bash $MAKE_TOOLCHAIN \
   --toolchain=${ARCH}-4.9 \
   --install-dir=${INSTALL_DIR} \
   --use-llvm \
-  --stl=libc++
+  --stl=libc++ \
+  --force
 
 if [ $ARCH = x86 ]; then
     cp $NDK_DIR/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a $INSTALL_DIR/sysroot/usr/lib/
