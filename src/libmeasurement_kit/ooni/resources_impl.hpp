@@ -49,7 +49,7 @@ void get_latest_release_impl(Callback<Error, std::string> callback,
      *      - Simone (2016-12-06)
      */
     set_max_redirects(settings);
-    auto url = get_base_url(settings) + "/download/latest/version";
+    auto url = get_base_url(settings) + "download/latest/version";
     logger->info("Downloading latest version; please, be patient...");
     http_get(url, [=](Error error, Var<Response> response) {
         if (error) {
@@ -143,7 +143,7 @@ void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
                 cb(JsonKeyError());
                 return;
             }
-            auto url = get_base_url(settings) + "/download/";
+            auto url = get_base_url(settings) + "download/";
             url += latest;
             url += "/";
             std::string path = sanitize_path(entry["path"]);
