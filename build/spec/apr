@@ -4,6 +4,27 @@ pkg_tag=1.5.2
 pkg_configure_flags="--disable-posix-shm $pkg_configure_flags"
 
 pkg_make() {
-    make tools/gen_test_char CC="cc" CFLAGS="-Wall" CPPFLAGS="" LDFLAGS=""
+    #
+    # XXX Your attention, please:
+    #
+    # The build process of APR builds and uses this executable to create
+    # a table telling APR itself how apr_escape_string() should escape
+    # the strings passed to it. The problem is that, if we compile using
+    # Android cross compiler, the result executable can't be executed
+    # given that it's for another architecture.
+    #
+    # To workaround this issue, I decided to compile using the system's
+    # compiler; given that the generator should generate the same output
+    # for all Unix systems we are safe until we include Windows.
+    #
+    echo "- ./libtool --mode=compile cc -c -Wall -o tools/gen_test_char.lo tools/gen_test_char.c"
+    ./libtool --mode=compile cc -c -Wall -o tools/gen_test_char.lo tools/gen_test_char.c
+    echo "- ./libtool --mode=link cc -o tools/gen_test_char tools/gen_test_char.lo"
+    ./libtool --mode=link cc -o tools/gen_test_char tools/gen_test_char.lo
+    echo "- install -d include/private"
+    install -d include/private
+    echo "- ./tools/gen_test_char > include/private/apr_escape_test_char.h"
+    ./tools/gen_test_char > include/private/apr_escape_test_char.h
+    echo "- make $pkg_make_flags"
     make $pkg_make_flags
 }
