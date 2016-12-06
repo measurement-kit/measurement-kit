@@ -1,6 +1,6 @@
 /*
- *  Catch v1.5.7
- *  Generated: 2016-09-27 10:45:46.824849
+ *  Catch v1.5.9
+ *  Generated: 2016-11-29 12:14:38.049276
  *  ----------------------------------------------------------
  *  This file has been merged from multiple headers. Please don't edit it directly
  *  Copyright (c) 2012 Two Blue Cubes Ltd. All rights reserved.
@@ -3428,6 +3428,7 @@ namespace Catch {
 #include <streambuf>
 #include <ostream>
 #include <fstream>
+#include <memory>
 
 namespace Catch {
 
@@ -3995,9 +3996,12 @@ namespace Clara {
         inline void convertInto( std::string const& _source, std::string& _dest ) {
             _dest = _source;
         }
+        char toLowerCh(char c) {
+            return static_cast<char>( ::tolower( c ) );
+        }
         inline void convertInto( std::string const& _source, bool& _dest ) {
             std::string sourceLC = _source;
-            std::transform( sourceLC.begin(), sourceLC.end(), sourceLC.begin(), ::tolower );
+            std::transform( sourceLC.begin(), sourceLC.end(), sourceLC.begin(), toLowerCh );
             if( sourceLC == "y" || sourceLC == "1" || sourceLC == "true" || sourceLC == "yes" || sourceLC == "on" )
                 _dest = true;
             else if( sourceLC == "n" || sourceLC == "0" || sourceLC == "false" || sourceLC == "no" || sourceLC == "off" )
@@ -6461,7 +6465,7 @@ namespace Catch {
 namespace Catch {
 
     struct RandomNumberGenerator {
-        typedef int result_type;
+        typedef std::ptrdiff_t result_type;
 
         result_type operator()( result_type n ) const { return std::rand() % n; }
 
@@ -7578,7 +7582,7 @@ namespace Catch {
         return os;
     }
 
-    Version libraryVersion( 1, 5, 7, "", 0 );
+    Version libraryVersion( 1, 5, 9, "", 0 );
 
 }
 
@@ -7809,8 +7813,11 @@ namespace Catch {
     bool contains( std::string const& s, std::string const& infix ) {
         return s.find( infix ) != std::string::npos;
     }
+    char toLowerCh(char c) {
+        return static_cast<char>( ::tolower( c ) );
+    }
     void toLowerInPlace( std::string& s ) {
-        std::transform( s.begin(), s.end(), s.begin(), ::tolower );
+        std::transform( s.begin(), s.end(), s.begin(), toLowerCh );
     }
     std::string toLower( std::string const& s ) {
         std::string lc = s;
@@ -9163,6 +9170,7 @@ namespace Catch {
     public:
         XmlReporter( ReporterConfig const& _config )
         :   StreamingReporterBase( _config ),
+            m_xml(_config.stream()),
             m_sectionDepth( 0 )
         {
             m_reporterPrefs.shouldRedirectStdOut = true;
@@ -9182,7 +9190,6 @@ namespace Catch {
 
         virtual void testRunStarting( TestRunInfo const& testInfo ) CATCH_OVERRIDE {
             StreamingReporterBase::testRunStarting( testInfo );
-            m_xml.setStream( stream );
             m_xml.startElement( "Catch" );
             if( !m_config->name().empty() )
                 m_xml.writeAttribute( "name", m_config->name() );
@@ -9258,7 +9265,7 @@ namespace Catch {
                         .writeText( assertionResult.getMessage() );
                     break;
                 case ResultWas::FatalErrorCondition:
-                    m_xml.scopedElement( "Fatal Error Condition" )
+                    m_xml.scopedElement( "FatalErrorCondition" )
                         .writeAttribute( "filename", assertionResult.getSourceInfo().file )
                         .writeAttribute( "line", assertionResult.getSourceInfo().line )
                         .writeText( assertionResult.getMessage() );
