@@ -9,6 +9,11 @@
 
 using namespace mk;
 
+TEST_CASE("sanitize_version() works as expected") {
+    REQUIRE(ooni::resources::sanitize_version("\t 1.2.3 \r\t\n  \r") ==
+            "1.2.3");
+}
+
 static void get_fail(std::string, Callback<Error, Var<http::Response>> cb,
                      http::Headers, Settings, Var<Reactor>, Var<Logger>,
                      Var<http::Response>, int) {
@@ -20,14 +25,6 @@ static void get_500(std::string, Callback<Error, Var<http::Response>> cb,
                     Var<http::Response>, int) {
     Var<http::Response> response{new http::Response};
     response->status_code = 500;
-    cb(NoError(), response);
-}
-
-static void get_no_loc(std::string, Callback<Error, Var<http::Response>> cb,
-                       http::Headers, Settings, Var<Reactor>, Var<Logger>,
-                       Var<http::Response>, int) {
-    Var<http::Response> response{new http::Response};
-    response->status_code = 300;
     cb(NoError(), response);
 }
 
@@ -45,15 +42,6 @@ TEST_CASE("get_latest_release() works as expected") {
         ooni::resources::get_latest_release_impl<get_500>(
             [=](Error e, std::string s) {
                 REQUIRE(e.code == ooni::CannotGetResourcesVersionError().code);
-                REQUIRE(s == "");
-            },
-            {}, Reactor::global(), Logger::global());
-    }
-
-    SECTION("When the location header is missing") {
-        ooni::resources::get_latest_release_impl<get_no_loc>(
-            [=](Error e, std::string s) {
-                REQUIRE(e.code == ooni::MissingLocationHeaderError().code);
                 REQUIRE(s == "");
             },
             {}, Reactor::global(), Logger::global());
@@ -96,6 +84,24 @@ TEST_CASE("get_manifest_as_json() works as expected") {
                 REQUIRE(s == nullptr);
             },
             {}, Reactor::global(), Logger::global());
+    }
+}
+
+TEST_CASE("sanitize_path() works as expected") {
+    // Important: let's also make sure that multiple sequences are stripped
+
+    SECTION("When there are neither forward not back slashes") {
+        REQUIRE(ooni::resources::sanitize_path("antani") == "antani");
+    }
+
+    SECTION("For backward slashes") {
+        REQUIRE(ooni::resources::sanitize_path("/etc/passwd///")
+                == ".etc.passwd.");
+    }
+
+    SECTION("For forward slashes") {
+        REQUIRE(ooni::resources::sanitize_path("\\etc\\passwd\\\\\\")
+                == ".etc.passwd.");
     }
 }
 
