@@ -12,15 +12,19 @@ namespace mk {
 namespace cmdline {
 namespace ooniresources {
 
-#define USAGE "ooniresources [-v]" 
+#define USAGE "ooniresources [-v] [-d dir]"
 
 using namespace mk::ooni;
 using namespace mk;
 
 int main(const char *, int argc, char **argv) {
 
-    for (int ch; (ch = getopt(argc, argv, "v")) != -1; ) {
+    Settings settings;
+    for (int ch; (ch = getopt(argc, argv, "d:v")) != -1; ) {
         switch (ch) {
+        case 'd':
+            settings["ooni/resources_destdir"] = std::string{optarg};
+            break;
         case 'v':
             increase_verbosity();
             break;
@@ -49,8 +53,8 @@ int main(const char *, int argc, char **argv) {
                             /* FALLTHROUGH */
                         }
                         break_loop();
-                    });
-            });
+                    }, settings);
+            }, settings);
     });
 
     return 0;

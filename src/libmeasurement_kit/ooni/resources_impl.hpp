@@ -173,7 +173,19 @@ void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
                           * filepaths here we will need to make sure that we
                           * are not writing into bad places.
                           */
-                         std::ofstream ofile(path);
+                         std::string dir = settings.get(
+                            "ooni/resources_destdir",
+                            std::string{"."}
+                         );
+                         /*
+                          * See http://stackoverflow.com/questions/12971499
+                          */
+#if (defined _WIN32 || defined __CYGWIN__)
+                         dir += R"xx(\)xx";
+#else
+                         dir += "/";
+#endif
+                         std::ofstream ofile(dir + path);
                          ofile << response->body;
                          ofile.close();
                          /*
