@@ -12,18 +12,61 @@ namespace mk {
 namespace ooni {
 namespace bouncer {
 
-struct Reply {
-    std::string https_collector;
-    std::string https_helper;
+class BouncerReply {
+ private:
+     Var<Logger> logger;
 
-    std::string cloudfront_collector;
-    std::string cloudfront_helper;
+ public:
+    json response;
+
+    static ErrorOr<Var<BouncerReply>> create(std::string, Var<Logger>);
+
+    std::string get_collector();
+    std::string get_collector_alternate(std::string type);
+    std::string get_name();
+    std::string get_test_helper(std::string name);
+    std::string get_test_helper_alternate(std::string type);
+    std::string get_version();
 };
+
+ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data, Var<Logger> logger) {
+    Var<BouncerReply> reply(new BouncerReply);
+    try {
+        reply->response = json::parse(data);
+        if (reply->response.find("error") != reply->response.end()) {
+            if (reply->response["error"] == "collector-not-found") {
+                logger->warn(
+                        "collector not found for the requested test");
+                return BouncerCollectorNotFoundError();
+            }
+            if (reply->response["error"] == "invalid-request") {
+                logger->warn("invalid request sent to the bouncer");
+                return BouncerInvalidRequestError();
+            }
+            // I assume that if we receive a json with the key "error"
+            // then the json has an unknown schema and we should not
+            // continue to process it
+            logger->warn("bouncer generic error");
+            return BouncerGenericError();
+        }
+        if (reply->response["net-tests"].empty()) {
+            logger->warn("generic bouncer error");
+            return BouncerTestHelperNotFoundError();
+        }
+    } catch (std::invalid_argument &) {
+        return JsonParseError();
+    } catch (std::out_of_range &) {
+        return JsonKeyError();
+    } catch (std::domain_error &) {
+        return JsonDomainError();
+    }
+    return reply;
+}
 
 template <MK_MOCK_NAMESPACE(http, request)>
 void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,
-                    Callback<Error, Var<Reply>> cb, Settings settings,
+                    Callback<Error, Var<BouncerReply>> cb, Settings settings,
                     Var<Reactor> reactor, Var<Logger> logger) {
 
     json request;
@@ -43,73 +86,18 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                 reactor->call_soon([=]() { cb(e, nullptr); });
                 return;
             }
-            Var<Reply> reply(new Reply);
-            try {
-                json response = json::parse(resp->body);
-                if (response.find("error") != response.end()) {
-                    if (response["error"] == "collector-not-found") {
-                        logger->warn(
-                            "collector not found for the requested test");
-                        reactor->call_soon([=]() {
-                            cb(BouncerCollectorNotFoundError(), nullptr);
-                        });
-                        return;
-                    }
-                    if (response["error"] == "invalid-request") {
-                        logger->warn("invalid request sent to the bouncer");
-                        reactor->call_soon([=]() {
-                            cb(BouncerInvalidRequestError(), nullptr);
-                        });
-                        return;
-                    }
-                    // I assume that if we receive a json with the key "error"
-                    // then the json has an unknown schema and we should not
-                    // continue to process it
-                    logger->warn("bouncer generic error");
-                    reactor->call_soon(
-                        [=]() { cb(BouncerGenericError(), nullptr); });
-                    return;
-                }
-                if (response["net-tests"].empty()) {
-                    logger->warn("generic bouncer error");
-                    reactor->call_soon([=]() {
-                            cb(BouncerTestHelperNotFoundError(), nullptr);
-                            });
-                    return;
-                }
-                auto collector_alternate =
-                    response["net-tests"][0]["collector-alternate"];
-                for (auto collector : collector_alternate) {
-                    if (collector["type"] == "https") {
-                        reply->https_collector = collector["address"];
-                    } else if (collector["type"] == "cloudfront") {
-                        reply->cloudfront_collector = collector["address"];
-                    }
-                }
-                auto test_helpers_alternate =
-                    response["net-tests"][0]["test-helpers-alternate"]
-                            [test_name];
-                for (auto helper : test_helpers_alternate) {
-                    if (helper["type"] == "https") {
-                        reply->https_helper = helper["address"];
-                    } else if (helper["type"] == "cloudfront") {
-                        reply->cloudfront_helper = helper["address"];
-                    }
-                }
-            } catch (std::invalid_argument &) {
-                cb(JsonParseError(), nullptr);
+
+            ErrorOr<Var<BouncerReply>> reply(BouncerReply::create(resp->body, logger));
+            if (!!reply) {
+                cb(NoError(), *reply);
                 return;
-            } catch (std::out_of_range &) {
-                cb(JsonKeyError(), nullptr);
-                return;
-            } catch (std::domain_error &) {
-                cb(JsonDomainError(), nullptr);
+            } else {
+                cb(reply.as_error(), nullptr);
                 return;
             }
-            reactor->call_soon([=]() { cb(NoError(), reply); });
         },
         reactor, logger, nullptr, 0);
-};
+}
 
 } // namespace mk
 } // namespace ooni
