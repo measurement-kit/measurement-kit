@@ -6,6 +6,7 @@ Pod::Spec.new do |s|
              "Arturo Filastò",
              "Davide Allavena",
              "Carmine D'Amico",
+             "Leonid Evdokimov",
              "Antonio Langiu",
              "Lorenzo Primiterra",
              "Alessandro Quaranta"
