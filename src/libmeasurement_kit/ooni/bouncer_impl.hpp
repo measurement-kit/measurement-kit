@@ -146,7 +146,7 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
         settings, {}, request.dump(),
         [=](Error e, Var<http::Response> resp) {
             if (e) {
-                reactor->call_soon([=]() { cb(e, nullptr); });
+                cb(e, nullptr);
                 return;
             }
 
