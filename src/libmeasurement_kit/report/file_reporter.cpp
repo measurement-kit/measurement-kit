@@ -26,7 +26,7 @@ static Error map_error(std::ofstream &file) {
     return reporter;
 }
 
-Continuation<Error> FileReporter::open(Report) {
+Continuation<Error> FileReporter::open(Report &) {
     return do_open_([=](Callback<Error> cb) {
         file.open(filename);
         if (!file.good()) {

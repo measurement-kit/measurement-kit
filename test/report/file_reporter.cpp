@@ -14,12 +14,12 @@ using namespace mk;
 using json = nlohmann::json;
 
 TEST_CASE("The constructor works correctly") {
-    REQUIRE_NOTHROW(FileReporter::make("/nonexistent/foobar.json"));
+    REQUIRE_NOTHROW(FileReporter::make("/nonexistent/foobar.njson"));
 }
 
 TEST_CASE("open() tells us if it encounters an error") {
     Report report;
-    Var<BaseReporter> reporter = FileReporter::make("/nonexistent/foobar.json");
+    Var<BaseReporter> reporter = FileReporter::make("/nonexistent/foobar.njson");
     // This should cause failure on open() because directory doesn't exist
     reporter->open(report)([](Error err) {
         REQUIRE(err);
@@ -41,7 +41,7 @@ TEST_CASE(
         report.test_version = MEASUREMENT_KIT_VERSION;
         report.options = options;
         mk::utc_time_now(&report.test_start_time);
-        std::string filename("example_test_report.json");
+        std::string filename("example_test_report.njson");
         report.add_reporter(FileReporter::make(filename));
 
         mk::report::Entry entry;
@@ -77,6 +77,6 @@ TEST_CASE(
                         REQUIRE(entry["antani"].get<std::string>() == "fuffa");
                     }
                 });
-            });
+            }, Logger::global());
         });
     }

@@ -146,12 +146,15 @@ the `query` function. The following setting keys are available:
 
 - *"dns/attempts"*: how many attempts before erroring out (default is three)
 
-- *"dns/nameserver"*: address (and optionally port) of the name server to use. If you
+- *"dns/nameserver"*: address of the name server to use. If you
   don't specify this, the default name server is used. On Unix systems the default DNS
   server is obtained parsing `/etc/resolv.conf`; on mobile devices where such file
   is not available, the default DNS name server is `127.0.0.1` which typically is not
   correct. Hence with mobile devices you SHOULD typically supply the DNS server
   you would like to use.
+
+- *"dns/port"*: port of the name server to use. If you don't specify this, the
+  default is `53`.
 
 - *"dns/randomize_case"*: whether to [randomize request case to make DNS
   poisoning more complex](https://lists.torproject.org/pipermail/tor-commits/2008-October/026025.html)
@@ -171,7 +174,8 @@ and receive the corresponding response.
 using namespace mk;
 
 Settings settings({
-    {"dns/nameserver", "8.8.8.8:53"},
+    {"dns/nameserver", "8.8.8.8"},
+    {"dns/port", 53},
     {"dns/attempts", 1},
     {"dns/timeout", 3.1415},
     {"dns/randomize_case", true},

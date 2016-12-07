@@ -14,7 +14,7 @@ using namespace mk::net;
 using json = nlohmann::json;
 
 static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
-                 Var<Logger>, Var<Reactor>) {
+                 Var<Reactor>, Var<Logger>) {
     cb(MockedError(), nullptr);
 }
 
@@ -104,7 +104,7 @@ TEST_CASE("wait_in_queue() deals with invalid wait time") {
         ctx, [](Error err) { REQUIRE(err == InvalidSrvQueueMessageError()); });
 }
 
-static void call_soon_not_called(Var<Reactor>, Callback<>) {
+static void call_soon_not_called(Callback<>, Var<Reactor>) {
     REQUIRE(false /* should not happen */);
 }
 
@@ -151,7 +151,7 @@ TEST_CASE("wait_in_queue() deals with server-busy-60s wait time") {
 }
 
 static bool call_soon_called_flag = false;
-static void call_soon_called(Var<Reactor>, Callback<>) {
+static void call_soon_called(Callback<>, Var<Reactor>) {
     REQUIRE(!call_soon_called_flag);
     call_soon_called_flag = true;
 }

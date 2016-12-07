@@ -2,25 +2,29 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../dns/query_impl.hpp"
-
-struct evdns_base;
+#include "../libevent/dns.hpp"
+#include "../dns/system_resolver.hpp"
 
 namespace mk {
 namespace dns {
 
-extern "C" {
-    void handle_resolve(int code, char type, int count, int ttl,
-            void *addresses, void *opaque) {
-        auto context = static_cast<QueryContext *>(opaque);
-        dns_callback(code, type, count, ttl, addresses, context);
+void query(
+        QueryClass dns_class,
+        QueryType dns_type,
+        std::string name,
+        Callback<Error, Var<Message>> cb,
+        Settings settings,
+        Var<Reactor> reactor,
+        Var<Logger> logger) {
+    std::string engine = settings.get("dns/engine", std::string("libevent"));
+    logger->log(MK_LOG_DEBUG2, "dns: engine: %s", engine.c_str());
+    if (engine == "libevent") {
+        libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);
+    } else if (engine == "system") {
+        system_resolver(dns_class, dns_type, name, cb, settings, reactor, logger);
+    } else {
+        reactor->call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
     }
-}
-
-void query (QueryClass dns_class, QueryType dns_type,
-        std::string name, Callback<Error, Message> cb,
-        Settings settings, Var<Reactor> reactor) {
-    query_impl (dns_class, dns_type, name, cb, settings, reactor);
 }
 
 } // namespace dns

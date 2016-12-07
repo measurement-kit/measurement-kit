@@ -18,7 +18,9 @@ class BaseReporter : public NonCopyable, public NonMovable {
 
     virtual ~BaseReporter();
 
-    virtual Continuation<Error> open(Report) {
+    // TODO: refactor moving these inline functions inside of the .cpp file
+
+    virtual Continuation<Error> open(Report &) {
         return do_open_([=](Callback<Error> cb) { cb(NoError()); });
     }
 
@@ -28,6 +30,10 @@ class BaseReporter : public NonCopyable, public NonMovable {
 
     virtual Continuation<Error> close() {
         return do_close_([=](Callback<Error> cb) { cb(NoError()); });
+    }
+
+    virtual std::string get_report_id() {
+        return ""; /* This is basically "invalid report id" */
     }
 
   protected:

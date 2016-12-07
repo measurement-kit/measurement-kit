@@ -515,14 +515,14 @@ static void experiment_dns_query(
   }
 
   templates::dns_query(entry, "A", "IN", hostname, nameserver,
-        [=](Error err, dns::Message message) {
+        [=](Error err, Var<dns::Message> message) {
           logger->debug("web_connectivity: experiment_dns_query got response");
           std::vector<std::string> addresses;
           if (err) {
             callback(err, addresses);
             return;
           }
-          for (auto answer : message.answers) {
+          for (auto answer : message->answers) {
             if (answer.ipv4 != "") {
               addresses.push_back(answer.ipv4);
             } else if (answer.hostname != "") {
@@ -624,17 +624,6 @@ void web_connectivity(std::string input, Settings options,
       }, reactor, logger); // end tcp_connect
 
     }, options, reactor, logger); // end dns_query
-}
-
-Var<NetTest> WebConnectivity::create_test_() {
-  WebConnectivity *test = new WebConnectivity(input_filepath, options);
-  test->logger = logger;
-  test->reactor = reactor;
-  test->output_filepath = output_filepath;
-  test->entry_cb = entry_cb;
-  test->begin_cb = begin_cb;
-  test->end_cb = end_cb;
-  return Var<NetTest>(test);
 }
 
 } // namespace ooni

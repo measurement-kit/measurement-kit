@@ -14,15 +14,15 @@ using namespace mk::ooni;
 using namespace mk::report;
 
 TEST_CASE("dns query template works as expected") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         Var<Entry> entry(new Entry);
         templates::dns_query(
             entry, "A", "IN", "nexa.polito.it", "8.8.8.8:53",
-            [=](Error err, dns::Message) {
+            [=](Error err, Var<dns::Message>) {
                 REQUIRE(!err);
                 templates::dns_query(
                     entry, "A", "IN", "nexa.polito.it", "8.8.8.1:53",
-                    [=](Error err, dns::Message) {
+                    [=](Error err, Var<dns::Message>) {
                         REQUIRE(!!err);
                         nlohmann::json answers;
                         nlohmann::json root;
@@ -88,7 +88,7 @@ TEST_CASE("tcp connect returns error if port is invalid") {
 
 TEST_CASE("http requests template works as expected") {
     Var<Entry> entry(new Entry);
-    loop_with_initial_event_and_connectivity([=]() {
+    loop_with_initial_event([=]() {
         templates::http_request(
             entry, {{"http/url", "http://nexa.polito.it/robots.txt"}}, {}, "",
             [=](Error err, Var<http::Response>) {

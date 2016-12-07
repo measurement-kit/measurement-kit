@@ -9,7 +9,8 @@
 
 namespace mk {
 
-void parallel(std::vector<Continuation<Error>> input, Callback<Error> cb);
+void parallel(std::vector<Continuation<Error>> input, Callback<Error> cb,
+              size_t parallelism = 0 /* means equal to input.size() */);
 
 } // namespace mk
 #endif

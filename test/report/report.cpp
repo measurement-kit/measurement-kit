@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include <measurement_kit/report.hpp>
 
@@ -18,7 +18,7 @@ class CountedReporter : public BaseReporter {
 
     ~CountedReporter() override;
 
-    Continuation<Error> open(Report) override {
+    Continuation<Error> open(Report &) override {
         return do_open_([=](Callback<Error> cb) {
             ++open_count;
             return cb(NoError());
@@ -54,7 +54,7 @@ class FailingReporter : public BaseReporter {
 
     ~FailingReporter() override;
 
-    Continuation<Error> open(Report) override {
+    Continuation<Error> open(Report & /*report*/) override {
         return do_open_([=](Callback<Error> cb) {
             if (open_count++ == 0) {
                 cb(MockedError());
@@ -175,13 +175,13 @@ TEST_CASE("The write_entry() method works correctly") {
                                 REQUIRE(err.child_errors.size() == 1);
                                 REQUIRE(err.child_errors[0]->code ==
                                         ReportAlreadyClosedError().code);
-                            });
+                            }, Logger::global());
                         });
-                    });
-                });
-            });
+                    }, Logger::global());
+                }, Logger::global());
+            }, Logger::global());
         });
-    });
+    }, Logger::global());
 }
 
 TEST_CASE("We can retry a partially successful write_entry()") {
@@ -209,8 +209,8 @@ TEST_CASE("We can retry a partially successful write_entry()") {
                 REQUIRE(err.child_errors[0]->child_errors[0]->code ==
                         DuplicateEntrySubmitError().code);
                 REQUIRE(err.child_errors[1]->code == NoError().code);
-            });
-        });
+            }, Logger::global());
+        }, Logger::global());
     });
     REQUIRE(counted_reporter->write_count == 1);
     REQUIRE(failing_reporter->write_count == 2);
@@ -262,4 +262,33 @@ TEST_CASE("We can retry a partially successful close") {
     });
     REQUIRE(counted_reporter->close_count == 1);
     REQUIRE(failing_reporter->close_count == 2);
+}
+
+class ReturningIdReporter : public BaseReporter {
+  public:
+    static Var<ReturningIdReporter> make() {
+        return Var<ReturningIdReporter>(new ReturningIdReporter);
+    }
+
+    ~ReturningIdReporter() override;
+
+    std::string get_report_id() override { return "xx"; }
+};
+
+ReturningIdReporter::~ReturningIdReporter() {}
+
+TEST_CASE(
+        "We return an error if multiple report-ids are returned by reporters") {
+    Report report;
+    report.add_reporter(ReturningIdReporter::make());
+    report.add_reporter(ReturningIdReporter::make());
+    report.open([&](Error err) {
+        REQUIRE(err.code == NoError().code);
+        Entry entry;
+        entry["foobar"] = 17;
+        entry["baz"] = "foobar";
+        report.write_entry(entry, [&](Error err) {
+            REQUIRE(err.code == MultipleReportIdsError().code);
+        }, Logger::global());
+    });
 }

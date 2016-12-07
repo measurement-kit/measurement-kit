@@ -14,37 +14,39 @@ using namespace mk::report;
 
 void dns_query(Var<Entry> entry, dns::QueryType query_type,
                dns::QueryClass query_class, std::string query_name,
-               std::string nameserver, Callback<Error, dns::Message> cb,
+               std::string nameserver, Callback<Error, Var<dns::Message>> cb,
                Settings options, Var<Reactor> reactor, Var<Logger> logger) {
 
     int resolver_port;
     std::string resolver_hostname, nameserver_part;
     std::stringstream nameserver_ss(nameserver);
 
+    // TODO: Fix IPv6 `nameserver`, use google's [2001:4860:4860::8888]:53 for testing.
     std::getline(nameserver_ss, nameserver_part, ':');
     resolver_hostname = nameserver_part;
 
     std::getline(nameserver_ss, nameserver_part, ':');
     resolver_port = std::stoi(nameserver_part, nullptr);
 
-    options["dns/nameserver"] = nameserver;
+    options["dns/nameserver"] = resolver_hostname;
+    options["dns/port"] = resolver_port;
     options["dns/attempts"] = 1;
 
     dns::query(query_class, query_type, query_name,
-               [=](Error error, dns::Message message) {
+               [=](Error error, Var<dns::Message> message) {
                    logger->debug("dns_test: got response!");
                    Entry query_entry;
                    query_entry["resolver_hostname"] = resolver_hostname;
                    query_entry["resolver_port"] = resolver_port;
                    query_entry["failure"] = nullptr;
                    query_entry["answers"] = Entry::array();
-                   if (query_type == dns::QueryTypeId::A) {
+                   if (query_type == dns::MK_DNS_TYPE_A) {
                        query_entry["query_type"] = "A";
                        query_entry["hostname"] = query_name;
                    }
                    if (!error) {
-                       for (auto answer : message.answers) {
-                           if (query_type == dns::QueryTypeId::A) {
+                       for (auto answer : message->answers) {
+                           if (query_type == dns::MK_DNS_TYPE_A) {
                                query_entry["answers"].push_back(
                                    {{"ttl", answer.ttl},
                                     {"ipv4", answer.ipv4},
@@ -114,7 +116,7 @@ void tcp_connect(Settings options, Callback<Error, Var<net::Transport>> cb,
         cb(MissingRequiredHostError(), nullptr);
         return;
     }
-    net::connect(options["host"], *port, cb, options, logger, reactor);
+    net::connect(options["host"], *port, cb, options, reactor, logger);
 }
 
 } // namespace templates

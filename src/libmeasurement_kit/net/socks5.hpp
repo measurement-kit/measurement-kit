@@ -4,7 +4,6 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_SOCKS5_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_SOCKS5_HPP
 
-#include "../net/connection.hpp"
 #include "../net/emitter.hpp"
 
 #include <measurement_kit/net.hpp>

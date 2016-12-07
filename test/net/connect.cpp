@@ -5,7 +5,6 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/common/check_connectivity.hpp"
 #include "../src/libmeasurement_kit/net/connect_impl.hpp"
 #include "../src/libmeasurement_kit/net/emitter.hpp"
 
@@ -32,7 +31,7 @@ static int fail(const char *, sockaddr *, int *) { return -1; }
 TEST_CASE("connect_base deals with evutil_parse_sockaddr_port error") {
     loop_with_initial_event([]() {
         connect_base<fail>("130.192.16.172", 80,
-                           [](Error e, bufferevent *b) {
+                           [](Error e, bufferevent *b, double) {
                                REQUIRE(e);
                                REQUIRE(b == nullptr);
                                break_loop();
@@ -75,7 +74,7 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
         connect_base<::evutil_parse_sockaddr_port, ::bufferevent_socket_new,
                      bufferevent_set_timeouts, fail>(
             "130.192.16.172", 80,
-            [](Error e, bufferevent *b) {
+            [](Error e, bufferevent *b, double) {
                 REQUIRE(e);
                 REQUIRE(b == nullptr);
                 break_loop();
@@ -85,7 +84,7 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
 }
 
 static void success(std::string, int, Callback<Error, Var<Transport>> cb,
-                    Settings, Var<Logger> logger, Var<Reactor>) {
+                    Settings, Var<Reactor>, Var<Logger> logger) {
     cb(NoError(), Var<Transport>(new Emitter(logger)));
 }
 
@@ -96,12 +95,12 @@ TEST_CASE("net::connect_many() correctly handles net::connect() success") {
                               REQUIRE(!err);
                               REQUIRE(conns.size() == 3);
                           },
-                          {}, Logger::global(), Reactor::global());
+                          {}, Reactor::global(), Logger::global());
     connect_many_impl<success>(ctx);
 }
 
 static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
-                 Var<Logger>, Var<Reactor>) {
+                 Var<Reactor>, Var<Logger>) {
     cb(GenericError(), Var<Transport>(nullptr));
 }
 
@@ -112,7 +111,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
                               REQUIRE(err);
                               REQUIRE(conns.size() == 0);
                           },
-                          {}, Logger::global(), Reactor::global());
+                          {}, Reactor::global(), Logger::global());
     connect_many_impl<fail>(ctx);
 }
 
@@ -128,9 +127,9 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("connect_base works with ipv4") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         connect_base("130.192.16.172", 80,
-                     [](Error err, bufferevent *bev) {
+                     [](Error err, bufferevent *bev, double) {
                          REQUIRE(!err);
                          REQUIRE(bev);
                          ::bufferevent_free(bev);
@@ -145,9 +144,9 @@ static bool check_error(Error err) {
 }
 
 TEST_CASE("connect_base works with ipv4 and closed port") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         connect_base("130.192.16.172", 81,
-                     [](Error err, bufferevent *bev) {
+                     [](Error err, bufferevent *bev, double) {
                          REQUIRE(check_error(err));
                          REQUIRE(bev == nullptr);
                          break_loop();
@@ -157,9 +156,9 @@ TEST_CASE("connect_base works with ipv4 and closed port") {
 }
 
 TEST_CASE("connect_base works with ipv4 and timeout") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         connect_base("130.192.16.172", 80,
-                     [](Error err, bufferevent *bev) {
+                     [](Error err, bufferevent *bev, double) {
                          REQUIRE(err == TimeoutError());
                          REQUIRE(bev == nullptr);
                          break_loop();
@@ -169,9 +168,9 @@ TEST_CASE("connect_base works with ipv4 and timeout") {
 }
 
 TEST_CASE("connect_base works with ipv6") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         connect_base("2a00:1450:4001:801::1004", 80,
-                     [](Error err, bufferevent *bev) {
+                     [](Error err, bufferevent *bev, double) {
                          if (err) {
                              REQUIRE(err);
                              REQUIRE(bev == nullptr);
@@ -187,8 +186,9 @@ TEST_CASE("connect_base works with ipv6") {
 }
 
 TEST_CASE("connect_first_of works with empty vector") {
-    loop_with_initial_event_and_connectivity([]() {
-        connect_first_of({}, 80,
+    Var<ConnectResult> result(new ConnectResult);
+    loop_with_initial_event([=]() {
+        connect_first_of(result, 80,
                          [](std::vector<Error> errors, bufferevent *bev) {
                              REQUIRE(errors.size() == 0);
                              REQUIRE(bev == nullptr);
@@ -199,11 +199,13 @@ TEST_CASE("connect_first_of works with empty vector") {
 }
 
 TEST_CASE("connect_first_of works when all connect fail") {
-    loop_with_initial_event_and_connectivity([]() {
+    Var<ConnectResult> result(new ConnectResult);
+    result->resolve_result.addresses = {
+        "130.192.16.172", "130.192.16.172", "130.192.16.172",
+    };
+    loop_with_initial_event([&]() {
         connect_first_of(
-            {
-                "130.192.16.172", "130.192.16.172", "130.192.16.172",
-            },
+            result,
             80,
             [](std::vector<Error> errors, bufferevent *bev) {
                 REQUIRE(errors.size() == 3);
@@ -218,11 +220,13 @@ TEST_CASE("connect_first_of works when all connect fail") {
 }
 
 TEST_CASE("connect_first_of works when a connect succeeds") {
-    loop_with_initial_event_and_connectivity([]() {
+    Var<ConnectResult> result(new ConnectResult);
+    result->resolve_result.addresses = {
+        "130.192.16.172", "130.192.16.172", "130.192.16.172",
+    };
+    loop_with_initial_event([&]() {
         connect_first_of(
-            {
-                "130.192.16.172", "130.192.16.172", "130.192.16.172",
-            },
+            result,
             80,
             [](std::vector<Error> errors, bufferevent *bev) {
                 REQUIRE(errors.size() == 1);
@@ -238,7 +242,7 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
 }
 
 TEST_CASE("resolve_hostname works with IPv4 address") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         std::string hostname = "130.192.16.172";
         resolve_hostname(hostname, [hostname](ResolveHostnameResult r) {
             REQUIRE(r.inet_pton_ipv4);
@@ -250,7 +254,7 @@ TEST_CASE("resolve_hostname works with IPv4 address") {
 }
 
 TEST_CASE("resolve_hostname works with IPv6 address") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         std::string hostname = "2a00:1450:400d:807::200e";
         resolve_hostname(hostname, [hostname](ResolveHostnameResult r) {
             REQUIRE(r.inet_pton_ipv6);
@@ -262,7 +266,7 @@ TEST_CASE("resolve_hostname works with IPv6 address") {
 }
 
 TEST_CASE("resolve_hostname works with domain") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         resolve_hostname("google.com", [](ResolveHostnameResult r) {
             REQUIRE(not r.inet_pton_ipv4);
             REQUIRE(not r.inet_pton_ipv6);
@@ -276,7 +280,7 @@ TEST_CASE("resolve_hostname works with domain") {
 }
 
 TEST_CASE("stress resolve_hostname with invalid address and domain") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         // Pass input that is neither invalid IPvX nor valid domain
         resolve_hostname("192.1688.antani", [](ResolveHostnameResult r) {
             REQUIRE(not r.inet_pton_ipv4);
@@ -290,7 +294,7 @@ TEST_CASE("stress resolve_hostname with invalid address and domain") {
 }
 
 TEST_CASE("connect() works with valid IPv4") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         connect_logic("www.google.com", 80, [](Error e, Var<ConnectResult> r) {
             REQUIRE(!e);
             REQUIRE(r->connected_bev != nullptr);
@@ -301,7 +305,7 @@ TEST_CASE("connect() works with valid IPv4") {
 }
 
 TEST_CASE("connect() fails when port is closed or filtered") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         connect_logic("www.google.com", 81, [](Error e, Var<ConnectResult> r) {
             REQUIRE(e);
             REQUIRE(r->connected_bev == nullptr);
@@ -311,7 +315,7 @@ TEST_CASE("connect() fails when port is closed or filtered") {
 }
 
 TEST_CASE("connect() fails when setting an invalid dns") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         connect_logic("www.google.com", 80,
                       [](Error e, Var<ConnectResult> r) {
                           REQUIRE(e);
@@ -325,7 +329,7 @@ TEST_CASE("connect() fails when setting an invalid dns") {
 }
 
 TEST_CASE("net::connect_many() works as expected") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         connect_many("www.google.com", 80, 3,
                      [](Error error, std::vector<Var<Transport>> conns) {
                          REQUIRE(!error);
@@ -345,10 +349,10 @@ TEST_CASE("net::connect_many() works as expected") {
 
 TEST_CASE("net::connect() works with a custom reactor") {
     // Note: this is how Portolan uses measurement-kit
-    if (!CheckConnectivity::is_down()) {
-        set_verbosity(MK_LOG_DEBUG);
-        Var<Reactor> reactor = Reactor::make();
-        auto ok = false;
+    set_verbosity(MK_LOG_DEBUG);
+    Var<Reactor> reactor = Reactor::make();
+    auto ok = false;
+    reactor->loop_with_initial_event([&]() {
         connect("nexa.polito.it", 22,
                 [&](Error error, Var<Transport> txp) {
                     if (error) {
@@ -358,14 +362,13 @@ TEST_CASE("net::connect() works with a custom reactor") {
                     txp->close([&]() { reactor->break_loop(); });
                     ok = true;
                 },
-                {}, Logger::global(), reactor);
-        reactor->loop();
-        REQUIRE(ok);
-    }
+                {}, reactor, Logger::global());
+    });
+    REQUIRE(ok);
 }
 
 TEST_CASE("net::connect() can connect to open port") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         connect("www.kernel.org", 80, [](Error error, Var<Transport> txp) {
             REQUIRE(!error);
             Var<ConnectResult> cr = error.context.as<ConnectResult>();
@@ -380,7 +383,7 @@ TEST_CASE("net::connect() can connect to open port") {
 }
 
 TEST_CASE("net::connect() can connect to ssl port") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         set_verbosity(MK_LOG_DEBUG);
         connect("nexa.polito.it", 443,
                 [](Error error, Var<Transport> txp) {
@@ -399,7 +402,7 @@ TEST_CASE("net::connect() can connect to ssl port") {
 }
 
 TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         set_verbosity(MK_LOG_DEBUG);
         connect("expired.badssl.com", 443,
                 [](Error error, Var<Transport> ) {
@@ -413,7 +416,7 @@ TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
 
 TEST_CASE("net::connect() ssl fails when presented a certificate with the "
           "wrong hostname") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         set_verbosity(MK_LOG_DEBUG);
         connect("wrong.host.badssl.com", 443,
                 [](Error error, Var<Transport>) {
@@ -426,7 +429,7 @@ TEST_CASE("net::connect() ssl fails when presented a certificate with the "
 }
 
 TEST_CASE("net::connect() ssl works when using SNI") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         set_verbosity(MK_LOG_DEBUG);
         connect("sha256.badssl.com", 443,
                 [](Error error, Var<Transport> txp) {
@@ -438,29 +441,8 @@ TEST_CASE("net::connect() ssl works when using SNI") {
     });
 }
 
-TEST_CASE("net::connect() ssl works when setting ca_bundle_path via global "
-          "settings") {
-    set_verbosity(MK_LOG_DEBUG);
-    Var<Settings> global_settings = Settings::global();
-    (*global_settings)["net/ca_bundle_path"] = "test/fixtures/certs.pem";
-    loop_with_initial_event_and_connectivity([]() {
-        connect("nexa.polito.it", 443,
-                [](Error error, Var<Transport> txp) {
-                    REQUIRE(!error);
-                    Var<ConnectResult> cr = error.context.as<ConnectResult>();
-                    REQUIRE(cr);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv4);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv6);
-                    REQUIRE(cr->resolve_result.addresses.size() > 0);
-                    REQUIRE(cr->connected_bev);
-                    txp->close([]() { break_loop(); });
-                },
-                {{"net/ssl", true}});
-    });
-}
-
 TEST_CASE("net::connect() works in case of error") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         connect("nexa.polito.it", 81,
                 [](Error error, Var<Transport>) {
                     REQUIRE(error);

@@ -25,7 +25,7 @@ namespace net {
 
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
-void connect_first_of(std::vector<std::string> addresses, int port,
+void connect_first_of(Var<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings = {},
                       Var<Reactor> reactor = Reactor::global(),
                       Var<Logger> logger = Logger::global(), size_t index = 0,
@@ -57,8 +57,9 @@ class ConnectManyCtx {
     std::string address;
     int port = 0;
     Settings settings;
-    Var<Logger> logger = Logger::global();
     Var<Reactor> reactor = Reactor::global();
+    Var<Logger> logger = Logger::global();
+    Var<ConnectManyResult> result;
 };
 
 } // namespace mk
