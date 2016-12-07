@@ -52,6 +52,25 @@ TEST_CASE("The bouncer can handle a collector not found response") {
     });
 }
 
+TEST_CASE("The bouncer works as expected when trying to get invalid values") {
+    loop_with_initial_event([]() {
+        post_net_tests_impl(
+            "https://a.collector.ooni.io/bouncer/net-tests", "web-connectivity",
+            "0.0.1", {"web-connectivity"},
+            [](Error e, Var<BouncerReply> reply) {
+                REQUIRE(!e);
+                REQUIRE(reply->get_collector_alternate("antani") == "");
+                REQUIRE(reply->get_test_helper("antani") == "");
+                REQUIRE(reply->get_test_helper_alternate("web-connectivity", "antani") 
+                        == "");
+                REQUIRE(reply->get_test_helper_alternate("antani", "cloudfront") 
+                        == "");
+                break_loop();
+            },
+            {}, Reactor::global(), Logger::global());
+    });
+}
+
 TEST_CASE("The bouncer works as expected") {
     loop_with_initial_event([]() {
         post_net_tests_impl(
