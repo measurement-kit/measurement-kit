@@ -36,7 +36,7 @@ TEST_CASE("The bouncer can handle an invalid request") {
             {}, Reactor::global(), Logger::global());
     });
 }
-/*
+
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("The bouncer can handle a collector not found response") {
@@ -59,13 +59,22 @@ TEST_CASE("The bouncer works as expected") {
             "0.0.1", {"web-connectivity"},
             [](Error e, Var<BouncerReply> reply) {
                 REQUIRE(!e);
-                REQUIRE(reply->get_collector ==
+                REQUIRE(reply->get_collector() ==
+                        "httpo://ihiderha53f36lsd.onion");
+                REQUIRE(reply->get_collector_alternate("https") == 
                         "https://a.collector.ooni.io:4441");
-                REQUIRE(reply->https_helper ==
-                        "https://a.web-connectivity.th.ooni.io:4442");
+                REQUIRE(reply->get_collector_alternate("cloudfront") == 
+                        "https://das0y2z2ribx3.cloudfront.net");
+                REQUIRE(reply->get_name() == "web-connectivity");
+                REQUIRE(reply->get_test_helper("web-connectivity") ==
+                        "httpo://7jne2rpg5lsaqs6b.onion");
+                REQUIRE(reply->get_test_helper_alternate("web-connectivity", "https") 
+                        == "https://a.web-connectivity.th.ooni.io:4442");
+                REQUIRE(reply->get_test_helper_alternate("web-connectivity", "cloudfront") 
+                        == "https://d2vt18apel48hw.cloudfront.net");
                 break_loop();
             },
             {}, Reactor::global(), Logger::global());
     });
 }
-#endif */
+#endif
