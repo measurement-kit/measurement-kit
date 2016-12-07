@@ -126,9 +126,9 @@ void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
                            }
                            cb(*result);
                        },
-                       settings, reactor);
+                       settings, reactor, logger);
                },
-               settings, reactor);
+               settings, reactor, logger);
 }
 
 void connect_logic(std::string hostname, int port,

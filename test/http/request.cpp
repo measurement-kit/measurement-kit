@@ -23,6 +23,9 @@ static inline bool check_error_after_tor(Error e) {
     return e == NoError() or e == ConnectFailedError();
 }
 
+/*
+ * TODO: replace with common/utils.cpp sha256_of():
+ */
 static std::string md5(std::string s) {
     static const char *table[] = {"0", "1", "2", "3", "4", "5", "6", "7",
                                   "8", "9", "a", "b", "c", "d", "e", "f"};

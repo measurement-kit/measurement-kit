@@ -1,9 +1,0 @@
-#!/bin/sh
-set -e
-pkg_rootdir=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
-cd $pkg_rootdir
-
-# Note: the build order matters -- think twice before changing it
-for dependency in geoip libressl libevent; do
-    ./build/dependency $dependency
-done

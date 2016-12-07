@@ -143,3 +143,8 @@ TEST_CASE("percentile() works with one-element vectors") {
     REQUIRE(mk::percentile({17.0}, 0.1) == 17.0);
     REQUIRE(mk::percentile({17.0}, 0.9) == 17.0);
 }
+
+TEST_CASE("sha256_of() works as expected") {
+    REQUIRE(mk::sha256_of("xeuCh5zu chai5oeL uv0foh4E Ixiew5Uc thaid6Vu") ==
+            "7a8f31f91ddabd2ee96230b512b27f5a88adeceb20cc08228819b77417fba96e");
+}

@@ -26,11 +26,11 @@ Logger::Logger() {
         }
         uint32_t verbosity = (level & MK_LOG_VERBOSITY_MASK);
         if (verbosity <= MK_LOG_WARNING) {
-            fprintf(stderr, "warning: %s\n", s);
+            fprintf(stderr, "[!] %s\n", s);
         } else if (verbosity == MK_LOG_INFO) {
             fprintf(stderr, "%s\n", s);
         } else {
-            fprintf(stderr, "debug: %s\n", s);
+            fprintf(stderr, "[D] %s\n", s);
         }
     };
 }
@@ -50,11 +50,19 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
     // Since v0.4 we dispatch the MK_LOG_EVENT event to the proper handler
     // if set, otherwise we fallthrough passing it to consumer_.
     if (event_handler_ and (level & MK_LOG_EVENT) != 0) {
-        event_handler_(buffer_);
+        try {
+            event_handler_(buffer_);
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
         return;
     }
     if (consumer_) {
-        consumer_(level, buffer_);
+        try {
+            consumer_(level, buffer_);
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
     }
     if (ofile_) {
         *ofile_ << buffer_ << "\n";
@@ -93,7 +101,7 @@ void Logger::increase_verbosity() {
     }
 }
 
-void Logger::on_progress(Delegate<double> fn) {
+void Logger::on_progress(Delegate<double, const char *> fn) {
     progress_handler_ = fn;
 }
 
@@ -102,10 +110,23 @@ void Logger::set_logfile(std::string path) {
     // TODO: what to do if we cannot open the logfile? return error?
 }
 
-void Logger::progress(double prog) {
+void Logger::progress(double prog, const char *s) {
     if (progress_handler_) {
-        progress_handler_(prog);
+        prog = prog * progress_scale_ + progress_offset_;
+        try {
+            progress_handler_(prog, s);
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
     }
+}
+
+void Logger::set_progress_offset(double offset) {
+    progress_offset_ = offset;
+}
+
+void Logger::set_progress_scale(double scale) {
+    progress_scale_ = scale;
 }
 
 } // namespace mk

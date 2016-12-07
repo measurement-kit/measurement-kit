@@ -74,6 +74,9 @@ if(UNIX)
   CHECK_INCLUDE_FILES(GeoIP.h HAVE_GEOIP_H)
   CHECK_LIBRARY_EXISTS(GeoIP GeoIP_open "${MK_GEOIP}/lib" HAVE_LIBGEOIP)
   set(CMAKE_REQUIRED_INCLUDES "")
+  if (NOT HAVE_GEOIP_H OR NOT HAVE_LIBGEOIP)
+    message(FATAL_ERROR "geoip missing; Use -DMK_GEOIP to specify where it is installed (e.g. -DMK_GEOIP=/usr/local if it is installed under /usr/local)")
+  endif()
 
   # openssl
 
@@ -83,6 +86,9 @@ if(UNIX)
   CHECK_INCLUDE_FILES(openssl/ssl.h HAVE_OPENSSL_SSL_H)
   CHECK_LIBRARY_EXISTS(ssl SSL_new "${MK_OPENSSL}/lib" HAVE_LIBSSL)
   set(CMAKE_REQUIRED_INCLUDES "")
+  if (NOT HAVE_OPENSSL_RSA_H OR NOT HAVE_LIBSSL)
+    message(FATAL_ERROR "openssl/libressl missing; Use -DMK_OPENSSL to specify where it is installed (e.g. -DMK_OPENSSL=/usr/local if it is installed under /usr/local)")
+  endif()
 
   # libevent
 
@@ -90,8 +96,9 @@ if(UNIX)
   CHECK_INCLUDE_FILES(event2/event.h HAVE_EVENT2_EVENT_H)
   CHECK_LIBRARY_EXISTS(event event_new "${MK_LIBEVENT}/lib" HAVE_LIBEVENT)
   set(CMAKE_REQUIRED_INCLUDES "")
-
-  # XXX: here we should fail if something was not found!
+  if (NOT HAVE_EVENT2_EVENT_H OR NOT HAVE_LIBEVENT)
+    message(FATAL_ERROR "libevent missing; Use -DMK_LIBEVENT to specify where it is installed (e.g. -DMK_LIBEVENT=/usr/local if it is installed under /usr/local)")
+  endif()
 
   list(APPEND MK_LIBS GeoIP crypto ssl event event_openssl event_pthreads)
 endif()
@@ -105,6 +112,8 @@ link_directories(${MK_LINK_DIRS})
 file(
   GLOB
   MK_LIBRARY_SOURCES
+  "include/measurement_kit/*.hpp"
+  "include/measurement_kit/*/*.hpp"
   "src/libmeasurement_kit/*/*.c"
   "src/libmeasurement_kit/*/*.cpp"
 )
