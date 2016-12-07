@@ -1,3 +1,25 @@
+# MeasurementKit 0.3.9 [2016-12-04]
+
+- Revert "Add workaround for macOS"
+
+# MeasurementKit 0.3.8 [2016-12-04]
+
+- Make sure --disable-traceroute actually works
+- Add workaround for macOS
+
+# MeasurementKit 0.3.7 [2016-12-02]
+
+- Allow to quickly disable traceroute
+
+# MeasurementKit 0.3.6 [2016-12-01]
+
+- http/request: don't redirect if `*max_request <= 0` (#908)
+- Log dns debug to the correct logger (#912) (#914)
+- web-connectivity: log errors (#916)
+- bufferevent: use `BEV_OPT_DEFER_CALLBACKS` (#924)
+- Fix several warnings (#926)
+- `ooni_reporter.cpp`: make sure we submit report id (#927)
+
 # MeasurementKit 0.3.5 [2016-11-01]
 
 - a few `web_connectivity` fixes (#880, #889, #890)

@@ -18,7 +18,8 @@ OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
         settings["collector_base_url"] =
             ooni::collector::testing_collector_url();
     }
-    logger->info("Using collector: %s", settings["collector_base_url"].c_str());
+    logger->info("Results collector: %s",
+        settings["collector_base_url"].c_str());
 }
 
 /* static */ Var<BaseReporter> OoniReporter::make(Settings settings,
@@ -29,11 +30,11 @@ OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
 
 Continuation<Error> OoniReporter::open(Report &report) {
     return do_open_([=](Callback<Error> cb) {
-        logger->info("Opening report...");
+        logger->info("Opening report; please be patient...");
         ooni::collector::connect_and_create_report(
                 report.get_dummy_entry(),
                 [=](Error error, std::string rid) {
-                    logger->info("Opening report... %d", error.code);
+                    logger->debug("Opening report... %d", error.code);
                     if (not error) {
                         logger->info("Report ID: %s", rid.c_str());
                         report_id = rid;
@@ -55,12 +56,17 @@ Continuation<Error> OoniReporter::write_entry(Entry entry) {
             cb(MissingReportIdError());
             return;
         }
-        logger->info("Submitting entry...");
+        logger->info("Submitting test results; please be patient...");
         ooni::collector::connect_and_update_report(report_id, entry,
                                              [=](Error e) {
-                                                 logger->info(
+                                                 logger->debug(
                                                      "Submitting entry... %d",
                                                      e.code);
+                                                 if (!e) {
+                                                     logger->info("Results "
+                                                        "successfully "
+                                                        "submitted");
+                                                 }
                                                  cb(e);
                                              },
                                              settings,
@@ -76,12 +82,16 @@ Continuation<Error> OoniReporter::close() {
             cb(MissingReportIdError());
             return;
         }
-        logger->info("Closing report...");
+        logger->info("Closing report; please be patient...");
         ooni::collector::connect_and_close_report(report_id,
                                             [=](Error e) {
-                                                logger->info(
+                                                logger->debug(
                                                     "Closing report... %d",
                                                     e.code);
+                                                if (!e) {
+                                                    logger->info("Report "
+                                                        "successfully closed");
+                                                }
                                                 cb(e);
                                             },
                                             settings,

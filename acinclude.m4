@@ -36,6 +36,12 @@ AC_DEFUN([MK_AM_DISABLE_INTEGRATION_TESTS], [
                    [], [CPPFLAGS="$CPPFLAGS -DENABLE_INTEGRATION_TESTS"])
 ])
 
+AC_DEFUN([MK_AM_DISABLE_TRACEROUTE], [
+  AC_ARG_ENABLE([traceroute],
+    AS_HELP_STRING([--disable-traceroute, do not build traceroute]),
+                   [], [CPPFLAGS="$CPPFLAGS -DENABLE_TRACEROUTE"])
+])
+
 AC_DEFUN([MK_AM_CHECK_LIBC_FUNCS], [
   AC_CHECK_FUNCS([ \
     err \

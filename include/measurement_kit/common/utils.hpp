@@ -29,5 +29,7 @@ T split(std::string s, std::string pattern = "\\s+") {
     return {first, last};
 }
 
+std::string sha256_of(std::string input);
+
 } // namespace mk
 #endif

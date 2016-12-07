@@ -16,7 +16,7 @@ class Settings : public std::map<std::string, SettingsEntry> {
 
 #define XX(_rv_, _methname_, _accessor_)                                       \
     template <typename Type>                                                   \
-    _rv_ _methname_(std::string key, Type def_value) {                         \
+    _rv_ _methname_(std::string key, Type def_value) const {                   \
         if (find(key) == end()) {                                              \
             return def_value;                                                  \
         }                                                                      \

@@ -36,13 +36,13 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
             } else {
                 (*report_entry)["connect_times"] = *ctimes;
             }
-            logger->info("Connected to %s:%d", address.c_str(), params.port);
+            logger->debug("Connected to %s:%d", address.c_str(), params.port);
             logger->debug("ndt: suspend coroutine");
             cb(NoError(), [=](Callback<Error, double> cb) {
 
                 // The coroutine is resumed and receives data
                 logger->debug("ndt: resume coroutine");
-                logger->info("Starting download");
+                logger->debug("Starting download");
                 Var<MeasureSpeed> average(new MeasureSpeed);
                 // Note: we parse but ignore the server's snap delay
                 Var<MeasureSpeed> snaps(new MeasureSpeed(0.5));
@@ -74,9 +74,11 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                     });
 
                     txp->on_error([=](Error err) {
-                        logger->info("Ending download (%d)", err.code);
                         if (err == EofError()) {
                             err = NoError();
+                        }
+                        if (err) {
+                            logger->info("Ending download (%d)", err.code);
                         }
                         txp->close([=]() {
                             ++(*num_completed);
@@ -90,7 +92,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                                 return;
                             }
                             double speed = average->speed();
-                            logger->info("S2C speed %lf kbit/s", speed);
+                            logger->debug("S2C speed %lf kbit/s", speed);
                             // XXX We need to define what we consider
                             // error when we have parallel flows
                             cb((num_flows == 1) ? err : NoError(), speed);
