@@ -261,11 +261,18 @@ void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
 
     try {
         base = create_evdns_base(settings, reactor);
-    } catch (std::bad_alloc &) {
-        throw; // Let this propagate as we can do nothing
     } catch (std::runtime_error &) {
         cb(GenericError(), nullptr); // TODO: refine error thrown here
         return;
+    } catch (std::bad_alloc &) {
+        /*
+         * Note: `bad_alloc` derives from `exception` and not from
+         * `runtime_error` so this exceptions ordering is okay.
+         *
+         * See <http://en.cppreference.com/w/cpp/memory/new/bad_alloc>
+         *     <http://en.cppreference.com/w/cpp/error/runtime_error>
+         */
+        throw; // Let this propagate as we can do nothing
     }
 
     if (dns_class != MK_DNS_CLASS_IN) {
