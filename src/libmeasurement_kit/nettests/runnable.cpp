@@ -77,6 +77,8 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         if (entry_cb) {
             try {
                 entry_cb(entry.dump(4));
+            } catch (const std::bad_alloc &) {
+                throw; /* Do not want to stop this exception */
             } catch (const std::exception &exc) {
                 logger->warn("Unhandled exception in entry_cb(): %s",
                              exc.what());

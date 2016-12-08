@@ -12,8 +12,9 @@ Override default behavior by setting these environment variables:
   - pkg_configure_flags: extra flags for './configure' (if any)
   - pkg_cmake_flags: extra flags for 'cmake .' (if CMakeLists.txt exists)
   - pkg_make_flags: extra flags for 'make' (e.g. 'V=0')
-  - pkg_prefix: prefix where to install (e.g. '/usr/local')
   - pkg_make_install_flags: extra flags for 'make install' (e.g. DESTDIR=/opt)
+  - pkg_prefix: prefix where to install (e.g. '/usr/local')
+  - pkg_steps: steps to perform (default 'configure make make_install')
   - pkg_sudo: optional comand to execute 'make install' with (e.g. sudo)
 
 Examples:

@@ -30,6 +30,8 @@ static report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
     try {
         // Note: do static cast to make sure it's convertible to a double
         return static_cast<double>(test_s2c["web100_data"]["MinRTT"]);
+    } catch (const std::bad_alloc &) {
+        throw; /* Do not want to stop this exception */
     } catch (const std::exception &) {
         logger->warn("Cannot access Web100 data");
         /* Fallthrough to next method of computing RTT */
@@ -40,6 +42,8 @@ static report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
         // XXX Needed to add temp variable because otherwise it did not compile
         std::vector<double> temp = test_s2c["connect_times"];
         rtts = temp;
+    } catch (const std::bad_alloc &) {
+        throw; /* Do not want to stop this exception */
     } catch (const std::exception &) {
         logger->warn("Cannot access connect times");
         /* Fallthrough to the following check that will fail */ ;
@@ -84,6 +88,8 @@ static report::Entry compute_download_speed(report::Entry &test_s2c,
             return nullptr;
         }
         return sum / good_speeds.size();
+    } catch (const std::bad_alloc &) {
+        throw; /* Do not want to stop this exception */
     } catch (const std::exception &) {
         logger->warn("Cannot compute download speed");
         // FALLTHROUGH
@@ -97,6 +103,8 @@ static report::Entry compute_stats(report::Entry &root, std::string key,
     report::Entry test_s2c;
     try {
         test_s2c = root[key]["test_s2c"][0] /* We know it's just one entry */;
+    } catch (const std::bad_alloc &) {
+        throw; /* Do not want to stop this exception */
     } catch (const std::exception &) {
         logger->warn("cannot access root[\"%s\"][\"test_s2c\"][0]",
                      key.c_str());
@@ -255,11 +263,15 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
             }
             try {
                 compute_simple_stats(*overall_entry, logger);
+            } catch (const std::bad_alloc &) {
+                throw; /* Do not want to stop this exception */
             } catch (const std::exception &) {
                 /* Just in case */ ;
             }
             try {
                 compute_advanced_stats(*overall_entry);
+            } catch (const std::bad_alloc &) {
+                throw; /* Do not want to stop this exception */
             } catch (const std::exception &) {
                 /* Just in case */ ;
             }

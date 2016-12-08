@@ -205,6 +205,14 @@ dns::query(
         }, settings);
 ```
 
+# BUGS
+
+The current implementation returns an error when the server replies and the
+response is an error response. In such cases the `Var<Response>` parameter
+is anyway not `nullptr`. Yet, the library SHOULD return `NoError()` in such
+cases and leave the caller to decide whether the error code received in the
+DNS response should be treated as an error or not.
+
 # HISTORY
 
 The DNS module appeared in MeasurementKit 0.1.0.

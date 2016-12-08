@@ -44,6 +44,12 @@ you lock any shared resources before proceeding as in
     });
 ```
 
+Furthermore, whereas other callbacks MAY catch unhandled exceptions and
+route them accordingly (more specifically they MAY either ignore them or
+make sure that who called the currently running code notices), we can't
+provide this guarantee for this final callback, because there is no code
+to which we can provide notification that something wrong occurred.
+
 # HISTORY
 
 The `Async` class appeared in MeasurementKit 0.1.0. It was renamed

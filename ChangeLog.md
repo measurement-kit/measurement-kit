@@ -1,3 +1,14 @@
+# MeasurementKit 0.4.0-alpha.1 [2016-12-08]
+
+- Improve `multi_ndt` entry format (cfe21d36)
+- Better and more consistent exception handling (8ccf2d5d)
+- Revert part of 8ccf2d5d (de952620)
+- `test/dns/system_resolver`: don't use global reactor (ce77ca8e)
+- Fix `test/dns/system_resolver` on my system (5faa0fa2)
+- Document know bug of DNS module (b1efb366)
+- Improve build/dependency help message (7dc6c1c5)
+- Revert "Add patch to make LibreSSL compile on all archs" (ea466b21)
+
 # MeasurementKit 0.4.0-alpha [2016-12-07]
 
 - cmdline.hpp: Use macros to simplify code (#858)
