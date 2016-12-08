@@ -6,6 +6,8 @@
 - `test/dns/system_resolver`: don't use global reactor (ce77ca8e)
 - Fix `test/dns/system_resolver` on my system (5faa0fa2)
 - Document know bug of DNS module (b1efb366)
+- Improve build/dependency help message (7dc6c1c5)
+- Revert "Add patch to make LibreSSL compile on all archs" (ea466b21)
 
 # MeasurementKit 0.4.0-alpha [2016-12-07]
 
