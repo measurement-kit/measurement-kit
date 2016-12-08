@@ -13,9 +13,6 @@ namespace ooni {
 namespace bouncer {
 
 class BouncerReply {
- private:
-     Var<Logger> logger;
-
  public:
     json response;
 
