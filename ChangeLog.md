@@ -2,6 +2,10 @@
 
 - Improve `multi_ndt` entry format (cfe21d36)
 - Better and more consistent exception handling (8ccf2d5d)
+- Revert part of 8ccf2d5d (de952620)
+- `test/dns/system_resolver`: don't use global reactor (ce77ca8e)
+- Fix `test/dns/system_resolver` on my system (5faa0fa2)
+- Document know bug of DNS module (b1efb366)
 
 # MeasurementKit 0.4.0-alpha [2016-12-07]
 
