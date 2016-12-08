@@ -13,7 +13,7 @@ MultiNdtTest::MultiNdtTest() : BaseTest() {
     runnable->options["save_real_probe_ip"] = true;
     runnable->options["dns/engine"] = "system";
     runnable->test_name = "multi_ndt";
-    runnable->test_version = "0.0.5";  /* Forked from `ndt` v0.0.4 */
+    runnable->test_version = "0.0.6";  /* Forked from `ndt` v0.0.4 */
 }
 
 /*
@@ -104,7 +104,7 @@ static report::Entry compute_stats(report::Entry &root, std::string key,
     }
     stats["ping"] = compute_ping(test_s2c, logger);
     stats["download"] = compute_download_speed(test_s2c, logger);
-    stats["key"] = key;
+    stats["fastest_test"] = key;
     return stats;
 }
 
@@ -199,6 +199,12 @@ static void compute_advanced_stats(report::Entry &entry) {
         SenderLimited = SndLimTimeSender / TotalTestTime;
     }
     entry["advanced"]["SenderLimited"] = SenderLimited;
+
+    entry["advanced"]["MinRTT"] = test_s2c["web100_data"]["MinRTT"];
+    entry["advanced"]["MaxRTT"] = test_s2c["web100_data"]["MaxRTT"];
+    entry["advanced"]["MSS"] = test_s2c["web100_data"]["CurMSS"];
+    entry["advanced"]["FastRetran"] = test_s2c["web100_data"]["FastRetran"];
+    entry["advanced"]["Timeouts"] = test_s2c["web100_data"]["Timeouts"];
 }
 
 void MultiNdtRunnable::main(std::string, Settings ndt_settings,
