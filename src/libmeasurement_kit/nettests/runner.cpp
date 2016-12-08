@@ -65,7 +65,14 @@ void Runner::start_test(Var<Runnable> test, Callback<Var<Runnable>> fn) {
                     debug("runner: callbacking %p", (void *)test.get());
                     ctx_->active -= 1;
                     debug("runner: #active tasks: %d", (int)ctx_->active);
-                    fn(test);
+                    try {
+                        fn(test);
+                    } catch (const std::bad_alloc &) {
+                        throw; /* Do not want to stop this exception */
+                    } catch (const std::exception &exc) {
+                        warn("unhandled exception in final-cb: %s", exc.what());
+                        /* Suppress */ ;
+                    }
                 });
             });
         });

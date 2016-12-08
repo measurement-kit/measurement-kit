@@ -18,7 +18,9 @@ Logger::Logger() {
             try {
                 message = nlohmann::json::parse(s).dump(4);
                 s = message.c_str();
-            } catch (std::exception &) {
+            } catch (const std::bad_alloc &) {
+                throw; /* Do not want to stop this exception */
+            } catch (const std::exception &) {
                 fprintf(stderr, "warning: logger cannot parse json message\n");
                 return;
             }
@@ -52,6 +54,8 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
     if (event_handler_ and (level & MK_LOG_EVENT) != 0) {
         try {
             event_handler_(buffer_);
+        } catch (const std::bad_alloc &) {
+            throw; /* Do not want to stop this exception */
         } catch (const std::exception &) {
             /* Suppress */ ;
         }
@@ -60,6 +64,8 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
     if (consumer_) {
         try {
             consumer_(level, buffer_);
+        } catch (const std::bad_alloc &) {
+            throw; /* Do not want to stop this exception */
         } catch (const std::exception &) {
             /* Suppress */ ;
         }
@@ -115,6 +121,8 @@ void Logger::progress(double prog, const char *s) {
         prog = prog * progress_scale_ + progress_offset_;
         try {
             progress_handler_(prog, s);
+        } catch (const std::bad_alloc &) {
+            throw; /* Do not want to stop this exception */
         } catch (const std::exception &) {
             /* Suppress */ ;
         }
