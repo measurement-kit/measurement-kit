@@ -1,0 +1,111 @@
+--- a/configure.in	2016-12-05 21:17:10.000000000 +0100
++++ b/configure.in	2016-12-05 21:17:34.000000000 +0100
+@@ -970,7 +970,7 @@
+ fi
+ 
+ dnl ----------------------------- Checking for fdatasync: OS X doesn't have it
+-AC_CHECK_FUNCS(fdatasync)
++dnl AC_CHECK_FUNCS(fdatasync)
+ 
+ dnl ----------------------------- Checking for extended file descriptor handling
+ # test for epoll_create1
+@@ -1136,7 +1136,9 @@
+                 create_area])
+ 
+ APR_CHECK_DEFINE(MAP_ANON, sys/mman.h)
+-AC_CHECK_FILE(/dev/zero)
++if test "$cross_compiling" = "no"; then
++  AC_CHECK_FILE(/dev/zero)
++fi
+ 
+ # Not all systems can mmap /dev/zero (such as HP-UX).  Check for that.
+ if test "$ac_cv_func_mmap" = "yes" &&
+@@ -1591,7 +1591,11 @@
+ AC_CHECK_TYPE(ssize_t, int)
+ AC_C_INLINE
+ AC_C_CONST
+-AC_FUNC_SETPGRP
++if test "$cross_compiling" = "no"; then
++    AC_FUNC_SETPGRP
++else
++    ac_cv_func_setpgrp_void=yes
++fi
+ 
+ APR_CHECK_SOCKLEN_T
+ 
+@@ -1937,6 +1937,9 @@
+ else
+     have_iovec=1
+ fi
++if test "$cross_compiling" = "yes"; then
++    have_iovec=1  # override
++fi
+ 
+ AC_SUBST(voidp_size)
+ AC_SUBST(short_value)
+@@ -2202,6 +2202,7 @@
+     # really support PROCESS_SHARED locks.  So, we must validate that we 
+     # can go through the steps without receiving some sort of system error.
+     # Linux and older versions of AIX have this problem.
++    if test "$cross_compiling" = "no"; then
+     APR_IFALLYES(header:pthread.h define:PTHREAD_PROCESS_SHARED func:pthread_mutexattr_setpshared, [
+       AC_CACHE_CHECK([for working PROCESS_SHARED locks], apr_cv_process_shared_works, [
+       AC_TRY_RUN([
+@@ -2225,6 +2226,10 @@
+         }], [apr_cv_process_shared_works=yes], [apr_cv_process_shared_works=no])])
+       # Override detection of pthread_mutexattr_setpshared
+       ac_cv_func_pthread_mutexattr_setpshared=$apr_cv_process_shared_works])
++    else
++      apr_cv_process_shared_works=no
++      ac_cv_func_pthread_mutexattr_setpshared=$apr_cv_process_shared_works
++    fi
+ 
+     if test "$ac_cv_func_pthread_mutexattr_setpshared" = "yes"; then
+         APR_CHECK_PTHREAD_ROBUST_SHARED_MUTEX
+--- a/build/apr_network.m4	2016-12-06 00:40:06.000000000 +0100
++++ b/build/apr_network.m4	2016-12-06 00:41:20.000000000 +0100
+@@ -500,6 +500,7 @@
+ dnl on a TCP socket.
+ dnl
+ AC_DEFUN([APR_CHECK_TCP_NODELAY_WITH_CORK], [
++if test "$cross_compiling" != "yes"; then
+ AC_CACHE_CHECK([whether TCP_NODELAY and TCP_CORK can both be enabled],
+ [apr_cv_tcp_nodelay_with_cork],
+ [AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+@@ -541,6 +542,7 @@
+ 
+     exit(0);
+ ]])], [apr_cv_tcp_nodelay_with_cork=yes], [apr_cv_tcp_nodelay_with_cork=no])])
++fi
+ 
+ if test "$apr_cv_tcp_nodelay_with_cork" = "yes"; then
+   AC_DEFINE([HAVE_TCP_NODELAY_WITH_CORK], 1,
+--- a/include/apr_general.h	2016-12-06 01:31:24.000000000 +0100
++++ b/include/apr_general.h	2016-12-06 01:32:43.000000000 +0100
+@@ -33,6 +33,8 @@
+ #include <signal.h>
+ #endif
+ 
++#include <stddef.h>
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif /* __cplusplus */
+@@ -76,6 +76,9 @@
+  * @return offset
+  */
+ 
++#ifdef offsetof
++#define APR_OFFSETOF(s_type,field) offsetof(s_type,field)
++#else
+ #if defined(CRAY) || (defined(__arm) && !(defined(LINUX) || defined(__FreeBSD__)))
+ #ifdef __STDC__
+ #define APR_OFFSET(p_type,field) _Offsetof(p_type,field)
+@@ -108,6 +111,7 @@
+ #else
+ #define APR_OFFSETOF(s_type,field) APR_OFFSET(s_type*,field)
+ #endif
++#endif
+ 
+ #ifndef DOXYGEN
+ 
