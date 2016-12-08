@@ -65,14 +65,14 @@ void Runner::start_test(Var<Runnable> test, Callback<Var<Runnable>> fn) {
                     debug("runner: callbacking %p", (void *)test.get());
                     ctx_->active -= 1;
                     debug("runner: #active tasks: %d", (int)ctx_->active);
-                    try {
-                        fn(test);
-                    } catch (const std::bad_alloc &) {
-                        throw; /* Do not want to stop this exception */
-                    } catch (const std::exception &exc) {
-                        warn("unhandled exception in final-cb: %s", exc.what());
-                        /* Suppress */ ;
-                    }
+                    /*
+                     * Note: here we cannot suppress unhandled exceptions
+                     * because this is the last piece of code before passing
+                     * back the control upstream. So we have no upstream to
+                     * which we can tell "hey, look, there was this unhandled
+                     * exception in one of your callbacks".
+                     */
+                    fn(test);
                 });
             });
         });
