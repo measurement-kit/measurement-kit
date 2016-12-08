@@ -18,12 +18,12 @@ class BouncerReply {
 
     static ErrorOr<Var<BouncerReply>> create(std::string, Var<Logger>);
 
-    std::string get_collector();
-    std::string get_collector_alternate(std::string type);
-    std::string get_name();
-    std::string get_test_helper(std::string name);
-    std::string get_test_helper_alternate(std::string name, std::string type);
-    std::string get_version();
+    ErrorOr<std::string> get_collector();
+    ErrorOr<std::string> get_collector_alternate(std::string type);
+    ErrorOr<std::string> get_name();
+    ErrorOr<std::string> get_test_helper(std::string name);
+    ErrorOr<std::string> get_test_helper_alternate(std::string name, std::string type);
+    ErrorOr<std::string> get_version();
 };
 
 ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data, Var<Logger> logger) {
@@ -60,16 +60,16 @@ ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data, Var<Logger> lo
     return reply;
 }
 
-std::string BouncerReply::get_collector() {
+ErrorOr<std::string> BouncerReply::get_collector() {
     try {
         return response["net-tests"][0]["collector"];
     } catch (std::domain_error &) {
         /* suppress */
     }
-    return "";
+    return BouncerValueNotFoundError();
 }
 
-std::string BouncerReply::get_collector_alternate(std::string type) {
+ErrorOr<std::string> BouncerReply::get_collector_alternate(std::string type) {
     try {
         auto collectors = response["net-tests"][0]["collector-alternate"];
         for (auto collector : collectors) {
@@ -79,28 +79,28 @@ std::string BouncerReply::get_collector_alternate(std::string type) {
     } catch (std::domain_error &) {
         /* suppress */
     }
-    return "";
+    return BouncerValueNotFoundError();
 }
 
-std::string BouncerReply::get_name() {
+ErrorOr<std::string> BouncerReply::get_name() {
     try {
         return response["net-tests"][0]["name"];
     } catch (std::domain_error &) {
         /* suppress */
     }
-    return "";
+    return BouncerValueNotFoundError();
 }
 
-std::string BouncerReply::get_test_helper(std::string name) {
+ErrorOr<std::string> BouncerReply::get_test_helper(std::string name) {
     try {
         return response["net-tests"][0]["test-helpers"][name];
     } catch (std::domain_error &) {
         /* suppress */
     }
-    return "";
+    return BouncerValueNotFoundError();
 }
 
-std::string BouncerReply::get_test_helper_alternate(std::string name, std::string type) {
+ErrorOr<std::string> BouncerReply::get_test_helper_alternate(std::string name, std::string type) {
     try {
         auto collectors = response["net-tests"][0]["test-helpers-alternate"][name];
         for (auto collector : collectors) {
@@ -110,17 +110,17 @@ std::string BouncerReply::get_test_helper_alternate(std::string name, std::strin
     } catch (std::domain_error &) {
         /* suppress */
     }
-    return "";
+    return BouncerValueNotFoundError();
 }
 
 
-std::string BouncerReply::get_version() {
+ErrorOr<std::string> BouncerReply::get_version() {
     try {
         return response["net-tests"][0]["version"];
     } catch (std::domain_error &) {
         /* suppress */
     }
-    return "";
+    return BouncerValueNotFoundError();
 }
 
 template <MK_MOCK_NAMESPACE(http, request)>

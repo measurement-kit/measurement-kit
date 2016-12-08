@@ -59,12 +59,14 @@ TEST_CASE("The bouncer works as expected when trying to get invalid values") {
             "0.0.1", {"web-connectivity"},
             [](Error e, Var<BouncerReply> reply) {
                 REQUIRE(!e);
-                REQUIRE(reply->get_collector_alternate("antani") == "");
-                REQUIRE(reply->get_test_helper("antani") == "");
-                REQUIRE(reply->get_test_helper_alternate("web-connectivity", "antani") 
-                        == "");
-                REQUIRE(reply->get_test_helper_alternate("antani", "cloudfront") 
-                        == "");
+                REQUIRE(reply->get_collector_alternate("antani").as_error() ==
+                        BouncerValueNotFoundError());
+                REQUIRE(reply->get_test_helper("antani").as_error() ==
+                        BouncerValueNotFoundError());
+                REQUIRE(reply->get_test_helper_alternate("web-connectivity", "antani").as_error() ==
+                        BouncerValueNotFoundError());
+                REQUIRE(reply->get_test_helper_alternate("antani", "cloudfront").as_error() ==
+                        BouncerValueNotFoundError());
                 break_loop();
             },
             {}, Reactor::global(), Logger::global());
@@ -78,18 +80,18 @@ TEST_CASE("The bouncer works as expected") {
             "0.0.1", {"web-connectivity"},
             [](Error e, Var<BouncerReply> reply) {
                 REQUIRE(!e);
-                REQUIRE(reply->get_collector() ==
+                REQUIRE(*reply->get_collector() ==
                         "httpo://ihiderha53f36lsd.onion");
-                REQUIRE(reply->get_collector_alternate("https") == 
+                REQUIRE(*reply->get_collector_alternate("https") ==
                         "https://a.collector.ooni.io:4441");
-                REQUIRE(reply->get_collector_alternate("cloudfront") == 
+                REQUIRE(*reply->get_collector_alternate("cloudfront") ==
                         "https://das0y2z2ribx3.cloudfront.net");
-                REQUIRE(reply->get_name() == "web-connectivity");
-                REQUIRE(reply->get_test_helper("web-connectivity") ==
+                REQUIRE(*reply->get_name() == "web-connectivity");
+                REQUIRE(*reply->get_test_helper("web-connectivity") ==
                         "httpo://7jne2rpg5lsaqs6b.onion");
-                REQUIRE(reply->get_test_helper_alternate("web-connectivity", "https") 
+                REQUIRE(*reply->get_test_helper_alternate("web-connectivity", "https")
                         == "https://a.web-connectivity.th.ooni.io:4442");
-                REQUIRE(reply->get_test_helper_alternate("web-connectivity", "cloudfront") 
+                REQUIRE(*reply->get_test_helper_alternate("web-connectivity", "cloudfront")
                         == "https://d2vt18apel48hw.cloudfront.net");
                 break_loop();
             },
