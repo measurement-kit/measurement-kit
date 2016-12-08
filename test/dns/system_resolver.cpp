@@ -74,7 +74,7 @@ TEST_CASE("the system resolver can handle an unsupported query type") {
 TEST_CASE("the system resolver returns an error with an invalid_site") {
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
-        system_resolver("IN", "A", "invalid_site",
+        system_resolver("IN", "A", "invalid_site.antani",
                         [=](Error e, Var<Message>) {
                             REQUIRE(
                                 e == HostOrServiceNotProvidedOrNotKnownError());
