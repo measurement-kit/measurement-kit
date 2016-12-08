@@ -43,9 +43,14 @@ ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data, Var<Logger> lo
     return reply;
 }
 
+json BouncerReply::get_base() {
+    // this method can throw exceptions
+    return response["net-tests"][0];
+}
+
 ErrorOr<std::string> BouncerReply::get_collector() {
     try {
-        return response["net-tests"][0]["collector"];
+        return get_base()["collector"];
     } catch (std::domain_error &) {
         /* suppress */
     }
@@ -54,7 +59,7 @@ ErrorOr<std::string> BouncerReply::get_collector() {
 
 ErrorOr<std::string> BouncerReply::get_collector_alternate(std::string type) {
     try {
-        auto collectors = response["net-tests"][0]["collector-alternate"];
+        auto collectors = get_base()["collector-alternate"];
         for (auto collector : collectors) {
             if (collector["type"] == type)
                 return collector["address"];
@@ -67,7 +72,7 @@ ErrorOr<std::string> BouncerReply::get_collector_alternate(std::string type) {
 
 ErrorOr<std::string> BouncerReply::get_name() {
     try {
-        return response["net-tests"][0]["name"];
+        return get_base()["name"];
     } catch (std::domain_error &) {
         /* suppress */
     }
@@ -76,7 +81,7 @@ ErrorOr<std::string> BouncerReply::get_name() {
 
 ErrorOr<std::string> BouncerReply::get_test_helper(std::string name) {
     try {
-        return response["net-tests"][0]["test-helpers"][name];
+        return get_base()["test-helpers"][name];
     } catch (std::domain_error &) {
         /* suppress */
     }
@@ -85,7 +90,7 @@ ErrorOr<std::string> BouncerReply::get_test_helper(std::string name) {
 
 ErrorOr<std::string> BouncerReply::get_test_helper_alternate(std::string name, std::string type) {
     try {
-        auto collectors = response["net-tests"][0]["test-helpers-alternate"][name];
+        auto collectors = get_base()["test-helpers-alternate"][name];
         for (auto collector : collectors) {
             if (collector["type"] == type)
                 return collector["address"];
@@ -99,7 +104,7 @@ ErrorOr<std::string> BouncerReply::get_test_helper_alternate(std::string name, s
 
 ErrorOr<std::string> BouncerReply::get_version() {
     try {
-        return response["net-tests"][0]["version"];
+        return get_base()["version"];
     } catch (std::domain_error &) {
         /* suppress */
     }

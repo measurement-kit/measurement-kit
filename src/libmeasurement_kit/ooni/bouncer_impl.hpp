@@ -24,6 +24,8 @@ class BouncerReply {
     ErrorOr<std::string> get_test_helper(std::string name);
     ErrorOr<std::string> get_test_helper_alternate(std::string name, std::string type);
     ErrorOr<std::string> get_version();
+ private:
+    json get_base();
 };
 
 template <MK_MOCK_NAMESPACE(http, request)>
@@ -54,10 +56,8 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
             if (!!reply) {
                 cb(NoError(), *reply);
                 return;
-            } else {
-                cb(reply.as_error(), nullptr);
-                return;
             }
+            cb(reply.as_error(), nullptr);
         },
         reactor, logger, nullptr, 0);
 }
