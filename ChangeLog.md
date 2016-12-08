@@ -1,3 +1,8 @@
+# MeasurementKit 0.4.0-alpha.1 [2016-12-08]
+
+- Improve `multi_ndt` entry format (cfe21d36)
+- Better and more consistent exception handling (8ccf2d5d)
+
 # MeasurementKit 0.4.0-alpha [2016-12-07]
 
 - cmdline.hpp: Use macros to simplify code (#858)
