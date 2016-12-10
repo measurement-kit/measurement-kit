@@ -121,6 +121,6 @@ fi
 for step in $pkg_steps; do
     echo ""
     echo "* step: $step"
-    pkg_$step
+    time pkg_$step
 done
 echo ""
