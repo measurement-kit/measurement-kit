@@ -12,7 +12,7 @@
 #include "../net/utils.hpp"
 
 #include "../libevent/connection.hpp"
-#include "../libevent/ssl_context.hpp"
+#include "../net/ssl_context.hpp"
 
 #include <cassert>
 #include <event2/bufferevent_ssl.h>
