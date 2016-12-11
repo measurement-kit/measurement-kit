@@ -4,8 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_SSL_CONTEXT_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_SSL_CONTEXT_HPP
 
-#include <measurement_kit/common.hpp>
-
+#include <measurement_kit/net.hpp>
 #include <openssl/ssl.h>
 
 namespace mk {
