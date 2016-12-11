@@ -32,6 +32,8 @@ ErrorOr<std::vector<T>> slurpv_impl(std::string p) {
         std_fclose(filep);
         return FileIoError();
     }
+    // Note: ftello() might be better for reading very large files but
+    // honestly I do think we should use some kind of mmap for them.
     long pos = std_ftell(filep);
     if (pos < 0) {
         std_fclose(filep);

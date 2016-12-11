@@ -165,7 +165,7 @@ static size_t fread_fail(void *, size_t, size_t, FILE *) { return 0; }
 
 static int fclose_fail(FILE *) { return -1; }
 
-TEST_CASE("slurp() works as expected") {
+TEST_CASE("slurpv() works as expected") {
     SECTION("If fopen() fails") {
         auto maybe_res = mk::slurpv_impl<char, fopen_fail>(
             "./test/fixtures/text-with-utf8.txt");
@@ -278,5 +278,28 @@ TEST_CASE("slurp() works as expected") {
         };
         REQUIRE(*maybe_res == expect);
         REQUIRE(maybe_res->size() == 240);
+    }
+}
+
+TEST_CASE("slurp() works as expected") {
+    SECTION("In case of nonexistent file") {
+        auto maybe_res = mk::slurp("/nonexistent");
+        REQUIRE(!maybe_res);
+        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+    }
+
+    SECTION("In case of existent file") {
+        auto maybe_res = mk::slurp("./test/fixtures/hosts.txt");
+        std::string expect = "torproject.org\n"        // line
+                             "ooni.nu\n"               // line
+                             "neubot.org\n"            // line
+                             "archive.org\n"           // line
+                             "creativecommons.org\n"   // line
+                             "cyber.law.harvard.edu\n" // line
+                             "duckduckgo.com\n"        // line
+                             "netflix.com\n"           // line
+                             "nmap.org\n"              // line
+                             "www.emule.com\n";
+        REQUIRE(*maybe_res == expect);
     }
 }
