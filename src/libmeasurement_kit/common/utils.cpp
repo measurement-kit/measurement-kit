@@ -10,7 +10,7 @@
 #include <event2/util.h>
 #include <openssl/sha.h>
 
-#include "../common/utils.hpp"
+#include "../common/utils_impl.hpp"
 
 namespace mk {
 
@@ -135,6 +135,19 @@ std::string sha256_of(std::string input) {
            << (unsigned)hash[i];
     }
     return ss.str();
+}
+
+ErrorOr<std::vector<char>> slurpv(std::string path) {
+    return slurpv_impl<char>(path);
+}
+
+ErrorOr<std::string> slurp(std::string path) {
+    ErrorOr<std::vector<char>> v = slurpv_impl<char>(path);
+    if (!v) {
+        return v.as_error();
+    }
+    std::string s{v->begin(), v->end()};  /* Note that here we make a copy */
+    return s;
 }
 
 } // namespace mk
