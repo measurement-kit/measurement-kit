@@ -52,7 +52,7 @@ ErrorOr<SSL_CTX *> make_ssl_ctx(std::string path) {
 
     if (SSL_CTX_load_verify_locations(ctx, path.c_str(), nullptr) != 1) {
         debug("ssl: failed to load verify location");
-        // XXX: not freeing to see what happens with Valgrind
+        SSL_CTX_free(ctx);
         return SslCtxLoadVerifyLocationsError();
     }
 

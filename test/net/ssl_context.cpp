@@ -57,3 +57,23 @@ TEST_CASE("make_ssl_ctx() works") {
                 net::SslCtxLoadVerifyLocationsError().code);
     }
 }
+
+TEST_CASE("SslContext::make() works as expected") {
+    SECTION("when the path is nonexistent") {
+        ErrorOr<Var<net::SslContext>> maybe_ctx =
+            net::SslContext::make("/nonexistent");
+        REQUIRE(!maybe_ctx);
+        REQUIRE(maybe_ctx.as_error().code ==
+                net::SslCtxLoadVerifyLocationsError().code);
+    }
+
+    SECTION("when the path exists and we cache it") {
+        ErrorOr<Var<net::SslContext>> maybe_ctx_1 =
+            net::SslContext::make("./test/fixtures/certs.pem");
+        REQUIRE(!!maybe_ctx_1);
+        ErrorOr<Var<net::SslContext>> maybe_ctx_2 =
+            net::SslContext::make("./test/fixtures/certs.pem");
+        REQUIRE(!!maybe_ctx_2);
+        REQUIRE(maybe_ctx_1->get() == maybe_ctx_2->get());
+    }
+}
