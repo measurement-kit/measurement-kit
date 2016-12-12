@@ -27,15 +27,7 @@ subr_make() {
 }
 
 subr_make_check() {
-    # Here we need to `cat ./test-suite.log` on failure otherwise we don't
-    # know what went wrong and that's quite annoying to say the least
-    set +e
     make $make_flags check V=0
-    if [ $? -ne 0 ]; then
-        cat ./test-suite.log
-        exit 1
-    fi
-    set -e
 }
 
 subr_finalize() {
