@@ -75,7 +75,7 @@ TEST_CASE("make_ssl_ctx() works") {
                               ssl_ctx_load_verify_mem_fail>("");
         REQUIRE(!maybe_ctx);
         REQUIRE(maybe_ctx.as_error().code ==
-                net::SslCtxLoadVerifyLocationsError().code);
+                net::SslCtxLoadVerifyMemError().code);
     }
 #endif
 }

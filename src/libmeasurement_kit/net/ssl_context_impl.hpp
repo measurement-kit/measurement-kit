@@ -63,10 +63,11 @@ ErrorOr<SSL_CTX *> make_ssl_ctx(std::string path) {
         if (!SSL_CTX_load_verify_mem(ctx, bundle.data(), bundle.size())) {
             debug("ssl: failed to load default ca bundle");
             SSL_CTX_free(ctx);
-            return SslCtxLoadVerifyLocationsError();
+            return SslCtxLoadVerifyMemError();
         }
-/* FALLTHROUGH */
+        /* FALLTHROUGH */
 #else
+        SSL_CTX_free(ctx);
         return MissingCaBundlePathError();
 #endif
     }
