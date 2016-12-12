@@ -35,9 +35,9 @@ static void initialize_ssl() {
     }
 }
 
-template <MK_MOCK(SSL_CTX_new), MK_MOCK(SSL_CTX_load_verify_locations),
+template <MK_MOCK(SSL_CTX_new), MK_MOCK(SSL_CTX_load_verify_locations)
 #ifdef LIBRESSL_VERSION_NUMBER
-          MK_MOCK(SSL_CTX_load_verify_mem)
+          , MK_MOCK(SSL_CTX_load_verify_mem)
 #endif
           >
 ErrorOr<SSL_CTX *> make_ssl_ctx(std::string path) {
