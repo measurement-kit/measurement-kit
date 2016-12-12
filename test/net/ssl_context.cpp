@@ -43,13 +43,13 @@ TEST_CASE("make_ssl_ctx() works") {
         ErrorOr<SSL_CTX *> maybe_ctx = net::make_ssl_ctx("");
         REQUIRE(!!maybe_ctx);
         REQUIRE(*maybe_ctx != nullptr);
+        SSL_CTX_free(*maybe_ctx);
 #else
         ErrorOr<SSL_CTX *> maybe_ctx = net::make_ssl_ctx("");
         REQUIRE(!maybe_ctx);
         REQUIRE(maybe_ctx.as_error().code ==
                 net::MissingCaBundlePathError().code);
 #endif
-        SSL_CTX_free(*maybe_ctx);
     }
 
     SECTION("when SSL_CTX_new() fails") {
