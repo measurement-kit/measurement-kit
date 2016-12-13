@@ -9,6 +9,11 @@
 namespace mk {
 namespace nettests {
 
+BaseTest &BaseTest::on_logger_eof(Delegate<> func) {
+    runnable->logger->on_eof(func);
+    return *this;
+}
+
 BaseTest &BaseTest::on_log(Delegate<uint32_t, const char *> func) {
     runnable->logger->on_log(func);
     return *this;
