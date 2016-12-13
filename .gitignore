@@ -70,6 +70,7 @@
 /test/ndt/test_meta
 /test/ndt/test_s2c
 /test/net/buffer
+/test/net/builtin_ca_bundle
 /test/net/connect
 /test/net/emitter
 /test/net/evbuffer

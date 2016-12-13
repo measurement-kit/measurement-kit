@@ -33,12 +33,23 @@ static int ssl_ctx_load_verify_locations_fail(SSL_CTX *, const char *,
     return 0;
 }
 
+#ifdef LIBRESSL_VERSION_NUMBER
+static int ssl_ctx_load_verify_mem_fail(SSL_CTX *, void *, int) { return 0; }
+#endif
+
 TEST_CASE("make_ssl_ctx() works") {
     SECTION("when the ca_bundle_path is empty") {
+#ifdef LIBRESSL_VERSION_NUMBER
+        ErrorOr<SSL_CTX *> maybe_ctx = net::make_ssl_ctx("");
+        REQUIRE(!!maybe_ctx);
+        REQUIRE(*maybe_ctx != nullptr);
+        SSL_CTX_free(*maybe_ctx);
+#else
         ErrorOr<SSL_CTX *> maybe_ctx = net::make_ssl_ctx("");
         REQUIRE(!maybe_ctx);
         REQUIRE(maybe_ctx.as_error().code ==
                 net::MissingCaBundlePathError().code);
+#endif
     }
 
     SECTION("when SSL_CTX_new() fails") {
@@ -56,6 +67,17 @@ TEST_CASE("make_ssl_ctx() works") {
         REQUIRE(maybe_ctx.as_error().code ==
                 net::SslCtxLoadVerifyLocationsError().code);
     }
+
+#ifdef LIBRESSL_VERSION_NUMBER
+    SECTION("when SSL_CTX_load_verify_mem() fails") {
+        ErrorOr<SSL_CTX *> maybe_ctx =
+            net::make_ssl_ctx<SSL_CTX_new, SSL_CTX_load_verify_locations,
+                              ssl_ctx_load_verify_mem_fail>("");
+        REQUIRE(!maybe_ctx);
+        REQUIRE(maybe_ctx.as_error().code ==
+                net::SslCtxLoadVerifyMemError().code);
+    }
+#endif
 }
 
 TEST_CASE("SslContext::make() works as expected") {

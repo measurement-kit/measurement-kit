@@ -4,6 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_SSL_CONTEXT_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_SSL_CONTEXT_IMPL_HPP
 
+#include "../net/builtin_ca_bundle.hpp"
 #include "../net/ssl_context.hpp"
 #include <cassert>
 #include <openssl/err.h>
@@ -34,15 +35,15 @@ static void initialize_ssl() {
     }
 }
 
-template <MK_MOCK(SSL_CTX_new), MK_MOCK(SSL_CTX_load_verify_locations)>
+template <MK_MOCK(SSL_CTX_new), MK_MOCK(SSL_CTX_load_verify_locations)
+#ifdef LIBRESSL_VERSION_NUMBER
+          , MK_MOCK(SSL_CTX_load_verify_mem)
+#endif
+          >
 ErrorOr<SSL_CTX *> make_ssl_ctx(std::string path) {
 
     debug("ssl: creating ssl context with bundle %s", path.c_str());
     initialize_ssl();
-
-    if (path == "") {
-        return MissingCaBundlePathError();
-    }
 
     SSL_CTX *ctx = SSL_CTX_new(TLSv1_client_method());
     if (ctx == nullptr) {
@@ -50,10 +51,25 @@ ErrorOr<SSL_CTX *> make_ssl_ctx(std::string path) {
         return SslCtxNewError();
     }
 
-    if (SSL_CTX_load_verify_locations(ctx, path.c_str(), nullptr) != 1) {
-        debug("ssl: failed to load verify location");
+    if (path != "") {
+        if (!SSL_CTX_load_verify_locations(ctx, path.c_str(), nullptr)) {
+            debug("ssl: failed to load verify location");
+            SSL_CTX_free(ctx);
+            return SslCtxLoadVerifyLocationsError();
+        }
+    } else {
+#ifdef LIBRESSL_VERSION_NUMBER
+        std::vector<uint8_t> bundle = builtin_ca_bundle();
+        if (!SSL_CTX_load_verify_mem(ctx, bundle.data(), bundle.size())) {
+            debug("ssl: failed to load default ca bundle");
+            SSL_CTX_free(ctx);
+            return SslCtxLoadVerifyMemError();
+        }
+        /* FALLTHROUGH */
+#else
         SSL_CTX_free(ctx);
-        return SslCtxLoadVerifyLocationsError();
+        return MissingCaBundlePathError();
+#endif
     }
 
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
