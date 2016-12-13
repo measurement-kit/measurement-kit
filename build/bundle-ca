@@ -21,21 +21,18 @@ def main():
  *
  * Returns the CA file shipped with the libressl version we compile with
  * as a vector of unsigned characters. This could then be passed to libressl
- * specific functions for loading CAs from a memmory buffer.
+ * specific functions for loading CAs from a memory buffer.
  *
  * Based on libressl %s
  */
 
-#include <cstdint>
-#include <fstream>
-#include <string>
-#include <vector>
+#include "../net/builtin_ca_bundle.hpp"
 
 namespace mk {
 namespace net {
 
-static std::vector<uint8_t> builtin_ca_bundle() {
-    static std::vector<uint8_t> singleton{
+std::vector<uint8_t> builtin_ca_bundle() {
+    static std::vector<uint8_t> cav{
 """ % libressl_version)
         for number in ca_bundle_data:
             if sys.version_info.major == 2:
@@ -43,7 +40,7 @@ static std::vector<uint8_t> builtin_ca_bundle() {
             filep.write(b"%d," % number)
         filep.write(b"""
     };
-    return singleton;
+    return cav;
 }
 
 } // namespace net

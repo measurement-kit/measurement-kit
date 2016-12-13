@@ -7,10 +7,10 @@ pkg_tag=v2.4.4
 pkg_steps=install
 
 pkg_install() {
-    oheader="../../../src/libmeasurement_kit/net/builtin_ca_bundle.hpp"
+    ofile="../../../src/libmeasurement_kit/net/builtin_ca_bundle.cpp"
     echo "Installing apps/openssl/cert.pem in MK sources"
-    ../../../build/bundle-ca $pkg_tag apps/openssl/cert.pem $oheader
-    clang-format -i $oheader
+    ../../../build/bundle-ca $pkg_tag apps/openssl/cert.pem $ofile
+    clang-format -i $ofile
     # Also save a copy that would be used for regress testing
     cp apps/openssl/cert.pem ../../../test/fixtures/saved_ca_bundle.pem
 }
