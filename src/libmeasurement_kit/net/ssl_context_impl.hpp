@@ -36,13 +36,13 @@ static void initialize_ssl() {
 }
 
 template <MK_MOCK(SSL_CTX_new), MK_MOCK(SSL_CTX_load_verify_locations)
-#ifdef LIBRESSL_VERSION_NUMBER
+#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
           , MK_MOCK(SSL_CTX_load_verify_mem)
 #endif
           >
 ErrorOr<SSL_CTX *> make_ssl_ctx(std::string path) {
 
-    debug("ssl: creating ssl context with bundle %s", path.c_str());
+    debug("ssl: creating ssl context with bundle: '%s'", path.c_str());
     initialize_ssl();
 
     SSL_CTX *ctx = SSL_CTX_new(TLSv1_client_method());
@@ -58,8 +58,9 @@ ErrorOr<SSL_CTX *> make_ssl_ctx(std::string path) {
             return SslCtxLoadVerifyLocationsError();
         }
     } else {
-#ifdef LIBRESSL_VERSION_NUMBER
+#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
         std::vector<uint8_t> bundle = builtin_ca_bundle();
+        debug("ssl: using builtin libressl's ca bundle");
         if (!SSL_CTX_load_verify_mem(ctx, bundle.data(), bundle.size())) {
             debug("ssl: failed to load default ca bundle");
             SSL_CTX_free(ctx);
