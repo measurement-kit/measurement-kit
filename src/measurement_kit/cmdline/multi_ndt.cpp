@@ -44,7 +44,7 @@ int main(const char *, int argc, char **argv) {
 
     test
         .on_progress([](double prog, const char *s) {
-            printf("Progress: %.2f%%: %s\n", prog * 100.0, s);
+            printf("Progress: %.1f%%: %s\n", prog * 100.0, s);
         })
         .on_event([](const char *s) {
             nlohmann::json doc = nlohmann::json::parse(s);
@@ -63,7 +63,7 @@ int main(const char *, int argc, char **argv) {
             auto simple = doc["test_keys"]["simple"];
             printf("\nTest summary\n");
             printf("------------\n");
-            std::string fastest = simple["key"];
+            std::string fastest = simple["fastest_test"];
             double download = simple["download"];
             double ping = simple["ping"];
             printf("Fastest test: %s\n", fastest.c_str());
@@ -71,12 +71,10 @@ int main(const char *, int argc, char **argv) {
             printf("Ping: %.2f ms\n", ping);
             printf("\nAdvanced info (from single stream test)\n");
             printf("---------------------------------------\n");
-            auto web100 = doc["test_keys"]["single_stream"][
-                    "test_s2c"][0]["web100_data"];
             auto adv = doc["test_keys"]["advanced"];
             double AvgRTT = adv["AvgRTT"];
-            double MinRTT = web100["MinRTT"];
-            double MaxRTT = web100["MaxRTT"];
+            double MinRTT = adv["MinRTT"];
+            double MaxRTT = adv["MaxRTT"];
             printf("RTT (avg/min/max): %.1f/%.1f/%.1f ms\n",
                    AvgRTT, MinRTT, MaxRTT);
             double CongestionLimited = adv["CongestionLimited"];
@@ -87,10 +85,10 @@ int main(const char *, int argc, char **argv) {
             double OutOfOrder = adv["OutOfOrder"];
             printf("OutOfOrder: %lf (%.3lf%%)\n",
                     OutOfOrder, OutOfOrder * 100.0);
-            unsigned long MSS = web100["CurMSS"];
+            unsigned long MSS = adv["MSS"];
             printf("MSS: %lu byte\n", MSS);
-            unsigned long FastRetran = web100["FastRetran"];
-            unsigned long Timeouts = web100["Timeouts"];
+            unsigned long FastRetran = adv["FastRetran"];
+            unsigned long Timeouts = adv["Timeouts"];
             printf("Congestion: FastRetran: %lu; Timeo: %lu\n",
                    FastRetran, Timeouts);
             double PacketLoss = adv["PacketLoss"];

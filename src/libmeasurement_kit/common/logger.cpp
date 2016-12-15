@@ -86,6 +86,10 @@ void Logger::warn(const char *fmt, ...) { XX(this, MK_LOG_WARNING); }
 void Logger::info(const char *fmt, ...) { XX(this, MK_LOG_INFO); }
 void Logger::debug(const char *fmt, ...) { XX(this, MK_LOG_DEBUG); }
 
+void Logger::on_eof(Delegate<> f) {
+    eof_handlers_.push_back(f);
+}
+
 void Logger::on_event(Delegate<const char *> f) { event_handler_ = f; }
 
 void log(uint32_t level, const char *fmt, ...) { XX(Logger::global(), level); }
@@ -127,6 +131,16 @@ void Logger::set_progress_offset(double offset) {
 
 void Logger::set_progress_scale(double scale) {
     progress_scale_ = scale;
+}
+
+Logger::~Logger() {
+    for (auto f : eof_handlers_) {
+        try {
+            f();
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
+    }
 }
 
 } // namespace mk

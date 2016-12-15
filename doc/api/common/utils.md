@@ -14,6 +14,9 @@ void utc_time_now(struct tm *);
 ErrorOr<std::string> timestamp(const struct tm *);
 timeval *timeval_init(timeval *, double);
 
+ErrorOr<std::vector<char>> slurpv(std::string);
+ErrorOr<std::string> slurp(std::string);
+
 }
 ```
 
@@ -48,6 +51,11 @@ is returned. Typical safe usage looks like this:
     timeval tv, *tvp = timeval_init(&tv, delta);
     libevent_api(/* some args... */, tvp);
 ```
+
+The slurpv() and slurp() functions read the content of the file specified
+as argument and return, respectively, a vector of chars containing the content
+of the file and a string containing the content of the file, on success, and
+an error in case of failure.
 
 # HISTORY
 

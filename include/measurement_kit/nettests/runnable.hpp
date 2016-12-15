@@ -7,6 +7,7 @@
 #include <measurement_kit/report.hpp>
 
 #include <ctime>
+#include <list>
 #include <sstream>
 
 namespace mk {
@@ -26,7 +27,8 @@ class Runnable : public NonCopyable, public NonMovable {
     std::string output_filepath;
     Delegate<std::string> entry_cb;
     Delegate<> begin_cb;
-    Delegate<> end_cb;
+    std::list<Delegate<>> end_cbs;
+    std::list<Delegate<>> destroy_cbs;
 
     std::string test_name = "ooni_test";
     std::string test_version = "0.0.1";
