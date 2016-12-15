@@ -302,8 +302,12 @@ void Runnable::begin(Callback<Error> cb) {
 }
 
 void Runnable::end(Callback<Error> cb) {
-    if (end_cb) {
-        end_cb();
+    for (auto fn : end_cbs) {
+        try {
+            fn();
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
     }
     report.close(cb);
 }

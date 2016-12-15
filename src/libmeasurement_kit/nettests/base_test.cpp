@@ -68,7 +68,7 @@ BaseTest &BaseTest::on_begin(Delegate<> cb) {
 }
 
 BaseTest &BaseTest::on_end(Delegate<> cb) {
-    runnable->end_cb = cb;
+    runnable->end_cbs.push_back(cb);
     return *this;
 }
 

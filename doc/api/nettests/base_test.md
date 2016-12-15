@@ -102,7 +102,8 @@ format MUST be compatible with [OONI specification](https://github.com/TheTorPro
 The `on_begin` and `on_end` methods allow to specify delegates called
 respectively when the test is about to begin and when the test is about
 to end. They may be useful to start and stop filtering for tests
-related events, for example.
+related events, for example. You MAY specify multiple `on_end` callbacks
+if you wish; they will be executed sequentially at end of test.
 
 The `run` method runs the test synchronously. It will not return until
 the test has terminated. Note that measurement-kit MAY run the test
