@@ -28,6 +28,7 @@ class Runnable : public NonCopyable, public NonMovable {
     Delegate<std::string> entry_cb;
     Delegate<> begin_cb;
     std::list<Delegate<>> end_cbs;
+    std::list<Delegate<>> destroy_cbs;
 
     std::string test_name = "ooni_test";
     std::string test_version = "0.0.1";

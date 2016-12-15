@@ -13,7 +13,15 @@ namespace nettests {
 using namespace mk::report;
 using namespace mk::ooni;
 
-Runnable::~Runnable() {}
+Runnable::~Runnable() {
+    for (auto fn : destroy_cbs) {
+        try {
+            fn();
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
+    }
+}
 
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}

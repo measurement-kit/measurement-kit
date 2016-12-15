@@ -27,6 +27,7 @@ class BaseTest {
     BaseTest &on_entry(Delegate<std::string>);
     BaseTest &on_begin(Delegate<>);
     BaseTest &on_end(Delegate<> cb);
+    BaseTest &on_destroy(Delegate<> cb);
 
     void run();
     void start(Callback<>);
@@ -104,6 +105,12 @@ respectively when the test is about to begin and when the test is about
 to end. They may be useful to start and stop filtering for tests
 related events, for example. You MAY specify multiple `on_end` callbacks
 if you wish; they will be executed sequentially at end of test.
+
+The `on_destroy` method allows to register delegates called when the
+test object is about to be destroyed. These delegates will be invoked
+sequentially by `~BaseTest`. This is the correct place to free the
+resources allocated for the purpose of allowing other test callbacks
+to run in other languages (e.g. Java and Python).
 
 The `run` method runs the test synchronously. It will not return until
 the test has terminated. Note that measurement-kit MAY run the test
