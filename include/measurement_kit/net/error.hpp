@@ -38,6 +38,7 @@ MK_DEFINE_ERR(MK_ERR_NET(24), BrokenPipeError, "")
 MK_DEFINE_ERR(MK_ERR_NET(25), SslNewError, "")
 MK_DEFINE_ERR(MK_ERR_NET(26), SslCtxNewError, "")
 MK_DEFINE_ERR(MK_ERR_NET(27), SslCtxLoadVerifyLocationsError, "")
+MK_DEFINE_ERR(MK_ERR_NET(28), SslCtxLoadVerifyMemError, "")
 
 } // namespace net
 } // namespace mk

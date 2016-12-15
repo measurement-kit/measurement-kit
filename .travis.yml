@@ -18,7 +18,10 @@ script:
     - ./build/dependency geoip
     - ./build/dependency libressl
     - ./build/dependency libevent
-    - ./configure $pkg_configure_flags --with-geoip=builtin
+    # Note: --with-ca-bundle="" is to force using libressl's builtin CA
+    # rather than the system one (the former is the configuration we use
+    # on mobile thus we are interested to test that here on travis)
+    - ./configure $pkg_configure_flags --with-geoip=builtin --with-ca-bundle=""
         --with-openssl=builtin --with-libevent=builtin $COVERAGE
     - make $pkg_make_flags
     - make $pkg_make_flags check-am$VALGRIND
