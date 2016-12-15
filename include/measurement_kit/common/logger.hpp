@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <fstream>
+#include <list>
 #include <mutex>
 #include <stdarg.h>
 
@@ -51,7 +52,7 @@ class Logger : public NonCopyable, public NonMovable {
 
     void on_log(Delegate<uint32_t, const char *> fn) { consumer_ = fn; }
 
-    void on_eof(Delegate<> fn) { eof_handler_ = fn; }
+    void on_eof(Delegate<> fn);
 
     void on_event(Delegate<const char *> fn);
 
@@ -70,11 +71,7 @@ class Logger : public NonCopyable, public NonMovable {
         return singleton;
     }
 
-    ~Logger() {
-        if (eof_handler_) {
-            eof_handler_();
-        }
-    }
+    ~Logger();
 
   private:
     Delegate<uint32_t, const char *> consumer_;
@@ -82,7 +79,7 @@ class Logger : public NonCopyable, public NonMovable {
     char buffer_[32768];
     std::mutex mutex_;
     Var<std::ofstream> ofile_;
-    Delegate<> eof_handler_;
+    std::list<Delegate<>> eof_handlers_;
     Delegate<const char *> event_handler_;
     Delegate<double, const char *> progress_handler_;
     double progress_offset_ = 0.0;
