@@ -12,8 +12,9 @@ Override default behavior by setting these environment variables:
   - pkg_configure_flags: extra flags for './configure' (if any)
   - pkg_cmake_flags: extra flags for 'cmake .' (if CMakeLists.txt exists)
   - pkg_make_flags: extra flags for 'make' (e.g. 'V=0')
-  - pkg_prefix: prefix where to install (e.g. '/usr/local')
   - pkg_make_install_flags: extra flags for 'make install' (e.g. DESTDIR=/opt)
+  - pkg_prefix: prefix where to install (e.g. '/usr/local')
+  - pkg_steps: steps to execute (default is: 'configure make make_install')
   - pkg_sudo: optional comand to execute 'make install' with (e.g. sudo)
 
 Examples:
@@ -22,6 +23,16 @@ Examples:
   - use four processors to compile libressl:
     - pkg_make_flags=-j4 ./build/dependency libressl
 EOF
+}
+
+pkg_autogen() {
+    if [ -x ./autogen.sh ]; then
+        echo "- ./autogen.sh"
+        ./autogen.sh
+    elif [ -f ./configure.ac ]; then
+        echo "- autoreconf -i"
+        autoreconf -i
+    fi
 }
 
 pkg_configure() {
@@ -48,6 +59,14 @@ pkg_none() {
     echo "- no action"
 }
 
+apply_patches() {
+    if [ -d ../../../build/patch/$1 ]; then
+        for diff in `find ../../../build/patch/$1 -type f`; do
+            git apply -v $diff
+        done
+    fi
+}
+
 set -e
 if [ $# -ne 1 ]; then
     print_usage
@@ -69,34 +88,24 @@ if [ ! -d third_party/cache/$pkg_name ]; then
     cd third_party/cache/$pkg_name
     if [ ! -z "$pkg_branch" ]; then
         git checkout $pkg_branch
-        if [ -z "$pkg_commit" ]; then
+        if [ "`git rev-parse HEAD`" != "$pkg_commit" ]; then
             # Mainly because this allows us to know which commit was the
             # tip of the branch when we compiled a dependency
-            echo "FATAL: 'pkg_branch' now requires also 'pkg_commit'" 1>&2
+            echo "FATAL: unexpected HEAD commit SHA-1" 1>&2
             exit 1
         fi
     fi
     if [ ! -z "$pkg_tag" ]; then
         git checkout tags/$pkg_tag
     fi
-    if [ -d ../../../build/patch/pre-autogen/$pkg_name ]; then
-        for diff in `ls ../../../build/patch/pre-autogen/$pkg_name`; do
-            cp ../../../build/patch/pre-autogen/$pkg_name/$diff .
-            git apply -v $diff
-            rm $diff
-        done
+    apply_patches pre-autogen/$pkg_name/common
+    if [ "$pkg_cross" != "" ]; then
+        apply_patches pre-autogen/$pkg_name/$pkg_cross
     fi
-    if [ -x ./autogen.sh ]; then
-        ./autogen.sh
-    elif [ -f ./configure.ac ]; then
-        autoreconf -i
-    fi
-    if [ -d ../../../build/patch/post-autogen/$pkg_name ]; then
-        for diff in `ls ../../../build/patch/post-autogen/$pkg_name`; do
-            cp ../../../build/patch/post-autogen/$pkg_name/$diff .
-            git apply -v $diff
-            rm $diff
-        done
+    pkg_autogen
+    apply_patches post-autogen/$pkg_name/common
+    if [ "$pkg_cross" != "" ]; then
+        apply_patches post-autogen/$pkg_name/$pkg_cross
     fi
     cd ../../../ # back to where we were
 fi
@@ -111,7 +120,7 @@ if [ -z "$pkg_steps" ]; then
 fi
 for step in $pkg_steps; do
     echo ""
-    echo "* $step"
+    echo "* step: $step"
     pkg_$step
 done
 echo ""

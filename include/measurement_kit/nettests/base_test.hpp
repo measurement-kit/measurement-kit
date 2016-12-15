@@ -12,6 +12,7 @@ class Runnable;
 
 class BaseTest {
   public:
+    BaseTest &on_logger_eof(Delegate<>);
     BaseTest &on_log(Delegate<uint32_t, const char *>);
     BaseTest &on_event(Delegate<const char *>);
     BaseTest &on_progress(Delegate<double, const char *>);
@@ -33,6 +34,7 @@ class BaseTest {
     BaseTest &on_entry(Delegate<std::string>);
     BaseTest &on_begin(Delegate<>);
     BaseTest &on_end(Delegate<> cb);
+    BaseTest &on_destroy(Delegate<> cb);
 
     void run();
     void start(Callback<> func);

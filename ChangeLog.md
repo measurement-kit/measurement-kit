@@ -1,3 +1,17 @@
+# MeasurementKit 0.4.0-alpha.1 [2016-12-15]
+
+- Improve multi_ndt entry format (#992)
+- Fix: libressl ios build (#994)
+- Refactor: ssl (#997)
+- Write ssl context regress tests (#998)
+- Implement mk::slurp() to read files at once (#996)
+- BaseTest: add on_logger_eof() method (#1004)
+- getaddrinfo: android dislikes AI_V4MAPPED|AI_ALL (#1005)
+- logger: allow multiple on_eof() callbacks (#1006)
+- runnable: allow multiple on-end callbacks (#1007)
+- Use builtin CA file if CA file is missing and we're using libressl (#999)
+- runnable: add on_destroy() callback (#1008)
+
 # MeasurementKit 0.4.0-alpha [2016-12-07]
 
 - cmdline.hpp: Use macros to simplify code (#858)

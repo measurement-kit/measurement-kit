@@ -10,3 +10,4 @@ machine:
 test:
   override:
     - ./build/docker/valgrind-clang
+    - if test -f ./test-suite.log; then cat ./test-suite.log; fi
