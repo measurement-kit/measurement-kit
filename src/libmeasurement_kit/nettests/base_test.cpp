@@ -72,6 +72,11 @@ BaseTest &BaseTest::on_end(Delegate<> cb) {
     return *this;
 }
 
+BaseTest &BaseTest::on_destroy(Delegate<> cb) {
+    runnable->destroy_cbs.push_back(cb);
+    return *this;
+}
+
 void BaseTest::run() {
     // Note: here we MUST point to a fresh reactor which we know for sure is
     // not already being used otherwise we cannot run the test

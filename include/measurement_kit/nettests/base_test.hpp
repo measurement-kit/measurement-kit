@@ -34,6 +34,7 @@ class BaseTest {
     BaseTest &on_entry(Delegate<std::string>);
     BaseTest &on_begin(Delegate<>);
     BaseTest &on_end(Delegate<> cb);
+    BaseTest &on_destroy(Delegate<> cb);
 
     void run();
     void start(Callback<> func);
