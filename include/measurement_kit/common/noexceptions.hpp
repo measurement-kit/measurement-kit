@@ -9,7 +9,6 @@
 
 namespace mk {
 
-// this is a specific implementation for json
 template <typename T> ErrorOr<T> json_noexcept(std::function<T()> fn) {
     try {
         return fn();
@@ -24,8 +23,6 @@ template <typename T> ErrorOr<T> json_noexcept(std::function<T()> fn) {
     } catch (std::exception &ex) {
         return UncaughtExceptionError(); // define a specific one
     }
-    // you should never be here!
-    assert(false);
 }
 
 } // namespace mk
