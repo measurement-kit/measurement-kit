@@ -26,7 +26,7 @@ TEST_CASE("The bouncer can handle an invalid request") {
     loop_with_initial_event([]() {
         // Mocked http request that returns an invalid-request
         post_net_tests_impl<request_invalid>(
-            "https://a.collector.ooni.io/bouncer/net-tests", "web-connectivity",
+            "https://a.collector.ooni.io/bouncer", "web-connectivity",
             "0.0.1", {"web-connectivity"},
             [](Error e, Var<BouncerReply>) {
                 REQUIRE(e == BouncerInvalidRequestError());
@@ -40,11 +40,11 @@ TEST_CASE("The bouncer can handle an invalid request") {
 
 TEST_CASE("The bouncer can handle a collector not found response") {
     loop_with_initial_event([]() {
-        post_net_tests_impl("https://a.collector.ooni.io/bouncer/net-tests",
+        post_net_tests_impl("https://a.collector.ooni.io/bouncer",
                             "antani", "0.0.1", {"antani"},
                             [](Error e, Var<BouncerReply>) {
 
-                                REQUIRE(e == BouncerCollectorNotFoundError());
+                                REQUIRE(e.code == BouncerCollectorNotFoundError().code);
                                 break_loop();
                             },
                             {}, Reactor::global(), Logger::global());
@@ -54,7 +54,7 @@ TEST_CASE("The bouncer can handle a collector not found response") {
 TEST_CASE("The bouncer works as expected when trying to get invalid values") {
     loop_with_initial_event([]() {
         post_net_tests_impl(
-            "https://a.collector.ooni.io/bouncer/net-tests", "web-connectivity",
+            "https://a.collector.ooni.io/bouncer", "web-connectivity",
             "0.0.1", {"web-connectivity"},
             [](Error e, Var<BouncerReply> reply) {
                 REQUIRE(!e);
@@ -77,7 +77,7 @@ TEST_CASE("The bouncer works as expected when trying to get invalid values") {
 TEST_CASE("The bouncer works as expected") {
     loop_with_initial_event([]() {
         post_net_tests_impl(
-            "https://a.collector.ooni.io/bouncer/net-tests", "web-connectivity",
+            "https://a.collector.ooni.io/bouncer", "web-connectivity",
             "0.0.1", {"web-connectivity"},
             [](Error e, Var<BouncerReply> reply) {
                 REQUIRE(!e);
