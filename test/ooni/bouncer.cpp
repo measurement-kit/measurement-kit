@@ -19,7 +19,7 @@ static nlohmann::json do_domain_error(std::string) {
 
 TEST_CASE("BouncerReply::create() works") {
 
-    SECTION("When the collect is not found") {
+    SECTION("When the collector is not found") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({"error": "collector-not-found"})", Logger::global());
         REQUIRE(!maybe_reply);
@@ -27,7 +27,7 @@ TEST_CASE("BouncerReply::create() works") {
                 ooni::BouncerCollectorNotFoundError());
     }
 
-    SECTION("When the collect is invalid") {
+    SECTION("When the response is invalid") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({"error": "invalid-request"})", Logger::global());
         REQUIRE(!maybe_reply);
@@ -73,7 +73,7 @@ TEST_CASE("BouncerReply::create() works") {
 
 TEST_CASE("BouncerReply accessors are robust to missing fields") {
     auto maybe_reply = ooni::BouncerReply::create(
-        R"({"net-tests": [{"test-helpers-alternate":[], "collector-alternate":[]}]})",
+        R"({"net-tests": [{"test-helpers-alternate":[], "collector-alternate":1234}]})",
         Logger::global());
     REQUIRE(!!maybe_reply);
     auto reply = *maybe_reply;
