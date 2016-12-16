@@ -38,6 +38,7 @@
 /include.am
 /maxmind-geoip.*.dat*
 /measurement_kit
+/resource-manifest.json
 /test-driver
 /test/common/continuation
 /test/common/delegate

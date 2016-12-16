@@ -9,5 +9,6 @@
 #include <measurement_kit/nettests/runnable.hpp>
 #include <measurement_kit/nettests/runner.hpp>
 #include <measurement_kit/nettests/tcp_connect.hpp>
+#include <measurement_kit/nettests/update_resources.hpp>
 #include <measurement_kit/nettests/web_connectivity.hpp>
 #endif
