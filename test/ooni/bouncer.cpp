@@ -12,6 +12,14 @@ using namespace mk;
 using namespace mk::ooni;
 using namespace mk::ooni::bouncer;
 
+static void request_error(Settings, http::Headers, std::string,
+                          Callback<Error, Var<http::Response>> cb,
+                          Var<Reactor> = Reactor::global(),
+                          Var<Logger> = Logger::global(),
+                          Var<http::Response> = nullptr, int = 0) {
+    cb(MockedError(), nullptr);
+}
+
 static void request_invalid(Settings, http::Headers, std::string,
                             Callback<Error, Var<http::Response>> cb,
                             Var<Reactor> = Reactor::global(),
@@ -20,6 +28,21 @@ static void request_invalid(Settings, http::Headers, std::string,
     Var<http::Response> response(new http::Response());
     response->body = "{\"error\": \"invalid-request\"}";
     cb(NoError(), response);
+}
+
+TEST_CASE("The bouncer can handle a network error") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        // Mocked http request that returns an invalid-request
+        post_net_tests_impl<request_error>(
+            "https://a.collector.ooni.io/bouncer", "web-connectivity",
+            "0.0.1", {"web-connectivity"},
+            [=](Error e, Var<BouncerReply>) {
+                REQUIRE(e == MockedError());
+                reactor->break_loop();
+            },
+            {}, reactor, Logger::global());
+    });
 }
 
 TEST_CASE("The bouncer can handle an invalid request") {
