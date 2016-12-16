@@ -23,40 +23,43 @@ static void request_invalid(Settings, http::Headers, std::string,
 }
 
 TEST_CASE("The bouncer can handle an invalid request") {
-    loop_with_initial_event([]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
         // Mocked http request that returns an invalid-request
         post_net_tests_impl<request_invalid>(
             "https://a.collector.ooni.io/bouncer", "web-connectivity",
             "0.0.1", {"web-connectivity"},
-            [](Error e, Var<BouncerReply>) {
+            [=](Error e, Var<BouncerReply>) {
                 REQUIRE(e == BouncerInvalidRequestError());
-                break_loop();
+                reactor->break_loop();
             },
-            {}, Reactor::global(), Logger::global());
+            {}, reactor, Logger::global());
     });
 }
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("The bouncer can handle a collector not found response") {
-    loop_with_initial_event([]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
         post_net_tests_impl("https://a.collector.ooni.io/bouncer",
                             "antani", "0.0.1", {"antani"},
-                            [](Error e, Var<BouncerReply>) {
+                            [=](Error e, Var<BouncerReply>) {
 
                                 REQUIRE(e.code == BouncerCollectorNotFoundError().code);
-                                break_loop();
+                                reactor->break_loop();
                             },
-                            {}, Reactor::global(), Logger::global());
+                            {}, reactor, Logger::global());
     });
 }
 
 TEST_CASE("The bouncer works as expected when trying to get invalid values") {
-    loop_with_initial_event([]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
         post_net_tests_impl(
             "https://a.collector.ooni.io/bouncer", "web-connectivity",
             "0.0.1", {"web-connectivity"},
-            [](Error e, Var<BouncerReply> reply) {
+            [=](Error e, Var<BouncerReply> reply) {
                 REQUIRE(!e);
                 REQUIRE(reply->get_collector_alternate("antani").as_error() ==
                         BouncerValueNotFoundError());
@@ -68,18 +71,19 @@ TEST_CASE("The bouncer works as expected when trying to get invalid values") {
                             .as_error() == BouncerValueNotFoundError());
                 REQUIRE(reply->get_test_helper_alternate("antani", "cloudfront")
                             .as_error() == BouncerValueNotFoundError());
-                break_loop();
+                reactor->break_loop();
             },
-            {}, Reactor::global(), Logger::global());
+            {}, reactor, Logger::global());
     });
 }
 
 TEST_CASE("The bouncer works as expected") {
-    loop_with_initial_event([]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
         post_net_tests_impl(
             "https://a.collector.ooni.io/bouncer", "web-connectivity",
             "0.0.1", {"web-connectivity"},
-            [](Error e, Var<BouncerReply> reply) {
+            [=](Error e, Var<BouncerReply> reply) {
                 REQUIRE(!e);
                 REQUIRE(*reply->get_collector() ==
                         "httpo://ihiderha53f36lsd.onion");
@@ -96,9 +100,9 @@ TEST_CASE("The bouncer works as expected") {
                 REQUIRE(*reply->get_test_helper_alternate("web-connectivity",
                                                           "cloudfront") ==
                         "https://d2vt18apel48hw.cloudfront.net");
-                break_loop();
+                reactor->break_loop();
             },
-            {}, Reactor::global(), Logger::global());
+            {}, reactor, Logger::global());
     });
 }
 #endif
