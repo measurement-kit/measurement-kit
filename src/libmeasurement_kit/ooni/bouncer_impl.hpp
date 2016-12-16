@@ -1,6 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
+#ifndef SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_IMPL_HPP
 
 #include <measurement_kit/ooni.hpp>
 
@@ -62,3 +64,4 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
 } // namespace mk
 } // namespace ooni
 } // namespace bouncer
+#endif
