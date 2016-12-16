@@ -37,6 +37,8 @@ class Runnable : public NonCopyable, public NonMovable {
     std::string probe_cc = "ZZ";
     std::string resolver_ip = "127.0.0.1";
     bool needs_input = false;
+    bool needs_bouncer = false;
+    std::list<std::string> required_test_helpers;
 
   protected:
     // Functions that derived classes SHOULD override
@@ -50,6 +52,7 @@ class Runnable : public NonCopyable, public NonMovable {
     Var<std::istream> input_generator;
 
     void run_next_measurement(size_t, Callback<Error>, size_t, Var<size_t>);
+    void contact_bouncer(Callback<Error>);
     void geoip_lookup(Callback<>);
     void open_report(Callback<Error>);
     std::string generate_output_filepath();

@@ -14,7 +14,7 @@ namespace web_connectivity {
 #define USAGE "usage: %s [-nv] [-b backend] [-N nameserver] file_name\n"
 
 int main(const char *, int argc, char **argv) {
-    std::string backend = "https://a.collector.test.ooni.io:4444";
+    std::string backend = "";
     std::string nameserver = "8.8.8.8";
     std::string name = argv[0];
     uint32_t verbosity = 0;
@@ -47,8 +47,11 @@ int main(const char *, int argc, char **argv) {
         exit(1);
     }
 
+    if (backend != "") {
+        test.set_options("backend", backend);
+    }
+
     test
-        .set_options("backend", backend)
         .set_options("nameserver", nameserver)
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")

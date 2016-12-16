@@ -238,74 +238,131 @@ std::string Runnable::generate_output_filepath() {
     return filename.str();
 }
 
+void Runnable::contact_bouncer(Callback<Error> cb) {
+    if (!needs_bouncer) {
+        cb(NoError());
+        return;
+    }
+    auto bouncer = options.get(
+        "bouncer_base_url", std::string{"https://a.collector.ooni.io/bouncer"});
+    logger->info("Contacting bouncer: %s", bouncer.c_str());
+    ooni::bouncer::post_net_tests(
+        bouncer, test_name, test_version, required_test_helpers,
+        [=](Error error, Var<BouncerReply> reply) {
+            if (error) {
+                cb(error);
+                return;
+            }
+            assert(!!reply);
+            auto maybe_collector = reply->get_collector_alternate("https");
+            if (!maybe_collector) {
+                cb(maybe_collector.as_error());
+                return;
+            }
+            logger->info("Bouncer discovered collector: %s",
+                         maybe_collector->c_str());
+            if (options.find("collector_base_url") == options.end()) {
+                options["collector_base_url"] = *maybe_collector;
+                logger->info("Using discovered collector");
+            }
+            for (auto th: required_test_helpers) {
+                auto maybe_backend = reply->get_test_helper_alternate(
+                    th, "https"
+                );
+                if (!!maybe_backend) {
+                    logger->info("Bouncer discovered backend: %s",
+                         maybe_backend->c_str());
+                    if (options.find("backend") == options.end()) {
+                        logger->info("Using discovered backend");
+                        options["backend"] = *maybe_backend;
+                        // FIXME: This breaks multi-backend tests!!!
+                        break;
+                    }
+                }
+            }
+            cb(NoError());
+        },
+        options, reactor, logger);
+}
+
 void Runnable::begin(Callback<Error> cb) {
     if (begin_cb) {
         begin_cb();
     }
     mk::utc_time_now(&test_start_time);
-    geoip_lookup([=]() {
-        resolver_lookup([=](Error error, std::string resolver_ip_) {
-            if (!error) {
-                resolver_ip = resolver_ip_;
-            } else {
-                logger->debug("failed to lookup resolver ip");
-            }
-            open_report([=](Error error) {
-                if (error and not options.get(
-                        "ignore_open_report_error", true)) {
-                    cb(error);
-                    return;
-                }
-                size_t num_entries = 0;
-                if (needs_input) {
-                    if (input_filepath == "") {
-                        logger->warn("an input file is required");
-                        cb(MissingRequiredInputFileError());
-                        return;
+    contact_bouncer([=](Error error) {
+        if (error) {
+            cb(error);
+            return;
+        }
+        geoip_lookup([=]() {
+            resolver_lookup(
+                [=](Error error, std::string resolver_ip_) {
+                    if (!error) {
+                        resolver_ip = resolver_ip_;
+                    } else {
+                        logger->debug("failed to lookup resolver ip");
                     }
-                    input_generator.reset(new std::ifstream(input_filepath));
-                    if (!input_generator->good()) {
-                        logger->warn("cannot read input file");
-                        cb(CannotOpenInputFileError());
-                        return;
-                    }
+                    open_report([=](Error error) {
+                        if (error and
+                            not options.get("ignore_open_report_error", true)) {
+                            cb(error);
+                            return;
+                        }
+                        size_t num_entries = 0;
+                        if (needs_input) {
+                            if (input_filepath == "") {
+                                logger->warn("an input file is required");
+                                cb(MissingRequiredInputFileError());
+                                return;
+                            }
+                            input_generator.reset(
+                                new std::ifstream(input_filepath));
+                            if (!input_generator->good()) {
+                                logger->warn("cannot read input file");
+                                cb(CannotOpenInputFileError());
+                                return;
+                            }
 
-                    // Count the number of entries
-                    std::string next_input;
-                    while ((std::getline(*input_generator, next_input))) {
-                        num_entries += 1;
-                    }
-                    if (!input_generator->eof()) {
-                        logger->warn("cannot read input file");
-                        cb(FileIoError());
-                        return;
-                    }
-                    // See http://stackoverflow.com/questions/5750485
-                    //  and http://stackoverflow.com/questions/28331017
-                    input_generator->clear();
-                    input_generator->seekg(0);
+                            // Count the number of entries
+                            std::string next_input;
+                            while (
+                                (std::getline(*input_generator, next_input))) {
+                                num_entries += 1;
+                            }
+                            if (!input_generator->eof()) {
+                                logger->warn("cannot read input file");
+                                cb(FileIoError());
+                                return;
+                            }
+                            // See http://stackoverflow.com/questions/5750485
+                            //  and http://stackoverflow.com/questions/28331017
+                            input_generator->clear();
+                            input_generator->seekg(0);
 
-                } else {
-                    input_generator.reset(new std::istringstream("\n"));
-                    num_entries = 1;
-                }
+                        } else {
+                            input_generator.reset(new std::istringstream("\n"));
+                            num_entries = 1;
+                        }
 
-
-                // Run `parallelism` measurements in parallel
-                Var<size_t> current_entry(new size_t(0));
-                mk::parallel(
-                    mk::fmap<size_t, Continuation<Error>>(
-                        mk::range<size_t>(options.get("parallelism", 3)),
-                        [=](size_t thread_id) {
-                            return [=](Callback<Error> cb) {
-                                run_next_measurement(thread_id, cb, num_entries,
+                        // Run `parallelism` measurements in parallel
+                        Var<size_t> current_entry(new size_t(0));
+                        mk::parallel(mk::fmap<size_t, Continuation<Error>>(
+                                         mk::range<size_t>(
+                                             options.get("parallelism", 3)),
+                                         [=](size_t thread_id) {
+                                             return [=](Callback<Error> cb) {
+                                                 run_next_measurement(
+                                                     thread_id, cb, num_entries,
                                                      current_entry);
-                            };
-                        }),
-                    cb);
+                                             };
+                                         }),
+                                     cb);
 
-            });
-        }, options, reactor, logger);
+                    });
+                },
+                options, reactor, logger);
+        });
     });
 }
 
