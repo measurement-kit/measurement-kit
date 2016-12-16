@@ -27,7 +27,7 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
     settings["http/url"] = base_bouncer_url;
     settings["http/method"] = "POST";
     http_request(
-        settings, {}, request.dump(),
+        settings, {{"Content-Type", "application/json"}}, request.dump(),
         [=](Error error, Var<http::Response> resp) {
             if (error) {
                 cb(error, nullptr);
