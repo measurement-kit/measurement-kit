@@ -19,7 +19,7 @@ static nlohmann::json do_domain_error(std::string) {
 
 TEST_CASE("BouncerReply::create() works") {
 
-    SECTION("When the collect is not found") {
+    SECTION("When the collector is not found") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({"error": "collector-not-found"})", Logger::global());
         REQUIRE(!maybe_reply);
@@ -27,7 +27,7 @@ TEST_CASE("BouncerReply::create() works") {
                 ooni::BouncerCollectorNotFoundError());
     }
 
-    SECTION("When the collect is invalid") {
+    SECTION("When the response is invalid") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({"error": "invalid-request"})", Logger::global());
         REQUIRE(!maybe_reply);
@@ -73,7 +73,8 @@ TEST_CASE("BouncerReply::create() works") {
 
 TEST_CASE("BouncerReply accessors are robust to missing fields") {
     auto maybe_reply = ooni::BouncerReply::create(
-        R"({"net-tests": [{}]})", Logger::global());
+        R"({"net-tests": [{"test-helpers-alternate":[], "collector-alternate":1234}]})",
+        Logger::global());
     REQUIRE(!!maybe_reply);
     auto reply = *maybe_reply;
 
@@ -141,10 +142,10 @@ TEST_CASE("post_net_tests() works") {
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
-    SECTION("When the collector is found response") {
+    SECTION("When the collector is not found") {
         Var<Reactor> reactor = Reactor::make();
         reactor->loop_with_initial_event([=]() {
-            ooni::bouncer::post_net_tests_impl(
+            ooni::bouncer::post_net_tests(
                 "https://a.collector.ooni.io/bouncer", "antani", "0.0.1",
                 {"antani"},
                 [=](Error e, Var<ooni::BouncerReply>) {
@@ -158,7 +159,7 @@ TEST_CASE("post_net_tests() works") {
     SECTION("When the input is correct") {
         Var<Reactor> reactor = Reactor::make();
         reactor->loop_with_initial_event([=]() {
-            ooni::bouncer::post_net_tests_impl(
+            ooni::bouncer::post_net_tests(
                 "https://a.collector.ooni.io/bouncer", "web-connectivity",
                 "0.0.1", {"web-connectivity"},
                 [=](Error e, Var<ooni::BouncerReply> reply) {
