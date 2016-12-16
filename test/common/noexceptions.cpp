@@ -12,16 +12,7 @@ using json = nlohmann::json;
 
 using namespace mk;
 
-TEST_CASE("no exceptions works") {
-    auto value = noexceptions<int>([]() {
-        throw GenericError();
-        return 1;
-    });
-    REQUIRE(!value);
-    REQUIRE(value.as_error() == GenericError());
-}
-
-TEST_CASE("test it with json") {
+TEST_CASE("Try to parse an invalid json") {
     auto value = json_noexcept<json>([]() {
             auto value = json::parse("this is not a json");
             return value;
@@ -30,22 +21,20 @@ TEST_CASE("test it with json") {
     REQUIRE(value.as_error() == JsonParseError());
 }
 
-
-TEST_CASE("test it with json with valid fields") {
-    auto value = json_noexcept<json>([]() {
-            auto value = json::parse("{\"key\":\"value\"}");
-            return value["key"];
-    });
-    REQUIRE(*value == "value");
-}
-
-TEST_CASE("test it with json with invalid fields") {
+TEST_CASE("Try to get an ivnalid key") {
     auto value = json_noexcept<json>([]() {
             auto value = json::parse("{\"key\":\"value\"}");
             return value.at("invalid_key");
     });
     REQUIRE(!value);
-    // you should handle the fact that you receive an error
-    // but, if you try to access you thrown the previous error
     REQUIRE_THROWS(*value);
+}
+
+TEST_CASE("json_noexcept works: Parse a valid json and get a key") {
+    auto value = json_noexcept<json>([]() {
+            auto value = json::parse("{\"key\":\"value\"}");
+            return value["key"];
+    });
+    REQUIRE(!!value);
+    REQUIRE(*value == "value");
 }
