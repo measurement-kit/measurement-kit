@@ -13,11 +13,10 @@ using namespace mk::ooni;
 using namespace mk::ooni::bouncer;
 
 static void request_invalid(Settings, http::Headers, std::string,
-                     Callback<Error, Var<http::Response>> cb,
-                     Var<Reactor> = Reactor::global(),
-                     Var<Logger> = Logger::global(),
-                     Var<http::Response> = nullptr,
-                     int = 0) {
+                            Callback<Error, Var<http::Response>> cb,
+                            Var<Reactor> = Reactor::global(),
+                            Var<Logger> = Logger::global(),
+                            Var<http::Response> = nullptr, int = 0) {
     Var<http::Response> response(new http::Response());
     response->body = "{\"error\": \"invalid-request\"}";
     cb(NoError(), response);
@@ -63,10 +62,12 @@ TEST_CASE("The bouncer works as expected when trying to get invalid values") {
                         BouncerValueNotFoundError());
                 REQUIRE(reply->get_test_helper("antani").as_error() ==
                         BouncerValueNotFoundError());
-                REQUIRE(reply->get_test_helper_alternate("web-connectivity", "antani").as_error() ==
-                        BouncerValueNotFoundError());
-                REQUIRE(reply->get_test_helper_alternate("antani", "cloudfront").as_error() ==
-                        BouncerValueNotFoundError());
+                REQUIRE(reply
+                            ->get_test_helper_alternate("web-connectivity",
+                                                        "antani")
+                            .as_error() == BouncerValueNotFoundError());
+                REQUIRE(reply->get_test_helper_alternate("antani", "cloudfront")
+                            .as_error() == BouncerValueNotFoundError());
                 break_loop();
             },
             {}, Reactor::global(), Logger::global());
@@ -89,10 +90,12 @@ TEST_CASE("The bouncer works as expected") {
                 REQUIRE(*reply->get_name() == "web-connectivity");
                 REQUIRE(*reply->get_test_helper("web-connectivity") ==
                         "httpo://7jne2rpg5lsaqs6b.onion");
-                REQUIRE(*reply->get_test_helper_alternate("web-connectivity", "https")
-                        == "https://a.web-connectivity.th.ooni.io:4442");
-                REQUIRE(*reply->get_test_helper_alternate("web-connectivity", "cloudfront")
-                        == "https://d2vt18apel48hw.cloudfront.net");
+                REQUIRE(*reply->get_test_helper_alternate("web-connectivity",
+                                                          "https") ==
+                        "https://a.web-connectivity.th.ooni.io:4442");
+                REQUIRE(*reply->get_test_helper_alternate("web-connectivity",
+                                                          "cloudfront") ==
+                        "https://d2vt18apel48hw.cloudfront.net");
                 break_loop();
             },
             {}, Reactor::global(), Logger::global());
