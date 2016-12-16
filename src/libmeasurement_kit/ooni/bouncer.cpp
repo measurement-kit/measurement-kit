@@ -6,7 +6,6 @@
 
 namespace mk {
 namespace ooni {
-namespace bouncer {
 
 ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data,
                                                 Var<Logger> logger) {
@@ -111,6 +110,8 @@ ErrorOr<std::string> BouncerReply::get_version() {
     }
     return BouncerValueNotFoundError();
 }
+
+namespace bouncer {
 
 void post_net_tests(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,

@@ -9,8 +9,6 @@
 #include "../src/libmeasurement_kit/ooni/bouncer_impl.hpp"
 
 using namespace mk;
-using namespace mk::ooni;
-using namespace mk::ooni::bouncer;
 
 static void request_error(Settings, http::Headers, std::string,
                           Callback<Error, Var<http::Response>> cb,
@@ -34,10 +32,10 @@ TEST_CASE("The bouncer can handle a network error") {
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
         // Mocked http request that returns an invalid-request
-        post_net_tests_impl<request_error>(
+        ooni::bouncer::post_net_tests_impl<request_error>(
             "https://a.collector.ooni.io/bouncer", "web-connectivity",
             "0.0.1", {"web-connectivity"},
-            [=](Error e, Var<BouncerReply>) {
+            [=](Error e, Var<ooni::BouncerReply>) {
                 REQUIRE(e == MockedError());
                 reactor->break_loop();
             },
@@ -49,11 +47,11 @@ TEST_CASE("The bouncer can handle an invalid request") {
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
         // Mocked http request that returns an invalid-request
-        post_net_tests_impl<request_invalid>(
+        ooni::bouncer::post_net_tests_impl<request_invalid>(
             "https://a.collector.ooni.io/bouncer", "web-connectivity",
             "0.0.1", {"web-connectivity"},
-            [=](Error e, Var<BouncerReply>) {
-                REQUIRE(e == BouncerInvalidRequestError());
+            [=](Error e, Var<ooni::BouncerReply>) {
+                REQUIRE(e == ooni::BouncerInvalidRequestError());
                 reactor->break_loop();
             },
             {}, reactor, Logger::global());
@@ -65,11 +63,11 @@ TEST_CASE("The bouncer can handle an invalid request") {
 TEST_CASE("The bouncer can handle a collector not found response") {
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
-        post_net_tests_impl("https://a.collector.ooni.io/bouncer",
+        ooni::bouncer::post_net_tests_impl("https://a.collector.ooni.io/bouncer",
                             "antani", "0.0.1", {"antani"},
-                            [=](Error e, Var<BouncerReply>) {
+                            [=](Error e, Var<ooni::BouncerReply>) {
 
-                                REQUIRE(e.code == BouncerCollectorNotFoundError().code);
+                                REQUIRE(e == ooni::BouncerCollectorNotFoundError());
                                 reactor->break_loop();
                             },
                             {}, reactor, Logger::global());
@@ -79,21 +77,21 @@ TEST_CASE("The bouncer can handle a collector not found response") {
 TEST_CASE("The bouncer works as expected when trying to get invalid values") {
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
-        post_net_tests_impl(
+        ooni::bouncer::post_net_tests_impl(
             "https://a.collector.ooni.io/bouncer", "web-connectivity",
             "0.0.1", {"web-connectivity"},
-            [=](Error e, Var<BouncerReply> reply) {
+            [=](Error e, Var<ooni::BouncerReply> reply) {
                 REQUIRE(!e);
                 REQUIRE(reply->get_collector_alternate("antani").as_error() ==
-                        BouncerValueNotFoundError());
+                        ooni::BouncerValueNotFoundError());
                 REQUIRE(reply->get_test_helper("antani").as_error() ==
-                        BouncerValueNotFoundError());
+                        ooni::BouncerValueNotFoundError());
                 REQUIRE(reply
                             ->get_test_helper_alternate("web-connectivity",
                                                         "antani")
-                            .as_error() == BouncerValueNotFoundError());
+                            .as_error() == ooni::BouncerValueNotFoundError());
                 REQUIRE(reply->get_test_helper_alternate("antani", "cloudfront")
-                            .as_error() == BouncerValueNotFoundError());
+                            .as_error() == ooni::BouncerValueNotFoundError());
                 reactor->break_loop();
             },
             {}, reactor, Logger::global());
@@ -103,10 +101,10 @@ TEST_CASE("The bouncer works as expected when trying to get invalid values") {
 TEST_CASE("The bouncer works as expected") {
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
-        post_net_tests_impl(
+        ooni::bouncer::post_net_tests_impl(
             "https://a.collector.ooni.io/bouncer", "web-connectivity",
             "0.0.1", {"web-connectivity"},
-            [=](Error e, Var<BouncerReply> reply) {
+            [=](Error e, Var<ooni::BouncerReply> reply) {
                 REQUIRE(!e);
                 REQUIRE(*reply->get_collector() ==
                         "httpo://ihiderha53f36lsd.onion");

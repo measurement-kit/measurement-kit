@@ -9,7 +9,6 @@
 
 namespace mk {
 namespace ooni {
-namespace bouncer {
 
 class BouncerReply {
   public:
@@ -28,6 +27,8 @@ class BouncerReply {
   private:
     nlohmann::json get_base();
 };
+
+namespace bouncer {
 
 void post_net_tests(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,
