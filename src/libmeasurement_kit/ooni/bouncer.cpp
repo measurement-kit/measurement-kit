@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "bouncer_impl.hpp"
+#include "../ooni/bouncer_impl.hpp"
 
 namespace mk {
 namespace ooni {
@@ -51,7 +51,7 @@ ErrorOr<std::string> BouncerReply::get_collector() {
     try {
         return get_base()["collector"];
     } catch (std::domain_error &) {
-        /* suppress */
+        /* FALLTHROUGH */ ;
     }
     return BouncerValueNotFoundError();
 }
@@ -60,11 +60,12 @@ ErrorOr<std::string> BouncerReply::get_collector_alternate(std::string type) {
     try {
         auto collectors = get_base()["collector-alternate"];
         for (auto collector : collectors) {
-            if (collector["type"] == type)
+            if (collector["type"] == type) {
                 return collector["address"];
+            }
         }
     } catch (std::domain_error &) {
-        /* suppress */
+        /* FALLTHROUGH */ ;
     }
     return BouncerValueNotFoundError();
 }
@@ -73,7 +74,7 @@ ErrorOr<std::string> BouncerReply::get_name() {
     try {
         return get_base()["name"];
     } catch (std::domain_error &) {
-        /* suppress */
+        /* FALLTHROUGH */ ;
     }
     return BouncerValueNotFoundError();
 }
@@ -82,7 +83,7 @@ ErrorOr<std::string> BouncerReply::get_test_helper(std::string name) {
     try {
         return get_base()["test-helpers"][name];
     } catch (std::domain_error &) {
-        /* suppress */
+        /* FALLTHROUGH */ ;
     }
     return BouncerValueNotFoundError();
 }
@@ -91,11 +92,12 @@ ErrorOr<std::string> BouncerReply::get_test_helper_alternate(std::string name, s
     try {
         auto collectors = get_base()["test-helpers-alternate"][name];
         for (auto collector : collectors) {
-            if (collector["type"] == type)
+            if (collector["type"] == type) {
                 return collector["address"];
+            }
         }
     } catch (std::domain_error &) {
-        /* suppress */
+        /* FALLTHROUGH */ ;
     }
     return BouncerValueNotFoundError();
 }
@@ -105,7 +107,7 @@ ErrorOr<std::string> BouncerReply::get_version() {
     try {
         return get_base()["version"];
     } catch (std::domain_error &) {
-        /* suppress */
+        /* FALLTHROUGH */ ;
     }
     return BouncerValueNotFoundError();
 }
