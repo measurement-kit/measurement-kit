@@ -6,15 +6,13 @@
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/ooni.hpp>
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace ooni {
 namespace bouncer {
 
 class BouncerReply {
- public:
-    json response;
+  public:
+    nlohmann::json response;
 
     static ErrorOr<Var<BouncerReply>> create(std::string, Var<Logger>);
 
@@ -24,8 +22,9 @@ class BouncerReply {
     ErrorOr<std::string> get_test_helper(std::string name);
     ErrorOr<std::string> get_test_helper_alternate(std::string name, std::string type);
     ErrorOr<std::string> get_version();
- private:
-    json get_base();
+
+  private:
+    nlohmann::json get_base();
 };
 
 template <MK_MOCK_NAMESPACE(http, request)>
@@ -34,8 +33,8 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                     Callback<Error, Var<BouncerReply>> cb, Settings settings,
                     Var<Reactor> reactor, Var<Logger> logger) {
 
-    json request;
-    json net_tests;
+    nlohmann::json request;
+    nlohmann::json net_tests;
     net_tests["input-hashes"] = {};
     net_tests["name"] = test_name;
     net_tests["test-helpers"] = helpers;

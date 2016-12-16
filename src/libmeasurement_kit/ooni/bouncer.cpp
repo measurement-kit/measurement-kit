@@ -8,11 +8,10 @@ namespace mk {
 namespace ooni {
 namespace bouncer {
 
-
 ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data, Var<Logger> logger) {
     Var<BouncerReply> reply(new BouncerReply);
     try {
-        reply->response = json::parse(data);
+        reply->response = nlohmann::json::parse(data);
         if (reply->response.find("error") != reply->response.end()) {
             if (reply->response["error"] == "collector-not-found") {
                 logger->warn(
@@ -43,7 +42,7 @@ ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data, Var<Logger> lo
     return reply;
 }
 
-json BouncerReply::get_base() {
+nlohmann::json BouncerReply::get_base() {
     // this method can throw exceptions
     return response["net-tests"][0];
 }
