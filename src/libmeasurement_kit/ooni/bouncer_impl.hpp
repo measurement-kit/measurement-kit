@@ -10,23 +10,6 @@ namespace mk {
 namespace ooni {
 namespace bouncer {
 
-class BouncerReply {
-  public:
-    nlohmann::json response;
-
-    static ErrorOr<Var<BouncerReply>> create(std::string, Var<Logger>);
-
-    ErrorOr<std::string> get_collector();
-    ErrorOr<std::string> get_collector_alternate(std::string type);
-    ErrorOr<std::string> get_name();
-    ErrorOr<std::string> get_test_helper(std::string name);
-    ErrorOr<std::string> get_test_helper_alternate(std::string name, std::string type);
-    ErrorOr<std::string> get_version();
-
-  private:
-    nlohmann::json get_base();
-};
-
 template <MK_MOCK_NAMESPACE(http, request)>
 void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,
