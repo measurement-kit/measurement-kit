@@ -192,19 +192,22 @@ TEST_CASE("dns::query deals with inet_pton returning 0") {
 
 TEST_CASE("dns::query raises if the query is unsupported") {
     query("IN", "MX", "www.neubot.org",
-          [](Error e, Var<Message>) { REQUIRE(e == UnsupportedTypeError()); });
+          [](Error e, Var<Message>) { REQUIRE(e == UnsupportedTypeError()); },
+          {{"dns/engine", "libevent"}});
 }
 
 TEST_CASE("dns::query raises if the class is unsupported") {
     query("CS", "A", "www.neubot.org",
-          [](Error e, Var<Message>) { REQUIRE(e == UnsupportedClassError()); });
+          [](Error e, Var<Message>) { REQUIRE(e == UnsupportedClassError()); },
+          {{"dns/engine", "libevent"}});
 }
 
 TEST_CASE("dns::query deals with invalid PTR name") {
     // This should be enough to see the failure, more tests for the
     // parser for PTR addresses are in test/common/utils.cpp
     query("IN", "PTR", "xx",
-          [](Error e, Var<Message>) { REQUIRE(e == InvalidNameForPTRError()); });
+          [](Error e, Var<Message>) { REQUIRE(e == InvalidNameForPTRError()); },
+          {{"dns/engine", "libevent"}});
 }
 
 #ifdef ENABLE_INTEGRATION_TESTS
@@ -215,7 +218,7 @@ TEST_CASE("dns::query deals with invalid PTR name") {
 // we are not connected to the 'Net.
 //
 
-TEST_CASE("The system resolver works as expected") {
+TEST_CASE("The libevent resolver works as expected") {
 
     //
     // Note: this test also makes sure that we get sensible
@@ -231,7 +234,7 @@ TEST_CASE("The system resolver works as expected") {
             REQUIRE(message->rtt > 0.0);
             REQUIRE(message->answers[0].ttl > 0);
             break_loop();
-        });
+        }, {{"dns/engine", "libevent"}});
     });
 
     loop_with_initial_event([]() {
@@ -244,7 +247,7 @@ TEST_CASE("The system resolver works as expected") {
                 REQUIRE(message->rtt > 0.0);
                 REQUIRE(message->answers[0].ttl > 0);
                 break_loop();
-            });
+            }, {{"dns/engine", "libevent"}});
     });
 
     loop_with_initial_event([]() {
@@ -257,7 +260,7 @@ TEST_CASE("The system resolver works as expected") {
             REQUIRE(message->rtt > 0.0);
             REQUIRE(message->answers[0].ttl > 0);
             break_loop();
-        });
+        }, {{"dns/engine", "libevent"}});
     });
 
     loop_with_initial_event([]() {
@@ -277,7 +280,7 @@ TEST_CASE("The system resolver works as expected") {
                   }
                   REQUIRE(found);
                   break_loop();
-              });
+              }, {{"dns/engine", "libevent"}});
     });
 
     loop_with_initial_event([]() {
@@ -290,7 +293,7 @@ TEST_CASE("The system resolver works as expected") {
                   REQUIRE(message->rtt > 0.0);
                   REQUIRE(message->answers[0].ttl > 0);
                   break_loop();
-              });
+              }, {{"dns/engine", "libevent"}});
     });
 
     loop_with_initial_event([]() {
@@ -304,7 +307,7 @@ TEST_CASE("The system resolver works as expected") {
                   REQUIRE(message->rtt > 0.0);
                   REQUIRE(message->answers[0].ttl > 0);
                   break_loop();
-              });
+              }, {{"dns/engine", "libevent"}});
     });
 }
 

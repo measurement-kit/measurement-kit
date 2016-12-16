@@ -56,20 +56,46 @@ TEST_CASE("Make sure that on_begin() works") {
 }
 
 TEST_CASE("Make sure that on_end() works") {
-    bool ok = false;
+    int ok = 0;
     nettests::Runnable test;
     test.reactor = Reactor::global();
     loop_with_initial_event([&]() {
-        test.end_cb = [&]() {
-            ok = true;
-        };
+        test.end_cbs.push_back([&]() {
+            ok += 1;
+        });
+        test.end_cbs.push_back([&]() {
+            ok += 2;
+        });
         test.begin([&](Error) {
             test.end([&](Error) {
                 break_loop();
             });
         });
     });
-    REQUIRE(ok);
+    REQUIRE(ok == 3);
+}
+
+TEST_CASE("Make sure that on_destroy() works") {
+    int ok = 0;
+    {
+        nettests::Runnable test;
+        test.reactor = Reactor::global();
+        loop_with_initial_event([&]() {
+            test.destroy_cbs.push_back([&]() {
+                ok += 1;
+            });
+            test.destroy_cbs.push_back([&]() {
+                ok += 2;
+            });
+            test.begin([&](Error) {
+                test.end([&](Error) {
+                    break_loop();
+                });
+            });
+        });
+        REQUIRE(ok == 0);
+    }
+    REQUIRE(ok == 3);
 }
 
 TEST_CASE("Ensure we do not save too much information by default") {

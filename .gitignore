@@ -70,10 +70,12 @@
 /test/ndt/test_meta
 /test/ndt/test_s2c
 /test/net/buffer
+/test/net/builtin_ca_bundle
 /test/net/connect
 /test/net/emitter
 /test/net/evbuffer
 /test/net/socks5
+/test/net/ssl_context
 /test/net/transport
 /test/net/utils
 /test/nettests/dns_injection
@@ -121,3 +123,4 @@ src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/
 stamp-h1
 third_party/
+xx

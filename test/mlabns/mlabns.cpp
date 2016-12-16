@@ -34,6 +34,7 @@ TEST_CASE("Query can pass the settings to the dns level") {
     settings["mlabns/metro"] = "trn";
     settings["mlabns/policy"] = "random";
     settings["dns/nameserver"] = "8.8.8.1";
+    settings["dns/engine"] = "libevent";
     std::string tool = "neubot";
 
     loop_with_initial_event([=]() {
