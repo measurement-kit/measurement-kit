@@ -10,6 +10,44 @@ namespace mk {
 namespace ooni {
 namespace bouncer {
 
+static inline nlohmann::json json_parse(std::string s) {
+    return nlohmann::json::parse(s);
+}
+
+template <MK_MOCK(json_parse)>
+ErrorOr<Var<BouncerReply>> create_impl(std::string data, Var<Logger> logger) {
+    Var<BouncerReply> reply{new BouncerReply};
+    try {
+        reply->response = json_parse(data);
+        if (reply->response.find("error") != reply->response.end()) {
+            if (reply->response["error"] == "collector-not-found") {
+                logger->warn("collector not found for the requested test");
+                return BouncerCollectorNotFoundError();
+            }
+            if (reply->response["error"] == "invalid-request") {
+                logger->warn("invalid request sent to the bouncer");
+                return BouncerInvalidRequestError();
+            }
+            // I assume that if we receive a json with the key "error"
+            // then the json has an unknown schema and we should not
+            // continue to process it
+            logger->warn("bouncer generic error");
+            return BouncerGenericError();
+        }
+        if (reply->response["net-tests"].empty()) {
+            logger->warn("generic bouncer error");
+            return BouncerTestHelperNotFoundError();
+        }
+    } catch (std::invalid_argument &) {
+        return JsonParseError();
+    } catch (std::out_of_range &) {
+        return JsonKeyError();
+    } catch (std::domain_error &) {
+        return JsonDomainError();
+    }
+    return reply;
+}
+
 template <MK_MOCK_NAMESPACE(http, request)>
 void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                          std::string test_version,

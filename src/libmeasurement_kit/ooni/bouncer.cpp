@@ -9,36 +9,7 @@ namespace ooni {
 
 ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data,
                                                 Var<Logger> logger) {
-    Var<BouncerReply> reply(new BouncerReply);
-    try {
-        reply->response = nlohmann::json::parse(data);
-        if (reply->response.find("error") != reply->response.end()) {
-            if (reply->response["error"] == "collector-not-found") {
-                logger->warn("collector not found for the requested test");
-                return BouncerCollectorNotFoundError();
-            }
-            if (reply->response["error"] == "invalid-request") {
-                logger->warn("invalid request sent to the bouncer");
-                return BouncerInvalidRequestError();
-            }
-            // I assume that if we receive a json with the key "error"
-            // then the json has an unknown schema and we should not
-            // continue to process it
-            logger->warn("bouncer generic error");
-            return BouncerGenericError();
-        }
-        if (reply->response["net-tests"].empty()) {
-            logger->warn("generic bouncer error");
-            return BouncerTestHelperNotFoundError();
-        }
-    } catch (std::invalid_argument &) {
-        return JsonParseError();
-    } catch (std::out_of_range &) {
-        return JsonKeyError();
-    } catch (std::domain_error &) {
-        return JsonDomainError();
-    }
-    return reply;
+    return bouncer::create_impl(data, logger);
 }
 
 nlohmann::json BouncerReply::get_base() {
