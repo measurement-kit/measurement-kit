@@ -43,14 +43,14 @@ ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data,
 }
 
 nlohmann::json BouncerReply::get_base() {
-    // this method can throw exceptions
+    // Note: this method can throw exceptions
     return response["net-tests"][0];
 }
 
 ErrorOr<std::string> BouncerReply::get_collector() {
     try {
         return get_base()["collector"];
-    } catch (std::domain_error &) {
+    } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
     return BouncerValueNotFoundError();
@@ -64,7 +64,7 @@ ErrorOr<std::string> BouncerReply::get_collector_alternate(std::string type) {
                 return collector["address"];
             }
         }
-    } catch (std::domain_error &) {
+    } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
     return BouncerValueNotFoundError();
@@ -73,7 +73,7 @@ ErrorOr<std::string> BouncerReply::get_collector_alternate(std::string type) {
 ErrorOr<std::string> BouncerReply::get_name() {
     try {
         return get_base()["name"];
-    } catch (std::domain_error &) {
+    } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
     return BouncerValueNotFoundError();
@@ -82,7 +82,7 @@ ErrorOr<std::string> BouncerReply::get_name() {
 ErrorOr<std::string> BouncerReply::get_test_helper(std::string name) {
     try {
         return get_base()["test-helpers"][name];
-    } catch (std::domain_error &) {
+    } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
     return BouncerValueNotFoundError();
@@ -97,7 +97,7 @@ ErrorOr<std::string> BouncerReply::get_test_helper_alternate(std::string name,
                 return collector["address"];
             }
         }
-    } catch (std::domain_error &) {
+    } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
     return BouncerValueNotFoundError();
@@ -106,7 +106,7 @@ ErrorOr<std::string> BouncerReply::get_test_helper_alternate(std::string name,
 ErrorOr<std::string> BouncerReply::get_version() {
     try {
         return get_base()["version"];
-    } catch (std::domain_error &) {
+    } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
     return BouncerValueNotFoundError();
