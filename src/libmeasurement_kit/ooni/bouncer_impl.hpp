@@ -43,18 +43,18 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
     settings["http/method"] = "POST";
     http_request(
         settings, {}, request.dump(),
-        [=](Error e, Var<http::Response> resp) {
-            if (e) {
-                cb(e, nullptr);
+        [=](Error error, Var<http::Response> resp) {
+            if (error) {
+                cb(error, nullptr);
                 return;
             }
 
             ErrorOr<Var<BouncerReply>> reply(BouncerReply::create(resp->body, logger));
-            if (!!reply) {
-                cb(NoError(), *reply);
+            if (!reply) {
+                cb(reply.as_error(), nullptr);
                 return;
             }
-            cb(reply.as_error(), nullptr);
+            cb(NoError(), *reply);
         },
         reactor, logger, nullptr, 0);
 }
