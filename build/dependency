@@ -122,9 +122,6 @@ if [ -z "$pkg_prefix" ]; then
 fi
 export pkg_prefix
 cd $pkg_rootdir
-if [ -x build/spec/$1 ]; then
-    exec build/spec/$1  # If the spec is executable, pass control to it
-fi
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
 if [ "$pkg_repository" != "" ]; then
