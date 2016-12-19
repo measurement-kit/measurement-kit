@@ -14,7 +14,7 @@ Override default behavior by setting these environment variables:
   - pkg_make_flags: extra flags for 'make' (e.g. 'V=0')
   - pkg_make_install_flags: extra flags for 'make install' (e.g. DESTDIR=/opt)
   - pkg_prefix: prefix where to install (e.g. '/usr/local')
-  - pkg_steps: steps to execute (default is: 'configure make make_install')
+  - pkg_steps: steps to execute (default is: 'depend configure make make_install')
   - pkg_sudo: optional comand to execute 'make install' with (e.g. sudo)
 
 Examples:
@@ -25,23 +25,47 @@ Examples:
 EOF
 }
 
+pkg_chdir() {
+    cd third_party/$pkg_name
+}
+
 pkg_autogen() {
     if [ -x ./autogen.sh ]; then
-        echo "- ./autogen.sh"
-        ./autogen.sh
+        echo "- ./autogen.sh $pkg_autogen_sh_flags"
+        ./autogen.sh $pkg_autogen_sh_flags
     elif [ -f ./configure.ac ]; then
         echo "- autoreconf -i"
         autoreconf -i
     fi
 }
 
+pkg_depend() {
+    for dep in `echo $pkg_deps`; do
+        if [ "$pkg_cross" != "" -a "$pkg_arch" != "" ]; then
+            dep="$pkg_cross-$pkg_arch-$dep"
+        fi
+        if [ ! -f $pkg_rootdir/$dep.tgz ]; then
+            baseurl=https://github.com/measurement-kit/dependencies
+            wget -O $pkg_rootdir/$dep.tgz                                      \
+                $baseurl/releases/download/2016-12-19/$dep.tgz
+            wget -O $pkg_rootdir/$dep.tgz.asc                                  \
+                $baseurl/releases/download/2016-12-19/$dep.tgz.asc
+            gpg2 --verify $pkg_rootdir/$dep.tgz.asc
+            install -d $pkg_prefix
+            tar -C $pkg_prefix -xzf $pkg_rootdir/$dep.tgz
+        else
+            echo "It seems $dep has already been built and installed"
+        fi
+    done
+}
+
 pkg_configure() {
     if [ -x ./configure ]; then
         echo "- ./configure --prefix=$pkg_prefix $pkg_configure_flags"
-        ./configure --prefix=$pkg_prefix $pkg_configure_flags
+        ./configure --prefix=/ $pkg_configure_flags
     elif [ -f ./CMakeLists.txt ]; then
         echo "- cmake -D CMAKE_INSTALL_PREFIX=$pkg_prefix $pkg_cmake_flags ."
-        cmake -D CMAKE_INSTALL_PREFIX=$pkg_prefix $pkg_cmake_flags .
+        cmake -D CMAKE_INSTALL_PREFIX=/ $pkg_cmake_flags .
     fi
 }
 
@@ -51,17 +75,37 @@ pkg_make() {
 }
 
 pkg_make_install() {
-    echo "- $pkg_sudo make $pkg_make_install_flags install"
-    $pkg_sudo make $pkg_make_install_flags install
-}
+    echo "- remove previously existing ./xx (if any)"
+    rm -rf ./xx
 
-pkg_none() {
-    echo "- no action"
+    echo "- $pkg_sudo make $pkg_make_install_flags install DESTDIR=./xx"
+    make $pkg_make_install_flags install DESTDIR=`pwd`/xx
+
+    echo "- cleanup unnecessary files in ./xx/$pkg_prefix"
+    (cd ./xx && find . -type f                                                 \
+       \( \! -name \*.h -and \! -name \*.hpp -and \! -name \*.a \)             \
+         -exec rm {} \;)
+    (cd ./xx && find . -type l -exec rm {} \;)
+    (cd ./xx && find . -type d -empty -depth -exec rmdir {} \;)
+
+    echo "- install spec in ./xx/$pkg_prefix"
+    install -d ./xx/spec
+    install -m644 $pkg_rootdir/build/spec/$1 ./xx/spec/$1
+
+    if [ "$pkg_cross" != "" -a "$pkg_arch" != "" ]; then
+        pkg_archive="$pkg_cross-$pkg_arch-$pkg_archive"
+    fi
+    echo "- tar -cvzf $pkg_archive.tgz"
+    (cd ./xx && tar -cvzf $pkg_rootdir/$pkg_archive.tgz .)
+
+    echo "- $pkg_sudo tar -C $pkg_prefix $pkg_archive.tgz"
+    install -d $pkg_prefix
+    $pkg_sudo tar -C $pkg_prefix -xzf $pkg_rootdir/$pkg_archive.tgz
 }
 
 apply_patches() {
-    if [ -d ../../../build/patch/$1 ]; then
-        for diff in `find ../../../build/patch/$1 -type f`; do
+    if [ -d ../../build/patch/$1 ]; then
+        for diff in `find ../../build/patch/$1 -type f`; do
             git apply -v $diff
         done
     fi
@@ -83,44 +127,36 @@ if [ -x build/spec/$1 ]; then
 fi
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
-if [ ! -d third_party/cache/$pkg_name ]; then
-    git clone $pkg_clone_flags $pkg_repository third_party/cache/$pkg_name
-    cd third_party/cache/$pkg_name
-    if [ ! -z "$pkg_branch" ]; then
-        git checkout $pkg_branch
-        if [ "`git rev-parse HEAD`" != "$pkg_commit" ]; then
+if [ "$pkg_repository" != "" ]; then
+    git clone $pkg_clone_flags --single-branch --depth 2                       \
+        --branch $pkg_branch_or_tag $pkg_repository third_party/$pkg_name
+    cd third_party/$pkg_name
+    if [ ! -z "$pkg_tip" ]; then
+        if [ "`git rev-parse HEAD`" != "$pkg_tip" ]; then
             # Mainly because this allows us to know which commit was the
             # tip of the branch when we compiled a dependency
             echo "FATAL: unexpected HEAD commit SHA-1" 1>&2
             exit 1
         fi
     fi
-    if [ ! -z "$pkg_tag" ]; then
-        git checkout tags/$pkg_tag
-    fi
-    apply_patches pre-autogen/$pkg_name/common
-    if [ "$pkg_cross" != "" ]; then
-        apply_patches pre-autogen/$pkg_name/$pkg_cross
-    fi
-    pkg_autogen
-    apply_patches post-autogen/$pkg_name/common
-    if [ "$pkg_cross" != "" ]; then
-        apply_patches post-autogen/$pkg_name/$pkg_cross
-    fi
-    cd ../../../ # back to where we were
+    cd ../..  # back to where we were
 fi
-if [ ! -d third_party/build/ ]; then
-    mkdir third_party/build/
+pkg_chdir
+apply_patches pre-autogen/$pkg_name/common
+if [ "$pkg_cross" != "" ]; then
+    apply_patches pre-autogen/$pkg_name/$pkg_cross
 fi
-rm -rf third_party/build/$pkg_name
-cp -R third_party/cache/$pkg_name third_party/build/$pkg_name
-cd third_party/build/$pkg_name
+pkg_autogen
+apply_patches post-autogen/$pkg_name/common
+if [ "$pkg_cross" != "" ]; then
+    apply_patches post-autogen/$pkg_name/$pkg_cross
+fi
 if [ -z "$pkg_steps" ]; then
-    pkg_steps="configure make make_install"
+    pkg_steps="depend configure make make_install"
 fi
 for step in $pkg_steps; do
     echo ""
-    echo "* step: $step"
-    pkg_$step
+    echo "* step: $step $1"
+    pkg_$step $1
 done
 echo ""

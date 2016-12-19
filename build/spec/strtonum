@@ -1,9 +1,9 @@
 
 # Note: here the pkg_name is libressl such that we only need to clone once
-# the library (for libressl proper and tls_verify.c) rather than twice
+# the library rather than multiple times for each "package" based on it
 pkg_name=libressl
 pkg_repository=https://github.com/libressl-portable/portable.git
-pkg_tag=v2.4.4
+pkg_branch_or_tag=v2.4.4
 pkg_steps=install
 
 pkg_install() {

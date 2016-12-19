@@ -1,0 +1,12 @@
+pkg_name=measurement-kit
+pkg_archive=${pkg_name}-`git describe --tags`-2
+pkg_deps="geoip-1.6.9-2 libressl-2.4.4-2 libevent-7dedc077-2"
+pkg_autogen_sh_flags="-n"
+pkg_configure_flags="--with-geoip=$pkg_prefix --with-openssl=$pkg_prefix --with-libevent=$pkg_prefix --disable-examples --disable-shared --disable-binaries $pkg_configure_flags"
+
+pkg_chdir() {
+    # Abusing of `chdir` step to cleanup the toplevel directory
+    if [ -f Majefile ]; then
+        make distclean
+    fi
+}
