@@ -78,7 +78,7 @@ pkg_make_install() {
     echo "- remove previously existing ./xx (if any)"
     rm -rf ./xx
 
-    echo "- $pkg_sudo make $pkg_make_install_flags install DESTDIR=./xx"
+    echo "- make $pkg_make_install_flags install DESTDIR=./xx"
     make $pkg_make_install_flags install DESTDIR=`pwd`/xx
 
     echo "- cleanup unnecessary files in ./xx/$pkg_prefix"
