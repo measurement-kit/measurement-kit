@@ -51,7 +51,4 @@ list_libs() {
         echo "/* Make CocoaPod happy */" > \
             Frameworks/$lib.framework/Headers/dummy_header.h
     done
-
-    output=measurement-kit-frameworks-`git describe --tags`-1.tgz
-    tar -cvzf $ROOTDIR/$output Frameworks
 )
