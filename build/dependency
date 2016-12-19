@@ -128,6 +128,7 @@ fi
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
 if [ "$pkg_repository" != "" ]; then
+    rm -rf third_party/$pkg_name
     git clone $pkg_clone_flags --single-branch --depth 2                       \
         --branch $pkg_branch_or_tag $pkg_repository third_party/$pkg_name
     cd third_party/$pkg_name
