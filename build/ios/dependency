@@ -11,7 +11,7 @@ BUILDDIR=$ROOTDIR/build
 IOSDIR=$BUILDDIR/ios
 
 if [ "$pkg_ios_archs" = "" ]; then
-    export pkg_ios_archs="i386 x86_64 armv7 armv7s arm64"
+    export pkg_ios_archs="x86_64 armv7 armv7s arm64"
 fi
 for arch in $pkg_ios_archs; do
     $IOSDIR/cross $arch $BUILDDIR/dependency $1
