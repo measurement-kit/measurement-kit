@@ -10,9 +10,6 @@ ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
 BUILDDIR=$ROOTDIR/build
 IOSDIR=$BUILDDIR/ios
 
-echo ""
-echo "Cross-compiling $1 for all platforms and archs"
-
 if [ "$pkg_ios_archs" = "" ]; then
     export pkg_ios_archs="i386 x86_64 armv7 armv7s arm64"
 fi
