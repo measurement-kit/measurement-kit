@@ -31,10 +31,17 @@ list_libs() {
         mkdir Frameworks/$lib.framework
     done
 
-    # Copying x86 headers. This has no implications because measurement-kit
-    # uses no machine-dependent headers.
-    cp -Rp tmp/iphonesimulator/i386/include/measurement_kit \
-        Frameworks/measurement_kit.framework/Headers
+    # Copying first headers we find. This has no implications because
+    # measurement-kit uses no machine-dependent headers.
+    for platform in iphoneos iphonesimulator; do
+        for arch in i386 x86_64 armv7 armv7s arm64; do
+            if [ -d tmp/$platform/$arch/include/measurement_kit ]; then
+                cp -Rp tmp/$platform/$arch/include/measurement_kit \
+                    Frameworks/measurement_kit.framework/Headers
+                break
+            fi
+        done
+    done
 
     # Lipo external libraries
     for lib in $EXTLIBRARIES; do
