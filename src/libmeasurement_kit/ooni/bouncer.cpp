@@ -92,6 +92,6 @@ void post_net_tests(std::string base_bouncer_url, std::string test_name,
                         settings, reactor, logger);
 }
 
-} // namespace mk
-} // namespace ooni
 } // namespace bouncer
+} // namespace ooni
+} // namespace mk
