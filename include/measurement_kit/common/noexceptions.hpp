@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_COMMON_NOEXCEPTIONS_HPP
 #define MEASUREMENT_KIT_COMMON_NOEXCEPTIONS_HPP
 
-#include <cassert>
 #include <measurement_kit/common/error_or.hpp>
 
 namespace mk {
