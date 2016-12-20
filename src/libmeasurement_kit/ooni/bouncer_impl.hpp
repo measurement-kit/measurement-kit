@@ -85,7 +85,7 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                  reactor, logger, nullptr, 0);
 }
 
-} // namespace mk
-} // namespace ooni
 } // namespace bouncer
+} // namespace ooni
+} // namespace mk
 #endif
