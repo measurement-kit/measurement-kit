@@ -46,8 +46,10 @@ modified using the following `settings`:
 
 - *"net/ca_bundle_path"* (string): path of the CA bundle to be used to verify
   SSL certificates. The default value is selected by `./configure` inspecting
-  the local system when compiling. For mobile devices, the default is the
-  empty string; i.e. you must provide a sensible value yourself.
+  the local system when compiling. If the path is the empty string and we
+  link against libressl (as is typically the case for mobile devices) we load
+  libressl default CA from memory (i.e. you don't need anymore to include a
+  CA file when setting up an application using measurement-kit).
 
 - *"net/dumb_transport"*: if this key is present a dumb transport is created (i.e. a
   transport that is not connected to any socket).

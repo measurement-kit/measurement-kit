@@ -12,7 +12,7 @@
 #include "../net/utils.hpp"
 
 #include "../libevent/connection.hpp"
-#include "../libevent/ssl_context.hpp"
+#include "../net/ssl_context.hpp"
 
 #include <cassert>
 #include <event2/bufferevent_ssl.h>
@@ -126,9 +126,9 @@ void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
                            }
                            cb(*result);
                        },
-                       settings, reactor);
+                       settings, reactor, logger);
                },
-               settings, reactor);
+               settings, reactor, logger);
 }
 
 void connect_logic(std::string hostname, int port,

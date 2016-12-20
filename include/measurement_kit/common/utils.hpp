@@ -29,5 +29,10 @@ T split(std::string s, std::string pattern = "\\s+") {
     return {first, last};
 }
 
+std::string sha256_of(std::string input);
+
+ErrorOr<std::vector<char>> slurpv(std::string path);
+ErrorOr<std::string> slurp(std::string path);
+
 } // namespace mk
 #endif

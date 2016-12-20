@@ -86,7 +86,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                         return;
                     }
 
-                    ctx->logger->info("Sent additional metadata to server");
+                    ctx->logger->debug("Sent additional metadata to server");
 
                     // Now we read the FINALIZE message
                     ctx->logger->debug("ndt: recv TEST_FINALIZE ...");

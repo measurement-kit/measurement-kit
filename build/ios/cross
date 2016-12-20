@@ -41,8 +41,9 @@ export CFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --sh
 export CXXFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
 export LDFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
 
-export pkg_configure_flags="$EXTRA_CONFIG -q"
+export pkg_configure_flags="$EXTRA_CONFIG"
 export pkg_prefix="$DESTDIR"
+export pkg_cross="ios"
 
 if [ $# -gt 0 ]; then
     $@

@@ -86,12 +86,13 @@ TEST_CASE("A logger without file and without callback works") {
 }
 
 TEST_CASE("The logger's EOF handler works") {
-    auto called = false;
+    auto called = 0;
     {
         Var<Logger> logger = Logger::make();
-        logger->on_eof([&]() { called = true; });
+        logger->on_eof([&]() { called += 1; });
+        logger->on_eof([&]() { called += 2; });
     }
-    REQUIRE(called);
+    REQUIRE(called == 3);
 }
 
 TEST_CASE("We pass MK_LOG_EVENT to logger if event-handler not set") {

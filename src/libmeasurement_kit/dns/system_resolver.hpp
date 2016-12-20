@@ -56,6 +56,7 @@ void resolve_async(ResolverContext *context) {
     addrinfo *sip = nullptr;
 
     int error = getaddrinfo(ctx->name.c_str(), nullptr, &ctx->hints, &sip);
+    ctx->logger->log(MK_LOG_DEBUG2, "getaddrinfo result: %d", error);
     if (error) {
         ctx->logger->warn("getaddrinfo failed: %s", gai_strerror(error));
         Error resolver_error;
@@ -150,7 +151,14 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     std::unique_ptr<ResolverContext> ctx(new ResolverContext(
         dns_class, dns_type, name, cb, settings, reactor, logger));
     Query query;
-    ctx->hints.ai_flags = AI_ALL | AI_V4MAPPED;
+    /*
+     * Note: here we pass empty flags. It used to be AI_ALL | AI_V4MAPPED but
+     * Android did not like it and, honestly, I do not think having back v4
+     * mapped addresses would be super useful to us (or in general) given that
+     * when we want to connect we usually connect trying to resolve AAAA and
+     * A at the same time. Keeping the feature conditionally may lead to
+     * odd behaviors in corner cases and I'd like to avoid future headaches.
+     */
     ctx->hints.ai_socktype = SOCK_STREAM;
 
     if (dns_class != MK_DNS_CLASS_IN) {

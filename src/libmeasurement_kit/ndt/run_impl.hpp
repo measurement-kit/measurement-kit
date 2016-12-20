@@ -57,27 +57,28 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
 
     connect(ctx, [ctx](Error err) {
         TRAP_ERRORS(err);
-        ctx->logger->progress(0.1);
+        ctx->logger->progress(0.1, "Connected to test server");
 
         send_login(ctx, [ctx](Error err) {
             TRAP_ERRORS(err);
-            ctx->logger->progress(0.2);
+            ctx->logger->progress(0.2, "Logged in with test server");
 
             recv_and_ignore_kickoff(ctx, [ctx](Error err) {
                 TRAP_ERRORS(err);
-                ctx->logger->progress(0.3);
+                ctx->logger->progress(0.3, "Waiting for our turn in queue");
 
                 wait_in_queue(ctx, [ctx](Error err) {
                     TRAP_ERRORS(err);
-                    ctx->logger->progress(0.4);
+                    ctx->logger->progress(0.4, "Authorized to run test");
 
                     recv_version(ctx, [ctx](Error err) {
                         TRAP_ERRORS(err);
-                        ctx->logger->progress(0.5);
+                        ctx->logger->progress(0.5, "Got server version");
 
                         recv_tests_id(ctx, [ctx](Error err) {
                             TRAP_ERRORS(err);
-                            ctx->logger->progress(0.6);
+                            ctx->logger->progress(0.6,
+                                "Got authorized tests identifiers");
 
                             run_tests(ctx, [ctx](Error err) {
                                 TRAP_ERRORS(err);
@@ -85,10 +86,12 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
 
                                 recv_results_and_logout(ctx, [ctx](Error err) {
                                     TRAP_ERRORS(err);
-                                    ctx->logger->progress(0.8);
+                                    ctx->logger->progress(0.8,
+                                        "Received results from server");
 
                                     wait_close(ctx, [ctx](Error err) {
-                                        ctx->logger->progress(0.9);
+                                        ctx->logger->progress(0.9,
+                                            "Connection with server closed");
                                         disconnect_and_callback(ctx, err);
                                     });
                                 });

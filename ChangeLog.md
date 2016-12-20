@@ -1,3 +1,96 @@
+# MeasurementKit 0.4.0-alpha.1 [2016-12-15]
+
+- Improve multi_ndt entry format (#992)
+- Fix: libressl ios build (#994)
+- Refactor: ssl (#997)
+- Write ssl context regress tests (#998)
+- Implement mk::slurp() to read files at once (#996)
+- BaseTest: add on_logger_eof() method (#1004)
+- getaddrinfo: android dislikes AI_V4MAPPED|AI_ALL (#1005)
+- logger: allow multiple on_eof() callbacks (#1006)
+- runnable: allow multiple on-end callbacks (#1007)
+- Use builtin CA file if CA file is missing and we're using libressl (#999)
+- runnable: add on_destroy() callback (#1008)
+
+# MeasurementKit 0.4.0-alpha [2016-12-07]
+
+- cmdline.hpp: Use macros to simplify code (#858)
+- Make `no_collector` / `no_file_report` options really usable (#860)
+- Make sure filenames extension is .njson, not .json (#873)
+- dns: pass logger to query() (#878)
+- don't track njson files (#879)
+- dns.hpp: pass a `Var<Message>` to the callback (#862)
+- ssl: handle errors using callbacks not exceptions (#789)
+- Start moving libevent code into a specific folder (#891)
+- More abstract reactor API (#894)
+- reactor: move more code from poller to here (#895)
+- More reactor-related cleanups (#896)
+- More maintenance of reactor and poller (#897)
+- net: measure connect time during connect (#899)
+- Prepare for required successful build only on travis (#902)
+- ndt: multi stream test (#710)
+- Implement and use `reactor->pollfd()` (#898)
+- Add support for submitting reports via cloudfronted collectors (#907)
+- http/request: don't redirect if `*max_request <= 0` (#910)
+- Log dns debug to the correct logger (#912)
+- travis: valgrind: update openssl.supp (#928)
+- Move cmdline in src/measurement_kit (#930)
+- collector_client.hpp: remove backward compat stuff (#931)
+- version: use C linkage function (#932)
+- Reactor should come before logger in function args (#933)
+- ndt: exchange reactor and logger arguments (#934)
+- reactor.hpp: add missing header (#936)
+- Do not use `using namespace` in public headers (#937)
+- Refactoring of the nettests layer (#938)
+- nettests: move code from headers to .cpp files (#939)
+- runner: hide implementation details (#940)
+- net_test: less inline functions (#941)
+- Merge net_test.hpp and ooni_test.hpp (#942)
+- ooni_reporter: fix layers violation (#943)
+- Divide net_test in base_test and runnable (#944)
+- nettests: more refactoring (#945)
+- Feature: ignore collector errors (#946)
+- Move ooni_reporter in report module (#947)
+- nettests: pass `Var<Entry>` to callback (#948)
+- nettests: run() now uses the current thread (#949)
+- dns: enums that should not conflict with windows (#951)
+- Resolve hosts using the system resolver (#918)
+- Support IPv6 link-local resolver (#915)
+- logger: add callback for JSON encoded events (#956)
+- ndt: print progress of the test (#958)
+- Make sure we always store and submit report-id (#950)
+- ndt: allow to specify alternative mlabns tool (#959)
+- Move network utils code in net directory (#960)
+- Always disable the Nagle algorithm (#961)
+- Set CFLAGS et al. in configure (#963)
+- Improve cmake for Unix (#965)
+- Implement single+multiple stream NDT test (#968)
+- Update dependencies for v0.4.0 (#982)
+- Implement ooni resources downloader (#811)
+- Improve the CMakeLists.txt file (#983)
+
+# MeasurementKit 0.3.9 [2016-12-04]
+
+- Revert "Add workaround for macOS"
+
+# MeasurementKit 0.3.8 [2016-12-04]
+
+- Make sure --disable-traceroute actually works
+- Add workaround for macOS
+
+# MeasurementKit 0.3.7 [2016-12-02]
+
+- Allow to quickly disable traceroute
+
+# MeasurementKit 0.3.6 [2016-12-01]
+
+- http/request: don't redirect if `*max_request <= 0` (#908)
+- Log dns debug to the correct logger (#912) (#914)
+- web-connectivity: log errors (#916)
+- bufferevent: use `BEV_OPT_DEFER_CALLBACKS` (#924)
+- Fix several warnings (#926)
+- `ooni_reporter.cpp`: make sure we submit report id (#927)
+
 # MeasurementKit 0.3.5 [2016-11-01]
 
 - a few `web_connectivity` fixes (#880, #889, #890)

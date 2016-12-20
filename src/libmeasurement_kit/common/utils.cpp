@@ -2,12 +2,15 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../common/utils.hpp"
-
-#include <event2/util.h>
-
 #include <ctype.h>
 #include <math.h>
+
+#include <iomanip>
+
+#include <event2/util.h>
+#include <openssl/sha.h>
+
+#include "../common/utils_impl.hpp"
 
 namespace mk {
 
@@ -116,6 +119,35 @@ double percentile(std::vector<double> v, double percent) {
     auto val0 = v[int(pivot_floor)] * (pivot_ceil - pivot);
     auto val1 = v[int(pivot_ceil)] * (pivot - pivot_floor);
     return val0 + val1;
+}
+
+// See: <http://stackoverflow.com/questions/2262386/>
+std::string sha256_of(std::string input) {
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    constexpr size_t hash_size = sizeof(hash) / sizeof(hash[0]);
+    SHA256_CTX ctx;
+    SHA256_Init(&ctx);
+    SHA256_Update(&ctx, input.data(), input.size());
+    SHA256_Final(hash, &ctx);
+    std::stringstream ss;
+    for (size_t i = 0; i < hash_size; i++) {
+        ss << std::hex << std::setw(2) << std::setfill('0')
+           << (unsigned)hash[i];
+    }
+    return ss.str();
+}
+
+ErrorOr<std::vector<char>> slurpv(std::string path) {
+    return slurpv_impl<char>(path);
+}
+
+ErrorOr<std::string> slurp(std::string path) {
+    ErrorOr<std::vector<char>> v = slurpv_impl<char>(path);
+    if (!v) {
+        return v.as_error();
+    }
+    std::string s{v->begin(), v->end()};  /* Note that here we make a copy */
+    return s;
 }
 
 } // namespace mk

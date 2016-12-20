@@ -9,6 +9,11 @@
 namespace mk {
 namespace nettests {
 
+BaseTest &BaseTest::on_logger_eof(Delegate<> func) {
+    runnable->logger->on_eof(func);
+    return *this;
+}
+
 BaseTest &BaseTest::on_log(Delegate<uint32_t, const char *> func) {
     runnable->logger->on_log(func);
     return *this;
@@ -19,7 +24,7 @@ BaseTest &BaseTest::on_event(Delegate<const char *> func) {
     return *this;
 }
 
-BaseTest &BaseTest::on_progress(Delegate<double> func) {
+BaseTest &BaseTest::on_progress(Delegate<double, const char *> func) {
     runnable->logger->on_progress(func);
     return *this;
 }
@@ -63,7 +68,12 @@ BaseTest &BaseTest::on_begin(Delegate<> cb) {
 }
 
 BaseTest &BaseTest::on_end(Delegate<> cb) {
-    runnable->end_cb = cb;
+    runnable->end_cbs.push_back(cb);
+    return *this;
+}
+
+BaseTest &BaseTest::on_destroy(Delegate<> cb) {
+    runnable->destroy_cbs.push_back(cb);
     return *this;
 }
 
