@@ -5,8 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/common/noexceptions.hpp>
-#include <measurement_kit/ext.hpp>
+#include <measurement_kit/json.hpp>
 
 using json = nlohmann::json;
 

@@ -1,5 +1,5 @@
 # NAME
-ext &mdash; module containing third parties' code
+json &mdash; module containing code used to handle json
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -7,7 +7,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 # SYNOPSIS
 ```C++
 // DO NOT INCLUDE THIS HEADER FILE DIRECTLY
-/*#include <measurement_kit/ext.hpp>*/
+/*#include <measurement_kit/json.hpp>*/
 ```
 
 # STABILITY
