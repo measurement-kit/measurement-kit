@@ -89,8 +89,8 @@ pkg_make_install() {
     echo "- cleanup unnecessary files in ./xx/$pkg_prefix"
     (cd ./xx && find . -type f                                                 \
        \( \! -name \*.h -and \! -name \*.hpp -and \! -name \*.a                \
-                        -and \! -name \*.dylib                                 \
-                        -and \! -name \*.so \)                                 \
+                        -and \! -name \*.dylib -and \! -name \*.dylib.\*       \
+                        -and \! -name \*.so -and \! -name \*.so.\* \)          \
          -exec rm {} \;)
     (cd ./xx && find . -depth -type d -empty -exec rmdir {} \;)
 
