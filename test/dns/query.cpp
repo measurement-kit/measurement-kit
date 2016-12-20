@@ -210,6 +210,60 @@ TEST_CASE("dns::query deals with invalid PTR name") {
           {{"dns/engine", "libevent"}});
 }
 
+// Test resolve_hostname
+
+TEST_CASE("resolve_hostname works with IPv4 address") {
+    loop_with_initial_event([]() {
+        std::string hostname = "130.192.16.172";
+        resolve_hostname(hostname, [hostname](ResolveHostnameResult r) {
+            REQUIRE(r.inet_pton_ipv4);
+            REQUIRE(r.addresses.size() == 1);
+            REQUIRE(r.addresses[0] == hostname);
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("resolve_hostname works with IPv6 address") {
+    loop_with_initial_event([]() {
+        std::string hostname = "2a00:1450:400d:807::200e";
+        resolve_hostname(hostname, [hostname](ResolveHostnameResult r) {
+            REQUIRE(r.inet_pton_ipv6);
+            REQUIRE(r.addresses.size() == 1);
+            REQUIRE(r.addresses[0] == hostname);
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("resolve_hostname works with domain") {
+    loop_with_initial_event([]() {
+        resolve_hostname("google.com", [](ResolveHostnameResult r) {
+            REQUIRE(not r.inet_pton_ipv4);
+            REQUIRE(not r.inet_pton_ipv6);
+            REQUIRE(not r.ipv4_err);
+            REQUIRE(not r.ipv6_err);
+            // At least one IPv4 and one IPv6 addresses
+            REQUIRE(r.addresses.size() > 1);
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("stress resolve_hostname with invalid address and domain") {
+    loop_with_initial_event([]() {
+        // Pass input that is neither invalid IPvX nor valid domain
+        resolve_hostname("192.1688.antani", [](ResolveHostnameResult r) {
+            REQUIRE(not r.inet_pton_ipv4);
+            REQUIRE(not r.inet_pton_ipv6);
+            REQUIRE(r.ipv4_err);
+            REQUIRE(r.ipv6_err);
+            REQUIRE(r.addresses.size() == 0);
+            break_loop();
+        });
+    });
+}
+
 #ifdef ENABLE_INTEGRATION_TESTS
 
 // Integration (or regress?) tests for dns::query.
