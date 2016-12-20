@@ -12,6 +12,7 @@ script:
     - export pkg_configure_flags="--quiet --disable-static"
     # On 12.04 the linker needs LD_RUN_PATH otherwise the linking fails
     - export LD_RUN_PATH=$TRAVIS_BUILD_DIR/builtin/lib
+    - export LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/builtin/lib
     # So, here we build our dependencies because it doesn't take too much time,
     # because travis uses 12.04 with very old libs which cause many warnings
     # with the also very old valgrind available:
@@ -26,9 +27,6 @@ script:
     - make $pkg_make_flags
     - make $pkg_make_flags check-am$VALGRIND
     - if [ -f test-suite.log ]; then cat test-suite.log; fi
-    - ldd ./test/traceroute/.libs/lt-android
-    - echo $LD_RUN_PATH
-    - ls $LD_RUN_PATH $LD_RUN_PATH/lib
 
 # Silence gcov standard output since it produces way too much output
 after_success:
