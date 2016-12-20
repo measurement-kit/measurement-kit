@@ -5,7 +5,7 @@ print_usage() {
 usage: $0 dependency-name
 
 Clones repository, configure, build and install dependency. By default sources
-are below './third_party' and installed software is below './builtin/'.
+are below './build/third_party' and installed software is below './builtin/'.
 
 Override default behavior by setting these environment variables:
   - pkg_clone_flags: extra flags for 'git clone' (e.g. '--recursive')
@@ -26,7 +26,12 @@ EOF
 }
 
 pkg_chdir() {
-    cd third_party/$pkg_name
+    #
+    # Note: we must have three layers of directory because old autotools
+    # misbehave when we are using only two layers and specifically they try
+    # to use measurement-kit's autotools rather than their own.
+    #
+    cd ./build/third_party/$pkg_name
 }
 
 pkg_autogen() {
@@ -104,8 +109,8 @@ pkg_make_install() {
 }
 
 apply_patches() {
-    if [ -d ../../build/patch/$1 ]; then
-        for diff in `find ../../build/patch/$1 -type f`; do
+    if [ -d ../../../build/patch/$1 ]; then
+        for diff in `find ../../../build/patch/$1 -type f`; do
             git apply -v $diff
         done
     fi
@@ -125,10 +130,11 @@ cd $pkg_rootdir
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
 if [ "$pkg_repository" != "" ]; then
-    rm -rf third_party/$pkg_name
+    rm -rf ./build/third_party/$pkg_name
     git clone $pkg_clone_flags --single-branch --depth 2                       \
-        --branch $pkg_branch_or_tag $pkg_repository third_party/$pkg_name
-    cd third_party/$pkg_name
+        --branch $pkg_branch_or_tag $pkg_repository                            \
+          ./build/third_party/$pkg_name
+    cd ./build/third_party/$pkg_name
     if [ ! -z "$pkg_tip" ]; then
         if [ "`git rev-parse HEAD`" != "$pkg_tip" ]; then
             # Mainly because this allows us to know which commit was the
@@ -137,7 +143,7 @@ if [ "$pkg_repository" != "" ]; then
             exit 1
         fi
     fi
-    cd ../..  # back to where we were
+    cd ../../..  # back to where we were
 fi
 pkg_chdir
 apply_patches pre-autogen/$pkg_name/common
