@@ -88,10 +88,11 @@ pkg_make_install() {
 
     echo "- cleanup unnecessary files in ./xx/$pkg_prefix"
     (cd ./xx && find . -type f                                                 \
-       \( \! -name \*.h -and \! -name \*.hpp -and \! -name \*.a \)             \
+       \( \! -name \*.h -and \! -name \*.hpp -and \! -name \*.a                \
+                        -and \! -name \*.dylib                                 \
+                        -and \! -name \*.so \)                                 \
          -exec rm {} \;)
-    (cd ./xx && find . -type l -exec rm {} \;)
-    (cd ./xx && find . -type d -empty -depth -exec rmdir {} \;)
+    (cd ./xx && find . -depth -type d -empty -exec rmdir {} \;)
 
     echo "- install spec in ./xx/$pkg_prefix"
     install -d ./xx/spec
