@@ -27,6 +27,8 @@ script:
     - make $pkg_make_flags check-am$VALGRIND
     - if [ -f test-suite.log ]; then cat test-suite.log; fi
     - ldd ./test/traceroute/.libs/lt-android
+    - echo $LD_RUN_PATH
+    - ls $LD_RUN_PATH $LD_RUN_PATH/lib
 
 # Silence gcov standard output since it produces way too much output
 after_success:
