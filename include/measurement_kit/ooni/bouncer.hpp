@@ -35,7 +35,7 @@ void post_net_tests(std::string base_bouncer_url, std::string test_name,
                     Callback<Error, Var<BouncerReply>> cb, Settings settings,
                     Var<Reactor> reactor, Var<Logger> logger);
 
-} // namespace mk
-} // namespace ooni
 } // namespace bouncer
+} // namespace ooni
+} // namespace mk
 #endif
