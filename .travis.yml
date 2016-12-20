@@ -23,10 +23,10 @@ script:
     # on mobile thus we are interested to test that here on travis)
     - ./configure $pkg_configure_flags --with-geoip=builtin --with-ca-bundle=""
         --with-openssl=builtin --with-libevent=builtin $COVERAGE
-    - cat config.log
     - make $pkg_make_flags
     - make $pkg_make_flags check-am$VALGRIND
     - if [ -f test-suite.log ]; then cat test-suite.log; fi
+    - ldd ./test/traceroute/.libs/lt-android
 
 # Silence gcov standard output since it produces way too much output
 after_success:
