@@ -169,7 +169,13 @@ Note that, in addition to the above specified software, the `dependency`
 script also assumes that you have installed: `wget`, `gpg2`, `tar`, `gzip`,
 `install`, possibly `cmake` (depending on whether you try to recompile
 a dependency whose build system uses `cmake`), `find`, `git`, and possibly
-other pieces of software.
+other pieces of software. Also, `dependency` MAY download precompiled
+pieces of software signed by the PGP key with fingerprint:
+
+    7388 77AA 6C82 9F26 A431  C5F4 80B6 9127 7733 D95B
+
+In such case, you SHOULD also import that key (bound to the email address
+`bassossimone@gmail.com`) to successfully build the dependency.
 
 ### How to test MeasurementKit on a Unix-like system
 
