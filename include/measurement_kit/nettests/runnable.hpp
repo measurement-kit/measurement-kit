@@ -7,6 +7,7 @@
 #include <measurement_kit/report.hpp>
 
 #include <ctime>
+#include <deque>
 #include <list>
 #include <sstream>
 
@@ -47,7 +48,7 @@ class Runnable : public NonCopyable, public NonMovable {
   private:
     report::Report report;
     tm test_start_time;
-    Var<std::istream> input_generator;
+    std::deque<std::string> inputs;
 
     void run_next_measurement(size_t, Callback<Error>, size_t, Var<size_t>);
     void geoip_lookup(Callback<>);

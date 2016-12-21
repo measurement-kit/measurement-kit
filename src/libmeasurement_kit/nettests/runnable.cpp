@@ -2,10 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/nettests.hpp>
-
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
+
+#include <measurement_kit/nettests.hpp>
+
+#include <random>
 
 namespace mk {
 namespace nettests {
@@ -33,19 +35,14 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
                                     Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
-    std::string next_input;
-    std::getline(*input_generator, next_input);
 
-    if (input_generator->eof()) {
+    if (inputs.size() <= 0) {
         logger->debug("net_test: reached end of input");
         cb(NoError());
         return;
     }
-    if (!input_generator->good()) {
-        logger->warn("net_test: I/O error reading input");
-        cb(FileIoError());
-        return;
-    }
+    std::string next_input = inputs.front();
+    inputs.pop_front();
 
     double prog = 0.0;
     if (num_entries > 0) {
@@ -263,8 +260,8 @@ void Runnable::begin(Callback<Error> cb) {
                         cb(MissingRequiredInputFileError());
                         return;
                     }
-                    input_generator.reset(new std::ifstream(input_filepath));
-                    if (!input_generator->good()) {
+                    std::ifstream input_generator{input_filepath};
+                    if (!input_generator.good()) {
                         logger->warn("cannot read input file");
                         cb(CannotOpenInputFileError());
                         return;
@@ -272,21 +269,21 @@ void Runnable::begin(Callback<Error> cb) {
 
                     // Count the number of entries
                     std::string next_input;
-                    while ((std::getline(*input_generator, next_input))) {
+                    while ((std::getline(input_generator, next_input))) {
                         num_entries += 1;
+                        inputs.push_back(next_input);
                     }
-                    if (!input_generator->eof()) {
+                    if (!input_generator.eof()) {
                         logger->warn("cannot read input file");
                         cb(FileIoError());
                         return;
                     }
-                    // See http://stackoverflow.com/questions/5750485
-                    //  and http://stackoverflow.com/questions/28331017
-                    input_generator->clear();
-                    input_generator->seekg(0);
-
+                    // See http://en.cppreference.com/w/cpp/algorithm/shuffle
+                    std::random_device rd;
+                    std::mt19937 g(rd());
+                    std::shuffle(inputs.begin(), inputs.end(), g);
                 } else {
-                    input_generator.reset(new std::istringstream("\n"));
+                    inputs.push_back("\n");
                     num_entries = 1;
                 }
 
