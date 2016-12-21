@@ -31,6 +31,8 @@ pkg_chdir() {
     # misbehave when we are using only two layers and specifically they try
     # to use measurement-kit's autotools rather than their own.
     #
+    # See measurement-kit/measurement-kit#1017 build history for more.
+    #
     cd ./build/third_party/$pkg_name
 }
 
