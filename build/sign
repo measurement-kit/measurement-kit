@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+while [ $# -gt 0 ]; do
+    gpg2 -u 738877AA6C829F26A431C5F480B691277733D95B -b --armor $1
+    shift
+done
