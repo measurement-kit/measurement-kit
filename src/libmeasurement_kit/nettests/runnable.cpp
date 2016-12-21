@@ -297,7 +297,8 @@ void Runnable::begin(Callback<Error> cb) {
                     std::mt19937 g(rd());
                     std::shuffle(inputs.begin(), inputs.end(), g);
                 } else {
-                    inputs.push_back("\n");
+                    // Empty string to call main() just once
+                    inputs.push_back("");
                     num_entries = 1;
                 }
 
