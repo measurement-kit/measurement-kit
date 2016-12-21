@@ -24,7 +24,7 @@ class Runnable : public NonCopyable, public NonMovable {
     Var<Logger> logger = Logger::make();
     Var<Reactor> reactor;  /* Left unspecified by purpose */
     Settings options;
-    std::string input_filepath;
+    std::list<std::string> input_filepaths;
     std::string output_filepath;
     Delegate<std::string> entry_cb;
     Delegate<> begin_cb;

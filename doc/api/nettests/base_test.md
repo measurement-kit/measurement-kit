@@ -20,6 +20,7 @@ class BaseTest {
     BaseTest &on_progress(Delegate<double, const char *>);
     BaseTest &set_verbosity(uint32_t);
     BaseTest &increase_verbosity();
+    BaseTest &add_input_filepath(std::string);
     BaseTest &set_input_filepath(std::string);
     BaseTest &set_output_filepath(std::string);
     template <typename T> BaseTest &set_options(std::string, T);
@@ -79,15 +80,25 @@ The `set_verbosity` and the `increase_verbosity` methods allow to,
 respectively, set an increase the verbosity of the logger bound to
 this test.
 
-The `set_input_filepath` and `set_output_filepath` methods allow to
-set, respectively, the input file path (i.e. the path of the file
-containing the inputs that the test should consume) and the output
-file path (i.e. the file where the test should write the results
-of the test). By default there is no input file path and the output
-file path is the empty string. In that case, the test will generate
-an output file path appropriate for the test itself. If you want
-to disable writing output to disk, you should pass the test the
-`no_file_report` setting instead, by setting its value to false.
+The `add_input_filepath` adds one file path to the input paths list, which
+by default is empty. Tests that require input would fail if no input file
+path is specified, while tests that do not require input will ignore input
+if it is provided by the caller. If an input file path cannot be openned
+or read, measurement-kit will emit a warning message, but the test will not
+fail. If an input file path contains the string "${cc}" this is replaced
+with the current country code in lower case (that is, if you are in Italy
+&mdash; country code `IT` &mdash; the string "${cc}" is replaced with
+`it`).
+
+The `set_input_filepath` method clears previously set input file paths
+and then sets the path provided as argument as the unique input file path.
+
+The `set_output_filepath` method allows to set the output file path (i.e.
+the file where the test should write the results of the test). If you don't
+specify the output file path, the test will generate an output file path
+appropriate for the test itself. If you want to disable writing output to
+disk, you should pass the test the `no_file_report` setting instead, by
+setting its value to the string "0".
 
 The `set_options` method allows to specify test options. Note that
 all options values SHOULD be passed as string (future versions of

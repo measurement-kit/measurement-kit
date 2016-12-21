@@ -255,28 +255,42 @@ void Runnable::begin(Callback<Error> cb) {
                 }
                 size_t num_entries = 0;
                 if (needs_input) {
-                    if (input_filepath == "") {
-                        logger->warn("an input file is required");
+                    if (input_filepaths.size() <= 0) {
+                        logger->warn("at least an input file is required");
                         cb(MissingRequiredInputFileError());
                         return;
                     }
-                    std::ifstream input_generator{input_filepath};
-                    if (!input_generator.good()) {
-                        logger->warn("cannot read input file");
-                        cb(CannotOpenInputFileError());
-                        return;
+                    std::string probe_cc_lowercase;
+                    for (auto &c: probe_cc) {
+                        /*
+                         * Note: in general the snippet below is not
+                         * so good because it does not work for UTF-8
+                         * and the like but here we are converting
+                         * country codes which are always ASCII.
+                         */
+                        probe_cc_lowercase += std::tolower(c);
                     }
-
-                    // Count the number of entries
-                    std::string next_input;
-                    while ((std::getline(input_generator, next_input))) {
-                        num_entries += 1;
-                        inputs.push_back(next_input);
-                    }
-                    if (!input_generator.eof()) {
-                        logger->warn("cannot read input file");
-                        cb(FileIoError());
-                        return;
+                    for (auto input_filepath: input_filepaths) {
+                        input_filepath = std::regex_replace(
+                            input_filepath,
+                            std::regex{R"(\$\{cc\})"},
+                            probe_cc_lowercase
+                        );
+                        std::ifstream input_generator{input_filepath};
+                        if (!input_generator.good()) {
+                            logger->warn("cannot open input file");
+                            continue;
+                        }
+                        // Count the number of entries
+                        std::string next_input;
+                        while ((std::getline(input_generator, next_input))) {
+                            num_entries += 1;
+                            inputs.push_back(next_input);
+                        }
+                        if (!input_generator.eof()) {
+                            logger->warn("cannot read input file");
+                            continue;
+                        }
                     }
                     // See http://en.cppreference.com/w/cpp/algorithm/shuffle
                     std::random_device rd;
