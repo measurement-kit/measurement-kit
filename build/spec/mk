@@ -5,7 +5,7 @@ pkg_autogen_sh_flags="-n"
 pkg_configure_flags="--with-geoip=$pkg_prefix --with-openssl=$pkg_prefix --with-libevent=$pkg_prefix --disable-examples --disable-shared --disable-binaries $pkg_configure_flags"
 
 pkg_chdir() {
-    # Abusing of `chdir` step to cleanup the toplevel directory
+    # XXX abusing of `chdir` step to cleanup the toplevel directory
     if [ -f Makefile ]; then
         make distclean
     fi

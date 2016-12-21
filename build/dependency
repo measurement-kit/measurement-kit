@@ -102,6 +102,11 @@ pkg_make_install() {
     install -d $tmp_inst_dir/spec
     install -m644 $pkg_rootdir/build/spec/$1 $tmp_inst_dir/spec/$1
 
+    if [ "$pkg_archive" = "" ]; then
+        echo "FATAL: missing 'pkg_archive'" 1>&2
+        exit 1
+    fi
+
     if [ "$pkg_cross" != "" -a "$pkg_arch" != "" ]; then
         pkg_archive="$pkg_cross-$pkg_arch-$pkg_archive"
     fi
