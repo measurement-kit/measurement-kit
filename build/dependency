@@ -84,7 +84,7 @@ pkg_make() {
 pkg_make_install() {
     tmp_inst_dir="./xx"
 
-    echo "- remove previously existing $tmp_inst_dir (if any)"
+    echo "- rm -rf $tmp_inst_dir"
     rm -rf $tmp_inst_dir
 
     echo "- make $pkg_make_install_flags install DESTDIR=$tmp_inst_dir"
