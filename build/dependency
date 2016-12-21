@@ -148,7 +148,7 @@ if [ "$pkg_repository" != "" ]; then
             exit 1
         fi
     fi
-    cd ../../../  # back to where we were
+    cd ../../../ # back to where we were
 fi
 pkg_chdir
 apply_patches pre-autogen/$pkg_name/common
