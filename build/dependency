@@ -82,29 +82,31 @@ pkg_make() {
 }
 
 pkg_make_install() {
-    echo "- remove previously existing ./xx (if any)"
-    rm -rf ./xx
+    tmp_inst_dir="./xx"
 
-    echo "- make $pkg_make_install_flags install DESTDIR=./xx"
-    make $pkg_make_install_flags install DESTDIR=`pwd`/xx
+    echo "- remove previously existing $tmp_inst_dir (if any)"
+    rm -rf $tmp_inst_dir
 
-    echo "- cleanup unnecessary files in ./xx/$pkg_prefix"
-    (cd ./xx && find . -type f                                                 \
+    echo "- make $pkg_make_install_flags install DESTDIR=$tmp_inst_dir"
+    make $pkg_make_install_flags install DESTDIR=`pwd`/$tmp_inst_dir
+
+    echo "- cleanup unnecessary files in $tmp_inst_dir/$pkg_prefix"
+    (cd $tmp_inst_dir && find . -type f                                        \
        \( \! -name \*.h -and \! -name \*.hpp -and \! -name \*.a                \
                         -and \! -name \*.dylib -and \! -name \*.dylib.\*       \
                         -and \! -name \*.so -and \! -name \*.so.\* \)          \
          -exec rm {} \;)
-    (cd ./xx && find . -depth -type d -empty -exec rmdir {} \;)
+    (cd $tmp_inst_dir && find . -depth -type d -empty -exec rmdir {} \;)
 
-    echo "- install spec in ./xx/$pkg_prefix"
-    install -d ./xx/spec
-    install -m644 $pkg_rootdir/build/spec/$1 ./xx/spec/$1
+    echo "- install spec in $tmp_inst_dir/$pkg_prefix"
+    install -d $tmp_inst_dir/spec
+    install -m644 $pkg_rootdir/build/spec/$1 $tmp_inst_dir/spec/$1
 
     if [ "$pkg_cross" != "" -a "$pkg_arch" != "" ]; then
         pkg_archive="$pkg_cross-$pkg_arch-$pkg_archive"
     fi
     echo "- tar -cvzf $pkg_archive.tgz"
-    (cd ./xx && tar -cvzf $pkg_rootdir/$pkg_archive.tgz .)
+    (cd $tmp_inst_dir && tar -cvzf $pkg_rootdir/$pkg_archive.tgz .)
 
     echo "- $pkg_sudo tar -C $pkg_prefix $pkg_archive.tgz"
     install -d $pkg_prefix
