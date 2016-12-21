@@ -165,6 +165,12 @@ is `/opt/local/include/event.h` and that `libevent.a` is
     ./configure --with-libevent=builtin  # Use what you have just built
 ```
 
+Note that, in addition to the above specified software, the `dependency`
+script also assumes that you have installed: `wget`, `gpg2`, `tar`, `gzip`,
+`install`, possibly `cmake` (depending on whether you try to recompile
+a dependency whose build system uses `cmake`), `find`, `git`, and possibly
+other pieces of software.
+
 ### How to test MeasurementKit on a Unix-like system
 
 Once you have built MeasurementKit, to compile and run the unit
