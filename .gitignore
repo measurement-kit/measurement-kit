@@ -39,6 +39,7 @@
 /maxmind-geoip.*.dat*
 /measurement_kit
 /test-driver
+/test/common/charset
 /test/common/continuation
 /test/common/delegate
 /test/common/error
