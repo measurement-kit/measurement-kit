@@ -1,6 +1,7 @@
 language: cpp
 
 script:
+    - export COVERALLS_REPO_TOKEN
     - ./build/docker/docker -j3 $DOCKER $SPEC
 
 matrix:
