@@ -8,11 +8,13 @@ fi
 spec_name=$1
 shift
 
+make_check_name=check  # allow to override
+
 subr_depend() {
     echo "Nothing to be done."
 }
 
-subr_make_depend() {
+subr_build_dependency() {
     echo "Nothing to be done."
 }
 
@@ -35,28 +37,25 @@ subr_make() {
 }
 
 subr_make_check() {
-    make $make_flags check V=0
+    if ! make $make_flags $make_check_name V=0; then
+        if [ -f ./test-suite.log ]; then
+            cat ./test-suite.log
+        fi
+        exit 1
+    fi
 }
 
 subr_finalize() {
     exit 0
 }
 
-if [ -z "$make_flags" ]; then
-    NPROC=$(nproc)
-    if [ $NPROC -gt 4 ]; then
-        NPROC=4
-    fi
-    make_flags="-j$NPROC"
-fi
-
 . build/docker/spec/$spec_name
 env
 sleep 5
 
 if [ $# -eq 0 ]; then
-    set -- depend make_depend start_over autogen configure make make_check     \
-            finalize
+    set -- depend build_dependency start_over autogen configure make           \
+        make_check finalize
 fi
 
 while [ $# -gt 0 ]; do
