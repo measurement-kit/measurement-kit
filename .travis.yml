@@ -2,13 +2,13 @@ language: cpp
 
 script:
     - if [ "$DOCKER" != "" -a "$SPEC" != "" ]; then
-        ./build/docker/docker -j3 $DOCKER $SPEC
+        ./build/docker/docker -j3 $DOCKER $SPEC;
       else
-        export make_flags="-j3"
-        export configure_flags="--disable-static $COVERAGE"
-        export make_check_name="check-am$VALGRIND"
+        export make_flags="-j3";
+        export configure_flags="--disable-static $COVERAGE";
+        export make_check_name="check-am$VALGRIND";
         ./build/docker/script/run travis-like build_dependency autogen
-            configure make make_check finalize
+            configure make make_check finalize;
       fi
 
 matrix:
