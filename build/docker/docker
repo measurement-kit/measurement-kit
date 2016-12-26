@@ -1,0 +1,36 @@
+#!/bin/sh
+set -e
+REPOROOT=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
+
+usage() {
+    echo "usage: $0 [-n num_cpu] machine spec [step...]" 1>&2
+    echo "example: $0 -n3 ubuntu:yakkety valgrind-gcc" 1>&2
+}
+
+args=$(getopt n: $*)
+if [ $? -ne 0 ]; then
+    usage
+    exit 1
+fi
+set -- $args
+envs=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -n)
+            envs="$envs -e make_flags=-j$2"
+            shift; shift;;
+        --)
+            shift; break;;
+    esac
+done
+if [ $# -lt 2 ]; then
+    usage
+    exit 1
+fi
+machine=$1
+shift
+spec=$1
+shift
+
+docker run -v $REPOROOT:/mk $envs $machine                                     \
+    /mk/build/docker/script/init $spec "$@"
