@@ -48,7 +48,7 @@ subr_build_dependency() {
 }
 
 subr_finalize() {
-    if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
+    if [ "$COVERAGE" = "--enable-coverage" ]; then
         pip install --user cpp-coveralls
         coveralls=$HOME/.local/bin/coveralls
         # Silence gcov standard output since it produces way too much output
