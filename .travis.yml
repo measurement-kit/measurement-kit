@@ -16,15 +16,23 @@ matrix:
 
     - sudo: required
       env: DOCKER=ubuntu:yakkety SPEC=valgrind-gcc
+      services:
+        - docker
 
     - sudo: required
       env: DOCKER=ubuntu:yakkety SPEC=valgrind-clang
+      services:
+        - docker
 
     - sudo: required
       env: DOCKER=debian:testing SPEC=valgrind-gcc
+      services:
+        - docker
 
     - sudo: required
       env: DOCKER=debian:testing SPEC=valgrind-clang
+      services:
+        - docker
 
     - sudo: false
       env: COVERAGE=--enable-coverage
