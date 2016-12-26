@@ -50,7 +50,7 @@ subr_build_dependency() {
 subr_finalize() {
     if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
         pip install --user cpp-coveralls
-        coveralls=$HOME/.bin/coveralls
+        coveralls=$HOME/.local/bin/coveralls
         # Silence gcov standard output since it produces way too much output
         $coveralls --gcov /usr/bin/gcov-6 --exclude src/libmeasurement_kit/ext \
                   -b .  --exclude example --exclude third_party                \
