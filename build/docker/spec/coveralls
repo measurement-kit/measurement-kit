@@ -36,5 +36,4 @@ subr_finalize() {
                                --exclude src/ext                           \
                                --exclude example                           \
                                --exclude third_party                       \
-      > /dev/null;
 }
