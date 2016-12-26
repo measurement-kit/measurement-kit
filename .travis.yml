@@ -5,7 +5,6 @@ script:
 
 matrix:
   include:
-
     - sudo: required
       env: DOCKER=ubuntu:yakkety SPEC=valgrind-gcc
       services:
