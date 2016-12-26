@@ -1,0 +1,78 @@
+#!/bin/sh
+set -e
+
+REPOROOT=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
+
+export CC=gcc-6 CPP="gcc-6 -E" CXX=g++-6
+export configure_flags="--quiet --disable-static $configure_flags"
+export make_flags="V=0 -j`nproc` $make_flags"
+
+# We need these flags for the linker to work on travis
+export LD_RUN_PATH=$REPOROOT/builtin LD_LIBRARY_PATH=$REPOROOT/builtin
+
+debian_deps="$debian_deps autoconf"
+debian_deps="$debian_deps automake"
+debian_deps="$debian_deps git"
+debian_deps="$debian_deps libtool"
+debian_deps="$debian_deps make"
+debian_deps="$debian_deps python-software-properties"
+debian_deps="$debian_deps wget"
+
+subr_depend() {
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y $debian_deps
+    apt-add-repository -y ppa:ubuntu-toolchain-r/test
+    apt-get update
+    apt-get install -y g++-6 gcc-6
+}
+
+subr_make_depend() {
+    export pkg_configure_flags="$configure_flags"
+    export pkg_make_flags="$make_flags"
+    #
+    # On travis we build our own dependencies for two reasons:
+    #
+    # 1. because 12.04 has old libs that trigger many Valgrind warnings
+    #
+    # 2. because Valgrind is very old
+    #
+    ./build/dependency libressl
+    ./build/dependency libevent
+    ./build/dependency geoip
+}
+
+subr_autogen() {
+    ./autogen.sh
+}
+
+subr_configure() {
+    # Note that we pass an empty CA bundle to test using our internal
+    # CA bundle that is the configuration we use on mobile devices
+    ./configure $configure_flags --with-geoip=builtin --with-ca-bundle=""      \
+        --with-openssl=builtin --with-libevent=builtin
+}
+
+subr_make_check() {
+    if [ -z "$make_check_rule" ]; then
+        make_check_rule=check
+    fi
+    set +e
+    make $make_flags $make_check_rule V=0
+    if [ $? -ne 0 -a -f ./test-suite.log ]; then
+        cat ./test-suite.log
+    fi
+    set -e
+}
+
+subr_finalize() {
+    if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
+        pip install --user cpp-coveralls
+        coveralls=$HOME/.bin/coveralls
+        # Silence gcov standard output since it produces way too much output
+        $coveralls --gcov /usr/bin/gcov-6 --exclude src/libmeasurement_kit/ext \
+                  -b .  --exclude example --exclude third_party                \
+                  --exclude include/measurement_kit/ext                        \
+                  --exclude src/libmeasurement_kit/cmdline > /dev/null;
+    fi
+}

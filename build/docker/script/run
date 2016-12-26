@@ -8,6 +8,14 @@ fi
 spec_name=$1
 shift
 
+subr_depend() {
+    echo "Nothing to be done."
+}
+
+subr_make_depend() {
+    echo "Nothing to be done."
+}
+
 subr_start_over() {
     if [ -f Makefile ]; then
         make distclean
@@ -47,10 +55,13 @@ env
 sleep 5
 
 if [ $# -eq 0 ]; then
-    set -- depend start_over autogen configure make make_check finalize
+    set -- depend make_depend start_over autogen configure make make_check     \
+            finalize
 fi
 
 while [ $# -gt 0 ]; do
+    echo ""
+    echo "- Step: $1"
     subr_$1
     shift
 done
