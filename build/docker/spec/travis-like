@@ -32,9 +32,6 @@ subr_depend() {
 }
 
 subr_build_dependency() {
-    if [ "$COVERAGE" = "--enable-coverage" ]; then
-        pip install --user cpp-coveralls
-    fi
     # Forward our build variables to the `./build/dependency` script
     export pkg_configure_flags="$configure_flags"
     export pkg_make_flags="$make_flags"
@@ -52,6 +49,7 @@ subr_build_dependency() {
 
 subr_finalize() {
     if [ "$COVERAGE" = "--enable-coverage" ]; then
+        pip install --user cpp-coveralls
         coveralls=$HOME/.local/bin/coveralls
         # Silence gcov standard output since it produces way too much output
         $coveralls --gcov /usr/bin/gcov-6 --exclude src/libmeasurement_kit/ext \
