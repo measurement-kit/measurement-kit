@@ -1,7 +1,6 @@
 language: cpp
 
 script:
-    - export COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN
     - ./build/docker/docker -j3 $DOCKER $SPEC
 
 matrix:
@@ -15,6 +14,10 @@ matrix:
       env: DOCKER=ubuntu:yakkety SPEC=valgrind-clang
       services:
         - docker
+      branches:
+        only:
+          - master
+          - stable
 
     - sudo: required
       env: DOCKER=ubuntu:yakkety SPEC=coveralls
@@ -25,8 +28,16 @@ matrix:
       env: DOCKER=debian:testing SPEC=valgrind-gcc
       services:
         - docker
+      branches:
+        only:
+          - master
+          - stable
 
     - sudo: required
       env: DOCKER=debian:testing SPEC=valgrind-clang
       services:
         - docker
+      branches:
+        only:
+          - master
+          - stable
