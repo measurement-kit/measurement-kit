@@ -4,8 +4,8 @@ set -e
 REPOROOT=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
 
 export CC=gcc-6 CPP="gcc-6 -E" CXX=g++-6
-export configure_flags="--quiet --disable-static $configure_flags"
-export make_flags="V=0 -j`nproc` $make_flags"
+export configure_flags="--disable-static $configure_flags"
+export make_flags="V=0 $make_flags"
 
 # We need these flags for the linker to work on travis
 export LD_RUN_PATH=$REPOROOT/builtin LD_LIBRARY_PATH=$REPOROOT/builtin
