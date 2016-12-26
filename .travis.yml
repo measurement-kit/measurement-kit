@@ -1,14 +1,30 @@
 language: cpp
 
 script:
-    - export make_flags="-j3"
-    - export configure_flags="--disable-static $COVERAGE"
-    - export make_check_name="check-am$VALGRIND"
-    - ./build/docker/script/run travis-like build_dependency autogen
+    - if [ "$DOCKER" != "" -a "$SPEC" != "" ]; then
+        ./build/docker/docker -j3 $DOCKER $SPEC
+      else
+        export make_flags="-j3"
+        export configure_flags="--disable-static $COVERAGE"
+        export make_check_name="check-am$VALGRIND"
+        ./build/docker/script/run travis-like build_dependency autogen
             configure make make_check finalize
+      fi
 
 matrix:
   include:
+
+    - sudo: required
+      env: DOCKER=ubuntu:yakkety SPEC=valgrind-gcc
+
+    - sudo: required
+      env: DOCKER=ubuntu:yakkety SPEC=valgrind-clang
+
+    - sudo: required
+      env: DOCKER=debian:testing SPEC=valgrind-gcc
+
+    - sudo: required
+      env: DOCKER=debian:testing SPEC=valgrind-clang
 
     - sudo: false
       env: COVERAGE=--enable-coverage

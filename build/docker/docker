@@ -3,11 +3,11 @@ set -e
 REPOROOT=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
 
 usage() {
-    echo "usage: $0 [-n num_cpu] machine spec [step...]" 1>&2
-    echo "example: $0 -n3 ubuntu:yakkety valgrind-gcc" 1>&2
+    echo "usage: $0 [-j num_cpu] machine spec [step...]" 1>&2
+    echo "example: $0 -j3 ubuntu:yakkety valgrind-gcc" 1>&2
 }
 
-args=$(getopt n: $*)
+args=$(getopt j: $*)
 if [ $? -ne 0 ]; then
     usage
     exit 1
@@ -16,7 +16,7 @@ set -- $args
 envs=""
 while [ $# -gt 0 ]; do
     case "$1" in
-        -n)
+        -j)
             envs="$envs -e make_flags=-j$2"
             shift; shift;;
         --)
