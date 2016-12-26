@@ -50,7 +50,7 @@ subr_finalize() {
 }
 
 . build/docker/spec/$spec_name
-env
+env | grep -v COVERALLS_REPO_TOKEN
 sleep 5
 
 if [ $# -eq 0 ]; then
