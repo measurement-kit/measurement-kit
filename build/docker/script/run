@@ -54,7 +54,7 @@ env
 sleep 5
 
 if [ $# -eq 0 ]; then
-    set -- depend build_dependency start_over autogen configure make           \
+    set -- start_over depend build_dependency autogen configure make           \
         make_check finalize
 fi
 

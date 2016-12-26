@@ -4,7 +4,8 @@ script:
     - export make_flags="-j3"
     - export configure_flags="--disable-static $COVERAGE"
     - export make_check_name="check-am$VALGRIND"
-    - ./build/docker/script/run travis-like
+    - ./build/docker/script/run travis-like build_dependency autogen
+            configure make make_check finalize
 
 matrix:
   include:
