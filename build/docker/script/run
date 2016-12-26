@@ -8,8 +8,6 @@ fi
 spec_name=$1
 shift
 
-make_check_name=check  # allow to override
-
 subr_depend() {
     echo "Nothing to be done."
 }
@@ -37,6 +35,9 @@ subr_make() {
 }
 
 subr_make_check() {
+    if [ -z "$make_check_name" ]; then
+        make_check_name=check
+    fi
     if ! make $make_flags $make_check_name V=0; then
         if [ -f ./test-suite.log ]; then
             cat ./test-suite.log
