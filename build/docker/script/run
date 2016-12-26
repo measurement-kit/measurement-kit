@@ -12,14 +12,14 @@ subr_depend() {
     echo "Nothing to be done."
 }
 
-subr_build_dependency() {
-    echo "Nothing to be done."
-}
-
 subr_start_over() {
     if [ -f Makefile ]; then
         make distclean
     fi
+}
+
+subr_build_dependency() {
+    echo "Nothing to be done."
 }
 
 subr_autogen() {
@@ -55,7 +55,7 @@ env | grep -v COVERALLS_REPO_TOKEN | sort
 sleep 5
 
 if [ $# -eq 0 ]; then
-    set -- start_over depend build_dependency autogen configure make           \
+    set -- depend start_over build_dependency autogen configure make           \
         make_check finalize
 fi
 
