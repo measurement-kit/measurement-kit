@@ -35,5 +35,5 @@ subr_finalize() {
                                --exclude include/measurement_kit/ext       \
                                --exclude src/ext                           \
                                --exclude example                           \
-                               --exclude third_party                       \
+                               --exclude third_party
 }
