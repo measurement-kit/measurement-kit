@@ -140,7 +140,7 @@ void request_recv_response(Var<Transport> txp,
                 logger->warn("Parsing error: %d", second_error.code);
                 err = second_error;
             }
-            if (err == NoError() and !complete) {
+            if (err == NoError() and !*complete) {
                 return; /* We can and want to read more */
             }
             /* FALLTHROUGH */
@@ -153,7 +153,7 @@ void request_recv_response(Var<Transport> txp,
                 logger->warn("Parsing error at EOF: %d", second_error.code);
                 err = second_error;
             }
-            if (complete) {
+            if (*complete) {
                 err = NoError();
             }
             /* FALLTHROUGH */
