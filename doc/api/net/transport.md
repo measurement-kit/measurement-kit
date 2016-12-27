@@ -54,6 +54,10 @@ void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
 void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
           Var<Reactor> reactor = Reactor::global());
 
+void start_read(Var<Transport> txp, Var<Buffer> buff, Callback<Error> cb);
+
+void stop_read(Var<Transport> txp);
+
 ```
 
 # DESCRIPTION
@@ -108,7 +112,36 @@ operation on a transport and only returns whether either `n` bytes have been
 read or an error occurred. The `read()` function is a wrapper that calls
 the `readn()` function with `n` equal to `1`.
 
+The `start_read()` and `stop_read()` functions allow you to continuously
+read from a transport until you feel that you have read enough and you do
+not want to read anymore.  It is *yours responsibility* to `stop_read()`
+after an error is received, because that is not done automatically. For
+example:
+
+```C++
+    Var<net::Buffer> buffer = net::Buffer::make();
+    Var<bool> done{new bool{false}};
+    net::start_read(txp, buff, [=](Error error) {
+        if (!error) {
+            error = parse(buffer, done);
+            if (!error and not *done) {
+                return; /* Read more from socket */
+            }
+            /* FALLTHROUGH */
+        }
+        stop_read(txp);  /* Remember: it's yours responsibility */
+        callback(error);
+    });
+```
+
+# CAVEATS
+
+You MUST NOT mix `start_read()` and `stop_read()` with `read()` or
+`readn()` or `write()`. If you need to perform both reads and writes on
+the same transport at a time, use the transport API directly.
+
 # HISTORY
 
 The `Transport` class appeared in MeasurementKit 0.1.0. The `read()`, `readn()`,
-and `write()` functions were added in v0.2.0.
+and `write()` functions were added in v0.2.0. `Start_read()` and `stop_read()`
+were added in v0.5.0.
