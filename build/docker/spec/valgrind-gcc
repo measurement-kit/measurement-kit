@@ -19,12 +19,4 @@ debian_deps="$debian_deps make"
 debian_deps="$debian_deps valgrind"
 debian_deps="$debian_deps wget"
 
-subr_depend() {
-    apt-get update
-    apt-get upgrade -y
-    apt-get install -y $debian_deps
-}
-
-subr_make_check() {
-    make $make_flags run-valgrind V=0
-}
+make_check_name=run-valgrind
