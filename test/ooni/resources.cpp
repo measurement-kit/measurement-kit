@@ -46,6 +46,17 @@ TEST_CASE("get_latest_release() works as expected") {
             },
             {}, Reactor::global(), Logger::global());
     }
+
+#if ENABLE_INTEGRATION_TESTS
+    SECTION("Integration test") {
+        ooni::resources::get_latest_release(
+            [=](Error e, std::string s) {
+                REQUIRE(e.code == NoError().code);
+                REQUIRE(s != "");
+            },
+            {}, Reactor::global(), Logger::global());
+    }
+#endif
 }
 
 static void get_invalid_json(std::string,
