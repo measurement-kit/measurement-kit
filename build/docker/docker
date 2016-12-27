@@ -35,6 +35,9 @@ shift
 if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
     envs="$envs -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN"
 fi
+if [ "$TRAVIS_BRANCH" != "" ]; then
+    envs="$envs -e TRAVIS_BRANCH=$TRAVIS_BRANCH"
+fi
 
 docker run -v $REPOROOT:/mk $envs $machine                                     \
     /mk/build/docker/script/init $spec "$@"
