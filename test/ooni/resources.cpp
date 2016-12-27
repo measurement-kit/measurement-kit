@@ -49,12 +49,16 @@ TEST_CASE("get_latest_release() works as expected") {
 
 #if ENABLE_INTEGRATION_TESTS
     SECTION("Integration test") {
-        ooni::resources::get_latest_release(
-            [=](Error e, std::string s) {
-                REQUIRE(e.code == NoError().code);
-                REQUIRE(s != "");
-            },
-            {}, Reactor::global(), Logger::global());
+        Var<Reactor> reactor = Reactor::make();
+        reactor->loop_with_initial_event([=]() {
+            ooni::resources::get_latest_release(
+                [=](Error e, std::string s) {
+                    REQUIRE(e.code == NoError().code);
+                    REQUIRE(s != "");
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
+        });
     }
 #endif
 }
