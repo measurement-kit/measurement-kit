@@ -58,6 +58,8 @@ void resolve_hostname(std::string hostname, Callback<ResolveHostnameResult> cb,
 
     logger->debug("resolve_hostname: ipv4...");
 
+    settings["dns/engine"] = "system";
+
     dns::query("IN", "A", hostname,
                [=](Error err, Var<dns::Message> resp) {
                    logger->debug("resolve_hostname: ipv4... done");
