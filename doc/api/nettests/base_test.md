@@ -99,6 +99,13 @@ to strings internally anyway. The following options are defined:
   and, if non-negative, used to compute the max test runtime. After such
   amount of time has passed, the test will stop running automatically.
 
+  By default, there is no maximum runtime constraint for tests.
+
+- *randomize_input*: the value of this variable is converted to bool
+  and, if true, instructs measurement-kit to randomize the input.
+
+  By default, input is randomized.
+
 The `on_entry` method allows to specify the delegate called when
 a test entry is about to be written to disk. The first argument
 receives the entry object serialized as JSON. Note that the entry
