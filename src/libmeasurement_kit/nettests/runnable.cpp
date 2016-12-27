@@ -101,6 +101,12 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
             } else {
                 logger->debug("net_test: written entry");
             }
+            double max_rt = options.get("max_runtime", -1.0);
+            if (max_rt >= 0.0 and mk::time_now() - beginning > max_rt) {
+                logger->info("Exceeded test maximum runtime");
+                cb(NoError());
+                return;
+            }
             reactor->call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
             });
@@ -243,6 +249,7 @@ void Runnable::begin(Callback<Error> cb) {
         begin_cb();
     }
     mk::utc_time_now(&test_start_time);
+    beginning = mk::time_now();
     geoip_lookup([=]() {
         resolver_lookup([=](Error error, std::string resolver_ip_) {
             if (!error) {
