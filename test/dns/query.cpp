@@ -236,6 +236,34 @@ TEST_CASE("resolve_hostname works with IPv6 address") {
     });
 }
 
+TEST_CASE("resolve_hostname works with domain") {
+    loop_with_initial_event([]() {
+        resolve_hostname("google.com", [](ResolveHostnameResult r) {
+            REQUIRE(not r.inet_pton_ipv4);
+            REQUIRE(not r.inet_pton_ipv6);
+            REQUIRE(not r.ipv4_err);
+            REQUIRE(not r.ipv6_err);
+            // At least one IPv4 and one IPv6 addresses
+            REQUIRE(r.addresses.size() > 1);
+            break_loop();
+        });
+    });
+}
+
+TEST_CASE("stress resolve_hostname with invalid address and domain") {
+    loop_with_initial_event([]() {
+        // Pass input that is neither invalid IPvX nor valid domain
+        resolve_hostname("192.1688.antani", [](ResolveHostnameResult r) {
+            REQUIRE(not r.inet_pton_ipv4);
+            REQUIRE(not r.inet_pton_ipv6);
+            REQUIRE(r.ipv4_err);
+            REQUIRE(r.ipv6_err);
+            REQUIRE(r.addresses.size() == 0);
+            break_loop();
+        });
+    });
+}
+
 #ifdef ENABLE_INTEGRATION_TESTS
 
 // Integration (or regress?) tests for dns::query.
@@ -337,33 +365,4 @@ TEST_CASE("The libevent resolver works as expected") {
     });
 }
 
-// Test resolve_hostname
-
-TEST_CASE("resolve_hostname works with domain") {
-    loop_with_initial_event([]() {
-        resolve_hostname("google.com", [](ResolveHostnameResult r) {
-            REQUIRE(not r.inet_pton_ipv4);
-            REQUIRE(not r.inet_pton_ipv6);
-            REQUIRE(not r.ipv4_err);
-            REQUIRE(not r.ipv6_err);
-            // At least one IPv4 and one IPv6 addresses
-            REQUIRE(r.addresses.size() > 1);
-            break_loop();
-        });
-    });
-}
-
-TEST_CASE("stress resolve_hostname with invalid address and domain") {
-    loop_with_initial_event([]() {
-        // Pass input that is neither invalid IPvX nor valid domain
-        resolve_hostname("192.1688.antani", [](ResolveHostnameResult r) {
-            REQUIRE(not r.inet_pton_ipv4);
-            REQUIRE(not r.inet_pton_ipv6);
-            REQUIRE(r.ipv4_err);
-            REQUIRE(r.ipv6_err);
-            REQUIRE(r.addresses.size() == 0);
-            break_loop();
-        });
-    });
-}
 #endif
