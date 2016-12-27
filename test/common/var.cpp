@@ -14,7 +14,6 @@ class Foo {
     double elem = 3.14;
     Foo() {}
     Foo(double x) : elem(x) {}
-    void mascetti() {}
 };
 
 class FooChild : public Foo {
