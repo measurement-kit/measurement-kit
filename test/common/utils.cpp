@@ -40,7 +40,7 @@ TEST_CASE("random_str() really generates only characters or numbers") {
         } else if (islower(x)) {
             found_low = true;
         } else {
-            REQUIRE(false);
+            REQUIRE(false); /* Should not happen */
         }
     }
     REQUIRE(found_num);
@@ -57,7 +57,7 @@ TEST_CASE("random_str_uppercase() really generates only uppercase") {
         } else if (isupper(x)) {
             found_upper = true;
         } else {
-            REQUIRE(false);
+            REQUIRE(false); /* Should not happen */
         }
     }
     REQUIRE(found_num);
