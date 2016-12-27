@@ -14,30 +14,8 @@ matrix:
       env: DOCKER=ubuntu:yakkety SPEC=valgrind-clang
       services:
         - docker
-      branches:
-        only:
-          - master
-          - stable
 
     - sudo: required
       env: DOCKER=ubuntu:yakkety SPEC=coveralls
       services:
         - docker
-
-    - sudo: required
-      env: DOCKER=debian:testing SPEC=valgrind-gcc
-      services:
-        - docker
-      branches:
-        only:
-          - master
-          - stable
-
-    - sudo: required
-      env: DOCKER=debian:testing SPEC=valgrind-clang
-      services:
-        - docker
-      branches:
-        only:
-          - master
-          - stable
