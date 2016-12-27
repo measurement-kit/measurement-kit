@@ -210,6 +210,8 @@ TEST_CASE("dns::query deals with invalid PTR name") {
           {{"dns/engine", "libevent"}});
 }
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 // Test resolve_hostname
 
 TEST_CASE("resolve_hostname works with IPv4 address") {
@@ -263,8 +265,6 @@ TEST_CASE("stress resolve_hostname with invalid address and domain") {
         });
     });
 }
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 // Integration (or regress?) tests for dns::query.
 //
