@@ -175,8 +175,7 @@ and receive the corresponding response.
 
 
 The `resolve_hostname()` function should be used to perform dns queries
-for connection purposes and not to perform tests on a dns server. It uses
-the system resolver to get the ipv4 and ipv6 IP addresses given an hostname.
+for connection purposes and not to perform tests on a dns server.
 In both cases of success or failure, it will invoke the callback passing an instance
 of `ResolveHostnameResult`.
 
