@@ -19,6 +19,6 @@ matrix:
 
     - sudo: required
       env: DOCKER=ubuntu:yakkety SPEC=valgrind-clang
-           BRANCHES_ONLY="master stable fix/ci"
+           BRANCHES_ONLY="master stable"
       services:
         - docker
