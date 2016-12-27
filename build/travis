@@ -2,6 +2,14 @@
 set -e
 BRANCHES="$1"
 shift
+
+#
+# Note: the way in which we use TRAVIS_BRANCH here makes sense only if
+# the current build is triggered by a push, not by a pull request.
+#
+# Since we currently do not build pull requests, this usage is okay.
+#
+
 if echo "$BRANCHES" | grep -q "$TRAVIS_BRANCH"; then
-    echo ./build/docker/docker "$@"
+    ./build/docker/docker "$@"
 fi
