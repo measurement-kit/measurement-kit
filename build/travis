@@ -12,4 +12,7 @@ shift
 
 if echo "$BRANCHES" | grep -q "$TRAVIS_BRANCH"; then
     ./build/docker/docker "$@"
+else
+    echo "Not building branch $TRAVIS_BRANCH."
+    echo "This build should only run for branches: $BRANCHES."
 fi
