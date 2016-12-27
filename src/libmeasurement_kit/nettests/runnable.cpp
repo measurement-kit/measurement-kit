@@ -278,10 +278,19 @@ void Runnable::begin(Callback<Error> cb) {
                         cb(FileIoError());
                         return;
                     }
-                    // See http://en.cppreference.com/w/cpp/algorithm/shuffle
-                    std::random_device rd;
-                    std::mt19937 g(rd());
-                    std::shuffle(inputs.begin(), inputs.end(), g);
+                    ErrorOr<bool> shuffle = options.get_noexcept<bool>(
+                            "randomize_input", true);
+                    if (!shuffle) {
+                        logger->warn("invalid 'randomize_input' option");
+                        cb(shuffle.as_error());
+                        return;
+                    }
+                    if (*shuffle) {
+                        // http://en.cppreference.com/w/cpp/algorithm/shuffle:
+                        std::random_device rd;
+                        std::mt19937 g(rd());
+                        std::shuffle(inputs.begin(), inputs.end(), g);
+                    }
                 } else {
                     // Empty string to call main() just once
                     inputs.push_back("");
