@@ -171,6 +171,9 @@ TEST_CASE("connect_base works with ipv6") {
     loop_with_initial_event([]() {
         connect_base("2a00:1450:4001:801::1004", 80,
                      [](Error err, bufferevent *bev, double) {
+                         /* Coverage note: depending on whether IPv6
+                            works or not here we're going to see either
+                            branch covered. */
                          if (err) {
                              REQUIRE(err);
                              REQUIRE(bev == nullptr);
