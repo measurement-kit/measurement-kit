@@ -33,7 +33,7 @@ subr_depend() {
 }
 
 subr_finalize() {
-    if ! /root/.local/bin/coveralls                                        \
+    if ! $HOME/.local/bin/coveralls                                        \
                            --gcov-options '\-lp'                           \
                            --build-root .                                  \
                            --exclude include/measurement_kit/ext           \
@@ -43,7 +43,8 @@ subr_finalize() {
                            --exclude example                               \
                            --exclude third_party 2>&1 >coveralls.log; then
         echo ""
-        echo "coveralls failed: printing the last log lines:"
+        echo "*** coveralls failed: printing the last log lines:"
+        echo " [...]"
         tail -n 16 coveralls.log
         exit 1
     fi
