@@ -9,7 +9,13 @@ spec_name=$1
 shift
 
 subr_depend() {
-    echo "Nothing to be done."
+    if [ "$debian_deps" != "" ]; then
+        apt-get update
+        apt-get upgrade -y
+        apt-get install -y $debian_deps
+    else
+        echo "Nothing to be done."
+    fi
 }
 
 subr_start_over() {
