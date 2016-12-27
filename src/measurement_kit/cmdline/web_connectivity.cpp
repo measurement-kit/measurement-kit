@@ -11,7 +11,8 @@ namespace mk {
 namespace cmdline {
 namespace web_connectivity {
 
-#define USAGE "usage: %s [-nv] [-b backend] [-N nameserver] file_name\n"
+#define USAGE                                                                  \
+"usage: %s [-nv] [-b backend] [-N nameserver] [-t runtime] file_name\n"
 
 int main(const char *, int argc, char **argv) {
     std::string backend = "https://a.collector.test.ooni.io:4444";
@@ -21,7 +22,7 @@ int main(const char *, int argc, char **argv) {
     mk::nettests::WebConnectivityTest test;
     int ch;
 
-    while ((ch = mkp_getopt(argc, argv, "b:N:nv")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "b:N:nt:v")) != -1) {
         switch (ch) {
         case 'b':
             backend = mkp_optarg;
@@ -31,6 +32,9 @@ int main(const char *, int argc, char **argv) {
             break;
         case 'n':
             test.set_options("no_collector", true);
+            break;
+        case 't':
+            test.set_options("max_runtime", mkp_optarg);
             break;
         case 'v':
             ++verbosity;
