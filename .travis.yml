@@ -1,21 +1,24 @@
 language: cpp
 
 script:
-    - ./build/docker/docker -j3 $DOCKER $SPEC
+    - ./build/travis $BRANCHES_ONLY -j3 $DOCKER $SPEC
 
 matrix:
   include:
     - sudo: required
       env: DOCKER=ubuntu:yakkety SPEC=valgrind-gcc
+           BRANCHES_ONLY=$TRAVIS_BRANCH
       services:
         - docker
 
     - sudo: required
       env: DOCKER=ubuntu:yakkety SPEC=valgrind-clang
+           BRANCHES_ONLY="master stable"
       services:
         - docker
 
     - sudo: required
       env: DOCKER=ubuntu:yakkety SPEC=coveralls
+           BRANCHES_ONLY=$TRAVIS_BRANCH
       services:
         - docker
