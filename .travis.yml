@@ -12,13 +12,13 @@ matrix:
         - docker
 
     - sudo: required
-      env: DOCKER=ubuntu:yakkety SPEC=valgrind-clang
-           BRANCHES_ONLY="master stable"
+      env: DOCKER=ubuntu:yakkety SPEC=coveralls
+           BRANCHES_ONLY=$TRAVIS_BRANCH
       services:
         - docker
 
     - sudo: required
-      env: DOCKER=ubuntu:yakkety SPEC=coveralls
-           BRANCHES_ONLY=$TRAVIS_BRANCH
+      env: DOCKER=ubuntu:yakkety SPEC=valgrind-clang
+           BRANCHES_ONLY="master stable"
       services:
         - docker
