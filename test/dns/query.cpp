@@ -36,6 +36,11 @@ static evdns_base *null_evdns_base_new(event_base *, int) {
     return (evdns_base *)nullptr;
 }
 
+static int null_evdns_base_nameserver_sockaddr_add(evdns_base *, const sockaddr *,
+                                                   ev_socklen_t, unsigned) {
+    return -1;
+}
+
 static int null_evdns_base_set_option_randomize(evdns_base *, const char *,
                                                 const char *) {
     return -1;
