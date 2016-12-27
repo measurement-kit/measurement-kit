@@ -26,6 +26,11 @@ MK_DEFINE_ERR(MK_ERR_OONI(13), CannotGetResourcesVersionError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(14), CannotGetResourcesManifestError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(15), CannotGetResourceError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(16), ResourceIntegrityError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(17), BouncerCollectorNotFoundError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(18), BouncerTestHelperNotFoundError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(19), BouncerInvalidRequestError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(20), BouncerGenericError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(21), BouncerValueNotFoundError, "")
 
 } // namespace mk
 } // namespace ooni

@@ -30,6 +30,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
 
     options["dns/nameserver"] = resolver_hostname;
     options["dns/port"] = resolver_port;
+    options["dns/engine"] = "libevent";
     options["dns/attempts"] = 1;
 
     dns::query(query_class, query_type, query_name,
