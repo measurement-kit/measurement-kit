@@ -1,7 +1,7 @@
 language: cpp
 
 script:
-    - ./build/travis $BRANCHES_ONLY -j3 $DOCKER $SPEC
+    - ./build/travis "$BRANCHES_ONLY" -j3 $DOCKER $SPEC
 
 matrix:
   include:
