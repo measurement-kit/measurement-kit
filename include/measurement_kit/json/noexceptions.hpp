@@ -20,7 +20,7 @@ template <typename T> ErrorOr<T> json_noexcept(std::function<T()> fn) {
     } catch (Error &err) {
         return err;
     } catch (std::exception &ex) {
-        return UncaughtExceptionError(); // define a specific one
+        return UncaughtExceptionError();
     }
 }
 
