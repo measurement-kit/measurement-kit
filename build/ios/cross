@@ -1,30 +1,34 @@
 #!/bin/sh
 set -e
 
-if [ $# -lt 1 ]; then
-    echo "$0 i386|x86_64|armv7|armv7s|arm64 [command [args...]]" 1>&2
+if [ $# -lt 2 ]; then
+    echo "$0 iphonesimulator i386|x86_64 [command [args...]]" 1>&2
+    echo "$0 iphoneos armv7|armv7s|arm64 [command [args...]]" 1>&2
     exit 1
 fi
 
+PLATFORM=$1
+shift
 ARCH=$1
 shift
 
-MINIOSVERSION="8.0"
-if [ "$ARCH" = "armv7" -o "$ARCH" = "armv7s" -o "$ARCH" = "arm64" ]; then
-    EXTRA_CONFIG="--host=arm-apple-darwin --target=arm-apple-darwin --disable-shared"
+echo ""
+echo "Cross compiling for $PLATFORM and $ARCH"
+
+MINIOSVERSION="7.1"
+if [ "$PLATFORM" = "iphoneos" ]; then
+    EXTRA_CONFIG="--host=arm-apple-darwin14 --target=arm-apple-darwin14 --disable-shared"
     MINVERSION="-miphoneos-version-min=$MINIOSVERSION"
-    PLATFORM="iphoneos"
-elif [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]; then
-    EXTRA_CONFIG="--host=${ARCH}-apple-darwin --target=${ARCH}-apple-darwin --disable-shared"
+elif [ "$ARCH" = "i386" ]; then
+    EXTRA_CONFIG="--host=i386-apple-darwin14 --target=i386-apple-darwin14 --disable-shared"
     MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
-    PLATFORM="iphonesimulator"
+elif [ "$ARCH" = "x86_64" ]; then
+    EXTRA_CONFIG="--host=x86_64-apple-darwin14 --target=x86_64-apple-darwin14 --disable-shared"
+    MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
 else
     echo "$0: unsupported configuration" 1>&2
     exit 1
 fi
-
-echo ""
-echo "Cross compiling for $PLATFORM and $ARCH"
 
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
 SOURCEDIR="$ROOTDIR/../../"
@@ -40,7 +44,6 @@ export LDFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --s
 export pkg_configure_flags="$EXTRA_CONFIG"
 export pkg_prefix="$DESTDIR"
 export pkg_cross="ios"
-export pkg_arch="$ARCH"
 
 if [ $# -gt 0 ]; then
     $@

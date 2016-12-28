@@ -1,8 +1,6 @@
-v=1.6.9
 pkg_name=geoip
 pkg_repository=https://github.com/maxmind/geoip-api-c.git
-pkg_branch_or_tag=v${v}
-pkg_archive=geoip-${v}-3
+pkg_tag=v1.6.9
 
 # Fix for the "missing _rpl_malloc() symbol" issue when cross-linking
 # See <http://wiki.buici.com/xwiki/bin/view/Programing+C+and+C%2B%2B/Autoconf+and+RPL_MALLOC>

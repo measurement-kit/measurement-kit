@@ -10,9 +10,8 @@ script:
     - export CXX="$CXX_NAME" CC="$CC_NAME";
     - export pkg_make_flags="V=0 -j3"
     - export pkg_configure_flags="--quiet --disable-static"
-    # On 12.04 the linker needs LD_{RUN,LIBRARY}_PATH otherwise the linking fails
-    - export LD_RUN_PATH=$TRAVIS_BUILD_DIR/builtin/lib
-    - export LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/builtin/lib
+    # On 12.04 the linker needs LD_RUN_PATH otherwise the linking fails
+    - export LD_RUN_PATH=$TRAVIS_BUILD_DIR/builtin
     # So, here we build our dependencies because it doesn't take too much time,
     # because travis uses 12.04 with very old libs which cause many warnings
     # with the also very old valgrind available:

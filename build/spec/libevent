@@ -1,8 +1,6 @@
 pkg_name=libevent
 pkg_repository=https://github.com/libevent/libevent
-pkg_branch_or_tag=patches-2.0
-pkg_tip=7dedc077aa15d592c538121c7d5f2727f682d5a6
-pkg_archive=libevent-`echo $pkg_tip | cut -c 1-8`-3
-pkg_deps="libressl-2.4.4-3"
+pkg_branch=patches-2.0
+pkg_commit=7dedc077aa15d592c538121c7d5f2727f682d5a6
 export CPPFLAGS="$CPPFLAGS -I$pkg_prefix/include"
 export LDFLAGS="$LDFLAGS -L$pkg_prefix/lib"
