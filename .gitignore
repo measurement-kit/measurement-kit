@@ -59,6 +59,7 @@
 /test/http/parse_url
 /test/http/request
 /test/http/response_parser
+/test/json/noexceptions
 /test/libevent/connection
 /test/libevent/dns_error
 /test/libevent/poller
@@ -87,6 +88,7 @@
 /test/nettests/runner
 /test/nettests/tcp_connect
 /test/nettests/web_connectivity
+/test/ooni/bouncer
 /test/ooni/collector_client
 /test/ooni/resources
 /test/ooni/templates

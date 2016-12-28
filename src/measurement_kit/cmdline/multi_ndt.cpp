@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include "../cmdline/cmdline.hpp"
-#include <measurement_kit/ext/json.hpp>
+#include <measurement_kit/json.hpp>
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ndt.hpp>
 
