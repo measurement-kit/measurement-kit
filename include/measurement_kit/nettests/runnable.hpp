@@ -47,6 +47,7 @@ class Runnable : public NonCopyable, public NonMovable {
   private:
     report::Report report;
     tm test_start_time;
+    double beginning = 0.0;
     Var<std::istream> input_generator;
 
     void run_next_measurement(size_t, Callback<Error>, size_t, Var<size_t>);
