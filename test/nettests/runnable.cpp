@@ -177,48 +177,50 @@ TEST_CASE("Make sure that 'randomize_input' works") {
                                     "nmap.org",
                                     "www.emule.com"};
 
+    auto run = [&](bool shuffle) -> std::vector<std::string> {
+
+        nettests::Runnable test;
+        test.reactor = Reactor::make();
+        test.input_filepath = "./test/fixtures/hosts.txt";
+        test.options["randomize_input"] = shuffle;
+        test.needs_input = true;
+        std::vector<std::string> result;
+
+        test.reactor->loop_with_initial_event([&]() {
+            test.entry_cb = [&](std::string s) {
+                nlohmann::json entry = nlohmann::json::parse(s);
+                result.push_back(entry["input"]);
+            };
+            test.begin([&](Error) {
+                test.end([&](Error) { test.reactor->break_loop(); });
+            });
+        });
+        return result;
+    };
+
     SECTION("In the common case") {
         // Note: the default should be that input is randomized
 
-        nettests::Runnable test;
-        test.reactor = Reactor::make();
-        test.input_filepath = "./test/fixtures/hosts.txt";
-        test.needs_input = true;
-        std::vector<std::string> result;
+        /*
+         * Since a random shuffle of the list could in theory be equal
+         * to the list itself, what we do is check that subsequent runs
+         * are different, impliying that there is randomness.
+         */
 
-        test.reactor->loop_with_initial_event([&]() {
-            test.entry_cb = [&](std::string s) {
-                nlohmann::json entry = nlohmann::json::parse(s);
-                result.push_back(entry["input"]);
-            };
-            test.begin([&](Error) {
-                test.end([&](Error) { test.reactor->break_loop(); });
-            });
-        });
-
-        REQUIRE(result != expect);
+        REQUIRE(run(true) != run(true));
+        REQUIRE(run(true) != run(true));
+        REQUIRE(run(true) != run(true));
     }
 
     SECTION("When the user does not want input to be shuffled") {
-
-        nettests::Runnable test;
-        test.reactor = Reactor::make();
-        test.input_filepath = "./test/fixtures/hosts.txt";
-        test.options["randomize_input"] = false;
-        test.needs_input = true;
-        std::vector<std::string> result;
-
-        test.reactor->loop_with_initial_event([&]() {
-            test.entry_cb = [&](std::string s) {
-                nlohmann::json entry = nlohmann::json::parse(s);
-                result.push_back(entry["input"]);
-            };
-            test.begin([&](Error) {
-                test.end([&](Error) { test.reactor->break_loop(); });
-            });
-        });
-
-        REQUIRE(result == expect);
+        auto do_check = [&]() {
+            auto vec = run(false);
+            REQUIRE(vec == run(false));
+            REQUIRE(vec == expect);
+        };
+        do_check();
+        do_check();
+        do_check();
     }
 }
 
