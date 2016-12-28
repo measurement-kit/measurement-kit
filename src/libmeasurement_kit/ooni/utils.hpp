@@ -9,8 +9,6 @@
 #include <GeoIP.h>
 #include <GeoIPCity.h>
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace ooni {
 

@@ -7,8 +7,6 @@
 
 #include <measurement_kit/json.hpp>
 
-using json = nlohmann::json;
-
 using namespace mk;
 
 TEST_CASE("Try to parse an invalid json") {

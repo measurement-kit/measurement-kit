@@ -6,8 +6,6 @@
 
 #include "../ooni/utils.hpp"
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace ooni {
 

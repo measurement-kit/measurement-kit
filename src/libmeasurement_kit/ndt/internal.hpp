@@ -68,7 +68,6 @@
 namespace mk {
 namespace ndt {
 
-using json = nlohmann::json;
 using namespace mk::net;
 using namespace mk::report;
 

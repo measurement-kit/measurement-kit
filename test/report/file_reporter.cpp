@@ -11,7 +11,6 @@
 
 using namespace mk::report;
 using namespace mk;
-using json = nlohmann::json;
 
 TEST_CASE("The constructor works correctly") {
     REQUIRE_NOTHROW(FileReporter::make("/nonexistent/foobar.njson"));
