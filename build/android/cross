@@ -2,63 +2,51 @@
 set -e
 
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
-if [ $? -ne 0 ]; then
-    echo "$0: cannot determine root directory" 1>&2
-    exit 1
-fi
 
-if [ $# -lt 2 ]; then
-    echo "Usage: $0 ARCH API" 1>&2
-    echo "  ARCH: aarch64-linux-android arm-linux-androideabi mipsel-linux-android mips64el-linux-android x86 x86_64" 1>&2
-    echo "  API: 1 ... 21" 1>&2
-    echo "Example usage (on MacOS using brew):" 1>&2
-    echo " $0 aarch64-linux-android 21" 1>&2
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 ARCH" 1>&2
+    echo "" 1>&2
+    echo "  ARCH: arm, arm64, mips, mips64, x86, x86_64" 1>&2
+    echo "" 1>&2
+    echo "Example usage:" 1>&2
+    echo " $0 arm64" 1>&2
     exit 1
 fi
 
 ARCH=$1
 shift 
-API=$1
-shift
 
 echo ""
-echo "Cross compiling for $ARCH with api: $API"
+echo "Cross compiling for $ARCH"
 
-# XXX shortcut for armeabi-v7a
-# According https://developer.android.com/ndk/guides/standalone_toolchain.html
-# the proper solution is to override CFLAGS
-if [ $ARCH = "arm-linux-androideabi-v7a" ]; then
-    echo "WARNING: converting $ARCH to arm-linux-androideabi" 1>&2
-    ARCH="arm-linux-androideabi"
-    V7A="-v7a"
-else
-    V7A=""
-fi
-
-export ANDROID_TOOLCHAIN=${ROOTDIR}/toolchain/${ARCH}-${API}
+export ANDROID_TOOLCHAIN=${ROOTDIR}/toolchain/${ARCH}
 export SYSROOT=${ANDROID_TOOLCHAIN}/sysroot
 
-# Note: the bin prefix (i686-linux-android) is different from the parameter
-# that shall be passed to `make-standalone-toolchain.sh` (x86).
-if [ $ARCH = aarch64-linux-android ]; then
-    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
+if [ $ARCH = arm64 ]; then
+    ARCH_FULLNAME=aarch64-linux-android
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH_FULLNAME}
     DESTDIR_NAME=arm64-v8a
-elif [ $ARCH = arm-linux-androideabi ]; then
-    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
-    DESTDIR_NAME=armeabi${V7A}
-elif [ $ARCH = mipsel-linux-android ]; then
-    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
+elif [ $ARCH = arm ]; then
+    ARCH_FULLNAME=arm-linux-androideabi
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH_FULLNAME}
+    DESTDIR_NAME=armeabi
+elif [ $ARCH = mips ]; then
+    ARCH_FULLNAME=mipsel-linux-android
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH_FULLNAME}
     DESTDIR_NAME=mips
-elif [ $ARCH = "mips64el-linux-android" ]; then
-    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH}
+elif [ $ARCH = mips64 ]; then
+    ARCH_FULLNAME=mips64el-linux-android
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH_FULLNAME}
     LIB_SUFFIX=64
     DESTDIR_NAME=mips64
     CONFIG_EXTRA="--disable-asm"
 elif [ $ARCH = x86 ]; then
-    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/i686-linux-android
+    ARCH_FULLNAME=i686-linux-android
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH_FULLNAME}
     DESTDIR_NAME=x86
 elif [ $ARCH = x86_64 ]; then
-    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/x86_64-linux-android
+    ARCH_FULLNAME=x86_64-linux-android
+    export TOOL_PATH=${ANDROID_TOOLCHAIN}/bin/${ARCH_FULLNAME}
     LIB_SUFFIX=64
     DESTDIR_NAME=x86_64
 else
@@ -78,11 +66,11 @@ export STRIP=${TOOL_PATH}-strip
 
 export CPPFLAGS="${CPPFLAGS} --sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_TOOLCHAIN}/include"
 export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib"
-export LIBS="-lc++_static -latomic -lm"
+export LIBS="-latomic -lm"
 
 BUILDDIR="${ROOTDIR}/jni/${DESTDIR_NAME}"
 
-export pkg_configure_flags="--host=${ARCH} --disable-shared $CONFIG_EXTRA"
+export pkg_configure_flags="--host=${ARCH_FULLNAME} --disable-shared $CONFIG_EXTRA"
 export pkg_prefix=${BUILDDIR}
 export pkg_cross="android"
 
