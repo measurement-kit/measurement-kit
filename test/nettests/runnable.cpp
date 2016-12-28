@@ -198,29 +198,27 @@ TEST_CASE("Make sure that 'randomize_input' works") {
         return result;
     };
 
+    auto repeat = [&](bool shuffle, int limit) -> int {
+        int x = 0;
+        /*
+         * Since in theory RND_SHUFFLE(vector) may be equal to vector, we
+         * measure randomness by counting the number of repetitions for
+         * which the shuffle has been found equal to the expected vector.
+         */
+        while (x++ < limit and run(shuffle) == expect) {
+            /* NOTHING */ ;
+        }
+        return x;
+    };
+
+
     SECTION("In the common case") {
         // Note: the default should be that input is randomized
-
-        /*
-         * Since a random shuffle of the list could in theory be equal
-         * to the list itself, what we do is check that subsequent runs
-         * are different, impliying that there is randomness.
-         */
-
-        REQUIRE(run(true) != run(true));
-        REQUIRE(run(true) != run(true));
-        REQUIRE(run(true) != run(true));
+        REQUIRE(repeat(true, 8) < 8);
     }
 
     SECTION("When the user does not want input to be shuffled") {
-        auto do_check = [&]() {
-            auto vec = run(false);
-            REQUIRE(vec == run(false));
-            REQUIRE(vec == expect);
-        };
-        do_check();
-        do_check();
-        do_check();
+        REQUIRE(repeat(false, 8) == 9);
     }
 }
 
