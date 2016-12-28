@@ -164,6 +164,64 @@ TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
     });
 }
 
+TEST_CASE("Make sure that 'randomize_input' works") {
+
+    std::vector<std::string> expect{"torproject.org",
+                                    "ooni.nu",
+                                    "neubot.org",
+                                    "archive.org",
+                                    "creativecommons.org",
+                                    "cyber.law.harvard.edu",
+                                    "duckduckgo.com",
+                                    "netflix.com",
+                                    "nmap.org",
+                                    "www.emule.com"};
+
+    SECTION("In the common case") {
+        // Note: the default should be that input is randomized
+
+        nettests::Runnable test;
+        test.reactor = Reactor::make();
+        test.input_filepath = "./test/fixtures/hosts.txt";
+        test.needs_input = true;
+        std::vector<std::string> result;
+
+        test.reactor->loop_with_initial_event([&]() {
+            test.entry_cb = [&](std::string s) {
+                nlohmann::json entry = nlohmann::json::parse(s);
+                result.push_back(entry["input"]);
+            };
+            test.begin([&](Error) {
+                test.end([&](Error) { test.reactor->break_loop(); });
+            });
+        });
+
+        REQUIRE(result != expect);
+    }
+
+    SECTION("When the user does not want input to be shuffled") {
+
+        nettests::Runnable test;
+        test.reactor = Reactor::make();
+        test.input_filepath = "./test/fixtures/hosts.txt";
+        test.options["randomize_input"] = false;
+        test.needs_input = true;
+        std::vector<std::string> result;
+
+        test.reactor->loop_with_initial_event([&]() {
+            test.entry_cb = [&](std::string s) {
+                nlohmann::json entry = nlohmann::json::parse(s);
+                result.push_back(entry["input"]);
+            };
+            test.begin([&](Error) {
+                test.end([&](Error) { test.reactor->break_loop(); });
+            });
+        });
+
+        REQUIRE(result == expect);
+    }
+}
+
 #else
 int main() {}
 #endif
