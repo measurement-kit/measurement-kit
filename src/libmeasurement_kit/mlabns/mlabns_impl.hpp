@@ -6,8 +6,6 @@
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace mlabns {
 
