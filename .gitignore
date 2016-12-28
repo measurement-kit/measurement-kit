@@ -45,7 +45,6 @@
 /test/common/error_or
 /test/common/fmap
 /test/common/logger
-/test/common/noexceptions
 /test/common/parallel
 /test/common/range
 /test/common/settings
