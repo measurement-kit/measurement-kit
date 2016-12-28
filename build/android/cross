@@ -85,6 +85,7 @@ BUILDDIR="${ROOTDIR}/jni/${DESTDIR_NAME}"
 export pkg_configure_flags="--host=${ARCH} --disable-shared $CONFIG_EXTRA"
 export pkg_prefix=${BUILDDIR}
 export pkg_cross="android"
+export pkg_steps="configure make make_install" # XXX until we update
 
 if [ $# -gt 0 ]; then
     $@
