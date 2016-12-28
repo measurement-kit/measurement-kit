@@ -1,3 +1,8 @@
+# MeasurementKit 0.4.0-alpha.2 [2016-12-28]
+
+- runnable: implement max_runtime option (#1028)
+- Fix libevent clock gettime (#1044)
+
 # MeasurementKit 0.4.0-alpha.1 [2016-12-15]
 
 - Improve multi_ndt entry format (#992)
