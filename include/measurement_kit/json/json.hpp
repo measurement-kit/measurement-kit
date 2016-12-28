@@ -7,11 +7,9 @@
 #include <measurement_kit/json/nhlohmann/json.hpp>
 
 namespace mk {
-namespace json {
 
-    using json = nlohmann::json;
+using json = nlohmann::json;
 
-} // namespace json
 } // namespace mk
 
 #endif
