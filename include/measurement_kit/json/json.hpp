@@ -4,10 +4,12 @@
 #ifndef MEASUREMENT_KIT_JSON_JSON_HPP
 #define MEASUREMENT_KIT_JSON_JSON_HPP
 
+#include <measurement_kit/json/nhlohmann/json.hpp>
+
 namespace mk {
 namespace json {
 
-#include <measurement_kit/json/nhlohmann/json.hpp>
+    using json = nlohmann::json;
 
 } // namespace json
 } // namespace mk
