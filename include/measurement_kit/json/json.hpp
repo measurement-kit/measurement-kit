@@ -4,7 +4,7 @@
 #ifndef MEASUREMENT_KIT_JSON_JSON_HPP
 #define MEASUREMENT_KIT_JSON_JSON_HPP
 
-#include <measurement_kit/json/nhlohmann/json.hpp>
+#include <measurement_kit/json/nlohmann/json.hpp>
 
 namespace mk {
 
