@@ -60,7 +60,7 @@ index 51725d6..86da55e 100644
  AC_SEARCH_LIBS([inet_aton], [resolv])
 -AC_SEARCH_LIBS([clock_gettime], [rt])
  AC_SEARCH_LIBS([sendfile], [sendfile])
- 
+
  dnl - check if the macro WIN32 is defined on this compiler.
 @@ -289,8 +288,8 @@ AC_C_INLINE
  AC_HEADER_TIME
