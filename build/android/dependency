@@ -16,13 +16,18 @@ SPEC=$2
 echo ""
 echo "Cross-compiling $SPEC for all archs"
 
-ALL_ARCHS="arm arm64 mips mips64 x86 x86_64"
+ALL_ARCHS="armeabi armeabi-v7a arm64 mips mips64 x86 x86_64"
 
 for ARCH in $ALL_ARCHS; do
     echo ""
     echo "Cross compiling $SPEC for arch ${ARCH}"
     rm -rf $ANDROIDDIR/toolchain/${ARCH}
-    $ANDROIDDIR/make-toolchain ${NDK_DIR} ${ARCH}
+    if [ "${ARCH}" = "armeabi" -o "${ARCH}" = "armeabi-v7a" ]; then
+        # Basically those use the same toolchain but we will use the
+        # -march and other flags to select specific details
+        TOOLCHAIN_ARCH="arm"
+    fi
+    $ANDROIDDIR/make-toolchain ${NDK_DIR} ${TOOLCHAIN_ARCH}
     $ANDROIDDIR/cross ${ARCH} $BUILDDIR/dependency $SPEC
 done
 
