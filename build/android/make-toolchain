@@ -42,5 +42,4 @@ $MAKE_TOOLCHAIN                                                                \
     --arch=${ARCH}                                                             \
     --api=${API}                                                               \
     --stl=libc++                                                               \
-    --force                                                                    \
     --install-dir=${INSTALL_DIR}
