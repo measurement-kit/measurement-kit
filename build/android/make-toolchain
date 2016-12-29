@@ -38,4 +38,5 @@ MAKE_TOOLCHAIN=${NDK_DIR}/build/tools/make_standalone_toolchain.py
 INSTALL_DIR=$BASEDIR/${ARCH}
 echo "Creating toolchain for API ${API} and ARCH ${ARCH} in ${INSTALL_DIR}"
 
-$MAKE_TOOLCHAIN --arch=${ARCH} --api=${API} --install-dir=${INSTALL_DIR}
+$MAKE_TOOLCHAIN --arch=${ARCH} --api=${API} --install-dir=${INSTALL_DIR}   \
+    --stl=libc++
