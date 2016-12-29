@@ -6,7 +6,7 @@ ROOTDIR=$(cd $(dirname $0) && pwd -P)
 if [ $# -lt 1 ]; then
     echo "Usage: $0 ARCH" 1>&2
     echo "" 1>&2
-    echo "  ARCH: arm, arm64, mips, mips64, x86, x86_64" 1>&2
+    echo "  ARCH: armeabi, armeabi-v7a, arm64, mips, mips64, x86, x86_64" 1>&2
     echo "" 1>&2
     echo "Example usage:" 1>&2
     echo " $0 arm64" 1>&2
@@ -57,6 +57,7 @@ elif [ "$ARCH" = "armeabi" ]; then
     #
     CFLAGS="-target armv5te-none-linux-androideabi -march=armv5te -mtune=xscale -msoft-float -mthumb -Os"
     CXXFLAGS=$CFLAGS
+    CONFIG_EXTRA="--disable-asm"  # "Instruction requires thumb2"
 elif [ "$ARCH" = "armeabi-v7a" ]; then
     TOOLCHAIN_NAME=arm-linux-androideabi
     DESTDIR_NAME=$ARCH

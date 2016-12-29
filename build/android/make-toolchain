@@ -6,7 +6,7 @@ if [ $# -ne 2 -a $# -ne 3 ]; then
     echo "Usage: $0 NDK_DIR ARCH [API]" 1>&2
     echo "" 1>&2
     echo "  NDK_DIR: path where NDK is installed" 1>&2
-    echo "  ARCH: arm, arm64, mips, mips64, x86, x86_64" 1>&2
+    echo "  ARCH: armeabi, armeabi-v7a, arm64, mips, mips64, x86, x86_64" 1>&2
     echo "  API: 1 ... 25" 1>&2
     echo "" 1>&2
     echo "If API is omitted, the minimum possible API for the " 1>&2
