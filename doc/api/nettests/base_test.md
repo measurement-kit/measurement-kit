@@ -91,13 +91,20 @@ to disable writing output to disk, you should pass the test the
 
 The `set_options` method allows to specify test options. Note that
 all options values SHOULD be passed as string (future versions of
-measurement-kit MAY) disable the possibility of passing test values
+measurement-kit MAY disable the possibility of passing test values
 as arbitrary scalar values, and the values are currently converted
-to strings internally anyway. The following options are defined:
+to strings internally anyway). The following options are defined:
 
 - *max_runtime*: the value of this variable is converted as double
   and, if non-negative, used to compute the max test runtime. After such
   amount of time has passed, the test will stop running automatically.
+
+  By default, there is no maximum runtime constraint for tests.
+
+- *randomize_input*: the value of this variable is converted to bool
+  and, if true, instructs measurement-kit to randomize the input.
+
+  By default, input is randomized.
 
 The `on_entry` method allows to specify the delegate called when
 a test entry is about to be written to disk. The first argument
