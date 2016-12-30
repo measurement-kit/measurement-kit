@@ -26,9 +26,12 @@ if [ $ARCH = "arm-linux-androideabi-v7a" ]; then
     ARCH="arm-linux-androideabi"
 fi
 
+# Directory where to install the toolchain. This must be done _after_
+# mapping the input architecture to a real toolchain architecture.
+INSTALL_DIR=$BASEDIR/${ARCH}-${API}
+
 MAKE_TOOLCHAIN=${NDK_DIR}/build/tools/make-standalone-toolchain.sh
 
-INSTALL_DIR=$BASEDIR/${ARCH}-${API}
 echo "Creating toolchain for API ${API} and ARCH ${ARCH}-4.9 in ${INSTALL_DIR}"
 
 # Bash is recommended to make the toolchain
