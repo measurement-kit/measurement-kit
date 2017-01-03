@@ -55,16 +55,19 @@ elif [ "$ARCH" = "armeabi" ]; then
     #
     # [1] https://en.wikipedia.org/wiki/ARM_architecture#Cores
     #
-    CFLAGS="-target armv5te-none-linux-androideabi -march=armv5te -mtune=xscale -msoft-float -mthumb -Os"
+    # Note: `-Os` was originally part of the flags but this led to
+    # non working libevent binaries as documented in #1051.
+    #
+    CFLAGS="-target armv5te-none-linux-androideabi -march=armv5te -mtune=xscale -msoft-float -mthumb"
     CXXFLAGS=$CFLAGS
     CONFIG_EXTRA="--disable-asm"  # "Instruction requires thumb2"
 elif [ "$ARCH" = "armeabi-v7a" ]; then
     TOOLCHAIN_NAME=arm-linux-androideabi
     DESTDIR_NAME=$ARCH
     #
-    # <Bandwagon>See above</>
+    # <Bandwagon>See above.</>
     #
-    CFLAGS="-target armv7-none-linux-androideabi -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb -Os"
+    CFLAGS="-target armv7-none-linux-androideabi -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb"
     CXXFLAGS="$CFLAGS"
 elif [ "$ARCH" = "mips" ]; then
     # Note: mips is actually mipsel (i.e. little endian)
