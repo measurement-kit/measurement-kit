@@ -56,9 +56,10 @@ elif [ "$ARCH" = "armeabi" ]; then
     # [1] https://en.wikipedia.org/wiki/ARM_architecture#Cores
     #
     # Note: `-Os` was originally part of the flags but this led to
-    # non working libevent binaries as documented in #1051.
+    # non working libevent binaries as documented in #1051. Also
+    # `-fno-integrated-as` is needed to avoid another segfault.
     #
-    CFLAGS="-target armv5te-none-linux-androideabi -march=armv5te -mtune=xscale -msoft-float -mthumb"
+    CFLAGS="-target armv5te-none-linux-androideabi -march=armv5te -mtune=xscale -msoft-float -mthumb -fno-integrated-as"
     CXXFLAGS=$CFLAGS
     CONFIG_EXTRA="--disable-asm"  # "Instruction requires thumb2"
 elif [ "$ARCH" = "armeabi-v7a" ]; then
