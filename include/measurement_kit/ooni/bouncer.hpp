@@ -5,7 +5,7 @@
 #define MEASUREMENT_KIT_OONI_BOUNCER_HPP
 
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext/json.hpp>
+#include <measurement_kit/json.hpp>
 
 namespace mk {
 namespace ooni {

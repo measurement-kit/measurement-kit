@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext.hpp>
+#include <measurement_kit/json.hpp>
 
 namespace mk {
 

@@ -11,7 +11,6 @@
 using namespace mk;
 using namespace mk::ndt;
 using namespace mk::net;
-using json = nlohmann::json;
 
 static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb,
                  Var<Reactor> = Reactor::global()) {

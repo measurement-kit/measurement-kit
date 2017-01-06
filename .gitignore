@@ -58,6 +58,7 @@
 /test/http/parse_url
 /test/http/request
 /test/http/response_parser
+/test/json/noexceptions
 /test/libevent/connection
 /test/libevent/dns_error
 /test/libevent/poller

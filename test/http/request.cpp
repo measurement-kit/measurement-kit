@@ -7,7 +7,7 @@
 
 #include "../src/libmeasurement_kit/http/request_impl.hpp"
 
-#include <measurement_kit/ext.hpp>
+#include <measurement_kit/json.hpp>
 
 #include <openssl/md5.h>
 

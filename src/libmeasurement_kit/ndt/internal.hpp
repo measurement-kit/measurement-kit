@@ -10,7 +10,7 @@
 #include "../common/utils.hpp"
 #include "measure_speed.hpp"
 
-#include <measurement_kit/ext.hpp>
+#include <measurement_kit/json.hpp>
 #include <measurement_kit/ndt.hpp>
 #include <measurement_kit/net.hpp>
 
@@ -68,7 +68,6 @@
 namespace mk {
 namespace ndt {
 
-using json = nlohmann::json;
 using namespace mk::net;
 using namespace mk::report;
 

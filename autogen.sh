@@ -28,7 +28,9 @@ gen_automatic_includes() {
         echo "#ifndef MEASUREMENT_KIT_$(echo $name|tr 'a-z' 'A-Z')_HPP"   >> $hh
         echo "#define MEASUREMENT_KIT_$(echo $name|tr 'a-z' 'A-Z')_HPP"   >> $hh
         for nn in $(ls include/measurement_kit/$name/); do
-            echo "#include <measurement_kit/$name/$nn>"                   >> $hh
+            if [ -f "include/measurement_kit/$name/$nn" ]; then
+                echo "#include <measurement_kit/$name/$nn>"               >> $hh
+            fi
         done
         echo "#endif"                                                     >> $hh
     done

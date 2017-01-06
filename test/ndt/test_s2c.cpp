@@ -9,7 +9,6 @@
 
 using namespace mk;
 using namespace mk::ndt;
-using json = nlohmann::json;
 
 static void failure(std::string, int, int, ConnectManyCb callback,
                     Settings, Var<Reactor>, Var<Logger>) {

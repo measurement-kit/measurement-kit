@@ -11,7 +11,6 @@
 using namespace mk;
 using namespace mk::ndt;
 using namespace mk::net;
-using json = nlohmann::json;
 
 static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
                  Var<Reactor>, Var<Logger>) {

@@ -10,7 +10,6 @@
 using namespace mk;
 using namespace mk::ndt;
 using namespace mk::net;
-using json = nlohmann::json;
 
 static void fail(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb,
                  Var<Reactor> = Reactor::global()) {

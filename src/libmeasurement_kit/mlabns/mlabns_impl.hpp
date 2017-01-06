@@ -2,11 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/ext.hpp>
+#include <measurement_kit/json.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
-
-using json = nlohmann::json;
 
 namespace mk {
 namespace mlabns {
