@@ -1,21 +1,30 @@
+# MeasurementKit 0.4.0-alpha.3 [2017-01-06]
+
+- nettests: randomize input (#1029)
+- Add workaround for Android with API < 21 (#1048)
+- android build: simple changes backported from #1047 (#1049)
+- More hotfix backports from #1047 (#1050)
+- Fix API and ABI compatibility for old Androids (#1047)
+- `system_resolver.hpp`: do not warn on getaddrinfo failure (#1055)
+
 # MeasurementKit 0.4.0-alpha.2 [2016-12-28]
 
-- runnable: implement max_runtime option (#1028)
+- runnable: implement `max_runtime` option (#1028)
 - Fix libevent clock gettime (#1044)
 
 # MeasurementKit 0.4.0-alpha.1 [2016-12-15]
 
-- Improve multi_ndt entry format (#992)
+- Improve `multi_ndt` entry format (#992)
 - Fix: libressl ios build (#994)
 - Refactor: ssl (#997)
 - Write ssl context regress tests (#998)
 - Implement mk::slurp() to read files at once (#996)
-- BaseTest: add on_logger_eof() method (#1004)
-- getaddrinfo: android dislikes AI_V4MAPPED|AI_ALL (#1005)
-- logger: allow multiple on_eof() callbacks (#1006)
+- BaseTest: add `on_logger_eof()` method (#1004)
+- getaddrinfo: android dislikes `AI_V4MAPPED|AI_ALL` (#1005)
+- logger: allow multiple `on_eof()` callbacks (#1006)
 - runnable: allow multiple on-end callbacks (#1007)
 - Use builtin CA file if CA file is missing and we're using libressl (#999)
-- runnable: add on_destroy() callback (#1008)
+- runnable: add `on_destroy()` callback (#1008)
 
 # MeasurementKit 0.4.0-alpha [2016-12-07]
 
