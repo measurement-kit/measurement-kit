@@ -60,7 +60,6 @@ void resolve_async_impl(ResolverContext *context) {
     int error = getaddrinfo(ctx->name.c_str(), nullptr, &ctx->hints, &sip);
     ctx->logger->log(MK_LOG_DEBUG2, "getaddrinfo result: %d", error);
     if (error) {
-        ctx->logger->warn("getaddrinfo failed: %s", gai_strerror(error));
         Error resolver_error;
         switch (error) {
         case EAI_AGAIN:
