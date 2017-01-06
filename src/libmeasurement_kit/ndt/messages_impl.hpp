@@ -4,6 +4,13 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NDT_MESSAGES_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_NDT_MESSAGES_IMPL_HPP
 
+/*
+ * To have UINT16_MAX defined. Required on Android API < 21.
+ *
+ * See <http://stackoverflow.com/a/986584>.
+ */
+#define __STDC_LIMIT_MACROS
+
 #include "../ndt/internal.hpp"
 #include <cassert>
 
