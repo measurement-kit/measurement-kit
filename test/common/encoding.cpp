@@ -53,6 +53,7 @@ TEST_CASE("is_valid_utf8_string works") {
 
 TEST_CASE("base64_encode() works as expected") {
     // Note: 'any carnal pleasure' example taken from wikipedia
+    //  https://en.wikipedia.org/wiki/Base64
 
     SECTION("When there are two paddings") {
         REQUIRE(mk::base64_encode("any carnal pleas") ==
