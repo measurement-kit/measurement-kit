@@ -10,7 +10,15 @@
 # define __restrict /* nothing */
 #endif
 
-#define mk_utf8_mbrtowc _citrus_utf8_ctype_mbrtowc
+/*
+ * Note: this is to edit the names of the symbols such that the compiled
+ * library only contains symbol names starting with `mk_`.
+ */
+#define _citrus_utf8_ctype_mbrtowc mk_utf8_mbrtowc
+#define _citrus_utf8_ctype_mbsinit mk_utf8_mbsinit
+#define _citrus_utf8_ctype_mbsnrtowcs mk_utf8_mbsnrtowcs
+#define _citrus_utf8_ctype_wcrtomb mk_utf8_wcrtomb
+#define _citrus_utf8_ctype_wcsnrtombs mk_utf8_wcsnrtombs
 
 #include "../portable/citrus_ctype.h"
 

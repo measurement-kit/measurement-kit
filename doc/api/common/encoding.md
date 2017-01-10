@@ -1,5 +1,5 @@
 # NAME
-charset &mdash; Functions to manipulate character sets
+encoding &mdash; Handle encodings (e.g. UTF-8, base64)
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -11,6 +11,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 namespace mk {
 
 Error is_valid_utf8_string(const std::string &s);
+
+std::string base64_encode(std::string s);
 
 }
 ```
@@ -33,6 +35,9 @@ one of the following errors:
 Internally, `is_valid_utf8_string` MAY be implemented using `mbrtowc(3)`
 configured for processing UTF-8. `mbrtowc(3)` is part of ISO C 90.
 
+The `base64_encode` function encodes the string passed in input as base64.
+
 # HISTORY
 
-The `is_complete_utf8_string` function appeared in MeasurementKit 0.4.0.
+The `is_complete_utf8_string` and `base64_encode` functions appeared in
+MeasurementKit 0.4.0.
