@@ -7,8 +7,6 @@
 
 #include <measurement_kit/common.hpp>
 
-#include <openssl/bio.h>
-
 #include <cassert>
 
 namespace mk {
