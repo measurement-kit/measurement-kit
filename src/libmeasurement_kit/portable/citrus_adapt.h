@@ -10,11 +10,7 @@
 # define __restrict /* nothing */
 #endif
 
-#define _citrus_utf8_ctype_mbrtowc mk_citrus_utf8_ctype_mbrtowc
-#define _citrus_utf8_ctype_mbsinit mk_citrus_utf8_ctype_mbsinit
-#define _citrus_utf8_ctype_mbsnrtowcs mk_citrus_utf8_ctype_mbsnrtowcs
-#define _citrus_utf8_ctype_wcrtomb mk_citrus_utf8_ctype_wcrtomb
-#define _citrus_utf8_ctype_wcsnrtombs mk_citrus_utf8_ctype_wcsnrtombs
+#define mk_utf8_mbrtowc _citrus_utf8_ctype_mbrtowc
 
 #include "../portable/citrus_ctype.h"
 

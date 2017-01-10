@@ -14,6 +14,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 The `common` module contains contains the following submodules:
 
 - [callback](common/callback.md): alias for writing callback functions more compactly
+- [charset](common/charset.md): functions to manipulate character sets
 - [continuation](common/continuation.md): type of function used to restart a function that paused
 - [delegate](common/delegate.md): member function overridable at runtime
 - [error](common/error.md): definition of error class and of shared error codes
