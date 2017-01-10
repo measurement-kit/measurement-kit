@@ -69,9 +69,6 @@ TEST_CASE("base64_encode() works as expected") {
                 "YW55IGNhcm5hbCBwbGVhc3Vy");
     }
 
-    // With Apple we would need to -lresolv. Anyway it should be enough
-    // to have this verified only with Linux systems.
-#ifdef __linux__
     SECTION("With random input") {
         for (int i = 0; i < 16; ++i) {
             uint16_t size = 0;
@@ -95,6 +92,4 @@ TEST_CASE("base64_encode() works as expected") {
             REQUIRE(result == expect);
         }
     }
-#endif
-
 }
