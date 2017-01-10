@@ -74,6 +74,9 @@ TEST_CASE("base64_encode() works as expected") {
         for (int i = 0; i < 16; ++i) {
             uint16_t size = 0;
             evutil_secure_rng_get_bytes(&size, sizeof(size));
+            if (size == 0) {
+                size = 16; /* Avoid using zero as length */
+            }
             std::vector<char> vec;
             vec.resize(size);
             evutil_secure_rng_get_bytes(vec.data(), vec.size());
