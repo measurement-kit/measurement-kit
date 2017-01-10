@@ -12,7 +12,7 @@
 
 /*
  * Note: this is to edit the names of the symbols such that the compiled
- * libray only contains symbol names starting with `mk_`.
+ * library only contains symbol names starting with `mk_`.
  */
 #define _citrus_utf8_ctype_mbrtowc mk_utf8_mbrtowc
 #define _citrus_utf8_ctype_mbsinit mk_utf8_mbsinit
