@@ -3,9 +3,9 @@
 #define MEASUREMENT_KIT_COMMON_HPP
 #include <measurement_kit/common/aaa_base.hpp>
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/charset.hpp>
 #include <measurement_kit/common/continuation.hpp>
 #include <measurement_kit/common/delegate.hpp>
+#include <measurement_kit/common/encoding.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/error_or.hpp>
 #include <measurement_kit/common/fmap.hpp>

@@ -3,8 +3,11 @@
 // information on the copying conditions.
 
 #include "../portable/citrus_adapt.h"
+#include "../common/encoding_base64_impl.hpp"
 
 #include <measurement_kit/common.hpp>
+
+#include <openssl/bio.h>
 
 #include <cassert>
 
@@ -38,6 +41,10 @@ Error is_valid_utf8_string(const std::string &s) {
         return IncompleteUtf8SequenceError();
     }
     return NoError();
+}
+
+std::string base64_encode(const std::string &s) {
+    return base64_encode_impl((const uint8_t *)s.data(), s.size());
 }
 
 } // namespace mk
