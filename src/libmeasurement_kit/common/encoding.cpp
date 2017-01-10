@@ -41,7 +41,7 @@ Error is_valid_utf8_string(const std::string &s) {
     return NoError();
 }
 
-std::string base64_encode(const std::string &s) {
+std::string base64_encode(std::string s) {
     return base64_encode_impl((const uint8_t *)s.data(), s.size());
 }
 

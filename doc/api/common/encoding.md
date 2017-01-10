@@ -12,7 +12,7 @@ namespace mk {
 
 Error is_valid_utf8_string(const std::string &s);
 
-std::string base64_encode(const std::string &s);
+std::string base64_encode(std::string s);
 
 }
 ```
