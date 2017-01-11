@@ -81,14 +81,14 @@ respectively, set an increase the verbosity of the logger bound to
 this test.
 
 The `add_input_filepath` adds one file path to the input paths list, which
-by default is empty. Tests that require input would fail if no input file
+by default is empty. Tests that require input will fail if no input file
 path is specified, while tests that do not require input will ignore input
 if it is provided by the caller. If an input file path cannot be openned
 or read, measurement-kit will emit a warning message, but the test will not
-fail. If an input file path contains the string "${cc}" this is replaced
-with the current country code in lower case (that is, if you are in Italy
-&mdash; country code `IT` &mdash; the string "${cc}" is replaced with
-`it`).
+fail. If an input file path contains the string "${probe_cc}" this is
+replaced with the two letter country code of the network the user is running
+the test from in lower case (that is, if you are in Italy &mdash; country
+code `IT` &mdash; the string "${probe_cc}" is replaced with `it`).
 
 The `set_input_filepath` method clears previously set input file paths
 and then sets the path provided as argument as the unique input file path.

@@ -280,7 +280,7 @@ void Runnable::begin(Callback<Error> cb) {
                     for (auto input_filepath: input_filepaths) {
                         input_filepath = std::regex_replace(
                             input_filepath,
-                            std::regex{R"(\$\{cc\})"},
+                            std::regex{R"(\$\{probe_cc\})"},
                             probe_cc_lowercase
                         );
                         std::ifstream input_generator{input_filepath};
@@ -288,16 +288,20 @@ void Runnable::begin(Callback<Error> cb) {
                             logger->warn("cannot open input file");
                             continue;
                         }
-                        // Count the number of entries
                         std::string next_input;
                         while ((std::getline(input_generator, next_input))) {
                             num_entries += 1;
                             inputs.push_back(next_input);
                         }
                         if (!input_generator.eof()) {
-                            logger->warn("cannot read input file");
+                            logger->warn("I/O error reading input file");
                             continue;
                         }
+                    }
+                    if (num_entries <= 0) {
+                        logger->warn("no specified input file could be read");
+                        cb(CannotReadAnyInputFileError());
+                        return;
                     }
                     ErrorOr<bool> shuffle = options.get_noexcept<bool>(
                             "randomize_input", true);
