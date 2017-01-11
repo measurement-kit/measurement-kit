@@ -9,7 +9,7 @@
 namespace mk {
 namespace ooni {
 
-MK_DEFINE_ERR(MK_ERR_OONI(0), CannotOpenInputFileError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(0), CannotReadAnyInputFileError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(1), MissingRequiredInputFileError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(2), MissingCollectorBaseUrlError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(3), CannotOpenReportError, "")
