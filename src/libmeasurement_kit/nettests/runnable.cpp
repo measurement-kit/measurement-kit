@@ -4,10 +4,9 @@
 
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
+#include "../nettests/utils.hpp"
 
 #include <measurement_kit/nettests.hpp>
-
-#include <random>
 
 namespace mk {
 namespace nettests {
@@ -260,68 +259,17 @@ void Runnable::begin(Callback<Error> cb) {
                     cb(error);
                     return;
                 }
-                size_t num_entries = 0;
-                if (needs_input) {
-                    if (input_filepaths.size() <= 0) {
-                        logger->warn("at least an input file is required");
-                        cb(MissingRequiredInputFileError());
-                        return;
-                    }
-                    std::string probe_cc_lowercase;
-                    for (auto &c: probe_cc) {
-                        /*
-                         * Note: in general the snippet below is not
-                         * so good because it does not work for UTF-8
-                         * and the like but here we are converting
-                         * country codes which are always ASCII.
-                         */
-                        probe_cc_lowercase += std::tolower(c);
-                    }
-                    for (auto input_filepath: input_filepaths) {
-                        input_filepath = std::regex_replace(
-                            input_filepath,
-                            std::regex{R"(\$\{probe_cc\})"},
-                            probe_cc_lowercase
-                        );
-                        std::ifstream input_generator{input_filepath};
-                        if (!input_generator.good()) {
-                            logger->warn("cannot open input file");
-                            continue;
-                        }
-                        std::string next_input;
-                        while ((std::getline(input_generator, next_input))) {
-                            num_entries += 1;
-                            inputs.push_back(next_input);
-                        }
-                        if (!input_generator.eof()) {
-                            logger->warn("I/O error reading input file");
-                            continue;
-                        }
-                    }
-                    if (num_entries <= 0) {
-                        logger->warn("no specified input file could be read");
-                        cb(CannotReadAnyInputFileError());
-                        return;
-                    }
-                    ErrorOr<bool> shuffle = options.get_noexcept<bool>(
-                            "randomize_input", true);
-                    if (!shuffle) {
-                        logger->warn("invalid 'randomize_input' option");
-                        cb(shuffle.as_error());
-                        return;
-                    }
-                    if (*shuffle) {
-                        // http://en.cppreference.com/w/cpp/algorithm/shuffle:
-                        std::random_device rd;
-                        std::mt19937 g(rd());
-                        std::shuffle(inputs.begin(), inputs.end(), g);
-                    }
-                } else {
-                    // Empty string to call main() just once
-                    inputs.push_back("");
-                    num_entries = 1;
-                }
 
+                ErrorOr<std::deque<std::string>> maybe_inputs =
+                    process_input_filepaths(options, needs_input,
+                                            input_filepaths, probe_cc,
+                                            logger);
+                if (!maybe_inputs) {
+                    cb(maybe_inputs.as_error());
+                    return;
+                }
+                inputs = *maybe_inputs;
+                size_t num_entries = inputs.size();
 
                 // Run `parallelism` measurements in parallel
                 Var<size_t> current_entry(new size_t(0));
