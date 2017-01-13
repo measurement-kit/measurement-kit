@@ -12,7 +12,7 @@ namespace cmdline {
 namespace web_connectivity {
 
 #define USAGE                                                                  \
-"usage: %s [-nv] [-b backend] [-N nameserver] [-t runtime] file_name\n"
+"usage: %s [-nv] [-b backend] [-N nameserver] [-t runtime] [file_name...]\n"
 
 int main(const char *, int argc, char **argv) {
     std::string backend = "https://a.collector.test.ooni.io:4444";
@@ -44,11 +44,10 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= mkp_optind;
-    argv += mkp_optind;
-    if (argc != 1) {
-        fprintf(stderr, USAGE, name.c_str());
-        exit(1);
+    argc -= mkp_optind, argv += mkp_optind;
+    while (argc > 0) {
+        test.add_input_filepath(argv[0]);
+        argc -= 1, argv += 1;
     }
 
     test
@@ -57,7 +56,6 @@ int main(const char *, int argc, char **argv) {
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_verbosity(verbosity)
-        .set_input_filepath(argv[0])
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
 
