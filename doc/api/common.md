@@ -16,6 +16,7 @@ The `common` module contains contains the following submodules:
 - [callback](common/callback.md): alias for writing callback functions more compactly
 - [continuation](common/continuation.md): type of function used to restart a function that paused
 - [delegate](common/delegate.md): member function overridable at runtime
+- [encoding](common/encoding.md): handle encodings (e.g. UTF-8, base64)
 - [error](common/error.md): definition of error class and of shared error codes
 - [error_or](common/error_or.md): maybe-like object containing either a result or an error
 - [lexical_cast](common/lexical_cast.md): lexical cast between scalar values

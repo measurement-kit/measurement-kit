@@ -1,0 +1,10 @@
+pkg_name=citrus
+pkg_repository=https://github.com/openbsd/src
+pkg_branch_or_tag=master
+pkg_tip=f1bc47ba651dac266c461622c51fe963b7574a0b
+pkg_steps=install
+
+pkg_install() {
+    cp lib/libc/citrus/citrus_ctype.h ../../../src/libmeasurement_kit/portable
+    cp lib/libc/citrus/citrus_utf8.c ../../../src/libmeasurement_kit/portable
+}
