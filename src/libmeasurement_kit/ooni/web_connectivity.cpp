@@ -20,11 +20,16 @@ using namespace mk::report;
 typedef std::vector<std::pair<std::string, int>> SocketList;
 
 static void compare_http_requests(Var<Entry> entry,
-                                  Entry experiment_response,
+                                  Var<http::Response> response,
                                   Entry control, Var<Logger> logger) {
 
-  // XXX find a way to avoid this.
-  std::string exp_body = experiment_response["body"];
+  // The response may be null if HTTP fails due to network errors
+  if (!response) {
+    logger->warn("skip comparison due to null response");
+    return;
+  }
+
+  std::string exp_body = response->body;
   int exp_length = exp_body.size();
   int ctrl_length = control["body_length"];
 
@@ -53,7 +58,7 @@ static void compare_http_requests(Var<Entry> entry,
   // control.
   (*entry)["status_code_match"] = true;
   if (((int) control["status_code"])/100 != 5) {
-    if (((int) control["status_code"]) == ((int) experiment_response["code"])) {
+    if (((unsigned) control["status_code"]) == response->status_code) {
       (*entry)["status_code_match"] = true;
     } else {
       (*entry)["status_code_match"] = false;
@@ -70,10 +75,10 @@ static void compare_http_requests(Var<Entry> entry,
     //lowercase_ctrl_headers.insert(std::tolower(it.key()));
     lowercase_ctrl_headers.insert(it.key());
   }
-  for (Entry::iterator it = experiment_response["headers"].begin();
-       it != experiment_response["headers"].end(); ++it) {
-    //lowercase_exp_headers.insert(std::tolower(it.key()));
-    lowercase_exp_headers.insert(it.key());
+  for (auto it = response->headers.begin();
+       it != response->headers.end(); ++it) {
+    //lowercase_exp_headers.insert(std::tolower(it->first));
+    lowercase_exp_headers.insert(it->first);
   }
 
   if (lowercase_ctrl_headers == lowercase_exp_headers) {
@@ -105,7 +110,7 @@ static void compare_http_requests(Var<Entry> entry,
 
   // Check if the HTML titles match
   logger->debug("web_connectivity: checking HTML titles");
-  std::string experiment_title = extract_html_title(experiment_response["body"]);
+  std::string experiment_title = extract_html_title(response->body);
   std::vector<std::string> exp_title_words;
   std::vector<std::string> ctrl_title_words;
 
@@ -242,7 +247,8 @@ static bool compare_tcp_connect(Var<Entry> entry, Entry control) {
 
 static void compare_control_experiment(
     std::string input,
-    Var<Entry> entry, std::vector<std::string> addresses,
+    Var<Entry> entry, Var<http::Response> response,
+    std::vector<std::string> addresses,
     Settings options, Var<Logger> logger) {
     if ((*entry)["control_failure"] != nullptr) {
       logger->warn("web_connectivity: skipping control comparison due to failure");
@@ -257,7 +263,7 @@ static void compare_control_experiment(
       logger->debug("web_connectivity: comparing http_requests");
       compare_http_requests(
               entry,
-              (*entry)["requests"][0]["response"],
+              response,
               (*entry)["control"]["http_request"],
               logger
       );
@@ -408,7 +414,7 @@ static void control_request(Var<Entry> entry,
 }
 
 static void experiment_http_request(Var<Entry> entry,
-        std::string url, Callback<Error> cb,
+        std::string url, Callback<Error, Var<http::Response>> cb,
         Settings options,
         Var<Reactor> reactor, Var<Logger> logger) {
 
@@ -418,13 +424,13 @@ static void experiment_http_request(Var<Entry> entry,
 
   logger->debug("Requesting url %s", url.c_str());
   templates::http_request(entry, options, headers, body, [=](Error err,
-              Var<http::Response> /*response*/) {
+              Var<http::Response> response) {
     if (err) {
       (*entry)["http_experiment_failure"] = err.as_ooni_error();
-      cb(err);
+      cb(err, response);
       return;
     }
-    cb(NoError());
+    cb(NoError(), response);
   }, reactor, logger);
 }
 
@@ -598,7 +604,8 @@ void web_connectivity(std::string input, Settings options,
 
         logger->info("web_connectivity: starting http_request to %s",
                      input.c_str());
-        experiment_http_request(entry, input, [=](Error err){
+        experiment_http_request(entry, input, [=](Error err,
+                    Var<http::Response> response) {
 
           if (err) {
             logger->debug("web_connectivity: http-request error: %s",
@@ -614,7 +621,8 @@ void web_connectivity(std::string input, Settings options,
             }
 
             logger->info("web_connectivity: comparing control with experiment");
-            compare_control_experiment(input, entry, addresses, options, logger);
+            compare_control_experiment(input, entry, response,
+                    addresses, options, logger);
             callback(entry);
 
           }, options, reactor, logger); // end control_request
