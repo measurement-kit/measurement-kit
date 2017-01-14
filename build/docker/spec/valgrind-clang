@@ -4,8 +4,7 @@ set -e
 export CPP="clang -E"
 export CC="clang"
 export CXX="clang++"
-
-export configure_flags="$configure_flags --disable-shared"
+export pkg_make_check_rule="run-valgrind"
 
 debian_deps="$debian_deps autoconf"
 debian_deps="$debian_deps automake"
@@ -18,5 +17,3 @@ debian_deps="$debian_deps libtool"
 debian_deps="$debian_deps make"
 debian_deps="$debian_deps valgrind"
 debian_deps="$debian_deps wget"
-
-make_check_name="run-valgrind"
