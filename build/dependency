@@ -83,44 +83,37 @@ if [ -x build/spec/$1 ]; then
 fi
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
-if [ ! -d third_party/cache/$pkg_name ]; then
-    git clone $pkg_clone_flags $pkg_repository third_party/cache/$pkg_name
-    cd third_party/cache/$pkg_name
-    if [ ! -z "$pkg_branch" ]; then
-        git checkout $pkg_branch
-        if [ "`git rev-parse HEAD`" != "$pkg_commit" ]; then
+if [ "$pkg_repository" != "" ]; then
+    rm -rf third_party/src/$pkg_name
+    git clone $pkg_clone_flags --single-branch --depth 2                       \
+        --branch $pkg_branch_or_tag $pkg_repository third_party/src/$pkg_name
+    cd third_party/src/$pkg_name
+    if [ "$pkg_tip" != "" ]; then
+        if [ "`git rev-parse HEAD`" != "$pkg_tip" ]; then
             # Mainly because this allows us to know which commit was the
             # tip of the branch when we compiled a dependency
             echo "FATAL: unexpected HEAD commit SHA-1" 1>&2
             exit 1
         fi
     fi
-    if [ ! -z "$pkg_tag" ]; then
-        git checkout tags/$pkg_tag
-    fi
-    apply_patches pre-autogen/$pkg_name/common
-    if [ "$pkg_cross" != "" ]; then
-        apply_patches pre-autogen/$pkg_name/$pkg_cross
-    fi
-    pkg_autogen
-    apply_patches post-autogen/$pkg_name/common
-    if [ "$pkg_cross" != "" ]; then
-        apply_patches post-autogen/$pkg_name/$pkg_cross
-    fi
-    cd ../../../ # back to where we were
 fi
-if [ ! -d third_party/build/ ]; then
-    mkdir third_party/build/
+apply_patches pre-autogen/$pkg_name/common
+if [ "$pkg_cross" != "" ]; then
+    apply_patches pre-autogen/$pkg_name/$pkg_cross
 fi
-rm -rf third_party/build/$pkg_name
-cp -R third_party/cache/$pkg_name third_party/build/$pkg_name
-cd third_party/build/$pkg_name
+pkg_autogen
+apply_patches post-autogen/$pkg_name/common
+if [ "$pkg_cross" != "" ]; then
+    apply_patches post-autogen/$pkg_name/$pkg_cross
+fi
 if [ -z "$pkg_steps" ]; then
     pkg_steps="configure make make_install"
 fi
 for step in $pkg_steps; do
+    echo "- - -"
     echo ""
-    echo "* step: $step"
+    echo "# $step"
+    echo ""
     pkg_$step
 done
 echo ""
