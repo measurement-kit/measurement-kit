@@ -1,12 +1,12 @@
 valgrind-gcc:
-  image: ubuntu:xenial
+  image: ubuntu:yakkety
   script: ./build/ci/gitlab valgrind-gcc
   only:
     - master
     - stable
 
 valgrind-clang:
-  image: ubuntu:xenial
+  image: ubuntu:yakkety
   script: ./build/ci/gitlab valgrind-clang
   only:
     - master
