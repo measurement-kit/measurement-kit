@@ -83,7 +83,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
         [=](Error error, Var<http::Response> response) {
             Entry rr;
             rr["request"]["headers"] = headers;
-            rr["request"]["body"] = body;
+            rr["request"]["body"] = represent_http_body(body);
             rr["request"]["url"] = settings.at("http/url").c_str();
             rr["request"]["method"] = settings.at("http/method").c_str();
 
@@ -92,7 +92,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
 
             if (!error) {
                 rr["response"]["headers"] = response->headers;
-                rr["response"]["body"] = response->body;
+                rr["response"]["body"] = represent_http_body(response->body);
                 rr["response"]["response_line"] = response->response_line;
                 rr["response"]["code"] = response->status_code;
                 rr["failure"] = nullptr;
