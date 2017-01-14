@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-configure_flags="--enable-coverage"
+export pkg_configure_flags="$pkg_configure_flags --enable-coverage"
+export pkg_make_check_rule="check"
 
 export CFLAGS="$CFLAGS -g -O0"
 export CXXFLAGS="$CXXFLAGS -g -O0"
@@ -18,13 +19,7 @@ debian_deps="$debian_deps make"
 debian_deps="$debian_deps python"
 debian_deps="$debian_deps python-pip"
 debian_deps="$debian_deps wget"
-
-subr_depend() {
-    apt-get update
-    apt-get upgrade -y
-    apt-get install -y $debian_deps
-    pip install --user cpp-coveralls
-}
+pip_deps="$pip_deps cpp-coveralls"
 
 subr_finalize() {
     $HOME/.local/bin/coveralls                                             \
