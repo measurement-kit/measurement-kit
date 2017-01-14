@@ -1,7 +1,7 @@
 language: cpp
 
 script:
-    - ./build/travis
+    - ./build/ci/travis
 
 matrix:
   include:
