@@ -12,18 +12,6 @@ matrix:
       services:
         - docker
 
-    - sudo: required
-      env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
-           DOCKER_BRANCHES_ONLY=$TRAVIS_BRANCH
-      services:
-        - docker
-
-    - sudo: required
-      env: DOCKER_SPEC=valgrind-gcc pkg_make_flags="V=0 -j3"
-           DOCKER_BRANCHES_ONLY=$TRAVIS_BRANCH
-      services:
-        - docker
-
     - sudo: false
       compiler: gcc-6
       env: CXX_NAME=g++-6 CC_NAME=gcc-6 VALGRIND=-valgrind
@@ -35,3 +23,15 @@ matrix:
             - valgrind
           sources:
             - ubuntu-toolchain-r-test
+
+    - sudo: required
+      env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
+           DOCKER_BRANCHES_ONLY="master stable"
+      services:
+        - docker
+
+    - sudo: required
+      env: DOCKER_SPEC=valgrind-gcc pkg_make_flags="V=0 -j3"
+           DOCKER_BRANCHES_ONLY="master stable"
+      services:
+        - docker
