@@ -22,7 +22,7 @@ TEST_CASE("make_ssl() works") {
             net::make_ssl<ssl_new_fail>(ctx, "www.google.com");
         REQUIRE(!maybe_ssl);
         REQUIRE(maybe_ssl.as_error().code == net::SslNewError().code);
-        //SSL_CTX_free(ctx); /* Test valgrind */
+        SSL_CTX_free(ctx);
     }
 }
 
