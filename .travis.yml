@@ -1,7 +1,7 @@
 language: cpp
 
 script:
-    - ./build/travis "$BRANCHES_ONLY" -j3 $DOCKER $SPEC
+    - ./build/travis
 
 matrix:
   include:
@@ -12,8 +12,7 @@ matrix:
         - docker
 
     - sudo: required
-      env: DOCKER=ubuntu:yakkety SPEC=coveralls
-           BRANCHES_ONLY=$TRAVIS_BRANCH
+      env: DOCKER_SPEC=coveralls pkg_make_flags="V=0 -j3"
       services:
         - docker
 
