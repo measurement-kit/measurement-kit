@@ -155,5 +155,14 @@ bool is_ip_addr(const std::string &ip_addr) {
     return false;
 }
 
+report::Entry represent_http_body(const std::string &body) {
+    Error error = is_valid_utf8_string(body);
+    if (error != NoError()) {
+        return report::Entry{{"format", "base64"},
+                              {"data", base64_encode(body)}};
+    }
+    return body;
+}
+
 } // namespace ooni
 } // namespace mk
