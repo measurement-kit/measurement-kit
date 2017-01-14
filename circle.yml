@@ -2,10 +2,11 @@ machine:
   services:
     - docker
 
-#general:
-#  branches:
-#    ignore:
-#      - /^doc\/.*$/
+general:
+  branches:
+    only:
+      - master
+      - stable
 
 test:
   override:
