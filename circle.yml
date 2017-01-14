@@ -5,7 +5,6 @@ machine:
 general:
   branches:
     only:
-      - fix/ci-cleanups
       - master
       - stable
 

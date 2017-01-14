@@ -2,7 +2,6 @@ valgrind-gcc:
   image: ubuntu:xenial
   script: ./build/ci/gitlab valgrind-gcc
   only:
-    - fix/ci-cleanups
     - master
     - stable
 
@@ -10,6 +9,5 @@ valgrind-clang:
   image: ubuntu:xenial
   script: ./build/ci/gitlab valgrind-clang
   only:
-    - fix/ci-cleanups
     - master
     - stable
