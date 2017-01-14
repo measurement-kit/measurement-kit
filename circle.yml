@@ -5,9 +5,10 @@ machine:
 general:
   branches:
     only:
+      - fix/ci-cleanups
       - master
       - stable
 
 test:
   override:
-    - ./build/docker/valgrind-clang
+    - ./build/ci/circle valgrind-clang
