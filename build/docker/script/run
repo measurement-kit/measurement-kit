@@ -15,35 +15,39 @@ subr_start_over() {
 }
 
 subr_autogen() {
+    echo "- ./autogen.sh"
     ./autogen.sh
 }
 
 subr_configure() {
+    echo "- ./configure $configure_flags"
     ./configure $configure_flags
 }
 
 subr_make() {
+    echo "- make $make_flags V=0"
     make $make_flags V=0
 }
 
 subr_make_check() {
-    make $make_flags check V=0
+    if [ -z "$make_check_name" ]; then
+        make_check_name=check
+    fi
+    echo "- make $make_flags $make_check_name V=0"
+    if ! make $make_flags $make_check_name V=0; then
+        if [ -f ./test-suite.log ]; then
+            cat ./test-suite.log
+        fi
+        exit 1
+    fi
 }
 
 subr_finalize() {
     exit 0
 }
 
-if [ -z "$make_flags" ]; then
-    NPROC=$(nproc)
-    if [ $NPROC -gt 4 ]; then
-        NPROC=4
-    fi
-    make_flags="-j$NPROC"
-fi
-
 . build/docker/spec/$spec_name
-env
+env | sed 's/^COVERALLS_REPO_TOKEN=.*$/COVERALLS_REPO_TOKEN=[secure]/g'
 sleep 5
 
 if [ $# -eq 0 ]; then
@@ -51,6 +55,11 @@ if [ $# -eq 0 ]; then
 fi
 
 while [ $# -gt 0 ]; do
+    echo ""
+    echo "- - -"
+    echo ""
+    echo "# $1"
+    echo ""
     subr_$1
     shift
 done
