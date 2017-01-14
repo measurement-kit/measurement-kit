@@ -43,9 +43,7 @@ fi
 
 while [ $# -gt 0 ]; do
     echo ""
-    echo "- - -"
-    echo ""
-    echo "# $1"
+    echo "docker/script/run: $1"
     echo ""
     subr_$1
     shift
