@@ -28,8 +28,12 @@ export LD_RUN_PATH=$TRAVIS_BUILD_DIR/builtin
 
 make $pkg_make_flags
 
-make $pkg_make_flags check-am$VALGRIND
-if [ -f test-suite.log ]; then cat test-suite.log; fi
+if ! make $pkg_make_flags check-am$VALGRIND; then
+    if [ -f test-suite.log ]; then
+        cat test-suite.log;
+    fi
+    exit 1
+fi
 
 # Silence gcov standard output since it produces way too much output
 if [ "$COVERAGE" = "--enable-coverage" ]; then
