@@ -25,6 +25,21 @@ Examples:
 EOF
 }
 
+apply_patches() {
+    if [ -d ../../../build/patch/$1 ]; then
+        for diff in `find ../../../build/patch/$1 -type f`; do
+            git apply -v $diff
+        done
+    fi
+}
+
+pkg_patch_pre_autogen() {
+    apply_patches pre-autogen/$pkg_name/common
+    if [ "$pkg_cross" != "" ]; then
+        apply_patches pre-autogen/$pkg_name/$pkg_cross
+    fi
+}
+
 pkg_autogen() {
     if [ -x ./autogen.sh ]; then
         echo "- ./autogen.sh"
@@ -32,6 +47,13 @@ pkg_autogen() {
     elif [ -f ./configure.ac ]; then
         echo "- autoreconf -i"
         autoreconf -i
+    fi
+}
+
+pkg_patch_post_autogen() {
+    apply_patches post-autogen/$pkg_name/common
+    if [ "$pkg_cross" != "" ]; then
+        apply_patches post-autogen/$pkg_name/$pkg_cross
     fi
 }
 
@@ -57,14 +79,6 @@ pkg_make_install() {
 
 pkg_none() {
     echo "- no action"
-}
-
-apply_patches() {
-    if [ -d ../../../build/patch/$1 ]; then
-        for diff in `find ../../../build/patch/$1 -type f`; do
-            git apply -v $diff
-        done
-    fi
 }
 
 set -e
@@ -97,17 +111,9 @@ if [ "$pkg_repository" != "" ]; then
         fi
     fi
 fi
-apply_patches pre-autogen/$pkg_name/common
-if [ "$pkg_cross" != "" ]; then
-    apply_patches pre-autogen/$pkg_name/$pkg_cross
-fi
-pkg_autogen
-apply_patches post-autogen/$pkg_name/common
-if [ "$pkg_cross" != "" ]; then
-    apply_patches post-autogen/$pkg_name/$pkg_cross
-fi
+
 if [ -z "$pkg_steps" ]; then
-    pkg_steps="configure make make_install"
+    pkg_steps="patch_pre_autogen autogen patch_post_autogen configure make make_install"
 fi
 for step in $pkg_steps; do
     echo "- - -"
