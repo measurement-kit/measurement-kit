@@ -11,10 +11,11 @@ Override default behavior by setting these environment variables:
   - pkg_clone_flags: extra flags for 'git clone' (e.g. '--recursive')
   - pkg_configure_flags: extra flags for './configure' (if any)
   - pkg_cmake_flags: extra flags for 'cmake .' (if CMakeLists.txt exists)
+  - pkg_make_check_rule: rule to run tests (default: not set, no tests are run)
   - pkg_make_flags: extra flags for 'make' (e.g. 'V=0')
   - pkg_make_install_flags: extra flags for 'make install' (e.g. DESTDIR=/opt)
   - pkg_prefix: prefix where to install (e.g. '/usr/local')
-  - pkg_steps: steps to execute (default is: 'configure make make_install')
+  - pkg_steps: steps to execute (default is: 'patch_pre_autogen autogen patch_post_autogen configure make make_check make_install')
   - pkg_sudo: optional comand to execute 'make install' with (e.g. sudo)
 
 Examples:
@@ -72,6 +73,20 @@ pkg_make() {
     make $pkg_make_flags
 }
 
+pkg_make_check() {
+    if [ "$pkg_make_check_rule" != "" ]; then
+        echo "- make $pkg_make_flags $pkg_make_check_rule"
+        if ! make $pkg_make_flags $pkg_make_check_rule; then
+            if [ -f ./test-suite.log ]; then
+                cat ./test-suite.log
+            fi
+            exit 1
+        fi
+    else
+        echo 'not running checks because $pkg_make_check_rule is not set'
+    fi
+}
+
 pkg_make_install() {
     echo "- $pkg_sudo make $pkg_make_install_flags install"
     $pkg_sudo make $pkg_make_install_flags install
@@ -113,12 +128,11 @@ if [ "$pkg_repository" != "" ]; then
 fi
 
 if [ -z "$pkg_steps" ]; then
-    pkg_steps="patch_pre_autogen autogen patch_post_autogen configure make make_install"
+    pkg_steps="patch_pre_autogen autogen patch_post_autogen configure make make_check make_install"
 fi
 for step in $pkg_steps; do
-    echo "- - -"
     echo ""
-    echo "# $step"
+    echo "./build/dependency: $step"
     echo ""
     pkg_$step
 done
