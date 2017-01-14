@@ -1,9 +1,11 @@
 #!/bin/sh
 set -e
 
-if [ "$COVERAGE" = "--enable-coverage" ]; then
-    pip install --user cpp-coveralls;
+if [ "$DOCKER_IMAGE" != "" -a "$DOCKER_SPEC" != "" ]; then
+    ./build/docker/script/setup $DOCKER_IMAGE $DOCKER_SPEC
+    exit 0
 fi
+
 ./autogen.sh
 
 export CXX="$CXX_NAME" CC="$CC_NAME";
@@ -33,12 +35,4 @@ if ! make $pkg_make_flags check-am$VALGRIND; then
         cat test-suite.log;
     fi
     exit 1
-fi
-
-# Silence gcov standard output since it produces way too much output
-if [ "$COVERAGE" = "--enable-coverage" ]; then
-    coveralls --gcov /usr/bin/gcov-6 --exclude src/libmeasurement_kit/ext      \
-        -b .  --exclude example --exclude third_party                          \
-        --exclude include/measurement_kit/ext                                  \
-        --exclude src/libmeasurement_kit/cmdline > /dev/null;
 fi

@@ -1,12 +1,10 @@
 #!/bin/sh
 set -e
 
-export CC="gcc"
-export CFLAGS="$CFLAGS --coverage -g -O0"
-export CPP="gcc -E"
-export CXXFLAGS="$CXXFLAGS --coverage -g -O0"
-export CXX="g++"
-export LDFLAGS="$LDFLAGS --coverage"
+configure_flags="--enable-coverage"
+
+export CFLAGS="$CFLAGS -g -O0"
+export CXXFLAGS="$CXXFLAGS -g -O0"
 
 debian_deps="$debian_deps autoconf"
 debian_deps="$debian_deps automake"
@@ -29,11 +27,12 @@ subr_depend() {
 }
 
 subr_finalize() {
-    /root/.local/bin/coveralls                                             \
+    $HOME/.local/bin/coveralls                                             \
                                --gcov-options '\-lp'                       \
                                --build-root .                              \
                                --exclude include/measurement_kit/ext       \
-                               --exclude src/ext                           \
+                               --exclude src/libmeasurement_kit/ext        \
+                               --exclude src/measurement_kit               \
                                --exclude example                           \
                                --exclude third_party                       \
       > /dev/null;
