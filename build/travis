@@ -2,7 +2,12 @@
 set -e
 
 if [ "$DOCKER_SPEC" != "" ]; then
-    ./build/docker/$DOCKER_SPEC
+    if echo "$DOCKER_BRANCHES_ONLY" | grep -q "$TRAVIS_BRANCH"; then
+        ./build/docker/$DOCKER_SPEC
+    else
+        echo "Branch $TRAVIS_BRANCH is not in '$DOCKER_BRANCHES_ONLY'"
+        echo "Therefore we are not building this branch"
+    fi
     exit 0
 fi
 
