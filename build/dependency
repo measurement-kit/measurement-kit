@@ -11,10 +11,11 @@ Override default behavior by setting these environment variables:
   - pkg_clone_flags: extra flags for 'git clone' (e.g. '--recursive')
   - pkg_configure_flags: extra flags for './configure' (if any)
   - pkg_cmake_flags: extra flags for 'cmake .' (if CMakeLists.txt exists)
+  - pkg_make_check_rule: rule to run tests (default: not set, no tests are run)
   - pkg_make_flags: extra flags for 'make' (e.g. 'V=0')
   - pkg_make_install_flags: extra flags for 'make install' (e.g. DESTDIR=/opt)
   - pkg_prefix: prefix where to install (e.g. '/usr/local')
-  - pkg_steps: steps to execute (default is: 'depend configure make make_install')
+  - pkg_steps: steps to execute (default is: 'patch_pre_autogen autogen patch_post_autogen configure make make_check make_install')
   - pkg_sudo: optional comand to execute 'make install' with (e.g. sudo)
 
 Examples:
@@ -25,15 +26,19 @@ Examples:
 EOF
 }
 
-pkg_chdir() {
-    #
-    # Note: we must have three layers of directory because old autotools
-    # misbehave when we are using only two layers and specifically they try
-    # to use measurement-kit's autotools rather than their own.
-    #
-    # See measurement-kit/measurement-kit#1017 build history for more.
-    #
-    cd ./build/third_party/$pkg_name
+apply_patches() {
+    if [ -d ../../../build/patch/$1 ]; then
+        for diff in `find ../../../build/patch/$1 -type f`; do
+            git apply -v $diff
+        done
+    fi
+}
+
+pkg_patch_pre_autogen() {
+    apply_patches pre-autogen/$pkg_name/common
+    if [ "$pkg_cross" != "" ]; then
+        apply_patches pre-autogen/$pkg_name/$pkg_cross
+    fi
 }
 
 pkg_autogen() {
@@ -46,24 +51,11 @@ pkg_autogen() {
     fi
 }
 
-pkg_depend() {
-    for dep in `echo $pkg_deps`; do
-        if [ "$pkg_cross" != "" -a "$pkg_arch" != "" ]; then
-            dep="$pkg_cross-$pkg_arch-$dep"
-        fi
-        if [ ! -f $pkg_rootdir/$dep.tgz ]; then
-            baseurl=https://github.com/measurement-kit/dependencies
-            wget -O $pkg_rootdir/$dep.tgz                                      \
-                $baseurl/releases/download/2016-12-19/$dep.tgz
-            wget -O $pkg_rootdir/$dep.tgz.asc                                  \
-                $baseurl/releases/download/2016-12-19/$dep.tgz.asc
-            gpg2 --verify $pkg_rootdir/$dep.tgz.asc
-            install -d $pkg_prefix
-            tar -C $pkg_prefix -xzf $pkg_rootdir/$dep.tgz
-        else
-            echo "It seems $dep has already been built and installed"
-        fi
-    done
+pkg_patch_post_autogen() {
+    apply_patches post-autogen/$pkg_name/common
+    if [ "$pkg_cross" != "" ]; then
+        apply_patches post-autogen/$pkg_name/$pkg_cross
+    fi
 }
 
 pkg_configure() {
@@ -79,6 +71,20 @@ pkg_configure() {
 pkg_make() {
     echo "- make $pkg_make_flags"
     make $pkg_make_flags
+}
+
+pkg_make_check() {
+    if [ "$pkg_make_check_rule" != "" ]; then
+        echo "- make $pkg_make_flags $pkg_make_check_rule"
+        if ! make $pkg_make_flags $pkg_make_check_rule; then
+            if [ -f ./test-suite.log ]; then
+                cat ./test-suite.log
+            fi
+            exit 1
+        fi
+    else
+        echo 'not running checks because $pkg_make_check_rule is not set'
+    fi
 }
 
 pkg_make_install() {
@@ -118,14 +124,6 @@ pkg_make_install() {
     $pkg_sudo tar -C $pkg_prefix -xzf $pkg_rootdir/$pkg_archive.tgz
 }
 
-apply_patches() {
-    if [ -d ../../../build/patch/$1 ]; then
-        for diff in `find ../../../build/patch/$1 -type f`; do
-            git apply -v $diff
-        done
-    fi
-}
-
 set -e
 if [ $# -ne 1 ]; then
     print_usage
@@ -140,12 +138,11 @@ cd $pkg_rootdir
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
 if [ "$pkg_repository" != "" ]; then
-    rm -rf ./build/third_party/$pkg_name
+    rm -rf third_party/src/$pkg_name
     git clone $pkg_clone_flags --single-branch --depth 2                       \
-        --branch $pkg_branch_or_tag $pkg_repository                            \
-          ./build/third_party/$pkg_name
-    cd ./build/third_party/$pkg_name
-    if [ ! -z "$pkg_tip" ]; then
+        --branch $pkg_branch_or_tag $pkg_repository third_party/src/$pkg_name
+    cd third_party/src/$pkg_name
+    if [ "$pkg_tip" != "" ]; then
         if [ "`git rev-parse HEAD`" != "$pkg_tip" ]; then
             # Mainly because this allows us to know which commit was the
             # tip of the branch when we compiled a dependency
@@ -153,24 +150,15 @@ if [ "$pkg_repository" != "" ]; then
             exit 1
         fi
     fi
-    cd ../../../ # back to where we were
 fi
-pkg_chdir
-apply_patches pre-autogen/$pkg_name/common
-if [ "$pkg_cross" != "" ]; then
-    apply_patches pre-autogen/$pkg_name/$pkg_cross
-fi
-pkg_autogen
-apply_patches post-autogen/$pkg_name/common
-if [ "$pkg_cross" != "" ]; then
-    apply_patches post-autogen/$pkg_name/$pkg_cross
-fi
+
 if [ -z "$pkg_steps" ]; then
-    pkg_steps="depend configure make make_install"
+    pkg_steps="patch_pre_autogen autogen patch_post_autogen configure make make_check make_install"
 fi
 for step in $pkg_steps; do
     echo ""
-    echo "* step: $step $1"
-    pkg_$step $1
+    echo "./build/dependency: $step"
+    echo ""
+    pkg_$step
 done
 echo ""

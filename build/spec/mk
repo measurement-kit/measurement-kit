@@ -1,12 +1,1 @@
 pkg_name=measurement-kit
-pkg_archive=${pkg_name}-0.4.0-alpha.1-3
-pkg_deps="geoip-1.6.9-3 libressl-2.4.4-3 libevent-7dedc077-3"
-pkg_autogen_sh_flags="-n"
-pkg_configure_flags="--with-geoip=$pkg_prefix --with-openssl=$pkg_prefix --with-libevent=$pkg_prefix --disable-examples --disable-shared --disable-binaries $pkg_configure_flags"
-
-pkg_chdir() {
-    # XXX abusing of `chdir` step to cleanup the toplevel directory
-    if [ -f Makefile ]; then
-        make distclean
-    fi
-}

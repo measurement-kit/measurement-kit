@@ -41,6 +41,7 @@
 /test-driver
 /test/common/continuation
 /test/common/delegate
+/test/common/encoding
 /test/common/error
 /test/common/error_or
 /test/common/fmap

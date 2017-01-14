@@ -1,3 +1,8 @@
+# MeasurementKit 0.4.0-beta [2017-01-13]
+
+- Feature: recognize utf8 (#1062)
+- Support for country-specific test lists (#1030)
+
 # MeasurementKit 0.4.0-alpha.3 [2017-01-06]
 
 - nettests: randomize input (#1029)

@@ -181,7 +181,7 @@ TEST_CASE("Make sure that 'randomize_input' works") {
 
         nettests::Runnable test;
         test.reactor = Reactor::make();
-        test.input_filepath = "./test/fixtures/hosts.txt";
+        test.input_filepaths.push_back("./test/fixtures/hosts.txt");
         test.options["randomize_input"] = shuffle;
         test.needs_input = true;
         std::vector<std::string> result;

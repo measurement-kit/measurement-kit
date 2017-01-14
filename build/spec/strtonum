@@ -7,7 +7,7 @@ pkg_branch_or_tag=v2.4.4
 pkg_steps=install
 
 pkg_install() {
-    echo "Installing strtonum.c $pkg_tag in MK sources"
+    echo "Installing strtonum.c $pkg_branch_or_tag in MK sources"
     cp openbsd/src/lib/libc/stdlib/strtonum.c \
         ../../../src/libmeasurement_kit/portable
 }

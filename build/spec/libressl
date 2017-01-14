@@ -1,5 +1,4 @@
 v=2.4.4
 pkg_name=libressl
 pkg_repository=https://github.com/libressl-portable/portable.git
-pkg_branch_or_tag=v${v}
-pkg_archive=libressl-${v}-3
+pkg_branch_or_tag=v2.4.4

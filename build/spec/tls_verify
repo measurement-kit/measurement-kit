@@ -7,6 +7,6 @@ pkg_branch_or_tag=v2.4.4
 pkg_steps=install
 
 pkg_install() {
-    echo "Installing tls/tls_verify.c $pkg_tag in MK sources"
+    echo "Installing tls/tls_verify.c $pkg_branch_or_tag in MK sources"
     cp tls/tls_verify.c ../../../src/libmeasurement_kit/ext
 }
