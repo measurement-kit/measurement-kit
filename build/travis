@@ -23,7 +23,7 @@ export LD_RUN_PATH=$TRAVIS_BUILD_DIR/builtin
 # Note: --with-ca-bundle="" is to force using libressl's builtin CA
 # rather than the system one (the former is the configuration we use
 # on mobile thus we are interested to test that here on travis)
-./configure $pkg_configure_flags --with-geoip=builtin --with-ca-bundle=""         \
+./configure $pkg_configure_flags --with-geoip=builtin --with-ca-bundle=""      \
     --with-openssl=builtin --with-libevent=builtin $COVERAGE
 
 make $pkg_make_flags
@@ -37,8 +37,8 @@ fi
 
 # Silence gcov standard output since it produces way too much output
 if [ "$COVERAGE" = "--enable-coverage" ]; then
-    coveralls --gcov /usr/bin/gcov-6 --exclude src/libmeasurement_kit/ext
-        -b .  --exclude example --exclude third_party
-        --exclude include/measurement_kit/ext
+    coveralls --gcov /usr/bin/gcov-6 --exclude src/libmeasurement_kit/ext      \
+        -b .  --exclude example --exclude third_party                          \
+        --exclude include/measurement_kit/ext                                  \
         --exclude src/libmeasurement_kit/cmdline > /dev/null;
 fi
