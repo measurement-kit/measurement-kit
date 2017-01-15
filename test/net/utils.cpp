@@ -87,11 +87,7 @@ TEST_CASE("parse_endpoint works for IPv6") {
     SECTION("With scope, without the port and without parentheses") {
         /*
          * Test disabled for other platforms. It seems I cannot produce
-         * a link-scope address for Linux good in general. I tried to do
-         * that for about half an hour then I recalled that I actually
-         * do not care for or like IPv6 and then perhaps people that do
-         * care about all that complexity will step in and submit a diff
-         * for this test case to also work with Linux.
+         * a link-scope address for Linux that works here (why!?).
          *
          * The specific problem is that, for the test to work, we need
          * to convince the system inet_pton() that the input address is
