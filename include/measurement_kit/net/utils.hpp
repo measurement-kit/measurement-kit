@@ -18,7 +18,7 @@ bool is_ipv4_addr(std::string s);
 bool is_ipv6_addr(std::string s);
 bool is_ip_addr(std::string s);
 
-ErrorOr<Endpoint> parse_endpoint(std::string epnt, uint16_t);
+ErrorOr<Endpoint> parse_endpoint(std::string s, uint16_t def_port);
 std::string serialize_endpoint(Endpoint);
 
 } // namespace net
