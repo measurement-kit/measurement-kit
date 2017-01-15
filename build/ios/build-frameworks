@@ -17,26 +17,26 @@ EXTLIBRARIES="libevent libevent_pthreads libevent_openssl libcrypto libssl libGe
 
     # Copying x86 headers. This has no implications because measurement-kit
     # uses no machine-dependent headers.
-    cp -Rp tmp/iPhoneSimulator/i386/include/measurement_kit \
+    cp -Rp tmp/iphonesimulator/i386/include/measurement_kit \
         Frameworks/measurement_kit.framework/Headers
 
     # Lipo external libraries
     for lib in $EXTLIBRARIES; do 
         lipo -create -output Frameworks/$lib.framework/$lib \
-          tmp/iPhoneOS/arm64/lib/$lib.a \
-          tmp/iPhoneOS/armv7s/lib/$lib.a \
-          tmp/iPhoneOS/armv7/lib/$lib.a \
-          tmp/iPhoneSimulator/i386/lib/$lib.a \
-          tmp/iPhoneSimulator/x86_64/lib/$lib.a
+          tmp/iphoneos/arm64/lib/$lib.a \
+          tmp/iphoneos/armv7s/lib/$lib.a \
+          tmp/iphoneos/armv7/lib/$lib.a \
+          tmp/iphonesimulator/i386/lib/$lib.a \
+          tmp/iphonesimulator/x86_64/lib/$lib.a
     done
     
     # Lipo measurement-kit library 
     lipo -create -output Frameworks/measurement_kit.framework/measurement_kit \
-      tmp/iPhoneOS/arm64/lib/libmeasurement_kit.a \
-      tmp/iPhoneOS/armv7s/lib/libmeasurement_kit.a \
-      tmp/iPhoneOS/armv7/lib/libmeasurement_kit.a \
-      tmp/iPhoneSimulator/i386/lib/libmeasurement_kit.a \
-      tmp/iPhoneSimulator/x86_64/lib/libmeasurement_kit.a
+      tmp/iphoneos/arm64/lib/libmeasurement_kit.a \
+      tmp/iphoneos/armv7s/lib/libmeasurement_kit.a \
+      tmp/iphoneos/armv7/lib/libmeasurement_kit.a \
+      tmp/iphonesimulator/i386/lib/libmeasurement_kit.a \
+      tmp/iphonesimulator/x86_64/lib/libmeasurement_kit.a
 
     # Create fake header to make CocoaPod happy
     for lib in $EXTLIBRARIES; do
