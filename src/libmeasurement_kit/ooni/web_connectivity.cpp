@@ -483,7 +483,7 @@ static void experiment_dns_query(
     Callback<Error, std::vector<std::string>> callback, Settings options,
     Var<Reactor> reactor, Var<Logger> logger) {
 
-    if (is_ip_addr(hostname)) {
+    if (net::is_ip_addr(hostname)) {
         // Don't perform DNS resolutions if it's an IP address
         std::vector<std::string> addresses;
         addresses.push_back(hostname);

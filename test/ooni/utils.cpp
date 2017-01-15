@@ -107,18 +107,6 @@ TEST_CASE("IpLocation::resolve_asn() deals with nonexistent database") {
              == mk::ooni::GeoipDatabaseOpenError()));
 }
 
-TEST_CASE("is_ip_addr works on ipv4") {
-    REQUIRE(mk::ooni::is_ip_addr("127.0.0.1") == true);
-}
-
-TEST_CASE("is_ip_addr works on ipv6") {
-    REQUIRE(mk::ooni::is_ip_addr("::42") == true);
-}
-
-TEST_CASE("is_ip_addr works on hostnames") {
-    REQUIRE(mk::ooni::is_ip_addr("example.com") == false);
-}
-
 TEST_CASE("is_private_ipv4_addr works") {
     REQUIRE(mk::ooni::is_private_ipv4_addr("127.0.0.1") == true);
 }
