@@ -55,7 +55,7 @@ a string. As such, it is the dual operation of `parse_endpoint`.
 # BUGS
 
 In theory, `parse_endpoint` should correctly deal with link scope
-addresses such as `[fe80::1%lo0]:80`. Howerver, it was only possible
+addresses such as `[fe80::1%lo0]:80`. However, it was only possible
 to test this functionality with macOS, therefore it MAY NOT work
 correctly on Linux systems.
 
