@@ -54,9 +54,7 @@ class MockConnection : public Emitter, public NonCopyable, public NonMovable {
 };
 
 void MockConnection::close(Callback<> cb) {
-    if (isclosed) {
-        throw std::runtime_error("already closed");
-    }
+    REQUIRE(!isclosed);
     isclosed = true;
     close_cb = cb;
     reactor->call_soon([=]() {
