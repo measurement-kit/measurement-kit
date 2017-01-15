@@ -7,6 +7,157 @@
 
 #include "../src/libmeasurement_kit/net/utils.hpp"
 
+TEST_CASE("is_ipv4_addr works") {
+    SECTION("on ipv4") {
+        REQUIRE(mk::net::is_ipv4_addr("127.0.0.1") == true);
+    }
+    SECTION("on ipv6") {
+        REQUIRE(mk::net::is_ipv4_addr("::42") == false);
+    }
+    SECTION("on hostnames") {
+        REQUIRE(mk::net::is_ipv4_addr("example.com") == false);
+    }
+}
+
+TEST_CASE("is_ipv6_addr works") {
+    SECTION("on ipv4") {
+        REQUIRE(mk::net::is_ipv6_addr("127.0.0.1") == false);
+    }
+    SECTION("on ipv6") {
+        REQUIRE(mk::net::is_ipv6_addr("::42") == true);
+    }
+    SECTION("on hostnames") {
+        REQUIRE(mk::net::is_ipv6_addr("example.com") == false);
+    }
+}
+
+TEST_CASE("is_ip_addr works") {
+    SECTION("on ipv4") {
+        REQUIRE(mk::net::is_ip_addr("127.0.0.1") == true);
+    }
+    SECTION("on ipv6") {
+        REQUIRE(mk::net::is_ip_addr("::42") == true);
+    }
+    SECTION("on hostnames") {
+        REQUIRE(mk::net::is_ip_addr("example.com") == false);
+    }
+}
+
+TEST_CASE("parse_endpoint works for IPv4") {
+    SECTION("With explicit address and port") {
+        auto epnt = mk::net::parse_endpoint("130.192.91.211:80", 53);
+        REQUIRE(epnt->hostname == "130.192.91.211");
+        REQUIRE(epnt->port == 80);
+    }
+    SECTION("Without the port") {
+        auto epnt = mk::net::parse_endpoint("130.192.91.211", 53);
+        REQUIRE(epnt->hostname == "130.192.91.211");
+        REQUIRE(epnt->port == 53);
+    }
+    SECTION("If the hostname is not specified") {
+        auto epnt = mk::net::parse_endpoint(":80", 53);
+        REQUIRE(!epnt);
+        REQUIRE(epnt.as_error() == mk::ValueError());
+    }
+}
+
+TEST_CASE("parse_endpoint works for IPv6") {
+
+    SECTION("With explicit address and port") {
+        auto epnt = mk::net::parse_endpoint("[::1]:80", 53);
+        REQUIRE(epnt->hostname == "::1");
+        REQUIRE(epnt->port == 80);
+    }
+    SECTION("Without the port and without parentheses") {
+        auto epnt = mk::net::parse_endpoint("::1", 53);
+        REQUIRE(epnt->hostname == "::1");
+        REQUIRE(epnt->port == 53);
+    }
+    SECTION("Without the port and with parentheses") {
+        auto epnt = mk::net::parse_endpoint("[::1]", 53);
+        REQUIRE(epnt->hostname == "::1");
+        REQUIRE(epnt->port == 53);
+    }
+
+    SECTION("With explicit address and port and scope") {
+        auto epnt = mk::net::parse_endpoint(R"([::1%en0]:80)", 53);
+        REQUIRE(epnt->hostname == R"(::1%en0)");
+        REQUIRE(epnt->port == 80);
+    }
+    SECTION("With scope, without the port and without parentheses") {
+        auto epnt = mk::net::parse_endpoint(R"(::1%en0)", 53);
+        REQUIRE(epnt->hostname == R"(::1%en0)");
+        REQUIRE(epnt->port == 53);
+    }
+    SECTION("With scope, without the port and with parentheses") {
+        auto epnt = mk::net::parse_endpoint(R"([::1%en0])", 53);
+        REQUIRE(epnt->hostname == R"(::1%en0)");
+        REQUIRE(epnt->port == 53);
+    }
+
+    SECTION("If the hostname is not specified") {
+        auto epnt = mk::net::parse_endpoint(":80", 53);
+        REQUIRE(!epnt);
+        REQUIRE(epnt.as_error() == mk::ValueError());
+    }
+    SECTION("If the hostname is not specified with parentheses") {
+        auto epnt = mk::net::parse_endpoint("[]:80", 53);
+        REQUIRE(!epnt);
+        REQUIRE(epnt.as_error() == mk::ValueError());
+    }
+}
+
+TEST_CASE("parse_endpoint works for domain") {
+    SECTION("With explicit address and port") {
+        auto epnt = mk::net::parse_endpoint("www.google.com:80", 53);
+        REQUIRE(epnt->hostname == "www.google.com");
+        REQUIRE(epnt->port == 80);
+    }
+    SECTION("Without the port") {
+        auto epnt = mk::net::parse_endpoint("www.google.com", 53);
+        REQUIRE(epnt->hostname == "www.google.com");
+        REQUIRE(epnt->port == 53);
+    }
+    SECTION("If the hostname is not specified") {
+        auto epnt = mk::net::parse_endpoint(":80", 53);
+        REQUIRE(!epnt);
+        REQUIRE(epnt.as_error() == mk::ValueError());
+    }
+}
+
+TEST_CASE("Serialize endpoint works correctly") {
+    SECTION("For IPv4") {
+        mk::net::Endpoint epnt;
+        epnt.hostname = "130.192.91.211";
+        epnt.port = 80;
+        std::string s = mk::net::serialize_endpoint(epnt);
+        REQUIRE(s == "130.192.91.211:80");
+        auto maybe_epnt = mk::net::parse_endpoint(s, 22);
+        REQUIRE(maybe_epnt->hostname == epnt.hostname);
+        REQUIRE(maybe_epnt->port == epnt.port);
+    }
+    SECTION("For IPv6") {
+        mk::net::Endpoint epnt;
+        epnt.hostname = "::1";
+        epnt.port = 80;
+        std::string s = mk::net::serialize_endpoint(epnt);
+        REQUIRE(s == "[::1]:80");
+        auto maybe_epnt = mk::net::parse_endpoint(s, 22);
+        REQUIRE(maybe_epnt->hostname == epnt.hostname);
+        REQUIRE(maybe_epnt->port == epnt.port);
+    }
+    SECTION("For domain") {
+        mk::net::Endpoint epnt;
+        epnt.hostname = "www.google.com";
+        epnt.port = 80;
+        std::string s = mk::net::serialize_endpoint(epnt);
+        REQUIRE(s == "www.google.com:80");
+        auto maybe_epnt = mk::net::parse_endpoint(s, 22);
+        REQUIRE(maybe_epnt->hostname == epnt.hostname);
+        REQUIRE(maybe_epnt->port == epnt.port);
+    }
+}
+
 TEST_CASE("IPv4 addresses are correctly reversed") {
     REQUIRE(mk::net::unreverse_ipv4("211.91.192.130.in-addr.arpa") ==
             "130.192.91.211");
