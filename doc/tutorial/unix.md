@@ -254,7 +254,12 @@ make install
 ```
 
 **Note** If you compiled dependencies using Measurement Kit own cross
-compile tool, note that this will not install them on your system.
+compile tool, this will not install them. In such case you need to locate
+the headers and libraries under `./builtin` and copy them manually under
+`/usr/local/include` and `/usr/local/lib` (or any other prefix you have
+selected). Beware not to copy `*.la` files in this process, because this
+may prevent Measurement Kit from working correctly, as they hardcode
+inside them the `./builtin` prefix, not `/usr/local`.
 
 On Linux you may need to update the dynamic linker after you have installed
 to `/usr/local`, running the following command as root:
