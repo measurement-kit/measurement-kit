@@ -144,9 +144,9 @@ We routinely compile and test Measurement Kit on:
 
 - Ubuntu 16.10 Yakkety Yak
 
-- macOS 10.12 sierra
+- Void Linux
 
-- Void Linux current
+- macOS 10.12 sierra
 
 For cross compiling the library on mobile devices, as of Measurement
 Kit v0.4.0 we use:
@@ -172,8 +172,8 @@ yourself](http://brew.sh/).
 
 In addition to those two options will also tell you how you could
 take advantage of our cross build system we use for mobile devices
-to compile the dependency yourself (not recommended, if possible
-rely on packages installed from your Unix distribution).
+to compile the dependency yourself (not recommended, better
+relying on your distribution package manager).
 
 You can pass options to configure to change its behavior. To see all
 available options, run `./configure --help`. These are some of the
