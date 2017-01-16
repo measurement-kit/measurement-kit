@@ -250,19 +250,16 @@ As regards `--prefix`, passing to configure `--prefix=/foo` means that:
 ### make
 
 If configure succeeds, Measurement Kit is now configured to build
-on your system. To compile, run:
+on your system. To compile, make sure make is installed, and then run:
 
 ```
-make V=0
+make
 ```
-
-The `V=0` enables the silent build process, which is more readable than
-the standard super-verbose build process.
 
 Then, you may want to run Measurement Kit tests:
 
 ```
-make check V=0
+make check
 ```
 
 If all tests pass, Measurement Kit should work well on your system.
@@ -277,14 +274,6 @@ to become *root* and type:
 make install
 ```
 
-**Note** If you compiled dependencies using Measurement Kit own cross
-compile tool, this will not install them. In such case you need to locate
-the headers and libraries under `./builtin` and copy them manually under
-`/usr/local/include` and `/usr/local/lib` (or any other prefix you have
-selected). Beware not to copy `*.la` files in this process, because this
-may prevent Measurement Kit from working correctly, as they hardcode
-inside them the `./builtin` prefix, not `/usr/local`.
-
 On Linux you may also need to update the dynamic linker with:
 
 ```
@@ -292,6 +281,15 @@ ldconfig
 ```
 
 Also this command must be run as root.
+
+**Note** If you compiled dependencies using Measurement Kit own
+cross compile tool, `make install` will not install them. In such
+case you need to locate the headers and libraries under `./builtin`
+and copy them manually under `/usr/local/include` and `/usr/local/lib`
+(or any other prefix you have selected). Beware not to copy `*.la`
+files in this process, because this may prevent Measurement Kit
+from working correctly, as they hardcode inside them the `./builtin`
+prefix, not `/usr/local`.
 
 ## Using Measurement Kit
 
@@ -303,25 +301,13 @@ you to study the [examples using such API](../../example/nettests).
 These examples are compiled as part of running `make`, unless you
 have instructed configure otherwise.
 
-To compile an example manually, copy its source code somewhere in the
-file system as, say, `main.cpp`, and then run:
+Anyway, each example should also include, as a comment, the correct
+command line to compile it on a typical Unix system.
+
+Remember that, if you have installed Measurement Kit in a non standard
+place with `./configure --prefix=$PREFIX`, you need to pass to the compiler
+also these flags:
 
 ```
-c++ -Wall -Wextra -std=c++11 -o main -lmeasurement_kit main.cpp
-```
-
-The above command may fail with missing headers or libraries if you
-have installed Measurement Kit in a location not automatically searched
-by your compiler. Assuming, you passed `--prefix=/foo` to configure,
-the corresponding command to compile will be:
-
-```
-c++ -Wall -Wextra -std=c++11 -I/foo/include -L/foo/lib -o main \
-		-lmeasurement_kit main.cpp
-```
-
-Then, you can execute the compiled binary using:
-
-```
-./main
+-I$PREFIX/include -L$PREFIX/lib
 ```
