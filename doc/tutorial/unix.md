@@ -54,9 +54,15 @@ This script will perform the following operations:
    https://en.wikipedia.org/wiki/GNU_build_system) used by
    Measurement Kit
 
-For this step to succeed, you certainly need to have installed the
-usual, standard Unix tools, wget (for downloading GeoIP), gzip (for
-uncompressing GeoIP), autoconf, automake and libtool.
+For this step to succeed, you certainly need to have installed:
+
+- the usual, standard Unix tools (grep, sed, etc.)
+
+- wget (for downloading GeoIP)
+
+- gzip (for uncompressing GeoIP)
+
+- autoconf, automake, and libtool (for `autoreconf -i`)
 
 ### Downloading the sources archive
 
