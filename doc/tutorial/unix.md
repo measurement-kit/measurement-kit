@@ -51,8 +51,8 @@ a `git clone`, for which you should follow the above instructions.
 
 Once you have downloaded the sources archive, you should verify its
 digital signature, extract the sources from it, and optionally
-download the [GeoIP](https://www.maxmind.com) databases. These steps
-are described below.
+download the [GeoIP](https://www.maxmind.com) databases, as described
+below.
 
 #### Verifying the sources archive
 
