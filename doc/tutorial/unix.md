@@ -8,9 +8,6 @@ on Unix. To start off, you need to get the sources.
 To this end, you can either clone the git repository or go straight
 into the download page and grab the latest sources.
 
-You can either clone the sources using `git` or download a tarball
-from MeasurementKit's github releases page.
-
 ### Cloning the git repository
 
 To clone the repository using git, type:
