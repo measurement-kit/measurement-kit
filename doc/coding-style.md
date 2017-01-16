@@ -137,12 +137,9 @@ delayed call object. Since this is something to be done in any case, it would
 probably be better to let the library do that.
 
 So, we concluded that the most abstract approach (and the simpler one for
-a library user) is to just expose the `call_later` function.
-
-Furthermore, this code organization gives us additional flexibility in that
-the closure can be both implemented using an object (as described above)
-or using the `[=]` operator of a lamba. In the latter case the code could
-probably also be organized as follows:
+a library user) is to just expose the `call_later` function. In fact, being
+this approach abstract, we can decide to implement it also in the
+following, more compact way:
 
 ```C++
 struct CallLater {
