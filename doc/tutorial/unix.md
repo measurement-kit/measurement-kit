@@ -94,8 +94,8 @@ which you should now enter.
 
 #### Downloading GeoIP databases
 
-If you plan to run regress tests, at this point you SHOULD also download
-the [GeoIP](https://www.maxmind.com) databases that they use, with:
+If you plan to run regress tests, at this point you should also download
+the [GeoIP](https://www.maxmind.com) databases with:
 
 ```
 ./build/get-geoip
