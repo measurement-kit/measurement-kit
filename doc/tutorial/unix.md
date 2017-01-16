@@ -183,7 +183,7 @@ most commonly used options:
 - `--disable-examples`: do not compile examples
 
 - `--disable-binaries`: only build `libmeasurement_kit` and do
-   not build the `measurement_kit` command line executable
+   not build the `measurement_kit` executable
 
 - `--disable-integration-tests`: only build unit tests and do not
    build integration tests
