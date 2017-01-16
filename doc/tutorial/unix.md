@@ -199,30 +199,23 @@ most commonly used options:
 
 - `--prefix=PATH`: path where to install Measurement Kit
 
-Note that, usually, you do not need to tell configure where dependencies
-are installed: typically they are installed in canonical places. Yet,
-in case you need to specify a `PATH` where a dependency is installed, such
-`PATH` should be the directory that contains the `include` and `lib`
-directories in turn containing the headers and the libraries of a specific
-dependency. For example, given the following filesystem layout:
+On Linux, you do not need to tell configure where dependencies are
+installed: typically they are installed in canonical places.
+
+On macOS, in my experience you should at least tell configure where
+libevent is installed, i.e.:
 
 ```
-/usr/local/libevent/2.0.22/include/event.h
-/usr/local/libevent/2.0.22/lib/libevent.a
+./configure --with-libevent=/usr/local
 ```
 
-you want to run:
+Note that this tells configure that headers are to be found under
+`/usr/local/include` and libraries under `/usr/local/lib`.
 
-```
-./configure --with-libevent=/usr/local/libevent/2.0.22
-```
+Also, the configure script will check if your are using brew and search
+for an installed openssl even if that is not available under `/usr/local`.
 
-Also, note that, if you are using macOS and brew, the configure script
-will figure that out and will automatically search for a suitable version
-of openssl, even if that is not available at the canonical location
-(i.e. `/usr/local`).
-
-Similarly, passing to configure `--prefix=/foo` means that:
+As regards `--prefix`, passing to configure `--prefix=/foo` means that:
 
 - binaries will be installed under `/foo/bin`
 
