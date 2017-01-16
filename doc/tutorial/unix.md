@@ -169,10 +169,10 @@ command (for Debian-like systems) and `brew install` command (for
 macOS; note that `brew` in not installed by default on macOS, and
 you need to [install it manually](http://brew.sh/)).
 
-In addition to those two options will also tell you how you could
-take advantage of our cross build system we use for mobile devices
-to compile the dependency yourself (not recommended, better
-relying on your distribution package manager).
+In addition to those two options, it will also tell you how you
+could take advantage of our cross build system for mobile devices
+to compile the dependency yourself (not recommended, better relying
+on your distribution package manager).
 
 You can pass options to configure to change its behavior. To see all
 available options, run `./configure --help`. These are some of the
