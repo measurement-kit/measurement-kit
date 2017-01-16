@@ -301,7 +301,7 @@ high level API exported by the library. To this end, we suggest
 you to study the [examples using such API](../../example/nettests).
 
 These examples are compiled as part of running `make`, unless you
-have instructed configure otherwise with `--disable-examples`.
+have instructed configure otherwise.
 
 To compile an example manually, copy its source code somewhere in the
 file system as, say, `main.cpp`, and then run:
