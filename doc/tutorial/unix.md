@@ -106,9 +106,8 @@ GeoIP databases in the current working directory.
 
 ## Configure, make, make install
 
-If you followed correctly the previous instructions, you should now
-be in the top level directory of the sources and such directory
-should contain an executable script called `./configure`.
+You should now be in the top level directory of the sources and
+such directory should contain an executable script called `./configure`.
 
 The bare-bone procedure to compile and install Measurement Kit
 is the following:
