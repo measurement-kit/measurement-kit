@@ -140,10 +140,22 @@ Specifically, the configure script SHOULD check for at least for:
 - either [openssl](https://github.com/openssl/openssl) or
   (preferred) [libressl](https://github.com/libressl-portable/portable).
 
-We routinely compile and test Measurement Kit on Ubuntu 16.10 Yakkety
-Yak, macOS 10.12 sierra, and Void Linux current. For cross compiling the
-library on mobile devices, as of Measurement Kit v0.4.0 we use libevent
-2.0.22 (branch `patches-2.0`), geoip 1.6.9, and libressl 2.4.4.
+We routinely compile and test Measurement Kit on:
+
+- Ubuntu 16.10 Yakkety Yak
+
+- macOS 10.12 sierra
+
+- Void Linux current
+
+For cross compiling the library on mobile devices, as of Measurement
+Kit v0.4.0 we use:
+
+- libevent 2.0.22 (branch `patches-2.0`)
+
+- geoip 1.6.9
+
+- libressl 2.4.4
 
 To run the configure script, simply type:
 
