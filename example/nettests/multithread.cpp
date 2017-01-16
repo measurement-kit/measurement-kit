@@ -38,7 +38,6 @@ int main(void) {
     };
 
     auto run = [&]() {
-        using namespace std::chrono_literals;
         while (again) {
             std::function<void()> func;
             {
@@ -49,7 +48,7 @@ int main(void) {
                 }
             }
             if (!func) {
-                std::this_thread::sleep_for(250ms);
+                std::this_thread::sleep_for(std::chrono::milliseconds(250));
                 continue;
             }
             try {
