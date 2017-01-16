@@ -11,7 +11,8 @@
 #include <thread>
 
 /*
- * Run multi-ndt test in a single threaded app.
+ * Run multi-ndt test in a multi threaded app. This example uses more
+ * features from the `mk::nettests` namespace than the simple one.
  *
  * Compile with:
  *
@@ -70,6 +71,9 @@ int main(void) {
 
             // By default measurement-kit only prints warnings
             .set_verbosity(MK_LOG_INFO)
+
+            // Do not write on disk the results of the test
+            .set_options("no_file_report", "1")
 
             /*
              * Lambda called to notify about test progress.
