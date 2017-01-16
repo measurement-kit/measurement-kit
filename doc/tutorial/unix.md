@@ -10,7 +10,7 @@ into the download page and grab the latest sources.
 
 ### Cloning the git repository
 
-To clone the repository using git, type:
+To clone the repository using git, run:
 
 ```
 git clone https://github.com/measurement-kit/measurement-kit
