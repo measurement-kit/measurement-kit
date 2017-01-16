@@ -35,6 +35,7 @@
 /example/libevent/discard
 /example/libevent/listen
 /example/net/transport
+/example/nettests/simple
 /include.am
 /maxmind-geoip.*.dat*
 /measurement_kit
