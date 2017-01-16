@@ -319,3 +319,9 @@ the corresponding command to compile will be:
 c++ -Wall -Wextra -std=c++11 -I/foo/include -L/foo/lib -o main \
 		-lmeasurement_kit main.cpp
 ```
+
+Then, you can execute the compiled binary using:
+
+```
+./main
+```
