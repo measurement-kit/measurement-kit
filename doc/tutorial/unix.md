@@ -1,7 +1,7 @@
 # Unix tutorial
 
-This tutorial explains how to integrate Measurement Kit into your Unix
-application. To start off, you need to get the sources.
+This tutorial explains how to compile, install and use Measurement Kit
+on Unix application. To start off, you need to get the sources.
 
 ## Getting the sources
 
