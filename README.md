@@ -114,47 +114,30 @@ the `build/android` directory of this repository.
 
 ### How to build MeasurementKit on iOS
 
-To compile and use MeasurementKit for iOS, do the following on a MacOSX
-system where Xcode and its command line tools have been installed:
+Having Xcode command line tools installed, run:
 
 ```
 ./build/ios/library
 ```
 
+See the [iOS tutorial](doc/tutorial/ios.md) for more info.
+
 ### How to add MeasurementKit to an Xcode project.
 
-The CocoaPods podspec has not been submitted yet, but you can already use
-it in your project adding this line in your Podfile:
+Make sure your [Podfile](https://guides.cocoapods.org/syntax/podfile.html)
+looks like this:
 
 ```ruby
-target '<YOUR-TARGET-NAME-HERE>' do
-    pod 'measurement_kit',
-      :git => 'https://github.com/measurement-kit/measurement-kit.git'
-end
-```
-
-You can use a specific branch, e.g.:
-
-```ruby
-target '<YOUR-TARGET-NAME-HERE>' do
+target 'YourTargetNameHere' do
     pod 'measurement_kit',
       :git => 'https://github.com/measurement-kit/measurement-kit.git',
-      :branch => 'branch-name'
+      :branch => 'stable'
 end
 ```
 
-Similarly, you can use a specific tag, e.g.:
-
-```ruby
-target '<YOUR-TARGET-NAME-HERE>' do
-    pod 'measurement_kit', 
-      :git => 'https://github.com/measurement-kit/measurement-kit.git',
-      :tag => 'v0.x.y'
-end
-```
-
-Then type `pod install` and open `.xcworkspace` file (beware not to open the
-`.xcodeproj` file instead, because that alone won't compile).
+Run `pod install` (or `pod update`) and remember to open the
+`.xcworkspace` rather than the `.xcodeproj`. See the [iOS tutorial](
+doc/tutorial/ios.md) for more info.
 
 ## How to use MeasurementKit
 
