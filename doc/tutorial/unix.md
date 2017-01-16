@@ -32,7 +32,8 @@ This script will perform the following operations:
 
 3. get the latest [GeoIP](https://www.maxmind.com) databases
 
-4. run `autoreconf -i` to prepare the GNU build system (used
+4. run `autoreconf -i` to prepare the [GNU build system](
+   (https://en.wikipedia.org/wiki/GNU_build_system) (used
    by MeasurementKit) to compile the library
 
 For this step to succeed, you certainly need to have installed the
