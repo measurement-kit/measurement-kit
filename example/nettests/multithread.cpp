@@ -49,13 +49,13 @@ int main(void) {
                 }
             }
             if (!func) {
-                std::this_thread::sleep_for(1000ms);
+                std::this_thread::sleep_for(250ms);
                 continue;
             }
             try {
                 func();
             } catch (const std::exception &exc) {
-                fprintf(stderr, "warn: unhandled exception: %s", exc.what());
+                fprintf(stderr, "warn: unhandled exception: %s\n", exc.what());
                 /* SUPPRESS */;
             }
         }
