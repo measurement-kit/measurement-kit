@@ -1,11 +1,11 @@
 # Unix tutorial
 
 This tutorial explains how to compile, install and use Measurement Kit
-on Unix. To start off, you need to get the sources.
+on Unix.
 
 ## Optional: running tutorial in a vagrant
 
-If you want to run these tutorial in a Vagrant, take advantage of the
+If you want to run this tutorial in a Vagrant, take advantage of the
 [Vagrantfile](../../Vagrantfile) and copy it somewhere on the file
 system. Then enter into the directory containing the Vagrantfile and run:
 
@@ -13,7 +13,7 @@ system. Then enter into the directory containing the Vagrantfile and run:
 vagrant up yakkety
 ```
 
-To spin up an Ubuntu 16.10 machine. Them run:
+To spin up an Ubuntu 16.10 machine. Then run:
 
 ```
 vagrant ssh yakkety
