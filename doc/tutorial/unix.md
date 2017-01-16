@@ -149,7 +149,7 @@ In the following, we describe each step in detail.
 The job of the configure script is to make sure that Measurement
 Kit will build on your system.
 
-Specifically, the configure script SHOULD check for at least for:
+Specifically, the configure script should check for at least for:
 
 - A compiler suite implementing C90 and C++11; e.g. [clang](
   http://clang.llvm.org/) or [gcc](https://gcc.gnu.org/).
