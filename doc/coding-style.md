@@ -154,6 +154,7 @@ extern "C" {
 static void c_callback(void *p) {
     auto context = static_cast<CallLater *>(p);
     context->callback();
+    event_system_free_handle(context->call);
     delete context;
 }
 } // extern "C"
