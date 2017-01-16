@@ -3,77 +3,233 @@
 This tutorial explains how to integrate Measurement Kit into your Unix
 application. To start off, you need to get the sources.
 
-## Download Measurement Kit
+## Getting the sources
 
 To this end, you can either clone the git repository or go straight
 into the download page and grab the latest sources.
 
+You can either clone the sources using `git` or download a tarball
+from MeasurementKit's github releases page.
+
+### Cloning the git repository
+
 To clone the repository using git, type:
 
-    git clone https://github.com/measurement-kit/measurement-kit
+```
+git clone https://github.com/measurement-kit/measurement-kit
+```
 
-The download page is available here:
+The result is a directory called `measurement_kit`. Enter into this
+directory and run the following command to prepare the sources for
+being compiled:
 
-    https://github.com/measurement-kit/measurement-kit/releases
+```
+./autogen.sh
+```
 
-If you clone using git, you will find a directory named `measurement-kit`
-inside your current directory. Otherwise, you will get a tarball named
-after the version number (e.g. `v0.1.0-beta.4.tar.gz`). Once you unpack
-that tarball, you will get a directory named `measurement-kit-VERSION`
-(e.g. `measurement-kit-0.1.0-beta.4`) inside your current directory.
+This script will perform the following operations:
 
-In either case, enter into this directory to configure the sources and
-compile Measurement Kit.
+1. update the `.gitignore` file
+
+2. generate a list of files to be compiled in `./include.am`
+
+3. get the latest [GeoIP](https://www.maxmind.com) databases
+
+4. run `autoreconf -i` to prepare the GNU build system (used
+   by MeasurementKit) to compile the library
+
+For this step to succeed, you certainly need to have installed the
+usual, standard Unix tools, wget (for downloading GeoIP), gzip (for
+uncompressing GeoIP), autoconf, automake and libtool.
+
+### Downloading the sources archive
+
+Go to the [github releases
+page](https://github.com/measurement-kit/measurement-kit/releases) and
+download the archive of the latest release. **Note**: you want to download
+a file called `measurement-kit-$version.tar.gz` and not a file labelled
+by GitHub as "Source code", because the latter is equivalent to performing
+a `git clone`, for which you should follow the above instructions.
+
+Once you have downloaded the sources archive, you should verify its
+digital signature, extract the sources from it, and optionally
+download the [GeoIP](https://www.maxmind.com) databases. These steps
+are described below.
+
+#### Verifying the sources archive
+
+In addition to the `measurement-kit-$version.tar.gz` file, you should also
+download its PGP signature, `measurement-kit-$version.tar.gz.asc`.
+
+Typically, releases are signed by `Simone Basso <bassosimone@gmail.com>`
+with a PGP key having this fingerprint:
+
+```
+7388 77AA 6C82 9F26 A431  C5F4 80B6 9127 7733 D95B
+```
+
+To verify the PGP signature, you need `gpg2` installed and to follow
+these steps:
+
+```
+gpg2 --recv-keys 738877AA6C829F26A431C5F480B691277733D95B
+gpg2 --verify measurement-kit-$version.tar.gz.asc
+```
+
+The first command receives the key, the second command verifies the
+tarball. The result should indicate that the signature is good. If in
+doubt, *right after* the second command, run `echo $?` and verify that
+the result is `0` (meaning that the second command succeded).
+
+#### Extracting from the sources archive
+
+Once you have verified the digital signature, uncompress the archive:
+
+```
+tar -xzf measurement-kit-$version.tar.gz
+```
+
+This will create a directory called `measurement-kit-$version`, in
+which you should now enter.
+
+#### Downloading GeoIP databases
+
+If you plan to run regress tests, at this point you SHOULD also download
+the [GeoIP](https://www.maxmind.com) databases that they use, with:
+
+```
+./build/get-geoip
+```
+
+This script will use wget and gzip to fetch and unpack the latest
+GeoIP databases in the current working directory.
 
 ## Configure, make, make install
 
-Measurement Kit build system is based on the so-called [GNU build
-system](https://en.wikipedia.org/wiki/GNU_build_system). Specifically,
-it uses `autoconf`, `automake`, and `libtool`. Make sure you have those
-three packages installed on your system before proceeding.
+Our build system uses on the so-called [GNU build
+system](https://en.wikipedia.org/wiki/GNU_build_system). If you
+followed correctly the previous instructions, you should now be in
+the top level directory of the sources and such directory should
+contain an executable script called `./configure`.
 
-To compile and install Measurement Kit you need to follow a number of
-steps. The first step is to download the sources of dependencies and to
-generate the `configure` script. To do that, run this command from the
-toplevel directory:
+The bare-bone procedure to compile and install Measurement Kit
+is the following:
 
-    ./autogen.sh
+```
+./configure
+make
+make install  # typically you need to run this step as root
+```
 
-In addition to generating `configure`, this script also generates the
-`include.am` file that contains the rules to build measurement-kit,
-the example programs, and the test programs.
+In the following, we describe each step in detail.
 
-At this point you are ready to *configure* Measurement Kit to build
-on your system. The bare minimum requirements to built it are a C++11
-compiler, a C90 compiler, make (not necessarily GNU make), a C++ standard
-library, a C library. Measurement Kit is known to work with recent
-versions of [clang](http://clang.llvm.org/) and [gcc](https://gcc.gnu.org/),
-of [libc++](http://libcxx.llvm.org/) and [libstdc++](
-https://gcc.gnu.org/libstdc++/). At the moment of writing this tutorial
-we tested Measurement Kit with clang 3.6 and gcc 5.2.
+### configure
 
-Measurement Kit depends at build time on other pieces of software. At the
-moment of writing this tutorial, it depends on:
+The job of the configure script is to make sure that the software
+packages required to build Measurement Kit are available on your
+system. Specifically, the configure script SHOULD check for at least
+the following features (more subtle features could be tested):
 
-- [libevent](https://github.com/libevent/libevent)
-- [geoip](https://github.com/maxmind/geoip-api-c)
+- A compiler suite implementing C90 and C++11; e.g. [clang](
+  http://clang.llvm.org/) or [gcc](https://gcc.gnu.org/).
 
-You may want to check the most recent version of [README.md](
-https://github.com/measurement-kit/measurement-kit/blob/master/README.md)
-to check whether the dependencies changed since this tutorial was
-written. If so, please let us know.
+- A C++11 standard library such as [libc++](http://libcxx.llvm.org/)
+  or [libstdc++](https://gcc.gnu.org/libstdc++/).
 
-The `configure` script will fail if a dependency is missing on the
-host system and tell you how you could install it.
+- [libevent](https://github.com/libevent/libevent).
 
-To start the `configure` script run:
+- [geoip](https://github.com/maxmind/geoip-api-c).
 
-    ./configure
+- either [openssl](https://github.com/openssl/openssl) or
+  (preferred) [libressl](https://github.com/libressl-portable/portable).
 
-If this script succeeds, Measurement Kit is now configured to build
+We routinely compile and test Measurement Kit on Ubuntu 16.10 Yakkety
+Yak, macOS 10.12 sierra, and Void Linux current. For cross compiling the
+library on mobile devices, as of Measurement Kit v0.4.0 we use libevent
+2.0.22 (branch `patches-2.0`), geoip 1.6.9, and libressl 2.4.4.
+
+To run the configure script, simply type:
+
+```
+./configure
+```
+
+If a dependency is missing, the script will stop and tell you how you
+could install such dependency on Debian-like systems and macOS. In
+particular, on Debian it suggests the proper `apt-get install` command
+and on macOS it suggests the proper `brew install` command. Note that
+`brew` is not distributed with macOS and you need to [install it
+yourself](http://brew.sh/).
+
+In addition to those two options will also tell you how you could
+take advantage of our cross build system we use for mobile devices
+to compile the dependency yourself (not recommended, if possible
+rely on packages installed from your Unix distribution).
+
+You can pass options to configure to change its behavior. To see all
+available options, run `./configure --help`. These are some of the
+most commonly used options:
+
+- `--enable-coverage`: build for running coverage tests
+
+- `--disable-examples`: do not compile examples
+
+- `--disable-binaries`: only build `libmeasurement_kit` and do
+   not build the `measurement_kit` command line executable
+
+- `--disable-integration-tests`: only build unit tests and do not
+   build integration tests
+
+- `--disable-traceroute`: do not build code for running traceroute
+   scans on Android
+
+- `--with-openssl=PATH`: path where openssl (or libressl) is installed
+
+- `--with-libevent=PATH`: path where libevent is installed
+
+- `--with-geoip=PATH`: path where geoip is installed
+
+- `--prefix=PATH`: path where to install Measurement Kit
+
+Note that, usually, you do not need to tell configure where dependencies
+are installed: typically they are installed in canonical places. Yet,
+in case you need to specify a `PATH` where a dependency is installed, such
+`PATH` should be the directory that contains the `include` and `lib`
+directories in turn containing the headers and the libraries of a specific
+dependency. For example, given the following filesystem layout:
+
+```
+/usr/local/libevent/2.0.22/include/event.h
+/usr/local/libevent/2.0.22/lib/libevent.a
+```
+
+you want to run:
+
+```
+./configure --with-libevent=/usr/local/libevent/2.0.22
+```
+
+Also, note that, if you are using macOS and brew, the configure script
+will figure that out and will automatically search for a suitable version
+of openssl, even if that is not available at the canonical location
+(i.e. `/usr/local`).
+
+Similarly, passing to configure `--prefix=/foo` means that:
+
+- binaries will be installed under `/foo/bin`
+
+- headers will be installed under `/foo/include`
+
+- libs will be installed under `/foo/lib`
+
+### make
+
+If configure succeeds, Measurement Kit is now configured to build
 on your system. To compile, run:
 
-    make V=0
+```
+make V=0
+```
 
 The `V=0` enables the silent build process, which is more readable than
 the standard super-verbose build process.
@@ -81,199 +237,49 @@ the standard super-verbose build process.
 If also this step succeeds, you may want to run Measurement Kit tests
 to make sure that everything was compiled correctly. To do so, run:
 
-    make check V=0
+```
+make check V=0
+```
 
-As a final step, to install Measurement Kit under `/usr/local`, you need
+### make install
+
+As a final step, to install Measurement Kit under `/usr/local` (or
+under the directory passed to configure using `--prefix`), you need
 to become *root* and type:
 
-    make install
+```
+make install
+```
 
-This will install Measurement Kit headers under `/usr/local/include` and
-Measurement Kit libraries under `/usr/local/lib`. If you compiled a dependency
-using the `./build/dependency` script, this dependency would not be installed
-and Measurement Kit is not going to work. Of course, it is quite easy to go
-inside the dependency sources (look inside the `third_party` folder created by
-`./build/dependency`) and adjust the configuration such that it installs
-inside `/usr/local`. But, at least for now, this step shall be done manually.
+**Note** If you compiled dependencies using Measurement Kit own cross
+compile tool, note that this will not install them on your system.
 
 On Linux you may need to update the dynamic linker after you have installed
 to `/usr/local`, running the following command as root:
 
-    ldconfig
+```
+ldconfig
+```
 
 ## Using Measurement Kit
 
-Now that Measurement Kit is installed, we can use it. To this end, we
-will write a small C++ program that uses Measurement Kit api. Specifically,
-we will use the [OONI API](
-https://github.com/measurement-kit/measurement-kit/tree/master/doc/api/ooni)
-to run OONI's [DNS injection test](
-https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-012-dns-injection.md).
+Now that Measurement Kit is installed, we can use it. To this end,
+we will write a small C++ program that uses it. Specifically, we
+will use the [nettests API](../api/nettests.md), the most high level
+API in Measurement Kit that allows us to easily specify what test
+to run and how. In particular, we will write a small program for
+running the [Multi NDT](../api/nettests/multi_ndt.md) test.
 
-To start off, create a file called `main.cpp`. We need to tell the compiler
-that we need to use Measurement Kit's OONI API. To do so, you need to add
-the following at the top of your file:
-
-```C++
-#include <measurement_kit/ooni.hpp>
-```
-
-This tells the C++ compiler to import the C++ header containing all the
-definitions of Measurement Kit's OONI API.
-
-Then, we need to write a skeleton main program. So, we will have:
-
-```C++
-#include <measurement_kit/ooni.hpp>
-
-int main() {}
-```
-
-To compile this on your system, use the following command:
-
-    c++ -Wall -std=c++11 -o main main.cpp
-
-If this works, it means that the compiler is a C++11 compiler and that
-Measurement Kit headers have been correctly found.
-
-Next, let's write some code inside `main()` to read command line arguments
-and act accordingly. Specifically, the user shall be able to specify an
-optional backend server address (using the `-b` flag) and one or more files
-containing domain names to be resolved using the selected backend (or the
-default backend). Also, when invoked with zero arguments (or with incorrect
-arguments) the program should print an help message.
-
-```C++
-#include <measurement_kit/ooni.hpp>
-#include <stdlib.h>
-#include <unistd.h>
-
-int main(int argc, char **argv) {
-    const char *backend = "8.8.8.1:53";
-    const char *progname = argv[0];
-    int verbose = MK_LOG_INFO;
-    int chr;
-
-    while ((chr = getopt(argc, argv, "b:v")) >= 0) {
-        switch (chr) {
-        case 'b':
-            backend = optarg;
-            break;
-        case 'v':
-            verbose = MK_LOG_DEBUG;
-            break;
-        default:
-            printf("usage: %s [-v] [-b backend] input-file [...]\n", progname);
-            exit(1);
-        }
-    }
-    argc -= optind;
-    argv += optind;
-    if (argc <= 0) {
-        printf("usage: %s [-v] [-b backend] input-file [...]\n", progname);
-        exit(1);
-    }
-}
-```
-
-Next we want to run OONI DnsInjection test on all the remaining arguments,
-using as backend the specified backend, or the default one. We will iterate
-over all the remaining command line options and launch an instance of the
-DNS Injection test for each file. All these tests will run in parallel and
-the program will terminate when all of them are complete. To track the
-completion status of tests we will use a `volatile int` variable.
-
-```C++
-    volatile int running = 0;
-    for (; argc > 0; --argc, ++argv, ++running) {
-        mk::ooni::DnsInjection()
-            .set_options("backend", backend)
-            .set_input_filepath(argv[0])
-            .set_verbosity(verbose)
-            .run([&running]() { --running; });
-    }
-```
-
-This is enough to run the test asynchronously. All tests will be run in a
-background thread. When the test completes, the C++11 lambda passed to `run()`
-is called and decrements the shared `running` variable.
-
-Now, we only need to add code to wait for all tests to complete.
-
-```C++
-    while (running > 0) sleep(1);
-```
-
-Putting everything together:
-
-```C++
-#include <measurement_kit/ooni.hpp>
-#include <stdlib.h>
-#include <unistd.h>
-
-int main(int argc, char **argv) {
-    const char *backend = "8.8.8.1:53";
-    const char *progname = argv[0];
-    int verbose = MK_LOG_INFO;
-    int chr;
-
-    while ((chr = getopt(argc, argv, "b:v")) >= 0) {
-        switch (chr) {
-        case 'b':
-            backend = optarg;
-            break;
-        case 'v':
-            verbose = MK_LOG_DEBUG;
-            break;
-        default:
-            printf("usage: %s [-v] [-b backend] input-file [...]\n", progname);
-            exit(1);
-        }
-    }
-    argc -= optind;
-    argv += optind;
-    if (argc <= 0) {
-        printf("usage: %s [-v] [-b backend] input-file [...]\n", progname);
-        exit(1);
-    }
-
-    volatile int running = 0;
-    for (; argc > 0; --argc, ++argv, ++running) {
-        mk::ooni::DnsInjection()
-            .set_options("backend", backend)
-            .set_input_filepath(argv[0])
-            .set_verbosity(verbose)
-            .run([&running]() { --running; });
-    }
-
-    while (running > 0) sleep(1);
-}
-```
-
-We can now compile (and link) the code using the following command:
-
-    c++ -Wall -std=c++11 -o main main.cpp -lmeasurement_kit
-
-Then create a file named INPUT and paste inside it this content:
+Copy the [source code of this example](../../example/nettests/simple.cpp)
+in the filesystem as `main.cpp`. Then, to compile it and link it against
+MeasurementKit, run:
 
 ```
-measurement-kit.github.io
-nexa.polito.it
-ooni.torproject.org
+c++ -Wall -Wextra -pedantic -std=c++11 -c main.cpp -o main
 ```
 
-Finally, we can run the program using this input as follows:
+To run it, type:
 
-    ./main -v INPUT INPUT INPUT
-
-Here we repeated `INPUT` three times to show that you can schedule
-three different instances of the DNS Injection test in parallel.
-
-At this point, you may have already noticed that the backend we are
-using (`8.8.8.1:53`) is not a valid DNS server. This is on purpose since
-the point of the test is to spot cases where someone in the middle
-maliciously injects DNS responses. To run again the test with instead
-a valid DNS server (quite pointless for the purpose of the test but
-still an interesting exercise), type:
-
-    ./main -vb 8.8.8.8 INPUT
+```
+./main
+```
