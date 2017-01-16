@@ -3,6 +3,8 @@
 This tutorial explains how to compile, install and use Measurement Kit
 on Unix. To start off, you need to get the sources.
 
+## Optional: running tutorial in a vagrant
+
 If you want to run these tutorial in a Vagrant, take advantage of the
 [Vagrantfile](../../Vagrantfile) and copy it somewhere on the file
 system. Then enter into the directory containing the Vagrantfile and run:
