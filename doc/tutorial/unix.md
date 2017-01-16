@@ -3,6 +3,22 @@
 This tutorial explains how to compile, install and use Measurement Kit
 on Unix. To start off, you need to get the sources.
 
+If you want to run these tutorial in a Vagrant, take advantage of the
+[Vagrantfile](../../Vagrantfile) and copy it somewhere on the file
+system. Then enter into the directory containing the Vagrantfile and run:
+
+```
+vagrant up yakkety
+```
+
+To spin up an Ubuntu 16.10 machine. Them run:
+
+```
+vagrant ssh yakkety
+```
+
+At this point you are inside the Vagrant.
+
 ## Getting the sources
 
 To this end, you can either clone the git repository or go straight
@@ -271,23 +287,27 @@ Also this command must be run as root.
 
 ## Using Measurement Kit
 
-Now that Measurement Kit is installed, we can use it. To this end,
-we will write a small C++ program that uses it. Specifically, we
-will use the [nettests API](../api/nettests.md), the most high level
-API in Measurement Kit that allows us to easily specify what test
-to run and how. In particular, we will write a small program for
-running the [Multi NDT](../api/nettests/multi_ndt.md) test.
+To start using Measurement Kit, you should get yourself familiar
+with its [nettests API](../api/nettests.md), which is the most
+high level API exported by the library. To this end, we suggest
+you to study the [examples using such API](../../example/nettests).
 
-Copy the [source code of this example](../../example/nettests/simple.cpp)
-in the filesystem as `main.cpp`. Then, to compile it and link it against
-MeasurementKit, run:
+These examples are compiled as part of running `make`, unless you
+have instructed configure otherwise with `--disable-examples`.
 
-```
-c++ -Wall -Wextra -pedantic -std=c++11 -c main.cpp -o main
-```
-
-To run it, type:
+To compile an example manually, copy its source code somewhere in the
+file system as, say, `main.cpp`, and then run:
 
 ```
-./main
+c++ -Wall -Wextra -std=c++11 -o main -lmeasurement_kit main.cpp
+```
+
+The above command may fail with missing headers or libraries if you
+have installed Measurement Kit in a location not automatically searched
+by your compiler. Assuming, you passed `--prefix=/foo` to configure,
+the corresponding command to compile will be:
+
+```
+c++ -Wall -Wextra -std=c++11 -I/foo/include -L/foo/lib -o main \
+		-lmeasurement_kit main.cpp
 ```
