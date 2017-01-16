@@ -106,7 +106,7 @@ GeoIP databases in the current working directory.
 
 ## Configure, make, make install
 
-Our build system uses on the so-called [GNU build
+We use the so-called [GNU build
 system](https://en.wikipedia.org/wiki/GNU_build_system). If you
 followed correctly the previous instructions, you should now be in
 the top level directory of the sources and such directory should
