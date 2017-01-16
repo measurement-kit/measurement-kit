@@ -303,7 +303,7 @@ These examples are compiled as part of running `make`, unless you
 have instructed configure otherwise.
 
 Anyway, each example should also include, as a comment, the correct
-command line to compile it on a typical Unix system.
+command line to compile it.
 
 Remember that, if you have installed Measurement Kit in a non standard
 place with `./configure --prefix=$PREFIX`, you need to pass to the compiler
