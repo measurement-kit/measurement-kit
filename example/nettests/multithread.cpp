@@ -106,6 +106,9 @@ int main(void) {
             // Lambda called when events occur. Here we process only download
             // speed updates emitted during the multi-ndt test.
             //
+            // In case `nlohmann::json::parse()` throws an exception, no
+            // worries because MK suppress exceptions in the on_event lambda.
+            //
             // See the above four points to keep in mind.
             .on_event([&](const char *s) {
                 nlohmann::json doc = nlohmann::json::parse(s);
