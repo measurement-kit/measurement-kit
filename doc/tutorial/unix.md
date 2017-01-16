@@ -235,12 +235,13 @@ make V=0
 The `V=0` enables the silent build process, which is more readable than
 the standard super-verbose build process.
 
-If also this step succeeds, you may want to run Measurement Kit tests
-to make sure that everything was compiled correctly. To do so, run:
+If also this step succeeds, you may want to run Measurement Kit tests:
 
 ```
 make check V=0
 ```
+
+If all tests passed, Measurement Kit should work well on your system.
 
 ### make install
 
