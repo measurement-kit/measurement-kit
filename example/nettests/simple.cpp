@@ -10,7 +10,7 @@
  *
  * Compile with:
  *
- *   c++ -Wall -o simple -lmeasurement_kit simple.cpp
+ *   c++ -Wall -o simple simple.cpp -lmeasurement_kit
  */
 int main(void) {
 
