@@ -166,8 +166,8 @@ To run the configure script, simply type:
 If a dependency is missing, the script will stop and tell you how
 you could install such dependency with the proper `apt-get install`
 command (for Debian-like systems) and `brew install` command (for
-macOS; note that `brew` is not distributed with macOS and you need
-to [install it yourself](http://brew.sh/).
+macOS; note that `brew` in not installed by default on macOS, and
+you need to [install it manually](http://brew.sh/)).
 
 In addition to those two options will also tell you how you could
 take advantage of our cross build system we use for mobile devices
