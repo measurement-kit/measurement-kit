@@ -288,8 +288,9 @@ case you need to locate the headers and libraries under `./builtin`
 and copy them manually under `/usr/local/include` and `/usr/local/lib`
 (or, more generally, `$prefix/include` and `$prefix/lib`). Beware
 not to copy `*.la` files in this process, because this may prevent
-Measurement Kit from working correctly, as they hardcode inside
-them the `./builtin` prefix, not `/usr/local`.
+Measurement Kit from working correctly, as the `*.la` files compiled
+using our cross compile tool hardcode inside them the `./builtin`
+prefix, not `/usr/local` (or `$prefix`).
 
 ## Using Measurement Kit
 
