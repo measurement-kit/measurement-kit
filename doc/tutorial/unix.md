@@ -28,7 +28,7 @@ into the download page and grab the latest sources.
 
 ### Cloning the git repository
 
-To clone the repository using git, run:
+To clone the repository, you need to install the git command. Then run:
 
 ```
 git clone https://github.com/measurement-kit/measurement-kit
