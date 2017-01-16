@@ -261,12 +261,13 @@ selected). Beware not to copy `*.la` files in this process, because this
 may prevent Measurement Kit from working correctly, as they hardcode
 inside them the `./builtin` prefix, not `/usr/local`.
 
-On Linux you may need to update the dynamic linker after you have installed
-to `/usr/local`, running the following command as root:
+On Linux you may also need to update the dynamic linker with:
 
 ```
 ldconfig
 ```
+
+Also this command must be run as root.
 
 ## Using Measurement Kit
 
