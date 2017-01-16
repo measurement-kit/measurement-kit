@@ -66,18 +66,20 @@ with a PGP key having this fingerprint:
 7388 77AA 6C82 9F26 A431  C5F4 80B6 9127 7733 D95B
 ```
 
-To verify the PGP signature, you need `gpg2` installed and to follow
-these steps:
+To verify the PGP signature, you need `gpg2` installed. Then, fetch the
+aforementioned public key with:
 
 ```
 gpg2 --recv-keys 738877AA6C829F26A431C5F480B691277733D95B
+```
+
+Finally, verify the digital signature with:
+
+```
 gpg2 --verify measurement-kit-$version.tar.gz.asc
 ```
 
-The first command receives the key, the second command verifies the
-tarball. The result should indicate that the signature is good. If in
-doubt, *right after* the second command, run `echo $?` and verify that
-the result is `0` (meaning that the second command succeded).
+The result should indicate that the signature is good.
 
 #### Extracting from the sources archive
 
