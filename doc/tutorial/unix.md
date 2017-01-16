@@ -286,10 +286,10 @@ Also this command must be run as root.
 cross compile tool, `make install` will not install them. In such
 case you need to locate the headers and libraries under `./builtin`
 and copy them manually under `/usr/local/include` and `/usr/local/lib`
-(or any other prefix you have selected). Beware not to copy `*.la`
-files in this process, because this may prevent Measurement Kit
-from working correctly, as they hardcode inside them the `./builtin`
-prefix, not `/usr/local`.
+(or, more generally, `$prefix/include` and `$prefix/lib`). Beware
+not to copy `*.la` files in this process, because this may prevent
+Measurement Kit from working correctly, as they hardcode inside
+them the `./builtin` prefix, not `/usr/local`.
 
 ## Using Measurement Kit
 
