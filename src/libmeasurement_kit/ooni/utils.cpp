@@ -145,14 +145,13 @@ bool is_private_ipv4_addr(const std::string &ipv4_addr) {
   return false;
 }
 
-bool is_ip_addr(const std::string &ip_addr) {
-    struct sockaddr_in sa;
-    struct sockaddr_in6 sa6;
-    if ((inet_pton(AF_INET, ip_addr.c_str(), &(sa.sin_addr)) == 1) ||
-        (inet_pton(AF_INET6, ip_addr.c_str(), &(sa6.sin6_addr)) == 1)) {
-        return true;
+report::Entry represent_http_body(const std::string &body) {
+    Error error = is_valid_utf8_string(body);
+    if (error != NoError()) {
+        return report::Entry{{"format", "base64"},
+                              {"data", base64_encode(body)}};
     }
-    return false;
+    return body;
 }
 
 } // namespace ooni

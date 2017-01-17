@@ -11,10 +11,11 @@ Override default behavior by setting these environment variables:
   - pkg_clone_flags: extra flags for 'git clone' (e.g. '--recursive')
   - pkg_configure_flags: extra flags for './configure' (if any)
   - pkg_cmake_flags: extra flags for 'cmake .' (if CMakeLists.txt exists)
+  - pkg_make_check_rule: rule to run tests (default: not set, no tests are run)
   - pkg_make_flags: extra flags for 'make' (e.g. 'V=0')
   - pkg_make_install_flags: extra flags for 'make install' (e.g. DESTDIR=/opt)
   - pkg_prefix: prefix where to install (e.g. '/usr/local')
-  - pkg_steps: steps to execute (default is: 'configure make make_install')
+  - pkg_steps: steps to execute (default is: 'patch_pre_autogen autogen patch_post_autogen configure make make_check make_install')
   - pkg_sudo: optional comand to execute 'make install' with (e.g. sudo)
 
 Examples:
@@ -25,6 +26,21 @@ Examples:
 EOF
 }
 
+apply_patches() {
+    if [ -d ../../../build/patch/$1 ]; then
+        for diff in `find ../../../build/patch/$1 -type f`; do
+            git apply -v $diff
+        done
+    fi
+}
+
+pkg_patch_pre_autogen() {
+    apply_patches pre-autogen/$pkg_name/common
+    if [ "$pkg_cross" != "" ]; then
+        apply_patches pre-autogen/$pkg_name/$pkg_cross
+    fi
+}
+
 pkg_autogen() {
     if [ -x ./autogen.sh ]; then
         echo "- ./autogen.sh"
@@ -32,6 +48,13 @@ pkg_autogen() {
     elif [ -f ./configure.ac ]; then
         echo "- autoreconf -i"
         autoreconf -i
+    fi
+}
+
+pkg_patch_post_autogen() {
+    apply_patches post-autogen/$pkg_name/common
+    if [ "$pkg_cross" != "" ]; then
+        apply_patches post-autogen/$pkg_name/$pkg_cross
     fi
 }
 
@@ -50,6 +73,20 @@ pkg_make() {
     make $pkg_make_flags
 }
 
+pkg_make_check() {
+    if [ "$pkg_make_check_rule" != "" ]; then
+        echo "- make $pkg_make_flags $pkg_make_check_rule"
+        if ! make $pkg_make_flags $pkg_make_check_rule; then
+            if [ -f ./test-suite.log ]; then
+                cat ./test-suite.log
+            fi
+            exit 1
+        fi
+    else
+        echo 'not running checks because $pkg_make_check_rule is not set'
+    fi
+}
+
 pkg_make_install() {
     echo "- $pkg_sudo make $pkg_make_install_flags install"
     $pkg_sudo make $pkg_make_install_flags install
@@ -57,14 +94,6 @@ pkg_make_install() {
 
 pkg_none() {
     echo "- no action"
-}
-
-apply_patches() {
-    if [ -d ../../../build/patch/$1 ]; then
-        for diff in `find ../../../build/patch/$1 -type f`; do
-            git apply -v $diff
-        done
-    fi
 }
 
 set -e
@@ -83,44 +112,28 @@ if [ -x build/spec/$1 ]; then
 fi
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
-if [ ! -d third_party/cache/$pkg_name ]; then
-    git clone $pkg_clone_flags $pkg_repository third_party/cache/$pkg_name
-    cd third_party/cache/$pkg_name
-    if [ ! -z "$pkg_branch" ]; then
-        git checkout $pkg_branch
-        if [ "`git rev-parse HEAD`" != "$pkg_commit" ]; then
+if [ "$pkg_repository" != "" ]; then
+    rm -rf third_party/src/$pkg_name
+    git clone $pkg_clone_flags --single-branch --depth 2                       \
+        --branch $pkg_branch_or_tag $pkg_repository third_party/src/$pkg_name
+    cd third_party/src/$pkg_name
+    if [ "$pkg_tip" != "" ]; then
+        if [ "`git rev-parse HEAD`" != "$pkg_tip" ]; then
             # Mainly because this allows us to know which commit was the
             # tip of the branch when we compiled a dependency
             echo "FATAL: unexpected HEAD commit SHA-1" 1>&2
             exit 1
         fi
     fi
-    if [ ! -z "$pkg_tag" ]; then
-        git checkout tags/$pkg_tag
-    fi
-    apply_patches pre-autogen/$pkg_name/common
-    if [ "$pkg_cross" != "" ]; then
-        apply_patches pre-autogen/$pkg_name/$pkg_cross
-    fi
-    pkg_autogen
-    apply_patches post-autogen/$pkg_name/common
-    if [ "$pkg_cross" != "" ]; then
-        apply_patches post-autogen/$pkg_name/$pkg_cross
-    fi
-    cd ../../../ # back to where we were
 fi
-if [ ! -d third_party/build/ ]; then
-    mkdir third_party/build/
-fi
-rm -rf third_party/build/$pkg_name
-cp -R third_party/cache/$pkg_name third_party/build/$pkg_name
-cd third_party/build/$pkg_name
+
 if [ -z "$pkg_steps" ]; then
-    pkg_steps="configure make make_install"
+    pkg_steps="patch_pre_autogen autogen patch_post_autogen configure make make_check make_install"
 fi
 for step in $pkg_steps; do
     echo ""
-    echo "* step: $step"
+    echo "./build/dependency: $step"
+    echo ""
     pkg_$step
 done
 echo ""

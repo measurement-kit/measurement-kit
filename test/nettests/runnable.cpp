@@ -164,6 +164,64 @@ TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
     });
 }
 
+TEST_CASE("Make sure that 'randomize_input' works") {
+
+    std::vector<std::string> expect{"torproject.org",
+                                    "ooni.nu",
+                                    "neubot.org",
+                                    "archive.org",
+                                    "creativecommons.org",
+                                    "cyber.law.harvard.edu",
+                                    "duckduckgo.com",
+                                    "netflix.com",
+                                    "nmap.org",
+                                    "www.emule.com"};
+
+    auto run = [&](bool shuffle) -> std::vector<std::string> {
+
+        nettests::Runnable test;
+        test.reactor = Reactor::make();
+        test.input_filepaths.push_back("./test/fixtures/hosts.txt");
+        test.options["randomize_input"] = shuffle;
+        test.needs_input = true;
+        std::vector<std::string> result;
+
+        test.reactor->loop_with_initial_event([&]() {
+            test.entry_cb = [&](std::string s) {
+                nlohmann::json entry = nlohmann::json::parse(s);
+                result.push_back(entry["input"]);
+            };
+            test.begin([&](Error) {
+                test.end([&](Error) { test.reactor->break_loop(); });
+            });
+        });
+        return result;
+    };
+
+    auto repeat = [&](bool shuffle, int limit) -> int {
+        int x = 0;
+        /*
+         * Since in theory RND_SHUFFLE(vector) may be equal to vector, we
+         * measure randomness by counting the number of repetitions for
+         * which the shuffle has been found equal to the expected vector.
+         */
+        while (x++ < limit and run(shuffle) == expect) {
+            /* NOTHING */ ;
+        }
+        return x;
+    };
+
+
+    SECTION("In the common case") {
+        // Note: the default should be that input is randomized
+        REQUIRE(repeat(true, 8) < 8);
+    }
+
+    SECTION("When the user does not want input to be shuffled") {
+        REQUIRE(repeat(false, 8) == 9);
+    }
+}
+
 #else
 int main() {}
 #endif

@@ -2,15 +2,80 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <deque>
+#include "../ext/http_parser.h"
+#include "../net/utils.hpp"
+
+#include <cassert>
 #include <cstring>
+#include <deque>
+#include <sstream>
 
 #include <event2/util.h>
 
-#include "../net/utils.hpp"
+#include <measurement_kit/net.hpp>
 
 namespace mk {
 namespace net {
+
+bool is_ipv4_addr(std::string s) {
+    sockaddr_in sin;
+    return inet_pton(AF_INET, s.c_str(), &sin.sin_addr) == 1;
+}
+
+bool is_ipv6_addr(std::string s) {
+    sockaddr_in6 sin6;
+    return inet_pton(AF_INET6, s.c_str(), &sin6.sin6_addr) == 1;
+}
+
+bool is_ip_addr(std::string s) {
+    return is_ipv4_addr(s) || is_ipv6_addr(s);
+}
+
+static ErrorOr<Endpoint> parse_endpoint_internal(std::string s) {
+    http_parser_url parser = {};
+    http_parser_url_init(&parser);
+    /*
+     * Here the trick is that we ask the parser to parse the URL typically
+     * passed to the CONNECT header, which is in the format we want.
+     */
+    if (http_parser_parse_url(s.data(), s.size(), 1, &parser) != 0) {
+        return ValueError();
+    }
+    assert(parser.field_set == ((1 << UF_HOST) | (1 << UF_PORT)));
+    Endpoint epnt = {};
+    epnt.hostname = s.substr(parser.field_data[UF_HOST].off,
+                             parser.field_data[UF_HOST].len);
+    epnt.port = parser.port;
+    return epnt;
+}
+
+static std::string serialize_address_port(std::string a, uint16_t p) {
+    std::stringstream ss;
+    bool is_ipv6 = is_ipv6_addr(a);
+    if (is_ipv6) ss << "[";
+    ss << a;
+    if (is_ipv6) ss << "]";
+    ss << ":";
+    ss << p;
+    std::string s = ss.str();
+    return s;
+}
+
+ErrorOr<Endpoint> parse_endpoint(std::string s, uint16_t default_port) {
+    ErrorOr<Endpoint> maybe_epnt = parse_endpoint_internal(s);
+    if (!!maybe_epnt) {
+        return maybe_epnt;
+    }
+    /*
+     * The CONNECT parser is quite strict. It fails if the port is not
+     * present. After first failure, retry adding the default port.
+     */
+    return parse_endpoint_internal(serialize_address_port(s, default_port));
+}
+
+std::string serialize_endpoint(Endpoint epnt) {
+    return serialize_address_port(epnt.hostname, epnt.port);
+}
 
 int storage_init(sockaddr_storage *storage, socklen_t *salen,
                  const char *family, const char *address, const char *port,
