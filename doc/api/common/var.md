@@ -55,6 +55,12 @@ The `as()` method casts the pointee to type `R` if possible. If conversion
 is not possible, the returned `Var<>` would point to a null pointer and hence
 attempting to dereference it would result in `std::runtime_error`.
 
+# CAVEAT
+
+The `as()` method does not seem to preserve any custom deleter that may
+have been passed to the original `Var<>`; this seems reasonable since the
+new `Var<>` will delete another type of object (if the cast worked).
+
 # HISTORY
 
 The `Var` template class appeared in MeasurementKit 0.1.0.
