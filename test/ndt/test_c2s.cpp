@@ -17,8 +17,9 @@ static void fail(Var<Entry>, std::string, int, Callback<Error, Var<Transport>> c
 }
 
 TEST_CASE("coroutine() is robust to connect error") {
+    Var<Entry> entry{new Entry};
     test_c2s::coroutine_impl<fail>(
-        "www.google.com", 3301, 10.0,
+        entry, "www.google.com", 3301, 10.0,
         [](Error err, Continuation<Error>) { REQUIRE(err == MockedError()); },
         2.0, {}, Reactor::global(), Logger::global());
 }
