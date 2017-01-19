@@ -10,9 +10,8 @@ namespace nettests {
 
 NdtTest::NdtTest() : BaseTest() {
     runnable.reset(new NdtRunnable);
-    runnable->options["save_real_probe_ip"] = true;
     runnable->test_name = "ndt";
-    runnable->test_version = "0.0.4";
+    runnable->test_version = "0.0.5";
 }
 
 void NdtRunnable::main(std::string, Settings settings,

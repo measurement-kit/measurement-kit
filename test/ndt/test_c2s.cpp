@@ -11,7 +11,7 @@ using namespace mk;
 using namespace mk::ndt;
 using json = nlohmann::json;
 
-static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
+static void fail(Var<Entry>, std::string, int, Callback<Error, Var<Transport>> cb, Settings,
                  Var<Reactor>, Var<Logger>) {
     cb(MockedError(), nullptr);
 }
@@ -85,7 +85,7 @@ static void test_prepare(Var<Context>,
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
-static void fail(std::string, int, double,
+static void fail(Var<Entry>, std::string, int, double,
                  Callback<Error, Continuation<Error>> cb, double, Settings,
                  Var<Reactor>, Var<Logger>) {
     cb(MockedError(), [](Callback<Error>) {
@@ -99,7 +99,7 @@ TEST_CASE("run() deals with coroutine fail") {
         ctx, [](Error err) { REQUIRE(err == ConnectTestConnectionError()); });
 }
 
-static void connect_but_fail_later(std::string, int, double,
+static void connect_but_fail_later(Var<Entry>, std::string, int, double,
                                    Callback<Error, Continuation<Error>> cb,
                                    double, Settings, Var<Reactor>,
                                    Var<Logger>) {
@@ -129,7 +129,7 @@ TEST_CASE("run() deals with coroutine terminating with error") {
         ctx, [](Error err) { REQUIRE(err == MockedError()); });
 }
 
-static void coro_ok(std::string, int, double,
+static void coro_ok(Var<Entry>, std::string, int, double,
                     Callback<Error, Continuation<Error>> cb, double, Settings,
                     Var<Reactor>, Var<Logger>) {
     cb(NoError(), [](Callback<Error> cb) { cb(NoError()); });
