@@ -15,7 +15,7 @@ MultiNdtTest::MultiNdtTest() : BaseTest() {
     runnable->options["save_real_probe_ip"] = true;
     runnable->options["dns/engine"] = "system";
     runnable->test_name = "multi_ndt";
-    runnable->test_version = "0.0.6";  /* Forked from `ndt` v0.0.4 */
+    runnable->test_version = "0.1.0";  /* Forked from `ndt` v0.0.4 */
 }
 
 static void write_simple_stats(report::Entry &entry, Var<Logger> logger) {

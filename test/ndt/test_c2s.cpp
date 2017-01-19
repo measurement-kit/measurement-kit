@@ -11,7 +11,7 @@ using namespace mk;
 using namespace mk::ndt;
 using json = nlohmann::json;
 
-static void fail(Var<Entry>, std::string, int, Callback<Error, Var<Transport>> cb, Settings,
+static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
                  Var<Reactor>, Var<Logger>) {
     cb(MockedError(), nullptr);
 }

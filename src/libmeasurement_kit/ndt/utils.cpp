@@ -16,7 +16,7 @@ namespace utils {
  * in input any valid JSON (`null`, numbers, strings, lists, objects).
  */
 
-static report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
+report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
 
     try {
         // Note: do static cast to make sure it's convertible to a double
@@ -47,7 +47,7 @@ static report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
     return sum / rtts.size();  /* Division by zero excluded above */
 }
 
-static report::Entry compute_speed(report::Entry &sender_or_receiver_data,
+report::Entry compute_speed(report::Entry &sender_or_receiver_data,
                                    Var<Logger> logger) {
     /*
      * This algorithm computes the speed in a way that is similar to the one
@@ -82,7 +82,7 @@ static report::Entry compute_speed(report::Entry &sender_or_receiver_data,
     return nullptr;
 }
 
-static report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
+report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
     report::Entry test_s2c;
     report::Entry test_c2s;
     report::Entry simple_stats;
@@ -106,9 +106,8 @@ static report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logg
     return simple_stats;
 }
 
-static report::Entry compute_advanced_stats(report::Entry &entry, Var<Logger> logger) {
-    report::Entry test_s2c =
-        entry["single_stream"]["test_s2c"][0] /* We know it's just one entry */;
+report::Entry compute_advanced_stats(report::Entry &entry, Var<Logger> logger) {
+    report::Entry test_s2c = entry["test_s2c"][0] /* We know it's just one entry */;
     report::Entry advanced_stats;
 
     // See: https://github.com/ndt-project/ndt/wiki/NDTTestMethodology#computed-variables
