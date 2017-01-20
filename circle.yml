@@ -10,4 +10,4 @@ general:
 
 test:
   override:
-    - ./build/docker/valgrind-clang
+    - ./build/ci/circle valgrind-clang

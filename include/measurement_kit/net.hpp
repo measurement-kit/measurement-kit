@@ -5,4 +5,5 @@
 #include <measurement_kit/net/connect.hpp>
 #include <measurement_kit/net/error.hpp>
 #include <measurement_kit/net/transport.hpp>
+#include <measurement_kit/net/utils.hpp>
 #endif
