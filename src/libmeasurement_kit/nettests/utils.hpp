@@ -42,10 +42,13 @@ namespace nettests {
  * - the error returned when trying to convert to boolean the value of
  *   "randomize_input" setting (e.g. ValueError)
  */
-ErrorOr<std::deque<std::string>>
-process_input_filepaths(const Settings &options, const bool &needs_input,
-                        const std::list<std::string> &input_filepaths,
-                        const std::string &probe_cc, Var<Logger> logger);
+ErrorOr<std::deque<std::string>> process_input_filepaths(
+        const bool &needs_input,
+        const std::list<std::string> &input_filepaths,
+        const std::string &probe_cc,
+        const Settings &options,
+        Var<Logger> logger
+);
 
 } // namespace nettests
 } // namespace mk

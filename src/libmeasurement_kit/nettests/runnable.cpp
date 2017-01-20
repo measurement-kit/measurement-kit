@@ -261,9 +261,8 @@ void Runnable::begin(Callback<Error> cb) {
                 }
 
                 ErrorOr<std::deque<std::string>> maybe_inputs =
-                    process_input_filepaths(options, needs_input,
-                                            input_filepaths, probe_cc,
-                                            logger);
+                    process_input_filepaths(needs_input, input_filepaths,
+                                            probe_cc, options, logger);
                 if (!maybe_inputs) {
                     cb(maybe_inputs.as_error());
                     return;

@@ -24,9 +24,10 @@ static bool readline_(std::ifstream &input, std::string &line) {
 
 template <MK_MOCK(open_file_), MK_MOCK(readline_)>
 ErrorOr<std::deque<std::string>>
-process_input_filepaths_impl(const Settings &options, const bool &needs_input,
+process_input_filepaths_impl(const bool &needs_input,
                              const std::list<std::string> &input_filepaths,
-                             const std::string &probe_cc, Var<Logger> logger) {
+                             const std::string &probe_cc, const Settings &options,
+                             Var<Logger> logger) {
     std::deque<std::string> inputs;
     if (needs_input) {
         if (input_filepaths.size() <= 0) {
