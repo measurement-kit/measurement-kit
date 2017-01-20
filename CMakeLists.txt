@@ -101,7 +101,6 @@ if(UNIX)
   CHECK_INCLUDE_FILES(event2/event.h HAVE_EVENT2_EVENT_H)
   CHECK_LIBRARY_EXISTS(event event_new "${MK_LIBEVENT}/lib" HAVE_LIBEVENT)
   set(CMAKE_REQUIRED_INCLUDES "")
-
   if (NOT HAVE_EVENT2_EVENT_H OR NOT HAVE_LIBEVENT)
     message(FATAL_ERROR "libevent missing; Use -DMK_LIBEVENT to specify where it is installed (e.g. -DMK_LIBEVENT=/usr/local if it is installed under /usr/local)")
   endif()
