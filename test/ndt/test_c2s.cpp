@@ -155,12 +155,14 @@ static void test_msg(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("run() deals with error when reading TEST_FINALIZE") {
     Var<Context> ctx(new Context);
+    ctx->entry.reset(new Entry);
     test_c2s::run_impl<test_prepare, coro_ok, test_start, test_msg, fail>(
         ctx, [](Error err) { REQUIRE(err == ReadingTestFinalizeError()); });
 }
 
 TEST_CASE("run() deals with unexpected message instead of TEST_FINALIZE") {
     Var<Context> ctx(new Context);
+    ctx->entry.reset(new Entry);
     test_c2s::run_impl<test_prepare, coro_ok, test_start, test_msg, invalid>(
         ctx, [](Error err) { REQUIRE(err == NotTestFinalizeError()); });
 }
