@@ -10,6 +10,7 @@
 #include "../src/libmeasurement_kit/nettests/utils_impl.hpp"
 
 #include <sstream>
+#include <unordered_set>
 
 static mk::Var<std::istream> check_variable_expanded(const std::string &path) {
     REQUIRE(path == "it");
@@ -48,6 +49,10 @@ TEST_CASE("process_input_filepaths() works as expected") {
             mk::nettests::process_input_filepaths_impl<check_variable_expanded>(
                 true, {"${probe_cc}"}, "IT", {}, mk::Logger::global(), nullptr,
                 nullptr);
+        /*
+         * We are going to fail because the mocked function returns a
+         * stream that is already at EOF.
+         */
         REQUIRE(!maybe_result);
         REQUIRE(maybe_result.as_error() ==
                 mk::ooni::CannotReadAnyInputFileError());
@@ -67,8 +72,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
     SECTION("If we can't open a file, the proper function is notified") {
         std::string cannot_open;
         mk::ErrorOr<std::deque<std::string>> maybe_result =
-            mk::nettests::process_input_filepaths_impl<mk::nettests::open_file_,
-                                                       cannot_read_line>(
+            mk::nettests::process_input_filepaths(
                 true, {"./nonexistent"}, "IT", {}, mk::Logger::global(),
                 [&](const std::string &p) { cannot_open = p; }, nullptr);
         REQUIRE(!maybe_result);
@@ -121,6 +125,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
     }
 
     SECTION("The randomize functionality is not invoked when not requested") {
+        /* No randomize, hence here we should not see exceptions: */
         mk::nettests::process_input_filepaths_impl<mk::nettests::open_file_,
                                                    mk::nettests::readline_,
                                                    intercept_randomize>(
@@ -152,10 +157,10 @@ TEST_CASE("process_input_filepaths() works as expected") {
         for (; count < 8; ++count) {
             mk::nettests::randomize_input_(copy);
             if (expect != copy) {
-                break;
+                return;
             }
         }
-        REQUIRE(count < 8);
+        REQUIRE(false);
     }
 
     SECTION("When input is not required, just a single entry is returned") {
@@ -167,5 +172,26 @@ TEST_CASE("process_input_filepaths() works as expected") {
         REQUIRE(!!maybe_result);
         REQUIRE(maybe_result->size() == 1);
         REQUIRE(*maybe_result == std::deque<std::string>{{""}});
+    }
+
+    SECTION("It is able to load and shuffle input") {
+        std::unordered_set<std::string> expect{"http://torproject.org",
+                                               "http://ooni.nu",
+                                               "http://neubot.org",
+                                               "http://archive.org",
+                                               "http://creativecommons.org",
+                                               "http://cyber.law.harvard.edu",
+                                               "http://duckduckgo.com",
+                                               "http://netflix.com",
+                                               "http://nmap.org",
+                                               "http://www.emule.com"};
+        mk::ErrorOr<std::deque<std::string>> maybe_result =
+            mk::nettests::process_input_filepaths(
+                true, {"./test/fixtures/urls.txt"}, "IT", {},
+                mk::Logger::global(), nullptr, nullptr);
+        REQUIRE(!!maybe_result);
+        std::unordered_set<std::string> result(maybe_result->begin(),
+                                               maybe_result->end());
+        REQUIRE(expect == result);
     }
 }
