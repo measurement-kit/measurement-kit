@@ -1,10 +1,13 @@
 valgrind-gcc:
-  image: ubuntu:xenial
-  script: ./build/docker/script/run valgrind-gcc
+  image: ubuntu:yakkety
+  script: ./build/ci/gitlab valgrind-gcc
   only:
     - master
+    - stable
+
 valgrind-clang:
-  image: ubuntu:xenial
-  script: ./build/docker/script/run valgrind-clang
+  image: ubuntu:yakkety
+  script: ./build/ci/gitlab valgrind-clang
   only:
     - master
+    - stable

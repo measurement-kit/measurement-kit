@@ -6,7 +6,7 @@ echo "Downloading and verifying precompiled dependencies from github"
 (
     set -e # just in case
     cd $ROOTDIR
-    DEPS_URL=https://github.com/measurement-kit/measurement-kit-deps/releases/download/2016-12-06/ios-dependencies-20161206T161912Z.tgz
+    DEPS_URL=https://github.com/measurement-kit/dependencies/releases/download/stable/ios-dependencies-20161228T131239Z.tgz
     DEPS_FILE=$(basename $DEPS_URL)
     curl --progress-bar -LO $DEPS_URL
     curl --progress-bar -LO $DEPS_URL.asc

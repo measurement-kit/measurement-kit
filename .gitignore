@@ -41,6 +41,7 @@
 /test-driver
 /test/common/continuation
 /test/common/delegate
+/test/common/encoding
 /test/common/error
 /test/common/error_or
 /test/common/fmap
@@ -76,10 +77,12 @@
 /test/ndt/test_meta
 /test/ndt/test_s2c
 /test/net/buffer
+/test/net/builtin_ca_bundle
 /test/net/connect
 /test/net/emitter
 /test/net/evbuffer
 /test/net/socks5
+/test/net/ssl_context
 /test/net/transport
 /test/net/utils
 /test/nettests/dns_injection
@@ -90,6 +93,7 @@
 /test/nettests/runner
 /test/nettests/tcp_connect
 /test/nettests/web_connectivity
+/test/ooni/bouncer
 /test/ooni/collector_client
 /test/ooni/resources
 /test/ooni/templates
@@ -126,3 +130,4 @@ src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/
 stamp-h1
 third_party/
+xx

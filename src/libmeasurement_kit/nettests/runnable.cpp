@@ -2,10 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/nettests.hpp>
-
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
+
+#include <measurement_kit/nettests.hpp>
+
+#include <random>
 
 namespace mk {
 namespace nettests {
@@ -13,7 +15,15 @@ namespace nettests {
 using namespace mk::report;
 using namespace mk::ooni;
 
-Runnable::~Runnable() {}
+Runnable::~Runnable() {
+    for (auto fn : destroy_cbs) {
+        try {
+            fn();
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
+    }
+}
 
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}
@@ -25,19 +35,14 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
                                     Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
-    std::string next_input;
-    std::getline(*input_generator, next_input);
 
-    if (input_generator->eof()) {
+    if (inputs.size() <= 0) {
         logger->debug("net_test: reached end of input");
         cb(NoError());
         return;
     }
-    if (!input_generator->good()) {
-        logger->warn("net_test: I/O error reading input");
-        cb(FileIoError());
-        return;
-    }
+    std::string next_input = inputs.front();
+    inputs.pop_front();
 
     double prog = 0.0;
     if (num_entries > 0) {
@@ -92,6 +97,12 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                 }
             } else {
                 logger->debug("net_test: written entry");
+            }
+            double max_rt = options.get("max_runtime", -1.0);
+            if (max_rt >= 0.0 and mk::time_now() - beginning > max_rt) {
+                logger->info("Exceeded test maximum runtime");
+                cb(NoError());
+                return;
             }
             reactor->call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
@@ -235,6 +246,7 @@ void Runnable::begin(Callback<Error> cb) {
         begin_cb();
     }
     mk::utc_time_now(&test_start_time);
+    beginning = mk::time_now();
     geoip_lookup([=]() {
         resolver_lookup([=](Error error, std::string resolver_ip_) {
             if (!error) {
@@ -250,35 +262,63 @@ void Runnable::begin(Callback<Error> cb) {
                 }
                 size_t num_entries = 0;
                 if (needs_input) {
-                    if (input_filepath == "") {
-                        logger->warn("an input file is required");
+                    if (input_filepaths.size() <= 0) {
+                        logger->warn("at least an input file is required");
                         cb(MissingRequiredInputFileError());
                         return;
                     }
-                    input_generator.reset(new std::ifstream(input_filepath));
-                    if (!input_generator->good()) {
-                        logger->warn("cannot read input file");
-                        cb(CannotOpenInputFileError());
+                    std::string probe_cc_lowercase;
+                    for (auto &c: probe_cc) {
+                        /*
+                         * Note: in general the snippet below is not
+                         * so good because it does not work for UTF-8
+                         * and the like but here we are converting
+                         * country codes which are always ASCII.
+                         */
+                        probe_cc_lowercase += std::tolower(c);
+                    }
+                    for (auto input_filepath: input_filepaths) {
+                        input_filepath = std::regex_replace(
+                            input_filepath,
+                            std::regex{R"(\$\{probe_cc\})"},
+                            probe_cc_lowercase
+                        );
+                        std::ifstream input_generator{input_filepath};
+                        if (!input_generator.good()) {
+                            logger->warn("cannot open input file");
+                            continue;
+                        }
+                        std::string next_input;
+                        while ((std::getline(input_generator, next_input))) {
+                            num_entries += 1;
+                            inputs.push_back(next_input);
+                        }
+                        if (!input_generator.eof()) {
+                            logger->warn("I/O error reading input file");
+                            continue;
+                        }
+                    }
+                    if (num_entries <= 0) {
+                        logger->warn("no specified input file could be read");
+                        cb(CannotReadAnyInputFileError());
                         return;
                     }
-
-                    // Count the number of entries
-                    std::string next_input;
-                    while ((std::getline(*input_generator, next_input))) {
-                        num_entries += 1;
-                    }
-                    if (!input_generator->eof()) {
-                        logger->warn("cannot read input file");
-                        cb(FileIoError());
+                    ErrorOr<bool> shuffle = options.get_noexcept<bool>(
+                            "randomize_input", true);
+                    if (!shuffle) {
+                        logger->warn("invalid 'randomize_input' option");
+                        cb(shuffle.as_error());
                         return;
                     }
-                    // See http://stackoverflow.com/questions/5750485
-                    //  and http://stackoverflow.com/questions/28331017
-                    input_generator->clear();
-                    input_generator->seekg(0);
-
+                    if (*shuffle) {
+                        // http://en.cppreference.com/w/cpp/algorithm/shuffle:
+                        std::random_device rd;
+                        std::mt19937 g(rd());
+                        std::shuffle(inputs.begin(), inputs.end(), g);
+                    }
                 } else {
-                    input_generator.reset(new std::istringstream("\n"));
+                    // Empty string to call main() just once
+                    inputs.push_back("");
                     num_entries = 1;
                 }
 
@@ -302,8 +342,12 @@ void Runnable::begin(Callback<Error> cb) {
 }
 
 void Runnable::end(Callback<Error> cb) {
-    if (end_cb) {
-        end_cb();
+    for (auto fn : end_cbs) {
+        try {
+            fn();
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
     }
     report.close(cb);
 }

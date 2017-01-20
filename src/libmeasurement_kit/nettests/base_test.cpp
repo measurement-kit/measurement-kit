@@ -9,6 +9,11 @@
 namespace mk {
 namespace nettests {
 
+BaseTest &BaseTest::on_logger_eof(Delegate<> func) {
+    runnable->logger->on_eof(func);
+    return *this;
+}
+
 BaseTest &BaseTest::on_log(Delegate<uint32_t, const char *> func) {
     runnable->logger->on_log(func);
     return *this;
@@ -37,9 +42,14 @@ BaseTest &BaseTest::increase_verbosity() {
 BaseTest::BaseTest() {}
 BaseTest::~BaseTest() {}
 
-BaseTest &BaseTest::set_input_filepath(std::string s) {
-    runnable->input_filepath = s;
+BaseTest &BaseTest::add_input_filepath(std::string s) {
+    runnable->input_filepaths.push_back(s);
     return *this;
+}
+
+BaseTest &BaseTest::set_input_filepath(std::string s) {
+    runnable->input_filepaths.clear();
+    return add_input_filepath(s);
 }
 
 BaseTest &BaseTest::set_output_filepath(std::string s) {
@@ -63,7 +73,12 @@ BaseTest &BaseTest::on_begin(Delegate<> cb) {
 }
 
 BaseTest &BaseTest::on_end(Delegate<> cb) {
-    runnable->end_cb = cb;
+    runnable->end_cbs.push_back(cb);
+    return *this;
+}
+
+BaseTest &BaseTest::on_destroy(Delegate<> cb) {
+    runnable->destroy_cbs.push_back(cb);
     return *this;
 }
 
