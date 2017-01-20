@@ -112,7 +112,7 @@ if(UNIX)
   CHECK_INCLUDE_FILES(ares_dns.h HAVE_ARES_DNS_H)
   CHECK_LIBRARY_EXISTS(cares ares_parse_a_reply "${MK_CARES}/lib" HAVE_CARES)
   set(CMAKE_REQUIRED_INCLUDES "")
-  if (NOT HAVE_ARES_H OR NOT HAVE_CARES)
+  if (NOT HAVE_ARES_H OR NOT HAVE_ARES_DNS_H OR NOT HAVE_CARES)
     message(FATAL_ERROR "c-ares/c-ares missing; Use -DMK_CARES to specify where it is installed (e.g. -DMK_CARES=/usr/local if it is installed under /usr/local)")
   endif()
 
