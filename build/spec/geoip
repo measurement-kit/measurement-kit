@@ -1,4 +1,3 @@
-v=1.6.9
 pkg_name=geoip
 pkg_repository=https://github.com/maxmind/geoip-api-c.git
 pkg_branch_or_tag=v1.6.9
