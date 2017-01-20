@@ -340,5 +340,8 @@ ErrorOr<std::vector<double>> get_connect_times(Error err) {
     return connect_times;
 }
 
+ConnectResult::~ConnectResult() {}
+ConnectManyResult::~ConnectManyResult() {}
+
 } // namespace net
 } // namespace mk
