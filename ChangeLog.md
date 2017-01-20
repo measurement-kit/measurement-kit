@@ -1,3 +1,16 @@
+# MeasurementKit 0.4.0-beta.1 [2017-01-16]
+
+- net: improve handling of address:port (#1079)
+- `clang-format -i ooni/web_connectivity.cpp` (#1078)
+- Attempt to fix issue with case sensitive drive (#1076)
+- README.md: attempt to fix coveralls badge (#1073)
+- travis: fix coveralls (#1066)
+
+# MeasurementKit 0.4.0-beta [2017-01-13]
+
+- Feature: recognize utf8 (#1062)
+- Support for country-specific test lists (#1030)
+
 # MeasurementKit 0.4.0-alpha.3 [2017-01-06]
 
 - nettests: randomize input (#1029)

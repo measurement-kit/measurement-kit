@@ -17,19 +17,18 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                std::string nameserver, Callback<Error, Var<dns::Message>> cb,
                Settings options, Var<Reactor> reactor, Var<Logger> logger) {
 
-    int resolver_port;
-    std::string resolver_hostname, nameserver_part;
-    std::stringstream nameserver_ss(nameserver);
+    ErrorOr<net::Endpoint> maybe_epnt = net::parse_endpoint(nameserver, 53);
+    if (!maybe_epnt) {
+        reactor->call_soon([=]() { cb(maybe_epnt.as_error(), nullptr); });
+        return;
+    }
 
-    // TODO: Fix IPv6 `nameserver`, use google's [2001:4860:4860::8888]:53 for testing.
-    std::getline(nameserver_ss, nameserver_part, ':');
-    resolver_hostname = nameserver_part;
-
-    std::getline(nameserver_ss, nameserver_part, ':');
-    resolver_port = std::stoi(nameserver_part, nullptr);
+    uint16_t resolver_port = maybe_epnt->port;
+    std::string resolver_hostname = maybe_epnt->hostname;
 
     options["dns/nameserver"] = resolver_hostname;
     options["dns/port"] = resolver_port;
+    options["dns/engine"] = "libevent"; /* Ensure we use low level engine */
     options["dns/attempts"] = 1;
 
     dns::query(query_class, query_type, query_name,
@@ -82,7 +81,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
         [=](Error error, Var<http::Response> response) {
             Entry rr;
             rr["request"]["headers"] = headers;
-            rr["request"]["body"] = body;
+            rr["request"]["body"] = represent_http_body(body);
             rr["request"]["url"] = settings.at("http/url").c_str();
             rr["request"]["method"] = settings.at("http/method").c_str();
 
@@ -91,7 +90,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
 
             if (!error) {
                 rr["response"]["headers"] = response->headers;
-                rr["response"]["body"] = response->body;
+                rr["response"]["body"] = represent_http_body(response->body);
                 rr["response"]["response_line"] = response->response_line;
                 rr["response"]["code"] = response->status_code;
                 rr["failure"] = nullptr;

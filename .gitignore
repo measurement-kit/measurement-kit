@@ -35,12 +35,14 @@
 /example/libevent/discard
 /example/libevent/listen
 /example/net/transport
+/example/nettests/simple
 /include.am
 /maxmind-geoip.*.dat*
 /measurement_kit
 /test-driver
 /test/common/continuation
 /test/common/delegate
+/test/common/encoding
 /test/common/error
 /test/common/error_or
 /test/common/fmap
