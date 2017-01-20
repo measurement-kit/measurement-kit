@@ -30,6 +30,14 @@ namespace nettests {
  *
  * @param logger Used to print log messages.
  *
+ * @param on_open_error In case it is not possible to open a file, and
+ * the function is not `nullptr`, the file name that failed is passed to
+ * this function.
+ *
+ * @param on_io_error In case reading a file fails with I/O error, and
+ * the function is not `nullptr`, the file name that failed is passed to
+ * this function.
+ *
  * @returns List of entries to test on sucess, error on failure. The
  * following errors will be returned:
  *
@@ -47,7 +55,9 @@ ErrorOr<std::deque<std::string>> process_input_filepaths(
         const std::list<std::string> &input_filepaths,
         const std::string &probe_cc,
         const Settings &options,
-        Var<Logger> logger
+        Var<Logger> logger,
+        std::function<void(const std::string &)> on_open_error,
+        std::function<void(const std::string &)> on_io_error
 );
 
 } // namespace nettests

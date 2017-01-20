@@ -14,20 +14,27 @@
 namespace mk {
 namespace nettests {
 
-static std::ifstream open_file_(const std::string &path) {
-    return std::ifstream{path};
+static Var<std::istream> open_file_(const std::string &path) {
+    return Var<std::istream>{new std::ifstream{path}};
 }
 
-static bool readline_(std::ifstream &input, std::string &line) {
+static bool readline_(std::istream &input, std::string &line) {
     return static_cast<bool>(std::getline(input, line));
 }
 
-template <MK_MOCK(open_file_), MK_MOCK(readline_)>
-ErrorOr<std::deque<std::string>>
-process_input_filepaths_impl(const bool &needs_input,
-                             const std::list<std::string> &input_filepaths,
-                             const std::string &probe_cc, const Settings &options,
-                             Var<Logger> logger) {
+static void randomize_input_(std::deque<std::string> &inputs) {
+    // See http://en.cppreference.com/w/cpp/algorithm/shuffle
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(inputs.begin(), inputs.end(), g);
+}
+
+template <MK_MOCK(open_file_), MK_MOCK(readline_), MK_MOCK(randomize_input_)>
+ErrorOr<std::deque<std::string>> process_input_filepaths_impl(
+    const bool &needs_input, const std::list<std::string> &input_filepaths,
+    const std::string &probe_cc, const Settings &options, Var<Logger> logger,
+    std::function<void(const std::string &)> on_open_error,
+    std::function<void(const std::string &)> on_io_error) {
     std::deque<std::string> inputs;
     if (needs_input) {
         if (input_filepaths.size() <= 0) {
@@ -48,17 +55,23 @@ process_input_filepaths_impl(const bool &needs_input,
             input_filepath = std::regex_replace(input_filepath,
                                                 std::regex{R"(\$\{probe_cc\})"},
                                                 probe_cc_lowercase);
-            std::ifstream input_generator = open_file_(input_filepath);
-            if (!input_generator.good()) {
+            Var<std::istream> input_generator = open_file_(input_filepath);
+            if (!input_generator->good()) {
                 logger->warn("cannot open input file");
+                if (!!on_open_error) {
+                    on_open_error(input_filepath);
+                }
                 continue;
             }
             std::string next_input;
-            while ((readline_(input_generator, next_input))) {
+            while ((readline_(*input_generator, next_input))) {
                 inputs.push_back(next_input);
             }
-            if (!input_generator.eof()) {
+            if (!input_generator->eof()) {
                 logger->warn("I/O error reading input file");
+                if (!!on_io_error) {
+                    on_io_error(input_filepath);
+                }
                 continue;
             }
         }
@@ -73,10 +86,7 @@ process_input_filepaths_impl(const bool &needs_input,
             return shuffle.as_error();
         }
         if (*shuffle) {
-            // http://en.cppreference.com/w/cpp/algorithm/shuffle:
-            std::random_device rd;
-            std::mt19937 g(rd());
-            std::shuffle(inputs.begin(), inputs.end(), g);
+            randomize_input_(inputs);
         }
     } else {
         // Empty string to call main() just once
