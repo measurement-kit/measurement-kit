@@ -116,57 +116,54 @@ void request_maybe_send(ErrorOr<Var<Request>> request, Var<Transport> txp,
     });
 }
 
+static void leave_recv(Error err, Var<ResponseParserNg> parser,
+                       Var<Transport> txp, Callback<Error, Var<Response>> cb,
+                       Var<Reactor> reactor, Var<Logger> logger) {
+    logger->log(MK_LOG_DEBUG2, "http: leave recv closure with error: %s",
+                err.explain().c_str());
+    txp->on_error(nullptr);
+    txp->on_data(nullptr);
+    Var<Response> response;
+    if (!err) {
+        response.reset(new Response{parser->response});
+    }
+    reactor->call_soon([=]() { cb(err, response); });
+}
+
 void request_recv_response(Var<Transport> txp,
                            Callback<Error, Var<Response>> cb,
                            Var<Reactor> reactor, Var<Logger> logger) {
+
+    logger->log(MK_LOG_DEBUG2, "http: entering recv closure");
     Var<ResponseParserNg> parser(new ResponseParserNg);
-    Var<Response> response(new Response);
-    Var<bool> prevent_emit(new bool(false));
-
-    // Note: any parser error at this point is an exception catched by the
-    // connection code and routed to the error handler function below
-    txp->on_data([=](Buffer data) { parser->feed(data); });
-
-    parser->on_response([=](Response r) { *response = r; });
 
     // TODO: here we should honour the `ignore_body` setting
-    parser->on_body([=](std::string s) { response->body += s; });
 
-    // TODO: we should improve the parser such that the transport forwards the
-    // "error" event to it and then the parser does the right thing, so that the
-    // code becomes less "twisted" here.
-    //
-    // XXX actually trying to do that could make things worse as we have
-    // seen in #690; we should refactor this code with care.
-
-    parser->on_end([=]() {
-        if (*prevent_emit == true) {
+    txp->on_data([=](Buffer data) {
+        Error err = parser->feed(data);
+        if (err == PausedAfterParsingHeadersError()) {
+            // This is where one could process the response headers and then
+            // get subsequent body chunks in streaming fashion. We do not use
+            // this feature here and we immediately restart the parser.
+            err = parser->parse();
+        }
+        if (err == ParsingHeadersInProgressError() or
+            err == ParsingBodyInProgressError()) {
+            // We are not done yet
+            logger->log(MK_LOG_DEBUG2, "http: parsing incomplete");
             return;
         }
-        txp->emit_error(NoError());
+        leave_recv(err, parser, txp, cb, reactor, logger);
     });
+
     txp->on_error([=](Error err) {
-        logger->debug("Received error %d on connection", err.code);
-        if (err == EofError()) {
-            // Calling parser->on_eof() could trigger parser->on_end() and
-            // we don't want this function to call ->emit_error()
-            *prevent_emit = true;
-            try {
-                logger->debug("Now passing EOF to parser");
-                parser->eof();
-            } catch (Error &second_error) {
-                logger->warn("Parsing error at EOF: %d", second_error.code);
-                err = second_error;
-                // FALLTHRU
-            }
+        logger->debug("http: transport error: %s", err.explain().c_str());
+        if (err == EofError() and (err = parser->eof()) != NoError()) {
+            logger->debug("http: parse error at EOF: %s",
+                          err.explain().c_str());
+            // FALLTRU
         }
-        logger->debug("Now reacting to delivered error %d", err.code);
-        txp->on_error(nullptr);
-        txp->on_data(nullptr);
-        reactor->call_soon([=]() {
-            logger->log(MK_LOG_DEBUG2, "request_recv_response: end of closure");
-            cb(err, response);
-        });
+        leave_recv(err, parser, txp, cb, reactor, logger);
     });
 }
 

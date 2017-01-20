@@ -23,7 +23,7 @@ TEST_CASE("ResponseParserNg deals with an invalid message") {
     data += "\r\n";
     data += "1234567";
 
-    REQUIRE_THROWS_AS(parser.feed(data), ParserError);
+    REQUIRE(parser.feed(data) == ParserInvalidConstantError());
 }
 
 TEST_CASE("ResponseParserNg deals with an UPGRADE request") {
@@ -38,17 +38,12 @@ TEST_CASE("ResponseParserNg deals with an UPGRADE request") {
     data += "Server: Antani/1.0.0.0\r\n";
     data += "\r\n";
 
-    REQUIRE_THROWS_AS(parser.feed(data), UpgradeError);
+    REQUIRE(parser.feed(data) == UpgradeError());
 }
 
-TEST_CASE("ResponseParserNg works as expected") {
+TEST_CASE("ResponseParserNg works as expected with content-length") {
     std::string data;
     ResponseParserNg parser;
-    std::string body;
-
-    //
-    // Request #1
-    //
 
     data = "";
     data += "HTTP/1.2 200 Ok\r\n";
@@ -58,29 +53,42 @@ TEST_CASE("ResponseParserNg works as expected") {
     data += "\r\n";
     data += "1234567";
 
-    parser.on_response([](Response r) {
-        REQUIRE(r.http_major == 1);
-        REQUIRE(r.http_minor == 2);
-        REQUIRE(r.status_code == 200);
-        REQUIRE(r.reason == "Ok");
-        REQUIRE(r.headers.size() == 3);
-        REQUIRE(r.headers.at("Content-Type") == "text/plain");
-        REQUIRE(r.headers.at("Content-Length") == "7");
-        REQUIRE(r.headers.at("Server") == "Antani/1.0.0.0");
-    });
-
-    body = "";
-    parser.on_body([&body](std::string s) { body += s; });
-    parser.on_end([&body]() { REQUIRE(body == "1234567"); });
-
     for (auto c : data) {
         mk::debug("%c\n", c);
-        parser.feed(c);
+        Error err = parser.feed(c);
+        REQUIRE((
+            err == ParsingHeadersInProgressError() or
+            err == ParsingBodyInProgressError() or
+            err == NoError() or
+            err == PausedAfterParsingHeadersError()
+        ));
+        if (err == PausedAfterParsingHeadersError()) {
+            err = parser.parse();
+            REQUIRE(err == ParsingBodyInProgressError());
+        }
     }
 
-    //
-    // Request #2
-    //
+    REQUIRE(parser.response.http_major == 1);
+    REQUIRE(parser.response.http_minor == 2);
+    REQUIRE(parser.response.status_code == 200);
+    REQUIRE(parser.response.reason == "Ok");
+    REQUIRE(parser.response.headers.size() == 3);
+    REQUIRE(parser.response.headers.at("Content-Type") == "text/plain");
+    REQUIRE(parser.response.headers.at("Content-Length") == "7");
+    REQUIRE(parser.response.headers.at("Server") == "Antani/1.0.0.0");
+    REQUIRE(parser.response.body == "1234567");
+
+    /*
+     * When the parser has reached the final state it is paused and
+     * we cannot convince it to restart parsing but we need to create
+     * a new parser object instead.
+     */
+    REQUIRE(parser.feed("XXX XXX XXX\r\n\r\n") == ParserPausedError());
+}
+
+TEST_CASE("ResponseParserNg works as expected with chunked body") {
+    std::string data;
+    ResponseParserNg parser;
 
     data = "";
     data += "HTTP/1.1 202 Accepted\r\n";
@@ -93,29 +101,33 @@ TEST_CASE("ResponseParserNg works as expected") {
     data += "3\r\nabc\r\n";
     data += "0\r\nX-Trailer: trailer\r\n\r\n";
 
-    parser.on_response([](Response r) {
-        REQUIRE(r.http_major == 1);
-        REQUIRE(r.http_minor == 1);
-        REQUIRE(r.status_code == 202);
-        REQUIRE(r.reason == "Accepted");
-        REQUIRE(r.headers.size() == 3);
-        REQUIRE(r.headers.at("Content-Type") == "text/html");
-        REQUIRE(r.headers.at("Transfer-Encoding") == "chunked");
-        REQUIRE(r.headers.at("Server") == "Antani/2.0.0.0");
-    });
-
-    body = "";
-    parser.on_body([&body](std::string s) { body += s; });
-    parser.on_end([&body]() { REQUIRE(body == "abcabcabc"); });
-
     for (auto c : data) {
         mk::debug("%c\n", c);
-        parser.feed(c);
+        Error err = parser.feed(c);
+        REQUIRE((
+            err == ParsingHeadersInProgressError() or
+            err == ParsingBodyInProgressError() or
+            err == NoError() or
+            err == PausedAfterParsingHeadersError()
+        ));
+        if (err == PausedAfterParsingHeadersError()) {
+            err = parser.parse();
+            REQUIRE(err == ParsingBodyInProgressError());
+        }
     }
+
+    REQUIRE(parser.response.http_major == 1);
+    REQUIRE(parser.response.http_minor == 1);
+    REQUIRE(parser.response.status_code == 202);
+    REQUIRE(parser.response.reason == "Accepted");
+    REQUIRE(parser.response.headers.size() == 3);
+    REQUIRE(parser.response.headers.at("Content-Type") == "text/html");
+    REQUIRE(parser.response.headers.at("Transfer-Encoding") == "chunked");
+    REQUIRE(parser.response.headers.at("Server") == "Antani/2.0.0.0");
+    REQUIRE(parser.response.body == "abcabcabc");
 }
 
 TEST_CASE("ResponseParserNg eof() works as expected") {
-    bool called = false;
     ResponseParserNg parser;
     std::string data;
 
@@ -127,9 +139,9 @@ TEST_CASE("ResponseParserNg eof() works as expected") {
     data += "\r\n";
     data += "1234567";
 
-    parser.feed(data);
-    parser.on_end([&called]() { called = true; });
-    parser.eof();
-
-    REQUIRE(called);
+    Error err = parser.feed(data);
+    REQUIRE(err == PausedAfterParsingHeadersError());
+    err = parser.parse();
+    REQUIRE(err == ParsingBodyInProgressError());
+    REQUIRE(parser.eof() == NoError());
 }

@@ -8,6 +8,7 @@
 
 #include <measurement_kit/http.hpp>
 
+#include <cassert>
 #include <type_traits>
 
 namespace mk {
@@ -24,46 +25,48 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
   public:
     ResponseParserNg(Var<Logger> = Logger::global());
 
-    void on_begin(std::function<void()> fn) { begin_fn_ = fn; }
+    // TODO: Now that `parse()` is public, it would probably be more clean
+    // to rename `feed()` to `feed_and_parse()`.
 
-    void on_response(std::function<void(Response)> fn) { response_fn_ = fn; }
-
-    void on_body(std::function<void(std::string)> fn) { body_fn_ = fn; }
-
-    void on_end(std::function<void()> fn) { end_fn_ = fn; }
-
-    void feed(Buffer &data) {
+    Error feed(Buffer &data) {
         buffer_ << data;
-        parse();
+        return parse();
     }
 
-    void feed(std::string data) {
+    Error feed(std::string data) {
         buffer_ << data;
-        parse();
+        return parse();
     }
 
-    void feed(const char c) {
+    Error feed(const char c) {
         buffer_.write((const void *)&c, 1);
-        parse();
+        return parse();
     }
 
-    void eof() { parser_execute(nullptr, 0); }
+    Error eof() {
+        size_t count = 0;
+        Error err = parser_execute(nullptr, 0, count);
+        if (err) {
+            logger_->debug("http: parser failed at EOF: %s",
+                           err.explain().c_str());
+            return err;
+        }
+        return parser_state_error_;
+    }
 
     int do_message_begin_() {
         logger_->log(MK_LOG_DEBUG2, "http: BEGIN");
-        response_ = Response();
+        response = Response();
         prev_ = HeaderParserState::NOTHING;
         field_ = "";
         value_ = "";
-        if (begin_fn_) {
-            begin_fn_();
-        }
+        parser_state_error_ = ParsingHeadersInProgressError();
         return 0;
     }
 
     int do_status_(const char *s, size_t n) {
         logger_->log(MK_LOG_DEBUG2, "http: STATUS");
-        response_.reason.append(s, n);
+        response.reason.append(s, n);
         return 0;
     }
 
@@ -82,54 +85,63 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     int do_headers_complete_() {
         logger_->log(MK_LOG_DEBUG2, "http: HEADERS_COMPLETE");
         if (field_ != "") { // Also copy last header
-            response_.headers[field_] = value_;
+            response.headers[field_] = value_;
         }
-        response_.http_major = parser_.http_major;
-        response_.status_code = parser_.status_code;
-        response_.http_minor = parser_.http_minor;
+        response.http_major = parser_.http_major;
+        response.status_code = parser_.status_code;
+        response.http_minor = parser_.http_minor;
         std::stringstream sst;
-        sst << "HTTP/" << response_.http_major << "." << response_.http_minor
-            << " " << response_.status_code << " " << response_.reason;
-        response_.response_line = sst.str();
-        logger_->debug("< %s", response_.response_line.c_str());
-        for (auto kv : response_.headers) {
+        sst << "HTTP/" << response.http_major << "." << response.http_minor
+            << " " << response.status_code << " " << response.reason;
+        response.response_line = sst.str();
+        logger_->debug("< %s", response.response_line.c_str());
+        for (auto kv : response.headers) {
             logger_->debug("< %s: %s", kv.first.c_str(), kv.second.c_str());
         }
-        if (response_fn_) {
-            response_fn_(response_);
-        }
+        logger_->log(MK_LOG_DEBUG2, "http: paused after parsing headers");
+        /*
+         * Temporarily pause the parser such that we exit early from the parser
+         * loop and the caller knows we've reached end of headers and can then
+         * resume parsing in a streaming fashion. Currently unused by the caller
+         * but certainly potentially useful with large bodies.
+         *
+         * Note that resuming is automatic next time you call `parse()` when the
+         * parser state "error" has the value set below.
+         */
+        http_parser_pause(&parser_, 1);
+        parser_state_error_ = PausedAfterParsingHeadersError();
         return 0;
     }
 
     int do_body_(const char *s, size_t n) {
         logger_->log(MK_LOG_DEBUG2, "http: BODY");
-        if (body_fn_) {
-            body_fn_(std::string(s, n));
-        }
+        // TODO: allow to skip the body
+        response.body += std::string(s, n);
         return 0;
     }
 
     int do_message_complete_() {
         logger_->log(MK_LOG_DEBUG2, "http: END");
-        if (end_fn_) {
-            end_fn_();
-        }
+        /*
+         * Pause the parser such that further data, e.g. another response, is
+         * not parsed overwriting what has been parsed so far.
+         */
+        http_parser_pause(&parser_, 1);
+        parser_state_error_ = NoError();
         return 0;
     }
 
-  private:
-    Delegate<> begin_fn_;
-    Delegate<Response> response_fn_;
-    Delegate<std::string> body_fn_;
-    Delegate<> end_fn_;
+    // Variables that you can access to fetch parsers' results
+    Response response;
 
+  private:
     Var<Logger> logger_ = Logger::global();
     http_parser parser_;
     http_parser_settings settings_;
     Buffer buffer_;
+    Error parser_state_error_ = ParsingHeadersInProgressError();
 
     // Variables used during parsing
-    Response response_;
     HeaderParserState prev_ = HeaderParserState::NOTHING;
     std::string field_;
     std::string value_;
@@ -145,7 +157,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         if (prev_ == HPS::NOTHING && cur == HPS::FIELD) {
             field_ = std::string(s, n);
         } else if (prev_ == HPS::VALUE && cur == HPS::FIELD) {
-            response_.headers[field_] = value_;
+            response.headers[field_] = value_;
             field_ = std::string(s, n);
         } else if (prev_ == HPS::FIELD && cur == HPS::FIELD) {
             field_.append(s, n);
@@ -159,25 +171,111 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         prev_ = cur;
     }
 
-    void parse() {
+    // TODO: move this function along with other public functions
+  public:
+    Error parse() {
         size_t total = 0;
+        Error err = NoError();
         buffer_.for_each([&](const void *p, size_t n) {
-            total += parser_execute(p, n);
-            return true;
+            size_t count = 0;
+            err = parser_execute(p, n, count);
+            logger_->log(MK_LOG_DEBUG2, "http: parsed = %ld, err = %s",
+                         count, err.explain().c_str());
+            assert(count <= n); /* For robustness */
+            total += count;
+            return !err;
         });
         buffer_.discard(total);
+        if (err) {
+            logger_->debug("http: parser failed: %s", err.explain().c_str());
+            return err;
+        }
+        return parser_state_error_;
     }
 
-    size_t parser_execute(const void *p, size_t n) {
-        size_t x =
-            http_parser_execute(&parser_, &settings_, (const char *)p, n);
+  private:
+    Error parser_execute(const void *p, size_t n, size_t &rv) {
+        if (parser_state_error_ == PausedAfterParsingHeadersError()) {
+            logger_->log(MK_LOG_DEBUG2, "http: resuming parsing after headers");
+            parser_state_error_ = ParsingBodyInProgressError();
+            http_parser_pause(&parser_, 0);
+            // FALLTHROUGH
+        }
+        rv = http_parser_execute(&parser_, &settings_, (const char *)p, n);
         if (parser_.upgrade) {
-            throw UpgradeError();
+            return UpgradeError();
         }
-        if (x != n) {
-            throw ParserError();
+        assert(rv <= n);
+        if (rv < n) {
+            return map_parser_error_();
         }
-        return n;
+        /*
+         * (Perhaps obvious) note: this means the parser successfully parsed
+         * the current chunk but in case there are not errors here the real
+         * error that `parse()` returns is `parser_state_error` that may tell
+         * the user for example that more data is required.
+         */
+        return NoError();
+    }
+
+    Error map_parser_error_() {
+        switch (HTTP_PARSER_ERRNO(&parser_)) {
+        case HPE_OK:
+            return NoError();
+        case HPE_INVALID_EOF_STATE:
+            return ParserInvalidEofStateError();
+        case HPE_HEADER_OVERFLOW:
+            return ParserHeaderOverflowError();
+        case HPE_CLOSED_CONNECTION:
+            return ParserClosedConnectionError();
+        case HPE_INVALID_VERSION:
+            return ParserInvalidVersionError();
+        case HPE_INVALID_STATUS:
+            return ParserInvalidStatusError();
+        case HPE_INVALID_METHOD:
+            return ParserInvalidMethodError();
+        case HPE_INVALID_URL:
+            return ParserInvalidUrlError();
+        case HPE_INVALID_HOST:
+            return ParserInvalidHostError();
+        case HPE_INVALID_PORT:
+            return ParserInvalidPortError();
+        case HPE_INVALID_PATH:
+            return ParserInvalidPathError();
+        case HPE_INVALID_QUERY_STRING:
+            return ParserInvalidQueryStringError();
+        case HPE_INVALID_FRAGMENT:
+            return ParserInvalidFragmentError();
+        case HPE_LF_EXPECTED:
+            return ParserLfExpectedError();
+        case HPE_INVALID_HEADER_TOKEN:
+            return ParserInvalidHeaderTokenError();
+        case HPE_INVALID_CONTENT_LENGTH:
+            return ParserInvalidContentLengthError();
+        case HPE_UNEXPECTED_CONTENT_LENGTH:
+            return ParserUnexpectedContentLengthError();
+        case HPE_INVALID_CHUNK_SIZE:
+            return ParserInvalidChunkSizeError();
+        case HPE_INVALID_CONSTANT:
+            return ParserInvalidConstantError();
+        case HPE_INVALID_INTERNAL_STATE:
+            return ParserInvalidInternalStateError();
+        case HPE_STRICT:
+            return ParserStrictModeAssertionError();
+        case HPE_PAUSED:
+            /*
+             * If the parser is paused for a specific reason, use the more
+             * specific reason instead of using the generic reason.
+             */
+            if (parser_state_error_ == PausedAfterParsingHeadersError()) {
+                return parser_state_error_;
+            }
+            return ParserPausedError();
+        default:
+            // FALLTHROUGH
+            break;
+        }
+        return GenericParserError();
     }
 };
 
