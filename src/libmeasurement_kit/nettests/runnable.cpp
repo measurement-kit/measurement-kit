@@ -195,6 +195,10 @@ void Runnable::geoip_lookup(Callback<> cb) {
 }
 
 void Runnable::open_report(Callback<Error> callback) {
+    /*
+     * TODO: it would probably more robust to future changes to
+     * set these values using a constructor.
+     */
     report.test_name = test_name;
     report.test_version = test_version;
     report.test_start_time = test_start_time;
