@@ -25,8 +25,9 @@ void Report::fill_entry(Entry &entry) const {
     entry["probe_ip"] = probe_ip;
     entry["probe_asn"] = probe_asn;
     entry["probe_cc"] = probe_cc;
-    entry["software_name"] = software_name;
-    entry["software_version"] = software_version;
+    entry["software_name"] = options.get("software_name", software_name);
+    entry["software_version"] =
+        options.get("software_version", software_version);
     entry["data_format_version"] = data_format_version;
 }
 
