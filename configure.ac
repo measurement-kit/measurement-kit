@@ -45,6 +45,7 @@ if test "`uname`" != "Darwin"; then
 fi
 
 MK_AM_CHECK_LIBC_FUNCS
+MK_AM_CARES
 MK_AM_OPENSSL
 MK_AM_LIBEVENT
 MK_AM_GEOIP

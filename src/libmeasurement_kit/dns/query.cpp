@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "../libevent/dns.hpp"
+#include "../dns/cares_engine.hpp"
 #include "../dns/system_resolver.hpp"
 
 namespace mk {
@@ -22,6 +23,9 @@ void query(
         libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);
     } else if (engine == "system") {
         system_resolver(dns_class, dns_type, name, cb, settings, reactor, logger);
+    } else if (engine == "cares") {
+        cares_engine_query(dns_class, dns_type, name, cb, settings, reactor,
+                           logger);
     } else {
         reactor->call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
     }

@@ -57,6 +57,32 @@ AC_DEFUN([MK_AM_CHECK_LIBC_FUNCS], [
   ])
 ])
 
+AC_DEFUN([MK_AM_CARES], [
+
+  AC_ARG_WITH([c-ares],
+              [AS_HELP_STRING([--with-c-ares],
+                [c-ares async DNS library @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
+
+  mk_not_found=""
+  AC_CHECK_HEADERS(ares.h, [], [mk_not_found=1])
+  AC_CHECK_HEADERS(ares_dns.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(cares, ares_parse_a_reply, [], [mk_not_found=1])
+
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: c-ares])
+    echo "    - to install on Debian: sudo apt-get install libc-ares-dev"
+    echo "    - to install on OSX: brew install c-ares"
+    echo "    - to compile from sources: ./build/dependency c-ares"
+    AC_MSG_ERROR([Please, install c-ares and run configure again])
+  fi
+])
+
 AC_DEFUN([MK_AM_LIBEVENT], [
 
   AC_ARG_WITH([libevent],

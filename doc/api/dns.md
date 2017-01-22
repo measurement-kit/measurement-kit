@@ -9,18 +9,15 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/dns.hpp>
 
-void mk::dns::query(mk::dns::QueryClass dns_class,
-                    mk::dns::QueryType dns_type,
-                    std::string query_name,
-                    mk::Callback<mk::Error, mk::dns::Message> callback,
-                    mk::Settings settings = {},
-                    mk::Var<mk::Reactor> reactor = mk::Reactor::global());
-
-void resolve_hostname(std::string hostname,
-                    Callback<ResolveHostnameResult> cb,
-                    Settings settings = {},
-                    Var<Reactor> reactor = Reactor::global(),
-                    Var<Logger> logger = Logger::global());
+void mk::dns::query(
+        mk::dns::QueryClass dns_class,
+        mk::dns::QueryType dns_type,
+        std::string query_name,
+        mk::Callback<mk::Error, mk::Var<mk::dns::Message>> callback,
+        mk::Settings settings = {},
+        mk::Var<mk::Reactor> reactor = mk::Reactor::global(),
+        mk::Var<mk::Logger> logger = mk::Logger::global()
+);
 ```
 
 # STABILITY
@@ -35,36 +32,36 @@ and receive the corresponding responses.
 The `dns_class` argument indicates the query class. At least
 the following query classes are defined:
 
-- *QueryClassId::IN*: this class represents the "internet" domain
+- *MK_DNS_CLASS_IN*: this class represents the "internet" domain
 
 Note that you can also pass the query class as string; e.g.,
 the following would compile and run as expected:
 
 
 ```C++
-    mk::dns::query("IN", ...);
+    mk::dns::query("IN", ...); // == mk::dns::query(MK_DNS_CLASS_IN, ...);
 ```
 
-The `dns_type` argument indicates the query type. The following
+The `dns_type` argument indicates the query type. At least, the following
 query types are defined:
 
-- *QueryTypeId::A*: the `query_name` argument must be a domain name and the result
+- *MK_DNS_TYPE_A*: the `query_name` argument must be a domain name and the result
   would be the corresponding IPv4 address, if any.
 
-- *QueryTypeId::AAAA*: the `query_name` argument must be a domain name and the result
+- *MK_DNS_TYPE_AAAA*: the `query_name` argument must be a domain name and the result
   would be the corresponding IPv6 address. if any.
 
-- *QueryTypeId::PTR*: the `query_name` argument should be an IP address expressed
+- *MK_DNS_TYPE_PTR*: the `query_name` argument should be an IP address expressed
   using the reverse `IN-ADDR` representation and the result would the corresponding
   domain name, if any (see `EXAMPLES` section for examples).
 
-- *QueryTypeId::REVERSE_A*: the `query_name` argument should be an IPv4 address and the
+- *MK_DNS_TYPE_REVERSE_A*: the `query_name` argument should be an IPv4 address and the
   result would be the corresponding domain name, if any. This is a nonstandard
   DNS query type and basically instructs the DNS library to create for you
   the reverse `IN-ADDR` representation of the `query_name` field and issue a `PTR`
   query.
 
-- *QueryTypeId::REVERSE_AAAA*: same as `REVERSE_A` except that here the input shall be
+- *MK_DNS_TYPE_REVERSE_AAAA*: same as `REVERSE_A` except that here the input shall be
   a IPv6 address.
 
 Note that you can also pass the query type as string; e.g. the following
@@ -72,7 +69,15 @@ would also work as expected:
 
 ```C++
     mk::dns::query("IN", "A", "www.google.com", ...);
+
+    /* The above is equivalent to: */
+    mk::dns::query(MK_DNS_CLASS_IN, MK_DNS_TYPE_A, "www.google.com", ...);
 ```
+
+Note that `MK_DNS_CLASS_xx` and `MK_DNS_TYPE_xx` defines are generally
+consistent with `arpa/nameser.h` defines and, as such, can be passed
+directly to functions handling standard DNS defines. This is not true,
+of course, for non standard defines such as `MK_DNS_TYPE_REVERSE_A`.
 
 The `callback` argument is a lambda to be called when the DNS response is available
 or an error occurs. In case of success, error would be equal to `NoError()`. Otherwise,
@@ -91,9 +96,15 @@ defined by MeasurementKit DNS implementation:
 - `CancelError`:  user cancelled query
 - `NoDataError`:  no data in the response
 
+More errors than the one define above MAY be defined. Check the
+`measurement_kit/dns/dns.hpp` header file when in doubt.
+
 In case of success, the `Message` argument passed to the callback would
-contain details on the response. The `Message` structure contains at least
-the following fields:
+contain details on the response. Note that the `Message` argument is
+actually passed through the `Var<>` shared pointer. The callback MUST NOT
+pass a `Var<>` containing `nullptr` in case of success but MAY pass a `Var<>`
+containing `nullptr` in case of failure.  The `Message` structure contains
+at least the following fields:
 
 ```C++
 class Message {
@@ -170,9 +181,25 @@ the `query` function. The following setting keys are available:
 - *"dns/timeout"*: time after which we stop waiting for a response (by
   default this is five seconds)
 
+- *"dns/engine"*: indicates the engine to be used to perform the DNS query
+  and receive the response. By the time when v0.4 will be released, the
+  following DNS engines will be available:
+
+    - *libevent*: DNS engine based on libevent's evdns
+    - *system*: DNS engine that uses the system's `getaddrinfo()`
+    - *cares*: DNS engine using the c-ares async DNS library
+
+  Note that not engines MAY NOT be able to honour all DNS settings. As of
+  v0.4.x, DNS engines will ignore DNS settings they cannot honour, but this
+  behavior is expected to change later on, where DNS engines will be
+  required to emit an error if a non-default DNS setting that they cannot
+  honour is passed to them.
+
 The optional `reactor` argument is the reactor to use to issue the query
 and receive the corresponding response.
 
+Likewise, the optional `logger` argument is the logger to use to emit log
+messages when sending the DNS request and receiving the response.
 
 The `resolve_hostname()` function should be used to perform dns queries
 for connection purposes and not to perform tests on a dns server.
@@ -243,4 +270,5 @@ dns::query(
 
 # HISTORY
 
-The DNS module appeared in MeasurementKit 0.1.0.
+The DNS module appeared in MeasurementKit 0.1.0. The *system* and *cares* DNS
+engines where added in MeasurementKit 0.4.0.

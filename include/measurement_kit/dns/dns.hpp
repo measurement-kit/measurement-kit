@@ -42,35 +42,60 @@ MK_DEFINE_ERR(MK_ERR_DNS(27), NotSupportedServnameError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(28), NotSupportedAISocktypeError, "")
 MK_DEFINE_ERR(MK_ERR_DNS(29), InetNtopFailureError, "")
 
+// c-ares errors
+MK_DEFINE_ERR(MK_ERR_DNS(30), SocketCreateError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(31), SetsockoptError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(32), IntegerOverflowError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(33), SendtoError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(34), PacketTruncatedError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(35), UnexpectedPollFlagsError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(36), RecvError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(37), UnexpectedShortReadError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(38), NoSpaceForQueryError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(39), NoSpaceForHeaderError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(40), NoSpaceForResourceRecordError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(41), InetNtopError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(42), InvalidRecordLengthError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(43), NoSpaceForResourceRecordHeaderError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(44), BadNameError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(45), NoDataToSendError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(46), InvalidAttemptsOptionError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(47), InvalidQueryIdOptionError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(48), InvalidRecursionDesiredOptionError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(49), InvalidRandomizeCaseOptionError, "")
+MK_DEFINE_ERR(MK_ERR_DNS(50), UnexpectedQueryIdError, "")
+
+// Note: these enums are consistent with the defines in arpa/nameser.h
+#define MK_DNS_CLASSES                                                         \
+    XX(INVALID, 0),                                                            \
+    XX(IN, 1),                                                                 \
+    XX(CH, 3),                                                                 \
+    XX(HS, 4)
+
 enum QueryClassId {
-    MK_DNS_CLASS_INVALID = 0,
-    MK_DNS_CLASS_IN,
-    MK_DNS_CLASS_CS,
-    MK_DNS_CLASS_CH,
-    MK_DNS_CLASS_HS
+#define XX(codename, value) MK_DNS_CLASS_ ## codename = value
+    MK_DNS_CLASSES
+#undef XX
 };
 
+// Note: these enums are consistent with the defines in arpa/nameser.h
+#define MK_DNS_TYPES                                                           \
+    XX(INVALID, 0),                                                            \
+    XX(A, 1),                                                                  \
+    XX(NS, 2),                                                                 \
+    XX(CNAME, 5),                                                              \
+    XX(SOA, 6),                                                                \
+    XX(PTR, 12),                                                               \
+    XX(MX, 15),                                                                \
+    XX(TXT, 16),                                                               \
+    XX(AAAA, 28),                                                              \
+    XX(REVERSE_A, 65530), /* nonstandard! */                                   \
+    XX(REVERSE_AAAA, 65531) /* nonstandard! */
+
 enum QueryTypeId {
-    MK_DNS_TYPE_INVALID = 0,
-    MK_DNS_TYPE_A,
-    MK_DNS_TYPE_NS,
-    MK_DNS_TYPE_MD,
-    MK_DNS_TYPE_MF,
-    MK_DNS_TYPE_CNAME,
-    MK_DNS_TYPE_SOA,
-    MK_DNS_TYPE_MB,
-    MK_DNS_TYPE_MG,
-    MK_DNS_TYPE_MR,
-    MK_DNS_TYPE_NUL,
-    MK_DNS_TYPE_WKS,
-    MK_DNS_TYPE_PTR,
-    MK_DNS_TYPE_HINFO,
-    MK_DNS_TYPE_MINFO,
-    MK_DNS_TYPE_MX,
-    MK_DNS_TYPE_TXT,
-    MK_DNS_TYPE_AAAA,
-    MK_DNS_TYPE_REVERSE_A,    // nonstandard
-    MK_DNS_TYPE_REVERSE_AAAA  // nonstandard
+#define XX(codename, value) MK_DNS_TYPE_ ## codename = value
+    MK_DNS_TYPES
+#undef XX
 };
 
 class QueryClass {
@@ -79,6 +104,11 @@ class QueryClass {
     QueryClass(QueryClassId);
     QueryClass(std::string);
     QueryClass(const char *);
+    QueryClass(int);
+    QueryClass &operator=(const QueryClass &);
+    QueryClass &operator=(std::string);
+    QueryClass &operator=(const char *);
+    QueryClass &operator=(int);
     bool operator==(QueryClassId id) const;
     bool operator!=(QueryClassId id) const;
     operator QueryClassId() const;
@@ -93,6 +123,11 @@ class QueryType {
     QueryType(QueryTypeId id);
     QueryType(std::string);
     QueryType(const char *);
+    QueryType(int);
+    QueryType &operator=(const QueryType &);
+    QueryType &operator=(std::string);
+    QueryType &operator=(const char *);
+    QueryType &operator=(int);
     bool operator==(QueryTypeId id) const;
     bool operator!=(QueryTypeId id) const;
     operator QueryTypeId() const;
@@ -104,9 +139,10 @@ class QueryType {
 class Answer {
   public:
     QueryType type;
-    QueryClass qclass;
+    QueryClass aclass;
     int code = 0;
     uint32_t ttl = 0;
+    uint16_t dlen = 0;
     std::string name;
     std::string ipv4;             ///< For A records
     std::string ipv6;             ///< For AAAA records
@@ -131,10 +167,32 @@ class Message {
   public:
     Message(){};
     Message(std::nullptr_t){};
-    double rtt = 0.0;
+    double rtt = 0.0; /* XXX not honoured by the cares engine */
+
+    /*
+     * XXX The following field is a duplicate of rcode.
+     */
     int error_code = 66 /* This is evdns's generic error */;
-    std::vector<Answer> answers;
+
+    uint16_t qid;     ///< Query ID
+    bool qr;          ///< Query or response
+    char opcode;      ///< Operation code
+    bool aa;          ///< Authoritative answer
+    bool tc;          ///< Truncated content
+    bool rd;          ///< Recursion desired
+    bool ra;          ///< Recursion available
+    bool z;           ///< Zero
+    /* TODO: what about the answer authenticated bit? */
+    char rcode;       ///< Reply code
+    uint16_t qdcount; ///< Questions count
+    uint16_t ancount; ///< Answers count
+    uint16_t nscount; ///< Name server authority count
+    uint16_t arcount; ///< Additional records count
+
     std::vector<Query> queries;
+    std::vector<Answer> answers;
+    std::vector<Answer> authorities;
+    std::vector<Answer> additionals;
 };
 
 void query(

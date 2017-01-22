@@ -62,6 +62,8 @@ void loop_with_initial_event(Callback<>, Var<Reactor> = Reactor::global());
 void loop(Var<Reactor> = Reactor::global());
 void loop_once(Var<Reactor> = Reactor::global());
 void break_loop(Var<Reactor> = Reactor::global());
+void pollfd(socket_t sockfd, short events, Callback<Error, short> callback,
+            double timeout = -1.0, Var<Reactor> = Reactor::global());
 
 // Introduced as aliases in v0.4.x
 inline void run_with_initial_event(Callback<> callback,

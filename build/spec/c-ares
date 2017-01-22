@@ -1,0 +1,10 @@
+pkg_name=c-ares
+pkg_repository=https://github.com/c-ares/c-ares.git
+pkg_branch_or_tag=cares-1_12_0
+
+pkg_autogen() {
+    echo "- libtoolize"
+    libtoolize || glibtoolize
+    echo "- autoreconf -i"
+    autoreconf -i
+}
