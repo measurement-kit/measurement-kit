@@ -123,11 +123,11 @@ TEST_CASE("extract_html_title works") {
     REQUIRE(mk::ooni::extract_html_title(body) == "TITLE");
 }
 
-TEST_CASE("represent_http_body works") {
+TEST_CASE("represent_string works") {
     SECTION("For an ASCII body") {
         std::string s = "an ASCII body";
         mk::report::Entry e = s;
-        REQUIRE(mk::ooni::represent_http_body(s).dump() == e.dump());
+        REQUIRE(mk::ooni::represent_string(s).dump() == e.dump());
     }
 
     SECTION("For a UTF-8 body") {
@@ -135,14 +135,14 @@ TEST_CASE("represent_http_body works") {
                                0xc3, 0xa8, 'i', 'o', 'u'};
         std::string s{v.begin(), v.end()};
         mk::report::Entry e = s;
-        REQUIRE(mk::ooni::represent_http_body(s).dump() == e.dump());
+        REQUIRE(mk::ooni::represent_string(s).dump() == e.dump());
     }
 
     SECTION("For a binary body") {
         std::vector<uint8_t> v{0x04, 0x03, 0x02, 0x01, 0x00, 0x01, 0x02, 0x03};
         std::string s{v.begin(), v.end()};
         REQUIRE(
-            mk::ooni::represent_http_body(s).dump() ==
+            mk::ooni::represent_string(s).dump() ==
             (mk::report::Entry{{"format", "base64"}, {"data", "BAMCAQABAgM="}}
                  .dump()));
     }
