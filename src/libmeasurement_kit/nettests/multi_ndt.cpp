@@ -22,7 +22,7 @@ static void write_simple_stats(report::Entry &entry, Var<Logger> logger) {
     report::Entry single = mk::ndt::utils::compute_simple_stats(entry["single_stream"], logger);
     single["fastest_test"] = "single_stream";
     report::Entry multi = mk::ndt::utils::compute_simple_stats(entry["multi_stream"], logger);
-    single["fastest_test"] = "multi_stream";
+    multi["fastest_test"] = "multi_stream";
 
     report::Entry selected;
 
