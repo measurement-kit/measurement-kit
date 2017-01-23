@@ -6,11 +6,13 @@
 
 #include "../common/utils.hpp"
 #include "../net/connect.hpp"
+#include "../net/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 
 #include <event2/bufferevent.h>
 
+#include <cerrno>
 #include <sstream>
 
 struct bufferevent;
@@ -76,9 +78,14 @@ void connect_base(std::string address, int port,
 
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
         bufferevent_free(bev);
-        cb(GenericError(), nullptr, 0.0);
+        Error err = mk::net::map_errno(errno);
+        logger->warn("connect() failed immediately: %s",
+                     err.as_ooni_error().c_str());
+        cb(err, nullptr, 0.0);
         return;
     }
+
+    logger->debug("connect() in progress...");
 
     // WARNING: set callbacks after connect() otherwise we free `bev` twice
     // NOTE: In case of `new` failure we let the stack unwind
@@ -87,6 +94,8 @@ void connect_base(std::string address, int port,
         new Callback<Error, bufferevent *>([=](Error err, bufferevent *bev) {
             if (err) {
                 bufferevent_free(bev);
+                logger->warn("connect() failed: %s",
+                             err.as_ooni_error().c_str());
                 cb(err, nullptr, 0.0);
                 return;
             }

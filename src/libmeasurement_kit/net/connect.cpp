@@ -15,6 +15,7 @@
 #include "../net/ssl_context.hpp"
 
 #include <cassert>
+#include <cerrno>
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/net.hpp>
@@ -30,8 +31,7 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
         (*cb)(mk::net::TimeoutError(), bev);
     } else {
-        // TODO: here we should map to the actual error that occurred
-        (*cb)(mk::net::NetworkError(), bev);
+        (*cb)(mk::net::map_errno(errno), bev);
     }
     delete cb;
 }
@@ -150,13 +150,20 @@ void connect_logic(std::string hostname, int port,
                              [=](std::vector<Error> e, bufferevent *b) {
                                  result->connect_result = e;
                                  result->connected_bev = b;
+                                 Error connect_error = ConnectFailedError();
+                                 for (auto ei: e) {
+                                    connect_error.add_child_error(ei);
+                                 }
                                  if (!b) {
-                                     cb(ConnectFailedError(), result);
+                                     cb(connect_error, result);
                                      return;
                                  }
                                  Error nagle_error = disable_nagle(
                                     bufferevent_getfd(result->connected_bev)
                                  );
+                                 for (auto ei: e) {
+                                    nagle_error.add_child_error(ei);
+                                 }
                                  cb(nagle_error, result);
                              },
                              settings, reactor, logger);

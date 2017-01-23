@@ -9,6 +9,7 @@
 #include <cstring>
 #include <deque>
 #include <sstream>
+#include <system_error>
 
 #include <event2/util.h>
 
@@ -238,6 +239,30 @@ Error disable_nagle(socket_t sockfd) {
         return SocketError();
     }
     return NoError();
+}
+
+Error map_errno(int error_code) {
+    if (error_code == 0) {
+        return NoError();
+    }
+    /*
+     * In most Unix systems they are the same error. For the few systems in
+     * which they are not (and note I don't even know whether measurement-kit
+     * does compile on these systems), force EAGAIN to be EWOULDBLOCK.
+     *
+     * (Yes, EWOULDBLOCK is a BSD-ism, but I like it more.)
+     */
+    if (error_code == EAGAIN) {
+        error_code = EWOULDBLOCK;
+        // FALLTHROUGH
+    }
+#define XX(_code_, _name_, _descr_)                                            \
+    if (std::make_error_condition(std::errc::_descr_).value() == error_code) { \
+        return _name_();                                                       \
+    }
+    MK_NET_ERRORS_XX
+#undef XX
+    return NetworkError();
 }
 
 } // namespace net

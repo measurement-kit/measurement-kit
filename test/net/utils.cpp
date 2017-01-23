@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <cerrno>
+
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
@@ -225,5 +227,39 @@ TEST_CASE("Verify that invalid input is rejected") {
             mk::net::unreverse_ipv6(
                 "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0."
                 "2.") == "");
+    }
+}
+
+TEST_CASE("map_errno() works as expected") {
+    SECTION("Make sure that 0 maps onto mk::NoError") {
+        REQUIRE(mk::net::map_errno(0) == mk::NoError());
+    }
+
+    SECTION("Make sure that EAGAIN is correctly handled") {
+        REQUIRE(mk::net::map_errno(EAGAIN) ==
+                mk::net::OperationWouldBlockError());
+    }
+
+    SECTION("Make sure that mapped errors map to correct classes") {
+#define XX(_code_, _name_, _descr_)                                            \
+    {                                                                          \
+        auto err_cond = std::make_error_condition(std::errc::_descr_);         \
+        int code = err_cond.value();                                           \
+        REQUIRE(mk::net::map_errno(code) == mk::net::_name_());                \
+    }
+        MK_NET_ERRORS_XX
+#undef XX
+    }
+
+    SECTION("Make sure some errors maps by passing the definition directly") {
+        REQUIRE(mk::net::map_errno(EWOULDBLOCK) ==
+                mk::net::OperationWouldBlockError());
+        REQUIRE(mk::net::map_errno(EINTR) == mk::net::InterruptedError());
+        REQUIRE(mk::net::map_errno(ENOBUFS)
+                == mk::net::NoBufferSpaceError());
+    }
+
+    SECTION("Make sure that unmapped errors map to mk::net::SocketError") {
+        REQUIRE(mk::net::map_errno(ENOENT) == mk::net::SocketError());
     }
 }
