@@ -39,6 +39,7 @@ with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
     test.options["collector_base_url"] =
         mk::ooni::collector::testing_collector_url();
+    test.logger->set_verbosity(MK_LOG_INFO);
     lambda(test);
 }
 
