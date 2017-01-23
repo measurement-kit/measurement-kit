@@ -17,7 +17,7 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
                      Var<Reactor> reactor = Reactor::global(),
                      Var<Logger> logger = Logger::global());
 
-report::Entry represent_http_body(const std::string &body);
+report::Entry represent_string(const std::string &s);
 
 } // namespace ooni
 } // namespace mk
