@@ -18,14 +18,48 @@
 namespace mk {
 namespace net {
 
+static Error make_sockaddr_ipv4(std::string s, uint16_t p, sockaddr_storage *ss,
+                                socklen_t *solen) noexcept {
+    sockaddr_storage ss4 = {};
+    sockaddr_in *sin4 = (sockaddr_in *)&ss4;
+    if (inet_pton(AF_INET, s.c_str(), &sin4->sin_addr) != 1) {
+        return ValueError();
+    }
+    sin4->sin_family = AF_INET;
+    sin4->sin_port = htons(p);
+    if (ss != nullptr) {
+        *ss = ss4;
+    }
+    if (solen != nullptr) {
+        *solen = sizeof(*sin4);
+    }
+    return NoError();
+}
+
+static Error make_sockaddr_ipv6(std::string s, uint16_t p, sockaddr_storage *ss,
+                                socklen_t *solen) noexcept {
+    sockaddr_storage ss6 = {};
+    sockaddr_in6 *sin6 = (sockaddr_in6 *)&ss6;
+    if (inet_pton(AF_INET6, s.c_str(), &sin6->sin6_addr) != 1) {
+        return ValueError();
+    }
+    sin6->sin6_family = AF_INET6;
+    sin6->sin6_port = htons(p);
+    if (ss != nullptr) {
+        *ss = ss6;
+    }
+    if (solen != nullptr) {
+        *solen = sizeof(*sin6);
+    }
+    return NoError();
+}
+
 bool is_ipv4_addr(std::string s) {
-    sockaddr_in sin;
-    return inet_pton(AF_INET, s.c_str(), &sin.sin_addr) == 1;
+    return make_sockaddr_ipv4(s, 80, nullptr, nullptr) == NoError();
 }
 
 bool is_ipv6_addr(std::string s) {
-    sockaddr_in6 sin6;
-    return inet_pton(AF_INET6, s.c_str(), &sin6.sin6_addr) == 1;
+    return make_sockaddr_ipv6(s, 80, nullptr, nullptr) == NoError();
 }
 
 bool is_ip_addr(std::string s) {
@@ -113,6 +147,10 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
         logger->warn("utils:storage_init: invalid port");
         return -1;
     }
+
+    /*
+     * TODO: merge this code with the above helpers.
+     */
 
     memset(storage, 0, sizeof(*storage));
     switch (_family) {
@@ -263,6 +301,36 @@ Error map_errno(int error_code) {
     MK_NET_ERRORS_XX
 #undef XX
     return GenericError();
+}
+
+Error make_sockaddr(std::string s, std::string p, sockaddr_storage *ss,
+                    socklen_t *solen) noexcept {
+    auto maybe_pn = lexical_cast_noexcept<long long>(p);
+    if (!maybe_pn) {
+        return maybe_pn.as_error();
+    }
+    /*
+     * I initially thought that lexical_cast would have been able to detect
+     * overflow caused by negative numbers being feed to it when requested to
+     * parse a positive only integer. It seems it's not always like to.
+     *
+     * See <https://travis-ci.org/measurement-kit/measurement-kit/jobs/194992117#L2007>
+     */
+    if (*maybe_pn < 0 || *maybe_pn > 65535) {
+        return ValueError();
+    }
+    // Static cast good because above we make sure it is feasible
+    return make_sockaddr(s, static_cast<uint16_t>(*maybe_pn), ss, solen);
+}
+
+Error make_sockaddr(std::string s, uint16_t p, sockaddr_storage *ss,
+                    socklen_t *solen) noexcept {
+
+    Error err = make_sockaddr_ipv4(s, p, ss, solen);
+    if (err != NoError()) {
+        err = make_sockaddr_ipv6(s, p, ss, solen);
+    }
+    return err;
 }
 
 } // namespace net
