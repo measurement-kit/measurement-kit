@@ -32,14 +32,22 @@ void connect_base(std::string address, int port,
                   Var<Logger> logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
 
-    std::stringstream ss;
-    ss << address << ":" << port;
-    std::string endpoint = ss.str();
+    std::string endpoint = [&]() {
+        Endpoint endpoint;
+        endpoint.hostname = address;
+        endpoint.port = port;
+        return serialize_endpoint(endpoint);
+    }();
+
     sockaddr_storage storage;
     sockaddr *saddr = (sockaddr *)&storage;
     int salen = sizeof storage;
 
+    // XXX: as we have seen in #915, the following function does not deal with
+    // IPv6 scoped link local addresses. We can fix this by copying from the
+    // way in which such problem is solved in libevent/dns_utils.hpp.
     if (evutil_parse_sockaddr_port(endpoint.c_str(), saddr, &salen) != 0) {
+        logger->warn("cannot parse endpoint: '%s'", endpoint.c_str());
         cb(GenericError(), nullptr, 0.0);
         return;
     }
@@ -75,6 +83,7 @@ void connect_base(std::string address, int port,
     double begin = mk::time_now();
 
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
+        logger->warn("connect() failed immediately");
         bufferevent_free(bev);
         cb(GenericError(), nullptr, 0.0);
         return;
@@ -86,6 +95,7 @@ void connect_base(std::string address, int port,
         bev, nullptr, nullptr, mk_bufferevent_on_event,
         new Callback<Error, bufferevent *>([=](Error err, bufferevent *bev) {
             if (err) {
+                logger->warn("connect() failed in its callback");
                 bufferevent_free(bev);
                 cb(err, nullptr, 0.0);
                 return;
