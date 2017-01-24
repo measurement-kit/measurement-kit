@@ -11,7 +11,10 @@
 
 namespace mk {
 
-class ErrorContext {};
+class ErrorContext {
+  public:
+    virtual ~ErrorContext();
+};
 
 class Error : public std::exception {
   public:
