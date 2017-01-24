@@ -34,13 +34,18 @@ void connect_base(std::string address, int port,
                   Var<Logger> logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
 
-    std::stringstream ss;
-    ss << address << ":" << port;
-    std::string endpoint = ss.str();
+    std::string endpoint = [&]() {
+        Endpoint endpoint;
+        endpoint.hostname = address;
+        endpoint.port = port;
+        return serialize_endpoint(endpoint);
+    }();
+
     sockaddr_storage storage;
     sockaddr *saddr = (sockaddr *)&storage;
     int salen = sizeof storage;
 
+    // TODO: make sure this handles scoped link local addresses
     if (evutil_parse_sockaddr_port(endpoint.c_str(), saddr, &salen) != 0) {
         cb(GenericError(), nullptr, 0.0);
         return;
