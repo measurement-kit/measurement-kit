@@ -114,6 +114,9 @@ were successful.
 Most MeasurementKit functions receive the `reactor` argument before the `logger`
 argument, but `connect()` uses the opposite convention.
 
+As of MeasurementKit v0.4, `connect()` does not correctly deal with scoped
+link-local IPv6 addresses (e.g. `fe80::1%lo0`).
+
 # HISTORY
 
 The `connect` submodule appeared in MeasurementKit 0.2.0.
