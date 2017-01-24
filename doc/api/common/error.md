@@ -10,7 +10,11 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 namespace mk {
 
-class ErrorContext {};
+class ErrorContext {
+  public:
+    virtual ~ErrorContext();
+    virtual nlohmann::json as_json();
+};
 
 class Error : public std::exception {
   public:
@@ -25,6 +29,11 @@ class Error : public std::exception {
     bool operator==(Error error);
     bool operator!=(int code);
     bool operator!=(Error error);
+
+    Error as_root_error();
+    void each(std::function<void(Error &)> lambda);
+    size_t count_children();
+    nlohmann::json as_json();
 
     std::string as_ooni_error();
 
@@ -113,6 +122,31 @@ as shown in the following snippet of code:
     MK_DEFINE_ERR(7, FooError, "");
     MK_DEFINE_ERR(7, FoobarError, "");
     REQUIRE((FooError() == FoobarError()));
+```
+
+The `as_root_error()` method goes in depth through child errors and
+returns the first error that either has no children or has more
+than one children. This is useful to find out the single lowest
+level operation that failed the current function call.
+
+The `each()` method goes in breadth through child errors and calls
+`lambda` for each of them.
+
+The `count_children()` method returns the number of child errors.
+
+The `as_json()` method returns the error as a JSON object. The JSON
+serialization of an error is a triple:
+
+- the first element is the string returned by `as_ooni_error()`
+- the second element is either `null` or the string returned
+  by `context->as_json()`
+- the third element is a vector containing the JSON serialization
+  of child errors
+
+For example:
+
+```JSON
+
 ```
 
 The `as_ooni_error()` method allows to obtain the [OONI error string](https://github.com/TheTorProject/ooni-spec/blob/master/data-formats/df-000-base.md#error-strings) corresponding

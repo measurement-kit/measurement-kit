@@ -4,8 +4,10 @@
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
+#include <measurement_kit/ext/json.hpp>
 #include <measurement_kit/common/var.hpp>
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -14,6 +16,7 @@ namespace mk {
 class ErrorContext {
   public:
     virtual ~ErrorContext();
+    virtual nlohmann::json as_json() const;
 };
 
 class Error : public std::exception {
@@ -41,14 +44,33 @@ class Error : public std::exception {
     bool operator!=(int n) const { return code != n; }
     bool operator!=(Error e) const { return code != e.code; }
 
-    std::string as_ooni_error() { return reason; }
+    std::string as_ooni_error() const noexcept { return reason; }
 
     void add_child_error(const Error &err) {
         Var<Error> container(new Error(err));
         child_errors.push_back(container);
     }
 
-    std::string explain() const {
+    Error as_root_error() const noexcept {
+        if (child_errors.size() != 1) {
+            return *this;
+        }
+        return child_errors[0]->as_root_error();
+    }
+
+    void each(std::function<void(Error &)> lambda) const {
+        for (auto ep: child_errors) {
+            lambda(*ep);
+        }
+    }
+
+    size_t count_children() const noexcept {
+        return child_errors.size();
+    }
+
+    nlohmann::json as_json() const;
+
+    std::string explain() const noexcept {
         std::string s;
         s += "{";
         s += reason;
@@ -80,21 +102,21 @@ class Error : public std::exception {
         _name_(Error e) : Error(_code_, _ooe_, e) {}                           \
     };
 
-MK_DEFINE_ERR(0, NoError, "")
-MK_DEFINE_ERR(1, GenericError, "")
-MK_DEFINE_ERR(2, NotInitializedError, "")
-MK_DEFINE_ERR(3, ValueError, "")
-MK_DEFINE_ERR(4, MockedError, "")
-MK_DEFINE_ERR(5, JsonParseError, "")
-MK_DEFINE_ERR(6, JsonKeyError, "")
-MK_DEFINE_ERR(7, JsonDomainError, "")
-MK_DEFINE_ERR(8, FileEofError, "")
-MK_DEFINE_ERR(9, FileIoError, "")
-MK_DEFINE_ERR(10, ParallelOperationError, "")
-MK_DEFINE_ERR(11, SequentialOperationError, "")
-MK_DEFINE_ERR(12, IllegalSequenceError, "")
-MK_DEFINE_ERR(13, UnexpectedNullByteError, "")
-MK_DEFINE_ERR(14, IncompleteUtf8SequenceError, "")
+MK_DEFINE_ERR(0, NoError, "no_error")
+MK_DEFINE_ERR(1, GenericError, "generic_error")
+MK_DEFINE_ERR(2, NotInitializedError, "not_initialized_error")
+MK_DEFINE_ERR(3, ValueError, "value_error")
+MK_DEFINE_ERR(4, MockedError, "mocked_error")
+MK_DEFINE_ERR(5, JsonParseError, "json_parse_error")
+MK_DEFINE_ERR(6, JsonKeyError, "json_key_error")
+MK_DEFINE_ERR(7, JsonDomainError, "json_domain_error")
+MK_DEFINE_ERR(8, FileEofError, "file_eof_error")
+MK_DEFINE_ERR(9, FileIoError, "file_io_error")
+MK_DEFINE_ERR(10, ParallelOperationError, "parallel_operation_failed")
+MK_DEFINE_ERR(11, SequentialOperationError, "sequential_operation_failed")
+MK_DEFINE_ERR(12, IllegalSequenceError, "illegal_bytes_sequence")
+MK_DEFINE_ERR(13, UnexpectedNullByteError, "unexpected_null_byte")
+MK_DEFINE_ERR(14, IncompleteUtf8SequenceError, "incomplete_utf8_sequence")
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)

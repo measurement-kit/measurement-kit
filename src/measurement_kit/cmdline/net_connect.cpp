@@ -49,7 +49,8 @@ int main(const char *, int argc, char **argv) {
 
     loop_with_initial_event([&domain, &port, &settings]() {
         connect(domain, port, [](Error err, Var<Transport> txp) {
-            std::cout << "Overall connect result: " << err.explain() << "\n";
+            std::cout << "Overall connect result: "
+                      << err.as_json().dump(4) << "\n";
             Var<ConnectResult> cr = err.context.as<ConnectResult>();
             if (!cr) {
                 std::cout << "No connection information\n";

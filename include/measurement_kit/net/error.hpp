@@ -88,6 +88,11 @@ MK_DEFINE_ERR(MK_ERR_NET(28), SslCtxLoadVerifyMemError, "")
 MK_NET_ERRORS_XX
 #undef XX
 
+MK_DEFINE_ERR(MK_ERR_NET(58), ConnectFailedLocallyError,
+              "connect_failed_locally")
+MK_DEFINE_ERR(MK_ERR_NET(59), ConnectFailedRemotelyError,
+              "connect_failed_remotely")
+
 } // namespace net
 } // namespace mk
 #endif

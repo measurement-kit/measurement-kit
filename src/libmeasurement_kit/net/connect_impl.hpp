@@ -33,6 +33,9 @@ void connect_base(std::string address, int port,
                   Var<Reactor> reactor = Reactor::global(),
                   Var<Logger> logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
+    Var<ConnectBaseResult> cbr{new ConnectBaseResult};
+    cbr->address = address;
+    cbr->port = port;
 
     std::string endpoint = [&]() {
         Endpoint endpoint;
@@ -47,7 +50,9 @@ void connect_base(std::string address, int port,
 
     // TODO: make sure this handles scoped link local addresses
     if (evutil_parse_sockaddr_port(endpoint.c_str(), saddr, &salen) != 0) {
-        cb(GenericError(), nullptr, 0.0);
+        Error error = GenericError();
+        error.context = cbr;
+        cb(error, nullptr, 0.0);
         return;
     }
 
@@ -86,6 +91,8 @@ void connect_base(std::string address, int port,
         Error err = mk::net::map_errno(errno);
         logger->warn("connect() failed immediately: %s",
                      err.as_ooni_error().c_str());
+        err = ConnectFailedLocallyError(err);
+        err.context = cbr;
         cb(err, nullptr, 0.0);
         return;
     }
@@ -101,11 +108,14 @@ void connect_base(std::string address, int port,
                 bufferevent_free(bev);
                 logger->warn("connect() failed: %s",
                              err.as_ooni_error().c_str());
+                err = ConnectFailedRemotelyError(err);
+                err.context = cbr;
                 cb(err, nullptr, 0.0);
                 return;
             }
             double elapsed = mk::time_now() - begin;
             logger->debug("connect time: %f", elapsed);
+            err.context = cbr;
             cb(err, bev, elapsed);
         }));
 }
@@ -150,6 +160,8 @@ connect_many_make(std::string address, int port, int count,
     ctx->reactor = reactor;
     ctx->logger = logger;
     ctx->result.reset(new ConnectManyResult);
+    ctx->result->hostname = address;
+    ctx->result->port = port;
     return ctx;
 }
 
