@@ -4,16 +4,16 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_CONNECT_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_CONNECT_IMPL_HPP
 
-#include "../common/utils.hpp"
-#include "../net/connect.hpp"
-#include "../net/utils.hpp"
-
 #include <measurement_kit/net.hpp>
 
 #include <event2/bufferevent.h>
 
 #include <cerrno>
 #include <sstream>
+
+#include "../common/utils.hpp"
+#include "../net/connect.hpp"
+#include "../net/utils.hpp"
 
 struct bufferevent;
 
@@ -89,12 +89,11 @@ void connect_base(std::string address, int port,
 
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
         bufferevent_free(bev);
-        Error err = mk::net::map_errno(errno);
-        logger->warn("connect() failed locally: %s",
-                     err.as_ooni_error().c_str());
-        err = ConnectFailedLocallyError(err);
-        err.context = cbr;
-        cb(err, nullptr, 0.0);
+        Error sys_error = mk::net::map_errno(errno);
+        logger->warn("reason why connect() has failed: %s",
+                     sys_error.as_ooni_error().c_str());
+        sys_error.context = cbr;
+        cb(sys_error, nullptr, 0.0);
         return;
     }
 
@@ -107,7 +106,7 @@ void connect_base(std::string address, int port,
         new Callback<Error, bufferevent *>([=](Error err, bufferevent *bev) {
             if (err) {
                 bufferevent_free(bev);
-                logger->warn("connect() failed remotely: %s",
+                logger->warn("reason why connect() has failed: %s",
                              err.as_ooni_error().c_str());
                 err = ConnectFailedRemotelyError(err);
                 err.context = cbr;

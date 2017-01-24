@@ -243,7 +243,7 @@ Error disable_nagle(socket_t sockfd) {
 
 Error map_errno(int error_code) {
     if (error_code == 0) {
-        return NoError();
+        return ValueError(); /* We don't expect this to happen */
     }
     /*
      * In most Unix systems they are the same error. For the few systems in
@@ -262,7 +262,7 @@ Error map_errno(int error_code) {
     }
     MK_NET_ERRORS_XX
 #undef XX
-    return NetworkError();
+    return GenericError();
 }
 
 } // namespace net

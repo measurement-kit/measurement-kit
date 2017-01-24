@@ -231,8 +231,8 @@ TEST_CASE("Verify that invalid input is rejected") {
 }
 
 TEST_CASE("map_errno() works as expected") {
-    SECTION("Make sure that 0 maps onto mk::NoError") {
-        REQUIRE(mk::net::map_errno(0) == mk::NoError());
+    SECTION("Make sure that 0 maps on mk::ValueError") {
+        REQUIRE(mk::net::map_errno(0) == mk::ValueError());
     }
 
     SECTION("Make sure that EAGAIN is correctly handled") {
@@ -259,7 +259,7 @@ TEST_CASE("map_errno() works as expected") {
                 == mk::net::NoBufferSpaceError());
     }
 
-    SECTION("Make sure that unmapped errors map to mk::net::SocketError") {
-        REQUIRE(mk::net::map_errno(ENOENT) == mk::net::SocketError());
+    SECTION("Make sure that unmapped errors map to mk::GenericError") {
+        REQUIRE(mk::net::map_errno(ENOENT) == mk::GenericError());
     }
 }
