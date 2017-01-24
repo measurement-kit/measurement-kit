@@ -4,14 +4,16 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_CONNECT_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_CONNECT_IMPL_HPP
 
-#include "../common/utils.hpp"
-#include "../net/connect.hpp"
-
 #include <measurement_kit/net.hpp>
 
 #include <event2/bufferevent.h>
 
+#include <cerrno>
 #include <sstream>
+
+#include "../common/utils.hpp"
+#include "../net/connect.hpp"
+#include "../net/utils.hpp"
 
 struct bufferevent;
 
@@ -85,9 +87,15 @@ void connect_base(std::string address, int port,
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
         logger->warn("connect() failed immediately");
         bufferevent_free(bev);
+        Error sys_error = mk::net::map_errno(errno);
+        logger->warn("reason why connect() has failed: %s",
+                     sys_error.as_ooni_error().c_str());
+        // TODO: propagate the error
         cb(GenericError(), nullptr, 0.0);
         return;
     }
+
+    logger->debug("connect() in progress...");
 
     // WARNING: set callbacks after connect() otherwise we free `bev` twice
     // NOTE: In case of `new` failure we let the stack unwind
@@ -97,6 +105,12 @@ void connect_base(std::string address, int port,
             if (err) {
                 logger->warn("connect() failed in its callback");
                 bufferevent_free(bev);
+                if (err == NetworkError()) {
+                    Error sys_error = mk::net::map_errno(errno);
+                    logger->warn("reason why connect() has failed: %s",
+                                 sys_error.as_ooni_error().c_str());
+                    // TODO: propagate the error
+                }
                 cb(err, nullptr, 0.0);
                 return;
             }
