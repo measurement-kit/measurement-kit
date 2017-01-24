@@ -25,7 +25,7 @@ void resolver_lookup(
         Var<Logger> logger = Logger::global()
 );
 
-report::Entry represent_http_body(const std::string &body);
+report::Entry represent_string(const std::string &s);
 
 } // namespace ooni
 } // namespace mk
@@ -63,11 +63,11 @@ especially for large ISPs. For example, if you use `8.8.8.8` as your DNS
 name server, this function will return an IP address owened by Google
 but different from `8.8.8.8`.
 
-The `represent_http_body` function represent the `body` passed as argument
-such that it can be serialized as JSON. Is the body is ASCII or UTF-8, it
+The `represent_string` function represent the `s` passed as argument
+such that it can be serialized as JSON. Is the string is ASCII or UTF-8, it
 is not changed. Otherwise, this function returns a JSON object where the
 `format` key maps to the `base64` string and the `data` key maps to the base64
-representation of the original body.
+representation of the original string.
 
 # HISTORY
 
