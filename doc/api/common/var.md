@@ -58,7 +58,7 @@ attempting to dereference it would result in `std::runtime_error`.
 # CAVEAT
 
 The `as()` method does not seem to preserve any custom deleter that may
-have been passed to the original `Var<>`, this seems reasonable since the
+have been passed to the original `Var<>`; this seems reasonable since the
 new `Var<>` will delete another type of object (if the cast worked).
 
 # HISTORY
