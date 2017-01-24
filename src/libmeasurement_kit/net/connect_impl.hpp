@@ -48,11 +48,12 @@ void connect_base(std::string address, int port,
     sockaddr *saddr = (sockaddr *)&storage;
     int salen = sizeof storage;
 
-    // TODO: make sure this handles scoped link local addresses
+    // XXX: as we have seen in #915, the following function does not deal with
+    // IPv6 scoped link local addresses. We can fix this by copying from the
+    // way in which such problem is solved in libevent/dns_utils.hpp.
     if (evutil_parse_sockaddr_port(endpoint.c_str(), saddr, &salen) != 0) {
-        Error error = GenericError();
-        error.context = cbr;
-        cb(error, nullptr, 0.0);
+        logger->warn("cannot parse endpoint: '%s'", endpoint.c_str());
+        cb(GenericError(), nullptr, 0.0);
         return;
     }
 
@@ -89,7 +90,7 @@ void connect_base(std::string address, int port,
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
         bufferevent_free(bev);
         Error err = mk::net::map_errno(errno);
-        logger->warn("connect() failed immediately: %s",
+        logger->warn("connect() failed locally: %s",
                      err.as_ooni_error().c_str());
         err = ConnectFailedLocallyError(err);
         err.context = cbr;
@@ -106,7 +107,7 @@ void connect_base(std::string address, int port,
         new Callback<Error, bufferevent *>([=](Error err, bufferevent *bev) {
             if (err) {
                 bufferevent_free(bev);
-                logger->warn("connect() failed: %s",
+                logger->warn("connect() failed remotely: %s",
                              err.as_ooni_error().c_str());
                 err = ConnectFailedRemotelyError(err);
                 err.context = cbr;
