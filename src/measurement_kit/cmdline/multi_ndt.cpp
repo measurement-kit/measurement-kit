@@ -72,26 +72,26 @@ int main(const char *, int argc, char **argv) {
             printf("\nAdvanced info (from single stream test)\n");
             printf("---------------------------------------\n");
             auto adv = doc["test_keys"]["advanced"];
-            double AvgRTT = adv["AvgRTT"];
-            double MinRTT = adv["MinRTT"];
-            double MaxRTT = adv["MaxRTT"];
+            double AvgRTT = adv["avg_rtt"];
+            double MinRTT = adv["min_rtt"];
+            double MaxRTT = adv["max_rtt"];
             printf("RTT (avg/min/max): %.1f/%.1f/%.1f ms\n",
                    AvgRTT, MinRTT, MaxRTT);
-            double CongestionLimited = adv["CongestionLimited"];
-            double ReceiverLimited = adv["ReceiverLimited"];
-            double SenderLimited = adv["SenderLimited"];
+            double CongestionLimited = adv["congestion_limited"];
+            double ReceiverLimited = adv["receiver_limited"];
+            double SenderLimited = adv["sender_limited"];
             printf("Limited (congestion/receiver/sender): %.2f/%.2f/%.2f\n",
                    CongestionLimited, ReceiverLimited, SenderLimited);
-            double OutOfOrder = adv["OutOfOrder"];
+            double OutOfOrder = adv["out_of_order"];
             printf("OutOfOrder: %lf (%.3lf%%)\n",
                     OutOfOrder, OutOfOrder * 100.0);
-            unsigned long MSS = adv["MSS"];
+            unsigned long MSS = adv["mss"];
             printf("MSS: %lu byte\n", MSS);
-            unsigned long FastRetran = adv["FastRetran"];
-            unsigned long Timeouts = adv["Timeouts"];
+            unsigned long FastRetran = adv["fast_retran"];
+            unsigned long Timeouts = adv["timeouts"];
             printf("Congestion: FastRetran: %lu; Timeo: %lu\n",
                    FastRetran, Timeouts);
-            double PacketLoss = adv["PacketLoss"];
+            double PacketLoss = adv["packet_loss"];
             printf("Loss: %lf (%.3lf%%)\n", PacketLoss, PacketLoss * 100.0);
             printf("\n");
         })
