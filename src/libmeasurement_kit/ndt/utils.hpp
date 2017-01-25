@@ -13,7 +13,7 @@ namespace utils {
 report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger);
 
 report::Entry compute_speed(report::Entry &sender_or_receiver_data,
-                                   Var<Logger> logger);
+                            const char *speed_type, Var<Logger> logger);
 
 report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger);
 

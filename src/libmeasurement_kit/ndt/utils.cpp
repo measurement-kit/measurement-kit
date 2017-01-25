@@ -21,8 +21,8 @@ report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
     try {
         // Note: do static cast to make sure it's convertible to a double
         return static_cast<double>(test_s2c["web100_data"]["MinRTT"]);
-    } catch (const std::exception &) {
-        logger->warn("Cannot access Web100 data");
+    } catch (const std::exception &w) {
+        logger->warn("Cannot access Web100 data: %s", w.what());
         /* Fallthrough to next method of computing RTT */
     }
 
@@ -48,7 +48,7 @@ report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
 }
 
 report::Entry compute_speed(report::Entry &sender_or_receiver_data,
-                                   Var<Logger> logger) {
+                            const char *speed_type, Var<Logger> logger) {
     /*
      * This algorithm computes the speed in a way that is similar to the one
      * implemented by OOKLA, as documented here:
@@ -75,8 +75,8 @@ report::Entry compute_speed(report::Entry &sender_or_receiver_data,
             return nullptr;
         }
         return sum / good_speeds.size();
-    } catch (const std::exception &) {
-        logger->warn("Cannot compute download speed");
+    } catch (const std::exception &x) {
+        logger->warn("Cannot compute %s speed", speed_type);
         // FALLTHROUGH
     }
     return nullptr;
@@ -94,11 +94,15 @@ report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
          * and have multiple S2C entries (e.g., pass both `-T download` and
          * `-T download_ext` to `./measurement_kit`).
          */
+        if (entry["test_s2c"].size() <= 0) {
+            throw std::runtime_error("missing entry");
+        }
         test_s2c = entry["test_s2c"][0];
-        simple_stats["download"] = compute_speed(test_s2c["receiver_data"], logger);
+        simple_stats["download"] = compute_speed(test_s2c["receiver_data"],
+                "download speed", logger);
         simple_stats["ping"] = compute_ping(test_s2c, logger);
-    } catch (const std::exception &) {
-        logger->warn("cannot access entry[\"test_s2c\"][0]");
+    } catch (const std::exception &x) {
+        logger->warn("cannot access entry[\"test_s2c\"][0]: %s", x.what());
         /* Cannot compute this stat */
     }
 
@@ -106,10 +110,14 @@ report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
         /*
          * As of v0.4.0, we cannot have more than one entry here.
          */
+        if (entry["test_c2s"].size() <= 0) {
+            throw std::runtime_error("missing entry");
+        }
         test_c2s = entry["test_c2s"][0];
-        simple_stats["upload"] = compute_speed(test_c2s["sender_data"], logger);
-    } catch (const std::exception &) {
-        logger->warn("cannot access entry[\"test_c2s\"][0]");
+        simple_stats["upload"] = compute_speed(test_c2s["sender_data"],
+                "upload speed", logger);
+    } catch (const std::exception &x) {
+        logger->warn("cannot access entry[\"test_c2s\"][0]: %s", x.what());
         /* Cannot compute this stat */
     }
     return simple_stats;
@@ -176,7 +184,7 @@ report::Entry compute_advanced_stats(report::Entry &entry, Var<Logger>) {
     // These are not used in ooni's UI
     advanced_stats["congestion_limited"] = CongestionLimited;
     advanced_stats["fast_retran"] = test_s2c["web100_data"]["FastRetran"];
-    advanced_stats["received_limited"] = ReceiverLimited;
+    advanced_stats["receiver_limited"] = ReceiverLimited;
     advanced_stats["sender_limited"] = SenderLimited;
     return advanced_stats;
 }

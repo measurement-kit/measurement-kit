@@ -112,7 +112,9 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
                 /* Just in case */ ;
             }
             try {
-                (*overall_entry)["advanced"] = mk::ndt::utils::compute_advanced_stats(*overall_entry, logger);
+                (*overall_entry)["advanced"] =
+                    mk::ndt::utils::compute_advanced_stats(
+                        (*overall_entry)["single_stream"], logger);
             } catch (const std::exception &) {
                 /* Just in case */ ;
             }
