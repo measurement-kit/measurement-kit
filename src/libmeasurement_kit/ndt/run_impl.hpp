@@ -41,10 +41,15 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
     dump_settings(ctx->settings, "ndt", ctx->logger);
 
     // Initialize entry keys that may be set by this routine
-    (*ctx->entry)["summary_data"] = Entry::object();
-    (*ctx->entry)["test_suite"] = ctx->test_suite;
+    (*ctx->entry)["client_resolver"] = nullptr; /* Set later by parent */
+    (*ctx->entry)["failure"] = nullptr;
     (*ctx->entry)["server_address"] = address;
     (*ctx->entry)["server_port"] = port;
+    (*ctx->entry)["server_version"] = nullptr;
+    (*ctx->entry)["summary_data"] = Entry::object();
+    (*ctx->entry)["test_c2s"] = Entry::array();
+    (*ctx->entry)["test_s2c"] = Entry::array();
+    (*ctx->entry)["test_suite"] = ctx->test_suite;
 
     // The following code implements this sequence diagram:
     // https://raw.githubusercontent.com/wiki/ndt-project/ndt/NDTProtocol.images/ndt_10.png

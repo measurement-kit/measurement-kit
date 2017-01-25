@@ -30,7 +30,7 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
         (*cb)(mk::net::TimeoutError(), bev);
     } else {
-        // TODO: here we should map to the actual error that occurred
+        // Note: the actual error is mapped in the callback
         (*cb)(mk::net::NetworkError(), bev);
     }
     delete cb;
@@ -339,6 +339,9 @@ ErrorOr<std::vector<double>> get_connect_times(Error err) {
     }
     return connect_times;
 }
+
+ConnectResult::~ConnectResult() {}
+ConnectManyResult::~ConnectManyResult() {}
 
 } // namespace net
 } // namespace mk
