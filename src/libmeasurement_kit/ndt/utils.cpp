@@ -88,7 +88,13 @@ report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
     report::Entry simple_stats;
 
     try {
-        test_s2c = entry["test_s2c"][0] /* We know it's just one entry */;
+        /*
+         * XXX The following code assumes there is just one entry, which is
+         * really what usually happens. But there are ways to run the test
+         * and have multiple S2C entries (e.g., pass both `-T download` and
+         * `-T download_ext` to `./measurement_kit`).
+         */
+        test_s2c = entry["test_s2c"][0];
         simple_stats["download"] = compute_speed(test_s2c["receiver_data"], logger);
         simple_stats["ping"] = compute_ping(test_s2c, logger);
     } catch (const std::exception &) {
@@ -97,7 +103,10 @@ report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
     }
 
     try {
-        test_c2s = entry["test_c2s"][0] /* We know it's just one entry */;
+        /*
+         * As of v0.4.0, we cannot have more than one entry here.
+         */
+        test_c2s = entry["test_c2s"][0];
         simple_stats["upload"] = compute_speed(test_c2s["sender_data"], logger);
     } catch (const std::exception &) {
         logger->warn("cannot access entry[\"test_c2s\"][0]");
@@ -106,8 +115,11 @@ report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
     return simple_stats;
 }
 
-report::Entry compute_advanced_stats(report::Entry &entry, Var<Logger> logger) {
-    report::Entry test_s2c = entry["test_s2c"][0] /* We know it's just one entry */;
+report::Entry compute_advanced_stats(report::Entry &entry, Var<Logger>) {
+    /*
+     * Typically we have just one entry. But see above comment.
+     */
+    report::Entry test_s2c = entry["test_s2c"][0];
     report::Entry advanced_stats;
 
     // See: https://github.com/ndt-project/ndt/wiki/NDTTestMethodology#computed-variables
@@ -161,7 +173,7 @@ report::Entry compute_advanced_stats(report::Entry &entry, Var<Logger> logger) {
     advanced_stats["out_of_order"] = OutOfOrder;
     advanced_stats["packet_loss"] = PacketLoss;
 
-    // Don't use these
+    // These are not used in ooni's UI
     advanced_stats["congestion_limited"] = CongestionLimited;
     advanced_stats["fast_retran"] = test_s2c["web100_data"]["FastRetran"];
     advanced_stats["received_limited"] = ReceiverLimited;
