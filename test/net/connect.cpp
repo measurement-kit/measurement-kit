@@ -145,7 +145,7 @@ TEST_CASE("connect_base works with ipv4") {
 }
 
 static bool check_error(Error err) {
-    return err == NetworkError() or err == TimeoutError();
+    return err == ConnectionRefusedError() or err == TimeoutError();
 }
 
 TEST_CASE("connect_base works with ipv4 and closed port") {
