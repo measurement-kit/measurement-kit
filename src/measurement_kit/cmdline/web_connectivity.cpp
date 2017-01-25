@@ -15,7 +15,7 @@ namespace web_connectivity {
 "usage: %s [-nv] [-b backend] [-N nameserver] [-t runtime] [file_name...]\n"
 
 int main(const char *, int argc, char **argv) {
-    std::string backend = "https://a.web-connectivity.th.ooni.io:4442";
+    std::string backend = "https://b.web-connectivity.th.ooni.io";
     std::string nameserver = "8.8.8.8";
     std::string name = argv[0];
     uint32_t verbosity = 0;
