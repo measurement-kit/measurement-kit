@@ -99,7 +99,7 @@ report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
         }
         test_s2c = entry["test_s2c"][0];
         simple_stats["download"] = compute_speed(test_s2c["receiver_data"],
-                "download speed", logger);
+                "download", logger);
         simple_stats["ping"] = compute_ping(test_s2c, logger);
     } catch (const std::exception &x) {
         logger->warn("cannot access entry[\"test_s2c\"][0]: %s", x.what());
@@ -115,7 +115,7 @@ report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
         }
         test_c2s = entry["test_c2s"][0];
         simple_stats["upload"] = compute_speed(test_c2s["sender_data"],
-                "upload speed", logger);
+                "upload", logger);
     } catch (const std::exception &x) {
         logger->warn("cannot access entry[\"test_c2s\"][0]: %s", x.what());
         /* Cannot compute this stat */
