@@ -78,14 +78,7 @@ void Connection::handle_event_(short what) {
 
     Error sys_error = net::map_errno(errno);
     logger->warn("Got error: %s", sys_error.as_ooni_error().c_str());
-    // TODO: we should propagate this error updating code below:
-
-    if (errno == EPIPE) {
-        emit_error(BrokenPipeError());
-        return;
-    }
-
-    emit_error(SocketError());
+    emit_error(sys_error);
 }
 
 Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> logger)

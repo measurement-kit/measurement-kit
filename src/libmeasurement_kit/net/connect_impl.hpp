@@ -90,8 +90,7 @@ void connect_base(std::string address, int port,
         Error sys_error = mk::net::map_errno(errno);
         logger->warn("reason why connect() has failed: %s",
                      sys_error.as_ooni_error().c_str());
-        // TODO: propagate the error
-        cb(GenericError(), nullptr, 0.0);
+        cb(sys_error, nullptr, 0.0);
         return;
     }
 
@@ -105,12 +104,8 @@ void connect_base(std::string address, int port,
             if (err) {
                 logger->warn("connect() failed in its callback");
                 bufferevent_free(bev);
-                if (err == NetworkError()) {
-                    Error sys_error = mk::net::map_errno(errno);
-                    logger->warn("reason why connect() has failed: %s",
-                                 sys_error.as_ooni_error().c_str());
-                    // TODO: propagate the error
-                }
+                logger->warn("reason why connect() has failed: %s",
+                             err.as_ooni_error().c_str());
                 cb(err, nullptr, 0.0);
                 return;
             }
