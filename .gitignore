@@ -88,6 +88,7 @@
 /test/nettests/runnable
 /test/nettests/runner
 /test/nettests/tcp_connect
+/test/nettests/utils
 /test/nettests/web_connectivity
 /test/ooni/collector_client
 /test/ooni/resources

@@ -8,7 +8,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/ooni.hpp>
 
-std::string default_collector_url();
+std::string testing_collector_url();
+std::string production_collector_url();
 
 void mk::ooni::submit_report(std::string filepath, std::string collector_base_url,
         Callback<Error> callback, Settings settings = {},
@@ -48,7 +49,8 @@ void mk::ooni::close_report(Var<net::Transport> txp, std::string report_id,
 
 This header contains routines to interact with OONI's collector.
 
-The `default_collector_url()` function returns the default collector URL.
+The `testing_collector_url()` function returns the testing collector URL,
+and the `production_collector_url()` returns the production one.
 
 The `submit_report()` function submits the report at `filepath` using the collector
 identifier by `collector_base_url` and calls `callback` when done. You can also
