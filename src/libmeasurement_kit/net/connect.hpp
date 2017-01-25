@@ -23,6 +23,14 @@ void mk_bufferevent_on_event(bufferevent *, short, void *);
 namespace mk {
 namespace net {
 
+class ConnectBaseResult : public ErrorContext {
+  public:
+    ~ConnectBaseResult() override;
+    nlohmann::json as_json() const override;
+    std::string address;
+    int port;
+};
+
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
 void connect_first_of(Var<ConnectResult> result, int port,

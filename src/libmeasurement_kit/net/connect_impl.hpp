@@ -33,6 +33,9 @@ void connect_base(std::string address, int port,
                   Var<Reactor> reactor = Reactor::global(),
                   Var<Logger> logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
+    Var<ConnectBaseResult> cbr{new ConnectBaseResult};
+    cbr->address = address;
+    cbr->port = port;
 
     std::string endpoint = [&]() {
         Endpoint endpoint;
@@ -85,13 +88,12 @@ void connect_base(std::string address, int port,
     double begin = mk::time_now();
 
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
-        logger->warn("connect() failed immediately");
         bufferevent_free(bev);
         Error sys_error = mk::net::map_errno(errno);
         logger->warn("reason why connect() has failed: %s",
                      sys_error.as_ooni_error().c_str());
-        // TODO: propagate the error
-        cb(GenericError(), nullptr, 0.0);
+        sys_error.context = cbr;
+        cb(sys_error, nullptr, 0.0);
         return;
     }
 
@@ -103,19 +105,17 @@ void connect_base(std::string address, int port,
         bev, nullptr, nullptr, mk_bufferevent_on_event,
         new Callback<Error, bufferevent *>([=](Error err, bufferevent *bev) {
             if (err) {
-                logger->warn("connect() failed in its callback");
                 bufferevent_free(bev);
-                if (err == NetworkError()) {
-                    Error sys_error = mk::net::map_errno(errno);
-                    logger->warn("reason why connect() has failed: %s",
-                                 sys_error.as_ooni_error().c_str());
-                    // TODO: propagate the error
-                }
+                logger->warn("reason why connect() has failed: %s",
+                             err.as_ooni_error().c_str());
+                err = ConnectFailedRemotelyError(err);
+                err.context = cbr;
                 cb(err, nullptr, 0.0);
                 return;
             }
             double elapsed = mk::time_now() - begin;
             logger->debug("connect time: %f", elapsed);
+            err.context = cbr;
             cb(err, bev, elapsed);
         }));
 }
@@ -160,6 +160,8 @@ connect_many_make(std::string address, int port, int count,
     ctx->reactor = reactor;
     ctx->logger = logger;
     ctx->result.reset(new ConnectManyResult);
+    ctx->result->hostname = address;
+    ctx->result->port = port;
     return ctx;
 }
 

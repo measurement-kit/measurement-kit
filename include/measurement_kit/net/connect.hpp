@@ -26,11 +26,14 @@ struct ResolveHostnameResult {
 
 class ConnectResult : public ErrorContext {
   public:
+    std::string hostname;
+    int port = 0;
     ResolveHostnameResult resolve_result;
     std::vector<Error> connect_result;
     double connect_time = 0.0;
     bufferevent *connected_bev = nullptr;
     ~ConnectResult() override;
+    nlohmann::json as_json() const override;
 };
 
 // Convert error returned by connect() in connect_time
@@ -44,8 +47,11 @@ void connect(std::string address, int port,
 
 class ConnectManyResult : public ErrorContext {
   public:
+    std::string hostname;
+    int port = 0;
     std::vector<Var<ConnectResult>> results;
     ~ConnectManyResult() override;
+    nlohmann::json as_json() const override;
 };
 
 // Convert error returned by connect_many() into connect_times vector

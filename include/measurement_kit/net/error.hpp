@@ -11,7 +11,7 @@ namespace net {
 
 MK_DEFINE_ERR(MK_ERR_NET(0), EofError, "")
 MK_DEFINE_ERR(MK_ERR_NET(1), TimeoutError, "generic_timeout_error")
-MK_DEFINE_ERR(MK_ERR_NET(2), SocketError, "")
+/* Error code not used; was SocketError */
 MK_DEFINE_ERR(MK_ERR_NET(3), ConnectFailedError, "connect_error")
 MK_DEFINE_ERR(MK_ERR_NET(4), DnsGenericError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_NET(5), BadSocksVersionError, "socks_error")
@@ -20,7 +20,11 @@ MK_DEFINE_ERR(MK_ERR_NET(7), SocksInvalidPortError, "")
 MK_DEFINE_ERR(MK_ERR_NET(8), SocksGenericError, "socks_error")
 MK_DEFINE_ERR(MK_ERR_NET(9), EOLNotFoundError, "")
 MK_DEFINE_ERR(MK_ERR_NET(10), LineTooLongError, "")
-MK_DEFINE_ERR(MK_ERR_NET(11), NetworkError, "")
+
+/* Not a mistake: */
+MK_DEFINE_ERR(MK_ERR_NET(11), SocketError, "generic_network_error")
+MK_DEFINE_ERR(MK_ERR_NET(11), NetworkError, "generic_network_error")
+
 MK_DEFINE_ERR(MK_ERR_NET(12), NoAvailableSocksAuthenticationError, "")
 MK_DEFINE_ERR(MK_ERR_NET(13), SocksError, "")
 MK_DEFINE_ERR(MK_ERR_NET(14), BadSocksReservedFieldError, "")
@@ -83,6 +87,11 @@ MK_DEFINE_ERR(MK_ERR_NET(28), SslCtxLoadVerifyMemError, "")
     MK_DEFINE_ERR(MK_ERR_NET(_code_), _name_, #_descr_)
 MK_NET_ERRORS_XX
 #undef XX
+
+MK_DEFINE_ERR(MK_ERR_NET(58), ConnectFailedLocallyError,
+              "connect_failed_locally")
+MK_DEFINE_ERR(MK_ERR_NET(59), ConnectFailedRemotelyError,
+              "connect_failed_remotely")
 
 } // namespace net
 } // namespace mk

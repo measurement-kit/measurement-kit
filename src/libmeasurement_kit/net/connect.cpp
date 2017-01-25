@@ -15,6 +15,7 @@
 #include "../net/ssl_context.hpp"
 
 #include <cassert>
+#include <cerrno>
 #include <event2/bufferevent_ssl.h>
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/net.hpp>
@@ -23,6 +24,8 @@
 #include <stddef.h>
 #include <string.h>
 
+#include <sstream>
+
 void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
     auto cb = static_cast<mk::Callback<mk::Error, bufferevent *> *>(ptr);
     if ((what & BEV_EVENT_CONNECTED) != 0) {
@@ -30,8 +33,7 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
         (*cb)(mk::net::TimeoutError(), bev);
     } else {
-        // Note: the actual error is mapped in the callback
-        (*cb)(mk::net::NetworkError(), bev);
+        (*cb)(mk::net::map_errno(errno), bev);
     }
     delete cb;
 }
@@ -136,6 +138,8 @@ void connect_logic(std::string hostname, int port,
                    Var<Reactor> reactor, Var<Logger> logger) {
 
     Var<ConnectResult> result(new ConnectResult);
+    result->hostname = hostname;
+    result->port = port;
     resolve_hostname(hostname,
                      [=](ResolveHostnameResult r) {
 
@@ -150,13 +154,20 @@ void connect_logic(std::string hostname, int port,
                              [=](std::vector<Error> e, bufferevent *b) {
                                  result->connect_result = e;
                                  result->connected_bev = b;
+                                 Error connect_error = ConnectFailedError();
+                                 for (auto ei: e) {
+                                    connect_error.add_child_error(ei);
+                                 }
                                  if (!b) {
-                                     cb(ConnectFailedError(), result);
+                                     cb(connect_error, result);
                                      return;
                                  }
                                  Error nagle_error = disable_nagle(
                                     bufferevent_getfd(result->connected_bev)
                                  );
+                                 for (auto ei: e) {
+                                    nagle_error.add_child_error(ei);
+                                 }
                                  cb(nagle_error, result);
                              },
                              settings, reactor, logger);
@@ -340,8 +351,29 @@ ErrorOr<std::vector<double>> get_connect_times(Error err) {
     return connect_times;
 }
 
+ConnectBaseResult::~ConnectBaseResult() {}
+
+nlohmann::json ConnectBaseResult::as_json() const {
+    std::stringstream ss;
+    ss << "connect_base() to " << address << " at port " << port;
+    return ss.str();
+}
+
 ConnectResult::~ConnectResult() {}
+
+nlohmann::json ConnectResult::as_json() const {
+    std::stringstream ss;
+    ss << "connect() to " << hostname << " at port " << port;
+    return ss.str();
+}
+
 ConnectManyResult::~ConnectManyResult() {}
+
+nlohmann::json ConnectManyResult::as_json() const {
+    std::stringstream ss;
+    ss << "connect_many() to " << hostname << " at port " << port;
+    return ss.str();
+}
 
 } // namespace net
 } // namespace mk

@@ -77,6 +77,7 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
                      bufferevent_set_timeouts, fail>(
             "130.192.16.172", 80,
             [=](Error e, bufferevent *b, double) {
+                std::cout << e.explain() << "\n";
                 REQUIRE(e);
                 REQUIRE(b == nullptr);
                 reactor->stop();
@@ -144,16 +145,15 @@ TEST_CASE("connect_base works with ipv4") {
     });
 }
 
-static bool check_error(Error err) {
-    return err == NetworkError() or err == TimeoutError();
-}
-
 TEST_CASE("connect_base works with ipv4 and closed port") {
+    auto check_error = [](Error err) -> bool {
+        return err == ConnectionRefusedError() || err == TimeoutError();
+    };
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
         connect_base("130.192.16.172", 81,
                      [=](Error err, bufferevent *bev, double) {
-                         REQUIRE(check_error(err));
+                         REQUIRE(check_error(err.as_root_error()));
                          REQUIRE(bev == nullptr);
                          reactor->stop();
                      },
@@ -166,7 +166,10 @@ TEST_CASE("connect_base works with ipv4 and timeout") {
     reactor->loop_with_initial_event([=]() {
         connect_base("130.192.16.172", 80,
                      [=](Error err, bufferevent *bev, double) {
-                         REQUIRE(err == TimeoutError());
+                         REQUIRE(err == ConnectFailedRemotelyError());
+                         REQUIRE(err.child_errors.size() == 1);
+                         REQUIRE(*err.child_errors[0] == TimeoutError());
+                         REQUIRE(err.as_root_error() == TimeoutError());
                          REQUIRE(bev == nullptr);
                          reactor->stop();
                      },
@@ -220,7 +223,10 @@ TEST_CASE("connect_first_of works when all connect fail") {
             [=](std::vector<Error> errors, bufferevent *bev) {
                 REQUIRE(errors.size() == 3);
                 for (Error err : errors) {
-                    REQUIRE(err == TimeoutError());
+                    REQUIRE(err == ConnectFailedRemotelyError());
+                    REQUIRE(err.child_errors.size() == 1);
+                    REQUIRE(*err.child_errors[0] == TimeoutError());
+                    REQUIRE(err.as_root_error() == TimeoutError());
                 }
                 REQUIRE(bev == nullptr);
                 reactor->stop();
