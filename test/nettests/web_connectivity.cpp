@@ -6,36 +6,24 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/nettests.hpp>
+#include "../nettests/utils.hpp"
 
-#include <chrono>
-#include <iostream>
-#include <thread>
-
-using namespace mk;
+using namespace mk::nettests;
 
 TEST_CASE("Synchronous web connectivity test") {
-    nettests::WebConnectivityTest{}
-        .set_options("backend", "https://a.collector.test.ooni.io:4444")
-        .set_options("geoip_country_path", "GeoIP.dat")
-        .set_options("geoip_asn_path", "GeoIPASNum.dat")
+    test::nettests::make_test<WebConnectivityTest>("urls.txt")
+        .set_options("backend", "https://a.web-connectivity.th.ooni.io:4442")
         .set_options("nameserver", "8.8.8.8")
-        .set_input_filepath("test/fixtures/urls.txt")
         .run();
 }
 
 TEST_CASE("Asynchronous web-connectivity test") {
-    bool done = false;
-    nettests::WebConnectivityTest{}
-        .set_options("backend", "https://a.collector.test.ooni.io:4444")
-        .set_options("geoip_country_path", "GeoIP.dat")
-        .set_options("geoip_asn_path", "GeoIPASNum.dat")
-        .set_options("nameserver", "8.8.8.8")
-        .set_input_filepath("test/fixtures/urls.txt")
-        .start([&done]() { done = true; });
-    do {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    } while (!done);
+    test::nettests::run_async(
+        test::nettests::make_test<WebConnectivityTest>("urls.txt")
+            .set_options("backend",
+                         "https://a.web-connectivity.th.ooni.io:4442")
+            .set_options("nameserver", "8.8.8.8")
+    );
 }
 
 #else
