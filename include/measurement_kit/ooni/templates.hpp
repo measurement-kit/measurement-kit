@@ -17,7 +17,8 @@ void dns_query(Var<report::Entry> entry, dns::QueryType, dns::QueryClass,
                Var<Reactor> = Reactor::global(),
                Var<Logger> = Logger::global());
 
-void http_request(Var<report::Entry> entry, Settings settings, http::Headers headers,
+void http_request(Var<report::Entry> entry, std::string probe_ip,
+                  Settings settings, http::Headers headers,
                   std::string body, Callback<Error, Var<http::Response>> cb,
                   Var<Reactor> reactor = Reactor::global(),
                   Var<Logger> logger = Logger::global());

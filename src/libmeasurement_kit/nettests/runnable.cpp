@@ -114,7 +114,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
     // This is to ensure that when calling multiple times geoip_lookup we
     // always reset the probe_ip, probe_asn and probe_cc values.
-    probe_ip = "127.0.0.1";
+    real_probe_ip = probe_ip = "127.0.0.1";
     probe_asn = "AS0";
     probe_cc = "ZZ";
 
@@ -138,6 +138,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
     // No need to perform further lookups if we don't need to save anything
     if (not save_ip and not save_asn and not save_cc) {
+        logger->warn("Not knowing user_ip means we cannot attempt to scrub it "
+                     "from the report");
         cb();
         return;
     }
@@ -146,6 +148,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
         [=](Error err, std::string ip) {
             if (err) {
                 logger->warn("ip_lookup() failed: error code: %d", err.code);
+                logger->warn("Not knowing user_ip means we cannot attempt "
+                             "to scrub it from the report");
                 cb();
                 return;
             }
@@ -154,6 +158,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
                 logger->debug("saving user's real ip on user's request");
                 probe_ip = ip;
             }
+            real_probe_ip = ip; // Needed to scrub entry
 
             auto country_path = options.get("geoip_country_path",
                                             std::string{});

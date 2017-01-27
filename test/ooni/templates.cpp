@@ -90,11 +90,13 @@ TEST_CASE("http requests template works as expected") {
     Var<Entry> entry(new Entry);
     loop_with_initial_event([=]() {
         templates::http_request(
-            entry, {{"http/url", "http://nexa.polito.it/robots.txt"}}, {}, "",
+            entry, "127.0.0.1",
+            {{"http/url", "http://nexa.polito.it/robots.txt"}}, {}, "",
             [=](Error err, Var<http::Response>) {
                 REQUIRE(!err);
                 templates::http_request(
-                    entry, {{"http/url", "http://nexa.polito.it:84/robots.txt"},
+                    entry, "127.0.0.1",
+                    {{"http/url", "http://nexa.polito.it:84/robots.txt"},
                             {"net/timeout", 1.0}},
                     {}, "", [=](Error err, Var<http::Response>) {
                         REQUIRE(err);

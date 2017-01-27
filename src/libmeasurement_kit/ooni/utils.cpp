@@ -154,5 +154,13 @@ report::Entry represent_string(const std::string &s) {
     return s;
 }
 
+std::string scrub(std::string s, std::string real_probe_ip) {
+    size_t p = 0;
+    while ((p = s.find(real_probe_ip, p)) != std::string::npos) {
+        s = s.replace(p, real_probe_ip.size(), "[REDACTED]");
+    }
+    return s;
+}
+
 } // namespace ooni
 } // namespace mk
