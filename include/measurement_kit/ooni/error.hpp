@@ -26,6 +26,8 @@ MK_DEFINE_ERR(MK_ERR_OONI(13), CannotGetResourcesVersionError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(14), CannotGetResourcesManifestError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(15), CannotGetResourceError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(16), ResourceIntegrityError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(17), HttpRequestError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(18), RegexSearchError, "")
 
 } // namespace mk
 } // namespace ooni
