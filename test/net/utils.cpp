@@ -297,7 +297,8 @@ TEST_CASE("make_sockaddr() works as expected") {
     }
 
     SECTION("With numeric port: it deals with invalid address") {
-        check_for_error("antani", "22");
+        auto err = mk::net::make_sockaddr("antani", 22, nullptr, nullptr);
+        REQUIRE(err == mk::ValueError());
     }
 
     SECTION("With numeric port: it works with valid IPv4") {
