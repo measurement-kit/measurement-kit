@@ -113,12 +113,15 @@ static void compare_http_requests(Var<Entry> entry,
 
     exp_title_words = split<std::vector<std::string>>(experiment_title, " ");
     ctrl_title_words = split<std::vector<std::string>>(control["title"], " ");
-    int idx = 0;
+    size_t idx = 0;
     (*entry)["title_match"] = (experiment_title == control["title"]);
     for (auto exp_word : exp_title_words) {
         if (exp_word.length() < 5) {
             idx++;
             continue;
+        }
+        if (idx >= ctrl_title_words.size()) {
+            break;
         }
         (*entry)["title_match"] = (bool)(exp_word == ctrl_title_words[idx]);
         break;
