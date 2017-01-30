@@ -184,6 +184,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
                                                "http://duckduckgo.com",
                                                "http://netflix.com",
                                                "http://nmap.org",
+                                               "http://whatismyipaddress.com",
                                                "http://www.emule.com"};
         mk::ErrorOr<std::deque<std::string>> maybe_result =
             mk::nettests::process_input_filepaths(
