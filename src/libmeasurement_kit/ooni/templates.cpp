@@ -6,6 +6,8 @@
 
 #include <event2/dns.h>
 
+#include "../ooni/utils.hpp"
+
 namespace mk {
 namespace ooni {
 namespace templates {
@@ -76,12 +78,31 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
         settings["http/method"] = "GET";
     }
 
+    /*
+     * XXX probe ip passed down the stack to allow us to scrub it from the
+     * entry; see issue #1110 for plans to make this better.
+     */
+    std::string probe_ip = settings.get("real_probe_ip_", std::string{});
+    auto redact = [=](std::string s) {
+        if (probe_ip != "" && !settings.get("save_real_probe_ip", false)) {
+            s = mk::ooni::scrub(s, probe_ip);
+        }
+        return s;
+    };
+
     http::request(
         settings, headers, body,
         [=](Error error, Var<http::Response> response) {
             Entry rr;
-            rr["request"]["headers"] = headers;
-            rr["request"]["body"] = represent_string(body);
+            /*
+             * Note: `probe_ip` comes from an external service, hence
+             * we MUST call `represent_string` _after_ `redact()`.
+             */
+            for (auto pair: headers) {
+                rr["request"]["headers"][pair.first] =
+                    represent_string(redact(pair.second));
+            }
+            rr["request"]["body"] = represent_string(redact(body));
             rr["request"]["url"] = settings.at("http/url").c_str();
             rr["request"]["method"] = settings.at("http/method").c_str();
 
@@ -90,12 +111,13 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
 
             if (!error) {
                 for (auto pair: response->headers) {
-                    rr["response"]["headers"][pair.first]
-                        = represent_string(pair.second);
+                    rr["response"]["headers"][pair.first] =
+                        represent_string(redact(pair.second));
                 }
-                rr["response"]["body"] = represent_string(response->body);
+                rr["response"]["body"] =
+                    represent_string(redact(response->body));
                 rr["response"]["response_line"] =
-                    represent_string(response->response_line);
+                    represent_string(redact(response->response_line));
                 rr["response"]["code"] = response->status_code;
                 rr["failure"] = nullptr;
             } else {

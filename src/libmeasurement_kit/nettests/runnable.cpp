@@ -138,6 +138,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
     // No need to perform further lookups if we don't need to save anything
     if (not save_ip and not save_asn and not save_cc) {
+        logger->warn("Not knowing user_ip means we cannot attempt to scrub it "
+                     "from the report");
         cb();
         return;
     }
@@ -146,6 +148,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
         [=](Error err, std::string ip) {
             if (err) {
                 logger->warn("ip_lookup() failed: error code: %d", err.code);
+                logger->warn("Not knowing user_ip means we cannot attempt "
+                             "to scrub it from the report");
                 cb();
                 return;
             }
@@ -154,6 +158,13 @@ void Runnable::geoip_lookup(Callback<> cb) {
                 logger->debug("saving user's real ip on user's request");
                 probe_ip = ip;
             }
+            /*
+             * XXX Passing down the stack the real probe IP to allow
+             * specific tests to scrub entries.
+             *
+             * See also measurement-kit/measurement-kit#1110.
+             */
+            options["real_probe_ip_"] = ip;
 
             auto country_path = options.get("geoip_country_path",
                                             std::string{});
