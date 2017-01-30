@@ -67,8 +67,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                options, reactor);
 }
 
-void http_request(Var<Entry> entry, std::string probe_ip,
-                  Settings settings, http::Headers headers,
+void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
                   std::string body, Callback<Error, Var<http::Response>> cb,
                   Var<Reactor> reactor, Var<Logger> logger) {
 
@@ -79,8 +78,13 @@ void http_request(Var<Entry> entry, std::string probe_ip,
         settings["http/method"] = "GET";
     }
 
+    /*
+     * XXX probe ip passed down the stack to allow us to scrub it from the
+     * entry; see issue #1110 for plans to make this better.
+     */
+    std::string probe_ip = settings.get("real_probe_ip_", std::string{});
     auto redact = [=](std::string s) {
-        if (!settings.get("save_real_probe_ip", false)) {
+        if (probe_ip != "" && !settings.get("save_real_probe_ip", false)) {
             s = mk::ooni::scrub(s, probe_ip);
         }
         return s;

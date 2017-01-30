@@ -392,8 +392,7 @@ static void control_request(Var<Entry> entry, SocketList socket_list,
                   reactor, logger);
 }
 
-static void experiment_http_request(Var<Entry> entry, std::string probe_ip,
-                                    std::string url,
+static void experiment_http_request(Var<Entry> entry, std::string url,
                                     Callback<Error, Var<http::Response>> cb,
                                     Settings options, Var<Reactor> reactor,
                                     Var<Logger> logger) {
@@ -403,7 +402,7 @@ static void experiment_http_request(Var<Entry> entry, std::string probe_ip,
     options["http/url"] = url;
 
     logger->debug("Requesting url %s", url.c_str());
-    templates::http_request(entry, probe_ip, options, headers, body,
+    templates::http_request(entry, options, headers, body,
                             [=](Error err, Var<http::Response> response) {
                                 if (err) {
                                     (*entry)["http_experiment_failure"] =
@@ -516,7 +515,7 @@ static void experiment_dns_query(
         options, reactor, logger);
 }
 
-void web_connectivity(std::string probe_ip, std::string input, Settings options,
+void web_connectivity(std::string input, Settings options,
                       Callback<Var<Entry>> callback, Var<Reactor> reactor,
                       Var<Logger> logger) {
     options["http/max_redirects"] = 20;
@@ -586,7 +585,7 @@ void web_connectivity(std::string probe_ip, std::string input, Settings options,
                         "web_connectivity: starting http_request to %s",
                         input.c_str());
                     experiment_http_request(
-                        entry, probe_ip, input,
+                        entry, input,
                         [=](Error err, Var<http::Response> response) {
 
                             if (err) {

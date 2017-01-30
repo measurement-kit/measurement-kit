@@ -14,8 +14,7 @@ void mk::ooni::dns_query(Var<Entry> entry, dns::QueryType, dns::QueryClass,
                Var<Reactor> = Reactor::global(),
                Var<Logger> = Logger::global());
 
-void mk::ooni::http_request(Var<Entry> entry, std::string probe_ip,
-                  Settings settings, http::Headers headers,
+void mk::ooni::http_request(Var<Entry> entry, Settings settings, http::Headers headers,
                   std::string body, Callback<Error, Var<http::Response>> cb,
                   Var<Reactor> reactor = Reactor::global(),
                   Var<Logger> logger = Logger::global());

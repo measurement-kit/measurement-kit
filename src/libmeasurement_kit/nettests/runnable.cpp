@@ -114,7 +114,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
     // This is to ensure that when calling multiple times geoip_lookup we
     // always reset the probe_ip, probe_asn and probe_cc values.
-    real_probe_ip = probe_ip = "127.0.0.1";
+    probe_ip = "127.0.0.1";
     probe_asn = "AS0";
     probe_cc = "ZZ";
 
@@ -158,7 +158,13 @@ void Runnable::geoip_lookup(Callback<> cb) {
                 logger->debug("saving user's real ip on user's request");
                 probe_ip = ip;
             }
-            real_probe_ip = ip; // Needed to scrub entry
+            /*
+             * XXX Passing down the stack the real probe IP to allow
+             * specific tests to scrub entries.
+             *
+             * See also measurement-kit/measurement-kit#1110.
+             */
+            options["real_probe_ip_"] = ip;
 
             auto country_path = options.get("geoip_country_path",
                                             std::string{});

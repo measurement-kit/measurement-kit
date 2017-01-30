@@ -21,7 +21,7 @@ void tcp_connect(std::string, Settings, Callback<Var<report::Entry>>,
                  Var<Reactor> = Reactor::global(),
                  Var<Logger> = Logger::global());
 
-void web_connectivity(std::string probe_ip, std::string input, Settings,
+void web_connectivity(std::string input, Settings,
                       Callback<Var<report::Entry>>,
                       Var<Reactor> = Reactor::global(),
                       Var<Logger> = Logger::global());

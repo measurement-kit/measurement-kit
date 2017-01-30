@@ -45,8 +45,6 @@ class Runnable : public NonCopyable, public NonMovable {
     virtual void teardown(std::string);
     virtual void main(std::string, Settings, Callback<Var<report::Entry>>);
 
-    std::string real_probe_ip = "127.0.0.1";  // For scrubbing entry
-
   private:
     report::Report report;
     tm test_start_time;
