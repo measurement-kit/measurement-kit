@@ -331,7 +331,8 @@ static void compare_control_experiment(std::string input, Var<Entry> entry,
     }
 }
 
-static void control_request(Var<Entry> entry, SocketList socket_list,
+static void control_request(http::Headers headers_to_pass_along,
+                            Var<Entry> entry, SocketList socket_list,
                             std::string url, Callback<Error> callback,
                             Settings settings, Var<Reactor> reactor,
                             Var<Logger> logger) {
@@ -357,6 +358,13 @@ static void control_request(Var<Entry> entry, SocketList socket_list,
         request["tcp_connect"].push_back(ss.str());
     }
     request["http_request"] = url;
+    // XXX in OONI headers are like `key: [value,...]` whereas in MK
+    // they are like `key: value`. Adapt to OONI format.
+    Entry true_headers;
+    for (auto pair: headers_to_pass_along) {
+        true_headers[pair.first].push_back(pair.second);
+    }
+    request["http_request_headers"] = true_headers;
     std::string body = request.dump();
 
     settings["http/url"] = settings["backend"];
@@ -368,6 +376,7 @@ static void control_request(Var<Entry> entry, SocketList socket_list,
     }
 
     logger->info("Using backend %s", settings["backend"].c_str());
+    logger->log(MK_LOG_DEBUG2, "Body %s", body.c_str());
 
     mk::dump_settings(settings, "web_connectivity", logger);
 
@@ -597,7 +606,8 @@ void web_connectivity(std::string input, Settings options,
                             logger->info(
                                 "web_connectivity: doing control request");
                             control_request(
-                                entry, socket_list, input,
+                                response->request->headers, entry,
+                                socket_list, input,
                                 [=](Error err) {
 
                                     if (err) {
