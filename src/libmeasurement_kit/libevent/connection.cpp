@@ -3,13 +3,14 @@
 // information on the copying conditions.
 
 #include "../libevent/connection.hpp"
+#include "../net/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 
 #include <event2/buffer.h>
 #include <event2/dns.h>
 
-#include <errno.h>
+#include <cerrno>
 #include <new>
 
 extern "C" {
@@ -75,14 +76,9 @@ void Connection::handle_event_(short what) {
         return;
     }
 
-    if (errno == EPIPE) {
-        emit_error(BrokenPipeError());
-        return;
-    }
-
-    // TODO: Here we need to map more network errors
-
-    emit_error(SocketError());
+    Error sys_error = net::map_errno(errno);
+    logger->warn("Got error: %s", sys_error.as_ooni_error().c_str());
+    emit_error(sys_error);
 }
 
 Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> logger)

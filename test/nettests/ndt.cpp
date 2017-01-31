@@ -7,28 +7,19 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/nettests.hpp>
+#include "../nettests/utils.hpp"
 
-#include <chrono>
-#include <iostream>
-#include <thread>
-
-using namespace mk;
+using namespace mk::nettests;
 
 TEST_CASE("Synchronous NDT test") {
-    nettests::NdtTest{}
-        .set_verbosity(MK_LOG_INFO)
+    test::nettests::make_test<NdtTest>()
         .run();
 }
 
 TEST_CASE("Asynchronous NDT test") {
-    bool done = false;
-    nettests::NdtTest{}
-        .set_verbosity(MK_LOG_INFO)
-        .start([&done]() { done = true; });
-    do {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    } while (!done);
+    test::nettests::run_async(
+        test::nettests::make_test<NdtTest>()
+    );
 }
 
 #else

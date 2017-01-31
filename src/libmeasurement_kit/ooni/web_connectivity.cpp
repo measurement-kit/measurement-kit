@@ -364,8 +364,7 @@ static void control_request(Var<Entry> entry, SocketList socket_list,
         // TODO set the appropriate headers to support cloud-fronting.
     }
 
-    logger->debug("web_connectivity: performing control request to %s",
-                  settings["backend"].c_str());
+    logger->info("Using backend %s", settings["backend"].c_str());
 
     mk::dump_settings(settings, "web_connectivity", logger);
 

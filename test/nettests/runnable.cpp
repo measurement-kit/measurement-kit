@@ -6,12 +6,13 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/nettests.hpp>
+#include "../nettests/utils.hpp"
 
+using namespace mk::nettests;
 using namespace mk;
 
 TEST_CASE("Make sure that on_entry() works") {
-    nettests::Runnable test;
+    test::nettests::with_runnable([](nettests::Runnable &test) {
     test.reactor = Reactor::global();
     loop_with_initial_event([&]() {
         test.entry_cb = [](std::string s) {
@@ -36,11 +37,12 @@ TEST_CASE("Make sure that on_entry() works") {
             });
         });
     });
+    });
 }
 
 TEST_CASE("Make sure that on_begin() works") {
+    test::nettests::with_runnable([](nettests::Runnable &test) {
     bool ok = false;
-    nettests::Runnable test;
     test.reactor = Reactor::global();
     loop_with_initial_event([&]() {
         test.begin_cb = [&]() {
@@ -53,11 +55,12 @@ TEST_CASE("Make sure that on_begin() works") {
         });
     });
     REQUIRE(ok);
+    });
 }
 
 TEST_CASE("Make sure that on_end() works") {
+    test::nettests::with_runnable([](nettests::Runnable &test) {
     int ok = 0;
-    nettests::Runnable test;
     test.reactor = Reactor::global();
     loop_with_initial_event([&]() {
         test.end_cbs.push_back([&]() {
@@ -73,12 +76,13 @@ TEST_CASE("Make sure that on_end() works") {
         });
     });
     REQUIRE(ok == 3);
+    });
 }
 
 TEST_CASE("Make sure that on_destroy() works") {
     int ok = 0;
     {
-        nettests::Runnable test;
+        test::nettests::with_runnable([&](nettests::Runnable &test) {
         test.reactor = Reactor::global();
         loop_with_initial_event([&]() {
             test.destroy_cbs.push_back([&]() {
@@ -94,12 +98,13 @@ TEST_CASE("Make sure that on_destroy() works") {
             });
         });
         REQUIRE(ok == 0);
+        });
     }
     REQUIRE(ok == 3);
 }
 
 TEST_CASE("Ensure we do not save too much information by default") {
-    nettests::Runnable test;
+    test::nettests::with_runnable([](nettests::Runnable &test) {
     test.reactor = Reactor::global();
     test.options["geoip_country_path"] = "GeoIP.dat";
     test.options["geoip_asn_path"] = "GeoIPASNum.dat";
@@ -117,10 +122,11 @@ TEST_CASE("Ensure we do not save too much information by default") {
             });
         });
     });
+    });
 }
 
 TEST_CASE("Ensure we can save IP address if we want") {
-    nettests::Runnable test;
+    test::nettests::with_runnable([](nettests::Runnable &test) {
     test.reactor = Reactor::global();
     test.options["geoip_country_path"] = "GeoIP.dat";
     test.options["geoip_asn_path"] = "GeoIPASNum.dat";
@@ -139,10 +145,11 @@ TEST_CASE("Ensure we can save IP address if we want") {
             });
         });
     });
+    });
 }
 
 TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
-    nettests::Runnable test;
+    test::nettests::with_runnable([](nettests::Runnable &test) {
     test.reactor = Reactor::global();
     test.options["geoip_country_path"] = "GeoIP.dat";
     test.options["geoip_asn_path"] = "GeoIPASNum.dat";
@@ -162,6 +169,7 @@ TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
             });
         });
     });
+    });
 }
 
 TEST_CASE("Make sure that 'randomize_input' works") {
@@ -179,12 +187,12 @@ TEST_CASE("Make sure that 'randomize_input' works") {
 
     auto run = [&](bool shuffle) -> std::vector<std::string> {
 
-        nettests::Runnable test;
+        std::vector<std::string> result;
+        test::nettests::with_runnable([&](nettests::Runnable &test) {
         test.reactor = Reactor::make();
         test.input_filepaths.push_back("./test/fixtures/hosts.txt");
         test.options["randomize_input"] = shuffle;
         test.needs_input = true;
-        std::vector<std::string> result;
 
         test.reactor->loop_with_initial_event([&]() {
             test.entry_cb = [&](std::string s) {
@@ -194,6 +202,7 @@ TEST_CASE("Make sure that 'randomize_input' works") {
             test.begin([&](Error) {
                 test.end([&](Error) { test.reactor->break_loop(); });
             });
+        });
         });
         return result;
     };

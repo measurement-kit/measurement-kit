@@ -4,14 +4,16 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_CONNECT_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_CONNECT_IMPL_HPP
 
-#include "../common/utils.hpp"
-#include "../net/connect.hpp"
-
 #include <measurement_kit/net.hpp>
 
 #include <event2/bufferevent.h>
 
+#include <cerrno>
 #include <sstream>
+
+#include "../common/utils.hpp"
+#include "../net/connect.hpp"
+#include "../net/utils.hpp"
 
 struct bufferevent;
 
@@ -32,14 +34,22 @@ void connect_base(std::string address, int port,
                   Var<Logger> logger = Logger::global()) {
     logger->debug("connect_base %s:%d", address.c_str(), port);
 
-    std::stringstream ss;
-    ss << address << ":" << port;
-    std::string endpoint = ss.str();
+    std::string endpoint = [&]() {
+        Endpoint endpoint;
+        endpoint.hostname = address;
+        endpoint.port = port;
+        return serialize_endpoint(endpoint);
+    }();
+
     sockaddr_storage storage;
     sockaddr *saddr = (sockaddr *)&storage;
     int salen = sizeof storage;
 
+    // XXX: as we have seen in #915, the following function does not deal with
+    // IPv6 scoped link local addresses. We can fix this by copying from the
+    // way in which such problem is solved in libevent/dns_utils.hpp.
     if (evutil_parse_sockaddr_port(endpoint.c_str(), saddr, &salen) != 0) {
+        logger->warn("cannot parse endpoint: '%s'", endpoint.c_str());
         cb(GenericError(), nullptr, 0.0);
         return;
     }
@@ -75,10 +85,16 @@ void connect_base(std::string address, int port,
     double begin = mk::time_now();
 
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
+        logger->warn("connect() failed immediately");
         bufferevent_free(bev);
-        cb(GenericError(), nullptr, 0.0);
+        Error sys_error = mk::net::map_errno(errno);
+        logger->warn("reason why connect() has failed: %s",
+                     sys_error.as_ooni_error().c_str());
+        cb(sys_error, nullptr, 0.0);
         return;
     }
+
+    logger->debug("connect() in progress...");
 
     // WARNING: set callbacks after connect() otherwise we free `bev` twice
     // NOTE: In case of `new` failure we let the stack unwind
@@ -86,7 +102,10 @@ void connect_base(std::string address, int port,
         bev, nullptr, nullptr, mk_bufferevent_on_event,
         new Callback<Error, bufferevent *>([=](Error err, bufferevent *bev) {
             if (err) {
+                logger->warn("connect() failed in its callback");
                 bufferevent_free(bev);
+                logger->warn("reason why connect() has failed: %s",
+                             err.as_ooni_error().c_str());
                 cb(err, nullptr, 0.0);
                 return;
             }
