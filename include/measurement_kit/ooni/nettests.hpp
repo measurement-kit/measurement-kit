@@ -26,6 +26,11 @@ void web_connectivity(std::string input, Settings,
                       Var<Reactor> = Reactor::global(),
                       Var<Logger> = Logger::global());
 
+void meek_fronting(Settings, Callback<Var<report::Entry>>,
+                   Var<Reactor> = Reactor::global(),
+                   Var<Logger> = Logger::global());
+
+
 } // namespace ooni
 } // namespace mk
 #endif
