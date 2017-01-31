@@ -18,7 +18,7 @@ static const char *kv_usage =
 static bool set_header(http::Headers &headers, const std::string option) {
     auto kv = mk::split<std::vector<std::string>>(option, ":");
     if (kv.size() != 2) {
-        std::cout << "invalid header: " << mkp_optarg << "\n";
+        std::cout << "invalid header: " << option << "\n";
         return false;
     }
     auto key = kv[0];
