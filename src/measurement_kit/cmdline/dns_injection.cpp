@@ -49,7 +49,12 @@ int main(const char *, int argc, char **argv) {
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_verbosity(verbosity)
         .set_input_filepath(argv[0])
-        .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
+        .on_progress([](double progress, std::string msg) {
+            std::cout << progress * 100.0 << "%: " << msg << "\n";
+        })
+        .on_log([](uint32_t, const char *s) {
+            std::cerr << s << "\n";
+        })
         .run();
 
     return 0;

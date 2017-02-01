@@ -267,17 +267,21 @@ void Runnable::begin(Callback<Error> cb) {
     beginning = mk::time_now();
     geoip_lookup([=]() {
         resolver_lookup([=](Error error, std::string resolver_ip_) {
+            logger->progress(0.05, "geoip lookup");
             if (!error) {
                 resolver_ip = resolver_ip_;
             } else {
                 logger->debug("failed to lookup resolver ip");
             }
             open_report([=](Error error) {
+                logger->progress(0.1, "open report");
                 if (error and not options.get(
                         "ignore_open_report_error", true)) {
                     cb(error);
                     return;
                 }
+                logger->set_progress_offset(0.1);
+                logger->set_progress_scale(0.8);
 
                 ErrorOr<std::deque<std::string>> maybe_inputs =
                     process_input_filepaths(needs_input, input_filepaths,
@@ -316,7 +320,13 @@ void Runnable::end(Callback<Error> cb) {
             /* Suppress */ ;
         }
     }
-    report.close(cb);
+    logger->set_progress_offset(0.0);
+    logger->set_progress_scale(1.0);
+    logger->progress(0.95, "ending the test");
+    report.close([=](Error err) {
+        logger->progress(1.00, "test complete");
+        cb(err);
+    });
 }
 
 } // namespace nettests
