@@ -41,16 +41,18 @@ ErrorOr<std::deque<std::string>> process_input_filepaths_impl(
             logger->warn("at least an input file is required");
             return ooni::MissingRequiredInputFileError();
         }
+        /*
+         * Note: in general the snippet below is not
+         * so good because it does not work for UTF-8
+         * and the like but here we are converting
+         * country codes which are always ASCII.
+         */
         std::string probe_cc_lowercase;
-        for (auto &c : probe_cc) {
-            /*
-             * Note: in general the snippet below is not
-             * so good because it does not work for UTF-8
-             * and the like but here we are converting
-             * country codes which are always ASCII.
-             */
-            probe_cc_lowercase += std::tolower(c);
-        }
+        std::transform(probe_cc.begin(),
+                       probe_cc.end(),
+                       probe_cc_lowercase.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+
         for (auto input_filepath : input_filepaths) {
             input_filepath = std::regex_replace(input_filepath,
                                                 std::regex{R"(\$\{probe_cc\})"},
