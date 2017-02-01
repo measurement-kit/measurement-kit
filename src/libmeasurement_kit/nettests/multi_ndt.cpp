@@ -68,8 +68,9 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
     Var<report::Entry> ndt_entry(new report::Entry);
     (*ndt_entry)["failure"] = nullptr;
     ndt_settings["test_suite"] = MK_NDT_DOWNLOAD;
+    logger->set_progress_offset(0.15);
+    logger->set_progress_scale(0.35);
     logger->progress(0.0, "Starting single-stream test");
-    logger->set_progress_scale(0.5);
     ndt::run(ndt_entry, [=](Error ndt_error) {
         if (ndt_error) {
             (*ndt_entry)["failure"] = ndt_error.as_ooni_error();
@@ -82,7 +83,8 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
         Settings neubot_settings{ndt_settings.begin(), ndt_settings.end()};
         neubot_settings["test_suite"] = MK_NDT_DOWNLOAD_EXT;
         neubot_settings["mlabns_tool_name"] = "neubot";
-        logger->set_progress_offset(0.5);
+        logger->set_progress_offset(0.55);
+        logger->set_progress_scale(0.35);
         logger->progress(0.0, "Starting multi-stream test");
         ndt::run(neubot_entry, [=](Error neubot_error) {
             logger->progress(1.0, "Test completed");
