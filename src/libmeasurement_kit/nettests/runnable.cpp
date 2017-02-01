@@ -35,6 +35,14 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
 
+    double max_rt = options.get("max_runtime", -1.0);
+    double delta = mk::time_now() - beginning;
+    if (max_rt >= 0.0 && delta > max_rt) {
+        logger->info("Exceeded test maximum runtime");
+        cb(NoError());
+        return;
+    }
+
     if (inputs.size() <= 0) {
         logger->debug("net_test: reached end of input");
         cb(NoError());
@@ -44,7 +52,9 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     inputs.pop_front();
 
     double prog = 0.0;
-    if (num_entries > 0) {
+    if (max_rt > 0.0) {
+        prog = delta / max_rt;
+    } else if (num_entries > 0) {
         prog = *current_entry / (double)num_entries;
     }
     *current_entry += 1;
@@ -96,12 +106,6 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                 }
             } else {
                 logger->debug("net_test: written entry");
-            }
-            double max_rt = options.get("max_runtime", -1.0);
-            if (max_rt >= 0.0 and mk::time_now() - beginning > max_rt) {
-                logger->info("Exceeded test maximum runtime");
-                cb(NoError());
-                return;
             }
             reactor->call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
