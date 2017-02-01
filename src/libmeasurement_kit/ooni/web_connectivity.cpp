@@ -72,13 +72,11 @@ static void compare_http_requests(Var<Entry> entry,
 
     for (Entry::iterator it = control["headers"].begin();
          it != control["headers"].end(); ++it) {
-        // lowercase_ctrl_headers.insert(std::tolower(it.key()));
-        lowercase_ctrl_headers.insert(it.key());
+        lowercase_ctrl_headers.insert(std::tolower(it.key()));
     }
     for (auto it = response->headers.begin(); it != response->headers.end();
          ++it) {
-        // lowercase_exp_headers.insert(std::tolower(it->first));
-        lowercase_exp_headers.insert(it->first);
+        lowercase_exp_headers.insert(std::tolower(it->first));
     }
 
     if (lowercase_ctrl_headers == lowercase_exp_headers) {
