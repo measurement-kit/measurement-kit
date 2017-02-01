@@ -101,6 +101,11 @@ std::string extract_html_title(std::string body);
 
 bool is_private_ipv4_addr(const std::string &ipv4_addr);
 
+std::string scrub(
+        std::string orig,
+        std::string real_probe_ip
+);
+
 } // namespace ooni
 } // namespace mk
 #endif
