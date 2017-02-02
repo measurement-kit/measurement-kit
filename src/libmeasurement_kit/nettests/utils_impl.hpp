@@ -47,7 +47,7 @@ ErrorOr<std::deque<std::string>> process_input_filepaths_impl(
          * and the like but here we are converting
          * country codes which are always ASCII.
          */
-        std::string probe_cc_lowercase;
+        std::string probe_cc_lowercase = "";
         std::transform(probe_cc.begin(),
                        probe_cc.end(),
                        probe_cc_lowercase.begin(),
