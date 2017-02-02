@@ -72,13 +72,21 @@ static void compare_http_requests(Var<Entry> entry,
 
     for (Entry::iterator it = control["headers"].begin();
          it != control["headers"].end(); ++it) {
-        // lowercase_ctrl_headers.insert(std::tolower(it.key()));
-        lowercase_ctrl_headers.insert(it.key());
+        std::string lower_header(it.key());
+        std::transform(lower_header.begin(),
+                       lower_header.end(),
+                       lower_header.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        lowercase_ctrl_headers.insert(lower_header);
     }
     for (auto it = response->headers.begin(); it != response->headers.end();
          ++it) {
-        // lowercase_exp_headers.insert(std::tolower(it->first));
-        lowercase_exp_headers.insert(it->first);
+        std::string lower_header(it->first);
+        std::transform(lower_header.begin(),
+                       lower_header.end(),
+                       lower_header.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        lowercase_exp_headers.insert(lower_header);
     }
 
     if (lowercase_ctrl_headers == lowercase_exp_headers) {
@@ -401,10 +409,11 @@ static void control_request(http::Headers headers_to_pass_along,
                   reactor, logger);
 }
 
-static void experiment_http_request(Var<Entry> entry, std::string url,
-                                    Callback<Error, Var<http::Response>> cb,
-                                    Settings options, Var<Reactor> reactor,
-                                    Var<Logger> logger) {
+static void experiment_http_request(
+        Var<Entry> entry, std::string url,
+        Callback<Error, http::Headers, Var<http::Response>> cb,
+        Settings options, Var<Reactor> reactor,
+        Var<Logger> logger) {
 
     http::Headers headers = constants::COMMON_CLIENT_HEADERS;
     std::string body;
@@ -416,10 +425,10 @@ static void experiment_http_request(Var<Entry> entry, std::string url,
                                 if (err) {
                                     (*entry)["http_experiment_failure"] =
                                         err.as_ooni_error();
-                                    cb(err, response);
+                                    cb(err, headers, response);
                                     return;
                                 }
-                                cb(NoError(), response);
+                                cb(NoError(), headers, response);
                             },
                             reactor, logger);
 }
@@ -595,7 +604,8 @@ void web_connectivity(std::string input, Settings options,
                         input.c_str());
                     experiment_http_request(
                         entry, input,
-                        [=](Error err, Var<http::Response> response) {
+                        [=](Error err, http::Headers request_headers,
+                            Var<http::Response> response) {
 
                             if (err) {
                                 logger->debug(
@@ -606,7 +616,7 @@ void web_connectivity(std::string input, Settings options,
                             logger->info(
                                 "web_connectivity: doing control request");
                             control_request(
-                                response->request->headers, entry,
+                                request_headers, entry,
                                 socket_list, input,
                                 [=](Error err) {
 

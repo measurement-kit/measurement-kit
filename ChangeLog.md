@@ -1,3 +1,13 @@
+# MeasurementKit 0.4.0-beta.3 [2017-02-01]
+
+- `ip_lookup()`: validate result as IP address (#1108)
+- `web_connectivity`: do not *request unconditionally
+- runnable: progress now accounts for max_runtime
+- progress: also track opening/closing report
+- The header key comparison MUST be done with the lowercase version
+- Use std::transform to convert to lowercase
+- Use transform also in another place
+
 # MeasurementKit 0.4.0-beta.2 [2017-01-31]
 
 - Start updating documentation for release 0.4.0 (#1082)
