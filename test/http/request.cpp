@@ -539,6 +539,33 @@ TEST_CASE("http::request() correctly follows redirects") {
     });
 }
 
+TEST_CASE("Headers are preserved across redirects") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        request(
+            {
+                {"http/url", "http://httpbin.org/absolute-redirect/3"},
+                {"http/max_redirects", 4},
+            },
+            {
+                {"Spam", "Ham"}, {"Accept", "*/*"},
+            },
+            "",
+            [=](Error error, Var<Response> response) {
+                REQUIRE(!error);
+                REQUIRE(response->status_code == 200);
+                REQUIRE(response->request->url.path == "/get");
+                REQUIRE(response->previous->status_code == 302);
+                REQUIRE(response->previous->request->url.path ==
+                        "/absolute-redirect/1");
+                auto body = nlohmann::json::parse(response->body);
+                REQUIRE(body["headers"]["Spam"] == "Ham");
+                reactor->stop();
+            },
+            reactor);
+    });
+}
+
 #endif // ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl fails without an url") {

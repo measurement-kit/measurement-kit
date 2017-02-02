@@ -35,6 +35,14 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
 
+    double max_rt = options.get("max_runtime", -1.0);
+    double delta = mk::time_now() - beginning;
+    if (max_rt >= 0.0 && delta > max_rt) {
+        logger->info("Exceeded test maximum runtime");
+        cb(NoError());
+        return;
+    }
+
     if (inputs.size() <= 0) {
         logger->debug("net_test: reached end of input");
         cb(NoError());
@@ -44,7 +52,9 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     inputs.pop_front();
 
     double prog = 0.0;
-    if (num_entries > 0) {
+    if (max_rt > 0.0) {
+        prog = delta / max_rt;
+    } else if (num_entries > 0) {
         prog = *current_entry / (double)num_entries;
     }
     *current_entry += 1;
@@ -97,12 +107,6 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
             } else {
                 logger->debug("net_test: written entry");
             }
-            double max_rt = options.get("max_runtime", -1.0);
-            if (max_rt >= 0.0 and mk::time_now() - beginning > max_rt) {
-                logger->info("Exceeded test maximum runtime");
-                cb(NoError());
-                return;
-            }
             reactor->call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
             });
@@ -138,6 +142,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
     // No need to perform further lookups if we don't need to save anything
     if (not save_ip and not save_asn and not save_cc) {
+        logger->warn("Not knowing user_ip means we cannot attempt to scrub it "
+                     "from the report");
         cb();
         return;
     }
@@ -146,6 +152,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
         [=](Error err, std::string ip) {
             if (err) {
                 logger->warn("ip_lookup() failed: error code: %d", err.code);
+                logger->warn("Not knowing user_ip means we cannot attempt "
+                             "to scrub it from the report");
                 cb();
                 return;
             }
@@ -154,6 +162,13 @@ void Runnable::geoip_lookup(Callback<> cb) {
                 logger->debug("saving user's real ip on user's request");
                 probe_ip = ip;
             }
+            /*
+             * XXX Passing down the stack the real probe IP to allow
+             * specific tests to scrub entries.
+             *
+             * See also measurement-kit/measurement-kit#1110.
+             */
+            options["real_probe_ip_"] = ip;
 
             auto country_path = options.get("geoip_country_path",
                                             std::string{});
@@ -252,17 +267,21 @@ void Runnable::begin(Callback<Error> cb) {
     beginning = mk::time_now();
     geoip_lookup([=]() {
         resolver_lookup([=](Error error, std::string resolver_ip_) {
+            logger->progress(0.05, "geoip lookup");
             if (!error) {
                 resolver_ip = resolver_ip_;
             } else {
                 logger->debug("failed to lookup resolver ip");
             }
             open_report([=](Error error) {
+                logger->progress(0.1, "open report");
                 if (error and not options.get(
                         "ignore_open_report_error", true)) {
                     cb(error);
                     return;
                 }
+                logger->set_progress_offset(0.1);
+                logger->set_progress_scale(0.8);
 
                 ErrorOr<std::deque<std::string>> maybe_inputs =
                     process_input_filepaths(needs_input, input_filepaths,
@@ -301,7 +320,13 @@ void Runnable::end(Callback<Error> cb) {
             /* Suppress */ ;
         }
     }
-    report.close(cb);
+    logger->set_progress_offset(0.0);
+    logger->set_progress_scale(1.0);
+    logger->progress(0.95, "ending the test");
+    report.close([=](Error err) {
+        logger->progress(1.00, "test complete");
+        cb(err);
+    });
 }
 
 } // namespace nettests
