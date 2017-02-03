@@ -121,12 +121,15 @@ static void compare_http_requests(Var<Entry> entry,
 
     exp_title_words = split<std::vector<std::string>>(experiment_title, " ");
     ctrl_title_words = split<std::vector<std::string>>(control["title"], " ");
-    int idx = 0;
+    size_t idx = 0;
     (*entry)["title_match"] = (experiment_title == control["title"]);
     for (auto exp_word : exp_title_words) {
         if (exp_word.length() < 5) {
             idx++;
             continue;
+        }
+        if (idx >= ctrl_title_words.size()) {
+            break;
         }
         (*entry)["title_match"] = (bool)(exp_word == ctrl_title_words[idx]);
         break;
@@ -336,7 +339,8 @@ static void compare_control_experiment(std::string input, Var<Entry> entry,
     }
 }
 
-static void control_request(Var<Entry> entry, SocketList socket_list,
+static void control_request(http::Headers headers_to_pass_along,
+                            Var<Entry> entry, SocketList socket_list,
                             std::string url, Callback<Error> callback,
                             Settings settings, Var<Reactor> reactor,
                             Var<Logger> logger) {
@@ -362,6 +366,13 @@ static void control_request(Var<Entry> entry, SocketList socket_list,
         request["tcp_connect"].push_back(ss.str());
     }
     request["http_request"] = url;
+    // XXX in OONI headers are like `key: [value,...]` whereas in MK
+    // they are like `key: value`. Adapt to OONI format.
+    Entry true_headers;
+    for (auto pair: headers_to_pass_along) {
+        true_headers[pair.first].push_back(pair.second);
+    }
+    request["http_request_headers"] = true_headers;
     std::string body = request.dump();
 
     settings["http/url"] = settings["backend"];
@@ -373,6 +384,7 @@ static void control_request(Var<Entry> entry, SocketList socket_list,
     }
 
     logger->info("Using backend %s", settings["backend"].c_str());
+    logger->log(MK_LOG_DEBUG2, "Body %s", body.c_str());
 
     mk::dump_settings(settings, "web_connectivity", logger);
 
@@ -397,10 +409,11 @@ static void control_request(Var<Entry> entry, SocketList socket_list,
                   reactor, logger);
 }
 
-static void experiment_http_request(Var<Entry> entry, std::string url,
-                                    Callback<Error, Var<http::Response>> cb,
-                                    Settings options, Var<Reactor> reactor,
-                                    Var<Logger> logger) {
+static void experiment_http_request(
+        Var<Entry> entry, std::string url,
+        Callback<Error, http::Headers, Var<http::Response>> cb,
+        Settings options, Var<Reactor> reactor,
+        Var<Logger> logger) {
 
     http::Headers headers = constants::COMMON_CLIENT_HEADERS;
     std::string body;
@@ -412,10 +425,10 @@ static void experiment_http_request(Var<Entry> entry, std::string url,
                                 if (err) {
                                     (*entry)["http_experiment_failure"] =
                                         err.as_ooni_error();
-                                    cb(err, response);
+                                    cb(err, headers, response);
                                     return;
                                 }
-                                cb(NoError(), response);
+                                cb(NoError(), headers, response);
                             },
                             reactor, logger);
 }
@@ -591,7 +604,8 @@ void web_connectivity(std::string input, Settings options,
                         input.c_str());
                     experiment_http_request(
                         entry, input,
-                        [=](Error err, Var<http::Response> response) {
+                        [=](Error err, http::Headers request_headers,
+                            Var<http::Response> response) {
 
                             if (err) {
                                 logger->debug(
@@ -602,7 +616,8 @@ void web_connectivity(std::string input, Settings options,
                             logger->info(
                                 "web_connectivity: doing control request");
                             control_request(
-                                entry, socket_list, input,
+                                request_headers, entry,
+                                socket_list, input,
                                 [=](Error err) {
 
                                     if (err) {

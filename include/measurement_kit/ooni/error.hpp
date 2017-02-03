@@ -31,6 +31,8 @@ MK_DEFINE_ERR(MK_ERR_OONI(18), BouncerTestHelperNotFoundError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(19), BouncerInvalidRequestError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(20), BouncerGenericError, "")
 MK_DEFINE_ERR(MK_ERR_OONI(21), BouncerValueNotFoundError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(22), HttpRequestError, "")
+MK_DEFINE_ERR(MK_ERR_OONI(23), RegexSearchError, "")
 
 } // namespace mk
 } // namespace ooni
