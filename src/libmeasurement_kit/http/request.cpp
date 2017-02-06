@@ -146,6 +146,9 @@ void request_recv_response(Var<Transport> txp,
             /* FALLTHROUGH */
 
         } else if (err == EofError()) {
+            // Assume there was no error. The parser will tell us if that
+            // is true (it was in final state) or false.
+            err = NoError();
             try {
                 logger->debug("Now passing EOF to parser");
                 parser->eof();
