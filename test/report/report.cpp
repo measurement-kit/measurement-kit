@@ -292,3 +292,22 @@ TEST_CASE(
         }, Logger::global());
     });
 }
+
+TEST_CASE("We can override software name and version") {
+    Report report;
+    Entry entry;
+
+    SECTION("We have a default") {
+        report.fill_entry(entry);
+        REQUIRE(entry["software_name"] == report.software_name);
+        REQUIRE(entry["software_version"] == report.software_version);
+    }
+
+    SECTION("We can override the default") {
+        report.options["software_name"] = "ooniprobe-ios";
+        report.options["software_version"] = "1.0.1";
+        report.fill_entry(entry);
+        REQUIRE(entry["software_name"] == "ooniprobe-ios");
+        REQUIRE(entry["software_version"] == "1.0.1");
+    }
+}

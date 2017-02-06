@@ -167,7 +167,7 @@ void disconnect_and_callback(Var<Context> ctx, Error err);
 */
 namespace test_c2s {
 
-void coroutine(std::string address, int port, double runtime,
+void coroutine(Var<Entry>, std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
                Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
                Var<Logger> logger = Logger::global());

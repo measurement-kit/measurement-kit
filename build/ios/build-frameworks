@@ -4,6 +4,22 @@ set -e
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
 EXTLIBRARIES="libevent libevent_pthreads libevent_openssl libcrypto libssl libGeoIP"
 
+list_libs() {
+    input_lib=$1
+    libs=""
+    for arch in i386 x86_64; do
+        if [ -f tmp/iphonesimulator/$arch/lib/$input_lib.a ]; then
+            libs="$libs tmp/iphonesimulator/$arch/lib/$input_lib.a"
+        fi
+    done
+    for arch in arm64 armv7s armv7; do
+        if [ -f tmp/iphoneos/$arch/lib/$input_lib.a ]; then
+            libs="$libs tmp/iphoneos/$arch/lib/$input_lib.a"
+        fi
+    done
+    echo $libs
+}
+
 (
     cd "$ROOTDIR"
 
@@ -15,28 +31,26 @@ EXTLIBRARIES="libevent libevent_pthreads libevent_openssl libcrypto libssl libGe
         mkdir Frameworks/$lib.framework
     done
 
-    # Copying x86 headers. This has no implications because measurement-kit
-    # uses no machine-dependent headers.
-    cp -Rp tmp/iphonesimulator/i386/include/measurement_kit \
-        Frameworks/measurement_kit.framework/Headers
+    # Copying first headers we find. This has no implications because
+    # measurement-kit uses no machine-dependent headers.
+    for platform in iphoneos iphonesimulator; do
+        for arch in i386 x86_64 armv7 armv7s arm64; do
+            if [ -d tmp/$platform/$arch/include/measurement_kit ]; then
+                cp -Rp tmp/$platform/$arch/include/measurement_kit \
+                    Frameworks/measurement_kit.framework/Headers
+                break
+            fi
+        done
+    done
 
     # Lipo external libraries
-    for lib in $EXTLIBRARIES; do 
-        lipo -create -output Frameworks/$lib.framework/$lib \
-          tmp/iphoneos/arm64/lib/$lib.a \
-          tmp/iphoneos/armv7s/lib/$lib.a \
-          tmp/iphoneos/armv7/lib/$lib.a \
-          tmp/iphonesimulator/i386/lib/$lib.a \
-          tmp/iphonesimulator/x86_64/lib/$lib.a
+    for lib in $EXTLIBRARIES; do
+        lipo -create -output Frameworks/$lib.framework/$lib `list_libs $lib`
     done
-    
-    # Lipo measurement-kit library 
-    lipo -create -output Frameworks/measurement_kit.framework/measurement_kit \
-      tmp/iphoneos/arm64/lib/libmeasurement_kit.a \
-      tmp/iphoneos/armv7s/lib/libmeasurement_kit.a \
-      tmp/iphoneos/armv7/lib/libmeasurement_kit.a \
-      tmp/iphonesimulator/i386/lib/libmeasurement_kit.a \
-      tmp/iphonesimulator/x86_64/lib/libmeasurement_kit.a
+
+    # Lipo measurement-kit library
+    lipo -create -output Frameworks/measurement_kit.framework/measurement_kit  \
+            `list_libs libmeasurement_kit`
 
     # Create fake header to make CocoaPod happy
     for lib in $EXTLIBRARIES; do

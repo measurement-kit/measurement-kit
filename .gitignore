@@ -35,6 +35,8 @@
 /example/libevent/discard
 /example/libevent/listen
 /example/net/transport
+/example/nettests/multithread
+/example/nettests/simple
 /include.am
 /maxmind-geoip.*.dat*
 /measurement_kit
@@ -86,6 +88,7 @@
 /test/nettests/runnable
 /test/nettests/runner
 /test/nettests/tcp_connect
+/test/nettests/utils
 /test/nettests/web_connectivity
 /test/ooni/bouncer
 /test/ooni/collector_client

@@ -1,3 +1,31 @@
+# MeasurementKit 0.4.0-beta.3 [2017-02-01]
+
+- `ip_lookup()`: validate result as IP address (#1108)
+- `web_connectivity`: do not `*request` unconditionally
+- runnable: progress now accounts for `max_runtime`
+- progress: also track opening/closing report
+- The header key comparison MUST be done with the lowercase version
+- Use std::transform to convert to lowercase
+- Use transform also in another place
+
+# MeasurementKit 0.4.0-beta.2 [2017-01-31]
+
+- Start updating documentation for release 0.4.0 (#1082)
+- report: Allow to specify application name and version (#1092)
+- report: include the platform (#1093)
+- Make sure http template produces good json (#1096)
+- var.hpp: fix as() to use dynamic cast (#1090)
+- test/net/connect.cpp: refactor to avoid global poller (#1099)
+- connect: start fixing IPv6 addresses (#1100)
+- net: start exposing network errors (#1101)
+- Feature: NDT stats (#1089)
+- Add regress tests for input processor (#1059)
+- Use default backends when it makes sense (#1097)
+- Propagate network errors (#1103)
+- Fix: web connectivity segfault (#1107)
+- `templates::http_request()`: scrub IP address (#1106)
+- `web_connectivity`: pass headers to backend (#1111)
+
 # MeasurementKit 0.4.0-beta.1 [2017-01-16]
 
 - net: improve handling of address:port (#1079)

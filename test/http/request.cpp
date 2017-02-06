@@ -474,10 +474,13 @@ TEST_CASE("http::request() works as expected using httpo URLs") {
                 if (!error) {
                     REQUIRE(response->status_code == 200);
                     nlohmann::json body = nlohmann::json::parse(response->body);
-                    REQUIRE(body["default"]["collector"] ==
-                            "httpo://ihiderha53f36lsd.onion");
-                    REQUIRE(body["dns"]["collector"] ==
-                            "httpo://ihiderha53f36lsd.onion");
+                    auto check = [](std::string s) {
+                        REQUIRE(s.substr(0, 8) == "httpo://");
+                        REQUIRE(s.size() >= 6);
+                        REQUIRE(s.substr(s.size() - 6) == ".onion");
+                    };
+                    check(body["default"]["collector"]);
+                    check(body["dns"]["collector"]);
                     REQUIRE(body["dns"]["address"] == "213.138.109.232:57004");
                 }
                 break_loop();
@@ -533,6 +536,33 @@ TEST_CASE("http::request() correctly follows redirects") {
                 REQUIRE(!response->previous->previous);
                 break_loop();
             });
+    });
+}
+
+TEST_CASE("Headers are preserved across redirects") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        request(
+            {
+                {"http/url", "http://httpbin.org/absolute-redirect/3"},
+                {"http/max_redirects", 4},
+            },
+            {
+                {"Spam", "Ham"}, {"Accept", "*/*"},
+            },
+            "",
+            [=](Error error, Var<Response> response) {
+                REQUIRE(!error);
+                REQUIRE(response->status_code == 200);
+                REQUIRE(response->request->url.path == "/get");
+                REQUIRE(response->previous->status_code == 302);
+                REQUIRE(response->previous->request->url.path ==
+                        "/absolute-redirect/1");
+                auto body = nlohmann::json::parse(response->body);
+                REQUIRE(body["headers"]["Spam"] == "Ham");
+                reactor->stop();
+            },
+            reactor);
     });
 }
 

@@ -12,11 +12,13 @@ struct bufferevent;
 namespace mk {
 namespace net {
 
-struct ConnectResult : public ErrorContext {
+class ConnectResult : public ErrorContext {
+  public:
     dns::ResolveHostnameResult resolve_result;
     std::vector<Error> connect_result;
     double connect_time = 0.0;
     bufferevent *connected_bev = nullptr;
+    ~ConnectResult() override;
 };
 
 // Convert error returned by connect() in connect_time
@@ -28,8 +30,10 @@ void connect(std::string address, int port,
              Var<Reactor> reactor = Reactor::global(),
              Var<Logger> logger = Logger::global());
 
-struct ConnectManyResult : public ErrorContext {
+class ConnectManyResult : public ErrorContext {
+  public:
     std::vector<Var<ConnectResult>> results;
+    ~ConnectManyResult() override;
 };
 
 // Convert error returned by connect_many() into connect_times vector
