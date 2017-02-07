@@ -620,7 +620,8 @@ TEST_CASE("We correctly deal with schema-less redirect") {
                 bool okay = response->request->url.schema == "http" ||
                             response->request->url.schema == "https";
                 REQUIRE(okay);
-                REQUIRE(response->request->url.address == "www.bacardi.com");
+                REQUIRE(response->request->url.address.find(
+                    "bacardi.com") != std::string::npos);
                 REQUIRE(response->request->url.path.size() > 1);
                 REQUIRE(response->previous->status_code == 302);
                 REQUIRE(response->previous->request->url.path == "/");
