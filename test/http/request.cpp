@@ -603,7 +603,7 @@ TEST_CASE("We correctly deal with schema-less redirect") {
     reactor->loop_with_initial_event([=]() {
         request(
             {
-                {"http/url", "http://bacardi.com"},
+                {"http/url", "http://www.bacardi.com"},
                 {"http/max_redirects", 4},
             },
             {
