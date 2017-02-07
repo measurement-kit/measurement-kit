@@ -603,7 +603,8 @@ TEST_CASE("We correctly deal with schema-less redirect") {
     reactor->loop_with_initial_event([=]() {
         request(
             {
-                {"http/url", "http://www.bacardi.com"},
+                {"http/url",
+                "https://httpbin.org/redirect-to?url=%2F%2Fhttpbin.org%2Fheaders"},
                 {"http/max_redirects", 4},
             },
             {
@@ -613,18 +614,12 @@ TEST_CASE("We correctly deal with schema-less redirect") {
             [=](Error error, Var<Response> response) {
                 REQUIRE(!error);
                 REQUIRE(response->status_code == 200);
-                /*
-                 * Apparently, my local system is redirected to http but
-                 * travis is redirected to https. Annoying.
-                 */
-                bool okay = response->request->url.schema == "http" ||
-                            response->request->url.schema == "https";
-                REQUIRE(okay);
-                REQUIRE(response->request->url.address.find(
-                    "bacardi.com") != std::string::npos);
-                REQUIRE(response->request->url.path.size() > 1);
+                REQUIRE(response->request->url.schema == "https");
+                REQUIRE(response->request->url.address == "httpbin.org");
+                REQUIRE(response->request->url.path == "/headers");
                 REQUIRE(response->previous->status_code / 100 == 3);
-                REQUIRE(response->previous->request->url.path == "/");
+                REQUIRE(response->previous->request->url.path
+                        == "/redirect-to");
                 reactor->stop();
             },
             reactor);
