@@ -594,6 +594,43 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
     });
 }
 
+TEST_CASE("We correctly deal with schema-less redirect") {
+    /*
+     * At the moment of writing this test, http://bacardi.com redirects to
+     * //bacardi.com which used to confuse our redirect code.
+     */
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        request(
+            {
+                {"http/url", "http://www.bacardi.com"},
+                {"http/max_redirects", 4},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "",
+            [=](Error error, Var<Response> response) {
+                REQUIRE(!error);
+                REQUIRE(response->status_code == 200);
+                /*
+                 * Apparently, my local system is redirected to http but
+                 * travis is redirected to https. Annoying.
+                 */
+                bool okay = response->request->url.schema == "http" ||
+                            response->request->url.schema == "https";
+                REQUIRE(okay);
+                REQUIRE(response->request->url.address.find(
+                    "bacardi.com") != std::string::npos);
+                REQUIRE(response->request->url.path.size() > 1);
+                REQUIRE(response->previous->status_code == 302);
+                REQUIRE(response->previous->request->url.path == "/");
+                reactor->stop();
+            },
+            reactor);
+    });
+}
+
 #endif // ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl fails without an url") {
