@@ -613,7 +613,13 @@ TEST_CASE("We correctly deal with schema-less redirect") {
             [=](Error error, Var<Response> response) {
                 REQUIRE(!error);
                 REQUIRE(response->status_code == 200);
-                REQUIRE(response->request->url.schema == "http");
+                /*
+                 * Apparently, my local system is redirected to http but
+                 * travis is redirected to https. Annoying.
+                 */
+                bool okay = response->request->url.schema == "http" ||
+                            response->request->url.schema == "https";
+                REQUIRE(okay);
                 REQUIRE(response->request->url.address == "www.bacardi.com");
                 REQUIRE(response->request->url.path.size() > 1);
                 REQUIRE(response->previous->status_code == 302);
