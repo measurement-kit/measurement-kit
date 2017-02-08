@@ -563,6 +563,37 @@ TEST_CASE("Headers are preserved across redirects") {
     });
 }
 
+TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
+    /*
+     * At the moment of writing this test, http://hushmail.com redirects to
+     * https://hushmail.com closing the connection with EOF.
+     *
+     * See measurement-kit/ooniprobe-ios#79.
+     */
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        request(
+            {
+                {"http/url", "http://hushmail.com"},
+                {"http/max_redirects", 4},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "",
+            [=](Error error, Var<Response> response) {
+                REQUIRE(!error);
+                REQUIRE(response->status_code == 200);
+                REQUIRE(response->request->url.schema == "https");
+                REQUIRE(response->request->url.address == "www.hushmail.com");
+                REQUIRE(response->previous->status_code == 302);
+                REQUIRE(response->previous->request->url.schema == "http");
+                reactor->stop();
+            },
+            reactor);
+    });
+}
+
 #endif // ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl fails without an url") {
