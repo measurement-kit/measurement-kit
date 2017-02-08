@@ -4,7 +4,7 @@ set -e
 export CPP="clang -E"
 export CC="clang"
 export CXX="clang++"
-export pkg_make_check_rule="run-valgrind"
+export pkg_make_check_rule="run-valgrind-docker"
 
 debian_deps="$debian_deps autoconf"
 debian_deps="$debian_deps automake"
