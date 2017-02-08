@@ -26,5 +26,5 @@ subr_depend() {
 }
 
 subr_make_check() {
-    make $make_flags run-valgrind V=0
+    make $make_flags run-valgrind-docker V=0
 }
