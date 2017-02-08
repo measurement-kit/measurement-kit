@@ -4,8 +4,6 @@ set -e
 export CPP="clang -E"
 export CC="clang"
 export CXX="clang++"
-export CFLAGS="$CFLAGS -O0"
-export CXXFLAGS="$CXXFLAGS -O0"
 
 export configure_flags="$configure_flags --disable-shared"
 
