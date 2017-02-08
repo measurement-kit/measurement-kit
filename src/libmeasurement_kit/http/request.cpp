@@ -151,6 +151,9 @@ void request_recv_response(Var<Transport> txp,
             // Calling parser->on_eof() could trigger parser->on_end() and
             // we don't want this function to call ->emit_error()
             *prevent_emit = true;
+            // Assume there was no error. The parser will tell us if that
+            // is true (it was in final state) or false.
+            err = NoError();
             try {
                 logger->debug("Now passing EOF to parser");
                 parser->eof();
