@@ -35,7 +35,7 @@ static void intercept_randomize(std::deque<std::string> &) {
 }
 
 TEST_CASE("process_input_filepaths() works as expected") {
-    SECTION("When needs_input no input filepaths is available") {
+    SECTION("When needs_input and no input filepaths are available") {
         mk::ErrorOr<std::deque<std::string>> maybe_result =
             mk::nettests::process_input_filepaths(
                 true, {}, "IT", {}, mk::Logger::global(), nullptr, nullptr);
