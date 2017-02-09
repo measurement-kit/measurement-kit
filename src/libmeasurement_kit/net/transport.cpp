@@ -56,5 +56,18 @@ void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
     readn(t, buff, 1, callback, reactor);
 }
 
+void start_read(Var<Transport> txp, Var<Buffer> buff, Callback<Error> cb) {
+    txp->on_data([=](Buffer d) {
+        *buff << d;
+        cb(NoError());
+    });
+    txp->on_error([=](Error error) { cb(error); });
+}
+
+void stop_read(Var<Transport> txp) {
+    txp->on_data(nullptr);
+    txp->on_error(nullptr);
+}
+
 } // namespace net
 } // namespace mk

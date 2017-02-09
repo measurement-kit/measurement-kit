@@ -121,48 +121,52 @@ void request_recv_response(Var<Transport> txp,
                            Var<Reactor> reactor, Var<Logger> logger) {
     Var<ResponseParserNg> parser(new ResponseParserNg);
     Var<Response> response(new Response);
-    Var<bool> prevent_emit(new bool(false));
+    Var<Buffer> buff = Buffer::make();
+    Var<bool> complete{new bool(false)};
 
-    // Note: any parser error at this point is an exception catched by the
-    // connection code and routed to the error handler function below
-    txp->on_data([=](Buffer data) { parser->feed(data); });
-
+    parser->on_end([=]() { *complete = true; });
     parser->on_response([=](Response r) { *response = r; });
 
     // TODO: here we should honour the `ignore_body` setting
     parser->on_body([=](std::string s) { response->body += s; });
 
-    // TODO: we should improve the parser such that the transport forwards the
-    // "error" event to it and then the parser does the right thing, so that the
-    // code becomes less "twisted" here.
-    //
-    // XXX actually trying to do that could make things worse as we have
-    // seen in #690; we should refactor this code with care.
-
-    parser->on_end([=]() {
-        if (*prevent_emit == true) {
-            return;
-        }
-        txp->emit_error(NoError());
-    });
-    txp->on_error([=](Error err) {
+    start_read(txp, buff, [=](Error err) {
         logger->debug("Received error %d on connection", err.code);
-        if (err == EofError()) {
-            // Calling parser->on_eof() could trigger parser->on_end() and
-            // we don't want this function to call ->emit_error()
-            *prevent_emit = true;
+
+        if (err == NoError()) {
+            try {
+                parser->feed(*buff);
+            } catch (Error &second_error) {
+                logger->warn("Parsing error: %d", second_error.code);
+                err = second_error;
+            }
+            if (err == NoError() and !*complete) {
+                return; /* We can and want to read more */
+            }
+            /* FALLTHROUGH */
+
+        } else if (err == EofError()) {
+            // Assume there was no error. The parser will tell us if that
+            // is true (it was in final state) or false.
+            err = NoError();
             try {
                 logger->debug("Now passing EOF to parser");
                 parser->eof();
             } catch (Error &second_error) {
                 logger->warn("Parsing error at EOF: %d", second_error.code);
                 err = second_error;
-                // FALLTHRU
             }
+            if (*complete) {
+                err = NoError();
+            }
+            /* FALLTHROUGH */
+
+        } else {
+            /* NOTHING */ ;
         }
+
         logger->debug("Now reacting to delivered error %d", err.code);
-        txp->on_error(nullptr);
-        txp->on_data(nullptr);
+        stop_read(txp);
         reactor->call_soon([=]() {
             logger->log(MK_LOG_DEBUG2, "request_recv_response: end of closure");
             cb(err, response);
