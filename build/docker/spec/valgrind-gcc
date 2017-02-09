@@ -4,6 +4,7 @@ set -e
 export CPP="gcc -E"
 export CC="gcc"
 export CXX="g++"
+export pkg_make_check_rule="run-valgrind-docker"
 
 export configure_flags="$configure_flags --disable-shared"
 
@@ -26,5 +27,5 @@ subr_depend() {
 }
 
 subr_make_check() {
-    make $make_flags run-valgrind V=0
+    make $make_flags $pkg_make_check_rule V=0
 }
