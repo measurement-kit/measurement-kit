@@ -594,6 +594,38 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
     });
 }
 
+TEST_CASE("We correctly deal with schema-less redirect") {
+    /*
+     * At the moment of writing this test, http://bacardi.com redirects to
+     * //bacardi.com which used to confuse our redirect code.
+     */
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        request(
+            {
+                {"http/url",
+                "https://httpbin.org/redirect-to?url=%2F%2Fhttpbin.org%2Fheaders"},
+                {"http/max_redirects", 4},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "",
+            [=](Error error, Var<Response> response) {
+                REQUIRE(!error);
+                REQUIRE(response->status_code == 200);
+                REQUIRE(response->request->url.schema == "https");
+                REQUIRE(response->request->url.address == "httpbin.org");
+                REQUIRE(response->request->url.path == "/headers");
+                REQUIRE(response->previous->status_code / 100 == 3);
+                REQUIRE(response->previous->request->url.path
+                        == "/redirect-to");
+                reactor->stop();
+            },
+            reactor);
+    });
+}
+
 #endif // ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl fails without an url") {
