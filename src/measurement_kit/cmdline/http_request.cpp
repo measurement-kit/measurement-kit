@@ -76,7 +76,7 @@ int main(const char *, int argc, char **argv) {
             body,
             [](Error error, Var<http::Response> response) {
                 if (error) {
-                    std::cout << "Error: " << error.code << "\n";
+                    std::cout << "Error: " << error.explain() << "\n";
                     break_loop();
                     return;
                 }

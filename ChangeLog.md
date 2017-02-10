@@ -1,3 +1,9 @@
+# MeasurementKit 0.4.0-beta.4 [2017-02-09]
+
+- .gitlab-ci.yml: also build stable (#1122)
+- http: fix EOF-implies-end-of-body logic (#1121)
+- http: fix schema less redirect (#1124)
+
 # MeasurementKit 0.4.0-beta.3 [2017-02-01]
 
 - `ip_lookup()`: validate result as IP address (#1108)
