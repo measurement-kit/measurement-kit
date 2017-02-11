@@ -151,6 +151,9 @@ void request_recv_response(Var<Transport> txp,
             // Calling parser->on_eof() could trigger parser->on_end() and
             // we don't want this function to call ->emit_error()
             *prevent_emit = true;
+            // Assume there was no error. The parser will tell us if that
+            // is true (it was in final state) or false.
+            err = NoError();
             try {
                 logger->debug("Now passing EOF to parser");
                 parser->eof();
@@ -232,7 +235,16 @@ void request(Settings settings, Headers headers, std::string body,
                                 return;
                             }
                             ErrorOr<Url> url;
-                            if (loc[0] == '/') {
+                            /*
+                             * Note: RFC 1808 Sect. 2.2 is clear that "//"
+                             * MUST be treated differently than "/".
+                             */
+                            if (loc.substr(0, 2) == "//") {
+                                url = parse_url_noexcept(
+                                    response->request->url.schema
+                                        + ":" + loc
+                                );
+                            } else if (loc.substr(0, 1) == "/") {
                                 url = response->request->url;
                                 url->pathquery = loc;
                             } else {
