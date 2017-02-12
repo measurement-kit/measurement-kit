@@ -24,7 +24,13 @@ void mk_bufferevent_on_event(bufferevent *, short, void *);
 namespace mk {
 namespace net {
 
-template <MK_MOCK(evutil_parse_sockaddr_port), MK_MOCK(bufferevent_socket_new),
+// Proxy required because `make_sockaddr` is overloaded
+static Error make_sockaddr_proxy(std::string s, std::string p,
+                                 sockaddr_storage *ss, socklen_t *len) {
+    return make_sockaddr(s, p, ss, len);
+}
+
+template <MK_MOCK(make_sockaddr_proxy), MK_MOCK(bufferevent_socket_new),
           MK_MOCK(bufferevent_set_timeouts),
           MK_MOCK(bufferevent_socket_connect)>
 void connect_base(std::string address, int port,
@@ -32,27 +38,25 @@ void connect_base(std::string address, int port,
                   double timeout = 10.0,
                   Var<Reactor> reactor = Reactor::global(),
                   Var<Logger> logger = Logger::global()) {
-    logger->debug("connect_base %s:%d", address.c_str(), port);
 
     std::string endpoint = [&]() {
         Endpoint endpoint;
         endpoint.hostname = address;
-        endpoint.port = port;
+        endpoint.port = (uint16_t)port; /* XXX We should change the prototype */
         return serialize_endpoint(endpoint);
     }();
+    logger->debug("connect_base %s", endpoint.c_str());
 
-    sockaddr_storage storage;
-    sockaddr *saddr = (sockaddr *)&storage;
-    int salen = sizeof storage;
-
-    // XXX: as we have seen in #915, the following function does not deal with
-    // IPv6 scoped link local addresses. We can fix this by copying from the
-    // way in which such problem is solved in libevent/dns_utils.hpp.
-    if (evutil_parse_sockaddr_port(endpoint.c_str(), saddr, &salen) != 0) {
+    std::string port_string = std::to_string(port);
+    sockaddr_storage storage = {};
+    socklen_t salen = 0;
+    Error err = make_sockaddr_proxy(address, port_string, &storage, &salen);
+    if (err != NoError()) {
         logger->warn("cannot parse endpoint: '%s'", endpoint.c_str());
-        cb(GenericError(), nullptr, 0.0);
+        cb(err, nullptr, 0.0);
         return;
     }
+    sockaddr *saddr = (sockaddr *)&storage;
 
     /*
      *  Rationale for deferring callbacks:
