@@ -89,7 +89,7 @@ void connect_base(std::string address, int port,
     double begin = mk::time_now();
 
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
-        logger->warn("connect() failed immediately");
+        logger->warn("connect() for %s failed immediately", endpoint.c_str());
         bufferevent_free(bev);
         Error sys_error = mk::net::map_errno(errno);
         logger->warn("reason why connect() has failed: %s",
@@ -106,7 +106,8 @@ void connect_base(std::string address, int port,
         bev, nullptr, nullptr, mk_bufferevent_on_event,
         new Callback<Error, bufferevent *>([=](Error err, bufferevent *bev) {
             if (err) {
-                logger->warn("connect() failed in its callback");
+                logger->warn("connect() for %s failed in its callback",
+                             endpoint.c_str());
                 bufferevent_free(bev);
                 logger->warn("reason why connect() has failed: %s",
                              err.as_ooni_error().c_str());
