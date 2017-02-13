@@ -9,10 +9,10 @@
 namespace mk {
 namespace mlabns {
 
-MK_DEFINE_ERR(MK_ERR_MLABNS(0), InvalidPolicyError, "")
-MK_DEFINE_ERR(MK_ERR_MLABNS(1), InvalidAddressFamilyError, "")
-MK_DEFINE_ERR(MK_ERR_MLABNS(2), InvalidMetroError, "")
-MK_DEFINE_ERR(MK_ERR_MLABNS(3), InvalidToolNameError, "")
+MK_DEFINE_ERR(MK_ERR_MLABNS(0), InvalidPolicyError, "mlabns_invalid_policy")
+MK_DEFINE_ERR(MK_ERR_MLABNS(1), InvalidAddressFamilyError, "mlabns_invalid_address_family")
+MK_DEFINE_ERR(MK_ERR_MLABNS(2), InvalidMetroError, "mlabns_invalid_metro")
+MK_DEFINE_ERR(MK_ERR_MLABNS(3), InvalidToolNameError, "mlabns_invalid_tool")
 
 /// Reply to mlab-ns query.
 class Reply {
