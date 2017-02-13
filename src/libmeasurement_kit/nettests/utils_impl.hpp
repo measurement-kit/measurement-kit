@@ -38,7 +38,6 @@ ErrorOr<std::deque<std::string>> process_input_filepaths_impl(
     std::deque<std::string> inputs;
     if (needs_input) {
         if (input_filepaths.size() <= 0) {
-            logger->warn("at least an input file is required");
             return ooni::MissingRequiredInputFileError();
         }
         /*
@@ -78,13 +77,11 @@ ErrorOr<std::deque<std::string>> process_input_filepaths_impl(
             }
         }
         if (inputs.size() <= 0) {
-            logger->warn("no specified input file could be read");
             return ooni::CannotReadAnyInputFileError();
         }
         ErrorOr<bool> shuffle =
             options.get_noexcept<bool>("randomize_input", true);
         if (!shuffle) {
-            logger->warn("invalid 'randomize_input' option");
             return shuffle.as_error();
         }
         if (*shuffle) {

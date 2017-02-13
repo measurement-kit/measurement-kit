@@ -283,16 +283,45 @@ void Runnable::begin(Callback<Error> cb) {
                 logger->set_progress_offset(0.1);
                 logger->set_progress_scale(0.8);
 
+                /*
+                 * In theory, one can pass input to a test that does not
+                 * require input using `add_input()`. We need to ignore
+                 * such input here when the test does not take any input,
+                 * otherwise the test itself would run more than once.
+                 *
+                 * Note: I believe we're approaching the point where having
+                 * a subclass for tests with input and one for tests without
+                 * input will start to be an interesting proposition.
+                 */
+                if (!needs_input && inputs.size() > 0) {
+                    logger->warn("ignoring input because this test actually "
+                                 "doesn't take any input");
+                    inputs.clear();
+                }
+
                 ErrorOr<std::deque<std::string>> maybe_inputs =
                     process_input_filepaths(needs_input, input_filepaths,
                                             probe_cc, options, logger,
                                             nullptr, nullptr);
-                if (!maybe_inputs) {
-                    cb(maybe_inputs.as_error());
+                if (!!maybe_inputs) {
+                    inputs.insert(std::end(inputs), std::begin(*maybe_inputs),
+                                  std::end(*maybe_inputs));
+                }
+                size_t num_entries = inputs.size();
+                /*
+                 * Note: even when input is not technically required, we
+                 * have one empty entry indicating one iteration.
+                 */
+                if (num_entries <= 0) {
+                    Error error = GenericError();  // Just in case...
+                    if (!maybe_inputs) {
+                        error = maybe_inputs.as_error();
+                    }
+                    logger->warn("cannot process input: %s",
+                                 error.as_ooni_error().c_str());
+                    cb(error);
                     return;
                 }
-                inputs = *maybe_inputs;
-                size_t num_entries = inputs.size();
 
                 // Run `parallelism` measurements in parallel
                 Var<size_t> current_entry(new size_t(0));
