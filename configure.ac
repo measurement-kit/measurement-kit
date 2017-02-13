@@ -44,6 +44,8 @@ if test "`uname`" != "Darwin"; then
   LDFLAGS="$LDFLAGS -pthread"
 fi
 
+LDFLAGS="$LDFLAGS -lcares"
+
 MK_AM_CHECK_LIBC_FUNCS
 MK_AM_OPENSSL
 MK_AM_LIBEVENT

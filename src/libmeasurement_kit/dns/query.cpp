@@ -2,6 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "../dns/query.hpp"
 #include "../libevent/dns.hpp"
 #include "../dns/system_resolver.hpp"
 
@@ -22,6 +23,8 @@ void query(
         libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);
     } else if (engine == "system") {
         system_resolver(dns_class, dns_type, name, cb, settings, reactor, logger);
+    } else if (engine == "cares") {
+        cares::query(dns_class, dns_type, name, cb, settings, reactor, logger);
     } else {
         reactor->call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
     }

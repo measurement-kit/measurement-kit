@@ -31,4 +31,17 @@ Which is arguably faster than writing the following:
 #define MK_MOCK_NAMESPACE_SUFFIX(ns_, name_, suffix_)                          \
     decltype(ns_::name_) ns_##_##name_##_##suffix_ = ns_::name_
 
+/*
+    The following allows you to skip generating too many templates when
+    you're compiling for release, but at the same time allows to mock up
+    the implementation when you compile for debugging.
+
+    Note that, for this to work, you cannot use MK_MOCK_NAMESPACE.
+*/
+#ifdef MK_ENABLE_MOCK
+#define MK_MOCK_TEMPLATE(_template_impl_) template < _template_impl_ >
+#else
+#define MK_MOCK_TEMPLATE(_template_impl_) /* nothing */
+#endif
+
 #endif
