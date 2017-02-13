@@ -21,18 +21,18 @@ namespace http {
     Error codes in the HTTP module.
 */
 
-MK_DEFINE_ERR(MK_ERR_HTTP(0), UpgradeError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(1), ParserError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(2), UrlParserError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(6), HttpRequestFailedError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(7), HeaderParserInternalError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(8), InvalidMaxRedirectsError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(9), InvalidRedirectUrlError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(10), EmptyLocationError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(11), TooManyRedirectsError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(0), UpgradeError, "http_upgrade_error")
+MK_DEFINE_ERR(MK_ERR_HTTP(1), ParserError, "http_parser_error")
+MK_DEFINE_ERR(MK_ERR_HTTP(2), UrlParserError, "http_url_parser_error")
+MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "http_missing_url_schema")
+MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "http_missing_url_host")
+MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "http_missing_url")
+MK_DEFINE_ERR(MK_ERR_HTTP(6), HttpRequestFailedError, "http_request_failed")
+MK_DEFINE_ERR(MK_ERR_HTTP(7), HeaderParserInternalError, "http_parser_internal_error")
+MK_DEFINE_ERR(MK_ERR_HTTP(8), InvalidMaxRedirectsError, "http_invalid_max_redirects_setting")
+MK_DEFINE_ERR(MK_ERR_HTTP(9), InvalidRedirectUrlError, "http_invalid_redirect_url")
+MK_DEFINE_ERR(MK_ERR_HTTP(10), EmptyLocationError, "http_empty_location_header")
+MK_DEFINE_ERR(MK_ERR_HTTP(11), TooManyRedirectsError, "http_too_many_redirects")
 
 /*
  _   _      _
