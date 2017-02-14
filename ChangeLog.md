@@ -1,3 +1,11 @@
+# MeasurementKit 0.4.0 [2017-02-13]
+
+- Repair circle-ci build for stable (#1123)
+- connect: support also ipv6 link local with scope (#1102)
+- Fix gitlab on stable by using yakkety (#1133)
+- Be more specific wrt connect() failure (#1126)
+- Add a name to each error (#1134)
+
 # MeasurementKit 0.4.0-beta.4 [2017-02-09]
 
 - .gitlab-ci.yml: also build stable (#1122)

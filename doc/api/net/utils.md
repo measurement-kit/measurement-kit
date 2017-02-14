@@ -11,9 +11,10 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 namespace mk {
 namespace net {
 
-struct Endpoint {
+class Endpoint {
+  public:
     std::string hostname;
-    uint16_t port;
+    uint16_t port = 0;
 };
 
 bool is_ipv4_addr(std::string s);
@@ -22,6 +23,20 @@ bool is_ip_addr(std::string s);
 
 ErrorOr<Endpoint> parse_endpoint(std::string s, uint16_t default_port);
 std::string serialize_endpoint(Endpoint e);
+
+Error make_sockaddr(
+        std::string address,
+        std::string port,
+        sockaddr_storage *ss,
+        socklen_t *len
+) noexcept;
+
+Error make_sockaddr(
+        std::string address,
+        uint16_t port,
+        sockaddr_storage *ss,
+        socklen_t *len
+) noexcept;
 
 }}
 ```
@@ -51,6 +66,11 @@ address, then the square brackets MAY be omitted.
 
 The `serialize_endpoint` function transforms the endpoint `e` into
 a string. As such, it is the dual operation of `parse_endpoint`.
+
+The `make_sockaddr` functions fills a `sockaddr_storage` structure and its
+length from a string possibly containing an IPv4 or IPv6 address and a
+port (either as a string or as an integer). The return value is `NoError`
+on success and an error on failure.
 
 # BUGS
 
