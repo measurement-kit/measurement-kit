@@ -175,9 +175,62 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
             throw UpgradeError();
         }
         if (x != n) {
-            throw ParserError();
+            throw ParserError(map_parser_error_());
         }
         return n;
+    }
+
+    Error map_parser_error_() {
+        switch (HTTP_PARSER_ERRNO(&parser_)) {
+        case HPE_OK:
+            return NoError();
+        case HPE_INVALID_EOF_STATE:
+            return ParserInvalidEofStateError();
+        case HPE_HEADER_OVERFLOW:
+            return ParserHeaderOverflowError();
+        case HPE_CLOSED_CONNECTION:
+            return ParserClosedConnectionError();
+        case HPE_INVALID_VERSION:
+            return ParserInvalidVersionError();
+        case HPE_INVALID_STATUS:
+            return ParserInvalidStatusError();
+        case HPE_INVALID_METHOD:
+            return ParserInvalidMethodError();
+        case HPE_INVALID_URL:
+            return ParserInvalidUrlError();
+        case HPE_INVALID_HOST:
+            return ParserInvalidHostError();
+        case HPE_INVALID_PORT:
+            return ParserInvalidPortError();
+        case HPE_INVALID_PATH:
+            return ParserInvalidPathError();
+        case HPE_INVALID_QUERY_STRING:
+            return ParserInvalidQueryStringError();
+        case HPE_INVALID_FRAGMENT:
+            return ParserInvalidFragmentError();
+        case HPE_LF_EXPECTED:
+            return ParserLfExpectedError();
+        case HPE_INVALID_HEADER_TOKEN:
+            return ParserInvalidHeaderTokenError();
+        case HPE_INVALID_CONTENT_LENGTH:
+            return ParserInvalidContentLengthError();
+        case HPE_UNEXPECTED_CONTENT_LENGTH:
+            return ParserUnexpectedContentLengthError();
+        case HPE_INVALID_CHUNK_SIZE:
+            return ParserInvalidChunkSizeError();
+        case HPE_INVALID_CONSTANT:
+            return ParserInvalidConstantError();
+        case HPE_INVALID_INTERNAL_STATE:
+            return ParserInvalidInternalStateError();
+        case HPE_STRICT:
+            return ParserStrictModeAssertionError();
+        case HPE_PAUSED:
+            return ParserPausedError();
+        default:
+            // FALLTHROUGH
+            break;
+        };
+        return GenericParserError();  /* Should not happen */
     }
 };
 

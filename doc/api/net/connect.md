@@ -78,30 +78,8 @@ where `resolve_result` contains the result of resolving the `address` argument i
 an IP address, `connect_result` is a vector containing an error for each failed connect
 attempt (where the size of the vector would be greater than one when a domain name
 mapped to multiple addresses and connecting to more than one address failed), `connected_bev`
-is the underlying libevent's `bufferevent` wrapped by `Transport`.
-
-The `ResolveHostnameResult` class is like:
-
-```C++
-struct ResolveHostnameResult {
-    bool inet_pton_ipv4 = false;
-    bool inet_pton_ipv6 = false;
-    Error ipv4_err;
-    dns::Message ipv4_reply;
-    Error ipv6_err;
-    dns::Message ipv6_reply;
-    std::vector<std::string> addresses;
-};
-```
-
-where `inet_pton_ipv4` is `true` if `address` is an IPv4 address and similarly
-`inet_pton_ipv6` is `true` if `address` is an IPv6 address; `ipv4_err` and `ipv4_reply`
-are the values returned by resolving `address` as a FQDN into a list of addresses;
-`ipv6_err` and `ipv6_reply` have the same semantic of their IPv4 counterparts; `addresses`
-is the list of the addresses that `connect()` will try to connect to. This list will
-only contain a IPv4 (or IPv6) address if `address` is an IPv4 (or IPv6) address and it
-will contain IPv4 addresses before IPv6 addresses (if any) when `address` instead is
-a FQDN (fully qualified domain name).
+is the underlying libevent's `bufferevent` wrapped by `Transport`. More details about the
+`ResolveHostnameResult` class can be found in doc/api/dns.hpp.
 
 The `connect_many()` function is similar to `connect()`. The main different is
 that `num` parallel connections are established and passed to the callback on success. Of

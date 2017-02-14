@@ -1,8 +1,19 @@
 #!/bin/sh
 set -e
 
-if [ "$DOCKER_IMAGE" != "" -a "$DOCKER_SPEC" != "" ]; then
-    ./build/docker/script/setup $DOCKER_IMAGE $DOCKER_SPEC
+if [ "$DOCKER_SPEC" != "" ]; then
+    #
+    # Note: the way in which we use TRAVIS_BRANCH here makes sense only if
+    # the current build is triggered by a push, not by a pull request.
+    #
+    # Since we currently do not build pull requests, this usage is okay.
+    #
+    if echo "$DOCKER_BRANCHES_ONLY" | grep -q "$TRAVIS_BRANCH"; then
+        ./build/docker/$DOCKER_SPEC
+    else
+        echo "Branch $TRAVIS_BRANCH is not in '$DOCKER_BRANCHES_ONLY'"
+        echo "Therefore we are not building this branch"
+    fi
     exit 0
 fi
 
