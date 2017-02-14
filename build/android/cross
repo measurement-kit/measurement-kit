@@ -108,8 +108,8 @@ export STRIP=${TOOL_PREFIX}-strip
 export CPPFLAGS="${CPPFLAGS} --sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_TOOLCHAIN}/include"
 
 # Pass specific flags to the C and/or CXX compiler
-export CFLAGS=${CFLAGS}
-export CXXFLAGS=${CXXFLAGS}
+export CFLAGS="${CFLAGS}"
+export CXXFLAGS="${CXXFLAGS}"
 
 # Teach the linker to find toolchain libraries
 export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib"
