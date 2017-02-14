@@ -8,65 +8,59 @@
 namespace mk {
 namespace ooni {
 
-void meek_fronting(Settings options,
-                               Callback<Var<report::Entry>> cb,
-                               Var<Reactor> reactor, Var<Logger> logger) {
-//    Var<report::Entry> entry(new report::Entry);
-//    (*entry)["tampering"] = nullptr;
-//    (*entry)["received"] = report::Entry::array();
-//    (*entry)["sent"] = report::Entry::array();
-//    Var<int> tests_run(new int(0));
-//
-//    ErrorOr<http::Url> backend_url =
-//        mk::http::parse_url_noexcept(options["backend"]);
-//
-//    if (!backend_url) {
-//        logger->debug("Invalid backend url.");
-//        cb(entry);
-//        return;
-//    }
-//
-//    auto handle_response = [=]() {
-//        *tests_run += 1;
-//        if (*tests_run == 4) {
-//            cb(entry);
-//        }
-//    };
-//
-//    // test_random_invalid_method
-//    // randomSTR(4) + " / HTTP/1.1\n\r"
-//    std::string test_random_invalid_method(mk::random_str_uppercase(4));
-//    test_random_invalid_method += " / HTTP/1.1\n\r";
-//    send_receive_invalid_request_line(
-//        entry, *backend_url, test_random_invalid_method, handle_response,
-//        options, reactor, logger);
-//
-//    // test_random_invalid_field_count
-//    // ' '.join(randomStr(5) for x in range(4)) + '\n\r'
-//    std::string test_random_invalid_field_count(mk::random_str_uppercase(5));
-//    for (int i = 0; i < 3; i++) {
-//        test_random_invalid_field_count += " " + mk::random_str_uppercase(5);
-//    }
-//    test_random_invalid_field_count += "\n\r";
-//    send_receive_invalid_request_line(
-//        entry, *backend_url, test_random_invalid_field_count, handle_response,
-//        options, reactor, logger);
-//
-//    // test_random_big_request_method
-//    // randomStr(1024) + ' / HTTP/1.1\n\r'
-//    std::string test_random_big_request_method(mk::random_str_uppercase(1024));
-//    test_random_big_request_method += " / HTTP/1.1\n\r";
-//    send_receive_invalid_request_line(
-//        entry, *backend_url, test_random_big_request_method, handle_response,
-//        options, reactor, logger);
-//
-//    // test_random_invalid_version_number
-//    // 'GET / HTTP/' + randomStr(3)
-//    std::string test_random_invalid_version_number("GET / HTTP/");
-//    test_random_invalid_version_number += mk::random_str_uppercase(3);
-//    send_receive_invalid_request_line(
-//        entry, *backend_url, test_random_invalid_version_number,
-//        handle_response, options, reactor, logger);
+using namespace mk::report;
+
+void meek_fronting(std::string input, Settings options,
+                   Callback<Var<report::Entry>> callback,
+                   Var<Reactor> reactor, Var<Logger> logger) {
+    Var<Entry> entry(new Entry);
+
+    std::list<std::string> outer_inner = split(input, ":");
+    if (outer_inner.size() != 2) {
+        return; /* XXX use more specific error */
+    }
+    // XXX: We should make sure that we remove leading and trailing whitespaces
+    // url parsing methods require a schema
+    std::string outer_host = "https://" + outer_inner.front();
+    std::string inner_host = "https://" + outer_inner.back();
+
+    ErrorOr<http::Url> outer_url = mk::http::parse_url_noexcept(outer_host);
+    ErrorOr<http::Url> inner_url = mk::http::parse_url_noexcept(inner_host);
+
+    if (!outer_url || !inner_url) {
+        logger->debug("Invalid url: '%s' or '%s'", outer_host.c_str(),
+                      inner_host.c_str());
+        callback(entry);
+        return;
+    }
+
+    options["http/url"] = "https://" + outer_url->address;
+    options["net/ssl"] = true;
+    http::Headers headers = { {"Host", inner_url->address} };
+    std::string body = ""; // spec says this is always a GET, so no body
+
+    logger->debug("Connecting to outer host %s and requesting inner url %s.",
+                  outer_url->address.c_str(),
+                  inner_url->address.c_str());
+
+    templates::http_request(entry, options, headers, body,
+                            [=](Error err, Var<http::Response> response) {
+                                if (err) {
+                                    logger->debug(
+                                        "meek_fronting: http-request error: %s",
+                                        err.explain().c_str());
+
+                                    (*entry)["meek_fronting_failure"] =
+                                        err.as_ooni_error();
+                                }
+
+                                if (!response) {
+                                    logger->warn("null response");
+                                }
+
+                                callback(entry);
+                            },
+                            reactor, logger);
 }
 
 } // namespace ooni

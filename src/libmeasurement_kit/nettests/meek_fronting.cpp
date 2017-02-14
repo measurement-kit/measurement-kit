@@ -12,11 +12,12 @@ MeekFrontingTest::MeekFrontingTest() : BaseTest() {
     runnable.reset(new MeekFrontingRunnable);
     runnable->test_name = "meek_fronting";
     runnable->test_version = "0.0.1";
+    runnable->needs_input = true;
 }
 
-void MeekFrontingRunnable::main(std::string, Settings options,
+void MeekFrontingRunnable::main(std::string input, Settings options,
                                 Callback<Var<report::Entry>> cb) {
-    ooni::meek_fronting(options, cb, reactor, logger);
+    ooni::meek_fronting(input, options, cb, reactor, logger);
 }
 
 } // namespace nettests
