@@ -9,9 +9,10 @@
 namespace mk {
 namespace net {
 
-struct Endpoint {
+class Endpoint {
+  public:
     std::string hostname;
-    uint16_t port;
+    uint16_t port = 0;
 };
 
 bool is_ipv4_addr(std::string s);
@@ -20,6 +21,20 @@ bool is_ip_addr(std::string s);
 
 ErrorOr<Endpoint> parse_endpoint(std::string s, uint16_t def_port);
 std::string serialize_endpoint(Endpoint);
+
+Error make_sockaddr(
+        std::string address,
+        std::string port,
+        sockaddr_storage *storage,
+        socklen_t *len
+) noexcept;
+
+Error make_sockaddr(
+        std::string address,
+        uint16_t port,
+        sockaddr_storage *storage,
+        socklen_t *len
+) noexcept;
 
 } // namespace net
 } // namespace mk
