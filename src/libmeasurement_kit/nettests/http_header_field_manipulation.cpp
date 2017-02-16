@@ -12,7 +12,7 @@ HttpHeaderFieldManipulationTest::HttpHeaderFieldManipulationTest() : BaseTest() 
     runnable.reset(new HttpHeaderFieldManipulationRunnable);
     runnable->test_name = "http_header_field_manipulation";
     runnable->test_version = "0.0.1";
-    runnable->needs_input = true;
+    runnable->needs_input = false;
 }
 
 void HttpHeaderFieldManipulationRunnable::main(std::string input,

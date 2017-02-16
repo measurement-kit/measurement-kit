@@ -13,18 +13,21 @@ namespace cmdline {
 namespace http_header_field_manipulation {
 
 static const char *kv_usage =
-    "usage: measurement_kit meek_fronting [-v] input_file \n";
+    "usage: measurement_kit http_header_field_manipulation [-v]\n";
 
 int main(const char *, int argc, char **argv) {
     Settings settings;
     std::string name = argv[0];
     uint32_t verbosity = 0;
-    mk::nettests::MeekFrontingTest test;
+    mk::nettests::HttpHeaderFieldManipulationTest test;
     int ch;
-    while ((ch = mkp_getopt(argc, argv, "v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "nv")) != -1) {
         switch (ch) {
         case 'v':
             ++verbosity;
+            break;
+        case 'n':
+            test.set_options("no_collector", true);
             break;
         default:
             std::cout << kv_usage;
