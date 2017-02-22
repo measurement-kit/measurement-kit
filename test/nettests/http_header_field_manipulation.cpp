@@ -15,7 +15,7 @@
 using namespace mk;
 
 TEST_CASE("Synchronous http-header-field-manipulation test") {
-    nettests::HeaderFieldManipulationTest{}
+    nettests::HTTPHeaderFieldManipulationTest{}
 //        .set_options("backend", "https://a.collector.test.ooni.io:4444")
 //        .set_options("geoip_country_path", "GeoIP.dat")
 //        .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -26,7 +26,7 @@ TEST_CASE("Synchronous http-header-field-manipulation test") {
 
 TEST_CASE("Asynchronous http-header-field-manipulation test") {
     bool done = false;
-    nettests::HeaderFieldManipulationTest{}
+    nettests::HTTPHeaderFieldManipulationTest{}
 //        .set_options("backend", "https://a.collector.test.ooni.io:4444")
 //        .set_options("geoip_country_path", "GeoIP.dat")
 //        .set_options("geoip_asn_path", "GeoIPASNum.dat")

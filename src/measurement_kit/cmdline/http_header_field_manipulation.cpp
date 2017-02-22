@@ -16,13 +16,17 @@ static const char *kv_usage =
     "usage: measurement_kit http_header_field_manipulation [-v]\n";
 
 int main(const char *, int argc, char **argv) {
+    std::string backend = "http://38.107.216.10:80";
     Settings settings;
     std::string name = argv[0];
     uint32_t verbosity = 0;
     mk::nettests::HttpHeaderFieldManipulationTest test;
     int ch;
-    while ((ch = mkp_getopt(argc, argv, "nv")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "b:nv")) != -1) {
         switch (ch) {
+        case 'b':
+            backend = mkp_optarg;
+            break;
         case 'v':
             ++verbosity;
             break;
@@ -36,12 +40,9 @@ int main(const char *, int argc, char **argv) {
     }
     argc -= mkp_optind;
     argv += mkp_optind;
-    while (argc > 0) {
-        test.add_input_filepath(argv[0]);
-        argc -= 1, argv += 1;
-    }
 
     test
+        .set_options("backend", backend)
         .set_verbosity(verbosity)
         .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
         .run();
