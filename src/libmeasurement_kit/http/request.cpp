@@ -185,12 +185,14 @@ void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
                             Var<Reactor> reactor, Var<Logger> logger) {
     request_maybe_send(request, txp, [=](Error error, Var<Request> request) {
         if (error) {
-            callback(error, nullptr);
+            Var<Response> response{new Response};
+            response->request = request;
+            callback(error, response);
             return;
         }
         request_recv_response(txp, [=](Error error, Var<Response> response) {
             if (error) {
-                callback(error, nullptr);
+                callback(error, response);
                 return;
             }
             response->request = request;
@@ -222,7 +224,7 @@ void request(Settings settings, Headers headers, std::string body,
                 [=](Error error, Var<Response> response) {
                     txp->close([=]() {
                         if (error) {
-                            callback(error, nullptr);
+                            callback(error, response);
                             return;
                         }
                         response->previous = previous;
@@ -231,7 +233,7 @@ void request(Settings settings, Headers headers, std::string body,
                             logger->debug("following redirect...");
                             std::string loc = response->headers["Location"];
                             if (loc == "") {
-                                callback(EmptyLocationError(), nullptr);
+                                callback(EmptyLocationError(), response);
                                 return;
                             }
                             ErrorOr<Url> url;
@@ -252,14 +254,14 @@ void request(Settings settings, Headers headers, std::string body,
                             }
                             if (!url) {
                                 callback(InvalidRedirectUrlError(
-                                         url.as_error()), nullptr);
+                                         url.as_error()), response);
                                 return;
                             }
                             Settings new_settings = settings;
                             new_settings["http/url"] = url->str();
                             logger->debug("redir url: %s", url->str().c_str());
                             if (num_redirs >= *max_redirects) {
-                                callback(TooManyRedirectsError(), nullptr);
+                                callback(TooManyRedirectsError(), response);
                                 return;
                             }
                             reactor->call_soon([=]() {
