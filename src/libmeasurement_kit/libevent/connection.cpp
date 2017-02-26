@@ -82,7 +82,7 @@ void Connection::handle_event_(short what) {
 }
 
 Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> logger)
-        : Emitter(logger), reactor(reactor) {
+        : EmitterBase(reactor, logger) {
     this->bev = buffev;
 
     // The following makes this non copyable and non movable.
@@ -101,7 +101,7 @@ void Connection::close(std::function<void()> cb) {
     on_flush(nullptr);
     on_error(nullptr);
     bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
-    disable_read();
+    stop_reading();
 
     close_cb = cb;
     reactor->call_soon([=]() {

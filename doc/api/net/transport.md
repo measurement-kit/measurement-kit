@@ -13,38 +13,70 @@ namespace net {
 
 class Transport {
   public:
+    virtual ~Transport();
+
+    /*
+     * As emitter:
+     */
+
     virtual void emit_connect() = 0;
     virtual void emit_data(Buffer buf) = 0;
     virtual void emit_flush() = 0;
     virtual void emit_error(Error err) = 0;
 
-    virtual void on_connect(std::function<void()>) = 0;
-    virtual void on_data(std::function<void(Buffer)>) = 0;
-    virtual void on_flush(std::function<void()>) = 0;
-    virtual void on_error(std::function<void(Error)>) = 0;
+    virtual void on_connect(Callback<>) = 0;
+    virtual void on_data(Callback<Buffer>) = 0;
+    virtual void on_flush(Callback<>) = 0;
+    virtual void on_error(Callback<Error>) = 0;
+
+    /*
+     * As recorder:
+     */
 
     virtual void record_received_data() = 0;
     virtual void dont_record_received_data() = 0;
     virtual Buffer &received_data() = 0;
+
     virtual void record_sent_data() = 0;
     virtual void dont_record_sent_data() = 0;
     virtual Buffer &sent_data() = 0;
 
-    virtual void set_timeout(double) = 0;
-    virtual void clear_timeout() = 0;
+    /*
+     * As writable:
+     */
 
     virtual void write(const void *, size_t) = 0;
     virtual void write(std::string) = 0;
     virtual void write(Buffer) = 0;
 
-    virtual void close(std::function<void()>) = 0;
+    /*
+     * As SOCKS5:
+     */
 
     virtual std::string socks5_address() = 0;
     virtual std::string socks5_port() = 0;
+
+    /*
+     * As pollable:
+     */
+
+    virtual void set_timeout(double timeo) = 0;
+    virtual void clear_timeout() = 0;
+
+    virtual void close(Callback<>) = 0;
+
+    virtual void start_reading() = 0;
+    virtual void stop_reading() = 0;
+
+    virtual void start_writing() = 0;
 };
 
 } // namespace net
 } // namespace mk
+
+/*
+ * Syntactic sugar:
+ */
 
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
 
@@ -61,6 +93,8 @@ void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
 The `Transport` is a TCP like connection to another endpoint. You typically
 construct a transport using the `net::connect()` factory method.
 
+## As event emitter
+
 A `Transport` is an event emitter class, meaning that it defines functions to
 emit and intercept specific events. The following events are defined:
 
@@ -70,34 +104,71 @@ emit and intercept specific events. The following events are defined:
 - *flush*: emitted when the output buffer is empty
 - *error*: emitted when a error occurs
 
-By default the handlers of all these events are empty (i.e. they do nothing
-when they are called).
+By default the handlers of all these events do nothing. You can set handlers
+using the `on_EVENT()` methods. You can emit events using the `emit_EVENT()`
+methods.
 
-In addition the `Transport` also allows to record the received and the sent data,
-and to set and clear the I/O timeout.
+## As data recorder
+
+In addition the `Transport` also allows to record the received and the sent
+data, using specific methods.
+
+## As writable
 
 The `write()` family of methods allow to write respectively a C style buffer, a
 C++ string, and a `Buffer` object. All these functions fill the send buffer, and
 a corresponding *flush* event would be emitted when it is empty.
 
+## As SOCKS5
+
+The `socks5_address()` and `socks5_port()` methods return respectively the SOCKS5
+address and port being used, if any. Otherwise the empty string is returned.
+
+## As pollable descriptor
+
+This set of methods defines how the transport interfaces with the
+underlying async I/O implementation.
+
+The `set_timeout()` and `clear_timeout()` methods respectively set the
+timeout to be used for I/O operations, as a floating point number of
+seconds `timeo`, and clear such timeout. The read timeout fires when no
+data is received after `timeo` seconds, likewise the write timeout fires
+if a pending write operation does not complete within `timeo` seconds. By
+default, measurement-kit sets a 30 seconds timeout. Clearing the timeout
+causes I/O operation to wait for possibly a number of seconds possibly
+equal to the lifespan of the universe, if you are lucky.
+
 The `close()` method initiates a close operation. The callback passed as first
 argument would be called when the `Transport` have been actually closed. We
-recommend always making sure that a `Transport` has been closed before continuing,
-as shown in the following snippet:
+recommend always making sure that a `Transport` has been closed before
+continuing, as shown in the following snippet:
 
 ```C++
 /* Some code */
 transport->close([=]() {
-    /* Continuation code after transport was closed */
+    /* Continuation code after transport has been closed */
 });
 ```
 
-Failure to do so MAY result in memory errors, since it is an underlying assumption
-of MeasurementKit code that the `Var<Transport>` object would only exit from the
-scope after the `Transport` itself has actually been closed.
+Failure to do so MAY result in leaking memory, since it is an underlying
+assumption of MeasurementKit code that the `Var<Transport>` object will only
+exit from the scope after the `Transport` itself has actually been closed.
 
-The `socks5_address()` and `socks5_port()` methods return respectively the SOCKS5
-address and port being used, if any. Otherwise the empty string is returned.
+The `start_reading()` and `stop_reading()` methods respectively enable and
+disable reading from the internal socket. The implementation MUST automatically
+enable (disable) reading when you set (clear) the `on_data()` callback. Hence,
+you don't need to call these methods directly. However, they are part of the
+interface, since different underlying I/O mechanisms would need to define these
+methods differently.
+
+The `start_writing()` method initiates an asynchronous write operation that
+is terminated by emitting the `FLUSH` event when the output buffer becomes
+empty. The implementation MUST automatically start writing when you call
+any `write()` method, hence you don't need to call this method directly. Yet,
+it is part of the interface, since underlying I/O mechanisms would need to
+define it differently.
+
+## Syntactic sugar
 
 The `write()` function is syntactic sugar that schedules an asynchronous write
 operation on a transport and calls the provided callback when either an error
