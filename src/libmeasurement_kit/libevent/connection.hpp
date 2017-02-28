@@ -17,11 +17,10 @@ namespace libevent {
 
 using namespace mk::net;
 
-class Connection : public Emitter, public NonMovable, public NonCopyable {
+class Connection : public EmitterBase, public NonMovable, public NonCopyable {
   public:
-    static Var<Transport> make(bufferevent *bev,
-                               Var<Reactor> reactor = Reactor::global(),
-                               Var<Logger> logger = Logger::global()) {
+    static Var<Transport> make(bufferevent *bev, Var<Reactor> reactor,
+                               Var<Logger> logger) {
         Connection *conn = new Connection(bev, reactor, logger);
         conn->self = Var<Transport>(conn);
         return conn->self;
@@ -56,35 +55,35 @@ class Connection : public Emitter, public NonMovable, public NonCopyable {
 
     void clear_timeout() override { set_timeout(-1); }
 
-    void do_send(Buffer data) override { data >> bufferevent_get_output(bev); }
+    void start_writing() override {
+        output_buff >> bufferevent_get_output(bev);
+    }
 
-    void enable_read() override {
+    void start_reading() override {
         if (bufferevent_enable(this->bev, EV_READ) != 0) {
             throw std::runtime_error("cannot enable read");
         }
     }
 
-    void disable_read() override {
+    void stop_reading() override {
         if (bufferevent_disable(this->bev, EV_READ) != 0) {
             throw std::runtime_error("cannot disable read");
         }
     }
 
-    void close(std::function<void()>) override;
+    void close(Callback<>) override;
 
     void handle_event_(short);
     void handle_read_();
     void handle_write_();
 
   private:
-    Connection(bufferevent *bev, Var<Reactor> = Reactor::global(),
-               Var<Logger> = Logger::global());
+    Connection(bufferevent *bev, Var<Reactor>, Var<Logger>);
 
     bufferevent *bev = nullptr;
     Var<Transport> self;
-    Var<Reactor> reactor = Reactor::global();
     bool isclosed = false;
-    std::function<void()> close_cb;
+    Callback<> close_cb;
     bool suppressed_eof = false;
 };
 

@@ -9,8 +9,17 @@
 namespace mk {
 namespace net {
 
-class Emitter : public Transport {
+class EmitterBase : public Transport {
   public:
+    EmitterBase(Var<Reactor> reactor, Var<Logger> logger)
+        : reactor(reactor), logger(logger) {}
+
+    ~EmitterBase() override;
+
+    /*
+     * TransportEmitter
+     */
+
     void emit_connect() override {
         logger->log(MK_LOG_DEBUG2, "emitter: emit 'connect' event");
         if (!do_connect) {
@@ -52,10 +61,6 @@ class Emitter : public Transport {
         do_error(err);
     }
 
-    Emitter(Var<Logger> lp = Logger::global()) : logger(lp) {}
-
-    ~Emitter() override;
-
     void on_connect(std::function<void()> fn) override {
         logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'connect' handler",
                     (fn != nullptr) ? "" : "un");
@@ -66,15 +71,12 @@ class Emitter : public Transport {
         logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'data' handler",
                     (fn != nullptr) ? "" : "un");
         if (fn) {
-            enable_read();
+            start_reading();
         } else {
-            disable_read();
+            stop_reading();
         }
         do_data = fn;
     }
-
-    virtual void enable_read() {}
-    virtual void disable_read() {}
 
     void on_flush(std::function<void()> fn) override {
         logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'flush' handler",
@@ -87,6 +89,10 @@ class Emitter : public Transport {
                     (fn != nullptr) ? "" : "un");
         do_error = fn;
     }
+
+    /*
+     * TransportRecorder
+     */
 
     void record_received_data() override {
         do_record_received_data = true;
@@ -112,13 +118,9 @@ class Emitter : public Transport {
         return sent_data_record;
     }
 
-    void set_timeout(double timeo) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: set_timeout %f", timeo);
-    }
-
-    void clear_timeout() override {
-        logger->log(MK_LOG_DEBUG2, "emitter: clear_timeout");
-    }
+    /*
+     * TransportWriter
+     */
 
     void write(const void *p, size_t n) override {
         logger->log(MK_LOG_DEBUG2, "emitter: send opaque data");
@@ -138,30 +140,62 @@ class Emitter : public Transport {
         if (do_record_sent_data) {
             sent_data_record.write(data.peek());
         }
-        do_send(data);
+        output_buff << data;
+        start_writing();
     }
 
-    // Implements actual send and should be override by subclasses
-    virtual void do_send(Buffer) {}
-
-    void close(std::function<void()>) override {}
+    /*
+     * TransportSocks5
+     */
 
     std::string socks5_address() override { return ""; }
 
     std::string socks5_port() override { return ""; }
 
+    /*
+     * TransportPollable: NOT IMPLEMENTED
+     */
+
   protected:
+    Var<Reactor> reactor = Reactor::global();
     Var<Logger> logger = Logger::global();
+    Buffer output_buff;
 
   private:
-    Delegate<> do_connect = []() {};
-    Delegate<Buffer> do_data = [](Buffer) {};
-    Delegate<> do_flush = []() {};
-    Delegate<Error> do_error = [](Error) {};
+    Delegate<> do_connect;
+    Delegate<Buffer> do_data;
+    Delegate<> do_flush;
+    Delegate<Error> do_error;
     bool do_record_received_data = false;
     Buffer received_data_record;
     bool do_record_sent_data = false;
     Buffer sent_data_record;
+};
+
+class Emitter : public EmitterBase {
+  public:
+    Emitter(Var<Reactor> reactor, Var<Logger> logger)
+        : EmitterBase(reactor, logger) {}
+
+    ~Emitter() override;
+
+    void set_timeout(double timeo) override {
+        logger->log(MK_LOG_DEBUG2, "emitter: set_timeout %f", timeo);
+    }
+
+    void clear_timeout() override {
+        logger->log(MK_LOG_DEBUG2, "emitter: clear_timeout");
+    }
+
+    /*
+     * XXX This is like it was before refactoring. It's probably wrong
+     * because instead we should defer the callback.
+     */
+    void close(Callback<>) override {}
+
+    void start_reading() override {}
+    void stop_reading() override {}
+    void start_writing() override {}
 };
 
 } // namespace net
