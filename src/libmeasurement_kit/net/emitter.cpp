@@ -7,6 +7,7 @@
 namespace mk {
 namespace net {
 
+EmitterBase::~EmitterBase() {}
 Emitter::~Emitter() {}
 
 } // namespace net

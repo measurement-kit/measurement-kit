@@ -97,8 +97,8 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
 }
 
 static void success(std::string, int, Callback<Error, Var<Transport>> cb,
-                    Settings, Var<Reactor>, Var<Logger> logger) {
-    cb(NoError(), Var<Transport>(new Emitter(logger)));
+                    Settings, Var<Reactor> r, Var<Logger> logger) {
+    cb(NoError(), Var<Transport>(new Emitter(r, logger)));
 }
 
 TEST_CASE("net::connect_many() correctly handles net::connect() success") {

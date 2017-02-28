@@ -196,7 +196,7 @@ void connect(std::string address, int port,
              Callback<Error, Var<Transport>> callback, Settings settings,
              Var<Reactor> reactor, Var<Logger> logger) {
     if (settings.find("net/dumb_transport") != settings.end()) {
-        callback(NoError(), Var<Transport>(new Emitter(logger)));
+        callback(NoError(), Var<Transport>(new Emitter(reactor, logger)));
         return;
     }
     if (settings.find("net/socks5_proxy") != settings.end()) {

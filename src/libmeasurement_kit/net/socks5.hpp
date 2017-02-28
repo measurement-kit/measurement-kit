@@ -11,17 +11,21 @@
 namespace mk {
 namespace net {
 
+/*
+ * TODO: to continue refactoring here we should probably inherit from
+ * emitter-base rather than emitter. I am not doing it as part of this
+ * diff, because that is more than hotfix refactoring.
+ */
 class Socks5 : public Emitter {
   public:
     // Constructor that attaches to already existing transport
-    Socks5(Var<Transport>, Settings, Var<Reactor> = Reactor::global(),
-            Var<Logger> = Logger::global());
+    Socks5(Var<Transport>, Settings, Var<Reactor>, Var<Logger>);
 
     void set_timeout(double timeout) override { conn->set_timeout(timeout); }
 
     void clear_timeout() override { conn->clear_timeout(); }
 
-    void do_send(Buffer data) override { conn->write(data); }
+    void start_writing() override { conn->write(output_buff); }
 
     void close(std::function<void()> callback) override {
         isclosed = true;
