@@ -65,6 +65,9 @@ class Transport {
     virtual void set_timeout(double timeo) = 0;
     virtual void clear_timeout() = 0;
 
+  protected:
+    virtual void adjust_timeout(double timeo) = 0;
+
     virtual void shutdown() = 0;
 
     virtual void start_reading() = 0;
@@ -114,7 +117,8 @@ The `close()` method initiates a close operation. Doing that puts the transport
 in a state where further emitted events are not delivered. Moreover, once
 closed, the transport would not attempt to change the state of the underlying
 I/O mechanism (i.e. it will not invoke any method described below as part of
-the "pollable" interface of a `Transport`). The callback passed
+the "pollable" interface of a `Transport`). Once `close()` is in progress,
+further attempts to `close()`, will raise an exception. The callback passed
 as the first argument will be invoked by the destructor of `Transport`. We
 recommend always making sure that a `Transport` was closed correctly, as shown
 by this code snippet:
@@ -148,7 +152,9 @@ address and port being used, if any. Otherwise the empty string is returned.
 ## As pollable descriptor
 
 This set of methods defines how the transport interfaces with the
-underlying async I/O implementation.
+underlying async I/O implementation. Since this is how the transport
+implementation should interface with the lower level of abstraction
+most methods in here are `protected`.
 
 The `set_timeout()` and `clear_timeout()` methods respectively set the
 timeout to be used for I/O operations, as a floating point number of
@@ -156,25 +162,30 @@ seconds `timeo`, and clear such timeout. The read timeout fires when no
 data is received after `timeo` seconds, likewise the write timeout fires
 if a pending write operation does not complete within `timeo` seconds. By
 default, measurement-kit sets a 30 seconds timeout. Clearing the timeout
-causes I/O operation to wait for possibly a number of seconds possibly
-equal to the lifespan of the universe, if you are lucky.
+causes I/O operation to wait for a number of seconds possibly
+equal to the lifespan of the universe, in the best (or is it worst?)
+case scenario.
+
+The `adjust_timeout()` method is called by `set_timeout()` or `clear_timeout()`
+to enforce setting the timeout. This method MUST NOT be called by the generic
+code after the transport has been closed. Passing a negative value implies
+that the timeout is to be cleared.
 
 The `shutdown()` method implementation depends on the underlying I/O
-mechanism. It is automatically called as part of `close()`.
+mechanism. It is automatically called as part of `close()`. The implementation
+SHOULD ensure that this method is idempotent.
 
 The `start_reading()` and `stop_reading()` methods respectively enable and
 disable reading from the internal socket. The implementation MUST automatically
-enable (disable) reading when you set (clear) the `on_data()` callback. Hence,
-you don't need to call these methods directly. However, they are part of the
-interface, since different underlying I/O mechanisms would need to define these
-methods differently.
+enable (disable) reading when you set (clear) the `on_data()` callback. This
+method MUST NOT be called by the generic code after the transport has been
+closed.
 
 The `start_writing()` method initiates an asynchronous write operation that
 is terminated by emitting the `FLUSH` event when the output buffer becomes
 empty. The implementation MUST automatically start writing when you call
-any `write()` method, hence you don't need to call this method directly. Yet,
-it is part of the interface, since underlying I/O mechanisms would need to
-define it differently.
+any `write()` method. This method MUST NOT be called by the generic code after
+the transport has been closed.
 
 ## Syntactic sugar
 
@@ -200,11 +211,6 @@ a single permanent shared reference in the `Reactor` and the user only has
 access to a weak shared pointer that becomes a real shared pointer only when
 the object is temporarily needed (and that handles the case where the original
 object is expired so it's not possible to temporarily acquire it).
-
-The current `Transport` interface contains functions that in theory the user
-is not *required* to call directly. We may want to list them in a separate
-interface and only add this interface as base class when we implement a real
-class. Again, this is more a refinement than a real bug.
 
 # HISTORY
 

@@ -32,10 +32,8 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
         }
     }
 
-    void set_timeout(double timeout) override {
-        if (close_pending) {
-            return;
-        }
+  protected:
+    void adjust_timeout(double timeout) override {
         timeval tv, *tvp = mk::timeval_init(&tv, timeout);
         bufferevent *underlying = bufferevent_get_underlying(this->bev);
         if (underlying) {
@@ -52,8 +50,6 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
             throw std::runtime_error("cannot set timeout");
         }
     }
-
-    void clear_timeout() override { set_timeout(-1); }
 
     void start_writing() override {
         output_buff >> bufferevent_get_output(bev);
@@ -73,6 +69,8 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
 
     void shutdown() override;
 
+    // They MUST be public because they're called by C code
+  public:
     void handle_event_(short);
     void handle_read_();
     void handle_write_();
@@ -82,9 +80,9 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
 
     bufferevent *bev = nullptr;
     Var<Transport> self;
-    bool isclosed = false;
     Callback<> close_cb;
     bool suppressed_eof = false;
+    bool shutdown_called = false;
 };
 
 } // namespace libevent

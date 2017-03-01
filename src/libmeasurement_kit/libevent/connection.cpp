@@ -91,9 +91,10 @@ Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> lo
 }
 
 void Connection::shutdown() {
-    if (close_pending) {
+    if (shutdown_called) {
         return; // Just for extra safety
     }
+    shutdown_called = true;
     bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
     reactor->call_soon([=]() {
         this->self = nullptr;

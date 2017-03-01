@@ -61,6 +61,13 @@ class TransportPollable {
     virtual void set_timeout(double) = 0;
     virtual void clear_timeout() = 0;
 
+    /*
+     * This is the interface with the underlying I/O system. As such, it is
+     * specified here, for clarity, but is also protected.
+     */
+  protected:
+    virtual void adjust_timeout(double) = 0;
+
     virtual void shutdown() = 0;
 
     /*

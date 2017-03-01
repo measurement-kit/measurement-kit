@@ -26,8 +26,12 @@ class Socks5 : public Emitter {
 
     void clear_timeout() override { conn->clear_timeout(); }
 
+  protected:
+    void adjust_timeout(double) override { /* NOTHING */ }
+
     void start_writing() override { conn->write(output_buff); }
 
+  public:
     void close(std::function<void()> callback) override {
         isclosed = true;
         conn->close(callback);
