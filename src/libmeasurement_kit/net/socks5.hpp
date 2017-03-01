@@ -12,9 +12,10 @@ namespace mk {
 namespace net {
 
 /*
- * TODO: to continue refactoring here we should probably inherit from
- * emitter-base rather than emitter. I am not doing it as part of this
- * diff, because that is more than hotfix refactoring.
+ * TODO: now that events are not emitted after close, we can safely
+ * refactor this as a factory function, because we do not need to
+ * worry about whether the `on_connect` callback has invoked `close`
+ * before emitting `DATA` with extra data that we may have read.
  */
 class Socks5 : public Emitter {
   public:

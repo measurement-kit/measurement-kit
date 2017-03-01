@@ -29,6 +29,8 @@ class Transport {
     virtual void on_flush(Callback<>) = 0;
     virtual void on_error(Callback<Error>) = 0;
 
+    virtual void close(Callback<>) = 0;
+
     /*
      * As recorder:
      */
@@ -63,7 +65,7 @@ class Transport {
     virtual void set_timeout(double timeo) = 0;
     virtual void clear_timeout() = 0;
 
-    virtual void close(Callback<>) = 0;
+    virtual void shutdown() = 0;
 
     virtual void start_reading() = 0;
     virtual void stop_reading() = 0;
@@ -108,6 +110,25 @@ By default the handlers of all these events do nothing. You can set handlers
 using the `on_EVENT()` methods. You can emit events using the `emit_EVENT()`
 methods.
 
+The `close()` method initiates a close operation. Doing that puts the transport
+in a state where further emitted events are not delivered. Moreover, once
+closed, the transport would not attempt to change the state of the underlying
+I/O mechanism (i.e. it will not invoke any method described below as part of
+the "pollable" interface of a `Transport`). The callback passed
+as the first argument will be invoked by the destructor of `Transport`. We
+recommend always making sure that a `Transport` was closed correctly, as shown
+by this code snippet:
+
+```C++
+/* Some code */
+transport->close([=]() {
+    /* Continuation code after transport has been closed */
+});
+```
+
+This will guarantee that you notice if a `Transport` is not actually closed
+because there are still references to `Var<Transport>` around.
+
 ## As data recorder
 
 In addition the `Transport` also allows to record the received and the sent
@@ -138,21 +159,8 @@ default, measurement-kit sets a 30 seconds timeout. Clearing the timeout
 causes I/O operation to wait for possibly a number of seconds possibly
 equal to the lifespan of the universe, if you are lucky.
 
-The `close()` method initiates a close operation. The callback passed as first
-argument would be called when the `Transport` have been actually closed. We
-recommend always making sure that a `Transport` has been closed before
-continuing, as shown in the following snippet:
-
-```C++
-/* Some code */
-transport->close([=]() {
-    /* Continuation code after transport has been closed */
-});
-```
-
-Failure to do so MAY result in leaking memory, since it is an underlying
-assumption of MeasurementKit code that the `Var<Transport>` object will only
-exit from the scope after the `Transport` itself has actually been closed.
+The `shutdown()` method implementation depends on the underlying I/O
+mechanism. It is automatically called as part of `close()`.
 
 The `start_reading()` and `stop_reading()` methods respectively enable and
 disable reading from the internal socket. The implementation MUST automatically
@@ -178,6 +186,25 @@ The `readn()` function is syntactic sugar that starts an asynchronous read
 operation on a transport and only returns whether either `n` bytes have been
 read or an error occurred. The `read()` function is a wrapper that calls
 the `readn()` function with `n` equal to `1`.
+
+# BUGS
+
+We typically pass around the `Transport` as a `Var<Transport>`. Since `Var` is
+a shared pointer, this means that a `Transport` may not be closed, after the
+`close()` method is called, unless all `Var`s pointing to it are cleared. For
+this reason, we added a callback to `close()`, so you know the code is not
+working correctly if the program stalls when it would be supposed to continue
+after `close()`. This is a bit rough but it currently works. In the future, it
+will be interesting to experiment with weak shared pointers such that we have
+a single permanent shared reference in the `Reactor` and the user only has
+access to a weak shared pointer that becomes a real shared pointer only when
+the object is temporarily needed (and that handles the case where the original
+object is expired so it's not possible to temporarily acquire it).
+
+The current `Transport` interface contains functions that in theory the user
+is not *required* to call directly. We may want to list them in a separate
+interface and only add this interface as base class when we implement a real
+class. Again, this is more a refinement than a real bug.
 
 # HISTORY
 

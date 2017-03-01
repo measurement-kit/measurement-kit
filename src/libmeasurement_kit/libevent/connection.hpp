@@ -30,12 +30,12 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
         if (bev != nullptr) {
             bufferevent_free(bev);
         }
-        if (close_cb) {
-            close_cb();
-        }
     }
 
     void set_timeout(double timeout) override {
+        if (close_pending) {
+            return;
+        }
         timeval tv, *tvp = mk::timeval_init(&tv, timeout);
         bufferevent *underlying = bufferevent_get_underlying(this->bev);
         if (underlying) {
@@ -71,7 +71,7 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
         }
     }
 
-    void close(Callback<>) override;
+    void shutdown() override;
 
     void handle_event_(short);
     void handle_read_();

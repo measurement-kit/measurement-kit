@@ -90,20 +90,11 @@ Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> lo
                       handle_libevent_event, this);
 }
 
-void Connection::close(std::function<void()> cb) {
-    if (isclosed) {
-        throw std::runtime_error("already closed");
+void Connection::shutdown() {
+    if (close_pending) {
+        return; // Just for extra safety
     }
-    isclosed = true;
-
-    on_connect(nullptr);
-    on_data(nullptr);
-    on_flush(nullptr);
-    on_error(nullptr);
     bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
-    stop_reading();
-
-    close_cb = cb;
     reactor->call_soon([=]() {
         this->self = nullptr;
     });
