@@ -6,7 +6,7 @@
 
 #ifndef _WIN32
 #include <getopt.h>
-#include "../../measurement_kit/portable/_getopt.h"
+#include "../portable/_getopt.h"
 #endif
 
 #endif
