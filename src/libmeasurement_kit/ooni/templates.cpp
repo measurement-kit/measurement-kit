@@ -93,38 +93,51 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
     http::request(
         settings, headers, body,
         [=](Error error, Var<http::Response> response) {
-            Entry rr;
-            /*
-             * Note: `probe_ip` comes from an external service, hence
-             * we MUST call `represent_string` _after_ `redact()`.
-             */
-            for (auto pair: headers) {
-                rr["request"]["headers"][pair.first] =
-                    represent_string(redact(pair.second));
-            }
-            rr["request"]["body"] = represent_string(redact(body));
-            rr["request"]["url"] = settings.at("http/url").c_str();
-            rr["request"]["method"] = settings.at("http/method").c_str();
 
-            // XXX we should probably update OONI data format to remove this.
-            rr["method"] = settings.at("http/method").c_str();
+            auto dump = [&](Var<http::Response> response) {
+                Entry rr;
 
-            if (!error) {
-                for (auto pair: response->headers) {
-                    rr["response"]["headers"][pair.first] =
-                        represent_string(redact(pair.second));
+                if (!!error) {
+                    rr["failure"] = error.as_ooni_error();
+                } else {
+                    rr["failure"] = nullptr;
                 }
-                rr["response"]["body"] =
-                    represent_string(redact(response->body));
-                rr["response"]["response_line"] =
-                    represent_string(redact(response->response_line));
-                rr["response"]["code"] = response->status_code;
-                rr["failure"] = nullptr;
-            } else {
-                rr["failure"] = error.as_ooni_error();
-            }
 
-            (*entry)["requests"].push_back(rr);
+                if (!!response) {
+                    /*
+                     * Note: `probe_ip` comes from an external service, hence
+                     * we MUST call `represent_string` _after_ `redact()`.
+                     */
+                    for (auto pair : response->headers) {
+                        rr["response"]["headers"][pair.first] =
+                            represent_string(redact(pair.second));
+                    }
+                    rr["response"]["body"] =
+                        represent_string(redact(response->body));
+                    rr["response"]["response_line"] =
+                        represent_string(redact(response->response_line));
+                    rr["response"]["code"] = response->status_code;
+
+                    auto request = response->request;
+                    for (auto pair : request->headers) {
+                        rr["request"]["headers"][pair.first] =
+                            represent_string(redact(pair.second));
+                    }
+                    rr["request"]["body"] =
+                        represent_string(redact(request->body));
+                    rr["request"]["url"] = request->url.str();
+                    rr["request"]["method"] = request->method;
+                }
+                return rr;
+            };
+
+            if (!!response) {
+                for (Var<http::Response> x = response; !!x; x = x->previous) {
+                    (*entry)["requests"].push_back(dump(x));
+                }
+            } else {
+                (*entry)["requests"].push_back(dump(response));
+            }
             cb(error, response);
         },
         reactor, logger);
