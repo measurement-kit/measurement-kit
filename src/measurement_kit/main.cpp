@@ -114,7 +114,20 @@ int main(int argc, char **argv) {
         return usage(1, stderr);
     }
 
-    optreset = 1, optind = 1; // Allow to call getopt() again
+    /*
+     * Allow to call getopt() again.
+     *
+     * Non portable. Assume it's either GNU or BSD. We can do better in
+     * configure checking for the proper way to reset options.
+     */
+#ifdef __GLIBC__
+    optind = 0;
+#elif (defined __APPLE__ || defined __FreeBSD__ || defined __OpenBSD__ ||      \
+       defined __NetBSD__ || defined __DragonFly__)
+    optreset = 1, optind = 1;
+#else
+#error "Don't know how to reset getopt() on your system"
+#endif
     for (auto p = &kv_modules[0]; p->mod_name != nullptr; ++p) {
         if (strcmp(argv[0], p->mod_name) == 0) {
             return p->mod_func(initializers, argc, argv);
