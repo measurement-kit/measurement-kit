@@ -6,8 +6,8 @@
 
 #include "../measurement_kit/cmdline.hpp"
 
-BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &t) {
-    t
+BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
+    test
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .on_progress([](double progress, std::string msg) {
@@ -22,9 +22,9 @@ BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &t) {
             fprintf(stderr, "%s\n", message);
         });
     for (auto fn : il) {
-        fn(t);
+        fn(test);
     }
-    return t;
+    return test;
 }
 
 BaseTest &ndt_init(std::list<Callback<BaseTest &>> il, BaseTest &t) {
@@ -55,6 +55,11 @@ std::vector<option> as_long_options(const OptionSpec *os) {
 }
 
 std::string as_getopt_string(const OptionSpec *os) {
+    /*
+     * Note: the leading `+` tells GNU getopt() to avoid reordering
+     * options, which allows us to have parse global options, followed
+     * by a command, followed by specific options.
+     */
     std::string ret = "+";
     for (auto sos = os; sos->short_name != 0; ++sos) {
         if (sos->short_name > 255) {
