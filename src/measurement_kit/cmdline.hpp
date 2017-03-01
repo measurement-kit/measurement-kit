@@ -41,10 +41,10 @@ class OptionSpec {
           description(description) {}
 
     int short_name = 0;
-    const char *long_name;
+    const char *long_name = nullptr;
     bool requires_argument = false;
-    const char *argument_name;
-    const char *description;
+    const char *argument_name = nullptr;
+    const char *description = nullptr;
 };
 
 std::vector<option> as_long_options(const OptionSpec *);
