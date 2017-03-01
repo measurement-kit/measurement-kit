@@ -22,6 +22,10 @@ class EmitterBase : public Transport {
 
     void emit_connect() override {
         logger->log(MK_LOG_DEBUG2, "emitter: emit 'connect' event");
+        if (close_pending) {
+            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            return;
+        }
         if (!do_connect) {
             logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
             return;
@@ -32,6 +36,10 @@ class EmitterBase : public Transport {
     void emit_data(Buffer data) override {
         logger->log(MK_LOG_DEBUG2, "emitter: emit 'data' event "
                     "(num_bytes = %lu)", data.length());
+        if (close_pending) {
+            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            return;
+        }
         if (do_record_received_data) {
             received_data_record.write(data.peek());
         }
@@ -44,6 +52,10 @@ class EmitterBase : public Transport {
 
     void emit_flush() override {
         logger->log(MK_LOG_DEBUG2, "emitter: emit 'flush' event");
+        if (close_pending) {
+            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            return;
+        }
         if (!do_flush) {
             logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
             return;
@@ -54,6 +66,10 @@ class EmitterBase : public Transport {
     void emit_error(Error err) override {
         logger->log(MK_LOG_DEBUG2, "emitter: emit 'error' event "
                     "(error.code = %d)", err.code);
+        if (close_pending) {
+            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            return;
+        }
         if (!do_error) {
             logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
             return;
@@ -70,6 +86,10 @@ class EmitterBase : public Transport {
     void on_data(std::function<void(Buffer)> fn) override {
         logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'data' handler",
                     (fn != nullptr) ? "" : "un");
+        if (close_pending) {
+            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            return;
+        }
         if (fn) {
             start_reading();
         } else {
@@ -89,6 +109,8 @@ class EmitterBase : public Transport {
                     (fn != nullptr) ? "" : "un");
         do_error = fn;
     }
+
+    void close(Callback<> cb) override;
 
     /*
      * TransportRecorder
@@ -141,6 +163,10 @@ class EmitterBase : public Transport {
             sent_data_record.write(data.peek());
         }
         output_buff << data;
+        if (close_pending) {
+            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            return;
+        }
         start_writing();
     }
 
@@ -160,6 +186,7 @@ class EmitterBase : public Transport {
     Var<Reactor> reactor = Reactor::global();
     Var<Logger> logger = Logger::global();
     Buffer output_buff;
+    bool close_pending = false;
 
   private:
     Delegate<> do_connect;
@@ -170,6 +197,7 @@ class EmitterBase : public Transport {
     Buffer received_data_record;
     bool do_record_sent_data = false;
     Buffer sent_data_record;
+    Callback<> close_cb;
 };
 
 class Emitter : public EmitterBase {
@@ -187,11 +215,7 @@ class Emitter : public EmitterBase {
         logger->log(MK_LOG_DEBUG2, "emitter: clear_timeout");
     }
 
-    /*
-     * XXX This is like it was before refactoring. It's probably wrong
-     * because instead we should defer the callback.
-     */
-    void close(Callback<>) override {}
+    void shutdown() override {}
 
     void start_reading() override {}
     void stop_reading() override {}

@@ -22,6 +22,8 @@ class TransportEmitter {
     virtual void on_data(Callback<Buffer>) = 0;
     virtual void on_flush(Callback<>) = 0;
     virtual void on_error(Callback<Error>) = 0;
+
+    virtual void close(Callback<>) = 0;
 };
 
 class TransportRecorder {
@@ -59,7 +61,7 @@ class TransportPollable {
     virtual void set_timeout(double) = 0;
     virtual void clear_timeout() = 0;
 
-    virtual void close(Callback<>) = 0;
+    virtual void shutdown() = 0;
 
     /*
      * Writing is stopped automatically when the send buffer is empty
