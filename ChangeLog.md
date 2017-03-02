@@ -1,3 +1,7 @@
+# MeasurementKit 0.4.1 [2017-03-02]
+
+- Backport #1149: ooni/templates http: include all request/responses
+
 # MeasurementKit 0.4.0 [2017-02-13]
 
 - Repair circle-ci build for stable (#1123)
