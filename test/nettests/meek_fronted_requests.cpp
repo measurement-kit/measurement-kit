@@ -14,8 +14,8 @@
 
 using namespace mk;
 
-TEST_CASE("Synchronous meek-fronting test") {
-    nettests::MeekFrontingTest{}
+TEST_CASE("Synchronous meek-fronted-requests test") {
+    nettests::MeekFrontedRequestsTest{}
 //        .set_options("backend", "https://a.collector.test.ooni.io:4444")
 //        .set_options("geoip_country_path", "GeoIP.dat")
 //        .set_options("geoip_asn_path", "GeoIPASNum.dat")
@@ -24,9 +24,9 @@ TEST_CASE("Synchronous meek-fronting test") {
         .run();
 }
 
-TEST_CASE("Asynchronous meek-fronting test") {
+TEST_CASE("Asynchronous meek-fronted-requests test") {
     bool done = false;
-    nettests::MeekFrontingTest{}
+    nettests::MeekFrontedRequestsTest{}
 //        .set_options("backend", "https://a.collector.test.ooni.io:4444")
 //        .set_options("geoip_country_path", "GeoIP.dat")
 //        .set_options("geoip_asn_path", "GeoIPASNum.dat")

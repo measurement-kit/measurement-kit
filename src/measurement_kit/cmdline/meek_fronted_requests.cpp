@@ -20,7 +20,7 @@ int main(const char *, int argc, char **argv) {
     std::string name = argv[0];
     uint32_t verbosity = 0;
     std::string expected_body, outer_host, inner_host;
-    mk::nettests::MeekFrontingTest test;
+    mk::nettests::MeekFrontedRequestsTest test;
     int ch;
     while ((ch = mkp_getopt(argc, argv, "B:D:H:nv")) != -1) {
         switch (ch) {
