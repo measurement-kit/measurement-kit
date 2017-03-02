@@ -47,13 +47,6 @@ int main(const char *, int argc, char **argv) {
     argc -= mkp_optind;
     argv += mkp_optind;
 
-    if (inner_host.empty()) {
-        std::cout << "inner_host empty\n";
-    }
-    if (outer_host.empty()) {
-        std::cout << "outer_host empty\n";
-    }
-
     if ((inner_host.empty() && !outer_host.empty()) ||
         (outer_host.empty() && !inner_host.empty())) {
         std::cout << "If you specify one of {outer,inner}_host, "
@@ -63,6 +56,7 @@ int main(const char *, int argc, char **argv) {
     }
 
     if (inner_host.empty() && outer_host.empty()) {
+        test.runnable->needs_input = true;
         if (argc < 1) {
             std::cout << kv_usage;
             exit(1);

@@ -79,7 +79,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         report::Entry entry;
         entry["test_keys"] = *test_keys;
         entry["test_keys"]["client_resolver"] = resolver_ip;
-        if ((*test_keys)["input"].is_null()) {
+        if (!(*test_keys)["input"].is_null()) {
             entry["input"] = (*test_keys)["input"];
         } else {
             entry["input"] = next_input;
