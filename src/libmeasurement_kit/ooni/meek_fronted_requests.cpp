@@ -11,7 +11,7 @@ namespace ooni {
 
 using namespace mk::report;
 
-void meek_fronting(std::string input, Settings options,
+void meek_fronted_requests(std::string input, Settings options,
                    Callback<Var<report::Entry>> callback,
                    Var<Reactor> reactor, Var<Logger> logger) {
     Var<Entry> entry(new Entry);
@@ -69,10 +69,10 @@ void meek_fronting(std::string input, Settings options,
                             [=](Error err, Var<http::Response> response) {
                                 if (err) {
                                     logger->debug(
-                                        "meek_fronting: http-request error: %s",
+                                        "meek_fronted_requests: http-request error: %s",
                                         err.explain().c_str());
 
-                                    (*entry)["meek_fronting_failure"] =
+                                    (*entry)["meek_fronted_requests"] =
                                         err.as_ooni_error();
                                 }
 

@@ -26,7 +26,7 @@ void web_connectivity(std::string input, Settings,
                       Var<Reactor> = Reactor::global(),
                       Var<Logger> = Logger::global());
 
-void meek_fronting(std::string input, Settings,
+void meek_fronted_requests(std::string input, Settings,
                    Callback<Var<report::Entry>>,
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());

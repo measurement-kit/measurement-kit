@@ -10,14 +10,14 @@ namespace nettests {
 
 MeekFrontingTest::MeekFrontingTest() : BaseTest() {
     runnable.reset(new MeekFrontingRunnable);
-    runnable->test_name = "meek_fronting";
+    runnable->test_name = "meek_fronted_requests";
     runnable->test_version = "0.0.1";
     runnable->needs_input = false;
 }
 
 void MeekFrontingRunnable::main(std::string input, Settings options,
                                 Callback<Var<report::Entry>> cb) {
-    ooni::meek_fronting(input, options, cb, reactor, logger);
+    ooni::meek_fronted_requests(input, options, cb, reactor, logger);
 }
 
 } // namespace nettests

@@ -10,10 +10,10 @@
 
 namespace mk {
 namespace cmdline {
-namespace meek_fronting {
+namespace meek_fronted_requests {
 
 static const char *kv_usage =
-    "usage: measurement_kit meek_fronting [-v] input_file \n";
+    "usage: measurement_kit meek_fronted_requests [-v] input_file \n";
 
 int main(const char *, int argc, char **argv) {
     Settings settings;
@@ -84,6 +84,6 @@ int main(const char *, int argc, char **argv) {
     return 0;
 }
 
-} // namespace meek_fronting
+} // namespace meek_fronted_requests
 } // namespace cmdline
 } // namespace mk
