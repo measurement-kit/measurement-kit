@@ -16,16 +16,33 @@ void meek_fronting(std::string input, Settings options,
                    Var<Reactor> reactor, Var<Logger> logger) {
     Var<Entry> entry(new Entry);
 
-    std::list<std::string> outer_inner = split(input, ":");
-    if (outer_inner.size() != 2) {
-        logger->debug("Couldn't split input: %s", input.c_str());
-        callback(entry);
-        return;
+    std::string expected_body, outer_host, inner_host;
+
+    if (options["expected_body"].empty()) {
+        expected_body = constants::MEEK_SERVER_RESPONSE;
+    } else {
+        expected_body = options["expected_body"];
     }
-    // XXX: We should make sure that we remove leading and trailing whitespaces
+
+    if (!options["outer_host"].empty() &&
+        !options["inner_host"].empty()) {
+        outer_host = options["outer_host"];
+        inner_host = options["inner_host"];
+    } else {
+        std::list<std::string> outer_inner = split(input, ":");
+        if (outer_inner.size() != 2) {
+            logger->debug("Couldn't split input: %s", input.c_str());
+            callback(entry);
+            return;
+        }
+        // XXX: We should make sure that we remove leading and trailing whitespaces
+        outer_host = outer_inner.front();
+        inner_host = outer_inner.back();
+    }
+
     // url parsing methods require a schema
-    std::string outer_host = "https://" + outer_inner.front();
-    std::string inner_host = "https://" + outer_inner.back();
+    outer_host.insert(0, "https://");
+    inner_host.insert(0, "https://");
 
     ErrorOr<http::Url> outer_url = mk::http::parse_url_noexcept(outer_host);
     ErrorOr<http::Url> inner_url = mk::http::parse_url_noexcept(inner_host);
@@ -65,8 +82,7 @@ void meek_fronting(std::string input, Settings options,
                                 }
 
                                 (*entry)["success"] =
-                                    (response->body ==
-                                     constants::MEEK_SERVER_RESPONSE);
+                                    (response->body == expected_body);
 
                                 callback(entry);
                             },
