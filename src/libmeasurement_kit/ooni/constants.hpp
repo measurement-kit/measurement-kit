@@ -56,6 +56,8 @@ const http::Headers COMMON_CLIENT_HEADERS = {
   }
 };
 
+const std::string MEEK_SERVER_RESPONSE = "I\u2019m just a happy little web server.\n";
+
 
 } // namespace constants
 } // namespace ooni

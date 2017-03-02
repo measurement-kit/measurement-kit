@@ -21,8 +21,11 @@ int main(const char *, int argc, char **argv) {
     uint32_t verbosity = 0;
     mk::nettests::MeekFrontingTest test;
     int ch;
-    while ((ch = mkp_getopt(argc, argv, "v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "nv")) != -1) {
         switch (ch) {
+        case 'n':
+            test.set_options("no_collector", true);
+            break;
         case 'v':
             ++verbosity;
             break;

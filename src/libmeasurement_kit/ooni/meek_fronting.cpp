@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "../common/utils.hpp"
+#include "../ooni/constants.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
@@ -17,7 +18,9 @@ void meek_fronting(std::string input, Settings options,
 
     std::list<std::string> outer_inner = split(input, ":");
     if (outer_inner.size() != 2) {
-        return; /* XXX use more specific error */
+        logger->debug("Couldn't split input: %s", input.c_str());
+        callback(entry);
+        return;
     }
     // XXX: We should make sure that we remove leading and trailing whitespaces
     // url parsing methods require a schema
@@ -33,6 +36,8 @@ void meek_fronting(std::string input, Settings options,
         callback(entry);
         return;
     }
+
+    (*entry)["input"] = {outer_url->address, inner_url->address};
 
     options["http/url"] = "https://" + outer_url->address;
     options["net/ssl"] = true;
@@ -56,7 +61,12 @@ void meek_fronting(std::string input, Settings options,
 
                                 if (!response) {
                                     logger->warn("null response");
+                                    callback(entry);
                                 }
+
+                                (*entry)["success"] =
+                                    (response->body ==
+                                     constants::MEEK_SERVER_RESPONSE);
 
                                 callback(entry);
                             },
