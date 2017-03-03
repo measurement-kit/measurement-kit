@@ -2,36 +2,32 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../cmdline/cmdline.hpp"
-#include <measurement_kit/nettests.hpp>
-#include <measurement_kit/http.hpp>
+#include "../cmdline.hpp"
 
 #include <iostream>
 
-namespace mk {
-namespace cmdline {
 namespace meek_fronted_requests {
 
 static const char *kv_usage =
     "usage: measurement_kit meek_fronted_requests [-v] input_file \n";
 
-int main(const char *, int argc, char **argv) {
+int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     Settings settings;
     std::string name = argv[0];
     uint32_t verbosity = 0;
     std::string expected_body, outer_host, inner_host;
     mk::nettests::MeekFrontedRequestsTest test;
     int ch;
-    while ((ch = mkp_getopt(argc, argv, "B:D:H:nv")) != -1) {
+    while ((ch = getopt(argc, argv, "B:D:H:nv")) != -1) {
         switch (ch) {
         case 'B':
-            expected_body = mkp_optarg;
+            expected_body = optarg;
             break;
         case 'D':
-            outer_host = mkp_optarg;
+            outer_host = optarg;
             break;
         case 'H':
-            inner_host = mkp_optarg;
+            inner_host = optarg;
             break;
         case 'n':
             test.set_options("no_collector", true);
@@ -44,8 +40,8 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= mkp_optind;
-    argv += mkp_optind;
+    argc -= optind;
+    argv += optind;
 
     if ((inner_host.empty() && !outer_host.empty()) ||
         (outer_host.empty() && !inner_host.empty())) {
@@ -53,6 +49,7 @@ int main(const char *, int argc, char **argv) {
                      "you must specify both.\n";
         std::cout << kv_usage;
         exit(1);
+        /* NOTREACHED */
     }
 
     if (inner_host.empty() && outer_host.empty()) {
@@ -60,6 +57,7 @@ int main(const char *, int argc, char **argv) {
         if (argc < 1) {
             std::cout << kv_usage;
             exit(1);
+            /* NOTREACHED */
         }
         while (argc > 0) {
             test.add_input_filepath(argv[0]);
@@ -79,5 +77,3 @@ int main(const char *, int argc, char **argv) {
 }
 
 } // namespace meek_fronted_requests
-} // namespace cmdline
-} // namespace mk
