@@ -21,13 +21,13 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     while ((ch = getopt(argc, argv, "B:D:H:nv")) != -1) {
         switch (ch) {
         case 'B':
-            expected_body = optarg;
+            test.set_options("expected_body", optarg);
             break;
         case 'D':
-            outer_host = optarg;
+            test.set_options("outer_host", optarg);
             break;
         case 'H':
-            inner_host = optarg;
+            test.set_options("inner_host", optarg);
             break;
         case 'n':
             test.set_options("no_collector", true);
@@ -65,14 +65,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         }
     }
 
-    test
-        .set_options("expected_body", expected_body)
-        .set_options("outer_host", outer_host)
-        .set_options("inner_host", inner_host)
-        .set_verbosity(verbosity)
-        .on_log([](uint32_t, const char *s) { std::cout << s << "\n"; })
-        .run();
-
+    common_init(initializers, test).run();
     return 0;
 }
 
