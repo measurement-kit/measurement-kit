@@ -4,12 +4,11 @@
 
 #include "../cmdline.hpp"
 
-#include <iostream>
-
 namespace meek_fronted_requests {
 
-static const char *kv_usage =
-    "usage: measurement_kit meek_fronted_requests [-v] input_file \n";
+#define USAGE                                                  \
+    "usage: measurement_kit [options] meek_fronted_requests\n" \
+    "                       [-B expected_body] input_file\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     Settings settings;
@@ -36,7 +35,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
             ++verbosity;
             break;
         default:
-            std::cout << kv_usage;
+            fprintf(stderr, "%s\n", USAGE);
             exit(1);
         }
     }
@@ -45,9 +44,9 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
 
     if ((inner_host.empty() && !outer_host.empty()) ||
         (outer_host.empty() && !inner_host.empty())) {
-        std::cout << "If you specify one of {outer,inner}_host, "
-                     "you must specify both.\n";
-        std::cout << kv_usage;
+        fprintf(stderr, "If you specify one of {outer,inner}_host, "
+                        "you must specify both.\n");
+        fprintf(stderr, "%s\n", USAGE);
         exit(1);
         /* NOTREACHED */
     }
@@ -55,7 +54,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     if (inner_host.empty() && outer_host.empty()) {
         test.runnable->needs_input = true;
         if (argc < 1) {
-            std::cout << kv_usage;
+            fprintf(stderr, "%s\n", USAGE);
             exit(1);
             /* NOTREACHED */
         }
