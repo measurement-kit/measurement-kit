@@ -31,7 +31,6 @@ void meek_fronted_requests(std::string input, Settings,
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
-
 } // namespace ooni
 } // namespace mk
 #endif
