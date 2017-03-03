@@ -80,13 +80,11 @@ void meek_fronted_requests(std::string input, Settings options,
                                         err.as_ooni_error();
                                 }
 
-                                if (!response) {
-                                    logger->warn("null response");
-                                    callback(entry);
+                                if (!!response) {
+                                    (*entry)["success"] =
+                                        (response->body == expected_body);
                                 }
 
-                                (*entry)["success"] =
-                                    (response->body == expected_body);
 
                                 callback(entry);
                             },
