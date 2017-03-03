@@ -61,7 +61,6 @@ void meek_fronted_requests(std::string input, Settings options,
     (*entry)["input"] = {outer_url->address, inner_url->address};
 
     options["http/url"] = "https://" + outer_url->address;
-    options["net/ssl"] = true;
     http::Headers headers = { {"Host", inner_url->address} };
     std::string body = ""; // spec says this is always a GET, so no body
 
