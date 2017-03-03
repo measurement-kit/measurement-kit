@@ -77,7 +77,9 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     logger->debug("net_test: running with input %s", next_input.c_str());
     main(next_input, options, [=](Var<report::Entry> test_keys) {
         report::Entry entry;
-        entry["test_keys"] = *test_keys;
+        if (!!test_keys) {
+            entry["test_keys"] = *test_keys;
+        }
         entry["test_keys"]["client_resolver"] = resolver_ip;
         entry["input"] = next_input;
         entry["measurement_start_time"] =
