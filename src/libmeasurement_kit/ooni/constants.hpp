@@ -56,7 +56,7 @@ const http::Headers COMMON_CLIENT_HEADERS = {
   }
 };
 
-const std::string MEEK_SERVER_RESPONSE = "I\u2019m just a happy little web server.\n";
+const std::string MEEK_SERVER_RESPONSE = "I\xe2\x80\x99m just a happy little web server.\n";
 
 
 } // namespace constants
