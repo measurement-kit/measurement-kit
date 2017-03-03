@@ -18,6 +18,7 @@ int main(const char *progname, int argc, char **argv);                         \
 
 // The main of specific modules:
 
+XX(agent)
 XX(dns_injection)
 XX(dns_query)
 XX(http_invalid_request_line)
