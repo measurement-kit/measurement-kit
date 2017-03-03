@@ -42,6 +42,11 @@ BaseTest &BaseTest::increase_verbosity() {
 BaseTest::BaseTest() {}
 BaseTest::~BaseTest() {}
 
+BaseTest &BaseTest::add_input(std::string s) {
+    runnable->inputs.push_back(s);
+    return *this;
+}
+
 BaseTest &BaseTest::add_input_filepath(std::string s) {
     runnable->input_filepaths.push_back(s);
     return *this;

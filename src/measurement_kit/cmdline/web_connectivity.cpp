@@ -12,7 +12,7 @@ namespace cmdline {
 namespace web_connectivity {
 
 #define USAGE                                                                  \
-"usage: %s [-nv] [-b backend] [-N nameserver] [-t runtime] [file_name...]\n"
+"usage: %s [-nv] [-b backend] [-f file] [-N nameserver] [-t runtime] [-u url]\n"
 
 int main(const char *, int argc, char **argv) {
     std::string backend = "https://b.web-connectivity.th.ooni.io";
@@ -22,10 +22,13 @@ int main(const char *, int argc, char **argv) {
     mk::nettests::WebConnectivityTest test;
     int ch;
 
-    while ((ch = mkp_getopt(argc, argv, "b:N:nt:v")) != -1) {
+    while ((ch = mkp_getopt(argc, argv, "b:f:N:nt:u:v")) != -1) {
         switch (ch) {
         case 'b':
             backend = mkp_optarg;
+            break;
+        case 'f':
+            test.add_input_filepath(mkp_optarg);
             break;
         case 'N':
             nameserver = mkp_optarg;
@@ -36,6 +39,9 @@ int main(const char *, int argc, char **argv) {
         case 't':
             test.set_options("max_runtime", mkp_optarg);
             break;
+        case 'u':
+            test.add_input(mkp_optarg);
+            break;
         case 'v':
             ++verbosity;
             break;
@@ -45,9 +51,9 @@ int main(const char *, int argc, char **argv) {
         }
     }
     argc -= mkp_optind, argv += mkp_optind;
-    while (argc > 0) {
-        test.add_input_filepath(argv[0]);
-        argc -= 1, argv += 1;
+    if (argc != 0) {
+        fprintf(stderr, USAGE, name.c_str());
+        exit(1);
     }
 
     test
