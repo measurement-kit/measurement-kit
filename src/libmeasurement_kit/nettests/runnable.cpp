@@ -265,6 +265,7 @@ void Runnable::begin(Callback<Error> cb) {
     }
     mk::utc_time_now(&test_start_time);
     beginning = mk::time_now();
+    mk::dump_settings(options, "runnable", logger);
     geoip_lookup([=]() {
         resolver_lookup([=](Error error, std::string resolver_ip_) {
             logger->progress(0.05, "geoip lookup");
