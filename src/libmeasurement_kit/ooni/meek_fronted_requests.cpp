@@ -31,7 +31,9 @@ void meek_fronted_requests(std::string input, Settings options,
     } else {
         std::list<std::string> outer_inner = split(input, ":");
         if (outer_inner.size() != 2) {
-            logger->debug("Couldn't split input: %s", input.c_str());
+            std::string fail_msg = "Couldn't split input: " + input;
+            logger->warn(fail_msg.c_str());
+            (*entry)["failure"] = fail_msg;
             callback(entry);
             return;
         }
@@ -48,8 +50,10 @@ void meek_fronted_requests(std::string input, Settings options,
     ErrorOr<http::Url> inner_url = mk::http::parse_url_noexcept(inner_host);
 
     if (!outer_url || !inner_url) {
-        logger->debug("Invalid url: '%s' or '%s'", outer_host.c_str(),
-                      inner_host.c_str());
+        std::string fail_msg = "Invalid url: " + outer_host + " or "
+                                               + inner_host;
+        logger->warn(fail_msg.c_str());
+        (*entry)["failure"] = fail_msg;
         callback(entry);
         return;
     }
@@ -72,7 +76,7 @@ void meek_fronted_requests(std::string input, Settings options,
                                         "meek_fronted_requests: http-request error: %s",
                                         err.explain().c_str());
 
-                                    (*entry)["meek_fronted_requests"] =
+                                    (*entry)["failure"] =
                                         err.as_ooni_error();
                                 }
 
