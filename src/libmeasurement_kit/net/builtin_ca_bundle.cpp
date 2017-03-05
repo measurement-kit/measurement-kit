@@ -6,7 +6,7 @@
  * as a vector of unsigned characters. This could then be passed to libressl
  * specific functions for loading CAs from a memory buffer.
  *
- * Based on libressl v2.4.4
+ * Based on libressl v2.4.5
  */
 
 #include "../net/builtin_ca_bundle.hpp"
