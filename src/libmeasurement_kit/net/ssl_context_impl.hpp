@@ -45,11 +45,20 @@ ErrorOr<SSL_CTX *> make_ssl_ctx(std::string path) {
     debug("ssl: creating ssl context with bundle: '%s'", path.c_str());
     initialize_ssl();
 
-    SSL_CTX *ctx = SSL_CTX_new(TLSv1_client_method());
+    SSL_CTX *ctx = SSL_CTX_new(SSLv23_client_method());
     if (ctx == nullptr) {
         debug("ssl: failed to create SSL_CTX");
         return SslCtxNewError();
     }
+    /*
+     * We use SSLv23_client_method() because it is the most general method
+     * that applications SHOULD use according to the manual[1] and we disable
+     * by default deprecated protocols. We MAY want to enable them in the
+     * OONI's web_connectivity test so to reach more websites.
+     *
+     * [1] https://www.openssl.org/docs/man1.0.1/ssl/SSL_CTX_new.html
+     */
+    SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3);
 
     if (path != "") {
         if (!SSL_CTX_load_verify_locations(ctx, path.c_str(), nullptr)) {
