@@ -15,6 +15,7 @@ using namespace mk::nettests;
 
 #define MK_CMDLINE_SUBCOMMANDS                                                 \
     XX(dns_injection)                                                          \
+    XX(http_header_field_manipulation)                                         \
     XX(http_invalid_request_line)                                              \
     XX(meek_fronted_requests)                                                  \
     XX(multi_ndt)                                                              \
