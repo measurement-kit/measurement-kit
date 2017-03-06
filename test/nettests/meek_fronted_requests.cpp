@@ -12,10 +12,7 @@ using namespace mk::nettests;
 using namespace mk;
 
 TEST_CASE("Synchronous meek-fronted-requests test") {
-    test::nettests::make_test<MeekFrontedRequestsTest>()
-        .set_options("expected_body", "I\u2019m just a happy little web server.\n")
-        .set_options("outer_host", "a0.awsstatic.com")
-        .set_options("inner_host", "d2zfqthxsdq309.cloudfront.net")
+    test::nettests::make_test<MeekFrontedRequestsTest>("meek_fronted_requests.txt")
         .run();
 }
 

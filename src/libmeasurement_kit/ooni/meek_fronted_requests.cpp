@@ -24,23 +24,17 @@ void meek_fronted_requests(std::string input, Settings options,
         expected_body = options["expected_body"];
     }
 
-    if (!options["outer_host"].empty() &&
-        !options["inner_host"].empty()) {
-        outer_host = options["outer_host"];
-        inner_host = options["inner_host"];
-    } else {
-        std::list<std::string> outer_inner = split(input, ":");
-        if (outer_inner.size() != 2) {
-            std::string fail_msg = "Couldn't split input: " + input;
-            logger->warn(fail_msg.c_str());
-            (*entry)["failure"] = fail_msg;
-            callback(entry);
-            return;
-        }
-        // XXX: We should make sure that we remove leading and trailing whitespaces
-        outer_host = outer_inner.front();
-        inner_host = outer_inner.back();
+    std::list<std::string> outer_inner = split(input, ":");
+    if (outer_inner.size() != 2) {
+        std::string fail_msg = "Couldn't split input: " + input;
+        logger->warn(fail_msg.c_str());
+        (*entry)["failure"] = fail_msg;
+        callback(entry);
+        return;
     }
+    // XXX: We should make sure that we remove leading and trailing whitespaces
+    outer_host = outer_inner.front();
+    inner_host = outer_inner.back();
 
     // url parsing methods require a schema
     outer_host.insert(0, "https://");
