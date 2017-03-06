@@ -43,7 +43,7 @@ void http_header_field_manipulation(std::string input, Settings options,
                                         "http_header_field_manipulation: http-request error: %s",
                                         err.explain().c_str());
 
-                                    (*entry)["http_header_field_manipulation_error"] =
+                                    (*entry)["failure"] =
                                         err.as_ooni_error();
                                 }
 
