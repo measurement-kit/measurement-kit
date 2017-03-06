@@ -6,36 +6,22 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/nettests.hpp>
+#include "../nettests/utils.hpp"
 
-#include <chrono>
-#include <iostream>
-#include <thread>
-
+using namespace mk::nettests;
 using namespace mk;
 
 TEST_CASE("Synchronous http-header-field-manipulation test") {
-    nettests::HTTPHeaderFieldManipulationTest{}
-//        .set_options("backend", "https://a.collector.test.ooni.io:4444")
-//        .set_options("geoip_country_path", "GeoIP.dat")
-//        .set_options("geoip_asn_path", "GeoIPASNum.dat")
-//        .set_options("nameserver", "8.8.8.8")
-//        .set_input_filepath("test/fixtures/urls.txt")
+    test::nettests::make_test<HttpHeaderFieldManipulationTest>()
+        .set_options("backend", "http://38.107.216.10:80")
         .run();
 }
 
 TEST_CASE("Asynchronous http-header-field-manipulation test") {
-    bool done = false;
-    nettests::HTTPHeaderFieldManipulationTest{}
-//        .set_options("backend", "https://a.collector.test.ooni.io:4444")
-//        .set_options("geoip_country_path", "GeoIP.dat")
-//        .set_options("geoip_asn_path", "GeoIPASNum.dat")
-//        .set_options("nameserver", "8.8.8.8")
-//        .set_input_filepath("test/fixtures/urls.txt")
-        .start([&done]() { done = true; });
-    do {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    } while (!done);
+    test::nettests::run_async(
+        test::nettests::make_test<HttpHeaderFieldManipulationTest>()
+            .set_options("backend", "http://38.107.216.10:80")
+    );
 }
 
 #else
