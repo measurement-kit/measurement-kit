@@ -6,18 +6,12 @@
 #include <string>
 #include <unistd.h>
 
-#include "../cmdline/cmdline.hpp"
-
-namespace mk {
-namespace cmdline {
-namespace ooniresources {
-
 #define USAGE "ooniresources [-v] [-d dir]"
 
 using namespace mk::ooni;
 using namespace mk;
 
-int main(const char *, int argc, char **argv) {
+int main(int argc, char **argv) {
 
     Settings settings;
     for (int ch; (ch = getopt(argc, argv, "d:v")) != -1; ) {
@@ -59,7 +53,3 @@ int main(const char *, int argc, char **argv) {
 
     return 0;
 }
-
-} // namespace ooniresources
-} // namespace cmdline
-} // namespace mk

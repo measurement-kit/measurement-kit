@@ -2,35 +2,33 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../cmdline/cmdline.hpp"
 #include <measurement_kit/net.hpp>
 
 #include <iostream>
 
-namespace mk {
-namespace cmdline {
-namespace net_connect {
+#include <unistd.h>
 
 using namespace mk::net;
+using namespace mk;
 
 static const char *kv_usage =
         "usage: ./example/net/connect [-Tv] [-p port] [-t timeout] domain\n";
 
-int main(const char *, int argc, char **argv) {
+int main(int argc, char **argv) {
 
     int port = 80;
     Settings settings;
     int ch;
-    while ((ch = mkp_getopt(argc, argv, "p:Tt:v")) != -1) {
+    while ((ch = getopt(argc, argv, "p:Tt:v")) != -1) {
         switch (ch) {
         case 'p':
-            port = lexical_cast<int>(mkp_optarg);
+            port = lexical_cast<int>(optarg);
             break;
         case 'T':
             settings["net/socks5_proxy"] = "127.0.0.1:9050";
             break;
         case 't':
-            settings["net/timeout"] = lexical_cast<double>(mkp_optarg);
+            settings["net/timeout"] = lexical_cast<double>(optarg);
             break;
         case 'v':
             increase_verbosity();
@@ -40,7 +38,7 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= mkp_optind, argv += mkp_optind;
+    argc -= optind, argv += optind;
     if (argc != 1) {
         std::cout << kv_usage;
         exit(1);
@@ -85,7 +83,3 @@ int main(const char *, int argc, char **argv) {
 
     return 0;
 }
-
-} // namespace net_connect
-} // namespace cmdline
-} // namespace mk
