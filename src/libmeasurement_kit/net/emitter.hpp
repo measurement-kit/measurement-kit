@@ -179,14 +179,25 @@ class EmitterBase : public Transport {
     std::string socks5_port() override { return ""; }
 
     /*
-     * TransportPollable: NOT IMPLEMENTED
+     * TransportPollable
      */
 
+    void set_timeout(double timeo) override {
+        if (close_pending) {
+            return;
+        }
+        adjust_timeout(timeo);
+    }
+
+    void clear_timeout() override { set_timeout(-1); }
+
+    // Protected methods of TransportPollable: not implemented
+
   protected:
+    // TODO: it would probably better to have accessors
     Var<Reactor> reactor = Reactor::global();
     Var<Logger> logger = Logger::global();
     Buffer output_buff;
-    bool close_pending = false;
 
   private:
     Delegate<> do_connect;
@@ -198,6 +209,7 @@ class EmitterBase : public Transport {
     bool do_record_sent_data = false;
     Buffer sent_data_record;
     Callback<> close_cb;
+    bool close_pending = false;
 };
 
 class Emitter : public EmitterBase {
@@ -207,12 +219,9 @@ class Emitter : public EmitterBase {
 
     ~Emitter() override;
 
-    void set_timeout(double timeo) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: set_timeout %f", timeo);
-    }
-
-    void clear_timeout() override {
-        logger->log(MK_LOG_DEBUG2, "emitter: clear_timeout");
+  protected:
+    void adjust_timeout(double timeo) override {
+        logger->log(MK_LOG_DEBUG2, "emitter: adjust_timeout %f", timeo);
     }
 
     void shutdown() override {}
