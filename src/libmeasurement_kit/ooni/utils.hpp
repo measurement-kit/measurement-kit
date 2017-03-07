@@ -106,6 +106,11 @@ std::string scrub(
         std::string real_probe_ip
 );
 
+void compare_headers_response(http::Headers headers,
+                             Var<http::Response> response,
+                             Var<report::Entry> entry,
+                             Var<Logger> logger);
+
 } // namespace ooni
 } // namespace mk
 #endif

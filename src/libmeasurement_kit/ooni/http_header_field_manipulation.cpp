@@ -4,6 +4,7 @@
 
 #include "../common/utils.hpp"
 #include "../ooni/constants.hpp"
+#include "../ooni/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
@@ -15,6 +16,7 @@ void http_header_field_manipulation(std::string input, Settings options,
                    Callback<Var<report::Entry>> callback,
                    Var<Reactor> reactor, Var<Logger> logger) {
     Var<Entry> entry(new Entry);
+    (*entry)["tampering"] = Entry::object();
 
     options["http/url"] = options["backend"];
     std::string body = ""; // spec says this is always a GET, so no body
@@ -49,6 +51,9 @@ void http_header_field_manipulation(std::string input, Settings options,
 
                                 if (!response) {
                                     logger->warn("null response");
+                                } else {
+                                    compare_headers_response(headers, response,
+                                                             entry, logger);
                                 }
 
                                 callback(entry);
