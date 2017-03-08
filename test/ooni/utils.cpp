@@ -139,19 +139,19 @@ TEST_CASE("ip lookup works") {
 TEST_CASE("geoip works") {
     auto asn = ooni::GeoipCache::global()->resolve_asn(
             "GeoIPASNum.dat",
-            "130.192.91.231"
+            "130.192.16.172"
     );
     auto cname = ooni::GeoipCache::global()->resolve_country_name(
             "GeoIP.dat",
-            "130.192.91.231"
+            "130.192.16.172"
     );
     auto cc = ooni::GeoipCache::global()->resolve_country_code(
             "GeoIP.dat",
-            "130.192.91.231"
+            "130.192.16.172"
     );
     auto city = ooni::GeoipCache::global()->resolve_city_name(
             "GeoLiteCity.dat",
-            "130.192.91.231"
+            "130.192.16.172"
     );
     REQUIRE(*asn == std::string{"AS137"});
     REQUIRE(*cc == std::string{"IT"});
