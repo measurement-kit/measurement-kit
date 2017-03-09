@@ -2,16 +2,15 @@
 set -e
 
 if [ "$DOCKER_SPEC" != "" ]; then
-    #
-    # Note: the way in which we use TRAVIS_BRANCH here makes sense only if
-    # the current build is triggered by a push, not by a pull request.
-    #
-    # Since we currently do not build pull requests, this usage is okay.
-    #
-    if echo "$DOCKER_BRANCHES_ONLY" | grep -q "$TRAVIS_BRANCH"; then
+    if [ "$TRAVIS_PULL_REQUEST_BRANCH" != "" ]; then
+        BRANCH="$TRAVIS_PULL_REQUEST_BRANCH"
+    else
+        BRANCH="$TRAVIS_BRANCH"
+    fi
+    if echo "$DOCKER_BRANCHES_ONLY" | grep -q "$BRANCH"; then
         ./build/docker/$DOCKER_SPEC
     else
-        echo "Branch $TRAVIS_BRANCH is not in '$DOCKER_BRANCHES_ONLY'"
+        echo "Branch $BRANCH is not in '$DOCKER_BRANCHES_ONLY'"
         echo "Therefore we are not building this branch"
     fi
     exit 0
