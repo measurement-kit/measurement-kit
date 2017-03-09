@@ -111,11 +111,9 @@ were successful.
 
 # BUGS
 
-Most MeasurementKit functions receive the `reactor` argument before the `logger`
-argument, but `connect()` uses the opposite convention.
-
-As of MeasurementKit v0.4, `connect()` does not correctly deal with scoped
-link-local IPv6 addresses (e.g. `fe80::1%lo0`).
+As of MeasurementKit v0.4, `connect()` does not implement SSLv2 and SSLv3,
+therefore secure connection will fail with sites that use such deprecated
+versions of the protocol.
 
 # HISTORY
 
