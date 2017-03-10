@@ -303,3 +303,39 @@ TEST_CASE("slurp() works as expected") {
         REQUIRE(*maybe_res == expect);
     }
 }
+
+TEST_CASE("mk::startswith() works as expected") {
+    SECTION("For empty s and p") {
+        REQUIRE(!!mk::startswith("", ""));
+    }
+    SECTION("For empty p") {
+        REQUIRE(!!mk::startswith("antani", ""));
+    }
+    SECTION("For s shorter than p") {
+        REQUIRE(!mk::startswith("x", "xyz"));
+    }
+    SECTION("For s equal to p") {
+        REQUIRE(!!mk::startswith("xyz", "xyz"));
+    }
+    SECTION("For s longer than p") {
+        REQUIRE(!!mk::startswith("antani", "ant"));
+    }
+}
+
+TEST_CASE("mk::endswith() works as expected") {
+    SECTION("For empty s and p") {
+        REQUIRE(!!mk::endswith("", ""));
+    }
+    SECTION("For empty p") {
+        REQUIRE(!!mk::endswith("antani", ""));
+    }
+    SECTION("For s shorter than p") {
+        REQUIRE(!mk::endswith("z", "xyz"));
+    }
+    SECTION("For s equal to p") {
+        REQUIRE(!!mk::endswith("xyz", "xyz"));
+    }
+    SECTION("For s longer than p") {
+        REQUIRE(!!mk::endswith("antanix", "nix"));
+    }
+}

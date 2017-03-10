@@ -150,4 +150,12 @@ ErrorOr<std::string> slurp(std::string path) {
     return s;
 }
 
+bool startswith(std::string s, std::string p) {
+    return s.find(p) == 0;
+}
+
+bool endswith(std::string s, std::string p) {
+    return s.rfind(p) != std::string::npos;
+}
+
 } // namespace mk
