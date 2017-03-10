@@ -46,6 +46,8 @@ void mk::http::request_sendrecv(mk::Var<mk::net::Transport> txp,
                                 mk::Callback<mk::Error, mk::Var<mk::http::Response>> callback,
                                 mk::Var<mk::Reactor> reactor = mk::Reactor::global(),
                                 mk::Var<mk::Logger> logger = mk::Logger::global());
+
+ErrorOr<Url> mk::redirect(const Url &orig_url, const std::string &location);
 ```
 
 # STABILITY
@@ -150,6 +152,9 @@ class Response {
     std::string body;
 };
 ```
+
+The `redirect()` function will construct a new URL from the existing URL and
+a location header, basically implementing MK redirection logic.
 
 # EXAMPLE
 ```C++

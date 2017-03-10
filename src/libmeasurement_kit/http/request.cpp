@@ -201,6 +201,24 @@ void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
     });
 }
 
+ErrorOr<Url> redirect(const Url &orig_url, const std::string &location) {
+    std::stringstream ss;
+    /*
+     * Note: RFC 1808 Sect. 2.2 is clear that "//"
+     * MUST be treated differently than "/".
+     */
+    if (location.substr(0, 2) == "//") {
+        ss << orig_url.schema << ":" << location;
+    } else if (location.substr(0, 1) == "/") {
+        Url new_url = orig_url;
+        new_url.pathquery = location;
+        ss << new_url.str();
+    } else {
+        ss << location;
+    }
+    return parse_url_noexcept(ss.str());
+}
+
 void request(Settings settings, Headers headers, std::string body,
              Callback<Error, Var<Response>> callback, Var<Reactor> reactor,
              Var<Logger> logger, Var<Response> previous, int num_redirs) {
@@ -236,22 +254,10 @@ void request(Settings settings, Headers headers, std::string body,
                                 callback(EmptyLocationError(), response);
                                 return;
                             }
-                            ErrorOr<Url> url;
-                            /*
-                             * Note: RFC 1808 Sect. 2.2 is clear that "//"
-                             * MUST be treated differently than "/".
-                             */
-                            if (loc.substr(0, 2) == "//") {
-                                url = parse_url_noexcept(
-                                    response->request->url.schema
-                                        + ":" + loc
-                                );
-                            } else if (loc.substr(0, 1) == "/") {
-                                url = response->request->url;
-                                url->pathquery = loc;
-                            } else {
-                                url = parse_url_noexcept(loc);
-                            }
+                            ErrorOr<Url> url = redirect(
+                                response->request->url,
+                                loc
+                            );
                             if (!url) {
                                 callback(InvalidRedirectUrlError(
                                          url.as_error()), response);
