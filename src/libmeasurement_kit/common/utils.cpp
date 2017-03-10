@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include <iomanip>
+#include <random>
 
 #include <event2/util.h>
 #include <openssl/sha.h>
