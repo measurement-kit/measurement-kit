@@ -210,19 +210,9 @@ ErrorOr<Url> redirect(const Url &orig_url, const std::string &location) {
     if (location.substr(0, 2) == "//") {
         ss << orig_url.schema << ":" << location;
     } else if (location.substr(0, 1) == "/") {
-        ss << orig_url.schema << "://";
-        if (net::is_ipv6_addr(orig_url.address)) {
-            ss << "[";
-        }
-        ss << orig_url.address;
-        if (net::is_ipv6_addr(orig_url.address)) {
-            ss << "]";
-        }
-        if ((orig_url.schema == "http" && orig_url.port != 80) ||
-            (orig_url.schema == "https" && orig_url.port != 443)) {
-            ss << ":" << orig_url.port;
-        }
-        ss << location;
+        Url new_url = orig_url;
+        new_url.pathquery = location;
+        ss << new_url.str();
     } else {
         ss << location;
     }
