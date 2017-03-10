@@ -7,6 +7,9 @@ if [ "$DOCKER_SPEC" != "" ]; then
     else
         BRANCH="$TRAVIS_BRANCH"
     fi
+    if [ "$DOCKER_BRANCHES_ONLY" = "" ]; then
+        DOCKER_BRANCHES_ONLY=$BRANCH  # No constraints? Run always.
+    fi
     if echo "$DOCKER_BRANCHES_ONLY" | grep -q "$BRANCH"; then
         ./build/docker/$DOCKER_SPEC
     else

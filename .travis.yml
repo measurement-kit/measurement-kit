@@ -20,7 +20,6 @@ matrix:
 
     - sudo: required
       env: DOCKER_SPEC=coveralls pkg_make_flags="V=0 -j3"
-           DOCKER_BRANCHES_ONLY=$TRAVIS_BRANCH
       services:
         - docker
 
