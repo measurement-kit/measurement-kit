@@ -219,7 +219,9 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
                     REQUIRE(!err);
 
                     request_recv_response(transport,
-                                          [&called](Error, Var<Response>) {
+                                          [&called](Error e, Var<Response> r) {
+                                              REQUIRE(e == NoError());
+                                              REQUIRE(r->status_code == 200);
                                               ++called;
                                               break_loop();
                                           });
@@ -243,6 +245,28 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
 }
 
 #endif // ENABLE_INTEGRATION_TESTS
+
+TEST_CASE("http::request_recv_response() deals with immediate EOF") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        connect("xxx.antani", 0,
+                [=](Error err, Var<Transport> transport) {
+                    REQUIRE(!err);
+                    request_recv_response(transport,
+                                          [=](Error e, Var<Response> r) {
+                                              REQUIRE(e == EofError());
+                                              REQUIRE(!!r);
+                                              reactor->stop();
+                                          },
+                                          reactor);
+                    transport->emit_error(EofError());
+                },
+                {// With this connect() succeeds immediately and the
+                 // callback receives a dumb Emitter transport that you
+                 // can drive by calling its emit_FOO() methods
+                 {"net/dumb_transport", true}});
+    });
+}
 
 #define SOCKS_PORT_IS(port)                                                    \
     static void socks_port_is_##port(                                          \
