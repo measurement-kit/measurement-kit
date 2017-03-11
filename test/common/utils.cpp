@@ -320,6 +320,9 @@ TEST_CASE("mk::startswith() works as expected") {
     SECTION("For s longer than p") {
         REQUIRE(!!mk::startswith("antani", "ant"));
     }
+    SECTION("For p present in s but not at s's beginning") {
+        REQUIRE(!mk::startswith("antani", "nta"));
+    }
 }
 
 TEST_CASE("mk::endswith() works as expected") {
@@ -337,5 +340,9 @@ TEST_CASE("mk::endswith() works as expected") {
     }
     SECTION("For s longer than p") {
         REQUIRE(!!mk::endswith("antanix", "nix"));
+    }
+    // #TrueStory: this has been an embarassing bug
+    SECTION("For p present in s but not at s's end") {
+        REQUIRE(!mk::endswith("antanix", "tan"));
     }
 }
