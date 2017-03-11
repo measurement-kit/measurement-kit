@@ -122,12 +122,16 @@ void request_recv_response(Var<Transport> txp,
     Var<ResponseParserNg> parser(new ResponseParserNg);
     Var<Response> response(new Response);
     Var<bool> prevent_emit(new bool(false));
+    Var<bool> valid_response(new bool(false));
 
     // Note: any parser error at this point is an exception catched by the
     // connection code and routed to the error handler function below
     txp->on_data([=](Buffer data) { parser->feed(data); });
 
-    parser->on_response([=](Response r) { *response = r; });
+    parser->on_response([=](Response r) {
+        *response = r;
+        *valid_response = true;
+    });
 
     // TODO: here we should honour the `ignore_body` setting
     parser->on_body([=](std::string s) { response->body += s; });
@@ -147,7 +151,7 @@ void request_recv_response(Var<Transport> txp,
     });
     txp->on_error([=](Error err) {
         logger->debug("Received error %d on connection", err.code);
-        if (err == EofError()) {
+        if (err == EofError() && *valid_response == true) {
             // Calling parser->on_eof() could trigger parser->on_end() and
             // we don't want this function to call ->emit_error()
             *prevent_emit = true;
