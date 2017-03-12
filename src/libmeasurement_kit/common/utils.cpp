@@ -150,4 +150,20 @@ ErrorOr<std::string> slurp(std::string path) {
     return s;
 }
 
+bool startswith(std::string s, std::string p) {
+    return s.find(p) == 0;
+}
+
+/*-
+ *     0 1 2 3 4 5 6
+ * s: |f|o|o|b|a|r|
+ * p:       |b|a|r|
+ *           0 1 2 3
+ *
+ * s.size() - p.size() = 3
+ */
+bool endswith(std::string s, std::string p) {
+    return s.size() >= p.size() ? s.rfind(p) == (s.size() - p.size()) : false;
+}
+
 } // namespace mk
