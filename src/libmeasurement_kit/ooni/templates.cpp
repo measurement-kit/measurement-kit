@@ -103,7 +103,19 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
                     rr["failure"] = nullptr;
                 }
 
-                if (!!response) {
+                /*
+                 * Note: we should not assume that, if the response is set,
+                 * then also the request will be set. The response should
+                 * be allocated in all cases because that's what is returned
+                 * by the callback, while the request may not be allocated
+                 * when we fail before filling a response (i.e. when we
+                 * cannot connect). For sure, the HTTP code should be made
+                 * less unpredictable, but that's not a good excuse for not
+                 * performing sanity checks also at this level.
+                 *
+                 * See <measurement-kit/measurement-kit#1169>.
+                 */
+                if (!!response && !!response->request) {
                     /*
                      * Note: `probe_ip` comes from an external service, hence
                      * we MUST call `represent_string` _after_ `redact()`.
@@ -119,6 +131,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
                     rr["response"]["code"] = response->status_code;
 
                     auto request = response->request;
+                    // Note: we checked above that we can deref `request`
                     for (auto pair : request->headers) {
                         rr["request"]["headers"][pair.first] =
                             represent_string(redact(pair.second));

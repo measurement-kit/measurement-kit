@@ -181,11 +181,11 @@ http::request({
 
 # BUGS
 
-- It is not possible to search HTTP headers in a case insensitive fashion
+- The `http/ignore_body` setting is not implemented.
 
-- The `Response::response_line` field is always empty
-
-- The `http/ignore_body` setting is not implemented
+- The `Var<Response>` returned by the various callbacks MAY be pointing
+  to `nullptr` and, moreover, there MAY be cases where `Var<Response> response`
+  is pointing to a valid response but `response->request` is `nullptr`.
 
 # HISTORY
 
