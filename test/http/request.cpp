@@ -741,4 +741,20 @@ TEST_CASE("http::redirect() works as expected") {
                                "http://b.org/b")
                     ->str() == "http://b.org/b");
     }
+    SECTION("When location is a relative URL") {
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://a.org/f"), "g")
+                    ->str() == "http://a.org/f/g");
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("http://a.org/f/"), "g")
+                ->str() == "http://a.org/f/g");
+        /*
+         * Explicitly make sure that the old query is cleared.
+         */
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("https://a.org/f?x"), "g")
+                ->str() == "https://a.org/f/g");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("https://a.org/f?x"),
+                               "g?h")
+                    ->str() == "https://a.org/f/g?h");
+    }
 }

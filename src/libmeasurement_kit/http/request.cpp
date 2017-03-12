@@ -211,14 +211,33 @@ ErrorOr<Url> redirect(const Url &orig_url, const std::string &location) {
      * Note: RFC 1808 Sect. 2.2 is clear that "//"
      * MUST be treated differently than "/".
      */
-    if (location.substr(0, 2) == "//") {
+    if (mk::startswith(location, "//")) {
         ss << orig_url.schema << ":" << location;
-    } else if (location.substr(0, 1) == "/") {
+    } else if (mk::startswith(location, "/")) {
         Url new_url = orig_url;
         new_url.pathquery = location;
         ss << new_url.str();
-    } else {
+    } else if (mk::startswith(location, "http://") ||
+               mk::startswith(location, "https://")) {
         ss << location;
+    } else {
+        /*
+         * Assume it's a relative redirect. I seem to recall this should
+         * not happen, but it really looks like it happens.
+         */
+         Url new_url = orig_url;
+         if (!mk::endswith(new_url.path, "/")) {
+            new_url.path += "/";
+         }
+         /*
+          * Note: clearing the query because a new query may be included in
+          * location and keeping also the old query would break things.
+          */
+         new_url.path += location;
+         new_url.query = "";
+         // TODO: can we make `pathquery` a property?
+         new_url.pathquery = new_url.path;
+         ss << new_url.str();
     }
     return parse_url_noexcept(ss.str());
 }
