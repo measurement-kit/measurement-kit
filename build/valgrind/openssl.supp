@@ -2,7 +2,6 @@
    <probably-false-positive-warning-on-travis>
    Memcheck:Addr4
    fun:tls_check_name
-   fun:_ZZN2mk3net11connect_sslEP11buffereventP6ssl_stSsSt8functionIFvNS_5ErrorES2_EENS_3VarINS_7ReactorEEENS9_INS_6LoggerEEEENKUlS6_S2_E_clES6_S2_
    fun:_ZNSt17_Function_handlerIFvN2mk5ErrorEP11buffereventEZNS0_3net11connect_sslES3_P6ssl_stSsSt8functionIS4_ENS0_3VarINS0_7ReactorEEENSA_INS0_6LoggerEEEEUlS1_S3_E_E9_M_invokeERKSt9_Any_dataOS1_OS3_
    fun:mk_bufferevent_on_event
    fun:bufferevent_run_deferred_callbacks_locked

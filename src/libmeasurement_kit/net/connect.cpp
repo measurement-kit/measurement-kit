@@ -34,7 +34,20 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
         (*cb)(mk::net::TimeoutError(), bev);
     } else {
-        (*cb)(mk::net::map_errno(errno), bev);
+        mk::Error err;
+        /*
+         * If there's not network error, assume it's going to be a SSL error,
+         * which is reasonable because currently we only use this function
+         * as callback for either socket or SSL connect.
+         */
+        if (errno != 0) {
+            err = mk::net::map_errno(errno);
+        } else {
+            long ssl_err = bufferevent_get_openssl_error(bev);
+            std::string s = ERR_error_string(ssl_err, nullptr);
+            err = mk::net::SslError(s);
+        }
+        (*cb)(err, bev);
     }
     delete cb;
 }
@@ -199,19 +212,18 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
             [cb, logger, hostname](Error err, bufferevent *bev) {
                 int hostname_validate_err = 0;
 
-                logger->debug("connect ssl... callback");
+                logger->debug("connect ssl... callback (error: %d)", err.code);
                 ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
 
                 if (err) {
-                    logger->debug("error in connection.");
-                    if (err == mk::net::NetworkError()) {
-                        long ssl_err = bufferevent_get_openssl_error(bev);
-                        err = SslError(ERR_error_string(ssl_err, nullptr));
-                    }
+                    std::string s = err.explain();
+                    logger->debug("error in connection: %s", s.c_str());
                     bufferevent_free(bev);
                     cb(err, nullptr);
                     return;
                 }
+
+                logger->debug("SSL version: %s", SSL_get_version(ssl));
 
                 long verify_err = SSL_get_verify_result(ssl);
                 if (verify_err != X509_V_OK) {

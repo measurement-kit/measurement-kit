@@ -219,7 +219,9 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
                     REQUIRE(!err);
 
                     request_recv_response(transport,
-                                          [&called](Error, Var<Response>) {
+                                          [&called](Error e, Var<Response> r) {
+                                              REQUIRE(e == NoError());
+                                              REQUIRE(r->status_code == 200);
                                               ++called;
                                               break_loop();
                                           });
@@ -243,6 +245,28 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
 }
 
 #endif // ENABLE_INTEGRATION_TESTS
+
+TEST_CASE("http::request_recv_response() deals with immediate EOF") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        connect("xxx.antani", 0,
+                [=](Error err, Var<Transport> transport) {
+                    REQUIRE(!err);
+                    request_recv_response(transport,
+                                          [=](Error e, Var<Response> r) {
+                                              REQUIRE(e == EofError());
+                                              REQUIRE(!!r);
+                                              reactor->stop();
+                                          },
+                                          reactor);
+                    transport->emit_error(EofError());
+                },
+                {// With this connect() succeeds immediately and the
+                 // callback receives a dumb Emitter transport that you
+                 // can drive by calling its emit_FOO() methods
+                 {"net/dumb_transport", true}});
+    });
+}
 
 #define SOCKS_PORT_IS(port)                                                    \
     static void socks_port_is_##port(                                          \
@@ -586,7 +610,7 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
                 REQUIRE(response->status_code == 200);
                 REQUIRE(response->request->url.schema == "https");
                 REQUIRE(response->request->url.address == "www.hushmail.com");
-                REQUIRE(response->previous->status_code == 302);
+                REQUIRE(response->previous->status_code / 100 == 3);
                 REQUIRE(response->previous->request->url.schema == "http");
                 reactor->stop();
             },
@@ -672,4 +696,65 @@ TEST_CASE("http::request() fails if fails request_send()") {
                     break_loop();
                 });
     });
+}
+
+TEST_CASE("http::redirect() works as expected") {
+    SECTION("When location starts with //") {
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("http://www.x.org/f?x"),
+                           "//www.y.com/bar")
+                ->str() == "http://www.y.com/bar");
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("https://www.x.org/f?x"),
+                           "//www.y.com/bar")
+                ->str() == "https://www.y.com/bar");
+    }
+    SECTION("When location starts with /") {
+        REQUIRE(http::redirect(
+                    *http::parse_url_noexcept("http://www.x.org/f?x"), "/bar")
+                    ->str() == "http://www.x.org/bar");
+        REQUIRE(http::redirect(
+                    *http::parse_url_noexcept("https://www.x.org/f?x"), "/bar")
+                    ->str() == "https://www.x.org/bar");
+        REQUIRE(http::redirect(
+                    *http::parse_url_noexcept("http://www.x.org:1/f?x"), "/bar")
+                    ->str() == "http://www.x.org:1/bar");
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("https://www.x.org:1/f?x"),
+                           "/bar")
+                ->str() == "https://www.x.org:1/bar");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("https://1.1.1.1/f?x"),
+                               "/bar")
+                    ->str() == "https://1.1.1.1/bar");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://[::1]/f?x"),
+                               "/bar")
+                    ->str() == "http://[::1]/bar");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://[::1]:66/f?x"),
+                               "/bar")
+                    ->str() == "http://[::1]:66/bar");
+    }
+    SECTION("When location is an absolute URL") {
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://a.org/f?x"),
+                               "https://b.org/b")
+                    ->str() == "https://b.org/b");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("https://a.org/f?x"),
+                               "http://b.org/b")
+                    ->str() == "http://b.org/b");
+    }
+    SECTION("When location is a relative URL") {
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://a.org/f"), "g")
+                    ->str() == "http://a.org/f/g");
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("http://a.org/f/"), "g")
+                ->str() == "http://a.org/f/g");
+        /*
+         * Explicitly make sure that the old query is cleared.
+         */
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("https://a.org/f?x"), "g")
+                ->str() == "https://a.org/f/g");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("https://a.org/f?x"),
+                               "g?h")
+                    ->str() == "https://a.org/f/g?h");
+    }
 }

@@ -122,12 +122,16 @@ void request_recv_response(Var<Transport> txp,
     Var<ResponseParserNg> parser(new ResponseParserNg);
     Var<Response> response(new Response);
     Var<bool> prevent_emit(new bool(false));
+    Var<bool> valid_response(new bool(false));
 
     // Note: any parser error at this point is an exception catched by the
     // connection code and routed to the error handler function below
     txp->on_data([=](Buffer data) { parser->feed(data); });
 
-    parser->on_response([=](Response r) { *response = r; });
+    parser->on_response([=](Response r) {
+        *response = r;
+        *valid_response = true;
+    });
 
     // TODO: here we should honour the `ignore_body` setting
     parser->on_body([=](std::string s) { response->body += s; });
@@ -147,7 +151,7 @@ void request_recv_response(Var<Transport> txp,
     });
     txp->on_error([=](Error err) {
         logger->debug("Received error %d on connection", err.code);
-        if (err == EofError()) {
+        if (err == EofError() && *valid_response == true) {
             // Calling parser->on_eof() could trigger parser->on_end() and
             // we don't want this function to call ->emit_error()
             *prevent_emit = true;
@@ -201,6 +205,43 @@ void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
     });
 }
 
+ErrorOr<Url> redirect(const Url &orig_url, const std::string &location) {
+    std::stringstream ss;
+    /*
+     * Note: RFC 1808 Sect. 2.2 is clear that "//"
+     * MUST be treated differently than "/".
+     */
+    if (mk::startswith(location, "//")) {
+        ss << orig_url.schema << ":" << location;
+    } else if (mk::startswith(location, "/")) {
+        Url new_url = orig_url;
+        new_url.pathquery = location;
+        ss << new_url.str();
+    } else if (mk::startswith(location, "http://") ||
+               mk::startswith(location, "https://")) {
+        ss << location;
+    } else {
+        /*
+         * Assume it's a relative redirect. I seem to recall this should
+         * not happen, but it really looks like it happens.
+         */
+         Url new_url = orig_url;
+         if (!mk::endswith(new_url.path, "/")) {
+            new_url.path += "/";
+         }
+         /*
+          * Note: clearing the query because a new query may be included in
+          * location and keeping also the old query would break things.
+          */
+         new_url.path += location;
+         new_url.query = "";
+         // TODO: can we make `pathquery` a property?
+         new_url.pathquery = new_url.path;
+         ss << new_url.str();
+    }
+    return parse_url_noexcept(ss.str());
+}
+
 void request(Settings settings, Headers headers, std::string body,
              Callback<Error, Var<Response>> callback, Var<Reactor> reactor,
              Var<Logger> logger, Var<Response> previous, int num_redirs) {
@@ -236,22 +277,10 @@ void request(Settings settings, Headers headers, std::string body,
                                 callback(EmptyLocationError(), response);
                                 return;
                             }
-                            ErrorOr<Url> url;
-                            /*
-                             * Note: RFC 1808 Sect. 2.2 is clear that "//"
-                             * MUST be treated differently than "/".
-                             */
-                            if (loc.substr(0, 2) == "//") {
-                                url = parse_url_noexcept(
-                                    response->request->url.schema
-                                        + ":" + loc
-                                );
-                            } else if (loc.substr(0, 1) == "/") {
-                                url = response->request->url;
-                                url->pathquery = loc;
-                            } else {
-                                url = parse_url_noexcept(loc);
-                            }
+                            ErrorOr<Url> url = redirect(
+                                response->request->url,
+                                loc
+                            );
                             if (!url) {
                                 callback(InvalidRedirectUrlError(
                                          url.as_error()), response);

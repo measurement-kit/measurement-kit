@@ -97,13 +97,15 @@ struct Response {
     Var<Request> request;
     Var<Response> previous;
     std::string response_line;
-    unsigned short http_major;
-    unsigned short http_minor;
-    unsigned int status_code;
+    unsigned short http_major = 0; // Initialize to know value
+    unsigned short http_minor = 0; // Initialize to know value
+    unsigned int status_code = 0;  // Initialize to know value
     std::string reason;
     Headers headers;
     std::string body;
 };
+
+ErrorOr<Url> redirect(const Url &orig_url, const std::string &location);
 
 void request_connect(Settings, Callback<Error, Var<net::Transport>>,
                      Var<Reactor> = Reactor::global(),

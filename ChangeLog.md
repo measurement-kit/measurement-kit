@@ -1,3 +1,15 @@
+# MeasurementKit 0.4.2 [2017-03-12]
+
+- Backport #1162: fix `unknown_failure 3` bug
+- Backport #1163: repair regress tests after travis failure
+- Backport #1164: repair broken test/ooni/utils.cpp
+- Backport #1168: http: refactor redirect logic
+- Backport #1170: ooni/template.cpp: don't assume `!!response->request`
+- Backport #1172 and #1173: common: add {start,end}swith
+- Backport #1174: http::Response: init numbers to known value
+- Backport #1175: http: treat EOF-instead-of-response as error
+- Backport #1176: Fix `unknown_error_3009` bug
+
 # MeasurementKit 0.4.1 [2017-03-02]
 
 - Backport #1149: ooni/templates http: include all request/responses
