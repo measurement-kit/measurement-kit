@@ -105,6 +105,8 @@ struct Response {
     std::string body;
 };
 
+ErrorOr<Url> redirect(const Url &orig_url, const std::string &location);
+
 void request_connect(Settings, Callback<Error, Var<net::Transport>>,
                      Var<Reactor> = Reactor::global(),
                      Var<Logger> = Logger::global());

@@ -673,3 +673,48 @@ TEST_CASE("http::request() fails if fails request_send()") {
                 });
     });
 }
+
+TEST_CASE("http::redirect() works as expected") {
+    SECTION("When location starts with //") {
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("http://www.x.org/f?x"),
+                           "//www.y.com/bar")
+                ->str() == "http://www.y.com/bar");
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("https://www.x.org/f?x"),
+                           "//www.y.com/bar")
+                ->str() == "https://www.y.com/bar");
+    }
+    SECTION("When location starts with /") {
+        REQUIRE(http::redirect(
+                    *http::parse_url_noexcept("http://www.x.org/f?x"), "/bar")
+                    ->str() == "http://www.x.org/bar");
+        REQUIRE(http::redirect(
+                    *http::parse_url_noexcept("https://www.x.org/f?x"), "/bar")
+                    ->str() == "https://www.x.org/bar");
+        REQUIRE(http::redirect(
+                    *http::parse_url_noexcept("http://www.x.org:1/f?x"), "/bar")
+                    ->str() == "http://www.x.org:1/bar");
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("https://www.x.org:1/f?x"),
+                           "/bar")
+                ->str() == "https://www.x.org:1/bar");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("https://1.1.1.1/f?x"),
+                               "/bar")
+                    ->str() == "https://1.1.1.1/bar");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://[::1]/f?x"),
+                               "/bar")
+                    ->str() == "http://[::1]/bar");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://[::1]:66/f?x"),
+                               "/bar")
+                    ->str() == "http://[::1]:66/bar");
+    }
+    SECTION("When location is an absolute URL") {
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://a.org/f?x"),
+                               "https://b.org/b")
+                    ->str() == "https://b.org/b");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("https://a.org/f?x"),
+                               "http://b.org/b")
+                    ->str() == "http://b.org/b");
+    }
+}
