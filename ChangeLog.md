@@ -1,4 +1,4 @@
-# MeasurementKit 0.4.2 [2017-03-09]
+# MeasurementKit 0.4.2 [2017-03-12]
 
 - Backport #1162: fix `unknown_failure 3` bug
 - Backport #1163: repair regress tests after travis failure
