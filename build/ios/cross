@@ -32,7 +32,7 @@ echo "Cross compiling for $PLATFORM and $ARCH"
 
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
 SOURCEDIR="$ROOTDIR/../../"
-DESTDIR="$ROOTDIR/tmp/${PLATFORM}/${ARCH}/"
+DESTDIR="$ROOTDIR/tmp"
 
 export CC="$(xcrun -find -sdk ${PLATFORM} cc)"
 export CXX="$(xcrun -find -sdk ${PLATFORM} g++)"
@@ -44,6 +44,7 @@ export LDFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --s
 export pkg_configure_flags="$EXTRA_CONFIG"
 export pkg_prefix="$DESTDIR"
 export pkg_cross="ios"
+export pkg_cross_arch="${PLATFORM}/${ARCH}"
 
 if [ $# -gt 0 ]; then
     $@
