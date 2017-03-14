@@ -1,3 +1,7 @@
+# MeasurementKit 0.4.3 [2017-03-14]
+
+- Backport 5d88cf9ff (#1177) to stable branch
+
 # MeasurementKit 0.4.2 [2017-03-12]
 
 - Backport #1162: fix `unknown_failure 3` bug
