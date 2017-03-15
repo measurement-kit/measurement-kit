@@ -23,6 +23,8 @@ Currently it implements the following high-level tests:
 
 - [OONI](https://ooni.torproject.org/)'s [TCP Connect](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-008-tcpconnect.md) test
 
+- [OONI](https://ooni.torproject.org/)'s [Meek Fronted Requests](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-014-meek-fronted-requests.md) test
+
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
 
