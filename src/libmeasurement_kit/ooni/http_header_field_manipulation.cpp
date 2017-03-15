@@ -52,8 +52,17 @@ void http_header_field_manipulation(std::string input, Settings options,
                                 if (!response) {
                                     logger->warn("null response");
                                 } else {
-                                    compare_headers_response(headers, response,
-                                                             entry, logger);
+                                    try {
+                                        compare_headers_response(headers,
+                                                                 response,
+                                                                 entry,
+                                                                 logger);
+                                    } catch (const std::exception &exc) {
+                                        (*entry)["failure"] = exc.what();
+                                        logger->warn("exception in "
+                                                     "compare_headers_response(): %s",
+                                                    exc.what());
+                                    }
                                 }
 
                                 callback(entry);
