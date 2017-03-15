@@ -24,6 +24,11 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     }
     argc -= optind;
     argv += optind;
+    if (argc != 0) {
+        fprintf(stderr, "%s\n", USAGE);
+        exit(1);
+        /* NOTREACHED */
+    }
 
     common_init(initializers, test.set_options("backend", backend)).run();
     return 0;
