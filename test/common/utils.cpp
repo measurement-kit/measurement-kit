@@ -346,3 +346,27 @@ TEST_CASE("mk::endswith() works as expected") {
         REQUIRE(!mk::endswith("antanix", "tan"));
     }
 }
+
+TEST_CASE("random_choice isn't obviously wrong") {
+    std::vector<std::string> choices = {"a", "b", "c", "d"};
+    auto choice = mk::random_choice(choices);
+    REQUIRE(std::find(choices.begin(), choices.end(), choice) != choices.end());
+}
+
+TEST_CASE("randomly_capitalize isn't obviously wrong") {
+    auto lower_string = "abc";
+    auto upper_string = "ABC";
+
+    auto rc_lower_string = mk::randomly_capitalize(lower_string);
+    auto rc_upper_string = mk::randomly_capitalize(upper_string);
+
+    for(auto &c : rc_lower_string) {
+        c = tolower(c);
+    }
+    for(auto &c : rc_upper_string) {
+        c = toupper(c);
+    }
+
+    REQUIRE(lower_string == rc_lower_string);
+    REQUIRE(upper_string == rc_upper_string);
+}
