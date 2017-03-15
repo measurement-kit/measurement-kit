@@ -52,7 +52,7 @@ void meek_fronted_requests(std::string input, Settings options,
         return;
     }
 
-    (*entry)["input"] = {outer_url->address, inner_url->address};
+    (*entry)["input_"] = {outer_url->address, inner_url->address};
 
     options["http/url"] = "https://" + outer_url->address;
     http::Headers headers = { {"Host", inner_url->address} };
