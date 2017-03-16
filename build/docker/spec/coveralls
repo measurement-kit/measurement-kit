@@ -22,7 +22,8 @@ debian_deps="$debian_deps wget"
 pip_deps="$pip_deps cpp-coveralls"
 
 subr_finalize() {
-    $HOME/.local/bin/coveralls                                             \
+    if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
+        $HOME/.local/bin/coveralls                                         \
                                --gcov-options '\-lp'                       \
                                --build-root .                              \
                                --exclude include/measurement_kit/ext       \
@@ -31,5 +32,6 @@ subr_finalize() {
                                --exclude src/measurement_kit               \
                                --exclude example                           \
                                --exclude third_party                       \
-      > /dev/null;
+            > /dev/null;
+    fi
 }

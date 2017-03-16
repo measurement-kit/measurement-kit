@@ -89,6 +89,7 @@
 /test/net/utils
 /test/nettests/dns_injection
 /test/nettests/http_invalid_request_line
+/test/nettests/meek_fronted_requests
 /test/nettests/multi_ndt
 /test/nettests/ndt
 /test/nettests/runnable
