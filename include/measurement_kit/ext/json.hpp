@@ -1,7 +1,7 @@
 /*
     __ _____ _____ _____
  __|  |   __|     |   | |  JSON for Modern C++
-|  |  |__   |  |  | | | |  version 2.0.10
+|  |  |__   |  |  | | | |  version 2.1.1
 |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 
 Licensed under the MIT License <http://opensource.org/licenses/MIT>.
@@ -34,7 +34,7 @@ SOFTWARE.
 #include <cassert> // assert
 #include <cctype> // isdigit
 #include <ciso646> // and, not, or
-#include <cmath> // isfinite, ldexp, signbit
+#include <cmath> // isfinite, labs, ldexp, signbit
 #include <cstddef> // nullptr_t, ptrdiff_t, size_t
 #include <cstdint> // int64_t, uint64_t
 #include <cstdlib> // abort, strtod, strtof, strtold, strtoul, strtoll, strtoull
@@ -228,11 +228,7 @@ template<class B1> struct conjunction<B1> : B1 {};
 template<class B1, class... Bn>
 struct conjunction<B1, Bn...> : std::conditional<bool(B1::value), conjunction<Bn...>, B1>::type {};
 
-  public:
-    // forward declarations
-    template<typename U> class iter_impl;
-    template<typename Base> class json_reverse_iterator;
-    class json_pointer;
+template<class B> struct negation : std::integral_constant < bool, !B::value > {};
 
 // dispatch utility (taken from ranges-v3)
 template<unsigned N> struct priority_tag : priority_tag < N - 1 > {};
@@ -289,14 +285,17 @@ struct external_constructor<value_t::number_float>
     }
 };
 
-    /// an iterator for a basic_json container
-    using iterator = iter_impl<basic_json>;
-    /// a const iterator for a basic_json container
-    using const_iterator = iter_impl<const basic_json>;
-    /// a reverse iterator for a basic_json container
-    using reverse_iterator = json_reverse_iterator<typename basic_json::iterator>;
-    /// a const reverse iterator for a basic_json container
-    using const_reverse_iterator = json_reverse_iterator<typename basic_json::const_iterator>;
+template<>
+struct external_constructor<value_t::number_unsigned>
+{
+    template<typename BasicJsonType>
+    static void construct(BasicJsonType& j, typename BasicJsonType::number_unsigned_t val) noexcept
+    {
+        j.m_type = value_t::number_unsigned;
+        j.m_value = val;
+        j.assert_invariant();
+    }
+};
 
 template<>
 struct external_constructor<value_t::number_integer>
@@ -1748,7 +1747,7 @@ class basic_json
                 {
                     if (t == value_t::null)
                     {
-                        throw std::domain_error("961c151d2e87f2686a955a9be24d316f1362bf21 2.0.10"); // LCOV_EXCL_LINE
+                        JSON_THROW(std::domain_error("961c151d2e87f2686a955a9be24d316f1362bf21 2.1.1")); // LCOV_EXCL_LINE
                     }
                     break;
                 }
@@ -4759,9 +4758,9 @@ class basic_json
 
     Returns a const iterator to one past the last element.
 
-    @return In case of a structured type (array or object), a reference to the
-    first element is returned. In case of number, string, or boolean values, a
-    reference to the value is returned.
+    @image html range-begin-end.svg "Illustration from cppreference.com"
+
+    @return const iterator one past the last element
 
     @complexity Constant.
 
@@ -4828,9 +4827,7 @@ class basic_json
     Returns an iterator to the reverse-end; that is, one before the first
     element.
 
-    @return In case of a structured type (array or object), a reference to the
-    last element is returned. In case of number, string, or boolean values, a
-    reference to the value is returned.
+    @image html range-rbegin-rend.svg "Illustration from cppreference.com"
 
     @complexity Constant.
 
@@ -5166,14 +5163,17 @@ class basic_json
     /*!
     @brief clears the contents
 
-    @note This method always returns @ref end() when executed on a JSON type
-          that is not an object.
+    Clears the content of a JSON value and resets it to the default value as
+    if @ref basic_json(value_t) would have been called:
 
-    @param[in] key key value of the element to search for
-
-    @return Iterator to an element with key equivalent to @a key. If no such
-    element is found or the JSON value is not an object, past-the-end (see
-    @ref end()) iterator is returned.
+    Value type  | initial value
+    ----------- | -------------
+    null        | `null`
+    boolean     | `false`
+    string      | `""`
+    number      | `0`
+    object      | `{}`
+    array       | `[]`
 
     @complexity Linear in the size of the JSON value.
 
@@ -5242,10 +5242,7 @@ class basic_json
     function is called on a JSON null value, an empty array is created before
     appending @a val.
 
-    @note This method always returns `0` when executed on a JSON type that is
-          not an object.
-
-    @param[in] key key value of the element to count
+    @param[in] val the value to add to the JSON array
 
     @throw std::domain_error when called on a type other than JSON array or
     null; example: `"cannot use push_back() with number"`
@@ -5793,7 +5790,10 @@ class basic_json
 
     @param[in,out] other object to exchange the contents with
 
-    @complexity Linear in the size of the JSON value.
+    @throw std::domain_error when JSON value is not an object; example:
+    `"cannot use swap() with string"`
+
+    @complexity Constant.
 
     @liveexample{The example below shows how objects can be swapped with
     `swap()`.,swap__object_t}
@@ -7772,17 +7772,18 @@ class basic_json
                 return result;
             }
 
-    @since version 1.0.0 (originally for @ref string_t)
-    */
-    template<typename CharT, typename std::enable_if<
-                 std::is_pointer<CharT>::value and
-                 std::is_integral<typename std::remove_pointer<CharT>::type>::value and
-                 sizeof(typename std::remove_pointer<CharT>::type) == 1, int>::type = 0>
-    static basic_json parse(const CharT s,
-                            const parser_callback_t cb = nullptr)
-    {
-        return parser(reinterpret_cast<const char*>(s), cb).parse();
-    }
+            case 0xb8: // map (one-byte uint8_t for n follows)
+            {
+                basic_json result = value_t::object;
+                const auto len = static_cast<size_t>(get_from_vector<uint8_t>(v, current_idx));
+                idx += 1; // skip 1 size byte
+                for (size_t i = 0; i < len; ++i)
+                {
+                    std::string key = from_cbor_internal(v, idx);
+                    result[key] = from_cbor_internal(v, idx);
+                }
+                return result;
+            }
 
             case 0xb9: // map (two-byte uint16_t for n follow)
             {
@@ -7846,8 +7847,10 @@ class basic_json
                 return true;
             }
 
-    @sa @ref parse(const CharT, const parser_callback_t) for a version
-    that reads from a string
+            case 0xf6: // null
+            {
+                return value_t::null;
+            }
 
             case 0xf9: // Half-Precision Float (two-byte IEEE 754)
             {
@@ -8040,1499 +8043,6 @@ class basic_json
 
     /// @}
 
-    //////////////////////////////////////////
-    // binary serialization/deserialization //
-    //////////////////////////////////////////
-
-    /// @name binary serialization/deserialization support
-    /// @{
-
-  private:
-    template<typename T>
-    static void add_to_vector(std::vector<uint8_t>& vec, size_t bytes, const T number)
-    {
-        assert(bytes == 1 or bytes == 2 or bytes == 4 or bytes == 8);
-
-        switch (bytes)
-        {
-            case 8:
-            {
-                vec.push_back(static_cast<uint8_t>((number >> 070) & 0xff));
-                vec.push_back(static_cast<uint8_t>((number >> 060) & 0xff));
-                vec.push_back(static_cast<uint8_t>((number >> 050) & 0xff));
-                vec.push_back(static_cast<uint8_t>((number >> 040) & 0xff));
-                // intentional fall-through
-            }
-
-            case 4:
-            {
-                vec.push_back(static_cast<uint8_t>((number >> 030) & 0xff));
-                vec.push_back(static_cast<uint8_t>((number >> 020) & 0xff));
-                // intentional fall-through
-            }
-
-            case 2:
-            {
-                vec.push_back(static_cast<uint8_t>((number >> 010) & 0xff));
-                // intentional fall-through
-            }
-
-            case 1:
-            {
-                vec.push_back(static_cast<uint8_t>(number & 0xff));
-                break;
-            }
-        }
-    }
-
-    /*!
-    @brief take sufficient bytes from a vector to fill an integer variable
-
-    In the context of binary serialization formats, we need to read several
-    bytes from a byte vector and combine them to multi-byte integral data
-    types.
-
-    @param[in] vec  byte vector to read from
-    @param[in] current_index  the position in the vector after which to read
-
-    @return the next sizeof(T) bytes from @a vec, in reverse order as T
-
-    @tparam T the integral return type
-
-    @throw std::out_of_range if there are less than sizeof(T)+1 bytes in the
-           vector @a vec to read
-
-    In the for loop, the bytes from the vector are copied in reverse order into
-    the return value. In the figures below, let sizeof(T)=4 and `i` be the loop
-    variable.
-
-    Precondition:
-
-    vec:   |   |   | a | b | c | d |      T: |   |   |   |   |
-                 ^               ^             ^                ^
-           current_index         i            ptr        sizeof(T)
-
-    Postcondition:
-
-    vec:   |   |   | a | b | c | d |      T: | d | c | b | a |
-                 ^   ^                                     ^
-                 |   i                                    ptr
-           current_index
-
-    @sa Code adapted from <http://stackoverflow.com/a/41031865/266378>.
-    */
-    template<typename T>
-    static T get_from_vector(const std::vector<uint8_t>& vec, const size_t current_index)
-    {
-        if (current_index + sizeof(T) + 1 > vec.size())
-        {
-            throw std::out_of_range("cannot read " + std::to_string(sizeof(T)) + " bytes from vector");
-        }
-
-        T result;
-        uint8_t* ptr = reinterpret_cast<uint8_t*>(&result);
-        for (size_t i = 0; i < sizeof(T); ++i)
-        {
-            *ptr++ = vec[current_index + sizeof(T) - i];
-        }
-        return result;
-    }
-
-  private:
-    /*!
-    @brief create a MessagePack serialization of a given JSON value
-
-    This is a straightforward implementation of the MessagePack specification.
-
-    @param[in] j  JSON value to serialize
-    @param[in,out] v  byte vector to write the serialization to
-
-    @sa https://github.com/msgpack/msgpack/blob/master/spec.md
-    */
-    static void to_msgpack_internal(const basic_json& j, std::vector<uint8_t>& v)
-    {
-        switch (j.type())
-        {
-            case value_t::null:
-            {
-                // nil
-                v.push_back(0xc0);
-                break;
-            }
-
-            case value_t::boolean:
-            {
-                // true and false
-                v.push_back(j.m_value.boolean ? 0xc3 : 0xc2);
-                break;
-            }
-
-            case value_t::number_integer:
-            {
-                if (j.m_value.number_integer >= 0)
-                {
-                    // MessagePack does not differentiate between positive
-                    // signed integers and unsigned integers. Therefore, we used
-                    // the code from the value_t::number_unsigned case here.
-                    if (j.m_value.number_unsigned < 128)
-                    {
-                        // positive fixnum
-                        add_to_vector(v, 1, j.m_value.number_unsigned);
-                    }
-                    else if (j.m_value.number_unsigned <= UINT8_MAX)
-                    {
-                        // uint 8
-                        v.push_back(0xcc);
-                        add_to_vector(v, 1, j.m_value.number_unsigned);
-                    }
-                    else if (j.m_value.number_unsigned <= UINT16_MAX)
-                    {
-                        // uint 16
-                        v.push_back(0xcd);
-                        add_to_vector(v, 2, j.m_value.number_unsigned);
-                    }
-                    else if (j.m_value.number_unsigned <= UINT32_MAX)
-                    {
-                        // uint 32
-                        v.push_back(0xce);
-                        add_to_vector(v, 4, j.m_value.number_unsigned);
-                    }
-                    else if (j.m_value.number_unsigned <= UINT64_MAX)
-                    {
-                        // uint 64
-                        v.push_back(0xcf);
-                        add_to_vector(v, 8, j.m_value.number_unsigned);
-                    }
-                }
-                else
-                {
-                    if (j.m_value.number_integer >= -32)
-                    {
-                        // negative fixnum
-                        add_to_vector(v, 1, j.m_value.number_integer);
-                    }
-                    else if (j.m_value.number_integer >= INT8_MIN and j.m_value.number_integer <= INT8_MAX)
-                    {
-                        // int 8
-                        v.push_back(0xd0);
-                        add_to_vector(v, 1, j.m_value.number_integer);
-                    }
-                    else if (j.m_value.number_integer >= INT16_MIN and j.m_value.number_integer <= INT16_MAX)
-                    {
-                        // int 16
-                        v.push_back(0xd1);
-                        add_to_vector(v, 2, j.m_value.number_integer);
-                    }
-                    else if (j.m_value.number_integer >= INT32_MIN and j.m_value.number_integer <= INT32_MAX)
-                    {
-                        // int 32
-                        v.push_back(0xd2);
-                        add_to_vector(v, 4, j.m_value.number_integer);
-                    }
-                    else if (j.m_value.number_integer >= INT64_MIN and j.m_value.number_integer <= INT64_MAX)
-                    {
-                        // int 64
-                        v.push_back(0xd3);
-                        add_to_vector(v, 8, j.m_value.number_integer);
-                    }
-                }
-                break;
-            }
-
-            case value_t::number_unsigned:
-            {
-                if (j.m_value.number_unsigned < 128)
-                {
-                    // positive fixnum
-                    add_to_vector(v, 1, j.m_value.number_unsigned);
-                }
-                else if (j.m_value.number_unsigned <= UINT8_MAX)
-                {
-                    // uint 8
-                    v.push_back(0xcc);
-                    add_to_vector(v, 1, j.m_value.number_unsigned);
-                }
-                else if (j.m_value.number_unsigned <= UINT16_MAX)
-                {
-                    // uint 16
-                    v.push_back(0xcd);
-                    add_to_vector(v, 2, j.m_value.number_unsigned);
-                }
-                else if (j.m_value.number_unsigned <= UINT32_MAX)
-                {
-                    // uint 32
-                    v.push_back(0xce);
-                    add_to_vector(v, 4, j.m_value.number_unsigned);
-                }
-                else if (j.m_value.number_unsigned <= UINT64_MAX)
-                {
-                    // uint 64
-                    v.push_back(0xcf);
-                    add_to_vector(v, 8, j.m_value.number_unsigned);
-                }
-                break;
-            }
-
-            case value_t::number_float:
-            {
-                // float 64
-                v.push_back(0xcb);
-                const uint8_t* helper = reinterpret_cast<const uint8_t*>(&(j.m_value.number_float));
-                for (size_t i = 0; i < 8; ++i)
-                {
-                    v.push_back(helper[7 - i]);
-                }
-                break;
-            }
-
-            case value_t::string:
-            {
-                const auto N = j.m_value.string->size();
-                if (N <= 31)
-                {
-                    // fixstr
-                    v.push_back(static_cast<uint8_t>(0xa0 | N));
-                }
-                else if (N <= 255)
-                {
-                    // str 8
-                    v.push_back(0xd9);
-                    add_to_vector(v, 1, N);
-                }
-                else if (N <= 65535)
-                {
-                    // str 16
-                    v.push_back(0xda);
-                    add_to_vector(v, 2, N);
-                }
-                else if (N <= 4294967295)
-                {
-                    // str 32
-                    v.push_back(0xdb);
-                    add_to_vector(v, 4, N);
-                }
-
-                // append string
-                std::copy(j.m_value.string->begin(), j.m_value.string->end(),
-                          std::back_inserter(v));
-                break;
-            }
-
-            case value_t::array:
-            {
-                const auto N = j.m_value.array->size();
-                if (N <= 15)
-                {
-                    // fixarray
-                    v.push_back(static_cast<uint8_t>(0x90 | N));
-                }
-                else if (N <= 0xffff)
-                {
-                    // array 16
-                    v.push_back(0xdc);
-                    add_to_vector(v, 2, N);
-                }
-                else if (N <= 0xffffffff)
-                {
-                    // array 32
-                    v.push_back(0xdd);
-                    add_to_vector(v, 4, N);
-                }
-
-                // append each element
-                for (const auto& el : *j.m_value.array)
-                {
-                    to_msgpack_internal(el, v);
-                }
-                break;
-            }
-
-            case value_t::object:
-            {
-                const auto N = j.m_value.object->size();
-                if (N <= 15)
-                {
-                    // fixmap
-                    v.push_back(static_cast<uint8_t>(0x80 | (N & 0xf)));
-                }
-                else if (N <= 65535)
-                {
-                    // map 16
-                    v.push_back(0xde);
-                    add_to_vector(v, 2, N);
-                }
-                else if (N <= 4294967295)
-                {
-                    // map 32
-                    v.push_back(0xdf);
-                    add_to_vector(v, 4, N);
-                }
-
-                // append each element
-                for (const auto& el : *j.m_value.object)
-                {
-                    to_msgpack_internal(el.first, v);
-                    to_msgpack_internal(el.second, v);
-                }
-                break;
-            }
-
-            default:
-            {
-                break;
-            }
-        }
-    }
-
-    /*!
-    @brief create a CBOR serialization of a given JSON value
-
-    This is a straightforward implementation of the CBOR specification.
-
-    @param[in] j  JSON value to serialize
-    @param[in,out] v  byte vector to write the serialization to
-
-    @sa https://tools.ietf.org/html/rfc7049
-    */
-    static void to_cbor_internal(const basic_json& j, std::vector<uint8_t>& v)
-    {
-        switch (j.type())
-        {
-            case value_t::null:
-            {
-                v.push_back(0xf6);
-                break;
-            }
-
-            case value_t::boolean:
-            {
-                v.push_back(j.m_value.boolean ? 0xf5 : 0xf4);
-                break;
-            }
-
-            case value_t::number_integer:
-            {
-                if (j.m_value.number_integer >= 0)
-                {
-                    // CBOR does not differentiate between positive signed
-                    // integers and unsigned integers. Therefore, we used the
-                    // code from the value_t::number_unsigned case here.
-                    if (j.m_value.number_integer <= 0x17)
-                    {
-                        add_to_vector(v, 1, j.m_value.number_integer);
-                    }
-                    else if (j.m_value.number_integer <= UINT8_MAX)
-                    {
-                        v.push_back(0x18);
-                        // one-byte uint8_t
-                        add_to_vector(v, 1, j.m_value.number_integer);
-                    }
-                    else if (j.m_value.number_integer <= UINT16_MAX)
-                    {
-                        v.push_back(0x19);
-                        // two-byte uint16_t
-                        add_to_vector(v, 2, j.m_value.number_integer);
-                    }
-                    else if (j.m_value.number_integer <= UINT32_MAX)
-                    {
-                        v.push_back(0x1a);
-                        // four-byte uint32_t
-                        add_to_vector(v, 4, j.m_value.number_integer);
-                    }
-                    else
-                    {
-                        v.push_back(0x1b);
-                        // eight-byte uint64_t
-                        add_to_vector(v, 8, j.m_value.number_integer);
-                    }
-                }
-                else
-                {
-                    // The conversions below encode the sign in the first byte,
-                    // and the value is converted to a positive number.
-                    const auto positive_number = -1 - j.m_value.number_integer;
-                    if (j.m_value.number_integer >= -24)
-                    {
-                        v.push_back(static_cast<uint8_t>(0x20 + positive_number));
-                    }
-                    else if (positive_number <= UINT8_MAX)
-                    {
-                        // int 8
-                        v.push_back(0x38);
-                        add_to_vector(v, 1, positive_number);
-                    }
-                    else if (positive_number <= UINT16_MAX)
-                    {
-                        // int 16
-                        v.push_back(0x39);
-                        add_to_vector(v, 2, positive_number);
-                    }
-                    else if (positive_number <= UINT32_MAX)
-                    {
-                        // int 32
-                        v.push_back(0x3a);
-                        add_to_vector(v, 4, positive_number);
-                    }
-                    else
-                    {
-                        // int 64
-                        v.push_back(0x3b);
-                        add_to_vector(v, 8, positive_number);
-                    }
-                }
-                break;
-            }
-
-            case value_t::number_unsigned:
-            {
-                if (j.m_value.number_unsigned <= 0x17)
-                {
-                    v.push_back(static_cast<uint8_t>(j.m_value.number_unsigned));
-                }
-                else if (j.m_value.number_unsigned <= 0xff)
-                {
-                    v.push_back(0x18);
-                    // one-byte uint8_t
-                    add_to_vector(v, 1, j.m_value.number_unsigned);
-                }
-                else if (j.m_value.number_unsigned <= 0xffff)
-                {
-                    v.push_back(0x19);
-                    // two-byte uint16_t
-                    add_to_vector(v, 2, j.m_value.number_unsigned);
-                }
-                else if (j.m_value.number_unsigned <= 0xffffffff)
-                {
-                    v.push_back(0x1a);
-                    // four-byte uint32_t
-                    add_to_vector(v, 4, j.m_value.number_unsigned);
-                }
-                else if (j.m_value.number_unsigned <= 0xffffffffffffffff)
-                {
-                    v.push_back(0x1b);
-                    // eight-byte uint64_t
-                    add_to_vector(v, 8, j.m_value.number_unsigned);
-                }
-                break;
-            }
-
-            case value_t::number_float:
-            {
-                // Double-Precision Float
-                v.push_back(0xfb);
-                const uint8_t* helper = reinterpret_cast<const uint8_t*>(&(j.m_value.number_float));
-                for (size_t i = 0; i < 8; ++i)
-                {
-                    v.push_back(helper[7 - i]);
-                }
-                break;
-            }
-
-            case value_t::string:
-            {
-                const auto N = j.m_value.string->size();
-                if (N <= 0x17)
-                {
-                    v.push_back(0x60 + N);  // 1 byte for string + size
-                }
-                else if (N <= 0xff)
-                {
-                    v.push_back(0x78);  // one-byte uint8_t for N
-                    add_to_vector(v, 1, N);
-                }
-                else if (N <= 0xffff)
-                {
-                    v.push_back(0x79);  // two-byte uint16_t for N
-                    add_to_vector(v, 2, N);
-                }
-                else if (N <= 0xffffffff)
-                {
-                    v.push_back(0x7a); // four-byte uint32_t for N
-                    add_to_vector(v, 4, N);
-                }
-                // LCOV_EXCL_START
-                else if (N <= 0xffffffffffffffff)
-                {
-                    v.push_back(0x7b);  // eight-byte uint64_t for N
-                    add_to_vector(v, 8, N);
-                }
-                // LCOV_EXCL_STOP
-
-                // append string
-                std::copy(j.m_value.string->begin(), j.m_value.string->end(),
-                          std::back_inserter(v));
-                break;
-            }
-
-            case value_t::array:
-            {
-                const auto N = j.m_value.array->size();
-                if (N <= 0x17)
-                {
-                    v.push_back(0x80 + N);  // 1 byte for array + size
-                }
-                else if (N <= 0xff)
-                {
-                    v.push_back(0x98);  // one-byte uint8_t for N
-                    add_to_vector(v, 1, N);
-                }
-                else if (N <= 0xffff)
-                {
-                    v.push_back(0x99);  // two-byte uint16_t for N
-                    add_to_vector(v, 2, N);
-                }
-                else if (N <= 0xffffffff)
-                {
-                    v.push_back(0x9a);  // four-byte uint32_t for N
-                    add_to_vector(v, 4, N);
-                }
-                // LCOV_EXCL_START
-                else if (N <= 0xffffffffffffffff)
-                {
-                    v.push_back(0x9b);  // eight-byte uint64_t for N
-                    add_to_vector(v, 8, N);
-                }
-                // LCOV_EXCL_STOP
-
-                // append each element
-                for (const auto& el : *j.m_value.array)
-                {
-                    to_cbor_internal(el, v);
-                }
-                break;
-            }
-
-            case value_t::object:
-            {
-                const auto N = j.m_value.object->size();
-                if (N <= 0x17)
-                {
-                    v.push_back(0xa0 + N);  // 1 byte for object + size
-                }
-                else if (N <= 0xff)
-                {
-                    v.push_back(0xb8);
-                    add_to_vector(v, 1, N);  // one-byte uint8_t for N
-                }
-                else if (N <= 0xffff)
-                {
-                    v.push_back(0xb9);
-                    add_to_vector(v, 2, N);  // two-byte uint16_t for N
-                }
-                else if (N <= 0xffffffff)
-                {
-                    v.push_back(0xba);
-                    add_to_vector(v, 4, N);  // four-byte uint32_t for N
-                }
-                // LCOV_EXCL_START
-                else if (N <= 0xffffffffffffffff)
-                {
-                    v.push_back(0xbb);
-                    add_to_vector(v, 8, N);  // eight-byte uint64_t for N
-                }
-                // LCOV_EXCL_STOP
-
-                // append each element
-                for (const auto& el : *j.m_value.object)
-                {
-                    to_cbor_internal(el.first, v);
-                    to_cbor_internal(el.second, v);
-                }
-                break;
-            }
-
-            default:
-            {
-                break;
-            }
-        }
-    }
-
-
-    /*
-    @brief checks if given lengths do not exceed the size of a given vector
-
-    To secure the access to the byte vector during CBOR/MessagePack
-    deserialization, bytes are copied from the vector into buffers. This
-    function checks if the number of bytes to copy (@a len) does not exceed the
-    size @s size of the vector. Additionally, an @a offset is given from where
-    to start reading the bytes.
-
-    This function checks whether reading the bytes is safe; that is, offset is a
-    valid index in the vector, offset+len
-
-    @param[in] size    size of the byte vector
-    @param[in] len     number of bytes to read
-    @param[in] offset  offset where to start reading
-
-    vec:  x x x x x X X X X X
-          ^         ^         ^
-          0         offset    len
-
-    @throws out_of_range if `len > v.size()`
-    */
-    static void check_length(const size_t size, const size_t len, const size_t offset)
-    {
-        // simple case: requested length is greater than the vector's length
-        if (len > size or offset > size)
-        {
-            throw std::out_of_range("len out of range");
-        }
-
-        // second case: adding offset would result in overflow
-        if ((size > (std::numeric_limits<size_t>::max() - offset)))
-        {
-            throw std::out_of_range("len+offset out of range");
-        }
-
-        // last case: reading past the end of the vector
-        if (len + offset > size)
-        {
-            throw std::out_of_range("len+offset out of range");
-        }
-    }
-
-    /*!
-    @brief create a JSON value from a given MessagePack vector
-
-    @param[in] v  MessagePack serialization
-    @param[in] idx  byte index to start reading from @a v
-
-    @return deserialized JSON value
-
-    @throw std::invalid_argument if unsupported features from MessagePack were
-    used in the given vector @a v or if the input is not valid MessagePack
-    @throw std::out_of_range if the given vector ends prematurely
-
-    @sa https://github.com/msgpack/msgpack/blob/master/spec.md
-    */
-    static basic_json from_msgpack_internal(const std::vector<uint8_t>& v, size_t& idx)
-    {
-        // make sure reading 1 byte is safe
-        check_length(v.size(), 1, idx);
-
-        // store and increment index
-        const size_t current_idx = idx++;
-
-        if (v[current_idx] <= 0xbf)
-        {
-            if (v[current_idx] <= 0x7f) // positive fixint
-            {
-                return v[current_idx];
-            }
-            else if (v[current_idx] <= 0x8f) // fixmap
-            {
-                basic_json result = value_t::object;
-                const size_t len = v[current_idx] & 0x0f;
-                for (size_t i = 0; i < len; ++i)
-                {
-                    std::string key = from_msgpack_internal(v, idx);
-                    result[key] = from_msgpack_internal(v, idx);
-                }
-                return result;
-            }
-            else if (v[current_idx] <= 0x9f) // fixarray
-            {
-                basic_json result = value_t::array;
-                const size_t len = v[current_idx] & 0x0f;
-                for (size_t i = 0; i < len; ++i)
-                {
-                    result.push_back(from_msgpack_internal(v, idx));
-                }
-                return result;
-            }
-            else // fixstr
-            {
-                const size_t len = v[current_idx] & 0x1f;
-                const size_t offset = current_idx + 1;
-                idx += len; // skip content bytes
-                check_length(v.size(), len, offset);
-                return std::string(reinterpret_cast<const char*>(v.data()) + offset, len);
-            }
-        }
-        else if (v[current_idx] >= 0xe0) // negative fixint
-        {
-            return static_cast<int8_t>(v[current_idx]);
-        }
-        else
-        {
-            switch (v[current_idx])
-            {
-                case 0xc0: // nil
-                {
-                    return value_t::null;
-                }
-
-                case 0xc2: // false
-                {
-                    return false;
-                }
-
-                case 0xc3: // true
-                {
-                    return true;
-                }
-
-                case 0xca: // float 32
-                {
-                    // copy bytes in reverse order into the double variable
-                    check_length(v.size(), sizeof(float), 1);
-                    float res;
-                    for (size_t byte = 0; byte < sizeof(float); ++byte)
-                    {
-                        reinterpret_cast<uint8_t*>(&res)[sizeof(float) - byte - 1] = v[current_idx + 1 + byte];
-                    }
-                    idx += sizeof(float); // skip content bytes
-                    return res;
-                }
-
-                case 0xcb: // float 64
-                {
-                    // copy bytes in reverse order into the double variable
-                    check_length(v.size(), sizeof(double), 1);
-                    double res;
-                    for (size_t byte = 0; byte < sizeof(double); ++byte)
-                    {
-                        reinterpret_cast<uint8_t*>(&res)[sizeof(double) - byte - 1] = v[current_idx + 1 + byte];
-                    }
-                    idx += sizeof(double); // skip content bytes
-                    return res;
-                }
-
-                case 0xcc: // uint 8
-                {
-                    idx += 1; // skip content byte
-                    return get_from_vector<uint8_t>(v, current_idx);
-                }
-
-                case 0xcd: // uint 16
-                {
-                    idx += 2; // skip 2 content bytes
-                    return get_from_vector<uint16_t>(v, current_idx);
-                }
-
-                case 0xce: // uint 32
-                {
-                    idx += 4; // skip 4 content bytes
-                    return get_from_vector<uint32_t>(v, current_idx);
-                }
-
-                case 0xcf: // uint 64
-                {
-                    idx += 8; // skip 8 content bytes
-                    return get_from_vector<uint64_t>(v, current_idx);
-                }
-
-                case 0xd0: // int 8
-                {
-                    idx += 1; // skip content byte
-                    return get_from_vector<int8_t>(v, current_idx);
-                }
-
-                case 0xd1: // int 16
-                {
-                    idx += 2; // skip 2 content bytes
-                    return get_from_vector<int16_t>(v, current_idx);
-                }
-
-                case 0xd2: // int 32
-                {
-                    idx += 4; // skip 4 content bytes
-                    return get_from_vector<int32_t>(v, current_idx);
-                }
-
-                case 0xd3: // int 64
-                {
-                    idx += 8; // skip 8 content bytes
-                    return get_from_vector<int64_t>(v, current_idx);
-                }
-
-                case 0xd9: // str 8
-                {
-                    const auto len = static_cast<size_t>(get_from_vector<uint8_t>(v, current_idx));
-                    const size_t offset = current_idx + 2;
-                    idx += len + 1; // skip size byte + content bytes
-                    check_length(v.size(), len, offset);
-                    return std::string(reinterpret_cast<const char*>(v.data()) + offset, len);
-                }
-
-                case 0xda: // str 16
-                {
-                    const auto len = static_cast<size_t>(get_from_vector<uint16_t>(v, current_idx));
-                    const size_t offset = current_idx + 3;
-                    idx += len + 2; // skip 2 size bytes + content bytes
-                    check_length(v.size(), len, offset);
-                    return std::string(reinterpret_cast<const char*>(v.data()) + offset, len);
-                }
-
-                case 0xdb: // str 32
-                {
-                    const auto len = static_cast<size_t>(get_from_vector<uint32_t>(v, current_idx));
-                    const size_t offset = current_idx + 5;
-                    idx += len + 4; // skip 4 size bytes + content bytes
-                    check_length(v.size(), len, offset);
-                    return std::string(reinterpret_cast<const char*>(v.data()) + offset, len);
-                }
-
-                case 0xdc: // array 16
-                {
-                    basic_json result = value_t::array;
-                    const auto len = static_cast<size_t>(get_from_vector<uint16_t>(v, current_idx));
-                    idx += 2; // skip 2 size bytes
-                    for (size_t i = 0; i < len; ++i)
-                    {
-                        result.push_back(from_msgpack_internal(v, idx));
-                    }
-                    return result;
-                }
-
-                case 0xdd: // array 32
-                {
-                    basic_json result = value_t::array;
-                    const auto len = static_cast<size_t>(get_from_vector<uint32_t>(v, current_idx));
-                    idx += 4; // skip 4 size bytes
-                    for (size_t i = 0; i < len; ++i)
-                    {
-                        result.push_back(from_msgpack_internal(v, idx));
-                    }
-                    return result;
-                }
-
-                case 0xde: // map 16
-                {
-                    basic_json result = value_t::object;
-                    const auto len = static_cast<size_t>(get_from_vector<uint16_t>(v, current_idx));
-                    idx += 2; // skip 2 size bytes
-                    for (size_t i = 0; i < len; ++i)
-                    {
-                        std::string key = from_msgpack_internal(v, idx);
-                        result[key] = from_msgpack_internal(v, idx);
-                    }
-                    return result;
-                }
-
-                case 0xdf: // map 32
-                {
-                    basic_json result = value_t::object;
-                    const auto len = static_cast<size_t>(get_from_vector<uint32_t>(v, current_idx));
-                    idx += 4; // skip 4 size bytes
-                    for (size_t i = 0; i < len; ++i)
-                    {
-                        std::string key = from_msgpack_internal(v, idx);
-                        result[key] = from_msgpack_internal(v, idx);
-                    }
-                    return result;
-                }
-
-                default:
-                {
-                    throw std::invalid_argument("error parsing a msgpack @ " + std::to_string(current_idx) + ": " + std::to_string(static_cast<int>(v[current_idx])));
-                }
-            }
-        }
-    }
-
-    /*!
-    @brief create a JSON value from a given CBOR vector
-
-    @param[in] v  CBOR serialization
-    @param[in] idx  byte index to start reading from @a v
-
-    @return deserialized JSON value
-
-    @throw std::invalid_argument if unsupported features from CBOR were used in
-    the given vector @a v or if the input is not valid CBOR
-    @throw std::out_of_range if the given vector ends prematurely
-
-    @sa https://tools.ietf.org/html/rfc7049
-    */
-    static basic_json from_cbor_internal(const std::vector<uint8_t>& v, size_t& idx)
-    {
-        // store and increment index
-        const size_t current_idx = idx++;
-
-        switch (v.at(current_idx))
-        {
-            // Integer 0x00..0x17 (0..23)
-            case 0x00:
-            case 0x01:
-            case 0x02:
-            case 0x03:
-            case 0x04:
-            case 0x05:
-            case 0x06:
-            case 0x07:
-            case 0x08:
-            case 0x09:
-            case 0x0a:
-            case 0x0b:
-            case 0x0c:
-            case 0x0d:
-            case 0x0e:
-            case 0x0f:
-            case 0x10:
-            case 0x11:
-            case 0x12:
-            case 0x13:
-            case 0x14:
-            case 0x15:
-            case 0x16:
-            case 0x17:
-            {
-                return v[current_idx];
-            }
-
-            case 0x18: // Unsigned integer (one-byte uint8_t follows)
-            {
-                idx += 1; // skip content byte
-                return get_from_vector<uint8_t>(v, current_idx);
-            }
-
-            case 0x19: // Unsigned integer (two-byte uint16_t follows)
-            {
-                idx += 2; // skip 2 content bytes
-                return get_from_vector<uint16_t>(v, current_idx);
-            }
-
-            case 0x1a: // Unsigned integer (four-byte uint32_t follows)
-            {
-                idx += 4; // skip 4 content bytes
-                return get_from_vector<uint32_t>(v, current_idx);
-            }
-
-            case 0x1b: // Unsigned integer (eight-byte uint64_t follows)
-            {
-                idx += 8; // skip 8 content bytes
-                return get_from_vector<uint64_t>(v, current_idx);
-            }
-
-            // Negative integer -1-0x00..-1-0x17 (-1..-24)
-            case 0x20:
-            case 0x21:
-            case 0x22:
-            case 0x23:
-            case 0x24:
-            case 0x25:
-            case 0x26:
-            case 0x27:
-            case 0x28:
-            case 0x29:
-            case 0x2a:
-            case 0x2b:
-            case 0x2c:
-            case 0x2d:
-            case 0x2e:
-            case 0x2f:
-            case 0x30:
-            case 0x31:
-            case 0x32:
-            case 0x33:
-            case 0x34:
-            case 0x35:
-            case 0x36:
-            case 0x37:
-            {
-                return static_cast<int8_t>(0x20 - 1 - v[current_idx]);
-            }
-
-            case 0x38: // Negative integer (one-byte uint8_t follows)
-            {
-                idx += 1; // skip content byte
-                // must be uint8_t !
-                return static_cast<number_integer_t>(-1) - get_from_vector<uint8_t>(v, current_idx);
-            }
-
-            case 0x39: // Negative integer -1-n (two-byte uint16_t follows)
-            {
-                idx += 2; // skip 2 content bytes
-                return static_cast<number_integer_t>(-1) - get_from_vector<uint16_t>(v, current_idx);
-            }
-
-            case 0x3a: // Negative integer -1-n (four-byte uint32_t follows)
-            {
-                idx += 4; // skip 4 content bytes
-                return static_cast<number_integer_t>(-1) - get_from_vector<uint32_t>(v, current_idx);
-            }
-
-            case 0x3b: // Negative integer -1-n (eight-byte uint64_t follows)
-            {
-                idx += 8; // skip 8 content bytes
-                return static_cast<number_integer_t>(-1) - static_cast<number_integer_t>(get_from_vector<uint64_t>(v, current_idx));
-            }
-
-            // UTF-8 string (0x00..0x17 bytes follow)
-            case 0x60:
-            case 0x61:
-            case 0x62:
-            case 0x63:
-            case 0x64:
-            case 0x65:
-            case 0x66:
-            case 0x67:
-            case 0x68:
-            case 0x69:
-            case 0x6a:
-            case 0x6b:
-            case 0x6c:
-            case 0x6d:
-            case 0x6e:
-            case 0x6f:
-            case 0x70:
-            case 0x71:
-            case 0x72:
-            case 0x73:
-            case 0x74:
-            case 0x75:
-            case 0x76:
-            case 0x77:
-            {
-                const auto len = static_cast<size_t>(v[current_idx] - 0x60);
-                const size_t offset = current_idx + 1;
-                idx += len; // skip content bytes
-                check_length(v.size(), len, offset);
-                return std::string(reinterpret_cast<const char*>(v.data()) + offset, len);
-            }
-
-            case 0x78: // UTF-8 string (one-byte uint8_t for n follows)
-            {
-                const auto len = static_cast<size_t>(get_from_vector<uint8_t>(v, current_idx));
-                const size_t offset = current_idx + 2;
-                idx += len + 1; // skip size byte + content bytes
-                check_length(v.size(), len, offset);
-                return std::string(reinterpret_cast<const char*>(v.data()) + offset, len);
-            }
-
-            case 0x79: // UTF-8 string (two-byte uint16_t for n follow)
-            {
-                const auto len = static_cast<size_t>(get_from_vector<uint16_t>(v, current_idx));
-                const size_t offset = current_idx + 3;
-                idx += len + 2; // skip 2 size bytes + content bytes
-                check_length(v.size(), len, offset);
-                return std::string(reinterpret_cast<const char*>(v.data()) + offset, len);
-            }
-
-            case 0x7a: // UTF-8 string (four-byte uint32_t for n follow)
-            {
-                const auto len = static_cast<size_t>(get_from_vector<uint32_t>(v, current_idx));
-                const size_t offset = current_idx + 5;
-                idx += len + 4; // skip 4 size bytes + content bytes
-                check_length(v.size(), len, offset);
-                return std::string(reinterpret_cast<const char*>(v.data()) + offset, len);
-            }
-
-            case 0x7b: // UTF-8 string (eight-byte uint64_t for n follow)
-            {
-                const auto len = static_cast<size_t>(get_from_vector<uint64_t>(v, current_idx));
-                const size_t offset = current_idx + 9;
-                idx += len + 8; // skip 8 size bytes + content bytes
-                check_length(v.size(), len, offset);
-                return std::string(reinterpret_cast<const char*>(v.data()) + offset, len);
-            }
-
-            case 0x7f: // UTF-8 string (indefinite length)
-            {
-                std::string result;
-                while (v.at(idx) != 0xff)
-                {
-                    string_t s = from_cbor_internal(v, idx);
-                    result += s;
-                }
-                // skip break byte (0xFF)
-                idx += 1;
-                return result;
-            }
-
-            // array (0x00..0x17 data items follow)
-            case 0x80:
-            case 0x81:
-            case 0x82:
-            case 0x83:
-            case 0x84:
-            case 0x85:
-            case 0x86:
-            case 0x87:
-            case 0x88:
-            case 0x89:
-            case 0x8a:
-            case 0x8b:
-            case 0x8c:
-            case 0x8d:
-            case 0x8e:
-            case 0x8f:
-            case 0x90:
-            case 0x91:
-            case 0x92:
-            case 0x93:
-            case 0x94:
-            case 0x95:
-            case 0x96:
-            case 0x97:
-            {
-                basic_json result = value_t::array;
-                const auto len = static_cast<size_t>(v[current_idx] - 0x80);
-                for (size_t i = 0; i < len; ++i)
-                {
-                    result.push_back(from_cbor_internal(v, idx));
-                }
-                return result;
-            }
-
-            case 0x98: // array (one-byte uint8_t for n follows)
-            {
-                basic_json result = value_t::array;
-                const auto len = static_cast<size_t>(get_from_vector<uint8_t>(v, current_idx));
-                idx += 1; // skip 1 size byte
-                for (size_t i = 0; i < len; ++i)
-                {
-                    result.push_back(from_cbor_internal(v, idx));
-                }
-                return result;
-            }
-
-            case 0x99: // array (two-byte uint16_t for n follow)
-            {
-                basic_json result = value_t::array;
-                const auto len = static_cast<size_t>(get_from_vector<uint16_t>(v, current_idx));
-                idx += 2; // skip 4 size bytes
-                for (size_t i = 0; i < len; ++i)
-                {
-                    result.push_back(from_cbor_internal(v, idx));
-                }
-                return result;
-            }
-
-            case 0x9a: // array (four-byte uint32_t for n follow)
-            {
-                basic_json result = value_t::array;
-                const auto len = static_cast<size_t>(get_from_vector<uint32_t>(v, current_idx));
-                idx += 4; // skip 4 size bytes
-                for (size_t i = 0; i < len; ++i)
-                {
-                    result.push_back(from_cbor_internal(v, idx));
-                }
-                return result;
-            }
-
-            case 0x9b: // array (eight-byte uint64_t for n follow)
-            {
-                basic_json result = value_t::array;
-                const auto len = static_cast<size_t>(get_from_vector<uint64_t>(v, current_idx));
-                idx += 8; // skip 8 size bytes
-                for (size_t i = 0; i < len; ++i)
-                {
-                    result.push_back(from_cbor_internal(v, idx));
-                }
-                return result;
-            }
-
-            case 0x9f: // array (indefinite length)
-            {
-                basic_json result = value_t::array;
-                while (v.at(idx) != 0xff)
-                {
-                    result.push_back(from_cbor_internal(v, idx));
-                }
-                // skip break byte (0xFF)
-                idx += 1;
-                return result;
-            }
-
-            // map (0x00..0x17 pairs of data items follow)
-            case 0xa0:
-            case 0xa1:
-            case 0xa2:
-            case 0xa3:
-            case 0xa4:
-            case 0xa5:
-            case 0xa6:
-            case 0xa7:
-            case 0xa8:
-            case 0xa9:
-            case 0xaa:
-            case 0xab:
-            case 0xac:
-            case 0xad:
-            case 0xae:
-            case 0xaf:
-            case 0xb0:
-            case 0xb1:
-            case 0xb2:
-            case 0xb3:
-            case 0xb4:
-            case 0xb5:
-            case 0xb6:
-            case 0xb7:
-            {
-                basic_json result = value_t::object;
-                const auto len = static_cast<size_t>(v[current_idx] - 0xa0);
-                for (size_t i = 0; i < len; ++i)
-                {
-                    std::string key = from_cbor_internal(v, idx);
-                    result[key] = from_cbor_internal(v, idx);
-                }
-                return result;
-            }
-
-            case 0xb8: // map (one-byte uint8_t for n follows)
-            {
-                basic_json result = value_t::object;
-                const auto len = static_cast<size_t>(get_from_vector<uint8_t>(v, current_idx));
-                idx += 1; // skip 1 size byte
-                for (size_t i = 0; i < len; ++i)
-                {
-                    std::string key = from_cbor_internal(v, idx);
-                    result[key] = from_cbor_internal(v, idx);
-                }
-                return result;
-            }
-
-            case 0xb9: // map (two-byte uint16_t for n follow)
-            {
-                basic_json result = value_t::object;
-                const auto len = static_cast<size_t>(get_from_vector<uint16_t>(v, current_idx));
-                idx += 2; // skip 2 size bytes
-                for (size_t i = 0; i < len; ++i)
-                {
-                    std::string key = from_cbor_internal(v, idx);
-                    result[key] = from_cbor_internal(v, idx);
-                }
-                return result;
-            }
-
-            case 0xba: // map (four-byte uint32_t for n follow)
-            {
-                basic_json result = value_t::object;
-                const auto len = static_cast<size_t>(get_from_vector<uint32_t>(v, current_idx));
-                idx += 4; // skip 4 size bytes
-                for (size_t i = 0; i < len; ++i)
-                {
-                    std::string key = from_cbor_internal(v, idx);
-                    result[key] = from_cbor_internal(v, idx);
-                }
-                return result;
-            }
-
-            case 0xbb: // map (eight-byte uint64_t for n follow)
-            {
-                basic_json result = value_t::object;
-                const auto len = static_cast<size_t>(get_from_vector<uint64_t>(v, current_idx));
-                idx += 8; // skip 8 size bytes
-                for (size_t i = 0; i < len; ++i)
-                {
-                    std::string key = from_cbor_internal(v, idx);
-                    result[key] = from_cbor_internal(v, idx);
-                }
-                return result;
-            }
-
-            case 0xbf: // map (indefinite length)
-            {
-                basic_json result = value_t::object;
-                while (v.at(idx) != 0xff)
-                {
-                    std::string key = from_cbor_internal(v, idx);
-                    result[key] = from_cbor_internal(v, idx);
-                }
-                // skip break byte (0xFF)
-                idx += 1;
-                return result;
-            }
-
-            case 0xf4: // false
-            {
-                return false;
-            }
-
-            case 0xf5: // true
-            {
-                return true;
-            }
-
-            case 0xf6: // null
-            {
-                return value_t::null;
-            }
-
-            case 0xf9: // Half-Precision Float (two-byte IEEE 754)
-            {
-                check_length(v.size(), 2, 1);
-                idx += 2; // skip two content bytes
-
-                // code from RFC 7049, Appendix D, Figure 3:
-                // As half-precision floating-point numbers were only added to
-                // IEEE 754 in 2008, today's programming platforms often still
-                // only have limited support for them. It is very easy to
-                // include at least decoding support for them even without such
-                // support. An example of a small decoder for half-precision
-                // floating-point numbers in the C language is shown in Fig. 3.
-                const int half = (v[current_idx + 1] << 8) + v[current_idx + 2];
-                const int exp = (half >> 10) & 0x1f;
-                const int mant = half & 0x3ff;
-                double val;
-                if (exp == 0)
-                {
-                    val = std::ldexp(mant, -24);
-                }
-                else if (exp != 31)
-                {
-                    val = std::ldexp(mant + 1024, exp - 25);
-                }
-                else
-                {
-                    val = mant == 0 ? INFINITY : NAN;
-                }
-                return half & 0x8000 ? -val : val;
-            }
-
-            case 0xfa: // Single-Precision Float (four-byte IEEE 754)
-            {
-                // copy bytes in reverse order into the float variable
-                check_length(v.size(), sizeof(float), 1);
-                float res;
-                for (size_t byte = 0; byte < sizeof(float); ++byte)
-                {
-                    reinterpret_cast<uint8_t*>(&res)[sizeof(float) - byte - 1] = v[current_idx + 1 + byte];
-                }
-                idx += sizeof(float); // skip content bytes
-                return res;
-            }
-
-            case 0xfb: // Double-Precision Float (eight-byte IEEE 754)
-            {
-                check_length(v.size(), sizeof(double), 1);
-                // copy bytes in reverse order into the double variable
-                double res;
-                for (size_t byte = 0; byte < sizeof(double); ++byte)
-                {
-                    reinterpret_cast<uint8_t*>(&res)[sizeof(double) - byte - 1] = v[current_idx + 1 + byte];
-                }
-                idx += sizeof(double); // skip content bytes
-                return res;
-            }
-
-            default: // anything else (0xFF is handled inside the other types)
-            {
-                throw std::invalid_argument("error parsing a CBOR @ " + std::to_string(current_idx) + ": " + std::to_string(static_cast<int>(v[current_idx])));
-            }
-        }
-    }
-
-  public:
-    /*!
-    @brief create a MessagePack serialization of a given JSON value
-
-    Serializes a given JSON value @a j to a byte vector using the MessagePack
-    serialization format. MessagePack is a binary serialization format which
-    aims to be more compact than JSON itself, yet more efficient to parse.
-
-    @param[in] j  JSON value to serialize
-    @return MessagePack serialization as byte vector
-
-    @complexity Linear in the size of the JSON value @a j.
-
-    @liveexample{The example shows the serialization of a JSON value to a byte
-    vector in MessagePack format.,to_msgpack}
-
-    @sa http://msgpack.org
-    @sa @ref from_msgpack(const std::vector<uint8_t>&) for the analogous
-        deserialization
-    @sa @ref to_cbor(const basic_json& for the related CBOR format
-    */
-    static std::vector<uint8_t> to_msgpack(const basic_json& j)
-    {
-        std::vector<uint8_t> result;
-        to_msgpack_internal(j, result);
-        return result;
-    }
-
-    /*!
-    @brief create a JSON value from a byte vector in MessagePack format
-
-    Deserializes a given byte vector @a v to a JSON value using the MessagePack
-    serialization format.
-
-    @param[in] v  a byte vector in MessagePack format
-    @return deserialized JSON value
-
-    @throw std::invalid_argument if unsupported features from MessagePack were
-    used in the given vector @a v or if the input is not valid MessagePack
-    @throw std::out_of_range if the given vector ends prematurely
-
-    @complexity Linear in the size of the byte vector @a v.
-
-    @liveexample{The example shows the deserialization of a byte vector in
-    MessagePack format to a JSON value.,from_msgpack}
-
-    @sa http://msgpack.org
-    @sa @ref to_msgpack(const basic_json&) for the analogous serialization
-    @sa @ref from_cbor(const std::vector<uint8_t>&) for the related CBOR format
-    */
-    static basic_json from_msgpack(const std::vector<uint8_t>& v)
-    {
-        size_t i = 0;
-        return from_msgpack_internal(v, i);
-    }
-
-    /*!
-    @brief create a MessagePack serialization of a given JSON value
-
-    Serializes a given JSON value @a j to a byte vector using the CBOR (Concise
-    Binary Object Representation) serialization format. CBOR is a binary
-    serialization format which aims to be more compact than JSON itself, yet
-    more efficient to parse.
-
-    @param[in] j  JSON value to serialize
-    @return MessagePack serialization as byte vector
-
-    @complexity Linear in the size of the JSON value @a j.
-
-    @liveexample{The example shows the serialization of a JSON value to a byte
-    vector in CBOR format.,to_cbor}
-
-    @sa http://cbor.io
-    @sa @ref from_cbor(const std::vector<uint8_t>&) for the analogous
-        deserialization
-    @sa @ref to_msgpack(const basic_json& for the related MessagePack format
-    */
-    static std::vector<uint8_t> to_cbor(const basic_json& j)
-    {
-        std::vector<uint8_t> result;
-        to_cbor_internal(j, result);
-        return result;
-    }
-
-    /*!
-    @brief create a JSON value from a byte vector in CBOR format
-
-    Deserializes a given byte vector @a v to a JSON value using the CBOR
-    (Concise Binary Object Representation) serialization format.
-
-    @param[in] v  a byte vector in CBOR format
-    @return deserialized JSON value
-
-    @throw std::invalid_argument if unsupported features from CBOR were used in
-    the given vector @a v or if the input is not valid MessagePack
-    @throw std::out_of_range if the given vector ends prematurely
-
-    @complexity Linear in the size of the byte vector @a v.
-
-    @liveexample{The example shows the deserialization of a byte vector in CBOR
-    format to a JSON value.,from_cbor}
-
-    @sa http://cbor.io
-    @sa @ref to_cbor(const basic_json&) for the analogous serialization
-    @sa @ref from_msgpack(const std::vector<uint8_t>&) for the related
-        MessagePack format
-    */
-    static basic_json from_cbor(const std::vector<uint8_t>& v)
-    {
-        size_t i = 0;
-        return from_cbor_internal(v, i);
-    }
-
-    /// @}
-
-  private:
     ///////////////////////////
     // convenience functions //
     ///////////////////////////
@@ -9547,29 +8057,35 @@ class basic_json
 
     @complexity Constant.
 
-    @since version 1.0.0
+    @liveexample{The following code exemplifies `type_name()` for all JSON
+    types.,type_name}
+
+    @since version 1.0.0, public since 2.1.0
     */
     std::string type_name() const
     {
-        switch (m_type)
         {
-            case value_t::null:
-                return "null";
-            case value_t::object:
-                return "object";
-            case value_t::array:
-                return "array";
-            case value_t::string:
-                return "string";
-            case value_t::boolean:
-                return "boolean";
-            case value_t::discarded:
-                return "discarded";
-            default:
-                return "number";
+            switch (m_type)
+            {
+                case value_t::null:
+                    return "null";
+                case value_t::object:
+                    return "object";
+                case value_t::array:
+                    return "array";
+                case value_t::string:
+                    return "string";
+                case value_t::boolean:
+                    return "boolean";
+                case value_t::discarded:
+                    return "discarded";
+                default:
+                    return "number";
+            }
         }
     }
 
+  private:
     /*!
     @brief calculates the extra space to escape a JSON string
 
@@ -9604,10 +8120,8 @@ class basic_json
                         // from c (1 byte) to \uxxxx (6 bytes)
                         return res + 5;
                     }
-                    else
-                    {
-                        return res;
-                    }
+
+                    return res;
                 }
             }
         });
@@ -9717,6 +8231,162 @@ class basic_json
                         {
                             result[++pos] = m;
                         }
+
+                        ++pos;
+                    }
+                    else
+                    {
+                        // all other characters are added as-is
+                        result[pos++] = c;
+                    }
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+    /*!
+    @brief locale-independent serialization for built-in arithmetic types
+    */
+    struct numtostr
+    {
+      public:
+        template<typename NumberType>
+        numtostr(NumberType value)
+        {
+            x_write(value, std::is_integral<NumberType>());
+        }
+
+        const char* c_str() const
+        {
+            return m_buf.data();
+        }
+
+      private:
+        /// a (hopefully) large enough character buffer
+        std::array < char, 64 > m_buf{{}};
+
+        template<typename NumberType>
+        void x_write(NumberType x, /*is_integral=*/std::true_type)
+        {
+            // special case for "0"
+            if (x == 0)
+            {
+                m_buf[0] = '0';
+                return;
+            }
+
+            const bool is_negative = x < 0;
+            size_t i = 0;
+
+            // spare 1 byte for '\0'
+            while (x != 0 and i < m_buf.size() - 1)
+            {
+                const auto digit = std::labs(static_cast<long>(x % 10));
+                m_buf[i++] = static_cast<char>('0' + digit);
+                x /= 10;
+            }
+
+            // make sure the number has been processed completely
+            assert(x == 0);
+
+            if (is_negative)
+            {
+                // make sure there is capacity for the '-'
+                assert(i < m_buf.size() - 2);
+                m_buf[i++] = '-';
+            }
+
+            std::reverse(m_buf.begin(), m_buf.begin() + i);
+        }
+
+        template<typename NumberType>
+        void x_write(NumberType x, /*is_integral=*/std::false_type)
+        {
+            // special case for 0.0 and -0.0
+            if (x == 0)
+            {
+                size_t i = 0;
+                if (std::signbit(x))
+                {
+                    m_buf[i++] = '-';
+                }
+                m_buf[i++] = '0';
+                m_buf[i++] = '.';
+                m_buf[i] = '0';
+                return;
+            }
+
+            // get number of digits for a text -> float -> text round-trip
+            static constexpr auto d = std::numeric_limits<NumberType>::digits10;
+
+            // the actual conversion
+            const auto written_bytes = snprintf(m_buf.data(), m_buf.size(), "%.*g", d, x);
+
+            // negative value indicates an error
+            assert(written_bytes > 0);
+            // check if buffer was large enough
+            assert(static_cast<size_t>(written_bytes) < m_buf.size());
+
+            // read information from locale
+            const auto loc = localeconv();
+            assert(loc != nullptr);
+            const char thousands_sep = !loc->thousands_sep ? '\0'
+                                       : loc->thousands_sep[0];
+
+            const char decimal_point = !loc->decimal_point ? '\0'
+                                       : loc->decimal_point[0];
+
+            // erase thousands separator
+            if (thousands_sep != '\0')
+            {
+                const auto end = std::remove(m_buf.begin(), m_buf.begin() + written_bytes, thousands_sep);
+                std::fill(end, m_buf.end(), '\0');
+            }
+
+            // convert decimal point to '.'
+            if (decimal_point != '\0' and decimal_point != '.')
+            {
+                for (auto& c : m_buf)
+                {
+                    if (c == decimal_point)
+                    {
+                        c = '.';
+                        break;
+                    }
+                }
+            }
+
+            // determine if need to append ".0"
+            size_t i = 0;
+            bool value_is_int_like = true;
+            for (i = 0; i < m_buf.size(); ++i)
+            {
+                // break when end of number is reached
+                if (m_buf[i] == '\0')
+                {
+                    break;
+                }
+
+                // check if we find non-int character
+                value_is_int_like = value_is_int_like and m_buf[i] != '.' and
+                                    m_buf[i] != 'e' and m_buf[i] != 'E';
+            }
+
+            if (value_is_int_like)
+            {
+                // there must be 2 bytes left for ".0"
+                assert((i + 2) < m_buf.size());
+                // we write to the end of the number
+                assert(m_buf[i] == '\0');
+                assert(m_buf[i - 1] != '\0');
+
+                // add ".0"
+                m_buf[i] = '.';
+                m_buf[i + 1] = '0';
 
                 // the resulting string is properly terminated
                 assert(m_buf[i + 2] == '\0');
@@ -10929,7 +9599,7 @@ class basic_json
             // immediately abort if stream is erroneous
             if (s.fail())
             {
-                throw std::invalid_argument("stream error");
+                JSON_THROW(std::invalid_argument("stream error"));
             }
 
             // fill buffer
@@ -12418,8 +11088,12 @@ basic_json_parser_74:
         }
 
 
-        @param[in,out] endptr recieves a pointer to the first character after
-        the number
+        /*!
+        @brief parse string into a built-in arithmetic type as if the current
+               locale is POSIX.
+
+        @note in floating-point case strtod may parse past the token's end -
+              this is not an error
 
         @note any leading blanks are not handled
         */
@@ -12442,8 +11116,11 @@ basic_json_parser_74:
                 return parse(val, std::is_integral<T>());
             }
 
-        @param[in,out] endptr  recieves a pointer to the first character after
-        the number
+          private:
+            const char* const m_start = nullptr;
+            const char* const m_end = nullptr;
+
+            // floating-point conversion
 
             // overloaded wrappers for strtod/strtof/strtold
             // that will be called from parse<floating_point_t>
@@ -12462,8 +11139,18 @@ basic_json_parser_74:
                 f = std::strtold(str, endptr);
             }
 
-        @param[in,out] endptr  recieves a pointer to the first character after
-        the number
+            template<typename T>
+            bool parse(T& value, /*is_integral=*/std::false_type) const
+            {
+                // replace decimal separator with locale-specific version,
+                // when necessary; data will point to either the original
+                // string, or buf, or tempstr containing the fixed string.
+                std::string tempstr;
+                std::array<char, 64> buf;
+                const size_t len = static_cast<size_t>(m_end - m_start);
+
+                // lexer will reject empty numbers
+                assert(len > 0);
 
                 // since dealing with strtod family of functions, we're
                 // getting the decimal point char from the C locale facilities
@@ -12597,45 +11284,20 @@ basic_json_parser_74:
 
                 case lexer::token_type::value_integer:
                 {
-                    auto digit = static_cast<number_unsigned_t>(*curptr - '0');
-
-                    // overflow if value * 10 + digit > max, move terms around
-                    // to avoid overflow in intermediate values
-                    if (value > (max - digit) / 10)
+                    number_integer_t val;
+                    if (num_converter.to(val))
                     {
-                        // overflow
-                        type = value_t::number_float;
-                    }
-                    else
-                    {
-                        // no overflow
-                        value = value * 10 + digit;
+                        // parsing successful
+                        result.m_type = value_t::number_integer;
+                        result.m_value = val;
+                        return true;
                     }
                     break;
                 }
 
-            // save the value (if not a float)
-            if (type == value_t::number_unsigned)
-            {
-                result.m_value.number_unsigned = value;
-            }
-            else if (type == value_t::number_integer)
-            {
-                // invariant: if we parsed a '-', the absolute value is between
-                // 0 (we allow -0) and max == -INT64_MIN
-                assert(value >= 0);
-                assert(value <= max);
-
-                if (value == max)
+                default:
                 {
-                    // we cannot simply negate value (== max == -INT64_MIN),
-                    // see https://github.com/nlohmann/json/issues/389
-                    result.m_value.number_integer = static_cast<number_integer_t>(INT64_MIN);
-                }
-                else
-                {
-                    // all other values can be negated safely
-                    result.m_value.number_integer = -static_cast<number_integer_t>(value);
+                    break;
                 }
             }
 
