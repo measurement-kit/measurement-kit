@@ -11,7 +11,7 @@ using json = nlohmann::json;
 namespace mk {
 namespace ooni {
 
-template <MK_MOCK_NAMESPACE(http, get)>
+template <MK_MOCK_AS(http::get, http_get)>
 void ip_lookup_impl(Callback<Error, std::string> callback, Settings settings = {},
                Var<Reactor> reactor = Reactor::global(),
                Var<Logger> logger = Logger::global()) {
@@ -40,7 +40,7 @@ void ip_lookup_impl(Callback<Error, std::string> callback, Settings settings = {
             {}, settings, reactor, logger, nullptr, 0);
 }
 
-template <MK_MOCK_NAMESPACE(dns, query)>
+template <MK_MOCK_AS(dns::query, dns_query)>
 void resolver_lookup_impl(Callback<Error, std::string> callback,
                           Settings settings = {},
                           Var<Reactor> reactor = Reactor::global(),

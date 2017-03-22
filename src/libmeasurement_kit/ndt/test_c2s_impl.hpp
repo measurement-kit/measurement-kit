@@ -10,7 +10,7 @@ namespace mk {
 namespace ndt {
 namespace test_c2s {
 
-template <MK_MOCK_NAMESPACE(net, connect)>
+template <MK_MOCK_AS(net::connect, net_connect)>
 void coroutine_impl(Var<Entry> report_entry, std::string address, int port, double runtime,
                     Callback<Error, Continuation<Error>> cb, double timeout,
                     Settings settings, Var<Reactor> reactor,
@@ -81,11 +81,11 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port, doub
                 settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, first),
+template <MK_MOCK_AS(messages::read_msg, messages_read_msg_first),
           MK_MOCK(coroutine),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, second),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, third),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, fourth)>
+          MK_MOCK_AS(messages::read_msg, messages_read_msg_second),
+          MK_MOCK_AS(messages::read_msg, messages_read_msg_third),
+          MK_MOCK_AS(messages::read_msg, messages_read_msg_fourth)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
