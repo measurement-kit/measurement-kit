@@ -16,11 +16,8 @@ Override default behavior by setting these environment variables:
   - pkg_make_install_flags: extra flags for 'make install' (e.g. DESTDIR=/opt)
   - pkg_prefix: prefix where to install (e.g. '/usr/local')
   - pkg_steps: steps to execute (default is: 'patch_pre_autogen autogen patch_post_autogen configure make make_check make_install')
-  - pkg_sudo: optional comand to execute 'make install' with (e.g. sudo)
 
 Examples:
-  - download, patch, compile, and install libevent at /opt:
-    - pkg_sudo=sudo pkg_prefix=/opt ./build/dependency libevent
   - use four processors to compile libressl:
     - pkg_make_flags=-j4 ./build/dependency libressl
 EOF
@@ -29,6 +26,7 @@ EOF
 apply_patches() {
     if [ -d ../../../build/patch/$1 ]; then
         for diff in `find ../../../build/patch/$1 -type f`; do
+            echo "* apply patch: $diff"
             git apply -v $diff
         done
     fi
@@ -60,11 +58,11 @@ pkg_patch_post_autogen() {
 
 pkg_configure() {
     if [ -x ./configure ]; then
-        echo "- ./configure --prefix=$pkg_prefix $pkg_configure_flags"
-        ./configure --prefix=$pkg_prefix $pkg_configure_flags
+        echo "- ./configure --prefix=/ $pkg_configure_flags"
+        ./configure --prefix=/ $pkg_configure_flags
     elif [ -f ./CMakeLists.txt ]; then
-        echo "- cmake -D CMAKE_INSTALL_PREFIX=$pkg_prefix $pkg_cmake_flags ."
-        cmake -D CMAKE_INSTALL_PREFIX=$pkg_prefix $pkg_cmake_flags .
+        echo "- cmake -D CMAKE_INSTALL_PREFIX=/ $pkg_cmake_flags ."
+        cmake -D CMAKE_INSTALL_PREFIX=/ $pkg_cmake_flags .
     fi
 }
 
@@ -88,8 +86,26 @@ pkg_make_check() {
 }
 
 pkg_make_install() {
-    echo "- $pkg_sudo make $pkg_make_install_flags install"
-    $pkg_sudo make $pkg_make_install_flags install
+    echo "- make $pkg_make_install_flags install"
+    based=$pkg_rootdir/third_party/tmp/$pkg_name-$pkg_branch_or_tag
+    adir=$based/$pkg_cross_arch
+    make $pkg_make_install_flags install DESTDIR=$adir
+    find $adir -depth -type d -name bin -exec rm -rf {} \;
+    find $adir -depth -type d -name pkgconfig -exec rm -rf {} \;
+    find $adir -depth -type d -name sbin -exec rm -rf {} \;
+    find $adir -depth -type f -name \*.la -exec rm -rf {} \;
+    tarname=$pkg_rootdir/$pkg_name-$pkg_branch_or_tag
+    tarname=$tarname-`echo $pkg_cross_arch|sed 's/\//-/g'`
+    tarname=$tarname-`date -u +%Y%m%dT%H%M%SZ`
+    tarname=$tarname.tgz
+    echo ""
+    echo "- create archive $tarname"
+    (cd $based && tar -cvzf $tarname ./)
+    rm -rf $pkg_rootdir/third_party/tmp
+    echo ""
+    echo "- install from $tarname into $pkg_prefix"
+    install -d $pkg_prefix
+    (cd $pkg_prefix && tar -xvzf $tarname)
 }
 
 pkg_none() {

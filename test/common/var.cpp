@@ -41,7 +41,8 @@ JarJar::~JarJar() noexcept {}
 
 TEST_CASE("Var raises an exception when the pointee is nullptr") {
     Var<Foo> foo;
-    REQUIRE_THROWS(auto k = foo->elem);
+    double k;
+    REQUIRE_THROWS(k = foo->elem);
     REQUIRE_THROWS(*foo);
     REQUIRE_THROWS(foo.get());
 }
@@ -49,7 +50,8 @@ TEST_CASE("Var raises an exception when the pointee is nullptr") {
 TEST_CASE("We can safely assign to Var an empty shared_ptr") {
     std::shared_ptr<Foo> antani;
     Var<Foo> necchi = antani;
-    REQUIRE_THROWS(auto k = necchi->elem);
+    double k;
+    REQUIRE_THROWS(k = necchi->elem);
     REQUIRE_THROWS(*necchi);
     REQUIRE_THROWS(necchi.get());
 }
