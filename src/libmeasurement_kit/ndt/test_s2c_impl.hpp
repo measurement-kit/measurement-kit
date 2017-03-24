@@ -12,7 +12,7 @@ namespace test_s2c {
 
 using namespace mk::report;
 
-template <MK_MOCK_NAMESPACE(net, connect_many)>
+template <MK_MOCK_AS(net::connect_many, net_connect_many)>
 void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                     Callback<Error, Continuation<Error, double>> cb,
                     double timeout, Settings settings, Var<Reactor> reactor,
@@ -104,7 +104,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
         settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(messages, read_msg)>
+template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
 void finalizing_test_impl(Var<Context> ctx, Var<Entry> cur_entry,
                           Callback<Error> callback) {
 
@@ -137,12 +137,13 @@ void finalizing_test_impl(Var<Context> ctx, Var<Entry> cur_entry,
     }, ctx->reactor);
 }
 
-template <MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, first),
+template <MK_MOCK_AS(messages::read_msg, messages_read_msg_first),
           MK_MOCK(coroutine),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, second),
-          MK_MOCK_NAMESPACE(messages, read_json),
-          MK_MOCK_NAMESPACE(messages, format_test_msg),
-          MK_MOCK_NAMESPACE(messages, write), MK_MOCK(finalizing_test)>
+          MK_MOCK_AS(messages::read_msg, messages_read_msg_second),
+          MK_MOCK_AS(messages::read_json, messages_read_json),
+          MK_MOCK_AS(messages::format_test_msg, messages_format_test_msg),
+          MK_MOCK_AS(messages::write, messages_write),
+          MK_MOCK(finalizing_test)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number

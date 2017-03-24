@@ -34,7 +34,7 @@ static inline std::string sanitize_version(const std::string &s) {
     return std::regex_replace(s, std::regex{R"xx([\ \t\r\n]+)xx"}, "");
 }
 
-template <MK_MOCK_NAMESPACE(http, get)>
+template <MK_MOCK_AS(http::get, http_get)>
 void get_latest_release_impl(Callback<Error, std::string> callback,
                              Settings settings, Var<Reactor> reactor,
                              Var<Logger> logger) {
@@ -66,7 +66,7 @@ void get_latest_release_impl(Callback<Error, std::string> callback,
     }, {}, settings, reactor, logger, nullptr, 0);
 }
 
-template <MK_MOCK_NAMESPACE(http, get)>
+template <MK_MOCK_AS(http::get, http_get)>
 void get_manifest_as_json_impl(
         std::string latest, Callback<Error, nlohmann::json> callback,
         Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
@@ -105,7 +105,7 @@ static inline std::string sanitize_path(const std::string &s) {
     return std::regex_replace(s, std::regex{R"xx([/\\]+)xx"}, ".");
 }
 
-template <MK_MOCK_NAMESPACE(http, get), MK_MOCK(ostream_bad)>
+template <MK_MOCK_AS(http::get, http_get), MK_MOCK(ostream_bad)>
 void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
                                     std::string country, Callback<Error> cb,
                                     Settings settings, Var<Reactor> reactor,
