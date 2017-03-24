@@ -3,7 +3,7 @@
 # the library rather than multiple times for each "package" based on it
 pkg_name=libressl
 pkg_repository=https://github.com/libressl-portable/portable.git
-pkg_tag=v2.4.4
+pkg_tag=v2.4.5
 pkg_steps=install
 
 pkg_install() {

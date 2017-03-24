@@ -3,7 +3,7 @@
 # the library (for libressl proper and tls_verify.c) rather than twice
 pkg_name=libressl
 pkg_repository=https://github.com/libressl-portable/portable.git
-pkg_tag=v2.4.4
+pkg_tag=v2.4.5
 pkg_steps=install
 
 pkg_install() {
