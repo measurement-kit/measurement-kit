@@ -72,7 +72,7 @@ elif [ "$ARCH" = "armeabi-v7a" ]; then
     CXXFLAGS="$CFLAGS"
 elif [ "$ARCH" = "mips" ]; then
     # Note: mips is actually mipsel (i.e. little endian)
-    TOOLCHAIN_NAME=mipsel-linux-android
+    TOOLCHAIN_NAME=mips64el-linux-android
     DESTDIR_NAME=mips
 elif [ "$ARCH" = "mips64" ]; then
     # Note: this is mips 64bit little endian
@@ -125,10 +125,10 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
 export pkg_configure_flags="--host=${TOOLCHAIN_NAME} --disable-shared $CONFIG_EXTRA"
 
 # Where to install headers and libraries
-export pkg_prefix="${ROOTDIR}/jni"
+export pkg_prefix="${ROOTDIR}"
 
 # Tell ./build/dependency that we are cross compiling
-export pkg_cross="android"
+export pkg_cross="jni"
 
 # Tell ./build/dependency the name of the cross architecture
 export pkg_cross_arch="${DESTDIR_NAME}"

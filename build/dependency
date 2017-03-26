@@ -87,15 +87,19 @@ pkg_make_check() {
 
 pkg_make_install() {
     echo "- make $pkg_make_install_flags install"
-    based=$pkg_rootdir/third_party/tmp/$pkg_name-$pkg_branch_or_tag
-    adir=$based/$pkg_cross_arch
+    vspec=$pkg_branch_or_tag
+    if [ "$pkg_tip" != "" ]; then
+        vspec="$pkg_tip"
+    fi
+    based=$pkg_rootdir/third_party/tmp/$pkg_name-$vspec
+    adir=$based/$pkg_cross/$pkg_cross_arch
     make $pkg_make_install_flags install DESTDIR=$adir
     find $adir -depth -type d -name bin -exec rm -rf {} \;
     find $adir -depth -type d -name pkgconfig -exec rm -rf {} \;
     find $adir -depth -type d -name sbin -exec rm -rf {} \;
     find $adir -depth -type f -name \*.la -exec rm -rf {} \;
-    tarname=$pkg_rootdir/$pkg_name-$pkg_branch_or_tag
-    tarname=$tarname-`echo $pkg_cross_arch|sed 's/\//-/g'`
+    tarname=$pkg_rootdir/$pkg_name-$vspec
+    tarname=$tarname-$pkg_cross-`echo $pkg_cross_arch|sed 's/\//-/g'`
     tarname=$tarname-`date -u +%Y%m%dT%H%M%SZ`
     tarname=$tarname.tgz
     echo ""

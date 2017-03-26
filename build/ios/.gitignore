@@ -1,4 +1,6 @@
 .DS_Store
 ios-dependencies.tgz
 ios-dependencies.tgz.asc
+*.tgz
+*.tgz.asc
 tmp
