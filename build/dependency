@@ -99,7 +99,7 @@ pkg_make_install() {
     find $adir -depth -type d -name sbin -exec rm -rf {} \;
     find $adir -depth -type f -name \*.la -exec rm -rf {} \;
     tarname=$pkg_rootdir/$pkg_name-$vspec
-    tarname=$tarname-$pkg_cross-`echo $pkg_cross_arch|sed 's/\//-/g'`
+    tarname=$tarname-$pkg_cross-$pkg_cross_arch
     tarname=$tarname-`date -u +%Y%m%dT%H%M%SZ`
     tarname=$tarname.tgz
     echo ""
