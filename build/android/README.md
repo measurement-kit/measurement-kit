@@ -19,7 +19,7 @@ run the downloaded file to unpack the NDK:
     /home/simone/Android
     $ ./android-ndk-r10e-linux-x86_64.bin
 
-### On MacOS using brew
+### On macOS using brew
 
 You can install it with brew. Just type the following:
 
@@ -35,7 +35,7 @@ On macOS, Android studio installs the ndk-build at
 
 To cross compile MeasurementKit for Android use
 the instructions contained in 
-[this repository](https://github.com/measurement-kit/measurement-kit-android).
+[this repository](https://github.com/measurement-kit/android-libs).
 
 The scripts contained in this folder are useful to build the dependencies.
 
@@ -45,22 +45,21 @@ available for Android. If you run the script without arguments, it will
 print the options it accepts and the available Android architectures for
 which you can cross compile:
 
-    $ ./dependency
+    $ ./build/android/dependency
     usage: ./build/android/dependency NDK_DIR spec
 
 To cross-compile you need to tell the script where did you install the NDK
-and which dependency `spec` you want to build. For example, on MacOS you can use
+and which dependency `spec` you want to build. For example, on macOS you can use
 the following command line:
 
-    $ ./dependency ~/Library/Android/sdk/ndk-bundle/ndk-build all 
+    $ ./build/android/dependency ~/Library/Android/sdk/ndk-bundle/ndk-build libevent
 
-to build all the MeasurementKit dependencies. Or
+to build libevent.
 
-    $ ./dependency ~/Library/Android/sdk/ndk-bundle/ndk-build libevent
-
-to build just libevent. 
-
-In the above examples we have shown the path to the Android NDK on MacOS. If
+In the above examples we have shown the path to the Android NDK on macOS. If
 you followed the instructions for Linux, you should have written instead:
 
-    $ ./dependency $HOME/Android/android-ndk-r10e/ [spec]
+    $ ./build/android/dependency $HOME/Android/android-ndk-r10e/ [spec]
+
+See also [the documentation of the core script used to build
+dependencies](../../doc/build/dependency.md).
