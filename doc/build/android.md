@@ -1,7 +1,8 @@
-# Build measurement-kit for Android
+# Cross-compiling MK dependencies for Android
 
-This directory contains the scripts needed to cross compile
-measurement-kit for Android platforms.
+We have [a specific repository](https://github.com/measurement-kit/android-libs)
+for compiling MeasurementKit for Android. This file explains how you can get
+the Android NDK and how to use it to cross compile dependencies for Android.
 
 ## Installing the NDK
 
