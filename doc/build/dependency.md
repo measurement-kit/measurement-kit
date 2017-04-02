@@ -12,7 +12,7 @@ wrappers for Android and iOS are, respectively,
 `./build/android/dependency` and `./build/ios/dependency`.
 
 The `dependency` script reads the proper package build specifications
-from `./build/spec`, downloads the sources, possibly apply patches,
+from `./build/spec`, downloads the sources, possibly applies patches,
 and builds the dependency. The wrapper scripts set environment
 variable such that the build dependency can be integrated into the
 iOS or Android build process.
