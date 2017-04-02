@@ -62,4 +62,4 @@ you followed the instructions for Linux, you should have written instead:
     $ ./build/android/dependency $HOME/Android/android-ndk-r10e/ [spec]
 
 See also [the documentation of the core script used to build
-dependencies](../dependency.md).
+dependencies](dependency.md).
