@@ -7,7 +7,7 @@ tarballs, one for iOS and one for Android, that can be downloaded
 during the respective build processes, so to avoid compiling all
 dependencies each time.
 
-Dependencies are build using the `./build/dependency` script whose
+Dependencies are built using the `./build/dependency` script whose
 wrappers for Android and iOS are, respectively,
 `./build/android/dependency` and `./build/ios/dependency`.
 
