@@ -34,12 +34,6 @@ On macOS, Android studio installs the ndk-build at
 
 ## Cross compiling MeasurementKit dependencies for Android
 
-To cross compile MeasurementKit for Android use
-the instructions contained in 
-[this repository](https://github.com/measurement-kit/android-libs).
-
-The scripts contained in this folder are useful to build the dependencies.
-
 The `./dependency` script allows to create the required custom
 toolchains and to cross-compile the dependencies for all the architectures
 available for Android. If you run the script without arguments, it will
