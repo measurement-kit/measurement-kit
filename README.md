@@ -115,7 +115,7 @@ make check
 ### How to build MeasurementKit on Android
 
 To compile MeasurementKit for Android, see the [build/android.md](
-../doc/build/android.md) documentation file.
+doc/build/android.md) documentation file.
 
 ### How to build MeasurementKit on iOS
 
