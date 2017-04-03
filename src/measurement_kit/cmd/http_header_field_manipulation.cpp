@@ -9,7 +9,7 @@ namespace http_header_field_manipulation {
 #define USAGE "usage: measurement_kit http_header_field_manipulation [-v]\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
-    std::string backend = "http://38.107.216.10:80";
+    std::string backend = "http://a.http.th.ooni.io";
     mk::nettests::HttpHeaderFieldManipulationTest test;
     int ch;
     while ((ch = getopt(argc, argv, "b:")) != -1) {

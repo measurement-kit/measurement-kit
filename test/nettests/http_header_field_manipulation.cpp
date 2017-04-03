@@ -13,14 +13,14 @@ using namespace mk;
 
 TEST_CASE("Synchronous http-header-field-manipulation test") {
     test::nettests::make_test<HttpHeaderFieldManipulationTest>()
-        .set_options("backend", "http://38.107.216.10:80")
+        .set_options("backend", "http://a.http.th.ooni.io")
         .run();
 }
 
 TEST_CASE("Asynchronous http-header-field-manipulation test") {
     test::nettests::run_async(
         test::nettests::make_test<HttpHeaderFieldManipulationTest>()
-            .set_options("backend", "http://38.107.216.10:80")
+            .set_options("backend", "http://a.http.th.ooni.io")
     );
 }
 
