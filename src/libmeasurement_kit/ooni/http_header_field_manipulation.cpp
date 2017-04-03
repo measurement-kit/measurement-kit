@@ -13,8 +13,8 @@ namespace ooni {
 using namespace mk::report;
 
 void http_header_field_manipulation(std::string input, Settings options,
-                   Callback<Var<report::Entry>> callback,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+                                    Callback<Var<report::Entry>> callback,
+                                    Var<Reactor> reactor, Var<Logger> logger) {
     Var<Entry> entry(new Entry);
     (*entry)["tampering"] = Entry::object();
     (*entry)["tampering"]["total"] = nullptr;
@@ -29,50 +29,43 @@ void http_header_field_manipulation(std::string input, Settings options,
     std::string random_host = random_str(15) + ".com";
     std::string random_ua = random_choice(constants::COMMON_USER_AGENTS);
 
-    http::Headers headers = { {randomly_capitalize("host"),
-                               random_host},
-                              {randomly_capitalize("user-agent"),
-                               random_ua},
-                              {randomly_capitalize("accept"),
-                               "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
-                              {randomly_capitalize("accept-encoding"),
-                               "gzip,deflate,sdch"},
-                              {randomly_capitalize("accept-language"),
-                               "en-US,en;q=0.8"},
-                              {randomly_capitalize("accept-charset"),
-                               "ISO-8859-1,utf-8;q=0.7,*;q=0.3"}
-                            };
+    http::Headers headers = {
+        {randomly_capitalize("host"), random_host},
+        {randomly_capitalize("user-agent"), random_ua},
+        {randomly_capitalize("accept"),
+         "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
+        {randomly_capitalize("accept-encoding"), "gzip,deflate,sdch"},
+        {randomly_capitalize("accept-language"), "en-US,en;q=0.8"},
+        {randomly_capitalize("accept-charset"),
+         "ISO-8859-1,utf-8;q=0.7,*;q=0.3"}};
 
-    templates::http_request(entry, options, headers, body,
-                            [=](Error err, Var<http::Response> response) {
-                                if (err) {
-                                    logger->debug(
-                                        "http_header_field_manipulation: http-request error: %s",
-                                        err.explain().c_str());
+    templates::http_request(
+        entry, options, headers, body,
+        [=](Error err, Var<http::Response> response) {
+            if (err) {
+                logger->debug(
+                    "http_header_field_manipulation: http-request error: %s",
+                    err.explain().c_str());
 
-                                    (*entry)["failure"] =
-                                        err.as_ooni_error();
-                                }
+                (*entry)["failure"] = err.as_ooni_error();
+            }
 
-                                if (!response) {
-                                    logger->warn("null response");
-                                } else {
-                                    try {
-                                        compare_headers_response(headers,
-                                                                 response,
-                                                                 entry,
-                                                                 logger);
-                                    } catch (const std::exception &exc) {
-                                        (*entry)["failure"] = exc.what();
-                                        logger->warn("exception in "
-                                                     "compare_headers_response(): %s",
-                                                    exc.what());
-                                    }
-                                }
+            if (!response) {
+                logger->warn("null response");
+            } else {
+                try {
+                    compare_headers_response(headers, response, entry, logger);
+                } catch (const std::exception &exc) {
+                    (*entry)["failure"] = exc.what();
+                    logger->warn("exception in "
+                                 "compare_headers_response(): %s",
+                                 exc.what());
+                }
+            }
 
-                                callback(entry);
-                            },
-                            reactor, logger);
+            callback(entry);
+        },
+        reactor, logger);
 }
 
 } // namespace ooni
