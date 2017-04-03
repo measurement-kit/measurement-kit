@@ -17,6 +17,11 @@ void http_header_field_manipulation(std::string input, Settings options,
                    Var<Reactor> reactor, Var<Logger> logger) {
     Var<Entry> entry(new Entry);
     (*entry)["tampering"] = Entry::object();
+    (*entry)["tampering"]["total"] = nullptr;
+    (*entry)["tampering"]["request_line_capitalization"] = nullptr;
+    (*entry)["tampering"]["header_name_diff"] = nullptr;
+    (*entry)["tampering"]["header_field_name"] = nullptr;
+    (*entry)["failure"] = nullptr;
 
     options["http/url"] = options["backend"];
     std::string body = ""; // spec says this is always a GET, so no body
