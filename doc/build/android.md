@@ -47,7 +47,7 @@ To cross-compile you need to tell the script where did you install the NDK
 and which dependency `spec` you want to build. For example, on macOS you can use
 the following command line:
 
-    $ ./build/android/dependency ~/Library/Android/sdk/ndk-bundle/ndk-build libevent
+    $ ./build/android/dependency ~/Library/Android/sdk/ndk-bundle libevent
 
 to build libevent.
 
