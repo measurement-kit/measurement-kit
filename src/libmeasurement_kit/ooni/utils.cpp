@@ -164,58 +164,5 @@ std::string scrub(std::string s, std::string real_probe_ip) {
     return s;
 }
 
-void compare_headers_response(http::Headers headers,
-                             Var<http::Response> response, Var<report::Entry> entry,
-                             Var<Logger> logger) {
-    if (response->body.empty()) {
-        logger->warn("empty response body");
-        (*entry)["tampering"]["total"] = true;
-        (*entry)["tampering"]["request_line_capitalization"] = true;
-        return;
-    }
-
-    nlohmann::json resp;
-    try {
-        resp = nlohmann::json::parse(response->body);
-    } catch (const std::invalid_argument &) {
-        logger->warn("response body not valid JSON");
-        (*entry)["tampering"]["total"] = true;
-        (*entry)["tampering"]["request_line_capitalization"] = true;
-        return;
-    }
-
-    (*entry)["tampering"]["total"] = false;
-
-    if (resp.find("request_line") == resp.end()) {
-        (*entry)["tampering"]["request_line_capitalization"] = true;
-    } else if (resp["request_line"] != "GET / HTTP/1.1") {
-        (*entry)["tampering"]["request_line_capitalization"] = true;
-    } else {
-        (*entry)["tampering"]["request_line_capitalization"] = false;
-    }
-
-    // ooni-probe behavior to report header keys in the request or response
-    // but not both. (case-sensitive, and ignoring values)
-    nlohmann::json resp_headers = resp["headers_dict"];
-    std::set<std::string> req_keys, resp_keys, diff;
-    for (auto it = headers.begin(); it != headers.end(); ++it) {
-        req_keys.insert(it->first);
-        logger->debug("ins %s in req_keys", it->first.c_str());
-    }
-    for (auto it = resp_headers.begin(); it != resp_headers.end(); ++it) {
-        resp_keys.insert(it.key());
-        logger->debug("ins %s in resp_keys", it.key().c_str());
-    }
-
-    std::set_difference(req_keys.begin(), req_keys.end(),
-                        resp_keys.begin(), resp_keys.end(),
-                        std::inserter(diff, diff.begin()));
-    std::set_difference(resp_keys.begin(), resp_keys.end(),
-                        req_keys.begin(), req_keys.end(),
-                        std::inserter(diff, diff.begin()));
-    (*entry)["tampering"]["header_name_diff"] = diff;
-    (*entry)["tampering"]["header_field_name"] = !diff.empty();
-}
-
 } // namespace ooni
 } // namespace mk
