@@ -48,7 +48,7 @@ ErrorOr<Var<BouncerReply>> create_impl(std::string data, Var<Logger> logger) {
     return reply;
 }
 
-template <MK_MOCK_NAMESPACE(http, request)>
+template <MK_MOCK_AS(http::request, http_request)>
 void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                          std::string test_version,
                          std::list<std::string> helpers,

@@ -111,7 +111,8 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
 #undef TRAP_ERRORS
 }
 
-template <MK_MOCK(run_with_specific_server), MK_MOCK_NAMESPACE(mlabns, query)>
+template <MK_MOCK(run_with_specific_server),
+          MK_MOCK_AS(mlabns::query, mlabns_query)>
 void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings,
               Var<Reactor> reactor, Var<Logger> logger) {
     ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
