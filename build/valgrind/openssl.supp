@@ -29,19 +29,3 @@
    fun:_ZN5Catch8runTestsERKNS_3PtrINS_6ConfigEEE
    fun:main
 }
-{
-   <suppression_for_error_in_travis_docker_builds>
-   Memcheck:Cond
-   fun:BN_GF2m_mod_mul_arr
-   obj:/lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-   obj:/lib/x86_64-linux-gnu/libcrypto.so.1.0.0
-   fun:EC_POINT_mul
-   fun:EC_KEY_generate_key
-   obj:/lib/x86_64-linux-gnu/libssl.so.1.0.0
-   obj:/lib/x86_64-linux-gnu/libssl.so.1.0.0
-   obj:/lib/x86_64-linux-gnu/libssl.so.1.0.0
-   obj:/usr/lib/x86_64-linux-gnu/libevent_openssl-2.0.so.5.1.9
-   obj:/usr/lib/x86_64-linux-gnu/libevent-2.0.so.5.1.9
-   fun:event_base_loop
-   fun:_ZN2mk8libevent11poller_loopIXadL_Z9event_newEEXadL_Z10event_freeEEXadL_Z9event_addEEXadL_Z19event_base_dispatchEEEEvNS_3VarI10event_baseEEPNS0_6PollerE
-}
