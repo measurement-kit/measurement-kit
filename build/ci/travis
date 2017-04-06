@@ -44,7 +44,8 @@ export LD_LIBRARY_PATH=$TRAVIS_BUILD_DIR/builtin/lib
 
 make $pkg_make_flags
 
-ldd ./measurement_kit
+ls ./.libs
+ldd ./.libs/measurement_kit
 
 if ! make $pkg_make_flags check-am$VALGRIND; then
     if [ -f test-suite.log ]; then
