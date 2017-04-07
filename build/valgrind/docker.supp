@@ -70,3 +70,17 @@
    fun:event_base_loop
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:EC_POINT_mul
+   fun:EC_KEY_generate_key
+   obj:/lib/x86_64-linux-gnu/libssl.so.1.0.0
+   obj:/lib/x86_64-linux-gnu/libssl.so.1.0.0
+   obj:/lib/x86_64-linux-gnu/libssl.so.1.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libevent_openssl-2.0.so.5.1.9
+   obj:/usr/lib/x86_64-linux-gnu/libevent-2.0.so.5.1.9
+   fun:event_base_loop
+   ...
+}
