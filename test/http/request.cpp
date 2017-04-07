@@ -621,6 +621,7 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
     });
 }
 
+#if 0
 TEST_CASE("We correctly deal with schema-less redirect") {
     /*
      * At the moment of writing this test, http://bacardi.com redirects to
@@ -652,6 +653,7 @@ TEST_CASE("We correctly deal with schema-less redirect") {
             reactor);
     });
 }
+#endif
 
 #endif // ENABLE_INTEGRATION_TESTS
 
