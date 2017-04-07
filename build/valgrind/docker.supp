@@ -71,7 +71,7 @@
    ...
 }
 {
-   <insert_a_suppression_name_here>
+   <insert_a_suppression_name_here_2>
    Memcheck:Value8
    ...
    fun:EC_POINT_mul
