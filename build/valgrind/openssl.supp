@@ -29,3 +29,99 @@
    fun:_ZN5Catch8runTestsERKNS_3PtrINS_6ConfigEEE
    fun:main
 }
+{
+   <libressl_false_positive_on_travis>
+   Memcheck:Cond
+   fun:BN_GF2m_mod_mul_arr
+   fun:ec_GF2m_montgomery_point_multiply
+   fun:ec_GF2m_simple_mul
+   fun:EC_POINT_mul
+   fun:EC_KEY_generate_key
+   fun:ssl3_send_client_key_exchange
+   fun:ssl3_connect
+   fun:ssl23_connect
+   fun:do_handshake
+   fun:bufferevent_run_deferred_callbacks_locked
+   fun:event_process_active_single_queue
+   fun:event_base_loop
+}
+{
+   <meet_another_libressl_false_positive_travis>
+   Memcheck:Cond
+   fun:BN_GF2m_mod_arr
+   fun:BN_GF2m_mod_mul_arr
+   fun:ec_GF2m_montgomery_point_multiply
+   fun:ec_GF2m_simple_mul
+   fun:EC_POINT_mul
+   fun:EC_KEY_generate_key
+   fun:ssl3_send_client_key_exchange
+   fun:ssl3_connect
+   fun:ssl23_connect
+   fun:do_handshake
+   fun:bufferevent_run_deferred_callbacks_locked
+   fun:event_process_active_single_queue
+}
+{
+   <third_libressl_false_positive_on_travis>
+   Memcheck:Cond
+   fun:BN_GF2m_add
+   fun:ec_GF2m_montgomery_point_multiply
+   fun:ec_GF2m_simple_mul
+   fun:EC_POINT_mul
+   fun:EC_KEY_generate_key
+   fun:ssl3_send_client_key_exchange
+   fun:ssl3_connect
+   fun:ssl23_connect
+   fun:do_handshake
+   fun:bufferevent_run_deferred_callbacks_locked
+   fun:event_process_active_single_queue
+   fun:event_base_loop
+}
+{
+   <fourth_libressl_false_positive>
+   Memcheck:Value8
+   fun:BN_GF2m_mod_sqr_arr
+   fun:ec_GF2m_montgomery_point_multiply
+   fun:ec_GF2m_simple_mul
+   fun:EC_POINT_mul
+   fun:EC_KEY_generate_key
+   fun:ssl3_send_client_key_exchange
+   fun:ssl3_connect
+   fun:ssl23_connect
+   fun:do_handshake
+   fun:bufferevent_run_deferred_callbacks_locked
+   fun:event_process_active_single_queue
+   fun:event_base_loop
+}
+{
+   <fifth_libressl_false_positive>
+   Memcheck:Cond
+   fun:BN_GF2m_mod_arr
+   fun:BN_GF2m_mod_mul_arr
+   fun:ec_GF2m_montgomery_point_multiply
+   fun:ec_GF2m_simple_mul
+   fun:EC_POINT_mul
+   fun:EC_KEY_generate_key
+   fun:ssl3_send_client_key_exchange
+   fun:ssl3_connect
+   fun:ssl23_connect
+   fun:do_handshake
+   fun:bufferevent_run_deferred_callbacks_locked
+   fun:event_process_active_single_queue
+}
+{
+   <sixth_libressl_false_positive_on_travis>
+   Memcheck:Cond
+   fun:BN_num_bits_word
+   fun:BN_num_bits
+   fun:ec_GF2m_simple_point2oct
+   fun:ssl3_send_client_key_exchange
+   fun:ssl3_connect
+   fun:ssl23_connect
+   fun:do_handshake
+   fun:bufferevent_run_deferred_callbacks_locked
+   fun:event_process_active_single_queue
+   fun:event_base_loop
+   fun:_ZN2mk8libevent11poller_loopIXadL_Z9event_newEEXadL_Z10event_freeEEXadL_Z9event_addEEXadL_Z19event_base_dispatchEEEEvNS_3VarI10event_baseEEPNS0_6PollerE
+   fun:_ZN2mk8libevent6Poller4loopEv
+}
