@@ -12,9 +12,10 @@ fi
 cd "${ROOTDIR}"
 test -f Makefile && make clean
 test -x configure || ./autogen.sh
-./configure $pkg_configure_flags --with-libevent=${pkg_prefix}                 \
-            --with-geoip=${pkg_prefix} --with-openssl=${pkg_prefix}            \
-            --disable-examples --prefix=${pkg_prefix}                          \
+dd=${pkg_prefix}/${pkg_cross}/${pkg_cross_arch}
+./configure $pkg_configure_flags --with-libevent=${dd}                         \
+            --with-geoip=${dd} --with-openssl=${dd}                            \
+            --disable-examples --prefix=${dd}                                  \
             --disable-shared --disable-binaries
 make $pkg_make_flags
 make install-strip

@@ -114,8 +114,10 @@ make check
 
 ### How to build MeasurementKit on Android
 
-To compile MeasurementKit for Android, see the README.md file contained in
-the `build/android` directory of this repository.
+We have [a specific repository](https://github.com/measurement-kit/android-libs)
+for compiling MeasurementKit for Android. You may also want to read the
+[documentation explaining how to cross compile MK dependencies for Android](
+doc/build/android.md).
 
 ### How to build MeasurementKit on iOS
 
