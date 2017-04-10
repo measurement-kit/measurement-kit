@@ -51,7 +51,7 @@ VALGRIND = $(LIBTOOL) --mode=execute valgrind --trace-children=yes             \
   --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all
 
 VALGRIND_TRAVIS = $(VALGRIND) --suppressions=build/valgrind/openssl.supp
-VALGRIND_DOCKER = $(VALGRIND) --suppressions=build/valgrind/docker.supp
+VALGRIND_DOCKER = $(VALGRIND) --suppressions=build/valgrind/strlen.supp
 
 check-am-valgrind:
 	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND_TRAVIS)'

@@ -621,6 +621,11 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
     });
 }
 
+/*
+ * Test commented out because it floods us with false positives.
+ *
+ * See https://github.com/measurement-kit/measurement-kit/pull/1185.
+ */
 #if 0
 TEST_CASE("We correctly deal with schema-less redirect") {
     /*

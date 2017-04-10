@@ -29,15 +29,3 @@
    fun:_ZN5Catch8runTestsERKNS_3PtrINS_6ConfigEEE
    fun:main
 }
-{
-   <libressl_false_positive_on_travis>
-   Memcheck:Cond
-   ...
-   fun:ssl3_send_client_key_exchange
-   fun:ssl3_connect
-   fun:ssl23_connect
-   fun:do_handshake
-   fun:bufferevent_run_deferred_callbacks_locked
-   fun:event_process_active_single_queue
-   fun:event_base_loop
-}
