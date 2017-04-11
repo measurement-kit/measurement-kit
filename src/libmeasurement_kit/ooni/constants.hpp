@@ -1,11 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_OONI_CONSTANTS_HPP
-#define SRC_OONI_CONSTANTS_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_OONI_CONSTANTS_HPP
+#define SRC_LIBMEASUREMENT_KIT_OONI_CONSTANTS_HPP
+
+#include <measurement_kit/http.hpp>
 
 #include <set>
-#include <measurement_kit/http.hpp>
 
 namespace mk {
 namespace ooni {
@@ -54,6 +55,8 @@ const http::Headers COMMON_CLIENT_HEADERS = {
     "Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
   }
 };
+
+const std::string MEEK_SERVER_RESPONSE = "I\xe2\x80\x99m just a happy little web server.\n";
 
 
 } // namespace constants

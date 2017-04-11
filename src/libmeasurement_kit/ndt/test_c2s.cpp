@@ -2,17 +2,18 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/ndt/test_c2s_impl.hpp"
+#include "../ndt/test_c2s_impl.hpp"
 
 namespace mk {
 namespace ndt {
 namespace test_c2s {
 
-void coroutine(std::string address, int port, double runtime,
+void coroutine(Var<Entry> e, std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout,
-               Settings settings, Var<Logger> logger, Var<Reactor> reactor) {
-    coroutine_impl(address, port, runtime, cb, timeout, settings, logger,
-                   reactor);
+               Settings settings, Var<Reactor> reactor,
+               Var<Logger> logger) {
+    coroutine_impl(e, address, port, runtime, cb, timeout, settings, reactor,
+                   logger);
 }
 
 void run(Var<Context> ctx, Callback<Error> callback) {

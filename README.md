@@ -1,6 +1,15 @@
 # MeasurementKit
 
-[![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit) [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=master&service=github)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/master/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/master) [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit)
+> Portable C++11 network measurement library
+
+[![Android](https://api.bintray.com/packages/measurement-kit/android/android-libs/images/download.svg)](https://bintray.com/measurement-kit/android/android-libs/_latestVersion) [![GitHub license](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://raw.githubusercontent.com/measurement-kit/measurement-kit/master/LICENSE) [![Github Releases](https://img.shields.io/github/release/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/releases) [![Github Issues](https://img.shields.io/github/issues/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/issues)
+
+- - -
+
+| branch | travis-ci | coveralls | gitlab-ci | circle-ci|
+|--------|-----------|-----------|-----------|----------|
+| master | [![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=master)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) | [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/master/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/master) | [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit) |
+| stable | [![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=stable)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=stable)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=stable) | [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/stable/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/stable) | [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit/tree/stable.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit/tree/stable) |
 
 MeasurementKit is a library that implements open network measurement methodologies
 (performance, censorship, etc.) and targets mobile platforms (Android and iOS).
@@ -19,6 +28,8 @@ Currently it implements the following high-level tests:
 - [OONI](https://ooni.torproject.org/)'s [HTTP Invalid Request Line](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-007-http-invalid-request-line.md) test
 
 - [OONI](https://ooni.torproject.org/)'s [TCP Connect](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-008-tcpconnect.md) test
+
+- [OONI](https://ooni.torproject.org/)'s [Meek Fronted Requests](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-014-meek-fronted-requests.md) test
 
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
@@ -81,183 +92,69 @@ git checkout feature/foo
 
 Then proceed with the instruction to build and test MeasurementKit.
 
+For more detailed instructions see [contributing instructions](
+CONTRIBUTING.md).
+
 ## How to build MeasurementKit
 
 ### How to build MeasurementKit on a Unix-like system
 
-To build, MeasurementKit needs:
-
-- a C90 compiler (such as gcc or clang)
-- a C++11 compiler (such as g++ >= 4.9 or clang++ >= 3.6)
-- autoconf, automake, and libtool
-- a Unix environment (such as Linux or MacOS)
-
-C++11 must be enabled, otherwise certain C++11 features such as
-`std::function` will not be recognized.
-
-MeasurementKit includes and unconditionally compiles the
-sources of the following projects:
-
-- [http-parser](https://github.com/joyent/http-parser)
-- [json](https://github.com/nlohmann/json)
-- [Catch](https://github.com/philsquared/Catch) (for tests only)
-- OpenBSD's [strtonum.c](http://cvsweb.openbsd.org/cgi-bin/cvsweb/src/lib/libc/stdlib/strtonum.c)
-
-MeasurementKit also depends on the following projects (which
-are only conditionally compiled as explained below):
-
-- [libevent](https://github.com/libevent/libevent)
-- [geoip](https://github.com/maxmind/geoip-api-c)
-
-The `./configure` script should check whether all
-the dependencies are in place and should configure the compilers
-properly. If a dependency is not found, `./configure` will
-stop and tell you how you could install the dependency.
-
-The vanilla build process is the following:
-
-    ./autogen.sh
-    ./configure
-    make
-
-To tell make to produce less output (as in the Linux kernel
-build process) run:
-
-    make V=0
-
-You can also force `./configure` to select dependencies available
-at specific directories using the following flags:
-
-- `--with-libevent=PREFIX` that tells `./configure` to use the
-libevent library and headers installed at PREFIX
-
-- `--with-geoip=PREFIX` that tells `./configure` to use the
-geoip library and headers installed at PREFIX
-
-In all the above cases you can also specify PREFIX equal to
-`builtin` to force `./configure` to use builtin sources.
-
-For example,
-
-- if libevent is installed at `/opt/local` (meaning that `event.h`
-is `/opt/local/include/event.h` and that `libevent.a` is
-`/opt/local/lib/libevent.a`), use
+Very briefly, to build from the git repository do:
 
 ```
-    ./configure --with-libevent=/opt/local
+./autogen.sh
+./configure
+make
 ```
 
-- to force-compile the libevent distributed along with MeasurementKit, use
+See [the Unix tutorial](doc/tutorial/unix.md) for more details.
 
-```
-    ./build/dependency libevent          # Build and install libevent in `./builtin`
-    ./configure --with-libevent=builtin  # Use what you have just built
-```
 
 ### How to test MeasurementKit on a Unix-like system
 
-Once you have built MeasurementKit, to compile and run the unit
-test programs, run:
+Once you have built MeasurementKit, run tests like:
 
-    make check
+```
+make check
+```
 
 ### How to build MeasurementKit on Android
 
-To compile MeasurementKit for Android, see the README.md file contained in
-the `build/android` directory of this repository.
+We have [a specific repository](https://github.com/measurement-kit/android-libs)
+for compiling MeasurementKit for Android. You may also want to read the
+[documentation explaining how to cross compile MK dependencies for Android](
+doc/build/android.md).
 
 ### How to build MeasurementKit on iOS
 
-To compile and use MeasurementKit for iOS, do the following on a MacOSX
-system where Xcode and its command line tools have been installed:
+Having Xcode command line tools installed, run:
 
 ```
 ./build/ios/library
 ```
 
+See the [iOS tutorial](doc/tutorial/ios.md) for more info.
+
 ### How to add MeasurementKit to an Xcode project.
 
-The CocoaPods podspec has not been submitted yet, but you can already use
-it in your project adding this line in your Podfile:
+Make sure your [Podfile](https://guides.cocoapods.org/syntax/podfile.html)
+looks like this:
 
 ```ruby
-target '<YOUR-TARGET-NAME-HERE>' do
-    pod 'measurement_kit',
-      :git => 'https://github.com/measurement-kit/measurement-kit.git'
-end
-```
-
-You can use a specific branch, e.g.:
-
-```ruby
-target '<YOUR-TARGET-NAME-HERE>' do
+target 'YourTargetNameHere' do
     pod 'measurement_kit',
       :git => 'https://github.com/measurement-kit/measurement-kit.git',
-      :branch => 'branch-name'
+      :branch => 'stable'
 end
 ```
 
-Similarly, you can use a specific tag, e.g.:
-
-```ruby
-target '<YOUR-TARGET-NAME-HERE>' do
-    pod 'measurement_kit', 
-      :git => 'https://github.com/measurement-kit/measurement-kit.git',
-      :tag => 'v0.x.y'
-end
-```
-
-Then type `pod install` and open `.xcworkspace` file (beware not to open the
-`.xcodeproj` file instead, because that alone won't compile).
+Run `pod install` (or `pod update`) and remember to open the
+`.xcworkspace` rather than the `.xcodeproj`. See the [iOS tutorial](
+doc/tutorial/ios.md) for more info.
 
 ## How to use MeasurementKit
 
-The following examples show how to use OONI library.
-
-This first example show how to run a synchronous test. That is, in the
-following example, the *run* call is going to block until the test is
-complete. (Note that in this case the test may or may not run in the context
-of the same thread that called *run*).
-
-```C++
-#include <measurement_kit/ooni.hpp>
-
-// Run sync test
-mk::ooni::HttpInvalidRequestLine()
-    .set_options("backend", "http://127.0.0.1/")
-    .increase_verbosity()
-    .on_log([](const char *s) {
-        // If needed, acquire the proper locks
-        // Process incoming log line
-    })
-    .run();
-
-// Note: run() returns when test is complete
-```
-
-In this second example, instead, we show how to run an asynchronous test. In
-this case, *run* returns immediately, the test runs in a background thread, and
-the callback passed as argument to *run* is invoked when the test completed.
-
-```C++
-// Run async test
-mk::ooni::HttpInvalidRequestLine()
-    .set_options("backend", "http://127.0.0.1/")
-    .increase_verbosity()
-    .on_log([](const char *s) {
-        // If needed, acquire the proper locks
-        // Process incoming log line
-    })
-    .run([]() {
-        // If needed, acquire the proper locks
-        // Handle test completion
-    });
-
-// Note: run() returns immediately, callback called when done
-```
-
-In both cases, you need to be careful inside the callbacks, because in general
-they may be called from background threads.
-
-You can find documentation of MeasurementKit C++ API in the
-[doc/api](doc/api) folder of the repository.
+You probably want to start using the [nettests API](doc/api/nettests.md)
+that is the high level API for running tests. To this end, see also
+the [nettests API examples](example/nettests) and the [Unix
+tutorial](doc/tutorial/unix.md).

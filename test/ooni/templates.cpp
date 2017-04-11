@@ -5,8 +5,8 @@
 #ifdef ENABLE_INTEGRATION_TESTS
 
 #define CATCH_CONFIG_MAIN
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
 #include <measurement_kit/ooni.hpp>
 
 using namespace mk;
@@ -14,15 +14,15 @@ using namespace mk::ooni;
 using namespace mk::report;
 
 TEST_CASE("dns query template works as expected") {
-    loop_with_initial_event_and_connectivity([]() {
+    loop_with_initial_event([]() {
         Var<Entry> entry(new Entry);
         templates::dns_query(
             entry, "A", "IN", "nexa.polito.it", "8.8.8.8:53",
-            [=](Error err, dns::Message) {
+            [=](Error err, Var<dns::Message>) {
                 REQUIRE(!err);
                 templates::dns_query(
                     entry, "A", "IN", "nexa.polito.it", "8.8.8.1:53",
-                    [=](Error err, dns::Message) {
+                    [=](Error err, Var<dns::Message>) {
                         REQUIRE(!!err);
                         nlohmann::json answers;
                         nlohmann::json root;
@@ -88,7 +88,7 @@ TEST_CASE("tcp connect returns error if port is invalid") {
 
 TEST_CASE("http requests template works as expected") {
     Var<Entry> entry(new Entry);
-    loop_with_initial_event_and_connectivity([=]() {
+    loop_with_initial_event([=]() {
         templates::http_request(
             entry, {{"http/url", "http://nexa.polito.it/robots.txt"}}, {}, "",
             [=](Error err, Var<http::Response>) {
@@ -107,16 +107,15 @@ TEST_CASE("http requests template works as expected") {
                         REQUIRE(root.is_object());
                         requests = root["requests"];
                         REQUIRE(requests.is_array());
-                        REQUIRE((requests.size() == 2));
+                        REQUIRE(requests.size() == 2);
                         /* First request (should be ok) */
                         req = requests[0];
                         REQUIRE(req.is_object());
                         REQUIRE((req["failure"] == nullptr));
                         REQUIRE((req["response"]["body"].is_string()));
                         REQUIRE((req["response"]["body"].size() > 0));
-                        // FIXME: response line not saved
-                        /*REQUIRE((req["response"]["response_line"] ==
-                                 "HTTP/1.1 200 OK"));*/
+                        REQUIRE((req["response"]["response_line"] ==
+                                 "HTTP/1.1 200 OK"));
                         int code = req["response"]["code"];
                         REQUIRE((code == 200));
                         REQUIRE((req["response"]["headers"].is_object()));

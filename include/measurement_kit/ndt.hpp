@@ -2,6 +2,5 @@
 #ifndef MEASUREMENT_KIT_NDT_HPP
 #define MEASUREMENT_KIT_NDT_HPP
 #include <measurement_kit/ndt/error.hpp>
-#include <measurement_kit/ndt/ndt_test.hpp>
 #include <measurement_kit/ndt/run.hpp>
 #endif

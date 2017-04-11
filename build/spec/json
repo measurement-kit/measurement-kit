@@ -1,0 +1,9 @@
+pkg_name=json
+pkg_repository=https://github.com/nlohmann/json.git
+pkg_branch_or_tag=v2.1.1
+pkg_steps=install
+
+pkg_install() {
+    echo "Installing $pkg_name header $pkg_tag in MK sources"
+    cp src/json.hpp ../../../include/measurement_kit/ext
+}

@@ -20,40 +20,43 @@ static Error map_error(std::ofstream &file) {
     return GenericError();
 }
 
-Error FileReporter::open() {
-    Error error = BaseReporter::open();
-    if (error) {
-        return error;
-    }
-    file.open(filename);
-    if (!file.good()) {
-        return map_error(file);
-    }
-    return NoError();
+/* static */ Var<BaseReporter> FileReporter::make(std::string s) {
+    Var<FileReporter> reporter(new FileReporter);
+    reporter->filename = s;
+    return reporter;
 }
 
-Error FileReporter::write_entry(report::Entry &entry) {
-    Error error = BaseReporter::write_entry(entry);
-    if (error) {
-        return error;
-    }
-    file << entry.dump() << std::endl;
-    if (!file.good()) {
-        return map_error(file);
-    }
-    return NoError();
+Continuation<Error> FileReporter::open(Report &) {
+    return do_open_([=](Callback<Error> cb) {
+        file.open(filename);
+        if (!file.good()) {
+            cb(map_error(file));
+            return;
+        }
+        cb(NoError());
+    });
 }
 
-Error FileReporter::close() {
-    Error error = BaseReporter::close();
-    if (error) {
-        return error;
-    }
-    file.close();
-    if (!file.good()) {
-        return map_error(file);
-    }
-    return NoError();
+Continuation<Error> FileReporter::write_entry(Entry entry) {
+    return do_write_entry_(entry, [=](Callback<Error> cb) {
+        file << entry.dump() << std::endl;
+        if (!file.good()) {
+            cb(map_error(file));
+            return;
+        }
+        cb(NoError());
+    });
+}
+
+Continuation<Error> FileReporter::close() {
+    return do_close_([=](Callback<Error> cb) {
+        file.close();
+        if (!file.good()) {
+            cb(map_error(file));
+            return;
+        }
+        cb(NoError());
+    });
 }
 
 } // namespace report

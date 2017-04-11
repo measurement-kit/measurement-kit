@@ -1,0 +1,24 @@
+diff --git a/update.sh b/update.sh
+index 0853c6b..b734773 100755
+--- a/update.sh
++++ b/update.sh
+@@ -5,17 +5,8 @@ openbsd_branch=`cat OPENBSD_BRANCH`
+ 
+ # pull in latest upstream code
+ echo "pulling upstream openbsd source"
+-if [ ! -d openbsd ]; then
+-	if [ -z "$LIBRESSL_GIT" ]; then
+-		git clone https://github.com/libressl-portable/openbsd.git
+-	else
+-		git clone $LIBRESSL_GIT/openbsd
+-	fi
+-fi
+-(cd openbsd
+- git fetch
+- git checkout $openbsd_branch
+- git pull --rebase)
++git clone --single-branch --depth 2 --branch $openbsd_branch                   \
++  https://github.com/libressl-portable/openbsd.git
+ 
+ # setup source paths
+ CWD=`pwd`

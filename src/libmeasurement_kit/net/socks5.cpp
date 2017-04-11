@@ -2,14 +2,16 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/net/socks5.hpp"
-#include "src/libmeasurement_kit/net/connect.hpp"
+#include "../net/socks5.hpp"
+#include "../net/connect.hpp"
+
+#include "../libevent/connection.hpp"
 
 namespace mk {
 namespace net {
 
-Socks5::Socks5(Var<Transport> tx, Settings s, Var<Reactor>, Var<Logger> lp)
-    : Emitter(lp), settings(s), conn(tx),
+Socks5::Socks5(Var<Transport> tx, Settings s, Var<Reactor> r, Var<Logger> lp)
+    : Emitter(r, lp), settings(s), conn(tx),
       proxy_address(settings["net/socks5_address"]),
       proxy_port(settings["net/socks5_port"]) {
     socks5_connect_();
@@ -142,8 +144,8 @@ void socks5_connect(std::string address, int port, Settings settings,
                     callback(err, nullptr);
                     return;
                 }
-                Var<Transport> txp = Connection::make(r->connected_bev,
-                                                      reactor, logger);
+                Var<Transport> txp = libevent::Connection::make(
+                        r->connected_bev, reactor, logger);
                 Var<Transport> socks5(
                         new Socks5(txp, settings, reactor, logger));
                 socks5->on_connect([=]() {

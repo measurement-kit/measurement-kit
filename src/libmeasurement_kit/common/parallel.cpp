@@ -6,22 +6,18 @@
 
 namespace mk {
 
-void parallel(std::vector<Continuation<Error>> input, Callback<Error> cb) {
-    static const Error template_error = ParallelOperationError();
-    Var<Error> overall(new Error(NoError()));
-    if (input.size() <= 0) {
-        cb(*overall);
-        return;
-    }
-    overall->child_errors.resize(input.size(), nullptr);
-    Var<size_t> completed(new size_t(0));
-    for (size_t idx = 0; idx < input.size(); ++idx) {
+static void run(
+        size_t idx, std::vector<Continuation<Error>> input, Callback<Error> cb,
+        Var<Error> overall, Var<size_t> completed, size_t parallelism) {
+    if (idx < input.size()) {
         input[idx]([=](Error error) {
             // XXX: code not thread safe, to make thread safe we could
             // share a mutex or use call_later() to serialize
             if (error and *overall == NoError()) {
+                static const Error template_error = ParallelOperationError();
                 overall->code = template_error.code;
                 overall->reason = template_error.reason;
+                // FALLTHROUGH
             }
             overall->child_errors[idx] = Var<Error>(new Error(error));
             *completed += 1;
@@ -34,7 +30,32 @@ void parallel(std::vector<Continuation<Error>> input, Callback<Error> cb) {
                 // compiler flags and we always make this check
                 throw std::runtime_error("unexpected *complete value");
             }
+            run(idx + parallelism, input, cb, overall, completed, parallelism);
         });
+    }
+}
+
+void parallel(std::vector<Continuation<Error>> input, Callback<Error> cb,
+              size_t parallelism) {
+    Var<Error> overall(new Error(NoError()));
+    if (input.size() <= 0) {
+        cb(*overall);
+        return;
+    }
+    overall->child_errors.resize(input.size(), nullptr);
+    Var<size_t> completed(new size_t(0));
+    if (parallelism <= 0) {
+        parallelism = input.size();
+    }
+    /*
+     * Possible improvement: use an atomic shared integer as opposed to
+     * using a counter to speed up the parallel process at the end, when
+     * some "threads" could terminate earlier than others.
+     *
+     * Enhancement suggested by @AntonioLangiu.
+     */
+    for (size_t idx = 0; idx < parallelism; ++idx) {
+        run(idx, input, cb, overall, completed, parallelism);
     }
 }
 

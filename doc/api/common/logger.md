@@ -17,7 +17,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #define MK_LOG_DEBUG2 3
 #define MK_LOG_VERBOSITY_MASK 31
 
-#define MK_LOG_JSON 32 ///< log message is a valid JSON document
+#define MK_LOG_EVENT 32          // Event occurred (encoded as JSON)
+#define MK_LOG_JSON MK_LOG_EVENT // Backward compat for v0.3.x
 
 namespace mk {
 
@@ -36,10 +37,19 @@ class Logger : public NonCopyable, public NonMovable {
     uint32_t get_verbosity();
 
     void on_log(Delegate<uint32_t, const char *> fn);
+    void on_eof(Delegate<> fn);
+    void on_event(Delegate<const char *> fn);
+    void on_progress(Delegate<double, const char *> fn);
 
     void set_logfile(std::string path);
 
+    void progress(double);
+    void set_progress_offset(double offset);
+    void set_progress_scale(double offset);
+
     static Var<Logger> global();
+
+    ~Logger();
 };
 
 /* Functions using the default logger: */
@@ -97,6 +107,7 @@ verbosity level of the message and the message itself. The default log
 function prints on the standard error output the severity (unless the
 severity is INFO, in which case nothing is printed) followed by the log
 message. For example:
+
 ```
 warning: A warning message
 A info message
@@ -106,13 +117,47 @@ debug: A debug2 message
 
 To disable the log callback, pass `nullptr` to it.
 
+The `on_eof()` method allows to register a function to be called when the
+logger is about to be destroyed. You can call this function multiple times
+to register multiple callbacks, if you wish.
+
+By default `MK_LOG_EVENT` messages are passed to the log callback. But you
+can route them to the event callback by specifying it using `on_event()`. In
+such case, those messages will be passed to the event callback only,
+meaning that the log callback will not be called for them and they will
+not be written on the logfile. This behavior is meant to transition between
+when events where passed to the log callback and a future where they will
+be either ignored or passed to the event callback.
+
+The `on_progress` method allows to register a delegate to receive
+progress notifications from measurement-kit tests. A progress notification
+is a tuple composed of a double (between 0.0 and 1.0) and a string: the
+double represents the overall percentage of completion whereas the string
+represents the operation currently in progress.
+
 The `set_logfile` method instructs the logger to write a copy of each log
 message into the specified log file. Setting the logfile has no impact on
 logs written using `on_log` and *viceversa*. By default no log file is
 specified. It is legal (albeit useless) to have a logger not attached to
 any log file and whose `on_log` callback is `nullptr`.
 
+The `progress` method is used to emit progress notifications.
+
+The `set_progress_offset` and `set_progress_scale` methods allow to define,
+respectively, the offset to be added to progress notifications and the
+scale value to multiply the progress notification for. By default the offset
+is 0.0 and the scale is 1.0. These two methods are useful to normalize the
+progress emitted by individual operations (which see _their_ progress as
+a number between 0.0 and 1.0) in the context of a more general progress; e.g.,
+the `MultiNdt` test runs two NDT tests, one using a single TCP stream and
+the other using three TCP streams. Both NDT tests sees their progress as
+between 0.0 and 1.0 but the parent `MultiNdt` class sets the scale equal to
+0.5 and the offset of the second NDT test equal to 0.5, so to normalize
+the progress emitted by the child NDT tests.
+
 The `global()` factory returns the default logger.
+
+The destructor calls the functions registered using `on_eof`.
 
 This module also includes syntactic sugar functions named like `Logger`
 methods that call the namesake method of the default logger. That is:
@@ -155,6 +200,9 @@ because this MAY result in deadlock or internal buffer corruption, depending on
 the mutex implementation. Ideally, the log message should be printed on some
 file, or you should save it as described above and then schedule a delayed call to
 properly process the message, if processing it is going to be slow.
+
+You MUST NOT set up the logger from multiple thread contexts, because methods
+that set callbacks, change the logger behavior, etc., are not thread safe.
 
 # EXAMPLE
 

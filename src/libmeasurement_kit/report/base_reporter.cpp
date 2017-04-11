@@ -2,51 +2,84 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <cstring>
+#include "../common/utils.hpp"
+
 #include <measurement_kit/report.hpp>
-#include "src/libmeasurement_kit/common/utils.hpp"
 
 namespace mk {
 namespace report {
 
-BaseReporter::BaseReporter() {
-    memset(&test_start_time, 0, sizeof (test_start_time));
+/* static */ Var<BaseReporter> BaseReporter::make() {
+    return Var<BaseReporter>(new BaseReporter);
 }
 
-Error BaseReporter::open() {
-    if (openned_) {
-        return ReportAlreadyOpen();
-    }
-    openned_ = true;
-    return NoError();
+BaseReporter::~BaseReporter() {}
+
+Continuation<Error> BaseReporter::do_open_(Continuation<Error> cc) {
+    return [=](Callback<Error> cb) {
+        if (openned_) {
+            // Make the operation idempotent by not failing it, but still pass
+            // a child error to tell the caller report was already openned
+            cb(NoError(ReportAlreadyOpenError()));
+            return;
+        }
+        cc([=](Error error) {
+            if (error) {
+                cb(error);
+                return;
+            }
+            openned_ = true;
+            cb(NoError());
+        });
+    };
 }
 
-Error BaseReporter::write_entry(report::Entry &entry) {
-    if (!openned_) {
-        return ReportNotOpen();
-    }
-    if (closed_) {
-        return ReportAlreadyClosed();
-    }
-    entry["test_name"] = test_name;
-    entry["test_version"] = test_version;
-    entry["test_start_time"] = *mk::timestamp(&test_start_time);
-    // header["options"] = options;
-    entry["probe_ip"] = probe_ip;
-    entry["probe_asn"] = probe_asn;
-    entry["probe_cc"] = probe_cc;
-    entry["software_name"] = software_name;
-    entry["software_version"] = software_version;
-    entry["data_format_version"] = data_format_version;
-    return NoError();
+Continuation<Error>
+BaseReporter::do_write_entry_(Entry entry, Continuation<Error> cc) {
+    return [=](Callback<Error> cb) {
+        if (!openned_) {
+            cb(ReportNotOpenError());
+            return;
+        }
+        if (closed_) {
+            cb(ReportAlreadyClosedError());
+            return;
+        }
+        // On success we save the serialization of the previous entry such
+        // that submitting more than once the same entry is idempontent
+        std::string serio = entry.dump();
+        if (serio == prev_entry_) {
+            cb(NoError(DuplicateEntrySubmitError()));
+            return;
+        }
+        cc([=](Error error) {
+            if (error) {
+                cb(error);
+                return;
+            }
+            prev_entry_ = serio; // Only on success to allow resubmit
+            cb(NoError());
+        });
+    };
 }
 
-Error BaseReporter::close() {
-    if (closed_) {
-        return ReportAlreadyClosed();
-    }
-    closed_ = true;
-    return NoError();
+Continuation<Error> BaseReporter::do_close_(Continuation<Error> cc) {
+    return [=](Callback<Error> cb) {
+        if (closed_) {
+            // Make the operation idempotent by not failing it, but still pass
+            // a child error to tell the caller report was already openned
+            cb(NoError(ReportAlreadyClosedError()));
+            return;
+        }
+        cc([=](Error error) {
+            if (error) {
+                cb(error);
+                return;
+            }
+            closed_ = true;
+            cb(NoError());
+        });
+    };
 }
 
 } // namespace report

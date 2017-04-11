@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_REPORT_FILE_REPORTER_HPP
 #define MEASUREMENT_KIT_REPORT_FILE_REPORTER_HPP
 
-#include <fstream>
 #include <measurement_kit/report/base_reporter.hpp>
 
 namespace mk {
@@ -12,17 +11,18 @@ namespace report {
 
 class FileReporter : public BaseReporter {
   public:
-    std::string filename;
+    static Var<BaseReporter> make(std::string filename);
 
-#define XX __attribute__((warn_unused_result))
+    Continuation<Error> open(Report &report) override;
+    Continuation<Error> write_entry(Entry entry) override;
+    Continuation<Error> close() override;
 
-    Error open() override XX;
-    Error write_entry(Entry &entry) override XX;
-    Error close() override XX;
-
-#undef XX
+    ~FileReporter() override {}
 
   private:
+    FileReporter() {}
+
+    std::string filename;
     std::ofstream file;
 };
 

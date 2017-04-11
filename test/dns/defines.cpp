@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include <measurement_kit/dns.hpp>
 
@@ -11,42 +11,42 @@ using namespace mk;
 using namespace mk::dns;
 
 TEST_CASE("QueryClass works as expected") {
-    QueryClass qclass(QueryClassId::IN);
+    QueryClass qclass(MK_DNS_CLASS_IN);
     QueryClassId id = qclass;
-    REQUIRE(id == QueryClassId::IN);
-    REQUIRE(qclass != QueryClassId::CH);
-    REQUIRE(qclass == QueryClassId::IN);
-    REQUIRE(QueryClass("IN") == QueryClassId::IN);
-    REQUIRE(QueryClass("CS") == QueryClassId::CS);
-    REQUIRE(QueryClass("CH") == QueryClassId::CH);
-    REQUIRE(QueryClass("HS") == QueryClassId::HS);
-    REQUIRE_THROWS(QueryClass("ANTANI"));
+    REQUIRE(id == MK_DNS_CLASS_IN);
+    REQUIRE(qclass != MK_DNS_CLASS_CH);
+    REQUIRE(qclass == MK_DNS_CLASS_IN);
+    REQUIRE(QueryClass("IN") == MK_DNS_CLASS_IN);
+    REQUIRE(QueryClass("CS") == MK_DNS_CLASS_CS);
+    REQUIRE(QueryClass("CH") == MK_DNS_CLASS_CH);
+    REQUIRE(QueryClass("HS") == MK_DNS_CLASS_HS);
+    REQUIRE(QueryClass("ANTANI") == MK_DNS_CLASS_INVALID);
 }
 
 TEST_CASE("QueryType works as expected") {
-    QueryType qclass(QueryTypeId::A);
+    QueryType qclass(MK_DNS_TYPE_A);
     QueryTypeId id = qclass;
-    REQUIRE(id == QueryTypeId::A);
-    REQUIRE(qclass != QueryTypeId::AAAA);
-    REQUIRE(qclass == QueryTypeId::A);
-    REQUIRE(QueryType("A") == QueryTypeId::A);
-    REQUIRE(QueryType("NS") == QueryTypeId::NS);
-    REQUIRE(QueryType("MD") == QueryTypeId::MD);
-    REQUIRE(QueryType("MF") == QueryTypeId::MF);
-    REQUIRE(QueryType("CNAME") == QueryTypeId::CNAME);
-    REQUIRE(QueryType("SOA") == QueryTypeId::SOA);
-    REQUIRE(QueryType("MB") == QueryTypeId::MB);
-    REQUIRE(QueryType("MG") == QueryTypeId::MG);
-    REQUIRE(QueryType("MR") == QueryTypeId::MR);
-    REQUIRE(QueryType("NUL") == QueryTypeId::NUL);
-    REQUIRE(QueryType("WKS") == QueryTypeId::WKS);
-    REQUIRE(QueryType("PTR") == QueryTypeId::PTR);
-    REQUIRE(QueryType("HINFO") == QueryTypeId::HINFO);
-    REQUIRE(QueryType("MINFO") == QueryTypeId::MINFO);
-    REQUIRE(QueryType("MX") == QueryTypeId::MX);
-    REQUIRE(QueryType("TXT") == QueryTypeId::TXT);
-    REQUIRE(QueryType("AAAA") == QueryTypeId::AAAA);
-    REQUIRE(QueryType("REVERSE_A") == QueryTypeId::REVERSE_A);
-    REQUIRE(QueryType("REVERSE_AAAA") == QueryTypeId::REVERSE_AAAA);
-    REQUIRE_THROWS(QueryType("ANTANI"));
+    REQUIRE(id == MK_DNS_TYPE_A);
+    REQUIRE(qclass != MK_DNS_TYPE_AAAA);
+    REQUIRE(qclass == MK_DNS_TYPE_A);
+    REQUIRE(QueryType("A") == MK_DNS_TYPE_A);
+    REQUIRE(QueryType("NS") == MK_DNS_TYPE_NS);
+    REQUIRE(QueryType("MD") == MK_DNS_TYPE_MD);
+    REQUIRE(QueryType("MF") == MK_DNS_TYPE_MF);
+    REQUIRE(QueryType("CNAME") == MK_DNS_TYPE_CNAME);
+    REQUIRE(QueryType("SOA") == MK_DNS_TYPE_SOA);
+    REQUIRE(QueryType("MB") == MK_DNS_TYPE_MB);
+    REQUIRE(QueryType("MG") == MK_DNS_TYPE_MG);
+    REQUIRE(QueryType("MR") == MK_DNS_TYPE_MR);
+    REQUIRE(QueryType("NUL") == MK_DNS_TYPE_NUL);
+    REQUIRE(QueryType("WKS") == MK_DNS_TYPE_WKS);
+    REQUIRE(QueryType("PTR") == MK_DNS_TYPE_PTR);
+    REQUIRE(QueryType("HINFO") == MK_DNS_TYPE_HINFO);
+    REQUIRE(QueryType("MINFO") == MK_DNS_TYPE_MINFO);
+    REQUIRE(QueryType("MX") == MK_DNS_TYPE_MX);
+    REQUIRE(QueryType("TXT") == MK_DNS_TYPE_TXT);
+    REQUIRE(QueryType("AAAA") == MK_DNS_TYPE_AAAA);
+    REQUIRE(QueryType("REVERSE_A") == MK_DNS_TYPE_REVERSE_A);
+    REQUIRE(QueryType("REVERSE_AAAA") == MK_DNS_TYPE_REVERSE_AAAA);
+    REQUIRE(QueryType("ANTANI") == MK_DNS_TYPE_INVALID);
 }

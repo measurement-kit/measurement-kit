@@ -17,6 +17,7 @@ The `net` module contains the following networking functionality:
 - [connect](net/connect.md): Functions to establish connections
 - [error](net/error.md): Network-level errors
 - [transport](net/transport.md): Abstract interface for connected sockets
+- [utils](net/utils.md): Utility functions
 
 # HISTORY
 

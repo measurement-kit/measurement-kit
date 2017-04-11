@@ -2,24 +2,52 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/common/check_connectivity.hpp"
-#include "src/libmeasurement_kit/common/poller.hpp"
-#include <measurement_kit/common.hpp>
+#include "../libevent/poller.hpp"
 
 namespace mk {
 
-/*static*/ Var<Reactor> Reactor::make() { return Var<Reactor>(new Poller); }
-
-void loop_with_initial_event_and_connectivity(std::function<void()> cb) {
-    if (!CheckConnectivity::is_down()) {
-        loop_with_initial_event(cb);
-    } else {
-        warn("Test skipped because network is down");
-    }
+/*static*/ Var<Reactor> Reactor::make() {
+    return Var<Reactor>(new libevent::Poller);
 }
 
-void reactor_call_soon(Var<Reactor> reactor, Callback<> callback) {
+Reactor::~Reactor() {}
+
+void Reactor::call_soon(Callback<> cb) {
+    call_later(0.0, cb);
+}
+
+void Reactor::loop_with_initial_event(Callback<> cb) {
+    call_soon(cb);
+    loop();
+}
+
+/*static*/ Var<Reactor> Reactor::global() {
+    static Var<Reactor> singleton = make();
+    return singleton;
+}
+
+void call_soon(Callback<> callback, Var<Reactor> reactor) {
     reactor->call_soon(callback);
+}
+
+void call_later(double delta, Callback<> callback, Var<Reactor> reactor) {
+    reactor->call_later(delta, callback);
+}
+
+void loop_with_initial_event(Callback<> callback, Var<Reactor> reactor) {
+    reactor->loop_with_initial_event(callback);
+}
+
+void loop(Var<Reactor> reactor) {
+    reactor->loop();
+}
+
+void loop_once(Var<Reactor> reactor) {
+    reactor->loop_once();
+}
+
+void break_loop(Var<Reactor> reactor) {
+    reactor->break_loop();
 }
 
 } // namespace mk

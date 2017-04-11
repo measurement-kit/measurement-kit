@@ -46,6 +46,8 @@ void mk::http::request_sendrecv(mk::Var<mk::net::Transport> txp,
                                 mk::Callback<mk::Error, mk::Var<mk::http::Response>> callback,
                                 mk::Var<mk::Reactor> reactor = mk::Reactor::global(),
                                 mk::Var<mk::Logger> logger = mk::Logger::global());
+
+ErrorOr<Url> mk::redirect(const Url &orig_url, const std::string &location);
 ```
 
 # STABILITY
@@ -151,6 +153,9 @@ class Response {
 };
 ```
 
+The `redirect()` function will construct a new URL from the existing URL and
+a location header, basically implementing MK redirection logic.
+
 # EXAMPLE
 ```C++
 #include <measurement_kit/http.hpp>
@@ -176,11 +181,11 @@ http::request({
 
 # BUGS
 
-- It is not possible to search HTTP headers in a case insensitive fashion
+- The `http/ignore_body` setting is not implemented.
 
-- The `Response::response_line` field is always empty
-
-- The `http/ignore_body` setting is not implemented
+- The `Var<Response>` returned by the various callbacks MAY be pointing
+  to `nullptr` and, moreover, there MAY be cases where `Var<Response> response`
+  is pointing to a valid response but `response->request` is `nullptr`.
 
 # HISTORY
 

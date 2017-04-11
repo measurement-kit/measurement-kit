@@ -1,19 +1,18 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_NDT_INTERNAL_HPP
-#define SRC_NDT_INTERNAL_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NDT_INTERNAL_HPP
+#define SRC_LIBMEASUREMENT_KIT_NDT_INTERNAL_HPP
 
 // This implementation targets v3.7.0 of the NDT protocol
 // See <https://github.com/ndt-project/ndt/wiki/NDTProtocol>
 
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include <list>
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/ext/json.hpp>
+#include "../common/utils.hpp"
+#include "measure_speed.hpp"
+
+#include <measurement_kit/ext.hpp>
 #include <measurement_kit/ndt.hpp>
 #include <measurement_kit/net.hpp>
-#include <string>
 
 /*
  ____        __ _       _ _   _
@@ -38,12 +37,16 @@
 #define MSG_WAITING 10
 #define MSG_EXTENDED_LOGIN 11
 
-#define TEST_MID 1
+// Those are the original defines of NDT. I'd rather use them in the
+// implementation rather than using our define names.
+#define TEST_MID MK_NDT_MIDDLEBOX
 #define TEST_C2S MK_NDT_UPLOAD
 #define TEST_S2C MK_NDT_DOWNLOAD
-#define TEST_SFW 8
-#define TEST_STATUS 16
-#define TEST_META 32
+#define TEST_SFW MK_NDT_SIMPLE_FIREWALL
+#define TEST_STATUS MK_NDT_STATUS
+#define TEST_META MK_NDT_META
+#define TEST_C2S_EXT MK_NDT_UPLOAD_EXT
+#define TEST_S2C_EXT MK_NDT_DOWNLOAD_EXT
 
 #define KICKOFF_MESSAGE "123456 654321"
 #define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
@@ -85,6 +88,8 @@ struct Context {
     Callback<Error> callback;
     Var<Entry> entry;
     std::list<std::string> granted_suite;
+    size_t granted_suite_count = 0;
+    size_t current_test_count = 0;
     Var<Logger> logger = Logger::global();
     int port = NDT_PORT;
     Var<Reactor> reactor = Reactor::global();
@@ -162,10 +167,10 @@ void disconnect_and_callback(Var<Context> ctx, Error err);
 */
 namespace test_c2s {
 
-void coroutine(std::string address, int port, double runtime,
+void coroutine(Var<Entry>, std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
-               Settings settings = {}, Var<Logger> logger = Logger::global(),
-               Var<Reactor> reactor = Reactor::global());
+               Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
+               Var<Logger> logger = Logger::global());
 
 void run(Var<Context> ctx, Callback<Error> callback);
 
@@ -198,13 +203,29 @@ void run(Var<Context> ctx, Callback<Error> callback);
 */
 namespace test_s2c {
 
-void coroutine(Var<Entry> report_entry, std::string address, int port,
+struct Params {
+    int port = -1;
+    double duration = 10.0;      // ignored by our implementation
+    bool snaps_enabled = false;  // we always take snaps, never report them
+    double snaps_delay = 0.5;    // we ignore what is sent by the server
+    double snaps_offeset = 0.0;  // ignored by our implementation
+    int num_streams = 1;
+
+    Params(){}
+
+    // This constructor only sets the port and all the other settings
+    // instead remain at their default value
+    Params(int port) : port(port) {}
+};
+
+void coroutine(Var<Entry> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb,
                double timeout = 10.0, Settings settings = {},
-               Var<Logger> logger = Logger::global(),
-               Var<Reactor> reactor = Reactor::global());
+               Var<Reactor> reactor = Reactor::global(),
+               Var<Logger> logger = Logger::global());
 
-void finalizing_test(Var<Context> ctx, Callback<Error> callback);
+void finalizing_test(Var<Context> ctx, Var<Entry> cur_entry,
+                     Callback<Error> callback);
 
 void run(Var<Context> ctx, Callback<Error> callback);
 
@@ -220,13 +241,14 @@ void run(Var<Context> ctx, Callback<Error> callback);
     Useful functions used by all modules.
 */
 
-inline void log_speed(Var<Logger> logger, std::string type,
+inline void log_speed(Var<Logger> logger, std::string type, int num_streams,
                       double elapsed, double speed) {
     logger->log(MK_LOG_JSON | MK_LOG_INFO, R"xx({
             "type": "%s",
             "elapsed": [%lf, "s"],
+            "num_streams": %d,
             "speed": [%lf, "kbit/s"]
-        })xx", type.c_str(), elapsed, speed);
+        })xx", type.c_str(), elapsed, num_streams, speed);
 }
 
 } // namespace mk

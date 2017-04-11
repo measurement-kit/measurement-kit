@@ -1,15 +1,15 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_OONI_COLLECTOR_CLIENT_IMPL_HPP
-#define SRC_OONI_COLLECTOR_CLIENT_IMPL_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_OONI_COLLECTOR_CLIENT_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_OONI_COLLECTOR_CLIENT_IMPL_HPP
 
 // This file implements the OONI collector client protocol
 // See <https://github.com/TheTorProject/ooni-spec/blob/master/oonib.md>
 
-#include <fstream>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/http.hpp>
 
 namespace mk {
 namespace ooni {
@@ -32,19 +32,28 @@ void post(Var<Transport> transport, std::string url_extra, std::string body,
           Callback<Error, nlohmann::json> callback, Settings conf = {},
           Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
-template <MK_MOCK_NAMESPACE(http, request_sendrecv)>
+template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void post_impl(Var<Transport> transport, std::string append_to_url,
                std::string body, Callback<Error, nlohmann::json> callback,
                Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+    std::string url = "";
+    Headers headers;
     if (settings.find("collector_base_url") == settings.end()) {
         callback(MissingCollectorBaseUrlError(), nullptr);
         return;
     }
-    std::string url = settings["collector_base_url"];
+    if (settings.find("collector_front_domain") != settings.end()) {
+        mk::http::Url base_url = mk::http::parse_url(settings["collector_base_url"]);
+        url = "https://";
+        url += settings["collector_front_domain"];
+        url += base_url.path; // XXX should we do more?
+        headers["Host"] = base_url.address; // XXX this is confusing that it's called address
+    } else {
+        url = settings["collector_base_url"];
+    }
     url += append_to_url;
     settings["http/url"] = url;
     settings["http/method"] = "POST";
-    Headers headers;
     if (body != "") {
         headers["Content-Type"] = "application/json";
     }
@@ -93,18 +102,27 @@ Error valid_entry(Entry entry);
       |_|
 */
 
-template <MK_MOCK_NAMESPACE(http, request_connect)>
+template <MK_MOCK_AS(http::request_connect, http_request_connect)>
 void connect_impl(Settings settings, Callback<Error, Var<Transport>> callback,
                   Var<Reactor> reactor, Var<Logger> logger) {
+    std::string url;
     if (settings.find("collector_base_url") == settings.end()) {
         callback(MissingCollectorBaseUrlError(), nullptr);
         return;
     }
-    settings["http/url"] = settings.at("collector_base_url");
+    if (settings.find("collector_front_domain") != settings.end()) {
+        mk::http::Url base_url = mk::http::parse_url(settings["collector_base_url"]);
+        url = "https://";
+        url += settings["collector_front_domain"];
+        url += base_url.path;
+    } else {
+        url = settings["collector_base_url"];
+    }
+    settings["http/url"] = url;
     http_request_connect(settings, callback, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, post)>
+template <MK_MOCK_AS(collector::post, collector_post)>
 void create_report_impl(Var<Transport> transport, Entry entry,
                         Callback<Error, std::string> callback,
                         Settings settings, Var<Reactor> reactor,
@@ -153,11 +171,49 @@ void create_report_impl(Var<Transport> transport, Entry entry,
                    settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, post)>
+template <MK_MOCK_AS(collector::connect, collector_connect),
+          MK_MOCK_AS(collector::create_report, collector_create_report)>
+void connect_and_create_report_impl(report::Entry entry,
+                                    Callback<Error, std::string> callback,
+                                    Settings settings, Var<Reactor> reactor,
+                                    Var<Logger> logger) {
+    collector_connect(settings, [=](Error error, Var<Transport> txp) {
+        if (error) {
+            callback(error, "");
+            return;
+        }
+        collector_create_report(txp, entry, [=](Error error, std::string rid) {
+            txp->close([=]() {
+                callback(error, rid);
+            });
+        }, settings, reactor, logger);
+    }, reactor, logger);
+}
+
+template <MK_MOCK_AS(collector::post, collector_post)>
 void update_report_impl(Var<Transport> transport, std::string report_id,
                         Entry entry, Callback<Error> callback,
                         Settings settings, Var<Reactor> reactor,
                         Var<Logger> logger) {
+
+    /*
+     * If needed, overwrite the `report_id` field with what was
+     * passed us by the server, which should be authoritative.
+     *
+     * Note that `entry` is passed by copy so changing it has no
+     * effect outside of this function.
+     *
+     * This action must be performed in addition to `valid_entry()`
+     * because that function does not check for report_id.
+     *
+     * We warn if `report_id` is not present because higher layers
+     * should already have set the report-id's value.
+     */
+    if (entry["report_id"] == nullptr) {
+        logger->warn("collector: forcing report_id which was not set");
+        entry["report_id"] = report_id;
+    }
+
     Error err = valid_entry(entry);
     if (err != NoError()) {
         callback(err);
@@ -173,25 +229,59 @@ void update_report_impl(Var<Transport> transport, std::string report_id,
                    settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, post)>
+template <MK_MOCK_AS(collector::connect, collector_connect),
+          MK_MOCK_AS(collector::update_report, collector_update_report)>
+void connect_and_update_report_impl(std::string report_id, report::Entry entry,
+                                    Callback<Error> callback,
+                                    Settings settings, Var<Reactor> reactor,
+                                    Var<Logger> logger) {
+    collector_connect(settings, [=](Error error, Var<Transport> txp) {
+        if (error) {
+            callback(error);
+            return;
+        }
+        collector_update_report(txp, report_id, entry, [=](Error error) {
+            txp->close([=]() {
+                callback(error);
+            });
+        }, settings, reactor, logger);
+    }, reactor, logger);
+}
+
+template <MK_MOCK_AS(collector::post, collector_post)>
 void close_report_impl(Var<Transport> transport, std::string report_id,
                        Callback<Error> callback, Settings settings,
                        Var<Reactor> reactor, Var<Logger> logger) {
-    // Here we log at level INFO so we can save one extra lambda
-    // below to just tell the user how closing report went
-    logger->info("closing report...");
     collector_post(transport, "/report/" + report_id + "/close", "",
                    [=](Error err, nlohmann::json) {
-                       logger->info("closing report... %d", err.code);
                        callback(err);
                    },
                    settings, reactor, logger);
 }
 
+template <MK_MOCK_AS(collector::connect, collector_connect),
+          MK_MOCK_AS(collector::close_report, collector_close_report)>
+void connect_and_close_report_impl(std::string report_id,
+                                   Callback<Error> callback,
+                                   Settings settings, Var<Reactor> reactor,
+                                   Var<Logger> logger) {
+    collector_connect(settings, [=](Error error, Var<Transport> txp) {
+        if (error) {
+            callback(error);
+            return;
+        }
+        collector_close_report(txp, report_id, [=](Error error) {
+            txp->close([=]() {
+                callback(error);
+            });
+        }, settings, reactor, logger);
+    }, reactor, logger);
+}
+
 ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger);
 
-template <MK_MOCK_NAMESPACE(collector, update_report),
-          MK_MOCK_NAMESPACE(collector, get_next_entry)>
+template <MK_MOCK_AS(collector::update_report, collector_update_report),
+          MK_MOCK_AS(collector::get_next_entry, collector_get_next_entry)>
 void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
                                 std::string report_id, int line, Entry entry,
                                 Callback<Error> callback, Settings settings,
@@ -233,10 +323,11 @@ void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
         settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, get_next_entry),
-          MK_MOCK_NAMESPACE(collector, connect),
-          MK_MOCK_NAMESPACE(collector, create_report)>
+template <MK_MOCK_AS(collector::get_next_entry, collector_get_next_entry),
+          MK_MOCK_AS(collector::connect, collector_connect),
+          MK_MOCK_AS(collector::create_report, collector_create_report)>
 void submit_report_impl(std::string filepath, std::string collector_base_url,
+                        std::string collector_front_domain,
                         Callback<Error> callback, Settings settings,
                         Var<Reactor> reactor, Var<Logger> logger) {
 
@@ -252,6 +343,9 @@ void submit_report_impl(std::string filepath, std::string collector_base_url,
     }
 
     settings["collector_base_url"] = collector_base_url;
+    if (collector_front_domain != "") {
+        settings["collector_front_domain"] = collector_front_domain;
+    }
     logger->info("connecting to collector %s...", collector_base_url.c_str());
     collector_connect(
         settings,

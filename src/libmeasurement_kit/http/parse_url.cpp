@@ -2,7 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "src/libmeasurement_kit/ext/http-parser/http_parser.h"
+#include "../ext/http_parser.h"
+
 #include <measurement_kit/http.hpp>
 
 namespace mk {
@@ -59,7 +60,13 @@ std::string Url::str() {
     std::stringstream sst;
     sst << schema;
     sst << "://";
+    if (net::is_ipv6_addr(address)) {
+        sst << "[";
+    }
     sst << address;
+    if (net::is_ipv6_addr(address)) {
+        sst << "]";
+    }
     if ((schema == "http" and port != 80) or
         (schema == "https" and port != 443)) {
         sst << ":";

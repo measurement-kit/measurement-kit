@@ -4,12 +4,15 @@
 #ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
-#include <cstdint>
-#include <fstream>
+#include <measurement_kit/common/aaa_base.hpp>
 #include <measurement_kit/common/delegate.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/var.hpp>
+
+#include <cstdint>
+#include <fstream>
+#include <list>
 #include <mutex>
 #include <stdarg.h>
 
@@ -21,12 +24,17 @@
 #define MK_LOG_DEBUG2 3
 #define MK_LOG_VERBOSITY_MASK 31
 
-#define MK_LOG_JSON 32 ///< Information encoded as JSON
+#define MK_LOG_EVENT 32 // Information encoded as JSON
+
+// Backwards compatibility until v0.5.0
+#define MK_LOG_JSON MK_LOG_EVENT
 
 namespace mk {
 
 class Logger : public NonCopyable, public NonMovable {
   public:
+    // TODO: refactor class to move all implementation in .cpp files
+
     static Var<Logger> make();
 
     void logv(uint32_t, const char *, va_list)
@@ -44,20 +52,26 @@ class Logger : public NonCopyable, public NonMovable {
 
     void on_log(Delegate<uint32_t, const char *> fn) { consumer_ = fn; }
 
-    void on_eof(Delegate<> fn) { eof_handler_ = fn; }
+    void on_eof(Delegate<> fn);
+
+    void on_event(Delegate<const char *> fn);
+
+    void on_progress(Delegate<double, const char *> fn);
 
     void set_logfile(std::string fpath);
+
+    void progress(double, const char *);
+
+    void set_progress_offset(double offset);
+
+    void set_progress_scale(double scale);
 
     static Var<Logger> global() {
         static Var<Logger> singleton(new Logger);
         return singleton;
     }
 
-    ~Logger() {
-        if (eof_handler_) {
-            eof_handler_();
-        }
-    }
+    ~Logger();
 
   private:
     Delegate<uint32_t, const char *> consumer_;
@@ -65,7 +79,11 @@ class Logger : public NonCopyable, public NonMovable {
     char buffer_[32768];
     std::mutex mutex_;
     Var<std::ofstream> ofile_;
-    Delegate<> eof_handler_;
+    std::list<Delegate<>> eof_handlers_;
+    Delegate<const char *> event_handler_;
+    Delegate<double, const char *> progress_handler_;
+    double progress_offset_ = 0.0;
+    double progress_scale_ = 1.0;
 
     Logger();
 };

@@ -3,12 +3,9 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "src/libmeasurement_kit/mlabns/mlabns_impl.hpp"
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/http.hpp>
-#include <measurement_kit/mlabns.hpp>
+#include "../src/libmeasurement_kit/mlabns/mlabns_impl.hpp"
 
 using namespace mk;
 
@@ -37,6 +34,7 @@ TEST_CASE("Query can pass the settings to the dns level") {
     settings["mlabns/metro"] = "trn";
     settings["mlabns/policy"] = "random";
     settings["dns/nameserver"] = "8.8.8.1";
+    settings["dns/engine"] = "libevent";
     std::string tool = "neubot";
 
     loop_with_initial_event([=]() {

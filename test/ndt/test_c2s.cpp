@@ -3,25 +3,25 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "src/libmeasurement_kit/ndt/test_c2s_impl.hpp"
-#include <measurement_kit/ndt.hpp>
+#include "../src/libmeasurement_kit/ndt/test_c2s_impl.hpp"
 
 using namespace mk;
 using namespace mk::ndt;
 using json = nlohmann::json;
 
 static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
-                 Var<Logger>, Var<Reactor>) {
+                 Var<Reactor>, Var<Logger>) {
     cb(MockedError(), nullptr);
 }
 
 TEST_CASE("coroutine() is robust to connect error") {
+    Var<Entry> entry{new Entry};
     test_c2s::coroutine_impl<fail>(
-        "www.google.com", 3301, 10.0,
+        entry, "www.google.com", 3301, 10.0,
         [](Error err, Continuation<Error>) { REQUIRE(err == MockedError()); },
-        2.0, {}, Logger::global(), Reactor::global());
+        2.0, {}, Reactor::global(), Logger::global());
 }
 
 static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb,
@@ -86,9 +86,9 @@ static void test_prepare(Var<Context>,
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
-static void fail(std::string, int, double,
+static void fail(Var<Entry>, std::string, int, double,
                  Callback<Error, Continuation<Error>> cb, double, Settings,
-                 Var<Logger>, Var<Reactor>) {
+                 Var<Reactor>, Var<Logger>) {
     cb(MockedError(), [](Callback<Error>) {
         REQUIRE(false); // should not happen
     });
@@ -100,10 +100,10 @@ TEST_CASE("run() deals with coroutine fail") {
         ctx, [](Error err) { REQUIRE(err == ConnectTestConnectionError()); });
 }
 
-static void connect_but_fail_later(std::string, int, double,
+static void connect_but_fail_later(Var<Entry>, std::string, int, double,
                                    Callback<Error, Continuation<Error>> cb,
-                                   double, Settings, Var<Logger>,
-                                   Var<Reactor>) {
+                                   double, Settings, Var<Reactor>,
+                                   Var<Logger>) {
     cb(NoError(), [](Callback<Error> cb) { cb(MockedError()); });
 }
 
@@ -130,9 +130,9 @@ TEST_CASE("run() deals with coroutine terminating with error") {
         ctx, [](Error err) { REQUIRE(err == MockedError()); });
 }
 
-static void coro_ok(std::string, int, double,
+static void coro_ok(Var<Entry>, std::string, int, double,
                     Callback<Error, Continuation<Error>> cb, double, Settings,
-                    Var<Logger>, Var<Reactor>) {
+                    Var<Reactor>, Var<Logger>) {
     cb(NoError(), [](Callback<Error> cb) { cb(NoError()); });
 }
 
@@ -155,12 +155,14 @@ static void test_msg(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("run() deals with error when reading TEST_FINALIZE") {
     Var<Context> ctx(new Context);
+    ctx->entry.reset(new Entry);
     test_c2s::run_impl<test_prepare, coro_ok, test_start, test_msg, fail>(
         ctx, [](Error err) { REQUIRE(err == ReadingTestFinalizeError()); });
 }
 
 TEST_CASE("run() deals with unexpected message instead of TEST_FINALIZE") {
     Var<Context> ctx(new Context);
+    ctx->entry.reset(new Entry);
     test_c2s::run_impl<test_prepare, coro_ok, test_start, test_msg, invalid>(
         ctx, [](Error err) { REQUIRE(err == NotTestFinalizeError()); });
 }

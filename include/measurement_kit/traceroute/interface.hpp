@@ -37,22 +37,9 @@
 // Disable for non Linux until we figure out how to build on iOS
 #ifdef __linux__
 
-#include <measurement_kit/common/reactor.hpp>
-
-#include <functional>
-#include <memory>
-#include <stdexcept>
-#include <string>
-
-#include <sys/types.h>
-
-// Forward declarations
-struct event_base;
+#include <measurement_kit/common.hpp>
 
 namespace mk {
-
-class Error;
-
 namespace traceroute {
 
 /// Meaning of a probe result
@@ -102,13 +89,13 @@ class ProberInterface {
                             std::string payload, double timeout) = 0;
 
     /// Set callback called when result is available
-    virtual void on_result(std::function<void(ProbeResult)> cb) = 0;
+    virtual void on_result(Callback<ProbeResult> cb) = 0;
 
     /// Set callback called on timeout
-    virtual void on_timeout(std::function<void()> cb) = 0;
+    virtual void on_timeout(Callback<> cb) = 0;
 
     /// Set callback called when there is an error
-    virtual void on_error(std::function<void(Error)> cb) = 0;
+    virtual void on_error(Callback<Error> cb) = 0;
 
     /// Default copy constructor
     ProberInterface(ProberInterface &) = default;
@@ -135,9 +122,8 @@ template <class Impl> class Prober : public ProberInterface {
     /// \param port The port to bind
     /// \param evbase Event base to use (optional)
     /// \throws Exception on error
-    Prober(bool use_ipv4, int port,
-           event_base *evbase = Reactor::global()->get_event_base()) {
-        impl_.reset(new Impl(use_ipv4, port, evbase));
+    Prober(bool use_ipv4, int port, Var<Reactor> reactor = Reactor::global()) {
+        impl_.reset(new Impl(use_ipv4, port, reactor));
     }
 
     void send_probe(std::string addr, int port, int ttl, std::string payload,
@@ -145,15 +131,15 @@ template <class Impl> class Prober : public ProberInterface {
         impl_->send_probe(addr, port, ttl, payload, timeout);
     }
 
-    void on_result(std::function<void(ProbeResult)> cb) override {
+    void on_result(Callback<ProbeResult> cb) override {
         impl_->on_result(cb);
     }
 
-    void on_timeout(std::function<void()> cb) override {
+    void on_timeout(Callback<> cb) override {
         impl_->on_timeout(cb);
     }
 
-    void on_error(std::function<void(Error)> cb) override {
+    void on_error(Callback<Error> cb) override {
         impl_->on_error(cb);
     }
 

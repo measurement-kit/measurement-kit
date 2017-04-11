@@ -1,10 +1,11 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_HTTP_REQUEST_HPP
-#define SRC_HTTP_REQUEST_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_HTTP_REQUEST_HPP
+#define SRC_LIBMEASUREMENT_KIT_HTTP_REQUEST_HPP
 
-#include "src/libmeasurement_kit/http/response_parser.hpp"
+#include "../http/response_parser.hpp"
+
 #include <measurement_kit/http.hpp>
 
 namespace mk {
@@ -12,7 +13,7 @@ namespace http {
 
 // TODO: mock more functions in request.cpp
 
-template <MK_MOCK_NAMESPACE(net, connect)>
+template <MK_MOCK_AS(net::connect, net_connect)>
 void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
                           Var<Reactor> reactor = Reactor::global(),
                           Var<Logger> logger = Logger::global()) {
@@ -40,7 +41,7 @@ void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
     } else if (url->schema == "https") {
         settings["net/ssl"] = true;
     }
-    net_connect(url->address, url->port, cb, settings, logger, reactor);
+    net_connect(url->address, url->port, cb, settings, reactor, logger);
 }
 
 } // namespace http

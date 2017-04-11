@@ -2,13 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
-#include <regex>
-#include <string>
-#include <utility>
 
 using json = nlohmann::json;
 
@@ -57,7 +53,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
     return query;
 }
 
-template <MK_MOCK_NAMESPACE(http, get)>
+template <MK_MOCK_AS(http::get, http_get)>
 void query_impl(std::string tool, Callback<Error, Reply> callback,
                 Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
     ErrorOr<std::string> query = as_query(settings);
@@ -75,7 +71,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
     }
     url += tool;
     url += *query;
-    logger->info("query mlabns for tool %s", tool.c_str());
+    logger->debug("query mlabns for tool %s", tool.c_str());
     logger->debug("mlabns url: %s", url.c_str());
     http_get(url,
         [callback, logger](Error error, Var<http::Response> response) {
@@ -108,7 +104,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
                 callback(JsonDomainError(), Reply());
                 return;
             }
-            logger->info("mlabns says to use %s", reply.fqdn.c_str());
+            logger->info("Discovered mlab test server: %s", reply.fqdn.c_str());
             callback(NoError(), reply);
         },
         {}, settings, reactor, logger, nullptr, 0);

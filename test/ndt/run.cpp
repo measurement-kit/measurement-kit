@@ -3,10 +3,9 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "src/libmeasurement_kit/ndt/run_impl.hpp"
-#include <measurement_kit/ndt.hpp>
+#include "../src/libmeasurement_kit/ndt/run_impl.hpp"
 
 using namespace mk;
 using namespace mk::ndt;
@@ -29,7 +28,7 @@ TEST_CASE("We deal with connect error") {
     run_with_specific_server_impl<failure, die, die, die, die, die, die, die,
                                   die, protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Logger::global(), Reactor::global());
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("We deal with send-login error") {
@@ -37,7 +36,7 @@ TEST_CASE("We deal with send-login error") {
     run_with_specific_server_impl<success, failure, die, die, die, die, die,
                                   die, die, protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Logger::global(), Reactor::global());
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("We deal with recv-and-ignore-kickoff error") {
@@ -45,7 +44,7 @@ TEST_CASE("We deal with recv-and-ignore-kickoff error") {
     run_with_specific_server_impl<success, success, failure, die, die, die, die,
                                   die, die, protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Logger::global(), Reactor::global());
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("We deal with wait-in-queue error") {
@@ -54,7 +53,7 @@ TEST_CASE("We deal with wait-in-queue error") {
                                   die, die, die,
                                   protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Logger::global(), Reactor::global());
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("We deal with recv-version error") {
@@ -63,7 +62,7 @@ TEST_CASE("We deal with recv-version error") {
                                   die, die, die, die,
                                   protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Logger::global(), Reactor::global());
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("We deal with recv-tests-id error") {
@@ -72,7 +71,7 @@ TEST_CASE("We deal with recv-tests-id error") {
                                   failure, die, die, die,
                                   protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Logger::global(), Reactor::global());
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("We deal with run-tests error") {
@@ -81,7 +80,7 @@ TEST_CASE("We deal with run-tests error") {
                                   success, failure, die, die,
                                   protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Logger::global(), Reactor::global());
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("We deal with recv-results-and-logout error") {
@@ -90,7 +89,7 @@ TEST_CASE("We deal with recv-results-and-logout error") {
                                   success, success, failure, die,
                                   protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Logger::global(), Reactor::global());
+        Reactor::global(), Logger::global());
 }
 
 TEST_CASE("run() deals with invalid port error") {
@@ -110,7 +109,7 @@ TEST_CASE("run() deals with mlab-ns query error") {
     Var<Entry> entry{new Entry};
     run_impl<run_with_specific_server, fail>(
         entry, [](Error err) { REQUIRE(err == MlabnsQueryError()); }, {},
-        Logger::global(), Reactor::global());
+        Reactor::global(), Logger::global());
 }
 
 /*

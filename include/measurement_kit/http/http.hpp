@@ -6,11 +6,7 @@
 
 // Documentation: doc/api/http.md
 
-#include <map>
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
-#include <string>
-#include <strings.h>
 
 namespace mk {
 namespace http {
@@ -25,18 +21,40 @@ namespace http {
     Error codes in the HTTP module.
 */
 
-MK_DEFINE_ERR(MK_ERR_HTTP(0), UpgradeError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(1), ParserError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(2), UrlParserError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(6), HttpRequestFailedError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(7), HeaderParserInternalError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(8), InvalidMaxRedirectsError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(9), InvalidRedirectUrlError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(10), EmptyLocationError, "")
-MK_DEFINE_ERR(MK_ERR_HTTP(11), TooManyRedirectsError, "")
+MK_DEFINE_ERR(MK_ERR_HTTP(0), UpgradeError, "http_upgrade_error")
+MK_DEFINE_ERR(MK_ERR_HTTP(1), ParserError, "http_parser_error")
+MK_DEFINE_ERR(MK_ERR_HTTP(2), UrlParserError, "http_url_parser_error")
+MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "http_missing_url_schema")
+MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "http_missing_url_host")
+MK_DEFINE_ERR(MK_ERR_HTTP(5), MissingUrlError, "http_missing_url")
+MK_DEFINE_ERR(MK_ERR_HTTP(6), HttpRequestFailedError, "http_request_failed")
+MK_DEFINE_ERR(MK_ERR_HTTP(7), HeaderParserInternalError, "http_parser_internal_error")
+MK_DEFINE_ERR(MK_ERR_HTTP(8), InvalidMaxRedirectsError, "http_invalid_max_redirects_setting")
+MK_DEFINE_ERR(MK_ERR_HTTP(9), InvalidRedirectUrlError, "http_invalid_redirect_url")
+MK_DEFINE_ERR(MK_ERR_HTTP(10), EmptyLocationError, "http_empty_location_header")
+MK_DEFINE_ERR(MK_ERR_HTTP(11), TooManyRedirectsError, "http_too_many_redirects")
+MK_DEFINE_ERR(MK_ERR_HTTP(12), ParserInvalidEofStateError, "http_parser_invalid_eof_state")
+MK_DEFINE_ERR(MK_ERR_HTTP(13), ParserHeaderOverflowError, "http_parser_header_overflow")
+MK_DEFINE_ERR(MK_ERR_HTTP(14), ParserClosedConnectionError, "http_parser_connection_closed")
+MK_DEFINE_ERR(MK_ERR_HTTP(15), ParserInvalidVersionError, "http_parser_invalid_version")
+MK_DEFINE_ERR(MK_ERR_HTTP(16), ParserInvalidStatusError, "http_parser_invalid_status")
+MK_DEFINE_ERR(MK_ERR_HTTP(17), ParserInvalidMethodError, "http_parser_invalid_method")
+MK_DEFINE_ERR(MK_ERR_HTTP(18), ParserInvalidUrlError, "http_parser_invalid_url")
+MK_DEFINE_ERR(MK_ERR_HTTP(19), ParserInvalidHostError, "http_parser_invalid_host")
+MK_DEFINE_ERR(MK_ERR_HTTP(20), ParserInvalidPortError, "http_parser_invalid_port")
+MK_DEFINE_ERR(MK_ERR_HTTP(21), ParserInvalidPathError, "http_parser_invalid_path")
+MK_DEFINE_ERR(MK_ERR_HTTP(22), ParserInvalidQueryStringError, "http_parser_invalid_query_string")
+MK_DEFINE_ERR(MK_ERR_HTTP(23), ParserInvalidFragmentError, "http_parser_invalid_fragment")
+MK_DEFINE_ERR(MK_ERR_HTTP(24), ParserLfExpectedError, "http_parser_expected_lf")
+MK_DEFINE_ERR(MK_ERR_HTTP(25), ParserInvalidHeaderTokenError, "http_parser_invalid_header_token")
+MK_DEFINE_ERR(MK_ERR_HTTP(26), ParserInvalidContentLengthError, "http_parser_invalid_content_length")
+MK_DEFINE_ERR(MK_ERR_HTTP(27), ParserUnexpectedContentLengthError, "http_parser_unexpected_content_length")
+MK_DEFINE_ERR(MK_ERR_HTTP(28), ParserInvalidChunkSizeError, "http_parser_invalid_chunk_size")
+MK_DEFINE_ERR(MK_ERR_HTTP(29), ParserInvalidConstantError, "http_parser_invalid_constant")
+MK_DEFINE_ERR(MK_ERR_HTTP(30), ParserInvalidInternalStateError, "http_parser_invalid_internal_state")
+MK_DEFINE_ERR(MK_ERR_HTTP(31), ParserStrictModeAssertionError, "http_parser_strict_mode_assertion")
+MK_DEFINE_ERR(MK_ERR_HTTP(32), ParserPausedError, "http_parser_paused")
+MK_DEFINE_ERR(MK_ERR_HTTP(33), GenericParserError, "http_parser_generic_error")
 
 /*
  _   _      _
@@ -76,9 +94,7 @@ ErrorOr<Url> parse_url_noexcept(std::string url);
 
 class HeadersComparator {
   public:
-    bool operator() (const std::string &l, const std::string &r) const {
-        return strcasecmp(l.c_str(), r.c_str()) < 0;
-    }
+    bool operator() (const std::string &l, const std::string &r) const;
 };
 
 using Headers = std::map<std::string, std::string, HeadersComparator>;
@@ -94,7 +110,7 @@ class Request {
 
     Request() {}
     Error init(Settings, Headers, std::string);
-    void serialize(net::Buffer &);
+    void serialize(net::Buffer &, Var<Logger> logger = Logger::global());
 
     static ErrorOr<Var<Request>> make(Settings, Headers, std::string);
 };
@@ -103,13 +119,15 @@ struct Response {
     Var<Request> request;
     Var<Response> previous;
     std::string response_line;
-    unsigned short http_major;
-    unsigned short http_minor;
-    unsigned int status_code;
+    unsigned short http_major = 0; // Initialize to know value
+    unsigned short http_minor = 0; // Initialize to know value
+    unsigned int status_code = 0;  // Initialize to know value
     std::string reason;
     Headers headers;
     std::string body;
 };
+
+ErrorOr<Url> redirect(const Url &orig_url, const std::string &location);
 
 void request_connect(Settings, Callback<Error, Var<net::Transport>>,
                      Var<Reactor> = Reactor::global(),

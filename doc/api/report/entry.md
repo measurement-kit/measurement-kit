@@ -39,7 +39,7 @@ class Entry : private nlohmann::json {
 
 # DESCRIPTION
 
-The `Entry` class inherits privately from `nlohmann::json` (pulled from `ext`) and behaves
+The `Entry` class inherits publicly from `nlohmann::json` (pulled from `ext`) and behaves
 like a JSON object (i.e. an object with both dictionary and list semantics, depending on
 the context).
 

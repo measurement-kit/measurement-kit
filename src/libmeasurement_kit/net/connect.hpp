@@ -1,25 +1,17 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_NET_CONNECT_HPP
-#define SRC_NET_CONNECT_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NET_CONNECT_HPP
+#define SRC_LIBMEASUREMENT_KIT_NET_CONNECT_HPP
 
-#include "src/libmeasurement_kit/ext/tls_internal.h"
+#include "../common/utils.hpp"
+#include "../ext/tls_internal.h"
 
-#include <event2/util.h>
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include <arpa/inet.h>
-#include <event2/bufferevent.h>
-#include <event2/util.h>
-#include <functional>
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/net.hpp>
+
+#include <event2/bufferevent.h>
+
 #include <sstream>
-#include <string>
-#include <sys/socket.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <vector>
 
 struct bufferevent;
 struct ssl_st;
@@ -33,18 +25,11 @@ namespace net {
 
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
-void connect_first_of(std::vector<std::string> addresses, int port,
+void connect_first_of(Var<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings = {},
                       Var<Reactor> reactor = Reactor::global(),
                       Var<Logger> logger = Logger::global(), size_t index = 0,
                       Var<std::vector<Error>> errors = nullptr);
-
-typedef std::function<void(ResolveHostnameResult)> ResolveHostnameCb;
-
-void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
-                      Settings settings = {},
-                      Var<Reactor> reactor = Reactor::global(),
-                      Var<Logger> logger = Logger::global());
 
 void connect_logic(std::string hostname, int port,
                    Callback<Error, Var<ConnectResult>> cb,
@@ -65,8 +50,9 @@ class ConnectManyCtx {
     std::string address;
     int port = 0;
     Settings settings;
-    Var<Logger> logger = Logger::global();
     Var<Reactor> reactor = Reactor::global();
+    Var<Logger> logger = Logger::global();
+    Var<ConnectManyResult> result;
 };
 
 } // namespace mk

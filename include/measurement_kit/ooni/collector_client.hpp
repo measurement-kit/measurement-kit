@@ -12,16 +12,23 @@ namespace ooni {
 namespace collector {
 
 /*
-    To submit a file report, pass it to `submit_report()`:
+    To submit a file report, use one of the following collectors. By default
+    the library uses the `production` collector.
 */
 
-#define MK_OONI_DEFAULT_COLLECTOR_URL "https://a.collector.ooni.io:4441"
-#define MK_OONI_TESTING_COLLECTOR_URL "https://a.collector.test.ooni.io"
+#define MK_OONI_PRODUCTION_COLLECTOR_URL "https://b.collector.ooni.io"
+#define MK_OONI_TESTING_COLLECTOR_URL "https://b.collector.test.ooni.io:4441"
 
-std::string default_collector_url();
+std::string production_collector_url();
 std::string testing_collector_url();
 
 void submit_report(std::string filepath, std::string collector_base_url,
+                   Callback<Error> callback, Settings conf = {},
+                   Var<Reactor> = Reactor::global(),
+                   Var<Logger> = Logger::global());
+
+void submit_report(std::string filepath, std::string collector_base_url,
+                   std::string collector_front_domain,
                    Callback<Error> callback, Settings conf = {},
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
@@ -40,14 +47,27 @@ void create_report(Var<net::Transport>, report::Entry,
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
+void connect_and_create_report(report::Entry, Callback<Error, std::string>,
+                               Settings = {}, Var<Reactor> = Reactor::global(),
+                               Var<Logger> = Logger::global());
+
 void update_report(Var<net::Transport>, std::string report_id, report::Entry,
                    Callback<Error>, Settings = {},
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
 
+void connect_and_update_report(std::string report_id, report::Entry,
+                               Callback<Error>, Settings = {},
+                               Var<Reactor> = Reactor::global(),
+                               Var<Logger> = Logger::global());
+
 void close_report(Var<net::Transport>, std::string report_id, Callback<Error>,
                   Settings = {}, Var<Reactor> = Reactor::global(),
                   Var<Logger> = Logger::global());
+
+void connect_and_close_report(std::string report_id, Callback<Error>,
+                              Settings = {}, Var<Reactor> = Reactor::global(),
+                              Var<Logger> = Logger::global());
 
 } // namespace collector
 } // namespace mk

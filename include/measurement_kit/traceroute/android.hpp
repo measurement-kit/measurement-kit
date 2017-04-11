@@ -37,16 +37,8 @@
 // This is meant to run on Android but can run on all Linux systems
 #ifdef __linux__
 
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/traceroute/interface.hpp>
 
-#include <functional>
-#include <string>
-
-#include <time.h>
-
-struct event;
-struct event_base;
 struct sock_extended_err;
 struct sockaddr_in6;
 struct sockaddr_in;
@@ -70,7 +62,7 @@ class AndroidProber : public NonCopyable,
     /// \param evbase Event base to use (optional)
     AndroidProber(
         bool use_ipv4, int port,
-        event_base *evbase = Reactor::global()->get_event_base(),
+        Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global());
 
     /// Destructor
@@ -79,13 +71,13 @@ class AndroidProber : public NonCopyable,
     void send_probe(std::string addr, int port, int ttl, std::string payload,
                     double timeout) override;
 
-    void on_result(std::function<void(ProbeResult)> cb) override {
+    void on_result(Callback<ProbeResult> cb) override {
         result_cb_ = cb;
     }
 
-    void on_timeout(std::function<void()> cb) override { timeout_cb_ = cb; }
+    void on_timeout(Callback<> cb) override { timeout_cb_ = cb; }
 
-    void on_error(std::function<void(Error)> cb) override {
+    void on_error(Callback<Error> cb) override {
         error_cb_ = cb;
     }
 
@@ -94,8 +86,7 @@ class AndroidProber : public NonCopyable,
     bool probe_pending_ = false;   ///< probe is pending
     timespec start_time_{0, 0};    ///< start time
     bool use_ipv4_ = true;         ///< using IPv4?
-    event_base *evbase_ = nullptr; ///< event base
-    event *evp_ = nullptr;         ///< event pointer
+    Var<Reactor> reactor;          ///< The reactor
     int port_ = 0;                 ///< socket port
     Var<Logger> logger = Logger::global();///< logger
 
@@ -151,8 +142,7 @@ class AndroidProber : public NonCopyable,
     /// Callback invoked when the socket is readable
     /// \param so Socket descriptor
     /// \param event Event that occurred
-    /// \param ptr Opaque pointer to this class
-    static void event_callback(int so, short event, void *ptr);
+    void event_callback(Error err, short event);
 
     /// Idempotent cleanup function
     void cleanup();

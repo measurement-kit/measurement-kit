@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_verify.c,v 1.15 2015/09/29 13:10:53 jsing Exp $ */
+/* $OpenBSD: tls_verify.c,v 1.17 2016/09/04 12:26:43 bcook Exp $ */
 /*
  * Copyright (c) 2014 Jeremie Courreges-Anglas <jca@openbsd.org>
  *
@@ -15,10 +15,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/socket.h>
+#include <measurement_kit/portable/sys/socket.h>
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#include <measurement_kit/portable/arpa/inet.h>
+#include <measurement_kit/portable/netinet/in.h>
 
 #include <string.h>
 
@@ -126,7 +126,7 @@ tls_check_subject_altname(struct tls *ctx, X509 *cert, const char *name)
 				data = ASN1_STRING_data(altname->d.dNSName);
 				len = ASN1_STRING_length(altname->d.dNSName);
 
-				if (len < 0 || len != strlen(data)) {
+				if (len < 0 || (size_t)len != strlen((char *)data)) {
 					tls_set_errorx(ctx,
 					    "error verifying name '%s': "
 					    "NUL byte in subjectAltName, "
@@ -141,7 +141,7 @@ tls_check_subject_altname(struct tls *ctx, X509 *cert, const char *name)
 				 * " " is a legal domain name, but that
 				 * dNSName must be rejected.
 				 */
-				if (strcmp(data, " ") == 0) {
+				if (strcmp((char *)data, " ") == 0) {
 					tls_set_error(ctx,
 					    "error verifying name '%s': "
 					    "a dNSName of \" \" must not be "
@@ -150,7 +150,7 @@ tls_check_subject_altname(struct tls *ctx, X509 *cert, const char *name)
 					break;
 				}
 
-				if (tls_match_name(data, name) == 0) {
+				if (tls_match_name((char *)data, name) == 0) {
 					rv = 0;
 					break;
 				}
@@ -219,7 +219,8 @@ tls_check_common_name(struct tls *ctx, X509 *cert, const char *name)
 	    common_name_len + 1);
 
 	/* NUL bytes in CN? */
-	if (common_name_len != strlen(common_name)) {
+	if (common_name_len < 0 ||
+	    (size_t)common_name_len != strlen(common_name)) {
 		tls_set_errorx(ctx, "error verifying name '%s': "
 		    "NUL byte in Common Name field, "
 		    "probably a malicious certificate", name);

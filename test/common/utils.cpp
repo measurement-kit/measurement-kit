@@ -3,11 +3,10 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include <cctype>
-#include <measurement_kit/common.hpp>
-#include "src/libmeasurement_kit/common/utils.hpp"
+#include "../src/libmeasurement_kit/common/utils_impl.hpp"
 
 TEST_CASE("We are NOT using the default random seed") {
     // Note: the default random generator shall be seeded using 1 unless
@@ -41,7 +40,7 @@ TEST_CASE("random_str() really generates only characters or numbers") {
         } else if (islower(x)) {
             found_low = true;
         } else {
-            REQUIRE(false);
+            REQUIRE(false); /* Should not happen */
         }
     }
     REQUIRE(found_num);
@@ -58,68 +57,11 @@ TEST_CASE("random_str_uppercase() really generates only uppercase") {
         } else if (isupper(x)) {
             found_upper = true;
         } else {
-            REQUIRE(false);
+            REQUIRE(false); /* Should not happen */
         }
     }
     REQUIRE(found_num);
     REQUIRE(found_upper);
-}
-
-TEST_CASE("IPv4 addresses are correctly reversed") {
-    REQUIRE(mk::unreverse_ipv4("211.91.192.130.in-addr.arpa") ==
-            "130.192.91.211");
-    REQUIRE(mk::unreverse_ipv4("4.3.2.1.in-addr.arpa.") ==
-            "1.2.3.4");
-    REQUIRE(mk::unreverse_ipv4("22.177.3.149.in-addr.arpa") ==
-            "149.3.177.22");
-}
-
-TEST_CASE("IPv4 addresses cannot contain numbers > 255") {
-    REQUIRE(mk::unreverse_ipv4("254.777.254.254.in-addr.arpa") ==
-            "");
-    REQUIRE(mk::unreverse_ipv4("255.255.255.255.in-addr.arpa") ==
-            "255.255.255.255");
-}
-
-TEST_CASE("IPv6 addresses are correctly reversed") {
-    REQUIRE(mk::unreverse_ipv6(
-                "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0."
-                "2.ip6.arpa") == "2001:0db8:0000:0000:0000:0000:0567:89ab");
-    REQUIRE(mk::unreverse_ipv6(
-                "1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0."
-                "2.ip6.arpa.") == "2001:0db8:0000:0000:0000:0000:0000:0001");
-    REQUIRE(mk::unreverse_ipv6(
-                "4.0.0.2.0.0.0.0.0.0.0.0.0.0.0.0.8.0.8.0.2.0.0.4.0.5.4.1.0.0.a."
-                "2.ip6.arpa") == "2a00:1450:4002:0808:0000:0000:0000:2004");
-}
-
-TEST_CASE("Verify that invalid input is rejected") {
-
-    SECTION("For IPv4") {
-        REQUIRE(mk::unreverse_ipv4("") == "");
-        // First non number non dot character we break and search in-addr.arpa
-        REQUIRE(mk::unreverse_ipv4("foobar") == "");
-        // We deal correctly with good address with missing suffix
-        REQUIRE(mk::unreverse_ipv4("4.3.2.1") == "");
-        REQUIRE(mk::unreverse_ipv4("4.3.2.1.") == "");
-    }
-
-    SECTION("For IPv6") {
-        REQUIRE(mk::unreverse_ipv6("") == "");
-        // We encounter a character that is not a dot in position N + 1
-        REQUIRE(mk::unreverse_ipv6("e.2.1;d.e.a.d") == "");
-        // We encounter a character that is not hex in position N
-        REQUIRE(mk::unreverse_ipv6("d.e.a.d.r.e.e.f") == "");
-        // We deal correctly with good address with missing suffix
-        REQUIRE(
-            mk::unreverse_ipv6(
-                "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0."
-                "2") == "");
-        REQUIRE(
-            mk::unreverse_ipv6(
-                "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0."
-                "2.") == "");
-    }
 }
 
 TEST_CASE("split(std::string s) works properly in the common case") {
@@ -200,4 +142,207 @@ TEST_CASE("percentile() works with one-element vectors") {
     REQUIRE(mk::percentile({17.0}, 0.5) == 17.0);
     REQUIRE(mk::percentile({17.0}, 0.1) == 17.0);
     REQUIRE(mk::percentile({17.0}, 0.9) == 17.0);
+}
+
+TEST_CASE("sha256_of() works as expected") {
+    REQUIRE(mk::sha256_of("xeuCh5zu chai5oeL uv0foh4E Ixiew5Uc thaid6Vu") ==
+            "7a8f31f91ddabd2ee96230b512b27f5a88adeceb20cc08228819b77417fba96e");
+}
+
+static FILE *fopen_fail(const char *, const char *) {
+    return nullptr;
+}
+
+static int fseek_fail(FILE *, long, int) {
+    return -1;
+}
+
+static long ftell_fail(FILE *) {
+    return -1;
+}
+
+static size_t fread_fail(void *, size_t, size_t, FILE *) { return 0; }
+
+static int fclose_fail(FILE *) { return -1; }
+
+TEST_CASE("slurpv() works as expected") {
+    SECTION("If fopen() fails") {
+        auto maybe_res = mk::slurpv_impl<char, fopen_fail>(
+            "./test/fixtures/text-with-utf8.txt");
+        REQUIRE(!maybe_res);
+        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+    }
+
+    SECTION("If first fseek() fails") {
+        auto maybe_res = mk::slurpv_impl<char, std::fopen, fseek_fail>(
+            "./test/fixtures/text-with-utf8.txt");
+        REQUIRE(!maybe_res);
+        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+    }
+
+    SECTION("If ftell() fails") {
+        auto maybe_res =
+            mk::slurpv_impl<char, std::fopen, std::fseek, ftell_fail>(
+                "./test/fixtures/text-with-utf8.txt");
+        REQUIRE(!maybe_res);
+        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+    }
+
+    SECTION("If second fseek() fails") {
+        auto maybe_res =
+            mk::slurpv_impl<char, std::fopen, std::fseek, std::ftell,
+                            fseek_fail>("./test/fixtures/text-with-utf8.txt");
+        REQUIRE(!maybe_res);
+        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+    }
+
+    SECTION("If fread() fails") {
+        auto maybe_res = mk::slurpv_impl<char, std::fopen, std::fseek,
+                                         std::ftell, std::fseek, fread_fail>(
+            "./test/fixtures/text-with-utf8.txt");
+        REQUIRE(!maybe_res);
+        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+    }
+
+    SECTION("If fclose() fails") {
+        auto maybe_res =
+            mk::slurpv_impl<char, std::fopen, std::fseek, std::ftell,
+                            std::fseek, std::fread, fclose_fail>(
+                "./test/fixtures/text-with-utf8.txt");
+        REQUIRE(!maybe_res);
+        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+    }
+
+    SECTION("For a file containing UTF-8") {
+        auto maybe_res =
+            mk::slurpv_impl<uint8_t>("./test/fixtures/text-with-utf8.txt");
+        REQUIRE(!!maybe_res);
+        std::vector<uint8_t> expect{
+            'C', 'i', 'r', 'i',  0xc3, 0xa8, '\n',      // first line
+            'A', 'g', 'l', 'i',  0xc3, 0xa8, '\n',      // second line
+            'P', 'e', 'l', 0xc3, 0xa8, '\n',            // third line
+            'P', 'e', 'r', 'c',  'h',  0xc3, 0xa9, '\n' // fourh line
+        };
+        REQUIRE(*maybe_res == expect);
+        REQUIRE(maybe_res->size() == 28);
+    }
+
+    SECTION("For a purely binary file") {
+        auto maybe_res = mk::slurpv_impl<uint8_t>("./test/fixtures/gzipped.gz");
+        REQUIRE(!!maybe_res);
+        std::vector<uint8_t> expect{
+            0x1f, 0x8b, 0x08, 0x08, 0xad, 0x82, 0x4d, 0x58,
+            0x02, 0x03, 0x58, 0x4f, 0x00, 0xad, 0xce, 0xb1,
+
+            0x4e, 0xc3, 0x30, 0x10, 0xc6, 0xf1, 0xdd, 0x4f,
+            0x71, 0x23, 0x20, 0x5d, 0x1c, 0x40, 0x62, 0x88,
+
+            0xc4, 0x80, 0x1a, 0x50, 0x17, 0x28, 0x82, 0x6c,
+            0x88, 0xc1, 0xb1, 0x8f, 0xc6, 0xc8, 0xb1, 0x8d,
+
+            0xef, 0x0a, 0xe2, 0xed, 0x69, 0x52, 0x44, 0x79,
+            0x80, 0xdc, 0xfa, 0x49, 0xff, 0xdf, 0x75, 0x9b,
+
+            0x76, 0xa3, 0xae, 0xf7, 0xa7, 0x54, 0x37, 0x10,
+            0x13, 0x08, 0xb1, 0x30, 0xb0, 0xf8, 0x10, 0x20,
+
+            0x12, 0x39, 0x90, 0x04, 0x3d, 0x81, 0x1f, 0x73,
+            0xa0, 0x91, 0xa2, 0x90, 0x6b, 0x94, 0x3a, 0x83,
+
+            0x97, 0xf6, 0xe1, 0x19, 0x56, 0x29, 0xb2, 0x67,
+            0xa1, 0x68, 0xbf, 0x5f, 0x4f, 0x06, 0x91, 0xcc,
+
+            0x8d, 0xd6, 0x5b, 0x2f, 0x5f, 0xd4, 0x57, 0x92,
+            0x4a, 0x2e, 0xe9, 0x9d, 0xac, 0x54, 0xa9, 0x6c,
+
+            0x75, 0x4a, 0xd1, 0x6b, 0xce, 0x64, 0xab, 0xfd,
+            0xae, 0xfb, 0x90, 0x7a, 0xbd, 0xbe, 0xbd, 0x69,
+
+            0x1b, 0x3d, 0x79, 0x38, 0x0d, 0xac, 0x85, 0xb1,
+            0xae, 0x2f, 0xd0, 0x45, 0xb6, 0xc7, 0x70, 0x35,
+
+            0xba, 0xd3, 0x19, 0x5c, 0x77, 0xdd, 0x23, 0x3c,
+            0xd1, 0xc7, 0x6e, 0x7a, 0x70, 0x31, 0xee, 0x12,
+
+            0xa7, 0x10, 0x96, 0xdf, 0xee, 0x51, 0x23, 0xe3,
+            0xa8, 0xc0, 0x9d, 0xa7, 0xe0, 0xe0, 0xde, 0x44,
+
+            0x9f, 0x77, 0xc1, 0x88, 0x4f, 0x71, 0x31, 0xf9,
+            0x0a, 0x87, 0xd9, 0xc0, 0xb7, 0xc9, 0xc0, 0xf1,
+
+            0x9f, 0xf1, 0xf7, 0xc5, 0xca, 0x64, 0xf1, 0x9f,
+            0x04, 0x39, 0x15, 0x31, 0x61, 0x29, 0xfa, 0xbc,
+
+            0x46, 0x7b, 0x08, 0xe3, 0x21, 0x3c, 0x7b, 0x3f,
+            0x31, 0x51, 0x2e, 0xef, 0x0a, 0x02, 0x00, 0x00,
+        };
+        REQUIRE(*maybe_res == expect);
+        REQUIRE(maybe_res->size() == 240);
+    }
+}
+
+TEST_CASE("slurp() works as expected") {
+    SECTION("In case of nonexistent file") {
+        auto maybe_res = mk::slurp("/nonexistent");
+        REQUIRE(!maybe_res);
+        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+    }
+
+    SECTION("In case of existent file") {
+        auto maybe_res = mk::slurp("./test/fixtures/hosts.txt");
+        std::string expect = "torproject.org\n"        // line
+                             "ooni.nu\n"               // line
+                             "neubot.org\n"            // line
+                             "archive.org\n"           // line
+                             "creativecommons.org\n"   // line
+                             "cyber.law.harvard.edu\n" // line
+                             "duckduckgo.com\n"        // line
+                             "netflix.com\n"           // line
+                             "nmap.org\n"              // line
+                             "www.emule.com\n";
+        REQUIRE(*maybe_res == expect);
+    }
+}
+
+TEST_CASE("mk::startswith() works as expected") {
+    SECTION("For empty s and p") {
+        REQUIRE(!!mk::startswith("", ""));
+    }
+    SECTION("For empty p") {
+        REQUIRE(!!mk::startswith("antani", ""));
+    }
+    SECTION("For s shorter than p") {
+        REQUIRE(!mk::startswith("x", "xyz"));
+    }
+    SECTION("For s equal to p") {
+        REQUIRE(!!mk::startswith("xyz", "xyz"));
+    }
+    SECTION("For s longer than p") {
+        REQUIRE(!!mk::startswith("antani", "ant"));
+    }
+    SECTION("For p present in s but not at s's beginning") {
+        REQUIRE(!mk::startswith("antani", "nta"));
+    }
+}
+
+TEST_CASE("mk::endswith() works as expected") {
+    SECTION("For empty s and p") {
+        REQUIRE(!!mk::endswith("", ""));
+    }
+    SECTION("For empty p") {
+        REQUIRE(!!mk::endswith("antani", ""));
+    }
+    SECTION("For s shorter than p") {
+        REQUIRE(!mk::endswith("z", "xyz"));
+    }
+    SECTION("For s equal to p") {
+        REQUIRE(!!mk::endswith("xyz", "xyz"));
+    }
+    SECTION("For s longer than p") {
+        REQUIRE(!!mk::endswith("antanix", "nix"));
+    }
+    // #TrueStory: this has been an embarassing bug
+    SECTION("For p present in s but not at s's end") {
+        REQUIRE(!mk::endswith("antanix", "tan"));
+    }
 }

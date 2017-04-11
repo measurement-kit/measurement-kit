@@ -1,10 +1,17 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_NDT_MESSAGES_IMPL_HPP
-#define SRC_NDT_MESSAGES_IMPL_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NDT_MESSAGES_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_NDT_MESSAGES_IMPL_HPP
 
-#include "src/libmeasurement_kit/ndt/internal.hpp"
+/*
+ * To have UINT16_MAX defined. Required on Android API < 21.
+ *
+ * See <http://stackoverflow.com/a/986584>.
+ */
+#define __STDC_LIMIT_MACROS
+
+#include "../ndt/internal.hpp"
 #include <cassert>
 
 namespace mk {
@@ -16,8 +23,8 @@ namespace messages {
     | type (1) | length (2) | payload (0-65535) |
     +----------+------------+-------------------+
 */
-template <MK_MOCK_NAMESPACE_SUFFIX(net, readn, first),
-          MK_MOCK_NAMESPACE_SUFFIX(net, readn, second)>
+template <MK_MOCK_AS(net::readn, net_readn_first),
+          MK_MOCK_AS(net::readn, net_readn_second)>
 void read_ll_impl(Var<Context> ctx,
                   Callback<Error, uint8_t, std::string> callback,
                   Var<Reactor> reactor) {

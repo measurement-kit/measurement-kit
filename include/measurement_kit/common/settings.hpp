@@ -4,9 +4,9 @@
 #ifndef MEASUREMENT_KIT_COMMON_SETTINGS_HPP
 #define MEASUREMENT_KIT_COMMON_SETTINGS_HPP
 
-#include <map>
 #include <measurement_kit/common/settings_entry.hpp>
-#include <string>
+
+#include <map>
 
 namespace mk {
 
@@ -16,7 +16,7 @@ class Settings : public std::map<std::string, SettingsEntry> {
 
 #define XX(_rv_, _methname_, _accessor_)                                       \
     template <typename Type>                                                   \
-    _rv_ _methname_(std::string key, Type def_value) {                         \
+    _rv_ _methname_(std::string key, Type def_value) const {                   \
         if (find(key) == end()) {                                              \
             return def_value;                                                  \
         }                                                                      \
@@ -27,11 +27,6 @@ class Settings : public std::map<std::string, SettingsEntry> {
     XX(ErrorOr<Type>, get_noexcept, as_noexcept)
 
 #undef XX
-
-    static Var<Settings> global() {
-        static Var<Settings> singleton(new Settings);
-        return singleton;
-    }
 
   protected:
   private:

@@ -4,14 +4,19 @@
 
 #include <cassert>
 #include <measurement_kit/net.hpp>
-#include "src/libmeasurement_kit/net/connect.hpp"
-#include "src/libmeasurement_kit/net/connection.hpp"
-#include "src/libmeasurement_kit/net/emitter.hpp"
-#include "src/libmeasurement_kit/net/socks5.hpp"
-#include "src/libmeasurement_kit/net/ssl-context.hpp"
+#include "../net/connect.hpp"
+#include "../net/emitter.hpp"
+#include "../net/socks5.hpp"
 
 namespace mk {
 namespace net {
+
+TransportEmitter::~TransportEmitter() {}
+TransportRecorder::~TransportRecorder() {}
+TransportWriter::~TransportWriter() {}
+TransportSocks5::~TransportSocks5() {}
+TransportPollable::~TransportPollable() {}
+Transport::~Transport() {}
 
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
     txp->on_flush([=]() {
@@ -51,6 +56,11 @@ void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
         txp->on_error(nullptr);
         cb(error);
     });
+}
+
+void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
+          Var<Reactor> reactor) {
+    readn(t, buff, 1, callback, reactor);
 }
 
 } // namespace net

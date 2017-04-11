@@ -36,6 +36,27 @@ AC_DEFUN([MK_AM_DISABLE_INTEGRATION_TESTS], [
                    [], [CPPFLAGS="$CPPFLAGS -DENABLE_INTEGRATION_TESTS"])
 ])
 
+AC_DEFUN([MK_AM_DISABLE_TRACEROUTE], [
+  AC_ARG_ENABLE([traceroute],
+    AS_HELP_STRING([--disable-traceroute, do not build traceroute]),
+                   [], [CPPFLAGS="$CPPFLAGS -DENABLE_TRACEROUTE"])
+])
+
+AC_DEFUN([MK_AM_CHECK_LIBC_FUNCS], [
+  AC_CHECK_FUNCS([ \
+    err \
+    errx \
+    warn \
+    warnx \
+    getopt \
+    getopt_long \
+    getopt_long_only \
+    gmtime_r \
+    strcasecmp \
+    strtonum \
+  ])
+])
+
 AC_DEFUN([MK_AM_LIBEVENT], [
 
   AC_ARG_WITH([libevent],
@@ -100,16 +121,28 @@ AC_DEFUN([MK_AM_OPENSSL], [
                 CPPFLAGS="$CPPFLAGS -I$withval/include"
                 LDFLAGS="$LDFLAGS -L$withval/lib"
               ],
-              [])
+              [
+	        if test -d /usr/local/Cellar/openssl; then
+		  AC_MSG_WARN([Using the OpenSSL installed via brew...])
+		  mk_openssl_v=`ls /usr/local/Cellar/openssl|tail -n1`
+		  mk_openssl_d="/usr/local/Cellar/openssl/$mk_openssl_v"
+		  CPPFLAGS="$CPPFLAGS -I$mk_openssl_d/include"
+		  LDFLAGS="$LDFLAGS -L$mk_openssl_d/lib"
+		fi
+	      ])
 
   mk_not_found=""
   AC_CHECK_HEADERS(openssl/ssl.h, [], [mk_not_found=1])
   AC_CHECK_LIB(crypto, RSA_new, [], [mk_not_found=1])
   AC_CHECK_LIB(ssl, SSL_new, [], [mk_not_found=1])
 
-  AC_MSG_CHECKING([whether OpenSSL is older than 1.0.0])
-  AC_RUN_IFELSE([
-    AC_LANG_SOURCE([
+  dnl This test breaks the build with 12.04 on travis because the linker there
+  dnl requires `LD_RUN_PATH` which sadly is not honoured by this test, still
+  dnl no worries because actually this check only makes sense for Mac systems
+  if test "`uname`" = "Darwin"; then
+    AC_MSG_CHECKING([whether OpenSSL is older than 1.0.0])
+    AC_RUN_IFELSE([
+      AC_LANG_SOURCE([
       #include <openssl/opensslv.h>
       #include <openssl/ssl.h>
 
@@ -149,20 +182,21 @@ AC_DEFUN([MK_AM_OPENSSL], [
         }
         return 0;
       }
-    ])
-  ],
-  [AC_MSG_RESULT([yes])],
-  [
-    AC_MSG_RESULT([no])
-    if test /usr/local/Cellar/openssl; then
-      AC_MSG_WARN([MacOS ships an old system-wide OpenSSL but you seem to])
-      AC_MSG_WARN([have a new version installed with brew.])
-      AC_MSG_WARN([So, you should try adding this flag to configure:])
-      AC_MSG_WARN(['--with-openssl=/usr/local/Cellar/openssl/VERSION/'])
-    fi
-    mk_not_found=1
-  ],
-  [AC_MSG_RESULT([Skip the test because we are cross-compiling])])
+      ])
+    ],
+    [AC_MSG_RESULT([yes])],
+    [
+      AC_MSG_RESULT([no])
+      if test -d /usr/local/Cellar/openssl; then
+        AC_MSG_WARN([MacOS ships an old system-wide OpenSSL but you seem to])
+        AC_MSG_WARN([have a new version installed with brew.])
+        AC_MSG_WARN([So, you should try adding this flag to configure:])
+        AC_MSG_WARN(['--with-openssl=/usr/local/Cellar/openssl/VERSION/'])
+      fi
+      mk_not_found=1
+    ],
+    [AC_MSG_RESULT([Skip the test because we are cross-compiling])])
+  fi
 
   if test "$mk_not_found" = "1"; then
     AC_MSG_WARN([Failed to find dependency: openssl])

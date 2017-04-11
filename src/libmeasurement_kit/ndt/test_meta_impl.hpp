@@ -1,22 +1,22 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_NDT_TEST_META_IMPL_HPP
-#define SRC_NDT_TEST_META_IMPL_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NDT_TEST_META_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_NDT_TEST_META_IMPL_HPP
 
-#include "src/libmeasurement_kit/ndt/internal.hpp"
+#include "../ndt/internal.hpp"
 
 namespace mk {
 namespace ndt {
 namespace test_meta {
 
-template <MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, first),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, second),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, format_test_msg, first),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, format_test_msg, second),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, format_test_msg, third),
-          MK_MOCK_NAMESPACE(messages, write),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, third)>
+template <MK_MOCK_AS(messages::read_msg, messages_read_msg_first),
+          MK_MOCK_AS(messages::read_msg, messages_read_msg_second),
+          MK_MOCK_AS(messages::format_test_msg, messages_format_test_msg_first),
+          MK_MOCK_AS(messages::format_test_msg, messages_format_test_msg_second),
+          MK_MOCK_AS(messages::format_test_msg, messages_format_test_msg_third),
+          MK_MOCK_AS(messages::write, messages_write),
+          MK_MOCK_AS(messages::read_msg, messages_read_msg_third)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends the PREPARE and START messages back to back
@@ -86,7 +86,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                         return;
                     }
 
-                    ctx->logger->info("Sent additional metadata to server");
+                    ctx->logger->debug("Sent additional metadata to server");
 
                     // Now we read the FINALIZE message
                     ctx->logger->debug("ndt: recv TEST_FINALIZE ...");

@@ -3,18 +3,17 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "src/libmeasurement_kit/ndt/test_s2c_impl.hpp"
-#include <measurement_kit/ndt.hpp>
+#include "../src/libmeasurement_kit/ndt/test_s2c_impl.hpp"
 
 using namespace mk;
 using namespace mk::ndt;
 using json = nlohmann::json;
 
-static void failure(std::string, int, Callback<Error, Var<Transport>> cb,
-                    Settings, Var<Logger>, Var<Reactor>) {
-    cb(MockedError(), nullptr);
+static void failure(std::string, int, int, ConnectManyCb callback,
+                    Settings, Var<Reactor>, Var<Logger>) {
+    callback(MockedError(), {});
 }
 
 TEST_CASE("coroutine() is robust to connect error") {
@@ -24,7 +23,7 @@ TEST_CASE("coroutine() is robust to connect error") {
         [](Error err, Continuation<Error, double>) {
             REQUIRE(err == MockedError());
         },
-        2.0, {}, Logger::global(), Reactor::global());
+        2.0, {}, Reactor::global(), Logger::global());
 }
 
 static void failure(Var<Context>, Callback<Error, uint8_t, std::string> cb,
@@ -34,8 +33,9 @@ static void failure(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("finalizing_test() deals with read_msg() error") {
     Var<Context> ctx(new Context);
+    Var<Entry> entry(new Entry);
     test_s2c::finalizing_test_impl<failure>(
-        ctx, [](Error err) { REQUIRE(err == ReadingTestMsgError()); });
+        ctx, entry, [](Error err) { REQUIRE(err == ReadingTestMsgError()); });
 }
 
 static void invalid(Var<Context>, Callback<Error, uint8_t, std::string> cb,
@@ -45,8 +45,9 @@ static void invalid(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("finalizing_test() deals with receiving invalid message") {
     Var<Context> ctx(new Context);
+    Var<Entry> entry(new Entry);
     test_s2c::finalizing_test_impl<invalid>(
-        ctx, [](Error err) { REQUIRE(err == NotTestMsgError()); });
+        ctx, entry, [](Error err) { REQUIRE(err == NotTestMsgError()); });
 }
 
 // XXX: static test function with a state is not good
@@ -62,8 +63,10 @@ static void empty(Var<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("finalizing_test() deals with receiving invalid json") {
     Var<Context> ctx(new Context);
+    ctx->entry.reset(new Entry);  // Required for when we reach TEST_FINALIZE
+    Var<Entry> entry(new Entry);
     test_s2c::finalizing_test_impl<empty>(
-        ctx, [](Error err) { REQUIRE(err == NoError()); });
+        ctx, entry, [](Error err) { REQUIRE(err == NoError()); });
 }
 
 TEST_CASE("run() deals with messages::read() failure") {
@@ -117,9 +120,9 @@ static void success(Var<Context>, Callback<Error, uint8_t, std::string> cb,
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
-static void failure(Var<Entry>, std::string, int,
+static void failure(Var<Entry>, std::string, test_s2c::Params,
                     Callback<Error, Continuation<Error, double>> cb, double,
-                    Settings, Var<Logger>, Var<Reactor>) {
+                    Settings, Var<Reactor>, Var<Logger>) {
     cb(MockedError(), [](Callback<Error, double>) {
         REQUIRE(false); // should not happen
     });
@@ -138,9 +141,9 @@ static void test_prepare(Var<Context>,
 }
 
 static void
-connect_but_fail_later(Var<Entry>, std::string, int,
+connect_but_fail_later(Var<Entry>, std::string, test_s2c::Params,
                        Callback<Error, Continuation<Error, double>> cb, double,
-                       Settings, Var<Logger>, Var<Reactor>) {
+                       Settings, Var<Reactor>, Var<Logger>) {
     cb(NoError(), [](Callback<Error, double> cb) { cb(MockedError(), 0.0); });
 }
 
@@ -167,9 +170,9 @@ TEST_CASE("run() deals with coroutine terminating with error") {
         ctx, [](Error err) { REQUIRE(err == MockedError()); });
 }
 
-static void coro_ok(Var<Entry>, std::string, int,
+static void coro_ok(Var<Entry>, std::string, test_s2c::Params,
                     Callback<Error, Continuation<Error, double>> cb, double,
-                    Settings, Var<Logger>, Var<Reactor>) {
+                    Settings, Var<Reactor>, Var<Logger>) {
     cb(NoError(), [](Callback<Error, double> cb) { cb(NoError(), 0.0); });
 }
 

@@ -2,16 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <event2/buffer.h>
-#include <netinet/in.h>                        // for htonl, htons
-#include <stdint.h>                            // for uint16_t, uint32_t, etc
-#include <functional>                          // for function
-#include <measurement_kit/common.hpp>
+#include "../net/evbuffer.hpp"
+
 #include <measurement_kit/net.hpp>
-#include <memory>                              // for unique_ptr
-#include <stdexcept>                           // for runtime_error
-#include <string>                              // for string, basic_string
-#include "src/libmeasurement_kit/net/evbuffer.hpp"
+
+#include <event2/buffer.h>
 
 namespace mk {
 namespace net {

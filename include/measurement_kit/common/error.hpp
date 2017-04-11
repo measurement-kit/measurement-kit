@@ -4,14 +4,17 @@
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
-#include <exception>
 #include <measurement_kit/common/var.hpp>
+
 #include <string>
 #include <vector>
 
 namespace mk {
 
-class ErrorContext {};
+class ErrorContext {
+  public:
+    virtual ~ErrorContext();
+};
 
 class Error : public std::exception {
   public:
@@ -40,6 +43,26 @@ class Error : public std::exception {
 
     std::string as_ooni_error() { return reason; }
 
+    void add_child_error(const Error &err) {
+        Var<Error> container(new Error(err));
+        child_errors.push_back(container);
+    }
+
+    std::string explain() const {
+        std::string s;
+        s += "{";
+        s += reason;
+        s += "}";
+        if (child_errors.size() > 0) {
+            s += " [";
+            for (auto &e : child_errors) {
+                s += e->explain();
+            }
+            s += "]";
+        }
+        return s;
+    }
+
     Var<ErrorContext> context;
     std::vector<Var<Error>> child_errors;
     int code = 0;
@@ -58,16 +81,20 @@ class Error : public std::exception {
     };
 
 MK_DEFINE_ERR(0, NoError, "")
-MK_DEFINE_ERR(1, GenericError, "")
-MK_DEFINE_ERR(2, NotInitializedError, "")
-MK_DEFINE_ERR(3, ValueError, "")
-MK_DEFINE_ERR(4, MockedError, "")
-MK_DEFINE_ERR(5, JsonParseError, "")
-MK_DEFINE_ERR(6, JsonKeyError, "")
-MK_DEFINE_ERR(7, JsonDomainError, "")
-MK_DEFINE_ERR(8, FileEofError, "")
-MK_DEFINE_ERR(9, FileIoError, "")
-MK_DEFINE_ERR(10, ParallelOperationError, "")
+MK_DEFINE_ERR(1, GenericError, "generic_error")
+MK_DEFINE_ERR(2, NotInitializedError, "not_initialized")
+MK_DEFINE_ERR(3, ValueError, "value_error")
+MK_DEFINE_ERR(4, MockedError, "mocked_error")
+MK_DEFINE_ERR(5, JsonParseError, "json_parse_error")
+MK_DEFINE_ERR(6, JsonKeyError, "json_key_error")
+MK_DEFINE_ERR(7, JsonDomainError, "json_domain_error")
+MK_DEFINE_ERR(8, FileEofError, "file_eof_error")
+MK_DEFINE_ERR(9, FileIoError, "file_io_error")
+MK_DEFINE_ERR(10, ParallelOperationError, "parallel_operation_error")
+MK_DEFINE_ERR(11, SequentialOperationError, "sequential_operation_error")
+MK_DEFINE_ERR(12, IllegalSequenceError, "illegal_sequence")
+MK_DEFINE_ERR(13, UnexpectedNullByteError, "unexpected_null_byte")
+MK_DEFINE_ERR(14, IncompleteUtf8SequenceError, "incomplete_utf8_sequence")
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)

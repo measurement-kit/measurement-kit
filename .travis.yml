@@ -1,64 +1,36 @@
 language: cpp
 
-#branches:
-#  except:
-#    - /^doc\/.*$/
-
-install:
-    - if [ "$VER" != ""  ]; then
-          export CXX="$CXX-$VER" CC="$CC-$VER";
-      fi;
-    - if [ "$COVERAGE" = "--enable-coverage" ]; then
-        pip install --user cpp-coveralls;
-      fi
-    - ./autogen.sh
-    - ./build/dependency geoip
-
 script:
-    - if [ "$BUILD_TYPE" = "ios" ]; then
-        ./mobile/ios/scripts/build.sh;
-      else
-        ./configure -q --with-geoip=builtin $COVERAGE && make -j2 V=0;
-      fi
-    - if [ "$BUILD_TYPE" != "ios" ]; then
-        make -j2 check-am V=0;
-      fi
-
-# Silence gcov standard output since it produces way too much output
-after_success:
-    - if [ "$COVERAGE" = "--enable-coverage" ]; then
-        coveralls --gcov /usr/bin/gcov-5 --exclude src/libmeasurement_kit/ext
-                  -b .  --exclude example --exclude third_party
-                  --exclude include/measurement_kit/ext
-                  --exclude src/libmeasurement_kit/cmdline > /dev/null;
-      fi
-
-after_failure:
-    - if [ -f "test-suite.log" ]; then
-        cat test-suite.log;
-      fi
+    - ./build/ci/travis
 
 matrix:
   include:
 
-    - sudo: false
-      compiler: g++-5
-      env: COVERAGE=--enable-coverage VER=5
-      addons:
-        apt:
-          packages:
-            - g++-5
-            - gcc-5
-          sources:
-            - ubuntu-toolchain-r-test
+    - sudo: required
+      env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
+           DOCKER_BRANCHES_ONLY="master stable"
+      services:
+        - docker
+
+    - sudo: required
+      env: DOCKER_SPEC=valgrind-gcc pkg_make_flags="V=0 -j3"
+           DOCKER_BRANCHES_ONLY="master stable"
+      services:
+        - docker
+
+    - sudo: required
+      env: DOCKER_SPEC=coveralls pkg_make_flags="V=0 -j3"
+      services:
+        - docker
 
     - sudo: false
-      compiler: g++-5
-      env: VER=5
+      compiler: gcc-6
+      env: CXX_NAME=g++-6 CC_NAME=gcc-6 VALGRIND=-valgrind
       addons:
         apt:
           packages:
-            - g++-5
-            - gcc-5
+            - g++-6
+            - gcc-6
+            - valgrind
           sources:
             - ubuntu-toolchain-r-test

@@ -7,13 +7,14 @@
 /// Tests Android traceroute prober
 
 // This is meant to run on Android but can run on all Linux systems
-#ifdef __linux__
+#if (defined __linux__ && defined ENABLE_TRACEROUTE)
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
+
+#include <measurement_kit/traceroute.hpp>
 
 #include <iostream>
-#include <measurement_kit/traceroute.hpp>
 
 using namespace mk::traceroute;
 using namespace mk;
@@ -24,7 +25,7 @@ TEST_CASE("Typical IPv4 traceroute usage") {
     auto prober = Prober<AndroidProber>(true, 11829);
     auto ttl = 1;
 
-    loop_with_initial_event_and_connectivity([&]() {
+    loop_with_initial_event([&]() {
         prober.on_result([&prober, &ttl, &payload](ProbeResult r) {
             std::cout << ttl << " " << r.interface_ip << " " << r.rtt
                       << " ms\n";
@@ -64,7 +65,7 @@ TEST_CASE("Check whether it works when destination sends reply") {
     auto prober = Prober<AndroidProber>(true, 11829);
     auto ttl = 1;
 
-    loop_with_initial_event_and_connectivity([&]() {
+    loop_with_initial_event([&]() {
         prober.on_result([&prober, &ttl, &payload](ProbeResult r) {
             std::cout << ttl << " " << r.interface_ip << " " << r.rtt
                       << " ms\n";

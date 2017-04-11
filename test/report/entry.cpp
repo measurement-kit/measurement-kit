@@ -3,8 +3,8 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
 #include <measurement_kit/report.hpp>
 
 using namespace mk::report;
@@ -74,7 +74,7 @@ TEST_CASE("We can create an Array") {
     entry.push_back(9.0);
     entry.push_back(11.0);
     entry.push_back(8.0);
-    REQUIRE(entry.dump() == "[10,9,11,8]");
+    REQUIRE(entry.dump() == "[10.0,9.0,11.0,8.0]");
 }
 
 TEST_CASE("Cast works when possible") {

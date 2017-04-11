@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+. ./build/autogen.d/geoip
+autogen_get_geoip

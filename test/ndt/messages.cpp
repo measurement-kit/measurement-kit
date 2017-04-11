@@ -3,10 +3,9 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "src/libmeasurement_kit/ndt/messages_impl.hpp"
-#include <measurement_kit/ndt.hpp>
+#include "../src/libmeasurement_kit/ndt/messages_impl.hpp"
 
 using namespace mk;
 using namespace mk::ndt;

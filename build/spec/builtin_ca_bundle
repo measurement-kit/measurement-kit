@@ -1,0 +1,16 @@
+
+# Note: here the pkg_name is libressl such that we only need to clone once
+# the library rather than multiple times for each "package" based on it
+pkg_name=libressl
+pkg_repository=https://github.com/libressl-portable/portable.git
+pkg_branch_or_tag=v2.4.5
+pkg_steps="autogen install"
+
+pkg_install() {
+    ofile="../../../src/libmeasurement_kit/net/builtin_ca_bundle.cpp"
+    echo "Installing apps/openssl/cert.pem in MK sources"
+    ../../../build/bundle-ca $pkg_branch_or_tag apps/openssl/cert.pem $ofile
+    clang-format -i $ofile
+    # Also save a copy that would be used for regress testing
+    cp apps/openssl/cert.pem ../../../test/fixtures/saved_ca_bundle.pem
+}

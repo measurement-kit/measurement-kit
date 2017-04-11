@@ -15,22 +15,35 @@ class Reactor {
     static Var<Reactor> make();
     static Var<Reactor> global();
 
-    virtual void call_later(double delay, Callback<> callback) = 0;
-    virtual void call_soon(Callback<> callback) = 0;
+    void call_later(double delay, Callback<> callback);
+    void call_soon(Callback<> callback);
 
-    virtual void loop() = 0;
-    virtual void break_loop() = 0;
-    virtual void loop_with_initial_event(Callback<> func) = 0;
+    void loop();
+    void break_loop();
+    void loop_with_initial_event(Callback<> func);
 }
 
-/* Functions using the global reactor: */
+/* Functional interface (by default using the global reactor): */
 
-void call_later(double delay, Callback<> callback);
-void call_soon(Callback<> callback);
+void call_later(
+        double delay,
+        Callback<> callback,
+        Var<Reactor> reactor = Reactor::global()
+);
 
-void loop();
-void break_loop();
-void loop_with_initial_event(Callback<> func);
+void call_soon(
+        Callback<> callback,
+        Var<Reactor> reactor = Reactor::global()
+);
+
+void loop(Var<Reactor> reactor = Reactor::global());
+
+void break_loop(Var<Reactor> reactor = Reactor::global());
+
+void loop_with_initial_event(
+        Callback<> func,
+        Var<Reactor> reactor = Reactor::global()
+);
 
 /* For regress tests: */
 
@@ -46,9 +59,10 @@ void loop_with_initial_event_and_connectivity(Callback<> func);
 The `Reactor` abstract interface dispatches I/O events. Most MeasurementKit
 objects refer to a specific `Reactor` object.
 
-The `make()` and `global()` factories return a reactor allocated on the heap whose
-lifecycle is manager using a `Var<>` smart pointer. Specifically, `make()` allocates
-a new reactor and `global()` returns a reference to the global reactor.
+The `make()` and `global()` factories return a reactor allocated
+on the heap whose lifecycle is manager using a `Var<>` smart pointer.
+Specifically, `make()` allocates a new reactor and `global()` returns
+a reference to the global reactor.
 
 The `call_later()` method schedules the callback `callback` to be executed
 after `delay` seconds. Use the closure of the lambda to pass objects to the
@@ -61,6 +75,8 @@ callback (and make sure that the lifecycle is managed correctly):
         // stack by value to the lambda. This pattern should be safe as
         // long as either copying the objects makes sense or you pass
         // around objects managed through a Var<> smart pointer.
+        // Note, however, that the compiler will only copy objects that
+        // you are using inside the lambda, for efficiency.
         obj->something();
     });
 ```
@@ -99,17 +115,16 @@ way, there is the guarantee that, even if `break_loop()` is called
 immediately because `action()` completes immediately, `break_loop()`
 always occurs *after* starting the loop and hence the loop is always interrupted.
 
-In `common/reactor.hpp` we also define syntactic sugar functions that operate
-on the global poller. That is `mk::loop()` is syntactic sugar for:
+In `common/reactor.hpp` also define functions that have equal semantic to
+`Reactor` methods but by default operate on the global reactor. For all these
+functions, it is however possible to pass a custom reactor as the last
+argument.
 
-```C++
-mk::Poller::global()->loop();
-```
-
-The `loop_with_initial_event_and_connectivity()` is a function that only starts the
-event loop and calls the initial function when there is connectivity. This is used
-typically in tests to avoid running tests requiring the network when the network is
-not available. For example,
+The `loop_with_initial_event_and_connectivity()` is a function that
+only starts the event loop and calls the initial function when there
+is connectivity. This is used typically in tests to avoid running
+tests requiring the network when the network is not available. For
+example,
 
 ```C++
 TEST_CASE("We can GET a specific URL") {
@@ -127,6 +142,7 @@ TEST_CASE("We can GET a specific URL") {
 
 # HISTORY
 
-The `Poller` class appeared in MeasurementKit 0.1.0. It was renamed `Reactor` in
-MeasurementKit 0.2.0. As of MK v0.2.0, the `Poller` still exists as a specific
-implementation of the `Reactor` interface described in this manual page.
+The `Poller` class appeared in MeasurementKit 0.1.0. It was renamed
+`Reactor` in MeasurementKit 0.2.0. As of MK v0.2.0, the `Poller`
+still exists as a specific implementation of the `Reactor` interface
+described in this manual page.

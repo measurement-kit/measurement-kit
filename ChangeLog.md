@@ -1,3 +1,243 @@
+# MeasurementKit 0.4.0 [2017-02-13]
+
+- Repair circle-ci build for stable (#1123)
+- connect: support also ipv6 link local with scope (#1102)
+- Fix gitlab on stable by using yakkety (#1133)
+- Be more specific wrt connect() failure (#1126)
+- Add a name to each error (#1134)
+
+# MeasurementKit 0.4.0-beta.4 [2017-02-09]
+
+- .gitlab-ci.yml: also build stable (#1122)
+- http: fix EOF-implies-end-of-body logic (#1121)
+- http: fix schema less redirect (#1124)
+
+# MeasurementKit 0.4.0-beta.3 [2017-02-01]
+
+- `ip_lookup()`: validate result as IP address (#1108)
+- `web_connectivity`: do not `*request` unconditionally
+- runnable: progress now accounts for `max_runtime`
+- progress: also track opening/closing report
+- The header key comparison MUST be done with the lowercase version
+- Use std::transform to convert to lowercase
+- Use transform also in another place
+
+# MeasurementKit 0.4.0-beta.2 [2017-01-31]
+
+- Start updating documentation for release 0.4.0 (#1082)
+- report: Allow to specify application name and version (#1092)
+- report: include the platform (#1093)
+- Make sure http template produces good json (#1096)
+- var.hpp: fix as() to use dynamic cast (#1090)
+- test/net/connect.cpp: refactor to avoid global poller (#1099)
+- connect: start fixing IPv6 addresses (#1100)
+- net: start exposing network errors (#1101)
+- Feature: NDT stats (#1089)
+- Add regress tests for input processor (#1059)
+- Use default backends when it makes sense (#1097)
+- Propagate network errors (#1103)
+- Fix: web connectivity segfault (#1107)
+- `templates::http_request()`: scrub IP address (#1106)
+- `web_connectivity`: pass headers to backend (#1111)
+
+# MeasurementKit 0.4.0-beta.1 [2017-01-16]
+
+- net: improve handling of address:port (#1079)
+- `clang-format -i ooni/web_connectivity.cpp` (#1078)
+- Attempt to fix issue with case sensitive drive (#1076)
+- README.md: attempt to fix coveralls badge (#1073)
+- travis: fix coveralls (#1066)
+
+# MeasurementKit 0.4.0-beta [2017-01-13]
+
+- Feature: recognize utf8 (#1062)
+- Support for country-specific test lists (#1030)
+
+# MeasurementKit 0.4.0-alpha.3 [2017-01-06]
+
+- nettests: randomize input (#1029)
+- Add workaround for Android with API < 21 (#1048)
+- android build: simple changes backported from #1047 (#1049)
+- More hotfix backports from #1047 (#1050)
+- Fix API and ABI compatibility for old Androids (#1047)
+- `system_resolver.hpp`: do not warn on getaddrinfo failure (#1055)
+
+# MeasurementKit 0.4.0-alpha.2 [2016-12-28]
+
+- runnable: implement `max_runtime` option (#1028)
+- Fix libevent clock gettime (#1044)
+
+# MeasurementKit 0.4.0-alpha.1 [2016-12-15]
+
+- Improve `multi_ndt` entry format (#992)
+- Fix: libressl ios build (#994)
+- Refactor: ssl (#997)
+- Write ssl context regress tests (#998)
+- Implement mk::slurp() to read files at once (#996)
+- BaseTest: add `on_logger_eof()` method (#1004)
+- getaddrinfo: android dislikes `AI_V4MAPPED|AI_ALL` (#1005)
+- logger: allow multiple `on_eof()` callbacks (#1006)
+- runnable: allow multiple on-end callbacks (#1007)
+- Use builtin CA file if CA file is missing and we're using libressl (#999)
+- runnable: add `on_destroy()` callback (#1008)
+
+# MeasurementKit 0.4.0-alpha [2016-12-07]
+
+- cmdline.hpp: Use macros to simplify code (#858)
+- Make `no_collector` / `no_file_report` options really usable (#860)
+- Make sure filenames extension is .njson, not .json (#873)
+- dns: pass logger to query() (#878)
+- don't track njson files (#879)
+- dns.hpp: pass a `Var<Message>` to the callback (#862)
+- ssl: handle errors using callbacks not exceptions (#789)
+- Start moving libevent code into a specific folder (#891)
+- More abstract reactor API (#894)
+- reactor: move more code from poller to here (#895)
+- More reactor-related cleanups (#896)
+- More maintenance of reactor and poller (#897)
+- net: measure connect time during connect (#899)
+- Prepare for required successful build only on travis (#902)
+- ndt: multi stream test (#710)
+- Implement and use `reactor->pollfd()` (#898)
+- Add support for submitting reports via cloudfronted collectors (#907)
+- http/request: don't redirect if `*max_request <= 0` (#910)
+- Log dns debug to the correct logger (#912)
+- travis: valgrind: update openssl.supp (#928)
+- Move cmdline in src/measurement_kit (#930)
+- collector_client.hpp: remove backward compat stuff (#931)
+- version: use C linkage function (#932)
+- Reactor should come before logger in function args (#933)
+- ndt: exchange reactor and logger arguments (#934)
+- reactor.hpp: add missing header (#936)
+- Do not use `using namespace` in public headers (#937)
+- Refactoring of the nettests layer (#938)
+- nettests: move code from headers to .cpp files (#939)
+- runner: hide implementation details (#940)
+- net_test: less inline functions (#941)
+- Merge net_test.hpp and ooni_test.hpp (#942)
+- ooni_reporter: fix layers violation (#943)
+- Divide net_test in base_test and runnable (#944)
+- nettests: more refactoring (#945)
+- Feature: ignore collector errors (#946)
+- Move ooni_reporter in report module (#947)
+- nettests: pass `Var<Entry>` to callback (#948)
+- nettests: run() now uses the current thread (#949)
+- dns: enums that should not conflict with windows (#951)
+- Resolve hosts using the system resolver (#918)
+- Support IPv6 link-local resolver (#915)
+- logger: add callback for JSON encoded events (#956)
+- ndt: print progress of the test (#958)
+- Make sure we always store and submit report-id (#950)
+- ndt: allow to specify alternative mlabns tool (#959)
+- Move network utils code in net directory (#960)
+- Always disable the Nagle algorithm (#961)
+- Set CFLAGS et al. in configure (#963)
+- Improve cmake for Unix (#965)
+- Implement single+multiple stream NDT test (#968)
+- Update dependencies for v0.4.0 (#982)
+- Implement ooni resources downloader (#811)
+- Improve the CMakeLists.txt file (#983)
+
+# MeasurementKit 0.3.9 [2016-12-04]
+
+- Revert "Add workaround for macOS"
+
+# MeasurementKit 0.3.8 [2016-12-04]
+
+- Make sure --disable-traceroute actually works
+- Add workaround for macOS
+
+# MeasurementKit 0.3.7 [2016-12-02]
+
+- Allow to quickly disable traceroute
+
+# MeasurementKit 0.3.6 [2016-12-01]
+
+- http/request: don't redirect if `*max_request <= 0` (#908)
+- Log dns debug to the correct logger (#912) (#914)
+- web-connectivity: log errors (#916)
+- bufferevent: use `BEV_OPT_DEFER_CALLBACKS` (#924)
+- Fix several warnings (#926)
+- `ooni_reporter.cpp`: make sure we submit report id (#927)
+
+# MeasurementKit 0.3.5 [2016-11-01]
+
+- a few `web_connectivity` fixes (#880, #889, #890)
+- fix progress in emitted progress json (#886)
+
+# MeasurementKit 0.3.4 [2016-10-28]
+
+- switch test collector to b.collector.test.ooni.io (#880)
+- remove `./build/android/library` (#870)
+- fixing `web_connectivity` bug #867
+
+# MeasurementKit 0.3.3 [2016-10-23]
+
+- `connect.cpp`: increase default net/timeout (#872)
+- `web_connectivity`: set the accessible key (#871)
+- Make `no_collector`/`no_file_report` really usable (#859)
+
+# MeasurementKit 0.3.2 [2016-10-03]
+
+- `ooni_test`: continue even if we cannot submit an entry
+- for testing use the discarding https collector deployed on heroku
+- clanups and other small changes
+- update android and ios to compile using latest dependencies
+
+# MeasurementKit 0.3.1 [2016-10-03]
+
+- update dependencies (yes, I was optimistic yesterday)
+
+# MeasurementKit 0.3.0 [2016-10-02]
+
+We are now entering in stable land. There are some outstanding issues
+like making sure dependencies are up to date and that documentation is
+in sync with code, but we can take care of those in subsequent patch
+releases, if needed. We have been testing this version of MK for quite
+a while now, and it really looks like good.
+
+Compared to previous 0.3.0-beta.3, this release includes some goodies
+from master that are very inlikely to impact on stability. Namely:
+
+- flesh out basic contribution guide (#819)
+- backport simple portability changes from #820 (#821)
+- report: allow to pretty print entry (#825)
+- very lite refactoring of runner (#826)
+
+# MeasurementKit 0.3.0-beta.3 [2016-09-19]
+
+- ooni: refactor geoip to cache openned databases (#809)
+- reduce tarball size by not shipping geoip
+- ooni: allow caller to set probe_{ip,asn,cc} (#816)
+- ooni: fix regress by changing collector-url
+
+# MeasurementKit 0.3.0-beta.2 [2016-09-15]
+
+- ooni: allow to disable collector
+- geoip: skip compiling binaries
+- ooni: count entries and emit progress
+- ooni: allow to optionally avoid writing reports to disk
+- http: put geoip databases in current working dir
+- *: make sure all errors are named Error
+
+# MeasurementKit 0.3.0-beta.1 [2016-09-01]
+
+- Improve .gitignore
+- Merge stable branch into release/v0.3.0 branch
+- Fix build with --disable-integration-tests
+
+# MeasurementKit 0.3.0-beta [2016-08-31]
+
+- autogen.sh: don't list embedded-mk as dependency (#796)
+- teach acinclude.m4 to use brew's OpenSSL (#797)
+- sketch out cmake build system (mainly for Windows) (#798)
+- implement incremental ooni collector (#765)
+- run OONI tests in parallel (#768)
+
+# MeasurementKit 0.2.9 [2016-08-31]
+
+- Make sure install.sh is included when we build release
+
 # MeasurementKit 0.3.0-alpha.1 [2016-08-25]
 
 - fix type of `getopt()` return value

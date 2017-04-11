@@ -1,0 +1,5 @@
+pkg_name=measurement-kit
+pkg_branch_or_tag=v0.5.0-dev
+_dd=${pkg_prefix}/${pkg_cross}/${pkg_cross_arch}
+pkg_configure_flags="--disable-examples --disable-shared --disable-binaries --with-openssl=${_dd} --with-libevent=${_dd} --with-geoip=${_dd} $pkg_configure_flags"
+pkg_make_install_rule=install-strip

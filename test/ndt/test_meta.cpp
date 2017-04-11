@@ -3,11 +3,10 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "src/libmeasurement_kit/ndt/test_meta_impl.hpp"
-#include "src/libmeasurement_kit/net/emitter.hpp"
-#include <measurement_kit/ndt.hpp>
+#include "../src/libmeasurement_kit/ndt/test_meta_impl.hpp"
+#include "../src/libmeasurement_kit/net/emitter.hpp"
 
 using namespace mk;
 using namespace mk::ndt;
@@ -76,7 +75,7 @@ TEST_CASE("run() deals with first format_test_msg() error") {
 
 TEST_CASE("run() deals with second format_test_msg() error") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     test_meta::run_impl<test_prepare, test_start, success, fail>(
         ctx,
         [](Error err) { REQUIRE(err == SerializingClientApplicationError()); });
@@ -84,7 +83,7 @@ TEST_CASE("run() deals with second format_test_msg() error") {
 
 TEST_CASE("run() deals with third format_test_msg() error") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     test_meta::run_impl<test_prepare, test_start, success, success, fail>(
         ctx, [](Error err) { REQUIRE(err == SerializingFinalMetaError()); });
 }
@@ -95,7 +94,7 @@ static void fail(Var<Context>, Buffer, Callback<Error> cb) {
 
 TEST_CASE("run() deals with write error") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     test_meta::run_impl<test_prepare, test_start, success, success, success,
                         fail>(
         ctx, [](Error err) { REQUIRE(err == WritingMetaError()); });
@@ -105,7 +104,7 @@ static void success(Var<Context>, Buffer, Callback<Error> cb) { cb(NoError()); }
 
 TEST_CASE("run() deals with third read() error") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     test_meta::run_impl<test_prepare, test_start, success, success, success,
                         success, fail>(
         ctx, [](Error err) { REQUIRE(err == ReadingTestFinalizeError()); });
@@ -113,7 +112,7 @@ TEST_CASE("run() deals with third read() error") {
 
 TEST_CASE("run() deals with unexpected message on third read") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     test_meta::run_impl<test_prepare, test_start, success, success, success,
                         success, unexpected>(
         ctx, [](Error err) { REQUIRE(err == NotTestFinalizeError()); });

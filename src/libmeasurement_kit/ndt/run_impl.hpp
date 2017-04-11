@@ -1,10 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_NDT_RUN_IMPL_HPP
-#define SRC_NDT_RUN_IMPL_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NDT_RUN_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_NDT_RUN_IMPL_HPP
 
-#include "src/libmeasurement_kit/ndt/internal.hpp"
+#include "../ndt/internal.hpp"
 #include <measurement_kit/mlabns.hpp>
 
 namespace mk {
@@ -19,7 +19,7 @@ template <Phase connect, Phase send_login, Phase recv_and_ignore_kickoff,
           Cleanup disconnect_and_callback>
 void run_with_specific_server_impl(Var<Entry> entry, std::string address, int port,
                                    Callback<Error> callback, Settings settings,
-                                   Var<Logger> logger, Var<Reactor> reactor) {
+                                   Var<Reactor> reactor, Var<Logger> logger) {
 
     // Note: this implementation is a template because that allows us to
     // easily change the functions implementing each phase of the protocol
@@ -41,12 +41,15 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
     dump_settings(ctx->settings, "ndt", ctx->logger);
 
     // Initialize entry keys that may be set by this routine
-    (*ctx->entry)["receiver_data"] = Entry::array();
-    (*ctx->entry)["web100_data"] = Entry::object();
-    (*ctx->entry)["summary_data"] = Entry::object();
-    (*ctx->entry)["test_suite"] = ctx->test_suite;
+    (*ctx->entry)["client_resolver"] = nullptr; /* Set later by parent */
+    (*ctx->entry)["failure"] = nullptr;
     (*ctx->entry)["server_address"] = address;
     (*ctx->entry)["server_port"] = port;
+    (*ctx->entry)["server_version"] = nullptr;
+    (*ctx->entry)["summary_data"] = Entry::object();
+    (*ctx->entry)["test_c2s"] = Entry::array();
+    (*ctx->entry)["test_s2c"] = Entry::array();
+    (*ctx->entry)["test_suite"] = ctx->test_suite;
 
     // The following code implements this sequence diagram:
     // https://raw.githubusercontent.com/wiki/ndt-project/ndt/NDTProtocol.images/ndt_10.png
@@ -59,29 +62,41 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
 
     connect(ctx, [ctx](Error err) {
         TRAP_ERRORS(err);
+        ctx->logger->progress(0.1, "Connected to test server");
 
         send_login(ctx, [ctx](Error err) {
             TRAP_ERRORS(err);
+            ctx->logger->progress(0.2, "Logged in with test server");
 
             recv_and_ignore_kickoff(ctx, [ctx](Error err) {
                 TRAP_ERRORS(err);
+                ctx->logger->progress(0.3, "Waiting for our turn in queue");
 
                 wait_in_queue(ctx, [ctx](Error err) {
                     TRAP_ERRORS(err);
+                    ctx->logger->progress(0.4, "Authorized to run test");
 
                     recv_version(ctx, [ctx](Error err) {
                         TRAP_ERRORS(err);
+                        ctx->logger->progress(0.5, "Got server version");
 
                         recv_tests_id(ctx, [ctx](Error err) {
                             TRAP_ERRORS(err);
+                            ctx->logger->progress(0.6,
+                                "Got authorized tests identifiers");
 
                             run_tests(ctx, [ctx](Error err) {
                                 TRAP_ERRORS(err);
+                                // Progress printed by run_tests()
 
                                 recv_results_and_logout(ctx, [ctx](Error err) {
                                     TRAP_ERRORS(err);
+                                    ctx->logger->progress(0.8,
+                                        "Received results from server");
 
                                     wait_close(ctx, [ctx](Error err) {
+                                        ctx->logger->progress(0.9,
+                                            "Connection with server closed");
                                         disconnect_and_callback(ctx, err);
                                     });
                                 });
@@ -96,9 +111,10 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address, int po
 #undef TRAP_ERRORS
 }
 
-template <MK_MOCK(run_with_specific_server), MK_MOCK_NAMESPACE(mlabns, query)>
-void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings, Var<Logger> logger,
-              Var<Reactor> reactor) {
+template <MK_MOCK(run_with_specific_server),
+          MK_MOCK_AS(mlabns::query, mlabns_query)>
+void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings,
+              Var<Reactor> reactor, Var<Logger> logger) {
     ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
     if (!port) {
         callback(InvalidPortError(port.as_error()));
@@ -106,18 +122,18 @@ void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings, Var
     }
     std::string address = settings.get<std::string>("address", "");
     if (address != "") {
-        run_with_specific_server(entry, address, *port, callback, settings, logger,
-                                 reactor);
+        run_with_specific_server(entry, address, *port, callback, settings,
+                                 reactor, logger);
         return;
     }
-    mlabns_query("ndt",
+    mlabns_query(settings.get<std::string>("mlabns_tool_name", "ndt"),
                  [=](Error err, mlabns::Reply reply) {
                      if (err) {
                          callback(MlabnsQueryError(err));
                          return;
                      }
                      run_with_specific_server(entry, reply.fqdn, *port, callback,
-                                              settings, logger, reactor);
+                                              settings, reactor, logger);
                  },
                  settings, reactor, logger);
 }

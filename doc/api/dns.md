@@ -15,6 +15,12 @@ void mk::dns::query(mk::dns::QueryClass dns_class,
                     mk::Callback<mk::Error, mk::dns::Message> callback,
                     mk::Settings settings = {},
                     mk::Var<mk::Reactor> reactor = mk::Reactor::global());
+
+void resolve_hostname(std::string hostname,
+                    Callback<ResolveHostnameResult> cb,
+                    Settings settings = {},
+                    Var<Reactor> reactor = Reactor::global(),
+                    Var<Logger> logger = Logger::global());
 ```
 
 # STABILITY
@@ -33,6 +39,7 @@ the following query classes are defined:
 
 Note that you can also pass the query class as string; e.g.,
 the following would compile and run as expected:
+
 
 ```C++
     mk::dns::query("IN", ...);
@@ -146,12 +153,15 @@ the `query` function. The following setting keys are available:
 
 - *"dns/attempts"*: how many attempts before erroring out (default is three)
 
-- *"dns/nameserver"*: address (and optionally port) of the name server to use. If you
+- *"dns/nameserver"*: address of the name server to use. If you
   don't specify this, the default name server is used. On Unix systems the default DNS
   server is obtained parsing `/etc/resolv.conf`; on mobile devices where such file
   is not available, the default DNS name server is `127.0.0.1` which typically is not
   correct. Hence with mobile devices you SHOULD typically supply the DNS server
   you would like to use.
+
+- *"dns/port"*: port of the name server to use. If you don't specify this, the
+  default is `53`.
 
 - *"dns/randomize_case"*: whether to [randomize request case to make DNS
   poisoning more complex](https://lists.torproject.org/pipermail/tor-commits/2008-October/026025.html)
@@ -163,6 +173,35 @@ the `query` function. The following setting keys are available:
 The optional `reactor` argument is the reactor to use to issue the query
 and receive the corresponding response.
 
+
+The `resolve_hostname()` function should be used to perform dns queries
+for connection purposes and not to perform tests on a dns server.
+In both cases of success or failure, it will invoke the callback passing an instance
+of `ResolveHostnameResult`.
+
+The `ResolveHostnameResult` class is like:
+
+```C++
+struct ResolveHostnameResult {
+    bool inet_pton_ipv4 = false;
+    bool inet_pton_ipv6 = false;
+    Error ipv4_err;
+    dns::Message ipv4_reply;
+    Error ipv6_err;
+    dns::Message ipv6_reply;
+    std::vector<std::string> addresses;
+};
+```
+
+where `inet_pton_ipv4` is `true` if `address` is an IPv4 address and similarly
+`inet_pton_ipv6` is `true` if `address` is an IPv6 address; `ipv4_err` and `ipv4_reply`
+are the values returned by resolving `address` as a FQDN into a list of addresses;
+`ipv6_err` and `ipv6_reply` have the same semantic of their IPv4 counterparts; `addresses`
+is the list of the addresses that `connect()` will try to connect to. This list will
+only contain a IPv4 (or IPv6) address if `address` is an IPv4 (or IPv6) address and it
+will contain IPv4 addresses before IPv6 addresses (if any) when `address` instead is
+a FQDN (fully qualified domain name).
+
 # EXAMPLE
 
 ```C++
@@ -171,7 +210,8 @@ and receive the corresponding response.
 using namespace mk;
 
 Settings settings({
-    {"dns/nameserver", "8.8.8.8:53"},
+    {"dns/nameserver", "8.8.8.8"},
+    {"dns/port", 53},
     {"dns/attempts", 1},
     {"dns/timeout", 3.1415},
     {"dns/randomize_case", true},

@@ -3,11 +3,11 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
+#include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "src/libmeasurement_kit/ext/Catch/single_include/catch.hpp"
-#include "src/libmeasurement_kit/net/emitter.hpp"
-#include "src/libmeasurement_kit/ooni/collector_client_impl.hpp"
-#include <measurement_kit/ooni.hpp>
+#include "../src/libmeasurement_kit/net/emitter.hpp"
+#include "../src/libmeasurement_kit/ooni/collector_client_impl.hpp"
+
 #include <sstream>
 
 using namespace mk::http;
@@ -47,16 +47,13 @@ class MockConnection : public Emitter, public NonCopyable, public NonMovable {
   private:
     bool isclosed = false;
     Callback<> close_cb;
-    Var<Reactor> reactor = Reactor::global();
     Var<Transport> self;
 
-    MockConnection() {}
+    MockConnection() : Emitter(Reactor::global(), Logger::global()) {}
 };
 
 void MockConnection::close(Callback<> cb) {
-    if (isclosed) {
-        throw std::runtime_error("already closed");
-    }
+    REQUIRE(!isclosed);
     isclosed = true;
     close_cb = cb;
     reactor->call_soon([=]() {
@@ -359,7 +356,7 @@ TEST_CASE("update_and_fetch_next() deals with get_next_entry error") {
 TEST_CASE("submit_report() deals with invalid file") {
     loop_with_initial_event([=]() {
         collector::submit_report_impl(
-            "/nonexistent/nonexistent-very-long-filename.txt", "",
+            "/nonexistent/nonexistent-very-long-filename.txt", "", "",
             [=](Error err) {
                 REQUIRE(err == CannotOpenReportError());
                 break_loop();
@@ -370,7 +367,7 @@ TEST_CASE("submit_report() deals with invalid file") {
 
 TEST_CASE("submit_report() deals with get_next_entry error") {
     loop_with_initial_event([=]() {
-        collector::submit_report_impl<fail>("test/fixtures/hosts.txt", "",
+        collector::submit_report_impl<fail>("test/fixtures/hosts.txt", "", "",
                                             [=](Error err) {
                                                 REQUIRE(err == MockedError());
                                                 break_loop();
@@ -392,7 +389,7 @@ static void fail(Settings, Callback<Error, Var<Transport>> cb, Var<Reactor>,
 TEST_CASE("submit_report() deals with collector_connect error") {
     loop_with_initial_event([=]() {
         collector::submit_report_impl<success, fail>(
-            "test/fixtures/hosts.txt", "",
+            "test/fixtures/hosts.txt", "", "",
             [=](Error err) {
                 REQUIRE(err == MockedError());
                 break_loop();
@@ -414,7 +411,7 @@ static void fail(Var<Transport>, Entry, Callback<Error, std::string> cb,
 TEST_CASE("submit_report() deals with collector_create_report error") {
     loop_with_initial_event([=]() {
         collector::submit_report_impl<success, success, fail>(
-            "test/fixtures/hosts.txt", "",
+            "test/fixtures/hosts.txt", "", "",
             [=](Error err) {
                 REQUIRE(err == MockedError());
                 break_loop();
@@ -436,7 +433,7 @@ TEST_CASE("submit_report() deals with collector_create_report error") {
 
 TEST_CASE("The collector client works as expected") {
     loop_with_initial_event([=]() {
-        collector::submit_report("test/fixtures/report.json",
+        collector::submit_report("test/fixtures/report.njson",
                                  collector::testing_collector_url(),
                                  [=](Error err) {
                                      REQUIRE(err == NoError());

@@ -4,47 +4,52 @@
 #ifndef MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 #define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
-#include <ctime>
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/report/report.hpp>
 #include <measurement_kit/report/entry.hpp>
 
 namespace mk {
 namespace report {
 
-class BaseReporter {
+class Report;
+
+class BaseReporter : public NonCopyable, public NonMovable {
   public:
-    const std::string software_name = "measurement_kit";
-    const std::string software_version = MEASUREMENT_KIT_VERSION;
-    const std::string data_format_version = "0.2.0";
+    static Var<BaseReporter> make();
 
-    std::string test_name;
-    std::string test_version;
+    virtual ~BaseReporter();
 
-    std::string probe_ip;
-    std::string probe_asn;
-    std::string probe_cc;
+    // TODO: refactor moving these inline functions inside of the .cpp file
 
-    tm test_start_time;
+    virtual Continuation<Error> open(Report &) {
+        return do_open_([=](Callback<Error> cb) { cb(NoError()); });
+    }
 
-    Settings options;
+    virtual Continuation<Error> write_entry(Entry e) {
+        return do_write_entry_(e, [=](Callback<Error> cb) { cb(NoError()); });
+    }
 
-    BaseReporter();
+    virtual Continuation<Error> close() {
+        return do_close_([=](Callback<Error> cb) { cb(NoError()); });
+    }
 
-    virtual ~BaseReporter() {}
+    virtual std::string get_report_id() {
+        return ""; /* This is basically "invalid report id" */
+    }
 
-#define XX __attribute__((warn_unused_result))
+  protected:
+    BaseReporter() {}
 
-    virtual Error open() XX;
+    Continuation<Error> do_open_(Continuation<Error> cc);
 
-    virtual Error write_entry(Entry &entry) XX;
+    Continuation<Error> do_write_entry_(Entry, Continuation<Error> cc);
 
-    virtual Error close() XX;
-
-#undef XX
+    Continuation<Error> do_close_(Continuation<Error> cc);
 
   private:
-    bool closed_ = false;
+
     bool openned_ = false;
+    bool closed_ = false;
+    std::string prev_entry_;
 };
 
 } // namespace report

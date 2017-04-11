@@ -2,12 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/common/version.hpp>
+#include <measurement_kit/common/version.h>
 
-namespace mk {
-
-std::string library_version() {
+const char *mk_version() {
     return MEASUREMENT_KIT_VERSION;
 }
-
-} // namespace mk

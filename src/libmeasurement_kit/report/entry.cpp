@@ -25,28 +25,41 @@ namespace report {
     return entry;
 }
 
+Entry &Entry::operator=(std::initializer_list<nlohmann::json> t) {
+    nlohmann::json::operator=(t);
+    return *this;
+}
+
 void Entry::push_back(Entry value) {
     try {
         nlohmann::json::push_back(value);
-    } catch (std::domain_error &) {
+    } catch (const std::domain_error &) {
         throw JsonDomainError();
     }
 }
 
-std::string Entry::dump() {
-    return nlohmann::json::dump();
+void Entry::push_back(std::initializer_list<nlohmann::json> j) {
+    try {
+        nlohmann::json::push_back(j);
+    } catch (const std::domain_error &) {
+        throw JsonDomainError();
+    }
+}
+
+std::string Entry::dump(const int indent) const {
+    return nlohmann::json::dump(indent);
 }
 
 Entry Entry::parse(const std::string &s) {
   return static_cast<Entry>(nlohmann::json::parse(s));
 }
 
-bool Entry::operator==(std::nullptr_t right) {
-    return static_cast<nlohmann::json &>(*this) == right;
+bool Entry::operator==(std::nullptr_t right) const noexcept {
+    return static_cast<const nlohmann::json &>(*this) == right;
 }
 
-bool Entry::operator!=(std::nullptr_t right) {
-    return static_cast<nlohmann::json &>(*this) != right;
+bool Entry::operator!=(std::nullptr_t right) const noexcept {
+    return static_cast<const nlohmann::json &>(*this) != right;
 }
 
 } // namespace report
