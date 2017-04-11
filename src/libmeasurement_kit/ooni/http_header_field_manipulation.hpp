@@ -4,6 +4,8 @@
 #ifndef SRC_LIBMEASUREMENT_HTTP_HEADER_FIELD_MANIPULATION_HPP
 #define SRC_LIBMEASUREMENT_HTTP_HEADER_FIELD_MANIPULATION_HPP
 
+#include <measurement_kit/ooni.hpp>
+
 namespace mk {
 namespace ooni {
 
