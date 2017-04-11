@@ -5,7 +5,7 @@ print_usage() {
 usage: $0 dependency-name
 
 Clones repository, configure, build and install dependency. By default sources
-are below './build/third_party' and installed software is below './builtin/'.
+are below './third_party' and installed software is below './builtin/'.
 
 Override default behavior by setting these environment variables:
   - pkg_clone_flags: extra flags for 'git clone' (e.g. '--recursive')
@@ -41,8 +41,8 @@ pkg_patch_pre_autogen() {
 
 pkg_autogen() {
     if [ -x ./autogen.sh ]; then
-        echo "- ./autogen.sh $pkg_autogen_sh_flags"
-        ./autogen.sh $pkg_autogen_sh_flags
+        echo "- ./autogen.sh"
+        ./autogen.sh
     elif [ -f ./configure.ac ]; then
         echo "- autoreconf -i"
         autoreconf -i
@@ -112,20 +112,8 @@ pkg_make_install() {
     (cd $pkg_prefix && tar -xvzf $tarname)
 }
 
-    if [ "$pkg_archive" = "" ]; then
-        echo "FATAL: missing 'pkg_archive'" 1>&2
-        exit 1
-    fi
-
-    if [ "$pkg_cross" != "" -a "$pkg_arch" != "" ]; then
-        pkg_archive="$pkg_cross-$pkg_arch-$pkg_archive"
-    fi
-    echo "- tar -cvzf $pkg_archive.tgz"
-    (cd $tmp_inst_dir && tar -cvzf $pkg_rootdir/$pkg_archive.tgz .)
-
-    echo "- $pkg_sudo tar -C $pkg_prefix $pkg_archive.tgz"
-    install -d $pkg_prefix
-    $pkg_sudo tar -C $pkg_prefix -xzf $pkg_rootdir/$pkg_archive.tgz
+pkg_none() {
+    echo "- no action"
 }
 
 set -e
@@ -139,6 +127,9 @@ if [ -z "$pkg_prefix" ]; then
 fi
 export pkg_prefix
 cd $pkg_rootdir
+if [ -x build/spec/$1 ]; then
+    exec build/spec/$1  # If the spec is executable, pass control to it
+fi
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
 if [ "$pkg_repository" != "" ]; then
