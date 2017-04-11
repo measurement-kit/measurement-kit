@@ -348,7 +348,7 @@ TEST_CASE("mk::endswith() works as expected") {
 }
 
 TEST_CASE("random_choice isn't obviously wrong") {
-    std::vector<std::string> choices = {"a", "b", "c", "d"};
+    std::vector<std::string> choices = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"};
     auto choice = mk::random_choice(choices);
     REQUIRE(std::find(choices.begin(), choices.end(), choice) != choices.end());
 }
