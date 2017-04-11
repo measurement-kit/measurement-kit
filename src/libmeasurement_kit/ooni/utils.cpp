@@ -5,8 +5,6 @@
 #include "../ooni/utils_impl.hpp"
 #include "../common/utils.hpp"
 
-#include <set>
-
 namespace mk {
 namespace ooni {
 
