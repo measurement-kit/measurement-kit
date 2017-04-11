@@ -11,8 +11,7 @@ namespace http_header_field_manipulation {
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     std::string backend = "http://a.http.th.ooni.io";
     mk::nettests::HttpHeaderFieldManipulationTest test;
-    int ch;
-    while ((ch = getopt(argc, argv, "b:")) != -1) {
+    for (int ch; (ch = getopt(argc, argv, "b:")) != -1; ) {
         switch (ch) {
         case 'b':
             backend = optarg;
