@@ -51,6 +51,8 @@ std::string unreverse_ipv4(std::string s);
 
 Error disable_nagle(socket_t);
 
+Error map_errno(int);
+
 } // namespace net
 } // namespace mk
 #endif

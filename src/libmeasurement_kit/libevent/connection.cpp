@@ -3,13 +3,14 @@
 // information on the copying conditions.
 
 #include "../libevent/connection.hpp"
+#include "../net/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 
 #include <event2/buffer.h>
 #include <event2/dns.h>
 
-#include <errno.h>
+#include <cerrno>
 #include <new>
 
 extern "C" {
@@ -75,18 +76,13 @@ void Connection::handle_event_(short what) {
         return;
     }
 
-    if (errno == EPIPE) {
-        emit_error(BrokenPipeError());
-        return;
-    }
-
-    // TODO: Here we need to map more network errors
-
-    emit_error(SocketError());
+    Error sys_error = net::map_errno(errno);
+    logger->warn("Got error: %s", sys_error.as_ooni_error().c_str());
+    emit_error(sys_error);
 }
 
 Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> logger)
-        : Emitter(logger), reactor(reactor) {
+        : EmitterBase(reactor, logger) {
     this->bev = buffev;
 
     // The following makes this non copyable and non movable.
@@ -94,20 +90,12 @@ Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> lo
                       handle_libevent_event, this);
 }
 
-void Connection::close(std::function<void()> cb) {
-    if (isclosed) {
-        throw std::runtime_error("already closed");
+void Connection::shutdown() {
+    if (shutdown_called) {
+        return; // Just for extra safety
     }
-    isclosed = true;
-
-    on_connect(nullptr);
-    on_data(nullptr);
-    on_flush(nullptr);
-    on_error(nullptr);
+    shutdown_called = true;
     bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
-    disable_read();
-
-    close_cb = cb;
     reactor->call_soon([=]() {
         this->self = nullptr;
     });

@@ -17,6 +17,9 @@ timeval *timeval_init(timeval *, double);
 ErrorOr<std::vector<char>> slurpv(std::string);
 ErrorOr<std::string> slurp(std::string);
 
+bool startswith(std::string s, std::string p);
+bool endswith(std::string s, std::string p);
+
 }
 ```
 
@@ -56,6 +59,9 @@ The slurpv() and slurp() functions read the content of the file specified
 as argument and return, respectively, a vector of chars containing the content
 of the file and a string containing the content of the file, on success, and
 an error in case of failure.
+
+The `startswith()` and `endswith()` functions tell you, respectively, whether
+`s` starts (or ends) with `p`.
 
 # HISTORY
 

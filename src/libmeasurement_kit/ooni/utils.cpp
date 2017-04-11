@@ -145,13 +145,21 @@ bool is_private_ipv4_addr(const std::string &ipv4_addr) {
   return false;
 }
 
-report::Entry represent_http_body(const std::string &body) {
-    Error error = is_valid_utf8_string(body);
+report::Entry represent_string(const std::string &s) {
+    Error error = is_valid_utf8_string(s);
     if (error != NoError()) {
         return report::Entry{{"format", "base64"},
-                              {"data", base64_encode(body)}};
+                              {"data", base64_encode(s)}};
     }
-    return body;
+    return s;
+}
+
+std::string scrub(std::string s, std::string real_probe_ip) {
+    size_t p = 0;
+    while ((p = s.find(real_probe_ip, p)) != std::string::npos) {
+        s = s.replace(p, real_probe_ip.size(), "[REDACTED]");
+    }
+    return s;
 }
 
 } // namespace ooni

@@ -107,16 +107,15 @@ TEST_CASE("http requests template works as expected") {
                         REQUIRE(root.is_object());
                         requests = root["requests"];
                         REQUIRE(requests.is_array());
-                        REQUIRE((requests.size() == 2));
+                        REQUIRE(requests.size() == 2);
                         /* First request (should be ok) */
                         req = requests[0];
                         REQUIRE(req.is_object());
                         REQUIRE((req["failure"] == nullptr));
                         REQUIRE((req["response"]["body"].is_string()));
                         REQUIRE((req["response"]["body"].size() > 0));
-                        // FIXME: response line not saved
-                        /*REQUIRE((req["response"]["response_line"] ==
-                                 "HTTP/1.1 200 OK"));*/
+                        REQUIRE((req["response"]["response_line"] ==
+                                 "HTTP/1.1 200 OK"));
                         int code = req["response"]["code"];
                         REQUIRE((code == 200));
                         REQUIRE((req["response"]["headers"].is_object()));

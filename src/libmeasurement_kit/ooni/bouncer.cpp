@@ -19,7 +19,7 @@ nlohmann::json BouncerReply::get_base() {
 
 ErrorOr<std::string> BouncerReply::get_collector() {
     try {
-        return get_base()["collector"];
+        return get_base()["collector"].get<std::string>();
     } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
@@ -31,7 +31,7 @@ ErrorOr<std::string> BouncerReply::get_collector_alternate(std::string type) {
         auto collectors = get_base()["collector-alternate"];
         for (auto collector : collectors) {
             if (collector["type"] == type) {
-                return collector["address"];
+                return collector["address"].get<std::string>();
             }
         }
     } catch (const std::exception &) {
@@ -42,7 +42,7 @@ ErrorOr<std::string> BouncerReply::get_collector_alternate(std::string type) {
 
 ErrorOr<std::string> BouncerReply::get_name() {
     try {
-        return get_base()["name"];
+        return get_base()["name"].get<std::string>();
     } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
@@ -51,7 +51,7 @@ ErrorOr<std::string> BouncerReply::get_name() {
 
 ErrorOr<std::string> BouncerReply::get_test_helper(std::string name) {
     try {
-        return get_base()["test-helpers"][name];
+        return get_base()["test-helpers"][name].get<std::string>();
     } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
@@ -64,7 +64,7 @@ ErrorOr<std::string> BouncerReply::get_test_helper_alternate(std::string name,
         auto collectors = get_base()["test-helpers-alternate"][name];
         for (auto collector : collectors) {
             if (collector["type"] == type) {
-                return collector["address"];
+                return collector["address"].get<std::string>();
             }
         }
     } catch (const std::exception &) {
@@ -75,7 +75,7 @@ ErrorOr<std::string> BouncerReply::get_test_helper_alternate(std::string name,
 
 ErrorOr<std::string> BouncerReply::get_version() {
     try {
-        return get_base()["version"];
+        return get_base()["version"].get<std::string>();
     } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }

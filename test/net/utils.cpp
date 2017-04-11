@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include <cerrno>
+
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
@@ -225,5 +227,105 @@ TEST_CASE("Verify that invalid input is rejected") {
             mk::net::unreverse_ipv6(
                 "b.a.9.8.7.6.5.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0."
                 "2.") == "");
+    }
+}
+
+TEST_CASE("map_errno() works as expected") {
+    SECTION("Make sure that 0 maps on mk::ValueError") {
+        REQUIRE(mk::net::map_errno(0) == mk::ValueError());
+    }
+
+    SECTION("Make sure that EAGAIN is correctly handled") {
+        REQUIRE(mk::net::map_errno(EAGAIN) ==
+                mk::net::OperationWouldBlockError());
+    }
+
+    SECTION("Make sure that mapped errors map to correct classes") {
+#define XX(_code_, _name_, _descr_)                                            \
+    {                                                                          \
+        auto err_cond = std::make_error_condition(std::errc::_descr_);         \
+        int code = err_cond.value();                                           \
+        REQUIRE(mk::net::map_errno(code) == mk::net::_name_());                \
+    }
+        MK_NET_ERRORS_XX
+#undef XX
+    }
+
+    SECTION("Make sure some errors maps by passing the definition directly") {
+        REQUIRE(mk::net::map_errno(EWOULDBLOCK) ==
+                mk::net::OperationWouldBlockError());
+        REQUIRE(mk::net::map_errno(EINTR) == mk::net::InterruptedError());
+        REQUIRE(mk::net::map_errno(ENOBUFS)
+                == mk::net::NoBufferSpaceError());
+    }
+
+    SECTION("Make sure that unmapped errors map to mk::GenericError") {
+        REQUIRE(mk::net::map_errno(ENOENT) == mk::GenericError());
+    }
+}
+
+TEST_CASE("make_sockaddr() works as expected") {
+    auto check_for_error = [](std::string address, std::string port) {
+        auto err = mk::net::make_sockaddr(address, port, nullptr, nullptr);
+        REQUIRE(err == mk::ValueError());
+    };
+
+    SECTION("With string port: we deal with invalid port") {
+        check_for_error("8.8.8.8", "antani");
+    }
+
+    SECTION("With string port: we deal with negative port") {
+        check_for_error("8.8.8.8", "-1");
+    }
+
+    SECTION("With string port: we deal with overflow") {
+        check_for_error("8.8.8.8", "65536");
+    }
+
+    SECTION("With string port: it works with a valid port") {
+        sockaddr_storage ss = {};
+        socklen_t sslen = 0;
+        auto err = mk::net::make_sockaddr("8.8.8.8", "22", &ss, &sslen);
+        REQUIRE(err == mk::NoError());
+        REQUIRE(sslen == sizeof(sockaddr_in));
+        sockaddr_in *sin4 = (sockaddr_in *)&ss;
+        REQUIRE(sin4->sin_family == AF_INET);
+        REQUIRE(sin4->sin_port == htons(22));
+        char x[INET_ADDRSTRLEN];
+        REQUIRE(inet_ntop(AF_INET, &sin4->sin_addr, x, sizeof(x)) != nullptr);
+        REQUIRE(std::string{"8.8.8.8"} == x);
+    }
+
+    SECTION("With numeric port: it deals with invalid address") {
+        auto err = mk::net::make_sockaddr("antani", 22, nullptr, nullptr);
+        REQUIRE(err == mk::ValueError());
+    }
+
+    SECTION("With numeric port: it works with valid IPv4") {
+        sockaddr_storage ss = {};
+        socklen_t sslen = 0;
+        auto err = mk::net::make_sockaddr("8.8.8.8", 22, &ss, &sslen);
+        REQUIRE(err == mk::NoError());
+        REQUIRE(sslen == sizeof(sockaddr_in));
+        sockaddr_in *sin4 = (sockaddr_in *)&ss;
+        REQUIRE(sin4->sin_family == AF_INET);
+        REQUIRE(sin4->sin_port == htons(22));
+        char x[INET_ADDRSTRLEN];
+        REQUIRE(inet_ntop(AF_INET, &sin4->sin_addr, x, sizeof(x)) != nullptr);
+        REQUIRE(std::string{"8.8.8.8"} == x);
+    }
+
+    SECTION("With numeric port: it works with valid IPv6") {
+        sockaddr_storage ss = {};
+        socklen_t sslen = 0;
+        auto err = mk::net::make_sockaddr("fe80::1", 22, &ss, &sslen);
+        REQUIRE(err == mk::NoError());
+        REQUIRE(sslen == sizeof(sockaddr_in6));
+        sockaddr_in6 *sin6 = (sockaddr_in6 *)&ss;
+        REQUIRE(sin6->sin6_family == AF_INET6);
+        REQUIRE(sin6->sin6_port == htons(22));
+        char x[INET6_ADDRSTRLEN];
+        REQUIRE(inet_ntop(AF_INET6, &sin6->sin6_addr, x, sizeof(x)) != nullptr);
+        REQUIRE(std::string{"fe80::1"} == x);
     }
 }

@@ -10,8 +10,8 @@ namespace mk {
 namespace ndt {
 namespace test_c2s {
 
-template <MK_MOCK_NAMESPACE(net, connect)>
-void coroutine_impl(std::string address, int port, double runtime,
+template <MK_MOCK_AS(net::connect, net_connect)>
+void coroutine_impl(Var<Entry> report_entry, std::string address, int port, double runtime,
                     Callback<Error, Continuation<Error>> cb, double timeout,
                     Settings settings, Var<Reactor> reactor,
                     Var<Logger> logger) {
@@ -39,6 +39,10 @@ void coroutine_impl(std::string address, int port, double runtime,
                         cb(err, nullptr);
                         return;
                     }
+                    ErrorOr<double> ctime = net::get_connect_time(err);
+                    if (!!ctime) {
+                        (*report_entry)["connect_times"].push_back(*ctime);
+                    }
                     logger->info("Connected to %s:%d", address.c_str(), port);
                     logger->debug("ndt: suspend coroutine");
                     cb(NoError(), [=](Callback<Error> cb) {
@@ -51,6 +55,9 @@ void coroutine_impl(std::string address, int port, double runtime,
                             double now = time_now();
                             snap->maybe_speed(now, [&](double el, double x) {
                                 log_speed(logger, "upload-speed", 1, el, x);
+                                (*report_entry)["sender_data"].push_back({
+                                    el, x
+                                });
                             });
                             if (now - begin > runtime) {
                                 logger->info("Elapsed enough time");
@@ -74,11 +81,11 @@ void coroutine_impl(std::string address, int port, double runtime,
                 settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, first),
+template <MK_MOCK_AS(messages::read_msg, messages_read_msg_first),
           MK_MOCK(coroutine),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, second),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, third),
-          MK_MOCK_NAMESPACE_SUFFIX(messages, read_msg, fourth)>
+          MK_MOCK_AS(messages::read_msg, messages_read_msg_second),
+          MK_MOCK_AS(messages::read_msg, messages_read_msg_third),
+          MK_MOCK_AS(messages::read_msg, messages_read_msg_fourth)>
 void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
@@ -99,10 +106,16 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
 
+        Var<Entry> cur_entry(new Entry);
+        (*cur_entry)["connect_times"] = Entry::array();
+        (*cur_entry)["params"] = {{"num_streams", 1}};
+        (*cur_entry)["receiver_data"] = {{"avg_speed", nullptr}};
+        (*cur_entry)["sender_data"] = Entry::array();
+
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start c2s coroutine ...");
         coroutine(
-            ctx->address, *port, TEST_C2S_DURATION,
+            cur_entry, ctx->address, *port, TEST_C2S_DURATION,
             [=](Error err, Continuation<Error> cc) {
                 ctx->logger->debug("ndt: start c2s coroutine ... %d", (int)err);
                 if (err) {
@@ -154,6 +167,13 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                             ctx->logger->info(
                                 "C2S speed calculated by server: %s kbit/s",
                                 s.c_str());
+
+                            ErrorOr<double> x =
+                                lexical_cast_noexcept<double>(s);
+                            if (!!x) {
+                                (*cur_entry)["receiver_data"]["avg_speed"] = *x;
+                            }
+                            (*ctx->entry)["test_c2s"].push_back(*cur_entry);
 
                             // The server sends us the FINALIZE message
                             ctx->logger->debug("ndt: recv TEST_FINALIZE ...");

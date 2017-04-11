@@ -4,10 +4,9 @@
 
 #include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
+#include "../nettests/utils.hpp"
 
 #include <measurement_kit/nettests.hpp>
-
-#include <random>
 
 namespace mk {
 namespace nettests {
@@ -36,6 +35,14 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
 
+    double max_rt = options.get("max_runtime", -1.0);
+    double delta = mk::time_now() - beginning;
+    if (max_rt >= 0.0 && delta > max_rt) {
+        logger->info("Exceeded test maximum runtime");
+        cb(NoError());
+        return;
+    }
+
     if (inputs.size() <= 0) {
         logger->debug("net_test: reached end of input");
         cb(NoError());
@@ -45,7 +52,9 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     inputs.pop_front();
 
     double prog = 0.0;
-    if (num_entries > 0) {
+    if (max_rt > 0.0) {
+        prog = delta / max_rt;
+    } else if (num_entries > 0) {
         prog = *current_entry / (double)num_entries;
     }
     *current_entry += 1;
@@ -68,9 +77,15 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     logger->debug("net_test: running with input %s", next_input.c_str());
     main(next_input, options, [=](Var<report::Entry> test_keys) {
         report::Entry entry;
+        // XXX simple way to override the default entry["input"] behavior
+        if (!(*test_keys)["input_"].is_null()) {
+            entry["input"] = (*test_keys)["input_"];
+            test_keys->erase("input_");
+        } else {
+            entry["input"] = next_input;
+        }
         entry["test_keys"] = *test_keys;
         entry["test_keys"]["client_resolver"] = resolver_ip;
-        entry["input"] = next_input;
         entry["measurement_start_time"] =
             *mk::timestamp(&measurement_start_time);
         entry["test_runtime"] = mk::time_now() - start_time;
@@ -97,12 +112,6 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                 }
             } else {
                 logger->debug("net_test: written entry");
-            }
-            double max_rt = options.get("max_runtime", -1.0);
-            if (max_rt >= 0.0 and mk::time_now() - beginning > max_rt) {
-                logger->info("Exceeded test maximum runtime");
-                cb(NoError());
-                return;
             }
             reactor->call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
@@ -139,6 +148,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
     // No need to perform further lookups if we don't need to save anything
     if (not save_ip and not save_asn and not save_cc) {
+        logger->warn("Not knowing user_ip means we cannot attempt to scrub it "
+                     "from the report");
         cb();
         return;
     }
@@ -147,6 +158,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
         [=](Error err, std::string ip) {
             if (err) {
                 logger->warn("ip_lookup() failed: error code: %d", err.code);
+                logger->warn("Not knowing user_ip means we cannot attempt "
+                             "to scrub it from the report");
                 cb();
                 return;
             }
@@ -155,6 +168,13 @@ void Runnable::geoip_lookup(Callback<> cb) {
                 logger->debug("saving user's real ip on user's request");
                 probe_ip = ip;
             }
+            /*
+             * XXX Passing down the stack the real probe IP to allow
+             * specific tests to scrub entries.
+             *
+             * See also measurement-kit/measurement-kit#1110.
+             */
+            options["real_probe_ip_"] = ip;
 
             auto country_path = options.get("geoip_country_path",
                                             std::string{});
@@ -195,6 +215,10 @@ void Runnable::geoip_lookup(Callback<> cb) {
 }
 
 void Runnable::open_report(Callback<Error> callback) {
+    /*
+     * TODO: it would probably more robust to future changes to
+     * set these values using a constructor.
+     */
     report.test_name = test_name;
     report.test_version = test_version;
     report.test_start_time = test_start_time;
@@ -247,81 +271,35 @@ void Runnable::begin(Callback<Error> cb) {
     }
     mk::utc_time_now(&test_start_time);
     beginning = mk::time_now();
+    mk::dump_settings(options, "runnable", logger);
     geoip_lookup([=]() {
         resolver_lookup([=](Error error, std::string resolver_ip_) {
+            logger->progress(0.05, "geoip lookup");
             if (!error) {
                 resolver_ip = resolver_ip_;
             } else {
                 logger->debug("failed to lookup resolver ip");
             }
             open_report([=](Error error) {
+                logger->progress(0.1, "open report");
                 if (error and not options.get(
                         "ignore_open_report_error", true)) {
                     cb(error);
                     return;
                 }
-                size_t num_entries = 0;
-                if (needs_input) {
-                    if (input_filepaths.size() <= 0) {
-                        logger->warn("at least an input file is required");
-                        cb(MissingRequiredInputFileError());
-                        return;
-                    }
-                    std::string probe_cc_lowercase;
-                    for (auto &c: probe_cc) {
-                        /*
-                         * Note: in general the snippet below is not
-                         * so good because it does not work for UTF-8
-                         * and the like but here we are converting
-                         * country codes which are always ASCII.
-                         */
-                        probe_cc_lowercase += std::tolower(c);
-                    }
-                    for (auto input_filepath: input_filepaths) {
-                        input_filepath = std::regex_replace(
-                            input_filepath,
-                            std::regex{R"(\$\{probe_cc\})"},
-                            probe_cc_lowercase
-                        );
-                        std::ifstream input_generator{input_filepath};
-                        if (!input_generator.good()) {
-                            logger->warn("cannot open input file");
-                            continue;
-                        }
-                        std::string next_input;
-                        while ((std::getline(input_generator, next_input))) {
-                            num_entries += 1;
-                            inputs.push_back(next_input);
-                        }
-                        if (!input_generator.eof()) {
-                            logger->warn("I/O error reading input file");
-                            continue;
-                        }
-                    }
-                    if (num_entries <= 0) {
-                        logger->warn("no specified input file could be read");
-                        cb(CannotReadAnyInputFileError());
-                        return;
-                    }
-                    ErrorOr<bool> shuffle = options.get_noexcept<bool>(
-                            "randomize_input", true);
-                    if (!shuffle) {
-                        logger->warn("invalid 'randomize_input' option");
-                        cb(shuffle.as_error());
-                        return;
-                    }
-                    if (*shuffle) {
-                        // http://en.cppreference.com/w/cpp/algorithm/shuffle:
-                        std::random_device rd;
-                        std::mt19937 g(rd());
-                        std::shuffle(inputs.begin(), inputs.end(), g);
-                    }
-                } else {
-                    // Empty string to call main() just once
-                    inputs.push_back("");
-                    num_entries = 1;
-                }
+                logger->set_progress_offset(0.1);
+                logger->set_progress_scale(0.8);
 
+                ErrorOr<std::deque<std::string>> maybe_inputs =
+                    process_input_filepaths(needs_input, input_filepaths,
+                                            probe_cc, options, logger,
+                                            nullptr, nullptr);
+                if (!maybe_inputs) {
+                    cb(maybe_inputs.as_error());
+                    return;
+                }
+                inputs = *maybe_inputs;
+                size_t num_entries = inputs.size();
 
                 // Run `parallelism` measurements in parallel
                 Var<size_t> current_entry(new size_t(0));
@@ -349,7 +327,13 @@ void Runnable::end(Callback<Error> cb) {
             /* Suppress */ ;
         }
     }
-    report.close(cb);
+    logger->set_progress_offset(0.0);
+    logger->set_progress_scale(1.0);
+    logger->progress(0.95, "ending the test");
+    report.close([=](Error err) {
+        logger->progress(1.00, "test complete");
+        cb(err);
+    });
 }
 
 } // namespace nettests

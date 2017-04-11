@@ -47,10 +47,9 @@ class MockConnection : public Emitter, public NonCopyable, public NonMovable {
   private:
     bool isclosed = false;
     Callback<> close_cb;
-    Var<Reactor> reactor = Reactor::global();
     Var<Transport> self;
 
-    MockConnection() {}
+    MockConnection() : Emitter(Reactor::global(), Logger::global()) {}
 };
 
 void MockConnection::close(Callback<> cb) {

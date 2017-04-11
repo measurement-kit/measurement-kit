@@ -6,6 +6,8 @@
 
 #include <event2/dns.h>
 
+#include "../ooni/utils.hpp"
+
 namespace mk {
 namespace ooni {
 namespace templates {
@@ -76,29 +78,79 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
         settings["http/method"] = "GET";
     }
 
+    /*
+     * XXX probe ip passed down the stack to allow us to scrub it from the
+     * entry; see issue #1110 for plans to make this better.
+     */
+    std::string probe_ip = settings.get("real_probe_ip_", std::string{});
+    auto redact = [=](std::string s) {
+        if (probe_ip != "" && !settings.get("save_real_probe_ip", false)) {
+            s = mk::ooni::scrub(s, probe_ip);
+        }
+        return s;
+    };
+
     http::request(
         settings, headers, body,
         [=](Error error, Var<http::Response> response) {
-            Entry rr;
-            rr["request"]["headers"] = headers;
-            rr["request"]["body"] = represent_http_body(body);
-            rr["request"]["url"] = settings.at("http/url").c_str();
-            rr["request"]["method"] = settings.at("http/method").c_str();
 
-            // XXX we should probably update OONI data format to remove this.
-            rr["method"] = settings.at("http/method").c_str();
+            auto dump = [&](Var<http::Response> response) {
+                Entry rr;
 
-            if (!error) {
-                rr["response"]["headers"] = response->headers;
-                rr["response"]["body"] = represent_http_body(response->body);
-                rr["response"]["response_line"] = response->response_line;
-                rr["response"]["code"] = response->status_code;
-                rr["failure"] = nullptr;
+                if (!!error) {
+                    rr["failure"] = error.as_ooni_error();
+                } else {
+                    rr["failure"] = nullptr;
+                }
+
+                /*
+                 * Note: we should not assume that, if the response is set,
+                 * then also the request will be set. The response should
+                 * be allocated in all cases because that's what is returned
+                 * by the callback, while the request may not be allocated
+                 * when we fail before filling a response (i.e. when we
+                 * cannot connect). For sure, the HTTP code should be made
+                 * less unpredictable, but that's not a good excuse for not
+                 * performing sanity checks also at this level.
+                 *
+                 * See <measurement-kit/measurement-kit#1169>.
+                 */
+                if (!!response && !!response->request) {
+                    /*
+                     * Note: `probe_ip` comes from an external service, hence
+                     * we MUST call `represent_string` _after_ `redact()`.
+                     */
+                    for (auto pair : response->headers) {
+                        rr["response"]["headers"][pair.first] =
+                            represent_string(redact(pair.second));
+                    }
+                    rr["response"]["body"] =
+                        represent_string(redact(response->body));
+                    rr["response"]["response_line"] =
+                        represent_string(redact(response->response_line));
+                    rr["response"]["code"] = response->status_code;
+
+                    auto request = response->request;
+                    // Note: we checked above that we can deref `request`
+                    for (auto pair : request->headers) {
+                        rr["request"]["headers"][pair.first] =
+                            represent_string(redact(pair.second));
+                    }
+                    rr["request"]["body"] =
+                        represent_string(redact(request->body));
+                    rr["request"]["url"] = request->url.str();
+                    rr["request"]["method"] = request->method;
+                }
+                return rr;
+            };
+
+            if (!!response) {
+                for (Var<http::Response> x = response; !!x; x = x->previous) {
+                    (*entry)["requests"].push_back(dump(x));
+                }
             } else {
-                rr["failure"] = error.as_ooni_error();
+                (*entry)["requests"].push_back(dump(response));
             }
-
-            (*entry)["requests"].push_back(rr);
             cb(error, response);
         },
         reactor, logger);

@@ -11,14 +11,9 @@
 
 #ifndef _WIN32
 
-/* If we're not under Windows, we are in a system where getopt() is
-   defined and hence just convert our portability names to the names
-   that are actually used under such system */
-#define mkp_optarg optarg
-#define mkp_optind optind
-#define mkp_opterr opterr
-#define mkp_optreset optreset
-#define mkp_getopt getopt
+/*
+ * Nothing to be done.
+ */
 
 #endif // !_WIN32
 
