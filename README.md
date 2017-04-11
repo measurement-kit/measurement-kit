@@ -31,6 +31,8 @@ Currently it implements the following high-level tests:
 
 - [OONI](https://ooni.torproject.org/)'s [Meek Fronted Requests](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-014-meek-fronted-requests.md) test
 
+- [OONI](https://ooni.torproject.org/)'s [HTTP Header Field Manipulation](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-006-header-field-manipulation.md) test
+
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
 

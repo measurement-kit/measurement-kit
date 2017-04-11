@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include <iomanip>
+#include <random>
 
 #include <event2/util.h>
 #include <openssl/sha.h>
@@ -165,5 +166,26 @@ bool startswith(std::string s, std::string p) {
 bool endswith(std::string s, std::string p) {
     return s.size() >= p.size() ? s.rfind(p) == (s.size() - p.size()) : false;
 }
+
+std::string random_choice(std::vector<std::string> inputs) {
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(inputs.begin(), inputs.end(), g);
+    return inputs[0];
+}
+
+std::string randomly_capitalize(std::string input) {
+    std::random_device rd;
+    std::mt19937 g(rd());
+    for (auto &c: input) {
+        if (g() % 2 == 0) {
+            c = toupper(c);
+        } else {
+            c = tolower(c);
+        }
+    }
+    return input;
+}
+
 
 } // namespace mk
