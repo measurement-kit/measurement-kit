@@ -354,19 +354,10 @@ TEST_CASE("random_choice isn't obviously wrong") {
 }
 
 TEST_CASE("randomly_capitalize isn't obviously wrong") {
-    auto lower_string = "abc";
-    auto upper_string = "ABC";
-
+    auto lower_string = "abcdefghij";
+    auto upper_string = "ABCDEFGHIJ";
     auto rc_lower_string = mk::randomly_capitalize(lower_string);
+    REQUIRE(rc_lower_string != lower_string);
     auto rc_upper_string = mk::randomly_capitalize(upper_string);
-
-    for(auto &c : rc_lower_string) {
-        c = tolower(c);
-    }
-    for(auto &c : rc_upper_string) {
-        c = toupper(c);
-    }
-
-    REQUIRE(lower_string == rc_lower_string);
-    REQUIRE(upper_string == rc_upper_string);
+    REQUIRE(rc_upper_string != upper_string);
 }
