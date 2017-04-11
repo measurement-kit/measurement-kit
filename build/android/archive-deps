@@ -13,4 +13,4 @@ find jni -type d -depth -name pkgconfig -exec rm -rf {} \;
 
 now=`date +%Y%m%dT%H%M%SZ`
 tar -czf android-dependencies-$now.tgz jni
-gpg2 -u 7733D95B -b --armor android-dependencies-$now.tgz
+$ROOTDIR/build/sign android-dependencies-$now.tgz

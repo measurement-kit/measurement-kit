@@ -15,7 +15,7 @@ Override default behavior by setting these environment variables:
   - pkg_make_flags: extra flags for 'make' (e.g. 'V=0')
   - pkg_make_install_flags: extra flags for 'make install' (e.g. DESTDIR=/opt)
   - pkg_prefix: prefix where to install (e.g. '/usr/local')
-  - pkg_steps: steps to execute (default is: 'patch_pre_autogen autogen patch_post_autogen configure make make_check make_install')
+  - pkg_steps: steps to execute (default is: 'init patch_pre_autogen autogen patch_post_autogen configure make make_check make_install')
 
 Examples:
   - use four processors to compile libressl:
@@ -29,6 +29,13 @@ apply_patches() {
             echo "* apply patch: $diff"
             git apply -v $diff
         done
+    fi
+}
+
+pkg_init() {
+    if [ -f Makefile ]; then
+        echo "- make distclean"
+        make distclean
     fi
 }
 
@@ -86,14 +93,17 @@ pkg_make_check() {
 }
 
 pkg_make_install() {
-    echo "- make $pkg_make_install_flags install"
+    if [ "$pkg_make_install_rule" = "" ]; then
+        pkg_make_install_rule=install
+    fi
     vspec=$pkg_branch_or_tag
     if [ "$pkg_tip" != "" ]; then
         vspec="$pkg_tip"
     fi
     based=$pkg_rootdir/third_party/tmp/$pkg_name-$vspec
     adir=$based/$pkg_cross/$pkg_cross_arch
-    make $pkg_make_install_flags install DESTDIR=$adir
+    echo "- make $pkg_make_install_flags $pkg_make_install_rule"
+    make $pkg_make_install_flags $pkg_make_install_rule DESTDIR=$adir
     find $adir -depth -type d -name bin -exec rm -rf {} \;
     find $adir -depth -type d -name pkgconfig -exec rm -rf {} \;
     find $adir -depth -type d -name sbin -exec rm -rf {} \;
@@ -127,9 +137,6 @@ if [ -z "$pkg_prefix" ]; then
 fi
 export pkg_prefix
 cd $pkg_rootdir
-if [ -x build/spec/$1 ]; then
-    exec build/spec/$1  # If the spec is executable, pass control to it
-fi
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
 if [ "$pkg_repository" != "" ]; then
@@ -148,7 +155,7 @@ if [ "$pkg_repository" != "" ]; then
 fi
 
 if [ -z "$pkg_steps" ]; then
-    pkg_steps="patch_pre_autogen autogen patch_post_autogen configure make make_check make_install"
+    pkg_steps="init patch_pre_autogen autogen patch_post_autogen configure make make_check make_install"
 fi
 for step in $pkg_steps; do
     echo ""
