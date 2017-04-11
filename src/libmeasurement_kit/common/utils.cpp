@@ -177,9 +177,11 @@ std::string random_choice(std::vector<std::string> inputs) {
 std::string randomly_capitalize(std::string input) {
     std::random_device rd;
     std::mt19937 g(rd());
-    for(auto &c : input) {
-        if(g()%2 == 0) {
+    for (auto &c: input) {
+        if (g() % 2 == 0) {
             c = toupper(c);
+        } else {
+            c = tolower(c);
         }
     }
     return input;
