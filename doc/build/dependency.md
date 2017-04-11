@@ -23,8 +23,13 @@ To cross compile a dependency (e.g. `libressl`) for Android you can
 use this command:
 
 ```
-./build/android/dependency libressl
+./build/android/dependency /path/to/ndk libressl
 ```
+
+Where `/path/to/ndk` is the path where the NDK has been installed,
+`$HOME/Library/Android/sdk/ndk-bundle` on macOS if you have installed
+the NDK using Android studio. See [Android specific documentation](android.md)
+for more information.
 
 The result would be a tarball in the repository toplevel directory
 for each Android architecture of interest.
@@ -40,6 +45,22 @@ Similarly, for iOS do:
 ```
 ./build/ios/dependency libressl
 ```
+
+Assuming all the dependencies have been compiled, you can cross compile
+MeasurementKit for iOS as it was a dependency using this command:
+
+```
+./build/ios/dependency mk
+```
+
+and for Android:
+
+```
+./build/android/dependency /path/to/ndk mk
+```
+
+This may not necessarily be the best way to cross compile MK for a specific
+platform, however it is a supported option.
 
 ## Submitting and fetching dependencies
 

@@ -13,4 +13,4 @@ find tmp -type d -depth -name pkgconfig -exec rm -rf {} \;
 
 now=`date +%Y%m%dT%H%M%SZ`
 tar -czf ios-dependencies-$now.tgz tmp
-gpg2 -u 7733D95B -b --armor ios-dependencies-$now.tgz
+$ROOTDIR/build/sign ios-dependencies-$now.tgz
