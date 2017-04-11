@@ -35,5 +35,4 @@ This test does not require an input file.
 mk::ooni::HttpHeaderFieldManipulation()
     .increase_verbosity()
     .run();
-
 ```
