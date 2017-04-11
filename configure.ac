@@ -42,7 +42,7 @@ if test "`uname`" != "Darwin"; then
   CFLAGS="$CFLAGS -pthread"
   CXXFLAGS="$CXXFLAGS -pthread"
   LDFLAGS="$LDFLAGS -pthread"
-else
+elif test "$cross_compiling" != yes; then
   # On my macOS, /usr/local is not added automatically
   CPPFLAGS="$CPPFLAGS -I/usr/local/include"
   LDFLAGS="$LDFLAGS -L/usr/local/lib"
