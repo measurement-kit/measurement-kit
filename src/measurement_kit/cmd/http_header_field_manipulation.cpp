@@ -6,7 +6,7 @@
 
 namespace http_header_field_manipulation {
 
-#define USAGE "usage: measurement_kit http_header_field_manipulation [-v]\n"
+#define USAGE "usage: measurement_kit [options] http_header_field_manipulation [-v]\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     std::string backend = "http://a.http.th.ooni.io";
@@ -22,8 +22,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= optind;
-    argv += optind;
+    argc -= optind, argv += optind;
     if (argc != 0) {
         fprintf(stderr, "%s\n", USAGE);
         exit(1);
