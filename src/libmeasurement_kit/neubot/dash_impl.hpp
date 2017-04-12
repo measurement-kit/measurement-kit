@@ -26,7 +26,7 @@ namespace mk {
 namespace neubot {
 namespace dash {
 
-template <MK_MOCK_NAMESPACE(http, request_send)>
+template <MK_MOCK_AS(http::request_send, http_request_send)>
 void loop_request(Var<Transport> transport, int speed_kbit,
                   Callback<Error, Var<Entry>> cb, Var<Entry> measurements,
                   std::string auth, Settings settings, Var<Reactor> reactor,
@@ -140,7 +140,7 @@ void loop_request(Var<Transport> transport, int speed_kbit,
         });
 }
 
-template <MK_MOCK_NAMESPACE(http, request_connect)>
+template <MK_MOCK_AS(http::request_connect, http_request_connect)>
 void run_impl(Settings settings, Callback<Error, Var<Entry>> cb,
               std::string auth, Var<Reactor> reactor, Var<Logger> logger) {
     settings["http/path"] = "";

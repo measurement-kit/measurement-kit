@@ -97,6 +97,8 @@
 /test/nettests/tcp_connect
 /test/nettests/utils
 /test/nettests/web_connectivity
+/test/neubot/dash
+/test/neubot/negotiate
 /test/ooni/bouncer
 /test/ooni/collector_client
 /test/ooni/resources

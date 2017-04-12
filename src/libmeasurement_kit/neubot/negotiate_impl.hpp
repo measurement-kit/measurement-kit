@@ -27,7 +27,7 @@ namespace mk {
 namespace neubot {
 namespace negotiate {
 
-template <MK_MOCK_NAMESPACE(http, request_sendrecv)>
+template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void collect(Var<Transport> transport, Callback<Error> cb, std::string auth,
              Var<Entry> measurements, Settings settings, Var<Reactor> reactor,
              Var<Logger> logger) {
@@ -54,7 +54,7 @@ void collect(Var<Transport> transport, Callback<Error> cb, std::string auth,
         reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(http, request_sendrecv)>
+template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void loop_negotiate(Var<Transport> transport, Callback<Error> cb,
                     Settings settings, Var<Reactor> reactor, Var<Logger> logger,
                     int iteration = 0) {
@@ -130,7 +130,7 @@ void loop_negotiate(Var<Transport> transport, Callback<Error> cb,
         reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(mlabns, query)>
+template <MK_MOCK_AS(mlabns::query, mlabns_query)>
 void run_impl(Callback<Error> cb, Settings settings, Var<Reactor> reactor,
               Var<Logger> logger) {
 
