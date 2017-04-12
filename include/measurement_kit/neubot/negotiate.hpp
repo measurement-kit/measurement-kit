@@ -1,3 +1,5 @@
+// XXX to be scrapped
+#if 0
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
@@ -9,6 +11,7 @@
 namespace mk {
 namespace neubot {
 namespace negotiate {
+
 
 void run(
         Callback<Error> cb,
@@ -23,4 +26,5 @@ void run(
 } // namespace negotiate
 } // namespace neubot
 } // namespace mk
+#endif
 #endif
