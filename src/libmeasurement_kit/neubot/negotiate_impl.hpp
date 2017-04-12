@@ -1,11 +1,11 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
+#ifndef SRC_LIBMEASUREMENT_KIT_NEUBOT_NEGOTIATE_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_NEUBOT_NEGOTIATE_IMPL_HPP
 
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include <functional>
-#include <iostream>
-#include <measurement_kit/common.hpp>
+#include "../common/utils.hpp"
+#include "../neubot/utils.hpp"
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
 #include <measurement_kit/neubot.hpp>
@@ -34,7 +34,6 @@ void collect(Var<Transport> transport, Callback<Error> cb, std::string auth,
     std::string body = measurements->dump();
     settings["http/method"] = "POST";
     settings["http/path"] = "/collect/dash";
-
     request_sendrecv(
         transport, settings,
         {
@@ -42,172 +41,149 @@ void collect(Var<Transport> transport, Callback<Error> cb, std::string auth,
         },
         body,
         [=](Error error, Var<Response> res) {
-            if (error || (res->status_code != 200)) {
-                logger->warn("Error: %d", (int)error);
-                cb(HttpRequestFailedError());
-                return;
+            if (!!res && res->status_code != 200) {
+                error = HttpRequestFailedError();
             }
-
-            transport->close([=]() { cb(NoError()); });
-
+            if (error) {
+                logger->warn("neubot: collect failed: %s",
+                             error.explain().c_str());
+            }
+            transport->close([=]() { cb(error); });
         },
         reactor, logger);
 }
+
+/*
+ * TODO: part of the negotiation code below is DASH specific. We should
+ * refactor code using lambdas so to avoid explicit dependency.
+ */
 
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void loop_negotiate(Var<Transport> transport, Callback<Error> cb,
                     Settings settings, Var<Reactor> reactor, Var<Logger> logger,
-                    int iteration = 0) {
-
-    std::array<int, 20> DASH_RATES{{100,  150,  200,  250,  300,   400,  500,
-                                    700,  900,  1200, 1500, 2000,  2500, 3000,
-                                    4000, 5000, 6000, 7000, 10000, 20000}};
-    Entry value = {{"dash_rates", DASH_RATES}};
+                    int iteration = 0, std::string auth_token = "") {
+    Entry value = {{"dash_rates", dash_rates()}};
     std::string body = value.dump();
-
     settings["http/path"] = "/negotiate/dash";
     settings["http/method"] = "POST";
-
     if (iteration > DASH_MAX_NEGOTIATION) {
-        std::cout << "Too many negotiations\n";
-        transport->close([=]() { cb(TooManyNegotiationsError()); });
+        logger->warn("neubot: too many negotiations");
+        cb(TooManyNegotiationsError());
         return;
-    };
-
+    }
     request_sendrecv(
         transport, settings,
         {
-            {"Content-Type", "application/json"}, {"Authorization", ""},
+            {"Content-Type", "application/json"}, {"Authorization", auth_token},
         },
         body,
         [=](Error error, Var<Response> res) {
-            if (error || (res->status_code != 200)) {
-                std::cout << "Error: " << (int)error;
+            if (error) {
+                logger->warn("neubot: negotiate failed: %s",
+                             error.explain().c_str());
+                cb(error);
+                return;
+            }
+            if (!!res && res->status_code != 200) {
+                logger->warn("neubot: negotiate failed on server side");
                 cb(HttpRequestFailedError());
                 return;
             }
-
-            auto respbody = nlohmann::json::parse(res->body);
-            std::string auth = respbody.at("authorization");
-            auto queue_pos = respbody.at("queue_pos");
-            auto real_address = respbody.at("real_address");
-            int unchoked = respbody.at("unchoked");
-
-            // XXX
-            if (unchoked == 0) {
+            nlohmann::json respbody;
+            std::string auth;
+            int queue_pos = 0;
+            std::string real_address;
+            int unchoked = 0;
+            try {
+                respbody = nlohmann::json::parse(res->body);
+                auth = respbody.at("authorization");
+                queue_pos = respbody.at("queue_pos");
+                real_address = respbody.at("real_address");
+                unchoked = respbody.at("unchoked");
+            } catch (const std::exception &) {
+                logger->warn("neubot: cannot parse negotiate response");
+                cb(GenericError());
+                return;
+            }
+            if (!unchoked) {
                 reactor->call_soon([=]() {
                     loop_negotiate(transport, cb, settings, reactor, logger,
-                                   iteration + 1);
+                                   iteration + 1, auth);
                 });
-
-            } else {
-                dash::run(
-                    settings,
-                    [=](Error err, Var<Entry> measurements) {
-                        if (err) {
-                            logger->warn("Error: %d", (int)error);
-                            cb(err);
-                            return;
-                        }
-
-                        collect(transport,
-                                [=](Error err) {
-                                    if (err) {
-                                        logger->warn("Error: %d", (int)error);
-                                        cb(err);
-                                        return;
-                                    }
-
-                                    cb(NoError());
-                                },
-                                auth, measurements, settings, reactor, logger);
-
-                    },
-                    auth);
+                return;
             }
-
+            dash::run(settings,
+                      [=](Error err, Var<Entry> measurements) {
+                          if (err) {
+                              logger->warn("neubot: test failed: %s",
+                                           error.explain().c_str());
+                              cb(err);
+                              return;
+                          }
+                          collect(transport, cb, auth, measurements, settings,
+                                  reactor, logger);
+                      },
+                      auth);
         },
         reactor, logger);
 }
 
+// TODO: we should probably pass the entry to the caller
 template <MK_MOCK_AS(mlabns::query, mlabns_query)>
 void run_impl(Callback<Error> cb, Settings settings, Var<Reactor> reactor,
               Var<Logger> logger) {
 
-    if (settings["url"] != "") {
-
-        settings["http/url"] = settings["url"];
-
-        if (settings["negotiate"] == "false") {
-            dash::run(settings, [=](Error error, Var<Entry>) {
+    auto run_test_with_url = [=](std::string url) {
+        Settings settings_copy = settings; // Make a non-const copy
+        settings_copy["http/url"] = url;
+        if (settings_copy["negotiate"].as<bool>() == false) {
+            dash::run(settings_copy, [=](Error error, Var<Entry> /*entry*/) {
                 if (error) {
-                    logger->warn("Error: %d", (int)error);
+                    logger->warn("neubot: dash failed: %s",
+                                 error.explain().c_str());
                     cb(error);
                     return;
                 }
             });
             return;
         }
-
-        request_connect(settings,
+        request_connect(settings_copy,
                         [=](Error error, Var<Transport> transport) {
-
                             if (error) {
-                                logger->warn("Error: %d", (int)error);
-                                transport->close([=]() { cb(error); });
+                                logger->warn("neubot: cannot connect to "
+                                             "negotiate server: %s",
+                                             error.explain().c_str());
+                                cb(error);
                                 return;
                             }
-
-                            loop_negotiate(transport, cb, settings, reactor,
-                                           logger);
-
-                            return;
+                            loop_negotiate(transport,
+                                           [=](Error error) {
+                                               transport->close(
+                                                   [=]() { cb(error); });
+                                           },
+                                           settings_copy, reactor, logger);
                         },
                         reactor, logger);
+    };
+
+    if (settings.find("url") != settings.end()) {
+        run_test_with_url(settings["url"]);
         return;
     }
-
-    query("neubot", [=](Error error, mlabns::Reply reply) {
-        if (error) {
-            logger->warn("Error: %d", (int)error);
-            cb(error);
-            return;
-        }
-
-        Settings s = settings;
-
-        s["http/url"] = reply.url;
-
-        if (s["negotiate"] == "false") {
-            dash::run(s, [=](Error error, Var<Entry>) {
-                if (error) {
-                    logger->warn("Error: %d", (int)error);
-                    cb(error);
-                    return;
-                }
-            });
-
-            return;
-        }
-
-        request_connect(s,
-                        [=](Error error, Var<Transport> transport) {
-
-                            if (error) {
-                                logger->warn("Error: %d", (int)error);
-                                transport->close([=]() { cb(error); });
-                                return;
-                            }
-
-                            loop_negotiate(transport, cb, s, reactor, logger);
-
-                            return;
-                        },
-                        reactor, logger);
-
-    }, settings);
+    mlabns_query("neubot",
+                 [=](Error error, mlabns::Reply reply) {
+                     if (error) {
+                         logger->warn("neubot: mlabns error: %s",
+                                      error.explain().c_str());
+                         cb(error);
+                         return;
+                     }
+                     run_test_with_url(reply.url);
+                 },
+                 settings, reactor, logger);
 }
 
 } // namespace negotiate
 } // namespace neubot
 } // namespace mk
+#endif

@@ -14,7 +14,7 @@ void run(
         Callback<Error> cb,
         Settings settings = {
             {"url", ""},
-            {"negotiate", "true"},
+            {"negotiate", true},
         },
         Var<Reactor> reactor = Reactor::global(),
         Var<Logger> logger = Logger::global()

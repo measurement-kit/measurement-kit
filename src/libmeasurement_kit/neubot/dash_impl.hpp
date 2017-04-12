@@ -1,11 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
+#ifndef SRC_LIBMEASUREMENT_KIT_NEUBOT_DASH_IMPL_HPP
+#define SRC_LIBMEASUREMENT_KIT_NEUBOT_DASH_IMPL_HPP
 
-#include "src/libmeasurement_kit/common/utils.hpp"
-#include <functional>
+#include "../common/utils.hpp"
+#include "../neubot/utils.hpp"
 #include <iostream>
-#include <measurement_kit/common.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
 #include <measurement_kit/neubot.hpp>
@@ -26,41 +27,37 @@ namespace mk {
 namespace neubot {
 namespace dash {
 
-template <MK_MOCK_AS(http::request_send, http_request_send)>
+// XXX: it makes no sense that we have measurements both as argument
+// and as part of the callback
+template <MK_MOCK_AS(http::request_send, http_request_send),
+          MK_MOCK_AS(http::request_recv_response, http_request_recv_response)>
 void loop_request(Var<Transport> transport, int speed_kbit,
                   Callback<Error, Var<Entry>> cb, Var<Entry> measurements,
                   std::string auth, Settings settings, Var<Reactor> reactor,
                   Var<Logger> logger, int iteration = 1) {
-
-    int rate_index = 0;
-    static const int DASH_RATES[] = {100,  150,  200,  250,  300,   400,  500,
-                                     700,  900,  1200, 1500, 2000,  2500, 3000,
-                                     4000, 5000, 6000, 7000, 10000, 20000};
-    static const int sizeofrates = (int)(sizeof(DASH_RATES) / sizeof(int));
-    std::string path = "/dash/download/";
-
     if (iteration > DASH_MAX_ITERATION) {
-        transport->close([=]() { cb(NoError(), measurements); });
+        cb(NoError(), measurements);
         return;
     }
 
-    // Bisect
-    while ((DASH_RATES[rate_index] < speed_kbit) &&
-           (rate_index < sizeofrates)) {
+    // Select the rate index lower than the current speed
+    size_t rate_index = 0;
+    while (dash_rates()[rate_index] < speed_kbit &&
+           rate_index < dash_rates().size()) {
         rate_index++;
     }
-    rate_index -= 1;
-    if (rate_index < 0) {
-        rate_index = 0;
+    if (rate_index > 0) { // Make sure we don't underflow
+        rate_index -= 1;
     }
 
-    int rate_kbit = DASH_RATES[rate_index];
+    std::string path = "/dash/download/";
+    int rate_kbit = dash_rates()[rate_index];
     int count = ((rate_kbit * 1000) / 8) * DASH_SECONDS;
     path += std::to_string(count);
     settings["http/path"] = path;
     double saved_times = mk::time_now();
 
-    request_send(
+    http_request_send(
         transport, settings,
         {
             {"Authorization", auth},
@@ -68,73 +65,67 @@ void loop_request(Var<Transport> transport, int speed_kbit,
         "",
         [=](Error error, Var<Request> req) {
             if (error) {
-                logger->warn("Error: %d", (int)error);
-                cb(error, nullptr);
+                logger->warn("dash: request failed: %s",
+                             error.explain().c_str());
+                cb(error, measurements);
                 return;
             }
-
-            request_recv_response(
+            http_request_recv_response(
                 transport,
                 [=](Error error, Var<Response> res) {
                     if (error) {
-                        logger->warn("Error: %d", (int)error);
-                        cb(error, nullptr);
+                        logger->warn("dash: cannot receive response: %s",
+                                     error.explain().c_str());
+                        cb(error, measurements);
                         return;
                     }
                     res->request = req;
-
                     double new_times = mk::time_now();
                     float length = res->body.length();
                     double time_elapsed = new_times - saved_times;
-
-                    if (time_elapsed < 0) {
-                        logger->warn("Time elapsed can't be negative");
-                        cb(NegativeTimeError(), nullptr);
+                    if (time_elapsed < 0) { // For robustness
+                        logger->warn("dash: elapsed time can't be negative");
+                        cb(NegativeTimeError(), measurements);
                         return;
                     }
-                    // TODO
-                    if (auth != "") {
-                        Entry result = {
-                            //{"connect_time", self.rtts[0]}
-                            //{"delta_user_time", delta_user_time}
-                            //{"delta_sys_time", delta_sys_time}
-                            {"elapsed", time_elapsed},        // OK
-                            {"elapsed_target", DASH_SECONDS}, // OK
-                            //{"internal_address", stream.myname[0]}
-                            {"iteration", iteration}, // OK
-                            //{"platform", sys.platform}
-                            {"rate", rate_kbit}, // OK
-                            //{"real_address", self.parent.real_address}
-                            //{"received", received}
-                            //{"remote_address", stream.peername[0]}
-                            //{"request_ticks", self.saved_ticks}
-                            //{"timestamp", mk::time_now}
-                            //{"uuid", self.conf.get("uuid")}
-                            {"version", MEASUREMENT_KIT_VERSION}};
-                        measurements->push_back(result);
-                    }
-
-                    double speed = double(length / time_elapsed);
-                    int s_k = (speed * 8) / 1000;
-
-                    std::cout << "DASH: [" << iteration << "/"
-                              << DASH_MAX_ITERATION << "] rate: " << rate_kbit
-                              << " Kbit/s, speed: " << s_k
-                              << " Kbit/s, elapsed: " << time_elapsed << " s\n";
-
+                    // TODO: we should fill all the required fields
+                    Entry result = {
+                        //{"connect_time", self.rtts[0]}
+                        //{"delta_user_time", delta_user_time}
+                        //{"delta_sys_time", delta_sys_time}
+                        {"elapsed", time_elapsed},
+                        {"elapsed_target", DASH_SECONDS},
+                        //{"internal_address", stream.myname[0]}
+                        {"iteration", iteration},
+                        //{"platform", sys.platform}
+                        {"rate", rate_kbit},
+                        //{"real_address", self.parent.real_address}
+                        //{"received", received}
+                        //{"remote_address", stream.peername[0]}
+                        //{"request_ticks", self.saved_ticks}
+                        //{"timestamp", mk::time_now}
+                        //{"uuid", self.conf.get("uuid")}
+                        {"version", MEASUREMENT_KIT_VERSION}
+                    };
+                    measurements->push_back(result);
+                    double speed = length / time_elapsed;
+                    double s_k = (speed * 8) / 1000;
+                    logger->debug("[%d/%d] rate: %d kbit/s, speed: %.2f "
+                                  "kbit/s, elapsed: %.2f s", iteration,
+                                  DASH_MAX_ITERATION, rate_kbit, s_k,
+                                  time_elapsed);
                     if (time_elapsed > DASH_SECONDS) {
+                        // If the rate is too high, scale it down
                         float relerr = 1 - (time_elapsed / DASH_SECONDS);
                         s_k *= relerr;
                         if (s_k < 0) {
                             s_k = 100;
                         }
                     }
-
                     reactor->call_soon([=]() {
                         loop_request(transport, s_k, cb, measurements, auth,
                                      settings, reactor, logger, iteration + 1);
                     });
-
                 },
                 reactor, logger);
         });
@@ -143,24 +134,26 @@ void loop_request(Var<Transport> transport, int speed_kbit,
 template <MK_MOCK_AS(http::request_connect, http_request_connect)>
 void run_impl(Settings settings, Callback<Error, Var<Entry>> cb,
               std::string auth, Var<Reactor> reactor, Var<Logger> logger) {
-    settings["http/path"] = "";
-    settings["http/method"] = "GET";
-
+    Var<Entry> measurements{new Entry};
     request_connect(settings,
                     [=](Error error, Var<Transport> transport) {
-
                         if (error) {
-                            logger->warn("Error: %d", (int)error);
-                            cb(error, nullptr);
+                            logger->warn("dash: cannot connect to server: %s",
+                                         error.explain().c_str());
+                            cb(error, measurements);
                             return;
                         }
-
-                        Var<Entry> measurements(new Entry);
-
-                        loop_request(transport, 100, cb, measurements, auth,
-                                     settings, reactor, logger);
-
-                        return;
+                        loop_request(transport, 100,
+                                     [=](Error e, Var<Entry>) {
+                                         transport->close([=]() {
+                                             // XXX As said above, it does not
+                                             // make sense to pass measurements
+                                             // around twice
+                                             cb(e, measurements);
+                                         });
+                                     },
+                                     measurements, auth, settings, reactor,
+                                     logger);
                     },
                     reactor, logger);
 }
@@ -168,3 +161,4 @@ void run_impl(Settings settings, Callback<Error, Var<Entry>> cb,
 } // namespace dash
 } // namespace neubot
 } // namespace mk
+#endif
