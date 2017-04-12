@@ -10,14 +10,17 @@ namespace mk {
 namespace neubot {
 namespace negotiate {
 
-void run(Callback<Error> cb, Settings settings = {
+void run(
+        Callback<Error> cb,
+        Settings settings = {
             {"url", ""},
             {"negotiate", "true"},
-        }, Var<Reactor> reactor = Reactor::global(),
-        Var<Logger> logger = Logger::global());
+        },
+        Var<Reactor> reactor = Reactor::global(),
+        Var<Logger> logger = Logger::global()
+);
 
 } // namespace negotiate
 } // namespace neubot
 } // namespace mk
-
 #endif
