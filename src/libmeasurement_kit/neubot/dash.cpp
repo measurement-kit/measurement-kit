@@ -8,11 +8,11 @@ namespace mk {
 namespace neubot {
 namespace dash {
 
-void run_with(std::string measurement_server_url, std::string auth_token,
-              Settings settings, Var<Reactor> reactor, Var<Logger> logger,
-              Callback<Error, Var<report::Entry>> callback) {
-    run_with_impl(measurement_server_url, auth_token, settings, reactor,
-                  logger, callback);
+void run(std::string measurement_server_url, std::string auth_token,
+         Var<report::Entry> entry, Settings settings, Var<Reactor> reactor,
+         Var<Logger> logger, Callback<Error> callback) {
+    run_impl(measurement_server_url, auth_token, entry, settings, reactor,
+             logger, callback);
 }
 
 void negotiate(Var<report::Entry> entry, Settings settings,

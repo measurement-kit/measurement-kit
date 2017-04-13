@@ -11,6 +11,7 @@ namespace neubot {
 
 MK_DEFINE_ERR(MK_ERR_NEUBOT(0), TooManyNegotiationsError, "")
 MK_DEFINE_ERR(MK_ERR_NEUBOT(1), InvalidTimeError, "")
+MK_DEFINE_ERR(MK_ERR_NEUBOT(2), CannotParseNegotiateResponseError, "")
 
 } // namespace neubot
 } // namespace mk

@@ -9,9 +9,9 @@
 #include <measurement_kit/mlabns.hpp>
 #include <measurement_kit/neubot.hpp>
 
-#define DASH_MAX_ITERATION 15
+#define DASH_MAX_ITERATIONS 15
 #define DASH_SECONDS 2
-#define DASH_MAX_NEGOTIATION 512
+#define MAX_NEGOTIATIONS 512
 
 namespace mk {
 namespace neubot {
@@ -37,7 +37,8 @@ void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
                Var<report::Entry> entry, Settings settings,
                Var<Reactor> reactor, Var<Logger> logger, Callback<Error> cb,
                int iteration = 1) {
-    if (iteration > DASH_MAX_ITERATION) {
+
+    if (iteration > DASH_MAX_ITERATIONS) {
         logger->debug("dash: completed all iterations");
         cb(NoError());
         return;
@@ -50,7 +51,7 @@ void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
     path += std::to_string(count);
     settings["http/path"] = path;
     settings["http/method"] = "GET";
-    double saved_times = mk::time_now();
+    double saved_time = mk::time_now();
     logger->debug("dash: requesting '%s'", path.c_str());
 
     http_request_send(
@@ -65,6 +66,7 @@ void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
                 cb(error);
                 return;
             }
+            assert(!!req);
             http_request_recv_response(
                 txp,
                 [=](Error error, Var<Response> res) {
@@ -74,16 +76,16 @@ void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
                         cb(error);
                         return;
                     }
-                    if (!res || res->status_code != 200) {
+                    assert(!!res);
+                    if (res->status_code != 200) {
                         logger->warn("dash: invalid response code: %s",
                                      error.explain().c_str());
                         cb(HttpRequestFailedError());
                         return;
                     }
                     res->request = req;
-                    double new_times = mk::time_now();
                     double length = res->body.length();
-                    double time_elapsed = new_times - saved_times;
+                    double time_elapsed = mk::time_now() - saved_time;
                     if (time_elapsed <= 0) { // For robustness
                         logger->warn("dash: invalid time error");
                         cb(InvalidTimeError());
@@ -111,8 +113,8 @@ void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
                     double s_k = (speed * 8) / 1000;
                     logger->debug("[%d/%d] rate: %d kbit/s, speed: %.2f "
                                   "kbit/s, elapsed: %.2f s",
-                                  iteration, DASH_MAX_ITERATION, rate_kbit, s_k,
-                                  time_elapsed);
+                                  iteration, DASH_MAX_ITERATIONS, rate_kbit,
+                                  s_k, time_elapsed);
                     if (time_elapsed > DASH_SECONDS) {
                         // If the rate is too high, scale it down
                         double relerr = 1 - (time_elapsed / DASH_SECONDS);
@@ -143,15 +145,18 @@ void run_impl(std::string url, std::string auth_token, Var<report::Entry> entry,
         settings,
         [=](Error error, Var<Transport> txp) {
             if (error) {
+                assert(!txp);
                 logger->warn("dash: cannot connect to server: %s",
                              error.explain().c_str());
                 cb(error);
                 return;
             }
             // Note: from now on, we own `txp`
+            assert(txp);
             run_loop_<http_request_send, http_request_recv_response>(
                 txp, dash_rates()[0], auth_token, entry, settings, reactor,
                 logger, [=](Error error) {
+                    // Release the `txp` before continuing
                     txp->close([=]() {
                         logger->debug("dash test complete");
                         cb(error, entry);
@@ -161,6 +166,11 @@ void run_impl(std::string url, std::string auth_token, Var<report::Entry> entry,
         reactor, logger);
 }
 
+/*
+ * TODO: this code currently is specifically tailored to the DASH test and
+ * we should instead make it more general and able to work with all the tests
+ * implemented by Neubot (probably using a Continuation).
+ */
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
                      Settings settings, Var<Reactor> reactor,
@@ -170,7 +180,7 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
     std::string body = value.dump();
     settings["http/path"] = "/negotiate/dash";
     settings["http/method"] = "POST";
-    if (iteration > DASH_MAX_NEGOTIATION) {
+    if (iteration > MAX_NEGOTIATIONS) {
         logger->warn("neubot: too many negotiations");
         cb(TooManyNegotiationsError(), "");
         return;
@@ -188,7 +198,8 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
                 cb(error, "");
                 return;
             }
-            if (!res || res->status_code != 200) {
+            assert(!!res);
+            if (res->status_code != 200) {
                 logger->warn("neubot: negotiate failed on server side");
                 cb(HttpRequestFailedError(), "");
                 return;
@@ -204,9 +215,10 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
                 queue_pos = respbody.at("queue_pos");
                 real_address = respbody.at("real_address");
                 unchoked = respbody.at("unchoked");
-            } catch (const std::exception &) {
-                logger->warn("neubot: cannot parse negotiate response");
-                cb(GenericError(), "");
+            } catch (const std::exception &exc) {
+                logger->warn("neubot: cannot parse negotiate response: %s",
+                             exc.what());
+                cb(CannotParseNegotiateResponseError(), "");
                 return;
             }
             if (!unchoked) {
@@ -237,8 +249,11 @@ void collect_(Var<Transport> txp, Var<Entry> entry, std::string auth,
             if (error) {
                 logger->warn("neubot: collect failed: %s",
                              error.explain().c_str());
-            } else if (!res || res->status_code != 200) {
-                error = HttpRequestFailedError();
+            } else {
+                assert(!!res);
+                if (res->status_code != 200) {
+                    error = HttpRequestFailedError();
+                }
             }
             cb(error);
         },
@@ -263,6 +278,7 @@ void negotiate_with_(std::string url, Var<report::Entry> entry,
                 return;
             }
             // Note: from now on, we own the `txp` transport
+            assert(!!txp);
             negotiate_loop_<http_request_sendrecv_negotiate>(
                 txp, entry, settings, reactor, logger,
                 [=](Error error, std::string auth_token) {
@@ -283,6 +299,7 @@ void negotiate_with_(std::string url, Var<report::Entry> entry,
                                  collect_<http_request_sendrecv_collect>(
                                      txp, entry, settings, reactor, logger,
                                      [=](Error error) {
+                                         // Dispose of the `txp`
                                          txp->close([=]() { cb(error); });
                                      });
                              });

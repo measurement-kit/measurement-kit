@@ -10,37 +10,22 @@ namespace mk {
 namespace neubot {
 namespace dash {
 
-void run_with(
+void run(
         std::string measurement_server_url,
         std::string auth_token,
+        Var<report::Entry> entry,
         Settings settings,
         Var<Reactor> reactor,
         Var<Logger> logger,
-        Callback<
-                Error /*error*/,
-                Var<report::Entry> /*entry*/
-        > callback
-);
-
-void negotiate_with(
-        std::string negotiate_server_url,
-        Settings settings,
-        Var<Reactor> reactor,
-        Var<Logger> logger,
-        Callback<
-                Error /*error*/,
-                Var<report::Entry> /*entry*/
-        > callback
+        Callback<Error> callback
 );
 
 void negotiate(
+        Var<report::Entry> entry,
         Settings settings,
         Var<Reactor> reactor,
         Var<Logger> logger,
-        Callback<
-                Error /*error*/,
-                Var<report::Entry> /*entry*/
-        > callback
+        Callback<Error> callback
 );
 
 } // namespace dash
