@@ -92,7 +92,7 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                         return;
                     }
                     // TODO: we should fill all the required fields
-                    entry->push_back(report::Entry{
+                    (*entry)["receiver_data"].push_back(report::Entry{
                         //{"connect_time", self.rtts[0]}
                         //{"delta_user_time", delta_user_time}
                         //{"delta_sys_time", delta_sys_time}
@@ -111,10 +111,10 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                         {"version", MEASUREMENT_KIT_VERSION}});
                     double speed = length / time_elapsed;
                     double s_k = (speed * 8) / 1000;
-                    logger->debug("[%d/%d] rate: %d kbit/s, speed: %.2f "
-                                  "kbit/s, elapsed: %.2f s",
-                                  iteration, DASH_MAX_ITERATIONS, rate_kbit,
-                                  s_k, time_elapsed);
+                    logger->info("[%d/%d] rate: %d kbit/s, speed: %.2f "
+                                 "kbit/s, elapsed: %.2f s",
+                                 iteration, DASH_MAX_ITERATIONS, rate_kbit,
+                                 s_k, time_elapsed);
                     if (time_elapsed > DASH_SECONDS) {
                         // If the rate is too high, scale it down
                         double relerr = 1 - (time_elapsed / DASH_SECONDS);
@@ -142,7 +142,7 @@ void run_impl(std::string url, std::string auth_token, Var<report::Entry> entry,
               Callback<Error> cb) {
     settings["http/url"] = url;
     settings["http/method"] = "GET";
-    logger->info("start dash test with: %s", url.c_str());
+    logger->info("Start dash test with: %s", url.c_str());
     http_request_connect(
         settings,
         [=](Error error, Var<net::Transport> txp) {
@@ -155,12 +155,13 @@ void run_impl(std::string url, std::string auth_token, Var<report::Entry> entry,
             }
             // Note: from now on, we own `txp`
             assert(txp);
+            logger->info("Connected to server; starting the test");
             run_loop_<http_request_send, http_request_recv_response>(
                 txp, dash_rates()[0], auth_token, entry, settings, reactor,
                 logger, [=](Error error) {
                     // Release the `txp` before continuing
+                    logger->info("Test complete; closing connection");
                     txp->close([=]() {
-                        logger->debug("dash test complete");
                         cb(error);
                     });
                 });
@@ -241,6 +242,8 @@ template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
               std::string auth, Settings settings, Var<Reactor> reactor,
               Var<Logger> logger, Callback<Error> cb) {
+    std::string body = entry->dump();
+    logger->debug("Body sent to server: %s", body.c_str());
     settings["http/method"] = "POST";
     settings["http/path"] = "/collect/dash";
     http_request_sendrecv(
@@ -248,7 +251,7 @@ void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
         {
             {"Content-Type", "application/json"}, {"Authorization", auth},
         },
-        entry->dump(),
+        body,
         [=](Error error, Var<http::Response> res) {
             if (error) {
                 logger->warn("neubot: collect failed: %s",
@@ -259,6 +262,7 @@ void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
                     error = http::HttpRequestFailedError();
                 }
             }
+            // TODO: we should parse the server response here...
             cb(error);
         },
         reactor, logger);
@@ -301,7 +305,7 @@ void negotiate_with_(std::string url, Var<report::Entry> entry,
                                                   error.explain().c_str());
                                      /* FALLTHROUGH */
                                  }
-                                 logger->debug("Collecting results");
+                                 logger->info("Collecting results");
                                  collect_<http_request_sendrecv_collect>(
                                      txp, entry, auth_token, settings, reactor,
                                      logger, [=](Error error) {

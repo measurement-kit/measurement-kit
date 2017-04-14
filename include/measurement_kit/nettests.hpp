@@ -2,6 +2,7 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_HPP
 #define MEASUREMENT_KIT_NETTESTS_HPP
 #include <measurement_kit/nettests/base_test.hpp>
+#include <measurement_kit/nettests/dash.hpp>
 #include <measurement_kit/nettests/dns_injection.hpp>
 #include <measurement_kit/nettests/http_invalid_request_line.hpp>
 #include <measurement_kit/nettests/meek_fronted_requests.hpp>

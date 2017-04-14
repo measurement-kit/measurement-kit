@@ -8,8 +8,8 @@ namespace dash {
 
 #define USAGE "usage: measurement_kit [options] dash [hostname]"
 
-int main(std::list<Callback<BaseTest &>> &, int argc, char **argv) {
-    Settings settings;
+int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
+    nettests::DashTest test;
     for (int ch; (ch = getopt(argc, argv, "")) != -1;) {
         switch (ch) {
         default:
@@ -25,21 +25,10 @@ int main(std::list<Callback<BaseTest &>> &, int argc, char **argv) {
         /* NOTREACHED */
     }
     if (argc == 1) {
-        settings["url"] = argv[0];
+        test.set_options("url", argv[0]);
     }
-    Var<report::Entry> entry{new report::Entry};
-    Var<Reactor> reactor = Reactor::global();
-    Var<Logger> logger = Logger::global();
-    reactor->run_with_initial_event([=]() {
-        neubot::dash::negotiate(entry, settings, reactor, logger,
-                                [=](Error error) {
-                                    if (error) {
-                                        logger->warn("dash test failed: %s",
-                                                     error.explain().c_str());
-                                    }
-                                    reactor->stop();
-                                });
-    });
+
+    common_init(initializers, test).run();
     return 0;
 }
 
