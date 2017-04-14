@@ -113,8 +113,8 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                     double s_k = (speed * 8) / 1000;
                     logger->info("[%d/%d] rate: %d kbit/s, speed: %.2f "
                                  "kbit/s, elapsed: %.2f s",
-                                 iteration, DASH_MAX_ITERATIONS, rate_kbit,
-                                 s_k, time_elapsed);
+                                 iteration, DASH_MAX_ITERATIONS, rate_kbit, s_k,
+                                 time_elapsed);
                     if (time_elapsed > DASH_SECONDS) {
                         // If the rate is too high, scale it down
                         double relerr = 1 - (time_elapsed / DASH_SECONDS);
@@ -161,9 +161,7 @@ void run_impl(std::string url, std::string auth_token, Var<report::Entry> entry,
                 logger, [=](Error error) {
                     // Release the `txp` before continuing
                     logger->info("Test complete; closing connection");
-                    txp->close([=]() {
-                        cb(error);
-                    });
+                    txp->close([=]() { cb(error); });
                 });
         },
         reactor, logger);
@@ -224,8 +222,8 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
                 callback(CannotParseNegotiateResponseError(), "");
                 return;
             }
-            logger->debug("negotiation: unchoked=%d queue_pos=%d",
-                          unchoked, queue_pos);
+            logger->debug("negotiation: unchoked=%d queue_pos=%d", unchoked,
+                          queue_pos);
             if (!unchoked) {
                 reactor->call_soon([=]() {
                     negotiate_loop_(entry, txp, settings, reactor, logger,

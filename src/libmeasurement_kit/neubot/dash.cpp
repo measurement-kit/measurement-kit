@@ -9,9 +9,9 @@ namespace neubot {
 namespace dash {
 
 const std::vector<int> &dash_rates() {
-    static std::vector<int> DASH_RATES{{100,  150,  200,  250,  300,   400,  500,
-                                 700,  900,  1200, 1500, 2000,  2500, 3000,
-                                 4000, 5000, 6000, 7000, 10000, 20000}};
+    static std::vector<int> DASH_RATES{
+        {100,  150,  200,  250,  300,  400,  500,  700,  900,   1200,
+         1500, 2000, 2500, 3000, 4000, 5000, 6000, 7000, 10000, 20000}};
     return DASH_RATES;
 }
 
