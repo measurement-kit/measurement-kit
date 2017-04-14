@@ -17,7 +17,7 @@ namespace mk {
 namespace neubot {
 namespace dash {
 
-std::vector<int> dash_rates(); // Implemented in dash.cpp
+const std::vector<int> &dash_rates(); // Implemented in dash.cpp
 
 static inline size_t select_lower_rate_index(int speed_kbit) {
     size_t rate_index = 0;
@@ -177,7 +177,7 @@ template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
                      Settings settings, Var<Reactor> reactor,
                      Var<Logger> logger, Callback<Error, std::string> callback,
-                     int iteration = 0, std::string auth_token = 0) {
+                     int iteration = 0, std::string auth_token = "") {
     report::Entry value = {{"dash_rates", dash_rates()}};
     std::string body = value.dump();
     settings["http/path"] = "/negotiate/dash";
@@ -223,6 +223,8 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
                 callback(CannotParseNegotiateResponseError(), "");
                 return;
             }
+            logger->debug("negotiation: unchoked=%d queue_pos=%d",
+                          unchoked, queue_pos);
             if (!unchoked) {
                 reactor->call_soon([=]() {
                     negotiate_loop_(entry, txp, settings, reactor, logger,
