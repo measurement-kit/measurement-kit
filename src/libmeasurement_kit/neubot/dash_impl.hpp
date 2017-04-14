@@ -33,7 +33,7 @@ static inline size_t select_lower_rate_index(int speed_kbit) {
 
 template <MK_MOCK_AS(http::request_send, http_request_send),
           MK_MOCK_AS(http::request_recv_response, http_request_recv_response)>
-void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
+void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                Var<report::Entry> entry, Settings settings,
                Var<Reactor> reactor, Var<Logger> logger, Callback<Error> cb,
                int iteration = 1) {
@@ -59,7 +59,7 @@ void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
         {
             {"Authorization", auth_token},
         },
-        "", [=](Error error, Var<Request> req) {
+        "", [=](Error error, Var<http::Request> req) {
             if (error) {
                 logger->warn("dash: request failed: %s",
                              error.explain().c_str());
@@ -69,7 +69,7 @@ void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
             assert(!!req);
             http_request_recv_response(
                 txp,
-                [=](Error error, Var<Response> res) {
+                [=](Error error, Var<http::Response> res) {
                     if (error) {
                         logger->warn("dash: cannot receive response: %s",
                                      error.explain().c_str());
@@ -80,7 +80,7 @@ void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
                     if (res->status_code != 200) {
                         logger->warn("dash: invalid response code: %s",
                                      error.explain().c_str());
-                        cb(HttpRequestFailedError());
+                        cb(http::HttpRequestFailedError());
                         return;
                     }
                     res->request = req;
@@ -92,23 +92,23 @@ void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
                         return;
                     }
                     // TODO: we should fill all the required fields
-                    entry->push_back(
-                        Entry{//{"connect_time", self.rtts[0]}
-                              //{"delta_user_time", delta_user_time}
-                              //{"delta_sys_time", delta_sys_time}
-                              {"elapsed", time_elapsed},
-                              {"elapsed_target", DASH_SECONDS},
-                              //{"internal_address", stream.myname[0]}
-                              {"iteration", iteration},
-                              //{"platform", sys.platform}
-                              {"rate", rate_kbit},
-                              //{"real_address", self.parent.real_address}
-                              //{"received", received}
-                              //{"remote_address", stream.peername[0]}
-                              //{"request_ticks", self.saved_ticks}
-                              //{"timestamp", mk::time_now}
-                              //{"uuid", self.conf.get("uuid")}
-                              {"version", MEASUREMENT_KIT_VERSION}});
+                    entry->push_back(report::Entry{
+                        //{"connect_time", self.rtts[0]}
+                        //{"delta_user_time", delta_user_time}
+                        //{"delta_sys_time", delta_sys_time}
+                        {"elapsed", time_elapsed},
+                        {"elapsed_target", DASH_SECONDS},
+                        //{"internal_address", stream.myname[0]}
+                        {"iteration", iteration},
+                        //{"platform", sys.platform}
+                        {"rate", rate_kbit},
+                        //{"real_address", self.parent.real_address}
+                        //{"received", received}
+                        //{"remote_address", stream.peername[0]}
+                        //{"request_ticks", self.saved_ticks}
+                        //{"timestamp", mk::time_now}
+                        //{"uuid", self.conf.get("uuid")}
+                        {"version", MEASUREMENT_KIT_VERSION}});
                     double speed = length / time_elapsed;
                     double s_k = (speed * 8) / 1000;
                     logger->debug("[%d/%d] rate: %d kbit/s, speed: %.2f "
@@ -124,8 +124,10 @@ void run_loop_(Var<Transport> txp, int speed_kbit, std::string auth_token,
                         }
                     }
                     reactor->call_soon([=]() {
-                        run_loop_(entry, txp, s_k, auth_token, settings,
-                                  reactor, logger, cb, iteration + 1);
+                        run_loop_<http_request_send,
+                                  http_request_recv_response>(
+                            txp, s_k, auth_token, entry, settings, reactor,
+                            logger, cb, iteration + 1);
                     });
                 },
                 reactor, logger);
@@ -140,10 +142,10 @@ void run_impl(std::string url, std::string auth_token, Var<report::Entry> entry,
               Callback<Error> cb) {
     settings["http/url"] = url;
     settings["http/method"] = "GET";
-    logging->debug("start dash test with: %s", url.c_str());
+    logger->info("start dash test with: %s", url.c_str());
     http_request_connect(
         settings,
-        [=](Error error, Var<Transport> txp) {
+        [=](Error error, Var<net::Transport> txp) {
             if (error) {
                 assert(!txp);
                 logger->warn("dash: cannot connect to server: %s",
@@ -159,7 +161,7 @@ void run_impl(std::string url, std::string auth_token, Var<report::Entry> entry,
                     // Release the `txp` before continuing
                     txp->close([=]() {
                         logger->debug("dash test complete");
-                        cb(error, entry);
+                        cb(error);
                     });
                 });
         },
@@ -176,13 +178,13 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
                      Settings settings, Var<Reactor> reactor,
                      Var<Logger> logger, Callback<Error, std::string> callback,
                      int iteration = 0, std::string auth_token = 0) {
-    Entry value = {{"dash_rates", dash_rates()}};
+    report::Entry value = {{"dash_rates", dash_rates()}};
     std::string body = value.dump();
     settings["http/path"] = "/negotiate/dash";
     settings["http/method"] = "POST";
     if (iteration > MAX_NEGOTIATIONS) {
         logger->warn("neubot: too many negotiations");
-        cb(TooManyNegotiationsError(), "");
+        callback(TooManyNegotiationsError(), "");
         return;
     }
     http_request_sendrecv(
@@ -191,17 +193,17 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
             {"Content-Type", "application/json"}, {"Authorization", auth_token},
         },
         body,
-        [=](Error error, Var<Response> res) {
+        [=](Error error, Var<http::Response> res) {
             if (error) {
                 logger->warn("neubot: negotiate failed: %s",
                              error.explain().c_str());
-                cb(error, "");
+                callback(error, "");
                 return;
             }
             assert(!!res);
             if (res->status_code != 200) {
                 logger->warn("neubot: negotiate failed on server side");
-                cb(HttpRequestFailedError(), "");
+                callback(http::HttpRequestFailedError(), "");
                 return;
             }
             nlohmann::json respbody;
@@ -218,25 +220,25 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
             } catch (const std::exception &exc) {
                 logger->warn("neubot: cannot parse negotiate response: %s",
                              exc.what());
-                cb(CannotParseNegotiateResponseError(), "");
+                callback(CannotParseNegotiateResponseError(), "");
                 return;
             }
             if (!unchoked) {
                 reactor->call_soon([=]() {
-                    negotiate_loop_(entry, txp, settings, reactor, logger, cb,
-                                    iteration + 1, auth);
+                    negotiate_loop_(entry, txp, settings, reactor, logger,
+                                    callback, iteration + 1, auth);
                 });
                 return;
             }
-            cb(NoError(), auth);
+            callback(NoError(), auth);
         },
         reactor, logger);
 }
 
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
-void collect_(Var<Transport> txp, Var<Entry> entry, std::string auth,
-              Settings settings, Var<Reactor> reactor, Var<Logger> logger,
-              Callback<Error> cb) {
+void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
+              std::string auth, Settings settings, Var<Reactor> reactor,
+              Var<Logger> logger, Callback<Error> cb) {
     settings["http/method"] = "POST";
     settings["http/path"] = "/collect/dash";
     http_request_sendrecv(
@@ -245,14 +247,14 @@ void collect_(Var<Transport> txp, Var<Entry> entry, std::string auth,
             {"Content-Type", "application/json"}, {"Authorization", auth},
         },
         entry->dump(),
-        [=](Error error, Var<Response> res) {
+        [=](Error error, Var<http::Response> res) {
             if (error) {
                 logger->warn("neubot: collect failed: %s",
                              error.explain().c_str());
             } else {
                 assert(!!res);
                 if (res->status_code != 200) {
-                    error = HttpRequestFailedError();
+                    error = http::HttpRequestFailedError();
                 }
             }
             cb(error);
@@ -266,10 +268,11 @@ template <MK_MOCK_AS(http::request_connect, http_request_connect),
 void negotiate_with_(std::string url, Var<report::Entry> entry,
                      Settings settings, Var<Reactor> reactor,
                      Var<Logger> logger, Callback<Error> cb) {
+    logger->info("Negotiating with: %s", url.c_str());
     settings["http/url"] = url;
     http_request_connect(
         settings,
-        [=](Error error, Var<Transport> txp) {
+        [=](Error error, Var<net::Transport> txp) {
             if (error) {
                 // Note: in this case we don't need to close the transport
                 logger->warn("neubot: cannot connect to negotiate server: %s",
@@ -280,7 +283,7 @@ void negotiate_with_(std::string url, Var<report::Entry> entry,
             // Note: from now on, we own the `txp` transport
             assert(!!txp);
             negotiate_loop_<http_request_sendrecv_negotiate>(
-                txp, entry, settings, reactor, logger,
+                entry, txp, settings, reactor, logger,
                 [=](Error error, std::string auth_token) {
                     if (error) {
                         logger->warn("neubot: negotiate failed: %s",
@@ -296,9 +299,10 @@ void negotiate_with_(std::string url, Var<report::Entry> entry,
                                                   error.explain().c_str());
                                      /* FALLTHROUGH */
                                  }
+                                 logger->debug("Collecting results");
                                  collect_<http_request_sendrecv_collect>(
-                                     txp, entry, settings, reactor, logger,
-                                     [=](Error error) {
+                                     txp, entry, auth_token, settings, reactor,
+                                     logger, [=](Error error) {
                                          // Dispose of the `txp`
                                          txp->close([=]() { cb(error); });
                                      });
@@ -316,6 +320,7 @@ void negotiate_impl(Var<report::Entry> entry, Settings settings,
         negotiate_with_(settings["url"], entry, settings, reactor, logger, cb);
         return;
     }
+    logger->info("Discovering mlab server using mlabns");
     mlabns_query("neubot",
                  [=](Error error, mlabns::Reply reply) {
                      if (error) {

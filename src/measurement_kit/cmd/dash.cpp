@@ -8,9 +8,9 @@ namespace dash {
 
 #define USAGE "usage: measurement_kit [options] dash [hostname]"
 
-int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
+int main(std::list<Callback<BaseTest &>> &, int argc, char **argv) {
     Settings settings;
-    for (int ch; (ch = getopt(argc, argv, "")) != -1; ) {
+    for (int ch; (ch = getopt(argc, argv, "")) != -1;) {
         switch (ch) {
         default:
             fprintf(stderr, "%s\n", USAGE);
@@ -27,13 +27,20 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     if (argc == 1) {
         settings["url"] = argv[0];
     }
-    loop_with_initial_event([=]() {
-        neubot::negotiate::run([=](Error error) {
-            if (error) {
-                mk::warn("dash test failed: %s", error.explain().c_str());
-            }
-            break_loop();
-        }, settings);
+    Var<report::Entry> entry{new report::Entry};
+    Var<Reactor> reactor = Reactor::global();
+    Var<Logger> logger = Logger::global();
+    logger->set_verbosity(7);
+    logger->warn("here");
+    reactor->run_with_initial_event([=]() {
+        neubot::dash::negotiate(entry, settings, reactor, logger,
+                                [=](Error error) {
+                                    if (error) {
+                                        logger->warn("dash test failed: %s",
+                                                     error.explain().c_str());
+                                    }
+                                    reactor->stop();
+                                });
     });
     return 0;
 }
