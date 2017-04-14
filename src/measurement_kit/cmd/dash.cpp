@@ -30,8 +30,6 @@ int main(std::list<Callback<BaseTest &>> &, int argc, char **argv) {
     Var<report::Entry> entry{new report::Entry};
     Var<Reactor> reactor = Reactor::global();
     Var<Logger> logger = Logger::global();
-    logger->set_verbosity(7);
-    logger->warn("here");
     reactor->run_with_initial_event([=]() {
         neubot::dash::negotiate(entry, settings, reactor, logger,
                                 [=](Error error) {
