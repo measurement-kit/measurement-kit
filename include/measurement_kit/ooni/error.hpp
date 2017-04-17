@@ -33,6 +33,11 @@ MK_DEFINE_ERR(MK_ERR_OONI(20), BouncerGenericError, "bouncer_generic_error")
 MK_DEFINE_ERR(MK_ERR_OONI(21), BouncerValueNotFoundError, "bouncer_value_not_found")
 MK_DEFINE_ERR(MK_ERR_OONI(22), HttpRequestError, "http_request_error")
 MK_DEFINE_ERR(MK_ERR_OONI(23), RegexSearchError, "regex_search_error")
+MK_DEFINE_ERR(MK_ERR_OONI(24), RegistryWrongUsernamePasswordError, "registry_wrong_username_password")
+MK_DEFINE_ERR(MK_ERR_OONI(25), RegistryMissingUsernamePasswordError, "registry_missing_username_password")
+MK_DEFINE_ERR(MK_ERR_OONI(26), MissingAuthenticationTokenError, "missing_authentication_token")
+MK_DEFINE_ERR(MK_ERR_OONI(27), MissingRequiredValueError, "missing_required_value")
+MK_DEFINE_ERR(MK_ERR_OONI(28), RegistryInvalidRequestError, "registry_invalid_request")
 
 } // namespace mk
 } // namespace ooni

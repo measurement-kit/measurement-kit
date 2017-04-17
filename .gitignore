@@ -23,6 +23,7 @@
 .DS_Store
 .deps
 .dirstamp
+.idea
 .libs
 .vagrant
 /*.njson
@@ -43,6 +44,7 @@
 /example/nettests/simple
 /example/ooni/oonireport
 /example/ooni/ooniresources
+/example/ooni/oorchestrate
 /include.am
 /include/measurement_kit/*.hpp
 /include/measurement_kit/common/git_version.hpp
