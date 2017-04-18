@@ -111,6 +111,7 @@
 /test/net/utils
 /test/nettests/dash
 /test/nettests/dns_injection
+/test/nettests/facebook_messenger
 /test/nettests/http_header_field_manipulation
 /test/nettests/http_invalid_request_line
 /test/nettests/meek_fronted_requests
