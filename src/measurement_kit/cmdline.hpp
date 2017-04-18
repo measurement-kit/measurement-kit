@@ -28,6 +28,7 @@ using namespace mk::nettests;
     XX(tcp_connect)                                                            \
     XX(telegram)                                                               \
     XX(web_connectivity)
+    XX(whatsapp)
 
 #define XX(_namespace_)                                                        \
     namespace _namespace_ {                                                    \
