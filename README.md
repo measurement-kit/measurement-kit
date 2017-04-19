@@ -8,7 +8,7 @@
 
 | branch | travis-ci | coveralls | gitlab-ci | circle-ci|
 |--------|-----------|-----------|-----------|----------|
-| master | [![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=master)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) | [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/master/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/master) | [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit) |
+| master | [![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://coveralls.io/repos/github/measurement-kit/measurement-kit/badge.svg?branch=master)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) | [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/master/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/master) | [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit) |
 | stable | [![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=stable)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=stable)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=stable) | [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/stable/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/stable) | [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit/tree/stable.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit/tree/stable) |
 
 MeasurementKit is a library that implements open network measurement methodologies
@@ -30,6 +30,8 @@ Currently it implements the following high-level tests:
 - [OONI](https://ooni.torproject.org/)'s [TCP Connect](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-008-tcpconnect.md) test
 
 - [OONI](https://ooni.torproject.org/)'s [Meek Fronted Requests](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-014-meek-fronted-requests.md) test
+
+- [OONI](https://ooni.torproject.org/)'s [HTTP Header Field Manipulation](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-006-header-field-manipulation.md) test
 
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
