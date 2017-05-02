@@ -1,3 +1,15 @@
+# MeasurementKit 0.6.0-beta [2017-05-02]
+
+- Backport build system changes from master
+- Sync files in top-level directory with master
+- Backport test/net/connect.cpp fix for libevent-2.1
+- Add NOTICE file, forgotten in previous PR
+- Manually resolve ChangeLog.md conflict
+- Add `node_modules` to .gitignore
+- Backport `MK_MOCK()` simplification from master
+- Backport HHFM and meek tests from master
+- Also update .gitignore
+
 # MeasurementKit 0.4.4 [2017-05-02]
 
 - Disable test for bacardi.com
