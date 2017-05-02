@@ -1,6 +1,6 @@
 pkg_name=Catch
 pkg_repository=https://github.com/philsquared/Catch.git
-pkg_tag=v1.5.9
+pkg_tag=v1.8.1
 pkg_steps=install
 
 pkg_install() {
