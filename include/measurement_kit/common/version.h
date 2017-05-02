@@ -5,7 +5,7 @@
 #define MEASUREMENT_KIT_COMMON_VERSION_HPP
 
 // Note: we use semantic versioning (see: http://semver.org/)
-#define MEASUREMENT_KIT_VERSION "0.5.0-alpha"
+#define MEASUREMENT_KIT_VERSION "0.7.0-dev"
 
 #ifdef __cplusplus
 extern "C" {
