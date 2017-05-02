@@ -34,6 +34,9 @@ class FileReporter : public BaseReporter {
 The `FileReporter` class is a `BaseReporter` that writes the report onto the
 file passed as first argument of the `make` factory.
 
+If the file passed as first argument is `-` then the report will be
+written on the standard output rather than on a file named `-`.
+
 A report file will consist of zero or more entries. Each entry is a JSON
 document serialized on a single line of text. Newlines could either be `\n`
 or `\r\n`.

@@ -77,9 +77,15 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     logger->debug("net_test: running with input %s", next_input.c_str());
     main(next_input, options, [=](Var<report::Entry> test_keys) {
         report::Entry entry;
+        // XXX simple way to override the default entry["input"] behavior
+        if (!(*test_keys)["input_"].is_null()) {
+            entry["input"] = (*test_keys)["input_"];
+            test_keys->erase("input_");
+        } else {
+            entry["input"] = next_input;
+        }
         entry["test_keys"] = *test_keys;
         entry["test_keys"]["client_resolver"] = resolver_ip;
-        entry["input"] = next_input;
         entry["measurement_start_time"] =
             *mk::timestamp(&measurement_start_time);
         entry["test_runtime"] = mk::time_now() - start_time;
@@ -265,6 +271,7 @@ void Runnable::begin(Callback<Error> cb) {
     }
     mk::utc_time_now(&test_start_time);
     beginning = mk::time_now();
+    mk::dump_settings(options, "runnable", logger);
     geoip_lookup([=]() {
         resolver_lookup([=](Error error, std::string resolver_ip_) {
             logger->progress(0.05, "geoip lookup");
