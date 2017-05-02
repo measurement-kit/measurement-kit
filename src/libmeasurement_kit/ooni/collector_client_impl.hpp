@@ -32,7 +32,7 @@ void post(Var<Transport> transport, std::string url_extra, std::string body,
           Callback<Error, nlohmann::json> callback, Settings conf = {},
           Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
 
-template <MK_MOCK_NAMESPACE(http, request_sendrecv)>
+template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void post_impl(Var<Transport> transport, std::string append_to_url,
                std::string body, Callback<Error, nlohmann::json> callback,
                Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
@@ -102,7 +102,7 @@ Error valid_entry(Entry entry);
       |_|
 */
 
-template <MK_MOCK_NAMESPACE(http, request_connect)>
+template <MK_MOCK_AS(http::request_connect, http_request_connect)>
 void connect_impl(Settings settings, Callback<Error, Var<Transport>> callback,
                   Var<Reactor> reactor, Var<Logger> logger) {
     std::string url;
@@ -122,7 +122,7 @@ void connect_impl(Settings settings, Callback<Error, Var<Transport>> callback,
     http_request_connect(settings, callback, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, post)>
+template <MK_MOCK_AS(collector::post, collector_post)>
 void create_report_impl(Var<Transport> transport, Entry entry,
                         Callback<Error, std::string> callback,
                         Settings settings, Var<Reactor> reactor,
@@ -171,8 +171,8 @@ void create_report_impl(Var<Transport> transport, Entry entry,
                    settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, connect),
-          MK_MOCK_NAMESPACE(collector, create_report)>
+template <MK_MOCK_AS(collector::connect, collector_connect),
+          MK_MOCK_AS(collector::create_report, collector_create_report)>
 void connect_and_create_report_impl(report::Entry entry,
                                     Callback<Error, std::string> callback,
                                     Settings settings, Var<Reactor> reactor,
@@ -190,7 +190,7 @@ void connect_and_create_report_impl(report::Entry entry,
     }, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, post)>
+template <MK_MOCK_AS(collector::post, collector_post)>
 void update_report_impl(Var<Transport> transport, std::string report_id,
                         Entry entry, Callback<Error> callback,
                         Settings settings, Var<Reactor> reactor,
@@ -229,8 +229,8 @@ void update_report_impl(Var<Transport> transport, std::string report_id,
                    settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, connect),
-          MK_MOCK_NAMESPACE(collector, update_report)>
+template <MK_MOCK_AS(collector::connect, collector_connect),
+          MK_MOCK_AS(collector::update_report, collector_update_report)>
 void connect_and_update_report_impl(std::string report_id, report::Entry entry,
                                     Callback<Error> callback,
                                     Settings settings, Var<Reactor> reactor,
@@ -248,7 +248,7 @@ void connect_and_update_report_impl(std::string report_id, report::Entry entry,
     }, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, post)>
+template <MK_MOCK_AS(collector::post, collector_post)>
 void close_report_impl(Var<Transport> transport, std::string report_id,
                        Callback<Error> callback, Settings settings,
                        Var<Reactor> reactor, Var<Logger> logger) {
@@ -259,8 +259,8 @@ void close_report_impl(Var<Transport> transport, std::string report_id,
                    settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, connect),
-          MK_MOCK_NAMESPACE(collector, close_report)>
+template <MK_MOCK_AS(collector::connect, collector_connect),
+          MK_MOCK_AS(collector::close_report, collector_close_report)>
 void connect_and_close_report_impl(std::string report_id,
                                    Callback<Error> callback,
                                    Settings settings, Var<Reactor> reactor,
@@ -280,8 +280,8 @@ void connect_and_close_report_impl(std::string report_id,
 
 ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger);
 
-template <MK_MOCK_NAMESPACE(collector, update_report),
-          MK_MOCK_NAMESPACE(collector, get_next_entry)>
+template <MK_MOCK_AS(collector::update_report, collector_update_report),
+          MK_MOCK_AS(collector::get_next_entry, collector_get_next_entry)>
 void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
                                 std::string report_id, int line, Entry entry,
                                 Callback<Error> callback, Settings settings,
@@ -323,9 +323,9 @@ void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
         settings, reactor, logger);
 }
 
-template <MK_MOCK_NAMESPACE(collector, get_next_entry),
-          MK_MOCK_NAMESPACE(collector, connect),
-          MK_MOCK_NAMESPACE(collector, create_report)>
+template <MK_MOCK_AS(collector::get_next_entry, collector_get_next_entry),
+          MK_MOCK_AS(collector::connect, collector_connect),
+          MK_MOCK_AS(collector::create_report, collector_create_report)>
 void submit_report_impl(std::string filepath, std::string collector_base_url,
                         std::string collector_front_domain,
                         Callback<Error> callback, Settings settings,

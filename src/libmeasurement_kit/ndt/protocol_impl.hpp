@@ -10,7 +10,7 @@ namespace mk {
 namespace ndt {
 namespace protocol {
 
-template <MK_MOCK_NAMESPACE(net, connect)>
+template <MK_MOCK_AS(net::connect, net_connect)>
 void connect_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: connect ...");
     net_connect(ctx->address, ctx->port,
@@ -29,8 +29,9 @@ void connect_impl(Var<Context> ctx, Callback<Error> callback) {
                 ctx->settings, ctx->reactor, ctx->logger);
 }
 
-template <MK_MOCK_NAMESPACE(messages, format_msg_extended_login),
-          MK_MOCK_NAMESPACE(messages, write)>
+template <MK_MOCK_AS(messages::format_msg_extended_login,
+                     messages_format_msg_extended_login),
+          MK_MOCK_AS(messages::write, messages_write)>
 void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: send login ...");
     ErrorOr<Buffer> out = messages_format_msg_extended_login(ctx->test_suite);
@@ -50,7 +51,7 @@ void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_NAMESPACE(net, readn)>
+template <MK_MOCK_AS(net::readn, net_readn)>
 void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv and ignore kickoff ...");
     net_readn(ctx->txp, ctx->buff, KICKOFF_MESSAGE_SIZE, [=](Error err) {
@@ -69,9 +70,9 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     }, ctx->reactor);
 }
 
-template <MK_MOCK_NAMESPACE(messages, read_msg),
-          MK_MOCK_NAMESPACE(messages, format_msg_waiting),
-          MK_MOCK_NAMESPACE(messages, write_noasync),
+template <MK_MOCK_AS(messages::read_msg, messages_read_msg),
+          MK_MOCK_AS(messages::format_msg_waiting, messages_format_msg_waiting),
+          MK_MOCK_AS(messages::write_noasync, messages_write_noasync),
           MK_MOCK(call_soon)>
 void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait in queue ...");
@@ -129,7 +130,7 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
     }, ctx->reactor);
 }
 
-template <MK_MOCK_NAMESPACE(messages, read_msg)>
+template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
 void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv server version ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
@@ -149,7 +150,7 @@ void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
     }, ctx->reactor);
 }
 
-template <MK_MOCK_NAMESPACE(messages, read_msg)>
+template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
 void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv tests ID ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
@@ -169,8 +170,9 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
     }, ctx->reactor);
 }
 
-template <MK_MOCK_NAMESPACE(test_c2s, run), MK_MOCK_NAMESPACE(test_meta, run),
-          MK_MOCK_NAMESPACE(test_s2c, run)>
+template <MK_MOCK_AS(test_c2s::run, test_c2s_run),
+          MK_MOCK_AS(test_meta::run, test_meta_run),
+          MK_MOCK_AS(test_s2c::run, test_s2c_run)>
 void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
 
     if (ctx->granted_suite.size() <= 0) {
@@ -235,7 +237,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_NAMESPACE(messages, read_msg)>
+template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
 void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv RESULTS ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
@@ -265,7 +267,7 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
     }, ctx->reactor);
 }
 
-template <MK_MOCK_NAMESPACE(net, read)>
+template <MK_MOCK_AS(net::read, net_read)>
 void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait close ...");
     ctx->txp->set_timeout(1.0);
