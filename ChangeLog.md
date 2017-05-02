@@ -1,3 +1,11 @@
+# MeasurementKit 0.4.4 [2017-05-02]
+
+- Disable test for bacardi.com
+- Backport #1186 to stable branch
+- Update to latest stable dependencies
+- Backport #1163 to stable branch
+- Backport #1179 to stable branch
+
 # MeasurementKit 0.4.3 [2017-03-14]
 
 - Backport 5d88cf9ff (#1177) to stable branch
