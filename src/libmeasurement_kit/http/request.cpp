@@ -65,13 +65,17 @@ void Request::serialize(net::Buffer &buff, Var<Logger> logger) {
     for (auto kv : headers) {
         buff << kv.first << ": " << kv.second << "\r\n";
     }
-    buff << "Host: " << url.address;
-    if ((url.schema == "http" and url.port != 80) or
-         (url.schema == "https" and url.port != 443)) {
-        buff << ":";
-        buff << std::to_string(url.port);
+    // if the host: header is passed explicitly,
+    // don't construct it again here.
+    if (headers.find("host") == headers.end()) {
+        buff << "Host: " << url.address;
+        if ((url.schema == "http" and url.port != 80) or
+            (url.schema == "https" and url.port != 443)) {
+            buff << ":";
+            buff << std::to_string(url.port);
+        }
+        buff << "\r\n";
     }
-    buff << "\r\n";
     if (body != "") {
         buff << "Content-Length: " << std::to_string(body.length()) << "\r\n";
     }

@@ -40,7 +40,7 @@ TEST_CASE("random_str() really generates only characters or numbers") {
         } else if (islower(x)) {
             found_low = true;
         } else {
-            REQUIRE(false);
+            REQUIRE(false); /* Should not happen */
         }
     }
     REQUIRE(found_num);
@@ -57,7 +57,7 @@ TEST_CASE("random_str_uppercase() really generates only uppercase") {
         } else if (isupper(x)) {
             found_upper = true;
         } else {
-            REQUIRE(false);
+            REQUIRE(false); /* Should not happen */
         }
     }
     REQUIRE(found_num);
@@ -345,4 +345,19 @@ TEST_CASE("mk::endswith() works as expected") {
     SECTION("For p present in s but not at s's end") {
         REQUIRE(!mk::endswith("antanix", "tan"));
     }
+}
+
+TEST_CASE("random_choice isn't obviously wrong") {
+    std::vector<std::string> choices = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"};
+    auto choice = mk::random_choice(choices);
+    REQUIRE(std::find(choices.begin(), choices.end(), choice) != choices.end());
+}
+
+TEST_CASE("randomly_capitalize isn't obviously wrong") {
+    auto lower_string = "abcdefghij";
+    auto upper_string = "ABCDEFGHIJ";
+    auto rc_lower_string = mk::randomly_capitalize(lower_string);
+    REQUIRE(rc_lower_string != lower_string);
+    auto rc_upper_string = mk::randomly_capitalize(upper_string);
+    REQUIRE(rc_upper_string != upper_string);
 }
