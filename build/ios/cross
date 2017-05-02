@@ -12,27 +12,27 @@ shift
 ARCH=$1
 shift
 
-echo ""
-echo "Cross compiling for $PLATFORM and $ARCH"
-
-MINIOSVERSION="7.1"
+MINIOSVERSION="8.0"
 if [ "$PLATFORM" = "iphoneos" ]; then
-    EXTRA_CONFIG="--host=arm-apple-darwin14 --target=arm-apple-darwin14 --disable-shared"
+    EXTRA_CONFIG="--host=arm-apple-darwin --target=arm-apple-darwin --disable-shared"
     MINVERSION="-miphoneos-version-min=$MINIOSVERSION"
 elif [ "$ARCH" = "i386" ]; then
-    EXTRA_CONFIG="--host=i386-apple-darwin14 --target=i386-apple-darwin14 --disable-shared"
+    EXTRA_CONFIG="--host=i386-apple-darwin --target=i386-apple-darwin --disable-shared"
     MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
 elif [ "$ARCH" = "x86_64" ]; then
-    EXTRA_CONFIG="--host=x86_64-apple-darwin14 --target=x86_64-apple-darwin14 --disable-shared"
+    EXTRA_CONFIG="--host=x86_64-apple-darwin --target=x86_64-apple-darwin --disable-shared"
     MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
 else
     echo "$0: unsupported configuration" 1>&2
     exit 1
 fi
 
+echo ""
+echo "Cross compiling for $PLATFORM and $ARCH"
+
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
 SOURCEDIR="$ROOTDIR/../../"
-DESTDIR="$ROOTDIR/tmp/${PLATFORM}/${ARCH}/"
+DESTDIR="$ROOTDIR/tmp"
 
 export CC="$(xcrun -find -sdk ${PLATFORM} cc)"
 export CXX="$(xcrun -find -sdk ${PLATFORM} g++)"
@@ -43,7 +43,8 @@ export LDFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --s
 
 export pkg_configure_flags="$EXTRA_CONFIG"
 export pkg_prefix="$DESTDIR"
-export pkg_cross="ios"
+export pkg_cross="${PLATFORM}"
+export pkg_cross_arch="${ARCH}"
 
 if [ $# -gt 0 ]; then
     $@

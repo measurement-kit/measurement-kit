@@ -1,6 +1,15 @@
 # MeasurementKit
 
-[![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit) [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=master)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/master/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/master) [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit)
+> Portable C++11 network measurement library
+
+[![Android](https://api.bintray.com/packages/measurement-kit/android/android-libs/images/download.svg)](https://bintray.com/measurement-kit/android/android-libs/_latestVersion) [![GitHub license](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://raw.githubusercontent.com/measurement-kit/measurement-kit/master/LICENSE) [![Github Releases](https://img.shields.io/github/release/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/releases) [![Github Issues](https://img.shields.io/github/issues/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/issues)
+
+- - -
+
+| branch | travis-ci | coveralls | gitlab-ci | circle-ci|
+|--------|-----------|-----------|-----------|----------|
+| master | [![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://coveralls.io/repos/github/measurement-kit/measurement-kit/badge.svg?branch=master)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) | [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/master/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/master) | [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit) |
+| stable | [![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=stable)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg?branch=stable)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=stable) | [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/stable/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/stable) | [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit/tree/stable.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit/tree/stable) |
 
 MeasurementKit is a library that implements open network measurement methodologies
 (performance, censorship, etc.) and targets mobile platforms (Android and iOS).
@@ -19,6 +28,10 @@ Currently it implements the following high-level tests:
 - [OONI](https://ooni.torproject.org/)'s [HTTP Invalid Request Line](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-007-http-invalid-request-line.md) test
 
 - [OONI](https://ooni.torproject.org/)'s [TCP Connect](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-008-tcpconnect.md) test
+
+- [OONI](https://ooni.torproject.org/)'s [Meek Fronted Requests](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-014-meek-fronted-requests.md) test
+
+- [OONI](https://ooni.torproject.org/)'s [HTTP Header Field Manipulation](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-006-header-field-manipulation.md) test
 
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
@@ -109,8 +122,10 @@ make check
 
 ### How to build MeasurementKit on Android
 
-To compile MeasurementKit for Android, see the README.md file contained in
-the `build/android` directory of this repository.
+We have [a specific repository](https://github.com/measurement-kit/android-libs)
+for compiling MeasurementKit for Android. You may also want to read the
+[documentation explaining how to cross compile MK dependencies for Android](
+doc/build/android.md).
 
 ### How to build MeasurementKit on iOS
 

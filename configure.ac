@@ -37,11 +37,15 @@ MK_AM_DISABLE_TRACEROUTE
 # See above comment
 AC_PROG_CXX
 
-# Must set -pthread before testing for -levent_pthreads
 if test "`uname`" != "Darwin"; then
+  # Must set -pthread before testing for -levent_pthreads
   CFLAGS="$CFLAGS -pthread"
   CXXFLAGS="$CXXFLAGS -pthread"
   LDFLAGS="$LDFLAGS -pthread"
+elif test "$cross_compiling" != yes; then
+  # On my macOS, /usr/local is not added automatically
+  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
+  LDFLAGS="$LDFLAGS -L/usr/local/lib"
 fi
 
 MK_AM_CHECK_LIBC_FUNCS
