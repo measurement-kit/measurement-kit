@@ -120,7 +120,7 @@ void connect_base(std::string address, int port,
         }));
 }
 
-template <MK_MOCK_NAMESPACE(net, connect)>
+template <MK_MOCK_AS(net::connect, net_connect)>
 void connect_many_impl(Var<ConnectManyCtx> ctx) {
     // Implementation note: this function connects sequentially, which
     // is slower but also much simpler to implement and verify

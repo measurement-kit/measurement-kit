@@ -23,8 +23,8 @@ namespace messages {
     | type (1) | length (2) | payload (0-65535) |
     +----------+------------+-------------------+
 */
-template <MK_MOCK_NAMESPACE_SUFFIX(net, readn, first),
-          MK_MOCK_NAMESPACE_SUFFIX(net, readn, second)>
+template <MK_MOCK_AS(net::readn, net_readn_first),
+          MK_MOCK_AS(net::readn, net_readn_second)>
 void read_ll_impl(Var<Context> ctx,
                   Callback<Error, uint8_t, std::string> callback,
                   Var<Reactor> reactor) {

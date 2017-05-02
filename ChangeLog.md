@@ -6,6 +6,63 @@
 - Backport #1163 to stable branch
 - Backport #1179 to stable branch
 
+# MeasurementKit 0.5.0-alpha [2017-04-11]
+
+- Force the library to use the system resolver (#972)
+- Add OONI bouncer support (#967)
+- Refine and finish bouncer implementation (#1014)
+- Add documentation for OONI's bouncer (#1032)
+- Move dns resolution function from net to dns (#1022)
+- Simple refactoring of system resolver (#1040)
+- Forward port patch #1066 to master (#1067)
+- build/dependency: implement quick git clone (#1068)
+- build/dependency: factor more operations (#1069)
+- Start cleaning up docker build system (#1070)
+- Finish cleaning up docker build system (#1071)
+- README.md: attempt to fix coveralls badge (#1072)
+- travis: conditional build depending on branch (#1074)
+- More cleanups of the CI subsystem (#1075)
+- Increase code coverage a bit (#1036)
+- Attempt to fix issue with case sensitive drive (#1076) (#1077)
+- Backport simple hotfixes from #1017 (#1091)
+- Tweak build/ios/cross (#1094)
+- http: extract interesting stuff from #929 (#1095)
+- Repair regress tests (#1117)
+- Tweak README.md and ChangeLog.md (#1119)
+- Fix uninitialized values according to Valgrind (#1118)
+- Remove bashism (#1145)
+- configure.ac: add /usr/local by default on macOS (#1151)
+- test/net/connect.cpp: libevent 2.1.8 compat (#1152)
+- Make Transport more OO (#1153)
+- net: move most close logic in emitter (#1154)
+- ooni/templates http: include all request/responses (#1149)
+- replace short PGP key fingerprint with long one (#1157)
+- Refactor cmdline to have OONI-like interface (#1156)
+- net: further tweak the transport model (#1155)
+- Repair broken test/ooni/utils.cpp (#1164)
+- Fix `unknown_failure 3` bug (#1162)
+- Repair regress tests after travis failure (#1166)
+- build/ci/travis: fix branch name detection logic (#1167)
+- http: refactor redirect logic (#1168)
+- ooni/template.cpp: don't assume `!!response->request` (#1170)
+- Finish fixing travis branch handling (#1171)
+- common: add {start,end}swith (#1172)
+- http::Response: init numbers to know value (#1174)
+- http: treat EOF instead of response as error (#1175)
+- Fix embarassing mk::endswith() bug (#1173)
+- Fix `unknown_error_3009` bug (#1176)
+- Fix report/entry.hpp w/ new NDK, nlohmann::json (#1177)
+- Only run coveralls if we know the token (#1181)
+- meek fronting nettest (#1141)
+- Update to nlohmann/json v2.1.1 (#1179)
+- mock.hpp: reduce implicit `MK_MOCK_NAMESPACE` magic (#1142)
+- Start updating dependencies: the easy part (#1163)
+- Update valgrind suppression files (#1186)
+- Build and archive dependencies separately (#1185)
+- Update README, license, badges (#1188)
+- Refactor and improve build scripts (#1017)
+- HTTP header fields manipulation test (#1146)
+
 # MeasurementKit 0.4.3 [2017-03-14]
 
 - Backport 5d88cf9ff (#1177) to stable branch
@@ -43,8 +100,8 @@
 # MeasurementKit 0.4.0-beta.3 [2017-02-01]
 
 - `ip_lookup()`: validate result as IP address (#1108)
-- `web_connectivity`: do not *request unconditionally
-- runnable: progress now accounts for max_runtime
+- `web_connectivity`: do not `*request` unconditionally
+- runnable: progress now accounts for `max_runtime`
 - progress: also track opening/closing report
 - The header key comparison MUST be done with the lowercase version
 - Use std::transform to convert to lowercase
