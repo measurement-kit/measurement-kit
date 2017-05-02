@@ -8,7 +8,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common/version.h>
 
-#define MEASUREMENT_KIT_VERSION "0.4.4"
+#define MEASUREMENT_KIT_VERSION "0.6.0-dev"
 
 const char *mk_version(void);
 ```
