@@ -2,17 +2,6 @@
 set -e
 ROOTDIR=$(cd `dirname "$0"` && pwd -P)
 
-if [ "$mk_ios_no_binary" = "" ]; then
-    echo "Downloading and verifying binary release from github"
-    RELEASE_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.6.0-beta/ios_frameworks-0.6.0-beta.zip
-    RELEASE_FILE=`basename $RELEASE_URL`
-    curl --progress-bar -LO $RELEASE_URL
-    curl --progress-bar -LO $RELEASE_URL.asc
-    gpg2 --verify $RELEASE_FILE.asc
-    unzip $RELEASE_FILE
-    exit 0
-fi
-
 echo "Downloading and verifying precompiled dependencies from github"
 (
     set -e # just in case
