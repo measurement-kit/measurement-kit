@@ -2,7 +2,7 @@
 set -e
 ROOTDIR=$(cd `dirname "$0"` && pwd -P)
 
-if [ "$1" = "-b" ]; then
+if [ "$mk_ios_no_binary" != "" ]; then
     echo "Downloading and verifying binary release from github"
     RELEASE_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.6.0-beta/ios_frameworks-0.6.0-beta.zip
     RELEASE_FILE=`basename $RELEASE_URL`
