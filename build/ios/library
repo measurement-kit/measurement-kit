@@ -2,6 +2,17 @@
 set -e
 ROOTDIR=$(cd `dirname "$0"` && pwd -P)
 
+RELEASE_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.6.0-beta/ios_binaries-0.6.0-beta.tgz
+RELEASE_FILE=$(basename $RELEASE_URL)
+if wget $RELEASE_URL; then
+    wget $RELEASE_URL.asc
+    gpg2 --verify $RELEASE_FILE.asc
+    tar xzf $RELEASE_FILE
+    rm $RELEASE_FILE $RELEASE_FILE.asc
+    $ROOTDIR/build-frameworks
+    exit 0
+fi
+
 echo "Downloading and verifying precompiled dependencies from github"
 (
     set -e # just in case
