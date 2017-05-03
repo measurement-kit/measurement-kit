@@ -16,9 +16,17 @@ Pod::Spec.new do |s|
     :git => "https://github.com/measurement-kit/measurement-kit.git",
     :tag => "v#{s.version}"
   }
-  s.prepare_command = <<-CMD
-    ./build/ios/library
-  CMD
+  s.default_subspec = 'Binary'
+  s.subspec 'Source' do |x|
+    x.prepare_command = <<-CMD
+      ./build/ios/library
+    CMD
+  done
+  s.subspec 'Binary' do |x|
+    x.prepare_command = <<-CMD
+      ./build/ios/library -b
+    CMD
+  done
   s.platform = :ios, "7.1"
   s.vendored_framework = "build/ios/Frameworks/*.framework"
 end
