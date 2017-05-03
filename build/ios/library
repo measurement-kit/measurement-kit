@@ -4,8 +4,8 @@ ROOTDIR=$(cd `dirname "$0"` && pwd -P)
 
 RELEASE_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.6.0-beta/ios_binaries-0.6.0-beta.tgz
 RELEASE_FILE=$(basename $RELEASE_URL)
-if curl --progress-bar -LO $RELEASE_URL; then
-    curl --progress-bar -LO $RELEASE_URL.asc
+if wget $RELEASE_URL; then
+    wget $RELEASE_URL.asc
     gpg2 --verify $RELEASE_FILE.asc
     tar xzf $RELEASE_FILE
     rm $RELEASE_FILE $RELEASE_FILE.asc
