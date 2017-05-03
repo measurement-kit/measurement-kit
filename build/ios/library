@@ -15,5 +15,5 @@ echo "Downloading and verifying precompiled dependencies from github"
     rm $DEPS_FILE $DEPS_FILE.asc
 )
 
-$ROOTDIR/dependency embedded-mk
+$ROOTDIR/dependency mk
 $ROOTDIR/build-frameworks
