@@ -2,14 +2,13 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../cmdline/cmdline.hpp"
 #include <measurement_kit/http.hpp>
 
 #include <iostream>
 
-namespace mk {
-namespace cmdline {
-namespace http_request {
+#include <getopt.h>
+
+using namespace mk;
 
 static const char *kv_usage =
     "usage: measurement_kit http_request [-v] [-b body] [-H 'key: value']\n"
@@ -31,28 +30,28 @@ static bool set_header(http::Headers &headers, const std::string option) {
     return true;
 }
 
-int main(const char *, int argc, char **argv) {
+int main(int argc, char **argv) {
 
     Settings settings;
     std::string body;
     http::Headers headers;
     int ch;
-    while ((ch = mkp_getopt(argc, argv, "b:H:m:R:v")) != -1) {
+    while ((ch = getopt(argc, argv, "b:H:m:R:v")) != -1) {
         switch (ch) {
         case 'b':
-            body = mkp_optarg;
+            body = optarg;
             break;
         case 'H':
-            if (!set_header(headers, mkp_optarg)) {
+            if (!set_header(headers, optarg)) {
                 exit(1);
                 // NOTREACHED
             }
             break;
         case 'm':
-            settings["http/method"] = mkp_optarg;
+            settings["http/method"] = optarg;
             break;
         case 'R':
-            settings["http/max_redirects"] = lexical_cast<int>(mkp_optarg);
+            settings["http/max_redirects"] = lexical_cast<int>(optarg);
             break;
         case 'v':
             increase_verbosity();
@@ -62,7 +61,7 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= mkp_optind, argv += mkp_optind;
+    argc -= optind, argv += optind;
     if (argc != 1) {
         std::cout << kv_usage;
         exit(1);
@@ -91,7 +90,3 @@ int main(const char *, int argc, char **argv) {
 
     return 0;
 }
-
-} // namespace http_request
-} // namespace cmdline
-} // namespace mk
