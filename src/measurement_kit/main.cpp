@@ -101,8 +101,7 @@ int main(int argc, char **argv) {
             printf("measurement-kit version: %s\n", mk_version());
             printf("libevent version: %s\n", mk_libevent_version());
             printf("OpenSSL version: %s\n", mk_openssl_version());
-            exit(0);
-            /* NOTREACHED */
+            return 0;
         default:
             return usage(1, stderr);
         }
