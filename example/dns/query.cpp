@@ -2,34 +2,33 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../cmdline/cmdline.hpp"
 #include <measurement_kit/dns.hpp>
 
 #include <iostream>
 
-namespace mk {
-namespace cmdline {
-namespace dns_query {
+#include <unistd.h>
 
 static const char *kv_usage =
     "usage: measurement_kit dns_query [-N nameserver] [-v] [-c class] [-t type] domain\n";
 
-int main(const char *, int argc, char **argv) {
+using namespace mk;
+
+int main(int argc, char **argv) {
 
     std::string nameserver = "";
     std::string query_class = "IN";
     int ch;
     std::string query_type = "A";
-    while ((ch = mkp_getopt(argc, argv, "c:N:t:v")) != -1) {
+    while ((ch = getopt(argc, argv, "c:N:t:v")) != -1) {
         switch (ch) {
         case 'c':
-            query_class = mkp_optarg;
+            query_class = optarg;
             break;
         case 'N':
-            nameserver = mkp_optarg;
+            nameserver = optarg;
             break;
         case 't':
-            query_type = mkp_optarg;
+            query_type = optarg;
             break;
         case 'v':
             increase_verbosity();
@@ -39,8 +38,8 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= mkp_optind;
-    argv += mkp_optind;
+    argc -= optind;
+    argv += optind;
     if (argc != 1) {
         std::cout << kv_usage;
         exit(1);
@@ -76,7 +75,3 @@ int main(const char *, int argc, char **argv) {
 
     return 0;
 }
-
-} // namespace dns_query
-} // namespace cmdline
-} // namespace mk

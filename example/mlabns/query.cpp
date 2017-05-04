@@ -2,14 +2,13 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../cmdline/cmdline.hpp"
 #include <measurement_kit/mlabns.hpp>
 
 #include <iostream>
 
-namespace mk {
-namespace cmdline {
-namespace mlabns {
+#include <getopt.h>
+
+using namespace mk;
 
 static const char *kv_usage =
     "usage: measurement_kit mlabns [-46v] [-C /path/to/ca/bundle] [-m metro]\n"
@@ -21,11 +20,11 @@ static void print_setting(Settings &settings, std::string key) {
     std::cout << "> " << key << ": " << value << "\n";
 }
 
-int main(const char *, int argc, char **argv) {
+int main(int argc, char **argv) {
 
     int ch;
     Settings settings;
-    while ((ch = mkp_getopt(argc, argv, "46C:m:p:v")) != -1) {
+    while ((ch = getopt(argc, argv, "46C:m:p:v")) != -1) {
         switch (ch) {
         case '4':
             settings["mlabns/address_family"] = "ipv4";
@@ -34,13 +33,13 @@ int main(const char *, int argc, char **argv) {
             settings["mlabns/address_family"] = "ipv6";
             break;
         case 'C':
-            settings["net/ca_bundle_path"] = mkp_optarg;
+            settings["net/ca_bundle_path"] = optarg;
             break;
         case 'm':
-            settings["mlabns/metro"] = mkp_optarg;
+            settings["mlabns/metro"] = optarg;
             break;
         case 'p':
-            settings["mlabns/policy"] = mkp_optarg;
+            settings["mlabns/policy"] = optarg;
             break;
         case 'v':
             increase_verbosity();
@@ -50,8 +49,8 @@ int main(const char *, int argc, char **argv) {
             exit(1);
         }
     }
-    argc -= mkp_optind;
-    argv += mkp_optind;
+    argc -= optind;
+    argv += optind;
     if (argc != 1) {
         std::cout << kv_usage;
         exit(1);
@@ -86,7 +85,3 @@ int main(const char *, int argc, char **argv) {
 
     return 0;
 }
-
-} // namespace mlabns
-} // namespace cmdline
-} // namespace mk
