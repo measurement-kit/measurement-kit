@@ -11,6 +11,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #define MEASUREMENT_KIT_VERSION "0.6.0-beta"
 
 const char *mk_version(void);
+const char *mk_openssl_version(void);
+const char *mk_libevent_version(void);
 ```
 
 # STABILITY
@@ -25,6 +27,9 @@ the programmer to know MeasurementKit version number.
 It also contains a *C linkage* function that can be used to programmatically
 retrieve the library version number. The function has C linkage so that it
 can be easily used from languages with foreign functions interface.
+
+It also contains *C linkage* functions that tell you the version of OpenSSL
+and libevent we are compiling measurement-kit with.
 
 # HISTORY
 

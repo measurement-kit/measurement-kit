@@ -13,6 +13,9 @@ extern "C" {
 
 const char *mk_version(void);
 
+const char *mk_openssl_version(void);
+const char *mk_libevent_version(void);
+
 #ifdef __cplusplus
 } // namespace mk
 #endif

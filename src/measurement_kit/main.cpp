@@ -99,6 +99,8 @@ int main(int argc, char **argv) {
             return usage(0, stdout);
         case 257:
             printf("measurement-kit version: %s\n", mk_version());
+            printf("libevent version: %s\n", mk_libevent_version());
+            printf("OpenSSL version: %s\n", mk_openssl_version());
             exit(0);
             /* NOTREACHED */
         default:
