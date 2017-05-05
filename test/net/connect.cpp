@@ -69,14 +69,23 @@ TEST_CASE("connect_base deals with bufferevent_set_timeouts error") {
     REQUIRE(ok);
 }
 
-static int fail(bufferevent *, sockaddr *, int) { return -1; }
+/*
+ * The first callback is for libevent 2.0 and the second is for libevent
+ * 2.1, where the API has changed. The C++ compiler will select the function
+ * that matches the expected prototype, according to SFINAE principles.
+ */
+class Fail {
+  public:
+    static int fail(bufferevent *, sockaddr *, int) { return -1; }
+    static int fail(bufferevent *, const sockaddr *, int) { return -1; }
+};
 
 TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
     // Note: connectivity not required to run this test
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
         connect_base<make_sockaddr_proxy, ::bufferevent_socket_new,
-                     bufferevent_set_timeouts, fail>(
+                     bufferevent_set_timeouts, Fail::fail>(
             "130.192.16.172", 80,
             [=](Error e, bufferevent *b, double) {
                 REQUIRE(e);
