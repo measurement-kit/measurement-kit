@@ -2,7 +2,7 @@
 set -e
 ROOTDIR=$(cd `dirname "$0"` && pwd -P)
 
-RELEASE_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.6.0-beta/ios_binaries-0.6.0-beta.tgz
+RELEASE_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.7.0-dev/ios_binaries-0.7.0-dev.tgz
 RELEASE_FILE=$(basename $RELEASE_URL)
 if wget $RELEASE_URL; then
     wget $RELEASE_URL.asc
