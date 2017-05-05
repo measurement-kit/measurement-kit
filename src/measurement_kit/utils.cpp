@@ -47,7 +47,7 @@ std::vector<option> as_long_options(const OptionSpec *os) {
     for (auto sos = os; sos->short_name != 0; ++sos) {
         option op = {};
         op.name = sos->long_name;
-        op.has_arg = (sos->requires_argument) ? no_argument : required_argument;
+        op.has_arg = (sos->requires_argument) ? required_argument : no_argument;
         op.val = sos->short_name;
         ret.push_back(op);
     }

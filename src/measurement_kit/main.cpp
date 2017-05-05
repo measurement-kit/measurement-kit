@@ -27,6 +27,7 @@ static OptionSpec kv_specs[] = {
     {'s', "list", false, nullptr, "List available nettests"},
     {'v', "verbose", false, nullptr, "Increase verbosity"},
     {256, "help", false, nullptr, "Display this help and exit"},
+    {257, "version", false, nullptr, "Display version number and exit"},
     {0, nullptr, 0, 0, nullptr}
 };
 
@@ -96,6 +97,12 @@ int main(int argc, char **argv) {
             break;
         case 256:
             return usage(0, stdout);
+        case 257:
+            printf("measurement_kit version: %s (%s)\n", mk_version(),
+                   mk_version_full());
+            printf("libevent version: %s\n", mk_libevent_version());
+            printf("OpenSSL version: %s\n", mk_openssl_version());
+            return 0;
         default:
             return usage(1, stderr);
         }
