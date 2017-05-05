@@ -27,8 +27,7 @@ gen_automatic_includes() {
     echo "#ifndef MEASUREMENT_KIT_COMMON_GIT_VERSION_HPP"                 >> $hh
     echo "#define MEASUREMENT_KIT_COMMON_GIT_VERSION_HPP"                 >> $hh
     echo ""                                                               >> $hh
-    echo "// Note: we use semantic versioning (see: http://semver.org/)"  >> $hh
-    echo "#define MEASUREMENT_KIT_VERSION \"`git describe --tags`\""      >> $hh
+    echo "#define MK_VERSION_WITH_GIT_TAG \"`git describe --tags`\""      >> $hh
     echo ""                                                               >> $hh
     echo "#endif"                                                         >> $hh
 

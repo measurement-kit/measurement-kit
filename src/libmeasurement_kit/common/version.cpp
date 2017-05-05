@@ -7,7 +7,11 @@
 #include <event2/event.h>
 
 const char *mk_version() {
-    return MEASUREMENT_KIT_VERSION;
+    return MK_VERSION;
+}
+
+const char *mk_version_with_git_tag() {
+    return MK_VERSION_WITH_GIT_TAG;
 }
 
 const char *mk_openssl_version() {
