@@ -281,6 +281,11 @@ void Runnable::begin(Callback<Error> cb) {
                 logger->debug("failed to lookup resolver ip");
             }
             open_report([=](Error error) {
+                if (error) {
+                    logger->warn("Cannot open report: %s",
+                                 error.explain().c_str());
+                    // FALLTHROUGH
+                }
                 logger->progress(0.1, "open report");
                 if (error and not options.get(
                         "ignore_open_report_error", true)) {

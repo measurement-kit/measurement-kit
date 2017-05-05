@@ -1,3 +1,23 @@
+# MeasurementKit 0.6.0-beta [2017-05-02]
+
+- Backport build system changes from master
+- Sync files in top-level directory with master
+- Backport test/net/connect.cpp fix for libevent-2.1
+- Add NOTICE file, forgotten in previous PR
+- Manually resolve ChangeLog.md conflict
+- Add `node_modules` to .gitignore
+- Backport `MK_MOCK()` simplification from master
+- Backport HHFM and meek tests from master
+- Also update .gitignore
+
+# MeasurementKit 0.4.4 [2017-05-02]
+
+- Disable test for bacardi.com
+- Backport #1186 to stable branch
+- Update to latest stable dependencies
+- Backport #1163 to stable branch
+- Backport #1179 to stable branch
+
 # MeasurementKit 0.5.0-alpha [2017-04-11]
 
 - Force the library to use the system resolver (#972)
