@@ -1,0 +1,45 @@
+#!/bin/sh
+args=`getopt ps: $*`
+if [ $? -ne 0 ]; then
+    echo "usage: $0 [-p] [-s regex]" 1>&2
+    exit 1
+fi
+set -- $args
+while [ $# -ne 0 ]; do
+    case "$1" in
+        -p)
+            arguments="$arguments -p"
+            shift
+            ;;
+        -s)
+            arguments="$arguments -s $2"
+            shift
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "usage: $0 [-p] [-s regex]" 1>&2
+            exit 1
+    esac
+done
+if [ $# -ne 0 ]; then
+    echo "usage: $0 [-p] [-s regex]" 1>&2
+    exit 1
+fi
+set -e
+pkg_rootdir=$(cd $(dirname $(dirname $0)) && pwd -P)
+cd $pkg_rootdir
+if [ "$pkg_prefix" = "" ]; then
+    pkg_prefix="$pkg_rootdir/builtin"
+fi
+npm install download-github-release
+./node_modules/.bin/download-github-release $arguments                     \
+        measurement-kit dependencies
+for file in *.tgz; do
+    gpg2 --verify $file.asc $file
+    install -d $pkg_prefix
+    tar -C $pkg_prefix -xf $file
+done

@@ -121,6 +121,7 @@ libtool
 ltmain.sh
 m4/*.m4
 missing
+node_modules/
 site
 src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/

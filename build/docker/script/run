@@ -8,42 +8,29 @@ fi
 spec_name=$1
 shift
 
+subr_depend() {
+    echo "- install debian deps: $debian_deps"
+    apt-get update
+    apt-get upgrade -y
+    apt-get install -y $debian_deps
+    if [ "$pip_deps" != "" ]; then
+        echo "- install pip deps: $pip_deps"
+        pip install --user $pip_deps
+    fi
+}
+
 subr_start_over() {
     if [ -f Makefile ]; then
         make distclean
     fi
 }
 
-subr_autogen() {
-    echo "- ./autogen.sh"
-    ./autogen.sh
-}
-
-subr_configure() {
-    echo "- ./configure $configure_flags"
-    ./configure $configure_flags
-}
-
-subr_make() {
-    echo "- make $make_flags V=0"
-    make $make_flags V=0
-}
-
-subr_make_check() {
-    if [ -z "$make_check_name" ]; then
-        make_check_name=check
-    fi
-    echo "- make $make_flags $make_check_name V=0"
-    if ! make $make_flags $make_check_name V=0; then
-        if [ -f ./test-suite.log ]; then
-            cat ./test-suite.log
-        fi
-        exit 1
-    fi
+subr_build() {
+    ./build/dependency mk
 }
 
 subr_finalize() {
-    exit 0
+    echo "- finalize"
 }
 
 . build/docker/spec/$spec_name
@@ -51,14 +38,12 @@ env | sed 's/^COVERALLS_REPO_TOKEN=.*$/COVERALLS_REPO_TOKEN=[secure]/g'
 sleep 5
 
 if [ $# -eq 0 ]; then
-    set -- depend start_over autogen configure make make_check finalize
+    set -- depend start_over build finalize
 fi
 
 while [ $# -gt 0 ]; do
     echo ""
-    echo "- - -"
-    echo ""
-    echo "# $1"
+    echo "docker/script/run: $1"
     echo ""
     subr_$1
     shift

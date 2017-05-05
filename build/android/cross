@@ -108,8 +108,8 @@ export STRIP=${TOOL_PREFIX}-strip
 export CPPFLAGS="${CPPFLAGS} --sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_TOOLCHAIN}/include"
 
 # Pass specific flags to the C and/or CXX compiler
-export CFLAGS=${CFLAGS}
-export CXXFLAGS=${CXXFLAGS}
+export CFLAGS="${CFLAGS}"
+export CXXFLAGS="${CXXFLAGS}"
 
 # Teach the linker to find toolchain libraries
 export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib"
@@ -125,10 +125,13 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
 export pkg_configure_flags="--host=${TOOLCHAIN_NAME} --disable-shared $CONFIG_EXTRA"
 
 # Where to install headers and libraries
-export pkg_prefix=${ROOTDIR}/jni/${DESTDIR_NAME}
+export pkg_prefix="${ROOTDIR}"
 
 # Tell ./build/dependency that we are cross compiling
-export pkg_cross="android"
+export pkg_cross="jni"
+
+# Tell ./build/dependency the name of the cross architecture
+export pkg_cross_arch="${DESTDIR_NAME}"
 
 if [ $# -gt 0 ]; then
     $@
