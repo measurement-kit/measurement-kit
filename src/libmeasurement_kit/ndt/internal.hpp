@@ -56,7 +56,7 @@
 
 // During the handshake we declare to be measurement-kit version such and
 // such that is compatible with version v3.7.0 of NDT
-#define MSG_NDT_VERSION "v3.7.0 (measurement-kit/" MEASUREMENT_KIT_VERSION ")"
+#define MSG_NDT_VERSION "v3.7.0"
 
 #define TEST_C2S_DURATION 10.0
 
