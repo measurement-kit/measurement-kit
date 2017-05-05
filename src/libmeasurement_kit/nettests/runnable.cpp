@@ -265,6 +265,7 @@ void Runnable::begin(Callback<Error> cb) {
     }
     mk::utc_time_now(&test_start_time);
     beginning = mk::time_now();
+    mk::dump_settings(options, "runnable", logger);
     geoip_lookup([=]() {
         resolver_lookup([=](Error error, std::string resolver_ip_) {
             logger->progress(0.05, "geoip lookup");
@@ -274,6 +275,11 @@ void Runnable::begin(Callback<Error> cb) {
                 logger->debug("failed to lookup resolver ip");
             }
             open_report([=](Error error) {
+                if (error) {
+                    logger->warn("Cannot open report: %s",
+                                 error.explain().c_str());
+                    // FALLTHROUGH
+                }
                 logger->progress(0.1, "open report");
                 if (error and not options.get(
                         "ignore_open_report_error", true)) {
