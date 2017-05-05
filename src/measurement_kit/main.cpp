@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
             return usage(0, stdout);
         case 257:
             printf("measurement_kit version: %s (%s)\n", mk_version(),
-                   mk_version_with_git_tag());
+                   mk_version_full());
             printf("libevent version: %s\n", mk_libevent_version());
             printf("OpenSSL version: %s\n", mk_openssl_version());
             return 0;

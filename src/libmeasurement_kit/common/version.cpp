@@ -10,8 +10,8 @@ const char *mk_version() {
     return MK_VERSION;
 }
 
-const char *mk_version_with_git_tag() {
-    return MK_VERSION_WITH_GIT_TAG;
+const char *mk_version_full() {
+    return MK_VERSION_FULL;
 }
 
 const char *mk_openssl_version() {
