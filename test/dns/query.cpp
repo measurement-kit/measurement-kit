@@ -64,7 +64,7 @@ BASE_FREE(evdns_set_options_randomize)
 
 TEST_CASE("throw error while fails evdns_base_new") {
     REQUIRE_THROWS_AS(
-        create_evdns_base<null_evdns_base_new>({}, Reactor::global()),
+        create_evdns_base<null_evdns_base_new>(nullptr, {}, Reactor::global()),
         std::bad_alloc);
 }
 
@@ -72,7 +72,7 @@ TEST_CASE("throw error on literal port") {
     // NB: dns/port=128000 just overflows uint16
     REQUIRE_THROWS_AS(
         (create_evdns_base(
-            {{"dns/nameserver", "8.8.8.8"}, {"dns/port", "domain"}}, Reactor::global())),
+            "8.8.8.8", {{"dns/port", "domain"}}, Reactor::global())),
         std::runtime_error);
 }
 
@@ -80,7 +80,7 @@ TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, null_evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_base_nameserver_sockaddr_add>(
-            {{"dns/nameserver", "nexa"}}, Reactor::global())),
+            "nexa", {}, Reactor::global())),
         std::runtime_error);
     REQUIRE(base_free_evdns_base_nameserver_sockaddr_add_flag);
 }
@@ -88,7 +88,7 @@ TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add") {
 TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add and base_new") {
     REQUIRE_THROWS_AS((create_evdns_base<null_evdns_base_new,
                                          null_evdns_base_nameserver_sockaddr_add>(
-                          {{"dns/nameserver", "nexa"}}, Reactor::global())),
+                          "nexa", {}, Reactor::global())),
                       std::bad_alloc);
 }
 
@@ -96,7 +96,7 @@ TEST_CASE("throw error while fails evdns_set_options for attempts") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_attempts>(
-            {{"dns/attempts", "nexa"}}, Reactor::global())),
+            nullptr, {{"dns/attempts", "nexa"}}, Reactor::global())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_attempts_flag);
 }
@@ -105,7 +105,7 @@ TEST_CASE("throw error while fails evdns_set_options for timeout") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_timeout>(
-            {{"dns/attempts", "nexa"}}, Reactor::global())),
+            nullptr, {{"dns/attempts", "nexa"}}, Reactor::global())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_timeout_flag);
 }
@@ -114,7 +114,7 @@ TEST_CASE("throw error while fails evdns_set_options for negative attempts") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_attempts_negative>(
-            {{"dns/attempts", -1}}, Reactor::global())),
+            nullptr, {{"dns/attempts", -1}}, Reactor::global())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_attempts_negative_flag);
 }
@@ -124,7 +124,7 @@ TEST_CASE("throw error while fails evdns_set_options for randomize-case") {
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_randomize,
                            null_evdns_base_set_option_randomize>(
-            {{"dns/randomize_case", ""}}, Reactor::global())),
+            nullptr, {{"dns/randomize_case", ""}}, Reactor::global())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_randomize_flag);
 }
@@ -143,51 +143,49 @@ TEST_CASE("throw error with ntop conversion error") {
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
     query_impl<::evdns_base_free, null_resolver>(
-        "IN", "A", "www.google.com",
-        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global(), Logger::global());
+        nullptr, "IN", "A", "www.google.com", {}, Reactor::global(),
+        Logger::global(),
+        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); });
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
     query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
-        "IN", "AAAA", "github.com",
-        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global(), Logger::global());
+        nullptr, "IN", "AAAA", "github.com", {}, Reactor::global(),
+        Logger::global(),
+        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); });
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
     query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, null_resolver_reverse>(
-        "IN", "REVERSE_A", "8.8.8.8",
-        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global(), Logger::global());
+        nullptr, "IN", "REVERSE_A", "8.8.8.8", {}, Reactor::global(),
+        Logger::global(),
+        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); });
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
     query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 null_resolver_reverse>(
-        "IN", "REVERSE_AAAA", "::1",
-
-        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global(), Logger::global());
+        nullptr, "IN", "REVERSE_AAAA", "::1", {}, Reactor::global(),
+        Logger::global(),
+        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); });
 }
 
 TEST_CASE("dns::query deals with inet_pton returning 0") {
     query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
-        "IN", "REVERSE_A", "8.8.8.8",
-
-        [](Error e, Var<Message>) { REQUIRE(e == InvalidIPv4AddressError()); }, {},
-        Reactor::global(), Logger::global());
+        nullptr, "IN", "REVERSE_A", "8.8.8.8", {}, Reactor::global(),
+        Logger::global(),
+        [](Error e, Var<Message>) { REQUIRE(e == InvalidIPv4AddressError()); });
 
     query_impl<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
-        "IN", "REVERSE_AAAA", "::1",
-        [](Error e, Var<Message>) { REQUIRE(e == InvalidIPv6AddressError()); }, {},
-        Reactor::global(), Logger::global());
+        nullptr,  "IN", "REVERSE_AAAA", "::1", {}, Reactor::global(),
+        Logger::global(),
+        [](Error e, Var<Message>) { REQUIRE(e == InvalidIPv6AddressError()); });
 }
 
 TEST_CASE("dns::query raises if the query is unsupported") {

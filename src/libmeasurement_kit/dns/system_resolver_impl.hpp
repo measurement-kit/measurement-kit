@@ -146,9 +146,14 @@ void resolve_async_impl(ResolverContext *context) {
 }
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
-void system_resolver_impl(QueryClass dns_class, QueryType dns_type,
-        std::string name, Callback<Error, Var<Message>> cb, Settings settings,
-        Var<Reactor> reactor, Var<Logger> logger) {
+void system_resolver_impl(NameServers /*ns*/, QueryClass dns_class,
+        QueryType dns_type, std::string name, Settings settings,
+        Var<Reactor> reactor, Var<Logger> logger,
+        Callback<Error, Var<Message>> cb) {
+
+    // XXX: check whether we have a nameserver and bail out in such case
+    // because we cannot honour that configuration setting
+
     std::unique_ptr<ResolverContext> ctx(new ResolverContext(
         dns_class, dns_type, name, cb, settings, reactor, logger));
     Query query;

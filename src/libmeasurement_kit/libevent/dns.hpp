@@ -10,13 +10,14 @@ namespace mk {
 namespace libevent {
 
 void query(
+        dns::NameServers ns,
         dns::QueryClass dns_class,
         dns::QueryType dns_type,
         std::string name,
-        Callback<Error, Var<dns::Message>> cb,
         Settings settings,
         Var<Reactor> reactor,
-        Var<Logger> logger
+        Var<Logger> logger,
+        Callback<Error, Var<dns::Message>> cb
 );
 
 Error dns_error(int code);

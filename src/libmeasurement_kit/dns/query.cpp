@@ -16,12 +16,31 @@ void query(
         Settings settings,
         Var<Reactor> reactor,
         Var<Logger> logger) {
+    NameServers ns;
+    if (settings.count("dns/nameserver") != 0) {
+        ns.push_back(settings.at("dns/nameserver"));
+    }
+    query_with_nameservers(ns, dns_class, dns_type, name, settings,
+                           reactor, logger, cb);
+}
+
+void query_with_nameservers(
+        NameServers name_servers,
+        QueryClass dns_class,
+        QueryType dns_type,
+        std::string name_to_query,
+        Settings settings,
+        Var<Reactor> reactor,
+        Var<Logger> logger,
+        Callback<Error, Var<Message>> cb) {
     std::string engine = settings.get("dns/engine", std::string("system"));
     logger->log(MK_LOG_DEBUG2, "dns: engine: %s", engine.c_str());
     if (engine == "libevent") {
-        libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);
+        libevent::query(name_servers, dns_class, dns_type, name_to_query,
+                        settings, reactor, logger, cb);
     } else if (engine == "system") {
-        system_resolver(dns_class, dns_type, name, cb, settings, reactor, logger);
+        system_resolver(name_servers, dns_class, dns_type, name_to_query,
+                        settings, reactor, logger, cb);
     } else {
         reactor->call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
     }

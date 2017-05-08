@@ -74,16 +74,16 @@ using evaddrinfo_uptr = std::unique_ptr<evutil_addrinfo, evaddrinfo_deleter>;
 template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_sockaddr_add),
         typename evdns_base_uptr = evdns_base_uptr, MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *create_evdns_base(
-        Settings settings, Var<Reactor> reactor = Reactor::global()) {
+        NameServers ns, Settings settings, Var<Reactor> reactor) {
 
     event_base *evb = reactor->get_event_base();
-    const int initialize_nameservers = settings.count("dns/nameserver") ? 0 : 1;
+    const int initialize_nameservers = ns.as_list().size() == 0 ? 1 : 0;
     evdns_base_uptr base(evdns_base_new(evb, initialize_nameservers));
     if (!base) {
         throw std::bad_alloc();
     }
 
-    if (!initialize_nameservers) {
+    for (auto name_server : ns.as_list()) {
         // libevent can't handle link-local IPv6 nameserver in
         // evdns_base_nameserver_ip_add, and there is no way to parse alike
         // addresses in platform-independent way, so that's why getaddrinfo().
@@ -98,7 +98,7 @@ static inline evdns_base *create_evdns_base(
         if (settings.count("dns/port")) {
             port = settings["dns/port"];
         }
-        const int eaierr = evutil_getaddrinfo(settings["dns/nameserver"].c_str(), port.c_str(), &hints, &res);
+        const int eaierr = evutil_getaddrinfo(name_server.c_str(), port.c_str(), &hints, &res);
         evaddrinfo_uptr ai(res);
         if (eaierr) {
             throw std::runtime_error(std::string("Cannot parse server address: ") + evutil_gai_strerror(eaierr));
@@ -251,16 +251,16 @@ static inline void dns_callback(int code, char type, int count, int ttl,
 template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
         MK_MOCK(evdns_base_resolve_ipv6), MK_MOCK(evdns_base_resolve_reverse),
         MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
-void query_impl(QueryClass dns_class, QueryType dns_type, std::string name,
-        Callback<Error, Var<Message>> cb, Settings settings,
-        Var<Reactor> reactor, Var<Logger> logger) {
+void query_impl(NameServers ns, QueryClass dns_class, QueryType dns_type,
+        std::string name, Settings settings, Var<Reactor> reactor,
+        Var<Logger> logger, Callback<Error, Var<Message>> cb) {
 
     Var<Message> message(new Message);
     Query query;
     evdns_base *base;
 
     try {
-        base = create_evdns_base(settings, reactor);
+        base = create_evdns_base(ns, settings, reactor);
     } catch (std::runtime_error &) {
         cb(GenericError(), nullptr); // TODO: refine error thrown here
         return;
