@@ -2,12 +2,13 @@ machine:
   services:
     - docker
 
-#general:
-#  branches:
-#    ignore:
-#      - /^doc\/.*$/
+general:
+  branches:
+    only:
+      - master
+      - stable
+      - oldstable
 
 test:
   override:
-    - ./build/docker/valgrind-clang
-    - if test -f ./test-suite.log; then cat ./test-suite.log; fi
+    - ./build/ci/circle valgrind-clang

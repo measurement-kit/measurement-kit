@@ -1,6 +1,6 @@
 pkg_name=http-parser
 pkg_repository=https://github.com/nodejs/http-parser.git
-pkg_tag=v2.7.1
+pkg_branch_or_tag=v2.7.1
 pkg_steps=install
 
 pkg_install() {

@@ -1,14 +1,25 @@
 language: cpp
 
 script:
-    - ./build/travis
+    - ./build/ci/travis
 
 matrix:
   include:
 
     - sudo: required
-      env: DOCKER_IMAGE=ubuntu:yakkety DOCKER_SPEC=coveralls
-           make_flags="-j3"
+      env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
+           DOCKER_BRANCHES_ONLY="master stable oldstable"
+      services:
+        - docker
+
+    - sudo: required
+      env: DOCKER_SPEC=valgrind-gcc pkg_make_flags="V=0 -j3"
+           DOCKER_BRANCHES_ONLY="master stable oldstable"
+      services:
+        - docker
+
+    - sudo: required
+      env: DOCKER_SPEC=coveralls pkg_make_flags="V=0 -j3"
       services:
         - docker
 

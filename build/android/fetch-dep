@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+ROOTDIR=$(cd $(dirname $0) && pwd -P)
+export pkg_prefix=$ROOTDIR
+$ROOTDIR/../fetch-dep "$@"
