@@ -5,6 +5,11 @@ script:
 
 matrix:
   include:
+    - sudo: required
+      env: DOCKER=ubuntu:yakkety SPEC=valgrind-gcc
+           BRANCHES_ONLY=$TRAVIS_BRANCH
+      services:
+        - docker
 
     - sudo: required
       env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
@@ -23,14 +28,8 @@ matrix:
       services:
         - docker
 
-    - sudo: false
-      compiler: gcc-6
-      env: CXX_NAME=g++-6 CC_NAME=gcc-6 VALGRIND=-valgrind
-      addons:
-        apt:
-          packages:
-            - g++-6
-            - gcc-6
-            - valgrind
-          sources:
-            - ubuntu-toolchain-r-test
+    - sudo: required
+      env: DOCKER=ubuntu:yakkety SPEC=valgrind-clang
+           BRANCHES_ONLY="master stable"
+      services:
+        - docker
