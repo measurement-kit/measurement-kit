@@ -505,7 +505,7 @@ TEST_CASE("http::request() works as expected using httpo URLs") {
                     };
                     check(body["default"]["collector"]);
                     check(body["dns"]["collector"]);
-                    REQUIRE(body["dns"]["address"] == "213.138.109.232:57004");
+                    REQUIRE(body["dns"]["address"] == "37.218.247.110:57004");
                 }
                 break_loop();
             });
@@ -538,6 +538,8 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
     });
 }
 
+// Test commented out because now this site has no valid certificate
+#if 0
 TEST_CASE("http::request() correctly follows redirects") {
     loop_with_initial_event([]() {
         request(
@@ -562,6 +564,7 @@ TEST_CASE("http::request() correctly follows redirects") {
             });
     });
 }
+#endif
 
 TEST_CASE("Headers are preserved across redirects") {
     Var<Reactor> reactor = Reactor::make();
