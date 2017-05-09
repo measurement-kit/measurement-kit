@@ -39,5 +39,12 @@ template <typename T> class Var : public std::shared_ptr<T> {
     // DOING THAT CREATES THE RISK OF OBJECT SLICING.
 };
 
+template <typename T, typename... A> Var<T> make_shared(A &&... a) {
+    // Safe as long as Var does not pose the risk of object slicing. Better to
+    // keep this implementation in this file to reduce risk of refactoring only
+    // Var<> and not updating accordingly this function.
+    return std::make_shared<T>(std::forward<A>(a)...);
+}
+
 } // namespace mk
 #endif
