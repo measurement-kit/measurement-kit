@@ -6,6 +6,7 @@
 
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/pool.hpp>
 #include <measurement_kit/common/socket.hpp>
 #include <measurement_kit/common/var.hpp>
 
@@ -17,7 +18,7 @@ struct event_base;
 
 namespace mk {
 
-class Reactor {
+class Reactor : public Pool {
   public:
     static Var<Reactor> make();
     virtual ~Reactor();
