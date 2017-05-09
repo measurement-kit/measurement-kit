@@ -50,7 +50,7 @@ TEST_CASE("Make sure that IP address scrubbing works") {
                   called += 1;
               }))
             .run();
-        REQUIRE(called == 2);
+        REQUIRE(called == 1);
     };
 
     SECTION("By default IP is redacted") {
