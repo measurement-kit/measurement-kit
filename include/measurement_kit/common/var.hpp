@@ -33,18 +33,15 @@ template <typename T> class Var : public std::shared_ptr<T> {
         return std::dynamic_pointer_cast<R>(*this);
     }
 
+    template <typename... A> static Var<T> make(A &&... a) {
+        return std::make_shared<T>(std::forward<A>(a)...);
+    }
+
   protected:
   private:
     // NO ATTRIBUTES HERE BY DESIGN. DO NOT ADD ATTRIBUTES HERE BECAUSE
     // DOING THAT CREATES THE RISK OF OBJECT SLICING.
 };
-
-template <typename T, typename... A> Var<T> make_shared(A &&... a) {
-    // Safe as long as Var does not pose the risk of object slicing. Better to
-    // keep this implementation in this file to reduce risk of refactoring only
-    // Var<> and not updating accordingly this function.
-    return std::make_shared<T>(std::forward<A>(a)...);
-}
 
 } // namespace mk
 #endif

@@ -21,6 +21,7 @@ void mk_call_later_cb(evutil_socket_t, short, void *p) {
 void mk_loop_periodic_cb(evutil_socket_t, short, void *ptr) {
     mk::libevent::Poller *poller = static_cast<mk::libevent::Poller *>(ptr);
     poller->handle_periodic_();
+    poller->gc();
 }
 
 void mk_pollfd_cb(evutil_socket_t, short evflags, void *p) {

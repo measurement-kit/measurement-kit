@@ -8,18 +8,11 @@ namespace mk {
 
 Pool::Pool() {}
 
-void Pool::query() {
-    mk::warn("=== BEGIN POOL RESOURCES ===");
-    for (auto &pair : resources_) {
-        mk::warn("Resource '%s': use count: %ld", pair.second.c_str(),
-                 pair.first.use_count());
-    }
-    mk::warn("=== END POOL RESOURCES ===");
-}
+void Pool::gc() { dead_.clear(); }
 
 Pool::~Pool() {
-    query();
-    resources_.clear();
+    gc();
+    active_.clear();
 }
 
 } // namespace mk

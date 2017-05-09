@@ -20,7 +20,26 @@ static void print_setting(Settings &settings, std::string key) {
     std::cout << "> " << key << ": " << value << "\n";
 }
 
+class Foo {
+  public:
+    int key = 17;
+    bool xx = false;
+    void print() { std::cout << key << " " << xx << "\n"; }
+    Foo(int k, bool x) : key(k), xx(x) {}
+    Foo() {}
+};
+
 int main(int argc, char **argv) {
+    {
+    Var<Reactor> reactor = Reactor::make();
+    Var<Foo> foo = reactor->alloc<Foo>();
+    //reactor->query();
+    foo->print();
+    Var<Foo> bar = reactor->alloc<Foo>(11, true);
+    bar->print();
+    //reactor->query();
+    reactor->free<Foo>(bar);
+    }
 
     int ch;
     Settings settings;

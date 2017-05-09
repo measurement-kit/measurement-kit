@@ -7,7 +7,7 @@
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/var.hpp>
 
-#include <map>
+#include <set>
 
 namespace mk {
 
@@ -16,17 +16,28 @@ class Pool {
     Pool();
     ~Pool();
 
-    template <typename T, typename... A>
-    Var<T> alloc(std::string s, A &&... a) {
-        Var<T> p = mk::make_shared<T>(std::forward<A>(a)...);
-        resources_[p] = s;
+    template <typename T, typename... A> Var<T> alloc(A &&... a) {
+        Var<T> p = Var<T>::make(std::forward<A>(a)...);
+        active_.insert(p);
         return p;
     }
 
-    void query();
+    template <typename T> void free(Var<T> p) {
+        if (dead_.count(p) != 0) {
+            throw std::runtime_error("Already dead");
+        }
+        if (active_.count(p) == 0) {
+            throw std::runtime_error("Not found");
+        }
+        dead_.insert(p);
+        active_.erase(p);
+    }
+
+    void gc();
 
   private:
-    std::map<Var<void>, std::string> resources_;
+    std::set<Var<void>> active_;
+    std::set<Var<void>> dead_;
 };
 
 } // namespace mk
