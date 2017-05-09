@@ -1,3 +1,13 @@
+# MeasurementKit 0.6.0 [2017-05-09]
+
+- Fix iOS build (#1206)
+- cocoapod: if possible download precompiled binary (#1207)
+- Backport command line improvements from master (#1211)
+- Be more precise with version numbers (#1212)
+- Sync stable with oldstable branches (#1214, #1221)
+- Update to catch v1.9.3 and adjust regress tests (#1215)
+- Backport regress test fix from master (see #1222)
+
 # MeasurementKit 0.6.0-beta [2017-05-02]
 
 - Backport build system changes from master
