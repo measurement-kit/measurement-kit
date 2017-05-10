@@ -26,8 +26,13 @@ MK_DEFINE_ERR(MK_ERR_OONI(13), CannotGetResourcesVersionError, "cannot_get_resou
 MK_DEFINE_ERR(MK_ERR_OONI(14), CannotGetResourcesManifestError, "cannot_get_resources_manifest")
 MK_DEFINE_ERR(MK_ERR_OONI(15), CannotGetResourceError, "cannot_get_resource")
 MK_DEFINE_ERR(MK_ERR_OONI(16), ResourceIntegrityError, "resource_checksum_failed")
-MK_DEFINE_ERR(MK_ERR_OONI(17), HttpRequestError, "http_request_failed")
-MK_DEFINE_ERR(MK_ERR_OONI(18), RegexSearchError, "regex_search_failed")
+MK_DEFINE_ERR(MK_ERR_OONI(17), BouncerCollectorNotFoundError, "bouncer_missing_collector")
+MK_DEFINE_ERR(MK_ERR_OONI(18), BouncerTestHelperNotFoundError, "bouncer_missing_test_helper")
+MK_DEFINE_ERR(MK_ERR_OONI(19), BouncerInvalidRequestError, "bouncer_invalid_request")
+MK_DEFINE_ERR(MK_ERR_OONI(20), BouncerGenericError, "bouncer_generic_error")
+MK_DEFINE_ERR(MK_ERR_OONI(21), BouncerValueNotFoundError, "bouncer_value_not_found")
+MK_DEFINE_ERR(MK_ERR_OONI(22), HttpRequestError, "http_request_error")
+MK_DEFINE_ERR(MK_ERR_OONI(23), RegexSearchError, "regex_search_error")
 
 } // namespace mk
 } // namespace ooni

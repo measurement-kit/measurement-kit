@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/dns/system_resolver.hpp"
+#include "../src/libmeasurement_kit/dns/system_resolver_impl.hpp"
 
 using namespace mk;
 using namespace mk::dns;
@@ -21,7 +21,7 @@ static int null_getaddrinfo(const char *, const char *, const struct addrinfo *,
 
 TEST_CASE("the system resolver can handle a getaddrinfo error") {
     loop_with_initial_event([]() {
-        system_resolver<null_getaddrinfo>(
+        system_resolver_impl<null_getaddrinfo>(
             "IN", "A", "www.neubot.org",
             [](Error e, Var<Message>) {
                 REQUIRE(e == NonRecoverableFailureError());
@@ -33,7 +33,7 @@ TEST_CASE("the system resolver can handle a getaddrinfo error") {
 
 TEST_CASE("the system resolver can handle a inet_ntop error") {
     loop_with_initial_event([]() {
-        system_resolver<getaddrinfo, null_inet_ntop>(
+        system_resolver_impl<getaddrinfo, null_inet_ntop>(
             "IN", "A", "neubot.org",
             [](Error e, Var<Message>) {
                 REQUIRE(e == InetNtopFailureError());

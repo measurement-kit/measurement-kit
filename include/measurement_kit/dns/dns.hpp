@@ -147,6 +147,25 @@ void query(
         Var<Logger> logger = Logger::global()
 );
 
+struct ResolveHostnameResult {
+    bool inet_pton_ipv4 = false;
+    bool inet_pton_ipv6 = false;
+
+    Error ipv4_err;
+    dns::Message ipv4_reply;
+    Error ipv6_err;
+    dns::Message ipv6_reply;
+
+    std::vector<std::string> addresses;
+};
+
+void resolve_hostname(std::string hostname,
+        Callback<ResolveHostnameResult> cb,
+        Settings settings = {},
+        Var<Reactor> reactor = Reactor::global(),
+        Var<Logger> logger = Logger::global());
+
+
 } // namespace dns
 } // namespace mk
 #endif

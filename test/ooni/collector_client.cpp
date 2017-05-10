@@ -47,16 +47,13 @@ class MockConnection : public Emitter, public NonCopyable, public NonMovable {
   private:
     bool isclosed = false;
     Callback<> close_cb;
-    Var<Reactor> reactor = Reactor::global();
     Var<Transport> self;
 
-    MockConnection() {}
+    MockConnection() : Emitter(Reactor::global(), Logger::global()) {}
 };
 
 void MockConnection::close(Callback<> cb) {
-    if (isclosed) {
-        throw std::runtime_error("already closed");
-    }
+    REQUIRE(!isclosed);
     isclosed = true;
     close_cb = cb;
     reactor->call_soon([=]() {

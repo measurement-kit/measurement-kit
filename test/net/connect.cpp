@@ -97,8 +97,8 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
 }
 
 static void success(std::string, int, Callback<Error, Var<Transport>> cb,
-                    Settings, Var<Reactor>, Var<Logger> logger) {
-    cb(NoError(), Var<Transport>(new Emitter(logger)));
+                    Settings, Var<Reactor> r, Var<Logger> logger) {
+    cb(NoError(), Var<Transport>(new Emitter(r, logger)));
 }
 
 TEST_CASE("net::connect_many() correctly handles net::connect() success") {
@@ -190,6 +190,9 @@ TEST_CASE("connect_base works with ipv6") {
     reactor->loop_with_initial_event([=]() {
         connect_base("2a00:1450:4001:801::1004", 80,
                      [=](Error err, bufferevent *bev, double) {
+                         /* Coverage note: depending on whether IPv6
+                            works or not here we're going to see either
+                            branch covered. */
                          if (err) {
                              REQUIRE(err);
                              REQUIRE(bev == nullptr);
@@ -263,62 +266,6 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
     });
 }
 
-TEST_CASE("resolve_hostname works with IPv4 address") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
-        std::string hostname = "130.192.16.172";
-        resolve_hostname(hostname, [=](ResolveHostnameResult r) {
-            REQUIRE(r.inet_pton_ipv4);
-            REQUIRE(r.addresses.size() == 1);
-            REQUIRE(r.addresses[0] == hostname);
-            reactor->stop();
-        }, {}, reactor);
-    });
-}
-
-TEST_CASE("resolve_hostname works with IPv6 address") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
-        std::string hostname = "2a00:1450:400d:807::200e";
-        resolve_hostname(hostname, [=](ResolveHostnameResult r) {
-            REQUIRE(r.inet_pton_ipv6);
-            REQUIRE(r.addresses.size() == 1);
-            REQUIRE(r.addresses[0] == hostname);
-            reactor->stop();
-        }, {}, reactor);
-    });
-}
-
-TEST_CASE("resolve_hostname works with domain") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
-        resolve_hostname("google.com", [=](ResolveHostnameResult r) {
-            REQUIRE(not r.inet_pton_ipv4);
-            REQUIRE(not r.inet_pton_ipv6);
-            REQUIRE(not r.ipv4_err);
-            REQUIRE(not r.ipv6_err);
-            // At least one IPv4 and one IPv6 addresses
-            REQUIRE(r.addresses.size() > 1);
-            reactor->stop();
-        }, {}, reactor);
-    });
-}
-
-TEST_CASE("stress resolve_hostname with invalid address and domain") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
-        // Pass input that is neither invalid IPvX nor valid domain
-        resolve_hostname("192.1688.antani", [=](ResolveHostnameResult r) {
-            REQUIRE(not r.inet_pton_ipv4);
-            REQUIRE(not r.inet_pton_ipv6);
-            REQUIRE(r.ipv4_err);
-            REQUIRE(r.ipv6_err);
-            REQUIRE(r.addresses.size() == 0);
-            reactor->stop();
-        }, {}, reactor);
-    });
-}
-
 TEST_CASE("connect() works with valid IPv4") {
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
@@ -353,6 +300,7 @@ TEST_CASE("connect() fails when setting an invalid dns") {
                       },
                       {{"dns/nameserver", "8.8.8.1"},
                        {"dns/timeout", 0.001},
+                       {"dns/engine", "libevent"},
                        {"dns/attempts", 1}},
                       reactor);
     });

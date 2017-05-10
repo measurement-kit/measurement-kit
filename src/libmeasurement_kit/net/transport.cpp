@@ -11,6 +11,13 @@
 namespace mk {
 namespace net {
 
+TransportEmitter::~TransportEmitter() {}
+TransportRecorder::~TransportRecorder() {}
+TransportWriter::~TransportWriter() {}
+TransportSocks5::~TransportSocks5() {}
+TransportPollable::~TransportPollable() {}
+Transport::~Transport() {}
+
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
     txp->on_flush([=]() {
         txp->on_flush(nullptr);
