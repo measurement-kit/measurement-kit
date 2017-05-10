@@ -66,6 +66,11 @@ CPPFLAGS="-I \$(top_srcdir)/include $CPPFLAGS"
 CFLAGS="-Wall -Wextra -pedantic $CFLAGS"
 CXXFLAGS="-Wall -Wextra -pedantic $CXXFLAGS"
 
+# Force compiling the http_parser in non-strict mode. This allows us to test
+# partially broken sites like mail.voila.fr that send spaces between the header
+# key and the separator (i.e. ':').
+CPPFLAGS="-DHTTP_PARSER_STRICT=0 $CPPFLAGS"
+
 MK_AM_REQUIRE_C99
 MK_AM_REQUIRE_CXX11
 MK_AM_REQUIRE_CXX11_LIBCXX
