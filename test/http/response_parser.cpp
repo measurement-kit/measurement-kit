@@ -31,7 +31,7 @@ TEST_CASE("ResponseParserNg deals with an UPGRADE request") {
     std::string data;
 
     data = "";
-    data += "HTTP/1.1 200 Ok\r\n";
+    data += "HTTP/1.1 101 Switching Protocols\r\n";
     data += "Content-Type: text/plain\r\n";
     data += "Connection: upgrade\r\n";
     data += "Upgrade: websockets\r\n";
