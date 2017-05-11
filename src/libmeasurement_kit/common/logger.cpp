@@ -45,7 +45,15 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
     // which allows the compiler to promote the smaller of res and
     // sizeof (buffer) to the correct size if needed.
     if (res < 0 || (unsigned int)res >= sizeof(buffer_)) {
-        return;
+        res = snprintf(buffer_, sizeof(buffer_),
+                       "logger: cannot format message with level %d "
+                       "and format string '%s' (vsnprintf() returned: %d)",
+                       level, fmt, res);
+        if (res < 0 || (unsigned int)res >= sizeof(buffer_)) {
+            return;
+        }
+        level = MK_LOG_WARNING;
+        // FALLTHROUGH
     }
     // Since v0.4 we dispatch the MK_LOG_EVENT event to the proper handler
     // if set, otherwise we fallthrough passing it to consumer_.
