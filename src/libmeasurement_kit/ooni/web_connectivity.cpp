@@ -569,6 +569,10 @@ void web_connectivity(std::string input, Settings options,
 
     std::string hostname = url->address;
     std::string nameserver = options["nameserver"];
+    if (nameserver != "") {
+        logger->warn("web_connectivity: you're using the deprecated "
+                     "'nameserver' option");
+    }
 
     logger->info("web_connectivity: starting dns_query for %s",
                  hostname.c_str());
