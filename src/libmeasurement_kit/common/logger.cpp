@@ -41,10 +41,11 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
     }
     std::lock_guard<std::mutex> lock(mutex_);
     int res = vsnprintf(buffer_, sizeof(buffer_), fmt, ap);
+
     // Once we know that res is non-negative we make it unsigned,
     // which allows the compiler to promote the smaller of res and
     // sizeof (buffer) to the correct size if needed.
-    if (res < 0 || (unsigned int)res >= sizeof(buffer_)) {
+    if (res < 0) {
         res = snprintf(buffer_, sizeof(buffer_),
                        "logger: cannot format message with level %d "
                        "and format string '%s' (vsnprintf() returned: %d)",
@@ -53,8 +54,18 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
             return;
         }
         level = MK_LOG_WARNING;
-        // FALLTHROUGH
+
+    } else if ((unsigned int)res >= sizeof(buffer_)) {
+        static_assert(sizeof(buffer_) >= 4, "buffer_ is too short");
+        buffer_[sizeof (buffer_) - 1] = '\0';
+        buffer_[sizeof (buffer_) - 2] = '.';
+        buffer_[sizeof (buffer_) - 3] = '.';
+        buffer_[sizeof (buffer_) - 4] = '.';
+
+    } else {
+        /* NOTHING */ ;
     }
+
     // Since v0.4 we dispatch the MK_LOG_EVENT event to the proper handler
     // if set, otherwise we fallthrough passing it to consumer_.
     if (event_handler_ and (level & MK_LOG_EVENT) != 0) {
@@ -65,6 +76,7 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
         }
         return;
     }
+
     if (consumer_) {
         try {
             consumer_(level, buffer_);
@@ -72,6 +84,7 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
             /* Suppress */ ;
         }
     }
+
     if (ofile_) {
         *ofile_ << buffer_ << "\n";
         // TODO: suppose here write fails... what do we want to do?
