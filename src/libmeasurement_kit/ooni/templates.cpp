@@ -35,6 +35,9 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
         options["dns/nameserver"] = resolver_hostname;
         options["dns/port"] = resolver_port;
         options["dns/attempts"] = 1;
+
+    } else if (nameserver != "") {
+        logger->warn("Explicit nameserver ignored with 'system' DNS engine");
     }
 
     dns::query(query_class, query_type, query_name,
