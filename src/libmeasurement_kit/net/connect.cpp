@@ -296,7 +296,7 @@ void connect(std::string address, int port,
                 if (settings.find("net/ca_bundle_path") != settings.end()) {
                     cbp = settings.at("net/ca_bundle_path");
                 }
-                logger->debug("ca_bundle_path: %s", cbp.c_str());
+                logger->debug("ca_bundle_path: '%s'", cbp.c_str());
                 ErrorOr<Var<SslContext>> ssl_context = SslContext::make(cbp);
                 if (!ssl_context) {
                     Error err = ssl_context.as_error();
