@@ -419,6 +419,12 @@ static void experiment_http_request(
     std::string body;
     options["http/url"] = url;
 
+    /*
+     * Only for web-connectivity, we want to allow any SSL protocol such
+     * that we can scan a more wide range of servers.
+     */
+    options["net/allow_ssl23"] = true;
+
     logger->debug("Requesting url %s", url.c_str());
     templates::http_request(entry, options, headers, body,
                             [=](Error err, Var<http::Response> response) {
