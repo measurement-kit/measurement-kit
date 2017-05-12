@@ -51,12 +51,15 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
                        "and format string '%s' (vsnprintf() returned: %d)",
                        level, fmt, res);
         if (res < 0 || (unsigned int)res >= sizeof(buffer_)) {
-            return;
+            static const char eb[] = "logger: cannot format message";
+            static_assert(sizeof (buffer_) >= sizeof (eb), "buffer_ too short");
+            memcpy(buffer_, eb, sizeof (eb));
+            // FALLTHROUGH
         }
         level = MK_LOG_WARNING;
 
     } else if ((unsigned int)res >= sizeof(buffer_)) {
-        static_assert(sizeof(buffer_) >= 4, "buffer_ is too short");
+        static_assert(sizeof(buffer_) >= 4, "buffer_ too short");
         buffer_[sizeof (buffer_) - 1] = '\0';
         buffer_[sizeof (buffer_) - 2] = '.';
         buffer_[sizeof (buffer_) - 3] = '.';
