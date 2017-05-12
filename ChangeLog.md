@@ -1,3 +1,9 @@
+# MeasurementKit 0.6.1 [2017-05-12]
+
+- Use also SSLv3 and SSLv3 with `web_connectivity` (#1228)
+- Cherry pick nodejs/http-parser#364 (#1227)
+- Reliability fixes for web connectivity (#1230)
+
 # MeasurementKit 0.6.0 [2017-05-09]
 
 - Fix iOS build (#1206)
