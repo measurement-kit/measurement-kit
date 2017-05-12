@@ -19,24 +19,32 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                std::string nameserver, Callback<Error, Var<dns::Message>> cb,
                Settings options, Var<Reactor> reactor, Var<Logger> logger) {
 
-    ErrorOr<net::Endpoint> maybe_epnt = net::parse_endpoint(nameserver, 53);
-    if (!maybe_epnt) {
-        reactor->call_soon([=]() { cb(maybe_epnt.as_error(), nullptr); });
-        return;
+    std::string engine = options.get("dns/engine", std::string{"system"});
+    bool not_system_engine = engine != "system";
+    uint16_t resolver_port = 0;
+    std::string resolver_hostname;
+
+    if (not_system_engine) {
+        ErrorOr<net::Endpoint> maybe_epnt = net::parse_endpoint(nameserver, 53);
+        if (!maybe_epnt) {
+            reactor->call_soon([=]() { cb(maybe_epnt.as_error(), nullptr); });
+            return;
+        }
+        resolver_port = maybe_epnt->port;
+        resolver_hostname = maybe_epnt->hostname;
+        options["dns/nameserver"] = resolver_hostname;
+        options["dns/port"] = resolver_port;
+        options["dns/attempts"] = 1;
+
+    } else if (nameserver != "") {
+        logger->warn("Explicit nameserver ignored with 'system' DNS engine");
     }
-
-    uint16_t resolver_port = maybe_epnt->port;
-    std::string resolver_hostname = maybe_epnt->hostname;
-
-    options["dns/nameserver"] = resolver_hostname;
-    options["dns/port"] = resolver_port;
-    options["dns/engine"] = "libevent"; /* Ensure we use low level engine */
-    options["dns/attempts"] = 1;
 
     dns::query(query_class, query_type, query_name,
                [=](Error error, Var<dns::Message> message) {
                    logger->debug("dns_test: got response!");
                    Entry query_entry;
+                   query_entry["engine"] = engine;
                    query_entry["resolver_hostname"] = resolver_hostname;
                    query_entry["resolver_port"] = resolver_port;
                    query_entry["failure"] = nullptr;
