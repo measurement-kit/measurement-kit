@@ -1,3 +1,7 @@
+# MeasurementKit 0.6.2 [2017-05-12]
+
+- By default use the system engine also in `stable`
+
 # MeasurementKit 0.6.1 [2017-05-12]
 
 - Use also SSLv3 and SSLv3 with `web_connectivity` (#1228)
