@@ -419,6 +419,12 @@ static void experiment_http_request(
     std::string body;
     options["http/url"] = url;
 
+    /*
+     * Only for web-connectivity, we want to allow any SSL protocol such
+     * that we can scan a more wide range of servers.
+     */
+    options["net/allow_ssl23"] = true;
+
     logger->debug("Requesting url %s", url.c_str());
     templates::http_request(entry, options, headers, body,
                             [=](Error err, Var<http::Response> response) {
@@ -505,6 +511,7 @@ static void experiment_dns_query(
 
     if (net::is_ip_addr(hostname)) {
         // Don't perform DNS resolutions if it's an IP address
+        // XXX This means we are not filling the entry
         std::vector<std::string> addresses;
         addresses.push_back(hostname);
         callback(NoError(), addresses);
@@ -514,8 +521,6 @@ static void experiment_dns_query(
     templates::dns_query(
         entry, "A", "IN", hostname, nameserver,
         [=](Error err, Var<dns::Message> message) {
-            logger->debug(
-                "web_connectivity: experiment_dns_query got response");
             std::vector<std::string> addresses;
             if (err) {
                 callback(err, addresses);
@@ -526,6 +531,8 @@ static void experiment_dns_query(
                     addresses.push_back(answer.ipv4);
                 } else if (answer.hostname != "") {
                     addresses.push_back(answer.ipv4);
+                } else {
+                    /* Not yet implemented */ ;
                 }
             }
             callback(NoError(), addresses);
@@ -568,6 +575,10 @@ void web_connectivity(std::string input, Settings options,
 
     std::string hostname = url->address;
     std::string nameserver = options["nameserver"];
+    if (nameserver != "") {
+        logger->warn("web_connectivity: you're using the deprecated "
+                     "'nameserver' option");
+    }
 
     logger->info("web_connectivity: starting dns_query for %s",
                  hostname.c_str());
@@ -579,10 +590,9 @@ void web_connectivity(std::string input, Settings options,
         [=](Error err, std::vector<std::string> addresses) {
 
             if (err) {
-                logger->debug("web_connectivity: dns-query error: %s",
-                              err.explain().c_str());
+                logger->warn("web_connectivity: dns-query error: %s",
+                             err.explain().c_str());
             }
-
             logger->info("web_connectivity: starting tcp_connect");
 
             SocketList socket_list;
@@ -595,8 +605,8 @@ void web_connectivity(std::string input, Settings options,
                 [=](Error err) {
 
                     if (err) {
-                        logger->debug("web_connectivity: tcp-connect error: %s",
-                                      err.explain().c_str());
+                        logger->warn("web_connectivity: tcp-connect error: %s",
+                                     err.explain().c_str());
                     }
 
                     logger->info(
@@ -608,7 +618,7 @@ void web_connectivity(std::string input, Settings options,
                             Var<http::Response> response) {
 
                             if (err) {
-                                logger->debug(
+                                logger->warn(
                                     "web_connectivity: http-request error: %s",
                                     err.explain().c_str());
                             }
@@ -621,10 +631,10 @@ void web_connectivity(std::string input, Settings options,
                                 [=](Error err) {
 
                                     if (err) {
-                                        logger->debug("web_connectivity: "
-                                                      "control-request error: "
-                                                      "%s",
-                                                      err.explain().c_str());
+                                        logger->warn("web_connectivity: "
+                                                     "control-request error: "
+                                                     "%s",
+                                                     err.explain().c_str());
                                     }
 
                                     logger->info("web_connectivity: comparing "

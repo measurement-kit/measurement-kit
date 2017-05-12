@@ -296,7 +296,7 @@ void connect(std::string address, int port,
                 if (settings.find("net/ca_bundle_path") != settings.end()) {
                     cbp = settings.at("net/ca_bundle_path");
                 }
-                logger->debug("ca_bundle_path: %s", cbp.c_str());
+                logger->debug("ca_bundle_path: '%s'", cbp.c_str());
                 ErrorOr<Var<SslContext>> ssl_context = SslContext::make(cbp);
                 if (!ssl_context) {
                     Error err = ssl_context.as_error();
@@ -312,6 +312,19 @@ void connect(std::string address, int port,
                     bufferevent_free(r->connected_bev);
                     callback(err, nullptr);
                     return;
+                }
+                ErrorOr<bool> allow_ssl23 =
+                    settings.get_noexcept("net/allow_ssl23", false);
+                if (!allow_ssl23) {
+                    Error err = ValueError();
+                    err.context = r;
+                    bufferevent_free(r->connected_bev);
+                    callback(err, nullptr);
+                    return;
+                }
+                if (*allow_ssl23 == true) {
+                    logger->debug("Re-enabling SSLv2 and SSLv3");
+                    SSL_clear_options(*cssl, SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3);
                 }
                 connect_ssl(r->connected_bev, *cssl, address,
                             [r, callback, timeout, ssl_context, reactor,
