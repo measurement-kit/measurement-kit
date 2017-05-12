@@ -1,3 +1,9 @@
+# MeasurementKit 0.6.3 [2017-05-12]
+
+- test: use DNS libevent engine where needed
+
+- Add script to create iOS binaries archive
+
 # MeasurementKit 0.6.2 [2017-05-12]
 
 - By default use the system engine also in `stable`
