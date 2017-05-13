@@ -78,13 +78,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     logger->debug("net_test: running with input %s", next_input.c_str());
     main(next_input, options, [=](Var<report::Entry> test_keys) {
         report::Entry entry;
-        // XXX simple way to override the default entry["input"] behavior
-        if (test_keys->count("input_") != 0) {
-            entry["input"] = (*test_keys)["input_"];
-            test_keys->erase("input_");
-        } else {
-            entry["input"] = next_input;
-        }
+        entry["input"] = next_input;
         // Make sure the input is `null` rather than empty string
         if (entry["input"] == "") {
             entry["input"] = nullptr;
