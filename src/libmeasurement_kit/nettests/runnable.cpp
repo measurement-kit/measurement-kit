@@ -102,6 +102,14 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         // Until we have support for it, just put `null`
         entry["probe_city"] = nullptr;
 
+        // Add test helpers
+        entry["test_helpers"] = Entry::object();
+        for (auto &name : test_helpers_names) {
+            if (options.count(name) != 0) {
+                entry["test_helpers"][name] = options[name];
+            }
+        }
+
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
