@@ -85,6 +85,10 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         } else {
             entry["input"] = next_input;
         }
+        // Make sure the input is `null` rather than empty string
+        if (entry["input"] == "") {
+            entry["input"] = nullptr;
+        }
         entry["test_keys"] = *test_keys;
         entry["test_keys"]["client_resolver"] = resolver_ip;
         entry["measurement_start_time"] =
