@@ -96,6 +96,12 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         entry["test_runtime"] = mk::time_now() - start_time;
         entry["id"] = mk::sole::uuid4().str();
 
+        // Until we have support for passing options, leave it empty
+        entry["options"] = Entry::array();
+
+        // Until we have support for it, just put `null`
+        entry["probe_city"] = nullptr;
+
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
