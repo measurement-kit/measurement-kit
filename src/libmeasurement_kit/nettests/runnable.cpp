@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "../common/utils.hpp"
+#include "../ext/sole.hpp"
 #include "../ooni/utils.hpp"
 #include "../nettests/utils.hpp"
 
@@ -89,6 +90,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         entry["measurement_start_time"] =
             *mk::timestamp(&measurement_start_time);
         entry["test_runtime"] = mk::time_now() - start_time;
+        entry["id"] = mk::sole::uuid4().str();
 
         logger->debug("net_test: tearing down");
         teardown(next_input);
