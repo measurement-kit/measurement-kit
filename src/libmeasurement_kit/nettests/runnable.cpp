@@ -78,7 +78,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     main(next_input, options, [=](Var<report::Entry> test_keys) {
         report::Entry entry;
         // XXX simple way to override the default entry["input"] behavior
-        if (!(*test_keys)["input_"].is_null()) {
+        if (test_keys->count("input_") != 0) {
             entry["input"] = (*test_keys)["input_"];
             test_keys->erase("input_");
         } else {
