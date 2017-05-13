@@ -166,11 +166,19 @@ void connect_logic(std::string hostname, int port,
                              [=](std::vector<Error> e, bufferevent *b) {
                                  result->connect_result = e;
                                  result->connected_bev = b;
-                                 Error connect_error = ConnectFailedError();
-                                 for (auto se: e) {
-                                    connect_error.add_child_error(se);
-                                 }
                                  if (!b) {
+                                     if (e.size() == 1) {
+                                         // Improvement: do not hide the reason
+                                         // why we failed if we have just one
+                                         // connect() attempt in the vector
+                                         cb(e[0], result);
+                                         return;
+                                     }
+                                     // Otherwise, report them all
+                                     Error connect_error = ConnectFailedError();
+                                     for (auto se: e) {
+                                         connect_error.add_child_error(se);
+                                     }
                                      cb(connect_error, result);
                                      return;
                                  }
