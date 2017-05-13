@@ -110,6 +110,9 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
             }
         }
 
+        // Add empty input hashes
+        entry["input_hashes"] = Entry::array();
+
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
