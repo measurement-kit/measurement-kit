@@ -82,6 +82,12 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
     (*entry)["agent"] = "agent";
     (*entry)["socksproxy"] = nullptr;
 
+    // Include the name of the agent, like ooni-probe does
+    ErrorOr<int> max_redirects = settings.get("http/max_redirects", 0);
+    if (!!max_redirects && *max_redirects > 0) {
+        (*entry)["agent"] = "redirect";
+    }
+
     if (settings.find("http/method") == settings.end()) {
         settings["http/method"] = "GET";
     }
