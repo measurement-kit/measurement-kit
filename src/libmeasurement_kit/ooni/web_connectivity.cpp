@@ -50,6 +50,7 @@ static void compare_http_requests(Var<Entry> entry,
     } else {
         (*entry)["body_length_match"] = false;
     }
+    (*entry)["body_proportion"] = body_proportion;
 
     // Verify that the status codes match
     logger->debug("web_connectivity: comparing status codes");
@@ -551,6 +552,7 @@ void web_connectivity(std::string input, Settings options,
 
     (*entry)["dns_consistency"] = nullptr;
     (*entry)["body_length_match"] = nullptr;
+    (*entry)["body_proportion"] = 0.0;
     (*entry)["headers_match"] = nullptr;
     (*entry)["status_code_match"] = nullptr;
     (*entry)["title_match"] = nullptr;
