@@ -1,3 +1,24 @@
+# MeasurementKit 0.6.4 [2017-05-14]
+
+- Add script to pretty print a report
+- `dns_injection` MUST use libevent engine
+- runable.cpp: don't create a null `input_` entry
+- `dns_injection`: force timeout to be 3.0 s
+- nettests: add support for UUID4
+- runnable: make sure empty input becomes null entry
+- runnable: add more missing entry fields
+- runnable: start adding support for test-helpers
+- runnable: add empty `input_hashes` entry
+- `http_invalid_request_line`: add backend to result
+- runnable.cpp: remove unneeded `input_` hack
+- `http_invalid_request_line`: better error reporting
+- `multi_ndt`: allow upload during single stream
+- Sync `tcp_connect` with ooni-probe
+- net/connect: make error result more precise
+- ooni/templates: agent consistent w/ ooniprobe
+- `web_connectivity`: add support for backend
+- Further improve `web_connectivity` report
+
 # MeasurementKit 0.6.3 [2017-05-12]
 
 - test: use DNS libevent engine where needed
