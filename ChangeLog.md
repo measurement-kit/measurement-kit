@@ -1,3 +1,11 @@
+# MeasurementKit 0.6.5 [2017-05-14]
+
+- Reveal SSL "dirty shutdown" errors
+- `web_connectivity`: allow dirty SSL shutdown
+- e/h/request.cpp: support custom CA bundle
+- h/request.cpp: remove a lie
+- l/connection.cpp: tweak debug message
+
 # MeasurementKit 0.6.4 [2017-05-14]
 
 - Add script to pretty print a report
