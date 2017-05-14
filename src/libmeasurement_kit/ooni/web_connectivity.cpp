@@ -421,10 +421,15 @@ static void experiment_http_request(
     options["http/url"] = url;
 
     /*
-     * Only for web-connectivity, we want to allow any SSL protocol such
-     * that we can scan a more wide range of servers.
+     * Only for web-connectivity:
+     *
+     * - we want to allow any SSL protocol such that we can scan a
+     *   more wide range of servers
+     *
+     * - we allow SSL dirty shutdowns to gather more evidence
      */
     options["net/allow_ssl23"] = true;
+    options["net/ssl_allow_dirty_shutdown"] = true;
 
     logger->debug("Requesting url %s", url.c_str());
     templates::http_request(entry, options, headers, body,

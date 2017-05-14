@@ -51,6 +51,11 @@ modified using the following `settings`:
   libressl default CA from memory (i.e. you don't need anymore to include a
   CA file when setting up an application using measurement-kit).
 
+- *"net/ssl_allow_dirty_shutdown"* (bool): if true, this setting treats EOF
+  received on the socket without receiving a clean SSL shutdown message as a
+  normal EOF. If false, this situation is reported as `SslDirtyShutdownError`.
+  By default, this flag is false.
+
 - *"net/dumb_transport"*: if this key is present a dumb transport is created (i.e. a
   transport that is not connected to any socket).
 

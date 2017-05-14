@@ -331,16 +331,31 @@ void connect(std::string address, int port,
                     return;
                 }
                 if (*allow_ssl23 == true) {
-                    logger->debug("Re-enabling SSLv2 and SSLv3");
+                    logger->info("Re-enabling SSLv2 and SSLv3");
                     SSL_clear_options(*cssl, SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3);
                 }
                 connect_ssl(r->connected_bev, *cssl, address,
                             [r, callback, timeout, ssl_context, reactor,
-                             logger](Error err, bufferevent *bev) {
+                             logger, settings](Error err, bufferevent *bev) {
                                 if (err) {
                                     err.context = r;
                                     callback(err, nullptr);
                                     return;
+                                }
+                                ErrorOr<bool> allow_dirty_shutdown =
+                                    settings.get_noexcept(
+                                        "net/ssl_allow_dirty_shutdown", false);
+                                if (!allow_dirty_shutdown) {
+                                    Error err = allow_dirty_shutdown.as_error();
+                                    err.context = r;
+                                    bufferevent_free(bev);
+                                    callback(err, nullptr);
+                                    return;
+                                }
+                                if (*allow_dirty_shutdown == true) {
+                                    bufferevent_openssl_set_allow_dirty_shutdown(
+                                        bev, 1);
+                                    logger->info("Allowing dirty SSL shutdown");
                                 }
                                 Var<Transport> txp =
                                     libevent::Connection::make(
