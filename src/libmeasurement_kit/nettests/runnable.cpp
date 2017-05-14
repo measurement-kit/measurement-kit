@@ -30,6 +30,7 @@ void Runnable::teardown(std::string) {}
 void Runnable::main(std::string, Settings, Callback<Var<report::Entry>> cb) {
     reactor->call_soon([=]() { cb(Var<report::Entry>{new report::Entry}); });
 }
+void Runnable::fixup_entry(report::Entry &) {}
 
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
@@ -111,6 +112,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         teardown(next_input);
 
         report.fill_entry(entry);
+        fixup_entry(entry); // Let drivers possibly fix-up the entry
         if (entry_cb) {
             try {
                 entry_cb(entry.dump(4));

@@ -565,10 +565,17 @@ void web_connectivity(std::string input, Settings options,
     (*entry)["tcp_connect"] = Entry::array();
     (*entry)["control"] = Entry({});
 
+    if (!mk::startswith(input, "http://") &&
+        !mk::startswith(input, "https://")) {
+        // Similarly to ooni-probe also accept a list of endpoints
+        input = "http://" + input;
+    }
+
     ErrorOr<http::Url> url = mk::http::parse_url_noexcept(input);
 
     if (!url) {
-        logger->debug("Invalid test url.");
+        logger->warn("Invalid test url.");
+        (*entry)["failure"] = url.as_error().as_ooni_error();
         callback(entry);
         return;
     }

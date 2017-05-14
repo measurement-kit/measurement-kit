@@ -45,6 +45,7 @@ class Runnable : public NonCopyable, public NonMovable {
     virtual void setup(std::string);
     virtual void teardown(std::string);
     virtual void main(std::string, Settings, Callback<Var<report::Entry>>);
+    virtual void fixup_entry(report::Entry &);
 
   private:
     report::Report report;
