@@ -62,7 +62,7 @@ void Connection::handle_write_() {
 
 static std::string map_bufferevent_event(short what) {
     std::stringstream ss;
-    ss << ((what & BEV_EVENT_EOF) ? "O" : "o")
+    ss << ((what & BEV_EVENT_EOF) ? "Z" : "z")
        << ((what & BEV_EVENT_TIMEOUT) ? "T" : "t")
        << ((what & BEV_EVENT_ERROR) ? "F" : "f")
        << ((what & BEV_EVENT_READING) ? "R" : "r")
