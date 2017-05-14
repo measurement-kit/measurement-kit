@@ -281,7 +281,7 @@ Error disable_nagle(socket_t sockfd) {
 
 Error map_errno(int error_code) {
     if (error_code == 0) {
-        return ValueError(); /* We don't expect this to happen */
+        return NoError();
     }
     /*
      * In most Unix systems they are the same error. For the few systems in
