@@ -1,3 +1,12 @@
+# MeasurementKit 0.6.6 [2017-05-15]
+
+- n/connect.cpp: compile with libevent v2.0.x
+- logger: stop using deprecated `MK_LOG_JSON`
+- improve documentation
+- fix t/h/request.cpp regress test
+- e/h/request.cpp: fix usage string
+- `connect_impl`: Fix regression added in 95e834e9e2
+
 # MeasurementKit 0.6.5 [2017-05-14]
 
 - Reveal SSL "dirty shutdown" errors

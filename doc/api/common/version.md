@@ -8,8 +8,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common/version.h>
 
-#define MK_VERSION "0.6.5"
-#define MK_VERSION_FULL "v0.6.5-6-abcdef"
+#define MK_VERSION "0.6.6"
+#define MK_VERSION_FULL "v0.6.6-6-abcdef"
 
 #define MEASUREMENT_KIT_VERSION MK_VERSION /* Backward compat. */
 
