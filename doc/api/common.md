@@ -26,6 +26,8 @@ The `common` module contains contains the following submodules:
 - [mock](common/mock.md): macros to mock implementation and write tests
 - [non_copyable](common/non_copyable.md): non copyable class
 - [non_movable](common/non_movable.md): non movable class
+- [parallel](common/parallel.md): allows to run continuations in parallel
+- [range](common/range.md): generates numbers from zero to N
 - [reactor](common/reactor.md): class for dispatching I/O events and timeouts
 - [settings](common/settings.md): class containing test settings
 - [settings_entry](common/settings_entry.md): an entry contained by the settings class
