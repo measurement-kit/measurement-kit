@@ -11,7 +11,7 @@
 using namespace mk;
 
 static const char *kv_usage =
-    "usage: measurement_kit http_request [-v] [-B /ca/bundle/path] [-b body] "
+    "usage: measurement_kit http_request [-v] [-B /ca/bundle/path] [-b body]\n"
     "       [-H 'key: value'] [-m method] [-R max-redirect] url\n";
 
 static bool set_header(http::Headers &headers, const std::string option) {
