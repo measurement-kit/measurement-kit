@@ -20,6 +20,7 @@ The `common` module contains contains the following submodules:
 - [encoding](common/encoding.md): handle encodings (e.g. UTF-8, base64)
 - [error](common/error.md): definition of error class and of shared error codes
 - [error_or](common/error_or.md): maybe-like object containing either a result or an error
+- [fmap](common/fmap.md): apply a function to a vector
 - [lexical_cast](common/lexical_cast.md): lexical cast between scalar values
 - [logger](common/logger.md): log messages
 - [mock](common/mock.md): macros to mock implementation and write tests

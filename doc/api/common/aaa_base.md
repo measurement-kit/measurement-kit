@@ -19,4 +19,4 @@ This module just pulls basic C/C++ headers needed by all other modules.
 
 # HISTORY
 
-The `aaa_base` header appeared in MeasurementKit 0.4.0.
+The `aaa_base` header appeared in MeasurementKit 0.3.0.
