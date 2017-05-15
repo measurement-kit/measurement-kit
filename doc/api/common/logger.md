@@ -73,7 +73,7 @@ void set_logfile(std::string path);
 
 The `MK_LOG_XXX` macros allow to set verbosity levels and other
 reserved values. Only the first four bits are used to represent levels
-of verbosity, while other bits are currently reserved.
+of verbosity, while other bits are used for other purposes.
 
 The `Logger` class specifies how logs are processed. You can change the
 function that receives logs. You can change the verbosity level. And
