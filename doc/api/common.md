@@ -13,6 +13,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 The `common` module contains contains the following submodules:
 
+- [aaa_base](common/aaa_base.md): include headers we always need
 - [callback](common/callback.md): alias for writing callback functions more compactly
 - [continuation](common/continuation.md): type of function used to restart a function that paused
 - [delegate](common/delegate.md): member function overridable at runtime
