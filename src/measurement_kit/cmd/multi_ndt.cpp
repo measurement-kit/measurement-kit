@@ -9,16 +9,21 @@
 namespace multi_ndt {
 
 #define USAGE                                                                  \
-    "usage: measurement_kit [options] multi_ndt [-m metro]\n"
+    "usage: measurement_kit [options] multi_ndt [-u] [-m metro]\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     MultiNdtTest test;
 
-    for (int ch; (ch = getopt(argc, argv, "m:")) != -1;) {
+    for (int ch; (ch = getopt(argc, argv, "m:u")) != -1;) {
         switch (ch) {
         case 'm':
             test.set_options("mlabns/policy", "metro");
             test.set_options("mlabns/metro", optarg);
+            break;
+        case 'u':
+            // By default only the download phase is performed
+            test.set_options("single_test_suite",
+                    MK_NDT_DOWNLOAD | MK_NDT_UPLOAD);
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);

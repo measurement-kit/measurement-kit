@@ -231,8 +231,8 @@ TEST_CASE("Verify that invalid input is rejected") {
 }
 
 TEST_CASE("map_errno() works as expected") {
-    SECTION("Make sure that 0 maps on mk::ValueError") {
-        REQUIRE(mk::net::map_errno(0) == mk::ValueError());
+    SECTION("Make sure that 0 maps on mk::NoError") {
+        REQUIRE(mk::net::map_errno(0) == mk::NoError());
     }
 
     SECTION("Make sure that EAGAIN is correctly handled") {

@@ -35,7 +35,7 @@ which is arguably faster than writing the following:
       ...
 ```
 
-`MK_MOCK_ALIAS` is similar to `MOCK` but allow you to explicitly specify
+`MK_MOCK_AS` is similar to `MOCK` but allow you to explicitly specify
 the alias with which you want the specified name to be available. For example:
 
 ```C++

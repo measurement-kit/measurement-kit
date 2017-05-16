@@ -16,7 +16,7 @@ void query(
         Settings settings,
         Var<Reactor> reactor,
         Var<Logger> logger) {
-    std::string engine = settings.get("dns/engine", std::string("libevent"));
+    std::string engine = settings.get("dns/engine", std::string("system"));
     logger->log(MK_LOG_DEBUG2, "dns: engine: %s", engine.c_str());
     if (engine == "libevent") {
         libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);

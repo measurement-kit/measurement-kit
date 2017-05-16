@@ -19,47 +19,61 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                std::string nameserver, Callback<Error, Var<dns::Message>> cb,
                Settings options, Var<Reactor> reactor, Var<Logger> logger) {
 
-    ErrorOr<net::Endpoint> maybe_epnt = net::parse_endpoint(nameserver, 53);
-    if (!maybe_epnt) {
-        reactor->call_soon([=]() { cb(maybe_epnt.as_error(), nullptr); });
-        return;
+    std::string engine = options.get("dns/engine", std::string{"system"});
+    bool not_system_engine = engine != "system";
+    uint16_t resolver_port = 0;
+    std::string resolver_hostname;
+
+    Var<report::Entry> query_entry{new report::Entry};
+
+    if (not_system_engine) {
+        ErrorOr<net::Endpoint> maybe_epnt = net::parse_endpoint(nameserver, 53);
+        if (!maybe_epnt) {
+            reactor->call_soon([=]() { cb(maybe_epnt.as_error(), nullptr); });
+            return;
+        }
+        resolver_port = maybe_epnt->port;
+        resolver_hostname = maybe_epnt->hostname;
+        options["dns/nameserver"] = resolver_hostname;
+        options["dns/port"] = resolver_port;
+        options["dns/attempts"] = 1;
+        (*query_entry)["resolver_hostname"] = resolver_hostname;
+        (*query_entry)["resolver_port"] = resolver_port;
+
+    } else {
+        if (nameserver != "") {
+            logger->warn("Explicit nameserver ignored with 'system' DNS engine");
+        }
+        // ooniprobe sets them to null when they are not available
+        (*query_entry)["resolver_hostname"] = nullptr;
+        (*query_entry)["resolver_port"] = nullptr;
     }
-
-    uint16_t resolver_port = maybe_epnt->port;
-    std::string resolver_hostname = maybe_epnt->hostname;
-
-    options["dns/nameserver"] = resolver_hostname;
-    options["dns/port"] = resolver_port;
-    options["dns/engine"] = "libevent"; /* Ensure we use low level engine */
-    options["dns/attempts"] = 1;
 
     dns::query(query_class, query_type, query_name,
                [=](Error error, Var<dns::Message> message) {
                    logger->debug("dns_test: got response!");
-                   Entry query_entry;
-                   query_entry["resolver_hostname"] = resolver_hostname;
-                   query_entry["resolver_port"] = resolver_port;
-                   query_entry["failure"] = nullptr;
-                   query_entry["answers"] = Entry::array();
+                   (*query_entry)["engine"] = engine;
+                   (*query_entry)["failure"] = nullptr;
+                   (*query_entry)["answers"] = Entry::array();
                    if (query_type == dns::MK_DNS_TYPE_A) {
-                       query_entry["query_type"] = "A";
-                       query_entry["hostname"] = query_name;
+                       (*query_entry)["query_type"] = "A";
+                       (*query_entry)["hostname"] = query_name;
                    }
                    if (!error) {
                        for (auto answer : message->answers) {
                            if (query_type == dns::MK_DNS_TYPE_A) {
-                               query_entry["answers"].push_back(
+                               (*query_entry)["answers"].push_back(
                                    {{"ttl", answer.ttl},
                                     {"ipv4", answer.ipv4},
                                     {"answer_type", "A"}});
                            }
                        }
                    } else {
-                       query_entry["failure"] = error.as_ooni_error();
+                       (*query_entry)["failure"] = error.as_ooni_error();
                    }
                    // TODO add support for bytes received
-                   // query_entry["bytes"] = response.get_bytes();
-                   (*entry)["queries"].push_back(query_entry);
+                   // (*query_entry)["bytes"] = response.get_bytes();
+                   (*entry)["queries"].push_back(*query_entry);
                    logger->debug("dns_test: callbacking");
                    cb(error, message);
                    logger->debug("dns_test: callback called");
@@ -73,6 +87,12 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
 
     (*entry)["agent"] = "agent";
     (*entry)["socksproxy"] = nullptr;
+
+    // Include the name of the agent, like ooni-probe does
+    ErrorOr<int> max_redirects = settings.get("http/max_redirects", 0);
+    if (!!max_redirects && *max_redirects > 0) {
+        (*entry)["agent"] = "redirect";
+    }
 
     if (settings.find("http/method") == settings.end()) {
         settings["http/method"] = "GET";
@@ -140,6 +160,13 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
                         represent_string(redact(request->body));
                     rr["request"]["url"] = request->url.str();
                     rr["request"]["method"] = request->method;
+                    rr["request"]["tor"] = {{
+                        "exit_ip", nullptr
+                    }, {
+                        "exit_name", nullptr
+                    }, {
+                        "is_tor", false
+                    }};
                 }
                 return rr;
             };

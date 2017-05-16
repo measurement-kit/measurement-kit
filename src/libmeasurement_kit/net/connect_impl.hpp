@@ -92,6 +92,9 @@ void connect_base(std::string address, int port,
         logger->warn("connect() for %s failed immediately", endpoint.c_str());
         bufferevent_free(bev);
         Error sys_error = mk::net::map_errno(errno);
+        if (sys_error == NoError()) {
+            sys_error = GenericError(); /* We must report an error */
+        }
         logger->warn("reason why connect() has failed: %s",
                      sys_error.as_ooni_error().c_str());
         cb(sys_error, nullptr, 0.0);
