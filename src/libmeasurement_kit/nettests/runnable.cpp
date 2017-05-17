@@ -337,49 +337,56 @@ void Runnable::begin(Callback<Error> cb) {
     }
     mk::utc_time_now(&test_start_time);
     beginning = mk::time_now();
-    mk::dump_settings(options, "runnable", logger);
-    geoip_lookup([=]() {
-        resolver_lookup([=](Error error, std::string resolver_ip_) {
-            logger->progress(0.05, "geoip lookup");
-            if (!error) {
-                resolver_ip = resolver_ip_;
-            } else {
-                logger->debug("failed to lookup resolver ip");
-            }
-            open_report([=](Error error) {
-                if (error) {
-                    logger->warn("Cannot open report: %s",
-                                 error.explain().c_str());
-                    // FALLTHROUGH
-                }
-                logger->progress(0.1, "open report");
-                if (error and not options.get(
-                        "ignore_open_report_error", true)) {
-                    cb(error);
-                    return;
-                }
-                logger->set_progress_offset(0.1);
-                logger->set_progress_scale(0.8);
+    contact_bouncer([=](Error error) {
+        if (error) {
+            cb(error);
+            return;
+        }
+        mk::dump_settings(options, "runnable", logger);
+        geoip_lookup([=]() {
+            resolver_lookup(
+                [=](Error error, std::string resolver_ip_) {
+                    logger->progress(0.05, "geoip lookup");
+                    if (!error) {
+                        resolver_ip = resolver_ip_;
+                    } else {
+                        logger->debug("failed to lookup resolver ip");
+                    }
+                    open_report([=](Error error) {
+                        if (error) {
+                            logger->warn("Cannot open report: %s",
+                                         error.explain().c_str());
+                            // FALLTHROUGH
+                        }
+                        logger->progress(0.1, "open report");
+                        if (error and
+                            not options.get("ignore_open_report_error", true)) {
+                            cb(error);
+                            return;
+                        }
+                        logger->set_progress_offset(0.1);
+                        logger->set_progress_scale(0.8);
 
-                ErrorOr<std::deque<std::string>> maybe_inputs =
-                    process_input_filepaths(needs_input, input_filepaths,
-                                            probe_cc, options, logger,
-                                            nullptr, nullptr);
-                if (!maybe_inputs) {
-                    cb(maybe_inputs.as_error());
-                    return;
-                }
-                inputs = *maybe_inputs;
-                size_t num_entries = inputs.size();
+                        ErrorOr<std::deque<std::string>> maybe_inputs =
+                            process_input_filepaths(
+                                needs_input, input_filepaths, probe_cc, options,
+                                logger, nullptr, nullptr);
+                        if (!maybe_inputs) {
+                            cb(maybe_inputs.as_error());
+                            return;
+                        }
+                        inputs = *maybe_inputs;
+                        size_t num_entries = inputs.size();
 
-                // Run `parallelism` measurements in parallel
-                Var<size_t> current_entry(new size_t(0));
-                mk::parallel(
-                    mk::fmap<size_t, Continuation<Error>>(
-                        mk::range<size_t>(options.get("parallelism", 3)),
-                        [=](size_t thread_id) {
-                            return [=](Callback<Error> cb) {
-                                run_next_measurement(thread_id, cb, num_entries,
+                        // Run `parallelism` measurements in parallel
+                        Var<size_t> current_entry(new size_t(0));
+                        mk::parallel(mk::fmap<size_t, Continuation<Error>>(
+                                         mk::range<size_t>(
+                                             options.get("parallelism", 3)),
+                                         [=](size_t thread_id) {
+                                             return [=](Callback<Error> cb) {
+                                                 run_next_measurement(
+                                                     thread_id, cb, num_entries,
                                                      current_entry);
                                              };
                                          }),
@@ -389,6 +396,7 @@ void Runnable::begin(Callback<Error> cb) {
                 },
                 options, reactor, logger);
         });
+    });
 }
 
 void Runnable::end(Callback<Error> cb) {
