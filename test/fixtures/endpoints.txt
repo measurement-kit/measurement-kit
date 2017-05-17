@@ -1,0 +1,10 @@
+torproject.org:80
+ooni.nu:443
+neubot.org:80
+archive.org:443
+creativecommons.org:443
+cyber.law.harvard.edu:80
+duckduckgo.com:80
+netflix.com:443
+nmap.org:80
+www.emule.com:80

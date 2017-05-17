@@ -106,11 +106,19 @@ void connect_logic(std::string hostname, int port,
                              [=](std::vector<Error> e, bufferevent *b) {
                                  result->connect_result = e;
                                  result->connected_bev = b;
-                                 Error connect_error = ConnectFailedError();
-                                 for (auto se: e) {
-                                    connect_error.add_child_error(se);
-                                 }
                                  if (!b) {
+                                     if (e.size() == 1) {
+                                         // Improvement: do not hide the reason
+                                         // why we failed if we have just one
+                                         // connect() attempt in the vector
+                                         cb(e[0], result);
+                                         return;
+                                     }
+                                     // Otherwise, report them all
+                                     Error connect_error = ConnectFailedError();
+                                     for (auto se: e) {
+                                         connect_error.add_child_error(se);
+                                     }
                                      cb(connect_error, result);
                                      return;
                                  }
@@ -263,16 +271,47 @@ void connect(std::string address, int port,
                     return;
                 }
                 if (*allow_ssl23 == true) {
-                    logger->debug("Re-enabling SSLv2 and SSLv3");
+                    logger->info("Re-enabling SSLv2 and SSLv3");
                     SSL_clear_options(*cssl, SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3);
                 }
                 connect_ssl(r->connected_bev, *cssl, address,
                             [r, callback, timeout, ssl_context, reactor,
-                             logger](Error err, bufferevent *bev) {
+                             logger, settings](Error err, bufferevent *bev) {
                                 if (err) {
                                     err.context = r;
                                     callback(err, nullptr);
                                     return;
+                                }
+                                ErrorOr<bool> allow_dirty_shutdown =
+                                    settings.get_noexcept(
+                                        "net/ssl_allow_dirty_shutdown", false);
+                                if (!allow_dirty_shutdown) {
+                                    Error err = allow_dirty_shutdown.as_error();
+                                    err.context = r;
+                                    bufferevent_free(bev);
+                                    callback(err, nullptr);
+                                    return;
+                                }
+                                if (*allow_dirty_shutdown == true) {
+                                    /*
+                                     * This useful libevent function is only
+                                     * available since libevent 2.1.0:
+                                     */
+#ifdef HAVE_BUFFEREVENT_OPENSSL_SET_ALLOW_DIRTY_SHUTDOWN
+                                    bufferevent_openssl_set_allow_dirty_shutdown(
+                                        bev, 1);
+                                    logger->info("Allowing dirty SSL shutdown");
+#else
+                                    logger->warn("Cannot tell libevent to "
+                                                 "allow SSL dirty shutdowns "
+                                                 "as requested by the "
+                                                 "programmer: as a result"
+                                                 "some SSL connections may "
+                                                 "interrupt abruptly with an "
+                                                 "error. This happens because "
+                                                 "you are not using version "
+                                                 "2.1.x of libevent.");
+#endif
                                 }
                                 Var<Transport> txp =
                                     libevent::Connection::make(

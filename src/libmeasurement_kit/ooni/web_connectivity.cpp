@@ -50,6 +50,7 @@ static void compare_http_requests(Var<Entry> entry,
     } else {
         (*entry)["body_length_match"] = false;
     }
+    (*entry)["body_proportion"] = body_proportion;
 
     // Verify that the status codes match
     logger->debug("web_connectivity: comparing status codes");
@@ -420,10 +421,15 @@ static void experiment_http_request(
     options["http/url"] = url;
 
     /*
-     * Only for web-connectivity, we want to allow any SSL protocol such
-     * that we can scan a more wide range of servers.
+     * Only for web-connectivity:
+     *
+     * - we want to allow any SSL protocol such that we can scan a
+     *   more wide range of servers
+     *
+     * - we allow SSL dirty shutdowns to gather more evidence
      */
     options["net/allow_ssl23"] = true;
+    options["net/ssl_allow_dirty_shutdown"] = true;
 
     logger->debug("Requesting url %s", url.c_str());
     templates::http_request(entry, options, headers, body,
@@ -551,6 +557,7 @@ void web_connectivity(std::string input, Settings options,
 
     (*entry)["dns_consistency"] = nullptr;
     (*entry)["body_length_match"] = nullptr;
+    (*entry)["body_proportion"] = 0.0;
     (*entry)["headers_match"] = nullptr;
     (*entry)["status_code_match"] = nullptr;
     (*entry)["title_match"] = nullptr;
@@ -565,10 +572,17 @@ void web_connectivity(std::string input, Settings options,
     (*entry)["tcp_connect"] = Entry::array();
     (*entry)["control"] = Entry({});
 
+    if (!mk::startswith(input, "http://") &&
+        !mk::startswith(input, "https://")) {
+        // Similarly to ooni-probe also accept a list of endpoints
+        input = "http://" + input;
+    }
+
     ErrorOr<http::Url> url = mk::http::parse_url_noexcept(input);
 
     if (!url) {
-        logger->debug("Invalid test url.");
+        logger->warn("Invalid test url.");
+        (*entry)["failure"] = url.as_error().as_ooni_error();
         callback(entry);
         return;
     }
