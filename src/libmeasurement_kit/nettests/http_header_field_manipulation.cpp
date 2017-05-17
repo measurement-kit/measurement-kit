@@ -13,7 +13,7 @@ HttpHeaderFieldManipulationTest::HttpHeaderFieldManipulationTest() : BaseTest() 
     runnable->test_name = "http_header_field_manipulation";
     runnable->test_version = "0.0.1";
     runnable->needs_input = false;
-    runnable->test_helpers_names = {"backend"};
+    runnable->required_test_helpers = {{"http-echo", "backend"}};
 }
 
 void HttpHeaderFieldManipulationRunnable::main(std::string input,

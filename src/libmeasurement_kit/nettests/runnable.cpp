@@ -99,7 +99,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
 
         // Add test helpers
         entry["test_helpers"] = Entry::object();
-        for (auto &name : test_helpers_names) {
+        for (auto &name : test_helpers_names()) {
             if (options.count(name) != 0) {
                 entry["test_helpers"][name] = options[name];
             }
@@ -289,8 +289,8 @@ void Runnable::contact_bouncer(Callback<Error> cb) {
         cb(NoError());
         return;
     }
-    auto bouncer = options.get(
-        "bouncer_base_url", std::string{"https://a.collector.ooni.io/bouncer"});
+    auto bouncer = options.get("bouncer_base_url",
+            ooni::production_bouncer_url());
     logger->info("Contacting bouncer: %s", bouncer.c_str());
     ooni::bouncer::post_net_tests(
         bouncer, test_name, test_version, required_test_helpers,
@@ -312,19 +312,19 @@ void Runnable::contact_bouncer(Callback<Error> cb) {
                 logger->info("Using discovered collector");
             }
             for (auto th: required_test_helpers) {
-                auto maybe_backend = reply->get_test_helper_alternate(
-                    th, "https"
+                auto maybe_helper = reply->get_test_helper_alternate(
+                    th.first, "https"
                 );
-                if (!!maybe_backend) {
-                    logger->info("Bouncer discovered backend: %s",
-                         maybe_backend->c_str());
-                    if (options.find("backend") == options.end()) {
-                        logger->info("Using discovered backend");
-                        options["backend"] = *maybe_backend;
-                        // FIXME: This breaks multi-backend tests!!!
-                        break;
-                    }
+                if (!maybe_helper) {
+                    continue;
                 }
+                logger->info("Bouncer discovered helper for %s: %s",
+                     th.first.c_str(), maybe_backend->c_str());
+                if (options.find(th.second) != options.end()) {
+                    continue;
+                logger->info("Using discovered helper as '%s'",
+                             th.second.c_str());
+                options[th.first] = *maybe_helper;
             }
             cb(NoError());
         },
@@ -414,6 +414,14 @@ void Runnable::end(Callback<Error> cb) {
         logger->progress(1.00, "test complete");
         cb(err);
     });
+}
+
+std::vector<std::string> Runnable::test_helpers_names() {
+    std::vector<std::string> values;
+    for (auto &kv : required_test_helpers) {
+        values.push_back(kv.second);
+    }
+    return values;
 }
 
 } // namespace nettests

@@ -30,7 +30,9 @@ class Runnable : public NonCopyable, public NonMovable {
     Delegate<> begin_cb;
     std::list<Delegate<>> end_cbs;
     std::list<Delegate<>> destroy_cbs;
-    std::vector<std::string> test_helpers_names;
+    bool needs_input = false;
+    bool needs_bouncer = false;
+    std::map<std::string, std::string> required_test_helpers;
 
     std::string test_name = "ooni_test";
     std::string test_version = "0.0.1";
@@ -38,9 +40,6 @@ class Runnable : public NonCopyable, public NonMovable {
     std::string probe_asn = "AS0";
     std::string probe_cc = "ZZ";
     std::string resolver_ip = "127.0.0.1";
-    bool needs_input = false;
-    bool needs_bouncer = false;
-    std::list<std::string> required_test_helpers;
 
   protected:
     // Functions that derived classes SHOULD override
@@ -48,6 +47,9 @@ class Runnable : public NonCopyable, public NonMovable {
     virtual void teardown(std::string);
     virtual void main(std::string, Settings, Callback<Var<report::Entry>>);
     virtual void fixup_entry(report::Entry &);
+
+    // Functions that derived classes should access
+    std::vector<std::string> test_helper_names();
 
   private:
     report::Report report;
