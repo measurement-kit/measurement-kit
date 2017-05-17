@@ -9,16 +9,15 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
-// The numbers [0-31] are reserved for verbosity levels. Numbers above 31
-// instead are reserved for other, not yet specified semantics.
+// The numbers [0-31] are reserved for verbosity levels.
 #define MK_LOG_WARNING 0
 #define MK_LOG_INFO 1
 #define MK_LOG_DEBUG 2
 #define MK_LOG_DEBUG2 3
 #define MK_LOG_VERBOSITY_MASK 31
 
+// Number above 31 have different semantics:
 #define MK_LOG_EVENT 32          // Event occurred (encoded as JSON)
-#define MK_LOG_JSON MK_LOG_EVENT // Backward compat for v0.3.x
 
 namespace mk {
 
@@ -27,7 +26,7 @@ class Logger : public NonCopyable, public NonMovable {
     static Var<Logger> make();
 
     void logv(uint32_t level, const char *fmt, va_list ap);
-    void log(uint32_T level, const char *fmt, ...);
+    void log(uint32_t level, const char *fmt, ...);
     void warn(const char *fmt, ...);
     void info(const char *fmt, ...);
     void debug(const char *fmt, ...);
@@ -74,7 +73,7 @@ void set_logfile(std::string path);
 
 The `MK_LOG_XXX` macros allow to set verbosity levels and other
 reserved values. Only the first four bits are used to represent levels
-of verbosity, while other bits are currently reserved.
+of verbosity, while other bits are used for other purposes.
 
 The `Logger` class specifies how logs are processed. You can change the
 function that receives logs. You can change the verbosity level. And

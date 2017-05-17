@@ -16,18 +16,15 @@
 #include <mutex>
 #include <stdarg.h>
 
-// The numbers [0-31] are reserved for verbosity levels. Numbers above 31
-// instead are reserved for other, not yet specified semantics.
+// The numbers [0-31] are reserved for verbosity levels.
 #define MK_LOG_WARNING 0
 #define MK_LOG_INFO 1
 #define MK_LOG_DEBUG 2
 #define MK_LOG_DEBUG2 3
 #define MK_LOG_VERBOSITY_MASK 31
 
+// The number above 31 have different semantics:
 #define MK_LOG_EVENT 32 // Information encoded as JSON
-
-// Backwards compatibility until v0.5.0
-#define MK_LOG_JSON MK_LOG_EVENT
 
 namespace mk {
 

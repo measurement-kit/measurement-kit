@@ -7,19 +7,15 @@
 namespace tcp_connect {
 
 #define USAGE                                                                  \
-    "usage: measurement_kit [options] tcp_connect [-f input_file] [-p port]"
+    "usage: measurement_kit [options] tcp_connect [-f input_file]"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     mk::nettests::TcpConnectTest test;
-    std::string port = "80";
 
-    for (int ch; (ch = getopt(argc, argv, "f:p:")) != -1;) {
+    for (int ch; (ch = getopt(argc, argv, "f:")) != -1;) {
         switch (ch) {
         case 'f':
             test.add_input_filepath(optarg);
-            break;
-        case 'p':
-            port = optarg;
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);
@@ -34,7 +30,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         /* NOTREACHED */
     }
 
-    common_init(initializers, test.set_options("port", port)).run();
+    common_init(initializers, test).run();
     return 0;
 }
 

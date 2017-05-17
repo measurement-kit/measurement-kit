@@ -14,7 +14,7 @@ namespace mk {
 Logger::Logger() {
     consumer_ = [](uint32_t level, const char *s) {
         std::string message;
-        if ((level & MK_LOG_JSON)) {
+        if ((level & MK_LOG_EVENT) != 0) {
             try {
                 message = nlohmann::json::parse(s).dump(4);
                 s = message.c_str();

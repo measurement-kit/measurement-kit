@@ -19,19 +19,15 @@ class TcpConnect : public OoniTest {};
 
 # DESCRIPTION
 
-The `TcpConnect` class allows to run OONI tcp-connect test. In addition
-to `OoniTest`, this class honours the following options:
+The `TcpConnect` class allows to run OONI tcp-connect test.
 
-- *"port"* (int): port to connect to.
-
-Also, this test requires an input file.
+This test requires an input file.
 
 # EXAMPLE
 
 ```C++
 // Run sync test
 mk::ooni::TcpConnect()
-    .set_options("port", 80)
     .set_input_filepath("test/fixtures/hosts.txt")
     .set_output_filepath("results.njson")
     .increase_verbosity()
@@ -43,7 +39,6 @@ mk::ooni::TcpConnect()
 
 // Run async test
 mk::ooni::TcpConnect()
-    .set_options("port", 80)
     .set_input_filepath("test/fixtures/hosts.txt")
     .set_output_filepath("results.njson")
     .increase_verbosity()

@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
+cd $ROOTDIR
+D=build/ios
+V=0.6.6
+
+# Do not ship *.la files that would break the build and, while there, also
+# remove directories that we don't need for cross compiling MK
+find $D/tmp -type f -name \*.la -exec rm {} \;
+find $D/tmp -type f -name \*.pc -exec rm {} \;
+find $D/tmp -type d -depth -name share -exec rm -rf {} \;
+find $D/tmp -type d -depth -name bin -exec rm -rf {} \;
+find $D/tmp -type d -depth -name pkgconfig -exec rm -rf {} \;
+
+tar -czf ios_binaries-$V.tgz $D/tmp
+$ROOTDIR/build/sign ios_binaries-$V.tgz
