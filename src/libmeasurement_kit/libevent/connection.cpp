@@ -40,6 +40,9 @@ void Connection::handle_read_() {
     Buffer buff(bufferevent_get_input(bev));
     try {
         emit_data(buff);
+    } catch (const YieldError &) {
+        mk::warn("Received yield...");
+        return; /* We'll restart the coroutines later */
     } catch (Error &error) {
         emit_error(error);
         return;

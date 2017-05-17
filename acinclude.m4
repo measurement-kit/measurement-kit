@@ -218,8 +218,8 @@ AC_DEFUN([MK_AM_REQUIRE_C99], [
 
 AC_DEFUN([MK_AM_REQUIRE_CXX11], [
   mk_saved_cxxflags="$CXXFLAGS"
-  CXXFLAGS=-std=c++11
-  AC_MSG_CHECKING([whether CXX supports -std=c++11])
+  CXXFLAGS=-std=c++14
+  AC_MSG_CHECKING([whether CXX supports -std=c++14])
   AC_LANG_PUSH([C++])
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
     [AC_MSG_RESULT([yes])]
@@ -228,7 +228,7 @@ AC_DEFUN([MK_AM_REQUIRE_CXX11], [
      AC_MSG_RESULT([no])
      AC_MSG_ERROR([a C++11 compiler is required])
     ])
-  CXXFLAGS="$mk_saved_cxxflags -std=c++11"
+  CXXFLAGS="$mk_saved_cxxflags -std=c++14"
   AC_LANG_POP([C++])
 ])
 
