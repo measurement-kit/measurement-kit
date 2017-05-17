@@ -13,22 +13,14 @@ using namespace mk::report;
 
 static void tcp_many(const std::vector<std::string> ip_ports,
                      Var<Entry> entry,
-                     Callback<Error> cb,
+                     Callback<Error> all_done_cb,
                      Var<Reactor> reactor,
                      Var<Logger> logger) {
-    // C++20 should have continuations in std; until then,
-    // we copy the ghetto pattern from web_connectivity
-    int ips_count = ip_ports.size();
-    Var<int> ips_tested(new int(0));
-    if (ips_count == *ips_tested) {
-        cb(NoError());
-        return;
-    }
 
     // per-endpoint, we only consider success/failure.
     // telegram is "blocked" if no endpoints succeed.
-    auto tcp_cb = [=](std::string ip, int port) {
-        return [=](Error err, Var<net::Transport> txp) {
+    auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
+        return [=](Error connect_error, Var<net::Transport> txp) {
             bool close_txp = true; // if connected, we must disconnect
             Entry result = {
                 {"ip", ip},
@@ -37,11 +29,11 @@ static void tcp_many(const std::vector<std::string> ip_ports,
                     {{"success", nullptr},
                     {"failure", nullptr}}},
             };
-            if (!!err) {
+            if (!!connect_error) {
                 logger->info("telegram: failure TCP connecting to %s:%d",
                              ip.c_str(), port);
                 result["status"]["success"] = false;
-                result["status"]["failure"] = err.as_ooni_error();
+                result["status"]["failure"] = connect_error.as_ooni_error();
                 close_txp = false;
             } else {
                 logger->info("telegram: success TCP connecting to %s:%d",
@@ -49,23 +41,15 @@ static void tcp_many(const std::vector<std::string> ip_ports,
                 result["status"]["success"] = true;
             }
             (*entry)["tcp_connect"].push_back(result);
-            *ips_tested += 1;
-            if (ips_count == *ips_tested) {
-                if (close_txp == true) {
-                    txp->close([=] { cb(NoError()); });
-                } else {
-                    cb(NoError());
-                }
+            if (close_txp == true) {
+                txp->close([=] { done_cb(connect_error); });
             } else {
-                if (close_txp == true) {
-                    // XXX optimistic closure
-                    txp->close([=] {});
-                }
+                done_cb(connect_error);
             }
-
         };
     };
 
+    std::vector<Continuation<Error>> continuations;
     for (auto ip_port : ip_ports) {
         std::list<std::string> ip_port_l = split(ip_port, ":");
         if (ip_port_l.size() != 2) {
@@ -81,57 +65,59 @@ static void tcp_many(const std::vector<std::string> ip_ports,
         tcp_options["host"] = ip;
         tcp_options["port"] = port;
         tcp_options["net/timeout"] = 10.0;
-        templates::tcp_connect(tcp_options, tcp_cb(ip, port), reactor, logger);
+        continuations.push_back(
+            [=](Callback<Error> done_cb) {
+                templates::tcp_connect(tcp_options, connected_cb(ip, port, done_cb), reactor, logger);
+            }
+        );
     }
+    mk::parallel(continuations, all_done_cb, 3 /* parallelism */);
 
 }
 
 static void http_many(const std::vector<std::string> urls,
                       Var<Entry> entry,
-                      Callback<Error> cb,
+                      Callback<Error> all_done_cb,
                       Var<Reactor> reactor,
                       Var<Logger> logger) {
-    int urls_count = urls.size();
-    Var<int> urls_tested(new int(0));
-    if (urls_count == *urls_tested) {
-        cb(NoError());
-        return;
-    }
 
-    auto http_cb = [=](std::string url) {
+    auto http_cb = [=](std::string url, Callback<Error> done_cb) {
         return [=](Error err, Var<http::Response> response) {
-             Entry result = {
-                 {"url", url},
-                 {"status",
-                     {{"success", nullptr},
-                     {"failure", nullptr}}},
-             };
+//              commenting out this stuff, as we might not want it...
+//             Entry result = {
+//                 {"url", url},
+//                 {"status",
+//                     {{"success", nullptr},
+//                     {"failure", nullptr}}},
+//             };
              if (!!err) {
                  logger->info("telegram: failure HTTP connecting to %s",
                      url.c_str());
-                 result["status"]["success"] = false;
-                 result["status"]["failure"] = err.as_ooni_error();
+//                 result["status"]["success"] = false;
+//                 result["status"]["failure"] = err.as_ooni_error();
              } else {
                  logger->info("telegram: success HTTP connecting to %s",
                      url.c_str());
-                 result["status"]["success"] = true;
+//                 result["status"]["success"] = true;
              }
-            (*entry)["http_connect"].push_back(result);
-             *urls_tested += 1;
-             if (urls_count == *urls_tested) {
-                 cb(NoError());
-             }
+//            (*entry)["http_connect"].push_back(result);
+            done_cb(err);
          };
     };
 
+    std::vector<Continuation<Error>> continuations;
     for (auto url : urls) {
         Settings http_options;
         http_options["http/url"] = url;
         http::Headers headers = constants::COMMON_CLIENT_HEADERS;
         std::string body;
-        templates::http_request(entry, http_options, headers, body,
-                                http_cb(url), reactor, logger);
+        continuations.push_back(
+            [=](Callback<Error> done_cb) {
+                templates::http_request(entry, http_options, headers, body, http_cb(url, done_cb), reactor, logger);
+            }
+        );
     }
+    mk::parallel(continuations, all_done_cb, 3 /* parallelism */);
 
 }
 
@@ -175,12 +161,29 @@ void telegram(std::string input, Settings options,
     // first try telegram web
     http_many(TELEGRAM_WEB_URLS, entry, [=](Error err) {
         logger->info("done testing telegram web");
+        if (!!err) {
+            logger->info("saw at least one error");
+            // set blocked = true
+        } else {
+            logger->info("saw no errors");
+            // if one title isn't right, set blocked = true
+        }
         // then try endpoints as TCP
         tcp_many(TELEGRAM_TCP_ENDPOINTS, entry, [=](Error err){
             logger->info("done testing endpoints as TCP");
+            if (!!err) {
+                logger->info("saw at least one error");
+            } else {
+                logger->info("saw no errors");
+            }
             // then try endpoints as HTTP
             http_many(TELEGRAM_HTTP_ENDPOINTS, entry, [=](Error err){
                 logger->info("done testing endpoints as HTTP");
+                if (!!err) {
+                    logger->info("saw at least one error");
+                } else {
+                    logger->info("saw no errors");
+                }
                 // then finish!
                 callback(entry);
             }, reactor, logger);
