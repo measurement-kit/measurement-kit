@@ -1,6 +1,6 @@
 pkg_name=json
 pkg_repository=https://github.com/nlohmann/json.git
-pkg_tag=v2.0.8
+pkg_branch_or_tag=v2.1.1
 pkg_steps=install
 
 pkg_install() {

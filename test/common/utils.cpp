@@ -40,7 +40,7 @@ TEST_CASE("random_str() really generates only characters or numbers") {
         } else if (islower(x)) {
             found_low = true;
         } else {
-            REQUIRE(false);
+            REQUIRE(false); /* Should not happen */
         }
     }
     REQUIRE(found_num);
@@ -57,7 +57,7 @@ TEST_CASE("random_str_uppercase() really generates only uppercase") {
         } else if (isupper(x)) {
             found_upper = true;
         } else {
-            REQUIRE(false);
+            REQUIRE(false); /* Should not happen */
         }
     }
     REQUIRE(found_num);
@@ -302,4 +302,62 @@ TEST_CASE("slurp() works as expected") {
                              "www.emule.com\n";
         REQUIRE(*maybe_res == expect);
     }
+}
+
+TEST_CASE("mk::startswith() works as expected") {
+    SECTION("For empty s and p") {
+        REQUIRE(!!mk::startswith("", ""));
+    }
+    SECTION("For empty p") {
+        REQUIRE(!!mk::startswith("antani", ""));
+    }
+    SECTION("For s shorter than p") {
+        REQUIRE(!mk::startswith("x", "xyz"));
+    }
+    SECTION("For s equal to p") {
+        REQUIRE(!!mk::startswith("xyz", "xyz"));
+    }
+    SECTION("For s longer than p") {
+        REQUIRE(!!mk::startswith("antani", "ant"));
+    }
+    SECTION("For p present in s but not at s's beginning") {
+        REQUIRE(!mk::startswith("antani", "nta"));
+    }
+}
+
+TEST_CASE("mk::endswith() works as expected") {
+    SECTION("For empty s and p") {
+        REQUIRE(!!mk::endswith("", ""));
+    }
+    SECTION("For empty p") {
+        REQUIRE(!!mk::endswith("antani", ""));
+    }
+    SECTION("For s shorter than p") {
+        REQUIRE(!mk::endswith("z", "xyz"));
+    }
+    SECTION("For s equal to p") {
+        REQUIRE(!!mk::endswith("xyz", "xyz"));
+    }
+    SECTION("For s longer than p") {
+        REQUIRE(!!mk::endswith("antanix", "nix"));
+    }
+    // #TrueStory: this has been an embarassing bug
+    SECTION("For p present in s but not at s's end") {
+        REQUIRE(!mk::endswith("antanix", "tan"));
+    }
+}
+
+TEST_CASE("random_choice isn't obviously wrong") {
+    std::vector<std::string> choices = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"};
+    auto choice = mk::random_choice(choices);
+    REQUIRE(std::find(choices.begin(), choices.end(), choice) != choices.end());
+}
+
+TEST_CASE("randomly_capitalize isn't obviously wrong") {
+    auto lower_string = "abcdefghij";
+    auto upper_string = "ABCDEFGHIJ";
+    auto rc_lower_string = mk::randomly_capitalize(lower_string);
+    REQUIRE(rc_lower_string != lower_string);
+    auto rc_upper_string = mk::randomly_capitalize(upper_string);
+    REQUIRE(rc_upper_string != upper_string);
 }

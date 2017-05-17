@@ -2,10 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <measurement_kit/nettests.hpp>
-
 #include "../common/utils.hpp"
+#include "../ext/sole.hpp"
 #include "../ooni/utils.hpp"
+#include "../nettests/utils.hpp"
+
+#include <measurement_kit/nettests.hpp>
 
 namespace mk {
 namespace nettests {
@@ -28,27 +30,33 @@ void Runnable::teardown(std::string) {}
 void Runnable::main(std::string, Settings, Callback<Var<report::Entry>> cb) {
     reactor->call_soon([=]() { cb(Var<report::Entry>{new report::Entry}); });
 }
+void Runnable::fixup_entry(report::Entry &) {}
 
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
                                     Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
-    std::string next_input;
-    std::getline(*input_generator, next_input);
 
-    if (input_generator->eof()) {
+    double max_rt = options.get("max_runtime", -1.0);
+    double delta = mk::time_now() - beginning;
+    if (max_rt >= 0.0 && delta > max_rt) {
+        logger->info("Exceeded test maximum runtime");
+        cb(NoError());
+        return;
+    }
+
+    if (inputs.size() <= 0) {
         logger->debug("net_test: reached end of input");
         cb(NoError());
         return;
     }
-    if (!input_generator->good()) {
-        logger->warn("net_test: I/O error reading input");
-        cb(FileIoError());
-        return;
-    }
+    std::string next_input = inputs.front();
+    inputs.pop_front();
 
     double prog = 0.0;
-    if (num_entries > 0) {
+    if (max_rt > 0.0) {
+        prog = delta / max_rt;
+    } else if (num_entries > 0) {
         prog = *current_entry / (double)num_entries;
     }
     *current_entry += 1;
@@ -71,17 +79,40 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     logger->debug("net_test: running with input %s", next_input.c_str());
     main(next_input, options, [=](Var<report::Entry> test_keys) {
         report::Entry entry;
+        entry["input"] = next_input;
+        // Make sure the input is `null` rather than empty string
+        if (entry["input"] == "") {
+            entry["input"] = nullptr;
+        }
         entry["test_keys"] = *test_keys;
         entry["test_keys"]["client_resolver"] = resolver_ip;
-        entry["input"] = next_input;
         entry["measurement_start_time"] =
             *mk::timestamp(&measurement_start_time);
         entry["test_runtime"] = mk::time_now() - start_time;
+        entry["id"] = mk::sole::uuid4().str();
+
+        // Until we have support for passing options, leave it empty
+        entry["options"] = Entry::array();
+
+        // Until we have support for it, just put `null`
+        entry["probe_city"] = nullptr;
+
+        // Add test helpers
+        entry["test_helpers"] = Entry::object();
+        for (auto &name : test_helpers_names) {
+            if (options.count(name) != 0) {
+                entry["test_helpers"][name] = options[name];
+            }
+        }
+
+        // Add empty input hashes
+        entry["input_hashes"] = Entry::array();
 
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
         report.fill_entry(entry);
+        fixup_entry(entry); // Let drivers possibly fix-up the entry
         if (entry_cb) {
             try {
                 entry_cb(entry.dump(4));
@@ -136,6 +167,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
     // No need to perform further lookups if we don't need to save anything
     if (not save_ip and not save_asn and not save_cc) {
+        logger->warn("Not knowing user_ip means we cannot attempt to scrub it "
+                     "from the report");
         cb();
         return;
     }
@@ -144,6 +177,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
         [=](Error err, std::string ip) {
             if (err) {
                 logger->warn("ip_lookup() failed: error code: %d", err.code);
+                logger->warn("Not knowing user_ip means we cannot attempt "
+                             "to scrub it from the report");
                 cb();
                 return;
             }
@@ -152,6 +187,13 @@ void Runnable::geoip_lookup(Callback<> cb) {
                 logger->debug("saving user's real ip on user's request");
                 probe_ip = ip;
             }
+            /*
+             * XXX Passing down the stack the real probe IP to allow
+             * specific tests to scrub entries.
+             *
+             * See also measurement-kit/measurement-kit#1110.
+             */
+            options["real_probe_ip_"] = ip;
 
             auto country_path = options.get("geoip_country_path",
                                             std::string{});
@@ -192,6 +234,10 @@ void Runnable::geoip_lookup(Callback<> cb) {
 }
 
 void Runnable::open_report(Callback<Error> callback) {
+    /*
+     * TODO: it would probably more robust to future changes to
+     * set these values using a constructor.
+     */
     report.test_name = test_name;
     report.test_version = test_version;
     report.test_start_time = test_start_time;
@@ -290,70 +336,50 @@ void Runnable::begin(Callback<Error> cb) {
         begin_cb();
     }
     mk::utc_time_now(&test_start_time);
-    contact_bouncer([=](Error error) {
-        if (error) {
-            cb(error);
-            return;
-        }
-        geoip_lookup([=]() {
-            resolver_lookup(
-                [=](Error error, std::string resolver_ip_) {
-                    if (!error) {
-                        resolver_ip = resolver_ip_;
-                    } else {
-                        logger->debug("failed to lookup resolver ip");
-                    }
-                    open_report([=](Error error) {
-                        if (error and
-                            not options.get("ignore_open_report_error", true)) {
-                            cb(error);
-                            return;
-                        }
-                        size_t num_entries = 0;
-                        if (needs_input) {
-                            if (input_filepath == "") {
-                                logger->warn("an input file is required");
-                                cb(MissingRequiredInputFileError());
-                                return;
-                            }
-                            input_generator.reset(
-                                new std::ifstream(input_filepath));
-                            if (!input_generator->good()) {
-                                logger->warn("cannot read input file");
-                                cb(CannotOpenInputFileError());
-                                return;
-                            }
+    beginning = mk::time_now();
+    mk::dump_settings(options, "runnable", logger);
+    geoip_lookup([=]() {
+        resolver_lookup([=](Error error, std::string resolver_ip_) {
+            logger->progress(0.05, "geoip lookup");
+            if (!error) {
+                resolver_ip = resolver_ip_;
+            } else {
+                logger->debug("failed to lookup resolver ip");
+            }
+            open_report([=](Error error) {
+                if (error) {
+                    logger->warn("Cannot open report: %s",
+                                 error.explain().c_str());
+                    // FALLTHROUGH
+                }
+                logger->progress(0.1, "open report");
+                if (error and not options.get(
+                        "ignore_open_report_error", true)) {
+                    cb(error);
+                    return;
+                }
+                logger->set_progress_offset(0.1);
+                logger->set_progress_scale(0.8);
 
-                            // Count the number of entries
-                            std::string next_input;
-                            while (
-                                (std::getline(*input_generator, next_input))) {
-                                num_entries += 1;
-                            }
-                            if (!input_generator->eof()) {
-                                logger->warn("cannot read input file");
-                                cb(FileIoError());
-                                return;
-                            }
-                            // See http://stackoverflow.com/questions/5750485
-                            //  and http://stackoverflow.com/questions/28331017
-                            input_generator->clear();
-                            input_generator->seekg(0);
+                ErrorOr<std::deque<std::string>> maybe_inputs =
+                    process_input_filepaths(needs_input, input_filepaths,
+                                            probe_cc, options, logger,
+                                            nullptr, nullptr);
+                if (!maybe_inputs) {
+                    cb(maybe_inputs.as_error());
+                    return;
+                }
+                inputs = *maybe_inputs;
+                size_t num_entries = inputs.size();
 
-                        } else {
-                            input_generator.reset(new std::istringstream("\n"));
-                            num_entries = 1;
-                        }
-
-                        // Run `parallelism` measurements in parallel
-                        Var<size_t> current_entry(new size_t(0));
-                        mk::parallel(mk::fmap<size_t, Continuation<Error>>(
-                                         mk::range<size_t>(
-                                             options.get("parallelism", 3)),
-                                         [=](size_t thread_id) {
-                                             return [=](Callback<Error> cb) {
-                                                 run_next_measurement(
-                                                     thread_id, cb, num_entries,
+                // Run `parallelism` measurements in parallel
+                Var<size_t> current_entry(new size_t(0));
+                mk::parallel(
+                    mk::fmap<size_t, Continuation<Error>>(
+                        mk::range<size_t>(options.get("parallelism", 3)),
+                        [=](size_t thread_id) {
+                            return [=](Callback<Error> cb) {
+                                run_next_measurement(thread_id, cb, num_entries,
                                                      current_entry);
                                              };
                                          }),
@@ -363,7 +389,6 @@ void Runnable::begin(Callback<Error> cb) {
                 },
                 options, reactor, logger);
         });
-    });
 }
 
 void Runnable::end(Callback<Error> cb) {
@@ -374,7 +399,13 @@ void Runnable::end(Callback<Error> cb) {
             /* Suppress */ ;
         }
     }
-    report.close(cb);
+    logger->set_progress_offset(0.0);
+    logger->set_progress_scale(1.0);
+    logger->progress(0.95, "ending the test");
+    report.close([=](Error err) {
+        logger->progress(1.00, "test complete");
+        cb(err);
+    });
 }
 
 } // namespace nettests

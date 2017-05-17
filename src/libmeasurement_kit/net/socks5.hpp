@@ -11,18 +11,27 @@
 namespace mk {
 namespace net {
 
+/*
+ * TODO: now that events are not emitted after close, we can safely
+ * refactor this as a factory function, because we do not need to
+ * worry about whether the `on_connect` callback has invoked `close`
+ * before emitting `DATA` with extra data that we may have read.
+ */
 class Socks5 : public Emitter {
   public:
     // Constructor that attaches to already existing transport
-    Socks5(Var<Transport>, Settings, Var<Reactor> = Reactor::global(),
-            Var<Logger> = Logger::global());
+    Socks5(Var<Transport>, Settings, Var<Reactor>, Var<Logger>);
 
     void set_timeout(double timeout) override { conn->set_timeout(timeout); }
 
     void clear_timeout() override { conn->clear_timeout(); }
 
-    void do_send(Buffer data) override { conn->write(data); }
+  protected:
+    void adjust_timeout(double) override { /* NOTHING */ }
 
+    void start_writing() override { conn->write(output_buff); }
+
+  public:
     void close(std::function<void()> callback) override {
         isclosed = true;
         conn->close(callback);

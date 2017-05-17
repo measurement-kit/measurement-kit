@@ -13,7 +13,7 @@ namespace http {
 
 // TODO: mock more functions in request.cpp
 
-template <MK_MOCK_NAMESPACE(net, connect)>
+template <MK_MOCK_AS(net::connect, net_connect)>
 void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
                           Var<Reactor> reactor = Reactor::global(),
                           Var<Logger> logger = Logger::global()) {

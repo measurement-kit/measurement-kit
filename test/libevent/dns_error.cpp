@@ -31,21 +31,21 @@ TEST_CASE("Evdns errors are correctly mapped to OONI failures") {
     REQUIRE(dns_error(DNS_ERR_TRUNCATED)
                 .as_ooni_error() == "dns_lookup_error");
     REQUIRE(dns_error(DNS_ERR_UNKNOWN).as_ooni_error() ==
-            "unknown_failure 2006");
+            "dns_unknown_error");
     REQUIRE(dns_error(DNS_ERR_TIMEOUT).as_ooni_error() ==
             "generic_timeout_error");
     REQUIRE(dns_error(DNS_ERR_SHUTDOWN).as_ooni_error() ==
-            "unknown_failure 2008");
+            "dns_shutdown");
     REQUIRE(dns_error(DNS_ERR_CANCEL).as_ooni_error() ==
-            "unknown_failure 2009");
+            "dns_cancel");
     REQUIRE(dns_error(DNS_ERR_NODATA).as_ooni_error() ==
             "dns_lookup_error");
 
     // Just three random numbers to increase confidence...
     REQUIRE(dns_error(1024).as_ooni_error() ==
-            "unknown_failure 1");
+            "generic_error");
     REQUIRE(dns_error(1025).as_ooni_error() ==
-            "unknown_failure 1");
+            "generic_error");
     REQUIRE(dns_error(1026).as_ooni_error() ==
-            "unknown_failure 1");
+            "generic_error");
 }

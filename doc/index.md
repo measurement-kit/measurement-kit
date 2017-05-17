@@ -1,4 +1,4 @@
-Welcome to Measurement Kit **v0.5.0-dev** documentation!
+Welcome to Measurement Kit **v0.7.0-dev** documentation!
 
 # How to generate documentation
 
@@ -28,9 +28,14 @@ to find out more on a specific library API.
 - [mlabns](api/mlabns.md): m-lab name service library
 - [ndt](api/ndt.md): network diagnostic tool library
 - [net](api/net.md): low-level networking library
+- [nettests](api/nettests.md): drive running network tests
 - [ooni](api/ooni.md): open observatory of network interference library
+- [portable](api/portable.md): portable C library headers
 - [report](api/report.md): library for managing test results
 - [traceroute](api/traceroute.md): traceroute library
+
+If you're new to MeasurementKit and all you want is to use it to run
+network tests, start from [nettests](api/nettests.md).
 
 Each library is contained in its own header file named after the module and
 stored inside the `measurement_kit` directory in the include path.

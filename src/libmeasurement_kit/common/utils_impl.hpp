@@ -18,11 +18,12 @@ namespace mk {
  *
  * See <http://stackoverflow.com/questions/116038/what-is-the-best-way-to-read-an-entire-file-into-a-stdstring-in-c>.
  */
-template <typename T, MK_MOCK_NAMESPACE(std, fopen),
-          MK_MOCK_NAMESPACE_SUFFIX(std, fseek, 1),
-          MK_MOCK_NAMESPACE(std, ftell),
-          MK_MOCK_NAMESPACE_SUFFIX(std, fseek, 2),
-          MK_MOCK_NAMESPACE(std, fread), MK_MOCK_NAMESPACE(std, fclose)>
+template <typename T, MK_MOCK_AS(std::fopen, std_fopen),
+          MK_MOCK_AS(std::fseek, std_fseek_1),
+          MK_MOCK_AS(std::ftell, std_ftell),
+          MK_MOCK_AS(std::fseek, std_fseek_2),
+          MK_MOCK_AS(std::fread, std_fread),
+          MK_MOCK_AS(std::fclose, std_fclose)>
 ErrorOr<std::vector<T>> slurpv_impl(std::string p) {
     FILE *filep = std_fopen(p.c_str(), "rb");
     if (filep == nullptr) {

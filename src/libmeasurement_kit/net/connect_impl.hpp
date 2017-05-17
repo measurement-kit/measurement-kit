@@ -4,14 +4,16 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_CONNECT_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_CONNECT_IMPL_HPP
 
-#include "../common/utils.hpp"
-#include "../net/connect.hpp"
-
 #include <measurement_kit/net.hpp>
 
 #include <event2/bufferevent.h>
 
+#include <cerrno>
 #include <sstream>
+
+#include "../common/utils.hpp"
+#include "../net/connect.hpp"
+#include "../net/utils.hpp"
 
 struct bufferevent;
 
@@ -22,7 +24,13 @@ void mk_bufferevent_on_event(bufferevent *, short, void *);
 namespace mk {
 namespace net {
 
-template <MK_MOCK(evutil_parse_sockaddr_port), MK_MOCK(bufferevent_socket_new),
+// Proxy required because `make_sockaddr` is overloaded
+static Error make_sockaddr_proxy(std::string s, std::string p,
+                                 sockaddr_storage *ss, socklen_t *len) {
+    return make_sockaddr(s, p, ss, len);
+}
+
+template <MK_MOCK(make_sockaddr_proxy), MK_MOCK(bufferevent_socket_new),
           MK_MOCK(bufferevent_set_timeouts),
           MK_MOCK(bufferevent_socket_connect)>
 void connect_base(std::string address, int port,
@@ -30,19 +38,25 @@ void connect_base(std::string address, int port,
                   double timeout = 10.0,
                   Var<Reactor> reactor = Reactor::global(),
                   Var<Logger> logger = Logger::global()) {
-    logger->debug("connect_base %s:%d", address.c_str(), port);
 
-    std::stringstream ss;
-    ss << address << ":" << port;
-    std::string endpoint = ss.str();
-    sockaddr_storage storage;
-    sockaddr *saddr = (sockaddr *)&storage;
-    int salen = sizeof storage;
+    std::string endpoint = [&]() {
+        Endpoint endpoint;
+        endpoint.hostname = address;
+        endpoint.port = (uint16_t)port; /* XXX We should change the prototype */
+        return serialize_endpoint(endpoint);
+    }();
+    logger->debug("connect_base %s", endpoint.c_str());
 
-    if (evutil_parse_sockaddr_port(endpoint.c_str(), saddr, &salen) != 0) {
-        cb(GenericError(), nullptr, 0.0);
+    std::string port_string = std::to_string(port);
+    sockaddr_storage storage = {};
+    socklen_t salen = 0;
+    Error err = make_sockaddr_proxy(address, port_string, &storage, &salen);
+    if (err != NoError()) {
+        logger->warn("cannot parse endpoint: '%s'", endpoint.c_str());
+        cb(err, nullptr, 0.0);
         return;
     }
+    sockaddr *saddr = (sockaddr *)&storage;
 
     /*
      *  Rationale for deferring callbacks:
@@ -75,10 +89,19 @@ void connect_base(std::string address, int port,
     double begin = mk::time_now();
 
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
+        logger->warn("connect() for %s failed immediately", endpoint.c_str());
         bufferevent_free(bev);
-        cb(GenericError(), nullptr, 0.0);
+        Error sys_error = mk::net::map_errno(errno);
+        if (sys_error == NoError()) {
+            sys_error = GenericError(); /* We must report an error */
+        }
+        logger->warn("reason why connect() has failed: %s",
+                     sys_error.as_ooni_error().c_str());
+        cb(sys_error, nullptr, 0.0);
         return;
     }
+
+    logger->debug("connect() in progress...");
 
     // WARNING: set callbacks after connect() otherwise we free `bev` twice
     // NOTE: In case of `new` failure we let the stack unwind
@@ -86,7 +109,11 @@ void connect_base(std::string address, int port,
         bev, nullptr, nullptr, mk_bufferevent_on_event,
         new Callback<Error, bufferevent *>([=](Error err, bufferevent *bev) {
             if (err) {
+                logger->warn("connect() for %s failed in its callback",
+                             endpoint.c_str());
                 bufferevent_free(bev);
+                logger->warn("reason why connect() has failed: %s",
+                             err.as_ooni_error().c_str());
                 cb(err, nullptr, 0.0);
                 return;
             }
@@ -96,7 +123,7 @@ void connect_base(std::string address, int port,
         }));
 }
 
-template <MK_MOCK_NAMESPACE(net, connect)>
+template <MK_MOCK_AS(net::connect, net_connect)>
 void connect_many_impl(Var<ConnectManyCtx> ctx) {
     // Implementation note: this function connects sequentially, which
     // is slower but also much simpler to implement and verify

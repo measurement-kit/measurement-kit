@@ -22,6 +22,9 @@ ALL_TESTS          = # Empty
 
 include include.am
 
+# We link with libresolv to have an oracle for our base64 implementation
+test_common_encoding_LDADD += -lresolv
+
 TESTS = $(ALL_TESTS)
 check_PROGRAMS = $(ALL_TESTS)
 
@@ -48,8 +51,11 @@ VALGRIND = $(LIBTOOL) --mode=execute valgrind --trace-children=yes             \
   --error-exitcode=1 --dsymutil=yes --leak-check=yes --gen-suppressions=all
 
 VALGRIND_TRAVIS = $(VALGRIND) --suppressions=build/valgrind/openssl.supp
+VALGRIND_DOCKER = $(VALGRIND) --suppressions=build/valgrind/strlen.supp
 
 check-am-valgrind:
 	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND_TRAVIS)'
+run-valgrind-docker:
+	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND_DOCKER)'
 run-valgrind:
 	$(MAKE) $(AM_MAKEFLAGS) check-am LOG_COMPILER='$(VALGRIND)'

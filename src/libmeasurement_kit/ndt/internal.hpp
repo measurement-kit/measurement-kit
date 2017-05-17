@@ -56,7 +56,7 @@
 
 // During the handshake we declare to be measurement-kit version such and
 // such that is compatible with version v3.7.0 of NDT
-#define MSG_NDT_VERSION "v3.7.0 (measurement-kit/" MEASUREMENT_KIT_VERSION ")"
+#define MSG_NDT_VERSION "v3.7.0"
 
 #define TEST_C2S_DURATION 10.0
 
@@ -167,7 +167,7 @@ void disconnect_and_callback(Var<Context> ctx, Error err);
 */
 namespace test_c2s {
 
-void coroutine(std::string address, int port, double runtime,
+void coroutine(Var<Entry>, std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
                Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
                Var<Logger> logger = Logger::global());
@@ -243,7 +243,7 @@ void run(Var<Context> ctx, Callback<Error> callback);
 
 inline void log_speed(Var<Logger> logger, std::string type, int num_streams,
                       double elapsed, double speed) {
-    logger->log(MK_LOG_JSON | MK_LOG_INFO, R"xx({
+    logger->log(MK_LOG_EVENT | MK_LOG_INFO, R"xx({
             "type": "%s",
             "elapsed": [%lf, "s"],
             "num_streams": %d,

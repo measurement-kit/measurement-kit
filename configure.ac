@@ -3,7 +3,7 @@
 # information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.5.0-dev, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.7.0-dev, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -37,11 +37,15 @@ MK_AM_DISABLE_TRACEROUTE
 # See above comment
 AC_PROG_CXX
 
-# Must set -pthread before testing for -levent_pthreads
 if test "`uname`" != "Darwin"; then
+  # Must set -pthread before testing for -levent_pthreads
   CFLAGS="$CFLAGS -pthread"
   CXXFLAGS="$CXXFLAGS -pthread"
   LDFLAGS="$LDFLAGS -pthread"
+elif test "$cross_compiling" != yes; then
+  # On my macOS, /usr/local is not added automatically
+  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
+  LDFLAGS="$LDFLAGS -L/usr/local/lib"
 fi
 
 MK_AM_CHECK_LIBC_FUNCS
@@ -61,6 +65,11 @@ MK_CHECK_CA_BUNDLE
 CPPFLAGS="-I \$(top_srcdir)/include $CPPFLAGS"
 CFLAGS="-Wall -Wextra -pedantic $CFLAGS"
 CXXFLAGS="-Wall -Wextra -pedantic $CXXFLAGS"
+
+# Force compiling the http_parser in non-strict mode. This allows us to test
+# partially broken sites like mail.voila.fr that send spaces between the header
+# key and the separator (i.e. ':').
+CPPFLAGS="-DHTTP_PARSER_STRICT=0 $CPPFLAGS"
 
 MK_AM_REQUIRE_C99
 MK_AM_REQUIRE_CXX11

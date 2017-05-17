@@ -20,7 +20,7 @@ using namespace mk::http;
 // Either tor was running and hence everything should be OK, or tor was
 // not running and hence connect() to socks port must have failed.
 static inline bool check_error_after_tor(Error e) {
-    return e == NoError() or e == ConnectFailedError();
+    return e == NoError() or e == ConnectionRefusedError();
 }
 
 /*
@@ -219,7 +219,9 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
                     REQUIRE(!err);
 
                     request_recv_response(transport,
-                                          [&called](Error, Var<Response>) {
+                                          [&called](Error e, Var<Response> r) {
+                                              REQUIRE(e == NoError());
+                                              REQUIRE(r->status_code == 200);
                                               ++called;
                                               break_loop();
                                           });
@@ -243,6 +245,28 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
 }
 
 #endif // ENABLE_INTEGRATION_TESTS
+
+TEST_CASE("http::request_recv_response() deals with immediate EOF") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        connect("xxx.antani", 0,
+                [=](Error err, Var<Transport> transport) {
+                    REQUIRE(!err);
+                    request_recv_response(transport,
+                                          [=](Error e, Var<Response> r) {
+                                              REQUIRE(e == EofError());
+                                              REQUIRE(!!r);
+                                              reactor->stop();
+                                          },
+                                          reactor);
+                    transport->emit_error(EofError());
+                },
+                {// With this connect() succeeds immediately and the
+                 // callback receives a dumb Emitter transport that you
+                 // can drive by calling its emit_FOO() methods
+                 {"net/dumb_transport", true}});
+    });
+}
 
 #define SOCKS_PORT_IS(port)                                                    \
     static void socks_port_is_##port(                                          \
@@ -474,11 +498,14 @@ TEST_CASE("http::request() works as expected using httpo URLs") {
                 if (!error) {
                     REQUIRE(response->status_code == 200);
                     nlohmann::json body = nlohmann::json::parse(response->body);
-                    REQUIRE(body["default"]["collector"] ==
-                            "httpo://ihiderha53f36lsd.onion");
-                    REQUIRE(body["dns"]["collector"] ==
-                            "httpo://ihiderha53f36lsd.onion");
-                    REQUIRE(body["dns"]["address"] == "213.138.109.232:57004");
+                    auto check = [](std::string s) {
+                        REQUIRE(s.substr(0, 8) == "httpo://");
+                        REQUIRE(s.size() >= 6);
+                        REQUIRE(s.substr(s.size() - 6) == ".onion");
+                    };
+                    check(body["default"]["collector"]);
+                    check(body["dns"]["collector"]);
+                    REQUIRE(body["dns"]["address"] == "37.218.247.110:57004");
                 }
                 break_loop();
             });
@@ -511,6 +538,8 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
     });
 }
 
+// Test commented out because now this site has no valid certificate
+#if 0
 TEST_CASE("http::request() correctly follows redirects") {
     loop_with_initial_event([]() {
         request(
@@ -535,6 +564,104 @@ TEST_CASE("http::request() correctly follows redirects") {
             });
     });
 }
+#endif
+
+TEST_CASE("Headers are preserved across redirects") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        request(
+            {
+                {"http/url", "http://httpbin.org/absolute-redirect/3"},
+                {"http/max_redirects", 4},
+            },
+            {
+                {"Spam", "Ham"}, {"Accept", "*/*"},
+            },
+            "",
+            [=](Error error, Var<Response> response) {
+                REQUIRE(!error);
+                REQUIRE(response->status_code == 200);
+                REQUIRE(response->request->url.path == "/get");
+                REQUIRE(response->previous->status_code == 302);
+                REQUIRE(response->previous->request->url.path ==
+                        "/absolute-redirect/1");
+                auto body = nlohmann::json::parse(response->body);
+                REQUIRE(body["headers"]["Spam"] == "Ham");
+                reactor->stop();
+            },
+            reactor);
+    });
+}
+
+TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
+    /*
+     * At the moment of writing this test, http://hushmail.com redirects to
+     * https://hushmail.com closing the connection with EOF.
+     *
+     * See measurement-kit/ooniprobe-ios#79.
+     */
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        request(
+            {
+                {"http/url", "http://hushmail.com"},
+                {"http/max_redirects", 4},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "",
+            [=](Error error, Var<Response> response) {
+                REQUIRE(!error);
+                REQUIRE(response->status_code == 200);
+                REQUIRE(response->request->url.schema == "https");
+                REQUIRE(response->request->url.address == "www.hushmail.com");
+                REQUIRE(response->previous->status_code / 100 == 3);
+                REQUIRE(response->previous->request->url.schema == "http");
+                reactor->stop();
+            },
+            reactor);
+    });
+}
+
+/*
+ * Test commented out because it floods us with false positives.
+ *
+ * See https://github.com/measurement-kit/measurement-kit/pull/1185.
+ */
+#if 0
+TEST_CASE("We correctly deal with schema-less redirect") {
+    /*
+     * At the moment of writing this test, http://bacardi.com redirects to
+     * //bacardi.com which used to confuse our redirect code.
+     */
+    Var<Reactor> reactor = Reactor::make();
+    reactor->loop_with_initial_event([=]() {
+        request(
+            {
+                {"http/url",
+                "https://httpbin.org/redirect-to?url=%2F%2Fhttpbin.org%2Fheaders"},
+                {"http/max_redirects", 4},
+            },
+            {
+                {"Accept", "*/*"},
+            },
+            "",
+            [=](Error error, Var<Response> response) {
+                REQUIRE(!error);
+                REQUIRE(response->status_code == 200);
+                REQUIRE(response->request->url.schema == "https");
+                REQUIRE(response->request->url.address == "httpbin.org");
+                REQUIRE(response->request->url.path == "/headers");
+                REQUIRE(response->previous->status_code / 100 == 3);
+                REQUIRE(response->previous->request->url.path
+                        == "/redirect-to");
+                reactor->stop();
+            },
+            reactor);
+    });
+}
+#endif
 
 #endif // ENABLE_INTEGRATION_TESTS
 
@@ -582,4 +709,65 @@ TEST_CASE("http::request() fails if fails request_send()") {
                     break_loop();
                 });
     });
+}
+
+TEST_CASE("http::redirect() works as expected") {
+    SECTION("When location starts with //") {
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("http://www.x.org/f?x"),
+                           "//www.y.com/bar")
+                ->str() == "http://www.y.com/bar");
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("https://www.x.org/f?x"),
+                           "//www.y.com/bar")
+                ->str() == "https://www.y.com/bar");
+    }
+    SECTION("When location starts with /") {
+        REQUIRE(http::redirect(
+                    *http::parse_url_noexcept("http://www.x.org/f?x"), "/bar")
+                    ->str() == "http://www.x.org/bar");
+        REQUIRE(http::redirect(
+                    *http::parse_url_noexcept("https://www.x.org/f?x"), "/bar")
+                    ->str() == "https://www.x.org/bar");
+        REQUIRE(http::redirect(
+                    *http::parse_url_noexcept("http://www.x.org:1/f?x"), "/bar")
+                    ->str() == "http://www.x.org:1/bar");
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("https://www.x.org:1/f?x"),
+                           "/bar")
+                ->str() == "https://www.x.org:1/bar");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("https://1.1.1.1/f?x"),
+                               "/bar")
+                    ->str() == "https://1.1.1.1/bar");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://[::1]/f?x"),
+                               "/bar")
+                    ->str() == "http://[::1]/bar");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://[::1]:66/f?x"),
+                               "/bar")
+                    ->str() == "http://[::1]:66/bar");
+    }
+    SECTION("When location is an absolute URL") {
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://a.org/f?x"),
+                               "https://b.org/b")
+                    ->str() == "https://b.org/b");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("https://a.org/f?x"),
+                               "http://b.org/b")
+                    ->str() == "http://b.org/b");
+    }
+    SECTION("When location is a relative URL") {
+        REQUIRE(http::redirect(*http::parse_url_noexcept("http://a.org/f"), "g")
+                    ->str() == "http://a.org/f/g");
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("http://a.org/f/"), "g")
+                ->str() == "http://a.org/f/g");
+        /*
+         * Explicitly make sure that the old query is cleared.
+         */
+        REQUIRE(
+            http::redirect(*http::parse_url_noexcept("https://a.org/f?x"), "g")
+                ->str() == "https://a.org/f/g");
+        REQUIRE(http::redirect(*http::parse_url_noexcept("https://a.org/f?x"),
+                               "g?h")
+                    ->str() == "https://a.org/f/g?h");
+    }
 }

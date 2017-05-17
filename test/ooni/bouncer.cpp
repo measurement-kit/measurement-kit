@@ -164,21 +164,29 @@ TEST_CASE("post_net_tests() works") {
                 "0.0.1", {"web-connectivity"},
                 [=](Error e, Var<ooni::BouncerReply> reply) {
                     REQUIRE(!e);
-                    REQUIRE(*reply->get_collector() ==
-                            "httpo://ihiderha53f36lsd.onion");
-                    REQUIRE(*reply->get_collector_alternate("https") ==
-                            "https://a.collector.ooni.io:4441");
-                    REQUIRE(*reply->get_collector_alternate("cloudfront") ==
-                            "https://das0y2z2ribx3.cloudfront.net");
+                    auto check_onion = [](std::string s) {
+                        REQUIRE(s.substr(0, 8) == "httpo://");
+                        REQUIRE(s.size() >= 6);
+                        REQUIRE(s.substr(s.size() - 6) == ".onion");
+                    };
+                    auto check_https = [](std::string s) {
+                        REQUIRE(s.substr(0, 8) == "https://");
+                        REQUIRE(s.find("ooni.io") != std::string::npos);
+                    };
+                    auto check_cf = [](std::string s) {
+                        REQUIRE(s.substr(0, 8) == "https://");
+                        REQUIRE(s.find("cloudfront.net") != std::string::npos);
+                    };
+
+                    check_onion(*reply->get_collector());
+                    check_https(*reply->get_collector_alternate("https"));
+                    check_cf(*reply->get_collector_alternate("cloudfront"));
                     REQUIRE(*reply->get_name() == "web-connectivity");
-                    REQUIRE(*reply->get_test_helper("web-connectivity") ==
-                            "httpo://7jne2rpg5lsaqs6b.onion");
-                    REQUIRE(*reply->get_test_helper_alternate(
-                                "web-connectivity", "https") ==
-                            "https://a.web-connectivity.th.ooni.io:4442");
-                    REQUIRE(*reply->get_test_helper_alternate(
-                                "web-connectivity", "cloudfront") ==
-                            "https://d2vt18apel48hw.cloudfront.net");
+                    check_onion(*reply->get_test_helper("web-connectivity"));
+                    check_https(*reply->get_test_helper_alternate(
+                                "web-connectivity", "https"));
+                    check_cf(*reply->get_test_helper_alternate(
+                                "web-connectivity", "cloudfront"));
                     reactor->break_loop();
                 },
                 {}, reactor, Logger::global());

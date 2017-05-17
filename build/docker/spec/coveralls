@@ -1,12 +1,11 @@
 #!/bin/sh
 set -e
 
-export CC="gcc"
-export CFLAGS="$CFLAGS --coverage -g -O0"
-export CPP="gcc -E"
-export CXXFLAGS="$CXXFLAGS --coverage -g -O0"
-export CXX="g++"
-export LDFLAGS="$LDFLAGS --coverage"
+export pkg_configure_flags="$pkg_configure_flags --enable-coverage"
+export pkg_make_check_rule="check"
+
+export CFLAGS="$CFLAGS -g -O0"
+export CXXFLAGS="$CXXFLAGS -g -O0"
 
 debian_deps="$debian_deps autoconf"
 debian_deps="$debian_deps automake"
@@ -20,21 +19,19 @@ debian_deps="$debian_deps make"
 debian_deps="$debian_deps python"
 debian_deps="$debian_deps python-pip"
 debian_deps="$debian_deps wget"
-
-subr_depend() {
-    apt-get update
-    apt-get upgrade -y
-    apt-get install -y $debian_deps
-    pip install --user cpp-coveralls
-}
+pip_deps="$pip_deps cpp-coveralls"
 
 subr_finalize() {
-    /root/.local/bin/coveralls                                             \
+    if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
+        $HOME/.local/bin/coveralls                                         \
                                --gcov-options '\-lp'                       \
                                --build-root .                              \
                                --exclude include/measurement_kit/ext       \
-                               --exclude src/ext                           \
+                               --exclude src/libmeasurement_kit/ext        \
+                               --exclude src/libmeasurement_kit/portable   \
+                               --exclude src/measurement_kit               \
                                --exclude example                           \
                                --exclude third_party                       \
-      > /dev/null;
+            > /dev/null;
+    fi
 }

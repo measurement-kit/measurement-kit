@@ -5,14 +5,15 @@
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ndt.hpp>
 
+#include "../ndt/utils.hpp"
+
 namespace mk {
 namespace nettests {
 
 NdtTest::NdtTest() : BaseTest() {
     runnable.reset(new NdtRunnable);
-    runnable->options["save_real_probe_ip"] = true;
     runnable->test_name = "ndt";
-    runnable->test_version = "0.0.4";
+    runnable->test_version = "0.1.0";
 }
 
 void NdtRunnable::main(std::string, Settings settings,
@@ -24,6 +25,16 @@ void NdtRunnable::main(std::string, Settings settings,
     ndt::run(entry, [=](Error error) {
         if (error) {
             (*entry)["failure"] = error.as_ooni_error();
+        }
+        try {
+            (*entry)["simple"] = mk::ndt::utils::compute_simple_stats(*entry, logger);
+        } catch (const std::exception &) {
+            /* Just in case */ ;
+        }
+        try {
+            (*entry)["advanced"] = mk::ndt::utils::compute_advanced_stats(*entry, logger);
+        } catch (const std::exception &) {
+            /* Just in case */ ;
         }
         cb(entry);
     }, settings, reactor, logger);

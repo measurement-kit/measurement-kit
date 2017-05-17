@@ -13,10 +13,10 @@ OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
     reactor = r;
     logger = l;
     if (settings.find("collector_base_url") == settings.end()) {
-        // Note: by default we use the testing collector URL because otherwise
-        // testing runs would be collected creating noise and using resources
+        // Note: by default we use the production collector URL and we need
+        // to remember to switch to the testing one in tests.
         settings["collector_base_url"] =
-            ooni::collector::testing_collector_url();
+            ooni::collector::production_collector_url();
     }
     logger->info("Results collector: %s",
         settings["collector_base_url"].c_str());

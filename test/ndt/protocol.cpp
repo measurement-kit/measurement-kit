@@ -299,7 +299,7 @@ static void eof_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
 
 TEST_CASE("wait_close() deals with EofError") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     protocol::wait_close_impl<eof_error>(
         ctx, [](Error err) { REQUIRE(err == NoError()); });
 }
@@ -311,7 +311,7 @@ static void timeout_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
 
 TEST_CASE("wait_close() deals with TimeoutError") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     protocol::wait_close_impl<timeout_error>(
         ctx, [](Error err) { REQUIRE(err == NoError()); });
 }
@@ -323,7 +323,7 @@ static void mocked_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
 
 TEST_CASE("wait_close() deals with an error") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     protocol::wait_close_impl<mocked_error>(
         ctx, [](Error err) { REQUIRE(err == WaitingCloseError()); });
 }
@@ -335,7 +335,7 @@ static void no_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
 
 TEST_CASE("wait_close() deals with a extra data") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     protocol::wait_close_impl<no_error>(
         ctx, [](Error err) { REQUIRE(err == DataAfterLogoutError()); });
 }
@@ -350,7 +350,7 @@ TEST_CASE("disconnect_and_callback_impl() without transport") {
 // To increase coverage
 TEST_CASE("disconnect_and_callback_impl() with transport") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     ctx->callback = [](Error e) { REQUIRE(e == MockedError()); };
     protocol::disconnect_and_callback_impl(ctx, MockedError());
 }

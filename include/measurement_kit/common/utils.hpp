@@ -34,5 +34,8 @@ std::string sha256_of(std::string input);
 ErrorOr<std::vector<char>> slurpv(std::string path);
 ErrorOr<std::string> slurp(std::string path);
 
+bool startswith(std::string s, std::string p);
+bool endswith(std::string s, std::string p);
+
 } // namespace mk
 #endif

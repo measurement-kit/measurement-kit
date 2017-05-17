@@ -8,11 +8,11 @@ namespace mk {
 namespace ndt {
 namespace test_c2s {
 
-void coroutine(std::string address, int port, double runtime,
+void coroutine(Var<Entry> e, std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout,
                Settings settings, Var<Reactor> reactor,
                Var<Logger> logger) {
-    coroutine_impl(address, port, runtime, cb, timeout, settings, reactor,
+    coroutine_impl(e, address, port, runtime, cb, timeout, settings, reactor,
                    logger);
 }
 

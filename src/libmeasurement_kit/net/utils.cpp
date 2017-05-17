@@ -2,15 +2,115 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include <deque>
+#include "../ext/http_parser.h"
+#include "../net/utils.hpp"
+
+#include <cassert>
 #include <cstring>
+#include <deque>
+#include <sstream>
+#include <system_error>
 
 #include <event2/util.h>
 
-#include "../net/utils.hpp"
+#include <measurement_kit/net.hpp>
 
 namespace mk {
 namespace net {
+
+static Error make_sockaddr_ipv4(std::string s, uint16_t p, sockaddr_storage *ss,
+                                socklen_t *solen) noexcept {
+    sockaddr_storage ss4 = {};
+    sockaddr_in *sin4 = (sockaddr_in *)&ss4;
+    if (inet_pton(AF_INET, s.c_str(), &sin4->sin_addr) != 1) {
+        return ValueError();
+    }
+    sin4->sin_family = AF_INET;
+    sin4->sin_port = htons(p);
+    if (ss != nullptr) {
+        *ss = ss4;
+    }
+    if (solen != nullptr) {
+        *solen = sizeof(*sin4);
+    }
+    return NoError();
+}
+
+static Error make_sockaddr_ipv6(std::string s, uint16_t p, sockaddr_storage *ss,
+                                socklen_t *solen) noexcept {
+    sockaddr_storage ss6 = {};
+    sockaddr_in6 *sin6 = (sockaddr_in6 *)&ss6;
+    if (inet_pton(AF_INET6, s.c_str(), &sin6->sin6_addr) != 1) {
+        return ValueError();
+    }
+    sin6->sin6_family = AF_INET6;
+    sin6->sin6_port = htons(p);
+    if (ss != nullptr) {
+        *ss = ss6;
+    }
+    if (solen != nullptr) {
+        *solen = sizeof(*sin6);
+    }
+    return NoError();
+}
+
+bool is_ipv4_addr(std::string s) {
+    return make_sockaddr_ipv4(s, 80, nullptr, nullptr) == NoError();
+}
+
+bool is_ipv6_addr(std::string s) {
+    return make_sockaddr_ipv6(s, 80, nullptr, nullptr) == NoError();
+}
+
+bool is_ip_addr(std::string s) {
+    return is_ipv4_addr(s) || is_ipv6_addr(s);
+}
+
+static ErrorOr<Endpoint> parse_endpoint_internal(std::string s) {
+    http_parser_url parser = {};
+    http_parser_url_init(&parser);
+    /*
+     * Here the trick is that we ask the parser to parse the URL typically
+     * passed to the CONNECT header, which is in the format we want.
+     */
+    if (http_parser_parse_url(s.data(), s.size(), 1, &parser) != 0) {
+        return ValueError();
+    }
+    assert(parser.field_set == ((1 << UF_HOST) | (1 << UF_PORT)));
+    Endpoint epnt = {};
+    epnt.hostname = s.substr(parser.field_data[UF_HOST].off,
+                             parser.field_data[UF_HOST].len);
+    epnt.port = parser.port;
+    return epnt;
+}
+
+static std::string serialize_address_port(std::string a, uint16_t p) {
+    std::stringstream ss;
+    bool is_ipv6 = is_ipv6_addr(a);
+    if (is_ipv6) ss << "[";
+    ss << a;
+    if (is_ipv6) ss << "]";
+    ss << ":";
+    ss << p;
+    std::string s = ss.str();
+    return s;
+}
+
+ErrorOr<Endpoint> parse_endpoint(std::string s, uint16_t default_port) {
+    ErrorOr<Endpoint> maybe_epnt = parse_endpoint_internal(s);
+    if (!!maybe_epnt) {
+        return maybe_epnt;
+    }
+    /*
+     * The CONNECT parser is quite strict. It fails if the port is not
+     * present. After first failure, retry adding the default port.
+     */
+    return parse_endpoint_internal(serialize_address_port(s, default_port));
+}
+
+std::string serialize_endpoint(Endpoint epnt) {
+    return serialize_address_port(epnt.hostname, epnt.port);
+}
 
 int storage_init(sockaddr_storage *storage, socklen_t *salen,
                  const char *family, const char *address, const char *port,
@@ -47,6 +147,10 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
         logger->warn("utils:storage_init: invalid port");
         return -1;
     }
+
+    /*
+     * TODO: merge this code with the above helpers.
+     */
 
     memset(storage, 0, sizeof(*storage));
     switch (_family) {
@@ -173,6 +277,59 @@ Error disable_nagle(socket_t sockfd) {
         return SocketError();
     }
     return NoError();
+}
+
+Error map_errno(int error_code) {
+    if (error_code == 0) {
+        return NoError();
+    }
+    /*
+     * In most Unix systems they are the same error. For the few systems in
+     * which they are not (and note I don't even know whether measurement-kit
+     * does compile on these systems), force EAGAIN to be EWOULDBLOCK.
+     *
+     * (Yes, EWOULDBLOCK is a BSD-ism, but I like it more.)
+     */
+    if (error_code == EAGAIN) {
+        error_code = EWOULDBLOCK;
+        // FALLTHROUGH
+    }
+#define XX(_code_, _name_, _descr_)                                            \
+    if (std::make_error_condition(std::errc::_descr_).value() == error_code) { \
+        return _name_();                                                       \
+    }
+    MK_NET_ERRORS_XX
+#undef XX
+    return GenericError();
+}
+
+Error make_sockaddr(std::string s, std::string p, sockaddr_storage *ss,
+                    socklen_t *solen) noexcept {
+    auto maybe_pn = lexical_cast_noexcept<long long>(p);
+    if (!maybe_pn) {
+        return maybe_pn.as_error();
+    }
+    /*
+     * I initially thought that lexical_cast would have been able to detect
+     * overflow caused by negative numbers being feed to it when requested to
+     * parse a positive only integer. It seems it's not always like this.
+     *
+     * See <https://travis-ci.org/measurement-kit/measurement-kit/jobs/194992117#L2007>
+     */
+    if (*maybe_pn < 0 || *maybe_pn > 65535) {
+        return ValueError();
+    }
+    // Static cast good because above we make sure it is feasible
+    return make_sockaddr(s, static_cast<uint16_t>(*maybe_pn), ss, solen);
+}
+
+Error make_sockaddr(std::string s, uint16_t p, sockaddr_storage *ss,
+                    socklen_t *solen) noexcept {
+    Error err = make_sockaddr_ipv4(s, p, ss, solen);
+    if (err != NoError()) {
+        err = make_sockaddr_ipv6(s, p, ss, solen);
+    }
+    return err;
 }
 
 } // namespace net

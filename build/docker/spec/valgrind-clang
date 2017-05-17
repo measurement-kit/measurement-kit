@@ -4,8 +4,7 @@ set -e
 export CPP="clang -E"
 export CC="clang"
 export CXX="clang++"
-
-export configure_flags="$configure_flags --disable-shared"
+export pkg_make_check_rule="run-valgrind-docker"
 
 debian_deps="$debian_deps autoconf"
 debian_deps="$debian_deps automake"
@@ -18,13 +17,3 @@ debian_deps="$debian_deps libtool"
 debian_deps="$debian_deps make"
 debian_deps="$debian_deps valgrind"
 debian_deps="$debian_deps wget"
-
-subr_depend() {
-    apt-get update
-    apt-get upgrade -y
-    apt-get install -y $debian_deps
-}
-
-subr_make_check() {
-    make $make_flags run-valgrind V=0
-}

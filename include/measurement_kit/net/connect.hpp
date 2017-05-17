@@ -12,23 +12,13 @@ struct bufferevent;
 namespace mk {
 namespace net {
 
-struct ResolveHostnameResult {
-    bool inet_pton_ipv4 = false;
-    bool inet_pton_ipv6 = false;
-
-    Error ipv4_err;
-    dns::Message ipv4_reply;
-    Error ipv6_err;
-    dns::Message ipv6_reply;
-
-    std::vector<std::string> addresses;
-};
-
-struct ConnectResult : public ErrorContext {
-    ResolveHostnameResult resolve_result;
+class ConnectResult : public ErrorContext {
+  public:
+    dns::ResolveHostnameResult resolve_result;
     std::vector<Error> connect_result;
     double connect_time = 0.0;
     bufferevent *connected_bev = nullptr;
+    ~ConnectResult() override;
 };
 
 // Convert error returned by connect() in connect_time
@@ -40,8 +30,10 @@ void connect(std::string address, int port,
              Var<Reactor> reactor = Reactor::global(),
              Var<Logger> logger = Logger::global());
 
-struct ConnectManyResult : public ErrorContext {
+class ConnectManyResult : public ErrorContext {
+  public:
     std::vector<Var<ConnectResult>> results;
+    ~ConnectManyResult() override;
 };
 
 // Convert error returned by connect_many() into connect_times vector

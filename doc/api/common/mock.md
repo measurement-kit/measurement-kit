@@ -10,11 +10,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/common.hpp>
 
 #define MK_MOCK(name_) decltype(name_) name_ = name_
-#define MK_MOCK_SUFFIX(name_, suffix_) decltype(name_) name_##_##suffix_ = name_
-define MK_MOCK_NAMESPACE(ns_, name_)                                          \
-    decltype(ns_::name_) ns_##_##name_ = ns_::name_
-#define MK_MOCK_NAMESPACE_SUFFIX(ns_, name_, suffix_)                          \
-    decltype(ns_::name_) ns_##_##name_##_##suffix_ = ns_::name_
+#define MK_MOCK_AS(name_, alias_) decltype(name_) alias_ = name_
 ```
 
 # DESCRIPTION
@@ -39,23 +35,16 @@ which is arguably faster than writing the following:
       ...
 ```
 
-`MK_MOCK_SUFFIX` is similar to `MOCK` but also takes a suffix that
-is appended to the function name within the template. This is useful
-when you want to distinguish the N-th and the N+1-th invocation of
-a function within another function.
-
-The `MK_MOCK_NAMESPACE` and `MK_MOCK_NAMESPACE_SUFFIX` macros are
-equal to `MK_MOCK` and `MK_MOCK_SUFFIX` respectively, except that you
-get also to specify a namespace and that such namespace plus underscore
-are prefixed to the function name. For example:
+`MK_MOCK_AS` is similar to `MOCK` but allow you to explicitly specify
+the alias with which you want the specified name to be available. For example:
 
 ```C++
   namespace foo {
   void bar();
   }
 
-  template<MK_MOCK_SUFFIX(foo, bar, 123)> void func() {
-    foo_bar_123();
+  template<MK_MOCK_AS(foo::bar, jarjar)> void func() {
+    jarjar();
   }
 ```
 
@@ -90,8 +79,8 @@ void bar();
 
 namespace foo {
 
-template<MK_MOCK_NAMESPACE_SUFFIX(foobar, bbbaz, 1),
-         MK_MOCK_NAMESPACE_SUFFIX(foobar, bbbaz, 2)>
+template<MK_MOCK_AS(foobar, foobar_bbbaz_1),
+         MK_MOCK_AS(foobar, foobar_bbbaz_2)>
 void bar_impl() {
     // With default arguments is equal to calling foobar::bbbaz()
     foobar_bbbaaz_1([=](Error err) {
@@ -154,4 +143,5 @@ TEST_CASE("Foo deals with second error") {
 
 # HISTORY
 
-The `Mock` macros appeared in MeasurementKit 0.2.0.
+The `Mock` macros appeared in MeasurementKit 0.2.0. It was significantly
+reworked in MeasurementKit 0.5.0.

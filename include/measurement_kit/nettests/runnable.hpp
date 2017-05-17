@@ -7,6 +7,7 @@
 #include <measurement_kit/report.hpp>
 
 #include <ctime>
+#include <deque>
 #include <list>
 #include <sstream>
 
@@ -23,12 +24,13 @@ class Runnable : public NonCopyable, public NonMovable {
     Var<Logger> logger = Logger::make();
     Var<Reactor> reactor;  /* Left unspecified by purpose */
     Settings options;
-    std::string input_filepath;
+    std::list<std::string> input_filepaths;
     std::string output_filepath;
     Delegate<std::string> entry_cb;
     Delegate<> begin_cb;
     std::list<Delegate<>> end_cbs;
     std::list<Delegate<>> destroy_cbs;
+    std::vector<std::string> test_helpers_names;
 
     std::string test_name = "ooni_test";
     std::string test_version = "0.0.1";
@@ -45,11 +47,13 @@ class Runnable : public NonCopyable, public NonMovable {
     virtual void setup(std::string);
     virtual void teardown(std::string);
     virtual void main(std::string, Settings, Callback<Var<report::Entry>>);
+    virtual void fixup_entry(report::Entry &);
 
   private:
     report::Report report;
     tm test_start_time;
-    Var<std::istream> input_generator;
+    std::deque<std::string> inputs;
+    double beginning = 0.0;
 
     void run_next_measurement(size_t, Callback<Error>, size_t, Var<size_t>);
     void contact_bouncer(Callback<Error>);

@@ -11,7 +11,7 @@ namespace nettests {
 TcpConnectTest::TcpConnectTest() : BaseTest() {
     runnable.reset(new TcpConnectRunnable);
     runnable->test_name = "tcp_connect";
-    runnable->test_version = "0.0.1";
+    runnable->test_version = "0.1.0";
     runnable->needs_input = true;
 }
 

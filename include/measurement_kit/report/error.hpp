@@ -9,15 +9,15 @@
 namespace mk {
 namespace report {
 
-MK_DEFINE_ERR(MK_ERR_REPORT(0), ReportAlreadyOpenError, "")
-MK_DEFINE_ERR(MK_ERR_REPORT(1), ReportNotOpenError, "")
-MK_DEFINE_ERR(MK_ERR_REPORT(2), ReportAlreadyClosedError, "")
-MK_DEFINE_ERR(MK_ERR_REPORT(3), ReportEofError, "")
-MK_DEFINE_ERR(MK_ERR_REPORT(4), ReportIoError, "")
-MK_DEFINE_ERR(MK_ERR_REPORT(5), ReportLogicalError, "")
-MK_DEFINE_ERR(MK_ERR_REPORT(6), DuplicateEntrySubmitError, "")
-MK_DEFINE_ERR(MK_ERR_REPORT(7), MissingReportIdError, "")
-MK_DEFINE_ERR(MK_ERR_REPORT(8), MultipleReportIdsError, "")
+MK_DEFINE_ERR(MK_ERR_REPORT(0), ReportAlreadyOpenError, "report_already_open")
+MK_DEFINE_ERR(MK_ERR_REPORT(1), ReportNotOpenError, "report_not_open")
+MK_DEFINE_ERR(MK_ERR_REPORT(2), ReportAlreadyClosedError, "report_already_closed")
+MK_DEFINE_ERR(MK_ERR_REPORT(3), ReportEofError, "report_eof_error")
+MK_DEFINE_ERR(MK_ERR_REPORT(4), ReportIoError, "report_io_error")
+MK_DEFINE_ERR(MK_ERR_REPORT(5), ReportLogicalError, "report_formatting_error")
+MK_DEFINE_ERR(MK_ERR_REPORT(6), DuplicateEntrySubmitError, "duplicate_entry_submitted")
+MK_DEFINE_ERR(MK_ERR_REPORT(7), MissingReportIdError, "missing_report_id")
+MK_DEFINE_ERR(MK_ERR_REPORT(8), MultipleReportIdsError, "multiple_inconsistent_report_ids")
 
 } // namespace report
 } // namespace mk

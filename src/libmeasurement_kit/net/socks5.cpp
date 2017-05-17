@@ -10,8 +10,8 @@
 namespace mk {
 namespace net {
 
-Socks5::Socks5(Var<Transport> tx, Settings s, Var<Reactor>, Var<Logger> lp)
-    : Emitter(lp), settings(s), conn(tx),
+Socks5::Socks5(Var<Transport> tx, Settings s, Var<Reactor> r, Var<Logger> lp)
+    : Emitter(r, lp), settings(s), conn(tx),
       proxy_address(settings["net/socks5_address"]),
       proxy_port(settings["net/socks5_port"]) {
     socks5_connect_();

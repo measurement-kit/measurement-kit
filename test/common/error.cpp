@@ -75,5 +75,5 @@ TEST_CASE("The add_child_error() method works") {
     REQUIRE((err.child_errors[0]->code == ExampleError().code));
     REQUIRE((err.child_errors[0]->reason == "example error antani"));
     REQUIRE((err.child_errors[1]->code == MockedError().code));
-    REQUIRE((err.child_errors[1]->reason == "unknown_failure 4"));
+    REQUIRE((err.child_errors[1]->reason == "mocked_error"));
 }

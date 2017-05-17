@@ -31,13 +31,6 @@ void connect_first_of(Var<ConnectResult> result, int port,
                       Var<Logger> logger = Logger::global(), size_t index = 0,
                       Var<std::vector<Error>> errors = nullptr);
 
-typedef std::function<void(ResolveHostnameResult)> ResolveHostnameCb;
-
-void resolve_hostname(std::string hostname, ResolveHostnameCb cb,
-                      Settings settings = {},
-                      Var<Reactor> reactor = Reactor::global(),
-                      Var<Logger> logger = Logger::global());
-
 void connect_logic(std::string hostname, int port,
                    Callback<Error, Var<ConnectResult>> cb,
                    Settings settings = {},

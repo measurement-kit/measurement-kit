@@ -60,7 +60,13 @@ std::string Url::str() {
     std::stringstream sst;
     sst << schema;
     sst << "://";
+    if (net::is_ipv6_addr(address)) {
+        sst << "[";
+    }
     sst << address;
+    if (net::is_ipv6_addr(address)) {
+        sst << "]";
+    }
     if ((schema == "http" and port != 80) or
         (schema == "https" and port != 443)) {
         sst << ":";

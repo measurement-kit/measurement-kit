@@ -3,13 +3,17 @@
 // information on the copying conditions.
 
 #include "../libevent/connection.hpp"
+#include "../net/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 
+#include <event2/bufferevent_ssl.h>
 #include <event2/buffer.h>
 #include <event2/dns.h>
 
-#include <errno.h>
+#include <openssl/err.h>
+
+#include <cerrno>
 #include <new>
 
 extern "C" {
@@ -56,10 +60,21 @@ void Connection::handle_write_() {
     }
 }
 
-void Connection::handle_event_(short what) {
-    logger->debug("connection: got bufferevent event: %d", what);
+static std::string map_bufferevent_event(short what) {
+    std::stringstream ss;
+    ss << ((what & BEV_EVENT_EOF) ? "Z" : "z")
+       << ((what & BEV_EVENT_TIMEOUT) ? "T" : "t")
+       << ((what & BEV_EVENT_ERROR) ? "F" : "f")
+       << ((what & BEV_EVENT_READING) ? "R" : "r")
+       << ((what & BEV_EVENT_WRITING) ? "W" : "w");
+    return ss.str();
+}
 
-    if (what & BEV_EVENT_EOF) {
+void Connection::handle_event_(short what) {
+    logger->debug("connection: got bufferevent event: %s",
+                  map_bufferevent_event(what).c_str());
+
+    if ((what & BEV_EVENT_EOF) != 0) {
         auto input = bufferevent_get_input(bev);
         if (evbuffer_get_length(input) > 0) {
             logger->debug("Suppress EOF with data lingering in input buffer");
@@ -70,23 +85,40 @@ void Connection::handle_event_(short what) {
         return;
     }
 
-    if (what & BEV_EVENT_TIMEOUT) {
+    if ((what & BEV_EVENT_TIMEOUT) != 0) {
         emit_error(TimeoutError());
         return;
     }
 
-    if (errno == EPIPE) {
-        emit_error(BrokenPipeError());
-        return;
+    Error sys_error = net::map_errno(errno);
+
+    if (sys_error == NoError()) {
+        unsigned long openssl_error;
+        char buff[128];
+        while ((openssl_error = bufferevent_get_openssl_error(bev)) != 0) {
+            if (sys_error == NoError()) {
+                sys_error = SslError();
+            }
+            ERR_error_string_n(openssl_error, buff, sizeof(buff));
+            sys_error.add_child_error(SslError(buff));
+        }
+        if (sys_error != SslError()) {
+            /*
+             * This is the case of the SSL dirty shutdown. The connection
+             * was not closed cleanly from the other end and in theory this
+             * could also be the effect of an attack.
+             */
+            logger->warn("libevent has detected an SSL dirty shutdown");
+            sys_error = SslDirtyShutdownError();
+        }
     }
 
-    // TODO: Here we need to map more network errors
-
-    emit_error(SocketError());
+    logger->warn("Got error: %s", sys_error.as_ooni_error().c_str());
+    emit_error(sys_error);
 }
 
 Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> logger)
-        : Emitter(logger), reactor(reactor) {
+        : EmitterBase(reactor, logger) {
     this->bev = buffev;
 
     // The following makes this non copyable and non movable.
@@ -94,20 +126,12 @@ Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> lo
                       handle_libevent_event, this);
 }
 
-void Connection::close(std::function<void()> cb) {
-    if (isclosed) {
-        throw std::runtime_error("already closed");
+void Connection::shutdown() {
+    if (shutdown_called) {
+        return; // Just for extra safety
     }
-    isclosed = true;
-
-    on_connect(nullptr);
-    on_data(nullptr);
-    on_flush(nullptr);
-    on_error(nullptr);
+    shutdown_called = true;
     bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
-    disable_read();
-
-    close_cb = cb;
     reactor->call_soon([=]() {
         this->self = nullptr;
     });

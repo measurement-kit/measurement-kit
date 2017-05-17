@@ -30,7 +30,7 @@ template <typename T> class Var : public std::shared_ptr<T> {
     }
 
     template <typename R> Var<R> as() {
-        return std::static_pointer_cast<R>(*this);
+        return std::dynamic_pointer_cast<R>(*this);
     }
 
   protected:

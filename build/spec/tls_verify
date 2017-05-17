@@ -1,12 +1,12 @@
 
 # Note: here the pkg_name is libressl such that we only need to clone once
-# the library (for libressl proper and tls_verify.c) rather than twice
+# the library rather than multiple times for each "package" based on it
 pkg_name=libressl
 pkg_repository=https://github.com/libressl-portable/portable.git
-pkg_tag=v2.4.4
-pkg_steps=install
+pkg_branch_or_tag=v2.4.5
+pkg_steps="autogen install"
 
 pkg_install() {
-    echo "Installing tls/tls_verify.c $pkg_tag in MK sources"
+    echo "Installing tls/tls_verify.c $pkg_branch_or_tag in MK sources"
     cp tls/tls_verify.c ../../../src/libmeasurement_kit/ext
 }

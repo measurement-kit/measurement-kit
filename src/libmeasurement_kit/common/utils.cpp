@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include <iomanip>
+#include <random>
 
 #include <event2/util.h>
 #include <openssl/sha.h>
@@ -149,5 +150,42 @@ ErrorOr<std::string> slurp(std::string path) {
     std::string s{v->begin(), v->end()};  /* Note that here we make a copy */
     return s;
 }
+
+bool startswith(std::string s, std::string p) {
+    return s.find(p) == 0;
+}
+
+/*-
+ *     0 1 2 3 4 5 6
+ * s: |f|o|o|b|a|r|
+ * p:       |b|a|r|
+ *           0 1 2 3
+ *
+ * s.size() - p.size() = 3
+ */
+bool endswith(std::string s, std::string p) {
+    return s.size() >= p.size() ? s.rfind(p) == (s.size() - p.size()) : false;
+}
+
+std::string random_choice(std::vector<std::string> inputs) {
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(inputs.begin(), inputs.end(), g);
+    return inputs[0];
+}
+
+std::string randomly_capitalize(std::string input) {
+    std::random_device rd;
+    std::mt19937 g(rd());
+    for (auto &c: input) {
+        if (g() % 2 == 0) {
+            c = toupper(c);
+        } else {
+            c = tolower(c);
+        }
+    }
+    return input;
+}
+
 
 } // namespace mk

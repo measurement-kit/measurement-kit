@@ -5,7 +5,7 @@
 #define MEASUREMENT_KIT_REPORT_ENTRY_HPP
 
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext.hpp>
+#include <measurement_kit/ext/json.hpp> // vendored nlohmann::json
 
 namespace mk {
 namespace report {
@@ -13,15 +13,41 @@ namespace report {
 // A report entry.
 class Entry : public nlohmann::json {
   public:
-    using nlohmann::json::json;
+    Entry() : nlohmann::json() {}
+    template <typename T> Entry(T t) : nlohmann::json(t) {}
+
+    /*
+     * I'd like to also declare these two constructors but apparently
+     * there are cases where having all constructors defined create
+     * some ambiguity and I don't know how to avoid that.
+     *
+     * Leaving this comment here so maybe someone can teach me.
+     */
+    //template <typename T> Entry(T &t) : nlohmann::json(t) {}
+    //template <typename T> Entry(T &&t) : nlohmann::json(t) {}
+
+    Entry(std::initializer_list<nlohmann::json> nl) : nlohmann::json(nl) {}
+
+    Entry(Entry &) = default;
+    Entry(const Entry &) = default;
+    Entry(Entry &&) = default;
 
     static Entry array();
     static Entry object();
 
+    template <typename T> Entry &operator=(T t) {
+        nlohmann::json::operator=(t);
+        return *this;
+    }
+
+    Entry &operator=(std::initializer_list<nlohmann::json> t);
+    Entry &operator=(Entry &) = default;
+    Entry &operator=(Entry &&) = default;
+
     template <typename T> operator ErrorOr<T>() {
         try {
             return nlohmann::json::operator T();
-        } catch (std::domain_error &) {
+        } catch (const std::domain_error &) {
             return JsonDomainError();
         }
     }
@@ -30,7 +56,7 @@ class Entry : public nlohmann::json {
     template <typename K> Entry &operator[](const K &key) {
         try {
             return static_cast<Entry &>(nlohmann::json::operator[](key));
-        } catch (std::domain_error &) {
+        } catch (const std::domain_error &) {
             throw JsonDomainError();
         }
     }
@@ -38,12 +64,23 @@ class Entry : public nlohmann::json {
     static Entry parse(const std::string &s);
 
     // Implementation of list
+
     void push_back(Entry);
+
+    template <typename T> void push_back(T t) {
+        try {
+            nlohmann::json::push_back(t);
+        } catch (const std::domain_error &) {
+            throw JsonDomainError();
+        }
+    }
+
+    void push_back(std::initializer_list<nlohmann::json> j);
 
     std::string dump(const int indent = -1) const;
 
-    bool operator==(std::nullptr_t right);
-    bool operator!=(std::nullptr_t right);
+    bool operator==(std::nullptr_t right) const noexcept;
+    bool operator!=(std::nullptr_t right) const noexcept;
 
   protected:
   private:
