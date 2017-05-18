@@ -154,7 +154,8 @@ void request_recv_response(Var<Transport> txp,
         txp->emit_error(NoError());
     });
     txp->on_error([=](Error err) {
-        logger->debug("Received error %d on connection", err.code);
+        logger->debug("Received error %s on connection",
+                      err.as_ooni_error().c_str());
         if (err == EofError() && *valid_response == true) {
             // Calling parser->on_eof() could trigger parser->on_end() and
             // we don't want this function to call ->emit_error()

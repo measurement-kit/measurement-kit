@@ -11,8 +11,8 @@
 using namespace mk;
 
 static const char *kv_usage =
-    "usage: measurement_kit http_request [-v] [-b body] [-H 'key: value']\n"
-    "                                    [-m method] [-R max-redirect] url\n";
+    "usage: measurement_kit http_request [-v] [-B /ca/bundle/path] [-b body]\n"
+    "       [-H 'key: value'] [-m method] [-R max-redirect] url\n";
 
 static bool set_header(http::Headers &headers, const std::string option) {
     auto kv = mk::split<std::vector<std::string>>(option, ":");
@@ -36,8 +36,11 @@ int main(int argc, char **argv) {
     std::string body;
     http::Headers headers;
     int ch;
-    while ((ch = getopt(argc, argv, "b:H:m:R:v")) != -1) {
+    while ((ch = getopt(argc, argv, "B:b:H:m:R:v")) != -1) {
         switch (ch) {
+        case 'B':
+            settings["net/ca_bundle_path"] = optarg;
+            break;
         case 'b':
             body = optarg;
             break;

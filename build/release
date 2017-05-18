@@ -8,7 +8,8 @@ old_version=$1
 new_version=$2
 for file in configure.ac doc/api/common/version.md doc/index.md                \
             include/measurement_kit/common/version.h build/spec/mk             \
-            measurement_kit.podspec build/ios/library; do
+            measurement_kit.podspec build/ios/library                          \
+            build/ios/archive-library; do
     cp $file $file.old
     sed "s/$old_version/$new_version/g" $file.old > $file
     rm $file.old

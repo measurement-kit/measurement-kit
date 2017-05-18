@@ -39,7 +39,7 @@ MK_DEFINE_ERR(MK_ERR_NET(23), MissingCaBundlePathError, "missing_ca_bundle_path"
 MK_DEFINE_ERR(MK_ERR_NET(25), SslNewError, "ssl_new_error")
 MK_DEFINE_ERR(MK_ERR_NET(26), SslCtxNewError, "ssl_ctx_net_error")
 MK_DEFINE_ERR(MK_ERR_NET(27), SslCtxLoadVerifyLocationsError, "ssl_ctx_load_verify_locations_error")
-MK_DEFINE_ERR(MK_ERR_NET(28), SslCtxLoadVerifyMemError, "ssl_ctx-load_verify_mem_error")
+MK_DEFINE_ERR(MK_ERR_NET(28), SslCtxLoadVerifyMemError, "ssl_ctx_load_verify_mem_error")
 
 /*
  * Maps std::errc from <system_error>
@@ -84,6 +84,8 @@ MK_DEFINE_ERR(MK_ERR_NET(28), SslCtxLoadVerifyMemError, "ssl_ctx-load_verify_mem
     MK_DEFINE_ERR(MK_ERR_NET(_code_), _name_, #_descr_)
 MK_NET_ERRORS_XX
 #undef XX
+
+MK_DEFINE_ERR(MK_ERR_NET(58), SslDirtyShutdownError, "ssl_dirty_shutdown")
 
 } // namespace net
 } // namespace mk

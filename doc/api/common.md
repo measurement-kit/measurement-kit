@@ -13,12 +13,14 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 The `common` module contains contains the following submodules:
 
+- [aaa_base](common/aaa_base.md): include headers we always need
 - [callback](common/callback.md): alias for writing callback functions more compactly
 - [continuation](common/continuation.md): type of function used to restart a function that paused
 - [delegate](common/delegate.md): member function overridable at runtime
 - [encoding](common/encoding.md): handle encodings (e.g. UTF-8, base64)
 - [error](common/error.md): definition of error class and of shared error codes
 - [error_or](common/error_or.md): maybe-like object containing either a result or an error
+- [fmap](common/fmap.md): apply a function to a vector
 - [has_global_factory](common/has_global_factory.md): template decorator to add a global, singleton factory to a class
 - [has_make_factory](common/has_make_factory.md): template decorator to add a factory called `make` to a class
 - [lexical_cast](common/lexical_cast.md): lexical cast between scalar values
@@ -27,6 +29,8 @@ The `common` module contains contains the following submodules:
 - [mock](common/mock.md): macros to mock implementation and write tests
 - [non_copyable](common/non_copyable.md): non copyable class
 - [non_movable](common/non_movable.md): non movable class
+- [parallel](common/parallel.md): allows to run continuations in parallel
+- [range](common/range.md): generates numbers from zero to N
 - [reactor](common/reactor.md): class for dispatching I/O events and timeouts
 - [return_type](common/return_type.md): return type deduction template
 - [settings](common/settings.md): class containing test settings
