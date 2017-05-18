@@ -9,6 +9,10 @@
 namespace mk {
 namespace ooni {
 
+void captive_portal(std::string, Settings, Callback<Var<report::Entry>>,
+                    Var<Reactor> = Reactor::global(),
+                    Var<Logger> = Logger::global());
+
 void dns_injection(std::string, Settings, Callback<Var<report::Entry>>,
                    Var<Reactor> = Reactor::global(),
                    Var<Logger> = Logger::global());
