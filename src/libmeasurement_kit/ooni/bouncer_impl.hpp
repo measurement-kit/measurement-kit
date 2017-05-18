@@ -74,6 +74,8 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                          return;
                      }
 
+                     logger->debug("Bouncer reply: %s", resp->body.c_str());
+
                      ErrorOr<Var<BouncerReply>> reply(
                          BouncerReply::create(resp->body, logger));
                      if (!reply) {

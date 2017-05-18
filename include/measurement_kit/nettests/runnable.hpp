@@ -32,7 +32,7 @@ class Runnable : public NonCopyable, public NonMovable {
     std::list<Delegate<>> destroy_cbs;
     bool needs_input = false;
     bool needs_bouncer = false;
-    std::map<std::string, std::string> required_test_helpers;
+    std::map<std::string, std::string> test_helpers_data;
 
     std::string test_name = "ooni_test";
     std::string test_version = "0.0.1";
@@ -49,7 +49,8 @@ class Runnable : public NonCopyable, public NonMovable {
     virtual void fixup_entry(report::Entry &);
 
     // Functions that derived classes should access
-    std::vector<std::string> test_helper_names();
+    std::list<std::string> test_helpers_option_names();
+    std::list<std::string> test_helpers_bouncer_names();
 
   private:
     report::Report report;

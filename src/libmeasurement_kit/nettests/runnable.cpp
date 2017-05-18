@@ -99,7 +99,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
 
         // Add test helpers
         entry["test_helpers"] = Entry::object();
-        for (auto &name : test_helpers_names()) {
+        for (auto &name : test_helpers_option_names()) {
             if (options.count(name) != 0) {
                 entry["test_helpers"][name] = options[name];
             }
@@ -290,10 +290,10 @@ void Runnable::contact_bouncer(Callback<Error> cb) {
         return;
     }
     auto bouncer = options.get("bouncer_base_url",
-            ooni::production_bouncer_url());
+            ooni::bouncer::production_bouncer_url());
     logger->info("Contacting bouncer: %s", bouncer.c_str());
     ooni::bouncer::post_net_tests(
-        bouncer, test_name, test_version, required_test_helpers,
+        bouncer, test_name, test_version, test_helpers_bouncer_names(),
         [=](Error error, Var<BouncerReply> reply) {
             if (error) {
                 cb(error);
@@ -311,20 +311,25 @@ void Runnable::contact_bouncer(Callback<Error> cb) {
                 options["collector_base_url"] = *maybe_collector;
                 logger->info("Using discovered collector");
             }
-            for (auto th: required_test_helpers) {
+            for (auto th: test_helpers_data) {
                 auto maybe_helper = reply->get_test_helper_alternate(
                     th.first, "https"
                 );
                 if (!maybe_helper) {
-                    continue;
+                    maybe_helper = reply->get_test_helper(th.first);
+                    if (!maybe_helper) {
+                        logger->warn("Cannot find alternate or normal helper");
+                        continue;
+                    }
                 }
                 logger->info("Bouncer discovered helper for %s: %s",
-                     th.first.c_str(), maybe_backend->c_str());
+                     th.first.c_str(), maybe_helper->c_str());
                 if (options.find(th.second) != options.end()) {
                     continue;
+                }
                 logger->info("Using discovered helper as '%s'",
                              th.second.c_str());
-                options[th.first] = *maybe_helper;
+                options[th.second] = *maybe_helper;
             }
             cb(NoError());
         },
@@ -416,10 +421,18 @@ void Runnable::end(Callback<Error> cb) {
     });
 }
 
-std::vector<std::string> Runnable::test_helpers_names() {
-    std::vector<std::string> values;
-    for (auto &kv : required_test_helpers) {
+std::list<std::string> Runnable::test_helpers_option_names() {
+    std::list<std::string> values;
+    for (auto &kv : test_helpers_data) {
         values.push_back(kv.second);
+    }
+    return values;
+}
+
+std::list<std::string> Runnable::test_helpers_bouncer_names() {
+    std::list<std::string> values;
+    for (auto &kv : test_helpers_data) {
+        values.push_back(kv.first);
     }
     return values;
 }

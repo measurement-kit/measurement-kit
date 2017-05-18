@@ -11,8 +11,8 @@ namespace http_invalid_request_line {
     "                       [-b backend_hostname] [-p port]"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
-    std::string backend_hostname = "a.echo.th.ooni.io";
-    std::string backend_port = "80";
+    std::string backend_hostname;
+    std::string backend_port;
     mk::nettests::HttpInvalidRequestLineTest test;
 
     for (int ch; (ch = getopt(argc, argv, "b:p:")) != -1;) {
@@ -36,8 +36,16 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         /* NOTREACHED */
     }
 
-    std::string backend = "http://" + backend_hostname + ":" + backend_port;
-    common_init(initializers, test.set_options("backend", backend)).run();
+    if (backend_hostname != "") {
+        std::string backend = "http://" + backend_hostname;
+        if (backend_port != "") {
+            backend += ":";
+            backend += backend_port;
+            backend += "/";
+        }
+        test.set_options("backend", backend);
+    }
+    common_init(initializers, test).run();
     return 0;
 }
 
