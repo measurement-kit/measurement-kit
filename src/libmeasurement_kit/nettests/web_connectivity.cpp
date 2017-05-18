@@ -13,7 +13,6 @@ WebConnectivityTest::WebConnectivityTest() : BaseTest() {
     runnable->test_name = "web_connectivity";
     runnable->test_version = "0.0.1";
     runnable->needs_input = true;
-    runnable->needs_bouncer = true;
     runnable->test_helpers_data = {{"web-connectivity", "backend"}};
 }
 

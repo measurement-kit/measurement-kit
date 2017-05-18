@@ -12,7 +12,6 @@ HttpInvalidRequestLineTest::HttpInvalidRequestLineTest() : BaseTest() {
     runnable.reset(new HttpInvalidRequestLineRunnable);
     runnable->test_name = "http_invalid_request_line";
     runnable->test_version = "0.0.2";
-    runnable->needs_bouncer = true;
     runnable->test_helpers_data = {{"tcp-echo", "backend"}};
 }
 

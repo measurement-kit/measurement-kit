@@ -31,7 +31,6 @@ class Runnable : public NonCopyable, public NonMovable {
     std::list<Delegate<>> end_cbs;
     std::list<Delegate<>> destroy_cbs;
     bool needs_input = false;
-    bool needs_bouncer = false;
     std::map<std::string, std::string> test_helpers_data;
 
     std::string test_name = "ooni_test";
