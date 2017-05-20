@@ -23,7 +23,7 @@ template <typename F, typename G> auto fcompose_impl_(F f, G g) {
 
 // pathologic corner case
 template <typename F, typename... G>
-auto fcompose(F f, std::tuple<G...> g, std::index_sequence<0>) {
+auto fcompose(F f, std::tuple<G...>, std::index_sequence<0>) {
     return f;
 }
 
@@ -43,6 +43,9 @@ auto fcompose(F f, std::tuple<G...> &&g, std::index_sequence<I>) {
 
 // convert G... into a tuple and start compile-time recursion
 template <typename F, typename... G> auto fcompose(F f, G &&... g) {
+    // Note: here we should not call `make_index_sequence` because that
+    // causes infinite compile time recursion. Instead what we want here
+    // is to create the type bound to the current size of the sequence.
     return fcompose(f, std::make_tuple<G...>(std::forward<G>(g)...),
                     std::index_sequence<sizeof...(G)>{});
 }

@@ -32,7 +32,7 @@ static bool set_header(http::Headers &headers, const std::string option) {
     return true;
 }
 
-static std::function<http::Response(net::Buffer)> http_read_response_coro() {
+static auto http_read_response_coro() {
     Var<http::ResponseParserNg> parser{new http::ResponseParserNg};
     Var<http::Response> response{new http::Response};
     Var<bool> parsing_complete{new bool{false}};
@@ -50,15 +50,14 @@ static std::function<http::Response(net::Buffer)> http_read_response_coro() {
     };
 }
 
-static std::function<http::Response(http::Response)>
-add_request(Var<http::Request> request) {
+static auto add_request_coro(Var<http::Request> request) {
     return [request = std::move(request)](http::Response response) {
         response.request = request;
         return response;
     };
 }
 
-static std::function<void(http::Response)> print_response_and_exit() {
+static auto print_response_and_exit_coro() {
     return [](http::Response response) {
         std::cout << response.response_line << "\n";
         for (auto &pair : response.headers) {
@@ -121,9 +120,11 @@ int main(int argc, char **argv) {
                         throw e;
                     }
                     mk::warn("Request sent... waiting for response...");
-                    t->on_data(fcompose(http_read_response_coro(),
-                                        fcompose(add_request(std::move(r)),
-                                                 print_response_and_exit())));
+                    t->on_data(fcompose(
+                        http_read_response_coro(),
+                        add_request_coro(std::move(r)),
+                        print_response_and_exit_coro()
+                    ));
                     t->on_error([](Error e) {
                         std::cout << "Error: " << e.explain() << "\n";
                         throw e;
