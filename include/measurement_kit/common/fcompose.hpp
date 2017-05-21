@@ -7,76 +7,74 @@
 #include <measurement_kit/common/fapply.hpp>
 #include <measurement_kit/common/fcar.hpp>
 #include <measurement_kit/common/fcdr.hpp>
+#include <measurement_kit/common/freverse.hpp>
 
 namespace mk {
 
-#if 0
-// applies to `g` the return value of `f(args...)`
-template <typename F, typename G> auto fcompose_impl_(F f, G g) {
-    return [f = std::move(f), g = std::move(g)](auto... args) {
-        /*
-         * We do this in two steps such that, if `f` returns a tuple,
-         * then the tuple is unpacked as the arguments to `g`.
-         */
-        return fapply(g, fapply(f, args...));
-    };
-}
-#endif
-
-/*
-f: [](double, int, Callback<std::string>) {}
-
-g: [](std::string, Callback<>) {}
-
-f.g: [](double, int, Callback<>) {}
-*/
-
-template <typename F, typename G> auto fcompose_impl_(F f, G g) {
-    // FIXME: it sucks that it's the first and not the last argument...
-    return [ f = std::move(f), g = std::move(g) ](auto... f_in) {
-        auto f_tuple = std::make_tuple(f_in...);
-        auto cb = fcar(f_tuple);
-        auto f_args = fcdr(f_tuple);
-        /*
-         * Note: here we basically need to construct a new tuple with all
-         * arguments because this is what `fapply()` expects.
-         */
-        fapply(f, std::tuple_cat(
-                      std::make_tuple([ g = std::move(g),
-                                        cb = std::move(cb) ](auto... f_out) {
-                          fapply(g, cb, f_out...);
-                      }),
-                      f_args));
-    };
-}
-
 // pathologic corner case
-template <typename F, typename... G>
-auto fcompose(F f, std::tuple<G...>, std::index_sequence<0>) {
+template <typename P, typename F, typename... G>
+auto fcompose(P, F f, std::tuple<G...>, std::index_sequence<0>) {
     return f;
 }
 
 // base case
-template <typename F, typename... G>
-auto fcompose(F f, std::tuple<G...> &&g, std::index_sequence<1>) {
-    return fcompose_impl_(f, fcar(g));
+template <typename P, typename F, typename... G>
+auto fcompose(P p, F f, std::tuple<G...> &&g, std::index_sequence<1>) {
+    return p(f, fcar(g));
 }
 
 // generic case
-template <typename F, typename... G, std::size_t I,
+template <typename P, typename F, typename... G, std::size_t I,
           typename = typename std::enable_if<(I >= 2)>::type>
-auto fcompose(F f, std::tuple<G...> &&g, std::index_sequence<I>) {
-    return fcompose(fcompose_impl_(f, fcar(g)), fcdr(g),
-                    std::index_sequence<I - 1>{});
+auto fcompose(P p, F f, std::tuple<G...> &&g, std::index_sequence<I>) {
+    return fcompose(p, p(f, fcar(g)), fcdr(g), std::index_sequence<I - 1>{});
 }
 
-// convert G... into a tuple and start compile-time recursion
-template <typename F, typename... G> auto fcompose(F f, G &&... g) {
-    // Note: here we should not call `make_index_sequence` because that
-    // causes infinite compile time recursion. Instead what we want here
-    // is to create the type bound to the current size of the sequence.
-    return fcompose(f, std::make_tuple<G...>(std::forward<G>(g)...),
-                    std::index_sequence<sizeof...(G)>{});
+/*
+ * Set policy (sync, async), convert `g...` into a tuple, and start
+ * compile time recursion with index sequence `len(g...)`.
+ */
+
+template <typename F, typename... G> auto fcompose_sync(F f, G &&... g) {
+    return fcompose(
+        [](auto f, auto g) {
+            return [ f = std::move(f), g = std::move(g) ](auto... f_in) {
+                /*
+                 * Compose `f` and `g` by applying `args` to f and passing the
+                 * return value (possibly a tuple to be expanded) as the
+                 * arguments that must be applied to `g`:
+                 */
+                return fapply(g, fapply(f, f_in...));
+            };
+        },
+        f, std::make_tuple(std::forward<G>(g)...),
+        std::index_sequence<sizeof...(G)>{});
+}
+
+template <typename F, typename... G> auto fcompose_async(F f, G &&... g) {
+    return fcompose(
+        [](auto f, auto g) {
+            return [ f = std::move(f), g = std::move(g) ](auto... f_in) {
+                /*
+                 * Assume that the convention is that we pass the callback as
+                 * the last argument. With this convention, compose `f` and `g`
+                 * by passing to `f` its arguments and a callback that takes
+                 * in input the output of `f` and calls `g` passing to it the
+                 * output of `f` as argument and as callback the callback passed
+                 * as the last argument in `args...`.
+                 */
+                auto f_tuple = std::make_tuple(f_in...);
+                auto f_rev = freverse(f_tuple);
+                auto g_cb = fcar(f_rev);
+                auto args = freverse(fcdr(f_rev));
+                auto f_cb = std::make_tuple([
+                    g = std::move(g), g_cb = std::move(g_cb)
+                ](auto... f_out) { fapply(g, f_out..., g_cb); });
+                fapply(f, std::tuple_cat(args, f_cb));
+            };
+        },
+        f, std::make_tuple(std::forward<G>(g)...),
+        std::index_sequence<sizeof...(G)>{});
 }
 
 } // namespace mk
