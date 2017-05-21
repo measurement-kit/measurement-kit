@@ -3,14 +3,14 @@
 // information on the copying conditions.
 // =============================================================
 // Based on <http://stackoverflow.com/questions/10626856>
-#ifndef MEASUREMENT_KIT_COMMON_FHEAD_HPP
-#define MEASUREMENT_KIT_COMMON_FHEAD_HPP
+#ifndef MEASUREMENT_KIT_COMMON_FCAR_HPP
+#define MEASUREMENT_KIT_COMMON_FCAR_HPP
 
 #include <tuple>
 
 namespace mk {
 
-template <typename T, typename... U> T fhead(std::tuple<T, U...> t) {
+template <typename T, typename... U> T fcar(std::tuple<T, U...> t) {
     return std::get<0>(t);
 }
 
