@@ -18,8 +18,8 @@ template <typename T> mk::nettests::BaseTest make_test() {
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_verbosity(MK_LOG_INFO)
-        .set_options("collector_base_url",
-                      mk::ooni::collector::testing_collector_url());
+        .set_options("bouncer_base_url",
+                mk::ooni::bouncer::testing_bouncer_url());
 }
 
 template <typename T> mk::nettests::BaseTest make_test(std::string s) {
@@ -39,6 +39,7 @@ with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
     test.options["bouncer_base_url"] =
         mk::ooni::bouncer::testing_bouncer_url();
+    test.use_bouncer = false;
     test.logger->set_verbosity(MK_LOG_INFO);
     lambda(test);
 }
