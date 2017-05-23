@@ -28,19 +28,31 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         std::string probe_ip;
         Var<Reactor> reactor = Reactor::make();
         reactor->loop_with_initial_event([&]() {
-            ooni::ip_lookup([&](Error err, std::string ip_addr) {
-                REQUIRE(!err);
-                probe_ip = ip_addr;
-                reactor->break_loop();
-            }, {}, reactor, Logger::global());
+            ooni::ip_lookup(
+                [&](Error err, std::string ip_addr) {
+                    REQUIRE(!err);
+                    probe_ip = ip_addr;
+                    reactor->break_loop();
+                },
+                {}, reactor, Logger::global());
         });
         REQUIRE(probe_ip != "");
         auto called = 0;
-        f(test::nettests::make_test<WebConnectivityTest>("scrub.txt")
-              .on_entry([&](std::string entry) {
-                  g(probe_ip, entry);
-                  called += 1;
-              }))
+        /*
+         * XXX the testing bouncer is not working. Then, use the production
+         * one along with the testing collector.
+         */
+        auto fixup_xxx = [](auto test) {
+            return test.set_options("bouncer_base_url",
+                                    ooni::bouncer::production_bouncer_url())
+                       .set_options("collector_base_url",
+                   ooni::collector::testing_collector_url());
+        };
+        f(fixup_xxx(test::nettests::make_test<WebConnectivityTest>("scrub.txt")
+                        .on_entry([&](std::string entry) {
+                            g(probe_ip, entry);
+                            called += 1;
+                        })))
             .run();
         REQUIRE(called == 1);
     };
@@ -69,11 +81,11 @@ TEST_CASE("Make sure that IP address scrubbing works") {
                 return test.set_options("save_real_probe_ip", false);
             },
             [&](std::string ip, std::string entry) {
-                 ip_check = (entry.find(ip) == std::string::npos);
-                 redacted_check =
-                     (entry.find("[REDACTED]") != std::string::npos);
-                 REQUIRE(ip_check);
-                 REQUIRE(redacted_check);
+                ip_check = (entry.find(ip) == std::string::npos);
+                redacted_check =
+                    (entry.find("[REDACTED]") != std::string::npos);
+                REQUIRE(ip_check);
+                REQUIRE(redacted_check);
             });
     }
 
@@ -88,11 +100,11 @@ TEST_CASE("Make sure that IP address scrubbing works") {
                 return test.set_options("save_real_probe_ip", true);
             },
             [&](std::string ip, std::string entry) {
-                 ip_check = (entry.find(ip) != std::string::npos);
-                 redacted_check =
-                     (entry.find("[REDACTED]") == std::string::npos);
-                 REQUIRE(ip_check);
-                 REQUIRE(redacted_check);
+                ip_check = (entry.find(ip) != std::string::npos);
+                redacted_check =
+                    (entry.find("[REDACTED]") == std::string::npos);
+                REQUIRE(ip_check);
+                REQUIRE(redacted_check);
             });
     }
 }
