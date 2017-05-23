@@ -64,12 +64,17 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
     net_tests["version"] = test_version;
     request["net-tests"][0] = net_tests;
 
-    settings["http/url"] = base_bouncer_url + "/net-tests";
+    std::string bbu = base_bouncer_url + "/net-tests";
+    logger->debug("Using bouncer URL: %s", bbu.c_str());
+
+    settings["http/url"] = bbu;
     settings["http/method"] = "POST";
     http_request(settings, {{"Content-Type", "application/json"}},
                  request.dump(),
                  [=](Error error, Var<http::Response> resp) {
                      if (error) {
+                         logger->warn("Bouncer error: %s",
+                                      error.explain().c_str());
                          cb(error, nullptr);
                          return;
                      }
