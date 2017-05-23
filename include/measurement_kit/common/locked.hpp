@@ -4,9 +4,6 @@
 #ifndef MEASUREMENT_KIT_COMMON_LOCKED_HPP
 #define MEASUREMENT_KIT_COMMON_LOCKED_HPP
 
-#include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/return_type.hpp>
-
 #include <mutex>
 
 namespace mk {
