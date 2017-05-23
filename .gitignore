@@ -63,8 +63,9 @@
 /test/common/utils
 /test/common/var
 /test/common/version
-/test/dns/defines
 /test/dns/query
+/test/dns/query_class
+/test/dns/query_type
 /test/dns/system_resolver
 /test/http/headers
 /test/http/parse_url
