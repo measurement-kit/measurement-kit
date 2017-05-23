@@ -81,6 +81,8 @@ void http_invalid_request_line(Settings options,
         return;
     }
 
+    logger->info("Using helper: %s", options["backend"].c_str());
+
     auto handle_response = [=](Var<report::Entry> inner) {
         *tests_run += 1;
         (*entry)["tampering_list"].push_back((*inner)["tampering"]);

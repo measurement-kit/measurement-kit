@@ -37,11 +37,10 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     }
 
     if (backend_hostname != "") {
-        std::string backend = "http://" + backend_hostname;
+        std::string backend = backend_hostname;
         if (backend_port != "") {
             backend += ":";
             backend += backend_port;
-            backend += "/";
         }
         test.set_options("backend", backend);
     }
