@@ -11,16 +11,7 @@
 
 namespace mk {
 
-template <typename Func, typename = typename std::enable_if<std::is_void<
-                             typename ReturnType<Func>::type>::value>::type>
-void locked(std::mutex &mutex, Func func) {
-    std::lock_guard<std::mutex> guard{mutex};
-    func();
-}
-
-template <typename Func, typename = typename std::enable_if<!std::is_void<
-                             typename ReturnType<Func>::type>::value>::type>
-typename ReturnType<Func>::type locked(std::mutex &mutex, Func func) {
+template <typename Func> auto locked(std::mutex &mutex, Func func) {
     std::lock_guard<std::mutex> guard{mutex};
     return func();
 }
