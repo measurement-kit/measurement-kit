@@ -296,16 +296,16 @@ void Runnable::contact_bouncer(Callback<Error> cb) {
                 return;
             }
             assert(!!reply);
-            auto maybe_collector = reply->get_collector_alternate("https");
-            if (!maybe_collector) {
-                cb(maybe_collector.as_error());
-                return;
-            }
-            logger->info("Bouncer discovered collector: %s",
-                         maybe_collector->c_str());
             if (options.find("collector_base_url") == options.end()) {
+                auto maybe_collector = reply->get_collector_alternate("https");
+                if (!maybe_collector) {
+                    logger->warn("no collector found");
+                    cb(maybe_collector.as_error());
+                    return;
+                }
                 options["collector_base_url"] = *maybe_collector;
-                logger->info("Using discovered collector");
+                logger->info("Using discovered collector: %s",
+                                        *maybe_collector->c_str());
             }
             for (auto th: test_helpers_data) {
                 auto maybe_helper = reply->get_test_helper_alternate(
