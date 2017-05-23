@@ -50,12 +50,14 @@ void Runner::start_test(Var<Runnable> test, Callback<Var<Runnable>> fn) {
                     ctx->reactor->call_soon(
                         [ ctx, tp = std::move(tp), fn = std::move(fn) ]() {
                             debug("runner: callbacking %p", (void *)tp.get());
-                            ctx->active -= 1;
-                            debug("runner: #active tasks: %d",
-                                  (int)ctx->active);
-                            if (ctx->active <= 0) {
-                                ctx->reactor->break_loop();
-                            }
+                            locked(ctx->mutex, [&]() {
+                                ctx->active -= 1;
+                                debug("runner: #active tasks: %d",
+                                      (int)ctx->active);
+                                if (ctx->active <= 0) {
+                                    ctx->reactor->break_loop();
+                                }
+                            });
                             fn(std::move(tp));
                         });
                 });
