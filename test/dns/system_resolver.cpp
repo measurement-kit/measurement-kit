@@ -84,13 +84,8 @@ TEST_CASE("the system resolver is able to resolve an ipv6 address") {
             REQUIRE(message->answers.size() > 0);
             auto found = false;
             for (auto answer : message->answers) {
-                /*
-                 * Note: mapped IP address added because that is the reply
-                 * received from Politecnico di Torino DNS.
-                 */
-                if (answer.ipv6 == "2001:858:2:2:aabb::563b:1e28" ||
-                    answer.ipv6 == "2001:858:2:2:aabb:0:563b:1e28" ||
-                    answer.ipv6 == "::ffff:154.35.132.70") {
+                if (answer.ipv6 == "2001:6b0:5a:5000::5" ||
+                    answer.ipv6 == "2001:6b0:5a:5000:0:5") {
                     found = true;
                 }
             }
