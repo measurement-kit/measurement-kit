@@ -21,7 +21,10 @@ The `common` module contains contains the following submodules:
 - [error](common/error.md): definition of error class and of shared error codes
 - [error_or](common/error_or.md): maybe-like object containing either a result or an error
 - [fmap](common/fmap.md): apply a function to a vector
+- [has_global_factory](common/has_global_factory.md): template decorator to add a global, singleton factory to a class
+- [has_make_factory](common/has_make_factory.md): template decorator to add a factory called `make` to a class
 - [lexical_cast](common/lexical_cast.md): lexical cast between scalar values
+- [locked](common/locked.md): run function with mutex held
 - [logger](common/logger.md): log messages
 - [mock](common/mock.md): macros to mock implementation and write tests
 - [non_copyable](common/non_copyable.md): non copyable class
@@ -29,11 +32,13 @@ The `common` module contains contains the following submodules:
 - [parallel](common/parallel.md): allows to run continuations in parallel
 - [range](common/range.md): generates numbers from zero to N
 - [reactor](common/reactor.md): class for dispatching I/O events and timeouts
+- [return_type](common/return_type.md): return type deduction template
 - [settings](common/settings.md): class containing test settings
 - [settings_entry](common/settings_entry.md): an entry contained by the settings class
 - [utils](common/utils.md): generic utility functions
 - [var](common/var.md): shared smart pointer with null pointer checks
 - [version](common/version.md): MeasurementKit version macro
+- [worker](common/worker.md): Runs tasks in one (or more) background thread(s)
 
 # HISTORY
 

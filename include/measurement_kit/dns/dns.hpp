@@ -32,14 +32,20 @@ MK_DEFINE_ERR(MK_ERR_DNS(17), InvalidDnsEngine, "dns_invalid_engine")
 MK_DEFINE_ERR(MK_ERR_DNS(18), TemporaryFailureError, "dns_temporary_failure")
 MK_DEFINE_ERR(MK_ERR_DNS(19), InvalidFlagsValueError, "dns_invalid_flags")
 MK_DEFINE_ERR(MK_ERR_DNS(20), InvalidHintsValueError, "dns_invalid_hints")
-MK_DEFINE_ERR(MK_ERR_DNS(21), NonRecoverableFailureError, "dns_non_recoverable_failure")
-MK_DEFINE_ERR(MK_ERR_DNS(22), NotSupportedAIFamilyError, "dns_unsupported_family")
+MK_DEFINE_ERR(MK_ERR_DNS(21), NonRecoverableFailureError,
+              "dns_non_recoverable_failure")
+MK_DEFINE_ERR(MK_ERR_DNS(22), NotSupportedAIFamilyError,
+              "dns_unsupported_family")
 MK_DEFINE_ERR(MK_ERR_DNS(23), MemoryAllocationFailureError, "dns_memory_error")
-MK_DEFINE_ERR(MK_ERR_DNS(24), HostOrServiceNotProvidedOrNotKnownError, "dns_host_or_service_not_provided_or_not_known")
+MK_DEFINE_ERR(MK_ERR_DNS(24), HostOrServiceNotProvidedOrNotKnownError,
+              "dns_host_or_service_not_provided_or_not_known")
 MK_DEFINE_ERR(MK_ERR_DNS(25), ArgumentBufferOverflowError, "dns_overflow_error")
-MK_DEFINE_ERR(MK_ERR_DNS(26), UnknownResolvedProtocolError, "dns_unknown_protocol")
-MK_DEFINE_ERR(MK_ERR_DNS(27), NotSupportedServnameError, "dns_unsupported_servname")
-MK_DEFINE_ERR(MK_ERR_DNS(28), NotSupportedAISocktypeError, "dns_unsupported_socktype")
+MK_DEFINE_ERR(MK_ERR_DNS(26), UnknownResolvedProtocolError,
+              "dns_unknown_protocol")
+MK_DEFINE_ERR(MK_ERR_DNS(27), NotSupportedServnameError,
+              "dns_unsupported_servname")
+MK_DEFINE_ERR(MK_ERR_DNS(28), NotSupportedAISocktypeError,
+              "dns_unsupported_socktype")
 MK_DEFINE_ERR(MK_ERR_DNS(29), InetNtopFailureError, "dns_inet_ntop_failure")
 
 enum QueryClassId {

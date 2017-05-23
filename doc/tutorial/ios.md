@@ -199,11 +199,11 @@ above as follows:
         });
 ```
 
-Basically, the C++11 lambda passed to `run()` is called from a background
+Basically, the C++14 lambda passed to `run()` is called from a background
 thread when the test is complete. Now, to do something useful in that lamba,
 let's simulate sending a message to the UX using `dispatch_async`.
 
-Let's create the message before running the test. Let's edit the C++11
+Let's create the message before running the test. Let's edit the C++14
 lambda capture list to retain a reference to `message`. And finally let's
 use `dispatch_async` to dispatch the message when we are done.
 
@@ -226,7 +226,7 @@ use `dispatch_async` to dispatch the message when we are done.
 
 The "test in progress" message is there so that it's clear from the logs
 that the test is run asynchronously (i.e. that the `run()` returns immediately
-and the C++11 lambda is only called when the test is complete).
+and the C++14 lambda is only called when the test is complete).
 
 To complete our example, let's also capture the test logs and insert them
 into an array, which will be printed once the test is complete. This simulates
