@@ -4,46 +4,42 @@
 #ifndef MEASUREMENT_KIT_DNS_QUERY_TYPE_HPP
 #define MEASUREMENT_KIT_DNS_QUERY_TYPE_HPP
 
-#include <string>
+#include <measurement_kit/dns/qctht_.hpp>
 
 namespace mk {
 namespace dns {
 
-enum QueryTypeId {
-    MK_DNS_TYPE_INVALID = 0,
-    MK_DNS_TYPE_A,
-    MK_DNS_TYPE_NS,
-    MK_DNS_TYPE_MD,
-    MK_DNS_TYPE_MF,
-    MK_DNS_TYPE_CNAME,
-    MK_DNS_TYPE_SOA,
-    MK_DNS_TYPE_MB,
-    MK_DNS_TYPE_MG,
-    MK_DNS_TYPE_MR,
-    MK_DNS_TYPE_NUL,
-    MK_DNS_TYPE_WKS,
-    MK_DNS_TYPE_PTR,
-    MK_DNS_TYPE_HINFO,
-    MK_DNS_TYPE_MINFO,
-    MK_DNS_TYPE_MX,
-    MK_DNS_TYPE_TXT,
-    MK_DNS_TYPE_AAAA,
-    MK_DNS_TYPE_REVERSE_A,    // nonstandard
-    MK_DNS_TYPE_REVERSE_AAAA  // nonstandard
-};
+#define MK_DNS_TYPE_IDS                                                        \
+    XX(INVALID) /* Must be first */                                            \
+    XX(A)                                                                      \
+    XX(NS)                                                                     \
+    XX(MD)                                                                     \
+    XX(MF)                                                                     \
+    XX(CNAME)                                                                  \
+    XX(SOA)                                                                    \
+    XX(MB)                                                                     \
+    XX(MG)                                                                     \
+    XX(MR)                                                                     \
+    XX(NUL)                                                                    \
+    XX(WKS)                                                                    \
+    XX(PTR)                                                                    \
+    XX(HINFO)                                                                  \
+    XX(MINFO)                                                                  \
+    XX(MX)                                                                     \
+    XX(TXT)                                                                    \
+    XX(AAAA)                                                                   \
+    XX(REVERSE_A /* nonstandard */)                                            \
+    XX(REVERSE_AAAA /* nonstandard */)
 
-class QueryType {
+#define XX(_name) MK_DNS_TYPE_##_name,
+enum QueryTypeId { MK_DNS_TYPE_IDS };
+#undef XX
+
+QueryTypeId query_type_ids_(std::string s);
+
+class QueryType : public qctht_<QueryTypeId, query_type_ids_> {
   public:
-    QueryType();
-    QueryType(QueryTypeId id);
-    QueryType(std::string);
-    QueryType(const char *);
-    bool operator==(QueryTypeId id) const;
-    bool operator!=(QueryTypeId id) const;
-    operator QueryTypeId() const;
-
-  private:
-    QueryTypeId id_;
+    using qctht_<QueryTypeId, query_type_ids_>::qctht_;
 };
 
 } // namespace dns
