@@ -43,17 +43,12 @@ void Worker::run_in_background_thread(Callback<> func) {
          * thread manipulates them, regardless of `this`'s destiny.
          */
         auto task = [mutex = mutex_, queue = queue_, active = active_]() {
-            bool initme = true;
             for (;;) {
-                Callback<> func = locked(*mutex, [&queue, &active, &initme]() {
+                Callback<> func = locked(*mutex, [&queue, &active]() {
                     /*
                      * Initialize inside the lock such that there is only
                      * one critical section in which we could be
                      */
-                    if (initme) {
-                        ++(*active);
-                        initme = false;
-                    }
                     if (queue->size() <= 0) {
                         --(*active);
                         return Callback<>{};
@@ -76,6 +71,7 @@ void Worker::run_in_background_thread(Callback<> func) {
         };
 
         std::thread{task}.detach();
+        ++(*active_);
     });
 }
 
