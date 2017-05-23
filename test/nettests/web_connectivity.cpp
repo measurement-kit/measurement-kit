@@ -13,17 +13,12 @@ using namespace mk;
 
 TEST_CASE("Synchronous web connectivity test") {
     test::nettests::make_test<WebConnectivityTest>("urls.txt")
-        .set_options("backend", "https://a.web-connectivity.th.ooni.io:4442")
-        .set_options("nameserver", "8.8.8.8")
         .run();
 }
 
 TEST_CASE("Asynchronous web-connectivity test") {
     test::nettests::run_async(
         test::nettests::make_test<WebConnectivityTest>("urls.txt")
-            .set_options("backend",
-                         "https://a.web-connectivity.th.ooni.io:4442")
-            .set_options("nameserver", "8.8.8.8")
     );
 }
 
@@ -42,9 +37,6 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         REQUIRE(probe_ip != "");
         auto called = 0;
         f(test::nettests::make_test<WebConnectivityTest>("scrub.txt")
-              .set_options("backend",
-                           "https://a.web-connectivity.th.ooni.io:4442")
-              .set_options("nameserver", "8.8.8.8")
               .on_entry([&](std::string entry) {
                   g(probe_ip, entry);
                   called += 1;
