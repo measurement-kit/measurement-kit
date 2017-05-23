@@ -17,10 +17,10 @@ void mk::dns::query(mk::dns::QueryClass dns_class,
                     mk::Var<mk::Reactor> reactor = mk::Reactor::global());
 
 void resolve_hostname(std::string hostname,
-                    Callback<ResolveHostnameResult> cb,
-                    Settings settings = {},
-                    Var<Reactor> reactor = Reactor::global(),
-                    Var<Logger> logger = Logger::global());
+                      Callback<ResolveHostnameResult> cb,
+                      Settings settings = {},
+                      Var<Reactor> reactor = Reactor::global(),
+                      Var<Logger> logger = Logger::global());
 ```
 
 # STABILITY
@@ -172,7 +172,6 @@ the `query` function. The following setting keys are available:
 
 The optional `reactor` argument is the reactor to use to issue the query
 and receive the corresponding response.
-
 
 The `resolve_hostname()` function should be used to perform dns queries
 for connection purposes and not to perform tests on a dns server.
