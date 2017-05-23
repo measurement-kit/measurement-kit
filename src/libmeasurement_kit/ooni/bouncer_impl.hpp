@@ -65,10 +65,12 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
     request["net-tests"][0] = net_tests;
 
     std::string bbu = base_bouncer_url + "/bouncer/net-tests";
-    logger->debug("Using bouncer URL: %s", bbu.c_str());
-
+    std::string bm = "POST";
     settings["http/url"] = bbu;
-    settings["http/method"] = "POST";
+    settings["http/method"] = bm;
+
+    logger->debug("%sing to '%s' data '%s'", bm.c_str(), bbu.c_str(),
+                  request.dump().c_str());
     http_request(settings, {{"Content-Type", "application/json"}},
                  request.dump(),
                  [=](Error error, Var<http::Response> resp) {
