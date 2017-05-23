@@ -151,10 +151,10 @@ Kit will build on your system.
 
 Specifically, the configure script should check for at least for:
 
-- A compiler suite implementing C90 and C++11; e.g. [clang](
+- A compiler suite implementing C90 and C++14; e.g. [clang](
   http://clang.llvm.org/) or [gcc](https://gcc.gnu.org/).
 
-- A C++11 standard library such as [libc++](http://libcxx.llvm.org/)
+- A C++14 standard library such as [libc++](http://libcxx.llvm.org/)
   or [libstdc++](https://gcc.gnu.org/libstdc++/).
 
 - [libevent](https://github.com/libevent/libevent).
