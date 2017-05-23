@@ -50,6 +50,15 @@ Poller::Poller() { base_ = poller_alloc_evbase(); }
 Poller::~Poller() {}
 event_base *Poller::get_event_base() { return base_.get(); }
 
+void Poller::call_soon(Callback<> cb) {
+    call_later(0.0, cb);
+}
+
+void Poller::loop_with_initial_event(Callback<> cb) {
+    call_soon(cb);
+    loop();
+}
+
 void Poller::call_later(double timeo, Callback<> cb) {
     poller_call_later(base_, timeo, cb);
 }
@@ -61,8 +70,8 @@ void Poller::break_loop() { poller_break_loop(base_); }
 void Poller::pollfd(
         socket_t sockfd,
         short events,
-        Callback<Error, short> callback,
-        double timeout) {
+        double timeout,
+        Callback<Error, short> callback) {
     poller_pollfd(base_, sockfd, events, callback, timeout);
 }
 

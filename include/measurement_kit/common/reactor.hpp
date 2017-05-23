@@ -9,7 +9,7 @@
 #include <measurement_kit/common/socket.hpp>
 #include <measurement_kit/common/var.hpp>
 
-// Deprecated in v0.4.x, will be removed in v0.5.x
+// Deprecated since v0.4.x
 struct event_base;
 
 #define MK_POLLIN 1 << 0
@@ -20,12 +20,14 @@ namespace mk {
 class Reactor {
   public:
     static Var<Reactor> make();
+    static Var<Reactor> make_remote();
     virtual ~Reactor();
 
-    void call_soon(Callback<> cb);
+    virtual void call_soon(Callback<> cb) = 0;
     virtual void call_later(double, Callback<> cb) = 0;
 
-    void loop_with_initial_event(Callback<> cb);
+    // Deprecated since v0.4.x
+    virtual void loop_with_initial_event(Callback<> cb) = 0;
     virtual void loop() = 0;
     virtual void loop_once() = 0;
     virtual void break_loop() = 0;
@@ -35,15 +37,18 @@ class Reactor {
         especially under Windows, but suitable to integrate with other
         async libraries such as c-ares and perhaps others.
     */
-
     virtual void pollfd(
                 socket_t sockfd,
                 short events,
-                Callback<Error, short> callback,
-                double timeout = -1.0
+                double timeout,
+                Callback<Error, short> callback
         ) = 0;
 
-    // Deprecated in v0.4.x, will be removed in v0.5.x
+    void pollfd(socket_t s, short e, Callback<Error, short> f, double t = -1) {
+        pollfd(std::move(s), std::move(e), std::move(t), std::move(f));
+    }
+
+    // Deprecated since v0.4.x
     virtual event_base *get_event_base() = 0;
 
     // Introduced as aliases in v0.4.x
@@ -54,6 +59,7 @@ class Reactor {
     void stop() { break_loop(); }
 
     static Var<Reactor> global();
+    static Var<Reactor> global_remote();
 };
 
 void call_soon(Callback<>, Var<Reactor> = Reactor::global());
