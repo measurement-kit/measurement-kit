@@ -55,6 +55,7 @@
 /test/common/error
 /test/common/error_or
 /test/common/fmap
+/test/common/locked
 /test/common/logger
 /test/common/parallel
 /test/common/range
