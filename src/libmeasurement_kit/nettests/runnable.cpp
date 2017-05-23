@@ -305,7 +305,7 @@ void Runnable::contact_bouncer(Callback<Error> cb) {
                 }
                 options["collector_base_url"] = *maybe_collector;
                 logger->info("Using discovered collector: %s",
-                                        *maybe_collector->c_str());
+                                        maybe_collector->c_str());
             }
             for (auto th: test_helpers_data) {
                 auto maybe_helper = reply->get_test_helper_alternate(
