@@ -193,6 +193,7 @@ TEST_CASE("Make sure that 'randomize_input' works") {
         test.input_filepaths.push_back("./test/fixtures/hosts.txt");
         test.options["randomize_input"] = shuffle;
         test.needs_input = true;
+        test.use_bouncer = false;
 
         test.reactor->loop_with_initial_event([&]() {
             test.entry_cb = [&](std::string s) {

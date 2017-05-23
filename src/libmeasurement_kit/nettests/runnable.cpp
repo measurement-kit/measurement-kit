@@ -285,6 +285,11 @@ std::string Runnable::generate_output_filepath() {
 }
 
 void Runnable::contact_bouncer(Callback<Error> cb) {
+    if (!use_bouncer) {
+        logger->info("skipping bouncer");
+        cb(NoError());
+        return;
+    }
     auto bouncer = options.get("bouncer_base_url",
             ooni::bouncer::production_bouncer_url());
     logger->info("Contacting bouncer: %s", bouncer.c_str());
