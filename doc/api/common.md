@@ -32,7 +32,6 @@ The `common` module contains contains the following submodules:
 - [parallel](common/parallel.md): allows to run continuations in parallel
 - [range](common/range.md): generates numbers from zero to N
 - [reactor](common/reactor.md): class for dispatching I/O events and timeouts
-- [return_type](common/return_type.md): return type deduction template
 - [settings](common/settings.md): class containing test settings
 - [settings_entry](common/settings_entry.md): an entry contained by the settings class
 - [utils](common/utils.md): generic utility functions
