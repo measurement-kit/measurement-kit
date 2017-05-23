@@ -25,6 +25,7 @@ TEST_CASE("Asynchronous web-connectivity test") {
 TEST_CASE("Make sure that IP address scrubbing works") {
     auto test = [](std::function<BaseTest(BaseTest)> f,
                    Callback<std::string /*ip*/, std::string /*entry*/> g) {
+        REQUIRE(true);
         std::string probe_ip;
         Var<Reactor> reactor = Reactor::make();
         reactor->loop_with_initial_event([&]() {
@@ -32,11 +33,12 @@ TEST_CASE("Make sure that IP address scrubbing works") {
                 REQUIRE(!err);
                 probe_ip = ip_addr;
                 reactor->break_loop();
-            });
+            }, {}, reactor, Logger::global());
         });
         REQUIRE(probe_ip != "");
         auto called = 0;
         f(test::nettests::make_test<WebConnectivityTest>("scrub.txt")
+              .set_verbosity(7)
               .on_entry([&](std::string entry) {
                   g(probe_ip, entry);
                   called += 1;
