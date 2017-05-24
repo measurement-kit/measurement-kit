@@ -4,43 +4,18 @@
 #ifndef MEASUREMENT_KIT_COMMON_VAR_HPP
 #define MEASUREMENT_KIT_COMMON_VAR_HPP
 
-#include <memory>
-#include <stdexcept>
+#include <measurement_kit/common/ptr_.hpp>
 
 namespace mk {
 
-template <typename T> class Var : public std::shared_ptr<T> {
-    using std::shared_ptr<T>::shared_ptr;
+MK_DEFINE_PTR_(Var_, shared_ptr, make_shared);
 
+template <typename T> class Var : public Var_<T> {
   public:
-    typename std::add_pointer<T>::type get() const { return operator->(); }
-
-    typename std::add_pointer<T>::type operator->() const {
-        if (std::shared_ptr<T>::get() == nullptr) {
-            throw std::runtime_error("null pointer");
-        }
-        return std::shared_ptr<T>::operator->();
-    }
-
-    typename std::add_lvalue_reference<T>::type operator*() const {
-        if (std::shared_ptr<T>::get() == nullptr) {
-            throw std::runtime_error("null pointer");
-        }
-        return std::shared_ptr<T>::operator*();
-    }
-
+    using Var_<T>::Var_;
     template <typename R> Var<R> as() {
         return std::dynamic_pointer_cast<R>(*this);
     }
-
-    template <typename... A> static Var<T> make(A &&... a) {
-        return std::make_shared<T>(std::forward<A>(a)...);
-    }
-
-  protected:
-  private:
-    // NO ATTRIBUTES HERE BY DESIGN. DO NOT ADD ATTRIBUTES HERE BECAUSE
-    // DOING THAT CREATES THE RISK OF OBJECT SLICING.
 };
 
 } // namespace mk

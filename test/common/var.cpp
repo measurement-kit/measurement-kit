@@ -65,7 +65,7 @@ TEST_CASE("We can assign to Var the result of make_shared") {
 
 TEST_CASE("The smart pointer works as expected") {
     auto pnecchi = new Foo(6.28);
-    Var<Foo> necchi(pnecchi);
+    Var<Foo> necchi{pnecchi};
     REQUIRE(necchi->elem == 6.28);
     REQUIRE((*necchi).elem == 6.28);
     REQUIRE(necchi.get() == pnecchi);
@@ -96,7 +96,7 @@ TEST_CASE("as() works as expected") {
     }
 
     SECTION("When upcast is possible and target pointer is not null") {
-        Var<FooBar> bar{new FooBar};
+        Var<FooBar> bar = Var<FooBar>::make();
         REQUIRE(!!bar);
         Var<Foo> foo = bar.as<Foo>();
         REQUIRE(!!foo);
@@ -110,7 +110,7 @@ TEST_CASE("as() works as expected") {
     }
 
     SECTION("When downcast is possible and target pointer is not null") {
-        Var<Foo> foo{new FooBar};
+        Var<Foo> foo = Var<FooBar>::make();
         REQUIRE(!!foo);
         Var<FooBar> bar = foo.as<FooBar>();
         REQUIRE(!!bar);
@@ -124,7 +124,7 @@ TEST_CASE("as() works as expected") {
     }
 
     SECTION("When cast is not possible and target pointer is not null") {
-        Var<Foo> foo{new FooBar};
+        Var<Foo> foo = Var<FooBar>::make();
         REQUIRE(!!foo);
         Var<JarJar> jar = foo.as<JarJar>();
         REQUIRE(!jar);
@@ -147,7 +147,7 @@ TEST_CASE("as() works as expected") {
     SECTION("The usage count is consistent") {
         Var<FooBar> bar;
         {
-            Var<Foo> foo{new FooBar};
+            Var<Foo> foo = Var<FooBar>::make();
             REQUIRE(!!foo);
             bar = foo.as<FooBar>();
             REQUIRE(!!bar);
