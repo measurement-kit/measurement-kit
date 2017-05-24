@@ -11,13 +11,12 @@ namespace web_connectivity {
     "                       [-f input_file] [-t timeout]\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
-    std::string backend = "https://b.web-connectivity.th.ooni.io";
     mk::nettests::WebConnectivityTest test;
 
     for (int ch; (ch = getopt(argc, argv, "b:f:t:")) != -1;) {
         switch (ch) {
         case 'b':
-            backend = optarg;
+            test.set_options("backend", optarg);
             break;
         case 'f':
             test.add_input_filepath(optarg);
@@ -38,7 +37,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         /* NOTREACHED */
     }
 
-    common_init(initializers, test.set_options("backend", backend)).run();
+    common_init(initializers, test).run();
     return 0;
 }
 

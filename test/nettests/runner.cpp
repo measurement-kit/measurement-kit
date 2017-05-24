@@ -14,7 +14,6 @@ using namespace mk;
 
 static void run_http_invalid_request_line(Runner &runner) {
     runner.start_test(test::nettests::make_test<HttpInvalidRequestLineTest>()
-                       .set_options("backend", "http://nexa.polito.it/")
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #1: %s\n", s);
                        })
@@ -26,7 +25,6 @@ static void run_http_invalid_request_line(Runner &runner) {
 
 static void run_dns_injection(Runner &runner) {
     runner.start_test(test::nettests::make_test<DnsInjectionTest>("hosts.txt")
-                       .set_options("backend", "8.8.8.8:53")
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #3: %s\n", s);
                        })
