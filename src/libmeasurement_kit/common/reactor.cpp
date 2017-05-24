@@ -3,18 +3,19 @@
 // information on the copying conditions.
 
 #include "../libevent/poller.hpp"
+#include "../common/remote_reactor.hpp"
 
 namespace mk {
+
+/*static*/ Var<Reactor> Reactor::make_remote() {
+    return locked_global([]() { return Var<Reactor>{new RemoteReactor}; });
+}
 
 /*static*/ Var<Reactor> Reactor::make() {
     return locked_global([]() { return Var<Reactor>{new libevent::Poller}; });
 }
 
 Reactor::~Reactor() {}
-
-void Reactor::call_soon(Callback<> &&cb) {
-    call_later(0.0, std::move(cb));
-}
 
 void Reactor::run_with_initial_event(Callback<> &&cb) {
     call_soon(std::move(cb));
@@ -30,6 +31,13 @@ void Reactor::run_with_initial_event(Callback<> &&cb) {
 
 void call_soon(Callback<> &&callback, Var<Reactor> reactor) {
     reactor->call_soon(std::move(callback));
+}
+
+/*static*/ Var<Reactor> Reactor::global_remote() {
+    return locked_global([]() {
+        static Var<Reactor> singleton = make_remote();
+        return singleton;
+    });
 }
 
 void call_later(double delta, Callback<> &&callback, Var<Reactor> reactor) {
