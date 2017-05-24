@@ -15,7 +15,7 @@ class Worker {
     static Var<Worker> global();
     static Var<Worker> make();
 
-    void run_in_background_thread(Callback<>);
+    void run_in_background_thread(Callback<> &&);
     size_t parallelism();
     void set_parallelism(size_t);
 };
@@ -33,7 +33,8 @@ The Worker class allows you to run tasks in a background thread (or more
 than one background thread).
 
 The `run_in_background_thread` method schedules the specified callback
-to run in a pool of one or more background threads.
+to run in a pool of one or more background threads. The callback must
+be moved, such that the Worker could take single ownership of it.
 
 The `parallelism` method returns the size of the thread pool.
 

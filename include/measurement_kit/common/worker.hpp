@@ -17,9 +17,10 @@ class Worker : public HasGlobalFactory<Worker>,
                public NonCopyable,
                public NonMovable {
   public:
-    void run_in_background_thread(Callback<> func);
+    void run_in_background_thread(Callback<> &&func);
     size_t parallelism();
     void set_parallelism(size_t);
+    short concurrency();
 
   private:
     /*
