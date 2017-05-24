@@ -77,9 +77,10 @@ bool Runner::empty() {
 Runner::~Runner() { break_loop_(); }
 
 /*static*/ Var<Runner> Runner::global() {
-    // XXX: how do we protect this singleton?
-    static Var<Runner> singleton(new Runner);
-    return singleton;
+    return locked_global([]() {
+        static Var<Runner> singleton(new Runner);
+        return singleton;
+    });
 }
 
 } // namespace nettests

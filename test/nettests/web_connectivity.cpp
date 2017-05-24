@@ -27,7 +27,6 @@ TEST_CASE("Asynchronous web-connectivity test") {
     );
 }
 
-#if 0
 TEST_CASE("Make sure that IP address scrubbing works") {
     auto test = [](std::function<BaseTest(BaseTest)> f,
                    Callback<std::string /*ip*/, std::string /*entry*/> g) {
@@ -105,7 +104,6 @@ TEST_CASE("Make sure that IP address scrubbing works") {
             });
     }
 }
-#endif
 
 #else
 int main() {}
