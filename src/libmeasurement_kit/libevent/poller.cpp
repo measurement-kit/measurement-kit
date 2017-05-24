@@ -51,7 +51,7 @@ Poller::~Poller() {}
 event_base *Poller::get_event_base() { return base_.get(); }
 
 void Poller::call_soon(Callback<> &&cb) {
-    call_later(-1.0, std::move(cb));
+    call_later(0.0, std::move(cb));
 }
 
 void Poller::call_later(double timeo, Callback<> &&cb) {
