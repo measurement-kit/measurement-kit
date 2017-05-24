@@ -19,7 +19,7 @@ void Worker::set_parallelism(size_t new_value) {
     });
 }
 
-void Worker::run_in_background_thread(Callback<> func) {
+void Worker::run_in_background_thread(Callback<> &&func) {
     locked(*mutex_, [this, func = std::move(func)]() {
 
         /*
@@ -73,6 +73,10 @@ void Worker::run_in_background_thread(Callback<> func) {
         std::thread{task}.detach();
         ++(*active_);
     });
+}
+
+short Worker::concurrency() {
+    return locked(*mutex_, [this]() { return *active_; });
 }
 
 } // namespace mk
