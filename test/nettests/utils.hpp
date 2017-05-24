@@ -43,11 +43,11 @@ static inline void run_async(mk::nettests::BaseTest test) {
 static inline void
 with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
-    // Force testing collector so we don't spam the production one
+    // FIXME: see above comment regarding collector and bouncer
     test.options["collector_base_url"] =
         mk::ooni::collector::testing_collector_url();
-    // Using a bouncer with a basic runnable will lead to bouncer error
-    test.use_bouncer = false;
+    test.options["bouncer_base_url"] =
+        mk::ooni::bouncer::production_bouncer_url();
     test.logger->set_verbosity(MK_LOG_INFO);
     lambda(test);
 }
