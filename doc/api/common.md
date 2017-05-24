@@ -35,6 +35,7 @@ The `common` module contains contains the following submodules:
 - [settings](common/settings.md): class containing test settings
 - [settings_entry](common/settings_entry.md): an entry contained by the settings class
 - [utils](common/utils.md): generic utility functions
+- [u](common/u.md): unique smart pointer with null pointer checks
 - [var](common/var.md): shared smart pointer with null pointer checks
 - [version](common/version.md): MeasurementKit version macro
 - [worker](common/worker.md): Runs tasks in one (or more) background thread(s)

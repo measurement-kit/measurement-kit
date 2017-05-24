@@ -19,7 +19,7 @@ TEST_CASE("U raises an exception when the pointee is nullptr") {
     REQUIRE_THROWS(foo.get());
 }
 
-TEST_CASE("We can safely assign to U an empty shared_ptr") {
+TEST_CASE("We can safely assign to U an empty unique_ptr") {
     U<Foo> necchi = []() { return std::unique_ptr<Foo>{}; }();
     double k;
     REQUIRE_THROWS(k = necchi->elem);
