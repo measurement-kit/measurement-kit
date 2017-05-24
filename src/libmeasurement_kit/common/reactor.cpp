@@ -7,7 +7,7 @@
 namespace mk {
 
 /*static*/ Var<Reactor> Reactor::make() {
-    return Var<Reactor>{new libevent::Poller};
+    return locked_global([]() { return Var<Reactor>{new libevent::Poller}; });
 }
 
 Reactor::~Reactor() {}
@@ -18,8 +18,10 @@ void Reactor::run_with_initial_event(Callback<> &&cb) {
 }
 
 /*static*/ Var<Reactor> Reactor::global() {
-    static Var<Reactor> singleton = make();
-    return singleton;
+    return locked_global([]() {
+        static Var<Reactor> singleton = make();
+        return singleton;
+    });
 }
 
 void call_soon(Callback<> &&callback, Var<Reactor> reactor) {
