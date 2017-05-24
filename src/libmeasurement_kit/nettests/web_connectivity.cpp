@@ -13,7 +13,7 @@ WebConnectivityTest::WebConnectivityTest() : BaseTest() {
     runnable->test_name = "web_connectivity";
     runnable->test_version = "0.0.1";
     runnable->needs_input = true;
-    runnable->test_helpers_names = {"backend"};
+    runnable->test_helpers_data = {{"web-connectivity", "backend"}};
 }
 
 void WebConnectivityRunnable::main(std::string input, Settings options,

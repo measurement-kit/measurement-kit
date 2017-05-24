@@ -9,12 +9,11 @@ namespace http_header_field_manipulation {
 #define USAGE "usage: measurement_kit [options] http_header_field_manipulation [-b backend]\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
-    std::string backend = "http://a.http.th.ooni.io";
     mk::nettests::HttpHeaderFieldManipulationTest test;
     for (int ch; (ch = getopt(argc, argv, "b:")) != -1; ) {
         switch (ch) {
         case 'b':
-            backend = optarg;
+            test.set_options("backend", optarg);
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);
@@ -28,7 +27,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         /* NOTREACHED */
     }
 
-    common_init(initializers, test.set_options("backend", backend)).run();
+    common_init(initializers, test).run();
     return 0;
 }
 

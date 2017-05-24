@@ -33,13 +33,6 @@ void call_soon(Callback<> &&callback, Var<Reactor> reactor) {
     reactor->call_soon(std::move(callback));
 }
 
-/*static*/ Var<Reactor> Reactor::global_remote() {
-    return locked_global([]() {
-        static Var<Reactor> singleton = make_remote();
-        return singleton;
-    });
-}
-
 void call_later(double delta, Callback<> &&callback, Var<Reactor> reactor) {
     reactor->call_later(delta, std::move(callback));
 }

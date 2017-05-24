@@ -92,6 +92,14 @@ void post_net_tests(std::string base_bouncer_url, std::string test_name,
                         settings, reactor, logger);
 }
 
+std::string production_bouncer_url() {
+    return MK_OONI_PRODUCTION_BOUNCER_URL;
+}
+
+std::string testing_bouncer_url() {
+    return MK_OONI_TESTING_BOUNCER_URL;
+}
+
 } // namespace bouncer
 } // namespace ooni
 } // namespace mk
