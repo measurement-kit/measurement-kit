@@ -63,6 +63,7 @@
 /test/common/utils
 /test/common/var
 /test/common/version
+/test/common/worker
 /test/dns/query
 /test/dns/query_class
 /test/dns/query_type

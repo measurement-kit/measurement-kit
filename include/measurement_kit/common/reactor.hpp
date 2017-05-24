@@ -9,7 +9,7 @@
 #include <measurement_kit/common/socket.hpp>
 #include <measurement_kit/common/var.hpp>
 
-// Deprecated in v0.4.x, will be removed in v0.5.x
+// Deprecated since v0.4.x
 struct event_base;
 
 #define MK_POLLIN 1 << 0
@@ -20,53 +20,55 @@ namespace mk {
 class Reactor {
   public:
     static Var<Reactor> make();
+    static Var<Reactor> global();
     virtual ~Reactor();
 
-    void call_soon(Callback<> cb);
-    virtual void call_later(double, Callback<> cb) = 0;
+    virtual void call_soon(Callback<> &&cb) = 0;
+    virtual void call_later(double, Callback<> &&cb) = 0;
 
-    void loop_with_initial_event(Callback<> cb);
-    virtual void loop() = 0;
-    virtual void loop_once() = 0;
-    virtual void break_loop() = 0;
+    // Backward compatibility names
+    void loop_with_initial_event(Callback<> &&cb) {
+        run_with_initial_event(std::move(cb));
+    }
+    void loop() { run(); }
+    void break_loop() { stop(); }
 
     /*
         POSIX API for dealing with sockets. Slower than APIs in net,
         especially under Windows, but suitable to integrate with other
         async libraries such as c-ares and perhaps others.
     */
-
     virtual void pollfd(
                 socket_t sockfd,
                 short events,
-                Callback<Error, short> callback,
-                double timeout = -1.0
+                double timeout,
+                Callback<Error, short> &&callback
         ) = 0;
 
-    // Deprecated in v0.4.x, will be removed in v0.5.x
+    // Backward compatibility API
+    void pollfd(socket_t sockfd, short events, Callback<Error, short> &&cb,
+                double timeout = -1.0) {
+        pollfd(sockfd, events, timeout, std::move(cb));
+    }
+
+    // Deprecated since v0.4.x
     virtual event_base *get_event_base() = 0;
 
-    // Introduced as aliases in v0.4.x
-    void run_with_initial_event(Callback<> cb) {
-        loop_with_initial_event(cb);
-    }
-    void run() { loop(); }
-    void stop() { break_loop(); }
-
-    static Var<Reactor> global();
+    void run_with_initial_event(Callback<> &&cb);
+    virtual void run() = 0;
+    virtual void stop() = 0;
 };
 
-void call_soon(Callback<>, Var<Reactor> = Reactor::global());
-void call_later(double, Callback<>, Var<Reactor> = Reactor::global());
-void loop_with_initial_event(Callback<>, Var<Reactor> = Reactor::global());
+void call_soon(Callback<> &&, Var<Reactor> = Reactor::global());
+void call_later(double, Callback<> &&, Var<Reactor> = Reactor::global());
+void loop_with_initial_event(Callback<> &&, Var<Reactor> = Reactor::global());
 void loop(Var<Reactor> = Reactor::global());
-void loop_once(Var<Reactor> = Reactor::global());
 void break_loop(Var<Reactor> = Reactor::global());
 
 // Introduced as aliases in v0.4.x
-inline void run_with_initial_event(Callback<> callback,
+inline void run_with_initial_event(Callback<> &&callback,
         Var<Reactor> reactor = Reactor::global()) {
-    loop_with_initial_event(callback, reactor);
+    loop_with_initial_event(std::move(callback), reactor);
 }
 inline void run(Var<Reactor> reactor = Reactor::global()) {
     loop(reactor);
