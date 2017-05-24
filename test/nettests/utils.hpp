@@ -18,8 +18,14 @@ template <typename T> mk::nettests::BaseTest make_test() {
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_verbosity(MK_LOG_INFO)
+        /*
+         * FIXME: the testing bouncer is not working. So use the testing
+         * collector with the production bouncer.
+         */
+        .set_options("collector_base_url",
+                mk::ooni::collector::testing_collector_url())
         .set_options("bouncer_base_url",
-                mk::ooni::bouncer::testing_bouncer_url());
+                mk::ooni::bouncer::production_bouncer_url());
 }
 
 template <typename T> mk::nettests::BaseTest make_test(std::string s) {
@@ -37,6 +43,10 @@ static inline void run_async(mk::nettests::BaseTest test) {
 static inline void
 with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
+    // Force testing collector so we don't spam the production one
+    test.options["collector_base_url"] =
+        mk::ooni::collector::testing_collector_url();
+    // Using a bouncer with a basic runnable will lead to bouncer error
     test.use_bouncer = false;
     test.logger->set_verbosity(MK_LOG_INFO);
     lambda(test);

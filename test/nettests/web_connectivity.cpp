@@ -38,21 +38,11 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         });
         REQUIRE(probe_ip != "");
         auto called = 0;
-        /*
-         * XXX the testing bouncer is not working. Then, use the production
-         * one along with the testing collector.
-         */
-        auto fixup_xxx = [](auto test) {
-            return test.set_options("bouncer_base_url",
-                                    ooni::bouncer::production_bouncer_url())
-                       .set_options("collector_base_url",
-                   ooni::collector::testing_collector_url());
-        };
-        f(fixup_xxx(test::nettests::make_test<WebConnectivityTest>("scrub.txt")
-                        .on_entry([&](std::string entry) {
-                            g(probe_ip, entry);
-                            called += 1;
-                        })))
+        f(test::nettests::make_test<WebConnectivityTest>("scrub.txt")
+              .on_entry([&](std::string entry) {
+                  g(probe_ip, entry);
+                  called += 1;
+              }))
             .run();
         REQUIRE(called == 1);
     };
