@@ -7,37 +7,9 @@
 
 #include <measurement_kit/common.hpp>
 
+#include "../../test/common/ptr_.hpp"
+
 using namespace mk;
-
-class Foo {
- public:
-    double elem = 3.14;
-    Foo() {}
-    Foo(double x) : elem(x) {}
-    void mascetti() {}
-    virtual ~Foo() noexcept;
-};
-
-Foo::~Foo() noexcept {}
-
-class FooBar : public Foo {
-  public:
-    double elem_child = 6.28;
-    FooBar(double y) : elem_child(y) {}
-    FooBar() {}
-    ~FooBar() noexcept override;
-};
-
-FooBar::~FooBar() noexcept {}
-
-// Enters the most glorious of the Sith lords...
-class JarJar {
-  public:
-    double binks = 0.91;
-    virtual ~JarJar() noexcept;
-};
-
-JarJar::~JarJar() noexcept {}
 
 TEST_CASE("U raises an exception when the pointee is nullptr") {
     U<Foo> foo;
