@@ -10,14 +10,14 @@ namespace ooni {
 
 static const int timeout = 5;
 
-static void send_receive_invalid_request_line(http::Url backend_url,
+static void send_receive_invalid_request_line(net::Endpoint endpoint,
                                               std::string request_line,
                                               Callback<Var<report::Entry>> cb,
                                               Settings settings,
                                               Var<Reactor> reactor,
                                               Var<Logger> logger) {
-    settings["host"] = backend_url.address;
-    settings["port"] = backend_url.port;
+    settings["host"] = endpoint.hostname;
+    settings["port"] = endpoint.port;
     Var<report::Entry> entry{new report::Entry{
         {"tampering", nullptr},
         {"received", nullptr},
@@ -69,15 +69,19 @@ void http_invalid_request_line(Settings options,
     (*entry)["failure_list"] = report::Entry::array();
     Var<int> tests_run(new int(0));
 
-    ErrorOr<http::Url> backend_url =
-        mk::http::parse_url_noexcept(options["backend"]);
+    ErrorOr<net::Endpoint> endpoint =
+        mk::net::parse_endpoint(options["backend"], 80);
 
-    if (!backend_url) {
-        logger->debug("Invalid backend url.");
-        (*entry)["failure"] = backend_url.as_error().as_ooni_error();
+    if (!endpoint) {
+        logger->warn("Invalid helper endpoint: %s (backend = '%s')",
+                     endpoint.as_error().explain().c_str(),
+                     options["backend"].c_str());
+        (*entry)["failure"] = endpoint.as_error().as_ooni_error();
         cb(entry);
         return;
     }
+
+    logger->info("Using helper: %s", options["backend"].c_str());
 
     auto handle_response = [=](Var<report::Entry> inner) {
         *tests_run += 1;
@@ -110,7 +114,7 @@ void http_invalid_request_line(Settings options,
     std::string test_random_invalid_method(mk::random_str_uppercase(4));
     test_random_invalid_method += " / HTTP/1.1\n\r";
     send_receive_invalid_request_line(
-        *backend_url, test_random_invalid_method, handle_response,
+        *endpoint, test_random_invalid_method, handle_response,
         options, reactor, logger);
 
     // test_random_invalid_field_count
@@ -121,7 +125,7 @@ void http_invalid_request_line(Settings options,
     }
     test_random_invalid_field_count += "\n\r";
     send_receive_invalid_request_line(
-        *backend_url, test_random_invalid_field_count, handle_response,
+        *endpoint, test_random_invalid_field_count, handle_response,
         options, reactor, logger);
 
     // test_random_big_request_method
@@ -129,7 +133,7 @@ void http_invalid_request_line(Settings options,
     std::string test_random_big_request_method(mk::random_str_uppercase(1024));
     test_random_big_request_method += " / HTTP/1.1\n\r";
     send_receive_invalid_request_line(
-        *backend_url, test_random_big_request_method, handle_response,
+        *endpoint, test_random_big_request_method, handle_response,
         options, reactor, logger);
 
     // test_random_invalid_version_number
@@ -137,7 +141,7 @@ void http_invalid_request_line(Settings options,
     std::string test_random_invalid_version_number("GET / HTTP/");
     test_random_invalid_version_number += mk::random_str_uppercase(3);
     send_receive_invalid_request_line(
-        *backend_url, test_random_invalid_version_number,
+        *endpoint, test_random_invalid_version_number,
         handle_response, options, reactor, logger);
 }
 
