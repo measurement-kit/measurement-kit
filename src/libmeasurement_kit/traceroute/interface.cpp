@@ -3,6 +3,8 @@
  * Measurement-kit is free software. See AUTHORS and LICENSE for more
  * information on the copying conditions.
  * =========================================================================
+ * Based on Portolan code contributed by its authors.
+ * See <http://portolanproject.iit.cnr.it/>.
  *
  * Portions Copyright (c) 2015, Adriano Faggiani, Enrico Gregori,
  * Luciano Lenzini, Valerio Luconi
