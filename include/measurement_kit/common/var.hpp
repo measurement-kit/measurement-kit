@@ -33,6 +33,10 @@ template <typename T> class Var : public std::shared_ptr<T> {
         return std::dynamic_pointer_cast<R>(*this);
     }
 
+    template <typename... A> static Var<T> make(A &&... a) {
+        return std::make_shared<T>(std::forward<A>(a)...);
+    }
+
   protected:
   private:
     // NO ATTRIBUTES HERE BY DESIGN. DO NOT ADD ATTRIBUTES HERE BECAUSE
