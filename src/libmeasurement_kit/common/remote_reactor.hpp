@@ -47,11 +47,6 @@ class RemoteReactor : public Reactor {
         throw std::runtime_error("loop() not available in this reactor");
     }
 
-    void run_with_initial_event(Callback<>) override {
-        throw std::runtime_error(
-            "loop_with_initial_event() not available in this reactor");
-    }
-
     event_base *get_event_base() override {
         // Note: the underlying `event_base` is configured to be thread safe
         return locked(state_->mutex,
