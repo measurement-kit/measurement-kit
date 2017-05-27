@@ -14,6 +14,7 @@ class RemoteReactor : public Reactor {
   public:
     class State {
       public:
+        std::atomic<bool> active{false};
         std::mutex mutex;
         Var<Reactor> reactor = Reactor::make();
         Var<Worker> worker = Worker::make();
@@ -96,7 +97,7 @@ class RemoteReactor : public Reactor {
         locked(mutex_, [ cb = std::move(cb), this ]() {
             // Guarantee: functions called with this method will be
             // called when we know that the reactor is running
-            if (!active_) {
+            if (!state_->active) {
                 std::promise<void> promise;
                 std::future<void> future = promise.get_future();
                 // Guarantee: the background thread only has access to the
@@ -109,7 +110,7 @@ class RemoteReactor : public Reactor {
                         [&promise]() { promise.set_value(); });
                 });
                 future.wait();
-                active_ = true;
+                state_->active = true;
             }
             // Note: passing the reactor as argument so we do not need to
             // capture `this` in the lambda capture above
