@@ -50,7 +50,7 @@ The `start_generic_task` schedules the task identified by `name` for
 execution in a background thread. The provided `logger` will be used to
 emit diagnostic messages. The `task` argument is a continuation that
 implements the task: it receives as a single argument a `Callback<>` that
-is to be called when the task has finished is work. The code will make
+is to be called when the task has finished its work. The code will make
 sure to call the final callback, `done`, when this happens.
 
 # HISTORY

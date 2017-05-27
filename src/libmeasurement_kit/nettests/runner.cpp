@@ -61,11 +61,11 @@ void Runner::start_generic_task(std::string &&name, Var<Logger> logger,
     }
     ctx_->active += 1;
     logger->debug("runner: scheduling '%s'", name.c_str());
-    ctx_->reactor->call_soon([=]() {
+    // Make sure we explicitly keep alive `task`, which must not be
+    // deleted until the `done` callback has been called.
+    ctx_->reactor->call_soon([name, logger, task, done, this]() {
         logger->debug("runner: starting '%s'", name.c_str());
-        // Make sure we explicitly keep alive `task`, which must not be
-        // deleted until the `done` callback has been called.
-        task([name, logger, task, done]() {
+        task([name, logger, task, done, this]() {
             logger->debug("runner: cleaning-up '%s'", name.c_str());
             // For robustness, delay the final callback to the beginning of
             // next I/O cycle to prevent possible user after frees. This
@@ -75,7 +75,7 @@ void Runner::start_generic_task(std::string &&name, Var<Logger> logger,
             // because `test` is most likely to be destroyed after `fn()`
             // returns. Thus, when unwinding the stack, the use after free
             // would happen.
-            ctx_->reactor->call_soon([name, logger, task, done]() {
+            ctx_->reactor->call_soon([name, logger, task, done, this]() {
                 logger->debug("runner: callbacking '%s'", name.c_str());
                 ctx_->active -= 1;
                 logger->debug("runner: #active tasks: %d", (int)ctx_->active);
