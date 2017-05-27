@@ -29,6 +29,8 @@ void Runner::start_test(Var<Runnable> test, Callback<Var<Runnable>> fn) {
 
 void Runner::break_loop_() { ctx_->reactor->break_loop(); }
 
+bool Runner::empty() { return !ctx_->reactor->is_running(); }
+
 void Runner::join_() {
     // NOTHING
 }
@@ -37,8 +39,6 @@ Runner::~Runner() {
     break_loop_();
     join_();
 }
-
-bool Runner::empty() { return !ctx_->reactor->is_running(); }
 
 /*static*/ Var<Runner> Runner::global() {
     return locked_global([]() {
