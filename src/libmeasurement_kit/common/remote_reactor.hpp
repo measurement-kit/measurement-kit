@@ -44,7 +44,7 @@ class RemoteReactor : public Reactor {
     }
 
     void run() override {
-        throw std::runtime_error("loop() not available in this reactor");
+        throw std::runtime_error("run() not available in this reactor");
     }
 
     event_base *get_event_base() override {
