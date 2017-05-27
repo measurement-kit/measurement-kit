@@ -108,6 +108,8 @@ class Reactor {
             });
         });
     }
+
+    virtual bool is_running() = 0;
 };
 
 void call_soon(Callback<> &&, Var<Reactor> = Reactor::global());
