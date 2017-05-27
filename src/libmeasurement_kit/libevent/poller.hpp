@@ -9,7 +9,7 @@
 namespace mk {
 namespace libevent {
 
-class Poller : public Reactor {
+class Poller : public Reactor, public NonCopyable, public NonMovable {
   public:
     Poller();
     ~Poller() override;
@@ -24,6 +24,8 @@ class Poller : public Reactor {
     void set_autostop(bool) override;
     bool autostop() override;
 
+    bool is_running() override;
+
     // BEGIN internal functions used to test periodic event functionality
     void handle_periodic_();
     void on_periodic_(Callback<Poller *>);
@@ -34,6 +36,7 @@ class Poller : public Reactor {
     Var<event_base> base_;
     Delegate<Poller *> periodic_cb_;
     bool autostop_ = false;
+    bool is_running_ = false;
 };
 
 } // namespace libevent

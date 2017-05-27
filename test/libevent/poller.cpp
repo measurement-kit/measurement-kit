@@ -166,3 +166,34 @@ TEST_CASE("The periodic event is fired when we call loop()") {
     poller.loop();
     REQUIRE(count == 3);
 }
+
+TEST_CASE("is_running works as expected") {
+    Poller poller;
+
+    SECTION("For loop()") {
+        REQUIRE(!poller.is_running());
+        poller.call_later(0.99, [&]() {
+            REQUIRE(poller.is_running());
+            poller.break_loop();
+        });
+        poller.loop();
+        REQUIRE(!poller.is_running());
+    }
+
+    SECTION("For loop_once()") {
+        auto done = false;
+        REQUIRE(!poller.is_running());
+        poller.call_later(0.99, [&]() {
+            REQUIRE(poller.is_running());
+            poller.break_loop();
+            done = true;
+        });
+        while (!done) {
+            REQUIRE(!poller.is_running());
+            poller.loop_once();
+            REQUIRE(!poller.is_running());
+        }
+        REQUIRE(!poller.is_running());
+    }
+
+}
