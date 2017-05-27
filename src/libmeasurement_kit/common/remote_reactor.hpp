@@ -24,11 +24,6 @@ class RemoteReactor : public Reactor {
         state_->reactor->set_autostop(true);
     }
 
-    // Note: here we don't stop the I/O loop because we want to give the
-    // caller the guarantee that he/she can dispose of this object once
-    // done with it without stopping all the background I/O (of couse if
-    // the current object is lost it might be difficult to continue to
-    // use the background thread, but this is life :-).
     ~RemoteReactor() override {}
 
     void call_soon(Callback<> &&cb) override {
