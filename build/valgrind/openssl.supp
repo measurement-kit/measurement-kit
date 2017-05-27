@@ -7,10 +7,9 @@
    fun:bufferevent_run_deferred_callbacks_locked
    fun:event_process_active_single_queue
    fun:event_base_loop
-   fun:_ZN2mk8libevent11poller_loopIXadL_Z9event_newEEXadL_Z10event_freeEEXadL_Z9event_addEEXadL_Z19event_base_dispatchEEEEiNS_3VarI10event_baseEEPNS0_6PollerE
+   fun:_ZN2mk8libevent11poller_loopIXadL_Z9event_newEEXadL_Z10event_freeEEXadL_Z9event_addEEXadL_Z19event_base_dispatchEEEEiNS_3VarI10event_baseEEPNS0_6PollerEb
    fun:_ZN2mk8libevent6Poller3runEv
    fun:_ZL31____C_A_T_C_H____T_E_S_T____*
    fun:_ZN5Catch8runTestsERKNS_3PtrINS_6ConfigEEE
    fun:main
 }
-
