@@ -38,6 +38,6 @@
       private:                                                                 \
         /* NO ATTRIBUTES HERE BY DESIGN. DO NOT ADD ATTRIBUTES HERE BECAUSE */ \
         /* DOING THAT CREATES THE RISK OF OBJECT SLICING. */                   \
-    };
+    }
 
 #endif
