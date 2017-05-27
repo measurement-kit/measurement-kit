@@ -21,7 +21,9 @@ class RemoteReactor : public Reactor {
     };
 
     RemoteReactor() {
+        // Use parallelism 1 because we want to use just one thread
         state_->worker->set_parallelism(1);
+        // Automatically stop, so we don't need to stop manually
         state_->reactor->set_autostop(true);
     }
 
@@ -65,7 +67,7 @@ class RemoteReactor : public Reactor {
         // In the worst case, such operations will be scheduled for a little
         // while when the reactor is stopping (this will happen due to the
         // properties of the worker, which has a queue).
-        locked(state_->mutex, [&]() { reactor_->break_loop(); });
+        locked(state_->mutex, [&]() { reactor_->stop(); });
     }
 
     void pollfd(socket_t sockfd, short events, double timeout,
@@ -105,9 +107,10 @@ class RemoteReactor : public Reactor {
                 //
                 // Moreover: the worker is safe with respect to the worker
                 // itself dying with the background thread running.
-                worker_->run_in_background_thread([&promise, r = reactor_ ]() {
-                    r->run_with_initial_event(
+                worker_->run_in_background_thread([&promise, s = state_ ]() {
+                    s->reactor->run_with_initial_event(
                         [&promise]() { promise.set_value(); });
+                    s->active = false;
                 });
                 future.wait();
                 state_->active = true;
