@@ -49,15 +49,15 @@ class RemoteReactor : public Reactor {
     void call_soon(Callback<> &&cb) override {
         // Guarantee: since we move all the arguments, this object can die
         // after this function returns without any hazard.
-        with_running_reactor_and_locked_do_([cb = std::move(cb)](
-            Var<Reactor> rr) { rr->call_soon(std::move(cb)); });
+        with_running_reactor_and_locked_do_(
+            [&]() { state_->reactor->call_soon(std::move(cb)); });
     }
 
     void call_later(double timeo, Callback<> &&cb) override {
         // Guarantee: since we move all the arguments, this object can die
         // after this function returns without any hazard.
-        with_running_reactor_and_locked_do_([ timeo, cb = std::move(cb) ](
-            Var<Reactor> rr) { rr->call_later(timeo, std::move(cb)); });
+        with_running_reactor_and_locked_do_(
+            [&]() { state_->reactor->call_later(timeo, std::move(cb)); });
     }
 
     void run() override {
@@ -79,19 +79,16 @@ class RemoteReactor : public Reactor {
         // In the worst case, such operations will be scheduled for a little
         // while when the reactor is stopping (this will happen due to the
         // properties of the worker, which has a queue).
-        locked(state_->mutex, [&]() { reactor_->stop(); });
+        locked(state_->mutex, [&]() { state_->reactor->stop(); });
     }
 
     void pollfd(socket_t sockfd, short events, double timeout,
-                Callback<Error, short> callback) override {
+                Callback<Error, short> &&callback) override {
         // Guarantee: since we move all the arguments, this object can die
         // after this function returns without any hazard.
-        with_running_reactor_and_locked_do_([
-            sockfd = std::move(sockfd), events = std::move(events),
-            callback = std::move(callback), timeout = std::move(timeout)
-        ](Var<Reactor> rr) {
-            rr->pollfd(std::move(sockfd), std::move(events),
-                       std::move(callback), std::move(timeout));
+        with_running_reactor_and_locked_do_([&]() {
+            state_->reactor->pollfd(std::move(sockfd), std::move(events),
+                                    std::move(callback), std::move(timeout));
         });
     }
 
@@ -99,7 +96,7 @@ class RemoteReactor : public Reactor {
         throw std::runtime_error("Cannot set auto-stop flag");
     }
 
-    bool get_autostop() override { return true; }
+    bool autostop() override { return true; }
 
     bool is_running() override {
         return locked(state_->mutex,
@@ -107,8 +104,8 @@ class RemoteReactor : public Reactor {
     }
 
   private:
-    void with_running_reactor_and_locked_do_(Callback<Var<Reactor>> cb) {
-        locked(mutex_, [ cb = std::move(cb), this ]() {
+    void with_running_reactor_and_locked_do_(Callback<> cb) {
+        locked(state_->mutex, [ cb = std::move(cb), this ]() {
             // Guarantee: functions called with this method will be
             // called when we know that the reactor is running
             if (!state_->active) {
@@ -120,17 +117,16 @@ class RemoteReactor : public Reactor {
                 //
                 // Moreover: the worker is safe with respect to the worker
                 // itself dying with the background thread running.
-                worker_->run_in_background_thread([&promise, s = state_ ]() {
-                    s->reactor->run_with_initial_event(
-                        [&promise]() { promise.set_value(); });
-                    locked(s->mutex, [&]() { s->active = false; });
-                });
+                state_->worker->run_in_background_thread(
+                    [&promise, s = state_ ]() {
+                        s->reactor->run_with_initial_event(
+                            [&promise]() { promise.set_value(); });
+                        locked(s->mutex, [&]() { s->active = false; });
+                    });
                 future.wait();
                 state_->active = true;
             }
-            // Note: passing the reactor as argument so we do not need to
-            // capture `this` in the lambda capture above
-            cb(reactor_);
+            cb();
         });
     }
 

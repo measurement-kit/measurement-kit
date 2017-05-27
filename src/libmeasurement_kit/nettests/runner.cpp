@@ -14,17 +14,21 @@ struct RunnerCtx {
 Runner::Runner() { ctx_.reset(new RunnerCtx); }
 
 void Runner::start_test(Var<Runnable> test, Callback<Var<Runnable>> fn) {
-    reactor->run_task("runner", test->logger,
-                      [test = std::move(test)](Callback && cb) {
-                          test->begin([test, cb](Error) {
-                              // TODO: do not ignore the error
-                              test->end([test, cb](Error) {
-                                  // TODO: do not ignore the error
-                                  cb();
-                              });
-                          });
-                      },
-                      fn);
+    ctx_->reactor->run_task_deferred(
+        "runner",
+        test->logger,
+        [=](Callback<> &&cb) {
+            test->begin([=](Error /*err*/) {
+                // TODO: do we want to ignore the error?
+                test->end([=](Error /*err*/) {
+                    // TODO: do we want to ignore the error?
+                    cb();
+                });
+            });
+        },
+        [=](auto /*callback*/) {
+            fn(test);
+        });
 }
 
 void Runner::break_loop_() { ctx_->reactor->break_loop(); }
