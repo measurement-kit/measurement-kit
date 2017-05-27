@@ -4,9 +4,6 @@
 
 #include <measurement_kit/nettests.hpp>
 
-#include <atomic>
-#include <cassert>
-
 namespace mk {
 namespace nettests {
 
