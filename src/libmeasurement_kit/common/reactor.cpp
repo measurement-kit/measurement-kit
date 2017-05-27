@@ -8,11 +8,11 @@
 namespace mk {
 
 /*static*/ Var<Reactor> Reactor::make_remote() {
-    return locked_global([]() { return Var<Reactor>{new RemoteReactor}; });
+    return Var<Reactor>{new RemoteReactor};
 }
 
 /*static*/ Var<Reactor> Reactor::make() {
-    return locked_global([]() { return Var<Reactor>{new libevent::Poller}; });
+    return Var<Reactor>{new libevent::Poller};
 }
 
 Reactor::~Reactor() {}
