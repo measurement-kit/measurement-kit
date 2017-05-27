@@ -12,10 +12,16 @@ namespace mk {
 
 class RemoteReactor : public Reactor {
   public:
+    class State {
+      public:
+        std::mutex mutex;
+        Var<Reactor> reactor = Reactor::make();
+        Var<Worker> worker = Worker::make();
+    };
+
     RemoteReactor() {
-        reactor_ = Reactor::make();
-        worker_ = Worker::make();
-        worker_->set_parallelism(1);
+        state_->worker->set_parallelism(1);
+        state_->reactor->set_autostop(true);
     }
 
     // Note: here we don't stop the I/O loop because we want to give the
@@ -25,42 +31,36 @@ class RemoteReactor : public Reactor {
     // use the background thread, but this is life :-).
     ~RemoteReactor() override {}
 
-    void call_soon(Callback<> cb) override {
+    void call_soon(Callback<> &&cb) override {
         // Guarantee: since we move all the arguments, this object can die
         // after this function returns without any hazard.
         with_running_reactor_and_locked_do_([cb = std::move(cb)](
             Var<Reactor> rr) { rr->call_soon(std::move(cb)); });
     }
 
-    void call_later(double timeo, Callback<> cb) override {
+    void call_later(double timeo, Callback<> &&cb) override {
         // Guarantee: since we move all the arguments, this object can die
         // after this function returns without any hazard.
-        with_running_reactor_and_locked_do_(
-            [ timeo = std::move(timeo), cb = std::move(cb) ](Var<Reactor> rr) {
-                rr->call_later(std::move(timeo), std::move(cb));
-            });
+        with_running_reactor_and_locked_do_([ timeo, cb = std::move(cb) ](
+            Var<Reactor> rr) { rr->call_later(timeo, std::move(cb)); });
     }
 
-    void loop_once() override {
-        throw std::logic_error("loop_once() not available in this reactor");
+    void run() override {
+        throw std::runtime_error("loop() not available in this reactor");
     }
 
-    void loop() override {
-        throw std::logic_error("loop() not available in this reactor");
-    }
-
-    void loop_with_initial_event(Callback<>) override {
-        throw std::logic_error(
+    void run_with_initial_event(Callback<>) override {
+        throw std::runtime_error(
             "loop_with_initial_event() not available in this reactor");
     }
 
     event_base *get_event_base() override {
-        // XXX This in theory means that one can access the `event_base`
-        // from another thread, however it should be thread safe...
-        return locked(mutex_, [&]() { return reactor_->get_event_base(); });
+        // Note: the underlying `event_base` is configured to be thread safe
+        return locked(state_->mutex,
+                      [&]() { return state_->reactor->get_event_base(); });
     }
 
-    void break_loop() override {
+    void stop() override {
         // Here we don't need to ensure that the reactor is running.
         //
         // If, after this method, this object is still alive, the user can
@@ -86,6 +86,19 @@ class RemoteReactor : public Reactor {
             rr->pollfd(std::move(sockfd), std::move(events),
                        std::move(callback), std::move(timeout));
         });
+    }
+
+    void set_autostop(bool /*value*/) override {
+        throw std::runtime_error("Cannot set auto-stop flag");
+    }
+
+    bool get_autostop() override {
+        return true;
+    }
+
+    bool is_running() override {
+        return locked(state_->mutex,
+                      [&]() { return state_->reactor->is_running(); });
     }
 
   private:
@@ -114,10 +127,7 @@ class RemoteReactor : public Reactor {
         });
     }
 
-    bool active_ = false;
-    std::mutex mutex_;
-    Var<Reactor> reactor_;
-    Var<Worker> worker_;
+    Var<State> state_ = Var<State>::make();
 };
 
 } // namespace mk
