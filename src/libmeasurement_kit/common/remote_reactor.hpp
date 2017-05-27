@@ -12,9 +12,26 @@ namespace mk {
 
 class RemoteReactor : public Reactor {
   public:
+    /*
+     * Note: we share a `Var<State>` between the I/O thread and other
+     * threads. According to the manual:
+     *
+     *     All member functions (including copy constructor and copy
+     *     assignment) can be called by multiple threads on different
+     *     instances of shared_ptr without additional synchronization
+     *     even if these instances are copies and share ownership of
+     *     the same object. If multiple threads of execution access
+     *     the same shared_ptr without synchronization and any of those
+     *     accesses uses a non-const member function of shared_ptr
+     *     then a data race will occur; the shared_ptr overloads of
+     *     atomic functions can be used to prevent the data race.
+     *
+     * Basically, we are safe as long as we don't change explicitly
+     * the value that `state_` does point to.
+     */
     class State {
       public:
-        std::atomic<bool> active{false};
+        bool active = false;
         std::mutex mutex;
         Var<Reactor> reactor = Reactor::make();
         Var<Worker> worker = Worker::make();
@@ -98,14 +115,15 @@ class RemoteReactor : public Reactor {
                 std::promise<void> promise;
                 std::future<void> future = promise.get_future();
                 // Guarantee: the background thread only has access to the
-                // thread safe reactor and keeps it alive via `Var<>`.
+                // state and keeps it alive via `Var<>`. This should be thread
+                // safe behavior (see big comment on that above).
                 //
                 // Moreover: the worker is safe with respect to the worker
                 // itself dying with the background thread running.
                 worker_->run_in_background_thread([&promise, s = state_ ]() {
                     s->reactor->run_with_initial_event(
                         [&promise]() { promise.set_value(); });
-                    s->active = false;
+                    locked(s->mutex, [&]() { s->active = false; });
                 });
                 future.wait();
                 state_->active = true;
