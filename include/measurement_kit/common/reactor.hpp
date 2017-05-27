@@ -57,6 +57,8 @@ class Reactor {
     void run_with_initial_event(Callback<> &&cb);
     virtual void run() = 0;
     virtual void stop() = 0;
+    virtual void set_autostop(bool) = 0;
+    virtual bool autostop() = 0;
 };
 
 void call_soon(Callback<> &&, Var<Reactor> = Reactor::global());

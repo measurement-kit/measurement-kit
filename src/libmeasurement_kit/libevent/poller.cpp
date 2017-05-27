@@ -58,7 +58,7 @@ void Poller::call_later(double timeo, Callback<> &&cb) {
     poller_call_later(base_, timeo, std::move(cb));
 }
 
-void Poller::run() { poller_loop(base_, this); }
+void Poller::run() { poller_loop(base_, this, autostop_); }
 void Poller::loop_once() { poller_loop_once(base_); }
 void Poller::stop() { poller_break_loop(base_); }
 
@@ -82,6 +82,9 @@ void Poller::handle_periodic_() {
 void Poller::on_periodic_(Callback<Poller *> cb) {
     periodic_cb_ = cb;
 }
+
+void Poller::set_autostop(bool v) { autostop_ = v; }
+bool Poller::autostop() { return autostop_; }
 
 } // namespace libevent
 } // namespace mk
