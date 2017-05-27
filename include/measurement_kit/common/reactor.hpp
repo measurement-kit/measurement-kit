@@ -21,7 +21,9 @@ namespace mk {
 class Reactor {
   public:
     static Var<Reactor> make();
+    static Var<Reactor> make_remote();
     static Var<Reactor> global();
+    static Var<Reactor> global_remote();
     virtual ~Reactor();
 
     virtual void call_soon(Callback<> &&cb) = 0;
