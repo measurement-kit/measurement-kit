@@ -89,32 +89,38 @@ TEST_CASE("poller.loop() works properly in corner cases") {
 
     SECTION("We deal with event_new() failure") {
         Poller poller;
-        REQUIRE_THROWS(poller_loop<fail>(poller.base_, &poller));
+        REQUIRE_THROWS(poller_loop<fail>(poller.base_, &poller, false));
     }
 
     SECTION("We free the periodic event") {
         Poller poller;
         poller.call_later(1.0, [&poller]() { poller.break_loop(); });
-        poller_loop<event_new, event_free_mock>(poller.base_, &poller);
+        poller_loop<event_new, event_free_mock>(poller.base_, &poller, false);
         REQUIRE(event_free_called);
     }
 
     SECTION("We deal with event_add() failure") {
         Poller poller;
         REQUIRE_THROWS((poller_loop<event_new, event_free, fail>(
-                poller.base_, &poller)));
+                poller.base_, &poller, false)));
     }
 
     SECTION("We deal with event_base_dispatch() returning -1") {
         Poller poller;
         REQUIRE_THROWS((poller_loop<event_new, event_free, event_add, fail>(
-                poller.base_, &poller)));
+                poller.base_, &poller, false)));
     }
 
     SECTION("We do not throw when event_base_dispatch() returs 1") {
         Poller poller;
         poller_loop<event_new, event_free, event_add, returns_one>(
-                poller.base_, &poller);
+                poller.base_, &poller, false);
+    }
+
+    SECTION("The autostop flag is honoured") {
+        Poller poller;
+        poller.set_autostop(true);
+        REQUIRE(poller_loop(poller.base_, &poller, true) == 1);
     }
 }
 

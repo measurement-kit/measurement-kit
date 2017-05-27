@@ -42,6 +42,9 @@ class Reactor {
                 double timeout = -1.0) {
         pollfd(sockfd, events, timeout, std::move(cb));
     }
+
+    void set_autostop(bool);
+    bool autostop();
 }
 
 /* Functional interface (by default using the global reactor): */
@@ -158,6 +161,13 @@ The `get_event_base` is a deprecated method that returns the underlying
 great detail our dependency on libevent. Ideally, this method should be
 a method of the specific implementation of the reactor, available only
 when you downcast from reactor to its specific implementation.
+
+The `set_autostop` and `autostop` methods respectively set and get
+the autostop flag. This flag tells the poller whether to continue
+running even when no events are scheduled. Different reactor implementations
+MAY have different default values for this flag. Note that these methods
+MUST be called before the reactor is running. If `set_autostop` is called
+on a running reactor, it MAY throw a runtime exception.
 
 In addition, this module exposes also syntactic sugar functions:
 

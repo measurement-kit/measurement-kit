@@ -70,16 +70,18 @@ void poller_call_later(Var<event_base> base, double timeo, Callback<> cb) {
     }
 }
 
-template<MK_MOCK(event_new), MK_MOCK(event_free), MK_MOCK(event_add),
-         MK_MOCK(event_base_dispatch)>
-void poller_loop(Var<event_base> base, Poller *poller) {
+template <MK_MOCK(event_new), MK_MOCK(event_free), MK_MOCK(event_add),
+          MK_MOCK(event_base_dispatch)>
+int poller_loop(Var<event_base> base, Poller *poller, bool autostop) {
     // Register a persistent periodic event to make sure that the event
     // loop is not going to exit if we run out of events. This is required
     // to make sure that the ordinary libevent loop works like tor event
     // loop (also based on libevent), which does not exit in any case.
     //
-    // Note that the development version of libevent has a flag to implement
-    // the behavior described above, but the stable libevent doesn't.
+    // Note that v2.1.x version of libevent has a flag to implement
+    // the behavior described above, but v2.0.x libevent doesn't.
+    //
+    // This is done unless `autostop` is true.
 
     timeval ten_seconds;
     Var<event> persist(
@@ -92,7 +94,8 @@ void poller_loop(Var<event_base> base, Poller *poller) {
     if (!persist) {
         throw std::runtime_error("event_new() failed");
     }
-    if (event_add(persist.get(), timeval_init(&ten_seconds, 10.0)) != 0) {
+    if (autostop == false &&
+        event_add(persist.get(), timeval_init(&ten_seconds, 10.0)) != 0) {
         throw std::runtime_error("event_add() failed");
     }
 
@@ -103,6 +106,8 @@ void poller_loop(Var<event_base> base, Poller *poller) {
     if (result == 1) {
         warn("loop: no pending and/or active events");
     }
+
+    return result;
 }
 
 template <MK_MOCK(event_base_loop)>
