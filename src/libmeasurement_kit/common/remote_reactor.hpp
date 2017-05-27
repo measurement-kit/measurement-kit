@@ -64,10 +64,7 @@ class RemoteReactor : public Reactor {
         // In the worst case, such operations will be scheduled for a little
         // while when the reactor is stopping (this will happen due to the
         // properties of the worker, which has a queue).
-        locked(mutex_, [&]() {
-            reactor_->break_loop();
-            active_ = false;
-        });
+        locked(state_->mutex, [&]() { reactor_->break_loop(); });
     }
 
     void pollfd(socket_t sockfd, short events, double timeout,
@@ -87,9 +84,7 @@ class RemoteReactor : public Reactor {
         throw std::runtime_error("Cannot set auto-stop flag");
     }
 
-    bool get_autostop() override {
-        return true;
-    }
+    bool get_autostop() override { return true; }
 
     bool is_running() override {
         return locked(state_->mutex,
