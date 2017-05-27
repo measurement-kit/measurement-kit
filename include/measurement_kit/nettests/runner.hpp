@@ -4,12 +4,11 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_RUNNER_HPP
 #define MEASUREMENT_KIT_NETTESTS_RUNNER_HPP
 
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/nettests/runnable.hpp>
 
 namespace mk {
 namespace nettests {
 struct RunnerCtx;
-class Runnable;
 
 class Runner {
   public:
@@ -17,6 +16,7 @@ class Runner {
     void start_test(Var<Runnable> test, Callback<Var<Runnable>> func);
     void break_loop_();
     bool empty();
+    void join_();
     ~Runner();
     static Var<Runner> global();
 
