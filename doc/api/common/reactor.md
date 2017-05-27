@@ -42,7 +42,18 @@ class Reactor {
                 double timeout = -1.0) {
         pollfd(sockfd, events, timeout, std::move(cb));
     }
-}
+
+    void set_autostop(bool);
+    bool autostop();
+
+    template <typename Task, typename Callback>
+    void run_task_now(std::string &&task_name, Var<Logger> logger, Task &&task,
+                      Callback &&cb);
+
+    template <typename Task, typename Callback>
+    void run_task_deferred(std::string &&task_name, Var<Logger> logger, Task &&task,
+                           Callback &&cb);
+};
 
 /* Functional interface (by default using the global reactor): */
 
@@ -158,6 +169,49 @@ The `get_event_base` is a deprecated method that returns the underlying
 great detail our dependency on libevent. Ideally, this method should be
 a method of the specific implementation of the reactor, available only
 when you downcast from reactor to its specific implementation.
+
+The `set_autostop` and `autostop` methods respectively set and get
+the autostop flag. This flag tells the poller whether to continue
+running even when no events are scheduled. Different reactor implementations
+MAY have different default values for this flag. Note that these methods
+MUST be called before the reactor is running. If `set_autostop` is called
+on a running reactor, it MAY throw a runtime exception.
+
+The `run_task_now` function runs the specific `task` (a callable object
+taking as argument `Callback<>`, and, when task is complete, invokes
+the `callback` argument (a callable taking as argument a `const Task &&`)
+in a way such that the `task` object may die safely in the callback if
+the user does not store it. It is rougly equivalent to:
+
+```C++
+    Var<Reactor> reactor = Reactor::make();
+    // ...
+    task([reactor, task]() {
+        reactor->call_soon([task]() {
+            callback(task);
+        });
+    });
+```
+
+The `task_name` and `logger` arguments are used to print diagnostics.
+
+The `run_task_deferred` uses `call_soon` to schedule `run_task_now`. It
+is roughly equivalent to:
+
+```C++
+    reactor->call_soon([reactor, task]() {
+        task([reactor, task]() {
+            reactor->call_soon([task]() {
+                callback(task);
+            });
+        });
+    });
+```
+
+`Run_task_now` and `run_task_deferred` are commonly used patterns
+throughout MK to make sure that `task` is alive for as long as
+needed. We added them to the reactor such that we can avoid repeating
+ourselves so often.
 
 In addition, this module exposes also syntactic sugar functions:
 

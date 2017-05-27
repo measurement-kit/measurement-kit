@@ -21,6 +21,9 @@ class Poller : public Reactor {
     void stop() override;
     void pollfd(socket_t, short, double, Callback<Error, short> &&) override;
 
+    void set_autostop(bool) override;
+    bool autostop() override;
+
     // BEGIN internal functions used to test periodic event functionality
     void handle_periodic_();
     void on_periodic_(Callback<Poller *>);
@@ -30,6 +33,7 @@ class Poller : public Reactor {
     // class is not meant to be used directly but as Var<Reactor>
     Var<event_base> base_;
     Delegate<Poller *> periodic_cb_;
+    bool autostop_ = false;
 };
 
 } // namespace libevent
