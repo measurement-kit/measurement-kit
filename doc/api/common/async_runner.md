@@ -124,7 +124,8 @@ The `active` method returns the number of tasks currently active.
 
 The `running` method tells you whether the background thread is running.
 
-The `reactor` method returns the reactor in use.
+The `reactor` method returns the reactor in use. If the task needs to use a
+specific reactor, you SHOULD pass it the one returned by this method.
 
 The `make` factory constructs a shared instance of this object.
 
@@ -134,23 +135,28 @@ The `global` factory returns the global shared `AsyncRunner`.
 
 The `start` method provides the following guarantees:
 
-1. The fourth argument `callback` will not be called immediately but
-   rather it will be deferred using `call_soon`
+1. the fourth argument `callback` will not be called immediately but
+   rather it will be deferred using `call_soon`;
 
-2. The third argument `task` will be alive *at least* until the
-   `callback` passed as fourth argument returns
+2. the third argument `task` will be alive until the `callback` passed
+   as fourth argument returns.
 
 The combination of this two guarantees avoids the following use after
 free hazard that we observed empirically:
 
-1. The `task` is only kept alive by the closure of the function passed to
-   it, since the prototype of `start` is such that it owns the `task`
+1. as it is currently implemented, `start` manages the lifecycle of `task`
+   using the closure of the function to be passed to `task`;
 
-2. As such, `task` dies only the function passed to it exits from the scope
+2. as such, unless there are other references to `task` around, `task`
+   will be destroyed just after the function passed to it returns;
 
-3. Yet, `task` implementation may be such that it needs to perform some
-   cleanup after it has called the final function and, in such case, said
-   code will perform cleanup on an already-destroyed `this`
+3. yet, `task` implementation may be such that, below the stack frame where
+   the final callback is called, there are other uses of either `task` or
+   objects whose lifecycle is managed by task;
+
+4. as such, without the two following guarantees, when the stack frame is
+   unwinding after the final callback has been called, it MAY be that there
+   is code using already-deleted objects.
 
 # CAVEATS
 
