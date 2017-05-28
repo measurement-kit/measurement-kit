@@ -48,7 +48,6 @@ class AsyncRunner {
 
 The `AsyncRunner` class runs schedules deferred execution of specific tasks
 in a background I/O thread where a `Reactor` I/O loop is running.
-a `Reactor` I/O loop is running.
 
 The `start` method is the most important method of this class. It performs the
 following operations:
