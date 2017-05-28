@@ -41,7 +41,7 @@ Since the callback will be called from a background thread, make sure
 you lock any shared resources before proceeding as in
 
 ```C++
-    Runner::global()->run(test, [=](Var<NetTest>) {
+    Runner::global()->start_test(test, [=](Var<NetTest>) {
         shared_resource.lock();
         // Now use the shared resource
     });
