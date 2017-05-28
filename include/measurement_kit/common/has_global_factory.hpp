@@ -4,6 +4,7 @@
 #ifndef MEASUREMENT_KIT_COMMON_HAS_GLOBAL_FACTORY_HPP
 #define MEASUREMENT_KIT_COMMON_HAS_GLOBAL_FACTORY_HPP
 
+#include <measurement_kit/common/locked.hpp>
 #include <measurement_kit/common/var.hpp>
 
 namespace mk {
@@ -11,11 +12,13 @@ namespace mk {
 template <typename T> class HasGlobalFactory {
   public:
     template <typename... A> static Var<T> global(A &&... a) {
-        static Var<T> singleton;
-        if (!singleton) {
-            singleton = Var<T>::make(std::forward<A>(a)...);
-        }
-        return singleton;
+        return locked_global([&]() {
+            static Var<T> singleton;
+            if (!singleton) {
+                singleton = Var<T>::make(std::forward<A>(a)...);
+            }
+            return singleton;
+        });
     }
 };
 

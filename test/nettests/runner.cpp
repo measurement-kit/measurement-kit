@@ -74,8 +74,7 @@ TEST_CASE("The destructor work as expected if the thread was already joined") {
     while (!runner.empty()) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    runner.break_loop_();
-    runner.join_();
+    runner.stop();
 }
 
 TEST_CASE("Nothing strange happens if no thread is bound to Runner") {
