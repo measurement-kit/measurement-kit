@@ -364,13 +364,29 @@ TEST_CASE("randomly_capitalize isn't obviously wrong") {
 
 
 TEST_CASE("parse_iso8601_utc works as expected") {
-  std::tm t;
-  auto e = mk::parse_iso8601_utc("2012-01-02T03:04:05Z", &t);
-  REQUIRE(!e);
-  REQUIRE(t.tm_sec == 5);
-  REQUIRE(t.tm_min == 4);
-  REQUIRE(t.tm_hour == 3);
-  REQUIRE(t.tm_mday == 2);
-  REQUIRE(t.tm_mon == 0);
-  REQUIRE(t.tm_year == 112);
+    SECTION("For valid input") {
+        std::tm t;
+        auto e = mk::parse_iso8601_utc("2012-01-02T03:04:05Z", &t);
+        REQUIRE(!e);
+        REQUIRE(t.tm_sec == 5);
+        REQUIRE(t.tm_min == 4);
+        REQUIRE(t.tm_hour == 3);
+        REQUIRE(t.tm_mday == 2);
+        REQUIRE(t.tm_mon == 0);
+        REQUIRE(t.tm_year == 112);
+    }
+
+    SECTION("For invalid input") {
+        std::tm t;
+        auto e = mk::parse_iso8601_utc("2012-01-02 03:04:05Z", &t);
+        REQUIRE(!!e);
+        REQUIRE(e == mk::ValueError());
+    }
+
+    SECTION("For no input") {
+        std::tm t;
+        auto e = mk::parse_iso8601_utc("", &t);
+        REQUIRE(!!e);
+        REQUIRE(e == mk::ValueError());
+    }
 }

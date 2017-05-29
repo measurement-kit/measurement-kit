@@ -13,6 +13,7 @@ double time_now();
 void utc_time_now(struct tm *);
 ErrorOr<std::string> timestamp(const struct tm *);
 timeval *timeval_init(timeval *, double);
+Error parse_iso8601_utc(std::string ts, std::tm *tmb);
 
 ErrorOr<std::vector<char>> slurpv(std::string);
 ErrorOr<std::string> slurp(std::string);
@@ -54,6 +55,11 @@ is returned. Typical safe usage looks like this:
     timeval tv, *tvp = timeval_init(&tv, delta);
     libevent_api(/* some args... */, tvp);
 ```
+
+The `parse_iso8601_utc()` function parses the string `ts` formatted as
+ISO8601 (e.g. `"2012-01-02T03:04:05Z"`) into the `tmb` structure, which
+MUST NOT be `nullptr`. On success, `NoError()` is returned, otherwise
+the code returns `ValueError()`.
 
 The slurpv() and slurp() functions read the content of the file specified
 as argument and return, respectively, a vector of chars containing the content
