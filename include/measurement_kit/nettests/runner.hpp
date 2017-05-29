@@ -8,23 +8,16 @@
 
 namespace mk {
 namespace nettests {
-struct RunnerCtx;
 class Runnable;
 
-class Runner {
+class Runner : public HasGlobalFactory<Runner> {
   public:
-    Runner();
     void start_test(Var<Runnable> test, Callback<Var<Runnable>> func);
-    void start_generic_task(std::string &&name, Var<Logger> logger,
-                            Continuation<> &&task, Callback<> &&done);
-    void break_loop_();
+    void stop();
     bool empty();
-    void join_();
-    ~Runner();
-    static Var<Runner> global();
 
   private:
-    Var<RunnerCtx> ctx_;
+    AsyncRunner impl_;
 };
 
 } // namespace nettests
