@@ -118,7 +118,7 @@ The `~AsyncRunner` destructor calls `stop`.
 
 The `stop` method stops the runner I/O loop and terminates all the tasks
 that are currently running, without calling their callbacks. It waits for
-the background thread to be terminated before continuing.
+the background thread to terminate before continuing.
 
 The `active` method returns the number of tasks currently active.
 
