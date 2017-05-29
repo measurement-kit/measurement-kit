@@ -17,6 +17,7 @@ double time_now();
 void utc_time_now(tm *);
 ErrorOr<std::string> timestamp(const tm *);
 timeval *timeval_init(timeval *, double);
+Error parse_iso8601_utc(std::string ts, std::tm *tmb);
 
 template <typename T=std::list<std::string>>
 T split(std::string s, std::string pattern = "\\s+") {
