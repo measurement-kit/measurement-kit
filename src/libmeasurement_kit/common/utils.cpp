@@ -35,12 +35,13 @@ void utc_time_now(struct tm *utc) {
 }
 
 Error parse_iso8601_utc(std::string ts, std::tm *tmb) {
-  std::istringstream ss(ts);
-  ss >> std::get_time(tmb, "%Y-%m-%dT%H:%M:%SZ");
-  if (ss.fail()) {
-    return ValueError();
-  }
-  return NoError();
+    *tmb = {}; // "portable programs should initialize the structure"
+    std::istringstream ss(ts);
+    ss >> std::get_time(tmb, "%Y-%m-%dT%H:%M:%SZ");
+    if (ss.fail()) {
+        return ValueError();
+    }
+    return NoError();
 }
 
 ErrorOr<std::string> timestamp(const struct tm *t) {
