@@ -25,6 +25,8 @@ class AsyncRunner : public HasMakeFactory<AsyncRunner>,
                     public NonCopyable,
                     public NonMovable {
   public:
+
+    // Adapted from src/libmeasurement_kit/nettests/runner.cpp
     template <typename Task, typename Callback>
     void start(std::string &&name, Var<Logger> logger, Task &&task,
                Callback &&cb) {
