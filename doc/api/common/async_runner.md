@@ -106,7 +106,7 @@ AsyncRunner::global()->start(
 ```
 
 The `task` passed as third argument is garbage collected by this method,
-such that it will be not destroyed immediately after the callback it receives
+such that it will not be destroyed immediately after the callback it receives
 as its first argument is called. Rather its destruction will be deferred to
 occur as part of a "call soon" scheduled in the `AsyncRunner`'s `Reactor`.
 
