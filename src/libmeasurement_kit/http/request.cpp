@@ -317,5 +317,57 @@ bool HeadersComparator::operator() (
     return strcasecmp(l.c_str(), r.c_str()) < 0;
 }
 
+void request_json_string(
+      std::string url, std::string method, std::string data,
+      http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+    settings["http/url"] = url;
+    settings["http/method"] = method;
+    headers["Content-Type"] = "application/json";
+    logger->debug("%s to %s (body: '%s')", method.c_str(), url.c_str(),
+                  data.c_str());
+    request(settings, headers, data,
+            [=](Error error, Var<http::Response> response) {
+                nlohmann::json jresponse;
+                if (error) {
+                    cb(error, response, jresponse);
+                    return;
+                }
+                try {
+                    jresponse = nlohmann::json::parse(response->body);
+                    cb(NoError(), response, jresponse);
+                    return;
+                } catch (const std::invalid_argument &) {
+                    cb(JsonParseError(), response, jresponse);
+                    return;
+                } catch (const std::out_of_range &) {
+                    cb(JsonKeyError(), response, jresponse);
+                    return;
+                } catch (const std::domain_error &) {
+                    cb(JsonDomainError(), response, jresponse);
+                    return;
+                }
+            },
+            reactor, logger, nullptr, 0);
+}
+
+void request_json_no_body(
+      std::string url, std::string method, http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+    request_json_string(url, method, "", headers, cb, settings, reactor,
+                        logger);
+}
+
+void request_json_object(
+      std::string url, std::string method, nlohmann::json jdata,
+      http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+    request_json_string(url, method, jdata.dump(), headers, cb, settings,
+                        reactor, logger);
+}
+
 } // namespace http
 } // namespace mk
