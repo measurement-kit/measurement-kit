@@ -133,30 +133,13 @@ The `global` factory returns the global shared `AsyncRunner`.
 
 # GUARANTEES
 
-The `start` method provides the following guarantees:
-
-1. the fourth argument `callback` will not be called immediately but
-   rather it will be deferred using `call_soon`;
-
-2. the third argument `task` will be alive until the `callback` passed
-   as fourth argument returns.
-
-The combination of this two guarantees avoids the following use after
-free hazard that we observed empirically:
-
-1. as it is currently implemented, `start` manages the lifecycle of `task`
-   using the closure of the function to be passed to `task`;
-
-2. as such, unless there are other references to `task` around, `task`
-   will be destroyed just after the function passed to it returns;
-
-3. yet, `task` implementation may be such that, below the stack frame where
-   the final callback is called, there are other uses of either `task` or
-   objects whose lifecycle is managed by task;
-
-4. as such, without the two following guarantees, when the stack frame is
-   unwinding after the final callback has been called, it MAY be that there
-   is code using already-deleted objects.
+The `start` method provides the guarantee that `task` will be alive *after* the
+function passed to `task` itself has been called. In particular, *task* will
+not be destroyed *before* the chain of function calls that lead to invoking the
+function passed to `task` has been fully executed and returned. This means you
+can code `task` to perform cleanup operations without worrying about whether
+the order of operations performed can lead to *use after free* when the stack
+of functions that lead to the final state return.
 
 # CAVEATS
 
