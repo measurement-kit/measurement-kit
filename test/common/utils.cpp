@@ -361,3 +361,16 @@ TEST_CASE("randomly_capitalize isn't obviously wrong") {
     auto rc_upper_string = mk::randomly_capitalize(upper_string);
     REQUIRE(rc_upper_string != upper_string);
 }
+
+
+TEST_CASE("parse_iso8601_utc works as expected") {
+  std::tm t;
+  auto e = mk::parse_iso8601_utc("2012-01-02T03:04:05Z", &t);
+  REQUIRE(!e);
+  REQUIRE(t.tm_sec == 5);
+  REQUIRE(t.tm_min == 4);
+  REQUIRE(t.tm_hour == 3);
+  REQUIRE(t.tm_mday == 2);
+  REQUIRE(t.tm_mon == 0);
+  REQUIRE(t.tm_year == 112);
+}

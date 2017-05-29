@@ -34,6 +34,15 @@ void utc_time_now(struct tm *utc) {
     gmtime_r(&tv, utc);
 }
 
+Error parse_iso8601_utc(std::string ts, std::tm *tmb) {
+  std::istringstream ss(ts);
+  ss >> std::get_time(tmb, "%Y-%m-%dT%H:%M:%SZ");
+  if (ss.fail()) {
+    return ValueError();
+  }
+  return NoError();
+}
+
 ErrorOr<std::string> timestamp(const struct tm *t) {
     char result[30];
     if (strftime(result, sizeof(result), "%Y-%m-%d %H:%M:%S", t) == 0) {
