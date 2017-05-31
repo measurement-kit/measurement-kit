@@ -73,6 +73,14 @@ class Authentication {
     void login(Callback<Error> &&cb, Settings settings = {},
                Var<Reactor> reactor = Reactor::global(),
                Var<Logger> logger = Logger::global()) {
+        if (username == "" || password == "") {
+            logger->warn("orchestrator: missing username or password");
+            // Guarantee that the callback will not be called immediately
+            reactor->call_soon([cb = std::move(cb)]() {
+                cb(MissingRequiredValueError());
+            });
+            return;
+        }
         nlohmann::json request{{"username", username}, {"password", password}};
         logger->info("orchestrator: sending login request");
         /*
@@ -138,19 +146,10 @@ class Authentication {
     Var<std::string> token_ = Var<std::string>::make();
 };
 
-class ProbeData {
+class ProbeData : public ClientData {
   public:
-    // XXX: these seems to duplicate a thingie or two in the API
-    std::string probe_cc;
-    std::string probe_asn;
-    std::string platform;
-    std::string software_name;
-    std::string software_version;
-    std::vector<std::string> supported_tests;
-    std::string network_type;
-    std::string available_bandwidth;
-    std::string token;
-    std::string probe_family;
+    ProbeData() : ClientData{} {}
+    ProbeData(const ClientData &cd) : ClientData{cd} {}
 
     nlohmann::json get_json() const {
         nlohmann::json j;
@@ -177,32 +176,44 @@ class ProbeData {
         return j;
     }
 
-    template <MK_MOCK(http_request_json_object)>
+    template <MK_MOCK(http::request_json_object, http_request_json_object)>
     void register_probe(std::string registry_url, std::string password,
                         Callback<Error, std::string> &&cb,
                         Settings settings = {},
                         Var<Reactor> reactor = Reactor::global(),
                         Var<Logger> logger = Logger::global()) {
+
         if (probe_cc.empty() || probe_asn.empty() || platform.empty() ||
             software_name.empty() || software_version.empty()) {
-            // FIXME: also the call soon must be done carefully
-            cb(MissingRequiredValueError(), "");
+            logger->warn("orchestrator: missing required value");
+            // Guarantee that the callback will not be called immediately
+            reactor->call_soon([cb = std::move(cb)]() {
+                cb(MissingRequiredValueError(), "");
+            });
             return;
         }
         if ((platform == "ios" || platform == "android") && token.empty()) {
-            cb(MissingRequiredValueError(), "");
+            logger->warn("orchestrator: you passed me an empty token");
+            // Guarantee that the callback will not be called immediately
+            reactor->call_soon([cb = std::move(cb)]() {
+                cb(MissingRequiredValueError(), "");
+            });
             return;
         }
 
         nlohmann::json request = get_json();
         request["password"] = password;
 
+        // Important: since we don't pass `this` to deferred callback, it
+        // should be safe for this object to die with the callback pending
         http_request_json_object(
               "POST", registry_url + "/api/v1/register", request, {},
               [cb = std::move(cb)](Error error, Var<http::Response> /*resp*/,
                                    nlohmann::json json_response) {
                   std::string client_id;
                   if (error) {
+                      logger->warn("orchestrator: JSON API error: %s",
+                                   error.explain().c_str());
                       cb(error, client_id);
                       return;
                   }
@@ -217,20 +228,148 @@ class ProbeData {
                             }
                             client_id = jresp["client_id"];
                             if (client_id == "") {
-                                // XXX return a different error
-                                throw RegistryInvalidRequestError();
+                                throw RegistryEmptyClientIdError();
                             }
                         });
+                  if (error) {
+                      logger->warn("orchestrator: JSON processing error: %s",
+                                   error.explain().c_str());
+                  }
                   cb(error, client_id);
               },
               settings, reactor, logger);
     }
 
+    template <MK_MOCK(http::request_json_object, http_request_json_object)>
     void update(std::string registry_url, Var<Authentication> auth,
                 Callback<Error> &&cb, Settings settings = {},
                 Var<Reactor> reactor = Reactor::global(),
                 Var<Logger> logger = Logger::global()) {
-        //
+        std::string update_url =
+              registry_url + "/api/v1/update/" + auth->username;
+        nlohmann::json update_request = get_json();
+        // Important: since we don't pass `this` to deferred callback, it should
+        // be safe for this object to die with the callback pending
+        auth->maybe_login(
+              [
+                update_url = std::move(update_url),
+                update_request = std::move(update_request)
+              ](Error err) {
+                  if (err != NoError()) {
+                      // Note: error printed by Authentication
+                      cb(err);
+                      return;
+                  }
+                  // Important: since we don't pass `this` to deferred callback,
+                  // it should be safe for this object to be destroyed while the
+                  // callback is pending
+                  http_request_json(
+                        "PUT", update_url, update_request,
+                        {{"Authorization", "Bearer " + auth->get_token()}},
+                        [cb = std::move(cb)](Error error,
+                                             Var<http::Response> /*resp*/,
+                                             nlohmann::json json_response) {
+                            if (err) {
+                                // Note: error printed by Authentication
+                                cb(err);
+                                return;
+                            }
+                            err = json_process(json_response, [&](auto jresp) {
+                                // XXX add better error handling
+                                if (jresp.find("error") != jresp.end()) {
+                                    std::string s = jsresp["error"];
+                                    logger->warn("orchestrator: update "
+                                                 "failed with \"%s\"",
+                                                 s.c - str());
+                                    throw RegistryInvalidRequestError();
+                                }
+                                if (jresp.find("status") == jresp.end() ||
+                                    jresp["status"] != "ok") {
+                                    throw RegistryInvalidRequestError();
+                                }
+                            });
+                            cb(err);
+                        },
+                        settings, reactor, logger);
+              },
+              settings, reactor, logger);
+    }
+};
+
+class RegistryOperation : public ClientData {
+  public:
+    RegistryOperation() {}
+    RegistryOperation(const ClientData &cd) : ClientData{cd} {}
+
+    ~RegistryOperation() = 0; /* Abstract class */
+
+    static std::string make_secrets_path(std::string dir) {
+#if (defined _WIN32 || defined __CYGWIN__)
+        dir += R"xx(\)xx";
+#else
+        dir += "/";
+#endif
+        dir += "orchestrator_secrets.json";
+        return dir;
+    }
+
+    ErrorOr<Var<Authentication>> attempt_loading_auth() {
+        std::string fpath = make_secrets_path(working_dir);
+        Var<Authentication> auth = Var<Autentication>::make();
+        Error err = auth->load(fpath);
+        if (err) {
+            return err;
+        }
+        return auth;
+    }
+};
+
+class RegisterProbe : public RegistryOperation {
+  public:
+    RegisterProbe() {}
+    RegisterProbe(const ClientData &cb) : RegistryOperation{cd} {}
+
+    void operator()(Callback<Error &&> &&cb) const {
+        ErrorOr<Authentication> maybe_auth = attempt_loading_auth();
+        if (!maybe_auth) {
+            // Note: we don't provide the guarantee that callbacks are
+            // always going to be delayed by this class
+            cb(maybe_auth.as_error());
+            return;
+        }
+        ProbeData pd{*this};
+        // Do not store `this` inside the callback so we guarantee that
+        // there will be no memory hazard even if this class dies
+        pd.register_probe(
+              registry_url, password,
+              [cb = std::move(cb)](Error err, std::string probe_id) {
+                  if (err) {
+                      cb(err);
+                      return;
+                  }
+                  Authentication auth;
+                  auth.password = password;
+                  auth.username = probe_id;
+                  cb(auth.store(fpath));
+              },
+              settings, reactor, logger);
+    }
+};
+
+class Update : public RegistryOperation {
+  public:
+    Update() {}
+    Update(const ClientData &cb) : RegistryOperation{cd} {}
+
+    void operator()(Callback<Error &&> &&cb) const {
+        ErrorOr<Authentication> maybe_auth = attempt_loading_auth();
+        if (!maybe_auth) {
+            // We don't provide the guarantee that callbacks are deferred
+            cb(maybe_auth.as_error());
+            return;
+        }
+        ProbeData{*this}.update(registry_url, *maybe_auth, std::move(cb),
+                                std::move(cb), settings, reactor, logger);
     }
 };
 
