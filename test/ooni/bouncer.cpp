@@ -9,12 +9,12 @@
 
 using namespace mk;
 
-static nlohmann::json do_out_of_range(std::string) {
-    throw std::out_of_range("out of range");
+static Error do_out_of_range(const std::string &, Callback<nlohmann::json &>) {
+    return JsonKeyError();
 }
 
-static nlohmann::json do_domain_error(std::string) {
-    throw std::domain_error("domain error");
+static Error do_domain_error(const std::string &, Callback<nlohmann::json &>) {
+    return JsonDomainError();
 }
 
 TEST_CASE("BouncerReply::create() works") {

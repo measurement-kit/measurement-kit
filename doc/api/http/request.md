@@ -23,6 +23,23 @@ void get(std::string url,
          Var<Reactor> reactor = Reactor::global(),
          Var<Logger> logger = Logger::global());
 
+void request_json_string(
+    std::string method, std::string url, std::string data,
+    http::Headers headers,
+    Callback<Error, Var<http::Response>, nlohmann::json> cb, Settings settings,
+    Var<Reactor> reactor, Var<Logger> logger);
+
+void request_json_no_body(
+    std::string method, std::string url, http::Headers headers,
+    Callback<Error, Var<http::Response>, nlohmann::json> cb, Settings settings,
+    Var<Reactor> reactor, Var<Logger> logger);
+
+void request_json_object(
+    std::string method, std::string url, nlohmann::json jdata,
+    http::Headers headers,
+    Callback<Error, Var<http::Response>, nlohmann::json> cb, Settings settings,
+    Var<Reactor> reactor, Var<Logger> logger);
+
 void request_connect(Settings settings,
                      Callback<Error, Var<net::Transport>> callback,
                      Var<Reactor> reactor = Reactor::global(),
@@ -86,6 +103,17 @@ The `get()` function is a wrapper for `request()` that sets for you
 `GET`. Unlike `request()` you cannot set the body, because `GET`
 requests SHOULD NOT carry a body. All other arguments have equal
 semantic.
+
+The `request_json_string()` function is a wrapper for `request()`
+that sends a JSON request (serialized as a string as the `data`
+argument) and gives back a JSON response (as a `nlohmann::json`).
+
+The `request_json_no_body()` function is a wrapper for `request()`
+that expects the response to be a JSON.
+
+The `request_json_object()` function is a wrapper for `request()`
+that sends a JSON request (represented by a `nlohmann::json`)
+and gives back a JSON response (again represented by a `nlohmann::json`).
 
 Both `request()` and `get()` support `SSL` if the URL schema is
 `https` and SOCKS5 proxying as described below for `request_connect()`.
@@ -189,4 +217,5 @@ See `example/http/request.cpp`.
 
 # HISTORY
 
-The `request` module appeared in MeasurementKit 0.2.0.
+The `request` module appeared in MeasurementKit 0.2.0. Support for calling
+JSON APIs was added in MK v0.7.0.
