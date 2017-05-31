@@ -330,7 +330,7 @@ void request_json_no_body(
       std::string method, std::string url, http::Headers headers,
       Callback<Error, Var<http::Response>, nlohmann::json> cb,
       Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
-    request_json_string(url, method, "", headers, cb, settings, reactor,
+    request_json_string(method, url, "", headers, cb, settings, reactor,
                         logger);
 }
 
@@ -339,7 +339,7 @@ void request_json_object(
       http::Headers headers,
       Callback<Error, Var<http::Response>, nlohmann::json> cb,
       Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
-    request_json_string(url, method, jdata.dump(), headers, cb, settings,
+    request_json_string(method, url, jdata.dump(), headers, cb, settings,
                         reactor, logger);
 }
 
