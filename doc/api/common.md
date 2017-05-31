@@ -23,7 +23,9 @@ The `common` module contains contains the following submodules:
 - [fmap](common/fmap.md): apply a function to a vector
 - [has_global_factory](common/has_global_factory.md): template decorator to add a global, singleton factory to a class
 - [has_make_factory](common/has_make_factory.md): template decorator to add a factory called `make` to a class
+- [json](common/json.md): code for parsing and processing JSON
 - [lexical_cast](common/lexical_cast.md): lexical cast between scalar values
+- [maybe](common/maybe.md): maybe-like monad
 - [locked](common/locked.md): run function with mutex held
 - [logger](common/logger.md): log messages
 - [mock](common/mock.md): macros to mock implementation and write tests
@@ -32,6 +34,7 @@ The `common` module contains contains the following submodules:
 - [parallel](common/parallel.md): allows to run continuations in parallel
 - [range](common/range.md): generates numbers from zero to N
 - [reactor](common/reactor.md): class for dispatching I/O events and timeouts
+- [sandbox](common/sandbox.md): filter and route `Error`s and exceptions
 - [settings](common/settings.md): class containing test settings
 - [settings_entry](common/settings_entry.md): an entry contained by the settings class
 - [utils](common/utils.md): generic utility functions
