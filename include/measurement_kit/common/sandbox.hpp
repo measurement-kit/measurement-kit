@@ -23,11 +23,10 @@ template <typename Callable>
 Maybe<std::exception> sandbox_for_exceptions(Callable fun) {
     try {
         fun();
-        return {};
     } catch (std::exception &exc) {
         return std::move(exc);
     }
-    /* NOTREACHED */
+    return {};
 }
 
 } // namespace mk
