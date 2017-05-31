@@ -17,9 +17,8 @@ using namespace mk::ooni;
 using namespace mk;
 
 int main(int argc, char **argv) {
-    std::string events_url = orchestrator::production_events_url();
-    std::string registry_url = orchestrator::production_registry_url();
-    std::string action = "lgin";
+    std::string events_url = orchestrator::testing_events_url();
+    std::string registry_url = orchestrator::testing_registry_url();
 
     Var<orchestrator::Authentication> auth(new orchestrator::Authentication);
     Var<orchestrator::ProbeData> pd(new orchestrator::ProbeData);
