@@ -26,7 +26,10 @@ Error json_process(nlohmann::json &json, Callable &&fun) {
 template <typename Callable>
 Error json_process_and_filter_errors(nlohmann::json &json, Callable &&fun) {
     return sandbox_for_errors([&]() {
-        json_process(json, std::move(fun));
+        auto err = json_process(json, std::move(fun));
+        if (err) {
+            throw err;
+        }
     });
 }
 
@@ -44,7 +47,10 @@ Error json_parse_and_process(Stringlike str, Callable &&fun) {
 template <typename Stringlike, typename Callable>
 Error json_parse_process_and_filter_errors(Stringlike str, Callable &&fun) {
     return sandbox_for_errors([&]() {
-        return json_parse_and_process(str, std::move(fun));
+        auto err = json_parse_and_process(str, std::move(fun));
+        if (err) {
+            throw err;
+        }
     });
 }
 
