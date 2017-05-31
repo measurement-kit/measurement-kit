@@ -55,10 +55,13 @@
 /test/common/error
 /test/common/error_or
 /test/common/fmap
+/test/common/json
 /test/common/locked
 /test/common/logger
+/test/common/maybe
 /test/common/parallel
 /test/common/range
+/test/common/sandbox
 /test/common/settings
 /test/common/utils
 /test/common/var
