@@ -189,5 +189,4 @@ See `example/http/request.cpp`.
 
 # HISTORY
 
-The `request` module appeared in MeasurementKit 0.2.0. Support for calling
-JSON APIs was added in MK v0.7.0.
+The `request` module appeared in MeasurementKit 0.2.0.
