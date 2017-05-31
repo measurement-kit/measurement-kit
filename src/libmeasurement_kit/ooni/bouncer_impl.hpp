@@ -10,40 +10,36 @@ namespace mk {
 namespace ooni {
 namespace bouncer {
 
-static inline nlohmann::json json_parse(std::string s) {
-    return nlohmann::json::parse(s);
+static Error
+my_json_parse_process_and_filter_errors(const std::string &data,
+                                        Callback<nlohmann::json &> callable) {
+    return json_parse_process_and_filter_errors(data, callable);
 }
 
-template <MK_MOCK(json_parse)>
+template <MK_MOCK(my_json_parse_process_and_filter_errors)>
 ErrorOr<Var<BouncerReply>> create_impl(std::string data, Var<Logger> logger) {
     Var<BouncerReply> reply{new BouncerReply};
-    try {
-        reply->response = json_parse(data);
+    Error err = my_json_parse_process_and_filter_errors(data, [&](auto j) {
+        reply->response = j;
         if (reply->response.find("error") != reply->response.end()) {
             if (reply->response["error"] == "collector-not-found") {
-                logger->warn("collector not found for the requested test");
-                return BouncerCollectorNotFoundError();
+                throw BouncerCollectorNotFoundError();
             }
             if (reply->response["error"] == "invalid-request") {
-                logger->warn("invalid request sent to the bouncer");
-                return BouncerInvalidRequestError();
+                throw BouncerInvalidRequestError();
             }
             // I assume that if we receive a json with the key "error"
             // then the json has an unknown schema and we should not
             // continue to process it
-            logger->warn("bouncer generic error");
-            return BouncerGenericError();
+            throw BouncerGenericError();
         }
         if (reply->response["net-tests"].empty()) {
-            logger->warn("generic bouncer error");
-            return BouncerTestHelperNotFoundError();
+            throw BouncerTestHelperNotFoundError();
         }
-    } catch (std::invalid_argument &) {
-        return JsonParseError();
-    } catch (std::out_of_range &) {
-        return JsonKeyError();
-    } catch (std::domain_error &) {
-        return JsonDomainError();
+    });
+    if (err) {
+        logger->warn("bouncer parsing error: %s", err.explain().c_str());
+        return err;
     }
     return reply;
 }

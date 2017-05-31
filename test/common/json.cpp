@@ -31,8 +31,35 @@ TEST_CASE("json_parse_and_process works as expected") {
     }
 }
 
+TEST_CASE("json_process_and_filter_errors works as expected") {
+    SECTION("When an error is thrown by the internal callback") {
+        auto json = nlohmann::json::array();
+        auto error = json_process_and_filter_errors(
+              json, [&](auto /*json*/) { throw MockedError(); });
+        REQUIRE(error == MockedError());
+    }
+    SECTION("When JSON manipulation fails") {
+        auto json = nlohmann::json::array();
+        auto error = json_process_and_filter_errors(
+              json, [&](auto json) { json.at("antani"); });
+        REQUIRE(error == JsonDomainError());
+    }
+}
+
 TEST_CASE("json_parse_process_and_filter_errors works as expected") {
-    auto error = json_parse_process_and_filter_errors(
-          "{}", [&](auto /*json*/) { throw MockedError(); });
-    REQUIRE(error == MockedError());
+    SECTION("When an error is thrown by the internal callback") {
+        auto error = json_parse_process_and_filter_errors(
+              "{}", [&](auto /*json*/) { throw MockedError(); });
+        REQUIRE(error == MockedError());
+    }
+    SECTION("When JSON parsing fails") {
+        auto error = json_parse_process_and_filter_errors(
+              "{", [&](auto /*json*/) { /* OKAY */; });
+        REQUIRE(error == JsonParseError());
+    }
+    SECTION("When JSON manipulation fails") {
+        auto error = json_parse_process_and_filter_errors(
+              "[]", [&](auto json) { json.at("antani"); });
+        REQUIRE(error == JsonDomainError());
+    }
 }
