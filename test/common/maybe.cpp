@@ -19,6 +19,6 @@ TEST_CASE("The Maybe monad works") {
     SECTION("When it is not empty") {
         Maybe<int> monad{17};
         REQUIRE(*monad == 17);
-        REQUIRE(!monad);
+        REQUIRE(!!monad);
     }
 }

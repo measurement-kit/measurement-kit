@@ -19,23 +19,20 @@ TEST_CASE("json_parse_and_process works as expected") {
     }
 
     SECTION("In case of key error") {
-        auto error = json_parse_and_process("{}", [&](auto json) {
-            json.at("foobar");
-        });
+        auto error = json_parse_and_process(
+              "{}", [&](auto json) { json.at("foobar"); });
         REQUIRE(error == JsonKeyError());
     }
 
     SECTION("In case of domain error") {
-        auto error = json_parse_and_process("[]", [&](auto json) {
-            json["foobar"];
-        });
+        auto error =
+              json_parse_and_process("[]", [&](auto json) { json["foobar"]; });
         REQUIRE(error == JsonDomainError());
     }
 }
 
 TEST_CASE("json_parse_process_and_filter_errors works as expected") {
-    auto error = json_parse_and_process("{}", [&](auto /*json*/) {
-        throw MockedError();
-    });
+    auto error = json_parse_process_and_filter_errors(
+          "{}", [&](auto /*json*/) { throw MockedError(); });
     REQUIRE(error == MockedError());
 }
