@@ -48,6 +48,30 @@
 #define TEST_C2S_EXT MK_NDT_UPLOAD_EXT
 #define TEST_S2C_EXT MK_NDT_DOWNLOAD_EXT
 
+static inline std::string id_to_name(int id) {
+    switch (id) {
+    case MK_NDT_MIDDLEBOX:
+        return "middlebox";
+    case MK_NDT_UPLOAD:
+        return "upload";
+    case MK_NDT_DOWNLOAD:
+        return "download";
+    case MK_NDT_SIMPLE_FIREWALL:
+        return "simple_firewall";
+    case MK_NDT_STATUS:
+        return "status";
+    case MK_NDT_META:
+        return "meta";
+    case MK_NDT_UPLOAD_EXT:
+        return "upload_ext";
+    case MK_NDT_DOWNLOAD_EXT:
+        return "download_ext";
+    default:
+        break;
+    }
+    return "unknown";
+}
+
 #define KICKOFF_MESSAGE "123456 654321"
 #define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
 
