@@ -1,3 +1,4 @@
+#if 0
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
@@ -120,4 +121,5 @@ void list_tasks(std::string base_url,
 } // namespace orchestrator
 } // namespace ooni
 } // namespace mk
+#endif
 #endif

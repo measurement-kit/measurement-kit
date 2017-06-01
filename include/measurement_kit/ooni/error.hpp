@@ -57,7 +57,7 @@ MK_DEFINE_ERR(MK_ERR_OONI(27), MissingRequiredValueError,
               "missing_required_value")
 MK_DEFINE_ERR(MK_ERR_OONI(28), RegistryInvalidRequestError,
               "registry_invalid_request")
-MK_DEFINE_ERR(MK_ERR_OONI(29), RegistryEmptyClientId,
+MK_DEFINE_ERR(MK_ERR_OONI(29), RegistryEmptyClientIdError,
               "registry_empty_client_id")
 
 } // namespace mk

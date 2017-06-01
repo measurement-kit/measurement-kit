@@ -62,10 +62,17 @@ void request_json_string_impl(
                     cb(error, response, jresponse);
                     return;
                 }
+                // FIXME
+#if 0
                 if (response->status_code != 200) {
+                    logger->warn("HTTP request failed: %d (%s) [body: '%s']",
+                                 response->status_code,
+                                 response->reason.c_str(),
+                                 response->body.c_str());
                     cb(HttpRequestFailedError(), response, jresponse);
                     return;
                 }
+#endif
                 error = json_parse_and_process(response->body, [&](auto json) {
                     jresponse = std::move(json);
                 });

@@ -12,7 +12,7 @@ namespace dns {
 MK_DEFINE_ERR(MK_ERR_DNS(0), FormatError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_DNS(1), ServerFailedError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_DNS(2), NotExistError, "dns_lookup_error")
-MK_DEFINE_ERR(MK_ERR_DNS(3), NotImplementedError, "dns_lookup_error")
+// NotImplementedError has been moved to common/error.hpp
 MK_DEFINE_ERR(MK_ERR_DNS(4), RefusedError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_DNS(5), TruncatedError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_DNS(6), UnknownError, "dns_unknown_error")

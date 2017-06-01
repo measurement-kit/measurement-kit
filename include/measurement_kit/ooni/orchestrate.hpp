@@ -33,7 +33,7 @@ std::string testing_events_url();
  * Registry database
  */
 
-class ClientData {
+class ClientMetadata {
   public:
     Var<Logger> logger = Logger::global();
     std::string available_bandwidth;
@@ -56,10 +56,12 @@ class ClientData {
 
 class Task; /* Forward declaration */
 
-class Client : public ClientData {
+class Client : public ClientMetadata {
   public:
-    void register_probe(Callback<Error &&> &&callback);
-    void update(Callback<Error &&> &&callback);
+    void register_probe(Settings settings, Var<Logger> logger,
+                        Callback<Error &&> &&callback);
+    void update(Settings settings, Var<Logger> logger,
+                Callback<Error &&> &&callback);
     void list_tasks(Callback<Error &&, std::vector<Task> &&> &&callback);
 };
 

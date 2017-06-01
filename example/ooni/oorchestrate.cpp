@@ -17,6 +17,34 @@ using namespace mk::ooni;
 using namespace mk;
 
 int main(int argc, char **argv) {
+    Var<Logger> logger = Logger::make();
+    logger->set_verbosity(MK_LOG_DEBUG2);
+    orchestrate::Client client;
+    client.probe_cc = "IT";
+    client.probe_asn = "AS0";
+    client.platform = "macos";
+    client.software_name = "example";
+    client.software_version = "1.0.0";
+    client.registry_url = orchestrate::testing_registry_url();
+    client.register_probe({}, logger,
+                          [client, logger](Error &&error) mutable /* XXX */ {
+                              if (error) {
+                                  throw error;
+                              }
+                              client.update({}, logger, [](Error &&error) {
+                                  if (error) {
+                                      throw error;
+                                  }
+                              });
+                          });
+    for (;;) {
+        sleep(1);
+        if (!AsyncRunner::global()->running()) {
+            break;
+        }
+    }
+
+#if 0
     std::string events_url = orchestrator::testing_events_url();
     std::string registry_url = orchestrator::testing_registry_url();
 
@@ -116,4 +144,5 @@ int main(int argc, char **argv) {
     });
 
     return 0;
+#endif
 }
