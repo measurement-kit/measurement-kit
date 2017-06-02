@@ -20,7 +20,6 @@ The `common` module contains contains the following submodules:
 - [encoding](common/encoding.md): handle encodings (e.g. UTF-8, base64)
 - [error](common/error.md): definition of error class and of shared error codes
 - [error_or](common/error_or.md): maybe-like object containing either a result or an error
-- [every](common/every.md): call a functor every N seconds
 - [fmap](common/fmap.md): apply a function to a vector
 - [has_global_factory](common/has_global_factory.md): template decorator to add a global, singleton factory to a class
 - [has_make_factory](common/has_make_factory.md): template decorator to add a factory called `make` to a class

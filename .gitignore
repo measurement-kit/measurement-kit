@@ -32,7 +32,6 @@
 /build/android/jni/conf
 /build/android/jni/spec
 /citizenlab-test-lists.*.csv
-/example/dns/ping
 /example/dns/query
 /example/http/request
 /example/libevent/discard
@@ -55,7 +54,6 @@
 /test/common/encoding
 /test/common/error
 /test/common/error_or
-/test/common/every
 /test/common/fmap
 /test/common/json
 /test/common/locked
@@ -69,7 +67,6 @@
 /test/common/var
 /test/common/version
 /test/common/worker
-/test/dns/ping
 /test/dns/query
 /test/dns/query_class
 /test/dns/query_type

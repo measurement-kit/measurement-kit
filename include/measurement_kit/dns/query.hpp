@@ -6,7 +6,6 @@
 
 #include <measurement_kit/dns/query_class.hpp>
 #include <measurement_kit/dns/query_type.hpp>
-#include <measurement_kit/common.hpp>
 
 namespace mk {
 namespace dns {
