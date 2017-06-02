@@ -10,8 +10,8 @@
 
 static const char *kv_usage =
       "usage: ./example/dns/ping [-v] [-c class] [-e engine] [-i interval]\n"
-      "                          [-N nameserver] [-r retries]\n"
-      "                          [-T timeout] [-t type] domain\n";
+      "                          [-m max_runtime] [-N nameserver]\n"
+      "                          [-r retries] [-T timeout] [-t type] domain\n";
 
 using namespace mk;
 
