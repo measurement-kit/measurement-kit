@@ -1,4 +1,3 @@
-#if 0
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
@@ -9,7 +8,7 @@
 
 namespace mk {
 namespace ooni {
-namespace orchestrator {
+namespace orchestratorx {
 
 
 void Authentication::maybe_login(Callback<Error> cb,
@@ -406,7 +405,6 @@ std::string testing_events_url() {
 }
 
 
-} // namespace orchestrator
+} // namespace orchestratorx
 } // namespace ooni
 } // namespace mk
-#endif

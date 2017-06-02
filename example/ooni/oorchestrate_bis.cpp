@@ -17,12 +17,39 @@ using namespace mk::ooni;
 using namespace mk;
 
 int main(int argc, char **argv) {
-    std::string events_url = orchestratorx::production_events_url();
-    std::string registry_url = orchestratorx::production_registry_url();
-    std::string action = "lgin";
+    Var<Logger> logger = Logger::make();
+    logger->set_verbosity(MK_LOG_DEBUG2);
+    orchestrate::Client client;
+    client.probe_cc = "IT";
+    client.probe_asn = "AS0";
+    client.platform = "macos";
+    client.software_name = "example";
+    client.software_version = "1.0.0";
+    client.registry_url = orchestrate::testing_registry_url();
+    client.register_probe({}, logger,
+                          [client, logger](Error &&error) mutable /* XXX */ {
+                              if (error) {
+                                  throw error;
+                              }
+                              client.update({}, logger, [](Error &&error) {
+                                  if (error) {
+                                      throw error;
+                                  }
+                              });
+                          });
+    for (;;) {
+        sleep(1);
+        if (!AsyncRunner::global()->running()) {
+            break;
+        }
+    }
 
-    Var<orchestratorx::Authentication> auth(new orchestratorx::Authentication);
-    Var<orchestratorx::ProbeData> pd(new orchestratorx::ProbeData);
+#if 0
+    std::string events_url = orchestrator::testing_events_url();
+    std::string registry_url = orchestrator::testing_registry_url();
+
+    Var<orchestrator::Authentication> auth(new orchestrator::Authentication);
+    Var<orchestrator::ProbeData> pd(new orchestrator::ProbeData);
 
     int c;
     while (1) {
@@ -99,7 +126,7 @@ int main(int argc, char **argv) {
             }
             debug("oorchestrate: listing tasks");
             list_tasks(events_url, auth,
-                [=](Error error, std::vector<orchestratorx::Task> task_list){
+                [=](Error error, std::vector<orchestrator::Task> task_list){
                 debug("oorchestrate: listed tasks");
                 if (error) {
                   std::cout << "Failed to list tasks: " << error.code;
@@ -117,4 +144,5 @@ int main(int argc, char **argv) {
     });
 
     return 0;
+#endif
 }

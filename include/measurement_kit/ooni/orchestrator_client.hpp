@@ -1,4 +1,3 @@
-#if 0
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
@@ -10,7 +9,7 @@
 
 namespace mk {
 namespace ooni {
-namespace orchestrator {
+namespace orchestratorx {
 
 #define MK_OONI_PRODUCTION_PROTEUS_REGISTRY_URL "https://a.registry.proteus.ooni.io"
 #define MK_OONI_TESTING_PROTEUS_REGISTRY_URL "https://a.registry.proteus.test.ooni.io"
@@ -118,8 +117,7 @@ void list_tasks(std::string base_url,
                 Var<Reactor> = Reactor::global(),
                 Var<Logger> = Logger::global());
 
-} // namespace orchestrator
+} // namespace orchestratorx
 } // namespace ooni
 } // namespace mk
-#endif
 #endif
