@@ -4,8 +4,8 @@
 #ifndef MEASUREMENT_KIT_COMMON_MAYBE_HPP
 #define MEASUREMENT_KIT_COMMON_MAYBE_HPP
 
-#include <type_traits>
 #include <stdexcept>
+#include <type_traits>
 
 namespace mk {
 
@@ -14,16 +14,17 @@ template <typename T> class Maybe {
     Maybe() {}
     Maybe(T &&t) : value_{std::move(t)}, valid_{true} {}
 
-    typename std::add_lvalue_reference<T>::type operator*() {
-        if (!valid_) {
-            throw std::runtime_error("Maybe is empty");
-        }
-        return value_;
-    }
+#define IMPL                                                                   \
+    if (!valid_) {                                                             \
+        throw std::runtime_error("Maybe is empty");                            \
+    }                                                                          \
+    return value_
 
-    operator bool() const {
-        return valid_;
-    }
+    T &operator*() { IMPL; }
+
+    const T &operator*() const { IMPL; }
+
+    operator bool() const { return valid_; }
 
   private:
     T value_ = {};
