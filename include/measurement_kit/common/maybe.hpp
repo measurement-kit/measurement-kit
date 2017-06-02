@@ -24,6 +24,8 @@ template <typename T> class Maybe {
 
     const T &operator*() const { IMPL; }
 
+#undef IMPL
+
     operator bool() const { return valid_; }
 
   private:
