@@ -68,7 +68,6 @@ int main(int argc, char **argv) {
         /* NOTREACHED */
     }
     std::string domain = argv[0];
-    *max_runtime += mk::time_now(); // Make it absolute
     reactor->run_with_initial_event([&]() {
         logger->info("Entering into the loop");
         dns::ping_nameserver(query_class, query_type, domain, interval,
