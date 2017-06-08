@@ -25,6 +25,10 @@ int main(int argc, char **argv) {
     client.platform = "macos";
     client.software_name = "example";
     client.software_version = "1.0.0";
+    client.supported_tests = {"web_connectivity"};
+    client.network_type = "wifi";
+    client.available_bandwidth = "10";
+    client.device_token = "X0";
     client.registry_url = orchestrate::testing_registry_url();
     client.register_probe({}, logger,
                           [client, logger](Error &&error) mutable /* XXX */ {

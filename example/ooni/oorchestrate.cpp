@@ -17,8 +17,8 @@ using namespace mk::ooni;
 using namespace mk;
 
 int main(int argc, char **argv) {
-    std::string events_url = orchestratorx::production_events_url();
-    std::string registry_url = orchestratorx::production_registry_url();
+    std::string events_url = orchestratorx::testing_events_url();
+    std::string registry_url = orchestratorx::testing_registry_url();
     std::string action = "lgin";
 
     Var<orchestratorx::Authentication> auth(new orchestratorx::Authentication);
@@ -75,6 +75,10 @@ int main(int argc, char **argv) {
         pd->platform = "macos";
         pd->software_name = "example";
         pd->software_version = "1.0.0";
+        pd->supported_tests = {"web_connectivity"};
+        pd->network_type = "wifi";
+        pd->available_bandwidth = "10";
+        pd->token = "XO";
         debug("oorchestrate: registering probe");
         pd->register_probe(registry_url, auth->password,
             [=](Error error, std::string client_id){
