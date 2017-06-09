@@ -170,8 +170,7 @@ static inline nlohmann::json as_json(const ClientMetadata &m) {
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void register_probe_(const ClientMetadata &m, std::string password,
-                     Settings settings, Var<Reactor> reactor,
-                     Var<Logger> logger,
+                     Var<Reactor> reactor,
                      Callback<Error, Var<Authentication>> &&cb) {
 
     Var<Authentication> auth = Var<Authentication>::make();
@@ -180,7 +179,7 @@ void register_probe_(const ClientMetadata &m, std::string password,
     if (m.probe_cc.empty() || m.probe_asn.empty() || m.platform.empty() ||
         m.software_name.empty() || m.software_version.empty() ||
         m.supported_tests.empty()) {
-        logger->warn("orchestrator: missing required value");
+        m.logger->warn("orchestrator: missing required value");
         // Guarantee that the callback will not be called immediately
         reactor->call_soon([ cb = std::move(cb), auth ]() {
             cb(MissingRequiredValueError(), auth);
@@ -189,7 +188,7 @@ void register_probe_(const ClientMetadata &m, std::string password,
     }
     if ((m.platform == "ios" || m.platform == "android") &&
         m.device_token.empty()) {
-        logger->warn("orchestrator: you passed me an empty device token");
+        m.logger->warn("orchestrator: you passed me an empty device token");
         // Guarantee that the callback will not be called immediately
         reactor->call_soon([ cb = std::move(cb), auth ]() {
             cb(MissingRequiredValueError(), auth);
@@ -202,9 +201,9 @@ void register_probe_(const ClientMetadata &m, std::string password,
 
     http_request_json_object(
           "POST", m.registry_url + "/api/v1/register", request, {},
-          [ cb = std::move(cb), logger, auth ](Error error,
-                                               Var<http::Response> /*resp*/,
-                                               nlohmann::json json_response) {
+          [ cb = std::move(cb), logger = m.logger,
+            auth ](Error error, Var<http::Response> /*resp*/,
+                   nlohmann::json json_response) {
               if (error) {
                   logger->warn("orchestrator: JSON API error: %s",
                                error.explain().c_str());
@@ -231,20 +230,19 @@ void register_probe_(const ClientMetadata &m, std::string password,
               }
               cb(error, auth);
           },
-          settings, reactor, logger);
+          m.settings, reactor, m.logger);
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void update_(const ClientMetadata &m, Var<Authentication> auth,
-             Settings settings, Var<Reactor> reactor, Var<Logger> logger,
-             Callback<Error> &&cb) {
+             Var<Reactor> reactor, Callback<Error> &&cb) {
     std::string update_url =
           m.registry_url + "/api/v1/update/" + auth->username;
     nlohmann::json update_request = as_json(m);
-    maybe_login(auth, m.registry_url, settings, reactor, logger, [
+    maybe_login(auth, m.registry_url, m.settings, reactor, m.logger, [
         update_url = std::move(update_url),
         update_request = std::move(update_request), cb = std::move(cb), auth,
-        settings, reactor, logger
+        settings = m.settings, reactor, logger = m.logger
     ](Error err) {
         if (err != NoError()) {
             // Note: error printed by Authentication
@@ -302,45 +300,39 @@ static inline ErrorOr<Var<Authentication>> load_auth(std::string working_dir) {
     return auth;
 }
 
-static inline std::string make_password() {
-    return mk::random_printable(64);
-}
+static inline std::string make_password() { return mk::random_printable(64); }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void do_register_probe(const ClientMetadata &m, std::string password,
-                       Settings settings, Var<Reactor> reactor,
-                       Var<Logger> logger, Callback<Error> &&cb) {
+                       Var<Reactor> reactor, Callback<Error> &&cb) {
     ErrorOr<Var<Authentication>> ma = load_auth(m.working_dir);
     if (!!ma) {
         // Assume that, if we can load the secrets, we are already registered
-        logger->info("This probe is already registered");
+        m.logger->info("This probe is already registered");
         reactor->call_soon([=]() { cb(NoError()); });
         return;
     }
     std::string destpath = make_secrets_path(m.working_dir);
-    register_probe_<http_request_json_object>(
-          m, password, settings, reactor, logger,
-          [
-            cb = std::move(cb), destpath = std::move(destpath)
-          ](Error err, Var<Authentication> auth) {
-              if (err) {
-                  cb(std::move(err));
-                  return;
-              }
-              cb(auth->store(destpath));
-          });
+    register_probe_<http_request_json_object>(m, password, reactor, [
+        cb = std::move(cb), destpath = std::move(destpath)
+    ](Error err, Var<Authentication> auth) {
+        if (err) {
+            cb(std::move(err));
+            return;
+        }
+        cb(auth->store(destpath));
+    });
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-void do_update(const ClientMetadata &m, Settings settings, Var<Reactor> reactor,
-               Var<Logger> logger, Callback<Error &&> &&cb) {
+void do_update(const ClientMetadata &m, Var<Reactor> reactor,
+               Callback<Error &&> &&cb) {
     ErrorOr<Var<Authentication>> ma = load_auth(m.working_dir);
     if (!ma) {
         reactor->call_soon([=]() { cb(ma.as_error()); });
         return;
     }
-    update_<http_request_json_object>(m, *ma, settings, reactor, logger,
-                                      std::move(cb));
+    update_<http_request_json_object>(m, *ma, reactor, std::move(cb));
 }
 
 } // namespace orchestrate

@@ -32,31 +32,28 @@ std::string testing_events_url() { return MK_OONI_TESTING_PROTEUS_EVENTS_URL; }
  * Registry database
  */
 
-void Client::register_probe(Settings settings, Var<Logger> logger,
-                            Callback<Error &&> &&cb) const {
+void Client::register_probe(Callback<Error &&> &&cb) const {
     // Move to callback a copy of the data contained by this object so we
     // completely detach the destiny of `this` and of the callback.
     ClientMetadata meta = *this;
     AsyncRunner::global()->start(
           "orchestrate::register_probe", logger,
-          [meta = std::move(meta), settings, logger](Callback<Error &&> &&cb) {
-              do_register_probe(meta, make_password(), settings,
-                                AsyncRunner::global()->reactor(), logger,
+          [meta = std::move(meta)](Callback<Error &&> && cb) {
+              do_register_probe(meta, make_password(),
+                                AsyncRunner::global()->reactor(),
                                 std::move(cb));
           },
           std::move(cb));
 }
 
-void Client::update(Settings settings, Var<Logger> logger,
-                    Callback<Error &&> &&cb) const {
+void Client::update(Callback<Error &&> &&cb) const {
     // Move to callback a copy of the data contained by this object so we
     // completely detach the destiny of `this` and of the callback.
     ClientMetadata meta = *this;
     AsyncRunner::global()->start(
           "orchestrate::update", logger,
-          [meta = std::move(meta), settings, logger](Callback<Error &&> &&cb) {
-              do_update(meta, settings, AsyncRunner::global()->reactor(),
-                        logger, std::move(cb));
+          [meta = std::move(meta)](Callback<Error &&> &&cb) {
+              do_update(meta, AsyncRunner::global()->reactor(), std::move(cb));
           },
           std::move(cb));
 }

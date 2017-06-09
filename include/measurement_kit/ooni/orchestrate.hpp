@@ -36,6 +36,7 @@ std::string testing_events_url();
 class ClientMetadata {
   public:
     Var<Logger> logger = Logger::global();
+    Settings settings = {};
     std::string available_bandwidth;
     std::string device_token;
     std::string events_url = production_events_url();
@@ -58,11 +59,9 @@ class Task; /* Forward declaration */
 
 class Client : public ClientMetadata {
   public:
-    void register_probe(Settings settings, Var<Logger> logger,
-                        Callback<Error &&> &&callback) const;
+    void register_probe(Callback<Error &&> &&callback) const;
 
-    void update(Settings settings, Var<Logger> logger,
-                Callback<Error &&> &&callback) const;
+    void update(Callback<Error &&> &&callback) const;
 
     void list_tasks(Callback<Error &&, std::vector<Task> &&> &&callback) const;
 };

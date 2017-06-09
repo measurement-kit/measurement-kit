@@ -16,6 +16,8 @@ class Client {
   public:
     Var<Logger> logger = Logger::global();
 
+    Settings settings = {};
+
     std::string available_bandwidth;
 
     std::string device_token;

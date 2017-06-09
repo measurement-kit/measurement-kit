@@ -17,9 +17,8 @@ using namespace mk::ooni;
 using namespace mk;
 
 int main(int argc, char **argv) {
-    Var<Logger> logger = Logger::make();
-    logger->set_verbosity(MK_LOG_DEBUG2);
     orchestrate::Client client;
+    client.logger->set_verbosity(MK_LOG_DEBUG2);
     client.probe_cc = "IT";
     client.probe_asn = "AS0";
     client.platform = "macos";
@@ -30,17 +29,16 @@ int main(int argc, char **argv) {
     client.available_bandwidth = "10";
     client.device_token = "X0";
     client.registry_url = orchestrate::testing_registry_url();
-    client.register_probe({}, logger,
-                          [client, logger](Error &&error) {
-                              if (error) {
-                                  throw error;
-                              }
-                              client.update({}, logger, [](Error &&error) {
-                                  if (error) {
-                                      throw error;
-                                  }
-                              });
-                          });
+    client.register_probe([client](Error &&error) {
+        if (error) {
+            throw error;
+        }
+        client.update([](Error &&error) {
+            if (error) {
+                throw error;
+            }
+        });
+    });
     for (;;) {
         sleep(1);
         if (AsyncRunner::global()->active() <= 0) {
