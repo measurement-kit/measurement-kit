@@ -111,6 +111,7 @@
 /test/nettests/web_connectivity
 /test/ooni/bouncer
 /test/ooni/collector_client
+/test/ooni/orchestrate
 /test/ooni/resources
 /test/ooni/templates
 /test/ooni/utils

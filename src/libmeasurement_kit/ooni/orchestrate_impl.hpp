@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_IMPL_HPP
 
-#include <measurement_kit/http.hpp>
+#include <measurement_kit/ooni.hpp>
 
 #include "../common/utils.hpp"
 
@@ -15,7 +15,7 @@ namespace orchestrate {
 class Authentication {
   public:
     std::string auth_token;
-    std::tm expiry_time = {};
+    std::time_t expiry_time = {};
     bool logged_in = false;
     std::string username;
     std::string password;
@@ -33,29 +33,16 @@ class Authentication {
     }
 
     Error store(const std::string &filepath) {
-        // TODO: we can perhaps make a better work at mapping file errors
-        std::ofstream ofile{filepath};
-        if (!ofile.good()) {
-            return FileIoError();
-        }
-        nlohmann::json serio{{"username", username}, {"password", password}};
-        ofile << serio.dump(4) << "\n";
-        if (!ofile.good()) {
-            return FileIoError();
-        }
-        return NoError();
+        return overwrite_file(filepath, nlohmann::json{{"username", username},
+                                                       {"password", password}}
+                                              .dump(4));
     }
 
-    bool is_valid() noexcept {
-        std::tm now = {};
-        if (logged_in == false) {
-            return false;
-        }
-        utc_time_now(&now);
-        if (difftime(mktime(&now), mktime(&expiry_time)) <= 0) {
-            return false;
-        }
-        return true;
+    bool is_valid() const noexcept {
+        // Assume that `std::time()` is not going to fail. Accoring to macOS
+        // manpage it can fail when `gettimeofday` can fail. In turn, the latter
+        // can fail with EFAULT (invalid buffer, not applicable here).
+        return logged_in && difftime(expiry_time, std::time(nullptr)) >= 0;
     }
 };
 
