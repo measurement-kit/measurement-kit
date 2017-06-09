@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
     client.device_token = "X0";
     client.registry_url = orchestrate::testing_registry_url();
     client.register_probe({}, logger,
-                          [client, logger](Error &&error) mutable /* XXX */ {
+                          [client, logger](Error &&error) {
                               if (error) {
                                   throw error;
                               }
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
                           });
     for (;;) {
         sleep(1);
-        if (!AsyncRunner::global()->running()) {
+        if (AsyncRunner::global()->active() <= 0) {
             break;
         }
     }

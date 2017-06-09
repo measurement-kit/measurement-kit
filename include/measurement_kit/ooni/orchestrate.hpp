@@ -59,10 +59,12 @@ class Task; /* Forward declaration */
 class Client : public ClientMetadata {
   public:
     void register_probe(Settings settings, Var<Logger> logger,
-                        Callback<Error &&> &&callback);
+                        Callback<Error &&> &&callback) const;
+
     void update(Settings settings, Var<Logger> logger,
-                Callback<Error &&> &&callback);
-    void list_tasks(Callback<Error &&, std::vector<Task> &&> &&callback);
+                Callback<Error &&> &&callback) const;
+
+    void list_tasks(Callback<Error &&, std::vector<Task> &&> &&callback) const;
 };
 
 /*

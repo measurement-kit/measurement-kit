@@ -142,6 +142,7 @@ ltmain.sh
 m4/*.m4
 missing
 node_modules/
+orchestrator_secrets.json
 site
 src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/

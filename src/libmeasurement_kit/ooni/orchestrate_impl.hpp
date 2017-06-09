@@ -6,6 +6,8 @@
 
 #include <measurement_kit/http.hpp>
 
+#include "../common/utils.hpp"
+
 namespace mk {
 namespace ooni {
 namespace orchestrate {
@@ -17,7 +19,6 @@ class Authentication {
     bool logged_in = false;
     std::string username;
     std::string password;
-    std::string base_url;
 
     Error load(const std::string &filepath) {
         ErrorOr<std::string> maybe_data = slurp(filepath);
@@ -59,8 +60,9 @@ class Authentication {
 };
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-void login(Var<Authentication> auth, Settings settings, Var<Reactor> reactor,
-           Var<Logger> logger, Callback<Error> &&cb) {
+void login(Var<Authentication> auth, std::string registry_url,
+           Settings settings, Var<Reactor> reactor, Var<Logger> logger,
+           Callback<Error> &&cb) {
     if (auth->username == "" || auth->password == "") {
         logger->warn("orchestrator: missing username or password");
         // Guarantee that the callback will not be called immediately
@@ -71,13 +73,14 @@ void login(Var<Authentication> auth, Settings settings, Var<Reactor> reactor,
     }
     nlohmann::json request{{"username", auth->username},
                            {"password", auth->password}};
-    logger->info("orchestrator: sending login request");
+    logger->info("orchestrator: sending login request: %s",
+                 request.dump().c_str());
     /*
      * Important: do not pass `this` to the lambda closure. Rather make
      * sure everything we pass can be kept safe by the closure.
      */
     http_request_json_object(
-          "POST", auth->base_url + "/api/v1/login", request, {},
+          "POST", registry_url + "/api/v1/login", request, {},
           [ auth, cb = std::move(cb),
             logger ](Error error, Var<http::Response> /*http_response*/,
                      nlohmann::json json_response) {
@@ -119,7 +122,8 @@ void login(Var<Authentication> auth, Settings settings, Var<Reactor> reactor,
           settings, reactor, logger);
 }
 
-static inline void maybe_login(Var<Authentication> auth, Settings settings,
+static inline void maybe_login(Var<Authentication> auth,
+                               std::string registry_url, Settings settings,
                                Var<Reactor> reactor, Var<Logger> logger,
                                Callback<Error> &&cb) {
     if (auth->is_valid()) {
@@ -128,7 +132,7 @@ static inline void maybe_login(Var<Authentication> auth, Settings settings,
         return;
     }
     logger->debug("orchestrator: logging in");
-    login(auth, settings, reactor, logger, std::move(cb));
+    login(auth, registry_url, settings, reactor, logger, std::move(cb));
 }
 
 static inline void refresh(Var<Authentication> /*auth*/, Settings /*settings*/,
@@ -174,7 +178,8 @@ void register_probe_(const ClientMetadata &m, std::string password,
     auth->password = password;
 
     if (m.probe_cc.empty() || m.probe_asn.empty() || m.platform.empty() ||
-        m.software_name.empty() || m.software_version.empty()) {
+        m.software_name.empty() || m.software_version.empty() ||
+        m.supported_tests.empty()) {
         logger->warn("orchestrator: missing required value");
         // Guarantee that the callback will not be called immediately
         reactor->call_soon([ cb = std::move(cb), auth ]() {
@@ -236,7 +241,7 @@ void update_(const ClientMetadata &m, Var<Authentication> auth,
     std::string update_url =
           m.registry_url + "/api/v1/update/" + auth->username;
     nlohmann::json update_request = as_json(m);
-    maybe_login(auth, settings, reactor, logger, [
+    maybe_login(auth, m.registry_url, settings, reactor, logger, [
         update_url = std::move(update_url),
         update_request = std::move(update_request), cb = std::move(cb), auth,
         settings, reactor, logger
@@ -298,7 +303,7 @@ static inline ErrorOr<Var<Authentication>> load_auth(std::string working_dir) {
 }
 
 static inline std::string make_password() {
-    return "ANTANI"; // FIXME
+    return mk::random_printable(64);
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
@@ -308,6 +313,7 @@ void do_register_probe(const ClientMetadata &m, std::string password,
     ErrorOr<Var<Authentication>> ma = load_auth(m.working_dir);
     if (!!ma) {
         // Assume that, if we can load the secrets, we are already registered
+        logger->info("This probe is already registered");
         reactor->call_soon([=]() { cb(NoError()); });
         return;
     }

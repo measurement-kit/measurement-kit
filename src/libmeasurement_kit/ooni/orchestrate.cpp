@@ -33,13 +33,14 @@ std::string testing_events_url() { return MK_OONI_TESTING_PROTEUS_EVENTS_URL; }
  */
 
 void Client::register_probe(Settings settings, Var<Logger> logger,
-                            Callback<Error &&> &&cb) {
-    // Passing `this` to callback is okay because we only use it to populate
-    // a `ClientMetadata` object used by the `register_probe()` function
+                            Callback<Error &&> &&cb) const {
+    // Move to callback a copy of the data contained by this object so we
+    // completely detach the destiny of `this` and of the callback.
+    ClientMetadata meta = *this;
     AsyncRunner::global()->start(
           "orchestrate::register_probe", logger,
-          [this, settings, logger](Callback<Error &&> &&cb) {
-              do_register_probe(*this, make_password(), settings,
+          [meta = std::move(meta), settings, logger](Callback<Error &&> &&cb) {
+              do_register_probe(meta, make_password(), settings,
                                 AsyncRunner::global()->reactor(), logger,
                                 std::move(cb));
           },
@@ -47,20 +48,21 @@ void Client::register_probe(Settings settings, Var<Logger> logger,
 }
 
 void Client::update(Settings settings, Var<Logger> logger,
-                    Callback<Error &&> &&cb) {
-    // Passing `this` to callback is okay because we only use it to populate
-    // a `ClientMetadata` object used by the `update()` function
+                    Callback<Error &&> &&cb) const {
+    // Move to callback a copy of the data contained by this object so we
+    // completely detach the destiny of `this` and of the callback.
+    ClientMetadata meta = *this;
     AsyncRunner::global()->start(
           "orchestrate::update", logger,
-          [this, settings, logger](Callback<Error &&> &&cb) {
-              do_update(*this, settings, AsyncRunner::global()->reactor(),
+          [meta = std::move(meta), settings, logger](Callback<Error &&> &&cb) {
+              do_update(meta, settings, AsyncRunner::global()->reactor(),
                         logger, std::move(cb));
           },
           std::move(cb));
 }
 
 void Client::list_tasks(
-      Callback<Error &&, std::vector<Task> &&> && /*callback)*/) {
+      Callback<Error &&, std::vector<Task> &&> && /*callback)*/) const {
     throw NotImplementedError();
 }
 
