@@ -49,10 +49,10 @@ class ClientMetadata {
     std::string probe_cc;
     std::string probe_family;
     std::string registry_url = production_registry_url();
+    std::string secrets_path = "orchestrator_secrets.json";
     std::string software_name = "measurement_kit";
     std::string software_version = MK_VERSION;
     std::vector<std::string> supported_tests;
-    std::string working_dir = ".";
 };
 
 class Task; /* Forward declaration */

@@ -34,10 +34,10 @@ class Client {
     std::string probe_cc;
     std::string probe_family;
     std::string registry_url = production_registry_url();
+    std::string secrets_path = "orchestrator_secrets.json";
     std::string software_name = "measurement_kit";
     std::string software_version = MK_VERSION;
     std::vector<std::string> supported_tests;
-    std::string working_dir = ".";
 
     void register_probe(Callback<Error &&> &&callback) const;
     void update(Callback<Error &&> &&callback) const;
@@ -131,6 +131,11 @@ The `registry_url` attribute contains the URL used to query the
 `registry` web service of the orchestrator. By default, this attribute
 is set to the production registry service URL used by OONI.
 
+The `secrets_path` attribute is the path of the file where to save
+orchestrator secrets. The default is `"orchestrator_secrets.json"` in
+the current working directory. You certainly want to change this on
+mobile device, to use a directory where the app can write.
+
 The `software_name` attribute is the name of the application using
 MeasurementKit OONI's orchestrator. By default is `measurement_kit`
 and you most certainly want to change it to the name of your
@@ -145,11 +150,6 @@ The `supported_tests` attribute is the vector of test names supported
 by OONI that the application would like to support. If not set,
 this field is filled by MeasurementKit with the list of implemented
 tests when preparing the request for the orchestrator.
-
-The `working_dir` attribute is the working directory where you want
-the orchestrator to save its state. The default is the current
-working directory, and you certainly want to change this on mobile
-devices, to point to a directory where the mobile app can write.
 
 Once the orchestrator client is configured, you can use its methods to send
 requests to the orchestrator server. The following methods are available:

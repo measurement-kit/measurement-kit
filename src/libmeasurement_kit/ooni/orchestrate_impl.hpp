@@ -267,18 +267,7 @@ void update_(const ClientMetadata &m, Var<Authentication> auth,
     });
 }
 
-static inline std::string make_secrets_path(std::string dir) noexcept {
-#if (defined _WIN32 || defined __CYGWIN__)
-    dir += R"xx(\)xx";
-#else
-    dir += "/";
-#endif
-    dir += "orchestrator_secrets.json";
-    return dir;
-}
-
-static inline ErrorOr<Var<Authentication>> load_auth(std::string working_dir) {
-    std::string fpath = make_secrets_path(working_dir);
+static inline ErrorOr<Var<Authentication>> load_auth(std::string fpath) {
     Var<Authentication> auth = Var<Authentication>::make();
     Error err = auth->load(fpath);
     if (err) {
@@ -292,14 +281,14 @@ static inline std::string make_password() { return mk::random_printable(64); }
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void do_register_probe(const ClientMetadata &m, std::string password,
                        Var<Reactor> reactor, Callback<Error> &&cb) {
-    ErrorOr<Var<Authentication>> ma = load_auth(m.working_dir);
+    ErrorOr<Var<Authentication>> ma = load_auth(m.secrets_path);
     if (!!ma) {
         // Assume that, if we can load the secrets, we are already registered
         m.logger->info("This probe is already registered");
         reactor->call_soon([=]() { cb(NoError()); });
         return;
     }
-    std::string destpath = make_secrets_path(m.working_dir);
+    std::string destpath = make_secrets_path(m.secrets_path);
     register_probe_<http_request_json_object>(m, password, reactor, [
         cb = std::move(cb), destpath = std::move(destpath)
     ](Error err, Var<Authentication> auth) {
@@ -314,7 +303,7 @@ void do_register_probe(const ClientMetadata &m, std::string password,
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void do_update(const ClientMetadata &m, Var<Reactor> reactor,
                Callback<Error &&> &&cb) {
-    ErrorOr<Var<Authentication>> ma = load_auth(m.working_dir);
+    ErrorOr<Var<Authentication>> ma = load_auth(m.secrets_path);
     if (!ma) {
         reactor->call_soon([=]() { cb(ma.as_error()); });
         return;
