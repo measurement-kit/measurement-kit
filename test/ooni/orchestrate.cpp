@@ -8,6 +8,7 @@
 #include "../src/libmeasurement_kit/ooni/orchestrate_impl.hpp"
 
 using namespace mk;
+using namespace mk::ooni;
 using namespace mk::ooni::orchestrate;
 
 TEST_CASE("Authentication::load() works correctly") {

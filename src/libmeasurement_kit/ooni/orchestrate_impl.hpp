@@ -50,13 +50,13 @@ template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void login(Var<Authentication> auth, std::string registry_url,
            Settings settings, Var<Reactor> reactor, Var<Logger> logger,
            Callback<Error &&> &&cb) {
-    auto fail_if_missing = [](const std::string &attr,
-                              const std::string &descr) {
+    auto fail_if_missing = [&](const std::string &attr,
+                               const std::string &descr) {
         if (attr == "") {
             logger->warn("orchestrator: missing %s", descr.c_str());
         }
         // Guarantee that the callback will not be called immediately
-        reactor->call_soon([cb = std::move(cb)]() {
+        reactor->call_soon([cb = std::move(cb), &descr]() {
             cb(MissingRequiredValueError(descr));
         });
         return;
@@ -80,7 +80,7 @@ void login(Var<Authentication> auth, std::string registry_url,
               if (error) {
                   logger->warn("orchestrator: JSON API error: %s",
                                error.explain().c_str());
-                  cb(error);
+                  cb(std::move(error));
                   return;
               }
               logger->debug("orchestrator: processing login response");
@@ -109,7 +109,7 @@ void login(Var<Authentication> auth, std::string registry_url,
                   logger->warn("orchestrator: json processing error: %s",
                                error.explain().c_str());
               }
-              cb(error);
+              cb(std::move(error));
           },
           settings, reactor, logger);
 }
