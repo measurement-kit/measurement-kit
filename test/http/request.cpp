@@ -791,6 +791,7 @@ static void non_200_response(Settings, Headers, std::string,
                              Var<Response> = nullptr, int = 0) {
     Var<Response> response = Var<Response>::make();
     response->status_code = 500;
+    response->body = "{}";
     cb(NoError(), response);
 }
 
@@ -818,8 +819,9 @@ TEST_CASE("request_json_string() works as expected") {
     SECTION("For non-200 HTTP status code") {
         request_json_string_impl<non_200_response>(
               "GET", "http://www.google.com", "", {},
-              [](Error error, Var<Response>, nlohmann::json) {
-                  REQUIRE(error == HttpRequestFailedError());
+              [](Error error, Var<Response> resp, nlohmann::json) {
+                  REQUIRE(error.code == NoError().code);
+                  REQUIRE(resp->status_code != 200);
               },
               {}, Reactor::global(), Logger::global());
     }

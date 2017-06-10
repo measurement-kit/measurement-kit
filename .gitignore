@@ -23,6 +23,7 @@
 .DS_Store
 .deps
 .dirstamp
+.idea
 .libs
 .vagrant
 /*.njson
@@ -44,6 +45,7 @@
 /example/nettests/simple
 /example/ooni/oonireport
 /example/ooni/ooniresources
+/example/ooni/oorchestrate
 /include.am
 /include/measurement_kit/*.hpp
 /include/measurement_kit/common/git_version.hpp
@@ -111,6 +113,7 @@
 /test/nettests/web_connectivity
 /test/ooni/bouncer
 /test/ooni/collector_client
+/test/ooni/orchestrate
 /test/ooni/resources
 /test/ooni/templates
 /test/ooni/utils
@@ -142,6 +145,9 @@ ltmain.sh
 m4/*.m4
 missing
 node_modules/
+orchestrator_dummy.json
+orchestrator_secrets.json
+orchestrator_secrets_*.json
 site
 src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/

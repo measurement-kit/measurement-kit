@@ -304,6 +304,27 @@ TEST_CASE("slurp() works as expected") {
     }
 }
 
+static size_t fwrite_fail(const void *, size_t, size_t, FILE *) { return 0; }
+
+TEST_CASE("mk::overwrite_file() works as expected") {
+    SECTION("If fopen() fails") {
+        REQUIRE((mk::overwrite_file_impl<fopen_fail>("xx", "xyz")) !=
+                mk::NoError());
+    }
+    SECTION("If fwrite() fails") {
+        REQUIRE((mk::overwrite_file_impl<std::fopen, fwrite_fail>(
+                      "xx", "xyz")) != mk::NoError());
+    }
+    SECTION("If fclose() fails") {
+        REQUIRE((mk::overwrite_file_impl<std::fopen, std::fwrite, fclose_fail>(
+                      "xx", "xyz")) != mk::NoError());
+    }
+    SECTION("If everything is okay") {
+        REQUIRE(mk::overwrite_file("xx", "xyz") == mk::NoError());
+        REQUIRE(*mk::slurp("xx") == "xyz");
+    }
+}
+
 TEST_CASE("mk::startswith() works as expected") {
     SECTION("For empty s and p") {
         REQUIRE(!!mk::startswith("", ""));

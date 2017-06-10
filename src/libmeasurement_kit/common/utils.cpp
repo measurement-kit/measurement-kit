@@ -16,6 +16,7 @@
 namespace mk {
 
 void timeval_now(timeval *tv) {
+    *tv = {};
     if (gettimeofday(tv, nullptr) != 0) {
         throw std::runtime_error("gettimeofday()");
     }
@@ -29,7 +30,7 @@ double time_now() {
 }
 
 void utc_time_now(struct tm *utc) {
-    time_t tv;
+    time_t tv = {};
     tv = time(nullptr);
     gmtime_r(&tv, utc);
 }
@@ -39,6 +40,21 @@ Error parse_iso8601_utc(std::string ts, std::tm *tmb) {
     std::istringstream ss(ts);
     ss >> std::get_time(tmb, "%Y-%m-%dT%H:%M:%SZ");
     if (ss.fail()) {
+        return ValueError();
+    }
+    return NoError();
+}
+
+// TODO: add regress test for this function
+Error parse_iso8601_utc(std::string ts, std::time_t *t) {
+    *t = {};
+    std::tm tmb;
+    Error err = parse_iso8601_utc(ts, &tmb);
+    if (err) {
+        return err;
+    }
+    *t = std::mktime(&tmb);
+    if (*t == (std::time_t) -1) {
         return ValueError();
     }
     return NoError();
@@ -159,6 +175,10 @@ ErrorOr<std::string> slurp(std::string path) {
     }
     std::string s{v->begin(), v->end()};  /* Note that here we make a copy */
     return s;
+}
+
+Error overwrite_file(std::string path, std::string content) {
+    return overwrite_file_impl(path, content);
 }
 
 bool startswith(std::string s, std::string p) {
