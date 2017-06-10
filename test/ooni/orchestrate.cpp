@@ -79,6 +79,40 @@ TEST_CASE("Authentication::is_valid() works correctly") {
     }
 }
 
+TEST_CASE("orchestrate::login() works correctly") {
+    auto auth = Authentication::make();
+    auto reactor = Reactor::make();
+
+    SECTION("When the username is missing") {
+        Error err;
+        reactor->run_with_initial_event([&]() {
+            login(auth, testing_registry_url(), {}, reactor, Logger::global(),
+                  [&](Error &&e) {
+                    err = e;
+                    reactor->break_loop();
+                  });
+        });
+        REQUIRE(err == MissingRequiredValueError());
+    }
+
+    SECTION("When the password is missing") {
+        auth->username = "antani";
+        Error err;
+        reactor->run_with_initial_event([&]() {
+            login(auth, testing_registry_url(), {}, reactor, Logger::global(),
+                  [&](Error &&e) {
+                    err = e;
+                    reactor->break_loop();
+                  });
+        });
+        REQUIRE(err == MissingRequiredValueError());
+    }
+
+    /*
+     * TODO: add more tests
+     */
+}
+
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Orchestration works") {

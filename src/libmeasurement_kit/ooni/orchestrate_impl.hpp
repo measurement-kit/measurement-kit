@@ -12,7 +12,7 @@ namespace mk {
 namespace ooni {
 namespace orchestrate {
 
-class Authentication {
+class Authentication : public HasMakeFactory<Authentication> {
   public:
     std::string auth_token;
     std::time_t expiry_time = {};
@@ -49,19 +49,25 @@ class Authentication {
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void login(Var<Authentication> auth, std::string registry_url,
            Settings settings, Var<Reactor> reactor, Var<Logger> logger,
-           Callback<Error> &&cb) {
-    if (auth->username == "" || auth->password == "") {
-        logger->warn("orchestrator: missing username or password");
+           Callback<Error &&> &&cb) {
+    auto fail_if_missing = [](const std::string &attr,
+                              const std::string &descr) {
+        if (attr == "") {
+            logger->warn("orchestrator: missing %s", descr.c_str());
+        }
         // Guarantee that the callback will not be called immediately
         reactor->call_soon([cb = std::move(cb)]() {
-            cb(MissingRequiredValueError());
+            cb(MissingRequiredValueError(descr));
         });
         return;
-    }
+    };
+    fail_if_missing(auth->username, "username");
+    fail_if_missing(auth->password, "password");
     nlohmann::json request{{"username", auth->username},
                            {"password", auth->password}};
-    logger->info("orchestrator: sending login request: %s",
-                 request.dump().c_str());
+    logger->info("Logging you in with orchestrator");
+    logger->debug("orchestrator: sending login request: %s",
+                  request.dump().c_str());
     /*
      * Important: do not pass `this` to the lambda closure. Rather make
      * sure everything we pass can be kept safe by the closure.
@@ -95,10 +101,9 @@ void login(Var<Authentication> auth, std::string registry_url,
                   if ((error = parse_iso8601_utc(ts, &auth->expiry_time))) {
                       throw error;
                   }
-                  // FIXME: I believe the token name here is too generic
                   auth->auth_token = response["token"];
                   auth->logged_in = true;
-                  logger->info("orchestrator: logged in");
+                  logger->info("Logged in with orchestrator");
               });
               if (error) {
                   logger->warn("orchestrator: json processing error: %s",

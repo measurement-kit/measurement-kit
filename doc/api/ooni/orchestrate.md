@@ -2,7 +2,7 @@
 orchestrate -- code to talk to OONI's orchestrator
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+MeasurementKit (`libmeasurement_kit`, `-lmeasurement_kit`).
 
 # SYNOPSIS
 ```C++
@@ -12,64 +12,47 @@ namespace mk {
 namespace ooni {
 namespace orchestrate {
 
+std::string production_registry_url();
+std::string testing_registry_url();
+
+std::string production_events_url();
+std::string testing_events_url();
+
 class Client {
   public:
     Var<Logger> logger = Logger::global();
-
     Settings settings = {};
-
     std::string available_bandwidth;
-
     std::string device_token;
-
     std::string events_url = production_events_url();
-
     std::string language;
-
     std::string network_type;
-
     std::string geoip_country_path;
-
     std::string geoip_asn_path;
-
     std::string platform;
-
     std::string probe_asn;
-
     std::string probe_cc;
-
     std::string probe_family;
-
     std::string registry_url = production_registry_url();
-
     std::string software_name = "measurement_kit";
-
     std::string software_version = MK_VERSION;
-
     std::vector<std::string> supported_tests;
-
     std::string working_dir = ".";
 
-    void register_probe(Callback<Error &&> &&callback);
-
-    void update(Callback<Error &&> &&callback);
-
-    void list_tasks(Callback<Error &&, std::vector<Task> &&> &&callback);
+    void register_probe(Callback<Error &&> &&callback) const;
+    void update(Callback<Error &&> &&callback) const;
+    void list_tasks(Callback<Error &&, std::vector<Task> &&> &&callback) const;
 };
 
 class Task {
   public:
     std::string events_url = production_events_url();
-
     std::string task_id;
 
-    void get(Callback<Error &&, std::string &&> &&callback);
-
-    void accept(Callback<Error &&> &&callback);
-
-    void reject(Callback<Error &&> &&callback);
-
-    void done(Callback<Error &&> &&callback);
+    void get(Callback<Error &&, std::string &&> &&callback) const;
+    void accept(Callback<Error &&> &&callback) const;
+    void reject(Callback<Error &&> &&callback) const;
+    void done(Callback<Error &&> &&callback) const;
 };
 
 } // namespace orchestrate
@@ -88,11 +71,18 @@ of services telling clients which tests it is most optimal to run, and with
 what inputs. This allows OONI to maximize censorship coverage given the probe's
 current geographic location and internet service provider.
 
+The `production_registry_url`, `testing_registry_url`, `production_events_url`,
+and `testing_events_url` return, respectively, the production and testing URLs
+of the orchestrator's registry and events web services used by OONI.
+
 Once you have constructed an orchestration client, you can configure it by
 setting the proper configuration attributes, described below:
 
 The `logger` attribute can be override to use a custom logger. By default, the
 global MeasurementKit logger is used.
+
+The `settings` attribute allows to specify optional settings. By default, an
+empty settings object is used, meaning that defaults will always be used.
 
 The `available_bandwidth` attribute indicates how much bandwidth you would
 like to use for automatic tests run through orchestration. By default, this
@@ -110,11 +100,13 @@ The `language` attribute tells the orchestrator the language used by
 this probe. By default this attribute is unspecified.
 
 The `network_type` attribute tells the orchestrator the type of the network
-the probe is connected to (i.e. Wi-Fi or mobile).
+the probe is connected to (i.e. Wi-Fi or mobile). By default this attribute is
+unspecified.
 
 The `geoip_country_path` and `geoip_asn_path` are used by the orchestrator
 client to guess the country and autonomous system number, if they are not
-provided by the API user (see below).
+provided by the API user (see below). By default these attributes are empty,
+meaning that MK will not attempt to geolocate the user.
 
 The `platform` attribute tells the orchestrator the platform in
 which the probe runs (e.g., `android`, `ios`). If not set, this
@@ -133,7 +125,7 @@ actual request for the orchestrator is prepared.
 
 The `probe_family` attribute allows to bind a set of different
 probes to a common family of probes. This attribute is currently
-not used.
+reserved for future use.
 
 The `registry_url` attribute contains the URL used to query the
 `registry` web service of the orchestrator. By default, this attribute
@@ -169,14 +161,13 @@ the orchestrator system. The parameter passed to the callback
 indicates whether there was an error.
 
 The `update` method assumes that a probe is already registered and
-updates the orchestrator system's knowledge of the state of a probe.
-It will call the proper orchestrator HTTP API. The parameter passed
-to the callback indicates whether there was an error.
+updates the orchestrator system's knowledge of the state of a probe
+(e.g. network type, location). The parameter passed to callback
+indicates whether there was an error.
 
 The `list_tasks` method assumes that a probe is already registered
-and gets the list of tasks to run. It will call the proper orchestrator
-HTTP API. The callback receives two parameters: whether there was
-an error and the list of tasks.
+and gets the list of tasks to run. The callback receives two parameters:
+whether there was an error and the list of tasks.
 
 Each task is an instance of the `Task` class.
 
@@ -184,9 +175,12 @@ The `list_tasks` callback receives as argument already configured `Task`
 instances. In particular, this means that the following attributes are set:
 
 The `events_url` attribute should point to the URL to be used to contact the
-`events` web service of the orchestrator.
+`events` web service of the orchestrator. By default this is initialized by
+the orchestrator code to point to the production events URL.
 
-The `task_id` attribute should contain the ID of the task.
+The `task_id` attribute should contain the ID of the task. By default this is
+initialized by the orchestrator code to be the ID of the task as returned by
+the orchestrator services.
 
 The `Task` instance could then be used to perform the following operations:
 
@@ -213,12 +207,13 @@ The `done` method informs the orchestrator that a task is done. The
 
 # CAVEATS
 
-1. The implementation MAY schedule any slow operation on a background thread
-   used for I/O. As a consequence, final callbacks MAY be called from another
+1. The implementation will schedule any slow operation on a background thread
+   used for I/O. As a consequence, depending on the thread from which you
+   schedule slow operations, their final callbacks MAY be called from another
    thread context.
 
-2. Slow operations MAY operate on a copy of the internal state, so state
-   changes performed after a slow operation is started MAY have no effect
+2. Slow operations operates on a copy of the internal state, so attribute
+   changes performed after a slow operation is started will have no effect
    on such slow operations.
 
 # EXAMPLE

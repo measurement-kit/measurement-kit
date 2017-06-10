@@ -60,9 +60,7 @@ class Task; /* Forward declaration */
 class Client : public ClientMetadata {
   public:
     void register_probe(Callback<Error &&> &&callback) const;
-
     void update(Callback<Error &&> &&callback) const;
-
     void list_tasks(Callback<Error &&, std::vector<Task> &&> &&callback) const;
 };
 
@@ -78,10 +76,10 @@ class TaskData {
 
 class Task : public TaskData {
   public:
-    void get(Callback<Error &&, std::string &&> &&callback);
-    void accept(Callback<Error &&> &&callback);
-    void reject(Callback<Error &&> &&callback);
-    void done(Callback<Error &&> &&callback);
+    void get(Callback<Error &&, std::string &&> &&callback) const;
+    void accept(Callback<Error &&> &&callback) const;
+    void reject(Callback<Error &&> &&callback) const;
+    void done(Callback<Error &&> &&callback) const;
 };
 
 } // namespace orchestrate

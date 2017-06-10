@@ -67,19 +67,19 @@ void Client::list_tasks(
  * Events database
  */
 
-void Task::get(Callback<Error &&, std::string &&> && /*callback*/) {
+void Task::get(Callback<Error &&, std::string &&> && /*callback*/) const {
     throw NotImplementedError();
 }
 
-void Task::accept(Callback<Error &&> && /*callback*/) {
+void Task::accept(Callback<Error &&> && /*callback*/) const {
     throw NotImplementedError();
 }
 
-void Task::reject(Callback<Error &&> && /*callback*/) {
+void Task::reject(Callback<Error &&> && /*callback*/) const {
     throw NotImplementedError();
 }
 
-void Task::done(Callback<Error &&> && /*callback*/) {
+void Task::done(Callback<Error &&> && /*callback*/) const {
     throw NotImplementedError();
 }
 
