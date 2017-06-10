@@ -147,6 +147,7 @@ m4/*.m4
 missing
 node_modules/
 orchestrator_dummy.json
+orchestrator_secrets_*.json
 orchestrator_secrets.json
 site
 src/libmeasurement_kit/ext/Catch/

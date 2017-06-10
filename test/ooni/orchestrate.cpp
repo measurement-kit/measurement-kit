@@ -6,6 +6,7 @@
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
 #include "../src/libmeasurement_kit/ooni/orchestrate_impl.hpp"
+#include "../src/libmeasurement_kit/common/utils.hpp"
 
 using namespace mk;
 using namespace mk::ooni;
@@ -117,6 +118,12 @@ TEST_CASE("orchestrate::login() works correctly") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Orchestration works") {
+    auto make_path = []() {
+        std::string s = "orchestrator_secrets_";
+        s += random_str(8);
+        s += ".json";
+        return s;
+    };
     Client client;
     client.logger->set_verbosity(MK_LOG_DEBUG2);
     client.probe_cc = "IT";
@@ -127,6 +134,7 @@ TEST_CASE("Orchestration works") {
     client.available_bandwidth = "10";
     client.device_token = "{TOKEN}";
     client.registry_url = testing_registry_url();
+    client.secrets_path = make_path();
     std::promise<Error> promise;
     std::future<Error> future = promise.get_future();
     client.register_probe([client, &promise](Error &&error) {

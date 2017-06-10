@@ -288,9 +288,8 @@ void do_register_probe(const ClientMetadata &m, std::string password,
         reactor->call_soon([=]() { cb(NoError()); });
         return;
     }
-    std::string destpath = make_secrets_path(m.secrets_path);
     register_probe_<http_request_json_object>(m, password, reactor, [
-        cb = std::move(cb), destpath = std::move(destpath)
+        cb = std::move(cb), destpath = m.secrets_path
     ](Error err, Var<Authentication> auth) {
         if (err) {
             cb(std::move(err));
