@@ -50,19 +50,14 @@ template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void login(Var<Authentication> auth, std::string registry_url,
            Settings settings, Var<Reactor> reactor, Var<Logger> logger,
            Callback<Error &&> &&cb) {
-    auto fail_if_missing = [&](const std::string &attr,
-                               const std::string &descr) {
-        if (attr == "") {
-            logger->warn("orchestrator: missing %s", descr.c_str());
-        }
+    if (auth->username == "" || auth->password == "") {
+        logger->warn("orchestrator: missing username or password");
         // Guarantee that the callback will not be called immediately
-        reactor->call_soon([cb = std::move(cb), &descr]() {
-            cb(MissingRequiredValueError(descr));
+        reactor->call_soon([cb = std::move(cb)]() {
+            cb(MissingRequiredValueError());
         });
         return;
     };
-    fail_if_missing(auth->username, "username");
-    fail_if_missing(auth->password, "password");
     nlohmann::json request{{"username", auth->username},
                            {"password", auth->password}};
     logger->info("Logging you in with orchestrator");
