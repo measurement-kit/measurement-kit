@@ -78,3 +78,32 @@ TEST_CASE("Authentication::is_valid() works correctly") {
         REQUIRE(auth.is_valid() == true);
     }
 }
+
+#ifdef ENABLE_INTEGRATION_TESTS
+
+TEST_CASE("Orchestration works") {
+    Client client;
+    client.logger->set_verbosity(MK_LOG_DEBUG2);
+    client.probe_cc = "IT";
+    client.probe_asn = "AS0";
+    client.platform = "macos";
+    client.supported_tests = {"web_connectivity"};
+    client.network_type = "wifi";
+    client.available_bandwidth = "10";
+    client.device_token = "{TOKEN}";
+    client.registry_url = testing_registry_url();
+    std::promise<Error> promise;
+    std::future<Error> future = promise.get_future();
+    client.register_probe([client, &promise](Error &&error) {
+        if (error) {
+            promise.set_value(error);
+            return;
+        }
+        client.update([&promise](Error &&error) {
+            promise.set_value(error);
+        });
+    });
+    REQUIRE(future.get() == NoError());
+}
+
+#endif
