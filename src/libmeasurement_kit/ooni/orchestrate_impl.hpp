@@ -136,31 +136,6 @@ static inline void refresh(Var<Authentication> /*auth*/, Settings /*settings*/,
     throw NotImplementedError();
 }
 
-nlohmann::json ClientMetadata::as_json_() const {
-    nlohmann::json j;
-    j["probe_cc"] = probe_cc;
-    j["probe_asn"] = probe_asn;
-    j["platform"] = platform;
-    j["software_name"] = software_name;
-    j["software_version"] = software_version;
-    if (!supported_tests.empty()) {
-        j["supported_tests"] = supported_tests;
-    }
-    if (!network_type.empty()) {
-        j["network_type"] = network_type;
-    }
-    if (!available_bandwidth.empty()) {
-        j["available_bandwidth"] = available_bandwidth;
-    }
-    if (!device_token.empty()) {
-        j["token"] = device_token;
-    }
-    if (!probe_family.empty()) {
-        j["probe_family"] = probe_family;
-    }
-    return j;
-}
-
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void register_probe_(const ClientMetadata &m, std::string password,
                      Var<Reactor> reactor,
