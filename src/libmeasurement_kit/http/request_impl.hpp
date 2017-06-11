@@ -62,10 +62,6 @@ void request_json_string_impl(
                     cb(error, response, jresponse);
                     return;
                 }
-                if (response->status_code != 200) {
-                    cb(HttpRequestFailedError(), response, jresponse);
-                    return;
-                }
                 error = json_parse_and_process(response->body, [&](auto json) {
                     jresponse = std::move(json);
                 });

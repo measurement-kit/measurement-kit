@@ -25,7 +25,6 @@ class AsyncRunner : public HasMakeFactory<AsyncRunner>,
                     public NonCopyable,
                     public NonMovable {
   public:
-
     // Adapted from src/libmeasurement_kit/nettests/runner.cpp
     template <typename Task, typename Callback>
     void start(std::string &&name, Var<Logger> logger, Task &&task,
@@ -62,7 +61,16 @@ class AsyncRunner : public HasMakeFactory<AsyncRunner>,
                 // MAY do some work after the closure returns. To avoid issues
                 // with use-after-free defer calling the final `cb`, and ensure
                 // the closure keeps the task alive until that point in time.
-                reactor_->call_soon([task, cb, name, logger, this, error]() {
+                //
+                // Notes:
+                //
+                // 1. if all objects avoid passing `this` to closures, we
+                //    can probably avoid doing this safety step
+                //
+                // 2. this last callback is mutable so it can be matched
+                //    by funtions that take a mutable error as argument
+                reactor_->call_soon([task, cb, name, logger, this,
+                                     error]() mutable {
                     logger->debug("%s: callback", name.c_str());
                     active_ -= 1;
                     logger->debug("runner: #active: %lld", (long long)active_);
