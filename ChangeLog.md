@@ -16,7 +16,7 @@ is therefore v0.5.0-alpha.
 - Force non-strict HTTP parser (#1225)
 - Use SSLv2 and SSLv3 with `web_connectivity` (#1228)
 - Cherry pick nodejs/http-parser#364 (#1227)
-- Changes to logger suggested by @darrk (#1230)
+- Changes to logger suggested by @darkk (#1230)
 - Remove all refs to `oldstable`
 - dns: make system resolver truly async (#1234)
 - We don't actually need ReturnType (#1239)
