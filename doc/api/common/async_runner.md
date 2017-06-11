@@ -141,6 +141,10 @@ can code `task` to perform cleanup operations without worrying about whether
 the order of operations performed can lead to *use after free* when the stack
 of functions that lead to the final state returns.
 
+In theory, the issue described above could be avoided if *all* objects
+avoid passing their `this` to callbacks. So, we can probably remove the
+guarantee above once `nettests::Runnable` has been refactored.
+
 # CAVEATS
 
 Since the fourth-argument `callback` will be called from a background

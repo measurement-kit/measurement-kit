@@ -11,114 +11,34 @@
 // XXX I believe there are portability issues with this header
 #include <getopt.h>
 
-#define USAGE "oorchestrate [-v] [--events-url events_url] [--registry-url registry_url] --username username --password password"
+#define USAGE "oorchestrate"
 
 using namespace mk::ooni;
 using namespace mk;
 
-int main(int argc, char **argv) {
-    std::string events_url = orchestratorx::testing_events_url();
-    std::string registry_url = orchestratorx::testing_registry_url();
-    std::string action = "lgin";
-
-    Var<orchestratorx::Authentication> auth(new orchestratorx::Authentication);
-    Var<orchestratorx::ProbeData> pd(new orchestratorx::ProbeData);
-
-    int c;
-    while (1) {
-      static struct option long_options[] = {
-        {"events-url", required_argument, 0, 0},
-        {"registry-url", required_argument, 0, 1},
-        {"username", required_argument, 0, 'u'},
-        {"password", required_argument, 0, 'p'},
-        {"verbose", required_argument, 0, 'v'},
-        {0, 0, 0, 0}
-      };
-
-      int opt_idx = 0;
-      c = getopt_long(argc, argv, "up:v", long_options, &opt_idx);
-      if (c == -1) {
-        break;
-      }
-
-      switch (c) {
-        case 0:
-          events_url = optarg;
-          break;
-        case 1:
-          registry_url = optarg;
-          break;
-        case 'u':
-          auth->username = optarg;
-          break;
-        case 'p':
-          auth->password = optarg;
-          break;
-        case 'v':
-          increase_verbosity();
-          break;
-
-        default:
-          std::cout << USAGE << "\n";
-          exit(1);
-      }
-    }
-    auth->base_url = registry_url;
-
-    argc -= optind;
-    argv += optind;
-
-    debug("oorchestrate: starting");
-    loop_with_initial_event([&]() {
-        pd->probe_cc = "IT";
-        pd->probe_asn = "AS0";
-        pd->platform = "macos";
-        pd->software_name = "example";
-        pd->software_version = "1.0.0";
-        pd->supported_tests = {"web_connectivity"};
-        pd->network_type = "wifi";
-        pd->available_bandwidth = "10";
-        pd->token = "XO";
-        debug("oorchestrate: registering probe");
-        pd->register_probe(registry_url, auth->password,
-            [=](Error error, std::string client_id){
-          if (error) {
-            std::cout << "Failed to register: " << error.code;
-            break_loop();
+int main(int /*argc*/, char ** /*argv*/) {
+    orchestrate::Client client;
+    client.logger->set_verbosity(MK_LOG_DEBUG2);
+    client.probe_cc = "IT";
+    client.probe_asn = "AS0";
+    client.platform = "macos";
+    client.software_name = "oorchestrate";
+    client.software_version = "1.0.0";
+    client.supported_tests = {"web_connectivity"};
+    client.network_type = "wifi";
+    client.available_bandwidth = "10";
+    //client.device_token = "X0";  /* Not needed on PC devices */
+    client.registry_url = orchestrate::testing_registry_url();
+    std::promise<Error> promise;
+    std::future<Error> future = promise.get_future();
+    client.register_probe([client, &promise](Error &&error) {
+        if (error) {
+            promise.set_value(error);
             return;
-          }
-          auth->username = client_id;
-          info("registered with ID: %s",
-               client_id.c_str());
-          pd->token = "DUMMY-TOKEN";
-          debug("oorchestrate: updating probe data");
-          pd->update(registry_url,
-                     auth, [=](Error error){
-            debug("oorchestrate: updated probe data");
-            if (error) {
-              std::cout << "Failed to update: " << error.code;
-              break_loop();
-              return;
-
-            }
-            debug("oorchestrate: listing tasks");
-            list_tasks(events_url, auth,
-                [=](Error error, std::vector<orchestratorx::Task> task_list){
-                debug("oorchestrate: listed tasks");
-                if (error) {
-                  std::cout << "Failed to list tasks: " << error.code;
-                  break_loop();
-                  return;
-
-                }
-                for (auto task : task_list) {
-                  info("Found task: %s", task.task_id.c_str());
-                }
-                break_loop();
-            });
-          });
+        }
+        client.update([&promise](Error &&error) {
+            promise.set_value(error);
         });
     });
-
-    return 0;
+    future.wait();
 }

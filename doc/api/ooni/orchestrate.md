@@ -72,8 +72,9 @@ what inputs. This allows OONI to maximize censorship coverage given the probe's
 current geographic location and internet service provider.
 
 The `production_registry_url`, `testing_registry_url`, `production_events_url`,
-and `testing_events_url` return, respectively, the production and testing URLs
-of the orchestrator's registry and events web services used by OONI.
+and `testing_events_url` functions return, respectively, the production and
+testing URLs of the orchestrator's registry and events web services used by
+OONI.
 
 Once you have constructed an orchestration client, you can configure it by
 setting the proper configuration attributes, described below:
@@ -219,6 +220,13 @@ The `done` method informs the orchestrator that a task is done. The
 # EXAMPLE
 
 See `example/ooni/oorchestrate.cpp`.
+
+# BUGS
+
+As of MK v0.7.0-alpha, the implementation does not guess any attribute.
+
+As of MK v0.7.0-alpha, the only implemented operations are `register_probe`
+and `update`. All other operations throw `NotImplementedError`.
 
 # HISTORY
 

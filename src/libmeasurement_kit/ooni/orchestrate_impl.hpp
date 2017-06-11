@@ -79,27 +79,32 @@ void login(Var<Authentication> auth, std::string registry_url,
                   return;
               }
               logger->debug("orchestrator: processing login response");
-              error = json_process(json_response, [&](auto response) {
-                  if (response.find("error") != response.end()) {
-                      if (response["error"] == "wrong-username-password") {
-                          throw RegistryWrongUsernamePasswordError();
-                      }
-                      if (response["error"] == "missing-username-password") {
-                          throw RegistryMissingUsernamePasswordError();
-                      }
-                      // Note: this is basically an error case that we did
-                      // not anticipate when writing the code
-                      throw GenericError();
-                  }
-                  std::string ts = response["expire"];
-                  logger->debug("orchestrator: parsing time %s", ts.c_str());
-                  if ((error = parse_iso8601_utc(ts, &auth->expiry_time))) {
-                      throw error;
-                  }
-                  auth->auth_token = response["token"];
-                  auth->logged_in = true;
-                  logger->info("Logged in with orchestrator");
-              });
+              error = json_process_and_filter_errors(
+                    json_response, [&](auto response) {
+                        if (response.find("error") != response.end()) {
+                            if (response["error"] ==
+                                "wrong-username-password") {
+                                throw RegistryWrongUsernamePasswordError();
+                            }
+                            if (response["error"] ==
+                                "missing-username-password") {
+                                throw RegistryMissingUsernamePasswordError();
+                            }
+                            // Note: this is basically an error case that we did
+                            // not anticipate when writing the code
+                            throw GenericError();
+                        }
+                        std::string ts = response["expire"];
+                        logger->debug("orchestrator: parsing time %s",
+                                      ts.c_str());
+                        if ((error =
+                                   parse_iso8601_utc(ts, &auth->expiry_time))) {
+                            throw error;
+                        }
+                        auth->auth_token = response["token"];
+                        auth->logged_in = true;
+                        logger->info("Logged in with orchestrator");
+                    });
               if (error) {
                   logger->warn("orchestrator: json processing error: %s",
                                error.explain().c_str());
@@ -115,7 +120,10 @@ static inline void maybe_login(Var<Authentication> auth,
                                Callback<Error> &&cb) {
     if (auth->is_valid()) {
         logger->debug("orchestrator: auth token is valid, no need to login");
-        cb(NoError());
+        // Guarantee that the callback will not be called immediately
+        reactor->call_soon([cb = std::move(cb)]() {
+            cb(NoError());
+        });
         return;
     }
     logger->debug("orchestrator: logging in");
@@ -124,35 +132,8 @@ static inline void maybe_login(Var<Authentication> auth,
 
 static inline void refresh(Var<Authentication> /*auth*/, Settings /*settings*/,
                            Var<Reactor> /*reactor*/, Var<Logger> /*logger*/,
-                           Callback<Error> &&cb) {
-    // XXX not implemented.
-    cb(NoError());
-}
-
-static inline nlohmann::json as_json(const ClientMetadata &m) {
-    nlohmann::json j;
-    j["probe_cc"] = m.probe_cc;
-    j["probe_asn"] = m.probe_asn;
-    j["platform"] = m.platform;
-    j["software_name"] = m.software_name;
-    j["software_version"] = m.software_version;
-    if (!m.supported_tests.empty()) {
-        j["supported_tests"] = m.supported_tests;
-    }
-    if (!m.network_type.empty()) {
-        j["network_type"] = m.network_type;
-    }
-    if (!m.available_bandwidth.empty()) {
-        j["available_bandwidth"] = m.available_bandwidth;
-    }
-    if (!m.device_token.empty()) {
-        // FIXME: I think the "token" name is too generic
-        j["token"] = m.device_token;
-    }
-    if (!m.probe_family.empty()) {
-        j["probe_family"] = m.probe_family;
-    }
-    return j;
+                           Callback<Error> && /*cb*/) {
+    throw NotImplementedError();
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
@@ -160,7 +141,7 @@ void register_probe_(const ClientMetadata &m, std::string password,
                      Var<Reactor> reactor,
                      Callback<Error, Var<Authentication>> &&cb) {
 
-    Var<Authentication> auth = Var<Authentication>::make();
+    Var<Authentication> auth = Authentication::make();
     auth->password = password;
 
     if (m.probe_cc.empty() || m.probe_asn.empty() || m.platform.empty() ||
@@ -183,7 +164,7 @@ void register_probe_(const ClientMetadata &m, std::string password,
         return;
     }
 
-    nlohmann::json request = as_json(m);
+    nlohmann::json request = m.as_json_();
     request["password"] = password;
 
     http_request_json_object(
@@ -225,7 +206,7 @@ void update_(const ClientMetadata &m, Var<Authentication> auth,
              Var<Reactor> reactor, Callback<Error> &&cb) {
     std::string update_url =
           m.registry_url + "/api/v1/update/" + auth->username;
-    nlohmann::json update_request = as_json(m);
+    nlohmann::json update_request = m.as_json_();
     maybe_login(auth, m.registry_url, m.settings, reactor, m.logger, [
         update_url = std::move(update_url),
         update_request = std::move(update_request), cb = std::move(cb), auth,
@@ -247,20 +228,21 @@ void update_(const ClientMetadata &m, Var<Authentication> auth,
                       cb(err);
                       return;
                   }
-                  err = json_process(json_response, [&](auto jresp) {
-                      // XXX add better error handling
-                      if (jresp.find("error") != jresp.end()) {
-                          std::string s = jresp["error"];
-                          logger->warn("orchestrator: update "
-                                       "failed with \"%s\"",
-                                       s.c_str());
-                          throw RegistryInvalidRequestError();
-                      }
-                      if (jresp.find("status") == jresp.end() ||
-                          jresp["status"] != "ok") {
-                          throw RegistryInvalidRequestError();
-                      }
-                  });
+                  err = json_process_and_filter_errors(
+                        json_response, [&](auto jresp) {
+                            // XXX add better error handling
+                            if (jresp.find("error") != jresp.end()) {
+                                std::string s = jresp["error"];
+                                logger->warn("orchestrator: update "
+                                             "failed with \"%s\"",
+                                             s.c_str());
+                                throw RegistryInvalidRequestError();
+                            }
+                            if (jresp.find("status") == jresp.end() ||
+                                jresp["status"] != "ok") {
+                                throw RegistryInvalidRequestError();
+                            }
+                        });
                   cb(err);
               },
               settings, reactor, logger);
@@ -268,7 +250,7 @@ void update_(const ClientMetadata &m, Var<Authentication> auth,
 }
 
 static inline ErrorOr<Var<Authentication>> load_auth(std::string fpath) {
-    Var<Authentication> auth = Var<Authentication>::make();
+    Var<Authentication> auth = Authentication::make();
     Error err = auth->load(fpath);
     if (err) {
         return err;

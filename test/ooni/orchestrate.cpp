@@ -132,7 +132,7 @@ TEST_CASE("Orchestration works") {
     client.supported_tests = {"web_connectivity"};
     client.network_type = "wifi";
     client.available_bandwidth = "10";
-    client.device_token = "{TOKEN}";
+    //client.device_token = "{TOKEN}";  /* Not needed on PC devices */
     client.registry_url = testing_registry_url();
     client.secrets_path = make_path();
     std::promise<Error> promise;
