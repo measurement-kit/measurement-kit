@@ -323,6 +323,11 @@ TEST_CASE("mk::overwrite_file() works as expected") {
         REQUIRE(mk::overwrite_file("xx", "xyz") == mk::NoError());
         REQUIRE(*mk::slurp("xx") == "xyz");
     }
+    SECTION("Make sure file is actually overwritten") {
+        REQUIRE(mk::overwrite_file("xx", "xyz") == mk::NoError());
+        REQUIRE(mk::overwrite_file("xx", "abc") == mk::NoError());
+        REQUIRE(*mk::slurp("xx") == "abc");
+    }
 }
 
 TEST_CASE("mk::startswith() works as expected") {

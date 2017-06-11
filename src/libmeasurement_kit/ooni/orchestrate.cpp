@@ -38,7 +38,7 @@ void Client::register_probe(Callback<Error &&> &&cb) const {
     ClientMetadata meta = *this;
     AsyncRunner::global()->start(
           "orchestrate::register_probe", logger,
-          [meta = std::move(meta)](Callback<Error &&> && cb) {
+          [meta = std::move(meta)](Callback<Error &&> &&cb) {
               do_register_probe(meta, make_password(),
                                 AsyncRunner::global()->reactor(),
                                 std::move(cb));

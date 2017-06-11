@@ -53,6 +53,7 @@ class ClientMetadata {
     std::string software_name = "measurement_kit";
     std::string software_version = MK_VERSION;
     std::vector<std::string> supported_tests;
+    nlohmann::json as_json_() const;
 };
 
 class Task; /* Forward declaration */
