@@ -21,11 +21,6 @@ class Poller : public Reactor, public NonCopyable, public NonMovable {
     void stop() override;
     void pollfd(socket_t, short, double, Callback<Error, short> &&) override;
 
-    void set_autostop(bool) override;
-    bool autostop() override;
-
-    bool is_running() override;
-
     // BEGIN internal functions used to test periodic event functionality
     void handle_periodic_();
     void on_periodic_(Callback<Poller *>);

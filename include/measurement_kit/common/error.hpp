@@ -95,6 +95,7 @@ MK_DEFINE_ERR(11, SequentialOperationError, "sequential_operation_error")
 MK_DEFINE_ERR(12, IllegalSequenceError, "illegal_sequence")
 MK_DEFINE_ERR(13, UnexpectedNullByteError, "unexpected_null_byte")
 MK_DEFINE_ERR(14, IncompleteUtf8SequenceError, "incomplete_utf8_sequence")
+MK_DEFINE_ERR(15, NotImplementedError, "not_implemented")
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)

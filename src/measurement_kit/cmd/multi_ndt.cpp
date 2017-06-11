@@ -39,6 +39,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     }
 
     ndt_init(initializers, test.on_entry([](std::string s) {
+        // Note: `on_entry()` filters all exceptions on our behalf
         nlohmann::json doc = nlohmann::json::parse(s);
         auto simple = doc["test_keys"]["simple"];
         printf("\nTest summary\n");

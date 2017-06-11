@@ -15,16 +15,17 @@ class Runner {
   public:
     static Var<Runner> global();
     void start_test(Var<NetTest> test, Callback<Var<NetTest>> callback);
-    void Runner::start_generic_task(std::string &&name, Var<Logger> logger,
-                                    Continuation<> &&task, Callback<> &&done);
+    void stop();
+    bool empty();
 };
 
-}}
+} // namespace nettests
+} // namespace mk
 ```
 
 # STABILITY
 
-1 - Experimental
+2 - Stable
 
 # DESCRIPTION
 
@@ -40,18 +41,16 @@ Since the callback will be called from a background thread, make sure
 you lock any shared resources before proceeding as in
 
 ```C++
-    Runner::global()->run(test, [=](Var<NetTest>) {
+    Runner::global()->start_test(test, [=](Var<NetTest>) {
         shared_resource.lock();
         // Now use the shared resource
     });
 ```
 
-The `start_generic_task` schedules the task identified by `name` for
-execution in a background thread. The provided `logger` will be used to
-emit diagnostic messages. The `task` argument is a continuation that
-implements the task: it receives as a single argument a `Callback<>` that
-is to be called when the task has finished its work. The code will make
-sure to call the final callback, `done`, when this happens.
+The `stop` method stops the runner I/O loop and terminates all the tests
+that are currently running, without calling their callbacks.
+
+The `empty` method returns true if no tests are running.
 
 # HISTORY
 

@@ -53,7 +53,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
     return query;
 }
 
-template <MK_MOCK_AS(http::get, http_get)>
+template <MK_MOCK_AS(http::request_json_no_body, request_json_no_body)>
 void query_impl(std::string tool, Callback<Error, Reply> callback,
                 Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
     ErrorOr<std::string> query = as_query(settings);
@@ -73,19 +73,16 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
     url += *query;
     logger->debug("query mlabns for tool %s", tool.c_str());
     logger->debug("mlabns url: %s", url.c_str());
-    http_get(url,
-        [callback, logger](Error error, Var<http::Response> response) {
+    request_json_no_body("GET", url, {},
+        [callback, logger](Error error, Var<http::Response> /*response*/,
+                           nlohmann::json json_response) {
             if (error) {
+                logger->warn("mlabns: HTTP error: %s", error.explain().c_str());
                 callback(error, Reply());
                 return;
             }
-            if (response->status_code != 200) {
-                callback(http::HttpRequestFailedError(), Reply());
-                return;
-            }
             Reply reply;
-            try {
-                auto node = json::parse(response->body);
+            Error err = json_process(json_response, [&](auto node) {
                 reply.city = node.at("city");
                 reply.url = node.at("url");
                 for (auto ip2 : node.at("ip")) {
@@ -94,20 +91,17 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
                 reply.fqdn = node.at("fqdn");
                 reply.site = node.at("site");
                 reply.country = node.at("country");
-            } catch (std::invalid_argument &) {
-                callback(JsonParseError(), Reply());
-                return;
-            } catch (std::out_of_range &) {
-                callback(JsonKeyError(), Reply());
-                return;
-            } catch (std::domain_error &) {
-                callback(JsonDomainError(), Reply());
-                return;
+            });
+            if (err) {
+                logger->warn("mlabns: cannot parse json: %s",
+                             err.explain().c_str());
+            } else {
+                logger->info("Discovered mlab test server: %s",
+                             reply.fqdn.c_str());
             }
-            logger->info("Discovered mlab test server: %s", reply.fqdn.c_str());
-            callback(NoError(), reply);
+            callback(err, reply);
         },
-        {}, settings, reactor, logger, nullptr, 0);
+        settings, reactor, logger);
 }
 
 } // namespace mlabns

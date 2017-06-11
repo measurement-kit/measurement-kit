@@ -58,18 +58,8 @@ void Poller::call_later(double timeo, Callback<> &&cb) {
     poller_call_later(base_, timeo, std::move(cb));
 }
 
-void Poller::run() {
-    is_running_ = true;
-    poller_loop(base_, this, autostop_);
-    is_running_ = false;
-}
-
-void Poller::loop_once() {
-    is_running_ = true;
-    poller_loop_once(base_);
-    is_running_ = false;
-}
-
+void Poller::run() { poller_loop(base_, this); }
+void Poller::loop_once() { poller_loop_once(base_); }
 void Poller::stop() { poller_break_loop(base_); }
 
 void Poller::pollfd(

@@ -23,6 +23,7 @@
 .DS_Store
 .deps
 .dirstamp
+.idea
 .libs
 .vagrant
 /*.njson
@@ -32,6 +33,7 @@
 /build/android/jni/conf
 /build/android/jni/spec
 /citizenlab-test-lists.*.csv
+/example/dns/ping
 /example/dns/query
 /example/http/request
 /example/libevent/discard
@@ -43,6 +45,7 @@
 /example/nettests/simple
 /example/ooni/oonireport
 /example/ooni/ooniresources
+/example/ooni/oorchestrate
 /include.am
 /include/measurement_kit/*.hpp
 /include/measurement_kit/common/git_version.hpp
@@ -54,18 +57,22 @@
 /test/common/encoding
 /test/common/error
 /test/common/error_or
+/test/common/every
 /test/common/fmap
+/test/common/json
 /test/common/locked
 /test/common/logger
+/test/common/maybe
 /test/common/parallel
 /test/common/range
-/test/common/reactor
+/test/common/sandbox
 /test/common/settings
 /test/common/u
 /test/common/utils
 /test/common/var
 /test/common/version
 /test/common/worker
+/test/dns/ping
 /test/dns/query
 /test/dns/query_class
 /test/dns/query_type
@@ -107,6 +114,7 @@
 /test/nettests/web_connectivity
 /test/ooni/bouncer
 /test/ooni/collector_client
+/test/ooni/orchestrate
 /test/ooni/resources
 /test/ooni/templates
 /test/ooni/utils
@@ -138,6 +146,9 @@ ltmain.sh
 m4/*.m4
 missing
 node_modules/
+orchestrator_dummy.json
+orchestrator_secrets.json
+orchestrator_secrets_*.json
 site
 src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/
