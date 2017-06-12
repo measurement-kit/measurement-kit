@@ -17,6 +17,7 @@
 #include <measurement_kit/neubot.hpp>
 
 #include "../common/utils.hpp"
+#include "../ext/sole.hpp"
 
 #define DASH_MAX_ITERATIONS 15
 #define DASH_SECONDS 2
@@ -44,9 +45,17 @@ static inline size_t select_lower_rate_index(int speed_kbit) {
 template <MK_MOCK_AS(http::request_send, http_request_send),
           MK_MOCK_AS(http::request_recv_response, http_request_recv_response)>
 void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
-               Var<report::Entry> entry, Settings settings,
+               std::string uuid, Var<report::Entry> entry, Settings settings,
                Var<Reactor> reactor, Var<Logger> logger, Callback<Error> cb,
                int iteration = 1) {
+
+    ErrorOr<bool> fast_scale_down = settings.get_noexcept(
+        "fast_scale_down", false);
+    if (!fast_scale_down) {
+        logger->warn("dash: cannot parse `fast_scale_down' option");
+        cb(fast_scale_down.as_error());
+        return;
+    }
 
     if (iteration > DASH_MAX_ITERATIONS) {
         logger->debug("dash: completed all iterations");
@@ -114,6 +123,7 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                         //{"delta_sys_time", delta_sys_time}
                         {"elapsed", time_elapsed},
                         {"elapsed_target", DASH_SECONDS},
+                        {"fast_scale_down", *fast_scale_down},
                         //{"internal_address", stream.myname[0]}
                         {"iteration", iteration},
                         //{"platform", sys.platform}
@@ -122,9 +132,11 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                         //{"received", received}
                         //{"remote_address", stream.peername[0]}
                         //{"request_ticks", self.saved_ticks}
-                        //{"timestamp", mk::time_now}
-                        //{"uuid", self.conf.get("uuid")}
-                        {"version", MEASUREMENT_KIT_VERSION}});
+                        {"timestamp", mk::time_now()},
+                        {"uuid", uuid},
+                        {"engine_name", "libmeasurement_kit"},
+                        {"engine_version", MK_VERSION},
+                        {"version", "0.006000000"}});
                     double speed = length / time_elapsed;
                     double s_k = (speed * 8) / 1000;
                     std::stringstream ss;
@@ -134,7 +146,8 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                        << std::setprecision(2) << time_elapsed << " s";
                     logger->progress(iteration / (double)DASH_MAX_ITERATIONS,
                                      ss.str().c_str());
-                    if (time_elapsed > DASH_SECONDS) {
+                    if (*fast_scale_down == true &&
+                          time_elapsed > DASH_SECONDS) {
                         // If the rate is too high, scale it down
                         double relerr = 1 - (time_elapsed / DASH_SECONDS);
                         s_k *= relerr;
@@ -145,8 +158,8 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                     reactor->call_soon([=]() {
                         run_loop_<http_request_send,
                                   http_request_recv_response>(
-                            txp, s_k, auth_token, entry, settings, reactor,
-                            logger, cb, iteration + 1);
+                            txp, s_k, auth_token, uuid, entry, settings,
+                            reactor, logger, cb, iteration + 1);
                     });
                 },
                 reactor, logger);
@@ -175,9 +188,13 @@ void run_impl(std::string url, std::string auth_token, Var<report::Entry> entry,
             // Note: from now on, we own `txp`
             assert(txp);
             logger->info("Connected to server; starting the test");
+            /*
+             * TODO: from the Neubot point of view, it would probably be
+             * very useful to save and reuse the same UUID4.
+             */
             run_loop_<http_request_send, http_request_recv_response>(
-                txp, dash_rates()[0], auth_token, entry, settings, reactor,
-                logger, [=](Error error) {
+                txp, dash_rates()[0], auth_token, mk::sole::uuid4().str(),
+                entry, settings, reactor, logger, [=](Error error) {
                     // Release the `txp` before continuing
                     logger->info("Test complete; closing connection");
                     txp->close([=]() { cb(error); });
