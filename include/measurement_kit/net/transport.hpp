@@ -79,11 +79,19 @@ class TransportPollable {
     virtual void start_writing() = 0;
 };
 
+class TransportConnectable {
+  public:
+    virtual ~TransportConnectable();
+    virtual double connect_time() = 0;
+    virtual void set_connect_time_(double) = 0;
+};
+
 class Transport : public TransportEmitter,
                   public TransportRecorder,
                   public TransportWriter,
                   public TransportSocks5,
-                  public TransportPollable {
+                  public TransportPollable,
+                  public TransportConnectable {
   public:
     virtual ~Transport();
 };

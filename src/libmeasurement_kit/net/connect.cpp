@@ -317,6 +317,7 @@ void connect(std::string address, int port,
                                     libevent::Connection::make(
                                         bev, reactor, logger);
                                 txp->set_timeout(timeout);
+                                txp->set_connect_time_(r->connect_time);
                                 assert(err == NoError());
                                 err.context = r;
                                 callback(err, txp);
@@ -327,6 +328,7 @@ void connect(std::string address, int port,
             Var<Transport> txp =
                 libevent::Connection::make(r->connected_bev, reactor, logger);
             txp->set_timeout(timeout);
+            txp->set_connect_time_(r->connect_time);
             assert(err == NoError());
             err.context = r;
             callback(err, txp);

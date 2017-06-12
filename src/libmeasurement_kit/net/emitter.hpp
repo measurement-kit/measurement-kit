@@ -193,6 +193,14 @@ class EmitterBase : public Transport {
 
     // Protected methods of TransportPollable: not implemented
 
+    /*
+     * TransportConnectable
+     */
+
+    double connect_time() override { return saved_connect_time; }
+
+    void set_connect_time_(double x) override { saved_connect_time = x; }
+
   protected:
     // TODO: it would probably better to have accessors
     Var<Reactor> reactor = Reactor::global();
@@ -210,6 +218,7 @@ class EmitterBase : public Transport {
     Buffer sent_data_record;
     Callback<> close_cb;
     bool close_pending = false;
+    double saved_connect_time = 0.0;
 };
 
 class Emitter : public EmitterBase {

@@ -65,6 +65,14 @@ class Transport {
     virtual void set_timeout(double timeo) = 0;
     virtual void clear_timeout() = 0;
 
+    /*
+     * As connectable:
+     */
+
+
+    virtual double connect_time() = 0;
+    virtual void set_connect_time_(double) = 0;
+
   protected:
     virtual void adjust_timeout(double timeo) = 0;
 
@@ -186,6 +194,10 @@ is terminated by emitting the `FLUSH` event when the output buffer becomes
 empty. The implementation MUST automatically start writing when you call
 any `write()` method. This method MUST NOT be called by the generic code after
 the transport has been closed.
+
+## As connectable
+
+This set of methods allow to set and get the time required to connect.
 
 ## Syntactic sugar
 

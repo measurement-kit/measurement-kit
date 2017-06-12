@@ -118,7 +118,7 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                     }
                     // TODO: we should fill all the required fields
                     (*entry)["receiver_data"].push_back(report::Entry{
-                        //{"connect_time", self.rtts[0]}
+                        {"connect_time", txp->connect_time()},
                         //{"delta_user_time", delta_user_time}
                         //{"delta_sys_time", delta_sys_time}
                         {"elapsed", time_elapsed},
@@ -241,6 +241,7 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
                 callback(http::HttpRequestFailedError(), "");
                 return;
             }
+            // TODO: Here we can probably use the JSON specific API
             nlohmann::json respbody;
             std::string auth;
             int queue_pos = 0;
@@ -276,7 +277,8 @@ template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
               std::string auth, Settings settings, Var<Reactor> reactor,
               Var<Logger> logger, Callback<Error> cb) {
-    std::string body = entry->dump();
+    // TODO: Here we can probably use the JSON specific API
+    std::string body = (*entry)["receiver_data"].dump();
     logger->debug("Body sent to server: %s", body.c_str());
     settings["http/method"] = "POST";
     settings["http/path"] = "/collect/dash";
@@ -296,7 +298,8 @@ void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
                     error = http::HttpRequestFailedError();
                 }
             }
-            // TODO: we should parse the server response here...
+            logger->debug("Response received from server: %s",
+                          res->body.c_str());
             cb(error);
         },
         reactor, logger);
