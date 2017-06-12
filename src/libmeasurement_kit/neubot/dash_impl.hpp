@@ -4,10 +4,19 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NEUBOT_DASH_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_NEUBOT_DASH_IMPL_HPP
 
-#include "../common/utils.hpp"
+/*
+ * Here we implement the measurement methodology described in "Measuring
+ * DASH Streaming Performance from the End Users Perspective using Neubot",
+ * by S. Basso, A. Servetti, E. Masala, J.C. De Martin.
+ *
+ * See: https://nexa.polito.it/publications/basso2014measuring
+ */
+
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
 #include <measurement_kit/neubot.hpp>
+
+#include "../common/utils.hpp"
 
 #define DASH_MAX_ITERATIONS 15
 #define DASH_SECONDS 2
@@ -28,6 +37,7 @@ static inline size_t select_lower_rate_index(int speed_kbit) {
     if (rate_index > 0) { // Make sure we don't underflow
         rate_index -= 1;
     }
+    assert(rate_index >= 0 && rate_index < dash_rates().size());
     return rate_index;
 }
 
@@ -44,9 +54,15 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
         return;
     }
 
+    /*
+     * Select the rate that is lower than the latest measured speed and
+     * compute the number of bytes to download such that downloading with
+     * the selected rate takes DASH_SECONDS (in theory).
+     */
     size_t rate_index = select_lower_rate_index(speed_kbit);
     int rate_kbit = dash_rates()[rate_index];
     int count = ((rate_kbit * 1000) / 8) * DASH_SECONDS;
+
     std::string path = "/dash/download/";
     path += std::to_string(count);
     settings["http/path"] = path;
@@ -111,10 +127,13 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                         {"version", MEASUREMENT_KIT_VERSION}});
                     double speed = length / time_elapsed;
                     double s_k = (speed * 8) / 1000;
-                    logger->info("[%d/%d] rate: %d kbit/s, speed: %.2f "
-                                 "kbit/s, elapsed: %.2f s",
-                                 iteration, DASH_MAX_ITERATIONS, rate_kbit, s_k,
-                                 time_elapsed);
+                    std::stringstream ss;
+                    ss << "rate: " << rate_kbit << " kbit/s, speed: "
+                       << std::fixed << std::setprecision(2) << s_k
+                       << " kbit/s, elapsed: " << std::fixed
+                       << std::setprecision(2) << time_elapsed << " s";
+                    logger->progress(iteration / (double)DASH_MAX_ITERATIONS,
+                                     ss.str().c_str());
                     if (time_elapsed > DASH_SECONDS) {
                         // If the rate is too high, scale it down
                         double relerr = 1 - (time_elapsed / DASH_SECONDS);
