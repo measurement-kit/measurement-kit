@@ -1,3 +1,127 @@
+# MeasurementKit 0.7.0-alpha.1 [2017-06-11]
+
+- Implement DNS "ping" (#1256)
+- Initial implementation of orchestrator (#1258)
+
+# MeasurementKit 0.7.0-alpha [2017-06-01]
+
+Note: 0.6.x was branched off stable. The release before this release
+is therefore v0.5.0-alpha.
+
+- Fix coveralls badge (#1190)
+- Allow writing report on the stdout (#1199)
+- Bump version number to v0.7.0-dev (#1201)
+- Sync master with stable (#1213, #1224, #1236)
+- Fix failing regress tests (#1222)
+- Force non-strict HTTP parser (#1225)
+- Use SSLv2 and SSLv3 with `web_connectivity` (#1228)
+- Cherry pick nodejs/http-parser#364 (#1227)
+- Changes to logger suggested by @darkk (#1230)
+- Remove all refs to `oldstable`
+- dns: make system resolver truly async (#1234)
+- We don't actually need ReturnType (#1239)
+- dns: split dns.hpp into several headers (#1241)
+- common/worker.cpp: Fix a possible race condition
+- dns: common impl for `query_{class,type}` (#1242)
+- Start using bouncer (#1016)
+- Start requiring move semantic for callbacks (#1244)
+- runner: allow to run arbitrary tasks (#1249)
+- Further refine the runner model (#1251)
+- Add support for parsing ISO8601
+- `parse_iso6801_utc`: add docs and more tests
+- Improve our json processing capabilities (#1253)
+- d/a/h/request.md: reindent and improve (#1254)
+- Fix `json_*_process_and_filter_errors()`
+- http/request: start adding JSON helpers
+- http/request: finish off json helpers
+- json helpers: Fix the order of arguments
+- ndt: do not abort if a test phase fails
+- Fix bouncer address
+
+# MeasurementKit 0.6.6 [2017-05-15]
+
+- n/connect.cpp: compile with libevent v2.0.x
+- logger: stop using deprecated `MK_LOG_JSON`
+- improve documentation
+- fix t/h/request.cpp regress test
+- e/h/request.cpp: fix usage string
+- `connect_impl`: Fix regression added in 95e834e9e2
+
+# MeasurementKit 0.6.5 [2017-05-14]
+
+- Reveal SSL "dirty shutdown" errors
+- `web_connectivity`: allow dirty SSL shutdown
+- e/h/request.cpp: support custom CA bundle
+- h/request.cpp: remove a lie
+- l/connection.cpp: tweak debug message
+
+# MeasurementKit 0.6.4 [2017-05-14]
+
+- Add script to pretty print a report
+- `dns_injection` MUST use libevent engine
+- runable.cpp: don't create a null `input_` entry
+- `dns_injection`: force timeout to be 3.0 s
+- nettests: add support for UUID4
+- runnable: make sure empty input becomes null entry
+- runnable: add more missing entry fields
+- runnable: start adding support for test-helpers
+- runnable: add empty `input_hashes` entry
+- `http_invalid_request_line`: add backend to result
+- runnable.cpp: remove unneeded `input_` hack
+- `http_invalid_request_line`: better error reporting
+- `multi_ndt`: allow upload during single stream
+- Sync `tcp_connect` with ooni-probe
+- net/connect: make error result more precise
+- ooni/templates: agent consistent w/ ooniprobe
+- `web_connectivity`: add support for backend
+- Further improve `web_connectivity` report
+
+# MeasurementKit 0.6.3 [2017-05-12]
+
+- test: use DNS libevent engine where needed
+
+- Add script to create iOS binaries archive
+
+# MeasurementKit 0.6.2 [2017-05-12]
+
+- By default use the system engine also in `stable`
+
+# MeasurementKit 0.6.1 [2017-05-12]
+
+- Use also SSLv3 and SSLv3 with `web_connectivity` (#1228)
+- Cherry pick nodejs/http-parser#364 (#1227)
+- Reliability fixes for web connectivity (#1230)
+
+# MeasurementKit 0.6.0 [2017-05-09]
+
+- Fix iOS build (#1206)
+- cocoapod: if possible download precompiled binary (#1207)
+- Backport command line improvements from master (#1211)
+- Be more precise with version numbers (#1212)
+- Sync stable with oldstable branches (#1214, #1221)
+- Update to catch v1.9.3 and adjust regress tests (#1215)
+- Backport regress test fix from master (see #1222)
+
+# MeasurementKit 0.6.0-beta [2017-05-02]
+
+- Backport build system changes from master
+- Sync files in top-level directory with master
+- Backport test/net/connect.cpp fix for libevent-2.1
+- Add NOTICE file, forgotten in previous PR
+- Manually resolve ChangeLog.md conflict
+- Add `node_modules` to .gitignore
+- Backport `MK_MOCK()` simplification from master
+- Backport HHFM and meek tests from master
+- Also update .gitignore
+
+# MeasurementKit 0.4.4 [2017-05-02]
+
+- Disable test for bacardi.com
+- Backport #1186 to stable branch
+- Update to latest stable dependencies
+- Backport #1163 to stable branch
+- Backport #1179 to stable branch
+
 # MeasurementKit 0.5.0-alpha [2017-04-11]
 
 - Force the library to use the system resolver (#972)

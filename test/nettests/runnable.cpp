@@ -18,7 +18,7 @@ TEST_CASE("Make sure that on_entry() works") {
         test.entry_cb = [](std::string s) {
             nlohmann::json entry = nlohmann::json::parse(s);
             REQUIRE((entry.at("data_format_version") == "0.2.0"));
-            REQUIRE((entry.at("input") == ""));
+            REQUIRE((entry.at("input") == nullptr));
             REQUIRE((entry.at("measurement_start_time") != ""));
             REQUIRE((entry.at("probe_asn") == "AS0"));
             REQUIRE((entry.at("probe_cc") == "ZZ"));

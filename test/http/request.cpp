@@ -20,7 +20,7 @@ using namespace mk::http;
 // Either tor was running and hence everything should be OK, or tor was
 // not running and hence connect() to socks port must have failed.
 static inline bool check_error_after_tor(Error e) {
-    return e == NoError() or e == ConnectFailedError();
+    return e == NoError() or e == ConnectionRefusedError();
 }
 
 /*
@@ -352,6 +352,8 @@ TEST_CASE("http::request() callback is called if input URL parsing fails") {
     REQUIRE(called);
 }
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE("http::request_connect_impl() works for normal connections") {
     loop_with_initial_event([]() {
         request_connect_impl({{"http/url", "http://www.google.com/robots.txt"}},
@@ -362,8 +364,6 @@ TEST_CASE("http::request_connect_impl() works for normal connections") {
                              });
     });
 }
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_send() works as expected") {
     loop_with_initial_event([]() {
@@ -505,7 +505,7 @@ TEST_CASE("http::request() works as expected using httpo URLs") {
                     };
                     check(body["default"]["collector"]);
                     check(body["dns"]["collector"]);
-                    REQUIRE(body["dns"]["address"] == "213.138.109.232:57004");
+                    REQUIRE(body["dns"]["address"] == "37.218.247.110:57004");
                 }
                 break_loop();
             });
@@ -538,6 +538,8 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
     });
 }
 
+// Test commented out because now this site has no valid certificate
+#if 0
 TEST_CASE("http::request() correctly follows redirects") {
     loop_with_initial_event([]() {
         request(
@@ -562,6 +564,7 @@ TEST_CASE("http::request() correctly follows redirects") {
             });
     });
 }
+#endif
 
 TEST_CASE("Headers are preserved across redirects") {
     Var<Reactor> reactor = Reactor::make();
@@ -682,6 +685,8 @@ TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
     });
 }
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE("http::request_send fails without url in settings") {
     loop_with_initial_event([]() {
         request_connect_impl(
@@ -697,6 +702,8 @@ TEST_CASE("http::request_send fails without url in settings") {
             });
     });
 }
+
+#endif
 
 TEST_CASE("http::request() fails if fails request_send()") {
     loop_with_initial_event([]() {
@@ -766,5 +773,65 @@ TEST_CASE("http::redirect() works as expected") {
         REQUIRE(http::redirect(*http::parse_url_noexcept("https://a.org/f?x"),
                                "g?h")
                     ->str() == "https://a.org/f/g?h");
+    }
+}
+
+static void fail_request(Settings, Headers, std::string,
+                         Callback<Error, Var<Response>> cb,
+                         Var<Reactor> = Reactor::global(),
+                         Var<Logger> = Logger::global(),
+                         Var<Response> = nullptr, int = 0) {
+    cb(MockedError(), Var<Response>::make());
+}
+
+static void non_200_response(Settings, Headers, std::string,
+                             Callback<Error, Var<Response>> cb,
+                             Var<Reactor> = Reactor::global(),
+                             Var<Logger> = Logger::global(),
+                             Var<Response> = nullptr, int = 0) {
+    Var<Response> response = Var<Response>::make();
+    response->status_code = 500;
+    response->body = "{}";
+    cb(NoError(), response);
+}
+
+static void fail_parsing(Settings, Headers, std::string,
+                         Callback<Error, Var<Response>> cb,
+                         Var<Reactor> = Reactor::global(),
+                         Var<Logger> = Logger::global(),
+                         Var<Response> = nullptr, int = 0) {
+    Var<Response> response = Var<Response>::make();
+    response->status_code = 200;
+    response->body = "{";
+    cb(NoError(), response);
+}
+
+TEST_CASE("request_json_string() works as expected") {
+    SECTION("For underlying http::request() failure") {
+        request_json_string_impl<fail_request>(
+              "GET", "http://www.google.com", "", {},
+              [](Error error, Var<Response>, nlohmann::json) {
+                  REQUIRE(error == MockedError());
+              },
+              {}, Reactor::global(), Logger::global());
+    }
+
+    SECTION("For non-200 HTTP status code") {
+        request_json_string_impl<non_200_response>(
+              "GET", "http://www.google.com", "", {},
+              [](Error error, Var<Response> resp, nlohmann::json) {
+                  REQUIRE(error.code == NoError().code);
+                  REQUIRE(resp->status_code != 200);
+              },
+              {}, Reactor::global(), Logger::global());
+    }
+
+    SECTION("For json_parse_and_process() error") {
+        request_json_string_impl<fail_parsing>(
+              "GET", "http://www.google.com", "{}", {},
+              [](Error error, Var<Response>, nlohmann::json) {
+                  REQUIRE(error == JsonParseError());
+              },
+              {}, Reactor::global(), Logger::global());
     }
 }

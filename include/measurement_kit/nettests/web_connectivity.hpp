@@ -17,6 +17,7 @@ class WebConnectivityTest : public BaseTest {
 class WebConnectivityRunnable : public Runnable {
   public:
     void main(std::string, Settings, Callback<Var<report::Entry>>) override;
+    void fixup_entry(report::Entry &) override;
 };
 
 } // namespace nettests

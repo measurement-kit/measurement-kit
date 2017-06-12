@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "../common/utils.hpp"
+#include "../ext/sole.hpp"
 #include "../ooni/utils.hpp"
 #include "../nettests/utils.hpp"
 
@@ -29,6 +30,7 @@ void Runnable::teardown(std::string) {}
 void Runnable::main(std::string, Settings, Callback<Var<report::Entry>> cb) {
     reactor->call_soon([=]() { cb(Var<report::Entry>{new report::Entry}); });
 }
+void Runnable::fixup_entry(report::Entry &) {}
 
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
@@ -77,23 +79,40 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     logger->debug("net_test: running with input %s", next_input.c_str());
     main(next_input, options, [=](Var<report::Entry> test_keys) {
         report::Entry entry;
-        // XXX simple way to override the default entry["input"] behavior
-        if (!(*test_keys)["input_"].is_null()) {
-            entry["input"] = (*test_keys)["input_"];
-            test_keys->erase("input_");
-        } else {
-            entry["input"] = next_input;
+        entry["input"] = next_input;
+        // Make sure the input is `null` rather than empty string
+        if (entry["input"] == "") {
+            entry["input"] = nullptr;
         }
         entry["test_keys"] = *test_keys;
         entry["test_keys"]["client_resolver"] = resolver_ip;
         entry["measurement_start_time"] =
             *mk::timestamp(&measurement_start_time);
         entry["test_runtime"] = mk::time_now() - start_time;
+        entry["id"] = mk::sole::uuid4().str();
+
+        // Until we have support for passing options, leave it empty
+        entry["options"] = Entry::array();
+
+        // Until we have support for it, just put `null`
+        entry["probe_city"] = nullptr;
+
+        // Add test helpers
+        entry["test_helpers"] = Entry::object();
+        for (auto &name : test_helpers_option_names()) {
+            if (options.count(name) != 0) {
+                entry["test_helpers"][name] = options[name];
+            }
+        }
+
+        // Add empty input hashes
+        entry["input_hashes"] = Entry::array();
 
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
         report.fill_entry(entry);
+        fixup_entry(entry); // Let drivers possibly fix-up the entry
         if (entry_cb) {
             try {
                 entry_cb(entry.dump(4));
@@ -265,57 +284,124 @@ std::string Runnable::generate_output_filepath() {
     return filename.str();
 }
 
+void Runnable::contact_bouncer(Callback<Error> cb) {
+    if (!use_bouncer) {
+        logger->info("skipping bouncer");
+        cb(NoError());
+        return;
+    }
+    auto bouncer = options.get("bouncer_base_url",
+            ooni::bouncer::production_bouncer_url());
+    logger->info("Contacting bouncer: %s", bouncer.c_str());
+    ooni::bouncer::post_net_tests(
+        bouncer, test_name, test_version, test_helpers_bouncer_names(),
+        [=](Error error, Var<BouncerReply> reply) {
+            if (error) {
+                cb(error);
+                return;
+            }
+            assert(!!reply);
+            if (options.find("collector_base_url") == options.end()) {
+                auto maybe_collector = reply->get_collector_alternate("https");
+                if (!maybe_collector) {
+                    logger->warn("no collector found");
+                    cb(maybe_collector.as_error());
+                    return;
+                }
+                options["collector_base_url"] = *maybe_collector;
+                logger->info("Using discovered collector: %s",
+                                        maybe_collector->c_str());
+            }
+            for (auto th: test_helpers_data) {
+                auto maybe_helper = reply->get_test_helper_alternate(
+                    th.first, "https"
+                );
+                if (!maybe_helper) {
+                    maybe_helper = reply->get_test_helper(th.first);
+                    if (!maybe_helper) {
+                        logger->warn("Cannot find alternate or normal helper");
+                        continue;
+                    }
+                }
+                logger->info("Bouncer discovered helper for %s: %s",
+                     th.first.c_str(), maybe_helper->c_str());
+                if (options.find(th.second) != options.end()) {
+                    continue;
+                }
+                logger->info("Using discovered helper as '%s'",
+                             th.second.c_str());
+                options[th.second] = *maybe_helper;
+            }
+            cb(NoError());
+        },
+        options, reactor, logger);
+}
+
 void Runnable::begin(Callback<Error> cb) {
     if (begin_cb) {
         begin_cb();
     }
     mk::utc_time_now(&test_start_time);
     beginning = mk::time_now();
-    mk::dump_settings(options, "runnable", logger);
-    geoip_lookup([=]() {
-        resolver_lookup([=](Error error, std::string resolver_ip_) {
-            logger->progress(0.05, "geoip lookup");
-            if (!error) {
-                resolver_ip = resolver_ip_;
-            } else {
-                logger->debug("failed to lookup resolver ip");
-            }
-            open_report([=](Error error) {
-                logger->progress(0.1, "open report");
-                if (error and not options.get(
-                        "ignore_open_report_error", true)) {
-                    cb(error);
-                    return;
-                }
-                logger->set_progress_offset(0.1);
-                logger->set_progress_scale(0.8);
+    contact_bouncer([=](Error error) {
+        if (error) {
+            cb(error);
+            return;
+        }
+        mk::dump_settings(options, "runnable", logger);
+        geoip_lookup([=]() {
+            resolver_lookup(
+                [=](Error error, std::string resolver_ip_) {
+                    logger->progress(0.05, "geoip lookup");
+                    if (!error) {
+                        resolver_ip = resolver_ip_;
+                    } else {
+                        logger->debug("failed to lookup resolver ip");
+                    }
+                    open_report([=](Error error) {
+                        if (error) {
+                            logger->warn("Cannot open report: %s",
+                                         error.explain().c_str());
+                            // FALLTHROUGH
+                        }
+                        logger->progress(0.1, "open report");
+                        if (error and
+                            not options.get("ignore_open_report_error", true)) {
+                            cb(error);
+                            return;
+                        }
+                        logger->set_progress_offset(0.1);
+                        logger->set_progress_scale(0.8);
 
-                ErrorOr<std::deque<std::string>> maybe_inputs =
-                    process_input_filepaths(needs_input, input_filepaths,
-                                            probe_cc, options, logger,
-                                            nullptr, nullptr);
-                if (!maybe_inputs) {
-                    cb(maybe_inputs.as_error());
-                    return;
-                }
-                inputs = *maybe_inputs;
-                size_t num_entries = inputs.size();
+                        ErrorOr<std::deque<std::string>> maybe_inputs =
+                            process_input_filepaths(
+                                needs_input, input_filepaths, probe_cc, options,
+                                logger, nullptr, nullptr);
+                        if (!maybe_inputs) {
+                            cb(maybe_inputs.as_error());
+                            return;
+                        }
+                        inputs = *maybe_inputs;
+                        size_t num_entries = inputs.size();
 
-                // Run `parallelism` measurements in parallel
-                Var<size_t> current_entry(new size_t(0));
-                mk::parallel(
-                    mk::fmap<size_t, Continuation<Error>>(
-                        mk::range<size_t>(options.get("parallelism", 3)),
-                        [=](size_t thread_id) {
-                            return [=](Callback<Error> cb) {
-                                run_next_measurement(thread_id, cb, num_entries,
+                        // Run `parallelism` measurements in parallel
+                        Var<size_t> current_entry(new size_t(0));
+                        mk::parallel(mk::fmap<size_t, Continuation<Error>>(
+                                         mk::range<size_t>(
+                                             options.get("parallelism", 3)),
+                                         [=](size_t thread_id) {
+                                             return [=](Callback<Error> cb) {
+                                                 run_next_measurement(
+                                                     thread_id, cb, num_entries,
                                                      current_entry);
-                            };
-                        }),
-                    cb);
+                                             };
+                                         }),
+                                     cb);
 
-            });
-        }, options, reactor, logger);
+                    });
+                },
+                options, reactor, logger);
+        });
     });
 }
 
@@ -334,6 +420,22 @@ void Runnable::end(Callback<Error> cb) {
         logger->progress(1.00, "test complete");
         cb(err);
     });
+}
+
+std::list<std::string> Runnable::test_helpers_option_names() {
+    std::list<std::string> values;
+    for (auto &kv : test_helpers_data) {
+        values.push_back(kv.second);
+    }
+    return values;
+}
+
+std::list<std::string> Runnable::test_helpers_bouncer_names() {
+    std::list<std::string> values;
+    for (auto &kv : test_helpers_data) {
+        values.push_back(kv.first);
+    }
+    return values;
 }
 
 } // namespace nettests

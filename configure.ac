@@ -3,7 +3,7 @@
 # information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.5.0-alpha, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.7.0-alpha.1, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -66,9 +66,13 @@ CPPFLAGS="-I \$(top_srcdir)/include $CPPFLAGS"
 CFLAGS="-Wall -Wextra -pedantic $CFLAGS"
 CXXFLAGS="-Wall -Wextra -pedantic $CXXFLAGS"
 
+# Force compiling the http_parser in non-strict mode. This allows us to test
+# partially broken sites like mail.voila.fr that send spaces between the header
+# key and the separator (i.e. ':').
+CPPFLAGS="-DHTTP_PARSER_STRICT=0 $CPPFLAGS"
+
 MK_AM_REQUIRE_C99
-MK_AM_REQUIRE_CXX11
-MK_AM_REQUIRE_CXX11_LIBCXX
+MK_AM_REQUIRE_CXX14
 MK_AM_CXXFLAGS_ADD_WARNINGS
 
 # checks for library functions

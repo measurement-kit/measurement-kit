@@ -18,6 +18,7 @@ static const struct {
 };
 
 static OptionSpec kv_specs[] = {
+    {'b', "bouncer", true, "URL", "Set custom bouncer base URL"},
     {'c', "collector", true, "URL", "Set custom collector base URL"},
     {'g', "no-geoip", false, nullptr, "Disable geoip lookup"},
     {'l', "logfile", true, "PATH", "Set logfile PATH"},
@@ -27,6 +28,7 @@ static OptionSpec kv_specs[] = {
     {'s', "list", false, nullptr, "List available nettests"},
     {'v', "verbose", false, nullptr, "Increase verbosity"},
     {256, "help", false, nullptr, "Display this help and exit"},
+    {257, "version", false, nullptr, "Display version number and exit"},
     {0, nullptr, 0, 0, nullptr}
 };
 
@@ -49,6 +51,14 @@ int main(int argc, char **argv) {
     for (int ch; (ch = getopt_long(argc, argv, stropt.c_str(),
                                    long_options.data(), nullptr)) != -1;) {
         switch (ch) {
+        case 'b':
+            [&]() {
+                std::string bouncer = optarg;
+                initializers.push_back([=](BaseTest &test) {
+                    test.set_options("bouncer_base_url", bouncer);
+                });
+            }();
+            break;
         case 'c':
             [&]() {
                 std::string collector = optarg;
@@ -96,6 +106,12 @@ int main(int argc, char **argv) {
             break;
         case 256:
             return usage(0, stdout);
+        case 257:
+            printf("measurement_kit version: %s (%s)\n", mk_version(),
+                   mk_version_full());
+            printf("libevent version: %s\n", mk_libevent_version());
+            printf("OpenSSL version: %s\n", mk_openssl_version());
+            return 0;
         default:
             return usage(1, stderr);
         }

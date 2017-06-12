@@ -29,6 +29,7 @@ BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
 
 BaseTest &ndt_init(std::list<Callback<BaseTest &>> il, BaseTest &t) {
     return common_init(il, t).on_event([](const char *s) {
+        // Note: `on_event()` filters all exceptions on our behalf
         nlohmann::json doc = nlohmann::json::parse(s);
         if (doc["type"] != "download-speed" && doc["type"] != "upload-speed") {
             return;
@@ -47,7 +48,7 @@ std::vector<option> as_long_options(const OptionSpec *os) {
     for (auto sos = os; sos->short_name != 0; ++sos) {
         option op = {};
         op.name = sos->long_name;
-        op.has_arg = (sos->requires_argument) ? no_argument : required_argument;
+        op.has_arg = (sos->requires_argument) ? required_argument : no_argument;
         op.val = sos->short_name;
         ret.push_back(op);
     }

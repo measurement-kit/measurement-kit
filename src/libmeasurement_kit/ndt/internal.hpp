@@ -48,6 +48,30 @@
 #define TEST_C2S_EXT MK_NDT_UPLOAD_EXT
 #define TEST_S2C_EXT MK_NDT_DOWNLOAD_EXT
 
+static inline std::string id_to_name(int id) {
+    switch (id) {
+    case MK_NDT_MIDDLEBOX:
+        return "middlebox";
+    case MK_NDT_UPLOAD:
+        return "upload";
+    case MK_NDT_DOWNLOAD:
+        return "download";
+    case MK_NDT_SIMPLE_FIREWALL:
+        return "simple_firewall";
+    case MK_NDT_STATUS:
+        return "status";
+    case MK_NDT_META:
+        return "meta";
+    case MK_NDT_UPLOAD_EXT:
+        return "upload_ext";
+    case MK_NDT_DOWNLOAD_EXT:
+        return "download_ext";
+    default:
+        break;
+    }
+    return "unknown";
+}
+
 #define KICKOFF_MESSAGE "123456 654321"
 #define KICKOFF_MESSAGE_SIZE (sizeof(KICKOFF_MESSAGE) - 1)
 
@@ -56,7 +80,7 @@
 
 // During the handshake we declare to be measurement-kit version such and
 // such that is compatible with version v3.7.0 of NDT
-#define MSG_NDT_VERSION "v3.7.0 (measurement-kit/" MEASUREMENT_KIT_VERSION ")"
+#define MSG_NDT_VERSION "v3.7.0"
 
 #define TEST_C2S_DURATION 10.0
 
@@ -243,7 +267,7 @@ void run(Var<Context> ctx, Callback<Error> callback);
 
 inline void log_speed(Var<Logger> logger, std::string type, int num_streams,
                       double elapsed, double speed) {
-    logger->log(MK_LOG_JSON | MK_LOG_INFO, R"xx({
+    logger->log(MK_LOG_EVENT | MK_LOG_INFO, R"xx({
             "type": "%s",
             "elapsed": [%lf, "s"],
             "num_streams": %d,

@@ -19,6 +19,7 @@ ErrorOr<SSL *> SslContext::get_client_ssl(std::string hostname) {
         singleton.reset(new SslContext);
         ErrorOr<SSL_CTX *> maybe_ctx = make_ssl_ctx(path);
         if (!maybe_ctx) {
+            singleton.reset();
             return maybe_ctx.as_error();
         }
         singleton->ctx = *maybe_ctx;

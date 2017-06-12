@@ -7,47 +7,41 @@
 namespace mk {
 
 /*static*/ Var<Reactor> Reactor::make() {
-    return Var<Reactor>(new libevent::Poller);
+    return locked_global([]() { return Var<Reactor>{new libevent::Poller}; });
 }
 
 Reactor::~Reactor() {}
 
-void Reactor::call_soon(Callback<> cb) {
-    call_later(0.0, cb);
-}
-
-void Reactor::loop_with_initial_event(Callback<> cb) {
-    call_soon(cb);
+void Reactor::run_with_initial_event(Callback<> &&cb) {
+    call_soon(std::move(cb));
     loop();
 }
 
 /*static*/ Var<Reactor> Reactor::global() {
-    static Var<Reactor> singleton = make();
-    return singleton;
+    return locked_global([]() {
+        static Var<Reactor> singleton = make();
+        return singleton;
+    });
 }
 
-void call_soon(Callback<> callback, Var<Reactor> reactor) {
-    reactor->call_soon(callback);
+void call_soon(Callback<> &&callback, Var<Reactor> reactor) {
+    reactor->call_soon(std::move(callback));
 }
 
-void call_later(double delta, Callback<> callback, Var<Reactor> reactor) {
-    reactor->call_later(delta, callback);
+void call_later(double delta, Callback<> &&callback, Var<Reactor> reactor) {
+    reactor->call_later(delta, std::move(callback));
 }
 
-void loop_with_initial_event(Callback<> callback, Var<Reactor> reactor) {
-    reactor->loop_with_initial_event(callback);
+void loop_with_initial_event(Callback<> &&callback, Var<Reactor> reactor) {
+    reactor->run_with_initial_event(std::move(callback));
 }
 
 void loop(Var<Reactor> reactor) {
-    reactor->loop();
-}
-
-void loop_once(Var<Reactor> reactor) {
-    reactor->loop_once();
+    reactor->run();
 }
 
 void break_loop(Var<Reactor> reactor) {
-    reactor->break_loop();
+    reactor->stop();
 }
 
 } // namespace mk

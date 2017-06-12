@@ -30,6 +30,9 @@ class Runnable : public NonCopyable, public NonMovable {
     Delegate<> begin_cb;
     std::list<Delegate<>> end_cbs;
     std::list<Delegate<>> destroy_cbs;
+    bool needs_input = false;
+    bool use_bouncer = true;
+    std::map<std::string, std::string> test_helpers_data;
 
     std::string test_name = "ooni_test";
     std::string test_version = "0.0.1";
@@ -37,13 +40,17 @@ class Runnable : public NonCopyable, public NonMovable {
     std::string probe_asn = "AS0";
     std::string probe_cc = "ZZ";
     std::string resolver_ip = "127.0.0.1";
-    bool needs_input = false;
 
   protected:
     // Functions that derived classes SHOULD override
     virtual void setup(std::string);
     virtual void teardown(std::string);
     virtual void main(std::string, Settings, Callback<Var<report::Entry>>);
+    virtual void fixup_entry(report::Entry &);
+
+    // Functions that derived classes should access
+    std::list<std::string> test_helpers_option_names();
+    std::list<std::string> test_helpers_bouncer_names();
 
   private:
     report::Report report;
@@ -52,6 +59,7 @@ class Runnable : public NonCopyable, public NonMovable {
     double beginning = 0.0;
 
     void run_next_measurement(size_t, Callback<Error>, size_t, Var<size_t>);
+    void contact_bouncer(Callback<Error>);
     void geoip_lookup(Callback<>);
     void open_report(Callback<Error>);
     std::string generate_output_filepath();

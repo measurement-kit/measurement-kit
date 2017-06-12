@@ -6,6 +6,7 @@
 
 // Documentation: doc/api/http.md
 
+#include <measurement_kit/ext.hpp>
 #include <measurement_kit/net.hpp>
 
 namespace mk {
@@ -182,6 +183,32 @@ inline void get(std::string url, Callback<Error, Var<Response>> cb,
     settings["http/url"] = url;
     request(settings, headers, "", cb, reactor, lp, previous, nredirects);
 }
+
+/*
+   _
+  (_)___  ___  _ __
+  | / __|/ _ \| '_ \
+  | \__ \ (_) | | | |
+ _/ |___/\___/|_| |_|
+|__/
+*/
+
+void request_json_string(
+      std::string method, std::string url, std::string data,
+      http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger);
+
+void request_json_no_body(
+      std::string method, std::string url, http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger);
+
+void request_json_object(
+      std::string method, std::string url, nlohmann::json jdata,
+      http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger);
 
 } // namespace http
 } // namespace mk

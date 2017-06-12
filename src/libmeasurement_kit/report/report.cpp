@@ -54,6 +54,9 @@ void Report::fill_entry(Entry &entry) const {
     entry["data_format_version"] = data_format_version;
     entry["annotations"]["platform"] =
         options.get("platform", std::string{MK_PLATFORM});
+    entry["annotations"]["engine_name"] = "libmeasurement_kit";
+    entry["annotations"]["engine_version"] = MK_VERSION;
+    entry["annotations"]["engine_version_full"] = MK_VERSION_FULL;
 }
 
 Entry Report::get_dummy_entry() const {
