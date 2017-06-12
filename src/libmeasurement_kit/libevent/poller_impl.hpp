@@ -6,6 +6,7 @@
 
 #include "../common/utils.hpp"
 #include "../libevent/poller.hpp"
+#include "../net/utils.hpp"
 
 #include <measurement_kit/common.hpp>
 
@@ -126,10 +127,10 @@ void poller_break_loop(Var<event_base> base) {
 template <MK_MOCK(event_base_once)>
 void poller_pollfd(
         Var<event_base> base,
-        socket_t sockfd,
-        short events,
-        Callback<Error, short> callback,
-        double timeo) {
+        const socket_t sockfd,
+        const short events,
+        const double timeo,
+        const Callback<Error &&, short> &&callback) {
     timeval tv;
     short evflags = EV_TIMEOUT;
     if ((events & MK_POLLIN) != 0) {
@@ -138,12 +139,94 @@ void poller_pollfd(
     if ((events & MK_POLLOUT) != 0) {
         evflags |= EV_WRITE;
     }
-    auto cbp = new Callback<Error, short>(callback);
+    auto cbp = new Callback<Error &&, short>{callback};
     if (event_base_once(base.get(), sockfd, evflags, mk_pollfd_cb, cbp,
                         timeval_init(&tv, timeo)) != 0) {
         delete cbp;
         throw std::runtime_error("event_base_once() failed");
     }
+}
+
+static inline void
+default_poller_pollfd(Var<event_base> base, const socket_t sockfd,
+                      const short events, const double timeo,
+                      const Callback<Error &&, short> &&callback) {
+    poller_pollfd(base, sockfd, events, timeo, std::move(callback));
+}
+
+template <typename Container, MK_MOCK(send), MK_MOCK(default_poller_pollfd)>
+void poller_send(Var<event_base> evbase, const socket_t sockfd,
+                 Container &&buff, const double timeout, const size_t total,
+                 const Callback<Error &&> &&callback) {
+    if (total >= buff.size()) {
+        callback(NoError());
+        return;
+    }
+    // For both std::vector<> and std::base_string<> the .data() method
+    // should return contiguous memory space suitable for `send`.
+    const ssize_t count =
+          send(sockfd, buff.data() + total, buff.size() - total, 0);
+    if (count < 0) {
+        callback(net::map_errno(errno));
+        return;
+    }
+    assert((size_t)count <= buff.size() - total);
+    default_poller_pollfd(evbase, sockfd, MK_POLLOUT, timeout, [
+        =, buff = std::move(buff), callback = std::move(callback)
+    ](Error && err, short events) {
+        if (err) {
+            callback(std::move(err));
+            return;
+        }
+        assert(events == MK_POLLOUT);
+        poller_send(evbase, sockfd, std::move(buff), timeout,
+                    total + (size_t)count, std::move(callback));
+    });
+}
+
+template <MK_MOCK(default_poller_pollfd), MK_MOCK(recv)>
+void poller_recv(Var<event_base> base, const socket_t sockfd, const size_t size,
+                 const double timeout,
+                 const Callback<Error &&, std::vector<uint8_t> &&> &&callback) {
+    default_poller_pollfd(
+          base, sockfd, MK_POLLIN, timeout,
+          [ =, callback = std::move(callback) ](Error && error, short events) {
+              std::vector<uint8_t> buff;
+              if (error) {
+                  callback(std::move(error), std::move(buff));
+                  return;
+              }
+              assert(events == MK_POLLIN);
+              buff.reserve(size);
+              const ssize_t count = recv(sockfd, buff.data(), buff.size(), 0);
+              if (count < 0) {
+                  error = net::map_errno(errno);
+                  // FALLTHROUGH
+              }
+              callback(std::move(error), std::move(buff));
+          });
+}
+
+static inline void default_poller_recv(
+      Var<event_base> base, const socket_t sockfd, const size_t size,
+      const double timeout,
+      const Callback<Error &&, std::vector<uint8_t> &&> &&callback) {
+    poller_recv(base, sockfd, size, timeout, std::move(callback));
+}
+
+template <MK_MOCK(default_poller_recv)>
+void poller_recv_loop(
+      Var<event_base> base, const socket_t sockfd, const size_t size,
+      const double timeout,
+      const std::function<bool(Error &&, std::vector<uint8_t> &&)> &&callback) {
+    default_poller_recv(base, sockfd, size, timeout, [
+        =, callback = std::move(callback)
+    ](Error && error, std::vector<uint8_t> && data) {
+        const bool again = callback(std::move(error), std::move(data));
+        if (again) {
+            poller_recv_loop(base, sockfd, size, timeout, std::move(callback));
+        }
+    });
 }
 
 } // namespace libevent
