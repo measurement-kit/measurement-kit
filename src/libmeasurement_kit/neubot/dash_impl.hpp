@@ -19,7 +19,7 @@
 #include "../common/utils.hpp"
 #include "../ext/sole.hpp"
 
-#define DASH_MAX_ITERATIONS 15
+#define DASH_MAX_ITERATIONS 60
 #define DASH_SECONDS 2
 #define MAX_NEGOTIATIONS 512
 
@@ -38,7 +38,7 @@ static inline size_t select_lower_rate_index(int speed_kbit) {
     if (rate_index > 0) { // Make sure we don't underflow
         rate_index -= 1;
     }
-    assert(rate_index >= 0 && rate_index < dash_rates().size());
+    assert(rate_index < dash_rates().size());
     return rate_index;
 }
 
@@ -47,7 +47,11 @@ template <MK_MOCK_AS(http::request_send, http_request_send),
 void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                std::string uuid, Var<report::Entry> entry, Settings settings,
                Var<Reactor> reactor, Var<Logger> logger, Callback<Error> cb,
-               int iteration = 1) {
+               int iteration = 1, Var<double> time_budget = nullptr) {
+
+    if (!time_budget) {
+        time_budget.reset(new double{0.0});
+    }
 
     ErrorOr<bool> fast_scale_down = settings.get_noexcept(
         "fast_scale_down", false);
@@ -68,17 +72,19 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
      * compute the number of bytes to download such that downloading with
      * the selected rate takes DASH_SECONDS (in theory).
      */
-    size_t rate_index = select_lower_rate_index(speed_kbit);
-    int rate_kbit = dash_rates()[rate_index];
+    //size_t rate_index = select_lower_rate_index(speed_kbit);
+    //int rate_kbit = dash_rates()[rate_index];
+    int rate_kbit = speed_kbit; // XXX
     int count = ((rate_kbit * 1000) / 8) * DASH_SECONDS;
 
     std::string path = "/dash/download/";
     path += std::to_string(count);
     settings["http/path"] = path;
     settings["http/method"] = "GET";
-    double saved_time = mk::time_now();
     logger->debug("dash: requesting '%s'", path.c_str());
 
+    // XXX
+    double saved_time = mk::time_now();
     http_request_send(
         txp, settings,
         {
@@ -137,13 +143,16 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                         {"engine_name", "libmeasurement_kit"},
                         {"engine_version", MK_VERSION},
                         {"version", "0.006000000"}});
+                    *time_budget += DASH_SECONDS - time_elapsed;
                     double speed = length / time_elapsed;
                     double s_k = (speed * 8) / 1000;
                     std::stringstream ss;
                     ss << "rate: " << rate_kbit << " kbit/s, speed: "
                        << std::fixed << std::setprecision(2) << s_k
                        << " kbit/s, elapsed: " << std::fixed
-                       << std::setprecision(2) << time_elapsed << " s";
+                       << std::setprecision(2) << time_elapsed
+                       << "s, time budget: " << std::fixed
+                       << std::setprecision(2) << *time_budget;
                     logger->progress(iteration / (double)DASH_MAX_ITERATIONS,
                                      ss.str().c_str());
                     if (*fast_scale_down == true &&
@@ -159,7 +168,7 @@ void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
                         run_loop_<http_request_send,
                                   http_request_recv_response>(
                             txp, s_k, auth_token, uuid, entry, settings,
-                            reactor, logger, cb, iteration + 1);
+                            reactor, logger, cb, iteration + 1, time_budget);
                     });
                 },
                 reactor, logger);
@@ -186,7 +195,7 @@ void run_impl(std::string url, std::string auth_token, Var<report::Entry> entry,
                 return;
             }
             // Note: from now on, we own `txp`
-            assert(txp);
+            assert(!!txp);
             logger->info("Connected to server; starting the test");
             /*
              * TODO: from the Neubot point of view, it would probably be
