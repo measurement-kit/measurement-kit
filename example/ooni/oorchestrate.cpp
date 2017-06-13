@@ -19,8 +19,8 @@ using namespace mk;
 int main(int /*argc*/, char ** /*argv*/) {
     orchestrate::Client client;
     client.logger->set_verbosity(MK_LOG_DEBUG2);
-    client.probe_cc = "IT";
-    client.probe_asn = "AS0";
+    client.geoip_country_path = "GeoIP.dat";
+    client.geoip_asn_path = "GeoIPASNum.dat";
     client.platform = "macos";
     client.software_name = "oorchestrate";
     client.software_version = "1.0.0";

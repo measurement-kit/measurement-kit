@@ -7,6 +7,7 @@
 #include <measurement_kit/ooni.hpp>
 
 #include "../common/utils.hpp"
+#include "../ooni/utils.hpp"
 
 namespace mk {
 namespace ooni {
@@ -260,6 +261,51 @@ static inline ErrorOr<Var<Authentication>> load_auth(std::string fpath) {
 
 static inline std::string make_password() { return mk::random_printable(64); }
 
+static inline void
+do_fill_missing_metadata(ClientMetadata m, Var<Reactor> reactor,
+                         Callback<Error, ClientMetadata> cb) {
+    if (m.probe_asn != "" && m.probe_cc != "") {
+        cb(NoError(), m);
+        return;
+    }
+    m.logger->info("Looking up probe IP to guess ASN and/or CC");
+    // Lambda is mutable because it needs to modify its own copy of `m`
+    ooni::ip_lookup(
+          [m, cb](Error error, std::string ip) mutable {
+              if (error) {
+                  cb(error, m);
+                  return;
+              }
+              m.logger->info("Probe IP is: %s", ip.c_str());
+              // Using local database to avoid thread safety issues
+              auto query_geoip = [&](const std::string &path, std::string &dest,
+                                     auto callable) {
+                  if (dest != "") {
+                      return;
+                  }
+                  ooni::GeoipDatabase db{path};
+                  ErrorOr<std::string> x = callable(db, ip, m.logger);
+                  if (!x) {
+                      m.logger->warn("geoip failed for '%s': %s", ip.c_str(),
+                                     x.as_error().as_ooni_error().c_str());
+                      return;
+                  }
+                  m.logger->info("IP %s maps to %s", ip.c_str(), x->c_str());
+                  dest = *x;
+              };
+              query_geoip(m.geoip_asn_path, m.probe_asn,
+                          [](auto db, auto ip, auto logger) {
+                              return db.resolve_asn(ip, logger);
+                          });
+              query_geoip(m.geoip_country_path, m.probe_cc,
+                          [](auto db, auto ip, auto logger) {
+                              return db.resolve_country_code(ip, logger);
+                          });
+              cb(NoError(), m);
+          },
+          m.settings, reactor, m.logger);
+}
+
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void do_register_probe(const ClientMetadata &m, std::string password,
                        Var<Reactor> reactor, Callback<Error> &&cb) {
@@ -270,15 +316,23 @@ void do_register_probe(const ClientMetadata &m, std::string password,
         reactor->call_soon([=]() { cb(NoError()); });
         return;
     }
-    register_probe_<http_request_json_object>(m, password, reactor, [
-        cb = std::move(cb), destpath = m.secrets_path
-    ](Error err, Var<Authentication> auth) {
-        if (err) {
-            cb(std::move(err));
-            return;
-        }
-        cb(auth->store(destpath));
-    });
+    mk::fcompose_async(
+          do_fill_missing_metadata,
+          [password, reactor](Error err, ClientMetadata m, Callback<Error> cb) {
+              if (err) {
+                  cb(err);
+                  return;
+              }
+              register_probe_<http_request_json_object>(m, password, reactor, [
+                  cb = std::move(cb), destpath = m.secrets_path
+              ](Error err, Var<Authentication> auth) {
+                  if (err) {
+                      cb(std::move(err));
+                      return;
+                  }
+                  cb(auth->store(destpath));
+              });
+          })(m, reactor, cb);
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
