@@ -67,24 +67,7 @@ modified using the following `settings`:
 
 - *"net/timeout"* (double): timeout for connect and I/O operations (default: `5.0` seconds).
 
-To provide insights into what went wrong and what went right during the connect
-attempt, the `Error` returned by `connect()` contains as `context` an instance of the
-following class
-
-```C++
-struct ConnectResult : public ErrorContext {
-    ResolveHostnameResult resolve_result;
-    std::vector<Error> connect_result;
-    bufferevent *connected_bev = nullptr;
-};
-```
-
-where `resolve_result` contains the result of resolving the `address` argument into
-an IP address, `connect_result` is a vector containing an error for each failed connect
-attempt (where the size of the vector would be greater than one when a domain name
-mapped to multiple addresses and connecting to more than one address failed), `connected_bev`
-is the underlying libevent's `bufferevent` wrapped by `Transport`. More details about the
-`ResolveHostnameResult` class can be found in doc/api/dns.hpp.
+- *"net/allow_ssl23"* (bool): whether to enable SSLv2 and SSLv3 (default: false)
 
 The `connect_many()` function is similar to `connect()`. The main different is
 that `num` parallel connections are established and passed to the callback on success. Of
@@ -94,9 +77,9 @@ were successful.
 
 # BUGS
 
-As of MeasurementKit v0.4, `connect()` does not implement SSLv2 and SSLv3,
-therefore secure connection will fail with sites that use such deprecated
-versions of the protocol.
+`connect()` SHOULD always return a valid `Var<Transport>`, even in case of
+errors, so to allow users to inspect what went wrong during the process. As
+of MK v0.7.0, however, this is not the case.
 
 # HISTORY
 

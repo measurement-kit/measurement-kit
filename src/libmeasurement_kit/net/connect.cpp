@@ -231,7 +231,6 @@ void connect(std::string address, int port,
         address, port,
         [=](Error err, Var<ConnectResult> r) {
             if (err) {
-                err.context = r;
                 callback(err, nullptr);
                 return;
             }
@@ -248,7 +247,6 @@ void connect(std::string address, int port,
                 ErrorOr<Var<SslContext>> ssl_context = SslContext::make(cbp);
                 if (!ssl_context) {
                     Error err = ssl_context.as_error();
-                    err.context = r;
                     bufferevent_free(r->connected_bev);
                     callback(err, nullptr);
                     return;
@@ -256,7 +254,6 @@ void connect(std::string address, int port,
                 ErrorOr<SSL *> cssl = (*ssl_context)->get_client_ssl(address);
                 if (!cssl) {
                     Error err = cssl.as_error();
-                    err.context = r;
                     bufferevent_free(r->connected_bev);
                     callback(err, nullptr);
                     return;
@@ -265,7 +262,6 @@ void connect(std::string address, int port,
                     settings.get_noexcept("net/allow_ssl23", false);
                 if (!allow_ssl23) {
                     Error err = ValueError();
-                    err.context = r;
                     bufferevent_free(r->connected_bev);
                     callback(err, nullptr);
                     return;
@@ -278,7 +274,6 @@ void connect(std::string address, int port,
                             [r, callback, timeout, ssl_context, reactor,
                              logger, settings](Error err, bufferevent *bev) {
                                 if (err) {
-                                    err.context = r;
                                     callback(err, nullptr);
                                     return;
                                 }
@@ -287,7 +282,6 @@ void connect(std::string address, int port,
                                         "net/ssl_allow_dirty_shutdown", false);
                                 if (!allow_dirty_shutdown) {
                                     Error err = allow_dirty_shutdown.as_error();
-                                    err.context = r;
                                     bufferevent_free(bev);
                                     callback(err, nullptr);
                                     return;
@@ -317,8 +311,10 @@ void connect(std::string address, int port,
                                     libevent::Connection::make(
                                         bev, reactor, logger);
                                 txp->set_timeout(timeout);
+                                txp->set_connect_time_(r->connect_time);
+                                txp->set_connect_errors_(r->connect_result);
+                                txp->set_dns_result_(r->resolve_result);
                                 assert(err == NoError());
-                                err.context = r;
                                 callback(err, txp);
                             },
                             reactor, logger);
@@ -327,35 +323,14 @@ void connect(std::string address, int port,
             Var<Transport> txp =
                 libevent::Connection::make(r->connected_bev, reactor, logger);
             txp->set_timeout(timeout);
+            txp->set_connect_time_(r->connect_time);
+            txp->set_connect_errors_(r->connect_result);
+            txp->set_dns_result_(r->resolve_result);
             assert(err == NoError());
-            err.context = r;
             callback(err, txp);
         },
         settings, reactor, logger);
 }
-
-ErrorOr<double> get_connect_time(Error err) {
-    Var<ConnectResult> cr = err.context.as<ConnectResult>();
-    if (!cr) {
-        return GenericError();
-    }
-    return cr->connect_time;
-}
-
-ErrorOr<std::vector<double>> get_connect_times(Error err) {
-    Var<ConnectManyResult> cmr = err.context.as<ConnectManyResult>();
-    if (!cmr) {
-        return GenericError();
-    }
-    std::vector<double> connect_times;
-    for (auto &cr: cmr->results) {
-        connect_times.push_back(cr->connect_time);
-    }
-    return connect_times;
-}
-
-ConnectResult::~ConnectResult() {}
-ConnectManyResult::~ConnectManyResult() {}
 
 } // namespace net
 } // namespace mk

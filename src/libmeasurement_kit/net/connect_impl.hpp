@@ -129,7 +129,6 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
     // is slower but also much simpler to implement and verify
     if (ctx->left <= 0) {
         Error err = NoError();
-        err.context = ctx->result;
         ctx->callback(err, ctx->connections);
         return;
     }
@@ -138,10 +137,6 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
                     if (err) {
                         ctx->callback(err, ctx->connections);
                         return;
-                    }
-                    Var<ConnectResult> cr = err.context.as<ConnectResult>();
-                    if (!!cr) {
-                        ctx->result->results.push_back(cr);
                     }
                     ctx->connections.push_back(std::move(txp));
                     --ctx->left;
@@ -162,7 +157,6 @@ connect_many_make(std::string address, int port, int count,
     ctx->settings = settings;
     ctx->reactor = reactor;
     ctx->logger = logger;
-    ctx->result.reset(new ConnectManyResult);
     return ctx;
 }
 

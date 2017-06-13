@@ -350,12 +350,10 @@ TEST_CASE("net::connect() can connect to open port") {
     reactor->loop_with_initial_event([=]() {
         connect("www.kernel.org", 80, [=](Error error, Var<Transport> txp) {
             REQUIRE(!error);
-            Var<ConnectResult> cr = error.context.as<ConnectResult>();
-            REQUIRE(cr);
-            REQUIRE(!cr->resolve_result.inet_pton_ipv4);
-            REQUIRE(!cr->resolve_result.inet_pton_ipv6);
-            REQUIRE(cr->resolve_result.addresses.size() > 0);
-            REQUIRE(cr->connected_bev);
+            auto resolve_result = txp->dns_result();
+            REQUIRE(!resolve_result.inet_pton_ipv4);
+            REQUIRE(!resolve_result.inet_pton_ipv6);
+            REQUIRE(resolve_result.addresses.size() > 0);
             txp->close([=]() { reactor->stop(); });
         }, {}, reactor);
     });
@@ -367,12 +365,10 @@ TEST_CASE("net::connect() can connect to ssl port") {
         connect("nexa.polito.it", 443,
                 [=](Error error, Var<Transport> txp) {
                     REQUIRE(!error);
-                    Var<ConnectResult> cr = error.context.as<ConnectResult>();
-                    REQUIRE(cr);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv4);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv6);
-                    REQUIRE(cr->resolve_result.addresses.size() > 0);
-                    REQUIRE(cr->connected_bev);
+                    auto resolve_result = txp->dns_result();
+                    REQUIRE(!resolve_result.inet_pton_ipv4);
+                    REQUIRE(!resolve_result.inet_pton_ipv6);
+                    REQUIRE(resolve_result.addresses.size() > 0);
                     txp->close([=]() { reactor->stop(); });
                 },
                 {{"net/ssl", true},
@@ -430,12 +426,17 @@ TEST_CASE("net::connect() works in case of error") {
         connect("nexa.polito.it", 81,
                 [=](Error error, Var<Transport>) {
                     REQUIRE(error);
+                    // FIXME: would be possible to re-enable this test when
+                    // connect would always return a transport, even on error,
+                    // so to provide information regarding what went wrong
+#if 0
                     Var<ConnectResult> cr = error.context.as<ConnectResult>();
                     REQUIRE(cr);
                     REQUIRE(!cr->resolve_result.inet_pton_ipv4);
                     REQUIRE(!cr->resolve_result.inet_pton_ipv6);
                     REQUIRE(cr->resolve_result.addresses.size() > 0);
                     REQUIRE(!cr->connected_bev);
+#endif
                     reactor->stop();
                 },
                 {{"net/timeout", 5.0}},
