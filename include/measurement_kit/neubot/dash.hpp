@@ -13,6 +13,7 @@ namespace dash {
 void run(
         std::string measurement_server_url,
         std::string auth_token,
+        std::string real_address,
         Var<report::Entry> entry,
         Settings settings,
         Var<Reactor> reactor,
