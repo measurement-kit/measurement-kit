@@ -11,11 +11,6 @@
 
 namespace mk {
 
-class ErrorContext {
-  public:
-    virtual ~ErrorContext();
-};
-
 class Error : public std::exception {
   public:
     Error() : Error(0, "", nullptr) {}
@@ -63,7 +58,6 @@ class Error : public std::exception {
         return s;
     }
 
-    Var<ErrorContext> context;
     std::vector<Var<Error>> child_errors;
     int code = 0;
     std::string reason;

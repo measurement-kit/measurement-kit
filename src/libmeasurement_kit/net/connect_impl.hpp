@@ -129,21 +129,16 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
     // is slower but also much simpler to implement and verify
     if (ctx->left <= 0) {
         Error err = NoError();
-        err.context = ctx->result;
         ctx->callback(err, ctx->connections);
         return;
     }
     net_connect(ctx->address, ctx->port,
                 [=](Error err, Var<Transport> txp) {
+                    ctx->connections.push_back(std::move(txp));
                     if (err) {
                         ctx->callback(err, ctx->connections);
                         return;
                     }
-                    Var<ConnectResult> cr = err.context.as<ConnectResult>();
-                    if (!!cr) {
-                        ctx->result->results.push_back(cr);
-                    }
-                    ctx->connections.push_back(std::move(txp));
                     --ctx->left;
                     connect_many_impl<net_connect>(ctx);
                 },
@@ -162,8 +157,25 @@ connect_many_make(std::string address, int port, int count,
     ctx->settings = settings;
     ctx->reactor = reactor;
     ctx->logger = logger;
-    ctx->result.reset(new ConnectManyResult);
     return ctx;
+}
+
+static inline Var<Transport> make_txp(Var<Transport> txp, double timeout,
+                                      Var<ConnectResult> r) {
+    if (timeout > 0.0) {
+        txp->set_timeout(timeout);
+    }
+    if (!!r) {
+        txp->set_connect_time_(r->connect_time);
+        txp->set_connect_errors_(r->connect_result);
+        txp->set_dns_result_(r->resolve_result);
+    }
+    return txp;
+}
+
+template <typename Type, typename... Args>
+Var<Transport> make_txp(double timeout, Var<ConnectResult> r, Args &&... args) {
+    return make_txp(Var<Type>::make(std::forward<Args>(args)...), timeout, r);
 }
 
 } // namespace mk

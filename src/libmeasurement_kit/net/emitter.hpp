@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_NET_EMITTER_HPP
 
 #include <measurement_kit/net.hpp>
+#include <measurement_kit/dns.hpp>
 
 namespace mk {
 namespace net {
@@ -198,8 +199,21 @@ class EmitterBase : public Transport {
      */
 
     double connect_time() override { return saved_connect_time; }
-
     void set_connect_time_(double x) override { saved_connect_time = x; }
+
+    std::vector<Error> connect_errors() override {
+        return saved_connect_errors;
+    }
+    void set_connect_errors_(std::vector<Error> x) override {
+        saved_connect_errors = x;
+    }
+
+    dns::ResolveHostnameResult dns_result() override {
+        return saved_dns_result;
+    }
+    void set_dns_result_(dns::ResolveHostnameResult x) override {
+        saved_dns_result = x;
+    }
 
   protected:
     // TODO: it would probably better to have accessors
@@ -219,6 +233,8 @@ class EmitterBase : public Transport {
     Callback<> close_cb;
     bool close_pending = false;
     double saved_connect_time = 0.0;
+    std::vector<Error> saved_connect_errors;
+    dns::ResolveHostnameResult saved_dns_result;
 };
 
 class Emitter : public EmitterBase {

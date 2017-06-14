@@ -7,6 +7,11 @@
 #include <measurement_kit/net/buffer.hpp>
 
 namespace mk {
+
+namespace dns {
+class ResolveHostnameResult; /* Forward declaration */
+} // namespace dns
+
 namespace net {
 
 class TransportEmitter {
@@ -84,6 +89,10 @@ class TransportConnectable {
     virtual ~TransportConnectable();
     virtual double connect_time() = 0;
     virtual void set_connect_time_(double) = 0;
+    virtual std::vector<Error> connect_errors() = 0;
+    virtual void set_connect_errors_(std::vector<Error>) = 0;
+    virtual dns::ResolveHostnameResult dns_result() = 0;
+    virtual void set_dns_result_(dns::ResolveHostnameResult) = 0;
 };
 
 class Transport : public TransportEmitter,

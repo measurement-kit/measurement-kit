@@ -72,6 +72,10 @@ class Transport {
 
     virtual double connect_time() = 0;
     virtual void set_connect_time_(double) = 0;
+    virtual std::vector<Error> connect_errors() = 0;
+    virtual void set_connect_errors_(std::vector<Error>) = 0;
+    virtual dns::ResolveHostnameResult dns_result() = 0;
+    virtual void set_dns_result_(dns::ResolveHostnameResult) = 0;
 
   protected:
     virtual void adjust_timeout(double timeo) = 0;
@@ -197,7 +201,13 @@ the transport has been closed.
 
 ## As connectable
 
-This set of methods allow to set and get the time required to connect.
+This set of methods allow to get various connect-time values, like the
+time required to connect (which approximates the minimum RTT), the errors
+experienced when connecting (for example, the DNS may return more than
+one address and some of them may be unreachable, but others work), and the
+result of the DNS query for the provided hostname.
+
+It also contains semi-hidden methods to set such values when connecting.
 
 ## Syntactic sugar
 
