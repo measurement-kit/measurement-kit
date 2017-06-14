@@ -216,7 +216,8 @@ void connect(std::string address, int port,
              Callback<Error, Var<Transport>> callback, Settings settings,
              Var<Reactor> reactor, Var<Logger> logger) {
     if (settings.find("net/dumb_transport") != settings.end()) {
-        callback(NoError(), Var<Transport>(new Emitter(reactor, logger)));
+        callback(NoError(), make_txp<Emitter>(
+            0.0, nullptr, reactor, logger));
         return;
     }
     if (settings.find("net/socks5_proxy") != settings.end()) {
@@ -231,7 +232,8 @@ void connect(std::string address, int port,
         address, port,
         [=](Error err, Var<ConnectResult> r) {
             if (err) {
-                callback(err, nullptr);
+                callback(err, make_txp<Emitter>(
+                    timeout, r, reactor, logger));
                 return;
             }
             if (settings.find("net/ssl") != settings.end()) {
@@ -248,14 +250,16 @@ void connect(std::string address, int port,
                 if (!ssl_context) {
                     Error err = ssl_context.as_error();
                     bufferevent_free(r->connected_bev);
-                    callback(err, nullptr);
+                    callback(err, make_txp<Emitter>(
+                        timeout, r, reactor, logger));
                     return;
                 }
                 ErrorOr<SSL *> cssl = (*ssl_context)->get_client_ssl(address);
                 if (!cssl) {
                     Error err = cssl.as_error();
                     bufferevent_free(r->connected_bev);
-                    callback(err, nullptr);
+                    callback(err, make_txp<Emitter>(
+                        timeout, r, reactor, logger));
                     return;
                 }
                 ErrorOr<bool> allow_ssl23 =
@@ -263,7 +267,8 @@ void connect(std::string address, int port,
                 if (!allow_ssl23) {
                     Error err = ValueError();
                     bufferevent_free(r->connected_bev);
-                    callback(err, nullptr);
+                    callback(err, make_txp<Emitter>(
+                        timeout, r, reactor, logger));
                     return;
                 }
                 if (*allow_ssl23 == true) {
@@ -274,7 +279,8 @@ void connect(std::string address, int port,
                             [r, callback, timeout, ssl_context, reactor,
                              logger, settings](Error err, bufferevent *bev) {
                                 if (err) {
-                                    callback(err, nullptr);
+                                    callback(err, make_txp<Emitter>(
+                                            timeout, r, reactor, logger));
                                     return;
                                 }
                                 ErrorOr<bool> allow_dirty_shutdown =
@@ -283,7 +289,8 @@ void connect(std::string address, int port,
                                 if (!allow_dirty_shutdown) {
                                     Error err = allow_dirty_shutdown.as_error();
                                     bufferevent_free(bev);
-                                    callback(err, nullptr);
+                                    callback(err, make_txp<Emitter>(
+                                            timeout, r, reactor, logger));
                                     return;
                                 }
                                 if (*allow_dirty_shutdown == true) {
@@ -307,27 +314,19 @@ void connect(std::string address, int port,
                                                  "2.1.x of libevent.");
 #endif
                                 }
-                                Var<Transport> txp =
-                                    libevent::Connection::make(
-                                        bev, reactor, logger);
-                                txp->set_timeout(timeout);
-                                txp->set_connect_time_(r->connect_time);
-                                txp->set_connect_errors_(r->connect_result);
-                                txp->set_dns_result_(r->resolve_result);
                                 assert(err == NoError());
-                                callback(err, txp);
+                                callback(err, make_txp(
+                                    libevent::Connection::make(
+                                        bev, reactor, logger),
+                                            timeout, r));
                             },
                             reactor, logger);
                 return;
             }
-            Var<Transport> txp =
-                libevent::Connection::make(r->connected_bev, reactor, logger);
-            txp->set_timeout(timeout);
-            txp->set_connect_time_(r->connect_time);
-            txp->set_connect_errors_(r->connect_result);
-            txp->set_dns_result_(r->resolve_result);
             assert(err == NoError());
-            callback(err, txp);
+            callback(err, make_txp(libevent::Connection::make(
+                r->connected_bev, reactor, logger),
+                    timeout, r));
         },
         settings, reactor, logger);
 }

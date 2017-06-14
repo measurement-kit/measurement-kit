@@ -30,7 +30,9 @@ void mk::net::connect_many(std::string address, int port, int num,
 
 The `connect()` function creates a connection to the remote `address` (which
 typically is a FQDN) and `port` and calls `callback` when done. On failure,
-an error is passed to the callback as its first argument; on success, the first
+an error is passed to the callback as its first argument, while a valid, but
+not connected, `Var<Transport>` is passed as its second argument.
+On success, the first
 callback argument is `NoError` and the second argument is a `Transport` instance
 wrapped by a `Var<>` smart pointer. Optionally you can also specify `settings`,
 a specific `logger` and a specific `reactor`.
@@ -74,12 +76,6 @@ that `num` parallel connections are established and passed to the callback on su
 course, this function would return `NoError()` only if all the parallel connect attempts
 were successful, and it would close all the open connections if only some connect attempts
 were successful.
-
-# BUGS
-
-`connect()` SHOULD always return a valid `Var<Transport>`, even in case of
-errors, so to allow users to inspect what went wrong during the process. As
-of MK v0.7.0, however, this is not the case.
 
 # HISTORY
 

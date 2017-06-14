@@ -77,7 +77,6 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
 
   private:
     Connection(bufferevent *bev, Var<Reactor>, Var<Logger>);
-
     bufferevent *bev = nullptr;
     Var<Transport> self;
     Callback<> close_cb;

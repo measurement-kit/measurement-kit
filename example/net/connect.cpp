@@ -48,16 +48,6 @@ int main(int argc, char **argv) {
     loop_with_initial_event([&domain, &port, &settings]() {
         connect(domain, port, [](Error err, Var<Transport> txp) {
             std::cout << "Overall connect result: " << err.as_ooni_error() << "\n";
-            if (!txp) {
-                /*
-                 * TODO: we should always return a transport, even in case
-                 * of error, so to allow the user to peek into what went
-                 * wrong when connecting. This is arguably better than putting
-                 * the context into the error because code is simpler.
-                 */
-                break_loop();
-                return;
-            }
             auto resolve_result = txp->dns_result();
             std::cout << "input was valid ipv4: " <<
                     resolve_result.inet_pton_ipv4 << "\n";
