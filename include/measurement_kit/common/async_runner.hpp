@@ -30,21 +30,7 @@ class AsyncRunner : public HasMakeFactory<AsyncRunner>,
     void start(std::string &&name, Var<Logger> logger, Task &&task,
                Callback &&cb) {
         assert(active_ >= 0);
-        if (!running_) {
-            std::promise<void> promise;
-            std::future<void> future = promise.get_future();
-            // WARNING: the destructor MUST wait for the thread because we
-            // are passing `this` to the thread's function.
-            logger->debug("runner: starting reactor in background...");
-            thread_ = std::thread([&promise, this, logger]() {
-                reactor_->run_with_initial_event([&promise, logger]() {
-                    logger->debug("runner: background reactor running...");
-                    promise.set_value();
-                });
-            });
-            future.wait();
-            running_ = true;
-        }
+        start_background_thread(logger);
         active_ += 1;
         logger->debug("%s: scheduling", name.c_str());
         // Give background thread exclusive ownership of arguments
@@ -80,6 +66,26 @@ class AsyncRunner : public HasMakeFactory<AsyncRunner>,
         });
     }
 
+    template <typename Task>
+    void start(std::string &&name, Var<Logger> logger, Task &&task) {
+        start_background_thread(logger);
+        assert(active_ >= 0);
+        active_ += 1;
+        logger->debug("%s: scheduling", name.c_str());
+        reactor_->call_soon([
+            task = std::move(task), name = std::move(name), logger, this
+        ]() {
+            logger->debug("%s: starting", name.c_str());
+            task([name, logger, this](Callback<> &&cb) {
+                logger->debug("%s: finished", name.c_str());
+                active_ -= 1;
+                logger->debug("runner: #active: %lld", (long long)active_);
+                logger->debug("%s: callback", name.c_str());
+                cb();
+            });
+        });
+    }
+
     void stop() {
         if (running_) {
             // WARNING: Make sure we stop the runner before we stop the
@@ -87,6 +93,24 @@ class AsyncRunner : public HasMakeFactory<AsyncRunner>,
             reactor_->stop();
             thread_.join();
             running_ = false;
+        }
+    }
+
+    void start_background_thread(Var<Logger> logger) {
+        if (!running_) {
+            std::promise<void> promise;
+            std::future<void> future = promise.get_future();
+            // WARNING: the destructor MUST wait for the thread because we
+            // are passing `this` to the thread's function.
+            logger->debug("runner: starting reactor in background...");
+            thread_ = std::thread([&promise, this, logger]() {
+                reactor_->run_with_initial_event([&promise, logger]() {
+                    logger->debug("runner: background reactor running...");
+                    promise.set_value();
+                });
+            });
+            future.wait();
+            running_ = true;
         }
     }
 

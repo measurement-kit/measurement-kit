@@ -261,89 +261,147 @@ static inline ErrorOr<Var<Authentication>> load_auth(std::string fpath) {
 
 static inline std::string make_password() { return mk::random_printable(64); }
 
-static inline void
-do_fill_missing_metadata(ClientMetadata m, Var<Reactor> reactor,
-                         Callback<Error, ClientMetadata> cb) {
-    if (m.probe_asn != "" && m.probe_cc != "") {
-        cb(NoError(), m);
-        return;
-    }
-    m.logger->info("Looking up probe IP to guess ASN and/or CC");
-    // Lambda is mutable because it needs to modify its own copy of `m`
-    ooni::ip_lookup(
-          [m, cb](Error error, std::string ip) mutable {
+template <MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
+void do_find_location(const ClientMetadata &m, Var<Reactor> reactor,
+                      Callback<Error &&, std::string &&, std::string> &&cb) {
+    ooni_ip_lookup(
+          [
+            logger = m.logger, geoip_asn_path = m.geoip_asn_path,
+            geoip_country_path = m.geoip_country_path, cb = std::move(cb)
+          ](Error error, std::string ip) mutable {
               if (error) {
-                  cb(error, m);
+                  cb(std::move(error), "", "");
                   return;
               }
-              m.logger->info("Probe IP is: %s", ip.c_str());
-              // Using local database to avoid thread safety issues
+              logger->info("Probe IP is: %s", ip.c_str());
               auto query_geoip = [&](const std::string &path, std::string &dest,
+                                     const std::string &fallback,
                                      auto callable) {
-                  if (dest != "") {
-                      return;
-                  }
+                  // Using local database to avoid thread safety issues
                   ooni::GeoipDatabase db{path};
-                  ErrorOr<std::string> x = callable(db, ip, m.logger);
+                  ErrorOr<std::string> x = callable(db, ip, logger);
                   if (!x) {
-                      m.logger->warn("geoip failed for '%s': %s", ip.c_str(),
-                                     x.as_error().as_ooni_error().c_str());
+                      logger->warn("geoip failed for '%s': %s", ip.c_str(),
+                                   x.as_error().as_ooni_error().c_str());
+                      dest = fallback;
                       return;
                   }
-                  m.logger->info("IP %s maps to %s", ip.c_str(), x->c_str());
+                  logger->info("IP %s maps to %s", ip.c_str(), x->c_str());
                   dest = *x;
               };
-              query_geoip(m.geoip_asn_path, m.probe_asn,
+              std::string probe_asn;
+              std::string probe_cc;
+              query_geoip(geoip_asn_path, probe_asn, "AS0",
                           [](auto db, auto ip, auto logger) {
                               return db.resolve_asn(ip, logger);
                           });
-              query_geoip(m.geoip_country_path, m.probe_cc,
+              query_geoip(geoip_country_path, probe_cc, "ZZ",
                           [](auto db, auto ip, auto logger) {
                               return db.resolve_country_code(ip, logger);
                           });
-              cb(NoError(), m);
+              cb(NoError(), std::move(probe_asn), std::move(probe_cc));
           },
           m.settings, reactor, m.logger);
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-void do_register_probe(const ClientMetadata &m, std::string password,
-                       Var<Reactor> reactor, Callback<Error> &&cb) {
-    ErrorOr<Var<Authentication>> ma = load_auth(m.secrets_path);
-    if (!!ma) {
-        // Assume that, if we can load the secrets, we are already registered
-        m.logger->info("This probe is already registered");
-        reactor->call_soon([=]() { cb(NoError()); });
+void possibly_register_probe_(
+      Error error, ClientMetadata m, Var<Reactor> reactor,
+      Callback<Error, ClientMetadata, Var<Reactor>> cb) {
+    if (error) {
+        cb(error, m, reactor);
         return;
     }
-    mk::fcompose_async(
-          do_fill_missing_metadata,
-          [password, reactor](Error err, ClientMetadata m, Callback<Error> cb) {
-              if (err) {
-                  cb(err);
-                  return;
+    ErrorOr<Var<Authentication>> x = load_auth(m.secrets_path);
+    if (!!x) {
+        // Assume that, if we can load the secrets, we are already registered
+        m.logger->debug("This probe is already registered");
+        cb(NoError(), m, reactor);
+        return;
+    }
+    m.logger->info("Registering this probe with the orchestrator registry");
+    register_probe_<http_request_json_object>(
+          m, make_password(), reactor,
+          [cb, m, reactor](Error err, Var<Authentication> auth) {
+              if (!err) {
+                  err = auth->store(m.secrets_path);
               }
-              register_probe_<http_request_json_object>(m, password, reactor, [
-                  cb = std::move(cb), destpath = m.secrets_path
-              ](Error err, Var<Authentication> auth) {
-                  if (err) {
-                      cb(std::move(err));
-                      return;
-                  }
-                  cb(auth->store(destpath));
-              });
-          })(m, reactor, cb);
+              cb(err, m, reactor);
+          });
+}
+
+template <MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
+void retrieve_missing_metadata_(
+      Error error, ClientMetadata m, Var<Reactor> reactor,
+      Callback<Error, ClientMetadata, Var<Reactor>> cb) {
+    if (error) {
+        cb(error, m, reactor);
+        return;
+    }
+    if (m.platform == "") {
+        m.platform = mk_platform();
+    }
+    if (m.supported_tests.empty()) {
+        m.supported_tests = {{"dns_injection"},
+                             {"http_header_field_manipulation"},
+                             {"http_invalid_request_line"},
+                             {"meek_fronted_requests"},
+                             {"ndt"},
+                             {"tcp_connect"},
+                             {"web_connectivity"}};
+    }
+    if (m.probe_asn != "" && m.probe_cc != "") {
+        m.logger->debug("No need to guess ASN and/or CC");
+        cb(NoError(), m, reactor);
+        return;
+    }
+    m.logger->info("Looking up probe IP to guess ASN and/or CC");
+    do_find_location<ooni_ip_lookup>(
+          m, reactor,
+          [m, reactor, cb](Error &&error, std::string &&asn,
+                           std::string &&cc) mutable {
+              m.probe_asn = asn;
+              m.probe_cc = cc;
+              cb(error, m, reactor);
+          });
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-void do_update(const ClientMetadata &m, Var<Reactor> reactor,
-               Callback<Error &&> &&cb) {
-    ErrorOr<Var<Authentication>> ma = load_auth(m.secrets_path);
-    if (!ma) {
-        reactor->call_soon([=]() { cb(ma.as_error()); });
+void finally_update_metadata_(Error error, ClientMetadata m,
+                              Var<Reactor> reactor, Callback<Error> cb) {
+    if (error) {
+        cb(error);
         return;
     }
-    update_<http_request_json_object>(m, *ma, reactor, std::move(cb));
+    ErrorOr<Var<Authentication>> x = load_auth(m.secrets_path);
+    if (!x) {
+        reactor->call_soon([=]() { cb(x.as_error()); });
+        return;
+    }
+    update_<http_request_json_object>(m, *x, reactor, std::move(cb));
+}
+
+template <MK_MOCK_AS(http::request_json_object, http_request_json_object),
+          MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
+void do_register_probe(const ClientMetadata &m, Var<Reactor> reactor,
+                       Callback<Error &&> &&cb) {
+    mk::fcompose_async(retrieve_missing_metadata_<ooni_ip_lookup>,
+                       possibly_register_probe_<http_request_json_object>,
+                       [](Error error, ClientMetadata, Var<Reactor>,
+                          Callback<Error> cb) { cb(error); })(NoError(), m,
+                                                              reactor, cb);
+}
+
+template <MK_MOCK_AS(http::request_json_object, http_request_json_object_1),
+          MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup),
+          MK_MOCK_AS(http::request_json_object, http_request_json_object_2)>
+void do_update(const ClientMetadata &m, Var<Reactor> reactor,
+               Callback<Error &&> &&cb) {
+    mk::fcompose_async(
+        retrieve_missing_metadata_<ooni_ip_lookup>,
+        possibly_register_probe_<http_request_json_object_1>,
+        finally_update_metadata_<http_request_json_object_2>
+    )(NoError(), m, reactor, cb);
 }
 
 } // namespace orchestrate
