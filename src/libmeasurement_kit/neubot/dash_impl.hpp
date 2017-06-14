@@ -42,137 +42,162 @@ static inline size_t select_lower_rate_index(int speed_kbit) {
     return rate_index;
 }
 
+class DashLoopCtx {
+  public:
+    std::string auth_token;
+    Callback<Error> cb;
+    int speed_kbit = dash_rates()[0];
+    Var<report::Entry> entry;
+    int iteration = 1;
+    Var<Logger> logger;
+    Var<Reactor> reactor;
+    Settings settings;
+    Var<net::Transport> txp;
+    std::string uuid;
+};
+
 template <MK_MOCK_AS(http::request_send, http_request_send),
           MK_MOCK_AS(http::request_recv_response, http_request_recv_response)>
-void run_loop_(Var<net::Transport> txp, int speed_kbit, std::string auth_token,
-               std::string uuid, Var<report::Entry> entry, Settings settings,
-               Var<Reactor> reactor, Var<Logger> logger, Callback<Error> cb,
-               int iteration = 1, Var<double> time_budget = nullptr) {
-
-    if (!time_budget) {
-        time_budget.reset(new double{0.0});
-    }
-
-    ErrorOr<bool> fast_scale_down = settings.get_noexcept(
-        "fast_scale_down", false);
+void run_loop_(Var<DashLoopCtx> ctx) {
+    ErrorOr<bool> fast_scale_down =
+          ctx->settings.get_noexcept("fast_scale_down", false);
     if (!fast_scale_down) {
-        logger->warn("dash: cannot parse `fast_scale_down' option");
-        cb(fast_scale_down.as_error());
+        ctx->logger->warn("dash: cannot parse `fast_scale_down' option");
+        ctx->cb(fast_scale_down.as_error());
         return;
     }
-
-    if (iteration > DASH_MAX_ITERATIONS) {
-        logger->debug("dash: completed all iterations");
-        cb(NoError());
+    ErrorOr<bool> use_fixed_rates =
+          ctx->settings.get_noexcept("use_fixed_rates", false);
+    if (!use_fixed_rates) {
+        ctx->logger->warn("dash: cannot parse `use_fixed_rates' option");
+        ctx->cb(use_fixed_rates.as_error());
         return;
     }
-
+    if (ctx->iteration > DASH_MAX_ITERATIONS) {
+        ctx->logger->debug("dash: completed all iterations");
+        ctx->cb(NoError());
+        return;
+    }
     /*
      * Select the rate that is lower than the latest measured speed and
      * compute the number of bytes to download such that downloading with
      * the selected rate takes DASH_SECONDS (in theory).
      */
-    //size_t rate_index = select_lower_rate_index(speed_kbit);
-    //int rate_kbit = dash_rates()[rate_index];
-    int rate_kbit = speed_kbit; // XXX
+    int rate_kbit =
+          (*use_fixed_rates == true)
+                ? dash_rates()[select_lower_rate_index(ctx->speed_kbit)]
+                : ctx->speed_kbit;
     int count = ((rate_kbit * 1000) / 8) * DASH_SECONDS;
-
     std::string path = "/dash/download/";
     path += std::to_string(count);
+    Settings settings = ctx->settings; /* Make a local copy */
     settings["http/path"] = path;
     settings["http/method"] = "GET";
     logger->debug("dash: requesting '%s'", path.c_str());
-
-    // XXX
+    /*
+     * Note: our accounting of time also includes the time to send the
+     * request to the server (approximately one RTT).
+     *
+     * This is different from the original implementation of DASH that
+     * is part of Neubot.
+     */
     double saved_time = mk::time_now();
     http_request_send(
-        txp, settings,
-        {
-            {"Authorization", auth_token},
-        },
-        "", [=](Error error, Var<http::Request> req) {
-            if (error) {
-                logger->warn("dash: request failed: %s",
-                             error.explain().c_str());
-                cb(error);
-                return;
-            }
-            assert(!!req);
-            http_request_recv_response(
-                txp,
-                [=](Error error, Var<http::Response> res) {
-                    if (error) {
-                        logger->warn("dash: cannot receive response: %s",
-                                     error.explain().c_str());
-                        cb(error);
-                        return;
-                    }
-                    assert(!!res);
-                    if (res->status_code != 200) {
-                        logger->warn("dash: invalid response code: %s",
-                                     error.explain().c_str());
-                        cb(http::HttpRequestFailedError());
-                        return;
-                    }
-                    res->request = req;
-                    double length = res->body.length();
-                    double time_elapsed = mk::time_now() - saved_time;
-                    if (time_elapsed <= 0) { // For robustness
-                        logger->warn("dash: invalid time error");
-                        cb(InvalidTimeError());
-                        return;
-                    }
-                    // TODO: we should fill all the required fields
-                    (*entry)["receiver_data"].push_back(report::Entry{
-                        {"connect_time", txp->connect_time()},
-                        //{"delta_user_time", delta_user_time}
-                        //{"delta_sys_time", delta_sys_time}
-                        {"elapsed", time_elapsed},
-                        {"elapsed_target", DASH_SECONDS},
-                        {"fast_scale_down", *fast_scale_down},
-                        //{"internal_address", stream.myname[0]}
-                        {"iteration", iteration},
-                        //{"platform", sys.platform}
-                        {"rate", rate_kbit},
-                        //{"real_address", self.parent.real_address}
-                        //{"received", received}
-                        //{"remote_address", stream.peername[0]}
-                        //{"request_ticks", self.saved_ticks}
-                        {"timestamp", mk::time_now()},
-                        {"uuid", uuid},
-                        {"engine_name", "libmeasurement_kit"},
-                        {"engine_version", MK_VERSION},
-                        {"version", "0.006000000"}});
-                    *time_budget += DASH_SECONDS - time_elapsed;
-                    double speed = length / time_elapsed;
-                    double s_k = (speed * 8) / 1000;
-                    std::stringstream ss;
-                    ss << "rate: " << rate_kbit << " kbit/s, speed: "
-                       << std::fixed << std::setprecision(2) << s_k
-                       << " kbit/s, elapsed: " << std::fixed
-                       << std::setprecision(2) << time_elapsed
-                       << "s, time budget: " << std::fixed
-                       << std::setprecision(2) << *time_budget;
-                    logger->progress(iteration / (double)DASH_MAX_ITERATIONS,
-                                     ss.str().c_str());
-                    if (*fast_scale_down == true &&
-                          time_elapsed > DASH_SECONDS) {
-                        // If the rate is too high, scale it down
-                        double relerr = 1 - (time_elapsed / DASH_SECONDS);
-                        s_k *= relerr;
-                        if (s_k < 0) {
-                            s_k = dash_rates()[0];
+          ctx->txp, settings,
+          {
+                {"Authorization", ctx->auth_token},
+          },
+          "", [=](Error error, Var<http::Request> req) {
+              if (error) {
+                  ctx->logger->warn("dash: request failed: %s",
+                                    error.explain().c_str());
+                  ctx->cb(error);
+                  return;
+              }
+              assert(!!req);
+              http_request_recv_response(
+                    ctx->txp,
+                    [=](Error error, Var<http::Response> res) {
+                        if (error) {
+                            ctx->logger->warn(
+                                  "dash: cannot receive response: %s",
+                                  error.explain().c_str());
+                            ctx->cb(error);
+                            return;
                         }
-                    }
-                    reactor->call_soon([=]() {
+                        assert(!!res);
+                        if (res->status_code != 200) {
+                            ctx->logger->warn("dash: invalid response code: %s",
+                                              error.explain().c_str());
+                            ctx->cb(http::HttpRequestFailedError());
+                            return;
+                        }
+                        res->request = req;
+                        double length = res->body.length();
+                        double time_elapsed = mk::time_now() - saved_time;
+                        if (time_elapsed <= 0) { // For robustness
+                            ctx->logger->warn("dash: negative time error");
+                            ctx->cb(GenericError("negative time error"));
+                            return;
+                        }
+                        // TODO: we should fill all the required fields
+                        (*ctx->entry)["receiver_data"].push_back(report::Entry{
+                              {"connect_time", ctx->txp->connect_time()},
+                              //{"delta_user_time", delta_user_time}
+                              //{"delta_sys_time", delta_sys_time}
+                              {"elapsed", time_elapsed},
+                              {"elapsed_target", DASH_SECONDS},
+                              {"engine_name", "libmeasurement_kit"},
+                              {"engine_version", MK_VERSION},
+                              {"fast_scale_down", *fast_scale_down},
+                              //{"internal_address", stream.myname[0]}
+                              {"iteration", ctx->iteration},
+                              //{"platform", mk_platform()},
+                              {"rate", rate_kbit},
+                              //{"real_address", self.parent.real_address}
+                              /*
+                               * Note: here we're only concerned with the amount
+                               * of useful data we received (we ignore overhead)
+                               *
+                               * This is different from the original
+                               * implementation of DASH that is part of Neubot.
+                               */
+                              {"received", length}
+                              //{"remote_address", stream.peername[0]}
+                              //{"request_ticks", self.saved_ticks}
+                              {"timestamp", mk::time_now()},
+                              {"use_fixed_rates", *use_fixed_rates},
+                              {"uuid", ctx->uuid},
+                              /*
+                               * This version indicates measurement-kit.
+                               */
+                              {"version", "0.006000000"}});
+                        double speed = length / time_elapsed;
+                        double s_k = (speed * 8) / 1000;
+                        std::stringstream ss;
+                        ss << "rate: " << rate_kbit
+                           << " kbit/s, speed: " << std::fixed
+                           << std::setprecision(2) << s_k
+                           << " kbit/s, elapsed: " << time_elapsed << "s";
+                        ctx->logger->progress(iteration /
+                                                    (double)DASH_MAX_ITERATIONS,
+                                              ss.str().c_str());
+                        if (*fast_scale_down == true &&
+                            time_elapsed > DASH_SECONDS) {
+                            // If the rate is too high, scale it down
+                            double relerr = 1 - (time_elapsed / DASH_SECONDS);
+                            s_k *= relerr;
+                            if (s_k < 0) {
+                                s_k = dash_rates()[0];
+                            }
+                        }
+                        ctx->speed_kbit = s_k;
+                        ctx->iteration += 1;
                         run_loop_<http_request_send,
-                                  http_request_recv_response>(
-                            txp, s_k, auth_token, uuid, entry, settings,
-                            reactor, logger, cb, iteration + 1, time_budget);
-                    });
-                },
-                reactor, logger);
-        });
+                                  http_request_recv_response>(ctx);
+                    },
+                    ctx->reactor, ctx->logger);
+          });
 }
 
 template <MK_MOCK_AS(http::request_connect, http_request_connect),
@@ -181,35 +206,41 @@ template <MK_MOCK_AS(http::request_connect, http_request_connect),
 void run_impl(std::string url, std::string auth_token, Var<report::Entry> entry,
               Settings settings, Var<Reactor> reactor, Var<Logger> logger,
               Callback<Error> cb) {
+    Var<DashLoopCtx> ctx = Var<DashLoopCtx>::make();
+    ctx->auth_token = auth_token;
+    ctx->entry = entry;
+    ctx->logger = logger;
+    ctx->reactor = reactor;
+    ctx->settings = settings;
+    /*
+     * TODO: from the Neubot point of view, it would probably be
+     * very useful to save and reuse the same UUID4.
+     */
+    ctx->uuid = mk::sole::uuid4().str();
     settings["http/url"] = url;
     settings["http/method"] = "GET";
     logger->info("Start dash test with: %s", url.c_str());
     http_request_connect(
-        settings,
-        [=](Error error, Var<net::Transport> txp) {
-            if (error) {
-                assert(!txp);
-                logger->warn("dash: cannot connect to server: %s",
-                             error.explain().c_str());
-                cb(error);
-                return;
-            }
-            // Note: from now on, we own `txp`
-            assert(!!txp);
-            logger->info("Connected to server; starting the test");
-            /*
-             * TODO: from the Neubot point of view, it would probably be
-             * very useful to save and reuse the same UUID4.
-             */
-            run_loop_<http_request_send, http_request_recv_response>(
-                txp, dash_rates()[0], auth_token, mk::sole::uuid4().str(),
-                entry, settings, reactor, logger, [=](Error error) {
-                    // Release the `txp` before continuing
-                    logger->info("Test complete; closing connection");
-                    txp->close([=]() { cb(error); });
-                });
-        },
-        reactor, logger);
+          settings,
+          [=](Error error, Var<net::Transport> txp) {
+              if (error) {
+                  logger->warn("dash: cannot connect to server: %s",
+                               error.explain().c_str());
+                  cb(error);
+                  return;
+              }
+              // Note: from now on, we own `txp`
+              assert(!!txp);
+              logger->info("Connected to server; starting the test");
+              ctx->txp = txp;
+              ctx->cb = [=](Error error) {
+                  // Release the `txp` before continuing
+                  logger->info("Test complete; closing connection");
+                  txp->close([=]() { cb(error); });
+              };
+              run_loop_<http_request_send, http_request_recv_response>(txp);
+          },
+          reactor, logger);
 }
 
 /*
