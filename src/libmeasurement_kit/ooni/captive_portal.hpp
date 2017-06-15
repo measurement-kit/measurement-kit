@@ -9,11 +9,8 @@
 namespace mk {
 namespace ooni {
 
-typedef std::map<std::string,std::string> input;
-void gen_http_inputs(Var<std::vector<input>> is, Var<Logger> logger);
-
-typedef std::function<bool(Var<http::Response>)> no_cp_f_t;
-void gen_no_cp_f(const input &i, Var<no_cp_f_t> no_cp_f);
+typedef std::map<std::string,std::string> input_t;
+void gen_http_inputs(Var<std::vector<input_t>> is, Var<Logger> logger);
 
 } // namespace ooni
 } // namespace mk
