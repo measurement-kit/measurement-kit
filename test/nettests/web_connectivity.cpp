@@ -50,14 +50,10 @@ TEST_CASE("Make sure that IP address scrubbing works") {
                   called += 1;
               }))
             .run();
-        REQUIRE(called == 2);
+        REQUIRE(called == 1);
     };
 
     SECTION("By default IP is redacted") {
-        /*
-         * Note: checks performed outside of the callback because that
-         * callback is in a context in which exceptions are filtered
-         */
         bool ip_check = false;
         bool redacted_check = false;
         test([](BaseTest test) { return test; },
@@ -65,9 +61,9 @@ TEST_CASE("Make sure that IP address scrubbing works") {
                  ip_check = (entry.find(ip) == std::string::npos);
                  redacted_check =
                      (entry.find("[REDACTED]") != std::string::npos);
+                 REQUIRE(ip_check);
+                 REQUIRE(redacted_check);
              });
-        REQUIRE(ip_check);
-        REQUIRE(redacted_check);
     }
 
     SECTION("IP is redacted when its inclusion is NOT requested") {
@@ -81,12 +77,12 @@ TEST_CASE("Make sure that IP address scrubbing works") {
                 return test.set_options("save_real_probe_ip", false);
             },
             [&](std::string ip, std::string entry) {
-                ip_check = (entry.find(ip) == std::string::npos);
-                redacted_check =
-                    (entry.find("[REDACTED]") != std::string::npos);
+                 ip_check = (entry.find(ip) == std::string::npos);
+                 redacted_check =
+                     (entry.find("[REDACTED]") != std::string::npos);
+                 REQUIRE(ip_check);
+                 REQUIRE(redacted_check);
             });
-        REQUIRE(ip_check);
-        REQUIRE(redacted_check);
     }
 
     SECTION("IP is NOT redacted when its inclusion is requested") {
@@ -100,12 +96,12 @@ TEST_CASE("Make sure that IP address scrubbing works") {
                 return test.set_options("save_real_probe_ip", true);
             },
             [&](std::string ip, std::string entry) {
-                ip_check = (entry.find(ip) != std::string::npos);
-                redacted_check =
-                    (entry.find("[REDACTED]") == std::string::npos);
+                 ip_check = (entry.find(ip) != std::string::npos);
+                 redacted_check =
+                     (entry.find("[REDACTED]") == std::string::npos);
+                 REQUIRE(ip_check);
+                 REQUIRE(redacted_check);
             });
-        REQUIRE(ip_check);
-        REQUIRE(redacted_check);
     }
 }
 

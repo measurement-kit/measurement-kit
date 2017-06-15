@@ -3,6 +3,7 @@
 // information on the copying conditions.
 
 #include "../common/utils.hpp"
+#include "../ext/sole.hpp"
 #include "../ooni/utils.hpp"
 #include "../nettests/utils.hpp"
 
@@ -29,6 +30,7 @@ void Runnable::teardown(std::string) {}
 void Runnable::main(std::string, Settings, Callback<Var<report::Entry>> cb) {
     reactor->call_soon([=]() { cb(Var<report::Entry>{new report::Entry}); });
 }
+void Runnable::fixup_entry(report::Entry &) {}
 
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
@@ -77,23 +79,40 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     logger->debug("net_test: running with input %s", next_input.c_str());
     main(next_input, options, [=](Var<report::Entry> test_keys) {
         report::Entry entry;
-        // XXX simple way to override the default entry["input"] behavior
-        if (!(*test_keys)["input_"].is_null()) {
-            entry["input"] = (*test_keys)["input_"];
-            test_keys->erase("input_");
-        } else {
-            entry["input"] = next_input;
+        entry["input"] = next_input;
+        // Make sure the input is `null` rather than empty string
+        if (entry["input"] == "") {
+            entry["input"] = nullptr;
         }
         entry["test_keys"] = *test_keys;
         entry["test_keys"]["client_resolver"] = resolver_ip;
         entry["measurement_start_time"] =
             *mk::timestamp(&measurement_start_time);
         entry["test_runtime"] = mk::time_now() - start_time;
+        entry["id"] = mk::sole::uuid4().str();
+
+        // Until we have support for passing options, leave it empty
+        entry["options"] = Entry::array();
+
+        // Until we have support for it, just put `null`
+        entry["probe_city"] = nullptr;
+
+        // Add test helpers
+        entry["test_helpers"] = Entry::object();
+        for (auto &name : test_helpers_names) {
+            if (options.count(name) != 0) {
+                entry["test_helpers"][name] = options[name];
+            }
+        }
+
+        // Add empty input hashes
+        entry["input_hashes"] = Entry::array();
 
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
         report.fill_entry(entry);
+        fixup_entry(entry); // Let drivers possibly fix-up the entry
         if (entry_cb) {
             try {
                 entry_cb(entry.dump(4));
