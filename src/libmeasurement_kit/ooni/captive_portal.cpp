@@ -123,7 +123,7 @@ void http_many(Var<Entry> entry,
                 logger->info("%s: %d", input.at("name").c_str(), unfiltered);
                 result["result"] = unfiltered;
             }
-            (*entry)["vendor_tests"].push_back(result);
+            (*entry)["vendor_http_tests"].push_back(result);
             done_cb(err);
         };
     };
@@ -166,17 +166,30 @@ void dns_msft_ncsi(Var<Entry> entry,
     templates::dns_query(
         entry, "A", "IN", hostname, nameserver,
         [=](Error err, Var<dns::Message> message) {
+            Entry result = { {"name", "Microsoft DNS"},
+                             {"result", nullptr},
+                             {"hostname", "dns.msftncsi.com"},
+                             {"expected_ip", "131.107.255.255"},
+                             {"failure", nullptr} };
             if (!!err) {
                 logger->info("dns_query err: %s", err.as_ooni_error().c_str());
+                result["failure"] = err.as_ooni_error();
                 done_cb(err);
             } else {
+                for (const auto& a : message->answers) {
+                    result["actual_ips"].push_back(a.ipv4);
+                }
                 if (message->answers.size() != 1) {
                     logger->info("maybe captive portal");
+                    result["result"] = false;
                 } else if (message->answers[0].ipv4 != "131.107.255.255") {
                     logger->info("probably captive portal");
+                    result["result"] = false;
                 } else {
                     logger->info("no captive portal");
+                    result["result"] = true;
                 }
+                (*entry)["vendor_dns_tests"].push_back(result);
                 done_cb(NoError());
             }
         }, options, reactor, logger);
