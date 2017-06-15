@@ -19,10 +19,12 @@ auto body_correct = [=](Var<http::Response> response, std::string expected) {
     return response->body == expected;
 };
 
-typedef std::map<std::string,std::string> input;
-void gen_http_inputs(Var<std::vector<input>> is, Var<Logger> logger) {
+// all but one of the current vendor tests are HTTP tests.
+// these check either a status code or the body content.
+typedef std::map<std::string,std::string> input_t;
+void gen_http_inputs(Var<std::vector<input_t>> is, Var<Logger> logger) {
     logger->info("starting to gen");
-    input i;
+    input_t i;
     i["name"] = "Microsoft HTTP";
     i["url"] = "http://www.msftncsi.com/ncsi.txt";
     i["body"] = "Microsoft NCSI";
@@ -42,7 +44,7 @@ void gen_http_inputs(Var<std::vector<input>> is, Var<Logger> logger) {
     i.clear();
     i["name"] = "Android KitKat HTTP";
     i["url"] = "http://clients3.google.com/generate_204";
-    i["status"] = "204"; //XXX: fml
+    i["status"] = "204"; //XXX: easier to just convert to an int later...
     is->push_back(i);
     i.clear();
     i["name"] = "Android Lollipop HTTP";
@@ -75,60 +77,65 @@ void gen_http_inputs(Var<std::vector<input>> is, Var<Logger> logger) {
     i.clear();
 }
 
-// TODO: rename input -> input_t
-typedef std::function<bool(Var<http::Response>)> no_cp_f_t;
-void gen_no_cp_f(const input &i, Var<no_cp_f_t> no_cp_f) {
-    if (i.count("body") && i.count("status")) {
-        (*no_cp_f) = [=](Var<http::Response> r) {
-            return r->body == i.at("body") &&
-                r->status_code == std::stoi(i.at("status"));
-        };
-    } else if (i.count("body")) {
-        (*no_cp_f) = [=](Var<http::Response> r) {
-            return r->body == i.at("body");
-        };
-    } else if (i.count("status")) {
-        (*no_cp_f) = [=](Var<http::Response> r) {
-            return r->status_code == std::stoi(i.at("status"));
-        };
-    } else {
-        exit(1); // bug
-    }
-}
-
 void http_many(Var<Entry> entry,
                Callback<Error> all_done_cb,
                Var<Reactor> reactor,
                Var<Logger> logger) {
 
-    auto http_cb = [=](std::string name, Var<no_cp_f_t> no_cp_f, Callback<Error> done_cb) {
+    auto http_cb = [=](const input_t& input, Callback<Error> done_cb) {
         return [=](Error err, Var<http::Response> response) {
+            // result: true means unfiltered
+            Entry result = { {"name", input.at("name")},
+                             {"result", nullptr},
+                             {"url", input.at("url")},
+                             {"expected_body", nullptr},
+                             {"actual_body", nullptr},
+                             {"expected_status", nullptr},
+                             {"actual_status", nullptr},
+                             {"failure", nullptr} };
+
+            if (input.count("body")) {
+                result["expected_body"] = input.at("body");
+            }
+            if (input.count("status")) {
+                result["expected_status"] = input.at("status");
+            }
+
             if (!!err) {
                 logger->info("err: %s", err.as_ooni_error().c_str());
-                done_cb(err);
+                result["failure"] = err.as_ooni_error();
             } else if (!response) {
                 logger->info("null response");
-                done_cb(NoError());
+                result["failure"] = "null response"; // XXX correct string?
             } else {
-                bool no_cp = (*no_cp_f)(response);
-                if (no_cp) {
-                    logger->info("no captive portal at %s", name.c_str());
+                result["actual_body"] = response->body;
+                result["actual_status"] = response->status_code;
+                // all tests check status or body but never both or neither
+                result["actual_body"] = response->body;
+                bool unfiltered;
+                if (input.count("body")) {
+                    unfiltered = !!(input.at("body") == response->body);
+                } else if (input.count("status")) {
+                    unfiltered = !!(std::stoi(input.at("status")) == response->status_code);
                 } else {
-                    logger->info("yes captive portal at %s", name.c_str());
+                    exit(1);
                 }
-                done_cb(NoError());
+                logger->info("%s: %d", input.at("name").c_str(), unfiltered);
+                result["result"] = unfiltered;
             }
+            (*entry)["vendor_tests"].push_back(result);
+            done_cb(err);
         };
     };
 
-    Var<std::vector<input>> inputs(new std::vector<input>);
+    Var<std::vector<input_t>> inputs(new std::vector<input_t>);
     gen_http_inputs(inputs, logger);
 
     std::vector<Continuation<Error>> continuations;
-    for (auto input : *inputs) {
+    for (const auto& input : *inputs) {
         logger->info("setting up %s", input.at("name").c_str());
         Settings http_options; //XXX: specify timeout here
-        http_options["http/url"] = input["url"];
+        http_options["http/url"] = input.at("url");
         std::string body;
         http::Headers headers;
         if (input.count("ua")) {
@@ -137,19 +144,18 @@ void http_many(Var<Entry> entry,
             headers = constants::COMMON_CLIENT_HEADERS;
         }
 
-        Var<no_cp_f_t> no_cp_f(new no_cp_f_t);
-        gen_no_cp_f(input, no_cp_f);
-
         continuations.push_back(
             [=](Callback<Error> done_cb) {
                 templates::http_request(entry, http_options, headers, body,
-                    http_cb(input.at("name"), no_cp_f, done_cb), reactor, logger);
+                    http_cb(input, done_cb), reactor, logger);
             }
         );
     }
     mk::parallel(continuations, all_done_cb, 3);
 }
 
+// this is the only test that doesn't follow the pattern of those above.
+// this hostname should always resolve to this IP.
 void dns_msft_ncsi(Var<Entry> entry,
                    Callback<Error> done_cb,
                    Var<Reactor> reactor,
