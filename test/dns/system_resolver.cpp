@@ -22,46 +22,46 @@ static int null_getaddrinfo(const char *, const char *, const struct addrinfo *,
 TEST_CASE("the system resolver can handle a getaddrinfo error") {
     loop_with_initial_event([]() {
         system_resolver_impl<null_getaddrinfo>(
-            "IN", "A", "www.neubot.org",
+            nullptr, "IN", "A", "www.neubot.org",
+            {}, Reactor::global(), Logger::global(),
             [](Error e, Var<Message>) {
                 REQUIRE(e == NonRecoverableFailureError());
                 break_loop();
-            },
-            {}, Reactor::global(), Logger::global());
+            });
     });
 }
 
 TEST_CASE("the system resolver can handle a inet_ntop error") {
     loop_with_initial_event([]() {
         system_resolver_impl<getaddrinfo, null_inet_ntop>(
-            "IN", "A", "neubot.org",
+            nullptr, "IN", "A", "neubot.org",
+            {}, Reactor::global(), Logger::global(),
             [](Error e, Var<Message>) {
                 REQUIRE(e == InetNtopFailureError());
                 break_loop();
-            },
-            {}, Reactor::global(), Logger::global());
+            });
     });
 }
 
 TEST_CASE("the system resolver can handle an unsupported class") {
     loop_with_initial_event([]() {
-        system_resolver("CS", "A", "neubot.org",
+        system_resolver(nullptr, "CS", "A", "neubot.org",
+                        {}, Reactor::global(), Logger::global(),
                         [](Error e, Var<Message>) {
                             REQUIRE(e == UnsupportedClassError());
                             break_loop();
-                        },
-                        {}, Reactor::global(), Logger::global());
+                        });
     });
 }
 
 TEST_CASE("the system resolver can handle an unsupported query type") {
     loop_with_initial_event([]() {
-        system_resolver("IN", "NS", "neubot.org",
+        system_resolver(nullptr, "IN", "NS", "neubot.org",
+                        {}, Reactor::global(), Logger::global(),
                         [](Error e, Var<Message>) {
                             REQUIRE(e == UnsupportedTypeError());
                             break_loop();
-                        },
-                        {}, Reactor::global(), Logger::global());
+                        });
     });
 }
 
@@ -69,34 +69,35 @@ TEST_CASE("the system resolver can handle an unsupported query type") {
 
 TEST_CASE("the system resolver returns an error with an invalid_site") {
     loop_with_initial_event([]() {
-        system_resolver("IN", "A", "invalid_site",
+        system_resolver(nullptr, "IN", "A", "invalid_site",
+                        {}, Reactor::global(), Logger::global(),
                         [](Error e, Var<Message>) {
                             REQUIRE(
                                 e == HostOrServiceNotProvidedOrNotKnownError());
                             break_loop();
-                        },
-                        {}, Reactor::global(), Logger::global());
+                        });
     });
 }
 
 TEST_CASE("the system resolver is able to resolve an ipv4 address") {
     loop_with_initial_event([]() {
-        system_resolver("IN", "A", "www.neubot.org",
+        system_resolver(nullptr, "IN", "A", "www.neubot.org",
+                        {}, Reactor::global(), Logger::global(),
                         [](Error e, Var<Message> message) {
                             REQUIRE(!e);
                             REQUIRE(message->answers.size() == 1);
                             REQUIRE(message->answers[0].ipv4 ==
                                     "130.192.16.172");
                             break_loop();
-                        },
-                        {}, Reactor::global(), Logger::global());
+                        });
     });
 }
 
 TEST_CASE("the system resolver is able to resolve an ipv6 address") {
     loop_with_initial_event([]() {
         system_resolver(
-            "IN", "AAAA", "ooni.torproject.org",
+            nullptr, "IN", "AAAA", "ooni.torproject.org",
+            {}, Reactor::global(), Logger::global(),
             [](Error e, Var<Message> message) {
                 REQUIRE(!e);
                 REQUIRE(message->answers.size() > 0);
@@ -114,49 +115,48 @@ TEST_CASE("the system resolver is able to resolve an ipv6 address") {
                 }
                 REQUIRE(found);
                 break_loop();
-            },
-            {}, Reactor::global(), Logger::global());
+            });
     });
 }
 
 TEST_CASE("the system resolver can handle errors with a CNAME query") {
     loop_with_initial_event([]() {
-        system_resolver("IN", "CNAME", "invalid",
+        system_resolver(nullptr, "IN", "CNAME", "invalid",
+                        {}, Reactor::global(), Logger::global(),
                         [](Error e, Var<Message>) {
                             REQUIRE(e
                                 == HostOrServiceNotProvidedOrNotKnownError());
                             break_loop();
-                        },
-                        {}, Reactor::global(), Logger::global());
+                        });
     });
 }
 
 TEST_CASE(
     "the system resolver doesn't resolve the canonical name with A query") {
     loop_with_initial_event([]() {
-        system_resolver("IN", "A", "ipv4.google.com",
+        system_resolver(nullptr, "IN", "A", "ipv4.google.com",
+                        {}, Reactor::global(), Logger::global(),
                         [](Error e, Var<Message> message) {
                             REQUIRE(!e);
                             REQUIRE(message->answers.size() > 0);
                             REQUIRE(message->answers[0].hostname == "");
                             break_loop();
-                        },
-                        {}, Reactor::global(), Logger::global());
+                        });
     });
 }
 
 TEST_CASE("the system resolver is able to resolve the canonical name with "
           "CNAME query") {
     loop_with_initial_event([]() {
-        system_resolver("IN", "CNAME", "ipv4.google.com",
+        system_resolver(nullptr, "IN", "CNAME", "ipv4.google.com",
+                        {}, Reactor::global(), Logger::global(),
                         [](Error e, Var<Message> message) {
                             REQUIRE(!e);
                             REQUIRE(message->answers.size() > 0);
                             REQUIRE(message->answers[0].hostname ==
                                     "ipv4.l.google.com");
                             break_loop();
-                        },
-                        {}, Reactor::global(), Logger::global());
+                        });
     });
 }
 

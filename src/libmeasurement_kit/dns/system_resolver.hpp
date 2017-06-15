@@ -10,13 +10,14 @@ namespace mk {
 namespace dns {
 
 void system_resolver(
+        NameServers name_servers,
         QueryClass dns_class,
         QueryType dns_type,
         std::string name,
-        Callback<Error, Var<Message>> cb,
         Settings settings,
         Var<Reactor> reactor,
-        Var<Logger> logger
+        Var<Logger> logger,
+        Callback<Error, Var<Message>> cb
 );
 
 } // namespace dns

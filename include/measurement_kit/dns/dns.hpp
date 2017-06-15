@@ -147,6 +147,31 @@ void query(
         Var<Logger> logger = Logger::global()
 );
 
+class NameServers {
+  public:
+    NameServers();
+    NameServers(std::nullptr_t);
+    template <typename T> NameServers(T t) : NameServers({std::string{t},}) {}
+    //NameServers(std::string name_server);
+    NameServers(std::initializer_list<std::string> name_servers);
+    void push_back(std::string name_server);
+    const std::list<std::string> &as_list() const noexcept;
+
+  private:
+    std::list<std::string> name_servers_;
+};
+
+void query_with_nameservers(
+        NameServers name_servers,
+        QueryClass dns_class,
+        QueryType dns_type,
+        std::string name_to_query,
+        Settings settings,
+        Var<Reactor> reactor,
+        Var<Logger> logger,
+        Callback<Error, Var<Message>> func
+);
+
 struct ResolveHostnameResult {
     bool inet_pton_ipv4 = false;
     bool inet_pton_ipv6 = false;

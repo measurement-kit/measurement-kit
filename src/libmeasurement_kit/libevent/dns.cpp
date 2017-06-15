@@ -16,14 +16,15 @@ extern "C" {
 }
 
 void query(
+        dns::NameServers ns,
         dns::QueryClass dns_class,
         dns::QueryType dns_type,
         std::string name,
-        Callback<Error, Var<Message>> cb,
         Settings settings,
         Var<Reactor> reactor,
-        Var<Logger> logger) {
-    query_impl(dns_class, dns_type, name, cb, settings, reactor, logger);
+        Var<Logger> logger,
+        Callback<Error, Var<dns::Message>> cb) {
+    query_impl(ns, dns_class, dns_type, name, settings, reactor, logger, cb);
 }
 
 } // namespace libevent
