@@ -4,8 +4,6 @@
 
 #include <measurement_kit/http.hpp>
 
-#include "../../src/libmeasurement_kit/http/response_parser.hpp"
-
 #include <iostream>
 
 #include <getopt.h>
@@ -30,42 +28,6 @@ static bool set_header(http::Headers &headers, const std::string option) {
     }
     headers[key] = value;
     return true;
-}
-
-static auto http_read_response_coro() {
-    Var<http::ResponseParserNg> parser{new http::ResponseParserNg};
-    Var<http::Response> response{new http::Response};
-    Var<bool> parsing_complete{new bool{false}};
-
-    parser->on_response([=](http::Response resp) { *response = resp; });
-    parser->on_end([=]() { *parsing_complete = true; });
-    parser->on_body([=](std::string s) { response->body += s; });
-
-    return [=](net::Buffer data) -> http::Response {
-        parser->feed(data);
-        if (*parsing_complete == false) {
-            throw YieldError(); /* Interrupt here the coroutine */
-        }
-        return *response;
-    };
-}
-
-static auto add_request_coro(Var<http::Request> request) {
-    return [request = std::move(request)](http::Response response) {
-        response.request = request;
-        return response;
-    };
-}
-
-static auto print_response_and_exit_coro() {
-    return [](http::Response response) {
-        std::cout << response.response_line << "\n";
-        for (auto &pair : response.headers) {
-            std::cout << pair.first << ": " << pair.second << "\n";
-        }
-        std::cout << "\n" << response.body << "\n";
-        break_loop();
-    };
 }
 
 int main(int argc, char **argv) {
@@ -109,28 +71,24 @@ int main(int argc, char **argv) {
     }
     settings["http/url"] = argv[0];
 
-    loop_with_initial_event([=]() {
-        http::request_connect(settings, [=](Error e, Var<net::Transport> t) {
-            if (e) {
-                throw e;
-            }
-            http::request_send(
-                t, settings, headers, body, [=](Error e, Var<http::Request> r) {
-                    if (e) {
-                        throw e;
-                    }
-                    mk::warn("Request sent... waiting for response...");
-                    t->on_data(fcompose(
-                        http_read_response_coro(),
-                        add_request_coro(std::move(r)),
-                        print_response_and_exit_coro()
-                    ));
-                    t->on_error([](Error e) {
-                        std::cout << "Error: " << e.explain() << "\n";
-                        throw e;
-                    });
-                });
-        });
+    loop_with_initial_event([&]() {
+        http::request(
+            settings,
+            headers,
+            body,
+            [](Error error, Var<http::Response> response) {
+                if (error) {
+                    std::cout << "Error: " << error.explain() << "\n";
+                    break_loop();
+                    return;
+                }
+                std::cout << response->response_line << "\n";
+                for (auto &pair : response->headers) {
+                    std::cout << pair.first << ": " << pair.second << "\n";
+                }
+                std::cout << "\n" << response->body << "\n";
+                break_loop();
+            });
     });
 
     return 0;
