@@ -90,9 +90,12 @@ class fcompose_policy_async_robust {
             auto f_cb = std::make_tuple(
                   [ g = std::move(g), g_cb = std::move(g_cb),
                     &e_route ](auto &&... f_out) {
+                      // IMPORTANT: we stop filtering exceptions as soon as
+                      // control has been passed to the next callback because
+                      // we can't tell whether the next callback is just one
+                      // inside the chain or the final one
                       e_route = false;
                       fapply(g, f_out..., g_cb);
-                      e_route = true;
                   });
             try {
                 fapply(f, std::tuple_cat(args, f_cb));
