@@ -14,7 +14,7 @@ namespace mk {
 template <typename F, typename... A, std::size_t... I>
 constexpr auto fapply_impl_(F &&f, std::tuple<A...> &&t,
                             std::index_sequence<I...>) {
-    return f(std::get<I>(t)...);
+    return f(std::move(std::get<I>(t))...);
 }
 
 // start compile time recursion to ensure the compiler generates code such

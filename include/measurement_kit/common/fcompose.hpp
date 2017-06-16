@@ -48,7 +48,7 @@ class fcompose_policy_sync {
     template <typename F, typename G>
     constexpr auto operator()(F &&f, G &&g) const {
         return [ f = std::move(f), g = std::move(g) ](auto &&... f_in) {
-            return fapply(g, fapply(f, f_in...));
+            return fapply(g, fapply(f, std::move(f_in)...));
         };
     }
 };
