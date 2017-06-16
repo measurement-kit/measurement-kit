@@ -1,3 +1,43 @@
+# MeasurementKit 0.7.0-alpha.1 [2017-06-11]
+
+- Implement DNS "ping" (#1256)
+- Initial implementation of orchestrator (#1258)
+
+# MeasurementKit 0.7.0-alpha [2017-06-01]
+
+Note: 0.6.x was branched off stable. The release before this release
+is therefore v0.5.0-alpha.
+
+- Fix coveralls badge (#1190)
+- Allow writing report on the stdout (#1199)
+- Bump version number to v0.7.0-dev (#1201)
+- Sync master with stable (#1213, #1224, #1236)
+- Fix failing regress tests (#1222)
+- Force non-strict HTTP parser (#1225)
+- Use SSLv2 and SSLv3 with `web_connectivity` (#1228)
+- Cherry pick nodejs/http-parser#364 (#1227)
+- Changes to logger suggested by @darkk (#1230)
+- Remove all refs to `oldstable`
+- dns: make system resolver truly async (#1234)
+- We don't actually need ReturnType (#1239)
+- dns: split dns.hpp into several headers (#1241)
+- common/worker.cpp: Fix a possible race condition
+- dns: common impl for `query_{class,type}` (#1242)
+- Start using bouncer (#1016)
+- Start requiring move semantic for callbacks (#1244)
+- runner: allow to run arbitrary tasks (#1249)
+- Further refine the runner model (#1251)
+- Add support for parsing ISO8601
+- `parse_iso6801_utc`: add docs and more tests
+- Improve our json processing capabilities (#1253)
+- d/a/h/request.md: reindent and improve (#1254)
+- Fix `json_*_process_and_filter_errors()`
+- http/request: start adding JSON helpers
+- http/request: finish off json helpers
+- json helpers: Fix the order of arguments
+- ndt: do not abort if a test phase fails
+- Fix bouncer address
+
 # MeasurementKit 0.6.6 [2017-05-15]
 
 - n/connect.cpp: compile with libevent v2.0.x

@@ -9,18 +9,30 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/dns.hpp>
 
-void mk::dns::query(mk::dns::QueryClass dns_class,
-                    mk::dns::QueryType dns_type,
-                    std::string query_name,
-                    mk::Callback<mk::Error, mk::dns::Message> callback,
-                    mk::Settings settings = {},
-                    mk::Var<mk::Reactor> reactor = mk::Reactor::global());
+namespace mk {
+namespace dns {
+
+void query(QueryClass dns_class,
+           QueryType dns_type,
+           std::string query_name,
+           Callback<Error, Var<Message>> callback,
+           Settings settings = {},
+           Var<Reactor> reactor = Reactor::global());
 
 void resolve_hostname(std::string hostname,
-                    Callback<ResolveHostnameResult> cb,
-                    Settings settings = {},
-                    Var<Reactor> reactor = Reactor::global(),
-                    Var<Logger> logger = Logger::global());
+                      Callback<ResolveHostnameResult> cb,
+                      Settings settings = {},
+                      Var<Reactor> reactor = Reactor::global(),
+                      Var<Logger> logger = Logger::global());
+
+template <typename ResultsCollector, typename Callback>
+void ping_nameserver(QueryClass dns_class, QueryType dns_type, std::string name,
+                     double interval, Maybe<double> run_for, Settings settings,
+                     Var<Reactor> reactor, Var<Logger> logger,
+                     ResultsCollector collector, Callback callback);
+
+} // namespace dns
+} // namespace mk
 ```
 
 # STABILITY
@@ -173,7 +185,6 @@ the `query` function. The following setting keys are available:
 The optional `reactor` argument is the reactor to use to issue the query
 and receive the corresponding response.
 
-
 The `resolve_hostname()` function should be used to perform dns queries
 for connection purposes and not to perform tests on a dns server.
 In both cases of success or failure, it will invoke the callback passing an instance
@@ -202,44 +213,21 @@ only contain a IPv4 (or IPv6) address if `address` is an IPv4 (or IPv6) address 
 will contain IPv4 addresses before IPv6 addresses (if any) when `address` instead is
 a FQDN (fully qualified domain name).
 
+The `ping_nameserver` template executes `query()` using the nameserver
+specified in `Settings` every `interval` seconds. If the `run_for` monad is
+empty, this function will run forever. Otherwise, it will stop after `*run_for`
+seconds. Every time `query()` completes, the error and the
+resulting message will be passed to the `collector` function (which
+is equivalent to `std::function<void(Error, Var<Message>)>`. When the
+time is up, the final `callback` (equivalent to `std::function<void(Error)>`)
+will be called. Such `callback` will most likely receive a value of
+`NoError()` unless `interval` is negative. In such case, this function
+will fail and return a value of `ValueError()`. In all cases, the invocation
+of the final callback will be deferred.
+
 # EXAMPLE
 
-```C++
-#include <measurement_kit/dns.hpp>
-
-using namespace mk;
-
-Settings settings({
-    {"dns/nameserver", "8.8.8.8"},
-    {"dns/port", 53},
-    {"dns/attempts", 1},
-    {"dns/timeout", 3.1415},
-    {"dns/randomize_case", true},
-});
-
-dns::query(
-        "IN", "AAAA", "nexa.polito.it",
-        [](Error error, dns::Message message) {
-            if (error) {
-                throw error;
-            }
-            double rtt = message.rtt;
-            for (auto answer : message.answers) {
-                int ttl = answer.ttl;
-                std::string r;
-                if (answer.type == "A") {
-                    r = answer.ipv4;
-                } else if (answer.type == "AAAA") {
-                    r = answer.ipv6;
-                } else if (answer.type == "PTR") {
-                    r = answer.hostname;
-                } else {
-                    continue;
-                }
-                /* ... */
-            }
-        }, settings);
-```
+See files in `example/dns/`.
 
 # HISTORY
 

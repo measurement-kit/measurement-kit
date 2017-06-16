@@ -50,7 +50,7 @@ ErrorOr<std::vector<T>> slurpv_impl(std::string p) {
     size_t nread = std_fread(result.data(), 1, result.size(), filep);
     // Note: cast to unsigned safe because we excluded negative case above
     if ((unsigned long)pos != nread) {
-        std_fclose(filep);
+        (void)std_fclose(filep);
         return FileIoError();
     }
     // Note: afaik fclose() should not fail when we're just reading
@@ -58,6 +58,25 @@ ErrorOr<std::vector<T>> slurpv_impl(std::string p) {
         return FileIoError();
     }
     return result;
+}
+
+template <MK_MOCK_AS(std::fopen, std_fopen),
+          MK_MOCK_AS(std::fwrite, std_fwrite),
+          MK_MOCK_AS(std::fclose, std_fclose)>
+Error overwrite_file_impl(std::string path, std::string content) {
+    FILE *filep = std_fopen(path.c_str(), "wb");
+    if (filep == nullptr) {
+        return FileIoError();
+    }
+    size_t count = std_fwrite(content.data(), 1, content.size(), filep);
+    if (count != content.size()) {
+        (void)std_fclose(filep);
+        return FileIoError();
+    }
+    if (std_fclose(filep) != 0) {
+        return FileIoError();
+    }
+    return NoError();
 }
 
 } // namespace mk

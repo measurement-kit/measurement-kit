@@ -38,7 +38,7 @@ Error dns_error(int code) {
 
     } else if (code == DNS_ERR_NOTIMPL) {
         // The name server does not support the requested kind of query
-        err = NotImplementedError();
+        err = dns::NotImplementedError();
 
     } else if (code == DNS_ERR_REFUSED) {
         // The name server refuses to perform the specified operation

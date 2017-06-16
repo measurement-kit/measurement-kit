@@ -44,6 +44,32 @@ void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
     net_connect(url->address, url->port, cb, settings, reactor, logger);
 }
 
+template <MK_MOCK_AS(mk::http::request, request)>
+void request_json_string_impl(
+      std::string method, std::string url, std::string data,
+      http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+    settings["http/url"] = url;
+    settings["http/method"] = method;
+    headers["Content-Type"] = "application/json";
+    logger->debug("%s to %s (body: '%s')", method.c_str(), url.c_str(),
+                  data.c_str());
+    request(settings, headers, data,
+            [=](Error error, Var<http::Response> response) {
+                nlohmann::json jresponse;
+                if (error) {
+                    cb(error, response, jresponse);
+                    return;
+                }
+                error = json_parse_and_process(response->body, [&](auto json) {
+                    jresponse = std::move(json);
+                });
+                cb(error, response, jresponse);
+            },
+            reactor, logger, nullptr, 0);
+}
+
 } // namespace http
 } // namespace mk
 #endif

@@ -5,10 +5,10 @@
    fun:_ZNSt17_Function_handlerIFvN2mk5ErrorEP11buffereventEZNS0_3net11connect_sslES3_P6ssl_stSsSt8functionIS4_ENS0_3VarINS0_7ReactorEEENSA_INS0_6LoggerEEEEUlS1_S3_E_E9_M_invokeERKSt9_Any_dataOS1_OS3_
    fun:mk_bufferevent_on_event
    fun:bufferevent_run_deferred_callbacks_locked
+   fun:event_process_active_single_queue
    fun:event_base_loop
    fun:_ZN2mk8libevent11poller_loopIXadL_Z9event_newEEXadL_Z10event_freeEEXadL_Z9event_addEEXadL_Z19event_base_dispatchEEEEvNS_3VarI10event_baseEEPNS0_6PollerE
-   fun:_ZN2mk8libevent6Poller4loopEv
-   fun:_ZN2mk7Reactor23loop_with_initial_eventESt8functionIFvvEE
+   fun:_ZN2mk8libevent6Poller3runEv
    fun:_ZL31____C_A_T_C_H____T_E_S_T____*
    fun:_ZN5Catch8runTestsERKNS_3PtrINS_6ConfigEEE
    fun:main
@@ -23,7 +23,7 @@
    fun:event_process_active_single_queue
    fun:event_base_loop
    fun:_ZN2mk8libevent11poller_loopIXadL_Z9event_newEEXadL_Z10event_freeEEXadL_Z9event_addEEXadL_Z19event_base_dispatchEEEEvNS_3VarI10event_baseEEPNS0_6PollerE
-   fun:_ZN2mk8libevent6Poller4loopEv
+   fun:_ZN2mk8libevent6Poller3runEv
    fun:_ZN2mk7Reactor23loop_with_initial_eventESt8functionIFvvEE
    fun:_ZL31____C_A_T_C_H____T_E_S_T____*
    fun:_ZN5Catch8runTestsERKNS_3PtrINS_6ConfigEEE
