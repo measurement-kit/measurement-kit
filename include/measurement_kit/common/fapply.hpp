@@ -12,8 +12,7 @@
 namespace mk {
 
 template <typename F, typename... A, std::size_t... I>
-constexpr auto fapply_impl_(F &&f, std::tuple<A...> &&t,
-                            std::index_sequence<I...>) {
+constexpr auto fapply_(F &&f, std::tuple<A...> &&t, std::index_sequence<I...>) {
     return f(std::move(std::get<I>(t))...);
 }
 
@@ -21,12 +20,12 @@ constexpr auto fapply_impl_(F &&f, std::tuple<A...> &&t,
 // that `f` is called with all the arguments inside `t`
 template <typename F, typename... A>
 constexpr auto fapply(F &&f, std::tuple<A...> &&t) {
-    return fapply_impl_(f, std::move(t), std::index_sequence_for<A...>{});
+    return fapply_(std::move(f), std::move(t), std::index_sequence_for<A...>{});
 }
 
 // convert arbitrary arguments into a tuple
 template <typename F, typename... A> constexpr auto fapply(F &&f, A &&... a) {
-    return fapply(f, std::make_tuple(std::forward<A>(a)...));
+    return fapply(std::move(f), std::make_tuple(std::forward<A>(a)...));
 }
 
 } // namespace mk
