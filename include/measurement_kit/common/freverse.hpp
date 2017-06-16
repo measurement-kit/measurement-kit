@@ -33,15 +33,15 @@
 namespace mk {
 
 template <class F, std::size_t... Is>
-constexpr auto index_apply_impl_(F f, std::index_sequence<Is...>) {
+constexpr auto index_apply_impl_(F &&f, std::index_sequence<Is...>) {
     return f(std::integral_constant<std::size_t, Is>{}...);
 }
 
-template <std::size_t N, class F> constexpr auto index_apply_(F f) {
+template <std::size_t N, class F> constexpr auto index_apply_(F &&f) {
     return index_apply_impl_(f, std::make_index_sequence<N>{});
 }
 
-template <class Tuple> constexpr auto freverse(Tuple t) {
+template <class Tuple> constexpr auto freverse(const Tuple &t) {
     return index_apply_<std::tuple_size<Tuple>{}>([&](auto... Is) {
         return std::make_tuple(
             std::get<std::tuple_size<Tuple>{} - 1 - Is>(t)...);

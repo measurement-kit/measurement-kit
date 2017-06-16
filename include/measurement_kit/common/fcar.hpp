@@ -10,7 +10,8 @@
 
 namespace mk {
 
-template <typename T, typename... U> T fcar(std::tuple<T, U...> t) {
+template <typename T, typename... U>
+constexpr T fcar(const std::tuple<T, U...> &t) {
     return std::get<0>(t);
 }
 
