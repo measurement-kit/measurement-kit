@@ -58,7 +58,12 @@
 /test/common/error
 /test/common/error_or
 /test/common/every
+/test/common/fapply
+/test/common/fcar
+/test/common/fcdr
+/test/common/fcompose
 /test/common/fmap
+/test/common/freverse
 /test/common/json
 /test/common/locked
 /test/common/logger
