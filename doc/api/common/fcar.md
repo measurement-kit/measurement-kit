@@ -1,5 +1,5 @@
 # NAME
-fcar &mdash; Get first argument of a tuple
+fcar &mdash; Get first element of a tuple
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
