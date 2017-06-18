@@ -23,8 +23,8 @@ The `common` module contains contains the following submodules:
 - [every](common/every.md): call a functor every N seconds
 - [fapply](common/fapply.md): apply arguments to a functor
 - [fcar](common/fcar.md): get first element of a tuple
-- [fcar](common/fcompose.md): compose arbitrary functors with different composing policies
-- [fcdr](common/fcdr.md): get remainder of a tuple
+- [fcompose](common/fcompose.md): compose arbitrary functors with different composing policies
+- [fcdr](common/fcdr.md): get from second to last element of a tuple
 - [fmap](common/fmap.md): apply a function to a vector
 - [freverse](common/freverse.md): get the reverse of a tuple
 - [has_global_factory](common/has_global_factory.md): template decorator to add a global, singleton factory to a class

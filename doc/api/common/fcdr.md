@@ -1,5 +1,5 @@
 # NAME
-fcdr &mdash; Get the remainder of a tuple
+fcdr &mdash; Get from second to last element of a tuple
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
