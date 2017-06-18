@@ -1,5 +1,5 @@
 # NAME
-gapply &mdash; Apply arguments to a functor
+fapply &mdash; Apply arguments to a functor
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
@@ -8,7 +8,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
-mk::fapply([](int x, int y) { return x + y; }, 10, 7);
+template <typename Functor, typename... Args>
+constexpr auto fapply(Functor functor, Args &&... args);
 ```
 
 # STABILITY
@@ -20,6 +21,10 @@ mk::fapply([](int x, int y) { return x + y; }, 10, 7);
 The `fapply` template function applies to functor passed as its first
 argument all the following arguments and, if the functor returns a
 result, returns such result.
+
+# EXAMPLE
+
+See `example/common/fapply.cpp`.
 
 # HISTORY
 

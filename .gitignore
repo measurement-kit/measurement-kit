@@ -33,6 +33,8 @@
 /build/android/jni/conf
 /build/android/jni/spec
 /citizenlab-test-lists.*.csv
+/example/common/fapply
+/example/common/fapply_with_callback
 /example/dns/ping
 /example/dns/query
 /example/http/request
