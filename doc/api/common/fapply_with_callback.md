@@ -1,5 +1,5 @@
 # NAME
-fapply &mdash; Specialized fapply for functors with callback
+fapply_with_callback &mdash; Specialized fapply for functors with callback
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
