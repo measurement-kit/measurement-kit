@@ -30,7 +30,7 @@ TEST_CASE("fcompose() works as expected with sync policy") {
         REQUIRE(fcompose(fcompose_policy_sync(),
                          [](int x) { return std::make_tuple(x, 2); },
                          [](int x, int y) { return x + y + 4; },
-                         [](int x) { return x + 4; })(std::move(1)) == 11);
+                         [](int x) { return x + 4; })(1) == 11);
     }
 }
 
