@@ -8,7 +8,12 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
-assert(mk::fcdr(std::make_tuple(1, 2, 3)) == std::make_tuple(2, 3));
+namespace mk {
+
+template <typename T, typename... U>
+constexpr auto fcdr(std::tuple<T, U...> &&t);
+
+}
 ```
 
 # STABILITY
@@ -21,6 +26,12 @@ The `fcdr` template function takes in input a non-empty tuple, removes
 the first element, and returns the rest of the tuple.
 
 The `fcdr` template SHOULD NOT compile if the tuple is empty.
+
+# EXAMPLE
+
+```C++
+REQUIRE(mk::fcdr(std::make_tuple(1, 2, 3)) == std::make_tuple(2, 3));
+```
 
 # HISTORY
 

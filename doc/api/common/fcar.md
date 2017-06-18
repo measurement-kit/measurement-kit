@@ -8,7 +8,12 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
-assert(mk::fcar(std::make_tuple(1, 2, 3)) == 1);
+namespace mk {
+
+template <typename T, typename... U>
+constexpr T fcar(const std::tuple<T, U...> &t);
+
+}
 ```
 
 # STABILITY
@@ -21,6 +26,12 @@ The `fcar` template function takes in input a non-empty tuple and
 returns back the first element of the tuple.
 
 The `fcar` template SHOULD NOT compile if the tuple is empty.
+
+# EXAMPLE
+
+```C++
+REQUIRE(mk::fcar(std::make_tuple(1, 2, 3)) == 1);
+```
 
 # HISTORY
 

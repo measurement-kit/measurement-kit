@@ -24,7 +24,7 @@ constexpr auto fapply_with_callback(
 # DESCRIPTION
 
 The `fapply_with_callback` template function applies to functor passed
-as its first argument the other arguments according as follows:
+as its first argument the other arguments as follows:
 
 - The variadic list of arguments `args...` will be passed first
 
