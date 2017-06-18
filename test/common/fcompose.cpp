@@ -114,19 +114,20 @@ TEST_CASE("We can move arguments using fcompose") {
         fcompose(fcompose_policy_sync(),
                  [](ncs &&s) {
                      s += " some message here";
-                     return ncs{std::move(s)};
+                     return std::make_tuple(ncs{std::move(s)}, "");
                  },
-                 [](ncs &&s) { std::cout << s << "\n"; })(ncs{"[!]"});
+                 [](ncs &&s, ncs &&x) { std::cout << s << x << "\n"; })(
+              ncs{"[!]"});
     }
 
     SECTION("With the async policy") {
         fcompose(fcompose_policy_async(),
-                 [](ncs &&s, Callback<ncs &&> &&cb) {
+                 [](ncs &&s, Callback<ncs &&, ncs &&> &&cb) {
                      s += " some message here";
-                     cb(std::move(s));
+                     cb(std::move(s), "");
                  },
-                 [](ncs &&s, Callback<> &&cb) {
-                     std::cout << s << "\n";
+                 [](ncs &&s, ncs &&x, Callback<> &&cb) {
+                     std::cout << s << x << "\n";
                      cb();
                  })(ncs{"[!]"}, []() {});
     }
