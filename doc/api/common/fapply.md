@@ -11,7 +11,10 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 namespace mk {
 
 template <typename Functor, typename... Args>
-constexpr auto fapply(Functor &&functor, Args &&... args);
+constexpr auto fapply(Functor &&, Args &&...);
+
+template <typename Functor, typename Callback, typename... Args>
+constexpr auto fapply_with_callback(Functor &&, Callback &&, Args &&...);
 
 }
 ```
@@ -26,10 +29,15 @@ The `fapply` template function applies to functor passed as its first
 argument all the following arguments and, if the functor returns a
 result, returns such result.
 
+The `fapply_with_callback` template function is similar except that
+it receives a callback separately. The callback will be passed as the
+last argument to the functor. This is an optimization that avoid the
+concatenation of tuples in `fcompose`.
+
 # EXAMPLE
 
 See `example/common/fapply.cpp`.
 
 # HISTORY
 
-The `fapply` template function appeared in MeasurementKit 0.7.0.
+The `fapply.hpp` header appeared in MeasurementKit 0.7.0.

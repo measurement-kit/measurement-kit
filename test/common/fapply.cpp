@@ -20,6 +20,12 @@ static void two_arguments(int x, int y) {
     REQUIRE(y == 11);
 }
 
+static void three_arguments(int x, int y, int z) {
+    REQUIRE(x == 7);
+    REQUIRE(y == 11);
+    REQUIRE(z == 0);
+}
+
 TEST_CASE("mk::fapply() works as expected with a C function") {
     SECTION("For no arguments") {
         mk::fapply(zero_arguments);
@@ -31,6 +37,10 @@ TEST_CASE("mk::fapply() works as expected with a C function") {
 
     SECTION("For two arguments") {
         mk::fapply(two_arguments, 7, 11);
+    }
+
+    SECTION("For three arguments") {
+        mk::fapply(three_arguments, 7, 11, 0);
     }
 }
 
@@ -48,5 +58,13 @@ TEST_CASE("mk::fapply() works as expected with a callable") {
             REQUIRE(x == 7);
             REQUIRE(y == 11);
         }, 7, 11);
+    }
+
+    SECTION("For three arguments") {
+        mk::fapply([](int x, int y, int z) {
+            REQUIRE(x == 7);
+            REQUIRE(y == 11);
+            REQUIRE(z == 0);
+        }, 7, 11, 0);
     }
 }

@@ -34,7 +34,6 @@
 /build/android/jni/spec
 /citizenlab-test-lists.*.csv
 /example/common/fapply
-/example/common/fapply_with_callback
 /example/common/fcompose
 /example/dns/ping
 /example/dns/query
