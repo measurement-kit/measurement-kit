@@ -6,7 +6,6 @@
 
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/fapply.hpp>
-#include <measurement_kit/common/fapply_with_callback.hpp>
 #include <measurement_kit/common/fcar.hpp>
 #include <measurement_kit/common/fcdr.hpp>
 #include <measurement_kit/common/freverse.hpp>
@@ -63,7 +62,8 @@ class fcompose_policy_async {
     template <typename F, typename G>
     constexpr auto operator()(F &&f, G &&g) const {
         return [ f = std::move(f), g = std::move(g) ](auto &&... f_in) {
-            // Important: keep this in sync with `fcompose_policy_async_robust`
+            // Important: keep this in sync with
+            // `fcompose_policy_async_and_route_exceptions`
             auto f_tuple = std::make_tuple(std::move(f_in)...);
             auto f_rev = freverse(std::move(f_tuple));
             auto g_cb = fcar(f_rev);
@@ -79,11 +79,11 @@ class fcompose_policy_async {
     }
 };
 
-// Like above but also routes exceptions in `f`. We MUST NOT route exceptions
-// in `g` because, from what we know, it's the final callback.
-class fcompose_policy_async_robust {
+// Like above but also routes exceptions
+class fcompose_policy_async_and_route_exceptions {
   public:
-    template <typename E> fcompose_policy_async_robust(E &&e) : errback_(e) {}
+    template <typename E>
+    fcompose_policy_async_and_route_exceptions(E &&e) : errback_(e) {}
 
     template <typename F, typename G> auto operator()(F &&f, G &&g) const {
         // Make sure we don't pass `this` to the lambda because the lifetime
@@ -95,26 +95,19 @@ class fcompose_policy_async_robust {
             auto f_rev = freverse(std::move(f_tuple));
             auto g_cb = fcar(f_rev);
             auto args = freverse(std::move(fcdr(std::move(f_rev))));
-            auto e_route = true;
+            // Note: `fapply_with_callback_and_route_exceptions` takes its
+            // errback by move, so here we need to create two inline copies
             auto f_cb = [ g = std::move(g), g_cb = std::move(g_cb),
-                          &e_route ](auto &&... f_out) {
-                // IMPORTANT: we stop filtering exceptions as soon as
-                // control has been passed to the next callback because
-                // we can't tell whether the next callback is just one
-                // inside the chain or the final one
-                e_route = false;
-                fapply_with_callback(std::move(g), std::move(g_cb),
-                                     std::move(f_out)...);
+                          eb ](auto &&... f_out) {
+                fapply_with_callback_and_route_exceptions(
+                      std::move(g), std::move(g_cb),
+                      [eb](const std::exception &exc) { eb(exc); },
+                      std::move(f_out)...);
             };
-            try {
-                fapply_with_callback(std::move(f), std::move(f_cb),
-                                     std::move(args));
-            } catch (const std::exception &exc) {
-                if (!e_route) {
-                    throw;
-                };
-                eb(exc);
-            }
+            fapply_with_callback_and_route_exceptions(
+                  std::move(f), std::move(f_cb),
+                  [eb](const std::exception &exc) { eb(exc); },
+                  std::move(args));
         };
     }
 
