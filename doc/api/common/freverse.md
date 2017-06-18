@@ -1,5 +1,5 @@
 # NAME
-freverse &mdash; Get the remainder of a tuple
+freverse &mdash; Reverse of a tuple
 
 # LIBRARY
 MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
