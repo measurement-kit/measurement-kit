@@ -33,6 +33,7 @@ The `common` module contains contains the following submodules:
 - [non_copyable](common/non_copyable.md): non copyable class
 - [non_movable](common/non_movable.md): non movable class
 - [parallel](common/parallel.md): allows to run continuations in parallel
+- [platform](common/platform.md): get platform name
 - [range](common/range.md): generates numbers from zero to N
 - [reactor](common/reactor.md): class for dispatching I/O events and timeouts
 - [sandbox](common/sandbox.md): filter and route `Error`s and exceptions
