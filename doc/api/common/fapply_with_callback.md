@@ -8,9 +8,13 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
+namespace mk {
+
 template <typename Functor, template Callback, typename... Args>
 constexpr auto fapply_with_callback(
-    Functor functor, Callback callback, Args &&... args);
+    Functor &&functor, Callback &&callback, Args &&... args);
+
+}
 ```
 
 # STABILITY

@@ -8,8 +8,12 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common.hpp>
 
+namespace mk {
+
 template <typename Functor, typename... Args>
-constexpr auto fapply(Functor functor, Args &&... args);
+constexpr auto fapply(Functor &&functor, Args &&... args);
+
+}
 ```
 
 # STABILITY
