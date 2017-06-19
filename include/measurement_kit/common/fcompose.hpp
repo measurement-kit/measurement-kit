@@ -16,22 +16,23 @@ namespace mk {
 
 // pathologic corner case
 template <typename P, typename F, typename... G>
-auto fcompose_(const P &, F &&f, std::tuple<G...> &&, std::index_sequence<0>) {
+constexpr auto fcompose_(const P &, F &&f, std::tuple<G...> &&,
+                         std::index_sequence<0>) {
     return f;
 }
 
 // base case
 template <typename P, typename F, typename... G>
-auto fcompose_(const P &p, F &&f, std::tuple<G...> &&g,
-               std::index_sequence<1>) {
+constexpr auto fcompose_(const P &p, F &&f, std::tuple<G...> &&g,
+                         std::index_sequence<1>) {
     return p(f, fcar(g));
 }
 
 // generic case
 template <typename P, typename F, typename... G, std::size_t I,
           typename = typename std::enable_if<(I >= 2)>::type>
-auto fcompose_(const P &p, F &&f, std::tuple<G...> &&g,
-               std::index_sequence<I>) {
+constexpr auto fcompose_(const P &p, F &&f, std::tuple<G...> &&g,
+                         std::index_sequence<I>) {
     return fcompose_(p, p(f, fcar(g)), fcdr(std::move(g)),
                      std::index_sequence<I - 1>{});
 }
@@ -43,8 +44,6 @@ constexpr auto fcompose(P &&p, F &&f, G &&... g) {
                      std::index_sequence<sizeof...(G)>{});
 }
 
-// g(f(f_in...))
-// Note: this policy is optimized to allow full move semantic of arguments
 class fcompose_policy_sync {
   public:
     template <typename F, typename G>
@@ -55,8 +54,6 @@ class fcompose_policy_sync {
     }
 };
 
-// g(f(f_in...[:-1]), f_in...[-1])
-// Note: this policy is optimized to allow full move semantic of arguments
 class fcompose_policy_async {
   public:
     template <typename F, typename G>
@@ -79,7 +76,6 @@ class fcompose_policy_async {
     }
 };
 
-// Like above but also routes exceptions
 class fcompose_policy_async_and_route_exceptions {
   public:
     template <typename E>

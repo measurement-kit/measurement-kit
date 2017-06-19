@@ -30,7 +30,7 @@ TEST_CASE("fcompose() works as expected with sync policy") {
         REQUIRE(fcompose(fcompose_policy_sync(),
                          [](int x) { return std::make_tuple(x, 2); },
                          [](int x, int y) { return x + y + 4; },
-                         [](int x) { return x + 4; })(std::move(1)) == 11);
+                         [](int x) { return x + 4; })(1) == 11);
     }
 
     SECTION("For exceptions") {
@@ -116,6 +116,35 @@ TEST_CASE("fcompose() works as expected with async_robust policy") {
                  [](int x, int y, Callback<int> cb) { cb(x + y); })(1,
                                                                     [](int) {});
         REQUIRE(!!fired);
+
+    SECTION("For deferred callbacks") {
+        // Simulate deferred callbacks using reactor->call_soon()
+        auto reactor = Reactor::make();
+        auto f = fcompose(
+              fcompose_policy_async(),
+              [reactor](int x, Callback<int, int> &&cb) {
+                  reactor->call_soon(
+                        [ x = std::move(x), cb = std::move(cb) ]() {
+                            cb(x, 2);
+                        });
+              },
+              [reactor](int x, int y, Callback<int> &&cb) {
+                  reactor->call_soon([
+                      x = std::move(x), y = std::move(y), cb = std::move(cb)
+                  ]() { cb(x + y + 4); });
+              },
+              [reactor](int x, Callback<int> &&cb) {
+                  reactor->call_soon(
+                        [ x = std::move(x), cb = std::move(cb) ]() {
+                            cb(x + 4);
+                        });
+              });
+        reactor->run_with_initial_event([reactor, f]() {
+            f(1, [reactor](int x) {
+                REQUIRE(x == 11);
+                reactor->stop();
+            });
+        });
     }
 }
 
@@ -138,19 +167,20 @@ TEST_CASE("We can move arguments using fcompose") {
         fcompose(fcompose_policy_sync(),
                  [](ncs &&s) {
                      s += " some message here";
-                     return ncs{std::move(s)};
+                     return std::make_tuple(ncs{std::move(s)}, "");
                  },
-                 [](ncs &&s) { std::cout << s << "\n"; })(ncs{"[!]"});
+                 [](ncs &&s, ncs &&x) { std::cout << s << x << "\n"; })(
+              ncs{"[!]"});
     }
 
     SECTION("With the async policy") {
         fcompose(fcompose_policy_async(),
-                 [](ncs &&s, Callback<ncs &&> &&cb) {
+                 [](ncs &&s, Callback<ncs &&, ncs &&> &&cb) {
                      s += " some message here";
-                     cb(std::move(s));
+                     cb(std::move(s), "");
                  },
-                 [](ncs &&s, Callback<> &&cb) {
-                     std::cout << s << "\n";
+                 [](ncs &&s, ncs &&x, Callback<> &&cb) {
+                     std::cout << s << x << "\n";
                      cb();
                  })(ncs{"[!]"}, []() {});
     }

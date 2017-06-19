@@ -7,60 +7,6 @@
 #include <iostream>
 
 static inline void fcompose_sync_example() {
-    auto func = mk::fcompose(mk::fcompose_policy_sync(),
-                             [](int x, int y, int z) { return x + y + z; },
-                             [](int sum) {
-                                 return std::make_tuple(std::string{"result"},
-                                                        std::to_string(sum));
-                             },
-                             [](std::string &&prefix, std::string &&result) {
-                                 std::cout << prefix << ": " << result << "\n";
-                             });
-    func(0, 4, 7);
-}
-
-static inline void sum3(int x, int y, int z, mk::Callback<int> cb) {
-    cb(x + y + z);
-}
-
-static inline void tostr(int sum,
-                         mk::Callback<std::string &&, std::string &&> cb) {
-    cb("result", std::to_string(sum));
-}
-
-static inline void print(std::string &&prefix, std::string &&result,
-                         mk::Callback<> cb) {
-    std::cout << prefix << ": " << result << "\n";
-    cb();
-}
-
-static inline void fcompose_async_example1() {
-    auto func = mk::fcompose(mk::fcompose_policy_async(), sum3, tostr, print);
-    func(0, 4, 7, []() { /* NOTHING */ });
-}
-
-static inline void fcompose_async_example2() {
-    auto r = mk::Reactor::global();
-    auto func = mk::fcompose(
-          mk::fcompose_policy_async(),
-          [=](int x, int y, int z, mk::Callback<int> cb) {
-              r->call_soon([=]() { sum3(x, y, z, cb); });
-          },
-          [=](int sum, mk::Callback<std::string &&, std::string &&> cb) {
-              r->call_soon([=]() { tostr(sum, cb); });
-          },
-          [=](std::string &&a, std::string &&b, mk::Callback<> cb) {
-              r->call_soon(
-                    [=]() mutable { print(std::move(a), std::move(b), cb); });
-          });
-    r->run_with_initial_event([=]() { func(0, 4, 7, [=]() { r->stop(); }); });
-}
-
-static inline void print_fail(std::string &&, std::string &&, mk::Callback<>) {
-    throw mk::MockedError("simulating error along the chain");
-}
-
-static inline void fcompose_async_and_route_exceptions_example1() {
     auto func = mk::fcompose(mk::fcompose_policy_async_and_route_exceptions(
                                    [](const std::exception &exc) {
                                        std::clog
@@ -71,31 +17,34 @@ static inline void fcompose_async_and_route_exceptions_example1() {
     func(0, -4, -7, []() { /* NOTHING */ });
 }
 
-static inline void fcompose_async_and_route_exceptions_example2() {
+static inline void fcompose_async_example() {
+    // Simulate deferred callbacks using r->call_soon().
     auto r = mk::Reactor::global();
-    auto func = mk::fcompose(
-          mk::fcompose_policy_async_and_route_exceptions(
-                [](const std::exception &exc) {
-                    std::clog << "Error occurred: " << exc.what() << "\n";
-                }),
-          [=](int x, int y, int z, mk::Callback<int> cb) {
-              r->call_soon([=]() { sum3(x, y, z, cb); });
+    auto f = mk::fcompose(
+          mk::fcompose_policy_async(),
+          [r](int x, int y, int z, mk::Callback<int> &&cb) {
+              r->call_soon([
+                  x = std::move(x), y = std::move(y), z = std::move(z),
+                  cb = std::move(cb)
+              ]() { cb(x + y + z); });
           },
-          [=](int sum, mk::Callback<std::string &&, std::string &&> cb) {
-              r->call_soon([=]() { tostr(sum, cb); });
+          [r](int s, mk::Callback<std::string &&, std::string &&> &&cb) {
+              r->call_soon([ s = std::move(s), cb = std::move(cb) ]() {
+                  cb("result", std::to_string(s));
+              });
           },
-          [=](std::string &&a, std::string &&b, mk::Callback<> cb) {
-              r->call_soon([=]() mutable {
-                  print_fail(std::move(a), std::move(b), cb);
+          [r](std::string &&p, std::string &&re, mk::Callback<> &&cb) {
+              r->call_soon([
+                  p = std::move(p), re = std::move(re), cb = std::move(cb)
+              ]() {
+                  std::cout << p << ": " << re << "\n";
+                  cb();
               });
           });
-    r->run_with_initial_event([=]() { func(0, 4, 7, [=]() { r->stop(); }); });
+    r->run_with_initial_event([r, f]() { f(0, 4, 7, [r]() { r->stop(); }); });
 }
 
 int main() {
     fcompose_sync_example();
-    fcompose_async_example1();
-    fcompose_async_example2();
-    fcompose_async_and_route_exceptions_example1();
-    fcompose_async_and_route_exceptions_example2();
+    fcompose_async_example();
 }

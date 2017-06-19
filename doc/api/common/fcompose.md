@@ -79,4 +79,4 @@ See `example/common/fcompose.cpp`.
 
 # HISTORY
 
-The `fcompose` template function appeared in MeasurementKit 0.7.0.
+The `fcompose.hpp` header appeared in MeasurementKit 0.7.0.

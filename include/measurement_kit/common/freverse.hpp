@@ -17,7 +17,6 @@ constexpr auto freverse_(std::tuple<T...> &&t, std::index_sequence<I...>) {
 }
 
 template <typename... T> constexpr auto freverse(std::tuple<T...> &&t) {
-    //static_assert(sizeof...(T) >= 1, "tuple size is zero");
     return freverse_(std::move(t), std::make_index_sequence<sizeof...(T)>{});
 }
 

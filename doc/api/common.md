@@ -22,7 +22,6 @@ The `common` module contains contains the following submodules:
 - [error_or](common/error_or.md): maybe-like object containing either a result or an error
 - [every](common/every.md): call a functor every N seconds
 - [fapply](common/fapply.md): apply arguments to a functor
-- [fapply_with_callback](common/fapply_with_callback.md): special fapply for functors with callback
 - [fcar](common/fcar.md): get first element of a tuple
 - [fcdr](common/fcdr.md): get from second to last element of a tuple
 - [fcompose](common/fcompose.md): compose arbitrary functors with different composing policies
