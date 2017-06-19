@@ -58,29 +58,55 @@ nlohmann::json ClientMetadata::as_json_() const {
 }
 
 void Client::register_probe(Callback<Error &&> &&cb) const {
-    // Move to callback a copy of the data contained by this object so we
-    // completely detach the destiny of `this` and of the callback.
-    ClientMetadata meta = *this;
-    AsyncRunner::global()->start(
-          "orchestrate::register_probe", logger,
-          [meta = std::move(meta)](Callback<Error &&> &&cb) {
-              do_register_probe(meta, make_password(),
-                                AsyncRunner::global()->reactor(),
-                                std::move(cb));
-          },
-          std::move(cb));
+    // Copy the data contained by this object so we completely detach the
+    // destiny of `this` and of the callback.
+    AsyncRunner::global()->start_("orchestrate::register_probe", logger, [
+        meta = *this, cb = std::move(cb)
+    ](Continuation<> && done) {
+        do_register_probe(meta, AsyncRunner::global()->reactor(), [
+            done = std::move(done), cb = std::move(cb)
+        ](Error && error) {
+            done([ error = std::move(error), cb = std::move(cb) ]() mutable {
+                cb(std::move(error));
+            });
+        });
+    });
+}
+
+void Client::find_location(
+      Callback<Error &&, std::string &&, std::string &&> &&cb) const {
+    // Copy the data contained by this object so we completely detach the
+    // destiny of `this` and of the callback.
+    AsyncRunner::global()->start_(
+          "orchestrate::find_location", logger,
+          [ meta = *this, cb = std::move(cb) ](Continuation<> && done) {
+              do_find_location(meta, AsyncRunner::global()->reactor(), [
+                  cb = std::move(cb), done = std::move(done)
+              ](Error && error, std::string && asn, std::string && cc) {
+                  done([
+                      cb = std::move(cb), error = std::move(error),
+                      asn = std::move(asn), cc = std::move(cc)
+                  ]() mutable {
+                      cb(std::move(error), std::move(asn), std::move(cc));
+                  });
+              });
+          });
 }
 
 void Client::update(Callback<Error &&> &&cb) const {
-    // Move to callback a copy of the data contained by this object so we
-    // completely detach the destiny of `this` and of the callback.
-    ClientMetadata meta = *this;
-    AsyncRunner::global()->start(
-          "orchestrate::update", logger,
-          [meta = std::move(meta)](Callback<Error &&> &&cb) {
-              do_update(meta, AsyncRunner::global()->reactor(), std::move(cb));
-          },
-          std::move(cb));
+    // Copy the data contained by this object so we completely detach the
+    // destiny of `this` and of the callback.
+    AsyncRunner::global()->start_("orchestrate::update", logger, [
+        meta = *this, cb = std::move(cb)
+    ](Continuation<> && done) {
+        do_update(meta, AsyncRunner::global()->reactor(), [
+            cb = std::move(cb), done = std::move(done)
+        ](Error && error) {
+            done([ cb = std::move(cb), error = std::move(error) ]() mutable {
+                cb(std::move(error));
+            });
+        });
+    });
 }
 
 void Client::list_tasks(

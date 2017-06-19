@@ -61,6 +61,8 @@ class Task; /* Forward declaration */
 class Client : public ClientMetadata {
   public:
     void register_probe(Callback<Error &&> &&callback) const;
+    void find_location(
+          Callback<Error &&, std::string &&, std::string &&> &&callback) const;
     void update(Callback<Error &&> &&callback) const;
     void list_tasks(Callback<Error &&, std::vector<Task> &&> &&callback) const;
 };
