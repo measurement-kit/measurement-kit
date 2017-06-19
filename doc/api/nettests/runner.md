@@ -56,4 +56,5 @@ The `empty` method returns true if no tests are running.
 
 The `Async` class appeared in MeasurementKit 0.1.0. It was renamed
 `Runner` in MeasurementKit 0.2.0. It was moved from the `common` to
-the `nettests` namespace in MeasurementKit 0.4.0.
+the `nettests` namespace in MeasurementKit 0.4.0. Support for running
+arbitrary lambdas was added in v0.7.0.

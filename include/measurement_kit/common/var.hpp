@@ -4,14 +4,13 @@
 #ifndef MEASUREMENT_KIT_COMMON_VAR_HPP
 #define MEASUREMENT_KIT_COMMON_VAR_HPP
 
-#include <memory>
-#include <stdexcept>
+#include <measurement_kit/common/ptr_.hpp>
 
 namespace mk {
 
-template <typename T> class Var : public std::shared_ptr<T> {
-    using std::shared_ptr<T>::shared_ptr;
+MK_DEFINE_PTR_(Var_, shared_ptr, make_shared);
 
+template <typename T> class Var : public Var_<T> {
   public:
     typename std::add_pointer<T>::type get() const { return operator->(); }
 

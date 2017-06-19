@@ -9,7 +9,7 @@
 namespace mk {
 namespace libevent {
 
-class Poller : public Reactor {
+class Poller : public Reactor, public NonCopyable, public NonMovable {
   public:
     Poller();
     ~Poller() override;
@@ -30,6 +30,8 @@ class Poller : public Reactor {
     // class is not meant to be used directly but as Var<Reactor>
     Var<event_base> base_;
     Delegate<Poller *> periodic_cb_;
+    bool autostop_ = false;
+    bool is_running_ = false;
 };
 
 } // namespace libevent

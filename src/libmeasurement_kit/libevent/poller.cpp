@@ -83,5 +83,10 @@ void Poller::on_periodic_(Callback<Poller *> cb) {
     periodic_cb_ = cb;
 }
 
+void Poller::set_autostop(bool v) { autostop_ = v; }
+bool Poller::autostop() { return autostop_; }
+
+bool Poller::is_running() { return is_running_; }
+
 } // namespace libevent
 } // namespace mk

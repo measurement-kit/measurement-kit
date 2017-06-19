@@ -206,8 +206,14 @@ the one obtained with `Reactor::make()`.
    instead the following pattern:
 
 ```C++
-int main(int argc, char **argv) {
-    Reactor reactor = Reactor::make();
+    reactor->call_soon([reactor, task]() {
+        task([reactor, task]() {
+            reactor->call_soon([task]() {
+                callback(task);
+            });
+        });
+    });
+```
 
     // Allocate objects on the stack before calling the blocking
     // `run_with_initial_event` method of `reactor`.
