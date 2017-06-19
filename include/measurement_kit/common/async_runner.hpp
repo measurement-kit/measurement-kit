@@ -66,8 +66,12 @@ class AsyncRunner : public HasMakeFactory<AsyncRunner>,
         });
     }
 
+    // Semi-hidden method for now only used internally. The reason why it is
+    // not advertised is that it does not provide the guarantees of the above
+    // version of `start`, and it must be used with code that does not pass
+    // the `this` of objects to any callback.
     template <typename Task>
-    void start(std::string &&name, Var<Logger> logger, Task &&task) {
+    void start_(std::string &&name, Var<Logger> logger, Task &&task) {
         start_background_thread(logger);
         assert(active_ >= 0);
         active_ += 1;
@@ -96,6 +100,20 @@ class AsyncRunner : public HasMakeFactory<AsyncRunner>,
         }
     }
 
+    long long active() { return active_; }
+
+    bool running() { return running_; }
+
+    ~AsyncRunner() { stop(); }
+
+    Var<Reactor> reactor() { return reactor_; }
+
+  private:
+    std::atomic<long long> active_{0};
+    Var<Reactor> reactor_ = Reactor::make();
+    std::atomic<bool> running_{false};
+    std::thread thread_;
+
     void start_background_thread(Var<Logger> logger) {
         if (!running_) {
             std::promise<void> promise;
@@ -113,20 +131,6 @@ class AsyncRunner : public HasMakeFactory<AsyncRunner>,
             running_ = true;
         }
     }
-
-    long long active() { return active_; }
-
-    bool running() { return running_; }
-
-    ~AsyncRunner() { stop(); }
-
-    Var<Reactor> reactor() { return reactor_; }
-
-  private:
-    std::atomic<long long> active_{0};
-    Var<Reactor> reactor_ = Reactor::make();
-    std::atomic<bool> running_{false};
-    std::thread thread_;
 };
 
 } // namespace mk

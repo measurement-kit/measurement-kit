@@ -60,7 +60,7 @@ nlohmann::json ClientMetadata::as_json_() const {
 void Client::register_probe(Callback<Error &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
-    AsyncRunner::global()->start("orchestrate::register_probe", logger, [
+    AsyncRunner::global()->start_("orchestrate::register_probe", logger, [
         meta = *this, cb = std::move(cb)
     ](Continuation<> && done) {
         do_register_probe(meta, AsyncRunner::global()->reactor(), [
@@ -77,7 +77,7 @@ void Client::find_location(
       Callback<Error &&, std::string &&, std::string &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
-    AsyncRunner::global()->start(
+    AsyncRunner::global()->start_(
           "orchestrate::find_location", logger,
           [ meta = *this, cb = std::move(cb) ](Continuation<> && done) {
               do_find_location(meta, AsyncRunner::global()->reactor(), [
@@ -96,7 +96,7 @@ void Client::find_location(
 void Client::update(Callback<Error &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
-    AsyncRunner::global()->start("orchestrate::update", logger, [
+    AsyncRunner::global()->start_("orchestrate::update", logger, [
         meta = *this, cb = std::move(cb)
     ](Continuation<> && done) {
         do_update(meta, AsyncRunner::global()->reactor(), [
