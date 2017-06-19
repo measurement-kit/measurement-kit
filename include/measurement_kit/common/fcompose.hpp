@@ -4,10 +4,13 @@
 #ifndef MEASUREMENT_KIT_COMMON_FCOMPOSE_HPP
 #define MEASUREMENT_KIT_COMMON_FCOMPOSE_HPP
 
+#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/fapply.hpp>
 #include <measurement_kit/common/fcar.hpp>
 #include <measurement_kit/common/fcdr.hpp>
 #include <measurement_kit/common/freverse.hpp>
+
+#include <exception>
 
 namespace mk {
 
@@ -56,6 +59,8 @@ class fcompose_policy_async {
     template <typename F, typename G>
     constexpr auto operator()(F &&f, G &&g) const {
         return [ f = std::move(f), g = std::move(g) ](auto &&... f_in) {
+            // Important: keep this in sync with
+            // `fcompose_policy_async_and_route_exceptions`
             auto f_tuple = std::make_tuple(std::move(f_in)...);
             auto f_rev = freverse(std::move(f_tuple));
             auto g_cb = fcar(f_rev);
@@ -69,6 +74,41 @@ class fcompose_policy_async {
                                  std::move(args));
         };
     }
+};
+
+class fcompose_policy_async_and_route_exceptions {
+  public:
+    template <typename E>
+    fcompose_policy_async_and_route_exceptions(E &&e) : errback_(e) {}
+
+    template <typename F, typename G> auto operator()(F &&f, G &&g) const {
+        // Make sure we don't pass `this` to the lambda because the lifetime
+        // of this object is actually very ephemeral (see above)
+        return [ f = std::move(f), g = std::move(g),
+                 eb = errback_ ](auto &&... f_in) {
+            // Important: keep this in sync with `fcompose_policy_async`
+            auto f_tuple = std::make_tuple(std::move(f_in)...);
+            auto f_rev = freverse(std::move(f_tuple));
+            auto g_cb = fcar(f_rev);
+            auto args = freverse(std::move(fcdr(std::move(f_rev))));
+            // Note: `fapply_with_callback_and_route_exceptions` takes its
+            // errback by move, so here we need to create two inline copies
+            auto f_cb = [ g = std::move(g), g_cb = std::move(g_cb),
+                          eb ](auto &&... f_out) {
+                fapply_with_callback_and_route_exceptions(
+                      std::move(g), std::move(g_cb),
+                      [eb](const std::exception &exc) { eb(exc); },
+                      std::move(f_out)...);
+            };
+            fapply_with_callback_and_route_exceptions(
+                  std::move(f), std::move(f_cb),
+                  [eb](const std::exception &exc) { eb(exc); },
+                  std::move(args));
+        };
+    }
+
+  private:
+    Callback<const std::exception &> errback_;
 };
 
 } // namespace mk

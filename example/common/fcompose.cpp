@@ -7,16 +7,14 @@
 #include <iostream>
 
 static inline void fcompose_sync_example() {
-    auto f = mk::fcompose(mk::fcompose_policy_sync(),
-                          [](int x, int y, int z) { return x + y + z; },
-                          [](int sum) {
-                              return std::make_tuple(std::string{"result"},
-                                                     std::to_string(sum));
-                          },
-                          [](std::string &&prefix, std::string &&result) {
-                              std::cout << prefix << ": " << result << "\n";
-                          });
-    f(0, 4, 7);
+    auto func = mk::fcompose(mk::fcompose_policy_async_and_route_exceptions(
+                                   [](const std::exception &exc) {
+                                       std::clog
+                                             << "Error occurred: " << exc.what()
+                                             << "\n";
+                                   }),
+                             sum3, tostr, print_fail);
+    func(0, -4, -7, []() { /* NOTHING */ });
 }
 
 static inline void fcompose_async_example() {
