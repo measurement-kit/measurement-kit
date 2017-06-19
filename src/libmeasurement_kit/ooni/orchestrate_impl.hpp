@@ -385,11 +385,12 @@ template <MK_MOCK_AS(http::request_json_object, http_request_json_object),
           MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
 void do_register_probe(const ClientMetadata &m, Var<Reactor> reactor,
                        Callback<Error &&> &&cb) {
-    mk::fcompose_async(retrieve_missing_metadata_<ooni_ip_lookup>,
-                       possibly_register_probe_<http_request_json_object>,
-                       [](Error error, ClientMetadata, Var<Reactor>,
-                          Callback<Error> cb) { cb(error); })(NoError(), m,
-                                                              reactor, cb);
+    mk::fcompose(mk::fcompose_policy_async(),
+                 retrieve_missing_metadata_<ooni_ip_lookup>,
+                 possibly_register_probe_<http_request_json_object>,
+                 [](Error error, ClientMetadata, Var<Reactor>,
+                    Callback<Error> cb) { cb(error); })(NoError(), m, reactor,
+                                                        cb);
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object_1),
@@ -397,7 +398,8 @@ template <MK_MOCK_AS(http::request_json_object, http_request_json_object_1),
           MK_MOCK_AS(http::request_json_object, http_request_json_object_2)>
 void do_update(const ClientMetadata &m, Var<Reactor> reactor,
                Callback<Error &&> &&cb) {
-    mk::fcompose_async(
+    mk::fcompose(
+        mk::fcompose_policy_async(),
         retrieve_missing_metadata_<ooni_ip_lookup>,
         possibly_register_probe_<http_request_json_object_1>,
         finally_update_metadata_<http_request_json_object_2>
