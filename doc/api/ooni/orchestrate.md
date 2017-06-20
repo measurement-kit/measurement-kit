@@ -21,7 +21,7 @@ std::string testing_events_url();
 class Auth {
   public:
     std::string auth_token;
-    std::time_t expiry_time = {};
+    std::string expiry_time;
     bool logged_in = false;
     std::string username;
     std::string password;
