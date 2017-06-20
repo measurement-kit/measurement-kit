@@ -158,14 +158,17 @@ void update_(const ClientMetadata &m, Auth &&auth, Var<Reactor> reactor,
                   cb(std::move(err), std::move(auth));
                   return;
               }
+              // With GCC move inside lambda happens before setting headers, so
+              // use a copy of the auth token to make sure we do not fail
+              std::string auth_token = auth.auth_token;
               http_request_json_object(
                     "PUT", update_url, update_request,
-                    {{"Authorization", "Bearer " + auth.auth_token}},
+                    {{"Authorization", "Bearer " + auth_token}},
                     [ cb = std::move(cb), logger, auth = std::move(auth) ](
                           Error err, Var<http::Response> /*resp*/,
                           nlohmann::json json_response) mutable {
                         if (err) {
-                            // Note: error printed by Auth
+                            // Note: error printed by maybe_login()
                             cb(std::move(err), std::move(auth));
                             return;
                         }
