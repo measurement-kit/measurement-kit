@@ -21,7 +21,12 @@ The `common` module contains contains the following submodules:
 - [error](common/error.md): definition of error class and of shared error codes
 - [error_or](common/error_or.md): maybe-like object containing either a result or an error
 - [every](common/every.md): call a functor every N seconds
+- [fapply](common/fapply.md): apply arguments to a functor
+- [fcar](common/fcar.md): get first element of a tuple
+- [fcdr](common/fcdr.md): get from second to last element of a tuple
+- [fcompose](common/fcompose.md): compose arbitrary functors with different composing policies
 - [fmap](common/fmap.md): apply a function to a vector
+- [freverse](common/freverse.md): get the reverse of a tuple
 - [has_global_factory](common/has_global_factory.md): template decorator to add a global, singleton factory to a class
 - [has_make_factory](common/has_make_factory.md): template decorator to add a factory called `make` to a class
 - [json](common/json.md): code for parsing and processing JSON
@@ -33,6 +38,7 @@ The `common` module contains contains the following submodules:
 - [non_copyable](common/non_copyable.md): non copyable class
 - [non_movable](common/non_movable.md): non movable class
 - [parallel](common/parallel.md): allows to run continuations in parallel
+- [platform](common/platform.md): get platform name
 - [range](common/range.md): generates numbers from zero to N
 - [reactor](common/reactor.md): class for dispatching I/O events and timeouts
 - [sandbox](common/sandbox.md): filter and route `Error`s and exceptions
