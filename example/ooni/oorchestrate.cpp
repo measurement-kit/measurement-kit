@@ -4,14 +4,32 @@
 
 #include <measurement_kit/ooni.hpp>
 
+#include <unistd.h>
+
 using namespace mk::ooni::orchestrate;
 using namespace mk::ooni;
 using namespace mk;
 
-int main(int /*argc*/, char ** /*argv*/) {
-    const std::string path = "orchestrator_secrets.json";
+#define USAGE "oorchestrate [-v]"
+
+int main(int argc, char **argv) {
     Client client;
-    client.logger->set_verbosity(MK_LOG_DEBUG2);
+    for (int ch; (ch = getopt(argc, argv, "v")) != -1;) {
+        switch (ch) {
+        case 'v':
+            client.logger->increase_verbosity();
+            break;
+        default:
+            std::cout << USAGE << "\n";
+            exit(1);
+        }
+    }
+    argc -= optind, argv += optind;
+    if (argc > 0) {
+        std::cout << USAGE << "\n";
+        exit(1);
+    }
+    const std::string path = "orchestrator_secrets.json";
     client.geoip_country_path = "GeoIP.dat";
     client.geoip_asn_path = "GeoIPASNum.dat";
     client.network_type = "wifi";
@@ -52,11 +70,16 @@ int main(int /*argc*/, char ** /*argv*/) {
               client.network_type = "3g"; // Simulate network change
               client.update(std::move(auth), std::move(cb));
           },
-          [&client](Error &&error, Auth &&auth,
-                    Callback<Error &&, Auth &&> &&cb) {
+          [&client, &path](Error &&error, Auth &&auth,
+                           Callback<Error &&, Auth &&> &&cb) {
               // Second update to check whether the auth token is working
               if (error) {
                   cb(std::move(error), std::move(auth));
+                  return;
+              }
+              // Dump after update() so we have also the token stored on disk
+              if ((error = auth.dump(path)) != NoError()) {
+                  cb(std::move(error), {});
                   return;
               }
               client.network_type = "wifi"; // Simulate network change

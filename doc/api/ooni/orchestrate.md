@@ -105,8 +105,7 @@ OONI.
 
 The `Auth` class contains authentication information. This class is passed
 around by most APIs, because the JWT authentication token may be modified as
-a result of every call to the API. If you want to store authentication data
-in a persistent way, there are methods to do that. More specifically:
+a result of every call to the API. The following methods are available:
 
 The `make_password()` method is a static method that creates a random
 password for you. This may be useful to you when you are about to call
@@ -124,15 +123,9 @@ The `dumps` method returns authentication information encoded as JSON.
 The `is_valid` method returns true if we're logged in and the authentication
 token is not expired, false otherwise.
 
-In general, you should store authentication information on persistent storage
-only after you register a probe. This can be done with `Client::register_probe`
-method. When your application starts up, you will then typically load the
-authentication information from persistent storage. Most if not all remote
-API calls MAY update the token contained in the `Auth` structure. This is why
-most APIs take `Auth` in by *move* and their callback has an `Auth` struct
-parameter that is *moved out*. You don't need to sync up the updated structure
-onto permanent storage, however, because the only change that can occur when
-APIs are called is that the authentication token is updated.
+You can pass around the `Auth` object as long as you need it. Then you can
+save it on persistent storage using either `dump` or `dumps`, and you can
+reload it again using either `load` or `loads`.
 
 The `Client` class is the one you use to start interacting with the
 orchestrator services. Once you have constructed a client with the

@@ -46,6 +46,9 @@ Error Auth::load(const std::string &filepath) noexcept {
 
 Error Auth::loads(const std::string &s) noexcept {
     return json_parse_process_and_filter_errors(s, [&](auto json) {
+        auth_token = json.at("auth_token");
+        expiry_time = json.at("expiry_time");
+        logged_in = json.at("logged_in");
         username = json.at("username");
         password = json.at("password");
     });
@@ -56,7 +59,10 @@ Error Auth::dump(const std::string &filepath) noexcept {
 }
 
 std::string Auth::dumps() noexcept {
-    auto json = nlohmann::json{{"username", username},
+    auto json = nlohmann::json{{"auth_token", auth_token},
+                               {"expiry_time", expiry_time},
+                               {"logged_in", logged_in},
+                               {"username", username},
                                {"password", password}};
     return json.dump(4);
 }

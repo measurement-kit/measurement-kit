@@ -77,11 +77,10 @@ void maybe_login(Auth &&auth, std::string registry_url, Settings settings,
                  Var<Reactor> reactor, Var<Logger> logger,
                  Callback<Error &&, Auth &&> &&cb) {
     if (auth.is_valid(logger)) {
-        logger->debug("orchestrator: auth token is valid, no need to login");
+        logger->info("Auth token is valid, no need to login");
         cb(NoError(), std::move(auth));
         return;
     }
-    logger->debug("orchestrator: logging in");
     login<http_request_json_object>(std::move(auth), registry_url, settings,
                                     reactor, logger, std::move(cb));
 }
@@ -134,6 +133,9 @@ void register_probe_(const ClientMetadata &m, std::string password,
               if (error) {
                   logger->warn("orchestrator: JSON processing error: %s",
                                error.explain().c_str());
+              } else {
+                  logger->info("Registered probe with orchestrator as: '%s'",
+                               auth.username.c_str());
               }
               cb(std::move(error), std::move(auth));
           },
@@ -182,6 +184,10 @@ void update_(const ClientMetadata &m, Auth &&auth, Var<Reactor> reactor,
                                       throw RegistryInvalidRequestError();
                                   }
                               });
+                        if (!err) {
+                            logger->info("Updated orchestrator about "
+                                         "this probe state");
+                        }
                         cb(std::move(err), std::move(auth));
                     },
                     settings, reactor, logger);
@@ -200,7 +206,7 @@ void do_find_location(const ClientMetadata &m, Var<Reactor> reactor,
                   cb(std::move(error), "", "");
                   return;
               }
-              logger->info("Probe IP is: %s", ip.c_str());
+              logger->debug("Probe IP is: %s", ip.c_str());
               auto query_geoip = [&](const std::string &path, std::string &dest,
                                      const std::string &fallback,
                                      auto callable) {
@@ -213,7 +219,7 @@ void do_find_location(const ClientMetadata &m, Var<Reactor> reactor,
                       dest = fallback;
                       return;
                   }
-                  logger->info("IP %s maps to %s", ip.c_str(), x->c_str());
+                  logger->debug("IP %s maps to %s", ip.c_str(), x->c_str());
                   dest = *x;
               };
               std::string probe_asn;
