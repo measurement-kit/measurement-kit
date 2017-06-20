@@ -150,7 +150,7 @@ TEST_CASE("orchestrate::login() works correctly") {
 
 TEST_CASE("Orchestration works") {
     Client client;
-    client.logger->set_verbosity(MK_LOG_DEBUG2);
+    client.logger->increase_verbosity();
     client.geoip_country_path = "GeoIP.dat";
     client.geoip_asn_path = "GeoIPASNum.dat";
     client.network_type = "wifi";
