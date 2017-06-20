@@ -78,9 +78,9 @@ class AsyncRunner : public HasMakeFactory<AsyncRunner>,
         logger->debug("%s: scheduling", name.c_str());
         reactor_->call_soon([
             task = std::move(task), name = std::move(name), logger, this
-        ]() {
+        ]() mutable {
             logger->debug("%s: starting", name.c_str());
-            task([name, logger, this](Callback<> &&cb) {
+            task([name, logger, this](Callback<> &&cb) mutable {
                 logger->debug("%s: finished", name.c_str());
                 active_ -= 1;
                 logger->debug("runner: #active: %lld", (long long)active_);

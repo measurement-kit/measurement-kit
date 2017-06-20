@@ -29,10 +29,49 @@ std::string production_events_url() {
 std::string testing_events_url() { return MK_OONI_TESTING_PROTEUS_EVENTS_URL; }
 
 /*
+ * Auth
+ */
+
+/*static*/ std::string Auth::make_password() {
+    return mk::random_printable(64);
+}
+
+Error Auth::load(const std::string &filepath) noexcept {
+    ErrorOr<std::string> maybe_data = slurp(filepath);
+    if (!maybe_data) {
+        return maybe_data.as_error();
+    }
+    return loads(*maybe_data);
+}
+
+Error Auth::loads(const std::string &s) noexcept {
+    return json_parse_process_and_filter_errors(s, [&](auto json) {
+        username = json.at("username");
+        password = json.at("password");
+    });
+}
+
+Error Auth::dump(const std::string &filepath) noexcept {
+    return overwrite_file(filepath, dumps());
+}
+
+std::string Auth::dumps() noexcept {
+    auto json = nlohmann::json{{"username", username}, {"password", password}};
+    return json.dump(4);
+}
+
+bool Auth::is_valid() const noexcept {
+    // Assume that `std::time()` is not going to fail. According to macOS
+    // manpage it can fail when `gettimeofday` can fail. In turn, the latter
+    // can fail with EFAULT (invalid buffer, not applicable here).
+    return logged_in && difftime(expiry_time, std::time(nullptr)) >= 0;
+}
+
+/*
  * Registry database
  */
 
-nlohmann::json ClientMetadata::as_json_() const {
+nlohmann::json ClientMetadata::as_json() const {
     nlohmann::json j;
     j["probe_cc"] = probe_cc;
     j["probe_asn"] = probe_asn;
@@ -57,19 +96,22 @@ nlohmann::json ClientMetadata::as_json_() const {
     return j;
 }
 
-void Client::register_probe(Callback<Error &&> &&cb) const {
+void Client::register_probe(std::string &&password,
+                            Callback<Error &&, Auth &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
     AsyncRunner::global()->start_("orchestrate::register_probe", logger, [
-        meta = *this, cb = std::move(cb)
-    ](Continuation<> && done) {
-        do_register_probe(meta, AsyncRunner::global()->reactor(), [
-            done = std::move(done), cb = std::move(cb)
-        ](Error && error) {
-            done([ error = std::move(error), cb = std::move(cb) ]() mutable {
-                cb(std::move(error));
-            });
-        });
+        password = std::move(password), meta = *this, cb = std::move(cb)
+    ](Continuation<> && done) mutable {
+        do_register_probe(
+              std::move(password), meta, AsyncRunner::global()->reactor(),
+              [ done = std::move(done),
+                cb = std::move(cb) ](Error && error, Auth && auth) mutable {
+                  done([
+                      error = std::move(error), cb = std::move(cb),
+                      auth = std::move(auth)
+                  ]() mutable { cb(std::move(error), std::move(auth)); });
+              });
     });
 }
 
@@ -79,7 +121,7 @@ void Client::find_location(
     // destiny of `this` and of the callback.
     AsyncRunner::global()->start_(
           "orchestrate::find_location", logger,
-          [ meta = *this, cb = std::move(cb) ](Continuation<> && done) {
+          [ meta = *this, cb = std::move(cb) ](Continuation<> && done) mutable {
               do_find_location(meta, AsyncRunner::global()->reactor(), [
                   cb = std::move(cb), done = std::move(done)
               ](Error && error, std::string && asn, std::string && cc) {
@@ -93,24 +135,26 @@ void Client::find_location(
           });
 }
 
-void Client::update(Callback<Error &&> &&cb) const {
+void Client::update(Auth &&auth, Callback<Error &&, Auth &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
     AsyncRunner::global()->start_("orchestrate::update", logger, [
-        meta = *this, cb = std::move(cb)
-    ](Continuation<> && done) {
-        do_update(meta, AsyncRunner::global()->reactor(), [
-            cb = std::move(cb), done = std::move(done)
-        ](Error && error) {
-            done([ cb = std::move(cb), error = std::move(error) ]() mutable {
-                cb(std::move(error));
-            });
-        });
+        meta = *this, cb = std::move(cb), auth = std::move(auth)
+    ](Continuation<> && done) mutable {
+        do_update(std::move(auth), meta, AsyncRunner::global()->reactor(),
+                  [ cb = std::move(cb), done = std::move(done) ](
+                        Error && error, Auth && auth) mutable {
+                      done([
+                          cb = std::move(cb), error = std::move(error),
+                          auth = std::move(auth)
+                      ]() mutable { cb(std::move(error), std::move(auth)); });
+                  });
     });
 }
 
-void Client::list_tasks(
-      Callback<Error &&, std::vector<Task> &&> && /*callback)*/) const {
+void Client::list_tasks(Auth &&,
+                        Callback<Error &&, Auth &&, std::vector<Task> &&>
+                              && /*callback)*/) const {
     throw NotImplementedError();
 }
 
@@ -118,19 +162,21 @@ void Client::list_tasks(
  * Events database
  */
 
-void Task::get(Callback<Error &&, std::string &&> && /*callback*/) const {
+void Task::get(
+      Auth &&,
+      Callback<Error &&, Auth &&, std::string &&> && /*callback*/) const {
     throw NotImplementedError();
 }
 
-void Task::accept(Callback<Error &&> && /*callback*/) const {
+void Task::accept(Auth &&, Callback<Error &&, Auth &&> && /*callback*/) const {
     throw NotImplementedError();
 }
 
-void Task::reject(Callback<Error &&> && /*callback*/) const {
+void Task::reject(Auth &&, Callback<Error &&, Auth &&> && /*callback*/) const {
     throw NotImplementedError();
 }
 
-void Task::done(Callback<Error &&> && /*callback*/) const {
+void Task::done(Auth &&, Callback<Error &&, Auth &&> && /*callback*/) const {
     throw NotImplementedError();
 }
 

@@ -45,7 +45,7 @@ class fcompose_policy_sync {
   public:
     template <typename F, typename G>
     constexpr auto operator()(F &&f, G &&g) const {
-        return [ f = std::move(f), g = std::move(g) ](auto &&... f_in) {
+        return [ f = std::move(f), g = std::move(g) ](auto &&... f_in) mutable {
             return fapply(g, fapply(f, std::move(f_in)...));
         };
     }
@@ -55,13 +55,13 @@ class fcompose_policy_async {
   public:
     template <typename F, typename G>
     constexpr auto operator()(F &&f, G &&g) const {
-        return [ f = std::move(f), g = std::move(g) ](auto &&... f_in) {
+        return [ f = std::move(f), g = std::move(g) ](auto &&... f_in) mutable {
             auto f_tuple = std::make_tuple(std::move(f_in)...);
             auto f_rev = freverse(std::move(f_tuple));
             auto g_cb = fcar(f_rev);
             auto args = freverse(std::move(fcdr(std::move(f_rev))));
             auto f_cb = [ g = std::move(g),
-                          g_cb = std::move(g_cb) ](auto &&... f_out) {
+                          g_cb = std::move(g_cb) ](auto &&... f_out) mutable {
                 fapply_with_callback(std::move(g), std::move(g_cb),
                                      std::move(f_out)...);
             };

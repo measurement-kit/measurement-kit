@@ -18,6 +18,22 @@ std::string testing_registry_url();
 std::string production_events_url();
 std::string testing_events_url();
 
+class Auth {
+  public:
+    std::string auth_token;
+    std::time_t expiry_time = {};
+    bool logged_in = false;
+    std::string username;
+    std::string password;
+
+    static std::string make_password();
+    Error load(const std::string &filepath) noexcept;
+    Error loads(const std::string &data) noexcept;
+    Error dump(const std::string &filepath) noexcept;
+    std::string dumps() noexcept;
+    bool is_valid() const noexcept;
+};
+
 class Client {
   public:
     Var<Logger> logger = Logger::global();
@@ -34,14 +50,21 @@ class Client {
     std::string probe_cc;
     std::string probe_family;
     std::string registry_url = production_registry_url();
-    std::string secrets_path = "orchestrator_secrets.json";
     std::string software_name = "measurement_kit";
     std::string software_version = MK_VERSION;
     std::vector<std::string> supported_tests;
 
-    void register_probe(Callback<Error &&> &&callback) const;
-    void update(Callback<Error &&> &&callback) const;
-    void list_tasks(Callback<Error &&, std::vector<Task> &&> &&callback) const;
+    void register_probe(
+          std::string &&, Callback<Error &&, Auth &&> &&callback) const;
+
+    void find_location(
+          Callback<Error &&, std::string &&, std::string &&> &&callback) const;
+
+    void update(Auth &&, Callback<Error &&, Auth &&> &&callback) const;
+
+    void list_tasks(
+          Auth &&,
+          Callback<Error &&, Auth &&, std::vector<Task> &&> &&callback) const;
 };
 
 class Task {
@@ -49,10 +72,14 @@ class Task {
     std::string events_url = production_events_url();
     std::string task_id;
 
-    void get(Callback<Error &&, std::string &&> &&callback) const;
-    void accept(Callback<Error &&> &&callback) const;
-    void reject(Callback<Error &&> &&callback) const;
-    void done(Callback<Error &&> &&callback) const;
+    void get(Auth &&,
+             Callback<Error &&, Auth &&, std::string &&> &&callback) const;
+
+    void accept(Auth &&, Callback<Error &&, Auth &&> &&callback) const;
+
+    void reject(Auth &&, Callback<Error &&, Auth &&> &&callback) const;
+
+    void done(Auth &&, Callback<Error &&, Auth &&> &&callback) const;
 };
 
 } // namespace orchestrate
@@ -76,8 +103,40 @@ and `testing_events_url` functions return, respectively, the production and
 testing URLs of the orchestrator's registry and events web services used by
 OONI.
 
-Once you have constructed an orchestration client, you can configure it by
-setting the proper configuration attributes, described below:
+The `Auth` class contains authentication information. This class is passed
+around by most APIs, because the JWT authentication token may be modified as
+a result of every call to the API. If you want to store authentication data
+in a persistent way, there are methods to do that. More specifically:
+
+The `make_password()` method is a static method that creates a random
+password for you. This may be useful to you when you are about to call
+the `Client::register_probe()` method, as described below.
+
+The `load` method loads authentication information from the specified file.
+
+The `loads` methods loads authentication information encoded in JSON
+from the specified string.
+
+The `dump` method stores authentication information into the specified file.
+
+The `dumps` method returns authentication information encoded as JSON.
+
+The `is_valid` method returns true if we're logged in and the authentication
+token is not expired, false otherwise.
+
+In general, you should store authentication information on persistent storage
+only after you register a probe. This can be done with `Client::register_probe`
+method. When your application starts up, you will then typically load the
+authentication information from persistent storage. Most if not all remote
+API calls MAY update the token contained in the `Auth` structure. This is why
+most APIs take `Auth` in by *move* and their callback has an `Auth` struct
+parameter that is *moved out*. You don't need to sync up the updated structure
+onto permanent storage, however, because the only change that can occur when
+APIs are called is that the authentication token is updated.
+
+The `Client` class is the one you use to start interacting with the
+orchestrator services. Once you have constructed a client with the
+default constructor, you can configure it by settings these attributes:
 
 The `logger` attribute can be override to use a custom logger. By default, the
 global MeasurementKit logger is used.
@@ -107,7 +166,7 @@ unspecified.
 The `geoip_country_path` and `geoip_asn_path` are used by the orchestrator
 client to guess the country and autonomous system number, if they are not
 provided by the API user (see below). By default these attributes are empty,
-meaning that MK will not attempt to geolocate the user.
+meaning that MK will fail to geolocate the user.
 
 The `platform` attribute tells the orchestrator the platform in
 which the probe runs (e.g., `android`, `ios`). If not set, this
@@ -132,11 +191,6 @@ The `registry_url` attribute contains the URL used to query the
 `registry` web service of the orchestrator. By default, this attribute
 is set to the production registry service URL used by OONI.
 
-The `secrets_path` attribute is the path of the file where to save
-orchestrator secrets. The default is `"orchestrator_secrets.json"` in
-the current working directory. You certainly want to change this on
-mobile device, to use a directory where the app can write.
-
 The `software_name` attribute is the name of the application using
 MeasurementKit OONI's orchestrator. By default is `measurement_kit`
 and you most certainly want to change it to the name of your
@@ -156,19 +210,38 @@ Once the orchestrator client is configured, you can use its methods to send
 requests to the orchestrator server. The following methods are available:
 
 The `register_probe` method registers the current probe with the
-orchestrator system. If the probe is already registered, this
-operation is a no-op. Otherwise, it will register the probe with
-the orchestrator system. The parameter passed to the callback
-indicates whether there was an error.
+orchestrator system. The first argument is the password to use to
+identify the probe; if the password is empty, `Auth::make_password()`
+will be used to generate a password automatically.  The second
+argument is a callback.  The callback receives two parameters: the
+error that occurred (if any), and an authentication structure that
+contains authentication information (your username; the password
+you chose or a random password, depending on how you used the API;
+a JWT authentication token). You typically want to store such
+information into a persistent storage, and to load it next to invoke
+again the API.
 
-The `update` method assumes that a probe is already registered and
-updates the orchestrator system's knowledge of the state of a probe
-(e.g. network type, location). The parameter passed to callback
-indicates whether there was an error.
+The `find_location` method uses MeasurementKit internal functionality
+to query for the current autonomous system number and country code. You
+can optionally use this function to fill the `probe_asn` and `probe_cc`
+fields of client. The first argument passed to the callback is the
+error that occurred, if any, The second argument is the probe's ASN.
+The third argument is the probe country code.
+
+The `update` method updates the orchestrator's system knowledge of the
+state of a probe (e.g. network type, location, ISP). If the probe is
+not registered yet, this method will fail. The first parameter
+is an authentication structure whose content is used to login with
+the orchestrator services and call the proper `update` API.  The second
+argument is a callback taking two arguments. The first callback argument
+is the error that occurred, if any. The second callback argument is a
+possibly-updated authentication structure.
 
 The `list_tasks` method assumes that a probe is already registered
-and gets the list of tasks to run. The callback receives two parameters:
-whether there was an error and the list of tasks.
+and gets the list of tasks to run. The first argument is an authentication
+structure. The second argument is a callback. The callback receives three
+parameters: whether there was an error, a possibly updated `Auth`
+structure, and the list of tasks.
 
 Each task is an instance of the `Task` class.
 
@@ -187,17 +260,27 @@ The `Task` instance could then be used to perform the following operations:
 
 The `get` method retrieves from the `events` web service the JSON data
 associated to the task. The semantic of this data depends on the type of
-task. The `Error` parameter indicates whether there was an error and
-the `string` parameter is a serialized JSON containing task data.
+task. The arguments are an authentication structure and a callback.
+The callback receives three parameters. The `Error` parameter indicates
+whether there was an error. The `Auth` parameter is a possibly updated
+authentication structure.  The `string` parameter is a serialized
+JSON containing task data.
 
-The `accept` method accepts the task. The `Error` parameter indicates whether
-there was an error.
+The `accept` method accepts the task. The arguments are an authentication
+structure and a callback. The callback takes two parameters. The `Error`
+parameter indicates whether there was an error. The `Auth` parameter is a
+possibly-updated authentication structure.
 
-The `reject` method rejects the task. The `Error` parameter indicates whether
-there was an error.
+The `reject` method rejects the task. The arguments are an authentication
+structure and a callback. The callback takes two parameters. The `Error`
+parameter indicates whether there was an error. The `Auth` parameter is a
+possibly-updated authentication structure.
 
 The `done` method informs the orchestrator that a task is done. The
-`Error` parameter indicates whether there was an error.
+arguments are an authentication structure and a callback. The callback
+takes two parameters. The `Error` parameter indicates whether there
+was an error. The `Auth` parameter is a possibly-updated authentication
+structure.
 
 # GUARANTEES
 
@@ -222,8 +305,6 @@ The `done` method informs the orchestrator that a task is done. The
 See `example/ooni/oorchestrate.cpp`.
 
 # BUGS
-
-As of MK v0.7.0-alpha, the implementation does not guess any attribute.
 
 As of MK v0.7.0-alpha, the only implemented operations are `register_probe`
 and `update`. All other operations throw `NotImplementedError`.

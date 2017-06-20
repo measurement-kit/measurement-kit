@@ -12,9 +12,9 @@ using namespace mk;
 using namespace mk::ooni;
 using namespace mk::ooni::orchestrate;
 
-TEST_CASE("Authentication::load() works correctly") {
+TEST_CASE("Auth::load() works correctly") {
     const std::string fname = "orchestrator_dummy.json";
-    Authentication auth;
+    Auth auth;
 
     SECTION("with a nonexistent file") {
         REQUIRE(auth.load("/nonexistent") != NoError());
@@ -44,25 +44,25 @@ TEST_CASE("Authentication::load() works correctly") {
     }
 }
 
-TEST_CASE("Authentication::store() works correctly") {
+TEST_CASE("Auth::dump() works correctly") {
     const std::string fname = "orchestrator_dummy.json";
-    Authentication auth;
+    Auth auth;
 
     SECTION("with nonexistent file") {
-        REQUIRE(auth.store("/nonexistent/nonexistent") != NoError());
+        REQUIRE(auth.dump("/nonexistent/nonexistent") != NoError());
     }
 
     SECTION("with existent file") {
         auth.username = auth.password = "xo";
-        REQUIRE(auth.store(fname) == NoError());
+        REQUIRE(auth.dump(fname) == NoError());
         nlohmann::json data = nlohmann::json::parse(*slurp(fname));
         REQUIRE(data["username"] == "xo");
         REQUIRE(data["password"] == "xo");
     }
 }
 
-TEST_CASE("Authentication::is_valid() works correctly") {
-    Authentication auth;
+TEST_CASE("Auth::is_valid() works correctly") {
+    Auth auth;
 
     SECTION("When we are not logged in") {
         REQUIRE(auth.is_valid() == false);
@@ -82,29 +82,29 @@ TEST_CASE("Authentication::is_valid() works correctly") {
 }
 
 TEST_CASE("orchestrate::login() works correctly") {
-    auto auth = Authentication::make();
     auto reactor = Reactor::make();
 
     SECTION("When the username is missing") {
         Error err;
         reactor->run_with_initial_event([&]() {
-            login(auth, testing_registry_url(), {}, reactor, Logger::global(),
-                  [&](Error &&e) {
-                    err = e;
-                    reactor->break_loop();
+            login({}, testing_registry_url(), {}, reactor, Logger::global(),
+                  [&](Error &&e, Auth &&) {
+                      err = e;
+                      reactor->break_loop();
                   });
         });
         REQUIRE(err == MissingRequiredValueError());
     }
 
     SECTION("When the password is missing") {
-        auth->username = "antani";
+        Auth auth;
+        auth.username = "antani";
         Error err;
         reactor->run_with_initial_event([&]() {
-            login(auth, testing_registry_url(), {}, reactor, Logger::global(),
-                  [&](Error &&e) {
-                    err = e;
-                    reactor->break_loop();
+            login(std::move(auth), testing_registry_url(), {}, reactor,
+                  Logger::global(), [&](Error &&e, Auth &&) {
+                      err = e;
+                      reactor->break_loop();
                   });
         });
         REQUIRE(err == MissingRequiredValueError());
@@ -118,24 +118,38 @@ TEST_CASE("orchestrate::login() works correctly") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Orchestration works") {
-    auto make_path = []() {
-        std::string s = "orchestrator_secrets_";
-        s += random_str(8);
-        s += ".json";
-        return s;
-    };
     Client client;
     client.logger->set_verbosity(MK_LOG_DEBUG2);
     client.geoip_country_path = "GeoIP.dat";
     client.geoip_asn_path = "GeoIPASNum.dat";
     client.network_type = "wifi";
-    //client.device_token = "{TOKEN}";  /* Not needed on PC devices */
+    // client.device_token = "{TOKEN}";  /* Not needed on PC devices */
     client.registry_url = testing_registry_url();
-    client.secrets_path = make_path();
     std::promise<Error> promise;
     std::future<Error> future = promise.get_future();
-    client.update([&promise](Error &&error) {
-        promise.set_value(error);
+    client.register_probe("", [&promise, &client](Error &&error, Auth &&auth) {
+        if (error) {
+            promise.set_value(error);
+            return;
+        }
+        auto path = []() {
+            std::string s = "orchestrator_secrets_";
+            s += random_str(8);
+            s += ".json";
+            return s;
+        }();
+        if ((error = auth.dump(path)) != NoError()) {
+            promise.set_value(error);
+            return;
+        }
+        auth = Auth(); // Clean up and reload to see if it works
+        if ((error = auth.load(path)) != NoError()) {
+            promise.set_value(error);
+            return;
+        }
+        client.update(std::move(auth), [&promise](Error &&error, Auth &&) {
+            promise.set_value(error);
+        });
     });
     REQUIRE(future.get() == NoError());
 }
