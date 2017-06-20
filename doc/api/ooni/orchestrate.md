@@ -210,9 +210,7 @@ argument is a callback.  The callback receives two parameters: the
 error that occurred (if any), and an authentication structure that
 contains authentication information (your username; the password
 you chose or a random password, depending on how you used the API;
-a JWT authentication token). You typically want to store such
-information into a persistent storage, and to load it next to invoke
-again the API.
+a JWT authentication token).
 
 The `find_location` method uses MeasurementKit internal functionality
 to query for the current autonomous system number and country code. You
