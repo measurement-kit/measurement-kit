@@ -129,7 +129,7 @@ reload it again using either `load` or `loads`.
 
 The `Client` class is the one you use to start interacting with the
 orchestrator services. Once you have constructed a client with the
-default constructor, you can configure it by settings these attributes:
+default constructor, you can configure it by setting these attributes:
 
 The `logger` attribute can be override to use a custom logger. By default, the
 global MeasurementKit logger is used.
