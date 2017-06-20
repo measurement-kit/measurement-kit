@@ -21,20 +21,48 @@ int main(int /*argc*/, char ** /*argv*/) {
     std::future<Error> future = promise.get_future();
     Auth auth;
     Error err = auth.load(path);
-    if (err) {
-        client.register_probe("",
-                              [&promise, &path](Error &&error, Auth &&auth) {
-                                  if (!error) {
-                                      error = auth.dump(path);
-                                  }
-                                  promise.set_value(error);
-                              });
-        err = future.get();
-        return (err) ? 1 : 0;
-    }
-    client.update(std::move(auth), [&promise](Error &&error, Auth &&) {
-        promise.set_value(error);
-    });
-    err = future.get();
-    return (err) ? 1 : 0;
+    auto func = mk::fcompose(
+          mk::fcompose_policy_async(),
+          [&err, &client, &path](Auth &&auth,
+                                 Callback<Error &&, Auth &&> &&cb) {
+              if (!err) {
+                  // If we have loaded the authentication, proceed
+                  cb(NoError(), std::move(auth));
+                  return;
+              }
+              client.register_probe("", [&path, cb = std::move(cb) ](
+                                              Error && error, Auth && auth) {
+                  if (error) {
+                      cb(std::move(error), {});
+                      return;
+                  }
+                  if ((error = auth.dump(path)) != NoError()) {
+                      cb(std::move(error), {});
+                      return;
+                  }
+                  cb(NoError(), std::move(auth));
+              });
+          },
+          [&client](Error &&error, Auth &&auth,
+                    Callback<Error &&, Auth &&> &&cb) {
+              if (error) {
+                  cb(std::move(error), {});
+                  return;
+              }
+              client.network_type = "3g"; // Simulate network change
+              client.update(std::move(auth), std::move(cb));
+          },
+          [&client](Error &&error, Auth &&auth,
+                    Callback<Error &&, Auth &&> &&cb) {
+              // Second update to check whether the auth token is working
+              if (error) {
+                  cb(std::move(error), std::move(auth));
+                  return;
+              }
+              client.network_type = "wifi"; // Simulate network change
+              client.update(std::move(auth), std::move(cb));
+          });
+    func(std::move(auth),
+         [&promise](Error &&error, Auth &&) { promise.set_value(error); });
+    return (future.get()) ? 1 : 0;
 }

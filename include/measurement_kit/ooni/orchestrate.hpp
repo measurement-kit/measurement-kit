@@ -36,7 +36,7 @@ std::string testing_events_url();
 class Auth {
   public:
     std::string auth_token;
-    std::time_t expiry_time = {};
+    std::string expiry_time;
     bool logged_in = false;
     std::string username;
     std::string password;
@@ -46,7 +46,7 @@ class Auth {
     Error loads(const std::string &data) noexcept;
     Error dump(const std::string &filepath) noexcept;
     std::string dumps() noexcept;
-    bool is_valid() const noexcept;
+    bool is_valid(Var<Logger>) const noexcept;
 };
 
 class ClientMetadata {

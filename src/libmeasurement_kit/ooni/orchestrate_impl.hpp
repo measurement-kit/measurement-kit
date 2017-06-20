@@ -58,13 +58,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
                             // not anticipate when writing the code
                             throw GenericError();
                         }
-                        std::string ts = response["expire"];
-                        logger->debug("orchestrator: parsing time %s",
-                                      ts.c_str());
-                        if ((error =
-                                   parse_iso8601_utc(ts, &auth.expiry_time))) {
-                            throw error;
-                        }
+                        auth.expiry_time = response["expire"];
                         auth.auth_token = response["token"];
                         auth.logged_in = true;
                         logger->info("Logged in with orchestrator");
@@ -82,7 +76,7 @@ template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void maybe_login(Auth &&auth, std::string registry_url, Settings settings,
                  Var<Reactor> reactor, Var<Logger> logger,
                  Callback<Error &&, Auth &&> &&cb) {
-    if (auth.is_valid()) {
+    if (auth.is_valid(logger)) {
         logger->debug("orchestrator: auth token is valid, no need to login");
         cb(NoError(), std::move(auth));
         return;
@@ -345,7 +339,7 @@ void do_update(Auth &&auth, const ClientMetadata &m, Var<Reactor> reactor,
     mk::fcompose(mk::fcompose_policy_async(), ctx_enter_,
                  ctx_retrieve_missing_meta_<ooni_ip_lookup>,
                  ctx_update_<http_request_json_object>,
-                 ctx_leave_)(auth, m, reactor, std::move(cb));
+                 ctx_leave_)(std::move(auth), m, reactor, std::move(cb));
 }
 
 } // namespace orchestrate

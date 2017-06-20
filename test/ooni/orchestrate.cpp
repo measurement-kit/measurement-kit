@@ -61,23 +61,44 @@ TEST_CASE("Auth::dump() works correctly") {
     }
 }
 
+template <typename F> std::string make_time_(F &&f) {
+    std::time_t t = f(std::time(nullptr));
+    if (t == (std::time_t) -1) {
+        throw std::runtime_error("std::time() failed");
+    }
+    std::tm ttm{};
+    if (gmtime_r(&t, &ttm) == nullptr) {
+        throw std::runtime_error("gmtime_r() failed");
+    }
+    std::stringstream ss;
+    ss << std::put_time(&ttm, "%Y-%m-%dT%H:%M:%SZ");
+    return ss.str();
+}
+
 TEST_CASE("Auth::is_valid() works correctly") {
     Auth auth;
 
     SECTION("When we are not logged in") {
-        REQUIRE(auth.is_valid() == false);
+        REQUIRE(auth.is_valid(Logger::global()) == false);
+    }
+
+    SECTION("When the token is empty") {
+        auth.logged_in = true;
+        REQUIRE(auth.is_valid(Logger::global()) == false);
     }
 
     SECTION("When we are logged in and time is expired") {
-        auth.expiry_time = std::time(nullptr) - 60; // One minute in the past
+        auth.expiry_time = make_time_([](time_t t) { return t - 60; });
         auth.logged_in = true;
-        REQUIRE(auth.is_valid() == false);
+        auth.auth_token = "{TOKEN}";
+        REQUIRE(auth.is_valid(Logger::global()) == false);
     }
 
     SECTION("When we are logged in and time is not expired") {
-        auth.expiry_time = std::time(nullptr) + 60; // One minute in the future
+        auth.expiry_time = make_time_([](time_t t) { return t + 60; });
         auth.logged_in = true;
-        REQUIRE(auth.is_valid() == true);
+        auth.auth_token = "{TOKEN}";
+        REQUIRE(auth.is_valid(Logger::global()) == true);
     }
 }
 
@@ -132,6 +153,8 @@ TEST_CASE("Orchestration works") {
             promise.set_value(error);
             return;
         }
+        // This is what you should do right after you are registered: you
+        // should dump the `Auth` structure on persistent storage
         auto path = []() {
             std::string s = "orchestrator_secrets_";
             s += random_str(8);
@@ -142,13 +165,33 @@ TEST_CASE("Orchestration works") {
             promise.set_value(error);
             return;
         }
-        auth = Auth(); // Clean up and reload to see if it works
+        // In theory you should not call `update` immediately so here we
+        // modify network type to simulate a change. We also reload the auth
+        // as this is typically what you would do after some time.
+        client.network_type = "3g";
+        auto saved_username = auth.username;
+        auto saved_password = auth.password;
+        auth = {}; // clear
         if ((error = auth.load(path)) != NoError()) {
             promise.set_value(error);
             return;
         }
-        client.update(std::move(auth), [&promise](Error &&error, Auth &&) {
-            promise.set_value(error);
+        // Just to make sure we successfully cleared the structure
+        REQUIRE(auth.logged_in == false);
+        REQUIRE(auth.auth_token == "");
+        REQUIRE(auth.expiry_time == "");
+        REQUIRE(auth.username == saved_username);
+        REQUIRE(auth.password == saved_password);
+        client.update(std::move(auth), [&promise, &client](Error &&error,
+                                                           Auth &&auth) {
+            if (error) {
+                promise.set_value(error);
+                return;
+            }
+            // Do it twice to see if the token is still valid
+            client.update(std::move(auth), [&promise](Error &&error, Auth &&) {
+                promise.set_value(error);
+            });
         });
     });
     REQUIRE(future.get() == NoError());

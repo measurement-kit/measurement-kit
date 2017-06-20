@@ -56,15 +56,62 @@ Error Auth::dump(const std::string &filepath) noexcept {
 }
 
 std::string Auth::dumps() noexcept {
-    auto json = nlohmann::json{{"username", username}, {"password", password}};
+    auto json = nlohmann::json{{"username", username},
+                               {"password", password}};
     return json.dump(4);
 }
 
-bool Auth::is_valid() const noexcept {
-    // Assume that `std::time()` is not going to fail. According to macOS
-    // manpage it can fail when `gettimeofday` can fail. In turn, the latter
-    // can fail with EFAULT (invalid buffer, not applicable here).
-    return logged_in && difftime(expiry_time, std::time(nullptr)) >= 0;
+bool Auth::is_valid(Var<Logger> logger) const noexcept {
+    if (!logged_in) {
+        logger->debug("orchestrator: not logged in");
+        return false;
+    }
+    if (auth_token.empty()) {
+        logger->warn("orchestrator: auth_token is empty");
+        return false;
+    }
+
+    tm expiry_temp{};
+    logger->debug("orchestrator: expiry_time: '%s'", expiry_time.c_str());
+    Error error = parse_iso8601_utc(expiry_time, &expiry_temp);
+    if (error) {
+        logger->warn("orchestrator: cannot parse expiry_time");
+        return false;
+    }
+    auto expiry_time_s = std::mktime(&expiry_temp);
+    if (expiry_time_s == (time_t)-1) {
+        logger->warn("orchestrator: std::mktime() failed");
+        return false;
+    }
+    logger->debug("orchestrator: expiry_time_s: %llu",
+                  (unsigned long long)expiry_time_s);
+
+    auto now_localtime = std::time(nullptr);
+    if (now_localtime == (time_t)-1) {
+        logger->warn("orchestrator: std::time() failed");
+        return false;
+    }
+    logger->debug("orchestrator: now_localtime: %llu",
+                  (unsigned long long)now_localtime);
+    tm now_temp{};
+    if (gmtime_r(&now_localtime, &now_temp) == nullptr) {
+        logger->warn("orchestrator: std::gmtime_r() failed");
+        return false;
+    }
+    auto now_utc = std::mktime(&now_temp);
+    if (now_utc == (time_t)-1) {
+        logger->warn("orchestrator: std::mktime() failed");
+        return false;
+    }
+    logger->debug("orchestrator: now_utc: %llu",
+                  (unsigned long long)now_utc);
+
+    auto diff = difftime(expiry_time_s, now_utc);
+    if (diff < 0) {
+        logger->debug("orchestrator: the auth_token is expired");
+        return false;
+    }
+    return true;
 }
 
 /*
