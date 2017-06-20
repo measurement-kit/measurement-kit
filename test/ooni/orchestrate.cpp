@@ -5,8 +5,8 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/ooni/orchestrate_impl.hpp"
 #include "../src/libmeasurement_kit/common/utils.hpp"
+#include "../src/libmeasurement_kit/ooni/orchestrate_impl.hpp"
 
 using namespace mk;
 using namespace mk::ooni;
@@ -36,9 +36,19 @@ TEST_CASE("Auth::load() works correctly") {
     }
 
     SECTION("with good input") {
-        nlohmann::json data{{"username", "xo"}, {"password", "xo"}};
-        REQUIRE(overwrite_file(fname, data.dump()) == NoError());
+        [&]() {
+            Auth auth;
+            auth.auth_token = "{TOKEN}";
+            auth.logged_in = true;
+            auth.expiry_time = "fff";
+            auth.username = "xo";
+            auth.password = "xo";
+            REQUIRE(overwrite_file(fname, auth.dumps()) == NoError());
+        }();
         REQUIRE(auth.load(fname) == NoError());
+        REQUIRE(auth.auth_token == "{TOKEN}");
+        REQUIRE(auth.logged_in == true);
+        REQUIRE(auth.expiry_time == "fff");
         REQUIRE(auth.username == "xo");
         REQUIRE(auth.password == "xo");
     }
@@ -63,7 +73,7 @@ TEST_CASE("Auth::dump() works correctly") {
 
 template <typename F> std::string make_time_(F &&f) {
     std::time_t t = f(std::time(nullptr));
-    if (t == (std::time_t) -1) {
+    if (t == (std::time_t)-1) {
         throw std::runtime_error("std::time() failed");
     }
     std::tm ttm{};
@@ -140,7 +150,7 @@ TEST_CASE("orchestrate::login() works correctly") {
 
 TEST_CASE("Orchestration works") {
     Client client;
-    client.logger->set_verbosity(MK_LOG_DEBUG2);
+    client.logger->increase_verbosity();
     client.geoip_country_path = "GeoIP.dat";
     client.geoip_asn_path = "GeoIPASNum.dat";
     client.network_type = "wifi";
@@ -176,12 +186,6 @@ TEST_CASE("Orchestration works") {
             promise.set_value(error);
             return;
         }
-        // Just to make sure we successfully cleared the structure
-        REQUIRE(auth.logged_in == false);
-        REQUIRE(auth.auth_token == "");
-        REQUIRE(auth.expiry_time == "");
-        REQUIRE(auth.username == saved_username);
-        REQUIRE(auth.password == saved_password);
         client.update(std::move(auth), [&promise, &client](Error &&error,
                                                            Auth &&auth) {
             if (error) {
