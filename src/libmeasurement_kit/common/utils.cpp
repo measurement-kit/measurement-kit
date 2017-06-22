@@ -45,21 +45,6 @@ Error parse_iso8601_utc(std::string ts, std::tm *tmb) {
     return NoError();
 }
 
-// TODO: add regress test for this function
-Error parse_iso8601_utc(std::string ts, std::time_t *t) {
-    *t = {};
-    std::tm tmb;
-    Error err = parse_iso8601_utc(ts, &tmb);
-    if (err) {
-        return err;
-    }
-    *t = std::mktime(&tmb);
-    if (*t == (std::time_t) -1) {
-        return ValueError();
-    }
-    return NoError();
-}
-
 ErrorOr<std::string> timestamp(const struct tm *t) {
     char result[30];
     if (strftime(result, sizeof(result), "%Y-%m-%d %H:%M:%S", t) == 0) {

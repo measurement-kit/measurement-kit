@@ -86,7 +86,7 @@ TEST_CASE("fcompose() works as expected with async policy") {
                             cb(x + 4);
                         });
               });
-        reactor->run_with_initial_event([reactor, f]() {
+        reactor->run_with_initial_event([reactor, f]() mutable {
             f(1, [reactor](int x) {
                 REQUIRE(x == 11);
                 reactor->stop();
