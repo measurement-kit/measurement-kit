@@ -17,8 +17,8 @@ static void tcp_many(const std::vector<std::string> ip_ports,
                       Var<Reactor> reactor,
                       Var<Logger> logger,
                       Callback<Error> all_done_cb) {
-    // per-endpoint, we only consider success/failure.
-    // telegram is "blocked" if no endpoints succeed.
+    // if any endpoints are unblocked, switch this to false
+    (*entry)["telegram_tcp_blocking"] = true;
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
         return [=](Error connect_error, Var<net::Transport> txp) {
             bool close_txp = true; // if connected, we must disconnect
@@ -39,6 +39,7 @@ static void tcp_many(const std::vector<std::string> ip_ports,
                 logger->info("telegram: success TCP connecting to %s:%d",
                              ip.c_str(), port);
                 result["status"]["success"] = true;
+                (*entry)["telegram_tcp_blocking"] = true;
             }
             (*entry)["tcp_connect"].push_back(result);
             if (close_txp == true) {
@@ -76,18 +77,38 @@ static void tcp_many(const std::vector<std::string> ip_ports,
 }
 
 static void http_many(const std::vector<std::string> urls,
-                       Var<Entry> entry,
-                       Var<Reactor> reactor,
-                       Var<Logger> logger,
-                       Callback<Error> all_done_cb) {
+                      std::string type,
+                      Var<Entry> entry,
+                      Var<Reactor> reactor,
+                      Var<Logger> logger,
+                      Callback<Error> all_done_cb) {
+    if (type == "endpoints") {
+        // if any endpoints are unblocked, switch this to false
+        (*entry)["telegram_tcp_blocking"] = true;
+    } else if (type == "web") {
+        // if any titles are not "Telegram Web", switch this to blocked
+        (*entry)["telegram_web_status"] = "ok";
+        (*entry)["telegram_web_failure"] = nullptr;
+    }
     auto http_cb = [=](std::string url, Callback<Error> done_cb) {
         return [=](Error err, Var<http::Response> response) {
              if (!!err) {
                  logger->info("telegram: failure HTTP connecting to %s",
                      url.c_str());
+                 if (type == "web") {
+                     (*entry)["telegram_web_status"] = "blocked";
+                     (*entry)["telegram_web_failure"] = err.as_ooni_error();
+                 }
              } else {
                  logger->info("telegram: success HTTP connecting to %s",
                      url.c_str());
+                 if (type == "endpoints") {
+                    (*entry)["telegram_tcp_blocking"] = false;
+                 } else if (type == "web") {
+                     if (extract_html_title(response->body) != "Telegram Web") {
+                         (*entry)["telegram_web_status"] = "blocked";
+                     }
+                 }
              }
             done_cb(err);
          };
@@ -180,7 +201,7 @@ void telegram(std::string input, Settings options,
     mk::fcompose(
         mk::fcompose_policy_async(),
         [=](Callback<> cb){
-            http_many(TELEGRAM_WEB_URLS, entry, reactor, logger,
+            http_many(TELEGRAM_WEB_URLS, "web", entry, reactor, logger,
                 [=](Error err){
                     logger->info("saw %s in Telegram Web",
                         (!!err) ? "at least one error" : "no errors");
@@ -198,7 +219,7 @@ void telegram(std::string input, Settings options,
             );
         },
         [=](Callback<> cb){
-            http_many(TELEGRAM_HTTP_ENDPOINTS, entry, reactor, logger,
+            http_many(TELEGRAM_HTTP_ENDPOINTS, "endpoints", entry, reactor, logger,
                 [=](Error err){
                     logger->info("saw %s in Telegram's HTTP endpoints",
                         (!!err) ? "at least one error" : "no errors");
