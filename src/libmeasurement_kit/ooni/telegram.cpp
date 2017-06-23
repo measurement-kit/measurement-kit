@@ -4,6 +4,7 @@
 
 #include "../common/utils.hpp"
 #include "../ooni/constants.hpp"
+#include "../ooni/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
@@ -12,11 +13,10 @@ namespace ooni {
 using namespace mk::report;
 
 static void tcp_many(const std::vector<std::string> ip_ports,
-                     Var<Entry> entry,
-                     Callback<Error> all_done_cb,
-                     Var<Reactor> reactor,
-                     Var<Logger> logger) {
-
+                      Var<Entry> entry,
+                      Var<Reactor> reactor,
+                      Var<Logger> logger,
+                      Callback<Error> all_done_cb) {
     // per-endpoint, we only consider success/failure.
     // telegram is "blocked" if no endpoints succeed.
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
@@ -76,31 +76,19 @@ static void tcp_many(const std::vector<std::string> ip_ports,
 }
 
 static void http_many(const std::vector<std::string> urls,
-                      Var<Entry> entry,
-                      Callback<Error> all_done_cb,
-                      Var<Reactor> reactor,
-                      Var<Logger> logger) {
-
+                       Var<Entry> entry,
+                       Var<Reactor> reactor,
+                       Var<Logger> logger,
+                       Callback<Error> all_done_cb) {
     auto http_cb = [=](std::string url, Callback<Error> done_cb) {
         return [=](Error err, Var<http::Response> response) {
-//              commenting out this stuff, as we might not want it...
-//             Entry result = {
-//                 {"url", url},
-//                 {"status",
-//                     {{"success", nullptr},
-//                     {"failure", nullptr}}},
-//             };
              if (!!err) {
                  logger->info("telegram: failure HTTP connecting to %s",
                      url.c_str());
-//                 result["status"]["success"] = false;
-//                 result["status"]["failure"] = err.as_ooni_error();
              } else {
                  logger->info("telegram: success HTTP connecting to %s",
                      url.c_str());
-//                 result["status"]["success"] = true;
              }
-//            (*entry)["http_connect"].push_back(result);
             done_cb(err);
          };
     };
@@ -158,37 +146,72 @@ void telegram(std::string input, Settings options,
     logger->info("starting telegram test");
     Var<Entry> entry(new Entry);
 
-    // first try telegram web
-    http_many(TELEGRAM_WEB_URLS, entry, [=](Error err) {
-        logger->info("done testing telegram web");
-        if (!!err) {
-            logger->info("saw at least one error");
-            // set blocked = true
-        } else {
-            logger->info("saw no errors");
-            // if one title isn't right, set blocked = true
-        }
-        // then try endpoints as TCP
-        tcp_many(TELEGRAM_TCP_ENDPOINTS, entry, [=](Error err){
-            logger->info("done testing endpoints as TCP");
-            if (!!err) {
-                logger->info("saw at least one error");
-            } else {
-                logger->info("saw no errors");
-            }
-            // then try endpoints as HTTP
-            http_many(TELEGRAM_HTTP_ENDPOINTS, entry, [=](Error err){
-                logger->info("done testing endpoints as HTTP");
-                if (!!err) {
-                    logger->info("saw at least one error");
-                } else {
-                    logger->info("saw no errors");
+//    // first try telegram web
+//    http_many(TELEGRAM_WEB_URLS, entry, [=](Error err) {
+//        logger->info("done testing telegram web");
+//        if (!!err) {
+//            logger->info("saw at least one error");
+//            // set blocked = true
+//        } else {
+//            logger->info("saw no errors");
+//            // if one title isn't right, set blocked = true
+//        }
+//        // then try endpoints as TCP
+//        tcp_many(TELEGRAM_TCP_ENDPOINTS, entry, [=](Error err){
+//            logger->info("done testing endpoints as TCP");
+//            if (!!err) {
+//                logger->info("saw at least one error");
+//            } else {
+//                logger->info("saw no errors");
+//            }
+//            // then try endpoints as HTTP
+//            http_many(TELEGRAM_HTTP_ENDPOINTS, entry, [=](Error err){
+//                logger->info("done testing endpoints as HTTP");
+//                if (!!err) {
+//                    logger->info("saw at least one error");
+//                } else {
+//                    logger->info("saw no errors");
+//                }
+//                // then finish!
+//                callback(entry);
+//            }, reactor, logger);
+//        }, reactor, logger);
+//    }, reactor, logger);
+    mk::fcompose(
+        mk::fcompose_policy_async(),
+        [=](Callback<> cb){
+            http_many(TELEGRAM_WEB_URLS, entry, reactor, logger,
+                [=](Error err){
+                    logger->info("saw %s in Telegram Web",
+                        (!!err) ? "at least one error" : "no errors");
+                    cb();
                 }
-                // then finish!
-                callback(entry);
-            }, reactor, logger);
-        }, reactor, logger);
-    }, reactor, logger);
+            );
+        },
+        [=](Callback<> cb){
+            tcp_many(TELEGRAM_TCP_ENDPOINTS, entry, reactor, logger,
+                [=](Error err){
+                    logger->info("saw %s in Telegram's TCP endpoints",
+                        (!!err) ? "at least one error" : "no errors");
+                    cb();
+                }
+            );
+        },
+        [=](Callback<> cb){
+            http_many(TELEGRAM_HTTP_ENDPOINTS, entry, reactor, logger,
+                [=](Error err){
+                    logger->info("saw %s in Telegram's HTTP endpoints",
+                        (!!err) ? "at least one error" : "no errors");
+                    cb();
+                }
+            );
+        }
+    )(
+        [=](){
+            logger->info("calling final callback");
+            callback(entry);
+        }
+    );
 
     return;
 }
