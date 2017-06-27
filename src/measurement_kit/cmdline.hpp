@@ -5,6 +5,7 @@
 #define SRC_MEASUREMENT_KIT_CMDLINE_HPP
 
 #include <measurement_kit/nettests.hpp>
+#include <measurement_kit/common.hpp>
 
 #include "portable/err.h"
 #include "portable/getopt.h"

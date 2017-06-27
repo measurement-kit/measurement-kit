@@ -1,8 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_NETTESTS_RUNNER_HPP
-#define MEASUREMENT_KIT_NETTESTS_RUNNER_HPP
+#ifndef PRIVATE_NETTESTS_RUNNER_HPP
+#define PRIVATE_NETTESTS_RUNNER_HPP
+
+#include "private/common/async_runner.hpp"
 
 #include <measurement_kit/common.hpp>
 

@@ -7,6 +7,9 @@
 // This file implements the OONI collector client protocol
 // See <https://github.com/TheTorProject/ooni-spec/blob/master/oonib.md>
 
+#include "private/common/json.hpp"
+#include "private/common/mock.hpp"
+
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/ooni.hpp>
 #include <measurement_kit/http.hpp>

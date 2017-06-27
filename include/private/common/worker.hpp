@@ -1,10 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_WORKER_HPP
-#define MEASUREMENT_KIT_COMMON_WORKER_HPP
+#ifndef PRIVATE_COMMON_WORKER_HPP
+#define PRIVATE_COMMON_WORKER_HPP
 
 #include <measurement_kit/common/has_global_factory.hpp>
+#include <measurement_kit/common/non_copyable.hpp>
+#include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/reactor.hpp>
 
 #include <list>
@@ -13,7 +15,6 @@
 namespace mk {
 
 class Worker : public HasGlobalFactory<Worker>,
-               public HasMakeFactory<Worker>,
                public NonCopyable,
                public NonMovable {
   public:

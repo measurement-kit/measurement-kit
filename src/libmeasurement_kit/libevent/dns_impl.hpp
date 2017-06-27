@@ -4,6 +4,8 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_DNS_QUERY_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_DNS_QUERY_IMPL_HPP
 
+#include "private/common/mock.hpp"
+
 #include "../common/utils.hpp"
 #include "../net/utils.hpp"
 #include "../libevent/dns.hpp"

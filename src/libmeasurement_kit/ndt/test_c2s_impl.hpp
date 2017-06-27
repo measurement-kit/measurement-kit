@@ -4,6 +4,8 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NDT_TEST_C2S_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_NDT_TEST_C2S_IMPL_HPP
 
+#include "private/common/mock.hpp"
+
 #include "../ndt/internal.hpp"
 
 namespace mk {

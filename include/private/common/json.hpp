@@ -1,11 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_JSON_HPP
-#define MEASUREMENT_KIT_COMMON_JSON_HPP
+#ifndef PRIVATE_COMMON_JSON_HPP
+#define PRIVATE_COMMON_JSON_HPP
+
+#include "private/common/sandbox.hpp"
 
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/sandbox.hpp>
 #include <measurement_kit/ext/json.hpp>
 
 namespace mk {

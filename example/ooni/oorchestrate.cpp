@@ -2,9 +2,13 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/common/fcompose.hpp"
+
 #include <measurement_kit/ooni.hpp>
 
 #include <unistd.h>
+
+#include <future>
 
 using namespace mk::ooni::orchestrate;
 using namespace mk::ooni;

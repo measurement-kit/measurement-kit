@@ -1,8 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_DNS_PING_HPP
-#define MEASUREMENT_KIT_DNS_PING_HPP
+#ifndef PRIVATE_DNS_PING_HPP
+#define PRIVATE_DNS_PING_HPP
+
+#include "private/common/every.hpp"
 
 #include <measurement_kit/dns/query.hpp>
 
