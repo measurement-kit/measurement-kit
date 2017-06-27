@@ -5,7 +5,6 @@
 #define PRIVATE_COMMON_ASYNC_RUNNER_HPP
 
 #include <measurement_kit/common/has_global_factory.hpp>
-#include <measurement_kit/common/has_make_factory.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
@@ -18,8 +17,7 @@
 
 namespace mk {
 
-class AsyncRunner : public HasMakeFactory<AsyncRunner>,
-                    public HasGlobalFactory<AsyncRunner>,
+class AsyncRunner : public HasGlobalFactory<AsyncRunner>,
                     public NonCopyable,
                     public NonMovable {
   public:

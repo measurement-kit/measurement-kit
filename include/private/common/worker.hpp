@@ -5,7 +5,6 @@
 #define PRIVATE_COMMON_WORKER_HPP
 
 #include <measurement_kit/common/has_global_factory.hpp>
-#include <measurement_kit/common/has_make_factory.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/reactor.hpp>
@@ -16,7 +15,6 @@
 namespace mk {
 
 class Worker : public HasGlobalFactory<Worker>,
-               public HasMakeFactory<Worker>,
                public NonCopyable,
                public NonMovable {
   public:

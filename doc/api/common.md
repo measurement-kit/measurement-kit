@@ -21,7 +21,6 @@ The `common` module contains contains the following submodules:
 - [error_or](common/error_or.md): maybe-like object containing either a result or an error
 - [every](common/every.md): call a functor every N seconds
 - [has_global_factory](common/has_global_factory.md): template decorator to add a global, singleton factory to a class
-- [has_make_factory](common/has_make_factory.md): template decorator to add a factory called `make` to a class
 - [lexical_cast](common/lexical_cast.md): lexical cast between scalar values
 - [maybe](common/maybe.md): maybe-like monad
 - [locked](common/locked.md): run function with mutex held
