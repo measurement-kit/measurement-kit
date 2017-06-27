@@ -11,7 +11,7 @@
 #include <event2/util.h>
 #include <openssl/sha.h>
 
-#include "../common/utils_impl.hpp"
+#include "private/common/utils_impl.hpp"
 
 namespace mk {
 
