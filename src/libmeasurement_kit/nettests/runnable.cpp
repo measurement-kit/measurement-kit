@@ -2,6 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/common/fmap.hpp"
+#include "private/common/parallel.hpp"
+#include "private/common/range.hpp"
+#include "private/nettests/runnable.hpp"
+
 #include "../common/utils.hpp"
 #include "../ext/sole.hpp"
 #include "../ooni/utils.hpp"
@@ -284,7 +289,7 @@ std::string Runnable::generate_output_filepath() {
     return filename.str();
 }
 
-void Runnable::contact_bouncer(Callback<Error> cb) {
+void Runnable::query_bouncer(Callback<Error> cb) {
     if (!use_bouncer) {
         logger->info("skipping bouncer");
         cb(NoError());
@@ -343,7 +348,7 @@ void Runnable::begin(Callback<Error> cb) {
     }
     mk::utc_time_now(&test_start_time);
     beginning = mk::time_now();
-    contact_bouncer([=](Error error) {
+    query_bouncer([=](Error error) {
         if (error) {
             cb(error);
             return;

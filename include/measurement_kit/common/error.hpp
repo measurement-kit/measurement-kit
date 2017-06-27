@@ -43,6 +43,8 @@ class Error : public std::exception {
 
     std::string as_ooni_error() { return reason; }
 
+    const char *what() const noexcept override { return reason.c_str(); }
+
     void add_child_error(const Error &err) {
         Var<Error> container(new Error(err));
         child_errors.push_back(container);
@@ -74,7 +76,7 @@ class Error : public std::exception {
       public:                                                                  \
         _name_() : Error(_code_, _ooe_) {}                                     \
         _name_(std::string s) : Error(_code_, _ooe_) {                         \
-            reason += " ";                                                     \
+            reason += ": ";                                                    \
             reason += s;                                                       \
         }                                                                      \
         _name_(Error e) : Error(_code_, _ooe_, e) {}                           \

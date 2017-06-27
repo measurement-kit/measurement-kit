@@ -5,16 +5,16 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/ooni/orchestrate_impl.hpp"
 #include "../src/libmeasurement_kit/common/utils.hpp"
+#include "../src/libmeasurement_kit/ooni/orchestrate_impl.hpp"
 
 using namespace mk;
 using namespace mk::ooni;
 using namespace mk::ooni::orchestrate;
 
-TEST_CASE("Authentication::load() works correctly") {
+TEST_CASE("Auth::load() works correctly") {
     const std::string fname = "orchestrator_dummy.json";
-    Authentication auth;
+    Auth auth;
 
     SECTION("with a nonexistent file") {
         REQUIRE(auth.load("/nonexistent") != NoError());
@@ -36,75 +36,106 @@ TEST_CASE("Authentication::load() works correctly") {
     }
 
     SECTION("with good input") {
-        nlohmann::json data{{"username", "xo"}, {"password", "xo"}};
-        REQUIRE(overwrite_file(fname, data.dump()) == NoError());
+        [&]() {
+            Auth auth;
+            auth.auth_token = "{TOKEN}";
+            auth.logged_in = true;
+            auth.expiry_time = "fff";
+            auth.username = "xo";
+            auth.password = "xo";
+            REQUIRE(overwrite_file(fname, auth.dumps()) == NoError());
+        }();
         REQUIRE(auth.load(fname) == NoError());
+        REQUIRE(auth.auth_token == "{TOKEN}");
+        REQUIRE(auth.logged_in == true);
+        REQUIRE(auth.expiry_time == "fff");
         REQUIRE(auth.username == "xo");
         REQUIRE(auth.password == "xo");
     }
 }
 
-TEST_CASE("Authentication::store() works correctly") {
+TEST_CASE("Auth::dump() works correctly") {
     const std::string fname = "orchestrator_dummy.json";
-    Authentication auth;
+    Auth auth;
 
     SECTION("with nonexistent file") {
-        REQUIRE(auth.store("/nonexistent/nonexistent") != NoError());
+        REQUIRE(auth.dump("/nonexistent/nonexistent") != NoError());
     }
 
     SECTION("with existent file") {
         auth.username = auth.password = "xo";
-        REQUIRE(auth.store(fname) == NoError());
+        REQUIRE(auth.dump(fname) == NoError());
         nlohmann::json data = nlohmann::json::parse(*slurp(fname));
         REQUIRE(data["username"] == "xo");
         REQUIRE(data["password"] == "xo");
     }
 }
 
-TEST_CASE("Authentication::is_valid() works correctly") {
-    Authentication auth;
+template <typename F> std::string make_time_(F &&f) {
+    std::time_t t = f(std::time(nullptr));
+    if (t == (std::time_t)-1) {
+        throw std::runtime_error("std::time() failed");
+    }
+    std::tm ttm{};
+    if (gmtime_r(&t, &ttm) == nullptr) {
+        throw std::runtime_error("gmtime_r() failed");
+    }
+    std::stringstream ss;
+    ss << std::put_time(&ttm, "%Y-%m-%dT%H:%M:%SZ");
+    return ss.str();
+}
+
+TEST_CASE("Auth::is_valid() works correctly") {
+    Auth auth;
 
     SECTION("When we are not logged in") {
-        REQUIRE(auth.is_valid() == false);
+        REQUIRE(auth.is_valid(Logger::global()) == false);
+    }
+
+    SECTION("When the token is empty") {
+        auth.logged_in = true;
+        REQUIRE(auth.is_valid(Logger::global()) == false);
     }
 
     SECTION("When we are logged in and time is expired") {
-        auth.expiry_time = std::time(nullptr) - 60; // One minute in the past
+        auth.expiry_time = make_time_([](time_t t) { return t - 60; });
         auth.logged_in = true;
-        REQUIRE(auth.is_valid() == false);
+        auth.auth_token = "{TOKEN}";
+        REQUIRE(auth.is_valid(Logger::global()) == false);
     }
 
     SECTION("When we are logged in and time is not expired") {
-        auth.expiry_time = std::time(nullptr) + 60; // One minute in the future
+        auth.expiry_time = make_time_([](time_t t) { return t + 60; });
         auth.logged_in = true;
-        REQUIRE(auth.is_valid() == true);
+        auth.auth_token = "{TOKEN}";
+        REQUIRE(auth.is_valid(Logger::global()) == true);
     }
 }
 
 TEST_CASE("orchestrate::login() works correctly") {
-    auto auth = Authentication::make();
     auto reactor = Reactor::make();
 
     SECTION("When the username is missing") {
         Error err;
         reactor->run_with_initial_event([&]() {
-            login(auth, testing_registry_url(), {}, reactor, Logger::global(),
-                  [&](Error &&e) {
-                    err = e;
-                    reactor->break_loop();
+            login({}, testing_registry_url(), {}, reactor, Logger::global(),
+                  [&](Error &&e, Auth &&) {
+                      err = e;
+                      reactor->break_loop();
                   });
         });
         REQUIRE(err == MissingRequiredValueError());
     }
 
     SECTION("When the password is missing") {
-        auth->username = "antani";
+        Auth auth;
+        auth.username = "antani";
         Error err;
         reactor->run_with_initial_event([&]() {
-            login(auth, testing_registry_url(), {}, reactor, Logger::global(),
-                  [&](Error &&e) {
-                    err = e;
-                    reactor->break_loop();
+            login(std::move(auth), testing_registry_url(), {}, reactor,
+                  Logger::global(), [&](Error &&e, Auth &&) {
+                      err = e;
+                      reactor->break_loop();
                   });
         });
         REQUIRE(err == MissingRequiredValueError());
@@ -118,32 +149,53 @@ TEST_CASE("orchestrate::login() works correctly") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Orchestration works") {
-    auto make_path = []() {
-        std::string s = "orchestrator_secrets_";
-        s += random_str(8);
-        s += ".json";
-        return s;
-    };
     Client client;
-    client.logger->set_verbosity(MK_LOG_DEBUG2);
-    client.probe_cc = "IT";
-    client.probe_asn = "AS0";
-    client.platform = "macos";
-    client.supported_tests = {"web_connectivity"};
+    client.logger->increase_verbosity();
+    client.geoip_country_path = "GeoIP.dat";
+    client.geoip_asn_path = "GeoIPASNum.dat";
     client.network_type = "wifi";
-    client.available_bandwidth = "10";
-    //client.device_token = "{TOKEN}";  /* Not needed on PC devices */
+    // client.device_token = "{TOKEN}";  /* Not needed on PC devices */
     client.registry_url = testing_registry_url();
-    client.secrets_path = make_path();
     std::promise<Error> promise;
     std::future<Error> future = promise.get_future();
-    client.register_probe([client, &promise](Error &&error) {
+    client.register_probe("", [&promise, &client](Error &&error, Auth &&auth) {
         if (error) {
             promise.set_value(error);
             return;
         }
-        client.update([&promise](Error &&error) {
+        // This is what you should do right after you are registered: you
+        // should dump the `Auth` structure on persistent storage
+        auto path = []() {
+            std::string s = "orchestrator_secrets_";
+            s += random_str(8);
+            s += ".json";
+            return s;
+        }();
+        if ((error = auth.dump(path)) != NoError()) {
             promise.set_value(error);
+            return;
+        }
+        // In theory you should not call `update` immediately so here we
+        // modify network type to simulate a change. We also reload the auth
+        // as this is typically what you would do after some time.
+        client.network_type = "3g";
+        auto saved_username = auth.username;
+        auto saved_password = auth.password;
+        auth = {}; // clear
+        if ((error = auth.load(path)) != NoError()) {
+            promise.set_value(error);
+            return;
+        }
+        client.update(std::move(auth), [&promise, &client](Error &&error,
+                                                           Auth &&auth) {
+            if (error) {
+                promise.set_value(error);
+                return;
+            }
+            // Do it twice to see if the token is still valid
+            client.update(std::move(auth), [&promise](Error &&error, Auth &&) {
+                promise.set_value(error);
+            });
         });
     });
     REQUIRE(future.get() == NoError());

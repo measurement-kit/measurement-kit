@@ -4,6 +4,8 @@
 
 #include <measurement_kit/dns.hpp>
 
+#include "private/dns/ping.hpp"
+
 #include <iostream>
 
 #include <unistd.h>

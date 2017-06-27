@@ -2,6 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/nettests/runnable.hpp"
+#include "private/nettests/runner.hpp"
+
 #include <measurement_kit/nettests.hpp>
 
 #include <cassert>
@@ -59,6 +62,11 @@ BaseTest &BaseTest::set_output_filepath(std::string s) {
 
 BaseTest &BaseTest::set_error_filepath(std::string s) {
     runnable->logger->set_logfile(s);
+    return *this;
+}
+
+BaseTest &BaseTest::set_options(std::string key, std::string value) {
+    runnable->options[key] = value;
     return *this;
 }
 

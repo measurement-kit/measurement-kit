@@ -4,6 +4,8 @@
 #ifndef TEST_NETTESTS_UTILS_HPP
 #define TEST_NETTESTS_UTILS_HPP
 
+#include "private/nettests/runnable.hpp"
+
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ooni.hpp>
 

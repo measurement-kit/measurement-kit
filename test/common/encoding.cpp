@@ -5,6 +5,8 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
+#include "private/common/encoding.hpp"
+
 #include <resolv.h>
 
 #include <event2/util.h>

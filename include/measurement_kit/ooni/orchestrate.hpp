@@ -33,6 +33,22 @@ std::string testing_events_url();
  * Registry database
  */
 
+class Auth {
+  public:
+    std::string auth_token;
+    std::string expiry_time;
+    bool logged_in = false;
+    std::string username;
+    std::string password;
+
+    static std::string make_password();
+    Error load(const std::string &filepath) noexcept;
+    Error loads(const std::string &data) noexcept;
+    Error dump(const std::string &filepath) noexcept;
+    std::string dumps() noexcept;
+    bool is_valid(Var<Logger>) const noexcept;
+};
+
 class ClientMetadata {
   public:
     Var<Logger> logger = Logger::global();
@@ -49,20 +65,28 @@ class ClientMetadata {
     std::string probe_cc;
     std::string probe_family;
     std::string registry_url = production_registry_url();
-    std::string secrets_path = "orchestrator_secrets.json";
     std::string software_name = "measurement_kit";
     std::string software_version = MK_VERSION;
     std::vector<std::string> supported_tests;
-    nlohmann::json as_json_() const;
+
+    nlohmann::json as_json() const;
 };
 
 class Task; /* Forward declaration */
 
 class Client : public ClientMetadata {
   public:
-    void register_probe(Callback<Error &&> &&callback) const;
-    void update(Callback<Error &&> &&callback) const;
-    void list_tasks(Callback<Error &&, std::vector<Task> &&> &&callback) const;
+    void register_probe(
+          std::string &&, Callback<Error &&, Auth &&> &&callback) const;
+
+    void find_location(
+          Callback<Error &&, std::string &&, std::string &&> &&callback) const;
+
+    void update(Auth &&, Callback<Error &&, Auth &&> &&callback) const;
+
+    void list_tasks(
+          Auth &&,
+          Callback<Error &&, Auth &&, std::vector<Task> &&> &&callback) const;
 };
 
 /*
@@ -77,10 +101,14 @@ class TaskData {
 
 class Task : public TaskData {
   public:
-    void get(Callback<Error &&, std::string &&> &&callback) const;
-    void accept(Callback<Error &&> &&callback) const;
-    void reject(Callback<Error &&> &&callback) const;
-    void done(Callback<Error &&> &&callback) const;
+    void get(Auth &&,
+             Callback<Error &&, Auth &&, std::string &&> &&callback) const;
+
+    void accept(Auth &&, Callback<Error &&, Auth &&> &&callback) const;
+
+    void reject(Auth &&, Callback<Error &&, Auth &&> &&callback) const;
+
+    void done(Auth &&, Callback<Error &&, Auth &&> &&callback) const;
 };
 
 } // namespace orchestrate

@@ -4,6 +4,8 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_EVBUFFER_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_EVBUFFER_HPP
 
+#include "private/common/mock.hpp"
+
 #include <measurement_kit/common.hpp>
 
 #include <event2/buffer.h>

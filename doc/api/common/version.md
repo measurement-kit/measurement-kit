@@ -45,6 +45,6 @@ and libevent we are compiling measurement-kit with.
 
 # HISTORY
 
-The `version.hpp` header appeared in MeasurementKit 0.2.0. Support for
+The `version.h` header appeared in MeasurementKit 0.2.0. Support for
 knowing the precise git tag and dependencies versions was added during the
 v0.6 release cycle.
