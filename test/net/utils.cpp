@@ -5,9 +5,9 @@
 #include <cerrno>
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/net/utils.hpp"
+#include "private/net/utils.hpp"
 
 TEST_CASE("is_ipv4_addr works") {
     SECTION("on ipv4") {

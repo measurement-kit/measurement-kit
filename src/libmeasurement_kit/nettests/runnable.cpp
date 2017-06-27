@@ -7,10 +7,10 @@
 #include "private/common/range.hpp"
 #include "private/nettests/runnable.hpp"
 
-#include "../common/utils.hpp"
-#include "../ext/sole.hpp"
-#include "../ooni/utils.hpp"
-#include "../nettests/utils.hpp"
+#include "private/common/utils.hpp"
+#include "private/ext/sole.hpp"
+#include "private/ooni/utils.hpp"
+#include "private/nettests/utils.hpp"
 
 #include <measurement_kit/nettests.hpp>
 

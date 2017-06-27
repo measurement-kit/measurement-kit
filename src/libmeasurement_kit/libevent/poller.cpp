@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../libevent/poller_impl.hpp"
+#include "private/libevent/poller_impl.hpp"
 
 #include <measurement_kit/net/error.hpp>
 

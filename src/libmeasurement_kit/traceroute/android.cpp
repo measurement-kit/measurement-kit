@@ -40,8 +40,8 @@ void mk_traceroute_android_unused();
 void mk_traceroute_android_unused() {}
 #else
 
-#include "../net/utils.hpp"
-#include "../common/utils.hpp"
+#include "private/net/utils.hpp"
+#include "private/common/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 #include <measurement_kit/traceroute.hpp>

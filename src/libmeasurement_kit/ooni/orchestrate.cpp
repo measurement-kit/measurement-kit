@@ -4,7 +4,7 @@
 
 #include <measurement_kit/ooni.hpp>
 
-#include "../ooni/orchestrate_impl.hpp"
+#include "private/ooni/orchestrate_impl.hpp"
 
 namespace mk {
 namespace ooni {

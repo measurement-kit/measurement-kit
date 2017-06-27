@@ -3,10 +3,10 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
 #include <measurement_kit/common.hpp>
-#include "../src/libmeasurement_kit/ndt/measure_speed.hpp"
+#include "private/ndt/measure_speed.hpp"
 
 using namespace mk;
 using namespace mk::ndt;

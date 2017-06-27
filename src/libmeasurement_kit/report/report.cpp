@@ -5,7 +5,7 @@
 #include "private/common/fmap.hpp"
 #include "private/common/parallel.hpp"
 
-#include "../common/utils.hpp"
+#include "private/common/utils.hpp"
 
 #include <measurement_kit/report.hpp>
 

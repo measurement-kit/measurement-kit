@@ -5,7 +5,7 @@
 // Derivative work of r-lyeh/sole@c61c49f10d.
 // See NOTICE for original license.
 
-#include "../ext/sole.hpp"
+#include "private/ext/sole.hpp"
 
 #include <iomanip>
 #include <random>

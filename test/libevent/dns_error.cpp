@@ -3,12 +3,12 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
 #include <measurement_kit/dns.hpp>
 #include <event2/dns.h>
 
-#include "../src/libmeasurement_kit/libevent/dns.hpp"
+#include "private/libevent/dns.hpp"
 
 using namespace mk;
 using namespace mk::libevent;

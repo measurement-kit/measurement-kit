@@ -24,7 +24,7 @@
 
 #include <openssl/x509v3.h>
 
-#include "tls_internal.h"
+#include "private/ext/tls_internal.h"
 
 static int tls_match_name(const char *cert_name, const char *name);
 static int tls_check_subject_altname(struct tls *ctx, X509 *cert,

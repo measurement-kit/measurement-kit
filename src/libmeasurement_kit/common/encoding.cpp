@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../portable/citrus_adapt.h"
-#include "../common/encoding_base64_impl.hpp"
+#include "private/portable/citrus_adapt.h"
+#include "private/common/encoding_base64_impl.hpp"
 
 #include <measurement_kit/common.hpp>
 
