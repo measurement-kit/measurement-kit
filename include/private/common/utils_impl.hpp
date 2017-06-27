@@ -6,6 +6,8 @@
 
 #include "private/common/mock.hpp"
 
+#include "private/common/mock.hpp"
+
 #include "../common/utils.hpp"
 #include <cstdio>
 #include <measurement_kit/common.hpp>

@@ -7,6 +7,9 @@
 #include "private/common/json.hpp"
 #include "private/common/mock.hpp"
 
+#include "private/common/json.hpp"
+#include "private/common/mock.hpp"
+
 #include "../http/response_parser.hpp"
 
 #include <measurement_kit/http.hpp>

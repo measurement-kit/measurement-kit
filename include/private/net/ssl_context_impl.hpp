@@ -6,6 +6,8 @@
 
 #include "private/common/mock.hpp"
 
+#include "private/common/mock.hpp"
+
 #include "../net/builtin_ca_bundle.hpp"
 #include "../net/ssl_context.hpp"
 #include <cassert>

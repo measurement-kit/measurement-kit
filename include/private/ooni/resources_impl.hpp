@@ -7,6 +7,9 @@
 #include "private/common/mock.hpp"
 #include "private/common/parallel.hpp"
 
+#include "private/common/mock.hpp"
+#include "private/common/parallel.hpp"
+
 #include <fstream>
 #include <regex>
 

@@ -7,6 +7,9 @@
 #include "private/common/encoding.hpp"
 #include "private/common/mock.hpp"
 
+#include "private/common/encoding.hpp"
+#include "private/common/mock.hpp"
+
 #include "../ooni/utils.hpp"
 
 using json = nlohmann::json;

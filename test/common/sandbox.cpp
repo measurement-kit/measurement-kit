@@ -7,6 +7,8 @@
 
 #include "private/common/sandbox.hpp"
 
+#include "private/common/sandbox.hpp"
+
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

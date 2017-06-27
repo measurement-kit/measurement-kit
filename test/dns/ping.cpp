@@ -7,6 +7,8 @@
 
 #include "private/dns/ping.hpp"
 
+#include "private/dns/ping.hpp"
+
 #include <measurement_kit/dns.hpp>
 
 #include <iostream>

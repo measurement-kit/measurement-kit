@@ -6,6 +6,8 @@
 
 #include "private/common/mock.hpp"
 
+#include "private/common/mock.hpp"
+
 #include "../common/utils.hpp"
 #include "../net/utils.hpp"
 #include "../libevent/dns.hpp"

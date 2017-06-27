@@ -7,6 +7,8 @@
 
 #include "private/common/range.hpp"
 
+#include "private/common/range.hpp"
+
 #include <measurement_kit/common.hpp>
 
 TEST_CASE("The mk::range() API works as expected") {

@@ -7,6 +7,8 @@
 
 #include "private/common/fcompose.hpp"
 
+#include "private/common/fcompose.hpp"
+
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

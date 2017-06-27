@@ -7,6 +7,9 @@
 #include "private/common/mock.hpp"
 #include "private/common/worker.hpp"
 
+#include "private/common/mock.hpp"
+#include "private/common/worker.hpp"
+
 #include <measurement_kit/dns.hpp>
 
 #include "../dns/getaddrinfo_async.hpp"

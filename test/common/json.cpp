@@ -7,6 +7,8 @@
 
 #include "private/common/json.hpp"
 
+#include "private/common/json.hpp"
+
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

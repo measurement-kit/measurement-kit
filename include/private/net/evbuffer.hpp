@@ -6,6 +6,8 @@
 
 #include "private/common/mock.hpp"
 
+#include "private/common/mock.hpp"
+
 #include <measurement_kit/common.hpp>
 
 #include <event2/buffer.h>

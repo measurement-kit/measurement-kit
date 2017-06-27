@@ -7,6 +7,8 @@
 
 #include "private/common/freverse.hpp"
 
+#include "private/common/freverse.hpp"
+
 #include <measurement_kit/common.hpp>
 
 TEST_CASE("mk::freverse() works as expected") {

@@ -7,6 +7,8 @@
 
 #include "private/common/every.hpp"
 
+#include "private/common/every.hpp"
+
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

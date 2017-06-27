@@ -6,6 +6,8 @@
 
 #include "private/common/mock.hpp"
 
+#include "private/common/mock.hpp"
+
 #include "../ndt/internal.hpp"
 #include <measurement_kit/mlabns.hpp>
 

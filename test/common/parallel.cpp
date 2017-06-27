@@ -7,6 +7,8 @@
 
 #include "private/common/parallel.hpp"
 
+#include "private/common/parallel.hpp"
+
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

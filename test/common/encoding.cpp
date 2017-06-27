@@ -7,6 +7,8 @@
 
 #include "private/common/encoding.hpp"
 
+#include "private/common/encoding.hpp"
+
 #include <resolv.h>
 
 #include <event2/util.h>
