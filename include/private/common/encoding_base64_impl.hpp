@@ -27,8 +27,8 @@
  *
  * René Nyffenegger rene.nyffenegger@adp-gmbh.ch
  */
-#ifndef PRIVATE_COMMON_ENCODING_BASE65_IMPL_HPP
-#define PRIVATE_COMMON_ENCODING_BASE65_IMPL_HPP
+#ifndef PRIVATE_COMMON_ENCODING_BASE64_IMPL_HPP
+#define PRIVATE_COMMON_ENCODING_BASE64_IMPL_HPP
 
 #include <cstdint>
 #include <string>
