@@ -4,6 +4,9 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_IMPL_HPP
 
+#include "private/common/json.hpp"
+#include "private/common/mock.hpp"
+
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {

@@ -5,6 +5,8 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
+#include "private/common/freverse.hpp"
+
 #include <measurement_kit/common.hpp>
 
 TEST_CASE("mk::freverse() works as expected") {

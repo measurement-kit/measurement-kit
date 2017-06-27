@@ -4,6 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NETTESTS_UTILS_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_NETTESTS_UTILS_IMPL_HPP
 
+#include "private/common/mock.hpp"
 #include "../nettests/utils.hpp"
 
 #include <measurement_kit/ooni.hpp>

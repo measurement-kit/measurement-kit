@@ -5,6 +5,8 @@
 #define CATCH_CONFIG_MAIN
 #include "../src/libmeasurement_kit/ext/catch.hpp"
 
+#include "private/common/fapply.hpp"
+
 #include <measurement_kit/common.hpp>
 
 static void zero_arguments() {

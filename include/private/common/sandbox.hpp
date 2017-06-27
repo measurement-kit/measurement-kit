@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_SANDBOX_HPP
-#define MEASUREMENT_KIT_COMMON_SANDBOX_HPP
+#ifndef PRIVATE_COMMON_SANDBOX_HPP
+#define PRIVATE_COMMON_SANDBOX_HPP
 
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/maybe.hpp>

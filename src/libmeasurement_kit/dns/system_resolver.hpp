@@ -4,6 +4,9 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_DNS_SYSTEM_RESOLVER_HPP
 #define SRC_LIBMEASUREMENT_KIT_DNS_SYSTEM_RESOLVER_HPP
 
+#include "private/common/mock.hpp"
+#include "private/common/worker.hpp"
+
 #include <measurement_kit/dns.hpp>
 
 #include "../dns/getaddrinfo_async.hpp"

@@ -5,6 +5,9 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_IMPL_HPP
 
 #include "private/common/async_runner.hpp"
+#include "private/common/fcompose.hpp"
+#include "private/common/json.hpp"
+#include "private/common/mock.hpp"
 
 #include <measurement_kit/ooni.hpp>
 
