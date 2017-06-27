@@ -18,6 +18,7 @@ static const struct {
 };
 
 static OptionSpec kv_specs[] = {
+    {'b', "bouncer", true, "URL", "Set custom bouncer base URL"},
     {'c', "collector", true, "URL", "Set custom collector base URL"},
     {'g', "no-geoip", false, nullptr, "Disable geoip lookup"},
     {'l', "logfile", true, "PATH", "Set logfile PATH"},
@@ -50,6 +51,14 @@ int main(int argc, char **argv) {
     for (int ch; (ch = getopt_long(argc, argv, stropt.c_str(),
                                    long_options.data(), nullptr)) != -1;) {
         switch (ch) {
+        case 'b':
+            [&]() {
+                std::string bouncer = optarg;
+                initializers.push_back([=](BaseTest &test) {
+                    test.set_options("bouncer_base_url", bouncer);
+                });
+            }();
+            break;
         case 'c':
             [&]() {
                 std::string collector = optarg;

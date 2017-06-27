@@ -8,8 +8,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/common/version.h>
 
-#define MK_VERSION "0.7.0-dev"
-#define MK_VERSION_FULL "v0.7.0-dev-6-abcdef"
+#define MK_VERSION "0.7.0-alpha.1"
+#define MK_VERSION_FULL "v0.7.0-alpha.1-6-abcdef"
 
 #define MEASUREMENT_KIT_VERSION MK_VERSION /* Backward compat. */
 
@@ -45,6 +45,6 @@ and libevent we are compiling measurement-kit with.
 
 # HISTORY
 
-The `version.hpp` header appeared in MeasurementKit 0.2.0. Support for
+The `version.h` header appeared in MeasurementKit 0.2.0. Support for
 knowing the precise git tag and dependencies versions was added during the
 v0.6 release cycle.

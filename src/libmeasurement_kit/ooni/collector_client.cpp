@@ -106,13 +106,13 @@ ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger) {
         return FileIoError();
     }
     logger->debug("Read line from report: %s", line.c_str());
-    try {
-        // Works because we are using nlohmann::json::json() as Entry::Entry()
-        return Entry(nlohmann::json::parse(line));
-    } catch (const std::invalid_argument &) {
-        return JsonParseError();
+    Entry entry;
+    // Works because we are using nlohmann::json::json() as Entry::Entry()
+    auto e = json_parse_and_process(line, [&](auto j) { entry = j; });
+    if (e != NoError()) {
+        return e;
     }
-    /* NOTREACHED */
+    return entry;
 }
 
 void submit_report(std::string filepath, std::string collector_base_url,

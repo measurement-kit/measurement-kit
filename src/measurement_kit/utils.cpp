@@ -29,6 +29,7 @@ BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
 
 BaseTest &ndt_init(std::list<Callback<BaseTest &>> il, BaseTest &t) {
     return common_init(il, t).on_event([](const char *s) {
+        // Note: `on_event()` filters all exceptions on our behalf
         nlohmann::json doc = nlohmann::json::parse(s);
         if (doc["type"] != "download-speed" && doc["type"] != "upload-speed") {
             return;

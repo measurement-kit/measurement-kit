@@ -12,7 +12,7 @@ HttpInvalidRequestLineTest::HttpInvalidRequestLineTest() : BaseTest() {
     runnable.reset(new HttpInvalidRequestLineRunnable);
     runnable->test_name = "http_invalid_request_line";
     runnable->test_version = "0.0.2";
-    runnable->test_helpers_names = {"backend"};
+    runnable->test_helpers_data = {{"tcp-echo", "backend"}};
 }
 
 void HttpInvalidRequestLineRunnable::main(std::string, Settings options,

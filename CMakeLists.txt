@@ -12,7 +12,7 @@ set(MK_OPENSSL "${MK_OPENSSL}" CACHE PATH "Path where openssl is installed")
 
 # Compiler:
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(MK_UNIX_CFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
 set(MK_UNIX_CXXFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
 

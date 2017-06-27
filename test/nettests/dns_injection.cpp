@@ -13,7 +13,6 @@ using namespace mk::nettests;
 
 TEST_CASE("Synchronous dns-injection test") {
     test::nettests::make_test<DnsInjectionTest>("hosts.txt")
-        .set_options("backend", "8.8.8.1:53")
         .set_options("dns/timeout", "0.1")
         .run();
 }
@@ -21,7 +20,6 @@ TEST_CASE("Synchronous dns-injection test") {
 TEST_CASE("Asynchronous dns-injection test") {
     test::nettests::run_async(
         test::nettests::make_test<DnsInjectionTest>("hosts.txt")
-            .set_options("backend", "8.8.8.1:53")
             .set_options("dns/timeout", "0.1")
     );
 }
