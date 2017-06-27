@@ -1,10 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_ASYNC_RUNNER_HPP
-#define MEASUREMENT_KIT_COMMON_ASYNC_RUNNER_HPP
-
-// Documentation: doc/api/common/async_runner.md
+#ifndef PRIVATE_COMMON_ASYNC_RUNNER_HPP
+#define PRIVATE_COMMON_ASYNC_RUNNER_HPP
 
 #include <measurement_kit/common/has_global_factory.hpp>
 #include <measurement_kit/common/has_make_factory.hpp>

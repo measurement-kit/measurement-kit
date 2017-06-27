@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef MEASUREMENT_KIT_NETTESTS_RUNNABLE_HPP
-#define MEASUREMENT_KIT_NETTESTS_RUNNABLE_HPP
+#ifndef PRIVATE_NETTESTS_RUNNABLE_HPP
+#define PRIVATE_NETTESTS_RUNNABLE_HPP
 
 #include <measurement_kit/report.hpp>
 
@@ -22,7 +22,7 @@ class Runnable : public NonCopyable, public NonMovable {
     virtual ~Runnable();
 
     Var<Logger> logger = Logger::make();
-    Var<Reactor> reactor;  /* Left unspecified by purpose */
+    Var<Reactor> reactor; /* Left unspecified by purpose */
     Settings options;
     std::list<std::string> input_filepaths;
     std::string output_filepath;
@@ -63,6 +63,28 @@ class Runnable : public NonCopyable, public NonMovable {
     void geoip_lookup(Callback<>);
     void open_report(Callback<Error>);
     std::string generate_output_filepath();
+};
+
+#define MK_DECLARE_RUNNABLE(_name_)                                            \
+    class _name_ : public Runnable {                                           \
+      public:                                                                  \
+        void main(std::string, Settings,                                       \
+                  Callback<Var<report::Entry>>) override;                      \
+    }
+
+MK_DECLARE_RUNNABLE(DnsInjectionRunnable);
+MK_DECLARE_RUNNABLE(HttpHeaderFieldManipulationRunnable);
+MK_DECLARE_RUNNABLE(HttpInvalidRequestLineRunnable);
+MK_DECLARE_RUNNABLE(MeekFrontedRequestsRunnable);
+MK_DECLARE_RUNNABLE(MultiNdtRunnable);
+MK_DECLARE_RUNNABLE(NdtRunnable);
+MK_DECLARE_RUNNABLE(TcpConnectRunnable);
+
+// Separate definition because it contains extra methods
+class WebConnectivityRunnable : public Runnable {
+  public:
+    void main(std::string, Settings, Callback<Var<report::Entry>>) override;
+    void fixup_entry(report::Entry &) override;
 };
 
 } // namespace nettests

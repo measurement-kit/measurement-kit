@@ -4,6 +4,8 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_IMPL_HPP
 
+#include "private/common/async_runner.hpp"
+
 #include <measurement_kit/ooni.hpp>
 
 #include "../common/utils.hpp"

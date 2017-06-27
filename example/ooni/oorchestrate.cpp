@@ -6,6 +6,8 @@
 
 #include <unistd.h>
 
+#include <future>
+
 using namespace mk::ooni::orchestrate;
 using namespace mk::ooni;
 using namespace mk;

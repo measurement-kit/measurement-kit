@@ -1,5 +1,6 @@
 // Public domain 2017, Simone Basso <bassosimone@gmail.com.
 
+#include <measurement_kit/common.hpp>
 #include <measurement_kit/ext.hpp>      // Import nlohmann::json
 #include <measurement_kit/nettests.hpp> // Import mk::nettests
 
@@ -8,6 +9,7 @@
 #include <atomic>
 #include <deque>
 #include <functional>
+#include <mutex>
 #include <thread>
 
 /*
