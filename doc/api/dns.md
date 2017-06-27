@@ -25,12 +25,6 @@ void resolve_hostname(std::string hostname,
                       Var<Reactor> reactor = Reactor::global(),
                       Var<Logger> logger = Logger::global());
 
-template <typename ResultsCollector, typename Callback>
-void ping_nameserver(QueryClass dns_class, QueryType dns_type, std::string name,
-                     double interval, Maybe<double> run_for, Settings settings,
-                     Var<Reactor> reactor, Var<Logger> logger,
-                     ResultsCollector collector, Callback callback);
-
 } // namespace dns
 } // namespace mk
 ```
@@ -212,18 +206,6 @@ is the list of the addresses that `connect()` will try to connect to. This list 
 only contain a IPv4 (or IPv6) address if `address` is an IPv4 (or IPv6) address and it
 will contain IPv4 addresses before IPv6 addresses (if any) when `address` instead is
 a FQDN (fully qualified domain name).
-
-The `ping_nameserver` template executes `query()` using the nameserver
-specified in `Settings` every `interval` seconds. If the `run_for` monad is
-empty, this function will run forever. Otherwise, it will stop after `*run_for`
-seconds. Every time `query()` completes, the error and the
-resulting message will be passed to the `collector` function (which
-is equivalent to `std::function<void(Error, Var<Message>)>`. When the
-time is up, the final `callback` (equivalent to `std::function<void(Error)>`)
-will be called. Such `callback` will most likely receive a value of
-`NoError()` unless `interval` is negative. In such case, this function
-will fail and return a value of `ValueError()`. In all cases, the invocation
-of the final callback will be deferred.
 
 # EXAMPLE
 
