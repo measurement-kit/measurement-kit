@@ -50,9 +50,6 @@ endif()
 
 # Check dependencies:
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
 include(CheckLibraryExists)
@@ -134,7 +131,6 @@ target_include_directories(
 target_link_libraries(
   measurement_kit_static
   ${MK_LIBS}
-  Threads::Threads
 )
 
 ## measurement_kit
@@ -154,7 +150,6 @@ target_link_libraries(
   measurement_kit_exe
   measurement_kit_static
   ${MK_LIBS}
-  Threads::Threads
 )
 
 ## tests
@@ -168,6 +163,5 @@ foreach(MK_TEST_SOURCE ${MK_TESTS_SOURCES})
     ${MK_TEST_NAME}
     measurement_kit_static
     ${MK_LIBS}
-    Threads::Threads
   )
 endforeach()
