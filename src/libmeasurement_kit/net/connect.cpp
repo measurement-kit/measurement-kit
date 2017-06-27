@@ -6,13 +6,13 @@
 #include "config.h" // For MK_CA_BUNDLE
 #endif
 
-#include "../net/connect_impl.hpp"
-#include "../net/emitter.hpp"
-#include "../net/socks5.hpp"
-#include "../net/utils.hpp"
+#include "private/net/connect_impl.hpp"
+#include "private/net/emitter.hpp"
+#include "private/net/socks5.hpp"
+#include "private/net/utils.hpp"
 
-#include "../libevent/connection.hpp"
-#include "../net/ssl_context.hpp"
+#include "private/libevent/connection.hpp"
+#include "private/net/ssl_context.hpp"
 
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/net.hpp>

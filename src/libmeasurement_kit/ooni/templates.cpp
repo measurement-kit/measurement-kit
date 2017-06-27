@@ -6,7 +6,7 @@
 
 #include <event2/dns.h>
 
-#include "../ooni/utils.hpp"
+#include "private/ooni/utils.hpp"
 
 namespace mk {
 namespace ooni {

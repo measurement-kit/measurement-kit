@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../libevent/connection.hpp"
-#include "../net/utils.hpp"
+#include "private/libevent/connection.hpp"
+#include "private/net/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 

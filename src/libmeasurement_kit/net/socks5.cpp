@@ -2,10 +2,10 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../net/socks5.hpp"
-#include "../net/connect.hpp"
+#include "private/net/socks5.hpp"
+#include "private/net/connect.hpp"
 
-#include "../libevent/connection.hpp"
+#include "private/libevent/connection.hpp"
 
 namespace mk {
 namespace net {

@@ -5,9 +5,9 @@
 #include <measurement_kit/ooni.hpp>
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/nettests/utils_impl.hpp"
+#include "private/nettests/utils_impl.hpp"
 
 #include <sstream>
 #include <unordered_set>

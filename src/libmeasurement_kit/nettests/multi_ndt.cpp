@@ -7,7 +7,7 @@
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ndt.hpp>
 
-#include "../ndt/utils.hpp"
+#include "private/ndt/utils.hpp"
 
 namespace mk {
 namespace nettests {
