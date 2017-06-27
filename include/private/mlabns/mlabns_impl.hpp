@@ -7,9 +7,6 @@
 #include "private/common/json.hpp"
 #include "private/common/mock.hpp"
 
-#include "private/common/json.hpp"
-#include "private/common/mock.hpp"
-
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
