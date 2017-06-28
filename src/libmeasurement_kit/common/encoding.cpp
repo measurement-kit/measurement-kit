@@ -4,6 +4,7 @@
 
 #include "private/portable/citrus_adapt.h"
 #include "private/common/encoding_base64_impl.hpp"
+#include "private/common/encoding.hpp"
 
 #include <measurement_kit/common.hpp>
 
