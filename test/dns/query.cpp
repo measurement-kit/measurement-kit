@@ -331,8 +331,8 @@ TEST_CASE("The libevent resolver works as expected") {
                   REQUIRE(message->answers[0].ttl > 0);
                   auto found = false;
                   for (auto answer : message->answers) {
-                      if (answer.ipv6 == "2001:6b0:5a:5000::5" ||
-                          answer.ipv6 == "2001:6b0:5a:5000:0:5") {
+                      if (answer.ipv6 == "2620:0:6b0:b:1a1a:0:26e5:4810" ||
+                          answer.ipv6 == "2620::6b0:b:1a1a::26e5:4810") {
                           found = true;
                       }
                   }
