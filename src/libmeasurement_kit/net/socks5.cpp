@@ -140,7 +140,7 @@ void socks5_connect(std::string address, int port, Settings settings,
     connect_logic(proxy_address, lexical_cast<int>(proxy_port),
             [=](Error err, Var<ConnectResult> r) {
                 if (err) {
-                    err.context = r;
+                    err.context = r.as<ErrorContext>();
                     callback(err, nullptr);
                     return;
                 }
@@ -152,13 +152,13 @@ void socks5_connect(std::string address, int port, Settings settings,
                     socks5->on_connect(nullptr);
                     socks5->on_error(nullptr);
                     Error error = NoError();
-                    error.context = r;
+                    error.context = r.as<ErrorContext>();
                     callback(error, socks5);
                 });
                 socks5->on_error([=](Error error) {
                     socks5->on_connect(nullptr);
                     socks5->on_error(nullptr);
-                    error.context = r;
+                    error.context = r.as<ErrorContext>();
                     callback(error, nullptr);
                 });
             },

@@ -133,7 +133,7 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
     // is slower but also much simpler to implement and verify
     if (ctx->left <= 0) {
         Error err = NoError();
-        err.context = ctx->result;
+        err.context = ctx->result.as<ErrorContext>();
         ctx->callback(err, ctx->connections);
         return;
     }

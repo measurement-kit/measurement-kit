@@ -231,7 +231,7 @@ void connect(std::string address, int port,
         address, port,
         [=](Error err, Var<ConnectResult> r) {
             if (err) {
-                err.context = r;
+                err.context = r.as<ErrorContext>();
                 callback(err, nullptr);
                 return;
             }
@@ -248,7 +248,7 @@ void connect(std::string address, int port,
                 ErrorOr<Var<SslContext>> ssl_context = SslContext::make(cbp);
                 if (!ssl_context) {
                     Error err = ssl_context.as_error();
-                    err.context = r;
+                    err.context = r.as<ErrorContext>();
                     bufferevent_free(r->connected_bev);
                     callback(err, nullptr);
                     return;
@@ -256,7 +256,7 @@ void connect(std::string address, int port,
                 ErrorOr<SSL *> cssl = (*ssl_context)->get_client_ssl(address);
                 if (!cssl) {
                     Error err = cssl.as_error();
-                    err.context = r;
+                    err.context = r.as<ErrorContext>();
                     bufferevent_free(r->connected_bev);
                     callback(err, nullptr);
                     return;
@@ -265,7 +265,7 @@ void connect(std::string address, int port,
                     settings.get_noexcept("net/allow_ssl23", false);
                 if (!allow_ssl23) {
                     Error err = ValueError();
-                    err.context = r;
+                    err.context = r.as<ErrorContext>();
                     bufferevent_free(r->connected_bev);
                     callback(err, nullptr);
                     return;
@@ -278,7 +278,7 @@ void connect(std::string address, int port,
                             [r, callback, timeout, ssl_context, reactor,
                              logger, settings](Error err, bufferevent *bev) {
                                 if (err) {
-                                    err.context = r;
+                                    err.context = r.as<ErrorContext>();
                                     callback(err, nullptr);
                                     return;
                                 }
@@ -287,7 +287,7 @@ void connect(std::string address, int port,
                                         "net/ssl_allow_dirty_shutdown", false);
                                 if (!allow_dirty_shutdown) {
                                     Error err = allow_dirty_shutdown.as_error();
-                                    err.context = r;
+                                    err.context = r.as<ErrorContext>();
                                     bufferevent_free(bev);
                                     callback(err, nullptr);
                                     return;
@@ -318,7 +318,7 @@ void connect(std::string address, int port,
                                         bev, reactor, logger);
                                 txp->set_timeout(timeout);
                                 assert(err == NoError());
-                                err.context = r;
+                                err.context = r.as<ErrorContext>();
                                 callback(err, txp);
                             },
                             reactor, logger);
@@ -328,7 +328,7 @@ void connect(std::string address, int port,
                 libevent::Connection::make(r->connected_bev, reactor, logger);
             txp->set_timeout(timeout);
             assert(err == NoError());
-            err.context = r;
+            err.context = r.as<ErrorContext>();
             callback(err, txp);
         },
         settings, reactor, logger);

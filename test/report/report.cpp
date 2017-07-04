@@ -115,8 +115,8 @@ TEST_CASE("We can retry a partially successful open") {
     Var<CountedReporter> counted_reporter = CountedReporter::make();
     Var<FailingReporter> failing_reporter = FailingReporter::make();
     Report report;
-    report.add_reporter(counted_reporter);
-    report.add_reporter(failing_reporter);
+    report.add_reporter(counted_reporter.as<BaseReporter>());
+    report.add_reporter(failing_reporter.as<BaseReporter>());
     report.open([&](Error err) {
         REQUIRE(err.code == ParallelOperationError().code);
         REQUIRE(err.child_errors.size() == 2);
@@ -189,8 +189,8 @@ TEST_CASE("We can retry a partially successful write_entry()") {
     Var<FailingReporter> failing_reporter = FailingReporter::make();
     failing_reporter->open_count = 1; // So open won't fail
     Report report;
-    report.add_reporter(counted_reporter);
-    report.add_reporter(failing_reporter);
+    report.add_reporter(counted_reporter.as<BaseReporter>());
+    report.add_reporter(failing_reporter.as<BaseReporter>());
     report.open([&](Error err) {
         REQUIRE(err.code == NoError().code);
         Entry entry;
@@ -240,8 +240,8 @@ TEST_CASE("We can retry a partially successful close") {
     Var<FailingReporter> failing_reporter = FailingReporter::make();
     failing_reporter->open_count = 1; // So open won't fail
     Report report;
-    report.add_reporter(counted_reporter);
-    report.add_reporter(failing_reporter);
+    report.add_reporter(counted_reporter.as<BaseReporter>());
+    report.add_reporter(failing_reporter.as<BaseReporter>());
     report.open([&](Error err) {
         REQUIRE(err.code == NoError().code);
         report.close([&](Error err) {
@@ -280,8 +280,8 @@ ReturningIdReporter::~ReturningIdReporter() {}
 TEST_CASE(
         "We return an error if multiple report-ids are returned by reporters") {
     Report report;
-    report.add_reporter(ReturningIdReporter::make());
-    report.add_reporter(ReturningIdReporter::make());
+    report.add_reporter(ReturningIdReporter::make().as<BaseReporter>());
+    report.add_reporter(ReturningIdReporter::make().as<BaseReporter>());
     report.open([&](Error err) {
         REQUIRE(err.code == NoError().code);
         Entry entry;

@@ -48,8 +48,7 @@ TEST_CASE("Var raises an exception when the pointee is nullptr") {
 }
 
 TEST_CASE("We can safely assign to Var an empty shared_ptr") {
-    std::shared_ptr<Foo> antani;
-    Var<Foo> necchi = antani;
+    Var<Foo> necchi = std::shared_ptr<Foo>{};
     double k;
     REQUIRE_THROWS(k = necchi->elem);
     REQUIRE_THROWS(*necchi);
