@@ -35,7 +35,7 @@ class EmitterBase : public Transport {
 
     void emit_data(Buffer data) override {
         logger->log(MK_LOG_DEBUG2, "emitter: emit 'data' event "
-                    "(num_bytes = %lu)", data.length());
+                    "(num_bytes = %zu)", data.length());
         if (close_pending) {
             logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
             return;

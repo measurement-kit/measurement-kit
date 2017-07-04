@@ -45,14 +45,14 @@ ErrorOr<Buffer> format_msg_waiting() {
 
 void write(Var<Context> ctx, Buffer buff, Callback<Error> cb) {
     std::string s = buff.peek();
-    ctx->logger->debug("> [%lu]: (%d) %s", s.length(), s.c_str()[0],
+    ctx->logger->debug("> [%zu]: (%d) %s", s.length(), s.c_str()[0],
                        s.substr(3).c_str());
     net::write(ctx->txp, buff, cb);
 }
 
 void write_noasync(Var<Context> ctx, Buffer buff) {
     std::string s = buff.peek();
-    ctx->logger->debug("> [%lu]: (%d) %s", s.length(), s.c_str()[0],
+    ctx->logger->debug("> [%zu]: (%d) %s", s.length(), s.c_str()[0],
                        s.substr(3).c_str());
     ctx->txp->write(buff);
 }
