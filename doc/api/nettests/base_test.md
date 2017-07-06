@@ -83,9 +83,9 @@ this test.
 
 The `add_input` method adds one specific input to the list of inputs to
 be processed by this test. If the test does not take input, the input added
-using this method will be ignored. Otherwise, it will be processed at the
-beginning of the test, before input read from files (see below) is processed.
-You can call this method multiple times to manually add multiple input.
+using this method will be ignored. You can call this method multiple times
+to manually add multiple input. Input added with this method is treated
+exactly like input read from input files.
 
 The `add_input_filepath` adds one file path to the input paths list, which
 by default is empty. Tests that require input will fail if no input file
