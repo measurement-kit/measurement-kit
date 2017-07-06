@@ -73,6 +73,7 @@ class Runnable : public NonCopyable, public NonMovable {
     }
 
 MK_DECLARE_RUNNABLE(DashRunnable);
+MK_DECLARE_RUNNABLE(CaptivePortalRunnable);
 MK_DECLARE_RUNNABLE(DnsInjectionRunnable);
 MK_DECLARE_RUNNABLE(FacebookMessengerRunnable);
 MK_DECLARE_RUNNABLE(HttpHeaderFieldManipulationRunnable);
