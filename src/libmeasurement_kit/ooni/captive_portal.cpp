@@ -20,64 +20,65 @@ using namespace mk::report;
 
 typedef std::map<std::string, std::string> input_t; // Syntactic sugar
 
-static void gen_http_inputs(Var<std::vector<input_t>> is, Var<Logger> logger) {
-    logger->info("starting to gen");
+static std::vector<input_t> gen_http_inputs() {
+    std::vector<input_t> is;
     input_t i;
     i["name"] = "Microsoft HTTP";
     i["url"] = "http://www.msftncsi.com/ncsi.txt";
     i["body"] = "Microsoft NCSI";
-    is->push_back(i);
+    is.push_back(i);
     i.clear();
     i["name"] = "Apple HTTP 1";
     i["url"] = "http://captive.apple.com";
     i["body"] = "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</"
                 "BODY></HTML>\n";
     i["ua"] = "CaptiveNetworkSupport/1.0 wispr";
-    is->push_back(i);
+    is.push_back(i);
     i.clear();
     i["name"] = "Apple HTTP 2";
     i["url"] = "http://captive.apple.com/hotspot_detect.html";
     i["body"] = "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</"
                 "BODY></HTML>\n";
     i["ua"] = "CaptiveNetworkSupport/1.0 wispr";
-    is->push_back(i);
+    is.push_back(i);
     i.clear();
     i["name"] = "Android KitKat HTTP";
     i["url"] = "http://clients3.google.com/generate_204";
     i["status"] = "204"; // XXX: easier to just convert to an int later...
-    is->push_back(i);
+    is.push_back(i);
     i.clear();
     i["name"] = "Android Lollipop HTTP";
     i["url"] = "http://connectivitycheck.android.com/generate_204";
     i["status"] = "204";
-    is->push_back(i);
+    is.push_back(i);
     i.clear();
     i["name"] = "Android Marshmallow HTTP";
     i["url"] = "http://connectivitycheck.gstatic.com/generate_204";
     i["status"] = "204";
-    is->push_back(i);
+    is.push_back(i);
     i.clear();
     i["name"] = "Android Nougat HTTP 1";
     i["url"] = "https://www.google.com/generate_204";
     i["status"] = "204";
     i["ua"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like "
               "Gecko) Chrome/52.0.2743.82 Safari/537.36";
-    is->push_back(i);
+    is.push_back(i);
     i.clear();
     i["name"] = "Android Nougat HTTP 2";
     i["url"] = "http://www.google.com/gen_204";
     i["status"] = "204";
     i["ua"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like "
               "Gecko) Chrome/52.0.2743.82 Safari/537.36";
-    is->push_back(i);
+    is.push_back(i);
     i.clear();
     i["name"] = "Android Nougat HTTP 3";
     i["url"] = "http://play.googleapis.com/generate_204";
     i["status"] = "204";
     i["ua"] = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like "
               "Gecko) Chrome/52.0.2743.82 Safari/537.36";
-    is->push_back(i);
+    is.push_back(i);
     i.clear();
+    return std::move(is);
 }
 
 void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
@@ -127,12 +128,8 @@ void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
         };
     };
 
-    // Note: here it does not seem we need to use a `Var<>` for `inputs`.
-    Var<std::vector<input_t>> inputs(new std::vector<input_t>);
-    gen_http_inputs(inputs, logger);
-
     std::vector<Continuation<Error>> continuations;
-    for (const auto &input : *inputs) {
+    for (const auto &input : gen_http_inputs()) {
         logger->info("setting up %s", input.at("name").c_str());
         options["http/url"] = input.at("url");
         std::string body;
