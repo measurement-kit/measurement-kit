@@ -104,8 +104,9 @@ void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
                 logger->info("err: %s", err.as_ooni_error().c_str());
                 result["failure"] = err.as_ooni_error();
             } else if (!response) {
+                // Should really not happen, no need to be specific
                 logger->warn("null response");
-                result["failure"] = "unknown_error"; // No need to be specific
+                result["failure"] = "unknown_error";
             } else {
                 result["actual_body"] = response->body;
                 result["actual_status"] = response->status_code;
@@ -120,8 +121,8 @@ void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
                     unfiltered = !!(std::stoul(input.at("status")) ==
                                     response->status_code);
                 } else {
-                    // Given the above comment, this should not happen
-                    logger->warn("unexpected response from client");
+                    // Should really not happen, no need to be specific
+                    logger->warn("unexpected input format");
                     result["failure"] = "unknown_error";
                 }
                 logger->info("%s unfiltered: %s", input.at("name").c_str(),
