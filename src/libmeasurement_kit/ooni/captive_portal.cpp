@@ -81,6 +81,7 @@ void gen_http_inputs(Var<std::vector<input_t>> is, Var<Logger> logger) {
 
 void http_many(Var<Entry> entry,
                Callback<Error> all_done_cb,
+               Settings options,
                Var<Reactor> reactor,
                Var<Logger> logger) {
 
@@ -130,14 +131,14 @@ void http_many(Var<Entry> entry,
         };
     };
 
+    // Note: here it does not seem we need to use a `Var<>` for `inputs`.
     Var<std::vector<input_t>> inputs(new std::vector<input_t>);
     gen_http_inputs(inputs, logger);
 
     std::vector<Continuation<Error>> continuations;
     for (const auto& input : *inputs) {
         logger->info("setting up %s", input.at("name").c_str());
-        Settings http_options; //XXX: specify timeout here
-        http_options["http/url"] = input.at("url");
+        options["http/url"] = input.at("url");
         std::string body;
         http::Headers headers;
         if (input.count("ua")) {
@@ -146,9 +147,12 @@ void http_many(Var<Entry> entry,
             headers = constants::COMMON_CLIENT_HEADERS;
         }
 
+        // Note: the following callback uses `[=]`, which means that the
+        // options are copied in each run. Thus, each test is getting its
+        // right URL to connect to and check.
         continuations.push_back(
             [=](Callback<Error> done_cb) {
-                templates::http_request(entry, http_options, headers, body,
+                templates::http_request(entry, options, headers, body,
                     http_cb(input, done_cb), reactor, logger);
             }
         );
@@ -160,9 +164,9 @@ void http_many(Var<Entry> entry,
 // this hostname should always resolve to this IP.
 void dns_msft_ncsi(Var<Entry> entry,
                    Callback<Error> done_cb,
+                   Settings options,
                    Var<Reactor> reactor,
                    Var<Logger> logger) {
-    Settings options;
     std::string hostname = "dns.msftncsi.com";
     std::string nameserver = "";
     templates::dns_query(
@@ -197,7 +201,7 @@ void dns_msft_ncsi(Var<Entry> entry,
         }, options, reactor, logger);
 }
 
-void captive_portal(std::string input, Settings options,
+void captive_portal(std::string /*input*/, Settings options,
                     Callback<Var<Entry>> callback, Var<Reactor> reactor,
                     Var<Logger> logger) {
     Var<Entry> entry(new Entry);
@@ -213,8 +217,8 @@ void captive_portal(std::string input, Settings options,
                 logger->info("dns_msft_ncsi error");
             }
             callback(entry);
-        }, reactor, logger);
-    }, reactor, logger);
+        }, options, reactor, logger);
+    }, options, reactor, logger);
 
 
 }
