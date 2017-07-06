@@ -13,14 +13,6 @@ namespace ooni {
 
 using namespace mk::report;
 
-auto status_code_correct = [=](Var<http::Response> response, std::string expected) {
-    return response->status_code == std::stoi(expected); // this might be avoidable
-};
-
-auto body_correct = [=](Var<http::Response> response, std::string expected) {
-    return response->body == expected;
-};
-
 // all but one of the current vendor tests are HTTP tests.
 // these check either a status code or the body content.
 typedef std::map<std::string,std::string> input_t;
@@ -119,7 +111,7 @@ void http_many(Var<Entry> entry,
                 if (input.count("body")) {
                     unfiltered = !!(input.at("body") == response->body);
                 } else if (input.count("status")) {
-                    unfiltered = !!(std::stoi(input.at("status")) == response->status_code);
+                    unfiltered = !!(std::stoul(input.at("status")) == response->status_code);
                 } else {
                     exit(1);
                 }
