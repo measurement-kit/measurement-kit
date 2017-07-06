@@ -156,6 +156,8 @@ void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
 void dns_msft_ncsi(Var<Entry> entry, Callback<Error> done_cb, Settings options,
                    Var<Reactor> reactor, Var<Logger> logger) {
     std::string hostname = "dns.msftncsi.com";
+    // Note: we're setting the nameserver to empty, which is going to work
+    // as long as we're using the `system` DNS resolver
     std::string nameserver = "";
     templates::dns_query(entry, "A", "IN", hostname, nameserver,
                          [=](Error err, Var<dns::Message> message) {
