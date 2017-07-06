@@ -84,7 +84,7 @@ static std::vector<input_t> gen_http_inputs() {
 void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
                Var<Reactor> reactor, Var<Logger> logger) {
 
-    auto http_cb = [=](const input_t &input, Callback<Error> done_cb) {
+    auto http_cb = [=](input_t input, Callback<Error> done_cb) {
         return [=](Error err, Var<http::Response> response) {
             // result: true means unfiltered
             Entry result = {
@@ -129,7 +129,10 @@ void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
     };
 
     std::vector<Continuation<Error>> continuations;
-    for (const auto &input : gen_http_inputs()) {
+    // Note: regarding `input` we're making copies on purpose for
+    // robustness. We can be more smart using move semantic, but it
+    // doesn't seem we need to optimize that much (it's small).
+    for (auto input : gen_http_inputs()) {
         logger->info("setting up %s", input.at("name").c_str());
         options["http/url"] = input.at("url");
         std::string body;
