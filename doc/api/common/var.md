@@ -19,6 +19,7 @@ template typename<T> class Var : public std::shared_ptr<T> {
     T *operator->() const;
     T &operator*() const;
     template <typename R> Var<R> as();
+    static template <typename... Args> Var<T> make(Args &&... args);
 };
 
 }
@@ -54,6 +55,15 @@ pointee if the pointee is non null and throws `std::runtime_error` otherwise.
 The `as()` method casts the pointee to type `R` if possible. If conversion
 is not possible, the returned `Var<>` would point to a null pointer and hence
 attempting to dereference it would result in `std::runtime_error`.
+
+The static `make()` method is equivalent to:
+
+```C++
+Var<T> t{new T{arguments...}};
+```
+
+except that, like for `std::make_shared`, only one allocation is performed
+to allocate both the shared pointer control block and the pointee.
 
 # CAVEAT
 

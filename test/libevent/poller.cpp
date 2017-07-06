@@ -3,11 +3,11 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
 #include <measurement_kit/common.hpp>
-#include "../src/libmeasurement_kit/common/utils.hpp"
-#include "../src/libmeasurement_kit/libevent/poller_impl.hpp"
+#include "private/common/utils.hpp"
+#include "private/libevent/poller_impl.hpp"
 
 using namespace mk;
 using namespace mk::libevent;

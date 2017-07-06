@@ -9,18 +9,24 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/dns.hpp>
 
-void mk::dns::query(mk::dns::QueryClass dns_class,
-                    mk::dns::QueryType dns_type,
-                    std::string query_name,
-                    mk::Callback<mk::Error, mk::dns::Message> callback,
-                    mk::Settings settings = {},
-                    mk::Var<mk::Reactor> reactor = mk::Reactor::global());
+namespace mk {
+namespace dns {
+
+void query(QueryClass dns_class,
+           QueryType dns_type,
+           std::string query_name,
+           Callback<Error, Var<Message>> callback,
+           Settings settings = {},
+           Var<Reactor> reactor = Reactor::global());
 
 void resolve_hostname(std::string hostname,
-                    Callback<ResolveHostnameResult> cb,
-                    Settings settings = {},
-                    Var<Reactor> reactor = Reactor::global(),
-                    Var<Logger> logger = Logger::global());
+                      Callback<ResolveHostnameResult> cb,
+                      Settings settings = {},
+                      Var<Reactor> reactor = Reactor::global(),
+                      Var<Logger> logger = Logger::global());
+
+} // namespace dns
+} // namespace mk
 ```
 
 # STABILITY
@@ -173,7 +179,6 @@ the `query` function. The following setting keys are available:
 The optional `reactor` argument is the reactor to use to issue the query
 and receive the corresponding response.
 
-
 The `resolve_hostname()` function should be used to perform dns queries
 for connection purposes and not to perform tests on a dns server.
 In both cases of success or failure, it will invoke the callback passing an instance
@@ -204,42 +209,7 @@ a FQDN (fully qualified domain name).
 
 # EXAMPLE
 
-```C++
-#include <measurement_kit/dns.hpp>
-
-using namespace mk;
-
-Settings settings({
-    {"dns/nameserver", "8.8.8.8"},
-    {"dns/port", 53},
-    {"dns/attempts", 1},
-    {"dns/timeout", 3.1415},
-    {"dns/randomize_case", true},
-});
-
-dns::query(
-        "IN", "AAAA", "nexa.polito.it",
-        [](Error error, dns::Message message) {
-            if (error) {
-                throw error;
-            }
-            double rtt = message.rtt;
-            for (auto answer : message.answers) {
-                int ttl = answer.ttl;
-                std::string r;
-                if (answer.type == "A") {
-                    r = answer.ipv4;
-                } else if (answer.type == "AAAA") {
-                    r = answer.ipv6;
-                } else if (answer.type == "PTR") {
-                    r = answer.hostname;
-                } else {
-                    continue;
-                }
-                /* ... */
-            }
-        }, settings);
-```
+See files in `example/dns/`.
 
 # HISTORY
 

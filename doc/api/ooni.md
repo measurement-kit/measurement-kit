@@ -15,6 +15,7 @@ The `ooni` module contains the following submodules:
 
 - [collector_client](ooni/collector_client.md): routines to interact with OONI's collector client
 - [error](ooni/error.md): OONI specific errors
+- [orchestrate](ooni/orchestrate.md): OONI's orchestrator
 - [tcp_connect](ooni/tcp_connect.md): OONI's TCP connect test
 - [utils](ooni/utils.md): Useful functions
 

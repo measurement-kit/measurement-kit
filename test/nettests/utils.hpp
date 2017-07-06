@@ -4,6 +4,8 @@
 #ifndef TEST_NETTESTS_UTILS_HPP
 #define TEST_NETTESTS_UTILS_HPP
 
+#include "private/nettests/runnable.hpp"
+
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ooni.hpp>
 
@@ -18,8 +20,14 @@ template <typename T> mk::nettests::BaseTest make_test() {
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .set_verbosity(MK_LOG_INFO)
+        /*
+         * FIXME: the testing bouncer is not working. So use the testing
+         * collector with the production bouncer.
+         */
         .set_options("collector_base_url",
-                      mk::ooni::collector::testing_collector_url());
+                mk::ooni::collector::testing_collector_url())
+        .set_options("bouncer_base_url",
+                mk::ooni::bouncer::production_bouncer_url());
 }
 
 template <typename T> mk::nettests::BaseTest make_test(std::string s) {
@@ -37,8 +45,11 @@ static inline void run_async(mk::nettests::BaseTest test) {
 static inline void
 with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
+    // FIXME: see above comment regarding collector and bouncer
     test.options["collector_base_url"] =
         mk::ooni::collector::testing_collector_url();
+    test.options["bouncer_base_url"] =
+        mk::ooni::bouncer::production_bouncer_url();
     test.logger->set_verbosity(MK_LOG_INFO);
     lambda(test);
 }

@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../http/request_impl.hpp"
-#include "../common/utils.hpp"
+#include "private/http/request_impl.hpp"
+#include "private/common/utils.hpp"
 
 namespace mk {
 namespace http {
@@ -315,6 +315,32 @@ void request(Settings settings, Headers headers, std::string body,
 bool HeadersComparator::operator() (
         const std::string &l, const std::string &r) const {
     return strcasecmp(l.c_str(), r.c_str()) < 0;
+}
+
+void request_json_string(
+      std::string method, std::string url, std::string data,
+      http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+    request_json_string_impl(method, url, data, headers, cb, settings, reactor,
+                             logger);
+}
+
+void request_json_no_body(
+      std::string method, std::string url, http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+    request_json_string(method, url, "", headers, cb, settings, reactor,
+                        logger);
+}
+
+void request_json_object(
+      std::string method, std::string url, nlohmann::json jdata,
+      http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+    request_json_string(method, url, jdata.dump(), headers, cb, settings,
+                        reactor, logger);
 }
 
 } // namespace http

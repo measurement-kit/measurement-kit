@@ -3,10 +3,10 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/net/emitter.hpp"
-#include "../src/libmeasurement_kit/ooni/collector_client_impl.hpp"
+#include "private/net/emitter.hpp"
+#include "private/ooni/collector_client_impl.hpp"
 
 #include <sstream>
 

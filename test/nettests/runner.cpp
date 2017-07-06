@@ -4,17 +4,18 @@
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
-#define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/nettests/runner.hpp"
 
-#include "../nettests/utils.hpp"
+#define CATCH_CONFIG_MAIN
+#include "private/ext/catch.hpp"
+
+#include "utils.hpp"
 
 using namespace mk::nettests;
 using namespace mk;
 
 static void run_http_invalid_request_line(Runner &runner) {
     runner.start_test(test::nettests::make_test<HttpInvalidRequestLineTest>()
-                       .set_options("backend", "http://nexa.polito.it/")
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #1: %s\n", s);
                        })
@@ -26,7 +27,6 @@ static void run_http_invalid_request_line(Runner &runner) {
 
 static void run_dns_injection(Runner &runner) {
     runner.start_test(test::nettests::make_test<DnsInjectionTest>("hosts.txt")
-                       .set_options("backend", "8.8.8.8:53")
                        .on_log([](uint32_t, const char *s) {
                            (void)fprintf(stderr, "test #3: %s\n", s);
                        })
@@ -76,8 +76,7 @@ TEST_CASE("The destructor work as expected if the thread was already joined") {
     while (!runner.empty()) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-    runner.break_loop_();
-    runner.join_();
+    runner.stop();
 }
 
 TEST_CASE("Nothing strange happens if no thread is bound to Runner") {

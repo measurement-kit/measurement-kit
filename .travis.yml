@@ -8,13 +8,11 @@ matrix:
 
     - sudo: required
       env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
-           DOCKER_BRANCHES_ONLY="master stable"
       services:
         - docker
 
     - sudo: required
       env: DOCKER_SPEC=valgrind-gcc pkg_make_flags="V=0 -j3"
-           DOCKER_BRANCHES_ONLY="master stable"
       services:
         - docker
 
@@ -22,15 +20,3 @@ matrix:
       env: DOCKER_SPEC=coveralls pkg_make_flags="V=0 -j3"
       services:
         - docker
-
-    - sudo: false
-      compiler: gcc-6
-      env: CXX_NAME=g++-6 CC_NAME=gcc-6 VALGRIND=-valgrind
-      addons:
-        apt:
-          packages:
-            - g++-6
-            - gcc-6
-            - valgrind
-          sources:
-            - ubuntu-toolchain-r-test

@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/nettests/runnable.hpp"
+
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ooni.hpp>
 
@@ -13,7 +15,7 @@ HttpHeaderFieldManipulationTest::HttpHeaderFieldManipulationTest() : BaseTest() 
     runnable->test_name = "http_header_field_manipulation";
     runnable->test_version = "0.0.1";
     runnable->needs_input = false;
-    runnable->test_helpers_names = {"backend"};
+    runnable->test_helpers_data = {{"http-return-json-headers", "backend"}};
 }
 
 void HttpHeaderFieldManipulationRunnable::main(std::string input,

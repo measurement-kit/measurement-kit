@@ -27,6 +27,7 @@ class Error : public std::exception {
     bool operator!=(Error error);
 
     std::string as_ooni_error();
+    const chat *what() const noexcept override;
 
     Var<ErrorContext> context;
     std::vector<Var<Error>> child_errors;
@@ -118,6 +119,9 @@ as shown in the following snippet of code:
 The `as_ooni_error()` method allows to obtain the [OONI error string](https://github.com/TheTorProject/ooni-spec/blob/master/data-formats/df-000-base.md#error-strings) corresponding
 to a specific MeasurementKit error. In the future the error returned by `as_ooni_error()`
 MAY be different from the error stored in the `reason` field.
+
+The `what()` method overrides the corresponding method of `std::exception`. It
+returns the same string that `as_ooni_error()` returns.
 
 The `Var<ErrorContext> context` field is a shared smart pointer (see `Var`) that MAY
 store the error context in specific cases. The typical pattern for accessing such error

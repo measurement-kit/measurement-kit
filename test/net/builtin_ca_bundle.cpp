@@ -3,10 +3,10 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/common/utils_impl.hpp"
-#include "../src/libmeasurement_kit/net/builtin_ca_bundle.hpp"
+#include "private/common/utils_impl.hpp"
+#include "private/net/builtin_ca_bundle.hpp"
 
 using namespace mk;
 

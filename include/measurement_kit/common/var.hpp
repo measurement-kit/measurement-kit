@@ -13,9 +13,9 @@ template <typename T> class Var : public std::shared_ptr<T> {
     using std::shared_ptr<T>::shared_ptr;
 
   public:
-    T *get() const { return operator->(); }
+    typename std::add_pointer<T>::type get() const { return operator->(); }
 
-    T *operator->() const {
+    typename std::add_pointer<T>::type operator->() const {
         if (std::shared_ptr<T>::get() == nullptr) {
             throw std::runtime_error("null pointer");
         }
@@ -31,6 +31,10 @@ template <typename T> class Var : public std::shared_ptr<T> {
 
     template <typename R> Var<R> as() {
         return std::dynamic_pointer_cast<R>(*this);
+    }
+
+    template <typename... A> static Var<T> make(A &&... a) {
+        return std::make_shared<T>(std::forward<A>(a)...);
     }
 
   protected:

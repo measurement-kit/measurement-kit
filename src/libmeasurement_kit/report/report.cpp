@@ -2,32 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../common/utils.hpp"
+#include "private/common/fmap.hpp"
+#include "private/common/parallel.hpp"
+
+#include "private/common/utils.hpp"
 
 #include <measurement_kit/report.hpp>
-
-/*
- * Guess the platform in which we are.
- *
- * See: <https://sourceforge.net/p/predef/wiki/OperatingSystems/>
- *      <http://stackoverflow.com/a/18729350>
- */
-#if defined __ANDROID__
-#  define MK_PLATFORM "android"
-#elif defined __linux__
-#  define MK_PLATFORM "linux"
-#elif defined _WIN32
-#  define MK_PLATFORM "windows"
-#elif defined __APPLE__
-#  include <TargetConditionals.h>
-#  if TARGET_OS_IPHONE
-#    define MK_PLATFORM "ios"
-#  else
-#    define MK_PLATFORM "macos"
-#  endif
-#else
-#  define MK_PLATFORM "unknown"
-#endif
 
 namespace mk {
 namespace report {
@@ -53,7 +33,7 @@ void Report::fill_entry(Entry &entry) const {
         options.get("software_version", software_version);
     entry["data_format_version"] = data_format_version;
     entry["annotations"]["platform"] =
-        options.get("platform", std::string{MK_PLATFORM});
+        options.get("platform", std::string{mk_platform()});
     entry["annotations"]["engine_name"] = "libmeasurement_kit";
     entry["annotations"]["engine_version"] = MK_VERSION;
     entry["annotations"]["engine_version_full"] = MK_VERSION_FULL;

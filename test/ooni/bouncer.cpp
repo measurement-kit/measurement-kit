@@ -3,18 +3,18 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/ooni/bouncer_impl.hpp"
+#include "private/ooni/bouncer_impl.hpp"
 
 using namespace mk;
 
-static nlohmann::json do_out_of_range(std::string) {
-    throw std::out_of_range("out of range");
+static Error do_out_of_range(const std::string &, Callback<nlohmann::json &>) {
+    return JsonKeyError();
 }
 
-static nlohmann::json do_domain_error(std::string) {
-    throw std::domain_error("domain error");
+static Error do_domain_error(const std::string &, Callback<nlohmann::json &>) {
+    return JsonDomainError();
 }
 
 TEST_CASE("BouncerReply::create() works") {
@@ -130,7 +130,7 @@ TEST_CASE("post_net_tests() works") {
         reactor->loop_with_initial_event([=]() {
             // Mocked http request that returns an invalid-request
             ooni::bouncer::post_net_tests_impl<request_error>(
-                "https://a.collector.ooni.io/bouncer", "web-connectivity",
+                ooni::bouncer::production_bouncer_url(), "web-connectivity",
                 "0.0.1", {"web-connectivity"},
                 [=](Error e, Var<ooni::BouncerReply>) {
                     REQUIRE(e == MockedError());
@@ -146,7 +146,7 @@ TEST_CASE("post_net_tests() works") {
         Var<Reactor> reactor = Reactor::make();
         reactor->loop_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
-                "https://a.collector.ooni.io/bouncer", "antani", "0.0.1",
+                ooni::bouncer::production_bouncer_url(), "antani", "0.0.1",
                 {"antani"},
                 [=](Error e, Var<ooni::BouncerReply>) {
                     REQUIRE(e == ooni::BouncerCollectorNotFoundError());
@@ -160,7 +160,7 @@ TEST_CASE("post_net_tests() works") {
         Var<Reactor> reactor = Reactor::make();
         reactor->loop_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
-                "https://a.collector.ooni.io/bouncer", "web-connectivity",
+                ooni::bouncer::production_bouncer_url(), "web-connectivity",
                 "0.0.1", {"web-connectivity"},
                 [=](Error e, Var<ooni::BouncerReply> reply) {
                     REQUIRE(!e);

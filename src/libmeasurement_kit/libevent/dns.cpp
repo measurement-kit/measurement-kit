@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../libevent/dns_impl.hpp"
+#include "private/libevent/dns_impl.hpp"
 
 namespace mk {
 namespace libevent {

@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../libevent/poller_impl.hpp"
+#include "private/libevent/poller_impl.hpp"
 
 #include <measurement_kit/net/error.hpp>
 
@@ -50,20 +50,24 @@ Poller::Poller() { base_ = poller_alloc_evbase(); }
 Poller::~Poller() {}
 event_base *Poller::get_event_base() { return base_.get(); }
 
-void Poller::call_later(double timeo, Callback<> cb) {
-    poller_call_later(base_, timeo, cb);
+void Poller::call_soon(Callback<> &&cb) {
+    call_later(0.0, std::move(cb));
 }
 
-void Poller::loop() { poller_loop(base_, this); }
+void Poller::call_later(double timeo, Callback<> &&cb) {
+    poller_call_later(base_, timeo, std::move(cb));
+}
+
+void Poller::run() { poller_loop(base_, this); }
 void Poller::loop_once() { poller_loop_once(base_); }
-void Poller::break_loop() { poller_break_loop(base_); }
+void Poller::stop() { poller_break_loop(base_); }
 
 void Poller::pollfd(
         socket_t sockfd,
         short events,
-        Callback<Error, short> callback,
-        double timeout) {
-    poller_pollfd(base_, sockfd, events, callback, timeout);
+        double timeout,
+        Callback<Error, short> &&callback) {
+    poller_pollfd(base_, sockfd, events, std::move(callback), timeout);
 }
 
 void Poller::handle_periodic_() {
