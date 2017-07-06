@@ -20,6 +20,7 @@ class BaseTest {
     BaseTest &on_progress(Delegate<double, const char *>);
     BaseTest &set_verbosity(uint32_t);
     BaseTest &increase_verbosity();
+    BaseTest &add_input(std::string);
     BaseTest &add_input_filepath(std::string);
     BaseTest &set_input_filepath(std::string);
     BaseTest &set_output_filepath(std::string);
@@ -80,9 +81,16 @@ The `set_verbosity` and the `increase_verbosity` methods allow to,
 respectively, set an increase the verbosity of the logger bound to
 this test.
 
+The `add_input` method adds one specific input to the list of inputs to
+be processed by this test. If the test does not take input, the input added
+using this method will be ignored. Otherwise, it will be processed at the
+beginning of the test, before input read from files (see below) is processed.
+You can call this method multiple times to manually add multiple input.
+
 The `add_input_filepath` adds one file path to the input paths list, which
 by default is empty. Tests that require input will fail if no input file
-path is specified, while tests that do not require input will ignore input
+path is specified and no input was provided using `add_input`,
+while tests that do not require input will ignore input
 if it is provided by the caller. If an input file path cannot be openned
 or read, measurement-kit will emit a warning message, but the test will not
 fail. If an input file path contains the string "${probe_cc}" this is

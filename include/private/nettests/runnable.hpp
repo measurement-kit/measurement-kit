@@ -22,9 +22,10 @@ class Runnable : public NonCopyable, public NonMovable {
     virtual ~Runnable();
 
     Var<Logger> logger = Logger::make();
-    Var<Reactor> reactor; /* Left unspecified by purpose */
+    Var<Reactor> reactor; /* Left unspecified on purpose */
     Settings options;
     std::list<std::string> input_filepaths;
+    std::deque<std::string> inputs;
     std::string output_filepath;
     Delegate<std::string> entry_cb;
     Delegate<> begin_cb;
@@ -55,7 +56,6 @@ class Runnable : public NonCopyable, public NonMovable {
   private:
     report::Report report;
     tm test_start_time;
-    std::deque<std::string> inputs;
     double beginning = 0.0;
 
     void run_next_measurement(size_t, Callback<Error>, size_t, Var<size_t>);

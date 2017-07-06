@@ -32,6 +32,7 @@ class BaseTest {
     BaseTest();
     virtual ~BaseTest();
 
+    BaseTest &add_input(std::string);
     BaseTest &add_input_filepath(std::string);
     BaseTest &set_input_filepath(std::string);
     BaseTest &set_output_filepath(std::string);
