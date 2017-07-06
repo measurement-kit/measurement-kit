@@ -2,9 +2,11 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../common/utils.hpp"
-#include "../ooni/constants.hpp"
-#include "../ooni/utils.hpp"
+#include "private/common/fcompose.hpp"
+#include "private/common/parallel.hpp"
+#include "private/common/utils.hpp"
+#include "private/ooni/constants.hpp"
+#include "private/ooni/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
@@ -167,37 +169,6 @@ void telegram(std::string input, Settings options,
     logger->info("starting telegram test");
     Var<Entry> entry(new Entry);
 
-//    // first try telegram web
-//    http_many(TELEGRAM_WEB_URLS, entry, [=](Error err) {
-//        logger->info("done testing telegram web");
-//        if (!!err) {
-//            logger->info("saw at least one error");
-//            // set blocked = true
-//        } else {
-//            logger->info("saw no errors");
-//            // if one title isn't right, set blocked = true
-//        }
-//        // then try endpoints as TCP
-//        tcp_many(TELEGRAM_TCP_ENDPOINTS, entry, [=](Error err){
-//            logger->info("done testing endpoints as TCP");
-//            if (!!err) {
-//                logger->info("saw at least one error");
-//            } else {
-//                logger->info("saw no errors");
-//            }
-//            // then try endpoints as HTTP
-//            http_many(TELEGRAM_HTTP_ENDPOINTS, entry, [=](Error err){
-//                logger->info("done testing endpoints as HTTP");
-//                if (!!err) {
-//                    logger->info("saw at least one error");
-//                } else {
-//                    logger->info("saw no errors");
-//                }
-//                // then finish!
-//                callback(entry);
-//            }, reactor, logger);
-//        }, reactor, logger);
-//    }, reactor, logger);
     mk::fcompose(
         mk::fcompose_policy_async(),
         [=](Callback<> cb){
