@@ -4,7 +4,7 @@
 
 #ifdef ENABLE_INTEGRATION_TESTS
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
 #include "../nettests/utils.hpp"
 
