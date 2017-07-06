@@ -115,13 +115,17 @@ void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
                 if (input.count("body")) {
                     unfiltered = !!(input.at("body") == response->body);
                 } else if (input.count("status")) {
+                    // Note: `std::stoul` can throw but the status is set by
+                    // us, therefore we do not bother with checking exceptions
                     unfiltered = !!(std::stoul(input.at("status")) ==
                                     response->status_code);
                 } else {
+                    // Given the above comment, this should not happen
                     logger->warn("unexpected response from client");
                     result["failure"] = "unknown_error";
                 }
-                logger->info("%s: %d", input.at("name").c_str(), unfiltered);
+                logger->info("%s unfiltered: %s", input.at("name").c_str(),
+                             unfiltered ? "yes" : "no");
                 result["result"] = unfiltered;
             }
             (*entry)["vendor_http_tests"].push_back(result);
@@ -177,6 +181,8 @@ void dns_msft_ncsi(Var<Entry> entry, Callback<Error> done_cb, Settings options,
                                  done_cb(err);
                              } else {
                                  for (const auto &a : message->answers) {
+                                     // XXX: This should actually be adapted
+                                     // to also deal with IPv6 replies
                                      result["actual_ips"].push_back(a.ipv4);
                                  }
                                  if (message->answers.size() != 1) {
@@ -201,18 +207,17 @@ void captive_portal(std::string /*input*/, Settings options,
                     Callback<Var<Entry>> callback, Var<Reactor> reactor,
                     Var<Logger> logger) {
     Var<Entry> entry(new Entry);
-
     logger->info("starting http_many");
     http_many(entry,
               [=](Error err) {
-                  if (!!err) {
-                      logger->info("http_many error");
+                  if (err) {
+                      logger->warn("http_many error");
                   }
                   logger->info("starting dns_msft_ncsi");
                   dns_msft_ncsi(entry,
                                 [=](Error err) {
-                                    if (!!err) {
-                                        logger->info("dns_msft_ncsi error");
+                                    if (err) {
+                                        logger->warn("dns_msft_ncsi error");
                                     }
                                     callback(entry);
                                 },
