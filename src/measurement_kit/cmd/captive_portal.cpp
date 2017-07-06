@@ -6,9 +6,7 @@
 
 namespace captive_portal {
 
-#define USAGE                                                                  \
-    "usage: measurement_kit [options] captive_portal [-b backend]\n"           \
-    "                       [-f input_file] [-t timeout]\n"
+#define USAGE "usage: measurement_kit [options] captive_portal\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     mk::nettests::CaptivePortalTest test;
