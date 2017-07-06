@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/nettests/runnable.hpp"
+
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ooni.hpp>
 
@@ -15,7 +17,7 @@ CaptivePortalTest::CaptivePortalTest() : BaseTest() {
 }
 
 void CaptivePortalRunnable::main(std::string input, Settings options,
-                                   Callback<Var<report::Entry>> cb) {
+                                 Callback<Var<report::Entry>> cb) {
     ooni::captive_portal(input, options, cb, reactor, logger);
 }
 
