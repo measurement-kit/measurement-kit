@@ -104,21 +104,22 @@ void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
                 logger->info("err: %s", err.as_ooni_error().c_str());
                 result["failure"] = err.as_ooni_error();
             } else if (!response) {
-                logger->info("null response");
-                result["failure"] = "null response"; // XXX correct string?
+                logger->warn("null response");
+                result["failure"] = "unknown_error"; // No need to be specific
             } else {
                 result["actual_body"] = response->body;
                 result["actual_status"] = response->status_code;
                 // all tests check status or body but never both or neither
                 result["actual_body"] = response->body;
-                bool unfiltered;
+                bool unfiltered = false;
                 if (input.count("body")) {
                     unfiltered = !!(input.at("body") == response->body);
                 } else if (input.count("status")) {
                     unfiltered = !!(std::stoul(input.at("status")) ==
                                     response->status_code);
                 } else {
-                    exit(1);
+                    logger->warn("unexpected response from client");
+                    result["failure"] = "unknown_error";
                 }
                 logger->info("%s: %d", input.at("name").c_str(), unfiltered);
                 result["result"] = unfiltered;
