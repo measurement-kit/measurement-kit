@@ -179,7 +179,13 @@ static inline Var<Transport> make_txp(Var<Transport> txp, double timeout,
 
 template <typename Type, typename... Args>
 Var<Transport> make_txp(double timeout, Var<ConnectResult> r, Args &&... args) {
-    return make_txp(Var<Type>::make(std::forward<Args>(args)...), timeout, r);
+    // Note: need to pass through `make_shared` because the new Transport that
+    // cannot inherit from `shared_ptr` because of the new NDK is less simple
+    // to use than the one that inherited from `shared_ptr`. I guess there must
+    // be some constructor override that is missing.
+    return make_txp(
+          Var<Transport>{std::make_shared<Type>(std::forward<Args>(args)...)},
+          timeout, r);
 }
 
 } // namespace mk

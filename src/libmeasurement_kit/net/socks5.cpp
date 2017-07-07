@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include "private/net/socks5.hpp"
-#include "private/net/connect.hpp"
+#include "private/net/connect_impl.hpp"
 
 #include "private/libevent/connection.hpp"
 
