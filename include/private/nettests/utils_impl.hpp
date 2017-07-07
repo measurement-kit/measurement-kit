@@ -48,10 +48,9 @@ Error process_input_filepaths_impl(std::deque<std::string> &inputs,
          * country codes which are always ASCII.
          */
         std::string probe_cc_lowercase = "";
-        std::transform(probe_cc.begin(),
-                       probe_cc.end(),
-                       probe_cc_lowercase.begin(),
-                       [](unsigned char c) { return std::tolower(c); });
+        for (auto c : probe_cc) {
+            probe_cc_lowercase += std::tolower(c);
+        }
 
         for (auto input_filepath : input_filepaths) {
             input_filepath = std::regex_replace(input_filepath,
