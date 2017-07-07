@@ -25,7 +25,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         /* NOTREACHED */
     }
     if (argc == 1) {
-        test.set_options("url", argv[0]);
+        test.set_options("hostname", argv[0]);
     }
 
     common_init(initializers, test).run();

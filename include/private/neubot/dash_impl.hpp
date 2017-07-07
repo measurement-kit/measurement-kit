@@ -355,10 +355,13 @@ void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
 template <MK_MOCK_AS(http::request_connect, http_request_connect),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_negotiate),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_collect)>
-void negotiate_with_(std::string url, Var<report::Entry> entry,
+void negotiate_with_(std::string hostname, Var<report::Entry> entry,
                      Settings settings, Var<Reactor> reactor,
                      Var<Logger> logger, Callback<Error> cb) {
-    logger->info("Negotiating with: %s", url.c_str());
+    logger->info("Negotiating with: %s", hostname.c_str());
+    std::stringstream ss;
+    ss << "http://" << hostname << "/";
+    std::string url = ss.str();
     settings["http/url"] = url;
     http_request_connect(
           settings,
@@ -407,8 +410,9 @@ template <MK_MOCK_AS(mlabns::query, mlabns_query)>
 void negotiate_impl(Var<report::Entry> entry, Settings settings,
                     Var<Reactor> reactor, Var<Logger> logger,
                     Callback<Error> cb) {
-    if (settings.find("url") != settings.end()) {
-        negotiate_with_(settings["url"], entry, settings, reactor, logger, cb);
+    if (settings.find("hostname") != settings.end()) {
+        negotiate_with_(settings["hostname"], entry, settings,
+                        reactor, logger, cb);
         return;
     }
     logger->info("Discovering mlab server using mlabns");
@@ -420,7 +424,7 @@ void negotiate_impl(Var<report::Entry> entry, Settings settings,
                          cb(error);
                          return;
                      }
-                     negotiate_with_(reply.url, entry, settings, reactor,
+                     negotiate_with_(reply.fqdn, entry, settings, reactor,
                                      logger, cb);
                  },
                  settings, reactor, logger);
