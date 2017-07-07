@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
-#ifndef SRC_LIBMEASUREMENT_KIT_NEUBOT_DASH_IMPL_HPP
-#define SRC_LIBMEASUREMENT_KIT_NEUBOT_DASH_IMPL_HPP
+#ifndef PRIVATE_NEUBOT_DASH_IMPL_HPP
+#define PRIVATE_NEUBOT_DASH_IMPL_HPP
 
 /*
  * Here we implement the measurement methodology described in "Measuring
@@ -12,12 +12,13 @@
  * See: https://nexa.polito.it/publications/basso2014measuring
  */
 
+#include "private/common/json.hpp"
+#include "private/common/mock.hpp"
+#include "private/common/utils.hpp"
+#include "private/ext/sole.hpp"
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
 #include <measurement_kit/neubot.hpp>
-
-#include "../common/utils.hpp"
-#include "../ext/sole.hpp"
 
 #define DASH_MAX_ITERATIONS 15
 #define DASH_SECONDS 2
@@ -153,7 +154,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                               {"fast_scale_down", *fast_scale_down},
                               //{"internal_address", stream.myname[0]}
                               {"iteration", ctx->iteration},
-                              //{"platform", mk_platform()},
+                              {"platform", mk_platform()},
                               {"rate", rate_kbit},
                               {"real_address", ctx->real_address},
                               /*

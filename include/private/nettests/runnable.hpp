@@ -72,6 +72,7 @@ class Runnable : public NonCopyable, public NonMovable {
                   Callback<Var<report::Entry>>) override;                      \
     }
 
+MK_DECLARE_RUNNABLE(DashRunnable);
 MK_DECLARE_RUNNABLE(DnsInjectionRunnable);
 MK_DECLARE_RUNNABLE(HttpHeaderFieldManipulationRunnable);
 MK_DECLARE_RUNNABLE(HttpInvalidRequestLineRunnable);

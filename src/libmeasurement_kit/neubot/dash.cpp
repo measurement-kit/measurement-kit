@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../neubot/dash_impl.hpp"
+#include "private/neubot/dash_impl.hpp"
 
 namespace mk {
 namespace neubot {

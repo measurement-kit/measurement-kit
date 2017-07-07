@@ -107,6 +107,7 @@
 /test/net/ssl_context
 /test/net/transport
 /test/net/utils
+/test/nettests/dash
 /test/nettests/dns_injection
 /test/nettests/http_header_field_manipulation
 /test/nettests/http_invalid_request_line
@@ -118,7 +119,6 @@
 /test/nettests/tcp_connect
 /test/nettests/utils
 /test/nettests/web_connectivity
-/test/neubot/dash
 /test/neubot/negotiate
 /test/ooni/bouncer
 /test/ooni/collector_client
