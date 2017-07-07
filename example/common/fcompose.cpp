@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/common/fcompose.hpp"
+
 #include <measurement_kit/common.hpp>
 
 #include <iostream>
@@ -43,7 +45,8 @@ static inline void fcompose_async_example() {
                   cb();
               });
           });
-    r->run_with_initial_event([r, f]() { f(0, 4, 7, [r]() { r->stop(); }); });
+    r->run_with_initial_event(
+          [r, f]() mutable { f(0, 4, 7, [r]() { r->stop(); }); });
 }
 
 int main() {

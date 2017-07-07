@@ -2,10 +2,12 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/nettests/runnable.hpp"
+
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ndt.hpp>
 
-#include "../ndt/utils.hpp"
+#include "private/ndt/utils.hpp"
 
 namespace mk {
 namespace nettests {

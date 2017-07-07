@@ -4,6 +4,8 @@
 
 #include <measurement_kit/common.hpp>
 
+#include "private/common/parallel.hpp"
+
 namespace mk {
 
 static void run(

@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../net/ssl_context_impl.hpp"
+#include "private/net/ssl_context_impl.hpp"
 
 namespace mk {
 namespace net {

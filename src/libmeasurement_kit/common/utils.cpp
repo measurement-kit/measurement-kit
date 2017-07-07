@@ -11,7 +11,7 @@
 #include <event2/util.h>
 #include <openssl/sha.h>
 
-#include "../common/utils_impl.hpp"
+#include "private/common/utils_impl.hpp"
 
 namespace mk {
 
@@ -40,21 +40,6 @@ Error parse_iso8601_utc(std::string ts, std::tm *tmb) {
     std::istringstream ss(ts);
     ss >> std::get_time(tmb, "%Y-%m-%dT%H:%M:%SZ");
     if (ss.fail()) {
-        return ValueError();
-    }
-    return NoError();
-}
-
-// TODO: add regress test for this function
-Error parse_iso8601_utc(std::string ts, std::time_t *t) {
-    *t = {};
-    std::tm tmb;
-    Error err = parse_iso8601_utc(ts, &tmb);
-    if (err) {
-        return err;
-    }
-    *t = std::mktime(&tmb);
-    if (*t == (std::time_t) -1) {
         return ValueError();
     }
     return NoError();

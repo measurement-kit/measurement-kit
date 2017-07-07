@@ -37,10 +37,7 @@ enum QueryTypeId { MK_DNS_TYPE_IDS };
 
 QueryTypeId query_type_ids_(std::string s);
 
-class QueryType : public qctht_<QueryTypeId, query_type_ids_> {
-  public:
-    using qctht_<QueryTypeId, query_type_ids_>::qctht_;
-};
+using QueryType = qctht_<QueryTypeId, query_type_ids_>;
 
 } // namespace dns
 } // namespace mk

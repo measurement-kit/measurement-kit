@@ -2,6 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/nettests/runnable.hpp"
+#include "private/nettests/runner.hpp"
+
 #include <measurement_kit/nettests.hpp>
 
 #include <atomic>

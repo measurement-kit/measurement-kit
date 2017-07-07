@@ -3,7 +3,13 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
+
+#include "private/common/worker.hpp"
+#include "private/common/range.hpp"
+
+#include "private/common/worker.hpp"
+#include "private/common/range.hpp"
 
 #include <measurement_kit/common.hpp>
 
@@ -12,7 +18,7 @@
 #include <thread>
 
 TEST_CASE("The worker is robust to submitting many tasks in a row") {
-    auto worker = mk::Worker::make();
+    auto worker = mk::Var<mk::Worker>::make();
     for (auto _: mk::range<int>(128)) {
         worker->run_in_background_thread([]() {
             using namespace std::chrono_literals;

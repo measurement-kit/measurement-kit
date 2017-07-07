@@ -3,10 +3,10 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
-#include "../src/libmeasurement_kit/ooni/http_header_field_manipulation.hpp"
+#include "private/ext/catch.hpp"
+#include "private/ooni/http_header_field_manipulation.hpp"
 
-#include "../nettests/utils.hpp"
+#include "utils.hpp"
 
 using namespace mk::nettests;
 using namespace mk;

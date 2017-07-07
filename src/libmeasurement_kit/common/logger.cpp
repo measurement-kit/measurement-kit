@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/common/json.hpp"
+
 #include <stdio.h>
 
 #include <measurement_kit/common.hpp>

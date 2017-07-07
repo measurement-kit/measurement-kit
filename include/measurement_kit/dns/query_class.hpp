@@ -22,10 +22,7 @@ enum QueryClassId { MK_DNS_CLASS_IDS };
 
 QueryClassId query_class_ids_(std::string s);
 
-class QueryClass : public qctht_<QueryClassId, query_class_ids_> {
-  public:
-    using qctht_<QueryClassId, query_class_ids_>::qctht_;
-};
+using QueryClass = qctht_<QueryClassId, query_class_ids_>;
 
 } // namespace dns
 } // namespace mk

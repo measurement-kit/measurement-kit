@@ -4,9 +4,9 @@
 
 #include <cassert>
 #include <measurement_kit/net.hpp>
-#include "../net/connect.hpp"
-#include "../net/emitter.hpp"
-#include "../net/socks5.hpp"
+#include "private/net/connect.hpp"
+#include "private/net/emitter.hpp"
+#include "private/net/socks5.hpp"
 
 namespace mk {
 namespace net {
