@@ -11,7 +11,7 @@ namespace neubot {
 namespace dash {
 
 void run(
-        std::string measurement_server_url,
+        std::string measurement_server_hostname,
         std::string auth_token,
         std::string real_address,
         Var<report::Entry> entry,

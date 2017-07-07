@@ -101,7 +101,6 @@ MK_DEFINE_ERR(15, NotImplementedError, "not_implemented")
 #define MK_ERR_OONI(x) (6000 + x)
 #define MK_ERR_REPORT(x) (7000 + x)
 #define MK_ERR_NDT(x) (8000 + x)
-#define MK_ERR_NEUBOT(x) (9000 + x)
 
 } // namespace mk
 #endif

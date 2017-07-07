@@ -8,11 +8,11 @@
 #include "private/nettests/runnable.hpp"
 
 #include "private/common/utils.hpp"
-#include "private/ext/sole.hpp"
 #include "private/ooni/utils.hpp"
 #include "private/nettests/utils.hpp"
 
 #include <measurement_kit/nettests.hpp>
+#include <measurement_kit/ext/sole.hpp>
 
 namespace mk {
 namespace nettests {

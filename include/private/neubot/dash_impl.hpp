@@ -10,12 +10,45 @@
  * by S. Basso, A. Servetti, E. Masala, J.C. De Martin.
  *
  * See: https://nexa.polito.it/publications/basso2014measuring
+ *
+ * Differences from the methodology outlined in the paper:
+ *
+ * 1. By default, we don't scale down significantly the speed after we
+ *    sense some queue in the network. That was meant to avoid clogging
+ *    the downlink for Neubot (a background tool), but for OONI we do
+ *    actually plan to run the test in the foreground. To re-enable the
+ *    old behavior, set the `fast_scale_down` option to non-zero.
+ *
+ * 2. By default, we don't use the vector of fixed rates but rather we
+ *    use as rate the speed computed in the previous set. This should
+ *    yield a more accurate streaming speed estimate. This different
+ *    behavior was suggested to me by Antonio Servetti sometime around
+ *    May '17. To re-enable the old behavior, you need to set the
+ *    `use_fixed_rates` option to non-zero.
+ *
+ * 3. As pointed out also by a comment in the code, our measurement of
+ *    the download speed starts when we send the request rather when we
+ *    receive the first byte of the response. I think this is not bad,
+ *    since it actually captures better the time to fetch the chunk that
+ *    one should play, as opposed to accurately estimating the speed.
+ *
+ * 4. We leave to zero the `delta_user_time` and `delta_sys_time`. We
+ *    may change this in the future, when we understand how to get them
+ *    portably. They were not so important for us anyway.
+ *
+ * 5. As pointed out also by a comment in the code, we don't consider
+ *    the overhead of protocols when computing the speed. As for point
+ *    three above, this allows to write a simpler implementation than
+ *    the one in Neubot and, as a byproduct, provides us with information
+ *    closer to know how much time it takes to get a playable chunk
+ *    than just measuring the raw speed (I think, when I wrote the test
+ *    for Neubot, I had too much bias towards measuring speed).
  */
 
 #include "private/common/json.hpp"
 #include "private/common/mock.hpp"
 #include "private/common/utils.hpp"
-#include "private/ext/sole.hpp"
+#include <measurement_kit/ext/sole.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
 #include <measurement_kit/neubot.hpp>
@@ -145,8 +178,8 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                         // TODO: we should fill all the required fields
                         (*ctx->entry)["receiver_data"].push_back(report::Entry{
                               {"connect_time", ctx->txp->connect_time()},
-                              //{"delta_user_time", delta_user_time}
-                              //{"delta_sys_time", delta_sys_time}
+                              {"delta_user_time", 0.0},
+                              {"delta_sys_time", 0.0},
                               {"elapsed", time_elapsed},
                               {"elapsed_target", DASH_SECONDS},
                               {"engine_name", "libmeasurement_kit"},
@@ -216,10 +249,16 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
     ctx->real_address = real_address;
     ctx->settings = settings;
     /*
-     * TODO: from the Neubot point of view, it would probably be
-     * very useful to save and reuse the same UUID4.
+     * From the Neubot point of view, it is for sure very very useful to save
+     * and reuse the same UUID4. We can attempt to do that by asking the caller
+     * to pass us the unique identifier to be used for this client.
      */
-    ctx->uuid = mk::sole::uuid4().str();
+    if (ctx->settings.find("uuid") == settings.end()) {
+        ctx->logger->warn("You passed me no UUID, generating a random one");
+        ctx->uuid = mk::sole::uuid4().str();
+    } else {
+        ctx->uuid = ctx->settings.at("uuid");
+    }
     settings["http/url"] = url;
     settings["http/method"] = "GET";
     logger->info("Start dash test with: %s", url.c_str());
@@ -368,6 +407,7 @@ void negotiate_with_(std::string hostname, Var<report::Entry> entry,
           [=](Error error, Var<net::Transport> txp) {
               if (error) {
                   // Note: in this case we don't need to close the transport
+                  // because we get passed a dumb transport on error
                   logger->warn("neubot: cannot connect to negotiate server: %s",
                                error.explain().c_str());
                   cb(error);

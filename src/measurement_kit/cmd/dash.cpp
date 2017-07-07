@@ -6,12 +6,15 @@
 
 namespace dash {
 
-#define USAGE "usage: measurement_kit [options] dash [hostname]"
+#define USAGE "usage: measurement_kit [options] dash [-U uuid] [hostname]"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     nettests::DashTest test;
-    for (int ch; (ch = getopt(argc, argv, "")) != -1;) {
+    for (int ch; (ch = getopt(argc, argv, "U:")) != -1;) {
         switch (ch) {
+        case 'U':
+            test.set_options("uuid", optarg);
+            break;
         default:
             fprintf(stderr, "%s\n", USAGE);
             exit(1);
