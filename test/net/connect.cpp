@@ -124,7 +124,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
         connect_many_make("www.google.com", 80, 3,
                           [](Error err, std::vector<Var<Transport>> conns) {
                               REQUIRE(err);
-                              REQUIRE(conns.size() == 0);
+                              REQUIRE(conns.size() == 1);
                           },
                           {}, reactor, Logger::global());
     connect_many_impl<fail>(ctx);
@@ -350,12 +350,10 @@ TEST_CASE("net::connect() can connect to open port") {
     reactor->loop_with_initial_event([=]() {
         connect("www.kernel.org", 80, [=](Error error, Var<Transport> txp) {
             REQUIRE(!error);
-            Var<ConnectResult> cr = error.context.as<ConnectResult>();
-            REQUIRE(cr);
-            REQUIRE(!cr->resolve_result.inet_pton_ipv4);
-            REQUIRE(!cr->resolve_result.inet_pton_ipv6);
-            REQUIRE(cr->resolve_result.addresses.size() > 0);
-            REQUIRE(cr->connected_bev);
+            auto resolve_result = txp->dns_result();
+            REQUIRE(!resolve_result.inet_pton_ipv4);
+            REQUIRE(!resolve_result.inet_pton_ipv6);
+            REQUIRE(resolve_result.addresses.size() > 0);
             txp->close([=]() { reactor->stop(); });
         }, {}, reactor);
     });
@@ -367,12 +365,10 @@ TEST_CASE("net::connect() can connect to ssl port") {
         connect("nexa.polito.it", 443,
                 [=](Error error, Var<Transport> txp) {
                     REQUIRE(!error);
-                    Var<ConnectResult> cr = error.context.as<ConnectResult>();
-                    REQUIRE(cr);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv4);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv6);
-                    REQUIRE(cr->resolve_result.addresses.size() > 0);
-                    REQUIRE(cr->connected_bev);
+                    auto resolve_result = txp->dns_result();
+                    REQUIRE(!resolve_result.inet_pton_ipv4);
+                    REQUIRE(!resolve_result.inet_pton_ipv6);
+                    REQUIRE(resolve_result.addresses.size() > 0);
                     txp->close([=]() { reactor->stop(); });
                 },
                 {{"net/ssl", true},
@@ -428,14 +424,12 @@ TEST_CASE("net::connect() works in case of error") {
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
         connect("nexa.polito.it", 81,
-                [=](Error error, Var<Transport>) {
+                [=](Error error, Var<Transport> txp) {
                     REQUIRE(error);
-                    Var<ConnectResult> cr = error.context.as<ConnectResult>();
-                    REQUIRE(cr);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv4);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv6);
-                    REQUIRE(cr->resolve_result.addresses.size() > 0);
-                    REQUIRE(!cr->connected_bev);
+                    auto resolve_result = txp->dns_result();
+                    REQUIRE(!resolve_result.inet_pton_ipv4);
+                    REQUIRE(!resolve_result.inet_pton_ipv6);
+                    REQUIRE(resolve_result.addresses.size() > 0);
                     reactor->stop();
                 },
                 {{"net/timeout", 5.0}},

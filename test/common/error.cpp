@@ -12,7 +12,6 @@ using namespace mk;
 TEST_CASE("The default constructed error is true-ish") {
     Error err;
     REQUIRE(!err);
-    REQUIRE(!err.context);
     REQUIRE((err.child_errors.size() <= 0));
     REQUIRE(err.code == 0);
     REQUIRE(err.reason == "");
@@ -21,7 +20,6 @@ TEST_CASE("The default constructed error is true-ish") {
 TEST_CASE("Error constructed with error code is correctly initialized") {
     Error err{17};
     REQUIRE(!!err);
-    REQUIRE(!err.context);
     REQUIRE((err.child_errors.size() <= 0));
     REQUIRE(err.code == 17);
     REQUIRE(err.reason == "unknown_failure 17");
@@ -30,7 +28,6 @@ TEST_CASE("Error constructed with error code is correctly initialized") {
 TEST_CASE("Error constructed with error and message is correctly initialized") {
     Error err{17, "antani"};
     REQUIRE(!!err);
-    REQUIRE(!err.context);
     REQUIRE((err.child_errors.size() <= 0));
     REQUIRE(err.code == 17);
     REQUIRE(err.reason == "antani");
@@ -39,7 +36,6 @@ TEST_CASE("Error constructed with error and message is correctly initialized") {
 TEST_CASE("Constructor with underlying error works correctly") {
     Error err{17, "antani", MockedError()};
     REQUIRE(!!err);
-    REQUIRE(!err.context);
     REQUIRE(*err.child_errors[0] == MockedError());
     REQUIRE(err.code == 17);
     REQUIRE(err.reason == "antani");

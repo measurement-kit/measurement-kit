@@ -10,8 +10,6 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 
 namespace mk {
 
-class ErrorContext {};
-
 class Error : public std::exception {
   public:
     Error();
@@ -29,7 +27,6 @@ class Error : public std::exception {
     std::string as_ooni_error();
     const chat *what() const noexcept override;
 
-    Var<ErrorContext> context;
     std::vector<Var<Error>> child_errors;
     int code = 0;
     std::string reason;
@@ -72,9 +69,6 @@ MK_DEFINE_ERR(9, FileIoError, "")
 2 - Stable
 
 # DESCRIPTION
-
-The `ErrorContext` class is a generic class that can be used as a base class
-of any type of error context that could be stored within an error.
 
 The `Error` class represents an error. It is a derived class of `std::exception`
 so that it could be thrown and catched as an exception. (In general in MeasurementKit
@@ -122,27 +116,6 @@ MAY be different from the error stored in the `reason` field.
 
 The `what()` method overrides the corresponding method of `std::exception`. It
 returns the same string that `as_ooni_error()` returns.
-
-The `Var<ErrorContext> context` field is a shared smart pointer (see `Var`) that MAY
-store the error context in specific cases. The typical pattern for accessing such error
-context involves three steps: making sure that the context is not `nullptr`, casting
-the base error class to the specific expected class, and making sure that the cast did
-not fail, again checking whether the context is not `nullptr`. For example:
-
-```C++
-    operation([=](Error err) {
-        if (err) {
-            if (err.context) {
-                Var<SpecificContext> ctx = err.context.as<SpecificContext>();
-                if (ctx) {
-                    // TODO: use the specific context
-                }
-            }
-            return;
-        }
-        // Normal processing...
-    });
-```
 
 The `child_errors` field is vector of smart pointers that MAY be set to
 indicate that the current error was triggered by one or more underlying errors.
@@ -216,4 +189,4 @@ even though they internally contain two different errors.
 
 The `Error` class appeared in MeasurementKit 0.1.0. The `ErrorContext` class, the
 `MK_DEFINE_ERR` macro, and the macros to compute absolute error codes all appeared
-in MeasurementKit 0.2.0.
+in MeasurementKit 0.2.0. The `ErrorContext` class was removed in MK v0.7.0.

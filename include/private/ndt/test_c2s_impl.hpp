@@ -43,10 +43,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port, doub
                         cb(err, nullptr);
                         return;
                     }
-                    ErrorOr<double> ctime = net::get_connect_time(err);
-                    if (!!ctime) {
-                        (*report_entry)["connect_times"].push_back(*ctime);
-                    }
+                    (*report_entry)["connect_times"].push_back(txp->connect_time());
                     logger->info("Connected to %s:%d", address.c_str(), port);
                     logger->debug("ndt: suspend coroutine");
                     cb(NoError(), [=](Callback<Error> cb) {

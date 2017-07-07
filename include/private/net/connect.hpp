@@ -23,6 +23,14 @@ void mk_bufferevent_on_event(bufferevent *, short, void *);
 namespace mk {
 namespace net {
 
+class ConnectResult {
+  public:
+    dns::ResolveHostnameResult resolve_result;
+    std::vector<Error> connect_result;
+    double connect_time = 0.0;
+    bufferevent *connected_bev = nullptr;
+};
+
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
 void connect_first_of(Var<ConnectResult> result, int port,
@@ -52,7 +60,6 @@ class ConnectManyCtx {
     Settings settings;
     Var<Reactor> reactor = Reactor::global();
     Var<Logger> logger = Logger::global();
-    Var<ConnectManyResult> result;
 };
 
 } // namespace mk
