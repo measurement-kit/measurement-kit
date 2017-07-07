@@ -175,7 +175,6 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                             ctx->cb(GenericError("negative_time_error"));
                             return;
                         }
-                        // TODO: we should fill all the required fields
                         (*ctx->entry)["receiver_data"].push_back(report::Entry{
                               {"connect_time", ctx->txp->connect_time()},
                               {"delta_user_time", 0.0},
