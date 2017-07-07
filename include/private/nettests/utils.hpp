@@ -14,6 +14,9 @@ namespace nettests {
 /**
  * @brief Generates the list of entries to be tested.
  *
+ * @param input The input deque containing input. Note that it may already
+ * contain input that has been manually specified by the user.
+ *
  * @param needs_input If this value is false, the function returns just a
  * single, empty entry; otherwise, the function reads and returns as entries
  * all lines of the files provided as argument.
@@ -38,8 +41,9 @@ namespace nettests {
  * the function is not `nullptr`, the file name that failed is passed to
  * this function.
  *
- * @returns List of entries to test on sucess, error on failure. The
- * following errors will be returned:
+ * @returns one of the following errors:
+ *
+ * - NoError if everything was okay
  *
  * - MissingRequiredInputFileError if needs_input is true and no input
  *   file is passed through the input_filepaths argument
@@ -50,7 +54,8 @@ namespace nettests {
  * - the error returned when trying to convert to boolean the value of
  *   "randomize_input" setting (e.g. ValueError)
  */
-ErrorOr<std::deque<std::string>> process_input_filepaths(
+Error process_input_filepaths(
+        std::deque<std::string> &input,
         const bool &needs_input,
         const std::list<std::string> &input_filepaths,
         const std::string &probe_cc,

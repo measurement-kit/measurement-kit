@@ -10,9 +10,9 @@ AC_DEFUN([MK_AM_ENABLE_COVERAGE], [
 
 AC_DEFUN([MK_AM_ADD_COVERAGE_FLAGS_IF_NEEDED], [
   if test "$enable_coverage" = "yes"; then
-    CFLAGS="--coverage $CFLAGS"
-    CXXFLAGS="--coverage $CXXFLAGS"
-    LDFLAGS="--coverage $LDFLAGS"
+    CFLAGS="$CFLAGS --coverage -g -O0"
+    CXXFLAGS="$CXXFLAGS --coverage -g -O0"
+    LDFLAGS="$LDFLAGS --coverage"
   fi
 ])
 

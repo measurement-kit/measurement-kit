@@ -378,15 +378,13 @@ void Runnable::begin(Callback<Error> cb) {
                         logger->set_progress_offset(0.1);
                         logger->set_progress_scale(0.8);
 
-                        ErrorOr<std::deque<std::string>> maybe_inputs =
-                            process_input_filepaths(
+                        error = process_input_filepaths(inputs,
                                 needs_input, input_filepaths, probe_cc, options,
                                 logger, nullptr, nullptr);
-                        if (!maybe_inputs) {
-                            cb(maybe_inputs.as_error());
+                        if (error) {
+                            cb(error);
                             return;
                         }
-                        inputs = *maybe_inputs;
                         size_t num_entries = inputs.size();
 
                         // Run `parallelism` measurements in parallel
