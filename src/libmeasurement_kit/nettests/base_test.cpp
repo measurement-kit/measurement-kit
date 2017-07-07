@@ -2,6 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/nettests/runnable.hpp"
+#include "private/nettests/runner.hpp"
+
 #include <measurement_kit/nettests.hpp>
 
 #include <cassert>
@@ -42,6 +45,14 @@ BaseTest &BaseTest::increase_verbosity() {
 BaseTest::BaseTest() {}
 BaseTest::~BaseTest() {}
 
+BaseTest &BaseTest::add_input(std::string s) {
+    // Note: ooni-probe does not allow to specify more than one input from the
+    // command line. Given that the underlying code allows that, I do not see a
+    // reason to be artifically restrictive here.
+    runnable->inputs.push_back(s);
+    return *this;
+}
+
 BaseTest &BaseTest::add_input_filepath(std::string s) {
     runnable->input_filepaths.push_back(s);
     return *this;
@@ -59,6 +70,11 @@ BaseTest &BaseTest::set_output_filepath(std::string s) {
 
 BaseTest &BaseTest::set_error_filepath(std::string s) {
     runnable->logger->set_logfile(s);
+    return *this;
+}
+
+BaseTest &BaseTest::set_options(std::string key, std::string value) {
+    runnable->options[key] = value;
     return *this;
 }
 

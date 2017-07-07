@@ -10,7 +10,7 @@
 #if (defined __linux__ && defined ENABLE_TRACEROUTE)
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
 #include <measurement_kit/traceroute.hpp>
 

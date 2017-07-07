@@ -31,7 +31,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include "../portable/citrus_adapt.h"
+#include "private/portable/citrus_adapt.h"
 
 size_t
 _citrus_utf8_ctype_mbrtowc(wchar_t * __restrict pwc,

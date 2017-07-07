@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
             std::cout << "input was valid ipv4: " <<
                     resolve_result.inet_pton_ipv4 << "\n";
             std::cout << "input was valid ipv6: " <<
-                    resolve_result.inet_pton_ipv4 << "\n";
+                    resolve_result.inet_pton_ipv6 << "\n";
             std::cout << "ipv4 resolve error: " <<
                     resolve_result.ipv4_err.as_ooni_error() << "\n";
             std::cout << "ipv6 resolve error: " <<

@@ -3,7 +3,11 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
+
+#include "private/dns/ping.hpp"
+
+#include "private/dns/ping.hpp"
 
 #include <measurement_kit/dns.hpp>
 

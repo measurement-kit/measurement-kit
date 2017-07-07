@@ -2,7 +2,7 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../net/evbuffer.hpp"
+#include "private/net/evbuffer.hpp"
 
 #include <measurement_kit/net.hpp>
 

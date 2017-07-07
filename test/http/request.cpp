@@ -3,9 +3,9 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/http/request_impl.hpp"
+#include "private/http/request_impl.hpp"
 
 #include <measurement_kit/ext.hpp>
 
@@ -615,7 +615,7 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
                 REQUIRE(!error);
                 REQUIRE(response->status_code == 200);
                 REQUIRE(response->request->url.schema == "https");
-                REQUIRE(response->request->url.address == "www.hushmail.com");
+                REQUIRE(response->request->url.address == "hushmail.com");
                 REQUIRE(response->previous->status_code / 100 == 3);
                 REQUIRE(response->previous->request->url.schema == "http");
                 reactor->stop();

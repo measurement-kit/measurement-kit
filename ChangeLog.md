@@ -1,3 +1,15 @@
+# MeasurementKit 0.7.0-alpha.2 [2017-06-28]
+
+- Add public API to get platform name
+- Simple implementation of fcompose() (#1262)
+- orchestration: guess params and other improvements (#1260)
+- orchestrator: do not write on disk (#1263)
+- `s/contact_bouncer/query_bouncer/`
+- [ci skip] update docs
+- travis: only build using docker (#1264)
+- Cleanup API for v0.7 (#1265)
+- Cleanup/move all headers (#1266)
+
 # MeasurementKit 0.7.0-alpha.1 [2017-06-11]
 
 - Implement DNS "ping" (#1256)

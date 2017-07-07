@@ -2,10 +2,15 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../common/utils.hpp"
-#include "../ext/sole.hpp"
-#include "../ooni/utils.hpp"
-#include "../nettests/utils.hpp"
+#include "private/common/fmap.hpp"
+#include "private/common/parallel.hpp"
+#include "private/common/range.hpp"
+#include "private/nettests/runnable.hpp"
+
+#include "private/common/utils.hpp"
+#include "private/ext/sole.hpp"
+#include "private/ooni/utils.hpp"
+#include "private/nettests/utils.hpp"
 
 #include <measurement_kit/nettests.hpp>
 
@@ -284,7 +289,7 @@ std::string Runnable::generate_output_filepath() {
     return filename.str();
 }
 
-void Runnable::contact_bouncer(Callback<Error> cb) {
+void Runnable::query_bouncer(Callback<Error> cb) {
     if (!use_bouncer) {
         logger->info("skipping bouncer");
         cb(NoError());
@@ -343,7 +348,7 @@ void Runnable::begin(Callback<Error> cb) {
     }
     mk::utc_time_now(&test_start_time);
     beginning = mk::time_now();
-    contact_bouncer([=](Error error) {
+    query_bouncer([=](Error error) {
         if (error) {
             cb(error);
             return;
@@ -373,15 +378,13 @@ void Runnable::begin(Callback<Error> cb) {
                         logger->set_progress_offset(0.1);
                         logger->set_progress_scale(0.8);
 
-                        ErrorOr<std::deque<std::string>> maybe_inputs =
-                            process_input_filepaths(
+                        error = process_input_filepaths(inputs,
                                 needs_input, input_filepaths, probe_cc, options,
                                 logger, nullptr, nullptr);
-                        if (!maybe_inputs) {
-                            cb(maybe_inputs.as_error());
+                        if (error) {
+                            cb(error);
                             return;
                         }
-                        inputs = *maybe_inputs;
                         size_t num_entries = inputs.size();
 
                         // Run `parallelism` measurements in parallel

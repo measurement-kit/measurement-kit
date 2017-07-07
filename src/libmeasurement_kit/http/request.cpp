@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../http/request_impl.hpp"
-#include "../common/utils.hpp"
+#include "private/http/request_impl.hpp"
+#include "private/common/utils.hpp"
 
 namespace mk {
 namespace http {

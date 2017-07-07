@@ -5,9 +5,9 @@
 #include <measurement_kit/ooni.hpp>
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/nettests/utils_impl.hpp"
+#include "private/nettests/utils_impl.hpp"
 
 #include <sstream>
 #include <unordered_set>
@@ -35,101 +35,126 @@ static void intercept_randomize(std::deque<std::string> &) {
 }
 
 TEST_CASE("process_input_filepaths() works as expected") {
-    SECTION("When needs_input and no input filepaths are available") {
-        mk::ErrorOr<std::deque<std::string>> maybe_result =
-            mk::nettests::process_input_filepaths(
+
+    SECTION("When needs_input and no input filepaths are available "
+            "and no manual input is available") {
+        std::deque<std::string> inputs;
+        mk::Error error =
+            mk::nettests::process_input_filepaths(inputs,
                 true, {}, "IT", {}, mk::Logger::global(), nullptr, nullptr);
-        REQUIRE(!maybe_result);
-        REQUIRE(maybe_result.as_error() ==
+        REQUIRE(error);
+        REQUIRE(error ==
                 mk::ooni::MissingRequiredInputFileError());
     }
 
+    SECTION("When needs_input and no input filepaths are available "
+            "but manual input is available") {
+        /* The opposite case, where there is no manual input but we have
+           files containing input is tested down below. */
+        std::deque<std::string> inputs{"antani"};
+        mk::Error error =
+            mk::nettests::process_input_filepaths(inputs,
+                true, {}, "IT", {}, mk::Logger::global(), nullptr, nullptr);
+        REQUIRE(!error);
+        REQUIRE(error == mk::NoError());
+    }
+
     SECTION("The ${probe_cc} variable is correctly expanded") {
-        mk::ErrorOr<std::deque<std::string>> maybe_result =
+        std::deque<std::string> inputs;
+        mk::Error error =
             mk::nettests::process_input_filepaths_impl<check_variable_expanded>(
+                inputs,
                 true, {"${probe_cc}"}, "IT", {}, mk::Logger::global(), nullptr,
                 nullptr);
         /*
          * We are going to fail because the mocked function returns a
          * stream that is already at EOF.
          */
-        REQUIRE(!maybe_result);
-        REQUIRE(maybe_result.as_error() ==
+        REQUIRE(error);
+        REQUIRE(error ==
                 mk::ooni::CannotReadAnyInputFileError());
     }
 
     SECTION("When no line could be read, an error is returned") {
-        mk::ErrorOr<std::deque<std::string>> maybe_result =
+        std::deque<std::string> inputs;
+        mk::Error error =
             mk::nettests::process_input_filepaths_impl<ensure_file_openned,
                                                        cannot_read_line>(
+                inputs,
                 true, {"./test/fixtures/urls.txt"}, "IT", {},
                 mk::Logger::global(), nullptr, nullptr);
-        REQUIRE(!maybe_result);
-        REQUIRE(maybe_result.as_error() ==
+        REQUIRE(error);
+        REQUIRE(error ==
                 mk::ooni::CannotReadAnyInputFileError());
     }
 
     SECTION("If we can't open a file, the proper function is notified") {
+        std::deque<std::string> inputs;
         std::string cannot_open;
-        mk::ErrorOr<std::deque<std::string>> maybe_result =
-            mk::nettests::process_input_filepaths(
+        mk::Error error =
+            mk::nettests::process_input_filepaths(inputs,
                 true, {"./nonexistent"}, "IT", {}, mk::Logger::global(),
                 [&](const std::string &p) { cannot_open = p; }, nullptr);
-        REQUIRE(!maybe_result);
-        REQUIRE(maybe_result.as_error() ==
+        REQUIRE(error);
+        REQUIRE(error ==
                 mk::ooni::CannotReadAnyInputFileError());
         REQUIRE(cannot_open == "./nonexistent");
     }
 
     SECTION("We are notified if there is I/O error") {
+        std::deque<std::string> inputs;
         std::string cannot_read;
-        mk::ErrorOr<std::deque<std::string>> maybe_result =
+        mk::Error error =
             mk::nettests::process_input_filepaths_impl<mk::nettests::open_file_,
                                                        simulate_io_error>(
-                true, {"./test/fixtures/urls.txt"}, "IT", {},
+                inputs, true, {"./test/fixtures/urls.txt"}, "IT", {},
                 mk::Logger::global(), nullptr,
                 [&](const std::string &p) { cannot_read = p; });
-        REQUIRE(!maybe_result);
-        REQUIRE(maybe_result.as_error() ==
+        REQUIRE(error);
+        REQUIRE(error ==
                 mk::ooni::CannotReadAnyInputFileError());
         REQUIRE(cannot_read == "./test/fixtures/urls.txt");
     }
 
     SECTION("When the randomize_input option is invalid") {
-        mk::ErrorOr<std::deque<std::string>> maybe_result =
+        std::deque<std::string> inputs;
+        mk::Error error =
             mk::nettests::process_input_filepaths(
-                true, {"./test/fixtures/urls.txt"}, "IT",
+                inputs, true, {"./test/fixtures/urls.txt"}, "IT",
                 {{"randomize_input", "antani"}}, mk::Logger::global(), nullptr,
                 nullptr);
-        REQUIRE(!maybe_result);
-        REQUIRE(maybe_result.as_error() == mk::ValueError());
+        REQUIRE(error);
+        REQUIRE(error == mk::ValueError());
     }
 
     SECTION("The randomize functionality is invoked when requested") {
+        std::deque<std::string> inputs;
         REQUIRE_THROWS_AS(
             (mk::nettests::process_input_filepaths_impl<
                 mk::nettests::open_file_, mk::nettests::readline_,
-                intercept_randomize>(true, {"./test/fixtures/urls.txt"}, "IT",
+                intercept_randomize>(inputs, true, {"./test/fixtures/urls.txt"}, "IT",
                                      {{"randomize_input", "1"}},
                                      mk::Logger::global(), nullptr, nullptr)),
             mk::MockedError);
     }
 
     SECTION("The randomize functionality is invoked by default") {
+        std::deque<std::string> inputs;
         REQUIRE_THROWS_AS((mk::nettests::process_input_filepaths_impl<
                               mk::nettests::open_file_, mk::nettests::readline_,
-                              intercept_randomize>(
+                              intercept_randomize>(inputs,
                               true, {"./test/fixtures/urls.txt"}, "IT", {},
                               mk::Logger::global(), nullptr, nullptr)),
                           mk::MockedError);
     }
 
     SECTION("The randomize functionality is not invoked when not requested") {
+        std::deque<std::string> inputs;
         /* No randomize, hence here we should not see exceptions: */
         mk::nettests::process_input_filepaths_impl<mk::nettests::open_file_,
                                                    mk::nettests::readline_,
                                                    intercept_randomize>(
-            true, {"./test/fixtures/urls.txt"}, "IT",
+            inputs, true, {"./test/fixtures/urls.txt"}, "IT",
             {{"randomize_input", "0"}}, mk::Logger::global(), nullptr, nullptr);
     }
 
@@ -164,17 +189,31 @@ TEST_CASE("process_input_filepaths() works as expected") {
     }
 
     SECTION("When input is not required, just a single entry is returned") {
-        mk::ErrorOr<std::deque<std::string>> maybe_result =
+        std::deque<std::string> inputs;
+        mk::Error error =
             mk::nettests::process_input_filepaths(
-                false, {"./test/fixtures/urls.txt"}, "IT",
+                inputs, false, {"./test/fixtures/urls.txt"}, "IT",
                 {{"randomize_input", "antani"}}, mk::Logger::global(), nullptr,
                 nullptr);
-        REQUIRE(!!maybe_result);
-        REQUIRE(maybe_result->size() == 1);
-        REQUIRE(*maybe_result == std::deque<std::string>{{""}});
+        REQUIRE(!error);
+        REQUIRE(inputs.size() == 1);
+        REQUIRE(inputs == std::deque<std::string>{{""}});
+    }
+
+    SECTION("We deal correctly with manual input when no input is expected") {
+        std::deque<std::string> inputs{"antani", "mascetti"};
+        mk::Error error =
+            mk::nettests::process_input_filepaths(
+                inputs, false, {"./test/fixtures/urls.txt"}, "IT",
+                {{"randomize_input", "antani"}}, mk::Logger::global(), nullptr,
+                nullptr);
+        REQUIRE(!error);
+        REQUIRE(inputs.size() == 1);
+        REQUIRE(inputs == std::deque<std::string>{{""}});
     }
 
     SECTION("It is able to load and shuffle input") {
+        std::deque<std::string> inputs;
         std::unordered_set<std::string> expect{"http://torproject.org",
                                                "http://ooni.nu",
                                                "http://neubot.org",
@@ -186,13 +225,13 @@ TEST_CASE("process_input_filepaths() works as expected") {
                                                "http://nmap.org",
                                                "http://whatismyipaddress.com",
                                                "http://www.emule.com"};
-        mk::ErrorOr<std::deque<std::string>> maybe_result =
-            mk::nettests::process_input_filepaths(
+        mk::Error error =
+            mk::nettests::process_input_filepaths(inputs,
                 true, {"./test/fixtures/urls.txt"}, "IT", {},
                 mk::Logger::global(), nullptr, nullptr);
-        REQUIRE(!!maybe_result);
-        std::unordered_set<std::string> result(maybe_result->begin(),
-                                               maybe_result->end());
+        REQUIRE(!error);
+        std::unordered_set<std::string> result(inputs.begin(),
+                                               inputs.end());
         REQUIRE(expect == result);
     }
 }
