@@ -185,7 +185,8 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                               {"engine_name", "libmeasurement_kit"},
                               {"engine_version", MK_VERSION},
                               {"fast_scale_down", *fast_scale_down},
-                              //{"internal_address", stream.myname[0]}
+                              {"internal_address",
+                               ctx->txp->sockname().hostname},
                               {"iteration", ctx->iteration},
                               {"platform", mk_platform()},
                               {"rate", rate_kbit},
@@ -198,7 +199,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                                * implementation of DASH that is part of Neubot.
                                */
                               {"received", length},
-                              //{"remote_address", stream.peername[0]}
+                              {"remote_address", ctx->txp->peername().hostname},
                               {"request_ticks", saved_time},
                               {"timestamp", llround(saved_time)},
                               {"use_fixed_rates", *use_fixed_rates},
@@ -253,7 +254,7 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
      * and reuse the same UUID4. We can attempt to do that by asking the caller
      * to pass us the unique identifier to be used for this client.
      */
-    if (ctx->settings.find("uuid") == settings.end()) {
+    if (ctx->settings.find("uuid") == ctx->settings.end()) {
         ctx->logger->warn("You passed me no UUID, generating a random one");
         ctx->uuid = mk::sole::uuid4().str();
     } else {
