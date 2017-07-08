@@ -30,6 +30,7 @@ subr_finalize() {
                                --exclude src/measurement_kit               \
                                --exclude example                           \
                                --exclude third_party                       \
+                               --exclude builtin                           \
             > /dev/null;
     fi
 }
