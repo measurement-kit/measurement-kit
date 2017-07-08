@@ -215,6 +215,9 @@ class EmitterBase : public Transport {
         saved_dns_result = x;
     }
 
+    Endpoint sockname() override { return {}; }
+    Endpoint peername() override { return {}; }
+
   protected:
     // TODO: it would probably better to have accessors
     Var<Reactor> reactor = Reactor::global();

@@ -5,6 +5,7 @@
 #define MEASUREMENT_KIT_NET_TRANSPORT_HPP
 
 #include <measurement_kit/net/buffer.hpp>
+#include <measurement_kit/net/utils.hpp>
 
 namespace mk {
 
@@ -95,12 +96,20 @@ class TransportConnectable {
     virtual void set_dns_result_(dns::ResolveHostnameResult) = 0;
 };
 
+class TransportSockNamePeerName {
+  public:
+    virtual ~TransportSockNamePeerName();
+    virtual Endpoint sockname() = 0;
+    virtual Endpoint peername() = 0;
+};
+
 class Transport : public TransportEmitter,
                   public TransportRecorder,
                   public TransportWriter,
                   public TransportSocks5,
                   public TransportPollable,
-                  public TransportConnectable {
+                  public TransportConnectable,
+                  public TransportSockNamePeerName {
   public:
     virtual ~Transport();
 };

@@ -33,6 +33,8 @@ Currently it implements the following high-level tests:
 
 - [OONI](https://ooni.torproject.org/)'s [HTTP Header Field Manipulation](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-006-header-field-manipulation.md) test
 
+- Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
+
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
 
@@ -52,11 +54,9 @@ tests. More in detail it currently implements:
 
 - the functionality to communicate with the [OONI collector](https://github.com/TheTorProject/ooni-backend)
 
-In the short term we plan to add to MeasurementKit:
-
-- Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
-
 - the functionality to communicate with the [OONI bouncer](https://github.com/TheTorProject/ooni-backend)
+
+In the short term we plan to add to MeasurementKit:
 
 - more OONI tests
 
