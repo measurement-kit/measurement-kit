@@ -94,6 +94,8 @@ class DashLoopCtx {
 template <MK_MOCK_AS(http::request_send, http_request_send),
           MK_MOCK_AS(http::request_recv_response, http_request_recv_response)>
 void run_loop_(Var<DashLoopCtx> ctx) {
+    // TODO: We may want to move this parsing of options in the setup
+    // phase of the test and store them inside `ctx`.
     ErrorOr<bool> fast_scale_down =
           ctx->settings.get_noexcept("fast_scale_down", false);
     if (!fast_scale_down) {
@@ -222,7 +224,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                             // If the rate is too high, scale it down
                             double relerr = 1 - (time_elapsed / DASH_SECONDS);
                             s_k *= relerr;
-                            if (s_k < 0) {
+                            if (s_k <= 0) {
                                 s_k = dash_rates()[0];
                             }
                         }
