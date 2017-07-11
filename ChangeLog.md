@@ -1,3 +1,15 @@
+# MeasurementKit 0.7.0-alpha.3 [2017-07-11]
+
+- cmake: Fix build and register tests as such (#1267)
+- var: inherit -> compose (fix android build)
+- Fix Android build warnings
+- Allow to pass nettests input from command line (#1273)
+- connect: simplify access to connect-time stats (#1261)
+- Implement Neubot's DASH test (#769)
+- docker: exclude `builtin` from coveralls
+- FIX test/http/request.cpp for hustmail
+- REPAIR test/http/request.cpp build
+
 # MeasurementKit 0.7.0-alpha.2 [2017-06-28]
 
 - Add public API to get platform name

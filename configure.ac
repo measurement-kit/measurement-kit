@@ -3,7 +3,7 @@
 # information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.7.0-alpha.2, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.7.0-alpha.3, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
