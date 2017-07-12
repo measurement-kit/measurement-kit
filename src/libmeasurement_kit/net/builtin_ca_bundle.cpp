@@ -6,10 +6,10 @@
  * as a vector of unsigned characters. This could then be passed to libressl
  * specific functions for loading CAs from a memory buffer.
  *
- * Based on libressl 2017-06-07
+ * Based on curl cacert-2017-06-07
  */
 
-#include "../net/builtin_ca_bundle.hpp"
+#include "private/net/builtin_ca_bundle.hpp"
 
 namespace mk {
 namespace net {
