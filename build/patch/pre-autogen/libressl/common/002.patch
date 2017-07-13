@@ -2,7 +2,7 @@ diff --git a/update.sh b/update.sh
 index 0853c6b..b734773 100755
 --- a/update.sh
 +++ b/update.sh
-@@ -5,17 +5,8 @@ openbsd_branch=`cat OPENBSD_BRANCH`
+@@ -5,16 +5,8 @@ openbsd_branch=`cat OPENBSD_BRANCH`
  
  # pull in latest upstream code
  echo "pulling upstream openbsd source"
@@ -14,7 +14,6 @@ index 0853c6b..b734773 100755
 -	fi
 -fi
 -(cd openbsd
-- git fetch
 - git checkout $openbsd_branch
 - git pull --rebase)
 +git clone --single-branch --depth 2 --branch $openbsd_branch                   \
