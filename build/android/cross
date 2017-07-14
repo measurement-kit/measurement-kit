@@ -78,6 +78,7 @@ elif [ "$ARCH" = "mips64" ]; then
     TOOLCHAIN_NAME=mips64el-linux-android
     DESTDIR_NAME=mips64
     LIB_SUFFIX=64
+    CONFIG_EXTRA="--disable-asm"  # See issue 653
 elif [ "$ARCH" = "x86" ]; then
     TOOLCHAIN_NAME=i686-linux-android
     DESTDIR_NAME=x86
