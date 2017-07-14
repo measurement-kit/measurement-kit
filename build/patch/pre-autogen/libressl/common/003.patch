@@ -12,7 +12,7 @@ index 3e4d3af..ab42f77 100644
  AC_CHECK_FUNCS([strlcat strlcpy strndup strnlen strsep strtonum])
  AC_CHECK_FUNCS([timegm _mkgmtime])
 +
-+dnl Note: in Android <= L getpagesize() is defined inline. As such, the test
++dnl Note: in Android < 21 getpagesize() is defined inline. As such, the test
 +dnl for getpagesize() should include <unistd.h>.
 +AC_MSG_CHECKING([for getpagesize])
 +AC_LINK_IFELSE([AC_LANG_PROGRAM([
