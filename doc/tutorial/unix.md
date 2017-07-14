@@ -247,6 +247,17 @@ As regards `--prefix`, passing to configure `--prefix=/foo` means that:
 
 - libs will be installed under `/foo/lib`
 
+If you are building on Linux and you want to use libc++ rather than
+the GNU C++ library, make sure you install `clang`, `libc++` (including
+its headers, typically in a `-dev` package), `libc++abi` (including
+heders). Then export the following variables *before* running `./configure`:
+
+```
+export CXX=clang++
+export CC=clang
+export CXXFLAGS="-stdlib=libc++"
+```
+
 ### make
 
 If configure succeeds, Measurement Kit is now configured to build
