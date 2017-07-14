@@ -4,9 +4,6 @@ set -e
 export pkg_configure_flags="$pkg_configure_flags --enable-coverage"
 export pkg_make_check_rule="check"
 
-export CFLAGS="$CFLAGS -g -O0"
-export CXXFLAGS="$CXXFLAGS -g -O0"
-
 debian_deps="$debian_deps autoconf"
 debian_deps="$debian_deps automake"
 debian_deps="$debian_deps g++"
