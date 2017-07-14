@@ -80,7 +80,7 @@ class DashLoopCtx {
   public:
     std::string auth_token;
     Callback<Error> cb;
-    int speed_kbit = dash_rates()[0];
+    int speed_kbit = -1; // Means: determine best initial value
     Var<report::Entry> entry;
     int iteration = 1;
     Var<Logger> logger;
@@ -103,6 +103,13 @@ void run_loop_(Var<DashLoopCtx> ctx) {
         ctx->cb(fast_scale_down.as_error());
         return;
     }
+    ErrorOr<int> constant_bitrate =
+          ctx->settings.get_noexcept("constant_bitrate", 0);
+    if (!constant_bitrate || *constant_bitrate < 0) {
+        ctx->logger->warn("dash: cannot parse `constant_bitrate' option");
+        ctx->cb(constant_bitrate.as_error());
+        return;
+    }
     ErrorOr<bool> use_fixed_rates =
           ctx->settings.get_noexcept("use_fixed_rates", false);
     if (!use_fixed_rates) {
@@ -110,21 +117,80 @@ void run_loop_(Var<DashLoopCtx> ctx) {
         ctx->cb(use_fixed_rates.as_error());
         return;
     }
+    ErrorOr<int> elapsed_target =
+          ctx->settings.get_noexcept("elapsed_target", DASH_SECONDS);
+    if (!elapsed_target || *elapsed_target < 0) {
+        ctx->logger->warn("dash: cannot parse `elapsed_target' option");
+        ctx->cb(elapsed_target.as_error());
+        return;
+    }
     if (ctx->iteration > DASH_MAX_ITERATIONS) {
         ctx->logger->debug("dash: completed all iterations");
+        try {
+            std::vector<double> rates;
+            std::vector<double> stalls;
+            double frame_ready_time = 0.0;
+            double play_time = 0.0;
+            double connect_latency = 0.0;
+            for (auto &e : (*ctx->entry)["receiver_data"]) {
+                if (connect_latency == 0.0) {
+                    // It is always equal for all the records
+                    connect_latency = e["connect_time"];
+                }
+                rates.push_back(e["rate"]);
+                /* The first chunk is played when it arrives. To have smooth
+                   video, we'd like to play each subsequent chunk within
+                   `elapsed_target` seconds. So, the player has always something
+                   to play and the user sees the video. If a chunk arrives
+                   earlier than the play deadline, good because we can request
+                   the next chunk also earlier. That is, we increase buffer
+                   time for slow delivery. On the contrary, if a chunk arrives
+                   later than the play deadline, we need to stop playing. The
+                   max(stalls) is the delay we would have needed to add at
+                   the beginning to make sure we had no player stalls. */
+                double elapsed = e["elapsed"];
+                frame_ready_time += elapsed;
+                double elapsed_target = e["elapsed_target"];
+                // Note: this says that the play time of the first frame is
+                // when we receive it. Subsequent frames must be played after
+                // `elapsed_target` seconds each to have smooth video.
+                play_time +=
+                      (play_time == 0) ? frame_ready_time : elapsed_target;
+                double stall = frame_ready_time - play_time;
+                stalls.push_back(stall);
+            }
+            (*ctx->entry)["simple"]["connect_latency"] = connect_latency;
+            (*ctx->entry)["simple"]["median_bitrate"] = mk::median(rates);
+            (*ctx->entry)["simple"]["min_playout_delay"] =
+                  (stalls.size() > 0)
+                        ? *std::max_element(stalls.begin(), stalls.end())
+                        : 0.0;
+        } catch (...) {
+            ctx->logger->warn("dash: cannot save summary information");
+        }
         ctx->cb(NoError());
         return;
+    }
+    if (ctx->speed_kbit < 0) {
+        // Determine initial speed estimate. In legacy mode (i.e. when we use
+        // a fixed vector of rates), we use the first entry. Otherwise, we use
+        // as initial speed estimate 3000 kbit/s. This number is the minimum
+        // speed recommended by Netflix to stream in SD quality, as of 13 July
+        // 2017. I though this would be a good starting point.
+        //
+        // See: <https://help.netflix.com/en/node/306>.
+        ctx->speed_kbit = (*use_fixed_rates == true) ? dash_rates()[0] : 3000;
     }
     /*
      * Select the rate that is lower than the latest measured speed and
      * compute the number of bytes to download such that downloading with
-     * the selected rate takes DASH_SECONDS (in theory).
+     * the selected rate takes `elapsed_target` (in theory).
      */
     int rate_kbit =
           (*use_fixed_rates == true)
                 ? dash_rates()[select_lower_rate_index(ctx->speed_kbit)]
-                : ctx->speed_kbit;
-    int count = ((rate_kbit * 1000) / 8) * DASH_SECONDS;
+                : (*constant_bitrate > 0) ? *constant_bitrate : ctx->speed_kbit;
+    int count = ((rate_kbit * 1000) / 8) * (*elapsed_target);
     std::string path = "/dash/download/";
     path += std::to_string(count);
     Settings settings = ctx->settings; /* Make a local copy */
@@ -179,10 +245,11 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                         }
                         (*ctx->entry)["receiver_data"].push_back(report::Entry{
                               {"connect_time", ctx->txp->connect_time()},
+                              {"constant_bitrate", *constant_bitrate != 0},
                               {"delta_user_time", 0.0},
                               {"delta_sys_time", 0.0},
                               {"elapsed", time_elapsed},
-                              {"elapsed_target", DASH_SECONDS},
+                              {"elapsed_target", *elapsed_target},
                               {"engine_name", "libmeasurement_kit"},
                               {"engine_version", MK_VERSION},
                               {"fast_scale_down", *fast_scale_down},
@@ -215,14 +282,15 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                         ss << "rate: " << rate_kbit
                            << " kbit/s, speed: " << std::fixed
                            << std::setprecision(2) << s_k
-                           << " kbit/s, elapsed: " << time_elapsed << "s";
+                           << " kbit/s, elapsed: " << time_elapsed << " s";
                         ctx->logger->progress(ctx->iteration /
                                                     (double)DASH_MAX_ITERATIONS,
                                               ss.str().c_str());
                         if (*fast_scale_down == true &&
-                            time_elapsed > DASH_SECONDS) {
+                            time_elapsed > *elapsed_target) {
                             // If the rate is too high, scale it down
-                            double relerr = 1 - (time_elapsed / DASH_SECONDS);
+                            double relerr =
+                                  1 - (time_elapsed / *elapsed_target);
                             s_k *= relerr;
                             if (s_k <= 0) {
                                 s_k = dash_rates()[0];
@@ -275,7 +343,8 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
               }
               // Note: from now on, we own `txp`
               assert(!!txp);
-              logger->info("Connected to server; starting the test");
+              logger->info("Connected to server (3WHS RTT = %f s); starting "
+                           "the test", txp->connect_time());
               ctx->txp = txp;
               ctx->cb = [=](Error error) {
                   // Release the `txp` before continuing

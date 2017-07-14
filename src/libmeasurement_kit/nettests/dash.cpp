@@ -12,7 +12,7 @@ namespace nettests {
 DashTest::DashTest() : BaseTest() {
     runnable.reset(new DashRunnable);
     runnable->test_name = "dash";
-    runnable->test_version = "0.0.1";
+    runnable->test_version = "0.7.0";
     runnable->needs_input = false;
 }
 
