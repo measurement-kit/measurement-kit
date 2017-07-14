@@ -2,7 +2,7 @@ diff --git a/m4/check-libc.m4 b/m4/check-libc.m4
 index 3e4d3af..ab42f77 100644
 --- a/m4/check-libc.m4
 +++ b/m4/check-libc.m4
-@@ -2,10 +2,27 @@ AC_DEFUN([CHECK_LIBC_COMPAT], [
+@@ -2,10 +2,26 @@ AC_DEFUN([CHECK_LIBC_COMPAT], [
  # Check for libc headers
  AC_CHECK_HEADERS([err.h readpassphrase.h])
  # Check for general libc functions
@@ -15,12 +15,11 @@ index 3e4d3af..ab42f77 100644
 +dnl Note: in Android <= L getpagesize() is defined inline. As such, the test
 +dnl for getpagesize() should include <unistd.h>.
 +AC_MSG_CHECKING([for getpagesize])
-+AC_RUN_IFELSE([
-+  #include <unistd.h>
-+  int main() {
-+    return getpagesize();
-+  }
++AC_LINK_IFELSE([AC_LANG_PROGRAM([
++        #include <unistd.h>
 +], [
++        return getpagesize();
++])], [
 +  ac_cv_func_getpagesize="yes"
 +  AC_MSG_RESULT([yes])
 +], [
