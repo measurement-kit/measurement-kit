@@ -615,7 +615,9 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
                 REQUIRE(!error);
                 REQUIRE(response->status_code == 200);
                 REQUIRE(response->request->url.schema == "https");
-                REQUIRE(response->request->url.address == "www.hushmail.com");
+                auto okay = response->request->url.address == "hushmail.com" ||
+                        response->request->url.address == "www.hushmail.com";
+                REQUIRE(okay);
                 REQUIRE(response->previous->status_code / 100 == 3);
                 REQUIRE(response->previous->request->url.schema == "http");
                 reactor->stop();
