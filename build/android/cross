@@ -61,7 +61,6 @@ elif [ "$ARCH" = "armeabi" ]; then
     #
     CFLAGS="-target armv5te-none-linux-androideabi -march=armv5te -mtune=xscale -msoft-float -mthumb -fno-integrated-as"
     CXXFLAGS=$CFLAGS
-    CONFIG_EXTRA="--disable-asm"  # "Instruction requires thumb2"
 elif [ "$ARCH" = "armeabi-v7a" ]; then
     TOOLCHAIN_NAME=arm-linux-androideabi
     DESTDIR_NAME=$ARCH
