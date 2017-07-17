@@ -1,3 +1,10 @@
+# MeasurementKit 0.7.0-beta [2017-07-17]
+
+- Cherry picks from v0.7.0-beta branch (#1278)
+- Fix: ssl verify errors (#1279)
+- docker: use libc++ with clang (#1275)
+- Integration branch for v0.7.0-beta (#1271)
+
 # MeasurementKit 0.7.0-alpha.3 [2017-07-11]
 
 - cmake: Fix build and register tests as such (#1267)
