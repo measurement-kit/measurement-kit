@@ -43,6 +43,13 @@
  *    closer to know how much time it takes to get a playable chunk
  *    than just measuring the raw speed (I think, when I wrote the test
  *    for Neubot, I had too much bias towards measuring speed).
+ *
+ * 6. As pointed out by a comment in the code, when we don't use a fixed
+ *    vector or rates, the initial speed estimate is 3,000 kbit/s. This
+ *    initial value was chosen because Netflix recommends to have at least
+ *    that bandwidth to stream in SD quality. (Bandwidth is, of course,
+ *    different from the bitrate, but a number close to 3,000 kbit/s
+ *    seems anyway to be a reasonable starting point.)
  */
 
 #include "private/common/json.hpp"
