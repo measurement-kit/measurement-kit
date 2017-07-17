@@ -65,6 +65,18 @@ class Transport {
     virtual void set_timeout(double timeo) = 0;
     virtual void clear_timeout() = 0;
 
+    /*
+     * As connectable:
+     */
+
+
+    virtual double connect_time() = 0;
+    virtual void set_connect_time_(double) = 0;
+    virtual std::vector<Error> connect_errors() = 0;
+    virtual void set_connect_errors_(std::vector<Error>) = 0;
+    virtual dns::ResolveHostnameResult dns_result() = 0;
+    virtual void set_dns_result_(dns::ResolveHostnameResult) = 0;
+
   protected:
     virtual void adjust_timeout(double timeo) = 0;
 
@@ -186,6 +198,16 @@ is terminated by emitting the `FLUSH` event when the output buffer becomes
 empty. The implementation MUST automatically start writing when you call
 any `write()` method. This method MUST NOT be called by the generic code after
 the transport has been closed.
+
+## As connectable
+
+This set of methods allow to get various connect-time values, like the
+time required to connect (which approximates the minimum RTT), the errors
+experienced when connecting (for example, the DNS may return more than
+one address and some of them may be unreachable, but others work), and the
+result of the DNS query for the provided hostname.
+
+It also contains semi-hidden methods to set such values when connecting.
 
 ## Syntactic sugar
 

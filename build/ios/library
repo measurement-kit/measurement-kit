@@ -2,7 +2,7 @@
 set -e
 ROOTDIR=$(cd `dirname "$0"` && pwd -P)
 
-RELEASE_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.7.0-alpha.2/ios_binaries-0.7.0-alpha.2.tgz
+RELEASE_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.7.0-alpha.3/ios_binaries-0.7.0-alpha.3.tgz
 RELEASE_FILE=$(basename $RELEASE_URL)
 if wget $RELEASE_URL; then
     wget $RELEASE_URL.asc
@@ -17,7 +17,7 @@ echo "Downloading and verifying precompiled dependencies from github"
 (
     set -e # just in case
     cd $ROOTDIR
-    DEPS_URL=https://github.com/measurement-kit/dependencies/releases/download/2017-07-11/ios-dependencies-20170711T140837Z.tgz
+    DEPS_URL=https://github.com/measurement-kit/dependencies/releases/download/2017-07-12/ios-dependencies-20170714T172936Z.tgz
     DEPS_FILE=$(basename $DEPS_URL)
     curl --progress-bar -LO $DEPS_URL
     curl --progress-bar -LO $DEPS_URL.asc

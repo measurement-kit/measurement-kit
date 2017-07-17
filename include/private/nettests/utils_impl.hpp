@@ -31,14 +31,13 @@ static void randomize_input_(std::deque<std::string> &inputs) {
 }
 
 template <MK_MOCK(open_file_), MK_MOCK(readline_), MK_MOCK(randomize_input_)>
-ErrorOr<std::deque<std::string>> process_input_filepaths_impl(
+Error process_input_filepaths_impl(std::deque<std::string> &inputs,
     const bool &needs_input, const std::list<std::string> &input_filepaths,
     const std::string &probe_cc, const Settings &options, Var<Logger> logger,
     std::function<void(const std::string &)> on_open_error,
     std::function<void(const std::string &)> on_io_error) {
-    std::deque<std::string> inputs;
     if (needs_input) {
-        if (input_filepaths.size() <= 0) {
+        if (input_filepaths.size() <= 0 && inputs.size() == 0) {
             logger->warn("at least an input file is required");
             return ooni::MissingRequiredInputFileError();
         }
@@ -91,10 +90,17 @@ ErrorOr<std::deque<std::string>> process_input_filepaths_impl(
             randomize_input_(inputs);
         }
     } else {
-        // Empty string to call main() just once
+        // Add empty string to call main just once. Due to the way in which
+        // we work, we clear the input if it's not empty, otherwise input-less
+        // tests are going to run more than once.
+        if (inputs.size() != 0) {
+            logger->warn("Manually passed input for a test that requires no "
+                         "input; fixing by clearing the input vector");
+            inputs.clear();
+        }
         inputs.push_back("");
     }
-    return inputs;
+    return NoError();
 }
 
 } // namespace nettests

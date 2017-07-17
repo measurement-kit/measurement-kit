@@ -23,7 +23,7 @@ static Error map_error(std::ostream &file) {
 /* static */ Var<BaseReporter> FileReporter::make(std::string s) {
     Var<FileReporter> reporter(new FileReporter);
     reporter->filename = s;
-    return reporter;
+    return reporter.as<BaseReporter>();
 }
 
 Continuation<Error> FileReporter::open(Report &) {

@@ -30,7 +30,9 @@ void mk::net::connect_many(std::string address, int port, int num,
 
 The `connect()` function creates a connection to the remote `address` (which
 typically is a FQDN) and `port` and calls `callback` when done. On failure,
-an error is passed to the callback as its first argument; on success, the first
+an error is passed to the callback as its first argument, while a valid, but
+not connected, `Var<Transport>` is passed as its second argument.
+On success, the first
 callback argument is `NoError` and the second argument is a `Transport` instance
 wrapped by a `Var<>` smart pointer. Optionally you can also specify `settings`,
 a specific `logger` and a specific `reactor`.
@@ -67,36 +69,13 @@ modified using the following `settings`:
 
 - *"net/timeout"* (double): timeout for connect and I/O operations (default: `5.0` seconds).
 
-To provide insights into what went wrong and what went right during the connect
-attempt, the `Error` returned by `connect()` contains as `context` an instance of the
-following class
-
-```C++
-struct ConnectResult : public ErrorContext {
-    ResolveHostnameResult resolve_result;
-    std::vector<Error> connect_result;
-    bufferevent *connected_bev = nullptr;
-};
-```
-
-where `resolve_result` contains the result of resolving the `address` argument into
-an IP address, `connect_result` is a vector containing an error for each failed connect
-attempt (where the size of the vector would be greater than one when a domain name
-mapped to multiple addresses and connecting to more than one address failed), `connected_bev`
-is the underlying libevent's `bufferevent` wrapped by `Transport`. More details about the
-`ResolveHostnameResult` class can be found in doc/api/dns.hpp.
+- *"net/allow_ssl23"* (bool): whether to enable SSLv2 and SSLv3 (default: false)
 
 The `connect_many()` function is similar to `connect()`. The main different is
 that `num` parallel connections are established and passed to the callback on success. Of
 course, this function would return `NoError()` only if all the parallel connect attempts
 were successful, and it would close all the open connections if only some connect attempts
 were successful.
-
-# BUGS
-
-As of MeasurementKit v0.4, `connect()` does not implement SSLv2 and SSLv3,
-therefore secure connection will fail with sites that use such deprecated
-versions of the protocol.
 
 # HISTORY
 

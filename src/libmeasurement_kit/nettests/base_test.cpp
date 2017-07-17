@@ -45,6 +45,14 @@ BaseTest &BaseTest::increase_verbosity() {
 BaseTest::BaseTest() {}
 BaseTest::~BaseTest() {}
 
+BaseTest &BaseTest::add_input(std::string s) {
+    // Note: ooni-probe does not allow to specify more than one input from the
+    // command line. Given that the underlying code allows that, I do not see a
+    // reason to be artifically restrictive here.
+    runnable->inputs.push_back(s);
+    return *this;
+}
+
 BaseTest &BaseTest::add_input_filepath(std::string s) {
     runnable->input_filepaths.push_back(s);
     return *this;

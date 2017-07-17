@@ -3,7 +3,7 @@
 // information on the copying conditions.
 
 #include "private/net/socks5.hpp"
-#include "private/net/connect.hpp"
+#include "private/net/connect_impl.hpp"
 
 #include "private/libevent/connection.hpp"
 
@@ -140,26 +140,23 @@ void socks5_connect(std::string address, int port, Settings settings,
     connect_logic(proxy_address, lexical_cast<int>(proxy_port),
             [=](Error err, Var<ConnectResult> r) {
                 if (err) {
-                    err.context = r;
-                    callback(err, nullptr);
+                    callback(err, make_txp<Emitter>(
+                        0.0, r, reactor, logger));
                     return;
                 }
                 Var<Transport> txp = libevent::Connection::make(
                         r->connected_bev, reactor, logger);
-                Var<Transport> socks5(
-                        new Socks5(txp, settings, reactor, logger));
+                Var<Transport> socks5 = make_txp<Socks5>(
+                        0.0, r, txp, settings, reactor, logger);
                 socks5->on_connect([=]() {
                     socks5->on_connect(nullptr);
                     socks5->on_error(nullptr);
-                    Error error = NoError();
-                    error.context = r;
-                    callback(error, socks5);
+                    callback(NoError(), socks5);
                 });
                 socks5->on_error([=](Error error) {
                     socks5->on_connect(nullptr);
                     socks5->on_error(nullptr);
-                    error.context = r;
-                    callback(error, nullptr);
+                    callback(error, socks5);
                 });
             },
             settings, reactor, logger);

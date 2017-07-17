@@ -71,7 +71,33 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         test.set_options("address", argv[0]);
     }
 
-    ndt_init(initializers, test).run();
+    ndt_init(initializers, test)
+          .on_entry([](std::string s) {
+              nlohmann::json doc = nlohmann::json::parse(s);
+              auto simple = doc["test_keys"]["simple"];
+              auto advanced = doc["test_keys"]["advanced"];
+              printf("\nTest summary\n");
+              printf("------------\n");
+              double download = simple["download"];
+              double upload = simple["upload"];
+              printf("Upload speed: %.2f kbit/s\n", upload);
+              printf("Download speed: %.2f kbit/s\n", download);
+              double packet_loss = advanced["packet_loss"];
+              double out_of_order = advanced["out_of_order"];
+              double max_rtt = advanced["max_rtt"];
+              double avg_rtt = advanced["avg_rtt"];
+              double min_rtt = advanced["min_rtt"];
+              long mss = advanced["mss"];
+              long timeouts = advanced["timeouts"];
+              printf("Packet loss rate: %.2f%%\n", packet_loss * 100.0);
+              printf("Out of order: %.2f%%\n", out_of_order * 100.0);
+              printf("RTT (min/avg/max): %.2f/%.2f/%.2f ms\n", min_rtt, avg_rtt,
+                     max_rtt);
+              printf("MSS: %ld\n", mss);
+              printf("Timeouts: %ld\n", timeouts);
+              printf("\n");
+          })
+          .run();
     return 0;
 }
 

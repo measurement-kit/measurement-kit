@@ -8,12 +8,12 @@ namespace web_connectivity {
 
 #define USAGE                                                                  \
     "usage: measurement_kit [options] web_connectivity [-b backend]\n"         \
-    "                       [-f input_file] [-t timeout]\n"
+    "                       [-f input_file] [-t timeout] [-u url]\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     mk::nettests::WebConnectivityTest test;
 
-    for (int ch; (ch = getopt(argc, argv, "b:f:t:")) != -1;) {
+    for (int ch; (ch = getopt(argc, argv, "b:f:t:u:")) != -1;) {
         switch (ch) {
         case 'b':
             test.set_options("backend", optarg);
@@ -23,6 +23,9 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
             break;
         case 't':
             test.set_options("max_runtime", optarg);
+            break;
+        case 'u':
+            test.add_input(optarg);
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);

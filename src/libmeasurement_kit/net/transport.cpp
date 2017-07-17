@@ -16,6 +16,8 @@ TransportRecorder::~TransportRecorder() {}
 TransportWriter::~TransportWriter() {}
 TransportSocks5::~TransportSocks5() {}
 TransportPollable::~TransportPollable() {}
+TransportConnectable::~TransportConnectable() {}
+TransportSockNamePeerName::~TransportSockNamePeerName() {}
 Transport::~Transport() {}
 
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {

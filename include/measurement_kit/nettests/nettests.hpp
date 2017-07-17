@@ -32,6 +32,7 @@ class BaseTest {
     BaseTest();
     virtual ~BaseTest();
 
+    BaseTest &add_input(std::string);
     BaseTest &add_input_filepath(std::string);
     BaseTest &set_input_filepath(std::string);
     BaseTest &set_output_filepath(std::string);
@@ -64,6 +65,7 @@ class BaseTest {
         _name_();                                                              \
     }
 
+MK_DECLARE_TEST(DashTest);
 MK_DECLARE_TEST(DnsInjectionTest);
 MK_DECLARE_TEST(HttpHeaderFieldManipulationTest);
 MK_DECLARE_TEST(HttpInvalidRequestLineTest);
