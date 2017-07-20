@@ -194,27 +194,14 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     }
 
     std::function<void(Var<Context>, Callback<Error>)> func;
-    const char *progress_descr = "";
     if (*num == TEST_C2S) {
         func = test_c2s_run;
-        progress_descr = "Upload test";
     } else if (*num == TEST_META) {
         func = test_meta_run;
-        progress_descr = "Send results to test server";
     } else if (*num == TEST_S2C or *num == TEST_S2C_EXT) {
         func = test_s2c_run;
-        if (*num == TEST_S2C_EXT) {
-            progress_descr = "Multi-stream download test";
-        } else {
-            progress_descr = "Single-stream download test";
-        }
     } else {
         /* nothing */
-    }
-
-    if (ctx->granted_suite_count > 0) {  // Defensive check
-        ctx->logger->progress(0.6 + (double)++ctx->current_test_count
-            / (double)ctx->granted_suite_count / 10.0, progress_descr);
     }
 
     if (!func) {
