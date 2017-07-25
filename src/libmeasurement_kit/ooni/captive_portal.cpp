@@ -174,11 +174,17 @@ void dns_msft_ncsi(Var<Entry> entry, Callback<Error> done_cb, Settings options,
                                               err.as_ooni_error().c_str());
                                  done_cb(err);
                              } else {
+                                 bool unfiltered = false;
                                  for (const auto &a : message->answers) {
                                      // XXX: This should actually be adapted
                                      // to also deal with IPv6 replies
                                      (*entry)["vendor_dns_tests"]["ms_dns_cp"].push_back(a.ipv4);
+                                     if (a.ipv4 == "131.107.255.255") {
+                                        unfiltered = true;
+                                     }
                                  }
+                                 logger->info("MS DNS test unfiltered: %s",
+                                         (unfiltered ? "yes" : "no"));
                                  done_cb(NoError());
                              }
                          },
