@@ -185,7 +185,7 @@ void dns_msft_ncsi(Var<Entry> entry, Callback<Error> done_cb, Settings options,
                          options, reactor, logger);
 }
 
-void captive_portal(std::string /*input*/, Settings options,
+void captiveportal(std::string /*input*/, Settings options,
                     Callback<Var<Entry>> callback, Var<Reactor> reactor,
                     Var<Logger> logger) {
     Var<Entry> entry(new Entry);

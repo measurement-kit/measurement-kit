@@ -4,9 +4,9 @@
 
 #include "../cmdline.hpp"
 
-namespace captive_portal {
+namespace captiveportal {
 
-#define USAGE "usage: measurement_kit [options] captive_portal\n"
+#define USAGE "usage: measurement_kit [options] captiveportal\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     mk::nettests::CaptivePortalTest test;
@@ -30,4 +30,4 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     return 0;
 }
 
-} // namespace captive_portal
+} // namespace captiveportal
