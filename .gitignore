@@ -107,8 +107,8 @@
 /test/net/ssl_context
 /test/net/transport
 /test/net/utils
-/test/nettests/dash
 /test/nettests/captive_portal
+/test/nettests/dash
 /test/nettests/dns_injection
 /test/nettests/http_header_field_manipulation
 /test/nettests/http_invalid_request_line
