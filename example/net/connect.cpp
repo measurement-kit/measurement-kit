@@ -48,36 +48,24 @@ int main(int argc, char **argv) {
     loop_with_initial_event([&domain, &port, &settings]() {
         connect(domain, port, [](Error err, Var<Transport> txp) {
             std::cout << "Overall connect result: " << err.as_ooni_error() << "\n";
-            Var<ConnectResult> cr = err.context.as<ConnectResult>();
-            if (!cr) {
-                std::cout << "No connection information\n";
-            } else {
-                std::cout << "input was valid ipv4: " <<
-                        cr->resolve_result.inet_pton_ipv4 << "\n";
-                std::cout << "input was valid ipv6: " <<
-                        cr->resolve_result.inet_pton_ipv4 << "\n";
-                std::cout << "ipv4 resolve error: " <<
-                        (int) cr->resolve_result.ipv4_err << "\n";
-                std::cout << "ipv6 resolve error: " <<
-                        (int) cr->resolve_result.ipv6_err << "\n";
-                std::cout << "list of addresses returned:\n";
-                for (auto addr : cr->resolve_result.addresses) {
-                    std::cout << "    - " << addr << "\n";
-                }
-                std::cout << "errors returned by the various connects:\n";
-                for (auto e : cr->connect_result) {
-                    std::cout << "    - " << e.as_ooni_error() << "\n";
-                }
-                std::cout << "bufferevent address used internally: "
-                        << cr->connected_bev << "\n";
+            auto resolve_result = txp->dns_result();
+            std::cout << "input was valid ipv4: " <<
+                    resolve_result.inet_pton_ipv4 << "\n";
+            std::cout << "input was valid ipv6: " <<
+                    resolve_result.inet_pton_ipv6 << "\n";
+            std::cout << "ipv4 resolve error: " <<
+                    resolve_result.ipv4_err.as_ooni_error() << "\n";
+            std::cout << "ipv6 resolve error: " <<
+                    resolve_result.ipv6_err.as_ooni_error() << "\n";
+            std::cout << "list of addresses returned:\n";
+            for (auto addr : resolve_result.addresses) {
+                std::cout << "    - " << addr << "\n";
             }
-            if (txp) {
-                txp->close([]() {
-                    break_loop();
-                });
-            } else {
-                break_loop();
+            std::cout << "errors returned by the various connects:\n";
+            for (auto e : txp->connect_errors()) {
+                std::cout << "    - " << e.as_ooni_error() << "\n";
             }
+            txp->close([]() { break_loop(); });
         }, settings);
     });
 

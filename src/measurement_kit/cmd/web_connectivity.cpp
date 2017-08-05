@@ -8,22 +8,24 @@ namespace web_connectivity {
 
 #define USAGE                                                                  \
     "usage: measurement_kit [options] web_connectivity [-b backend]\n"         \
-    "                       [-f input_file] [-t timeout]\n"
+    "                       [-f input_file] [-t timeout] [-u url]\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
-    std::string backend = "https://b.web-connectivity.th.ooni.io";
     mk::nettests::WebConnectivityTest test;
 
-    for (int ch; (ch = getopt(argc, argv, "b:f:t:")) != -1;) {
+    for (int ch; (ch = getopt(argc, argv, "b:f:t:u:")) != -1;) {
         switch (ch) {
         case 'b':
-            backend = optarg;
+            test.set_options("backend", optarg);
             break;
         case 'f':
             test.add_input_filepath(optarg);
             break;
         case 't':
             test.set_options("max_runtime", optarg);
+            break;
+        case 'u':
+            test.add_input(optarg);
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);
@@ -38,7 +40,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         /* NOTREACHED */
     }
 
-    common_init(initializers, test.set_options("backend", backend)).run();
+    common_init(initializers, test).run();
     return 0;
 }
 

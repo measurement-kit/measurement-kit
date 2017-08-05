@@ -6,6 +6,7 @@
 
 // Documentation: doc/api/http.md
 
+#include <measurement_kit/ext.hpp>
 #include <measurement_kit/net.hpp>
 
 namespace mk {
@@ -33,6 +34,28 @@ MK_DEFINE_ERR(MK_ERR_HTTP(8), InvalidMaxRedirectsError, "http_invalid_max_redire
 MK_DEFINE_ERR(MK_ERR_HTTP(9), InvalidRedirectUrlError, "http_invalid_redirect_url")
 MK_DEFINE_ERR(MK_ERR_HTTP(10), EmptyLocationError, "http_empty_location_header")
 MK_DEFINE_ERR(MK_ERR_HTTP(11), TooManyRedirectsError, "http_too_many_redirects")
+MK_DEFINE_ERR(MK_ERR_HTTP(12), ParserInvalidEofStateError, "http_parser_invalid_eof_state")
+MK_DEFINE_ERR(MK_ERR_HTTP(13), ParserHeaderOverflowError, "http_parser_header_overflow")
+MK_DEFINE_ERR(MK_ERR_HTTP(14), ParserClosedConnectionError, "http_parser_connection_closed")
+MK_DEFINE_ERR(MK_ERR_HTTP(15), ParserInvalidVersionError, "http_parser_invalid_version")
+MK_DEFINE_ERR(MK_ERR_HTTP(16), ParserInvalidStatusError, "http_parser_invalid_status")
+MK_DEFINE_ERR(MK_ERR_HTTP(17), ParserInvalidMethodError, "http_parser_invalid_method")
+MK_DEFINE_ERR(MK_ERR_HTTP(18), ParserInvalidUrlError, "http_parser_invalid_url")
+MK_DEFINE_ERR(MK_ERR_HTTP(19), ParserInvalidHostError, "http_parser_invalid_host")
+MK_DEFINE_ERR(MK_ERR_HTTP(20), ParserInvalidPortError, "http_parser_invalid_port")
+MK_DEFINE_ERR(MK_ERR_HTTP(21), ParserInvalidPathError, "http_parser_invalid_path")
+MK_DEFINE_ERR(MK_ERR_HTTP(22), ParserInvalidQueryStringError, "http_parser_invalid_query_string")
+MK_DEFINE_ERR(MK_ERR_HTTP(23), ParserInvalidFragmentError, "http_parser_invalid_fragment")
+MK_DEFINE_ERR(MK_ERR_HTTP(24), ParserLfExpectedError, "http_parser_expected_lf")
+MK_DEFINE_ERR(MK_ERR_HTTP(25), ParserInvalidHeaderTokenError, "http_parser_invalid_header_token")
+MK_DEFINE_ERR(MK_ERR_HTTP(26), ParserInvalidContentLengthError, "http_parser_invalid_content_length")
+MK_DEFINE_ERR(MK_ERR_HTTP(27), ParserUnexpectedContentLengthError, "http_parser_unexpected_content_length")
+MK_DEFINE_ERR(MK_ERR_HTTP(28), ParserInvalidChunkSizeError, "http_parser_invalid_chunk_size")
+MK_DEFINE_ERR(MK_ERR_HTTP(29), ParserInvalidConstantError, "http_parser_invalid_constant")
+MK_DEFINE_ERR(MK_ERR_HTTP(30), ParserInvalidInternalStateError, "http_parser_invalid_internal_state")
+MK_DEFINE_ERR(MK_ERR_HTTP(31), ParserStrictModeAssertionError, "http_parser_strict_mode_assertion")
+MK_DEFINE_ERR(MK_ERR_HTTP(32), ParserPausedError, "http_parser_paused")
+MK_DEFINE_ERR(MK_ERR_HTTP(33), GenericParserError, "http_parser_generic_error")
 
 /*
  _   _      _
@@ -160,6 +183,32 @@ inline void get(std::string url, Callback<Error, Var<Response>> cb,
     settings["http/url"] = url;
     request(settings, headers, "", cb, reactor, lp, previous, nredirects);
 }
+
+/*
+   _
+  (_)___  ___  _ __
+  | / __|/ _ \| '_ \
+  | \__ \ (_) | | | |
+ _/ |___/\___/|_| |_|
+|__/
+*/
+
+void request_json_string(
+      std::string method, std::string url, std::string data,
+      http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger);
+
+void request_json_no_body(
+      std::string method, std::string url, http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger);
+
+void request_json_object(
+      std::string method, std::string url, nlohmann::json jdata,
+      http::Headers headers,
+      Callback<Error, Var<http::Response>, nlohmann::json> cb,
+      Settings settings, Var<Reactor> reactor, Var<Logger> logger);
 
 } // namespace http
 } // namespace mk

@@ -151,10 +151,10 @@ Kit will build on your system.
 
 Specifically, the configure script should check for at least for:
 
-- A compiler suite implementing C90 and C++11; e.g. [clang](
+- A compiler suite implementing C90 and C++14; e.g. [clang](
   http://clang.llvm.org/) or [gcc](https://gcc.gnu.org/).
 
-- A C++11 standard library such as [libc++](http://libcxx.llvm.org/)
+- A C++14 standard library such as [libc++](http://libcxx.llvm.org/)
   or [libstdc++](https://gcc.gnu.org/libstdc++/).
 
 - [libevent](https://github.com/libevent/libevent).
@@ -246,6 +246,17 @@ As regards `--prefix`, passing to configure `--prefix=/foo` means that:
 - headers will be installed under `/foo/include`
 
 - libs will be installed under `/foo/lib`
+
+If you are building on Linux and you want to use libc++ rather than
+the GNU C++ library, make sure you install `clang`, `libc++` (including
+its headers, typically in a `-dev` package), `libc++abi` (including
+heders). Then export the following variables *before* running `./configure`:
+
+```
+export CXX=clang++
+export CC=clang
+export CXXFLAGS="-stdlib=libc++"
+```
 
 ### make
 

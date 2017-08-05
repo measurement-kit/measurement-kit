@@ -8,6 +8,7 @@
 
 BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
     test
+        .set_verbosity(MK_LOG_INFO)
         .set_options("geoip_country_path", "GeoIP.dat")
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .on_progress([](double progress, std::string msg) {
@@ -28,17 +29,9 @@ BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
 }
 
 BaseTest &ndt_init(std::list<Callback<BaseTest &>> il, BaseTest &t) {
-    return common_init(il, t).on_event([](const char *s) {
-        nlohmann::json doc = nlohmann::json::parse(s);
-        if (doc["type"] != "download-speed" && doc["type"] != "upload-speed") {
-            return;
-        }
-        double elapsed = doc["elapsed"][0];
-        std::string elapsed_unit = doc["elapsed"][1];
-        double speed = doc["speed"][0];
-        std::string speed_unit = doc["speed"][1];
-        printf("%8.2f %s %10.2f %s\n", elapsed, elapsed_unit.c_str(), speed,
-               speed_unit.c_str());
+    return common_init(il, t).on_event([](const char * /*unused*/) {
+        // NOTHING: this is done just to suppress printing events as JSONs
+        // as part of logging, which is annoying from the CLI.
     });
 }
 

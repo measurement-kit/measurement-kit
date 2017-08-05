@@ -1,3 +1,83 @@
+# MeasurementKit 0.7.0 [2017-08-05]
+
+- build/ios/archive-library: fix version number
+- orchestrate.cpp: serialize also language (#1282)
+- ndt: make test progress more smooth
+- runnable: stop time tests with 10% tolerance
+- Add more parameters to dash
+- fix(http): re-renable previously disabled tests
+
+# MeasurementKit 0.7.0-beta [2017-07-17]
+
+- Cherry picks from v0.7.0-beta branch (#1278)
+- Fix: ssl verify errors (#1279)
+- docker: use libc++ with clang (#1275)
+- Integration branch for v0.7.0-beta (#1271)
+
+# MeasurementKit 0.7.0-alpha.3 [2017-07-11]
+
+- cmake: Fix build and register tests as such (#1267)
+- var: inherit -> compose (fix android build)
+- Fix Android build warnings
+- Allow to pass nettests input from command line (#1273)
+- connect: simplify access to connect-time stats (#1261)
+- Implement Neubot's DASH test (#769)
+- docker: exclude `builtin` from coveralls
+- FIX test/http/request.cpp for hustmail
+- REPAIR test/http/request.cpp build
+
+# MeasurementKit 0.7.0-alpha.2 [2017-06-28]
+
+- Add public API to get platform name
+- Simple implementation of fcompose() (#1262)
+- orchestration: guess params and other improvements (#1260)
+- orchestrator: do not write on disk (#1263)
+- `s/contact_bouncer/query_bouncer/`
+- [ci skip] update docs
+- travis: only build using docker (#1264)
+- Cleanup API for v0.7 (#1265)
+- Cleanup/move all headers (#1266)
+
+# MeasurementKit 0.7.0-alpha.1 [2017-06-11]
+
+- Implement DNS "ping" (#1256)
+- Initial implementation of orchestrator (#1258)
+
+# MeasurementKit 0.7.0-alpha [2017-06-01]
+
+Note: 0.6.x was branched off stable. The release before this release
+is therefore v0.5.0-alpha.
+
+- Fix coveralls badge (#1190)
+- Allow writing report on the stdout (#1199)
+- Bump version number to v0.7.0-dev (#1201)
+- Sync master with stable (#1213, #1224, #1236)
+- Fix failing regress tests (#1222)
+- Force non-strict HTTP parser (#1225)
+- Use SSLv2 and SSLv3 with `web_connectivity` (#1228)
+- Cherry pick nodejs/http-parser#364 (#1227)
+- Changes to logger suggested by @darkk (#1230)
+- Remove all refs to `oldstable`
+- dns: make system resolver truly async (#1234)
+- We don't actually need ReturnType (#1239)
+- dns: split dns.hpp into several headers (#1241)
+- common/worker.cpp: Fix a possible race condition
+- dns: common impl for `query_{class,type}` (#1242)
+- Start using bouncer (#1016)
+- Start requiring move semantic for callbacks (#1244)
+- runner: allow to run arbitrary tasks (#1249)
+- Further refine the runner model (#1251)
+- Add support for parsing ISO8601
+- `parse_iso6801_utc`: add docs and more tests
+- Improve our json processing capabilities (#1253)
+- d/a/h/request.md: reindent and improve (#1254)
+- Fix `json_*_process_and_filter_errors()`
+- http/request: start adding JSON helpers
+- http/request: finish off json helpers
+- json helpers: Fix the order of arguments
+- ndt: do not abort if a test phase fails
+- Fix bouncer address
+
 # MeasurementKit 0.6.6 [2017-05-15]
 
 - n/connect.cpp: compile with libevent v2.0.x

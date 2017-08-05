@@ -4,7 +4,6 @@ valgrind-gcc:
   only:
     - master
     - stable
-    - oldstable
 
 valgrind-clang:
   image: ubuntu:yakkety
@@ -12,4 +11,3 @@ valgrind-clang:
   only:
     - master
     - stable
-    - oldstable

@@ -3,7 +3,7 @@
 # the library rather than multiple times for each "package" based on it
 pkg_name=libressl
 pkg_repository=https://github.com/libressl-portable/portable.git
-pkg_branch_or_tag=v2.4.5
+pkg_branch_or_tag=v2.5.5
 pkg_steps="autogen install"
 
 pkg_install() {

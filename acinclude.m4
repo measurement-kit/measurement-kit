@@ -10,9 +10,9 @@ AC_DEFUN([MK_AM_ENABLE_COVERAGE], [
 
 AC_DEFUN([MK_AM_ADD_COVERAGE_FLAGS_IF_NEEDED], [
   if test "$enable_coverage" = "yes"; then
-    CFLAGS="--coverage $CFLAGS"
-    CXXFLAGS="--coverage $CXXFLAGS"
-    LDFLAGS="--coverage $LDFLAGS"
+    CFLAGS="$CFLAGS --coverage -g -O0"
+    CXXFLAGS="$CXXFLAGS --coverage -g -O0"
+    LDFLAGS="$LDFLAGS --coverage"
   fi
 ])
 
@@ -216,59 +216,21 @@ AC_DEFUN([MK_AM_REQUIRE_C99], [
   fi
 ])
 
-AC_DEFUN([MK_AM_REQUIRE_CXX11], [
+AC_DEFUN([MK_AM_REQUIRE_CXX14], [
   mk_saved_cxxflags="$CXXFLAGS"
-  CXXFLAGS=-std=c++11
-  AC_MSG_CHECKING([whether CXX supports -std=c++11])
+  CXXFLAGS=-std=c++14
+  AC_MSG_CHECKING([whether CXX supports -std=c++14])
   AC_LANG_PUSH([C++])
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
     [AC_MSG_RESULT([yes])]
     [],
     [
      AC_MSG_RESULT([no])
-     AC_MSG_ERROR([a C++11 compiler is required])
+     AC_MSG_ERROR([a C++14 compiler is required])
     ])
-  CXXFLAGS="$mk_saved_cxxflags -std=c++11"
+  CXXFLAGS="$mk_saved_cxxflags -std=c++14"
   AC_LANG_POP([C++])
 ])
-
-dnl This should probably be removed since MacOS 10.8 is now obsolete
-AC_DEFUN([MK_AM_REQUIRE_CXX11_LIBCXX], [
-measurement_kit_saved_cxxflags="$CXXFLAGS"
-CXXFLAGS="-std=c++11"
-measurement_kit_cxx_stdlib_flags=""
-AC_MSG_CHECKING([whether the C++ library supports C++11])
-AC_LANG_PUSH([C++])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>],
-                                    [std::function<void(void)> f;]])],
-    [AC_MSG_RESULT([yes])]
-    [],
-    [
-     AC_MSG_RESULT([no])
-     #
-     # Special case for MacOS 10.8, in which we need to explicitly
-     # tell the compiler to use libc++ (which supports C++11).
-     #
-     AC_MSG_CHECKING([whether libc++ is available])
-     CXXFLAGS="-std=c++11 -stdlib=libc++"
-     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <functional>]
-                                         [std::function<void(void)> f;]])],
-        [
-         AC_MSG_RESULT([yes])
-         measurement_kit_cxx_stdlib_flags="-stdlib=libc++"
-        ]
-        [],
-        [
-         AC_MSG_RESULT([no])
-         AC_MSG_ERROR([a C++11 library is required])
-        ]
-     )
-    ]
-)
-CXXFLAGS="$measurement_kit_saved_cxxflags $measurement_kit_cxx_stdlib_flags"
-AC_LANG_POP([C++])
-])
-
 
 AC_DEFUN([MK_CHECK_CA_BUNDLE], [
   AC_MSG_CHECKING([CA bundle path])

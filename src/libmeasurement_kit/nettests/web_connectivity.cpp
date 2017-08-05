@@ -2,6 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
+#include "private/nettests/runnable.hpp"
+
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ooni.hpp>
 
@@ -13,7 +15,7 @@ WebConnectivityTest::WebConnectivityTest() : BaseTest() {
     runnable->test_name = "web_connectivity";
     runnable->test_version = "0.0.1";
     runnable->needs_input = true;
-    runnable->test_helpers_names = {"backend"};
+    runnable->test_helpers_data = {{"web-connectivity", "backend"}};
 }
 
 void WebConnectivityRunnable::main(std::string input, Settings options,

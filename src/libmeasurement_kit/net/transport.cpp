@@ -4,12 +4,21 @@
 
 #include <cassert>
 #include <measurement_kit/net.hpp>
-#include "../net/connect.hpp"
-#include "../net/emitter.hpp"
-#include "../net/socks5.hpp"
+#include "private/net/connect.hpp"
+#include "private/net/emitter.hpp"
+#include "private/net/socks5.hpp"
 
 namespace mk {
 namespace net {
+
+TransportEmitter::~TransportEmitter() {}
+TransportRecorder::~TransportRecorder() {}
+TransportWriter::~TransportWriter() {}
+TransportSocks5::~TransportSocks5() {}
+TransportPollable::~TransportPollable() {}
+TransportConnectable::~TransportConnectable() {}
+TransportSockNamePeerName::~TransportSockNamePeerName() {}
+Transport::~Transport() {}
 
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
     txp->on_flush([=]() {

@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../ext/http_parser.h"
-#include "../net/utils.hpp"
+#include "private/ext/http_parser.h"
+#include "private/net/utils.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -106,6 +106,28 @@ ErrorOr<Endpoint> parse_endpoint(std::string s, uint16_t default_port) {
      * present. After first failure, retry adding the default port.
      */
     return parse_endpoint_internal(serialize_address_port(s, default_port));
+}
+
+ErrorOr<Endpoint>
+endpoint_from_sockaddr_storage(sockaddr_storage *ss) noexcept {
+    // Code adapted from private/dns/getaddrinfo_async.hpp
+    char abuf[128];
+    void *aptr = nullptr;
+    Endpoint epnt;
+    if (ss->ss_family == AF_INET) {
+        aptr = &((sockaddr_in *)ss)->sin_addr;
+        epnt.port = ntohs(((sockaddr_in *)ss)->sin_port);
+    } else if (ss->ss_family == AF_INET6) {
+        aptr = &((sockaddr_in6 *)ss)->sin6_addr;
+        epnt.port = ntohs(((sockaddr_in6 *)ss)->sin6_port);
+    } else {
+        return ValueError("invalid_family");
+    }
+    if (inet_ntop(ss->ss_family, aptr, abuf, sizeof(abuf)) == nullptr) {
+        return GenericError("inet_ntop_failure");
+    }
+    epnt.hostname = abuf;
+    return epnt;
 }
 
 std::string serialize_endpoint(Endpoint epnt) {

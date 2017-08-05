@@ -17,6 +17,7 @@ double time_now();
 void utc_time_now(tm *);
 ErrorOr<std::string> timestamp(const tm *);
 timeval *timeval_init(timeval *, double);
+Error parse_iso8601_utc(std::string ts, std::tm *tmb);
 
 template <typename T=std::list<std::string>>
 T split(std::string s, std::string pattern = "\\s+") {
@@ -33,6 +34,8 @@ std::string sha256_of(std::string input);
 
 ErrorOr<std::vector<char>> slurpv(std::string path);
 ErrorOr<std::string> slurp(std::string path);
+
+Error overwrite_file(std::string path, std::string content);
 
 bool startswith(std::string s, std::string p);
 bool endswith(std::string s, std::string p);

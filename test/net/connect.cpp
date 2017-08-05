@@ -3,10 +3,10 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/net/connect_impl.hpp"
-#include "../src/libmeasurement_kit/net/emitter.hpp"
+#include "private/net/connect_impl.hpp"
+#include "private/net/emitter.hpp"
 
 #include <event2/bufferevent.h>
 
@@ -97,8 +97,8 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
 }
 
 static void success(std::string, int, Callback<Error, Var<Transport>> cb,
-                    Settings, Var<Reactor>, Var<Logger> logger) {
-    cb(NoError(), Var<Transport>(new Emitter(logger)));
+                    Settings, Var<Reactor> r, Var<Logger> logger) {
+    cb(NoError(), Var<Transport>(new Emitter(r, logger)));
 }
 
 TEST_CASE("net::connect_many() correctly handles net::connect() success") {
@@ -124,7 +124,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
         connect_many_make("www.google.com", 80, 3,
                           [](Error err, std::vector<Var<Transport>> conns) {
                               REQUIRE(err);
-                              REQUIRE(conns.size() == 0);
+                              REQUIRE(conns.size() == 1);
                           },
                           {}, reactor, Logger::global());
     connect_many_impl<fail>(ctx);
@@ -266,62 +266,6 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
     });
 }
 
-TEST_CASE("resolve_hostname works with IPv4 address") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
-        std::string hostname = "130.192.16.172";
-        resolve_hostname(hostname, [=](ResolveHostnameResult r) {
-            REQUIRE(r.inet_pton_ipv4);
-            REQUIRE(r.addresses.size() == 1);
-            REQUIRE(r.addresses[0] == hostname);
-            reactor->stop();
-        }, {}, reactor);
-    });
-}
-
-TEST_CASE("resolve_hostname works with IPv6 address") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
-        std::string hostname = "2a00:1450:400d:807::200e";
-        resolve_hostname(hostname, [=](ResolveHostnameResult r) {
-            REQUIRE(r.inet_pton_ipv6);
-            REQUIRE(r.addresses.size() == 1);
-            REQUIRE(r.addresses[0] == hostname);
-            reactor->stop();
-        }, {}, reactor);
-    });
-}
-
-TEST_CASE("resolve_hostname works with domain") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
-        resolve_hostname("google.com", [=](ResolveHostnameResult r) {
-            REQUIRE(not r.inet_pton_ipv4);
-            REQUIRE(not r.inet_pton_ipv6);
-            REQUIRE(not r.ipv4_err);
-            REQUIRE(not r.ipv6_err);
-            // At least one IPv4 and one IPv6 addresses
-            REQUIRE(r.addresses.size() > 1);
-            reactor->stop();
-        }, {}, reactor);
-    });
-}
-
-TEST_CASE("stress resolve_hostname with invalid address and domain") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
-        // Pass input that is neither invalid IPvX nor valid domain
-        resolve_hostname("192.1688.antani", [=](ResolveHostnameResult r) {
-            REQUIRE(not r.inet_pton_ipv4);
-            REQUIRE(not r.inet_pton_ipv6);
-            REQUIRE(r.ipv4_err);
-            REQUIRE(r.ipv6_err);
-            REQUIRE(r.addresses.size() == 0);
-            reactor->stop();
-        }, {}, reactor);
-    });
-}
-
 TEST_CASE("connect() works with valid IPv4") {
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
@@ -406,12 +350,10 @@ TEST_CASE("net::connect() can connect to open port") {
     reactor->loop_with_initial_event([=]() {
         connect("www.kernel.org", 80, [=](Error error, Var<Transport> txp) {
             REQUIRE(!error);
-            Var<ConnectResult> cr = error.context.as<ConnectResult>();
-            REQUIRE(cr);
-            REQUIRE(!cr->resolve_result.inet_pton_ipv4);
-            REQUIRE(!cr->resolve_result.inet_pton_ipv6);
-            REQUIRE(cr->resolve_result.addresses.size() > 0);
-            REQUIRE(cr->connected_bev);
+            auto resolve_result = txp->dns_result();
+            REQUIRE(!resolve_result.inet_pton_ipv4);
+            REQUIRE(!resolve_result.inet_pton_ipv6);
+            REQUIRE(resolve_result.addresses.size() > 0);
             txp->close([=]() { reactor->stop(); });
         }, {}, reactor);
     });
@@ -423,12 +365,10 @@ TEST_CASE("net::connect() can connect to ssl port") {
         connect("nexa.polito.it", 443,
                 [=](Error error, Var<Transport> txp) {
                     REQUIRE(!error);
-                    Var<ConnectResult> cr = error.context.as<ConnectResult>();
-                    REQUIRE(cr);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv4);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv6);
-                    REQUIRE(cr->resolve_result.addresses.size() > 0);
-                    REQUIRE(cr->connected_bev);
+                    auto resolve_result = txp->dns_result();
+                    REQUIRE(!resolve_result.inet_pton_ipv4);
+                    REQUIRE(!resolve_result.inet_pton_ipv6);
+                    REQUIRE(resolve_result.addresses.size() > 0);
                     txp->close([=]() { reactor->stop(); });
                 },
                 {{"net/ssl", true},
@@ -484,14 +424,12 @@ TEST_CASE("net::connect() works in case of error") {
     Var<Reactor> reactor = Reactor::make();
     reactor->loop_with_initial_event([=]() {
         connect("nexa.polito.it", 81,
-                [=](Error error, Var<Transport>) {
+                [=](Error error, Var<Transport> txp) {
                     REQUIRE(error);
-                    Var<ConnectResult> cr = error.context.as<ConnectResult>();
-                    REQUIRE(cr);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv4);
-                    REQUIRE(!cr->resolve_result.inet_pton_ipv6);
-                    REQUIRE(cr->resolve_result.addresses.size() > 0);
-                    REQUIRE(!cr->connected_bev);
+                    auto resolve_result = txp->dns_result();
+                    REQUIRE(!resolve_result.inet_pton_ipv4);
+                    REQUIRE(!resolve_result.inet_pton_ipv6);
+                    REQUIRE(resolve_result.addresses.size() > 0);
                     reactor->stop();
                 },
                 {{"net/timeout", 5.0}},

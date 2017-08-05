@@ -11,11 +11,6 @@
 
 namespace mk {
 
-class ErrorContext {
-  public:
-    virtual ~ErrorContext();
-};
-
 class Error : public std::exception {
   public:
     Error() : Error(0, "", nullptr) {}
@@ -43,6 +38,8 @@ class Error : public std::exception {
 
     std::string as_ooni_error() { return reason; }
 
+    const char *what() const noexcept override { return reason.c_str(); }
+
     void add_child_error(const Error &err) {
         Var<Error> container(new Error(err));
         child_errors.push_back(container);
@@ -63,7 +60,6 @@ class Error : public std::exception {
         return s;
     }
 
-    Var<ErrorContext> context;
     std::vector<Var<Error>> child_errors;
     int code = 0;
     std::string reason;
@@ -74,7 +70,7 @@ class Error : public std::exception {
       public:                                                                  \
         _name_() : Error(_code_, _ooe_) {}                                     \
         _name_(std::string s) : Error(_code_, _ooe_) {                         \
-            reason += " ";                                                     \
+            reason += ": ";                                                    \
             reason += s;                                                       \
         }                                                                      \
         _name_(Error e) : Error(_code_, _ooe_, e) {}                           \
@@ -95,6 +91,7 @@ MK_DEFINE_ERR(11, SequentialOperationError, "sequential_operation_error")
 MK_DEFINE_ERR(12, IllegalSequenceError, "illegal_sequence")
 MK_DEFINE_ERR(13, UnexpectedNullByteError, "unexpected_null_byte")
 MK_DEFINE_ERR(14, IncompleteUtf8SequenceError, "incomplete_utf8_sequence")
+MK_DEFINE_ERR(15, NotImplementedError, "not_implemented")
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)

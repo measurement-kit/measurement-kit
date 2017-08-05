@@ -23,10 +23,10 @@ def main():
  * as a vector of unsigned characters. This could then be passed to libressl
  * specific functions for loading CAs from a memory buffer.
  *
- * Based on libressl %s
+ * Based on curl cacert-%s
  */
 
-#include "../net/builtin_ca_bundle.hpp"
+#include "private/net/builtin_ca_bundle.hpp"
 
 namespace mk {
 namespace net {

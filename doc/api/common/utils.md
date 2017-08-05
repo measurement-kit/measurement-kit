@@ -13,9 +13,12 @@ double time_now();
 void utc_time_now(struct tm *);
 ErrorOr<std::string> timestamp(const struct tm *);
 timeval *timeval_init(timeval *, double);
+Error parse_iso8601_utc(std::string ts, std::tm *tmb);
 
 ErrorOr<std::vector<char>> slurpv(std::string);
 ErrorOr<std::string> slurp(std::string);
+
+Error overwrite_file(std::string path, std::string content);
 
 bool startswith(std::string s, std::string p);
 bool endswith(std::string s, std::string p);
@@ -55,10 +58,19 @@ is returned. Typical safe usage looks like this:
     libevent_api(/* some args... */, tvp);
 ```
 
+The `parse_iso8601_utc()` function parses the string
+`ts` formatted as ISO8601 (e.g. `"2012-01-02T03:04:05Z"`) into a `std::tm`
+structure, which MUST NOT be `nullptr`. On success, `NoError()` is returned,
+otherwise the code returns `ValueError()`.
+
 The slurpv() and slurp() functions read the content of the file specified
 as argument and return, respectively, a vector of chars containing the content
 of the file and a string containing the content of the file, on success, and
 an error in case of failure.
+
+The `overwrite_file()` function creates (or truncates) the file at `path`
+and writes `content` inside it. The return value is `NoError()` on success
+or an error on failure.
 
 The `startswith()` and `endswith()` functions tell you, respectively, whether
 `s` starts (or ends) with `p`.

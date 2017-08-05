@@ -3,7 +3,7 @@
 # information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.6.6, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.7.0, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -72,8 +72,7 @@ CXXFLAGS="-Wall -Wextra -pedantic $CXXFLAGS"
 CPPFLAGS="-DHTTP_PARSER_STRICT=0 $CPPFLAGS"
 
 MK_AM_REQUIRE_C99
-MK_AM_REQUIRE_CXX11
-MK_AM_REQUIRE_CXX11_LIBCXX
+MK_AM_REQUIRE_CXX14
 MK_AM_CXXFLAGS_ADD_WARNINGS
 
 # checks for library functions

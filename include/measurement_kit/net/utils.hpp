@@ -22,6 +22,10 @@ bool is_ip_addr(std::string s);
 ErrorOr<Endpoint> parse_endpoint(std::string s, uint16_t def_port);
 std::string serialize_endpoint(Endpoint);
 
+ErrorOr<Endpoint> endpoint_from_sockaddr_storage(
+        sockaddr_storage *storage
+) noexcept;
+
 Error make_sockaddr(
         std::string address,
         std::string port,

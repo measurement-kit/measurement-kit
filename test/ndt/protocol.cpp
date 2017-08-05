@@ -3,10 +3,10 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/ndt/protocol_impl.hpp"
-#include "../src/libmeasurement_kit/net/emitter.hpp"
+#include "private/ndt/protocol_impl.hpp"
+#include "private/net/emitter.hpp"
 
 using namespace mk;
 using namespace mk::ndt;
@@ -104,7 +104,7 @@ TEST_CASE("wait_in_queue() deals with invalid wait time") {
         ctx, [](Error err) { REQUIRE(err == InvalidSrvQueueMessageError()); });
 }
 
-static void call_soon_not_called(Callback<>, Var<Reactor>) {
+static void call_soon_not_called(Callback<> &&, Var<Reactor>) {
     REQUIRE(false /* should not happen */);
 }
 
@@ -151,7 +151,7 @@ TEST_CASE("wait_in_queue() deals with server-busy-60s wait time") {
 }
 
 static bool call_soon_called_flag = false;
-static void call_soon_called(Callback<>, Var<Reactor>) {
+static void call_soon_called(Callback<> &&, Var<Reactor>) {
     REQUIRE(!call_soon_called_flag);
     call_soon_called_flag = true;
 }
@@ -276,8 +276,12 @@ static void fail(Var<Context>, Callback<Error> cb) { cb(MockedError()); }
 TEST_CASE("run_tests() deals with test failure") {
     Var<Context> ctx(new Context);
     ctx->granted_suite.push_front(lexical_cast<std::string>(TEST_C2S));
-    protocol::run_tests_impl<fail>(
-        ctx, [](Error err) { REQUIRE(err == TestFailedError()); });
+    ctx->entry = Var<Entry>::make();
+    protocol::run_tests_impl<fail>(ctx, [ctx](Error err) {
+        REQUIRE(err == NoError());
+        REQUIRE((*ctx->entry)["phase_result"][id_to_name(TEST_C2S)] ==
+                "mocked_error");
+    });
 }
 
 TEST_CASE("recv_results_and_logout() deals with read() error") {
@@ -299,7 +303,7 @@ static void eof_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
 
 TEST_CASE("wait_close() deals with EofError") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     protocol::wait_close_impl<eof_error>(
         ctx, [](Error err) { REQUIRE(err == NoError()); });
 }
@@ -311,7 +315,7 @@ static void timeout_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
 
 TEST_CASE("wait_close() deals with TimeoutError") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     protocol::wait_close_impl<timeout_error>(
         ctx, [](Error err) { REQUIRE(err == NoError()); });
 }
@@ -323,7 +327,7 @@ static void mocked_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
 
 TEST_CASE("wait_close() deals with an error") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     protocol::wait_close_impl<mocked_error>(
         ctx, [](Error err) { REQUIRE(err == WaitingCloseError()); });
 }
@@ -335,7 +339,7 @@ static void no_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
 
 TEST_CASE("wait_close() deals with a extra data") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     protocol::wait_close_impl<no_error>(
         ctx, [](Error err) { REQUIRE(err == DataAfterLogoutError()); });
 }
@@ -350,7 +354,7 @@ TEST_CASE("disconnect_and_callback_impl() without transport") {
 // To increase coverage
 TEST_CASE("disconnect_and_callback_impl() with transport") {
     Var<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter);
+    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
     ctx->callback = [](Error e) { REQUIRE(e == MockedError()); };
     protocol::disconnect_and_callback_impl(ctx, MockedError());
 }

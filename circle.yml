@@ -7,7 +7,6 @@ general:
     only:
       - master
       - stable
-      - oldstable
 
 test:
   override:

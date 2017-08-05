@@ -12,7 +12,7 @@ set(MK_OPENSSL "${MK_OPENSSL}" CACHE PATH "Path where openssl is installed")
 
 # Compiler:
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(MK_UNIX_CFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
 set(MK_UNIX_CXXFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
 
@@ -49,6 +49,9 @@ if(UNIX)
 endif()
 
 # Check dependencies:
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 
 include(CheckIncludeFiles)
 include(CheckFunctionExists)
@@ -100,6 +103,12 @@ if(UNIX)
     message(FATAL_ERROR "libevent missing; Use -DMK_LIBEVENT to specify where it is installed (e.g. -DMK_LIBEVENT=/usr/local if it is installed under /usr/local)")
   endif()
 
+  # libresolv (required by `./test/common/encoding`)
+  CHECK_LIBRARY_EXISTS(resolv hstrerror "" HAVE_LIBRESOLV)
+  if (HAVE_LIBRESOLV)
+    list(APPEND MK_LIBS resolv)
+  endif()
+
   list(APPEND MK_LIBS GeoIP crypto ssl event event_openssl event_pthreads)
 endif()
 
@@ -131,6 +140,7 @@ target_include_directories(
 target_link_libraries(
   measurement_kit_static
   ${MK_LIBS}
+  Threads::Threads
 )
 
 ## measurement_kit
@@ -150,9 +160,12 @@ target_link_libraries(
   measurement_kit_exe
   measurement_kit_static
   ${MK_LIBS}
+  Threads::Threads
 )
 
 ## tests
+
+enable_testing()
 
 file(GLOB MK_TESTS_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "test/*/*.cpp")
 foreach(MK_TEST_SOURCE ${MK_TESTS_SOURCES})
@@ -163,5 +176,7 @@ foreach(MK_TEST_SOURCE ${MK_TESTS_SOURCES})
     ${MK_TEST_NAME}
     measurement_kit_static
     ${MK_LIBS}
+    Threads::Threads
   )
+  add_test(${MK_TEST_NAME} ${MK_TEST_NAME})
 endforeach()

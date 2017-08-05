@@ -5,6 +5,7 @@
 #define SRC_MEASUREMENT_KIT_CMDLINE_HPP
 
 #include <measurement_kit/nettests.hpp>
+#include <measurement_kit/common.hpp>
 
 #include "portable/err.h"
 #include "portable/getopt.h"
@@ -14,6 +15,7 @@ using namespace mk;
 using namespace mk::nettests;
 
 #define MK_CMDLINE_SUBCOMMANDS                                                 \
+    XX(dash)                                                                   \
     XX(dns_injection)                                                          \
     XX(http_header_field_manipulation)                                         \
     XX(http_invalid_request_line)                                              \

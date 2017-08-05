@@ -2,8 +2,8 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "../libevent/connection.hpp"
-#include "../net/utils.hpp"
+#include "private/libevent/connection.hpp"
+#include "private/net/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 
@@ -117,9 +117,8 @@ void Connection::handle_event_(short what) {
     emit_error(sys_error);
 }
 
-Connection::Connection(bufferevent *buffev, Var<Reactor> reactor,
-                       Var<Logger> logger)
-    : Emitter(logger), reactor(reactor) {
+Connection::Connection(bufferevent *buffev, Var<Reactor> reactor, Var<Logger> logger)
+        : EmitterBase(reactor, logger) {
     this->bev = buffev;
 
     // The following makes this non copyable and non movable.
@@ -127,21 +126,15 @@ Connection::Connection(bufferevent *buffev, Var<Reactor> reactor,
                       handle_libevent_event, this);
 }
 
-void Connection::close(std::function<void()> cb) {
-    if (isclosed) {
-        throw std::runtime_error("already closed");
+void Connection::shutdown() {
+    if (shutdown_called) {
+        return; // Just for extra safety
     }
-    isclosed = true;
-
-    on_connect(nullptr);
-    on_data(nullptr);
-    on_flush(nullptr);
-    on_error(nullptr);
+    shutdown_called = true;
     bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
-    disable_read();
-
-    close_cb = cb;
-    reactor->call_soon([=]() { this->self = nullptr; });
+    reactor->call_soon([=]() {
+        this->self = nullptr;
+    });
 }
 
 } // namespace libevent

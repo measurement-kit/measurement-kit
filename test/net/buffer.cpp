@@ -3,9 +3,9 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/net/evbuffer.hpp"
+#include "private/net/evbuffer.hpp"
 
 #include <measurement_kit/net.hpp>
 

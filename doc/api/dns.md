@@ -9,12 +9,24 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/dns.hpp>
 
-void mk::dns::query(mk::dns::QueryClass dns_class,
-                    mk::dns::QueryType dns_type,
-                    std::string query_name,
-                    mk::Callback<mk::Error, mk::dns::Message> callback,
-                    mk::Settings settings = {},
-                    mk::Var<mk::Reactor> reactor = mk::Reactor::global());
+namespace mk {
+namespace dns {
+
+void query(QueryClass dns_class,
+           QueryType dns_type,
+           std::string query_name,
+           Callback<Error, Var<Message>> callback,
+           Settings settings = {},
+           Var<Reactor> reactor = Reactor::global());
+
+void resolve_hostname(std::string hostname,
+                      Callback<ResolveHostnameResult> cb,
+                      Settings settings = {},
+                      Var<Reactor> reactor = Reactor::global(),
+                      Var<Logger> logger = Logger::global());
+
+} // namespace dns
+} // namespace mk
 ```
 
 # STABILITY
@@ -33,6 +45,7 @@ the following query classes are defined:
 
 Note that you can also pass the query class as string; e.g.,
 the following would compile and run as expected:
+
 
 ```C++
     mk::dns::query("IN", ...);
@@ -166,44 +179,37 @@ the `query` function. The following setting keys are available:
 The optional `reactor` argument is the reactor to use to issue the query
 and receive the corresponding response.
 
-# EXAMPLE
+The `resolve_hostname()` function should be used to perform dns queries
+for connection purposes and not to perform tests on a dns server.
+In both cases of success or failure, it will invoke the callback passing an instance
+of `ResolveHostnameResult`.
+
+The `ResolveHostnameResult` class is like:
 
 ```C++
-#include <measurement_kit/dns.hpp>
-
-using namespace mk;
-
-Settings settings({
-    {"dns/nameserver", "8.8.8.8"},
-    {"dns/port", 53},
-    {"dns/attempts", 1},
-    {"dns/timeout", 3.1415},
-    {"dns/randomize_case", true},
-});
-
-dns::query(
-        "IN", "AAAA", "nexa.polito.it",
-        [](Error error, dns::Message message) {
-            if (error) {
-                throw error;
-            }
-            double rtt = message.rtt;
-            for (auto answer : message.answers) {
-                int ttl = answer.ttl;
-                std::string r;
-                if (answer.type == "A") {
-                    r = answer.ipv4;
-                } else if (answer.type == "AAAA") {
-                    r = answer.ipv6;
-                } else if (answer.type == "PTR") {
-                    r = answer.hostname;
-                } else {
-                    continue;
-                }
-                /* ... */
-            }
-        }, settings);
+struct ResolveHostnameResult {
+    bool inet_pton_ipv4 = false;
+    bool inet_pton_ipv6 = false;
+    Error ipv4_err;
+    dns::Message ipv4_reply;
+    Error ipv6_err;
+    dns::Message ipv6_reply;
+    std::vector<std::string> addresses;
+};
 ```
+
+where `inet_pton_ipv4` is `true` if `address` is an IPv4 address and similarly
+`inet_pton_ipv6` is `true` if `address` is an IPv6 address; `ipv4_err` and `ipv4_reply`
+are the values returned by resolving `address` as a FQDN into a list of addresses;
+`ipv6_err` and `ipv6_reply` have the same semantic of their IPv4 counterparts; `addresses`
+is the list of the addresses that `connect()` will try to connect to. This list will
+only contain a IPv4 (or IPv6) address if `address` is an IPv4 (or IPv6) address and it
+will contain IPv4 addresses before IPv6 addresses (if any) when `address` instead is
+a FQDN (fully qualified domain name).
+
+# EXAMPLE
+
+See files in `example/dns/`.
 
 # HISTORY
 

@@ -3,10 +3,10 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/net/emitter.hpp"
-#include "../src/libmeasurement_kit/ooni/collector_client_impl.hpp"
+#include "private/net/emitter.hpp"
+#include "private/ooni/collector_client_impl.hpp"
 
 #include <sstream>
 
@@ -47,16 +47,13 @@ class MockConnection : public Emitter, public NonCopyable, public NonMovable {
   private:
     bool isclosed = false;
     Callback<> close_cb;
-    Var<Reactor> reactor = Reactor::global();
     Var<Transport> self;
 
-    MockConnection() {}
+    MockConnection() : Emitter(Reactor::global(), Logger::global()) {}
 };
 
 void MockConnection::close(Callback<> cb) {
-    if (isclosed) {
-        throw std::runtime_error("already closed");
-    }
+    REQUIRE(!isclosed);
     isclosed = true;
     close_cb = cb;
     reactor->call_soon([=]() {

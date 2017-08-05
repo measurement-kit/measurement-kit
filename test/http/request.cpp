@@ -3,9 +3,9 @@
 // information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
+#include "private/ext/catch.hpp"
 
-#include "../src/libmeasurement_kit/http/request_impl.hpp"
+#include "private/http/request_impl.hpp"
 
 #include <measurement_kit/ext.hpp>
 
@@ -352,6 +352,8 @@ TEST_CASE("http::request() callback is called if input URL parsing fails") {
     REQUIRE(called);
 }
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE("http::request_connect_impl() works for normal connections") {
     loop_with_initial_event([]() {
         request_connect_impl({{"http/url", "http://www.google.com/robots.txt"}},
@@ -362,8 +364,6 @@ TEST_CASE("http::request_connect_impl() works for normal connections") {
                              });
     });
 }
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_send() works as expected") {
     loop_with_initial_event([]() {
@@ -538,8 +538,6 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
     });
 }
 
-// Test commented out because now this site has no valid certificate
-#if 0
 TEST_CASE("http::request() correctly follows redirects") {
     loop_with_initial_event([]() {
         request(
@@ -564,7 +562,6 @@ TEST_CASE("http::request() correctly follows redirects") {
             });
     });
 }
-#endif
 
 TEST_CASE("Headers are preserved across redirects") {
     Var<Reactor> reactor = Reactor::make();
@@ -615,7 +612,9 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
                 REQUIRE(!error);
                 REQUIRE(response->status_code == 200);
                 REQUIRE(response->request->url.schema == "https");
-                REQUIRE(response->request->url.address == "www.hushmail.com");
+                auto okay = response->request->url.address == "hushmail.com" ||
+                        response->request->url.address == "www.hushmail.com";
+                REQUIRE(okay);
                 REQUIRE(response->previous->status_code / 100 == 3);
                 REQUIRE(response->previous->request->url.schema == "http");
                 reactor->stop();
@@ -624,12 +623,6 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
     });
 }
 
-/*
- * Test commented out because it floods us with false positives.
- *
- * See https://github.com/measurement-kit/measurement-kit/pull/1185.
- */
-#if 0
 TEST_CASE("We correctly deal with schema-less redirect") {
     /*
      * At the moment of writing this test, http://bacardi.com redirects to
@@ -661,7 +654,6 @@ TEST_CASE("We correctly deal with schema-less redirect") {
             reactor);
     });
 }
-#endif
 
 #endif // ENABLE_INTEGRATION_TESTS
 
@@ -685,6 +677,8 @@ TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
     });
 }
 
+#ifdef ENABLE_INTEGRATION_TESTS
+
 TEST_CASE("http::request_send fails without url in settings") {
     loop_with_initial_event([]() {
         request_connect_impl(
@@ -700,6 +694,8 @@ TEST_CASE("http::request_send fails without url in settings") {
             });
     });
 }
+
+#endif
 
 TEST_CASE("http::request() fails if fails request_send()") {
     loop_with_initial_event([]() {
@@ -769,5 +765,65 @@ TEST_CASE("http::redirect() works as expected") {
         REQUIRE(http::redirect(*http::parse_url_noexcept("https://a.org/f?x"),
                                "g?h")
                     ->str() == "https://a.org/f/g?h");
+    }
+}
+
+static void fail_request(Settings, Headers, std::string,
+                         Callback<Error, Var<Response>> cb,
+                         Var<Reactor> = Reactor::global(),
+                         Var<Logger> = Logger::global(),
+                         Var<Response> = nullptr, int = 0) {
+    cb(MockedError(), Var<Response>::make());
+}
+
+static void non_200_response(Settings, Headers, std::string,
+                             Callback<Error, Var<Response>> cb,
+                             Var<Reactor> = Reactor::global(),
+                             Var<Logger> = Logger::global(),
+                             Var<Response> = nullptr, int = 0) {
+    Var<Response> response = Var<Response>::make();
+    response->status_code = 500;
+    response->body = "{}";
+    cb(NoError(), response);
+}
+
+static void fail_parsing(Settings, Headers, std::string,
+                         Callback<Error, Var<Response>> cb,
+                         Var<Reactor> = Reactor::global(),
+                         Var<Logger> = Logger::global(),
+                         Var<Response> = nullptr, int = 0) {
+    Var<Response> response = Var<Response>::make();
+    response->status_code = 200;
+    response->body = "{";
+    cb(NoError(), response);
+}
+
+TEST_CASE("request_json_string() works as expected") {
+    SECTION("For underlying http::request() failure") {
+        request_json_string_impl<fail_request>(
+              "GET", "http://www.google.com", "", {},
+              [](Error error, Var<Response>, nlohmann::json) {
+                  REQUIRE(error == MockedError());
+              },
+              {}, Reactor::global(), Logger::global());
+    }
+
+    SECTION("For non-200 HTTP status code") {
+        request_json_string_impl<non_200_response>(
+              "GET", "http://www.google.com", "", {},
+              [](Error error, Var<Response> resp, nlohmann::json) {
+                  REQUIRE(error.code == NoError().code);
+                  REQUIRE(resp->status_code != 200);
+              },
+              {}, Reactor::global(), Logger::global());
+    }
+
+    SECTION("For json_parse_and_process() error") {
+        request_json_string_impl<fail_parsing>(
+              "GET", "http://www.google.com", "{}", {},
+              [](Error error, Var<Response>, nlohmann::json) {
+                  REQUIRE(error == JsonParseError());
+              },
+              {}, Reactor::global(), Logger::global());
     }
 }
