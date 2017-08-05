@@ -1,3 +1,12 @@
+# MeasurementKit 0.7.0 [2017-08-05]
+
+- build/ios/archive-library: fix version number
+- orchestrate.cpp: serialize also language (#1282)
+- ndt: make test progress more smooth
+- runnable: stop time tests with 10% tolerance
+- Add more parameters to dash
+- fix(http): re-renable previously disabled tests
+
 # MeasurementKit 0.7.0-beta [2017-07-17]
 
 - Cherry picks from v0.7.0-beta branch (#1278)

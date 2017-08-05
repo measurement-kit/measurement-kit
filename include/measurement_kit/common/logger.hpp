@@ -59,6 +59,8 @@ class Logger : public NonCopyable, public NonMovable {
 
     void progress(double, const char *);
 
+    void progress_relative(double, const char *);
+
     void set_progress_offset(double offset);
 
     void set_progress_scale(double scale);
@@ -81,6 +83,7 @@ class Logger : public NonCopyable, public NonMovable {
     Delegate<double, const char *> progress_handler_;
     double progress_offset_ = 0.0;
     double progress_scale_ = 1.0;
+    double progress_relative_ = 0.0;
 
     Logger();
 };

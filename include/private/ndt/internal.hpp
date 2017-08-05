@@ -267,6 +267,13 @@ void run(Var<Context> ctx, Callback<Error> callback);
 
 inline void log_speed(Var<Logger> logger, std::string type, int num_streams,
                       double elapsed, double speed) {
+    if (speed > 0 && elapsed < 10.0) {
+        std::stringstream ss;
+        ss << type << " (elapsed " << std::fixed << std::setprecision(2)
+           << elapsed << " s) " << std::fixed << std::setprecision(2)
+           << speed << " kbit/s " << "(num_streams " << num_streams << ")";
+        logger->progress_relative(0.025, ss.str().c_str());
+    }
     logger->log(MK_LOG_EVENT | MK_LOG_INFO, R"xx({
             "type": "%s",
             "elapsed": [%lf, "s"],
