@@ -135,6 +135,7 @@ add_library(
 target_include_directories(
   measurement_kit_static
   PUBLIC
+  "include"
   ${MK_INCLUDE_DIRS}
 )
 target_link_libraries(
