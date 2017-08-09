@@ -1,6 +1,6 @@
 # Part of measurement-kit <https://measurement-kit.github.io/>.
-# Measurement-kit is free software. See AUTHORS and LICENSE for more
-# information on the copying conditions.
+# Measurement-kit is free software under the BSD license. See AUTHORS
+# and LICENSE for more information on the copying conditions.
 
 cmake_minimum_required(VERSION 3.6)
 
@@ -135,6 +135,7 @@ add_library(
 target_include_directories(
   measurement_kit_static
   PUBLIC
+  "include"
   ${MK_INCLUDE_DIRS}
 )
 target_link_libraries(
