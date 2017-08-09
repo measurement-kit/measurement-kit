@@ -42,8 +42,6 @@
 /example/dns/ping
 /example/dns/query
 /example/http/request
-/example/libevent/discard
-/example/libevent/listen
 /example/mlabns/query
 /example/net/connect
 /example/net/transport
