@@ -1,6 +1,6 @@
 dnl Part of measurement-kit <https://measurement-kit.github.io/>.
-dnl Measurement-kit is free software. See AUTHORS and LICENSE for more
-dnl information on the copying conditions.
+dnl Measurement-kit is free software under the BSD license. See AUTHORS
+dnl and LICENSE for more information on the copying conditions.
 
 AC_DEFUN([MK_AM_ENABLE_COVERAGE], [
   AC_ARG_ENABLE([coverage],

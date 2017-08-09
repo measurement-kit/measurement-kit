@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef SRC_MEASUREMENT_KIT_CMDLINE_HPP
 #define SRC_MEASUREMENT_KIT_CMDLINE_HPP
 

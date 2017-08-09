@@ -1,6 +1,6 @@
 # Part of measurement-kit <https://measurement-kit.github.io/>.
-# Measurement-kit is free software. See AUTHORS and LICENSE for more
-# information on the copying conditions.
+# Measurement-kit is free software under the BSD license. See AUTHORS
+# and LICENSE for more information on the copying conditions.
 
 AUTOMAKE_OPTIONS = foreign 1.9 subdir-objects
 ACLOCAL_AMFLAGS = -I m4
