@@ -27,12 +27,16 @@
 .libs
 .vagrant
 /*.njson
+/CMakeCache.txt
+/CMakeFiles/
+/CTestTestfile.cmake
 /GeoIP.dat
 /GeoIPASNum.dat
 /GeoLiteCity.dat
 /build/android/jni/conf
 /build/android/jni/spec
 /citizenlab-test-lists.*.csv
+/cmake_install.cmake
 /example/common/fapply
 /example/common/fcompose
 /example/dns/ping
@@ -53,6 +57,7 @@
 /include/measurement_kit/common/git_version.hpp
 /maxmind-geoip.*.dat*
 /measurement_kit
+/measurement_kit_exe
 /test-driver
 /test/common/continuation
 /test/common/delegate
@@ -129,6 +134,7 @@
 /test/report/file_reporter
 /test/report/report
 /test/traceroute/android
+/test_*
 /tmp
 /tor-bridges.tor-bridges-ip-port.csv
 Makefile
