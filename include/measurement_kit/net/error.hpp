@@ -10,7 +10,7 @@ namespace mk {
 namespace net {
 
 MK_DEFINE_ERR(MK_ERR_NET(0), EofError, "eof_error")
-MK_DEFINE_ERR(MK_ERR_NET(1), TimeoutError, "generic_timeout_error")
+using TimeoutError = mk::TimeoutError; /* Was: MK_ERR_NET(1) */
 /* Unused: MK_ERR_NET(2) */
 MK_DEFINE_ERR(MK_ERR_NET(3), ConnectFailedError, "connect_error")
 MK_DEFINE_ERR(MK_ERR_NET(4), DnsGenericError, "dns_lookup_error")
