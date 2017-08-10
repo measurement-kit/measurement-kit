@@ -16,7 +16,7 @@ if [ $system = "Darwin" ]; then
              -a -d /usr/local/Cellar/openssl ]; then
             echo "- You seem have all dependencies installed"
             echo "- I will invoke cmake with brew suitable defaults"
-            cmake_options="-D MK_GEOIP=/usr/local -D MK_LIBEVENT=/usr/local -D MK_OPENSSL=/usr/local/opt/openssl"
+            cmake_options="-D MK_GEOIP=/usr/local -D MK_LIBEVENT=/usr/local -D MK_OPENSSL=/usr/local/opt/openssl -DMK_CA_BUNDLE=/usr/local/etc/openssl/cert.pem"
         else
             echo "- Not sure whether you have all dependencies installed"
             echo "- Will invoke cmake with default options and let it decide"
