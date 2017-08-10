@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.6)
 
 # Definitions:
 
+set(MK_CA_BUNDLE "${MK_CA_BUNDLE}" CACHE PATH "Path where a CA cert chain is installed")
 set(MK_GEOIP "${MK_GEOIP}" CACHE PATH "Path where geoip is installed")
 set(MK_LIBEVENT "${MK_LIBEVENT}" CACHE PATH "Path where libevent is installed")
 set(MK_OPENSSL "${MK_OPENSSL}" CACHE PATH "Path where openssl is installed")
@@ -16,7 +17,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(MK_UNIX_CFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
 set(MK_UNIX_CXXFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
 
-add_definitions(-DENABLE_INTEGRATION_TESTS)
+add_definitions(-DENABLE_INTEGRATION_TESTS -DMK_CA_BUNDLE="${MK_CA_BUNDLE}")
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   set(CMAKE_CXX_FLAGS
