@@ -5,11 +5,6 @@
 #define PRIVATE_DNS_SYSTEM_RESOLVER_HPP
 
 #include "private/common/mock.hpp"
-#include "private/common/worker.hpp"
-
-#include "private/common/mock.hpp"
-#include "private/common/worker.hpp"
-
 #include <measurement_kit/dns.hpp>
 
 #include "../dns/getaddrinfo_async.hpp"
@@ -58,7 +53,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     message->queries.push_back(query);
 
     getaddrinfo_async<getaddrinfo, inet_ntop>(
-        name, hints, reactor, logger, Worker::global(),
+        name, hints, reactor, logger,
         [ message = std::move(message),
           cb = std::move(cb) ](Error error, std::vector<Answer> answers) {
             message->answers = std::move(answers);
