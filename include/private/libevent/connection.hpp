@@ -4,20 +4,55 @@
 #ifndef PRIVATE_LIBEVENT_CONNECTION_HPP
 #define PRIVATE_LIBEVENT_CONNECTION_HPP
 
-#include "../net/utils.hpp"
-#include "../net/emitter.hpp"
-
-#include <measurement_kit/net.hpp>
-
-#include <event2/bufferevent.h>
-#include <event2/event.h>
-
+#include "private/net/emitter.hpp"
+#include "private/net/utils.hpp"
 #include <cassert>
+#include <cerrno>
+#include <event2/buffer.h>
+#include <event2/bufferevent.h>
+#include <event2/bufferevent_ssl.h>
+#include <event2/event.h>
+#include <functional>
+#include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/error_or.hpp>
+#include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/non_copyable.hpp>
+#include <measurement_kit/common/non_movable.hpp>
+#include <measurement_kit/common/reactor.hpp>
+#include <measurement_kit/common/utils.hpp>
+#include <measurement_kit/net/buffer.hpp>
+#include <measurement_kit/net/error.hpp>
+#include <measurement_kit/net/transport.hpp>
+#include <measurement_kit/net/utils.hpp>
+#include <measurement_kit/portable/sys/socket.h>
+#include <new>
+#include <openssl/err.h>
+#include <ostream>
+#include <stdexcept>
+#include <utility>
+
+extern "C" {
+
+static inline void handle_libevent_read(bufferevent *, void *);
+static inline void handle_libevent_write(bufferevent *, void *);
+static inline void handle_libevent_event(bufferevent *, short, void *);
+
+} // extern "C"
 
 namespace mk {
 namespace libevent {
 
 using namespace mk::net;
+
+static inline std::string map_bufferevent_event(short what) {
+    std::stringstream ss;
+    ss << ((what & BEV_EVENT_EOF) ? "Z" : "z")
+       << ((what & BEV_EVENT_TIMEOUT) ? "T" : "t")
+       << ((what & BEV_EVENT_ERROR) ? "F" : "f")
+       << ((what & BEV_EVENT_READING) ? "R" : "r")
+       << ((what & BEV_EVENT_WRITING) ? "W" : "w");
+    return ss.str();
+}
 
 class Connection : public EmitterBase, public NonMovable, public NonCopyable {
   public:
@@ -69,10 +104,16 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
         }
     }
 
-    void shutdown() override;
+    void shutdown() override {
+        if (shutdown_called) {
+            return; // Just for extra safety
+        }
+        shutdown_called = true;
+        bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
+        reactor->call_soon([=]() { this->self = nullptr; });
+    }
 
-    template <decltype(getsockname) func>
-    Endpoint sockname_peername_() {
+    template <decltype(getsockname) func> Endpoint sockname_peername_() {
         // Assumption: in the common case this operation won't fail. When it
         // fails, we'll just return an empty endpoint.
         assert(bev != nullptr);
@@ -82,7 +123,7 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
             return {};
         }
         sockaddr_storage ss{};
-        socklen_t sslen = sizeof (ss);
+        socklen_t sslen = sizeof(ss);
         if (func(fd, (sockaddr *)&ss, &sslen) != 0) {
             logger->warn("connection: cannot get socket name / peer name");
             return {};
@@ -96,22 +137,97 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
         return *epnt;
     }
 
-    Endpoint sockname() override {
-        return sockname_peername_<::getsockname>();
-    }
+    Endpoint sockname() override { return sockname_peername_<::getsockname>(); }
 
-    Endpoint peername() override {
-        return sockname_peername_<::getpeername>();
-    }
+    Endpoint peername() override { return sockname_peername_<::getpeername>(); }
 
-    // They MUST be public because they're called by C code
   public:
-    void handle_event_(short);
-    void handle_read_();
-    void handle_write_();
+    // They MUST be public because they're called by C code
+
+    void handle_event_(short what) {
+
+        logger->debug("connection: got bufferevent event: %s",
+                      map_bufferevent_event(what).c_str());
+
+        if ((what & BEV_EVENT_EOF) != 0) {
+            auto input = bufferevent_get_input(bev);
+            if (evbuffer_get_length(input) > 0) {
+                logger->debug(
+                      "Suppress EOF with data lingering in input buffer");
+                suppressed_eof = true;
+                return;
+            }
+            emit_error(EofError());
+            return;
+        }
+
+        if ((what & BEV_EVENT_TIMEOUT) != 0) {
+            emit_error(TimeoutError());
+            return;
+        }
+
+        Error sys_error = net::map_errno(errno);
+
+        if (sys_error == NoError()) {
+            unsigned long openssl_error;
+            char buff[128];
+            while ((openssl_error = bufferevent_get_openssl_error(bev)) != 0) {
+                if (sys_error == NoError()) {
+                    sys_error = SslError();
+                }
+                ERR_error_string_n(openssl_error, buff, sizeof(buff));
+                sys_error.add_child_error(SslError(buff));
+            }
+            if (sys_error != SslError()) {
+                /*
+                 * This is the case of the SSL dirty shutdown. The connection
+                 * was not closed cleanly from the other end and in theory this
+                 * could also be the effect of an attack.
+                 */
+                logger->warn("libevent has detected an SSL dirty shutdown");
+                sys_error = SslDirtyShutdownError();
+            }
+        }
+
+        logger->warn("Got error: %s", sys_error.as_ooni_error().c_str());
+        emit_error(sys_error);
+    }
+
+    void handle_read_() {
+        Buffer buff(bufferevent_get_input(bev));
+        try {
+            emit_data(buff);
+        } catch (Error &error) {
+            emit_error(error);
+            return;
+        }
+        if (suppressed_eof) {
+            suppressed_eof = false;
+            logger->debug("Deliver previously suppressed EOF");
+            emit_error(EofError());
+            return;
+        }
+    }
+
+    void handle_write_() {
+        try {
+            emit_flush();
+        } catch (Error &error) {
+            emit_error(error);
+        }
+    }
 
   private:
-    Connection(bufferevent *bev, Var<Reactor>, Var<Logger>);
+    Connection(bufferevent *bev, Var<Reactor> reactor, Var<Logger> logger)
+        : EmitterBase{reactor, logger} {
+
+        this->bev = bev;
+
+        // The following makes this non copyable and non movable.
+        bufferevent_setcb(this->bev, handle_libevent_read,
+                          handle_libevent_write, handle_libevent_event, this);
+    }
+
     bufferevent *bev = nullptr;
     Var<Transport> self;
     Callback<> close_cb;
@@ -122,3 +238,20 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
 } // namespace libevent
 } // namespace mk
 #endif
+
+extern "C" {
+
+static inline void handle_libevent_read(bufferevent *, void *opaque) {
+    static_cast<mk::libevent::Connection *>(opaque)->handle_read_();
+}
+
+static inline void handle_libevent_write(bufferevent *, void *opaque) {
+    static_cast<mk::libevent::Connection *>(opaque)->handle_write_();
+}
+
+static inline void handle_libevent_event(bufferevent *, short what,
+                                         void *opaque) {
+    static_cast<mk::libevent::Connection *>(opaque)->handle_event_(what);
+}
+
+} // extern "C"
