@@ -119,12 +119,6 @@ TEST_CASE("Poller: call_later") {
               poller;
         REQUIRE_THROWS(poller.call_later(0.0, []() {}));
     }
-
-    SECTION("We don't leak if the callback throws an exception") {
-        Poller<> poller;
-        poller.call_later(0.1, []() { throw std::exception{}; });
-        REQUIRE_THROWS(poller.run());
-    }
 }
 
 TEST_CASE("Poller: pollfd") {
@@ -133,11 +127,5 @@ TEST_CASE("Poller: pollfd") {
                event_base_loopbreak>
               poller;
         REQUIRE_THROWS(poller.pollfd(0, 0, 0.0, [](Error, short) {}));
-    }
-
-    SECTION("We don't leak if the callback throws an exception") {
-        Poller<> poller;
-        poller.pollfd(0, 0, 0.1, [](Error, short) { throw std::exception{}; });
-        REQUIRE_THROWS(poller.run());
     }
 }

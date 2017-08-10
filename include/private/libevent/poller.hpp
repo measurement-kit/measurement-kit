@@ -21,7 +21,6 @@
 #include <event2/event.h>                          // for event_base_*
 #include <event2/thread.h>                         // for evthread_use_*
 #include <event2/util.h>                           // for evutil_socket_t
-#include <exception>                               // for std::current_exception
 #include <functional>                              // for std::function
 #include <measurement_kit/common/callback.hpp>     // for mk::Callback
 #include <measurement_kit/common/error.hpp>        // for mk::Error
@@ -259,16 +258,11 @@ static inline void mk_call_later_cb(evutil_socket_t, short evflags,
                                     void *opaque) {
     assert((evflags & (~(EV_TIMEOUT))) == 0);
     auto cbp = static_cast<mk::Callback<> *>(opaque);
-    std::exception_ptr unhandled;
-    try {
-        (*cbp)();
-    } catch (...) {
-        unhandled = std::current_exception();
-    }
+    // In case of exception here, the stack is going to unwind, tearing down
+    // the libevent loop and leaking forever `cbp` and the event once that was
+    // used to invoke this callback.
+    (*cbp)();
     delete cbp;
-    if (unhandled) {
-        std::rethrow_exception(unhandled);
-    }
 }
 
 static inline void mk_pollfd_cb(evutil_socket_t, short evflags, void *opaque) {
@@ -285,16 +279,11 @@ static inline void mk_pollfd_cb(evutil_socket_t, short evflags, void *opaque) {
     if ((evflags & EV_WRITE) != 0) {
         flags |= MK_POLLOUT;
     }
-    std::exception_ptr unhandled;
-    try {
-        (*cbp)(err, flags);
-    } catch (...) {
-        unhandled = std::current_exception();
-    }
+    // In case of exception here, the stack is going to unwind, tearing down
+    // the libevent loop and leaking forever `cbp` and the event once that was
+    // used to invoke this callback.
+    (*cbp)(err, flags);
     delete cbp;
-    if (unhandled) {
-        std::rethrow_exception(unhandled);
-    }
 }
 
 static inline void mk_periodic_cb(evutil_socket_t, short, void *) {
