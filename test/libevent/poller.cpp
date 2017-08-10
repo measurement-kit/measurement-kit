@@ -5,158 +5,127 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include <measurement_kit/common.hpp>
 #include "private/common/utils.hpp"
-#include "private/libevent/poller_impl.hpp"
+#include "private/libevent/poller.hpp"
+#include <measurement_kit/common.hpp>
 
 using namespace mk;
 using namespace mk::libevent;
 
-static int fail_int() { return -1; }
-static event_base *fail_evbase() { return nullptr; }
+extern "C" {
 
-static int fail(int, const struct sigaction *, struct sigaction *) {
+static int evthread_use_pthreads_fail() { return -1; }
+static int sigaction_fail(int, const struct sigaction *, struct sigaction *) {
     return -1;
 }
 
-static bool event_base_free_called = false;
-static void event_base_free_mock(event_base *p) {
-    REQUIRE(!event_base_free_called);
-    event_base_free(p);
-    event_base_free_called = true;
-}
+} // extern "C"
 
-TEST_CASE("Constructor") {
+TEST_CASE("LibeventLibrary") {
     SECTION("We deal with evthread_use_pthreads() failure") {
-        // Since here we syntethize a different template, this should be
-        // the time where we create the singleton()
-        REQUIRE_THROWS(poller_alloc_evbase<fail_int>());
+        REQUIRE_THROWS((Poller<>::LibeventLibrary<evthread_use_pthreads_fail,
+                                                 sigaction>{}));
     }
 
     SECTION("We deal with sigaction() failure") {
-        REQUIRE_THROWS((poller_alloc_evbase<evthread_use_pthreads, fail>()));
+        REQUIRE_THROWS((Poller<>::LibeventLibrary<evthread_use_pthreads,
+                                                 sigaction_fail>{}));
     }
+}
 
+extern "C" {
+
+static event_base *event_base_new_fail() { return nullptr; }
+
+static int event_base_dispatch_fail(event_base *) { return -1; }
+
+static int event_base_dispatch_no_events(event_base *) { return 1; }
+
+static int event_base_loopbreak_fail(event_base *) { return -1; }
+
+} // extern "C"
+
+TEST_CASE("Poller: basic functionality") {
     SECTION("We deal with event_base_new() failure") {
-        REQUIRE_THROWS((poller_alloc_evbase<evthread_use_pthreads, sigaction,
-                                            fail_evbase>()));
+        REQUIRE_THROWS((Poller<event_base_new_fail, event_base_once,
+                               event_base_dispatch, event_base_loopbreak,
+                               event_new, event_add>{}));
+    }
+
+    SECTION("We deal with event_base_dispatch() failure") {
+        Poller<event_base_new, event_base_once, event_base_dispatch_fail,
+               event_base_loopbreak, event_new, event_add>
+              poller;
+        REQUIRE_THROWS(poller.run());
+    }
+
+    SECTION("We deal with event_base_dispatch() running out of events") {
+        Poller<event_base_new, event_base_once, event_base_dispatch_no_events,
+               event_base_loopbreak, event_new, event_add>
+              poller;
+        poller.run();
+    }
+
+    SECTION("We deal with event_base_loopbreak() failure") {
+        Poller<event_base_new, event_base_once, event_base_dispatch,
+               event_base_loopbreak_fail, event_new, event_add>
+              poller;
+        REQUIRE_THROWS(poller.stop());
     }
 }
 
-TEST_CASE("The destructor works properly") {
-    {
-        poller_alloc_evbase<evthread_use_pthreads, sigaction, event_base_new,
-                            event_base_free_mock>();
-    }
-    REQUIRE(event_base_free_called);
-}
+extern "C" {
 
-static int fail(event_base *, evutil_socket_t, short, event_callback_fn,
-                void *, const timeval *) {
-    return -1;
-}
-
-TEST_CASE("call_later() deals with event_base_once() failure") {
-    REQUIRE_THROWS((poller_call_later<fail>(
-            poller_alloc_evbase(), 1.0, [](){})));
-}
-
-static event *fail(struct event_base *, evutil_socket_t, short,
-                   event_callback_fn, void *) {
+static event *event_new_fail(event_base *, evutil_socket_t, short,
+                             event_callback_fn, void *) {
     return nullptr;
 }
 
-static bool event_free_called = false;
-static void event_free_mock(event *p) {
-    REQUIRE(!event_free_called);
-    event_free(p);
-    event_free_called = true;
-}
-
-static int fail(event *, const timeval *) {
+static int event_add_fail(event *, const timeval *) {
     return -1;
 }
 
-static int fail(event_base *) {
-    return -1;
-}
+} // extern "C"
 
-static int returns_one(event_base *) {
-    return 1;
-}
-
-TEST_CASE("poller.loop() works properly in corner cases") {
-
+TEST_CASE("Poller: periodic event") {
     SECTION("We deal with event_new() failure") {
-        Poller poller;
-        REQUIRE_THROWS(poller_loop<fail>(poller.base_, &poller));
-    }
-
-    SECTION("We free the periodic event") {
-        Poller poller;
-        poller.call_later(1.0, [&poller]() { poller.break_loop(); });
-        poller_loop<event_new, event_free_mock>(poller.base_, &poller);
-        REQUIRE(event_free_called);
+        Poller<event_base_new, event_base_once, event_base_dispatch_no_events,
+               event_base_loopbreak, event_new_fail, event_add>
+              poller;
+        REQUIRE_THROWS(poller.run());
     }
 
     SECTION("We deal with event_add() failure") {
-        Poller poller;
-        REQUIRE_THROWS((poller_loop<event_new, event_free, fail>(
-                poller.base_, &poller)));
-    }
-
-    SECTION("We deal with event_base_dispatch() returning -1") {
-        Poller poller;
-        REQUIRE_THROWS((poller_loop<event_new, event_free, event_add, fail>(
-                poller.base_, &poller)));
-    }
-
-    SECTION("We do not throw when event_base_dispatch() returs 1") {
-        Poller poller;
-        poller_loop<event_new, event_free, event_add, returns_one>(
-                poller.base_, &poller);
+        Poller<event_base_new, event_base_once, event_base_dispatch_no_events,
+               event_base_loopbreak, event_new, event_add_fail>
+              poller;
+        REQUIRE_THROWS(poller.run());
     }
 }
 
-static int fail(event_base *, int) {
+extern "C" {
+
+static int event_base_once_fail(event_base *, evutil_socket_t, short,
+                                event_callback_fn, void *, const timeval *) {
     return -1;
 }
 
-TEST_CASE("poller.loop_once() deals with libevent failures") {
-    Poller poller;
-    REQUIRE_THROWS(poller_loop_once<fail>(poller.base_));
+} // extern "C"
+
+TEST_CASE("Poller: call_later") {
+    SECTION("We deal with event_base_once() failure") {
+        Poller<event_base_new, event_base_once_fail, event_base_dispatch,
+               event_base_loopbreak>
+              poller;
+        REQUIRE_THROWS(poller.call_later(0.0, []() {}));
+    }
 }
 
-TEST_CASE("poller.break_loop() works properly") {
-    Poller poller;
-    REQUIRE_THROWS(poller_break_loop<fail>(poller.base_));
-}
-
-TEST_CASE("poller.call_soon() works") {
-    Poller poller;
-    auto now = mk::time_now();
-    poller.call_soon([&poller]() { poller.break_loop(); });
-    poller.loop();
-    REQUIRE((mk::time_now() - now) < 1.00); // Very conservative check
-}
-
-TEST_CASE("poller.call_later() works") {
-    Poller poller;
-    auto now = mk::time_now();
-    poller.call_later(3.14, [&poller]() { poller.break_loop(); });
-    poller.loop();
-    REQUIRE((mk::time_now() - now) > 3.00); // Very conservative check
-}
-
-TEST_CASE("The periodic event is fired when we call loop()") {
-    Poller poller;
-    unsigned int count = 0;
-    poller.on_periodic_([&count](Poller *poller) {
-        if (++count < 3) {
-            return;
-        }
-        poller->break_loop();
-    });
-    poller.loop();
-    REQUIRE(count == 3);
+TEST_CASE("Poller: pollfd") {
+    SECTION("We deal with event_base_once() failure") {
+        Poller<event_base_new, event_base_once_fail, event_base_dispatch,
+               event_base_loopbreak>
+              poller;
+        REQUIRE_THROWS(poller.pollfd(0, 0, 0.0, [](Error, short) {}));
+    }
 }
