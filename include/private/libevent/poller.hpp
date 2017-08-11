@@ -17,6 +17,7 @@
 /// \brief Header-only implementation of mk::Reactor based on libevent.
 
 #include "private/common/mock.hpp"                 // for MK_MOCK
+#include "private/common/worker.hpp"               // for mk::Worker
 #include <cassert>                                 // for assert
 #include <event2/event.h>                          // for event_base_*
 #include <event2/thread.h>                         // for evthread_use_*
@@ -190,6 +191,12 @@ class Poller : public Reactor, public NonCopyable, public NonMovable {
     */
     /// \subsubsection Call later
     /// \brief Here we have code schedule callbacks at a later time.
+
+    Worker worker;
+
+    void run_in_background_thread(Callback<> &&cb) override {
+        worker.run_in_background_thread(std::move(cb));
+    }
 
     void call_soon(Callback<> &&cb) override { call_later(0.0, std::move(cb)); }
 
