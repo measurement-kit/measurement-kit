@@ -16,13 +16,6 @@ TEST_CASE("Synchronous tcp-connect test") {
         .run();
 }
 
-TEST_CASE("Asynchronous tcp-connect test") {
-    test::nettests::run_async(
-        test::nettests::make_test<TcpConnectTest>("hosts.txt")
-            .set_options("port", "80")
-    );
-}
-
 #else
 int main() {}
 #endif

@@ -118,7 +118,6 @@
 /test/nettests/multi_ndt
 /test/nettests/ndt
 /test/nettests/runnable
-/test/nettests/runner
 /test/nettests/tcp_connect
 /test/nettests/utils
 /test/nettests/web_connectivity

@@ -16,12 +16,6 @@ TEST_CASE("Synchronous NDT test") {
         .run();
 }
 
-TEST_CASE("Asynchronous NDT test") {
-    test::nettests::run_async(
-        test::nettests::make_test<NdtTest>()
-    );
-}
-
 #else
 int main(){}
 #endif

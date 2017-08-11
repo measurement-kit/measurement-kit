@@ -8,6 +8,8 @@
 #include "private/common/utils.hpp"
 #include "private/ooni/orchestrate_impl.hpp"
 
+#include <future>
+
 using namespace mk;
 using namespace mk::ooni;
 using namespace mk::ooni::orchestrate;

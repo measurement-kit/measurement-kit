@@ -18,12 +18,6 @@ TEST_CASE("Synchronous http-header-field-manipulation test") {
         .run();
 }
 
-TEST_CASE("Asynchronous http-header-field-manipulation test") {
-    test::nettests::run_async(
-        test::nettests::make_test<HttpHeaderFieldManipulationTest>()
-    );
-}
-
 #endif
 
 TEST_CASE("compare_headers_response works") {
