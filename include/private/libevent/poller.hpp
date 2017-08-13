@@ -147,7 +147,7 @@ class Poller : public Reactor, public NonCopyable, public NonMovable {
         do {
             auto ev_status = event_base_dispatch(evbase);
             if (ev_status < 0) {
-                throw std::runtime_error("event_base_loop");
+                throw std::runtime_error("event_base_dispatch");
             }
             /*
                 Explanation: event_base_loop() returns one when there are no
