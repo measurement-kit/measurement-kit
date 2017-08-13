@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.6)
 
 # Definitions:
 
-set(MK_CA_BUNDLE "${MK_CA_BUNDLE}" CACHE PATH "Path where a CA cert chain is installed")
+set(MK_CA_BUNDLE "${MK_CA_BUNDLE}" CACHE PATH "Path where openssl CA bundle is installed")
 set(MK_GEOIP "${MK_GEOIP}" CACHE PATH "Path where geoip is installed")
 set(MK_LIBEVENT "${MK_LIBEVENT}" CACHE PATH "Path where libevent is installed")
 set(MK_OPENSSL "${MK_OPENSSL}" CACHE PATH "Path where openssl is installed")
