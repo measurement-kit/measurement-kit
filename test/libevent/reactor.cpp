@@ -6,7 +6,7 @@
 #include "private/ext/catch.hpp"
 
 #include "private/common/utils.hpp"
-#include "private/libevent/poller.hpp"
+#include "private/libevent/reactor.hpp"
 #include <measurement_kit/common.hpp>
 
 using namespace mk;
@@ -23,12 +23,12 @@ static int sigaction_fail(int, const struct sigaction *, struct sigaction *) {
 
 TEST_CASE("LibeventLibrary") {
     SECTION("We deal with evthread_use_pthreads() failure") {
-        REQUIRE_THROWS((Poller<>::LibeventLibrary<evthread_use_pthreads_fail,
+        REQUIRE_THROWS((Reactor<>::LibeventLibrary<evthread_use_pthreads_fail,
                                                  sigaction>{}));
     }
 
     SECTION("We deal with sigaction() failure") {
-        REQUIRE_THROWS((Poller<>::LibeventLibrary<evthread_use_pthreads,
+        REQUIRE_THROWS((Reactor<>::LibeventLibrary<evthread_use_pthreads,
                                                  sigaction_fail>{}));
     }
 }
@@ -45,32 +45,32 @@ static int event_base_loopbreak_fail(event_base *) { return -1; }
 
 } // extern "C"
 
-TEST_CASE("Poller: basic functionality") {
+TEST_CASE("Reactor: basic functionality") {
     SECTION("We deal with event_base_new() failure") {
-        REQUIRE_THROWS((Poller<event_base_new_fail, event_base_once,
+        REQUIRE_THROWS((Reactor<event_base_new_fail, event_base_once,
                                event_base_dispatch, event_base_loopbreak,
                                event_new, event_add>{}));
     }
 
     SECTION("We deal with event_base_dispatch() failure") {
-        Poller<event_base_new, event_base_once, event_base_dispatch_fail,
+        Reactor<event_base_new, event_base_once, event_base_dispatch_fail,
                event_base_loopbreak, event_new, event_add>
-              poller;
-        REQUIRE_THROWS(poller.run());
+              reactor;
+        REQUIRE_THROWS(reactor.run());
     }
 
     SECTION("We deal with event_base_dispatch() running out of events") {
-        Poller<event_base_new, event_base_once, event_base_dispatch_no_events,
+        Reactor<event_base_new, event_base_once, event_base_dispatch_no_events,
                event_base_loopbreak, event_new, event_add>
-              poller;
-        poller.run();
+              reactor;
+        reactor.run();
     }
 
     SECTION("We deal with event_base_loopbreak() failure") {
-        Poller<event_base_new, event_base_once, event_base_dispatch,
+        Reactor<event_base_new, event_base_once, event_base_dispatch,
                event_base_loopbreak_fail, event_new, event_add>
-              poller;
-        REQUIRE_THROWS(poller.stop());
+              reactor;
+        REQUIRE_THROWS(reactor.stop());
     }
 }
 
@@ -87,19 +87,19 @@ static int event_add_fail(event *, const timeval *) {
 
 } // extern "C"
 
-TEST_CASE("Poller: periodic event") {
+TEST_CASE("Reactor: periodic event") {
     SECTION("We deal with event_new() failure") {
-        Poller<event_base_new, event_base_once, event_base_dispatch_no_events,
+        Reactor<event_base_new, event_base_once, event_base_dispatch_no_events,
                event_base_loopbreak, event_new_fail, event_add>
-              poller;
-        REQUIRE_THROWS(poller.run());
+              reactor;
+        REQUIRE_THROWS(reactor.run());
     }
 
     SECTION("We deal with event_add() failure") {
-        Poller<event_base_new, event_base_once, event_base_dispatch_no_events,
+        Reactor<event_base_new, event_base_once, event_base_dispatch_no_events,
                event_base_loopbreak, event_new, event_add_fail>
-              poller;
-        REQUIRE_THROWS(poller.run());
+              reactor;
+        REQUIRE_THROWS(reactor.run());
     }
 }
 
@@ -112,20 +112,20 @@ static int event_base_once_fail(event_base *, evutil_socket_t, short,
 
 } // extern "C"
 
-TEST_CASE("Poller: call_later") {
+TEST_CASE("Reactor: call_later") {
     SECTION("We deal with event_base_once() failure") {
-        Poller<event_base_new, event_base_once_fail, event_base_dispatch,
+        Reactor<event_base_new, event_base_once_fail, event_base_dispatch,
                event_base_loopbreak>
-              poller;
-        REQUIRE_THROWS(poller.call_later(0.0, []() {}));
+              reactor;
+        REQUIRE_THROWS(reactor.call_later(0.0, []() {}));
     }
 }
 
-TEST_CASE("Poller: pollfd") {
+TEST_CASE("Reactor: pollfd") {
     SECTION("We deal with event_base_once() failure") {
-        Poller<event_base_new, event_base_once_fail, event_base_dispatch,
+        Reactor<event_base_new, event_base_once_fail, event_base_dispatch,
                event_base_loopbreak>
-              poller;
-        REQUIRE_THROWS(poller.pollfd(0, 0, 0.0, [](Error, short) {}));
+              reactor;
+        REQUIRE_THROWS(reactor.pollfd(0, 0, 0.0, [](Error, short) {}));
     }
 }

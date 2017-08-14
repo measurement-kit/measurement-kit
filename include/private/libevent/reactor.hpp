@@ -1,19 +1,18 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef PRIVATE_LIBEVENT_POLLER_HPP
-#define PRIVATE_LIBEVENT_POLLER_HPP
+#ifndef PRIVATE_LIBEVENT_REACTOR_HPP
+#define PRIVATE_LIBEVENT_REACTOR_HPP
 
-// # Libevent/poller
+// # Libevent/reactor
 /*-
-     _     _ _                          _                 _ _
-    | |   (_) |__   _____   _____ _ __ | |_   _ __   ___ | | | ___ _ __
-    | |   | | '_ \ / _ \ \ / / _ \ '_ \| __| | '_ \ / _ \| | |/ _ \ '__|
-    | |___| | |_) |  __/\ V /  __/ | | | |_  | |_) | (_) | | |  __/ |
-    |_____|_|_.__/ \___| \_/ \___|_| |_|\__| | .__/ \___/|_|_|\___|_|
-                                             |_|
+     _     _ _                          _                         _
+    | |   (_) |__   _____   _____ _ __ | |_   _ __ ___  __ _  ___| |_ ___  _ __
+    | |   | | '_ \ / _ \ \ / / _ \ '_ \| __| | '__/ _ \/ _` |/ __| __/ _ \| '__|
+    | |___| | |_) |  __/\ V /  __/ | | | |_  | | |  __/ (_| | (__| || (_) | |
+    |_____|_|_.__/ \___| \_/ \___|_| |_|\__| |_|  \___|\__,_|\___|\__\___/|_|
 */
-/// \section Libevent/poller
+/// \section Libevent/reactor
 /// \brief Header-only implementation of mk::Reactor based on libevent.
 
 #include "private/common/mock.hpp"                 // for MK_MOCK
@@ -70,7 +69,7 @@ struct EventDeleter {
 };
 using EventUptr = std::unique_ptr<event, EventDeleter>;
 
-// ## Poller
+// ## Reactor
 /*-
      ____       _ _
     |  _ \ ___ | | | ___ _ __
@@ -78,14 +77,14 @@ using EventUptr = std::unique_ptr<event, EventDeleter>;
     |  __/ (_) | | |  __/ |
     |_|   \___/|_|_|\___|_|
 */
-/// \subsection Poller
+/// \subsection Reactor
 /// \brief Here we have our main class.
 
 /// \brief mk::Reactor implementation using libevent.
 template <MK_MOCK(event_base_new), MK_MOCK(event_base_once),
           MK_MOCK(event_base_dispatch), MK_MOCK(event_base_loopbreak),
           MK_MOCK(event_new), MK_MOCK(event_add)>
-class Poller : public Reactor, public NonCopyable, public NonMovable {
+class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
   public:
     // ### Library
     /*-
@@ -133,13 +132,13 @@ class Poller : public Reactor, public NonCopyable, public NonMovable {
 
     event_base *evbase = nullptr;
 
-    Poller() {
+    Reactor() {
         if ((evbase = event_base_new()) == nullptr) {
             throw std::runtime_error("event_base_new");
         }
     }
 
-    ~Poller() override { event_base_free(evbase); }
+    ~Reactor() override { event_base_free(evbase); }
 
     event_base *get_event_base() override { return evbase; }
 
@@ -150,7 +149,7 @@ class Poller : public Reactor, public NonCopyable, public NonMovable {
         // thread without typically having any event in the event loop which
         // will exit. To avoid this, here's the persistent event hack. Another
         // possible fix (more elegant), would be to move the worker into the
-        // poller and consider the poller not done as long as we have pending
+        // reactor and consider the poller not done as long as we have pending
         // callbacks, pending I/O (this checked by libevent) and pending
         // worker threads to work on.
         //
