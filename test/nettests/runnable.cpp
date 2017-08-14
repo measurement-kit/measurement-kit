@@ -189,20 +189,21 @@ TEST_CASE("Make sure that 'randomize_input' works") {
 
         std::vector<std::string> result;
         test::nettests::with_runnable([&](nettests::Runnable &test) {
-        test.reactor = Reactor::make();
-        test.input_filepaths.push_back("./test/fixtures/hosts.txt");
-        test.options["randomize_input"] = shuffle;
-        test.needs_input = true;
+            test.reactor = Reactor::make();
+            test.input_filepaths.push_back("./test/fixtures/hosts.txt");
+            test.options["randomize_input"] = shuffle;
+            test.options["no_collector"] = true;
+            test.needs_input = true;
 
-        test.reactor->loop_with_initial_event([&]() {
-            test.entry_cb = [&](std::string s) {
-                nlohmann::json entry = nlohmann::json::parse(s);
-                result.push_back(entry["input"]);
-            };
-            test.begin([&](Error) {
-                test.end([&](Error) { test.reactor->break_loop(); });
+            test.reactor->loop_with_initial_event([&]() {
+                test.entry_cb = [&](std::string s) {
+                    nlohmann::json entry = nlohmann::json::parse(s);
+                    result.push_back(entry["input"]);
+                };
+                test.begin([&](Error) {
+                    test.end([&](Error) { test.reactor->break_loop(); });
+                });
             });
-        });
         });
         return result;
     };
@@ -215,11 +216,10 @@ TEST_CASE("Make sure that 'randomize_input' works") {
          * which the shuffle has been found equal to the expected vector.
          */
         while (x++ < limit and run(shuffle) == expect) {
-            /* NOTHING */ ;
+            /* NOTHING */;
         }
         return x;
     };
-
 
     SECTION("In the common case") {
         // Note: the default should be that input is randomized

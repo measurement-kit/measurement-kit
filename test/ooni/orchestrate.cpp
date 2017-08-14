@@ -6,6 +6,7 @@
 #include "private/ext/catch.hpp"
 
 #include "private/common/utils.hpp"
+#include "private/common/worker.hpp"
 #include "private/ooni/orchestrate_impl.hpp"
 
 #include <future>
@@ -201,6 +202,14 @@ TEST_CASE("Orchestration works") {
         });
     });
     REQUIRE(future.get() == NoError());
+    /*
+     * Wait for the default tasks queue to empty, so we exit from the
+     * process without still running detached threads and we don't leak
+     * memory and, therefore, valgrind memcheck does not fail.
+     */
+    while (Worker::default_tasks_queue()->concurrency() > 0) {
+        /* NOTHING */;
+    }
 }
 
 #endif
