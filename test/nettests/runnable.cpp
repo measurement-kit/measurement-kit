@@ -186,24 +186,17 @@ TEST_CASE("Make sure that 'randomize_input' works") {
                                     "www.emule.com"};
 
     auto run = [&](bool shuffle) -> std::vector<std::string> {
-
         std::vector<std::string> result;
         test::nettests::with_runnable([&](nettests::Runnable &test) {
-            test.reactor = Reactor::make();
             test.input_filepaths.push_back("./test/fixtures/hosts.txt");
             test.options["randomize_input"] = shuffle;
-            test.options["no_collector"] = true;
+            test.options["no_collector"] = true; // Speed up test
             test.needs_input = true;
-
-            test.reactor->loop_with_initial_event([&]() {
-                test.entry_cb = [&](std::string s) {
-                    nlohmann::json entry = nlohmann::json::parse(s);
-                    result.push_back(entry["input"]);
-                };
-                test.begin([&](Error) {
-                    test.end([&](Error) { test.reactor->break_loop(); });
-                });
-            });
+            test.entry_cb = [&](std::string s) {
+                nlohmann::json entry = nlohmann::json::parse(s);
+                result.push_back(entry["input"]);
+            };
+            test.run();
         });
         return result;
     };
