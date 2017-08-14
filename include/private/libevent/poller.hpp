@@ -144,36 +144,32 @@ class Poller : public Reactor, public NonCopyable, public NonMovable {
     event_base *get_event_base() override { return evbase; }
 
     void run() override {
-        // Register a persistent periodic event to make sure that the event
-        // loop is not going to exit if we run out of events. This is required
-        // because, when we're resolving DNS, we do that in a background
-        // thread without typically having any event in the event loop which
-        // will exit. To avoid this, here's the persistent event hack. Another
-        // possible fix (more elegant), would be to move the worker into the
-        // poller and consider the poller not done as long as we have pending
-        // callbacks, pending I/O (this checked by libevent) and pending
-        // worker threads to work on.
-        //
-        // Note that the libevent v2.1.x has a flag to obtain the behavior
-        // described above, but the v2.0.x libevent doesn't.
+        do {
+            auto ev_status = event_base_dispatch(evbase);
+            if (ev_status < 0) {
+                throw std::runtime_error("event_base_dispatch");
+            }
+            /*
+                Explanation: event_base_loop() returns one when there are no
+                pending events. In such case, before leaving the event loop, we
+                make sure we have no pending background threads. They are, as
+                of now, mostly used to perform DNS queries with getaddrinfo(),
+                which is blocking. If there are threads running, treat them
+                like pending events, even though they are not managed by
+                libevent, and continue running the loop. To avoid spawning
+                and to be sure we're ready to deal /pronto/ with any upcoming
+                libevent event, schedule a call for the near future so to
+                keep the libevent loop active, and ready to react.
 
-        timeval ten_seconds;
-        EventUptr persist{event_new(evbase, -1, EV_PERSIST | EV_TIMEOUT,
-                                    mk_periodic_cb, nullptr)};
-        if (!persist) {
-            throw std::runtime_error("event_new");
-        }
-        if (event_add(persist.get(), timeval_init(&ten_seconds, 10.0)) != 0) {
-            throw std::runtime_error("event_add");
-        }
-
-        auto rv = event_base_dispatch(evbase);
-        if (rv < 0) {
-            throw std::runtime_error("event_base_dispatch");
-        }
-        if (rv > 1) {
-            mk::warn("loop: no pending and/or active events");
-        }
+                The exact possible values for `ev_status` are -1, 0, and +1, but
+                I have coded more broad checks for robustness.
+            */
+            if (ev_status > 0 && worker.concurrency() <= 0) {
+                mk::warn("reactor: no pending and/or active events");
+                break;
+            }
+            call_later(0.250, []() {});
+        } while (true);
     }
 
     void stop() override {
