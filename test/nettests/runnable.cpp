@@ -196,7 +196,15 @@ TEST_CASE("Make sure that 'randomize_input' works") {
                 nlohmann::json entry = nlohmann::json::parse(s);
                 result.push_back(entry["input"]);
             };
-            test.run();
+            // This code duplicates test/nettests/base_test.cpp:start_internal_
+            test.reactor = Reactor::make();
+            test.reactor->run_with_initial_event([&]() {
+                test.begin([&](Error) {
+                    test.end([&](Error) {
+                        test.reactor->stop();
+                    });
+                });
+            });
         });
         return result;
     };
