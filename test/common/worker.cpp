@@ -30,7 +30,6 @@ TEST_CASE("The worker is robust to submitting many tasks in a row") {
         std::this_thread::sleep_for(1s);
         auto concurrency = worker->concurrency();
         std::cout << "Concurrency: " << concurrency << "\n";
-        // Cast to unsigned safe because of the above REQUIRE()
         REQUIRE(concurrency <= worker->parallelism());
         if (concurrency == 0) {
             break;
