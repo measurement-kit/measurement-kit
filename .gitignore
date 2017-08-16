@@ -92,7 +92,7 @@
 /test/http/response_parser
 /test/libevent/connection
 /test/libevent/dns_error
-/test/libevent/poller
+/test/libevent/reactor
 /test/mlabns/mlabns
 /test/ndt/measure_speed
 /test/ndt/messages
