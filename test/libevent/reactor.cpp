@@ -23,13 +23,15 @@ static int sigaction_fail(int, const struct sigaction *, struct sigaction *) {
 
 TEST_CASE("LibeventLibrary") {
     SECTION("We deal with evthread_use_pthreads() failure") {
-        REQUIRE_THROWS((Reactor<>::LibeventLibrary<evthread_use_pthreads_fail,
-                                                 sigaction>{}));
+        REQUIRE_THROWS(
+              (libevent::Reactor<>::LibeventLibrary<evthread_use_pthreads_fail,
+                                                    sigaction>{}));
     }
 
     SECTION("We deal with sigaction() failure") {
-        REQUIRE_THROWS((Reactor<>::LibeventLibrary<evthread_use_pthreads,
-                                                 sigaction_fail>{}));
+        REQUIRE_THROWS(
+              (libevent::Reactor<>::LibeventLibrary<evthread_use_pthreads,
+                                                    sigaction_fail>{}));
     }
 }
 
@@ -47,28 +49,31 @@ static int event_base_loopbreak_fail(event_base *) { return -1; }
 
 TEST_CASE("Reactor: basic functionality") {
     SECTION("We deal with event_base_new() failure") {
-        REQUIRE_THROWS((Reactor<event_base_new_fail, event_base_once,
-                               event_base_dispatch, event_base_loopbreak,
-                               event_new, event_add>{}));
+        REQUIRE_THROWS(
+              (libevent::Reactor<event_base_new_fail, event_base_once,
+                                 event_base_dispatch, event_base_loopbreak,
+                                 event_new, event_add>{}));
     }
 
     SECTION("We deal with event_base_dispatch() failure") {
-        Reactor<event_base_new, event_base_once, event_base_dispatch_fail,
-               event_base_loopbreak, event_new, event_add>
+        libevent::Reactor<event_base_new, event_base_once,
+                          event_base_dispatch_fail, event_base_loopbreak,
+                          event_new, event_add>
               reactor;
         REQUIRE_THROWS(reactor.run());
     }
 
     SECTION("We deal with event_base_dispatch() running out of events") {
-        Reactor<event_base_new, event_base_once, event_base_dispatch_no_events,
-               event_base_loopbreak, event_new, event_add>
+        libevent::Reactor<event_base_new, event_base_once,
+                          event_base_dispatch_no_events, event_base_loopbreak,
+                          event_new, event_add>
               reactor;
         reactor.run();
     }
 
     SECTION("We deal with event_base_loopbreak() failure") {
-        Reactor<event_base_new, event_base_once, event_base_dispatch,
-               event_base_loopbreak_fail, event_new, event_add>
+        libevent::Reactor<event_base_new, event_base_once, event_base_dispatch,
+                          event_base_loopbreak_fail, event_new, event_add>
               reactor;
         REQUIRE_THROWS(reactor.stop());
     }
@@ -81,23 +86,23 @@ static event *event_new_fail(event_base *, evutil_socket_t, short,
     return nullptr;
 }
 
-static int event_add_fail(event *, const timeval *) {
-    return -1;
-}
+static int event_add_fail(event *, const timeval *) { return -1; }
 
 } // extern "C"
 
 TEST_CASE("Reactor: periodic event") {
     SECTION("We deal with event_new() failure") {
-        Reactor<event_base_new, event_base_once, event_base_dispatch_no_events,
-               event_base_loopbreak, event_new_fail, event_add>
+        libevent::Reactor<event_base_new, event_base_once,
+                          event_base_dispatch_no_events, event_base_loopbreak,
+                          event_new_fail, event_add>
               reactor;
         REQUIRE_THROWS(reactor.run());
     }
 
     SECTION("We deal with event_add() failure") {
-        Reactor<event_base_new, event_base_once, event_base_dispatch_no_events,
-               event_base_loopbreak, event_new, event_add_fail>
+        libevent::Reactor<event_base_new, event_base_once,
+                          event_base_dispatch_no_events, event_base_loopbreak,
+                          event_new, event_add_fail>
               reactor;
         REQUIRE_THROWS(reactor.run());
     }
@@ -114,8 +119,8 @@ static int event_base_once_fail(event_base *, evutil_socket_t, short,
 
 TEST_CASE("Reactor: call_later") {
     SECTION("We deal with event_base_once() failure") {
-        Reactor<event_base_new, event_base_once_fail, event_base_dispatch,
-               event_base_loopbreak>
+        libevent::Reactor<event_base_new, event_base_once_fail,
+                          event_base_dispatch, event_base_loopbreak>
               reactor;
         REQUIRE_THROWS(reactor.call_later(0.0, []() {}));
     }
@@ -123,8 +128,8 @@ TEST_CASE("Reactor: call_later") {
 
 TEST_CASE("Reactor: pollfd") {
     SECTION("We deal with event_base_once() failure") {
-        Reactor<event_base_new, event_base_once_fail, event_base_dispatch,
-               event_base_loopbreak>
+        libevent::Reactor<event_base_new, event_base_once_fail,
+                          event_base_dispatch, event_base_loopbreak>
               reactor;
         REQUIRE_THROWS(reactor.pollfd(0, 0, 0.0, [](Error, short) {}));
     }
