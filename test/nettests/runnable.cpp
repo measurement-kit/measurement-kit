@@ -197,6 +197,7 @@ TEST_CASE("Make sure that 'randomize_input' works") {
                 result.push_back(entry["input"]);
             };
             // This code duplicates test/nettests/base_test.cpp:start_internal_
+            test.logger->set_verbosity(MK_LOG_DEBUG2);
             test.logger->warn("");
             test.logger->warn(" ~~~ BEGIN OF NEW ITERATION ~~~");
             test.reactor = Reactor::make();
