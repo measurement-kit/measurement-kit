@@ -192,6 +192,7 @@ TEST_CASE("Make sure that 'randomize_input' works") {
         test.reactor = Reactor::make();
         test.input_filepaths.push_back("./test/fixtures/hosts.txt");
         test.options["randomize_input"] = shuffle;
+        test.options["parallelism"] = 1; // Otherwise they're mixed anyway
         test.needs_input = true;
 
         test.reactor->loop_with_initial_event([&]() {
