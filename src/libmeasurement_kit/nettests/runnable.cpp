@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "private/common/fmap.hpp"
 #include "private/common/parallel.hpp"
@@ -43,8 +43,9 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     logger->debug("net_test: running next measurement");
 
     double max_rt = options.get("max_runtime", -1.0);
+    double max_rt_tolerance = max_rt / 10.0;
     double delta = mk::time_now() - beginning;
-    if (max_rt >= 0.0 && delta > max_rt) {
+    if (max_rt >= 0.0 && delta > max_rt - max_rt_tolerance) {
         logger->info("Exceeded test maximum runtime");
         cb(NoError());
         return;

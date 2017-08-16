@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_COMMON_REACTOR_HPP
 #define MEASUREMENT_KIT_COMMON_REACTOR_HPP
 
@@ -23,6 +23,7 @@ class Reactor {
     static Var<Reactor> global();
     virtual ~Reactor();
 
+    virtual void run_in_background_thread(Callback<> &&cb) = 0;
     virtual void call_soon(Callback<> &&cb) = 0;
     virtual void call_later(double, Callback<> &&cb) = 0;
 

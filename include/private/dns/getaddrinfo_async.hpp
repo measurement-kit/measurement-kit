@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_DNS_GETADDRINFO_ASYNC_HPP
 #define PRIVATE_DNS_GETADDRINFO_ASYNC_HPP
 
@@ -81,13 +81,13 @@ std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
 void getaddrinfo_async(std::string name, addrinfo hints, Var<Reactor> reactor,
-                       Var<Logger> logger, Var<Worker> worker,
+                       Var<Logger> logger,
                        Callback<Error, std::vector<Answer>> cb) {
     /*
      * Move everything down such that there is always just one function in
      * one specific thread having ownership of the state
      */
-    worker->run_in_background_thread([
+    reactor->run_in_background_thread([
         name = std::move(name), hints = std::move(hints),
         reactor = std::move(reactor), logger = std::move(logger),
         cb = std::move(cb)

@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/ooni.hpp>
 
@@ -126,25 +126,29 @@ bool Auth::is_valid(Var<Logger> logger) const noexcept {
 
 nlohmann::json ClientMetadata::as_json() const {
     nlohmann::json j;
-    j["probe_cc"] = probe_cc;
-    j["probe_asn"] = probe_asn;
-    j["platform"] = platform;
-    j["software_name"] = software_name;
-    j["software_version"] = software_version;
-    if (!supported_tests.empty()) {
-        j["supported_tests"] = supported_tests;
-    }
-    if (!network_type.empty()) {
-        j["network_type"] = network_type;
-    }
+    // Keep the following sorted to ease comparison with class definition
     if (!available_bandwidth.empty()) {
         j["available_bandwidth"] = available_bandwidth;
     }
     if (!device_token.empty()) {
         j["token"] = device_token;
     }
+    if (!language.empty()) {
+        j["language"] = language;
+    }
+    if (!network_type.empty()) {
+        j["network_type"] = network_type;
+    }
+    j["platform"] = platform;
+    j["probe_asn"] = probe_asn;
+    j["probe_cc"] = probe_cc;
     if (!probe_family.empty()) {
         j["probe_family"] = probe_family;
+    }
+    j["software_name"] = software_name;
+    j["software_version"] = software_version;
+    if (!supported_tests.empty()) {
+        j["supported_tests"] = supported_tests;
     }
     return j;
 }

@@ -1,7 +1,0 @@
-#!/bin/sh
-set -e
-rootdir=$(cd $(dirname $(dirname $0)) && pwd -P)
-cmake -D MK_GEOIP=/usr/local -D MK_LIBEVENT=/usr/local                         \
-      -D MK_OPENSSL=/usr/local/opt/openssl .
-echo ""
-echo "Now run 'make'"

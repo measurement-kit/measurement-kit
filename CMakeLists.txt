@@ -1,11 +1,12 @@
 # Part of measurement-kit <https://measurement-kit.github.io/>.
-# Measurement-kit is free software. See AUTHORS and LICENSE for more
-# information on the copying conditions.
+# Measurement-kit is free software under the BSD license. See AUTHORS
+# and LICENSE for more information on the copying conditions.
 
 cmake_minimum_required(VERSION 3.6)
 
 # Definitions:
 
+set(MK_CA_BUNDLE "${MK_CA_BUNDLE}" CACHE PATH "Path where openssl CA bundle is installed")
 set(MK_GEOIP "${MK_GEOIP}" CACHE PATH "Path where geoip is installed")
 set(MK_LIBEVENT "${MK_LIBEVENT}" CACHE PATH "Path where libevent is installed")
 set(MK_OPENSSL "${MK_OPENSSL}" CACHE PATH "Path where openssl is installed")
@@ -16,7 +17,7 @@ set(CMAKE_CXX_STANDARD 14)
 set(MK_UNIX_CFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
 set(MK_UNIX_CXXFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
 
-add_definitions(-DENABLE_INTEGRATION_TESTS)
+add_definitions(-DENABLE_INTEGRATION_TESTS -DMK_CA_BUNDLE="${MK_CA_BUNDLE}")
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   set(CMAKE_CXX_FLAGS
@@ -135,6 +136,7 @@ add_library(
 target_include_directories(
   measurement_kit_static
   PUBLIC
+  "include"
   ${MK_INCLUDE_DIRS}
 )
 target_link_libraries(
@@ -162,6 +164,21 @@ target_link_libraries(
   ${MK_LIBS}
   Threads::Threads
 )
+
+## examples
+
+file(GLOB MK_EXAMPLES_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "example/*/*.cpp")
+foreach(MK_EXAMPLE_SOURCE ${MK_EXAMPLES_SOURCES})
+  string(REPLACE ".cpp" "" MK_EXAMPLE_NAME ${MK_EXAMPLE_SOURCE})
+  string(REPLACE "/" "_" MK_EXAMPLE_NAME ${MK_EXAMPLE_NAME})
+  add_executable(${MK_EXAMPLE_NAME} ${MK_EXAMPLE_SOURCE})
+  target_link_libraries(
+    ${MK_EXAMPLE_NAME}
+    measurement_kit_static
+    ${MK_LIBS}
+    Threads::Threads
+  )
+endforeach()
 
 ## tests
 

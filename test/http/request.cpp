@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
@@ -538,8 +538,6 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
     });
 }
 
-// Test commented out because now this site has no valid certificate
-#if 0
 TEST_CASE("http::request() correctly follows redirects") {
     loop_with_initial_event([]() {
         request(
@@ -564,7 +562,6 @@ TEST_CASE("http::request() correctly follows redirects") {
             });
     });
 }
-#endif
 
 TEST_CASE("Headers are preserved across redirects") {
     Var<Reactor> reactor = Reactor::make();
@@ -626,12 +623,6 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
     });
 }
 
-/*
- * Test commented out because it floods us with false positives.
- *
- * See https://github.com/measurement-kit/measurement-kit/pull/1185.
- */
-#if 0
 TEST_CASE("We correctly deal with schema-less redirect") {
     /*
      * At the moment of writing this test, http://bacardi.com redirects to
@@ -663,7 +654,6 @@ TEST_CASE("We correctly deal with schema-less redirect") {
             reactor);
     });
 }
-#endif
 
 #endif // ENABLE_INTEGRATION_TESTS
 

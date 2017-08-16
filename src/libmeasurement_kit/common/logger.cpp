@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "private/common/json.hpp"
 
@@ -151,8 +151,20 @@ void Logger::progress(double prog, const char *s) {
     }
 }
 
+void Logger::progress_relative(double prog, const char *s) {
+    if (progress_handler_) {
+        progress_relative_ += prog * progress_scale_;
+        try {
+            progress_handler_(progress_offset_ + progress_relative_, s);
+        } catch (const std::exception &) {
+            /* Suppress */ ;
+        }
+    }
+}
+
 void Logger::set_progress_offset(double offset) {
     progress_offset_ = offset;
+    progress_relative_ = 0.0;
 }
 
 void Logger::set_progress_scale(double scale) {

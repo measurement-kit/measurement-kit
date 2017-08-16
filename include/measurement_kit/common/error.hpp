@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
@@ -92,6 +92,7 @@ MK_DEFINE_ERR(12, IllegalSequenceError, "illegal_sequence")
 MK_DEFINE_ERR(13, UnexpectedNullByteError, "unexpected_null_byte")
 MK_DEFINE_ERR(14, IncompleteUtf8SequenceError, "incomplete_utf8_sequence")
 MK_DEFINE_ERR(15, NotImplementedError, "not_implemented")
+MK_DEFINE_ERR(16, TimeoutError, "generic_timeout_error")
 
 #define MK_ERR_NET(x) (1000 + x)
 #define MK_ERR_DNS(x) (2000 + x)

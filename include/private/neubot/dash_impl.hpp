@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_NEUBOT_DASH_IMPL_HPP
 #define PRIVATE_NEUBOT_DASH_IMPL_HPP
 
@@ -60,6 +60,7 @@
 #include <measurement_kit/mlabns.hpp>
 #include <measurement_kit/neubot.hpp>
 
+#define DASH_INITIAL_RATE 3000
 #define DASH_MAX_ITERATIONS 15
 #define DASH_SECONDS 2
 #define MAX_NEGOTIATIONS 512
@@ -114,7 +115,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
           ctx->settings.get_noexcept("constant_bitrate", 0);
     if (!constant_bitrate || *constant_bitrate < 0) {
         ctx->logger->warn("dash: cannot parse `constant_bitrate' option");
-        ctx->cb(constant_bitrate.as_error());
+        ctx->cb(ValueError());
         return;
     }
     ErrorOr<bool> use_fixed_rates =
@@ -128,10 +129,25 @@ void run_loop_(Var<DashLoopCtx> ctx) {
           ctx->settings.get_noexcept("elapsed_target", DASH_SECONDS);
     if (!elapsed_target || *elapsed_target < 0) {
         ctx->logger->warn("dash: cannot parse `elapsed_target' option");
-        ctx->cb(elapsed_target.as_error());
+        ctx->cb(ValueError());
         return;
     }
-    if (ctx->iteration > DASH_MAX_ITERATIONS) {
+    ErrorOr<int> max_iterations =
+          ctx->settings.get_noexcept("max_iteration", DASH_MAX_ITERATIONS);
+    if (!max_iterations || *max_iterations < 0) {
+        ctx->logger->warn("dash: cannot parse `max_iteration' option");
+        ctx->cb(ValueError());
+        return;
+    }
+    ErrorOr<int> initial_rate =
+          ctx->settings.get_noexcept("initial_rate", DASH_INITIAL_RATE);
+    if (!initial_rate || *initial_rate < 0) {
+        ctx->logger->warn("dash: cannot parse `initial_rate' option");
+        ctx->cb(ValueError());
+        return;
+    }
+
+    if (ctx->iteration > *max_iterations) {
         ctx->logger->debug("dash: completed all iterations");
         try {
             std::vector<double> rates;
@@ -186,7 +202,8 @@ void run_loop_(Var<DashLoopCtx> ctx) {
         // 2017. I though this would be a good starting point.
         //
         // See: <https://help.netflix.com/en/node/306>.
-        ctx->speed_kbit = (*use_fixed_rates == true) ? dash_rates()[0] : 3000;
+        ctx->speed_kbit = (*use_fixed_rates == true)
+              ? dash_rates()[0] : *initial_rate;
     }
     /*
      * Select the rate that is lower than the latest measured speed and
@@ -291,7 +308,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                            << std::setprecision(2) << s_k
                            << " kbit/s, elapsed: " << time_elapsed << " s";
                         ctx->logger->progress(ctx->iteration /
-                                                    (double)DASH_MAX_ITERATIONS,
+                                                    (double)*max_iterations,
                                               ss.str().c_str());
                         if (*fast_scale_down == true &&
                             time_elapsed > *elapsed_target) {

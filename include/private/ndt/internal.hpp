@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_NDT_INTERNAL_HPP
 #define PRIVATE_NDT_INTERNAL_HPP
 
@@ -267,6 +267,13 @@ void run(Var<Context> ctx, Callback<Error> callback);
 
 inline void log_speed(Var<Logger> logger, std::string type, int num_streams,
                       double elapsed, double speed) {
+    if (speed > 0 && elapsed < 10.0) {
+        std::stringstream ss;
+        ss << type << " (elapsed " << std::fixed << std::setprecision(2)
+           << elapsed << " s) " << std::fixed << std::setprecision(2)
+           << speed << " kbit/s " << "(num_streams " << num_streams << ")";
+        logger->progress_relative(0.025, ss.str().c_str());
+    }
     logger->log(MK_LOG_EVENT | MK_LOG_INFO, R"xx({
             "type": "%s",
             "elapsed": [%lf, "s"],

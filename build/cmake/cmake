@@ -1,0 +1,55 @@
+#!/bin/sh
+set -e
+rootdir=$(cd $(dirname $(dirname $0)) && pwd -P)
+
+cmake_options=""
+
+echo ""
+
+system=`uname`
+echo "- Build system: $system"
+
+if [ $system = "Darwin" ]; then
+    if [ -d /usr/local/Cellar ]; then
+        echo "- You are using brew"
+        if [ -d /usr/local/Cellar/geoip -a -d /usr/local/Cellar/libevent       \
+             -a -d /usr/local/Cellar/openssl ]; then
+            echo "- You seem have all dependencies installed"
+            echo "- I will invoke cmake with brew suitable defaults"
+            cmake_options="-D MK_GEOIP=/usr/local -D MK_LIBEVENT=/usr/local -D MK_OPENSSL=/usr/local/opt/openssl -D MK_CA_BUNDLE=/usr/local/etc/openssl/cert.pem"
+        else
+            echo "- Not sure whether you have all dependencies installed"
+            echo "- Will invoke cmake with default options and let it decide"
+        fi
+    else
+        echo "- You don't have brew installed"
+        echo "- I will invoke cmake with default options and let it decide"
+    fi
+else
+    echo "- You are not on macOS, probably no cmake tweak is needed"
+fi
+
+echo "- about to invoke: 'cmake $cmake_options .'"
+echo ""
+echo "=== BEGIN CMAKE OUTPUT ==="
+echo ""
+
+cmake_failed=0
+if ! cmake $cmake_options .; then
+    cmake_failed=1
+fi
+
+echo ""
+echo "=== END CMAKE OUTPUT ==="
+echo ""
+
+if [ $cmake_failed -ne 0 ]; then
+    echo "- It seems that cmake failed. Possibly useful options in case it"
+    echo "  is complaining about missing dependencies:"
+    echo ""
+    echo "    -D MK_GEOIP=/geoip/install/path"
+    echo "    -D MK_LIBEVENT=/libevent/install/path"
+    echo "    -D MK_OPENSSL=/openssl/install/path"
+    echo ""
+    exit 1
+fi
