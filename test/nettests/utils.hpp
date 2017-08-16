@@ -50,6 +50,12 @@ with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
         mk::ooni::collector::testing_collector_url();
     test.options["bouncer_base_url"] =
         mk::ooni::bouncer::production_bouncer_url();
+    /*
+     * The `with_runnable` function is used for tests for which we do not
+     * care to submit to a collector. So, disable the collector so that these
+     * tests are going to be much faster than otherwise.
+     */
+    test.options["no_collector"] = 1;
     test.logger->set_verbosity(MK_LOG_INFO);
     lambda(test);
 }
