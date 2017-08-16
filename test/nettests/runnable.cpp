@@ -204,6 +204,11 @@ TEST_CASE("Make sure that 'randomize_input' works") {
             });
         });
         });
+        std::clog << "\n\n\n===\ncontent of result:";
+        for (auto &elem : result) {
+            std::clog << " " << elem;
+        }
+        std::clog << "\n\n\n===\n";
         return result;
     };
 
@@ -223,10 +228,12 @@ TEST_CASE("Make sure that 'randomize_input' works") {
 
     SECTION("In the common case") {
         // Note: the default should be that input is randomized
+        std::clog << "\n\n\nIN THE COMMON CASE\n\n\n";
         REQUIRE(repeat(true, 8) < 8);
     }
 
     SECTION("When the user does not want input to be shuffled") {
+        std::clog << "\n\n\nNO SHUFFLE\n\n\n";
         REQUIRE(repeat(false, 8) == 9);
     }
 }
