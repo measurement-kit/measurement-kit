@@ -197,7 +197,6 @@ TEST_CASE("Make sure that 'randomize_input' works") {
     }
 
     SECTION("When the user does not want input to be shuffled") {
-        std::clog << "\n\n\nNO SHUFFLE\n\n\n";
         REQUIRE(repeat(false, 8) == 9);
     }
 }
