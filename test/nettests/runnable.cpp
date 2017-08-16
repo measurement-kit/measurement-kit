@@ -197,6 +197,7 @@ TEST_CASE("Make sure that 'randomize_input' works") {
                 result.push_back(entry["input"]);
             };
             // This code duplicates test/nettests/base_test.cpp:start_internal_
+            mk::warn(" === BEGIN OF NEW ITERATION ===");
             test.reactor = Reactor::make();
             test.reactor->run_with_initial_event([&]() {
                 test.begin([&](Error) {
@@ -205,6 +206,7 @@ TEST_CASE("Make sure that 'randomize_input' works") {
                     });
                 });
             });
+            mk::warn(" === END OF NEW ITERATION ===");
         });
         return result;
     };

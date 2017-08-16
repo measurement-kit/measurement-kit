@@ -42,7 +42,7 @@ with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
         mk::ooni::collector::testing_collector_url();
     test.options["bouncer_base_url"] =
         mk::ooni::bouncer::production_bouncer_url();
-    test.logger->set_verbosity(MK_LOG_INFO);
+    test.logger->set_verbosity(MK_LOG_DEBUG2);
     lambda(test);
 }
 
