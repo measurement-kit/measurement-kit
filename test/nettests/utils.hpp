@@ -17,17 +17,11 @@ namespace nettests {
 
 template <typename T> mk::nettests::BaseTest make_test() {
     return T{}
-        .set_options("geoip_country_path", "GeoIP.dat")
-        .set_options("geoip_asn_path", "GeoIPASNum.dat")
-        .set_verbosity(MK_LOG_INFO)
-        /*
-         * FIXME: the testing bouncer is not working. So use the testing
-         * collector with the production bouncer.
-         */
-        .set_options("collector_base_url",
-                mk::ooni::collector::testing_collector_url())
-        .set_options("bouncer_base_url",
-                mk::ooni::bouncer::production_bouncer_url());
+          .set_options("geoip_country_path", "GeoIP.dat")
+          .set_options("geoip_asn_path", "GeoIPASNum.dat")
+          .set_verbosity(MK_LOG_INFO)
+          .set_options("bouncer_base_url",
+                       mk::ooni::bouncer::testing_bouncer_url());
 }
 
 template <typename T> mk::nettests::BaseTest make_test(std::string s) {
@@ -45,11 +39,7 @@ static inline void run_async(mk::nettests::BaseTest test) {
 static inline void
 with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
-    // FIXME: see above comment regarding collector and bouncer
-    test.options["collector_base_url"] =
-        mk::ooni::collector::testing_collector_url();
-    test.options["bouncer_base_url"] =
-        mk::ooni::bouncer::production_bouncer_url();
+    test.options["bouncer_base_url"] = mk::ooni::bouncer::testing_bouncer_url();
     /*
      * The `with_runnable` function is used for tests for which we do not
      * care to submit to a collector. So, disable the collector so that these
