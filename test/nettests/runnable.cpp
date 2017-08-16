@@ -192,6 +192,14 @@ TEST_CASE("Make sure that 'randomize_input' works") {
         test.reactor = Reactor::make();
         test.input_filepaths.push_back("./test/fixtures/hosts.txt");
         test.options["randomize_input"] = shuffle;
+        /*
+         * During #1297, I have experienced a lot of confusion because this
+         * test was not working correctly, but only under Valgrind, due to
+         * race conditions by which the order with which parallel tests were
+         * started was not the one in which they ended. Avoid this kind of
+         * unpredictable behavior by forcing no parallelism.
+         */
+        test.options["parallelism"] = 1;
         test.needs_input = true;
 
         test.reactor->loop_with_initial_event([&]() {
