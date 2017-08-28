@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include "private/net/ssl_context_impl.hpp"
+#include "private/net/libssl.hpp"
 
 using namespace mk;
 
