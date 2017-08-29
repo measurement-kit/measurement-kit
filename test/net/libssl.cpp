@@ -6,23 +6,23 @@
 #include "private/ext/catch.hpp"
 
 #include "private/net/libssl.hpp"
+#include <future>
 
+using namespace mk::net::libssl;
+using namespace mk::net;
 using namespace mk;
+
+static const char *default_cert = "./test/fixtures/certs.pem";
 
 static SSL *ssl_new_fail(SSL_CTX *) { return nullptr; }
 
-TEST_CASE("make_ssl() works") {
-
-    net::initialize_ssl(); /* Required to avoid failure when calling API */
-
+TEST_CASE("Context::get_client_ssl() works") {
     SECTION("when SSL_new() fails") {
-        SSL_CTX *ctx = SSL_CTX_new(SSLv23_method());
-        REQUIRE(ctx != nullptr);
-        ErrorOr<SSL *> maybe_ssl =
-            net::make_ssl<ssl_new_fail>(ctx, "www.google.com");
+        auto context = Context::make(default_cert, Logger::global());
+        auto maybe_ssl = (*context)->get_client_ssl<ssl_new_fail>(
+              "www.google.com", Logger::global());
         REQUIRE(!maybe_ssl);
-        REQUIRE(maybe_ssl.as_error().code == net::SslNewError().code);
-        SSL_CTX_free(ctx);
+        REQUIRE(maybe_ssl.as_error() == SslNewError());
     }
 }
 
@@ -37,65 +37,93 @@ static int ssl_ctx_load_verify_locations_fail(SSL_CTX *, const char *,
 static int ssl_ctx_load_verify_mem_fail(SSL_CTX *, void *, int) { return 0; }
 #endif
 
-TEST_CASE("make_ssl_ctx() works") {
+TEST_CASE("Context::make() works") {
     SECTION("when the ca_bundle_path is empty") {
+        auto maybe_ctx = Context::make("", Logger::global());
 #if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
-        ErrorOr<SSL_CTX *> maybe_ctx = net::make_ssl_ctx("");
         REQUIRE(!!maybe_ctx);
         REQUIRE(*maybe_ctx != nullptr);
-        SSL_CTX_free(*maybe_ctx);
 #else
-        ErrorOr<SSL_CTX *> maybe_ctx = net::make_ssl_ctx("");
         REQUIRE(!maybe_ctx);
-        REQUIRE(maybe_ctx.as_error().code ==
-                net::MissingCaBundlePathError().code);
+        REQUIRE(maybe_ctx.as_error() == MissingCaBundlePathError());
 #endif
     }
 
     SECTION("when SSL_CTX_new() fails") {
-        ErrorOr<SSL_CTX *> maybe_ctx =
-            net::make_ssl_ctx<ssl_ctx_new_fail>("/nonexistent");
+        auto maybe_ctx = Context::make<ssl_ctx_new_fail>("/nonexistent", Logger::global());
         REQUIRE(!maybe_ctx);
-        REQUIRE(maybe_ctx.as_error().code == net::SslCtxNewError().code);
+        REQUIRE(maybe_ctx.as_error() == SslCtxNewError());
     }
 
     SECTION("when SSL_CTX_load_verify_locations() fails") {
-        ErrorOr<SSL_CTX *> maybe_ctx =
-            net::make_ssl_ctx<SSL_CTX_new, ssl_ctx_load_verify_locations_fail>(
-                "./text/fixtures/certs.pem");
+        auto maybe_ctx =
+              Context::make<SSL_CTX_new, ssl_ctx_load_verify_locations_fail>(
+                    default_cert, Logger::global());
         REQUIRE(!maybe_ctx);
-        REQUIRE(maybe_ctx.as_error().code ==
-                net::SslCtxLoadVerifyLocationsError().code);
+        REQUIRE(maybe_ctx.as_error() == SslCtxLoadVerifyLocationsError());
     }
 
 #if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
     SECTION("when SSL_CTX_load_verify_mem() fails") {
-        ErrorOr<SSL_CTX *> maybe_ctx =
-            net::make_ssl_ctx<SSL_CTX_new, SSL_CTX_load_verify_locations,
-                              ssl_ctx_load_verify_mem_fail>("");
+        auto maybe_ctx =
+              Context::make<SSL_CTX_new, SSL_CTX_load_verify_locations,
+                            ssl_ctx_load_verify_mem_fail>("", Logger::global());
         REQUIRE(!maybe_ctx);
-        REQUIRE(maybe_ctx.as_error().code ==
-                net::SslCtxLoadVerifyMemError().code);
+        REQUIRE(maybe_ctx.as_error() == SslCtxLoadVerifyMemError());
     }
 #endif
 }
 
-TEST_CASE("SslContext::make() works as expected") {
-    SECTION("when the path is nonexistent") {
-        ErrorOr<Var<net::SslContext>> maybe_ctx =
-            net::SslContext::make("/nonexistent");
-        REQUIRE(!maybe_ctx);
-        REQUIRE(maybe_ctx.as_error().code ==
-                net::SslCtxLoadVerifyLocationsError().code);
+TEST_CASE("Cache works as expected") {
+    SECTION("different threads get different SSL_CTX") {
+        auto make = []() {
+            return Cache<>::thread_local_instance().get_client_ssl(
+                  default_cert, "www.google.com", Logger::global());
+        };
+        auto first = std::async(std::launch::async, make).get();
+        auto second = std::async(std::launch::async, make).get();
+        REQUIRE(*first != *second);
     }
 
-    SECTION("when the path exists and we cache it") {
-        ErrorOr<Var<net::SslContext>> maybe_ctx_1 =
-            net::SslContext::make("./test/fixtures/certs.pem");
-        REQUIRE(!!maybe_ctx_1);
-        ErrorOr<Var<net::SslContext>> maybe_ctx_2 =
-            net::SslContext::make("./test/fixtures/certs.pem");
-        REQUIRE(!!maybe_ctx_2);
-        REQUIRE(maybe_ctx_1->get() == maybe_ctx_2->get());
+    SECTION("cache is evicted when too many SSL_CTX are created") {
+        auto cache = Cache<1>{};
+        REQUIRE(cache.size() == 0);
+        auto ssl = cache.get_client_ssl(default_cert, "www.google.com",
+                                        Logger::global());
+        REQUIRE(*ssl != nullptr);
+        REQUIRE(cache.size() == 1);
+        ssl = cache.get_client_ssl("./test/fixtures/saved_ca_bundle.pem",
+                                   "www.google.com", Logger::global());
+        REQUIRE(*ssl != nullptr);
+        // Note: we expect this to be equal to one, meaning that the first
+        // created SSL_CTX has been evicted, given cache size.
+        REQUIRE(cache.size() == 1);
+    }
+
+    SECTION("cache works in the common case") {
+        auto cache = Cache<>{};
+        REQUIRE(cache.size() == 0);
+        auto ssl = cache.get_client_ssl(default_cert, "www.google.com",
+                                        Logger::global());
+        REQUIRE(*ssl != nullptr);
+        REQUIRE(cache.size() == 1);
+        ssl = cache.get_client_ssl("./test/fixtures/saved_ca_bundle.pem",
+                                   "www.google.com", Logger::global());
+        REQUIRE(*ssl != nullptr);
+        // Note: we expect this to be equal to one, meaning that the first
+        // created SSL_CTX has been evicted, given cache size.
+        REQUIRE(cache.size() == 2);
+    }
+
+    SECTION("cache uses same SSL_CTX for equal certificate path") {
+        auto cache = Cache<>{};
+        REQUIRE(cache.size() == 0);
+        auto first = cache.get_client_ssl(default_cert, "www.google.com",
+                                          Logger::global());
+        REQUIRE(!!first);
+        auto second = cache.get_client_ssl(default_cert, "www.kernel.org",
+                                           Logger::global());
+        REQUIRE(!!second);
+        REQUIRE(SSL_get_SSL_CTX(*first) == SSL_get_SSL_CTX(*second));
     }
 }

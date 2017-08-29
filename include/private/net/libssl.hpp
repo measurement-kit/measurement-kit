@@ -15,6 +15,7 @@
 /// \file private/net/libssl.hpp
 /// \brief Code related to libssl (openssl or libressl).
 
+#include "private/common/mock.hpp"
 #include "private/ext/tls_internal.h"
 #include <cassert>
 #include <map>
@@ -255,7 +256,7 @@ template <size_t max_cache_size = 64> class Cache {
 
            See above for a specific link re: refcounting.
         */
-        if (all_.size() > max_cache_size) {
+        if (all_.size() >= max_cache_size) {
             logger->warn("ssl: hit hard limit of maximum cached SSL_CTX");
             all_.clear();
         }
@@ -271,6 +272,9 @@ template <size_t max_cache_size = 64> class Cache {
         Var<Context> context = all_[ca_bundle_path];
         return context->get_client_ssl(hostname, logger);
     }
+
+    /// Return number of cached SSL_CTX
+    size_t size() const { return all_.size(); }
 
     /// Constructor
     // Note: this is public to allow for testing
