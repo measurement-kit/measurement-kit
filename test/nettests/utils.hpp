@@ -34,14 +34,6 @@ template <typename T> mk::nettests::BaseTest make_test(std::string s) {
     return make_test<T>().set_input_filepath("./test/fixtures/" + s);
 }
 
-static inline void run_async(mk::nettests::BaseTest test) {
-    volatile bool done = false;
-    test.start([&]() { done = true; });
-    do {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    } while (!done);
-}
-
 static inline void
 with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;

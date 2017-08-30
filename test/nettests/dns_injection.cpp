@@ -17,13 +17,6 @@ TEST_CASE("Synchronous dns-injection test") {
         .run();
 }
 
-TEST_CASE("Asynchronous dns-injection test") {
-    test::nettests::run_async(
-        test::nettests::make_test<DnsInjectionTest>("hosts.txt")
-            .set_options("dns/timeout", "0.1")
-    );
-}
-
 #endif
 
 // Note: we don't repeat this test for every type of nettest

@@ -11,15 +11,9 @@
 
 using namespace mk::nettests;
 
-TEST_CASE("Synchronous NDT test") {
+TEST_CASE("Synchronous multi NDT test") {
     test::nettests::make_test<MultiNdtTest>()
         .run();
-}
-
-TEST_CASE("Asynchronous NDT test") {
-    test::nettests::run_async(
-        test::nettests::make_test<MultiNdtTest>()
-    );
 }
 
 #else

@@ -5,10 +5,10 @@
 #define PRIVATE_COMMON_WORKER_HPP
 
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/has_global_factory.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
+#include <measurement_kit/common/var.hpp>
 
 #include <cassert>
 #include <functional>
@@ -20,7 +20,7 @@
 
 namespace mk {
 
-class Worker : public HasGlobalFactory<Worker> {
+class Worker {
   public:
     class State : public NonCopyable, public NonMovable {
       public:
@@ -85,6 +85,11 @@ class Worker : public HasGlobalFactory<Worker> {
     unsigned short concurrency() const {
         std::unique_lock<std::mutex> _{state->mutex};
         return state->active;
+    }
+
+    static Var<Worker> default_tasks_queue() {
+        static Var<Worker> worker = Var<Worker>::make();
+        return worker;
     }
 
   private:

@@ -16,11 +16,6 @@ TEST_CASE("Synchronous meek-fronted-requests test") {
         .run();
 }
 
-TEST_CASE("Asynchronous meek-fronted-requests test") {
-    auto t = test::nettests::make_test<MeekFrontedRequestsTest>("meek_fronted_requests.txt");
-    test::nettests::run_async(t);
-}
-
 #else
 int main() {}
 #endif
