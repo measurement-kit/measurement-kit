@@ -15,8 +15,4 @@ TEST_CASE("Synchronous dash test") {
     test::nettests::make_test<DashTest>().run();
 }
 
-TEST_CASE("Asynchronous dash test") {
-    test::nettests::run_async(test::nettests::make_test<DashTest>());
-}
-
 #endif

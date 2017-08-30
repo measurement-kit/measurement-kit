@@ -81,35 +81,6 @@ TEST_CASE("Reactor: basic functionality") {
 
 extern "C" {
 
-static event *event_new_fail(event_base *, evutil_socket_t, short,
-                             event_callback_fn, void *) {
-    return nullptr;
-}
-
-static int event_add_fail(event *, const timeval *) { return -1; }
-
-} // extern "C"
-
-TEST_CASE("Reactor: periodic event") {
-    SECTION("We deal with event_new() failure") {
-        libevent::Reactor<event_base_new, event_base_once,
-                          event_base_dispatch_no_events, event_base_loopbreak,
-                          event_new_fail, event_add>
-              reactor;
-        REQUIRE_THROWS(reactor.run());
-    }
-
-    SECTION("We deal with event_add() failure") {
-        libevent::Reactor<event_base_new, event_base_once,
-                          event_base_dispatch_no_events, event_base_loopbreak,
-                          event_new, event_add_fail>
-              reactor;
-        REQUIRE_THROWS(reactor.run());
-    }
-}
-
-extern "C" {
-
 static int event_base_once_fail(event_base *, evutil_socket_t, short,
                                 event_callback_fn, void *, const timeval *) {
     return -1;

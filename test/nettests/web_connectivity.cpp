@@ -16,12 +16,6 @@ TEST_CASE("Synchronous web connectivity test") {
         .run();
 }
 
-TEST_CASE("Asynchronous web-connectivity test") {
-    test::nettests::run_async(
-        test::nettests::make_test<WebConnectivityTest>("urls.txt")
-    );
-}
-
 TEST_CASE("Make sure that IP address scrubbing works") {
     auto test = [](std::function<BaseTest(BaseTest)> f,
                    Callback<std::string /*ip*/, std::string /*entry*/> g) {
