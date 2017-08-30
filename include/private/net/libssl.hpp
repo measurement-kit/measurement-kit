@@ -36,7 +36,7 @@ namespace libssl {
 
 /// Singleton for initializing SSL library.
 class Library : public HasGlobalFactory<Library> {
-  protected:
+  public:
     // Implementation note: since this lives as long as the application, it
     // would be a bit pointless to cleanup things in the destructor.
     Library() {

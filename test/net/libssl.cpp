@@ -83,6 +83,8 @@ TEST_CASE("Cache works as expected") {
         auto first = std::async(std::launch::async, make).get();
         auto second = std::async(std::launch::async, make).get();
         REQUIRE(*first != *second);
+        SSL_free(*first);
+        SSL_free(*second);
     }
 
     SECTION("cache is evicted when too many SSL_CTX are created") {
@@ -92,12 +94,14 @@ TEST_CASE("Cache works as expected") {
                                         Logger::global());
         REQUIRE(*ssl != nullptr);
         REQUIRE(cache.size() == 1);
+        SSL_free(*ssl);
         ssl = cache.get_client_ssl("./test/fixtures/saved_ca_bundle.pem",
                                    "www.google.com", Logger::global());
         REQUIRE(*ssl != nullptr);
         // Note: we expect this to be equal to one, meaning that the first
         // created SSL_CTX has been evicted, given cache size.
         REQUIRE(cache.size() == 1);
+        SSL_free(*ssl);
     }
 
     SECTION("cache works in the common case") {
@@ -107,12 +111,12 @@ TEST_CASE("Cache works as expected") {
                                         Logger::global());
         REQUIRE(*ssl != nullptr);
         REQUIRE(cache.size() == 1);
+        SSL_free(*ssl);
         ssl = cache.get_client_ssl("./test/fixtures/saved_ca_bundle.pem",
                                    "www.google.com", Logger::global());
         REQUIRE(*ssl != nullptr);
-        // Note: we expect this to be equal to one, meaning that the first
-        // created SSL_CTX has been evicted, given cache size.
         REQUIRE(cache.size() == 2);
+        SSL_free(*ssl);
     }
 
     SECTION("cache uses same SSL_CTX for equal certificate path") {
@@ -125,5 +129,7 @@ TEST_CASE("Cache works as expected") {
                                            Logger::global());
         REQUIRE(!!second);
         REQUIRE(SSL_get_SSL_CTX(*first) == SSL_get_SSL_CTX(*second));
+        SSL_free(*first);
+        SSL_free(*second);
     }
 }
