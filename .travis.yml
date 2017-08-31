@@ -8,15 +8,18 @@ matrix:
 
     - sudo: required
       env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
+           CXXFLAGS="-Werror" CFLAGS="-Werror"
       services:
         - docker
 
     - sudo: required
       env: DOCKER_SPEC=valgrind-gcc pkg_make_flags="V=0 -j3"
+           CXXFLAGS="-Werror" CFLAGS="-Werror"
       services:
         - docker
 
     - sudo: required
       env: DOCKER_SPEC=coveralls pkg_make_flags="V=0 -j3"
+           CXXFLAGS="-Werror" CFLAGS="-Werror"
       services:
         - docker
