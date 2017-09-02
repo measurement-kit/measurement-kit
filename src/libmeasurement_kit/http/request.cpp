@@ -123,7 +123,7 @@ void request_maybe_send(ErrorOr<Var<Request>> request, Var<Transport> txp,
 void request_recv_response(Var<Transport> txp,
                            Callback<Error, Var<Response>> cb,
                            Var<Reactor> reactor, Var<Logger> logger) {
-    Var<ResponseParserNg> parser(new ResponseParserNg);
+    Var<ResponseParserNg> parser{new ResponseParserNg{logger}};
     Var<Response> response(new Response);
     Var<bool> prevent_emit(new bool(false));
     Var<bool> valid_response(new bool(false));
