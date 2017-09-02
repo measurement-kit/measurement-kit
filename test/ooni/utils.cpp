@@ -137,19 +137,19 @@ TEST_CASE("ip lookup works") {
 }
 
 TEST_CASE("geoip works") {
-    auto asn = ooni::GeoipCache::thread_local_instance()->resolve_asn(
+    auto asn = ooni::GeoipCache::global()->resolve_asn(
             "GeoIPASNum.dat",
             "130.192.16.172"
     );
-    auto cname = ooni::GeoipCache::thread_local_instance()->resolve_country_name(
+    auto cname = ooni::GeoipCache::global()->resolve_country_name(
             "GeoIP.dat",
             "130.192.16.172"
     );
-    auto cc = ooni::GeoipCache::thread_local_instance()->resolve_country_code(
+    auto cc = ooni::GeoipCache::global()->resolve_country_code(
             "GeoIP.dat",
             "130.192.16.172"
     );
-    auto city = ooni::GeoipCache::thread_local_instance()->resolve_city_name(
+    auto city = ooni::GeoipCache::global()->resolve_city_name(
             "GeoLiteCity.dat",
             "130.192.16.172"
     );
@@ -160,64 +160,64 @@ TEST_CASE("geoip works") {
 }
 
 TEST_CASE("geoip memoization works") {
-    ooni::GeoipCache::thread_local_instance()->invalidate(); // Start clean
+    ooni::GeoipCache::global()->invalidate(); // Start clean
 
     // Open more then once. After the first open we should not really open.
-    auto gi = ooni::GeoipCache::thread_local_instance()->get(
+    auto gi = ooni::GeoipCache::global()->get(
         "GeoIP.dat");
     bool first_open;
 
     first_open = true;
-    gi = ooni::GeoipCache::thread_local_instance()->get(
+    gi = ooni::GeoipCache::global()->get(
         "GeoIP.dat", first_open);
     REQUIRE(first_open == false);
 
     // Repeat two more times to make sure behavior is consistent
 
     first_open = true;
-    gi = ooni::GeoipCache::thread_local_instance()->get(
+    gi = ooni::GeoipCache::global()->get(
         "GeoIP.dat", first_open);
     REQUIRE(first_open == false);
 
     first_open = true;
-    gi = ooni::GeoipCache::thread_local_instance()->get(
+    gi = ooni::GeoipCache::global()->get(
         "GeoIP.dat", first_open);
     REQUIRE(first_open == false);
 
     // Make sure that, if we change at least one file name, we reopen all
 
     first_open = false;
-    gi = ooni::GeoipCache::thread_local_instance()->get(
+    gi = ooni::GeoipCache::global()->get(
         "GeoLiteCity.dat", first_open);
     REQUIRE(first_open == true);
 
     // Make sure that, if we close, then of course we reopen
 
-    ooni::GeoipCache::thread_local_instance()->invalidate();
+    ooni::GeoipCache::global()->invalidate();
 
     first_open = false;
-    gi = ooni::GeoipCache::thread_local_instance()->get(
+    gi = ooni::GeoipCache::global()->get(
         "GeoLiteCity.dat", first_open);
     REQUIRE(first_open == true);
 
 }
 
 TEST_CASE("IpLocation::resolve_countr_code() deals with nonexistent database") {
-    REQUIRE((ooni::GeoipCache::thread_local_instance()->resolve_country_code(
+    REQUIRE((ooni::GeoipCache::global()->resolve_country_code(
                     "invalid.dat", "8.8.8.8"
                 ).as_error()
              == ooni::GeoipDatabaseOpenError()));
 }
 
 TEST_CASE("IpLocation::resolve_countr_name() deals with nonexistent database") {
-    REQUIRE((ooni::GeoipCache::thread_local_instance()->resolve_country_name(
+    REQUIRE((ooni::GeoipCache::global()->resolve_country_name(
                     "invalid.dat", "8.8.8.8"
                 ).as_error()
              == ooni::GeoipDatabaseOpenError()));
 }
 
 TEST_CASE("IpLocation::resolve_asn() deals with nonexistent database") {
-    REQUIRE((ooni::GeoipCache::thread_local_instance()->resolve_asn(
+    REQUIRE((ooni::GeoipCache::global()->resolve_asn(
                     "invalid.dat", "8.8.8.8"
                 ).as_error()
              == ooni::GeoipDatabaseOpenError()));
