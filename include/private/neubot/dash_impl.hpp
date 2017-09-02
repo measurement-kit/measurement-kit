@@ -233,7 +233,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
           ctx->txp, settings,
           {
                 {"Authorization", ctx->auth_token},
-                {"Cache-Control", "no-cache"},
+                {"Cache-Control", "no-cache, no-store, must-revalidate"},
           },
           "", [=](Error error, Var<http::Request> req) {
               if (error) {
@@ -406,7 +406,7 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
           {
                 {"Content-Type", "application/json"},
                 {"Authorization", auth_token},
-                {"Cache-Control", "no-cache"},
+                {"Cache-Control", "no-cache, no-store, must-revalidate"},
           },
           body,
           [=](Error error, Var<http::Response> res) {
@@ -463,7 +463,7 @@ void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
           txp, settings,
           {
                 {"Content-Type", "application/json"}, {"Authorization", auth},
-                {"Cache-Control", "no-cache"},
+                {"Cache-Control", "no-cache, no-store, must-revalidate"},
           },
           body,
           [=](Error error, Var<http::Response> res) {
