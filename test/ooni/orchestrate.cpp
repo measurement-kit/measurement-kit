@@ -206,6 +206,8 @@ TEST_CASE("Orchestration works") {
      * Wait for the default tasks queue to empty, so we exit from the
      * process without still running detached threads and we don't leak
      * memory and, therefore, valgrind memcheck does not fail.
+     *
+     * See also `test/nettests/utils.hpp`.
      */
     while (Worker::default_tasks_queue()->concurrency() > 0) {
         /* NOTHING */;

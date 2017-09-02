@@ -12,7 +12,7 @@ using namespace mk::nettests;
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Synchronous dash test") {
-    test::nettests::make_test<DashTest>().run();
+    test::nettests::with_test<DashTest>(test::nettests::run_test);
 }
 
 #endif
