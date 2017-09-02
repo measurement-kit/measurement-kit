@@ -90,17 +90,17 @@ with a PGP key having this fingerprint:
 7388 77AA 6C82 9F26 A431  C5F4 80B6 9127 7733 D95B
 ```
 
-To verify the PGP signature, you need `gpg2` installed. Then, fetch the
+To verify the PGP signature, you need `gpg` installed. Then, fetch the
 aforementioned public key with:
 
 ```
-gpg2 --recv-keys 738877AA6C829F26A431C5F480B691277733D95B
+gpg --recv-keys 738877AA6C829F26A431C5F480B691277733D95B
 ```
 
 Finally, verify the digital signature with:
 
 ```
-gpg2 --verify measurement-kit-$version.tar.gz.asc
+gpg --verify measurement-kit-$version.tar.gz.asc
 ```
 
 The result should indicate that the signature is good.

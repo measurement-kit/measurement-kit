@@ -22,7 +22,7 @@ install -d a/b/c
     ./autogen.sh --no-geoip  # do not distribute the GeoIP database
     cd ..
     tar -czf measurement-kit-$v.tar.gz measurement-kit-$v
-    gpg2 -u 738877AA6C829F26A431C5F480B691277733D95B -b --armor measurement-kit-$v.tar.gz
+    gpg -u 738877AA6C829F26A431C5F480B691277733D95B -b --armor measurement-kit-$v.tar.gz
 )
 mv a/b/c/measurement-kit-$v.tar.gz.asc .
 mv a/b/c/measurement-kit-$v.tar.gz .
