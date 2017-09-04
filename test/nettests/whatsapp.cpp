@@ -4,8 +4,8 @@
 
 #ifdef ENABLE_INTEGRATION_TESTS
 #define CATCH_CONFIG_MAIN
-#include "../src/libmeasurement_kit/ext/catch.hpp"
-#include "../src/libmeasurement_kit/ooni/whatsapp.hpp"
+#include "private/ext/catch.hpp"
+#include "private/ooni/whatsapp.hpp"
 
 #include "../nettests/utils.hpp"
 
