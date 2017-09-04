@@ -18,8 +18,8 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
     resolver_lookup_impl(callback, settings, reactor, logger);
 }
 
-/* static */ Var<GeoipCache> GeoipCache::global() {
-    static Var<GeoipCache> singleton(new GeoipCache);
+/* static */ Var<GeoipCache> GeoipCache::thread_local_instance() {
+    static thread_local Var<GeoipCache> singleton(new GeoipCache);
     return singleton;
 }
 
