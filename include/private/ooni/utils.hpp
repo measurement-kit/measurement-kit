@@ -42,7 +42,7 @@ class GeoipDatabase {
 
 class GeoipCache {
   public:
-    static Var<GeoipCache> thread_local_instance();
+    static Var<GeoipCache> global();
 
     Var<GeoipDatabase> get(std::string path, bool &did_open);
 
