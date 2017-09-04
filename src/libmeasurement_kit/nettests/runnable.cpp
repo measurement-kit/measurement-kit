@@ -205,7 +205,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
                                             std::string{});
             if (save_cc and country_path != "") {
                 try {
-                    probe_cc = *GeoipCache::global()
+                    probe_cc = *GeoipCache::thread_local_instance()
                        ->resolve_country_code(country_path, ip, logger);
                 } catch (const Error &err) {
                     logger->warn("cannot lookup country code: %s",
@@ -221,7 +221,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
             auto asn_path = options.get("geoip_asn_path", std::string{});
             if (save_asn and asn_path != "") {
                 try {
-                    probe_asn = *GeoipCache::global()
+                    probe_asn = *GeoipCache::thread_local_instance()
                         ->resolve_asn(asn_path, ip, logger);
                 } catch (const Error &err) {
                     logger->warn("cannot lookup asn: %s",

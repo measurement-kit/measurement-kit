@@ -190,19 +190,15 @@ static void compare_dns_queries(Var<Entry> entry,
     std::set<std::string> ctrl_asns;
 
     std::string asn_p = options.get("geoip_asn_path", std::string{});
-    logger->debug("Creating..");
-    // TODO: perhaps here we could use GeoipCache::global()
-    GeoipDatabase ip_location(asn_p);
+    auto ip_location = GeoipCache::thread_local_instance()->get(asn_p);
     for (auto exp_addr : exp_addresses) {
-        logger->debug("expaddr");
-        ErrorOr<std::string> asn = ip_location.resolve_asn(exp_addr);
+        ErrorOr<std::string> asn = ip_location->resolve_asn(exp_addr);
         if (asn && asn.as_value() != "AS0") {
             exp_asns.insert(asn.as_value());
         }
     }
-    logger->debug("control");
     for (auto ctrl_addr : ctrl_addresses) {
-        ErrorOr<std::string> asn = ip_location.resolve_asn(ctrl_addr);
+        ErrorOr<std::string> asn = ip_location->resolve_asn(ctrl_addr);
         if (asn && asn.as_value() != "AS0") {
             ctrl_asns.insert(asn.as_value());
         }
