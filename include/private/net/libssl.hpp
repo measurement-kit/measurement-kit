@@ -19,13 +19,11 @@
 #include "private/ext/tls_internal.h"
 #include <cassert>
 #include <map>
-#include <measurement_kit/common/has_global_factory.hpp>
 #include <measurement_kit/common/locked.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/net/error.hpp>
-#include <mutex>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <string>
