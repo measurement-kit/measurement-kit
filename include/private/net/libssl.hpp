@@ -322,6 +322,10 @@ Error verify_peer(std::string hostname, SSL *ssl, Var<Logger> logger) {
         logger->warn("ssl: got invalid hostname");
         return SslInvalidHostnameError();
     }
+    // FIXME: here we should also make sure whether we have a match or not
+    // similarly to what is done by libtls:
+    //
+    // https://github.com/libressl-portable/openbsd/blob/5d5aa153032583c16d6048c742e107028afa500a/src/lib/libtls/tls_client.c#L331
     return NoError();
 }
 
