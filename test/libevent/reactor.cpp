@@ -21,17 +21,16 @@ static int sigaction_fail(int, const struct sigaction *, struct sigaction *) {
 
 } // extern "C"
 
-TEST_CASE("LibeventLibrary") {
+TEST_CASE("libevent_init_once") {
     SECTION("We deal with evthread_use_pthreads() failure") {
-        REQUIRE_THROWS(
-              (libevent::Reactor<>::LibeventLibrary<evthread_use_pthreads_fail,
-                                                    sigaction>{}));
+        REQUIRE_THROWS((libevent::Reactor<>::libevent_init_once<
+                        evthread_use_pthreads_fail, sigaction>()));
     }
 
     SECTION("We deal with sigaction() failure") {
         REQUIRE_THROWS(
-              (libevent::Reactor<>::LibeventLibrary<evthread_use_pthreads,
-                                                    sigaction_fail>{}));
+              (libevent::Reactor<>::libevent_init_once<evthread_use_pthreads,
+                                                       sigaction_fail>()));
     }
 }
 
@@ -76,35 +75,6 @@ TEST_CASE("Reactor: basic functionality") {
                           event_base_loopbreak_fail, event_new, event_add>
               reactor;
         REQUIRE_THROWS(reactor.stop());
-    }
-}
-
-extern "C" {
-
-static event *event_new_fail(event_base *, evutil_socket_t, short,
-                             event_callback_fn, void *) {
-    return nullptr;
-}
-
-static int event_add_fail(event *, const timeval *) { return -1; }
-
-} // extern "C"
-
-TEST_CASE("Reactor: periodic event") {
-    SECTION("We deal with event_new() failure") {
-        libevent::Reactor<event_base_new, event_base_once,
-                          event_base_dispatch_no_events, event_base_loopbreak,
-                          event_new_fail, event_add>
-              reactor;
-        REQUIRE_THROWS(reactor.run());
-    }
-
-    SECTION("We deal with event_add() failure") {
-        libevent::Reactor<event_base_new, event_base_once,
-                          event_base_dispatch_no_events, event_base_loopbreak,
-                          event_new, event_add_fail>
-              reactor;
-        REQUIRE_THROWS(reactor.run());
     }
 }
 

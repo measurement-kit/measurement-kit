@@ -5,6 +5,7 @@
 #include <measurement_kit/ooni.hpp>
 
 #include "private/ooni/orchestrate_impl.hpp"
+#include "private/common/worker.hpp"
 
 namespace mk {
 namespace ooni {
@@ -157,18 +158,20 @@ void Client::register_probe(std::string &&password,
                             Callback<Error &&, Auth &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
-    AsyncRunner::global()->start_("orchestrate::register_probe", logger, [
+    //
+    // We must copy or move everything into the initial lambda and then from
+    // there the task is synchronous because run_...() is blocking.
+    Worker::default_tasks_queue()->run_in_background_thread([
         password = std::move(password), meta = *this, cb = std::move(cb)
-    ](Continuation<> && done) mutable {
-        do_register_probe(
-              std::move(password), meta, AsyncRunner::global()->reactor(),
-              [ done = std::move(done),
-                cb = std::move(cb) ](Error && error, Auth && auth) mutable {
-                  done([
-                      error = std::move(error), cb = std::move(cb),
-                      auth = std::move(auth)
-                  ]() mutable { cb(std::move(error), std::move(auth)); });
-              });
+    ]() mutable {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([&]() {
+            do_register_probe(std::move(password), meta, reactor,
+                              [&](Error &&error, Auth &&auth) {
+                                  reactor->stop();
+                                  cb(std::move(error), std::move(auth));
+                              });
+        });
     });
 }
 
@@ -176,18 +179,20 @@ void Client::find_location(
       Callback<Error &&, std::string &&, std::string &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
-    AsyncRunner::global()->start_(
-          "orchestrate::find_location", logger,
-          [ meta = *this, cb = std::move(cb) ](Continuation<> && done) mutable {
-              do_find_location(meta, AsyncRunner::global()->reactor(), [
-                  cb = std::move(cb), done = std::move(done)
-              ](Error && error, std::string && asn, std::string && cc) {
-                  done([
-                      cb = std::move(cb), error = std::move(error),
-                      asn = std::move(asn), cc = std::move(cc)
-                  ]() mutable {
-                      cb(std::move(error), std::move(asn), std::move(cc));
-                  });
+    //
+    // We must copy or move everything into the initial lambda and then from
+    // there the task is synchronous because run_...() is blocking.
+    Worker::default_tasks_queue()->run_in_background_thread(
+          [ meta = *this, cb = std::move(cb) ]() {
+              Var<Reactor> reactor = Reactor::make();
+              reactor->run_with_initial_event([&]() {
+                  do_find_location(meta, reactor,
+                                   [&](Error &&error, std::string &&asn,
+                                       std::string &&cc) {
+                                       reactor->stop();
+                                       cb(std::move(error), std::move(asn),
+                                          std::move(cc));
+                                   });
               });
           });
 }
@@ -195,17 +200,20 @@ void Client::find_location(
 void Client::update(Auth &&auth, Callback<Error &&, Auth &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
-    AsyncRunner::global()->start_("orchestrate::update", logger, [
+    //
+    // We must copy or move everything into the initial lambda and then from
+    // there the task is synchronous because run_...() is blocking.
+    Worker::default_tasks_queue()->run_in_background_thread([
         meta = *this, cb = std::move(cb), auth = std::move(auth)
-    ](Continuation<> && done) mutable {
-        do_update(std::move(auth), meta, AsyncRunner::global()->reactor(),
-                  [ cb = std::move(cb), done = std::move(done) ](
-                        Error && error, Auth && auth) mutable {
-                      done([
-                          cb = std::move(cb), error = std::move(error),
-                          auth = std::move(auth)
-                      ]() mutable { cb(std::move(error), std::move(auth)); });
-                  });
+    ]() mutable {
+        Var<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([&]() {
+            do_update(std::move(auth), meta, reactor,
+                      [&](Error &&error, Auth &&auth) {
+                          reactor->stop();
+                          cb(std::move(error), std::move(auth));
+                      });
+        });
     });
 }
 

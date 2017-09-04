@@ -22,12 +22,6 @@ TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
         .run();
 }
 
-TEST_CASE("Asynchronous http-invalid-request-line test") {
-    test::nettests::run_async(
-        test::nettests::make_test<HttpInvalidRequestLineTest>()
-    );
-}
-
 #else
 int main() {}
 #endif

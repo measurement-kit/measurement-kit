@@ -8,10 +8,6 @@ autogen_get_geoip() {
         wget $base/GeoLiteCountry/GeoIP.dat.gz -O GeoIP.dat.gz
         gzip -d GeoIP.dat.gz
     fi
-    if [ ! -f "GeoLiteCity.dat" ]; then
-        wget $base/GeoLiteCity.dat.gz -O GeoLiteCity.dat.gz
-        gzip -d GeoLiteCity.dat.gz
-    fi
     if [ ! -f "GeoIPASNum.dat" ]; then
         wget $base/asnum/GeoIPASNum.dat.gz -O GeoIPASNum.dat.gz
         gzip -d GeoIPASNum.dat.gz

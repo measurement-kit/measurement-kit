@@ -137,13 +137,14 @@ versions of MeasurementKit lower than v0.7.0.
 Other available methods (typically to be called in `main()`) are:
 
 The `run_with_initial_event` method runs the reactor and calls the specified
-callback when the reactor is running. This is a blocking method that does
-not return until you call the `stop` method. Calling this method when the
-reactor is already running causes an exception to be thrown.
+callback when the reactor is running. This is equivalent to calling
+`call_soon()` with the target callback, followed by `run()`.
 
 The `run` method runs the reactor. This is a blocking method that does not
-return until you call the `stop` method. Calling this method when the reactor
-is already running causes an exception to be thrown.
+return until the reactor runs out I/O events to poll for and/or pending
+(possibly delayed) calls. You can also stop a running reactor explicitly
+by calling `stop`. Calling `run` when the reactor is already running
+throws a `std::runtime_error` exception.
 
 The `stop` method stop the reactor. This is an idempotent method that you
 can call many times. This method MAY return while the reactor is still
@@ -201,9 +202,9 @@ the one obtained with `Reactor::make()`.
    callbacks in the same or in another thread context.
 
 4. calling `stop` before calling `run` has no effect and will typically lead
-   to your program hanging for an infinite amount of time. When you want to
-   run "initialization" actions in the context of the I/O loop you should use
-   instead the following pattern:
+   to your program enter the I/O loop and suddenly leaving it because there
+   is nothing to do. When you want to run "initialization" actions in the
+   context of the I/O loop you should use instead the following pattern:
 
 ```C++
 int main(int argc, char **argv) {
@@ -231,3 +232,7 @@ It was renamed `Reactor` in MeasurementKit 0.2.0. As of MK v0.2.0,
 the `Poller` still exists as a specific implementation of the
 `Reactor` interface described in this manual page. The `Reactor`
 was significantly improved as part of MK v0.4.0 and MK v0.7.0.
+
+Before MK v0.8.0, `Reactor::run()` was blocking until `stop` was
+called. After, `Reactor::run()` will return as soon as there aren't
+pending I/O events or (possibly delayed) calls.
