@@ -24,13 +24,13 @@ static int sigaction_fail(int, const struct sigaction *, struct sigaction *) {
 TEST_CASE("libevent_init_once") {
     SECTION("We deal with evthread_use_pthreads() failure") {
         REQUIRE_THROWS((libevent::Reactor<>::libevent_init_once<
-                        evthread_use_pthreads_fail, sigaction>{}));
+                        evthread_use_pthreads_fail, sigaction>()));
     }
 
     SECTION("We deal with sigaction() failure") {
         REQUIRE_THROWS(
               (libevent::Reactor<>::libevent_init_once<evthread_use_pthreads,
-                                                       sigaction_fail>{}));
+                                                       sigaction_fail>()));
     }
 }
 

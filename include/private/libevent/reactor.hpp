@@ -99,7 +99,7 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
     /// \brief Code to make sure libevent is correctly configured.
 
     template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction)>
-    static inline void init_libevent_once() {
+    static inline void libevent_init_once() {
         return locked_global([]() {
             static bool initialized = false;
             if (initialized) {
@@ -132,7 +132,7 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
     event_base *evbase = nullptr;
 
     Reactor() {
-        init_libevent_once();
+        libevent_init_once();
         if ((evbase = event_base_new()) == nullptr) {
             throw std::runtime_error("event_base_new");
         }
