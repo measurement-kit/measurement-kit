@@ -21,8 +21,13 @@ using namespace mk::report;
 typedef std::map<std::string, std::string> input_t; // Syntactic sugar
 
 static const std::vector<input_t> &gen_http_inputs() {
-    return locked_global([]() {
-        static std::vector<input_t> is;
+    // Implementation note: the vector must be static and outside of the lambda
+    // to prevent several clang warning re: return a stack allocated object.
+    // This seems weird to me, but perhaps it's just that I do not fully grok
+    // declaring a static variable inside a lambda (maybe it's not so weird
+    // if one thinks that a lambda is a class).
+    static std::vector<input_t> is;
+    locked_global([]() {
         if (is.size() <= 0) {
             input_t i;
             i["name"] = "MS HTTP Captive Portal";
@@ -83,12 +88,13 @@ static const std::vector<input_t> &gen_http_inputs() {
             is.push_back(i);
             i.clear();
         }
-        return is;
     });
+    return is;
 }
 
-void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
-               Var<Reactor> reactor, Var<Logger> logger) {
+static void http_many(Var<Entry> entry, Callback<Error> all_done_cb,
+                      Settings options, Var<Reactor> reactor,
+                      Var<Logger> logger) {
 
     auto http_cb = [=](const input_t &input, Callback<Error> done_cb) {
         return [=](Error err, Var<http::Response> response) {
@@ -165,8 +171,9 @@ void http_many(Var<Entry> entry, Callback<Error> all_done_cb, Settings options,
 
 // this is the only test that doesn't follow the pattern of those above.
 // this hostname should always resolve to this IP.
-void dns_msft_ncsi(Var<Entry> entry, Callback<Error> done_cb, Settings options,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+static void dns_msft_ncsi(Var<Entry> entry, Callback<Error> done_cb,
+                          Settings options, Var<Reactor> reactor,
+                          Var<Logger> logger) {
     std::string hostname = "dns.msftncsi.com";
     // Note: we're setting the nameserver to empty, which is going to work
     // as long as we're using the `system` DNS resolver. Using another resolver
