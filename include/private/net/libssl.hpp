@@ -34,18 +34,20 @@ namespace mk {
 namespace net {
 namespace libssl {
 
-/// Singleton for initializing SSL library.
-class Library : public HasGlobalFactory<Library> {
-  public:
-    // Implementation note: since this lives as long as the application, it
-    // would be a bit pointless to cleanup things in the destructor.
-    Library() {
-        SSL_library_init();
-        ERR_load_crypto_strings();
-        SSL_load_error_strings();
-        OpenSSL_add_all_algorithms();
-    }
-};
+/// Initialize the SSL library
+static inline void init_libssl_once(Var<Logger> logger) {
+    locked_global([]() {
+        static bool initialized = false;
+        if (!initialized) {
+            logger->debug("initializing SSL library");
+            SSL_library_init();
+            ERR_load_crypto_strings();
+            SSL_load_error_strings();
+            OpenSSL_add_all_algorithms();
+            initialized = true;
+        }
+    });
+}
 
 /*!
     \brief Wrapper for SSL context (`SSL_CTX *`).
@@ -130,9 +132,9 @@ class Context : public NonCopyable, public NonMovable {
               >
     static ErrorOr<Var<Context>> make(std::string ca_bundle_path,
                                       Var<Logger> logger) {
-        // Implementation note: we need to get the library singleton as early
-        // as here to make sure OpenSSL internals are initialized.
-        auto library = Library::global();
+        // Implementation note: we need to initialize libssl early otherwise
+        // most of the functions of the library will not work properly.
+        init_libssl_once(logger);
         logger->debug("ssl: creating SSL_CTX with bundle: '%s'",
                       ca_bundle_path.c_str());
         SSL_CTX *ctx = SSL_CTX_new(SSLv23_client_method());
