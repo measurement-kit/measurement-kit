@@ -42,9 +42,7 @@ template <typename T> void with_test(with_test_cb &&lambda) {
      *
      * See also `test/ooni/orchestrate.cpp`.
      */
-    while (mk::Worker::default_tasks_queue()->concurrency() > 0) {
-        /* NOTHING */;
-    }
+    mk::Worker::default_tasks_queue()->wait_empty_();
 }
 
 template <typename T> void with_test(std::string s, with_test_cb &&lambda) {

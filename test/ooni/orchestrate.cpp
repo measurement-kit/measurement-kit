@@ -209,9 +209,7 @@ TEST_CASE("Orchestration works") {
      *
      * See also `test/nettests/utils.hpp`.
      */
-    while (Worker::default_tasks_queue()->concurrency() > 0) {
-        /* NOTHING */;
-    }
+    Worker::default_tasks_queue()->wait_empty_();
 }
 
 #endif

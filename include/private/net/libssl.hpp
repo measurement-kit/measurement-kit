@@ -34,7 +34,7 @@ namespace libssl {
 
 /// Initialize the SSL library
 static inline void init_libssl_once(Var<Logger> logger) {
-    locked_global([]() {
+    locked_global([logger]() {
         static bool initialized = false;
         if (!initialized) {
             logger->debug("initializing SSL library");
