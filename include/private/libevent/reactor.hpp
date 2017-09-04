@@ -24,6 +24,7 @@
 #include <functional>                              // for std::function
 #include <measurement_kit/common/callback.hpp>     // for mk::Callback
 #include <measurement_kit/common/error.hpp>        // for mk::Error
+#include <measurement_kit/common/locked.hpp>       // for mk::locked_global
 #include <measurement_kit/common/logger.hpp>       // for mk::warn
 #include <measurement_kit/common/non_copyable.hpp> // for mk::NonCopyable
 #include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
@@ -98,26 +99,24 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
     /// \brief Code to make sure libevent is correctly configured.
 
     template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction)>
-    class LibeventLibrary {
-      public:
-        static LibeventLibrary *global() {
-            static LibeventLibrary singleton;
-            return &singleton;
-        }
-
-        LibeventLibrary() {
+    static inline void libevent_init_once() {
+        return locked_global([]() {
+            static bool initialized = false;
+            if (initialized) {
+                return;
+            }
+            mk::debug("initializing libevent once");
             if (evthread_use_pthreads() != 0) {
                 throw std::runtime_error("evthread_use_pthreads");
             }
-            struct sigaction sa {};
+            struct sigaction sa{};
             sa.sa_handler = SIG_IGN;
             if (sigaction(SIGPIPE, &sa, nullptr) != 0) {
                 throw std::runtime_error("sigaction");
             }
-        }
-    };
-
-    LibeventLibrary<> *library = LibeventLibrary<>::global();
+            initialized = true;
+        });
+    }
 
     // ### Event loop
     /*-
@@ -133,6 +132,7 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
     event_base *evbase = nullptr;
 
     Reactor() {
+        libevent_init_once();
         if ((evbase = event_base_new()) == nullptr) {
             throw std::runtime_error("event_base_new");
         }
