@@ -74,6 +74,10 @@ TEST_CASE("Context::make() works") {
 #endif
 }
 
+static ErrorOr<Var<Context>> context_make_fail(std::string, Var<Logger>) {
+    return MockedError();
+}
+
 TEST_CASE("Cache works as expected") {
     SECTION("different threads get different SSL_CTX") {
         auto make = []() {
@@ -131,5 +135,61 @@ TEST_CASE("Cache works as expected") {
         REQUIRE(SSL_get_SSL_CTX(*first) == SSL_get_SSL_CTX(*second));
         SSL_free(*first);
         SSL_free(*second);
+    }
+
+    SECTION("cache behaves when Context::make fails") {
+        auto cache = Cache<>{};
+        auto r = cache.get_client_ssl<context_make_fail>(
+              default_cert, "www.google.com", Logger::global());
+        REQUIRE(!r);
+        REQUIRE(r.as_error() == MockedError());
+    }
+}
+
+static long ssl_get_verify_result_fail(const SSL *) {
+    return X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT;
+}
+
+static long ssl_get_verify_result_success(const SSL *) {
+    return X509_V_OK;
+}
+
+static X509 *ssl_get_peer_certificate_fail(const SSL *) {
+    return nullptr;
+}
+
+static X509 *ssl_get_peer_certificate_success(const SSL *) {
+    return X509_new();
+}
+
+static int tls_check_name_fail(struct tls *, X509 *, const char *) {
+    return -1;
+}
+
+TEST_CASE("verify_peer works as expected") {
+    Cache<> c;
+
+    SECTION("when SSL_get_verify_result fails") {
+        auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::global());
+        REQUIRE(verify_peer<ssl_get_verify_result_fail>(
+                      "", ssl, Logger::global()) != NoError());
+        SSL_free(ssl);
+    }
+
+    SECTION("when SSL_get_peer_certificate fails") {
+        auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::global());
+        REQUIRE((verify_peer<ssl_get_verify_result_success,
+                             ssl_get_peer_certificate_fail>(
+                      "", ssl, Logger::global())) != NoError());
+        SSL_free(ssl);
+    }
+
+    SECTION("when tls_check_name fails") {
+        auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::global());
+        REQUIRE((verify_peer<ssl_get_verify_result_success,
+                             ssl_get_peer_certificate_success,
+                             tls_check_name_fail>("", ssl, Logger::global())) !=
+                NoError());
+        SSL_free(ssl);
     }
 }

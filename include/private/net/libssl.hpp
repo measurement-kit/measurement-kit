@@ -33,7 +33,7 @@ namespace net {
 namespace libssl {
 
 /// Initialize the SSL library
-static inline void init_libssl_once(Var<Logger> logger) {
+static inline void libssl_init_once(Var<Logger> logger) {
     locked_global([logger]() {
         static bool initialized = false;
         if (!initialized) {
@@ -132,7 +132,7 @@ class Context : public NonCopyable, public NonMovable {
                                       Var<Logger> logger) {
         // Implementation note: we need to initialize libssl early otherwise
         // most of the functions of the library will not work properly.
-        init_libssl_once(logger);
+        libssl_init_once(logger);
         logger->debug("ssl: creating SSL_CTX with bundle: '%s'",
                       ca_bundle_path.c_str());
         SSL_CTX *ctx = SSL_CTX_new(SSLv23_client_method());
@@ -145,8 +145,8 @@ class Context : public NonCopyable, public NonMovable {
          *
          * We use SSLv23_client_method() because it is the most general method
          * that applications SHOULD use according to the manual[1] and we
-         * disable by default deprecated protocols. We MAY want to enable them
-         * in the OONI's web_connectivity test so to reach more websites.
+         * disable by default deprecated protocols. We will enable them
+         * in the OONI's web_connectivity test so to measure more websites.
          *
          * [1] https://wiki.openssl.org/index.php/Manual:SSL_CTX_new(3)
          */
@@ -223,6 +223,12 @@ template <size_t max_cache_size = 64> class Cache {
         return instance;
     }
 
+    /// Inline wrapper for Context::make, for testability
+    static inline ErrorOr<Var<Context>> mkctx(std::string ca_bundle_path,
+                                              Var<Logger> logger) {
+        return Context::make(ca_bundle_path, logger);
+    }
+
     /*!
         \brief Factory to construct an `SSL *`.
 
@@ -245,6 +251,7 @@ template <size_t max_cache_size = 64> class Cache {
         \remark This operation is thread safe by definition since the
         cache is created using thread-local storage.
     */
+    template <MK_MOCK(mkctx)>
     ErrorOr<SSL *> get_client_ssl(std::string ca_bundle_path,
                                   std::string hostname, Var<Logger> logger) {
         /*
@@ -261,8 +268,7 @@ template <size_t max_cache_size = 64> class Cache {
             all_.clear();
         }
         if (all_.count(ca_bundle_path) == 0) {
-            ErrorOr<Var<Context>> maybe_context =
-                  Context::make(ca_bundle_path, logger);
+            ErrorOr<Var<Context>> maybe_context = mkctx(ca_bundle_path, logger);
             if (!maybe_context) {
                 return maybe_context.as_error();
             }
@@ -277,7 +283,6 @@ template <size_t max_cache_size = 64> class Cache {
     size_t size() const { return all_.size(); }
 
     /// Constructor
-    // Note: this is public to allow for testing
     Cache() {}
 
   private:
