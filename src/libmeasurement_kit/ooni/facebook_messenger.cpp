@@ -126,11 +126,11 @@ static void tcp_many(Error error,
             ips_count += 1;
         }
     }
-    Var<int> ips_tested(new int(0));
-    if (ips_count == *ips_tested) {
+    if (ips_count == 0) {
         cb(entry);
         return;
     }
+    Var<int> ips_tested(new int(0));
 
     auto tcp_cb = [=](std::string service, std::string ip, int port) {
         return [=](Error err, Var<net::Transport> txp) {
