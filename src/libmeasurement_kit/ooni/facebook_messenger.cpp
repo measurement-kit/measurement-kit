@@ -122,9 +122,7 @@ static void tcp_many(Error error,
         if (service_and_ips.first == "stun") {
             continue;
         }
-        for (auto const& ip : service_and_ips.second) {
-            ips_count += 1;
-        }
+        ips_count += service_and_ips.second.size();
     }
     if (ips_count == 0) {
         cb(entry);
