@@ -316,16 +316,17 @@ Error verify_peer(std::string hostname, SSL *ssl, Var<Logger> logger) {
         logger->warn("ssl: got no certificate");
         return SslNoCertificateError();
     }
-    auto err = tls_check_name(nullptr, server_cert, hostname.c_str());
+    auto match = 0;
+    auto err = tls_check_name(nullptr, server_cert, hostname.c_str(), &match);
     X509_free(server_cert); // Make sure we don't leak memory
     if (err != 0) {
         logger->warn("ssl: got invalid hostname");
         return SslInvalidHostnameError();
     }
-    // FIXME: here we should also make sure whether we have a match or not
-    // similarly to what is done by libtls:
-    //
-    // https://github.com/libressl-portable/openbsd/blob/5d5aa153032583c16d6048c742e107028afa500a/src/lib/libtls/tls_client.c#L331
+    if (!match) {
+        logger->warn("ssl: name not present in server certificate");
+        return SslMissingHostnameError();
+    }
     return NoError();
 }
 

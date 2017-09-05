@@ -86,6 +86,7 @@ MK_NET_ERRORS_XX
 #undef XX
 
 MK_DEFINE_ERR(MK_ERR_NET(58), SslDirtyShutdownError, "ssl_dirty_shutdown")
+MK_DEFINE_ERR(MK_ERR_NET(59), SslMissingHostnameError, "ssl_missing_hostname")
 
 } // namespace net
 } // namespace mk

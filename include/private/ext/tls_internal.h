@@ -22,7 +22,7 @@ union tls_addr {
 extern "C" {
 #endif
 
-int tls_check_name(struct tls *ctx, X509 *cert, const char *name);
+int tls_check_name(struct tls *ctx, X509 *cert, const char *name, int *match);
 
 #ifdef __cplusplus
 }
