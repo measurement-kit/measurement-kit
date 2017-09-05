@@ -12,7 +12,7 @@ using namespace mk::nettests;
 using namespace mk;
 
 TEST_CASE("Synchronous captive portal test") {
-    test::nettests::make_test<CaptivePortalTest>().run();
+    test::nettests::with_test<CaptivePortalTest>(test::nettests::run_test);
 }
 
 #else
