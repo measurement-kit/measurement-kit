@@ -12,13 +12,7 @@ using namespace mk::nettests;
 using namespace mk;
 
 TEST_CASE("Synchronous facebook_messenger test") {
-    test::nettests::make_test<FacebookMessengerTest>("meek_fronted_requests.txt")
-        .run();
-}
-
-TEST_CASE("Asynchronous meek-fronted-requests test") {
-    auto t = test::nettests::make_test<FacebookMessengerTest>("meek_fronted_requests.txt");
-    test::nettests::run_async(t);
+    test::nettests::with_test<FacebookMessengerTest>(test::nettests::run_test);
 }
 
 #else
