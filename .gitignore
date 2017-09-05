@@ -105,8 +105,8 @@
 /test/net/connect
 /test/net/emitter
 /test/net/evbuffer
+/test/net/libssl
 /test/net/socks5
-/test/net/ssl_context
 /test/net/transport
 /test/net/utils
 /test/nettests/dash

@@ -2,8 +2,8 @@
  * This is a mock of tls_internal.h filling out all the functions that are
  * called by tls_verify with mocks.
  */
-#ifndef SRC_EXT_TLS_INTERNAL_H
-#define SRC_EXT_TLS_INTERNAL_H
+#ifndef PRIVATE_EXT_TLS_INTERNAL_H
+#define PRIVATE_EXT_TLS_INTERNAL_H
 
 #include <measurement_kit/portable/netinet/in.h>
 #include <openssl/x509.h>

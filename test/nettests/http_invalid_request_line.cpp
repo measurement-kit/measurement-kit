@@ -12,14 +12,14 @@
 using namespace mk::nettests;
 
 TEST_CASE("Synchronous http-invalid-request-line test") {
-    test::nettests::make_test<HttpInvalidRequestLineTest>()
-        .run();
+    test::nettests::with_test<HttpInvalidRequestLineTest>(
+          test::nettests::run_test);
 }
 
 TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
-    test::nettests::make_test<HttpInvalidRequestLineTest>()
-        .set_options("backend", "http://data.neubot.org/")
-        .run();
+    test::nettests::with_test<HttpInvalidRequestLineTest>([](BaseTest &test) {
+        test.set_options("backend", "http://data.neubot.org/").run();
+    });
 }
 
 #else
