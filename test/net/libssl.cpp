@@ -162,8 +162,13 @@ static X509 *ssl_get_peer_certificate_success(const SSL *) {
     return X509_new();
 }
 
-static int tls_check_name_fail(struct tls *, X509 *, const char *) {
+static int tls_check_name_fail(struct tls *, X509 *, const char *, int *) {
     return -1;
+}
+
+static int tls_check_name_nomatch(struct tls *, X509 *, const char *, int *x) {
+    *x = 0;
+    return 0;
 }
 
 TEST_CASE("verify_peer works as expected") {
@@ -190,6 +195,15 @@ TEST_CASE("verify_peer works as expected") {
                              ssl_get_peer_certificate_success,
                              tls_check_name_fail>("", ssl, Logger::global())) !=
                 NoError());
+        SSL_free(ssl);
+    }
+
+    SECTION("when tls_check_name does not match") {
+        auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::global());
+        REQUIRE((verify_peer<ssl_get_verify_result_success,
+                             ssl_get_peer_certificate_success,
+                             tls_check_name_nomatch>(
+                      "", ssl, Logger::global())) != NoError());
         SSL_free(ssl);
     }
 }
