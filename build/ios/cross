@@ -12,7 +12,7 @@ shift
 ARCH=$1
 shift
 
-MINIOSVERSION="8.0"
+MINIOSVERSION="9.0"
 if [ "$PLATFORM" = "iphoneos" ]; then
     EXTRA_CONFIG="--host=arm-apple-darwin --target=arm-apple-darwin --disable-shared"
     MINVERSION="-miphoneos-version-min=$MINIOSVERSION"
@@ -42,6 +42,7 @@ export CXXFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --
 export LDFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
 
 export pkg_configure_flags="$EXTRA_CONFIG"
+export pkg_make_flags="V=0 $pkg_make_flags"
 export pkg_prefix="$DESTDIR"
 export pkg_cross="${PLATFORM}"
 export pkg_cross_arch="${ARCH}"

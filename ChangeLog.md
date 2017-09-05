@@ -1,3 +1,12 @@
+# MeasurementKit 0.7.1 [2017-09-05]
+
+- fix(*): use `gpg` rather than `gpg2` (#1320)
+- fix(geoip): make cache thread local (#1323)
+- Update to Catch v1.10.0 (#1327)
+- backport: ssl: refactor [...], fix thread safety (#1313)
+- Update tls_verify to v1.19 (#1328)
+- fix: ios build (#1331)
+
 # MeasurementKit 0.7.0 [2017-08-05]
 
 - build/ios/archive-library: fix version number

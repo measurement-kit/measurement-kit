@@ -2,11 +2,11 @@
 set -e
 ROOTDIR=$(cd `dirname "$0"` && pwd -P)
 
-RELEASE_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.7.0/ios_binaries-0.7.0.tgz
+RELEASE_URL=https://github.com/measurement-kit/measurement-kit/releases/download/v0.7.1/ios_binaries-0.7.1.tgz
 RELEASE_FILE=$(basename $RELEASE_URL)
 if wget $RELEASE_URL; then
     wget $RELEASE_URL.asc
-    gpg2 --verify $RELEASE_FILE.asc
+    gpg --verify $RELEASE_FILE.asc
     tar xzf $RELEASE_FILE
     rm $RELEASE_FILE $RELEASE_FILE.asc
     $ROOTDIR/build-frameworks
@@ -21,7 +21,7 @@ echo "Downloading and verifying precompiled dependencies from github"
     DEPS_FILE=$(basename $DEPS_URL)
     curl --progress-bar -LO $DEPS_URL
     curl --progress-bar -LO $DEPS_URL.asc
-    gpg2 --verify $DEPS_FILE.asc
+    gpg --verify $DEPS_FILE.asc
     tar -xzf $DEPS_FILE
     rm $DEPS_FILE $DEPS_FILE.asc
 )

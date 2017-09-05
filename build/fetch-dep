@@ -39,7 +39,7 @@ npm install download-github-release
 ./node_modules/.bin/download-github-release $arguments                     \
         measurement-kit dependencies
 for file in *.tgz; do
-    gpg2 --verify $file.asc $file
+    gpg --verify $file.asc $file
     install -d $pkg_prefix
     tar -C $pkg_prefix -xf $file
 done
