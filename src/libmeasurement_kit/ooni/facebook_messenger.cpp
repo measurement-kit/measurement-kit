@@ -25,7 +25,6 @@ static const std::map<std::string, std::string>
 
 static void dns_many(Error error,
                      Var<Entry> entry,
-                     std::map<std::string, std::string> fb_service_hostnames,
                      Settings options,
                      Var<Reactor> reactor,
                      Var<Logger> logger,
@@ -55,7 +54,7 @@ static void dns_many(Error error,
     // if we find any inconsistent DNS later, switch this to true
     (*entry)["facebook_dns_blocking"] = false;
 
-    size_t names_count = fb_service_hostnames.size();
+    size_t names_count = FB_SERVICE_HOSTNAMES.size();
     if (names_count == 0) {
         cb(NoError(), entry, *fb_service_ips, options, reactor, logger);
         return;
@@ -99,7 +98,7 @@ static void dns_many(Error error,
         };
     };
 
-    for (auto const& service_and_hostname : fb_service_hostnames) {
+    for (auto const& service_and_hostname : FB_SERVICE_HOSTNAMES) {
         std::string service = service_and_hostname.first;
         std::string hostname = service_and_hostname.second;
         templates::dns_query(entry, "A", "IN", hostname, "",
@@ -206,7 +205,6 @@ void facebook_messenger(Settings options,
                  tcp_many
                 )(NoError(),
                   entry,
-                  FB_SERVICE_HOSTNAMES,
                   options,
                   reactor,
                   logger,
