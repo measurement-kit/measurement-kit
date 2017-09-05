@@ -13,6 +13,16 @@ namespace ooni {
 
 using namespace mk::report;
 
+static const std::map<std::string, std::string>
+    &FB_SERVICE_HOSTNAMES = {
+        {"stun", "stun.fbsbx.com"},
+        {"b_api", "b-api.facebook.com"},
+        {"b_graph", "b-graph.facebook.com"},
+        {"edge", "edge-mqtt.facebook.com"},
+        {"external_cdn", "external.xx.fbcdn.net"},
+        {"scontent_cdn", "scontent.xx.fbcdn.net"},
+        {"star", "star.c10r.facebook.com"}};
+
 static void dns_many(Error error,
                      Var<Entry> entry,
                      std::map<std::string, std::string> fb_service_hostnames,
@@ -187,15 +197,6 @@ void facebook_messenger(Settings options,
     logger->info("starting facebook_messenger");
     Var<Entry> entry(new Entry);
 
-    std::map<std::string, std::string>
-        FB_SERVICE_HOSTNAMES = {
-            {"stun", "stun.fbsbx.com"},
-            {"b_api", "b-api.facebook.com"},
-            {"b_graph", "b-graph.facebook.com"},
-            {"edge", "edge-mqtt.facebook.com"},
-            {"external_cdn", "external.xx.fbcdn.net"},
-            {"scontent_cdn", "scontent.xx.fbcdn.net"},
-            {"star", "star.c10r.facebook.com"}};
 
     options["geoip_asn_path"] = "GeoIPASNum.dat";
 
