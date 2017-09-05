@@ -60,7 +60,7 @@ static void dns_many(Error error,
         cb(NoError(), entry, *fb_service_ips, options, reactor, logger);
         return;
     }
-    Var<int> names_tested(new int(0));
+    Var<size_t> names_tested(new size_t(0));
 
     auto dns_cb = [=](std::string service, std::string hostname) {
         return [=](Error err, Var<dns::Message> message) {
@@ -137,7 +137,7 @@ static void tcp_many(Error error,
         cb(entry);
         return;
     }
-    Var<int> ips_tested(new int(0));
+    Var<size_t> ips_tested(new size_t(0));
 
     auto tcp_cb = [=](std::string service, std::string ip, int port) {
         return [=](Error err, Var<net::Transport> txp) {
@@ -199,8 +199,6 @@ void facebook_messenger(Settings options,
     logger->info("starting facebook_messenger");
     Var<Entry> entry(new Entry);
 
-
-    options["geoip_asn_path"] = "GeoIPASNum.dat";
 
     mk::fcompose(
                  mk::fcompose_policy_async(),
