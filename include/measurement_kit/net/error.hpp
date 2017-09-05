@@ -37,7 +37,7 @@ MK_DEFINE_ERR(MK_ERR_NET(22), NotEnoughDataError, "not_enough_data")
 MK_DEFINE_ERR(MK_ERR_NET(23), MissingCaBundlePathError, "missing_ca_bundle_path")
 /* Error code not used; was the old BrokenPipeError */
 MK_DEFINE_ERR(MK_ERR_NET(25), SslNewError, "ssl_new_error")
-MK_DEFINE_ERR(MK_ERR_NET(26), SslCtxNewError, "ssl_ctx_net_error")
+MK_DEFINE_ERR(MK_ERR_NET(26), SslCtxNewError, "ssl_ctx_new_error")
 MK_DEFINE_ERR(MK_ERR_NET(27), SslCtxLoadVerifyLocationsError, "ssl_ctx_load_verify_locations_error")
 MK_DEFINE_ERR(MK_ERR_NET(28), SslCtxLoadVerifyMemError, "ssl_ctx_load_verify_mem_error")
 

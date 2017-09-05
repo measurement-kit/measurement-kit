@@ -5,6 +5,9 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h" // For MK_CA_BUNDLE
 #endif
+#ifndef MK_CA_BUNDLE
+#error "MK_CA_BUNDLE is not set."
+#endif
 
 #include "private/net/connect_impl.hpp"
 #include "private/net/emitter.hpp"
@@ -12,7 +15,7 @@
 #include "private/net/utils.hpp"
 
 #include "private/libevent/connection.hpp"
-#include "private/net/ssl_context.hpp"
+#include "private/net/libssl.hpp"
 
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/net.hpp>
@@ -141,8 +144,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                  Var<Logger> logger) {
     logger->debug("connect ssl...");
 
-    // Perhaps DEFER not needed on SSL but setting it won't hurt. See
-    // the similar comment in connect_impl.hpp for rationale.
+    // See similar comment in connect_impl.hpp for rationale.
     static const int flags = BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS;
 
     auto bev = bufferevent_openssl_filter_new(
@@ -158,8 +160,6 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
         bev, nullptr, nullptr, mk_bufferevent_on_event,
         new Callback<Error, bufferevent *>(
             [cb, logger, hostname](Error err, bufferevent *bev) {
-                int hostname_validate_err = 0;
-
                 logger->debug("connect ssl... callback (error: %d)", err.code);
                 ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
 
@@ -171,33 +171,10 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                     return;
                 }
 
-                logger->debug("SSL version: %s", SSL_get_version(ssl));
-
-                long verify_err = SSL_get_verify_result(ssl);
-                if (verify_err != X509_V_OK) {
-                    debug("ssl: got an invalid certificate");
+                err = libssl::verify_peer(hostname, ssl, logger);
+                if (err) {
                     bufferevent_free(bev);
-                    cb(SslInvalidCertificateError(
-                           X509_verify_cert_error_string(verify_err)),
-                       nullptr);
-                    return;
-                }
-
-                X509 *server_cert = SSL_get_peer_certificate(ssl);
-                if (server_cert == nullptr) {
-                    logger->debug("ssl: got no certificate");
-                    bufferevent_free(bev);
-                    cb(SslNoCertificateError(), nullptr);
-                    return;
-                }
-
-                hostname_validate_err =
-                    tls_check_name(nullptr, server_cert, hostname.c_str());
-                X509_free(server_cert);
-                if (hostname_validate_err != 0) {
-                    logger->debug("ssl: got invalid hostname");
-                    bufferevent_free(bev);
-                    cb(SslInvalidHostnameError(), nullptr);
+                    cb(err, nullptr);
                     return;
                 }
 
@@ -237,24 +214,13 @@ void connect(std::string address, int port,
                 return;
             }
             if (settings.find("net/ssl") != settings.end()) {
-                std::string cbp
-#ifdef MK_CA_BUNDLE
-                    = MK_CA_BUNDLE
-#endif
-                ;
+                std::string cbp = MK_CA_BUNDLE;
                 if (settings.find("net/ca_bundle_path") != settings.end()) {
                     cbp = settings.at("net/ca_bundle_path");
                 }
                 logger->debug("ca_bundle_path: '%s'", cbp.c_str());
-                ErrorOr<Var<SslContext>> ssl_context = SslContext::make(cbp);
-                if (!ssl_context) {
-                    Error err = ssl_context.as_error();
-                    bufferevent_free(r->connected_bev);
-                    callback(err, make_txp<Emitter>(
-                        timeout, r, reactor, logger));
-                    return;
-                }
-                ErrorOr<SSL *> cssl = (*ssl_context)->get_client_ssl(address);
+                ErrorOr<SSL *> cssl = libssl::Cache<>::thread_local_instance()
+                    .get_client_ssl(cbp, address, logger);
                 if (!cssl) {
                     Error err = cssl.as_error();
                     bufferevent_free(r->connected_bev);
@@ -273,10 +239,10 @@ void connect(std::string address, int port,
                 }
                 if (*allow_ssl23 == true) {
                     logger->info("Re-enabling SSLv2 and SSLv3");
-                    SSL_clear_options(*cssl, SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3);
+                    libssl::enable_v23(*cssl);
                 }
                 connect_ssl(r->connected_bev, *cssl, address,
-                            [r, callback, timeout, ssl_context, reactor,
+                            [r, callback, timeout, reactor,
                              logger, settings](Error err, bufferevent *bev) {
                                 if (err) {
                                     callback(err, make_txp<Emitter>(
