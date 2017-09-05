@@ -55,7 +55,7 @@ static void dns_many(Error error,
     // if we find any inconsistent DNS later, switch this to true
     (*entry)["facebook_dns_blocking"] = false;
 
-    int names_count = fb_service_hostnames.size();
+    size_t names_count = fb_service_hostnames.size();
     if (names_count == 0) {
         cb(NoError(), entry, *fb_service_ips, options, reactor, logger);
         return;
@@ -91,6 +91,7 @@ static void dns_many(Error error,
                     !(*fb_service_ips)[service].empty();
             }
             *names_tested += 1;
+            assert(names_count <= *names_tested);
             if (names_count == *names_tested) {
                 cb(NoError(), entry, *fb_service_ips, options, reactor, logger);
                 return;
