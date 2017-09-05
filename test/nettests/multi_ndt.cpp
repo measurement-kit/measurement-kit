@@ -12,8 +12,7 @@
 using namespace mk::nettests;
 
 TEST_CASE("Synchronous multi NDT test") {
-    test::nettests::make_test<MultiNdtTest>()
-        .run();
+    test::nettests::with_test<MultiNdtTest>(test::nettests::run_test);
 }
 
 #else

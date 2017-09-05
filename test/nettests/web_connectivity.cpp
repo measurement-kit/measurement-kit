@@ -12,12 +12,12 @@ using namespace mk::nettests;
 using namespace mk;
 
 TEST_CASE("Synchronous web connectivity test") {
-    test::nettests::make_test<WebConnectivityTest>("urls.txt")
-        .run();
+    test::nettests::with_test<WebConnectivityTest>("urls.txt",
+                                                   test::nettests::run_test);
 }
 
 TEST_CASE("Make sure that IP address scrubbing works") {
-    auto test = [](std::function<BaseTest(BaseTest)> f,
+    auto test = [](std::function<BaseTest(BaseTest &)> f,
                    Callback<std::string /*ip*/, std::string /*entry*/> g) {
         std::string probe_ip;
         Var<Reactor> reactor = Reactor::make();
@@ -32,12 +32,15 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         });
         REQUIRE(probe_ip != "");
         auto called = 0;
-        f(test::nettests::make_test<WebConnectivityTest>("scrub.txt")
+        test::nettests::with_test<WebConnectivityTest>("scrub.txt",
+              [&](mk::nettests::BaseTest &test) {
+            f(test
               .on_entry([&](std::string entry) {
                   g(probe_ip, entry);
                   called += 1;
               }))
             .run();
+        });
         REQUIRE(called == 1);
     };
 
