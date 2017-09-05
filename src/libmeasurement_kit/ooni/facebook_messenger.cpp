@@ -46,12 +46,11 @@ static void dns_many(Error error,
     (*entry)["facebook_dns_blocking"] = false;
 
     int names_count = fb_service_hostnames.size();
-    Var<int> names_tested(new int(0));
-
-    if (names_count == *names_tested) {
+    if (names_count == 0) {
         cb(NoError(), entry, *fb_service_ips, options, reactor, logger);
         return;
     }
+    Var<int> names_tested(new int(0));
 
     auto dns_cb = [=](std::string service, std::string hostname) {
         return [=](Error err, Var<dns::Message> message) {
