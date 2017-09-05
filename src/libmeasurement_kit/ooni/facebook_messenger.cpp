@@ -95,7 +95,6 @@ static void dns_many(Error error,
                              dns_cb(service, hostname), options, reactor,
                              logger);
     }
-    return;
 }
 
 static void tcp_many(Error error,
