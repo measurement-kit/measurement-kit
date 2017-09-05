@@ -16,11 +16,13 @@ using namespace mk::report;
 static void dns_many(Error error,
                      Var<Entry> entry,
                      std::map<std::string, std::string> fb_service_hostnames,
+                     Settings options,
                      Var<Reactor> reactor,
                      Var<Logger> logger,
                      Callback<Error,
                               Var<Entry>,
                               std::map<std::string, std::vector<std::string>>,
+                              Settings,
                               Var<Reactor>,
                               Var<Logger>> cb
                     ) {
@@ -36,7 +38,7 @@ static void dns_many(Error error,
         ));
 
     if (error) {
-        cb(error, entry, *fb_service_ips, reactor, logger);
+        cb(error, entry, *fb_service_ips, options, reactor, logger);
         return;
     }
 
@@ -47,7 +49,7 @@ static void dns_many(Error error,
     Var<int> names_tested(new int(0));
 
     if (names_count == *names_tested) {
-        cb(NoError(), entry, *fb_service_ips, reactor, logger);
+        cb(NoError(), entry, *fb_service_ips, options, reactor, logger);
         return;
     }
 
@@ -59,11 +61,9 @@ static void dns_many(Error error,
             } else {
                 for (auto answer : message->answers) {
                     if ((answer.ipv4 != "") || (answer.hostname != "")) {
-                        //XXX
-                        //std::string asn_p = options.get("geoip_asn_path", std::string{});
-                        std::string asn_p = "GeoIPASNum.dat";
-                        GeoipDatabase geoip(asn_p);
-                        ErrorOr<std::string> asn = geoip.resolve_asn(answer.ipv4);
+                        std::string asn_p = options.get("geoip_asn_path", std::string{});
+                        auto geoip = GeoipCache::thread_local_instance()->get(asn_p);
+                        ErrorOr<std::string> asn = geoip->resolve_asn(answer.ipv4);
                         if (asn && asn.as_value() != "AS0") {
                             logger->info("%s ipv4: %s, %s",
                                 hostname.c_str(), answer.ipv4.c_str(),
@@ -83,7 +83,7 @@ static void dns_many(Error error,
             }
             *names_tested += 1;
             if (names_count == *names_tested) {
-                cb(NoError(), entry, *fb_service_ips, reactor, logger);
+                cb(NoError(), entry, *fb_service_ips, options, reactor, logger);
                 return;
             }
         };
@@ -92,7 +92,6 @@ static void dns_many(Error error,
     for (auto const& service_and_hostname : fb_service_hostnames) {
         std::string service = service_and_hostname.first;
         std::string hostname = service_and_hostname.second;
-        Settings options; // XXX ought this to forward from above?
         templates::dns_query(entry, "A", "IN", hostname, "",
                              dns_cb(service, hostname), options, reactor,
                              logger);
@@ -103,6 +102,7 @@ static void dns_many(Error error,
 static void tcp_many(Error error,
                      Var<Entry> entry,
                      std::map<std::string, std::vector<std::string>> fb_service_ips,
+                     Settings options,
                      Var<Reactor> reactor,
                      Var<Logger> logger,
                      Callback<Var<Entry>> cb
@@ -201,6 +201,8 @@ void facebook_messenger(Settings options,
             {"scontent_cdn", "scontent.xx.fbcdn.net"},
             {"star", "star.c10r.facebook.com"}};
 
+    options["geoip_asn_path"] = "GeoIPASNum.dat";
+
     mk::fcompose(
                  mk::fcompose_policy_async(),
                  dns_many,
@@ -208,6 +210,7 @@ void facebook_messenger(Settings options,
                 )(NoError(),
                   entry,
                   FB_SERVICE_HOSTNAMES,
+                  options,
                   reactor,
                   logger,
                   callback
