@@ -108,12 +108,12 @@ std::string random_str_uppercase(size_t length) {
 }
 
 void dump_settings(Settings &s, std::string prefix, Var<Logger> logger) {
-    logger->debug("%s: {", prefix.c_str());
+    logger->log(MK_LOG_DEBUG2, "%s: {", prefix.c_str());
     for (auto pair : s) {
-        logger->debug("%s:     %s => %s", prefix.c_str(), pair.first.c_str(),
-                      pair.second.c_str());
+        logger->log(MK_LOG_DEBUG2, "%s:   \"%s\": \"%s\",", prefix.c_str(),
+                    pair.first.c_str(), pair.second.c_str());
     }
-    logger->debug("%s: }", prefix.c_str());
+    logger->log(MK_LOG_DEBUG2, "%s: }", prefix.c_str());
 }
 
 // Adapted from <http://code.activestate.com/recipes/511478/>

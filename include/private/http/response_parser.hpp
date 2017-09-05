@@ -95,6 +95,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         for (auto kv : response_.headers) {
             logger_->debug("< %s: %s", kv.first.c_str(), kv.second.c_str());
         }
+        logger_->debug("<");
         if (response_fn_) {
             response_fn_(response_);
         }

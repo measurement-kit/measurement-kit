@@ -64,12 +64,12 @@ void connect_first_of(Var<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings,
                       Var<Reactor> reactor, Var<Logger> logger, size_t index,
                       Var<std::vector<Error>> errors) {
-    logger->debug("connect_first_of begin");
+    logger->log(MK_LOG_DEBUG2, "connect_first_of begin");
     if (!errors) {
         errors.reset(new std::vector<Error>());
     }
     if (index >= result->resolve_result.addresses.size()) {
-        logger->debug("connect_first_of all addresses failed");
+        logger->log(MK_LOG_DEBUG2, "connect_first_of all addresses failed");
         cb(*errors, nullptr);
         return;
     }
@@ -78,12 +78,12 @@ void connect_first_of(Var<ConnectResult> result, int port,
                  [=](Error err, bufferevent *bev, double connect_time) {
                      errors->push_back(err);
                      if (err) {
-                         logger->debug("connect_first_of failure");
+                         logger->log(MK_LOG_DEBUG2, "connect_first_of failure");
                          connect_first_of(result, port, cb, settings,
                                           reactor, logger, index + 1, errors);
                          return;
                      }
-                     logger->debug("connect_first_of success");
+                     logger->log(MK_LOG_DEBUG2, "connect_first_of success");
                      result->connect_time = connect_time;
                      cb(*errors, bev);
                  },
@@ -142,7 +142,7 @@ void connect_logic(std::string hostname, int port,
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                  Callback<Error, bufferevent *> cb, Var<Reactor> reactor,
                  Var<Logger> logger) {
-    logger->debug("connect ssl...");
+    logger->debug("ssl: handshake...");
 
     // See similar comment in connect_impl.hpp for rationale.
     static const int flags = BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS;
@@ -160,12 +160,11 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
         bev, nullptr, nullptr, mk_bufferevent_on_event,
         new Callback<Error, bufferevent *>(
             [cb, logger, hostname](Error err, bufferevent *bev) {
-                logger->debug("connect ssl... callback (error: %d)", err.code);
                 ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
 
                 if (err) {
                     std::string s = err.explain();
-                    logger->debug("error in connection: %s", s.c_str());
+                    logger->debug("ssl: handshake error: %s", s.c_str());
                     bufferevent_free(bev);
                     cb(err, nullptr);
                     return;
@@ -178,6 +177,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                     return;
                 }
 
+                logger->debug("ssl: handshake... complete");
                 cb(err, bev);
             }));
 }
@@ -218,7 +218,6 @@ void connect(std::string address, int port,
                 if (settings.find("net/ca_bundle_path") != settings.end()) {
                     cbp = settings.at("net/ca_bundle_path");
                 }
-                logger->debug("ca_bundle_path: '%s'", cbp.c_str());
                 ErrorOr<SSL *> cssl = libssl::Cache<>::thread_local_instance()
                     .get_client_ssl(cbp, address, logger);
                 if (!cssl) {

@@ -95,8 +95,8 @@ void getaddrinfo_async(std::string name, addrinfo hints, Var<Reactor> reactor,
         addrinfo *rp = nullptr;
         Error error = getaddrinfo_async_map_error(
             getaddrinfo(name.c_str(), nullptr, &hints, &rp));
-        logger->debug("getaddrinfo('%s') => %s", name.c_str(),
-                      error.as_ooni_error().c_str());
+        logger->debug("getaddrinfo('%s') => error: code=%d, reason='%s'",
+                      name.c_str(), error.code, error.as_ooni_error().c_str());
         std::vector<Answer> answers;
         if (!error && rp != nullptr) {
             try {
