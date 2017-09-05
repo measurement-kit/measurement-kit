@@ -17,6 +17,7 @@
 
 #include "private/common/mock.hpp"
 #include "private/ext/tls_internal.h"
+#include "private/net/builtin_ca_bundle.hpp"
 #include <cassert>
 #include <map>
 #include <measurement_kit/common/locked.hpp>
