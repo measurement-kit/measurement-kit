@@ -91,7 +91,7 @@ static void dns_many(Error error,
                     !(*fb_service_ips)[service].empty();
             }
             *names_tested += 1;
-            assert(names_count <= *names_tested);
+            assert(*names_tested <= names_count);
             if (names_count == *names_tested) {
                 cb(NoError(), entry, *fb_service_ips, options, reactor, logger);
                 return;
@@ -154,7 +154,7 @@ static void tcp_many(Error error,
                 (*entry)["facebook_" + service + "_blocking"] = false;
             }
             *ips_tested += 1;
-            assert(ips_count <= *ips_tested);
+            assert(*ips_tested <= ips_count);
             if (ips_count == *ips_tested) {
                 if (close_txp == true) {
                     txp->close([=] {
