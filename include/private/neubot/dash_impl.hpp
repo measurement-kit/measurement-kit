@@ -234,7 +234,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
           {
                 {"Authorization", ctx->auth_token},
           },
-          "", [=](Error error, Var<http::Request> req) {
+          "", ctx->logger, [=](Error error, Var<http::Request> req) {
               if (error) {
                   ctx->logger->warn("dash: request failed: %s",
                                     error.explain().c_str());

@@ -71,8 +71,6 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
     settings["http/url"] = bbu;
     settings["http/method"] = bm;
 
-    logger->debug("%sing to '%s' data '%s'", bm.c_str(), bbu.c_str(),
-                  request.dump().c_str());
     http_request(settings, {{"Content-Type", "application/json"}},
                  request.dump(),
                  [=](Error error, Var<http::Response> resp) {
@@ -82,8 +80,6 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                          cb(error, nullptr);
                          return;
                      }
-
-                     logger->debug("Bouncer reply: %s", resp->body.c_str());
 
                      ErrorOr<Var<BouncerReply>> reply(
                          BouncerReply::create(resp->body, logger));

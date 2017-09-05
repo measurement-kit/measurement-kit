@@ -135,11 +135,11 @@ void request_connect(Settings, Callback<Error, Var<net::Transport>>,
                      Var<Logger> = Logger::global());
 
 void request_send(Var<net::Transport>, Settings, Headers, std::string,
-                  Callback<Error, Var<Request>>);
+                  Var<Logger>, Callback<Error, Var<Request>>);
 
 // Same as above except that the optional Request is passed in explicitly
 void request_maybe_send(ErrorOr<Var<Request>>, Var<net::Transport>,
-                        Callback<Error, Var<Request>>);
+                        Var<Logger>, Callback<Error, Var<Request>>);
 
 void request_recv_response(Var<net::Transport>, Callback<Error, Var<Response>>,
                            Var<Reactor> = Reactor::global(),

@@ -60,19 +60,12 @@ void post_impl(Var<Transport> transport, std::string append_to_url,
     if (body != "") {
         headers["Content-Type"] = "application/json";
     }
-    logger->debug("POST %s '%s'...", url.c_str(), body.c_str());
     http_request_sendrecv(transport, settings, headers, body,
                           [=](Error err, Var<Response> response) {
-                              logger->debug("POST %s '%s'... %d", url.c_str(),
-                                            body.c_str(), err.code);
                               if (err) {
                                   callback(err, nullptr);
                                   return;
                               }
-                              logger->debug("Response status code: %d",
-                                            response->status_code);
-                              logger->debug("Response reason: %s",
-                                            response->reason.c_str());
                               if (response->status_code / 100 != 2) {
                                   callback(HttpRequestFailedError(), nullptr);
                                   return;
