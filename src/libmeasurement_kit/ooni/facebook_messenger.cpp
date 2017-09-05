@@ -185,7 +185,7 @@ static void tcp_many(Error error,
     return;
 }
 
-void facebook_messenger(std::string input, Settings options,
+void facebook_messenger(Settings options,
               Callback<Var<report::Entry>> callback,
               Var<Reactor> reactor, Var<Logger> logger) {
     logger->info("starting facebook_messenger");

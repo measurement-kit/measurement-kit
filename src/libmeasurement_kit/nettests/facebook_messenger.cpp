@@ -17,9 +17,9 @@ FacebookMessengerTest::FacebookMessengerTest() : BaseTest() {
     runnable->needs_input = false;
 }
 
-void FacebookMessengerRunnable::main(std::string input, Settings options,
+void FacebookMessengerRunnable::main(std::string /*input*/, Settings options,
                             Callback<Var<report::Entry>> cb) {
-    ooni::facebook_messenger(input, options, cb, reactor, logger);
+    ooni::facebook_messenger(options, cb, reactor, logger);
 }
 
 } // namespace nettests
