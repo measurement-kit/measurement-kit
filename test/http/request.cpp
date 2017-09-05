@@ -376,7 +376,7 @@ TEST_CASE("http::request_send() works as expected") {
                                  {"http/method", "GET"},
                                  {"http/url", "http://www.google.com/"},
                              },
-                             {}, "",
+                             {}, "", Logger::global(),
                              [transport](Error error, Var<Request> request) {
                                  REQUIRE((request->method == "GET"));
                                  REQUIRE((request->url.schema == "http"));
@@ -408,7 +408,7 @@ TEST_CASE("http::request_recv_response() works as expected") {
                         {"http/method", "GET"},
                         {"http/url", "http://www.google.com/"},
                     },
-                    {}, "",
+                    {}, "", Logger::global(),
                     [transport](Error error, Var<Request>) {
                         REQUIRE(!error);
                         request_recv_response(
@@ -686,6 +686,7 @@ TEST_CASE("http::request_send fails without url in settings") {
             [](Error error, Var<Transport> transport) {
                 REQUIRE(!error);
                 request_send(transport, {{"http/method", "GET"}}, {}, "",
+                             Logger::global(),
                              [transport](Error error, Var<Request> request) {
                                  REQUIRE(!request);
                                  REQUIRE(error == MissingUrlError());
