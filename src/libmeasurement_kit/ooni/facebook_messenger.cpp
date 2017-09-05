@@ -125,7 +125,7 @@ static void tcp_many(Error error,
     // if we find any blocked TCP later, switch this to true
     (*entry)["facebook_dns_blocking"] = false;
 
-    int ips_count = 0;
+    size_t ips_count = 0;
     for (auto const& service_and_ips : fb_service_ips) {
         // skipping stun for now
         if (service_and_ips.first == "stun") {
@@ -154,6 +154,7 @@ static void tcp_many(Error error,
                 (*entry)["facebook_" + service + "_blocking"] = false;
             }
             *ips_tested += 1;
+            assert(ips_count <= *ips_tested);
             if (ips_count == *ips_tested) {
                 if (close_txp == true) {
                     txp->close([=] {
