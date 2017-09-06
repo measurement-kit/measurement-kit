@@ -4,8 +4,8 @@
 
 #include "private/common/fcompose.hpp"
 #include "private/common/utils.hpp"
-#include "private/ooni/utils.hpp"
 #include "private/ooni/constants.hpp"
+#include "private/ooni/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
@@ -13,38 +13,31 @@ namespace ooni {
 
 using namespace mk::report;
 
-static const std::map<std::string, std::string>
-    &FB_SERVICE_HOSTNAMES = {
-        {"stun", "stun.fbsbx.com"},
-        {"b_api", "b-api.facebook.com"},
-        {"b_graph", "b-graph.facebook.com"},
-        {"edge", "edge-mqtt.facebook.com"},
-        {"external_cdn", "external.xx.fbcdn.net"},
-        {"scontent_cdn", "scontent.xx.fbcdn.net"},
-        {"star", "star.c10r.facebook.com"}};
+static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
+      {"stun", "stun.fbsbx.com"},
+      {"b_api", "b-api.facebook.com"},
+      {"b_graph", "b-graph.facebook.com"},
+      {"edge", "edge-mqtt.facebook.com"},
+      {"external_cdn", "external.xx.fbcdn.net"},
+      {"scontent_cdn", "scontent.xx.fbcdn.net"},
+      {"star", "star.c10r.facebook.com"}};
 
-static void dns_many(Error error,
-                     Var<Entry> entry,
-                     Settings options,
-                     Var<Reactor> reactor,
-                     Var<Logger> logger,
-                     Callback<Error,
-                              Var<Entry>,
-                              Var<std::map<std::string, std::vector<std::string>>>,
-                              Settings,
-                              Var<Reactor>,
-                              Var<Logger>> cb
-                    ) {
-    Var<std::map<std::string, std::vector<std::string>>>
-        fb_service_ips(new std::map<std::string, std::vector<std::string>>(
-            {{"stun", {}},
-             {"b_api", {}},
-             {"b_graph", {}},
-             {"edge", {}},
-             {"external_cdn", {}},
-             {"scontent_cdn", {}},
-             {"star", {}}}
-        ));
+static void
+dns_many(Error error, Var<Entry> entry, Settings options, Var<Reactor> reactor,
+         Var<Logger> logger,
+         Callback<Error, Var<Entry>,
+                  Var<std::map<std::string, std::vector<std::string>>>,
+                  Settings, Var<Reactor>, Var<Logger>>
+               cb) {
+    Var<std::map<std::string, std::vector<std::string>>> fb_service_ips(
+          new std::map<std::string, std::vector<std::string>>(
+                {{"stun", {}},
+                 {"b_api", {}},
+                 {"b_graph", {}},
+                 {"edge", {}},
+                 {"external_cdn", {}},
+                 {"scontent_cdn", {}},
+                 {"star", {}}}));
 
     if (error) {
         cb(error, entry, fb_service_ips, options, reactor, logger);
@@ -65,20 +58,24 @@ static void dns_many(Error error,
         return [=](Error err, Var<dns::Message> message) {
             if (!!err) {
                 logger->info("fb_messenger: dns error for %s, %s",
-                    service.c_str(), hostname.c_str());
+                             service.c_str(), hostname.c_str());
             } else {
                 for (auto answer : message->answers) {
                     if ((answer.ipv4 != "") || (answer.hostname != "")) {
-                        std::string asn_p = options.get("geoip_asn_path", std::string{});
-                        auto geoip = GeoipCache::thread_local_instance()->get(asn_p);
-                        ErrorOr<std::string> asn = geoip->resolve_asn(answer.ipv4);
+                        std::string asn_p =
+                              options.get("geoip_asn_path", std::string{});
+                        auto geoip =
+                              GeoipCache::thread_local_instance()->get(asn_p);
+                        ErrorOr<std::string> asn =
+                              geoip->resolve_asn(answer.ipv4);
                         if (!!asn && asn.as_value() != "AS0") {
-                            logger->info("%s ipv4: %s, %s",
-                                hostname.c_str(), answer.ipv4.c_str(),
-                                asn.as_value().c_str());
+                            logger->info("%s ipv4: %s, %s", hostname.c_str(),
+                                         answer.ipv4.c_str(),
+                                         asn.as_value().c_str());
                             // if consistent, add to list for tcp connect later
                             if (asn.as_value() == "AS32934") {
-                                (*fb_service_ips)[service].push_back(answer.ipv4);
+                                (*fb_service_ips)[service].push_back(
+                                      answer.ipv4);
                             } else {
                                 (*entry)["facebook_dns_blocking"] = true;
                             }
@@ -87,7 +84,7 @@ static void dns_many(Error error,
                 }
                 // if any consistent IPs, consistent = true
                 (*entry)["facebook_" + service + "_dns_consistent"] =
-                    !(*fb_service_ips)[service].empty();
+                      !(*fb_service_ips)[service].empty();
             }
             *names_tested += 1;
             assert(*names_tested <= names_count);
@@ -98,7 +95,7 @@ static void dns_many(Error error,
         };
     };
 
-    for (auto const& service_and_hostname : FB_SERVICE_HOSTNAMES) {
+    for (auto const &service_and_hostname : FB_SERVICE_HOSTNAMES) {
         std::string service = service_and_hostname.first;
         std::string hostname = service_and_hostname.second;
         // Note: we're passing in an empty nameserver, which rests on the
@@ -110,14 +107,11 @@ static void dns_many(Error error,
     }
 }
 
-static void tcp_many(Error error,
-                     Var<Entry> entry,
-                     Var<std::map<std::string, std::vector<std::string>>> fb_service_ips,
-                     Settings options,
-                     Var<Reactor> reactor,
-                     Var<Logger> logger,
-                     Callback<Var<Entry>> cb
-                    ) {
+static void
+tcp_many(Error error, Var<Entry> entry,
+         Var<std::map<std::string, std::vector<std::string>>> fb_service_ips,
+         Settings options, Var<Reactor> reactor, Var<Logger> logger,
+         Callback<Var<Entry>> cb) {
 
     if (error) {
         cb(entry);
@@ -131,7 +125,7 @@ static void tcp_many(Error error,
     (*entry)["facebook_stun_reachable"] = nullptr;
 
     size_t ips_count = 0;
-    for (auto const& service_and_ips : *fb_service_ips) {
+    for (auto const &service_and_ips : *fb_service_ips) {
         // skipping stun for now; this is what ooni-probe does
         if (service_and_ips.first == "stun") {
             continue;
@@ -148,19 +142,17 @@ static void tcp_many(Error error,
         return [=](Error err, Var<net::Transport> txp) {
             assert(!!txp);
             Entry current_entry{
-                {"ip", ip},
-                {"port", port},
-                {"status", nullptr}};
+                  {"ip", ip}, {"port", port}, {"status", nullptr}};
             if (!!err) {
                 logger->info("tcp failure to %s at %s:%d", service.c_str(),
-                    ip.c_str(), port);
+                             ip.c_str(), port);
                 (*entry)["facebook_" + service + "_reachable"] = false;
                 (*entry)["facebook_tcp_blocking"] = true;
                 current_entry["status"]["success"] = false;
                 current_entry["status"]["failure"] = true;
             } else {
                 logger->info("tcp success to %s at %s:%d", service.c_str(),
-                    ip.c_str(), port);
+                             ip.c_str(), port);
                 (*entry)["facebook_" + service + "_reachable"] = true;
                 current_entry["status"]["success"] = true;
                 current_entry["status"]["failure"] = false;
@@ -176,13 +168,13 @@ static void tcp_many(Error error,
         };
     };
 
-    for (auto const& service_and_ips : *fb_service_ips) {
+    for (auto const &service_and_ips : *fb_service_ips) {
         std::string service = service_and_ips.first;
         // skipping stun for now; this is what ooni-probe does
         if (service == "stun") {
             continue;
         }
-        for (auto const& ip : service_and_ips.second) {
+        for (auto const &ip : service_and_ips.second) {
             Settings tcp_options{options};
             tcp_options["host"] = ip;
             uint16_t port = 443;
@@ -194,22 +186,12 @@ static void tcp_many(Error error,
     }
 }
 
-void facebook_messenger(Settings options,
-              Callback<Var<report::Entry>> callback,
-              Var<Reactor> reactor, Var<Logger> logger) {
+void facebook_messenger(Settings options, Callback<Var<report::Entry>> callback,
+                        Var<Reactor> reactor, Var<Logger> logger) {
     logger->info("starting facebook_messenger");
     Var<Entry> entry(new Entry);
-    mk::fcompose(
-                 mk::fcompose_policy_async(),
-                 dns_many,
-                 tcp_many
-                )(NoError(),
-                  entry,
-                  options,
-                  reactor,
-                  logger,
-                  callback
-                 );
+    mk::fcompose(mk::fcompose_policy_async(), dns_many, tcp_many)(
+          NoError(), entry, options, reactor, logger, callback);
 }
 
 } // namespace ooni
