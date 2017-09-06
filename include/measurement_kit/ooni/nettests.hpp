@@ -39,6 +39,10 @@ void http_header_field_manipulation(std::string input, Settings,
 void telegram(Settings, Callback<Var<report::Entry>>,
               Var<Reactor> = Reactor::global(),
               Var<Logger> = Logger::global());
+  
+void facebook_messenger(Settings, Callback<Var<report::Entry>>,
+                        Var<Reactor> = Reactor::global(),
+                        Var<Logger> = Logger::global());
 
 } // namespace ooni
 } // namespace mk
