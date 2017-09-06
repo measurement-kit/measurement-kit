@@ -12,7 +12,7 @@ using namespace mk::net::libssl;
 using namespace mk::net;
 using namespace mk;
 
-static const char *default_cert = "./test/fixtures/certs.pem";
+static const char *default_cert = "./test/fixtures/saved_ca_bundle.pem";
 
 static SSL *ssl_new_fail(SSL_CTX *) { return nullptr; }
 
@@ -116,7 +116,7 @@ TEST_CASE("Cache works as expected") {
         REQUIRE(*ssl != nullptr);
         REQUIRE(cache.size() == 1);
         SSL_free(*ssl);
-        ssl = cache.get_client_ssl("./test/fixtures/saved_ca_bundle.pem",
+        ssl = cache.get_client_ssl("./test/fixtures/basic_ca.pem",
                                    "www.google.com", Logger::global());
         REQUIRE(*ssl != nullptr);
         REQUIRE(cache.size() == 2);

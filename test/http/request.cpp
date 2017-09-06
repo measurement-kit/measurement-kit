@@ -146,7 +146,7 @@ TEST_CASE("http::request() works using HTTPS") {
                   "https://didattica.polito.it/tesi/SaperComunicare.pdf"},
                  {"http/method", "GET"},
                  {"http/http_version", "HTTP/1.1"},
-                 {"net/ca_bundle_path", "test/fixtures/certs.pem"}},
+                 {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
                 {
                     {"Accept", "*/*"},
                 },
