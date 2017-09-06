@@ -372,7 +372,7 @@ TEST_CASE("net::connect() can connect to ssl port") {
                     txp->close([=]() { reactor->stop(); });
                 },
                 {{"net/ssl", true},
-                 {"net/ca_bundle_path", "test/fixtures/certs.pem"}},
+                 {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
                 reactor);
     });
 }
@@ -386,7 +386,7 @@ TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
                     reactor->stop();
                 },
                 {{"net/ssl", true},
-                 {"net/ca_bundle_path", "test/fixtures/certs.pem"}},
+                 {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
                 reactor);
     });
 }
@@ -401,7 +401,7 @@ TEST_CASE("net::connect() ssl fails when presented a certificate with the "
                     reactor->stop();
                 },
                 {{"net/ssl", true},
-                 {"net/ca_bundle_path", "test/fixtures/certs.pem"}},
+                 {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
                 reactor);
     });
 }
@@ -415,7 +415,7 @@ TEST_CASE("net::connect() ssl works when using SNI") {
                     txp->close([=]() { reactor->stop(); });
                 },
                 {{"net/ssl", true},
-                 {"net/ca_bundle_path", "test/fixtures/certs.pem"}},
+                 {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
                 reactor);
     });
 }

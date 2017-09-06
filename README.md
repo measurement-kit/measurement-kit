@@ -33,6 +33,8 @@ Currently it implements the following high-level tests:
 
 - [OONI](https://ooni.torproject.org/)'s [HTTP Header Field Manipulation](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-006-header-field-manipulation.md) test
 
+- [OONI](https://ooni.torproject.org/)'s [Facebook Messenger](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-019-facebook-messenger.md) test
+
 - Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
 
 It contains building-block functionalities useful to implement your own
