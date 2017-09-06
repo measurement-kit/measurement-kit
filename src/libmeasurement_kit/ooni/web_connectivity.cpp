@@ -527,8 +527,6 @@ static void experiment_dns_query(
             for (auto answer : message->answers) {
                 if (answer.ipv4 != "") {
                     addresses.push_back(answer.ipv4);
-                } else if (answer.hostname != "") {
-                    addresses.push_back(answer.ipv4);
                 } else {
                     /* Not yet implemented */ ;
                 }
