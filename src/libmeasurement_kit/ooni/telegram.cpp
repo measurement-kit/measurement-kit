@@ -16,6 +16,7 @@ using namespace mk::report;
 
 static void tcp_many(const std::vector<std::string> ip_ports,
                       Var<Entry> entry,
+                      Settings options,
                       Var<Reactor> reactor,
                       Var<Logger> logger,
                       Callback<Error> all_done_cb) {
@@ -64,13 +65,12 @@ static void tcp_many(const std::vector<std::string> ip_ports,
         std::string ip = ip_port_l.front();
         int port = std::stoi(ip_port_l.back());
 
-        Settings tcp_options;
-        tcp_options["host"] = ip;
-        tcp_options["port"] = port;
-        tcp_options["net/timeout"] = 10.0;
+        options["host"] = ip;
+        options["port"] = port;
+        options["net/timeout"] = 10.0; // XXX maybe check if this was set upstream?
         continuations.push_back(
             [=](Callback<Error> done_cb) {
-                templates::tcp_connect(tcp_options, connected_cb(ip, port, done_cb), reactor, logger);
+                templates::tcp_connect(options, connected_cb(ip, port, done_cb), reactor, logger);
             }
         );
     }
@@ -81,6 +81,7 @@ static void tcp_many(const std::vector<std::string> ip_ports,
 static void http_many(const std::vector<std::string> urls,
                       std::string type,
                       Var<Entry> entry,
+                      Settings options,
                       Var<Reactor> reactor,
                       Var<Logger> logger,
                       Callback<Error> all_done_cb) {
@@ -118,13 +119,12 @@ static void http_many(const std::vector<std::string> urls,
 
     std::vector<Continuation<Error>> continuations;
     for (auto url : urls) {
-        Settings http_options;
-        http_options["http/url"] = url;
+        options["http/url"] = url;
         http::Headers headers = constants::COMMON_CLIENT_HEADERS;
         std::string body;
         continuations.push_back(
             [=](Callback<Error> done_cb) {
-                templates::http_request(entry, http_options, headers, body, http_cb(url, done_cb), reactor, logger);
+                templates::http_request(entry, options, headers, body, http_cb(url, done_cb), reactor, logger);
             }
         );
     }
@@ -172,7 +172,7 @@ void telegram(std::string input, Settings options,
     mk::fcompose(
         mk::fcompose_policy_async(),
         [=](Callback<> cb){
-            http_many(TELEGRAM_WEB_URLS, "web", entry, reactor, logger,
+            http_many(TELEGRAM_WEB_URLS, "web", entry, options, reactor, logger,
                 [=](Error err){
                     logger->info("saw %s in Telegram Web",
                         (!!err) ? "at least one error" : "no errors");
@@ -181,7 +181,7 @@ void telegram(std::string input, Settings options,
             );
         },
         [=](Callback<> cb){
-            tcp_many(TELEGRAM_TCP_ENDPOINTS, entry, reactor, logger,
+            tcp_many(TELEGRAM_TCP_ENDPOINTS, entry, options, reactor, logger,
                 [=](Error err){
                     logger->info("saw %s in Telegram's TCP endpoints",
                         (!!err) ? "at least one error" : "no errors");
@@ -190,7 +190,7 @@ void telegram(std::string input, Settings options,
             );
         },
         [=](Callback<> cb){
-            http_many(TELEGRAM_HTTP_ENDPOINTS, "endpoints", entry, reactor, logger,
+            http_many(TELEGRAM_HTTP_ENDPOINTS, "endpoints", entry, options, reactor, logger,
                 [=](Error err){
                     logger->info("saw %s in Telegram's HTTP endpoints",
                         (!!err) ? "at least one error" : "no errors");
