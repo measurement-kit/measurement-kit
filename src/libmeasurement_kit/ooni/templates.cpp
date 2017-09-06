@@ -75,7 +75,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                            } else if (answer.type == dns::MK_DNS_TYPE_CNAME) {
                                (*query_entry)["answers"].push_back(
                                    {{"ttl", answer.ttl},
-                                    {"ipv4", answer.hostname},
+                                    {"hostname", answer.hostname},
                                     {"answer_type", "CNAME"}});
                            }
                        }
