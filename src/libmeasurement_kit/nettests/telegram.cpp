@@ -17,9 +17,9 @@ TelegramTest::TelegramTest() : BaseTest() {
     runnable->needs_input = false;
 }
 
-void TelegramRunnable::main(std::string input, Settings options,
+void TelegramRunnable::main(std::string /*input*/, Settings options,
                             Callback<Var<report::Entry>> cb) {
-    ooni::telegram(input, options, cb, reactor, logger);
+    ooni::telegram(options, cb, reactor, logger);
 }
 
 } // namespace nettests

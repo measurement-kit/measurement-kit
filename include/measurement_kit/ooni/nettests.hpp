@@ -36,8 +36,7 @@ void http_header_field_manipulation(std::string input, Settings,
                                     Var<Reactor> = Reactor::global(),
                                     Var<Logger> = Logger::global());
 
-void telegram(std::string input, Settings,
-              Callback<Var<report::Entry>>,
+void telegram(Settings, Callback<Var<report::Entry>>,
               Var<Reactor> = Reactor::global(),
               Var<Logger> = Logger::global());
 

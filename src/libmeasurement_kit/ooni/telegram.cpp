@@ -132,8 +132,7 @@ static void http_many(const std::vector<std::string> urls,
 
 }
 
-void telegram(std::string input, Settings options,
-              Callback<Var<report::Entry>> callback,
+void telegram(Settings options, Callback<Var<report::Entry>> callback,
               Var<Reactor> reactor, Var<Logger> logger) {
     std::vector<std::string>
         TELEGRAM_WEB_URLS = { "http://web.telegram.org/",
