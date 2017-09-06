@@ -30,7 +30,7 @@ static void dns_many(Error error,
                      Var<Logger> logger,
                      Callback<Error,
                               Var<Entry>,
-                              std::map<std::string, std::vector<std::string>>,
+                              Var<std::map<std::string, std::vector<std::string>>>,
                               Settings,
                               Var<Reactor>,
                               Var<Logger>> cb
@@ -47,7 +47,7 @@ static void dns_many(Error error,
         ));
 
     if (error) {
-        cb(error, entry, *fb_service_ips, options, reactor, logger);
+        cb(error, entry, fb_service_ips, options, reactor, logger);
         return;
     }
 
@@ -56,7 +56,7 @@ static void dns_many(Error error,
 
     size_t names_count = FB_SERVICE_HOSTNAMES.size();
     if (names_count == 0) {
-        cb(NoError(), entry, *fb_service_ips, options, reactor, logger);
+        cb(NoError(), entry, fb_service_ips, options, reactor, logger);
         return;
     }
     Var<size_t> names_tested(new size_t(0));
@@ -72,7 +72,7 @@ static void dns_many(Error error,
                         std::string asn_p = options.get("geoip_asn_path", std::string{});
                         auto geoip = GeoipCache::thread_local_instance()->get(asn_p);
                         ErrorOr<std::string> asn = geoip->resolve_asn(answer.ipv4);
-                        if (asn && asn.as_value() != "AS0") {
+                        if (!!asn && asn.as_value() != "AS0") {
                             logger->info("%s ipv4: %s, %s",
                                 hostname.c_str(), answer.ipv4.c_str(),
                                 asn.as_value().c_str());
@@ -92,7 +92,7 @@ static void dns_many(Error error,
             *names_tested += 1;
             assert(*names_tested <= names_count);
             if (names_count == *names_tested) {
-                cb(NoError(), entry, *fb_service_ips, options, reactor, logger);
+                cb(NoError(), entry, fb_service_ips, options, reactor, logger);
                 return;
             }
         };
@@ -101,7 +101,10 @@ static void dns_many(Error error,
     for (auto const& service_and_hostname : FB_SERVICE_HOSTNAMES) {
         std::string service = service_and_hostname.first;
         std::string hostname = service_and_hostname.second;
-        templates::dns_query(entry, "A", "IN", hostname, "",
+        // Note: we're passing in an empty nameserver, which rests on the
+        // assumption that we're using the `system` DNS resolver.
+        constexpr const char *nameserver = "";
+        templates::dns_query(entry, "A", "IN", hostname, nameserver,
                              dns_cb(service, hostname), options, reactor,
                              logger);
     }
@@ -109,24 +112,27 @@ static void dns_many(Error error,
 
 static void tcp_many(Error error,
                      Var<Entry> entry,
-                     std::map<std::string, std::vector<std::string>> fb_service_ips,
+                     Var<std::map<std::string, std::vector<std::string>>> fb_service_ips,
                      Settings options,
                      Var<Reactor> reactor,
                      Var<Logger> logger,
                      Callback<Var<Entry>> cb
                     ) {
-    logger->info("starting tcp_many");
+
     if (error) {
         cb(entry);
         return;
     }
 
     // if we find any blocked TCP later, switch this to true
-    (*entry)["facebook_dns_blocking"] = false;
+    (*entry)["facebook_tcp_blocking"] = false;
+
+    // Note: we're skipping stun like ooni-probe does
+    (*entry)["facebook_stun_reachable"] = nullptr;
 
     size_t ips_count = 0;
-    for (auto const& service_and_ips : fb_service_ips) {
-        // skipping stun for now
+    for (auto const& service_and_ips : *fb_service_ips) {
+        // skipping stun for now; this is what ooni-probe does
         if (service_and_ips.first == "stun") {
             continue;
         }
@@ -138,58 +144,54 @@ static void tcp_many(Error error,
     }
     Var<size_t> ips_tested(new size_t(0));
 
-    auto tcp_cb = [=](std::string service, std::string ip, int port) {
+    auto tcp_cb = [=](std::string service, std::string ip, uint16_t port) {
         return [=](Error err, Var<net::Transport> txp) {
-            bool close_txp = true; // if connected, we must disconnect
+            assert(!!txp);
+            Entry current_entry{
+                {"ip", ip},
+                {"port", port},
+                {"status", nullptr}};
             if (!!err) {
                 logger->info("tcp failure to %s at %s:%d", service.c_str(),
                     ip.c_str(), port);
-                (*entry)["facebook_" + service + "_blocking"] = true;
-                (*entry)["facebook_dns_blocking"] = true;
-                close_txp = false;
+                (*entry)["facebook_" + service + "_reachable"] = false;
+                (*entry)["facebook_tcp_blocking"] = true;
+                current_entry["status"]["success"] = false;
+                current_entry["status"]["failure"] = true;
             } else {
                 logger->info("tcp success to %s at %s:%d", service.c_str(),
                     ip.c_str(), port);
-                (*entry)["facebook_" + service + "_blocking"] = false;
+                (*entry)["facebook_" + service + "_reachable"] = true;
+                current_entry["status"]["success"] = true;
+                current_entry["status"]["failure"] = false;
             }
+            (*entry)["tcp_connect"].push_back(std::move(current_entry));
             *ips_tested += 1;
             assert(*ips_tested <= ips_count);
             if (ips_count == *ips_tested) {
-                if (close_txp == true) {
-                    txp->close([=] {
-                        cb(entry);
-                        return;
-                    });
-                } else {
-                    cb(entry);
-                    return;
-                }
+                txp->close([=] { cb(entry); });
             } else {
-                if (close_txp == true) {
-                    // XXX optimistic closure
-                    txp->close([=] {});
-                }
+                txp->close([=] {});
             }
         };
     };
 
-    for (auto const& service_and_ips : fb_service_ips) {
+    for (auto const& service_and_ips : *fb_service_ips) {
         std::string service = service_and_ips.first;
-        // skipping stun for now
+        // skipping stun for now; this is what ooni-probe does
         if (service == "stun") {
             continue;
         }
         for (auto const& ip : service_and_ips.second) {
-            Settings tcp_options;
+            Settings tcp_options{options};
             tcp_options["host"] = ip;
-            int port = 443; //XXX hardcoded
+            uint16_t port = 443;
             tcp_options["port"] = port;
-            tcp_options["net/timeout"] = 10.0; //XXX hardcoded
+            tcp_options["net/timeout"] = 10.0;
             templates::tcp_connect(tcp_options, tcp_cb(service, ip, port),
                                    reactor, logger);
         }
     }
-    return;
 }
 
 void facebook_messenger(Settings options,
@@ -197,8 +199,6 @@ void facebook_messenger(Settings options,
               Var<Reactor> reactor, Var<Logger> logger) {
     logger->info("starting facebook_messenger");
     Var<Entry> entry(new Entry);
-
-
     mk::fcompose(
                  mk::fcompose_policy_async(),
                  dns_many,
@@ -210,8 +210,6 @@ void facebook_messenger(Settings options,
                   logger,
                   callback
                  );
-
-    return;
 }
 
 } // namespace ooni
