@@ -1,0 +1,21 @@
+// Part of measurement-kit <https://measurement-kit.github.io/>.
+// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// information on the copying conditions.
+#ifndef SRC_LIBMEASUREMENT_WHATSAPP_HPP
+#define SRC_LIBMEASUREMENT_WHATSAPP_HPP
+
+#include <measurement_kit/ooni.hpp>
+
+namespace mk {
+namespace ooni {
+
+uint32_t parseIPV4string(std::string ipAddress);
+std::vector<uint8_t> ip_to_bytes(std::string ip);
+ErrorOr<bool> same_pre(std::vector<uint8_t> ip1, std::vector<uint8_t> ip2, int pre_bits);
+ErrorOr<bool> ip_in_net(std::string ip1, std::string ip_w_mask);
+bool in_whatsapp_net(std::string ip);
+
+} // namespace ooni
+} // namespace mk
+
+#endif
