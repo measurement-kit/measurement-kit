@@ -14,8 +14,8 @@ namespace dns {
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
 void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
-                     Var<Reactor> reactor, Var<Logger> logger,
-                     Callback<Error, Var<Message>> cb) {
+                     Settings settings, Var<Reactor> reactor,
+                     Var<Logger> logger, Callback<Error, Var<Message>> cb) {
     Query query;
     addrinfo hints = {};
     /*
@@ -45,6 +45,18 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
         return;
     }
 
+    /*
+     * When running OONI tests, we're interested to know not only the IPs
+     * associated with a specific name, but also the CNAME.
+     */
+    ErrorOr<bool> also_cname = settings.get("dns/resolve_also_cname", false);
+    if (!also_cname) {
+        reactor->call_soon([=]() { cb(also_cname.as_error(), nullptr); });
+    }
+    if (*also_cname == true) {
+        hints.ai_flags |= AI_CANONNAME;
+    }
+
     query.type = dns_type;
     query.qclass = dns_class;
     query.name = name;
@@ -52,13 +64,12 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     Var<Message> message{new Message};
     message->queries.push_back(query);
 
-    getaddrinfo_async<getaddrinfo, inet_ntop>(
-        name, hints, reactor, logger,
-        [ message = std::move(message),
-          cb = std::move(cb) ](Error error, std::vector<Answer> answers) {
-            message->answers = std::move(answers);
-            cb(error, message);
-        });
+    getaddrinfo_async<getaddrinfo, inet_ntop>(name, hints, reactor, logger, [
+        message = std::move(message), cb = std::move(cb)
+    ](Error error, std::vector<Answer> answers) {
+        message->answers = std::move(answers);
+        cb(error, message);
+    });
 }
 
 } // namespace dns

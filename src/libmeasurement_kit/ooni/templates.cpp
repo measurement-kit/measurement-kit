@@ -44,6 +44,12 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
         if (nameserver != "") {
             logger->warn("Explicit nameserver ignored with 'system' DNS engine");
         }
+        // For now this option is only supported by the DNS engine. Unless the
+        // user has already taken the decision whether to also resolve CNAME or
+        // not, resolve the CNAME because generally we need that in OONI.
+        if (options.count("dns/resolve_also_cname") == 0) {
+            options["dns/resolve_also_cname"] = true;
+        }
         // ooniprobe sets them to null when they are not available
         (*query_entry)["resolver_hostname"] = nullptr;
         (*query_entry)["resolver_port"] = nullptr;
@@ -61,11 +67,16 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                    }
                    if (!error) {
                        for (auto answer : message->answers) {
-                           if (query_type == dns::MK_DNS_TYPE_A) {
+                           if (answer.type == dns::MK_DNS_TYPE_A) {
                                (*query_entry)["answers"].push_back(
                                    {{"ttl", answer.ttl},
                                     {"ipv4", answer.ipv4},
                                     {"answer_type", "A"}});
+                           } else if (answer.type == dns::MK_DNS_TYPE_CNAME) {
+                               (*query_entry)["answers"].push_back(
+                                   {{"ttl", answer.ttl},
+                                    {"ipv4", answer.hostname},
+                                    {"answer_type", "CNAME"}});
                            }
                        }
                    } else {
