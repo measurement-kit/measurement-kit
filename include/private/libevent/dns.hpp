@@ -335,6 +335,22 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
            Callback<Error, Var<Message>> cb, Settings settings,
            Var<Reactor> reactor, Var<Logger> logger) {
 
+    /*
+     * When running OONI tests, we're interested to know not only the IPs
+     * associated with a specific name, but also to the CNAME.
+     *
+     * This is not yet implemented in the libevent engine.
+     */
+    ErrorOr<bool> also_cname = settings.get("dns/resolve_also_cname", false);
+    if (!also_cname) {
+        cb(also_cname.as_error(), nullptr);
+        return;
+    }
+    if (*also_cname == true) {
+        cb(mk::NotImplementedError(), nullptr);
+        return;
+    }
+
     Var<Message> message(new Message);
     Query query;
     evdns_base *base;

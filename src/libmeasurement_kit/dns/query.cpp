@@ -21,7 +21,7 @@ void query(
     if (engine == "libevent") {
         libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);
     } else if (engine == "system") {
-        system_resolver(dns_class, dns_type, name, reactor, logger, cb);
+        system_resolver(dns_class, dns_type, name, settings, reactor, logger, cb);
     } else {
         reactor->call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
     }
