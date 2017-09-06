@@ -297,6 +297,7 @@ bool ip_in_nets(std::string ip, std::vector<std::string> nets) {
 // XXX not even beginning to fill in entry
 static void tcp_many(std::vector<std::string> ips,
                      Var<Entry> entry,
+                     Settings options,
                      Var<Reactor> reactor,
                      Var<Logger> logger,
                      Callback<Error> cb) {
@@ -349,11 +350,10 @@ static void tcp_many(std::vector<std::string> ips,
         // XXX hardcoded
         std::vector<int> ports {443, 5222};
         for (auto const& port : ports) {
-            Settings tcp_options;
-            tcp_options["host"] = ip;
-            tcp_options["port"] = port;
-            tcp_options["net/timeout"] = 10.0; //XXX hardcoded
-            templates::tcp_connect(tcp_options, tcp_cb(ip, port),
+            options["host"] = ip;
+            options["port"] = port;
+            options["net/timeout"] = 10.0; //XXX check if set upstream?
+            templates::tcp_connect(options, tcp_cb(ip, port),
                                    reactor, logger);
         }
     }
@@ -362,6 +362,7 @@ static void tcp_many(std::vector<std::string> ips,
 
 static void dns_many(std::vector<std::string> hostnames,
                      Var<Entry> entry,
+                     Settings options,
                      Var<Reactor> reactor,
                      Var<Logger> logger,
                      Callback<Error, std::vector<std::string>> cb) {
@@ -432,6 +433,7 @@ static void dns_many(std::vector<std::string> hostnames,
 static void http_many(const std::vector<std::string> urls,
                       std::string resource_name,
                       Var<Entry> entry,
+                      Settings options,
                       Var<Reactor> reactor,
                       Var<Logger> logger,
                       Callback<Error> cb) {
@@ -465,11 +467,10 @@ static void http_many(const std::vector<std::string> urls,
     };
 
     for (auto url : urls) {
-        Settings http_options;
-        http_options["http/url"] = url;
+        options["http/url"] = url;
         http::Headers headers = constants::COMMON_CLIENT_HEADERS;
         std::string body;
-        templates::http_request(entry, http_options, headers, body,
+        templates::http_request(entry, options, headers, body,
                                 http_cb(url), reactor, logger);
     }
 
@@ -524,7 +525,7 @@ void whatsapp(std::string input, Settings options,
     mk::fcompose(
         mk::fcompose_policy_async(),
         [=](Callback<> cb) {
-            http_many(WHATSAPP_REG_URLS, "registration_server", entry, reactor, logger,
+            http_many(WHATSAPP_REG_URLS, "registration_server", entry, options, reactor, logger,
                 [=](Error err) {
                     logger->info("saw %s in Whatsapp's registration server",
                         (!!err) ? "at least one error" : "no errors");
@@ -533,7 +534,7 @@ void whatsapp(std::string input, Settings options,
             );
         },
         [=](Callback<> cb) {
-            http_many(WHATSAPP_WEB_URLS, "whatsapp_web", entry, reactor, logger,
+            http_many(WHATSAPP_WEB_URLS, "whatsapp_web", entry, options, reactor, logger,
                 [=](Error err) {
                     logger->info("saw %s in Whatsapp Web",
                         (!!err) ? "at least one error" : "no errors");
@@ -542,7 +543,7 @@ void whatsapp(std::string input, Settings options,
             );
         },
         [=](Callback<std::vector<std::string>> cb) {
-            dns_many(WHATSAPP_ENDPOINT_HOSTNAMES, entry, reactor, logger,
+            dns_many(WHATSAPP_ENDPOINT_HOSTNAMES, entry, options, reactor, logger,
                 [=](Error err, std::vector<std::string> ips) {
                     logger->info("saw %s in Whatsapp's endpoints (DNS)",
                         (!!err) ? "at least one error" : "no errors");
@@ -551,7 +552,7 @@ void whatsapp(std::string input, Settings options,
             );
         },
         [=](std::vector<std::string> ips, Callback<> cb) {
-            tcp_many(ips, entry, reactor, logger,
+            tcp_many(ips, entry, options, reactor, logger,
                 [=](Error err) {
                     logger->info("saw %s in Whatsapp's endpoints (TCP)",
                         (!!err) ? "at least one error" : "no errors");
