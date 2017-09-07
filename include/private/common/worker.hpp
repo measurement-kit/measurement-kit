@@ -10,6 +10,7 @@
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/var.hpp>
 
+#include <chrono>
 #include <cassert>
 #include <functional>
 #include <list>
@@ -85,6 +86,29 @@ class Worker {
     unsigned short concurrency() const {
         std::unique_lock<std::mutex> _{state->mutex};
         return state->active;
+    }
+
+    void wait_empty_() const {
+        // Implementation note: this method is meant to be used in regress
+        // tests, where we don't want the test to exit until the background
+        // thread has exited, so to clear thread-local storage. Othrwise,
+        // Valgrind will complain about leaked thread-local storage.
+        //
+        // We expect the caller to issue a blocking command using a Worker
+        // and then to call this method such that we keep the main thread
+        // alive for longer, so that background threads can exit.
+        //
+        // Since this is meant for internal-only usage, as explained above,
+        // it has been given a name terminating with `_`.
+        //
+        // See:
+        // - test/ooni/orchestrate.cpp
+        // - test/nettests/utils.hpp
+        //
+        while (concurrency() > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     static Var<Worker> default_tasks_queue() {

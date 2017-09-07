@@ -149,14 +149,9 @@ TEST_CASE("geoip works") {
             "GeoIP.dat",
             "130.192.16.172"
     );
-    auto city = ooni::GeoipCache::thread_local_instance()->resolve_city_name(
-            "GeoLiteCity.dat",
-            "130.192.16.172"
-    );
     REQUIRE(*asn == std::string{"AS137"});
     REQUIRE(*cc == std::string{"IT"});
     REQUIRE(*cname == std::string{"Italy"});
-    REQUIRE(*city == std::string{"Turin"});
 }
 
 TEST_CASE("geoip memoization works") {
@@ -165,9 +160,8 @@ TEST_CASE("geoip memoization works") {
     // Open more then once. After the first open we should not really open.
     auto gi = ooni::GeoipCache::thread_local_instance()->get(
         "GeoIP.dat");
-    bool first_open;
 
-    first_open = true;
+    bool first_open = true;
     gi = ooni::GeoipCache::thread_local_instance()->get(
         "GeoIP.dat", first_open);
     REQUIRE(first_open == false);
@@ -188,7 +182,7 @@ TEST_CASE("geoip memoization works") {
 
     first_open = false;
     gi = ooni::GeoipCache::thread_local_instance()->get(
-        "GeoLiteCity.dat", first_open);
+        "GeoIPASNum.dat", first_open);
     REQUIRE(first_open == true);
 
     // Make sure that, if we close, then of course we reopen
@@ -197,7 +191,7 @@ TEST_CASE("geoip memoization works") {
 
     first_open = false;
     gi = ooni::GeoipCache::thread_local_instance()->get(
-        "GeoLiteCity.dat", first_open);
+        "GeoIPASNum.dat", first_open);
     REQUIRE(first_open == true);
 
 }

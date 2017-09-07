@@ -254,9 +254,6 @@ static void compare_control_experiment(std::string input, Var<Entry> entry,
         return;
     }
 
-    logger->debug("web_connectivity: control is like %s",
-                  (*entry)["control"].dump().c_str());
-
     if ((*entry)["http_experiment_failure"] == nullptr &&
         (*entry)["control"]["http_request"]["failure"] == nullptr) {
         logger->debug("web_connectivity: comparing http_requests");
@@ -285,7 +282,6 @@ static void compare_control_experiment(std::string input, Var<Entry> entry,
     }
 
     logger->debug("web_connectivity: checking if we got expected web page");
-    logger->debug("%s", (*entry).dump().c_str());
 
     bool got_expected_web_page = false;
     if (exp_http_failure == "" && ctrl_http_failure == "") {
@@ -530,8 +526,6 @@ static void experiment_dns_query(
             }
             for (auto answer : message->answers) {
                 if (answer.ipv4 != "") {
-                    addresses.push_back(answer.ipv4);
-                } else if (answer.hostname != "") {
                     addresses.push_back(answer.ipv4);
                 } else {
                     /* Not yet implemented */ ;

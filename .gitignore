@@ -32,7 +32,6 @@
 /CTestTestfile.cmake
 /GeoIP.dat
 /GeoIPASNum.dat
-/GeoLiteCity.dat
 /build/android/jni/conf
 /build/android/jni/spec
 /citizenlab-test-lists.*.csv
@@ -106,12 +105,13 @@
 /test/net/connect
 /test/net/emitter
 /test/net/evbuffer
+/test/net/libssl
 /test/net/socks5
-/test/net/ssl_context
 /test/net/transport
 /test/net/utils
 /test/nettests/dash
 /test/nettests/dns_injection
+/test/nettests/facebook_messenger
 /test/nettests/http_header_field_manipulation
 /test/nettests/http_invalid_request_line
 /test/nettests/meek_fronted_requests
