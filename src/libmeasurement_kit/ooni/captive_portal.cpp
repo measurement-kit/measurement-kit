@@ -206,6 +206,70 @@ static void dns_msft_ncsi(Var<Entry> entry, Callback<Error> done_cb,
           options, reactor, logger);
 }
 
+// DNS A lookups against some random hostnames unlikely to point at anything.
+void dns_random_hostnames(size_t count, size_t length, Var<Entry> entry,
+                          Callback<Error> done_cb, Settings options,
+                          Var<Reactor> reactor, Var<Logger> logger) {
+    // if any random domains resolve, change to false
+    // (true means unfiltered)
+    (*entry)["google_dns_cp"]["result"] = true;
+    (*entry)["google_dns_cp"]["addresses"] = Entry::array();
+    Var<size_t> names_tested(new size_t(0));
+
+    auto dns_cb = [=](std::string hostname) {
+        return [=](Error err, Var<dns::Message> message) {
+            if (!!err) {
+                if ((err == mk::dns::NotExistError()) ||
+                    (err == mk::dns::HostOrServiceNotProvidedOrNotKnownError())) {
+                    logger->info("%s: NXDOMAIN", hostname.c_str());
+                } else {
+                    logger->info("%s", err.as_ooni_error().c_str());
+                    logger->info("captive_portal: dns error for %s",
+                                hostname.c_str());
+                }
+            } else {
+                for (auto answer : message->answers) {
+                    if ((answer.ipv4 != "")) {
+                        (*entry)["google_dns_cp"]["result"] = false;
+                        logger->info("%s: %s", hostname.c_str(),
+                            answer.ipv4.c_str());
+                        (*entry)["google_dns_cp"]["addresses"].push_back(
+                            answer.ipv4.c_str());
+                    } else {
+                        // XXX not sure how to treat blank answers
+                        logger->info("%s: blank", hostname.c_str());
+                    }
+                }
+            }
+            *names_tested += 1;
+            assert(*names_tested <= count);
+            if (count == *names_tested) {
+                if ((*entry)["google_dns_cp"]["addresses"].empty()) {
+                    logger->info("all returned NXDOMAIN; we call this unfiltered");
+                } else {
+                    logger->info("unexpectedly resolved something random: evidence of filtering");
+                }
+                done_cb(NoError());
+                return;
+            }
+        };
+    };
+
+    std::vector<std::string> hostnames = {};
+    for (size_t i = 0; i < count; i++) {
+        hostnames.push_back(mk::random_str_lower_alpha(length) + mk::random_tld());
+    }
+
+    for (auto const &hostname : hostnames) {
+        // Note: we're passing in an empty nameserver, which rests on the
+        // assumption that we're using the `system` DNS resolver.
+        constexpr const char *nameserver = "";
+        templates::dns_query(entry, "A", "IN", hostname, nameserver,
+                             dns_cb(hostname), options, reactor,
+                             logger);
+    }
+}
+
 void captiveportal(std::string /*input*/, Settings options,
                    Callback<Var<Entry>> callback, Var<Reactor> reactor,
                    Var<Logger> logger) {
@@ -222,7 +286,14 @@ void captiveportal(std::string /*input*/, Settings options,
                                     if (err) {
                                         logger->warn("dns_msft_ncsi error");
                                     }
-                                    callback(entry);
+                                    logger->info("starting random hostnames");
+                                    dns_random_hostnames(3, 10, entry,
+                                            [=](Error err) {
+                                                if (err) {
+                                                    logger->warn("dns_msft_ncsi error");
+                                                }
+                                                callback(entry);
+                                            }, options, reactor, logger);
                                 },
                                 options, reactor, logger);
               },
