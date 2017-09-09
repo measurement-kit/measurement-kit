@@ -20,15 +20,12 @@ TransportConnectable::~TransportConnectable() {}
 TransportSockNamePeerName::~TransportSockNamePeerName() {}
 Transport::~Transport() {}
 
+// TODO: here we should probably also make sure that one cannot register
+// a new pending operation if a previous one is already in progress.
+
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
-    txp->on_flush([=]() {
+    txp->on_flush([=](Error err) {
         txp->on_flush(nullptr);
-        txp->on_error(nullptr);
-        cb(NoError());
-    });
-    txp->on_error([=](Error err) {
-        txp->on_flush(nullptr);
-        txp->on_error(nullptr);
         cb(err);
     });
     txp->write(buf);
@@ -37,18 +34,12 @@ void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
 void continue_writing(
     Var<Transport> txp,
     Callback<Error, std::function<void()> &> callback) {
-    txp->on_flush([=]() {
-        std::function<void()> canceller{[=]() {
-            txp->on_flush(nullptr);
-            txp->on_error(nullptr);
-        }};
-        callback(NoError(), canceller);
-    });
-    txp->on_error([=](Error error) {
-        txp->on_flush(nullptr);
-        txp->on_error(nullptr);
-        std::function<void()> canceller{[=]() {}};
-        callback(error, canceller);
+    txp->on_flush([=](Error err) {
+        std::function<void()> canceller{[=]() { txp->on_flush(nullptr); }};
+        if (!!err) {
+            canceller();
+        }
+        callback(err, canceller);
     });
 }
 
@@ -107,18 +98,12 @@ void continue_reading_into(
 void continue_reading(
     Var<Transport> txp,
     Callback<Error, Buffer, std::function<void()> &> callback) {
-    txp->on_data([=](Buffer data) {
-        std::function<void()> canceller{[=]() {
-            txp->on_data(nullptr);
-            txp->on_error(nullptr);
-        }};
-        callback(NoError(), data, canceller);
-    });
-    txp->on_error([=](Error error) {
-        txp->on_data(nullptr);
-        txp->on_error(nullptr);
-        std::function<void()> canceller{[=]() {}};
-        callback(error, Buffer{}, canceller);
+    txp->on_data([=](Error err, Buffer data) {
+        std::function<void()> canceller{[=]() { txp->on_data(nullptr); }};
+        if (!!err) {
+            canceller();
+        }
+        callback(err, data, canceller);
     });
 }
 

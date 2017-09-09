@@ -19,15 +19,13 @@ class TransportEmitter {
   public:
     virtual ~TransportEmitter();
 
-    virtual void emit_connect() = 0;
-    virtual void emit_data(Buffer buf) = 0;
-    virtual void emit_flush() = 0;
-    virtual void emit_error(Error err) = 0;
+    virtual void emit_connect(Error err) = 0;
+    virtual void emit_data(Error err, Buffer buf) = 0;
+    virtual void emit_flush(Error err) = 0;
 
-    virtual void on_connect(Callback<>) = 0;
-    virtual void on_data(Callback<Buffer>) = 0;
-    virtual void on_flush(Callback<>) = 0;
-    virtual void on_error(Callback<Error>) = 0;
+    virtual void on_connect(Callback<Error>) = 0;
+    virtual void on_data(Callback<Error, Buffer>) = 0;
+    virtual void on_flush(Callback<Error>) = 0;
 
     virtual void close(Callback<>) = 0;
 

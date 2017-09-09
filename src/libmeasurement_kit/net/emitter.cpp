@@ -24,14 +24,13 @@ void EmitterBase::close(Callback<> cb) {
          * to inform the caller that there is a problem with the code
          * because `close()` has been called more than once.
          */
-        throw std::runtime_error("close already pending");
+        throw std::runtime_error("close already pending"); // FIXME
     }
     close_pending = true;
     shutdown();
     on_connect(nullptr);
     on_data(nullptr);
     on_flush(nullptr);
-    on_error(nullptr);
     close_cb = cb;
 }
 
