@@ -15,9 +15,9 @@ namespace ndt {
 namespace test_c2s {
 
 template <MK_MOCK_AS(net::connect, net_connect)>
-void coroutine_impl(Var<Entry> report_entry, std::string address, int port, double runtime,
-                    Callback<Error, Continuation<Error>> cb, double timeout,
-                    Settings settings, Var<Reactor> reactor,
+void coroutine_impl(Var<Entry> report_entry, std::string address, int port,
+                    double runtime, Callback<Error, Continuation<Error>> cb,
+                    double timeout, Settings settings, Var<Reactor> reactor,
                     Var<Logger> logger) {
 
     // Performance note: This implementation does some string copies
@@ -36,59 +36,57 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port, doub
     std::string str = random_printable(8192);
 
     logger->debug("ndt: connect ...");
-    net_connect(address, port,
-                [=](Error err, Var<Transport> txp) {
-                    logger->debug("ndt: connect ... %d", (int)err);
-                    if (err) {
-                        cb(err, nullptr);
-                        return;
-                    }
-                    (*report_entry)["connect_times"].push_back(txp->connect_time());
-                    logger->info("Connected to %s:%d", address.c_str(), port);
-                    logger->debug("ndt: suspend coroutine");
-                    cb(NoError(), [=](Callback<Error> cb) {
-                        double begin = time_now();
-                        Var<MeasureSpeed> snap(new MeasureSpeed(0.5));
-                        logger->debug("ndt: resume coroutine");
-                        logger->info("Starting upload");
-                        txp->set_timeout(timeout);
-                        net::continue_writing(
-                            txp, [=](Error err, std::function<void()> &cancel) {
-                        // TODO: refactor this piece of code
-                        if (!err) {
-                            double now = time_now();
-                            snap->maybe_speed(now, [&](double el, double x) {
-                                log_speed(logger, "upload-speed", 1, el, x);
-                                (*report_entry)["sender_data"].push_back({
-                                    el, x
-                                });
-                            });
-                            if (now - begin > runtime) {
-                                logger->info("Elapsed enough time");
-                                cancel(); // Do it explicitly
-                                txp->close(nullptr);
-                                cb(NoError());
-                                return;
-                            }
-                            txp->write(str.data(), str.size());
-                            snap->total += str.size();
+    net_connect(
+        address, port,
+        [=](Error err, Var<Transport> txp) {
+            logger->debug("ndt: connect ... %d", (int)err);
+            if (err) {
+                cb(err, nullptr);
+                return;
+            }
+            (*report_entry)["connect_times"].push_back(txp->connect_time());
+            logger->info("Connected to %s:%d", address.c_str(), port);
+            logger->debug("ndt: suspend coroutine");
+            cb(NoError(), [=](Callback<Error> cb) {
+                double begin = time_now();
+                Var<MeasureSpeed> snap(new MeasureSpeed(0.5));
+                logger->debug("ndt: resume coroutine");
+                logger->info("Starting upload");
+                txp->set_timeout(timeout);
+                net::continue_writing(txp, [=](Error err,
+                                               std::function<void()> &cancel) {
+                    if (!err) {
+                        double now = time_now();
+                        snap->maybe_speed(now, [&](double el, double x) {
+                            log_speed(logger, "upload-speed", 1, el, x);
+                            (*report_entry)["sender_data"].push_back({el, x});
+                        });
+                        if (now - begin > runtime) {
+                            logger->info("Elapsed enough time");
+                            cancel(); // Do it explicitly
+                            txp->close(nullptr);
+                            cb(NoError());
                             return;
                         }
-                            cancel(); // Do it explicitly
-                            logger->info("Ending upload (%d)", (int)err);
-                            // TODO: we can avoid setting the callback
-                            txp->close([=]() {
-                                logger->info("Connection to %s:%d closed",
-                                             address.c_str(), port);
-                                cb(err);
-                            });
-                        });
-                        // Write the first data block immediately without
-                        // waiting (little) for socket being writable
                         txp->write(str.data(), str.size());
+                        snap->total += str.size();
+                        return;
+                    }
+                    cancel(); // Do it explicitly
+                    logger->info("Ending upload (%d)", (int)err);
+                    // TODO: we can avoid setting the callback
+                    txp->close([=]() {
+                        logger->info("Connection to %s:%d closed",
+                                     address.c_str(), port);
+                        cb(err);
                     });
-                },
-                settings, reactor, logger);
+                });
+                // Write the first data block immediately without
+                // waiting (little) for socket being writable
+                txp->write(str.data(), str.size());
+            });
+        },
+        settings, reactor, logger);
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg_first),
