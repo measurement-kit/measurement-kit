@@ -127,6 +127,10 @@ void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
 void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
           Var<Reactor> reactor = Reactor::global());
 
+void continue_reading(
+      Var<Transport> txp,
+      Callback<Error, Buffer, std::function<void()> &> callback);
+
 } // namespace net
 } // namespace mk
 #endif
