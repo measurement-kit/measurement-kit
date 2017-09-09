@@ -31,6 +31,8 @@
 #include <stdexcept>
 #include <utility>
 
+// TODO: we should probably rename this file `transport`.
+
 extern "C" {
 
 static inline void handle_libevent_read(bufferevent *, void *);
@@ -44,6 +46,7 @@ namespace libevent {
 
 using namespace mk::net;
 
+// TODO: we should extend to support the connect event
 static inline std::string map_bufferevent_event(short what) {
     std::stringstream ss;
     ss << ((what & BEV_EVENT_EOF) ? "Z" : "z")
@@ -54,6 +57,8 @@ static inline std::string map_bufferevent_event(short what) {
     return ss.str();
 }
 
+// TODO: we should write tests for this class
+template <MK_MOCK(bufferevent_enable), MK_MOCK(bufferevent_disable)>
 class Connection : public EmitterBase, public NonMovable, public NonCopyable {
   public:
     static Var<Transport> make(bufferevent *bev, Var<Reactor> reactor,
