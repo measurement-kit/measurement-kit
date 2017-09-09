@@ -132,10 +132,6 @@ void request_recv_response(SharedPtr<Transport> txp,
     SharedPtr<bool> prevent_emit(new bool(false));
     SharedPtr<bool> valid_response(new bool(false));
 
-    // Note: any parser error at this point is an exception catched by the
-    // connection code and routed to the error handler function below
-    txp->on_data([=](Buffer data) { parser->feed(data); });
-
     parser->on_response([=](Response r) {
         *response = r;
         *valid_response = true;
@@ -152,28 +148,32 @@ void request_recv_response(SharedPtr<Transport> txp,
         }
     });
 
-    // TODO: we should improve the parser such that the transport forwards the
-    // "error" event to it and then the parser does the right thing, so that the
-    // code becomes less "twisted" here.
-    //
-    // XXX actually trying to do that could make things worse as we have
-    // seen in #690; we should refactor this code with care.
-
     parser->on_end([=]() {
-        if (*prevent_emit == true) {
-            return;
-        }
+        *reached_end = true;
         if (response->body.size() > 0) {
             logger->debug2("%s", response->body.c_str());
         }
-        txp->emit_error(NoError());
     });
-    txp->on_error([=](Error err) {
+
+    net::continue_reading(txp, [=](Error err, Buffer data,
+                                   std::function<void()> &cancel) {
+
         logger->debug("http: received error %d on connection", err.code);
+
+        if (data.length() > 0) {
+            try {
+                parser->feed(data);
+            } catch (const Error &second_error) {
+                logger->warn("Parsing error: %d", second_error.code);
+                err = (!!err) ? err : second_error;
+                // FALLTHRU
+            }
+        }
+        if (err == NoError() && *reached_end == false) {
+            return; // basically: continue reading
+        }
+
         if (err == EofError() && *valid_response == true) {
-            // Calling parser->on_eof() could trigger parser->on_end() and
-            // we don't want this function to call ->emit_error()
-            *prevent_emit = true;
             // Assume there was no error. The parser will tell us if that
             // is true (it was in final state) or false.
             err = NoError();
@@ -186,8 +186,9 @@ void request_recv_response(SharedPtr<Transport> txp,
                 // FALLTHRU
             }
         }
-        txp->on_error(nullptr);
-        txp->on_data(nullptr);
+
+        cancel();
+
         reactor->call_soon([=]() {
             logger->debug2("http: end of closure");
             cb(err, response);

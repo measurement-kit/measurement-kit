@@ -7,6 +7,7 @@
 #include <measurement_kit/common/detail/mock.hpp>
 
 #include "../ndt/internal.hpp"
+#include "private/common/mock.hpp"
 
 namespace mk {
 namespace ndt {
@@ -56,7 +57,12 @@ void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, Params p
                 for (auto txp : txp_list) {
                     txp->set_timeout(timeout);
 
-                    txp->on_data([=](Buffer data) {
+                    net::continue_reading(
+                        txp, [=](Error err, Buffer data,
+                                 std::function<void()> & /*canceller*/) {
+                        // TODO: reindent this code block; I did not touch
+                        // it so to simplify reading the diff.
+                        if (err == NoError()) {
                         average->total += data.length();
                         snaps->total += data.length();
                         double ct = time_now();
@@ -70,10 +76,10 @@ void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, Params p
                             });
                         }
                         // TODO: force close the connection after a given
-                        // large amount of time has passed
-                    });
-
-                    txp->on_error([=](Error err) {
+                        // large amount of time has passed. When we do that
+                        // we can use the `canceller` variable ^-).
+                        return;
+                        }
                         if (err == EofError()) {
                             err = NoError();
                         }

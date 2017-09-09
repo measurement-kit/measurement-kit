@@ -65,5 +65,23 @@ void read(SharedPtr<Transport> t, SharedPtr<Buffer> buff, Callback<Error> callba
     readn(t, buff, 1, callback, reactor);
 }
 
+void continue_reading(
+    Var<Transport> txp,
+    Callback<Error, Buffer, std::function<void()> &> callback) {
+    txp->on_data([=](Buffer data) {
+        std::function<void()> canceller{[=]() {
+            txp->on_data(nullptr);
+            txp->on_error(nullptr);
+        }};
+        callback(NoError(), data, canceller);
+    });
+    txp->on_error([=](Error error) {
+        txp->on_data(nullptr);
+        txp->on_error(nullptr);
+        std::function<void()> canceller{[=]() {}};
+        callback(error, Buffer{}, canceller);
+    });
+}
+
 } // namespace net
 } // namespace mk
