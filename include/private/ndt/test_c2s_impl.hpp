@@ -194,13 +194,13 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
 
                                     // The C2S phase is now finished
                                     callback(NoError());
-                                }, ctx->reactor);
-                        }, ctx->reactor);
+                                });
+                        });
                     });
-                }, ctx->reactor);
+                });
             },
             ctx->timeout, ctx->settings, ctx->reactor, ctx->logger);
-    }, ctx->reactor);
+    });
 }
 
 } // namespace test_c2s

@@ -139,7 +139,7 @@ void finalizing_test_impl(Var<Context> ctx, Var<Entry> cur_entry,
         }
         // XXX: Here we can loop forever
         finalizing_test_impl<messages_read_msg>(ctx, cur_entry, callback);
-    }, ctx->reactor);
+    });
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg_first),
@@ -287,12 +287,12 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                                 // We enter into the final state of this test
                                 finalizing_test(ctx, cur_entry, callback);
                             });
-                        }, ctx->reactor);
+                        });
                     });
-                }, ctx->reactor);
+                });
             },
             ctx->timeout, ctx->settings, ctx->reactor, ctx->logger);
-    }, ctx->reactor);
+    });
 }
 
 } // namespace test_s2c

@@ -34,12 +34,11 @@ void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
     txp->write(buf);
 }
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
-           Var<Reactor> reactor) {
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb) {
     if (buff->length() >= n) {
         // Shortcut that simplifies coding a great deal - yet, do not callback
         // immediately to avoid O(N) stack consumption
-        reactor->call_soon([=]() {
+        txp->get_reactor()->call_soon([=]() {
             cb(NoError());
         });
         return;
@@ -60,9 +59,8 @@ void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
     });
 }
 
-void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
-          Var<Reactor> reactor) {
-    readn(t, buff, 1, callback, reactor);
+void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback) {
+    readn(t, buff, 1, callback);
 }
 
 void continue_reading(

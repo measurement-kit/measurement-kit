@@ -30,6 +30,8 @@ class TransportEmitter {
     virtual void on_error(Callback<Error>) = 0;
 
     virtual void close(Callback<>) = 0;
+
+    virtual Var<Reactor> get_reactor() = 0;
 };
 
 class TransportRecorder {
@@ -121,11 +123,9 @@ class Transport : public TransportEmitter,
 
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
-           Var<Reactor> reactor = Reactor::global());
+void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb);
 
-void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
-          Var<Reactor> reactor = Reactor::global());
+void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback);
 
 void continue_reading(
       Var<Transport> txp,

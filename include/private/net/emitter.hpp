@@ -113,6 +113,8 @@ class EmitterBase : public Transport {
 
     void close(Callback<> cb) override;
 
+    Var<Reactor> get_reactor() override { return reactor; }
+
     /*
      * TransportRecorder
      */
