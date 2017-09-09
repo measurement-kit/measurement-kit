@@ -55,7 +55,7 @@ void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_AS(net::readn, net_readn)>
+template <MK_MOCK_AS(net::readn_into, net_readn)>
 void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv and ignore kickoff ...");
     net_readn(ctx->txp, ctx->buff, KICKOFF_MESSAGE_SIZE, [=](Error err) {
@@ -253,7 +253,7 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_AS(net::read, net_read)>
+template <MK_MOCK_AS(net::read_into, net_read)>
 void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait close ...");
     ctx->txp->set_timeout(1.0);

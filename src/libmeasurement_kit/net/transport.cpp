@@ -34,33 +34,56 @@ void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
     txp->write(buf);
 }
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb) {
+void readn_into(Var<Transport> txp, Var<Buffer> buff, size_t n,
+                Callback<Error> cb) {
     if (buff->length() >= n) {
         // Shortcut that simplifies coding a great deal - yet, do not callback
         // immediately to avoid O(N) stack consumption
-        txp->get_reactor()->call_soon([=]() {
-            cb(NoError());
-        });
+        txp->get_reactor()->call_soon([=]() { cb(NoError()); });
         return;
     }
-    txp->on_data([=](Buffer d) {
-        *buff << d;
-        if (buff->length() < n) {
-            return;
-        }
-        txp->on_data(nullptr);
-        txp->on_error(nullptr);
-        cb(NoError());
-    });
-    txp->on_error([=](Error error) {
-        txp->on_data(nullptr);
-        txp->on_error(nullptr);
-        cb(error);
+    readn(txp, n, [=](Error err, Buffer data) {
+        *buff << data;
+        cb(err);
     });
 }
 
-void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback) {
-    readn(t, buff, 1, callback);
+void readn(Var<Transport> txp, size_t n, Callback<Error, Buffer> callback) {
+    Var<Buffer> buff = Buffer::make();
+    continue_reading(
+        txp, [=](Error err, Buffer data, std::function<void()> &cancel) {
+            *buff << data;
+            if (buff->length() < n && !err) {
+                return;
+            }
+            cancel();
+            callback(err, *buff);
+        });
+}
+
+void read_into(Var<Transport> txp, Var<Buffer> buff, Callback<Error> cb) {
+    read(txp, [=](Error err, Buffer data) {
+        *buff << data;
+        cb(err);
+    });
+}
+
+void read(Var<Transport> txp, Callback<Error, Buffer> callback) {
+    continue_reading(
+        txp, [=](Error err, Buffer data, std::function<void()> &cancel) {
+            cancel();
+            callback(err, data);
+        });
+}
+
+void continue_reading_into(
+    Var<Transport> txp, Var<Buffer> buff,
+    Callback<Error, std::function<void()> &> callback) {
+    continue_reading(
+        txp, [=](Error err, Buffer data, std::function<void()> &cancel) {
+            *buff << data;
+            callback(err, cancel);
+        });
 }
 
 void continue_reading(

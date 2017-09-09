@@ -123,9 +123,16 @@ class Transport : public TransportEmitter,
 
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb);
+void readn_into(Var<Transport> txp, Var<Buffer>, size_t n, Callback<Error> cb);
 
-void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback);
+void readn(Var<Transport> txp, size_t n, Callback<Error, Buffer> cb);
+
+void read_into(Var<Transport> txp, Var<Buffer>, Callback<Error> cb);
+
+void read(Var<Transport> t, Callback<Error, Buffer> callback);
+
+void continue_reading_into(Var<Transport> txp, Var<Buffer> buff,
+                           Callback<Error, std::function<void()> &> callback);
 
 void continue_reading(
       Var<Transport> txp,
