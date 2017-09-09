@@ -102,6 +102,15 @@ class EmitterBase : public Transport {
     void on_flush(std::function<void()> fn) override {
         logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'flush' handler",
                     (fn != nullptr) ? "" : "un");
+        if (close_pending) {
+            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            return;
+        }
+        if (fn) {
+            start_writing();
+        } else {
+            stop_writing();
+        }
         do_flush = fn;
     }
 
@@ -259,6 +268,7 @@ class Emitter : public EmitterBase {
     void start_reading() override {}
     void stop_reading() override {}
     void start_writing() override {}
+    void stop_writing() override {}
 };
 
 } // namespace net

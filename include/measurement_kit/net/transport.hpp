@@ -81,10 +81,13 @@ class TransportPollable {
     /*
      * Writing is stopped automatically when the send buffer is empty
      * and, when this happens, the FLUSH event is emitted.
+     *
+     * But you can also trigger it manually, if you wish to do so.
      */
     virtual void start_reading() = 0;
     virtual void stop_reading() = 0;
     virtual void start_writing() = 0;
+    virtual void stop_writing() = 0;
 };
 
 class TransportConnectable {
@@ -123,6 +126,9 @@ class Transport : public TransportEmitter,
 
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
 
+void continue_writing(Var<Transport> txp,
+                      Callback<Error, std::function<void()> &> cancel);
+
 void readn_into(Var<Transport> txp, Var<Buffer>, size_t n, Callback<Error> cb);
 
 void readn(Var<Transport> txp, size_t n, Callback<Error, Buffer> cb);
@@ -132,11 +138,11 @@ void read_into(Var<Transport> txp, Var<Buffer>, Callback<Error> cb);
 void read(Var<Transport> t, Callback<Error, Buffer> callback);
 
 void continue_reading_into(Var<Transport> txp, Var<Buffer> buff,
-                           Callback<Error, std::function<void()> &> callback);
+                           Callback<Error, std::function<void()> &> cancel);
 
 void continue_reading(
       Var<Transport> txp,
-      Callback<Error, Buffer, std::function<void()> &> callback);
+      Callback<Error, Buffer, std::function<void()> &> cancel);
 
 } // namespace net
 } // namespace mk

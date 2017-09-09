@@ -34,6 +34,24 @@ void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
     txp->write(buf);
 }
 
+void continue_writing(
+    Var<Transport> txp,
+    Callback<Error, std::function<void()> &> callback) {
+    txp->on_flush([=]() {
+        std::function<void()> canceller{[=]() {
+            txp->on_flush(nullptr);
+            txp->on_error(nullptr);
+        }};
+        callback(NoError(), canceller);
+    });
+    txp->on_error([=](Error error) {
+        txp->on_flush(nullptr);
+        txp->on_error(nullptr);
+        std::function<void()> canceller{[=]() {}};
+        callback(error, canceller);
+    });
+}
+
 void readn_into(Var<Transport> txp, Var<Buffer> buff, size_t n,
                 Callback<Error> cb) {
     if (buff->length() >= n) {

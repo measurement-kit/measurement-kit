@@ -52,7 +52,10 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port, doub
                         logger->debug("ndt: resume coroutine");
                         logger->info("Starting upload");
                         txp->set_timeout(timeout);
-                        txp->on_flush([=]() {
+                        net::continue_writing(
+                            txp, [=](Error err, std::function<void()> &cancel) {
+                        // TODO: refactor this piece of code
+                        if (!err) {
                             double now = time_now();
                             snap->maybe_speed(now, [&](double el, double x) {
                                 log_speed(logger, "upload-speed", 1, el, x);
@@ -62,20 +65,26 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port, doub
                             });
                             if (now - begin > runtime) {
                                 logger->info("Elapsed enough time");
-                                txp->emit_error(NoError());
+                                cancel(); // Do it explicitly
+                                txp->close(nullptr);
+                                cb(NoError());
                                 return;
                             }
                             txp->write(str.data(), str.size());
                             snap->total += str.size();
-                        });
-                        txp->on_error([=](Error err) {
+                            return;
+                        }
+                            cancel(); // Do it explicitly
                             logger->info("Ending upload (%d)", (int)err);
+                            // TODO: we can avoid setting the callback
                             txp->close([=]() {
                                 logger->info("Connection to %s:%d closed",
                                              address.c_str(), port);
                                 cb(err);
                             });
                         });
+                        // Write the first data block immediately without
+                        // waiting (little) for socket being writable
                         txp->write(str.data(), str.size());
                     });
                 },

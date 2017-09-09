@@ -89,7 +89,12 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
     }
 
     void start_writing() override {
+        // Note: in theory writing _nonzero_ bytes into the output
+        // bufferevent should be enough to start writing
         output_buff >> bufferevent_get_output(bev);
+        if (bufferevent_enable(this->bev, EV_WRITE) != 0) {
+            throw std::runtime_error("cannot enable write");
+        }
     }
 
     void start_reading() override {
@@ -101,6 +106,12 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
     void stop_reading() override {
         if (bufferevent_disable(this->bev, EV_READ) != 0) {
             throw std::runtime_error("cannot disable read");
+        }
+    }
+
+    void stop_writing() override {
+        if (bufferevent_disable(this->bev, EV_WRITE) != 0) {
+            throw std::runtime_error("cannot disable write");
         }
     }
 
