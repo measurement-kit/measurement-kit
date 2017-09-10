@@ -15,6 +15,7 @@
 /// \section Libevent/reactor
 /// \brief Header-only implementation of mk::Reactor based on libevent.
 
+#include "private/common/locked.hpp"               // for mk::locked_global
 #include "private/common/mock.hpp"                 // for MK_MOCK
 #include "private/common/worker.hpp"               // for mk::Worker
 #include <cassert>                                 // for assert
@@ -24,7 +25,6 @@
 #include <functional>                              // for std::function
 #include <measurement_kit/common/callback.hpp>     // for mk::Callback
 #include <measurement_kit/common/error.hpp>        // for mk::Error
-#include <measurement_kit/common/locked.hpp>       // for mk::locked_global
 #include <measurement_kit/common/logger.hpp>       // for mk::warn
 #include <measurement_kit/common/non_copyable.hpp> // for mk::NonCopyable
 #include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
