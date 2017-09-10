@@ -219,8 +219,8 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
     return 0;
 }
 
-socket_t socket_create(int domain, int type, int protocol, Var<Logger> logger) {
-    socket_t filedesc;
+os_socket_t socket_create(int domain, int type, int protocol, Var<Logger> logger) {
+    os_socket_t filedesc;
     int result;
 
     filedesc = socket(domain, type, protocol);
@@ -292,7 +292,7 @@ std::string unreverse_ipv4(std::string s) {
     return std::string(r.begin(), r.end());
 }
 
-Error disable_nagle(socket_t sockfd) {
+Error disable_nagle(os_socket_t sockfd) {
     static const int disable = 1;
     if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&disable,
                    sizeof (disable)) != 0) {

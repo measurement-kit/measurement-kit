@@ -38,7 +38,7 @@ int storage_init(
         Var<Logger> logger
 );
 
-socket_t socket_create(
+os_socket_t socket_create(
         int domain,
         int type,
         int protocol,
@@ -49,7 +49,7 @@ std::string unreverse_ipv6(std::string s);
 
 std::string unreverse_ipv4(std::string s);
 
-Error disable_nagle(socket_t);
+Error disable_nagle(os_socket_t);
 
 Error map_errno(int);
 
