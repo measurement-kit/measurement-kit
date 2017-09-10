@@ -13,12 +13,12 @@ using namespace mk::net;
 using json = nlohmann::json;
 
 static void fail(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb,
-                 Var<Reactor> = Reactor::global()) {
+                 Reactor = Reactor::global()) {
     cb(MockedError());
 }
 
 static void succeed(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(NoError());
 }
 
@@ -42,12 +42,12 @@ TEST_CASE("read_ndt() deals with the second readn() error") {
 }
 
 static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                 Var<Reactor> = Reactor::global()) {
+                 Reactor = Reactor::global()) {
     cb(MockedError(), 0, "");
 }
 
 static void succeed(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(NoError(), 0, "");
 }
 
@@ -66,12 +66,12 @@ TEST_CASE("read_json() deals with invalid JSON") {
 }
 
 static void fail(Var<Context>, Callback<Error, uint8_t, json> cb,
-                 Var<Reactor> = Reactor::global()) {
+                 Reactor = Reactor::global()) {
     cb(MockedError(), 0, {});
 }
 
 static void invalid(Var<Context>, Callback<Error, uint8_t, json> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(NoError(), 0, {{"foo", "baz"}, {"baz", 1}});
 }
 
@@ -90,7 +90,7 @@ TEST_CASE("read() deals with json without 'msg' field") {
 }
 
 static void bad_type(Var<Context>, Callback<Error, uint8_t, json> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(NoError(), 0, 3.14);
 }
 

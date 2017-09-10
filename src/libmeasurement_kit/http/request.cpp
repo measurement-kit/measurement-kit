@@ -99,7 +99,7 @@ void Request::serialize(net::Buffer &buff, Var<Logger> logger) {
 */
 
 void request_connect(Settings settings, Callback<Error, Var<Transport>> txp,
-                     Var<Reactor> reactor, Var<Logger> logger) {
+                     Reactor reactor, Var<Logger> logger) {
     request_connect_impl(settings, txp, reactor, logger);
 }
 
@@ -126,7 +126,7 @@ void request_maybe_send(ErrorOr<Var<Request>> request, Var<Transport> txp,
 
 void request_recv_response(Var<Transport> txp,
                            Callback<Error, Var<Response>> cb,
-                           Var<Reactor> reactor, Var<Logger> logger) {
+                           Reactor reactor, Var<Logger> logger) {
     Var<ResponseParserNg> parser{new ResponseParserNg{logger}};
     Var<Response> response(new Response);
     Var<bool> prevent_emit(new bool(false));
@@ -180,7 +180,7 @@ void request_recv_response(Var<Transport> txp,
         }
         txp->on_error(nullptr);
         txp->on_data(nullptr);
-        reactor->call_soon([=]() {
+        reactor.call_soon([=]() {
             logger->log(MK_LOG_DEBUG2, "http: end of closure");
             cb(err, response);
         });
@@ -189,14 +189,14 @@ void request_recv_response(Var<Transport> txp,
 
 void request_sendrecv(Var<Transport> txp, Settings settings, Headers headers,
                       std::string body, Callback<Error, Var<Response>> callback,
-                      Var<Reactor> reactor, Var<Logger> logger) {
+                      Reactor reactor, Var<Logger> logger) {
     request_maybe_sendrecv(Request::make(settings, headers, body), txp,
                            callback, reactor, logger);
 }
 
 void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
                             Callback<Error, Var<Response>> callback,
-                            Var<Reactor> reactor, Var<Logger> logger) {
+                            Reactor reactor, Var<Logger> logger) {
     request_maybe_send(request, txp, logger,
                        [=](Error error, Var<Request> request) {
         if (error) {
@@ -254,7 +254,7 @@ ErrorOr<Url> redirect(const Url &orig_url, const std::string &location) {
 }
 
 void request(Settings settings, Headers headers, std::string body,
-             Callback<Error, Var<Response>> callback, Var<Reactor> reactor,
+             Callback<Error, Var<Response>> callback, Reactor reactor,
              Var<Logger> logger, Var<Response> previous, int num_redirs) {
     dump_settings(settings, "request", logger);
     ErrorOr<int> max_redirects = settings.get_noexcept(
@@ -304,7 +304,7 @@ void request(Settings settings, Headers headers, std::string body,
                                 callback(TooManyRedirectsError(), response);
                                 return;
                             }
-                            reactor->call_soon([=]() {
+                            reactor.call_soon([=]() {
                                 request(new_settings, headers, body, callback,
                                     reactor, logger, response, num_redirs + 1);
                             });
@@ -327,7 +327,7 @@ void request_json_string(
       std::string method, std::string url, std::string data,
       http::Headers headers,
       Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+      Settings settings, Reactor reactor, Var<Logger> logger) {
     request_json_string_impl(method, url, data, headers, cb, settings, reactor,
                              logger);
 }
@@ -335,7 +335,7 @@ void request_json_string(
 void request_json_no_body(
       std::string method, std::string url, http::Headers headers,
       Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+      Settings settings, Reactor reactor, Var<Logger> logger) {
     request_json_string(method, url, "", headers, cb, settings, reactor,
                         logger);
 }
@@ -344,7 +344,7 @@ void request_json_object(
       std::string method, std::string url, nlohmann::json jdata,
       http::Headers headers,
       Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+      Settings settings, Reactor reactor, Var<Logger> logger) {
     request_json_string(method, url, jdata.dump(), headers, cb, settings,
                         reactor, logger);
 }

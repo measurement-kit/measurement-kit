@@ -24,13 +24,13 @@ static int fail_getaddrinfo(const char *, const char *, const struct addrinfo *,
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
 void run_system_resolver(std::string dns_class, std::string dns_type,
                          std::string name, Callback<Error, Var<Message>> cb) {
-    Var<Reactor> reactor = Reactor::make();
+    Reactor reactor;
     Var<Logger> logger = Logger::make();
-    reactor->run_with_initial_event([&]() {
+    reactor.run_with_initial_event([&]() {
         system_resolver<getaddrinfo, inet_ntop>(dns_class, dns_type, name,
                                                 {}, reactor, logger,
                                                 [&](Error e, Var<Message> m) {
-                                                    reactor->stop();
+                                                    reactor.stop();
                                                     cb(e, m);
                                                 });
     });

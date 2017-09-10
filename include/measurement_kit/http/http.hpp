@@ -131,7 +131,7 @@ struct Response {
 ErrorOr<Url> redirect(const Url &orig_url, const std::string &location);
 
 void request_connect(Settings, Callback<Error, Var<net::Transport>>,
-                     Var<Reactor> = Reactor::global(),
+                     Reactor = Reactor::global(),
                      Var<Logger> = Logger::global());
 
 void request_send(Var<net::Transport>, Settings, Headers, std::string,
@@ -142,18 +142,18 @@ void request_maybe_send(ErrorOr<Var<Request>>, Var<net::Transport>,
                         Var<Logger>, Callback<Error, Var<Request>>);
 
 void request_recv_response(Var<net::Transport>, Callback<Error, Var<Response>>,
-                           Var<Reactor> = Reactor::global(),
+                           Reactor = Reactor::global(),
                            Var<Logger> = Logger::global());
 
 void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
                       Callback<Error, Var<Response>>,
-                      Var<Reactor> = Reactor::global(),
+                      Reactor = Reactor::global(),
                       Var<Logger> = Logger::global());
 
 // Same as above except that the optional Request is passed in explicitly
 void request_maybe_sendrecv(ErrorOr<Var<Request>>, Var<net::Transport>,
                             Callback<Error, Var<Response>>,
-                            Var<Reactor> = Reactor::global(),
+                            Reactor = Reactor::global(),
                             Var<Logger> = Logger::global());
 
 /*
@@ -170,12 +170,12 @@ void request_maybe_sendrecv(ErrorOr<Var<Request>>, Var<net::Transport>,
  */
 
 void request(Settings, Headers, std::string, Callback<Error, Var<Response>>,
-             Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global(),
+             Reactor = Reactor::global(), Var<Logger> = Logger::global(),
              Var<Response> previous = nullptr, int nredirects = 0);
 
 inline void get(std::string url, Callback<Error, Var<Response>> cb,
                 Headers headers = {}, Settings settings = {},
-                Var<Reactor> reactor = Reactor::global(),
+                Reactor reactor = Reactor::global(),
                 Var<Logger> lp = Logger::global(),
                 Var<Response> previous = nullptr,
                 int nredirects = 0) {
@@ -197,18 +197,18 @@ void request_json_string(
       std::string method, std::string url, std::string data,
       http::Headers headers,
       Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger);
+      Settings settings, Reactor reactor, Var<Logger> logger);
 
 void request_json_no_body(
       std::string method, std::string url, http::Headers headers,
       Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger);
+      Settings settings, Reactor reactor, Var<Logger> logger);
 
 void request_json_object(
       std::string method, std::string url, nlohmann::json jdata,
       http::Headers headers,
       Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger);
+      Settings settings, Reactor reactor, Var<Logger> logger);
 
 } // namespace http
 } // namespace mk

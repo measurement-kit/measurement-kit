@@ -28,7 +28,7 @@
 #include <measurement_kit/common/logger.hpp>       // for mk::warn
 #include <measurement_kit/common/non_copyable.hpp> // for mk::NonCopyable
 #include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
-#include <measurement_kit/common/reactor.hpp>      // for mk::Reactor
+#include <measurement_kit/common/reactor.hpp>      // for mk::Reactor::Impl
 #include <measurement_kit/common/utils.hpp>        // for mk::timeval_init
 #include <measurement_kit/portable/netdb.h>        // for getaddrinfo
 #include <memory>                                  // for std::unique_ptr
@@ -45,43 +45,11 @@ static inline void mk_call_later_cb(evutil_socket_t, short, void *);
 namespace mk {
 namespace libevent {
 
-// ## EventUptr
-/*-
-     _____                 _   _   _       _
-    | ____|_   _____ _ __ | |_| | | |_ __ | |_ _ __
-    |  _| \ \ / / _ \ '_ \| __| | | | '_ \| __| '__|
-    | |___ \ V /  __/ | | | |_| |_| | |_) | |_| |
-    |_____| \_/ \___|_| |_|\__|\___/| .__/ \__|_|
-                                    |_|
-*/
-/// \subsection EventUptr
-/// \brief Convenience wrapper for managing events
-
-struct EventDeleter {
-    void operator()(event *p) {
-        if (p) {
-            event_free(p);
-        }
-    }
-};
-using EventUptr = std::unique_ptr<event, EventDeleter>;
-
-// ## Reactor
-/*-
-     ____       _ _
-    |  _ \ ___ | | | ___ _ __
-    | |_) / _ \| | |/ _ \ '__|
-    |  __/ (_) | | |  __/ |
-    |_|   \___/|_|_|\___|_|
-*/
-/// \subsection Reactor
-/// \brief Here we have our main class.
-
 /// \brief mk::Reactor implementation using libevent.
 template <MK_MOCK(event_base_new), MK_MOCK(event_base_once),
           MK_MOCK(event_base_dispatch), MK_MOCK(event_base_loopbreak),
           MK_MOCK(event_new), MK_MOCK(event_add)>
-class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
+class Reactor : public mk::Reactor::Impl, public NonCopyable, public NonMovable {
   public:
     // ### Library
     /*-
@@ -185,11 +153,9 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
 
     Worker worker;
 
-    void run_in_background_thread(Callback<> &&cb) override {
+    void call_in_background_thread(Callback<> &&cb) override {
         worker.run_in_background_thread(std::move(cb));
     }
-
-    void call_soon(Callback<> &&cb) override { call_later(0.0, std::move(cb)); }
 
     /*
         Note: according to libevent documentation, it is not necessary to

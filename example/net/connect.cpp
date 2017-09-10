@@ -45,8 +45,8 @@ int main(int argc, char **argv) {
     }
     std::string domain = argv[0];
 
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         connect(domain, port, [=](Error err, Var<Transport> txp) {
             std::cout << "Overall connect result: " << err.as_ooni_error() << "\n";
             auto resolve_result = txp->dns_result();
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
             for (auto e : txp->connect_errors()) {
                 std::cout << "    - " << e.as_ooni_error() << "\n";
             }
-            txp->close([=]() { reactor->stop(); });
+            txp->close([=]() { reactor.stop(); });
         }, settings);
     });
 

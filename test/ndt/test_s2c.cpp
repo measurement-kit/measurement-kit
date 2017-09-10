@@ -12,7 +12,7 @@ using namespace mk::ndt;
 using json = nlohmann::json;
 
 static void failure(std::string, int, int, ConnectManyCb callback,
-                    Settings, Var<Reactor>, Var<Logger>) {
+                    Settings, Reactor, Var<Logger>) {
     callback(MockedError(), {});
 }
 
@@ -27,7 +27,7 @@ TEST_CASE("coroutine() is robust to connect error") {
 }
 
 static void failure(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(MockedError(), 0, "");
 }
 
@@ -39,7 +39,7 @@ TEST_CASE("finalizing_test() deals with read_msg() error") {
 }
 
 static void invalid(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(NoError(), MSG_ERROR, "");
 }
 
@@ -52,7 +52,7 @@ TEST_CASE("finalizing_test() deals with receiving invalid message") {
 
 // XXX: static test function with a state is not good
 static void empty(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                  Var<Reactor> = Reactor::global()) {
+                  Reactor = Reactor::global()) {
     static int count = 0;
     if (count++ == 0) {
         cb(NoError(), TEST_MSG, "");
@@ -83,7 +83,7 @@ TEST_CASE("run() deals with receiving message different from PREPARE") {
 
 static void invalid_port(Var<Context>,
                          Callback<Error, uint8_t, std::string> cb,
-                         Var<Reactor> = Reactor::global()) {
+                         Reactor = Reactor::global()) {
     cb(NoError(), TEST_PREPARE, "foobar");
 }
 
@@ -94,7 +94,7 @@ TEST_CASE("run() deals with receiving invalid port") {
 }
 
 static void too_large(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                      Var<Reactor> = Reactor::global()) {
+                      Reactor = Reactor::global()) {
     cb(NoError(), TEST_PREPARE, "65536");
 }
 
@@ -105,7 +105,7 @@ TEST_CASE("run() deals with receiving too large port") {
 }
 
 static void too_small(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                      Var<Reactor> = Reactor::global()) {
+                      Reactor = Reactor::global()) {
     cb(NoError(), TEST_PREPARE, "-1");
 }
 
@@ -116,13 +116,13 @@ TEST_CASE("run() deals with receiving too small port") {
 }
 
 static void success(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
 static void failure(Var<Entry>, std::string, test_s2c::Params,
                     Callback<Error, Continuation<Error, double>> cb, double,
-                    Settings, Var<Reactor>, Var<Logger>) {
+                    Settings, Reactor, Var<Logger>) {
     cb(MockedError(), [](Callback<Error, double>) {
         REQUIRE(false); // should not happen
     });
@@ -136,14 +136,14 @@ TEST_CASE("run() deals with coroutine failure") {
 
 static void test_prepare(Var<Context>,
                          Callback<Error, uint8_t, std::string> cb,
-                         Var<Reactor> = Reactor::global()) {
+                         Reactor = Reactor::global()) {
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
 static void
 connect_but_fail_later(Var<Entry>, std::string, test_s2c::Params,
                        Callback<Error, Continuation<Error, double>> cb, double,
-                       Settings, Var<Reactor>, Var<Logger>) {
+                       Settings, Reactor, Var<Logger>) {
     cb(NoError(), [](Callback<Error, double> cb) { cb(MockedError(), 0.0); });
 }
 
@@ -160,7 +160,7 @@ TEST_CASE("run() deals with unexpected message instead of TEST_START") {
 }
 
 static void test_start(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                       Var<Reactor> = Reactor::global()) {
+                       Reactor = Reactor::global()) {
     cb(NoError(), TEST_START, "");
 }
 
@@ -172,12 +172,12 @@ TEST_CASE("run() deals with coroutine terminating with error") {
 
 static void coro_ok(Var<Entry>, std::string, test_s2c::Params,
                     Callback<Error, Continuation<Error, double>> cb, double,
-                    Settings, Var<Reactor>, Var<Logger>) {
+                    Settings, Reactor, Var<Logger>) {
     cb(NoError(), [](Callback<Error, double> cb) { cb(NoError(), 0.0); });
 }
 
 static void failure(Var<Context>, Callback<Error, uint8_t, json> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(MockedError(), 0, {});
 }
 
@@ -188,7 +188,7 @@ TEST_CASE("run() deals with error when reading TEST_MSG") {
 }
 
 static void invalid(Var<Context>, Callback<Error, uint8_t, json> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(NoError(), MSG_ERROR, {});
 }
 
@@ -199,7 +199,7 @@ TEST_CASE("run() deals with unexpected message instead of TEST_MSG") {
 }
 
 static void msg_test(Var<Context>, Callback<Error, uint8_t, json> cb,
-                     Var<Reactor> = Reactor::global()) {
+                     Reactor = Reactor::global()) {
     cb(NoError(), TEST_MSG, {});
 }
 

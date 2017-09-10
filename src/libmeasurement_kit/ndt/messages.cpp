@@ -10,17 +10,17 @@ namespace messages {
 
 void read_ll(Var<Context> ctx,
              mk::Callback<Error, uint8_t, std::string> callback,
-             Var<Reactor> reactor) {
+             Reactor reactor) {
     read_ll_impl(ctx, callback, reactor);
 }
 
 void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback,
-               Var<Reactor> reactor) {
+               Reactor reactor) {
     read_json_impl(ctx, callback, reactor);
 }
 
 void read_msg(Var<Context> ctx, Callback<Error, uint8_t, std::string> cb,
-              Var<Reactor> reactor) {
+              Reactor reactor) {
     read_msg_impl(ctx, cb, reactor);
 }
 

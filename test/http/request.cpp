@@ -118,8 +118,8 @@ TEST_CASE("HTTP Request class works as expected with explicit path") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request works as expected") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request(
             {
                 {"http/url",
@@ -136,14 +136,14 @@ TEST_CASE("http::request works as expected") {
                 REQUIRE(response->status_code == 200);
                 REQUIRE(md5(response->body) ==
                         "efa2a8f1ba8a6335a8d696f91de69737");
-                reactor->stop();
+                reactor.stop();
             });
     });
 }
 
 TEST_CASE("http::request() works using HTTPS") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request({{"http/url",
                   "https://didattica.polito.it/tesi/SaperComunicare.pdf"},
                  {"http/method", "GET"},
@@ -158,14 +158,14 @@ TEST_CASE("http::request() works using HTTPS") {
                     REQUIRE(response->status_code == 200);
                     REQUIRE(md5(response->body) ==
                             "1be9d96d157a3df328faa30e51faf63a");
-                    reactor->stop();
+                    reactor.stop();
                 });
     });
 }
 
 TEST_CASE("http::request() works as expected over Tor") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request(
             {
                 {"http/url",
@@ -186,14 +186,14 @@ TEST_CASE("http::request() works as expected over Tor") {
                     REQUIRE(md5(response->body) ==
                             "efa2a8f1ba8a6335a8d696f91de69737");
                 }
-                reactor->stop();
+                reactor.stop();
             });
     });
 }
 
 TEST_CASE("http::request correctly receives errors") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request(
             {
                 {"http/url", "http://nexa.polito.it:81/robots.txt"},
@@ -208,7 +208,7 @@ TEST_CASE("http::request correctly receives errors") {
             [=](Error error, Var<Response> response) {
                 REQUIRE(error);
                 REQUIRE(response == nullptr);
-                reactor->stop();
+                reactor.stop();
             });
     });
 }
@@ -218,8 +218,8 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
     auto called = 0;
 
     Var<Logger> logger = Logger::make();
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([&]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([&]() {
         connect("nexa.polito.it", 80,
                 [&](Error err, Var<Transport> transport) {
                     REQUIRE(!err);
@@ -229,7 +229,7 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
                                               REQUIRE(e == NoError());
                                               REQUIRE(r->status_code == 200);
                                               ++called;
-                                              reactor->stop();
+                                              reactor.stop();
                                           }, reactor, logger);
 
                     Buffer data;
@@ -253,8 +253,8 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
 #endif // ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_recv_response() deals with immediate EOF") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         connect("xxx.antani", 0,
                 [=](Error err, Var<Transport> transport) {
                     REQUIRE(!err);
@@ -262,7 +262,7 @@ TEST_CASE("http::request_recv_response() deals with immediate EOF") {
                                           [=](Error e, Var<Response> r) {
                                               REQUIRE(e == EofError());
                                               REQUIRE(!!r);
-                                              reactor->stop();
+                                              reactor.stop();
                                           },
                                           reactor);
                     transport->emit_error(EofError());
@@ -277,13 +277,13 @@ TEST_CASE("http::request_recv_response() deals with immediate EOF") {
 #define SOCKS_PORT_IS(port)                                                    \
     static void socks_port_is_##port(                                          \
         std::string, int, Callback<Error, Var<Transport>>, Settings settings,  \
-        Var<Reactor>, Var<Logger>) {                                           \
+        Reactor, Var<Logger>) {                                           \
         REQUIRE(settings.at("net/socks5_proxy") == "127.0.0.1:" #port);        \
     }
 
 static void socks_port_is_empty(std::string, int,
                                 Callback<Error, Var<Transport>>,
-                                Settings settings, Var<Reactor>, Var<Logger>) {
+                                Settings settings, Reactor, Var<Logger>) {
     REQUIRE(settings.find("net/socks5_proxy") == settings.end());
 }
 
@@ -361,20 +361,20 @@ TEST_CASE("http::request() callback is called if input URL parsing fails") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl() works for normal connections") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request_connect_impl({{"http/url", "http://www.google.com/robots.txt"}},
                              [=](Error error, Var<Transport> transport) {
                                  REQUIRE(!error);
                                  REQUIRE(static_cast<bool>(transport));
-                                 transport->close([=]() { reactor->stop(); });
+                                 transport->close([=]() { reactor.stop(); });
                              });
     });
 }
 
 TEST_CASE("http::request_send() works as expected") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request_connect_impl(
             {{"http/url", "http://www.google.com/"}},
             [=](Error error, Var<Transport> transport) {
@@ -394,7 +394,7 @@ TEST_CASE("http::request_send() works as expected") {
                                  REQUIRE((request->headers.size() == 0));
                                  REQUIRE((request->body == ""));
                                  REQUIRE(!error);
-                                 transport->close([=]() { reactor->stop(); });
+                                 transport->close([=]() { reactor.stop(); });
                              });
             });
     });
@@ -405,8 +405,8 @@ static inline bool status_code_ok(int code) {
 }
 
 TEST_CASE("http::request_recv_response() works as expected") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request_connect_impl(
             {{"http/url", "http://www.google.com/"}},
             [=](Error error, Var<Transport> transport) {
@@ -425,7 +425,7 @@ TEST_CASE("http::request_recv_response() works as expected") {
                                 REQUIRE(!e);
                                 REQUIRE(status_code_ok(r->status_code));
                                 REQUIRE(r->body.size() > 0);
-                                transport->close([=]() { reactor->stop(); });
+                                transport->close([=]() { reactor.stop(); });
                             });
                     });
             });
@@ -433,8 +433,8 @@ TEST_CASE("http::request_recv_response() works as expected") {
 }
 
 TEST_CASE("http::request_sendrecv() works as expected") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request_connect_impl(
             {{"http/url", "http://www.google.com/"}},
             [=](Error error, Var<Transport> transport) {
@@ -449,15 +449,15 @@ TEST_CASE("http::request_sendrecv() works as expected") {
                                      REQUIRE(!error);
                                      REQUIRE(status_code_ok(r->status_code));
                                      REQUIRE(r->body.size() > 0);
-                                     transport->close([=]() { reactor->stop(); });
+                                     transport->close([=]() { reactor.stop(); });
                                  });
             });
     });
 }
 
 TEST_CASE("http::request_sendrecv() works for multiple requests") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request_connect_impl(
             {{"http/url", "http://www.google.com/"}},
             [=](Error error, Var<Transport> transport) {
@@ -485,7 +485,7 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
                                 REQUIRE(!error);
                                 REQUIRE(r->status_code == 200);
                                 REQUIRE(r->body.size() > 0);
-                                transport->close([=]() { reactor->stop(); });
+                                transport->close([=]() { reactor.stop(); });
                             });
                     });
             });
@@ -493,8 +493,8 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
 }
 
 TEST_CASE("http::request() works as expected using httpo URLs") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request(
             {
                 {"http/url", "httpo://nkvphnp3p6agi5qq.onion/bouncer"},
@@ -519,14 +519,14 @@ TEST_CASE("http::request() works as expected using httpo URLs") {
                     check(body["dns"]["collector"]);
                     REQUIRE(body["dns"]["address"] == "37.218.247.110:57004");
                 }
-                reactor->stop();
+                reactor.stop();
             });
     });
 }
 
 TEST_CASE("http::request() works as expected using tor_socks_port") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request(
             {
                 {"http/url",
@@ -546,14 +546,14 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
                     REQUIRE(md5(response->body) ==
                             "efa2a8f1ba8a6335a8d696f91de69737");
                 }
-                reactor->stop();
+                reactor.stop();
             });
     });
 }
 
 TEST_CASE("http::request() correctly follows redirects") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request(
             {
                 {"http/url", "http://fsrn.org"},
@@ -572,14 +572,14 @@ TEST_CASE("http::request() correctly follows redirects") {
                 REQUIRE(response->previous->request->url.schema == "http");
                 REQUIRE(response->previous->request->url.address == "fsrn.org");
                 REQUIRE(!response->previous->previous);
-                reactor->stop();
+                reactor.stop();
             });
     });
 }
 
 TEST_CASE("Headers are preserved across redirects") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request(
             {
                 {"http/url", "http://httpbin.org/absolute-redirect/3"},
@@ -598,7 +598,7 @@ TEST_CASE("Headers are preserved across redirects") {
                         "/absolute-redirect/1");
                 auto body = nlohmann::json::parse(response->body);
                 REQUIRE(body["headers"]["Spam"] == "Ham");
-                reactor->stop();
+                reactor.stop();
             },
             reactor);
     });
@@ -611,8 +611,8 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
      *
      * See measurement-kit/ooniprobe-ios#79.
      */
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request(
             {
                 {"http/url", "http://hushmail.com"},
@@ -631,7 +631,7 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
                 REQUIRE(okay);
                 REQUIRE(response->previous->status_code / 100 == 3);
                 REQUIRE(response->previous->request->url.schema == "http");
-                reactor->stop();
+                reactor.stop();
             },
             reactor);
     });
@@ -642,8 +642,8 @@ TEST_CASE("We correctly deal with schema-less redirect") {
      * At the moment of writing this test, http://bacardi.com redirects to
      * //bacardi.com which used to confuse our redirect code.
      */
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request(
             {
                 {"http/url",
@@ -663,7 +663,7 @@ TEST_CASE("We correctly deal with schema-less redirect") {
                 REQUIRE(response->previous->status_code / 100 == 3);
                 REQUIRE(response->previous->request->url.path
                         == "/redirect-to");
-                reactor->stop();
+                reactor.stop();
             },
             reactor);
     });
@@ -672,23 +672,23 @@ TEST_CASE("We correctly deal with schema-less redirect") {
 #endif // ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl fails without an url") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request_connect_impl({},
                              [=](Error error, Var<Transport>) {
                                  REQUIRE(error == MissingUrlError());
-                                 reactor->stop();
+                                 reactor.stop();
                              });
     });
 }
 
 TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request_connect_impl({{"http/url", ">*7\n\n"}},
                              [=](Error error, Var<Transport>) {
                                  REQUIRE(error == UrlParserError());
-                                 reactor->stop();
+                                 reactor.stop();
                              });
     });
 }
@@ -696,8 +696,8 @@ TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_send fails without url in settings") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request_connect_impl(
             {{"http/url", "http://www.google.com/"}},
             [=](Error error, Var<Transport> transport) {
@@ -707,7 +707,7 @@ TEST_CASE("http::request_send fails without url in settings") {
                              [=](Error error, Var<Request> request) {
                                  REQUIRE(!request);
                                  REQUIRE(error == MissingUrlError());
-                                 transport->close([=]() { reactor->stop(); });
+                                 transport->close([=]() { reactor.stop(); });
                              });
             });
     });
@@ -716,12 +716,12 @@ TEST_CASE("http::request_send fails without url in settings") {
 #endif
 
 TEST_CASE("http::request() fails if fails request_send()") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         request({{"http/method", "GET"}}, {}, "",
                 [=](Error error, Var<Response>) {
                     REQUIRE(error);
-                    reactor->stop();
+                    reactor.stop();
                 });
     });
 }
@@ -789,7 +789,7 @@ TEST_CASE("http::redirect() works as expected") {
 
 static void fail_request(Settings, Headers, std::string,
                          Callback<Error, Var<Response>> cb,
-                         Var<Reactor> = Reactor::global(),
+                         Reactor = Reactor::global(),
                          Var<Logger> = Logger::global(),
                          Var<Response> = nullptr, int = 0) {
     cb(MockedError(), Var<Response>::make());
@@ -797,7 +797,7 @@ static void fail_request(Settings, Headers, std::string,
 
 static void non_200_response(Settings, Headers, std::string,
                              Callback<Error, Var<Response>> cb,
-                             Var<Reactor> = Reactor::global(),
+                             Reactor = Reactor::global(),
                              Var<Logger> = Logger::global(),
                              Var<Response> = nullptr, int = 0) {
     Var<Response> response = Var<Response>::make();
@@ -808,7 +808,7 @@ static void non_200_response(Settings, Headers, std::string,
 
 static void fail_parsing(Settings, Headers, std::string,
                          Callback<Error, Var<Response>> cb,
-                         Var<Reactor> = Reactor::global(),
+                         Reactor = Reactor::global(),
                          Var<Logger> = Logger::global(),
                          Var<Response> = nullptr, int = 0) {
     Var<Response> response = Var<Response>::make();

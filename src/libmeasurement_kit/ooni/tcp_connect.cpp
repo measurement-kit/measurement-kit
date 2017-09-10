@@ -10,7 +10,7 @@ namespace ooni {
 using namespace mk::report;
 
 void tcp_connect(std::string input, Settings options,
-                 Callback<Var<Entry>> callback, Var<Reactor> reactor,
+                 Callback<Var<Entry>> callback, Reactor reactor,
                  Var<Logger> logger) {
     Var<Entry> entry(new Entry);
     (*entry)["connection"] = nullptr;

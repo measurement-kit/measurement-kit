@@ -17,7 +17,7 @@ using namespace mk::report;
 void dns_query(Var<Entry> entry, dns::QueryType query_type,
                dns::QueryClass query_class, std::string query_name,
                std::string nameserver, Callback<Error, Var<dns::Message>> cb,
-               Settings options, Var<Reactor> reactor, Var<Logger> logger) {
+               Settings options, Reactor reactor, Var<Logger> logger) {
 
     std::string engine = options.get("dns/engine", std::string{"system"});
     bool not_system_engine = engine != "system";
@@ -29,7 +29,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
     if (not_system_engine) {
         ErrorOr<net::Endpoint> maybe_epnt = net::parse_endpoint(nameserver, 53);
         if (!maybe_epnt) {
-            reactor->call_soon([=]() { cb(maybe_epnt.as_error(), nullptr); });
+            reactor.call_soon([=]() { cb(maybe_epnt.as_error(), nullptr); });
             return;
         }
         resolver_port = maybe_epnt->port;
@@ -94,7 +94,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
 
 void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
                   std::string body, Callback<Error, Var<http::Response>> cb,
-                  Var<Reactor> reactor, Var<Logger> logger) {
+                  Reactor reactor, Var<Logger> logger) {
 
     (*entry)["agent"] = "agent";
     (*entry)["socksproxy"] = nullptr;
@@ -195,7 +195,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
 }
 
 void tcp_connect(Settings options, Callback<Error, Var<net::Transport>> cb,
-                 Var<Reactor> reactor, Var<Logger> logger) {
+                 Reactor reactor, Var<Logger> logger) {
     ErrorOr<int> port = options["port"].as_noexcept<int>();
     if (!port) {
         cb(port.as_error(), nullptr);

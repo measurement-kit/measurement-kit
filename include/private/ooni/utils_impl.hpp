@@ -19,7 +19,7 @@ namespace ooni {
 
 template <MK_MOCK_AS(http::get, http_get)>
 void ip_lookup_impl(Callback<Error, std::string> callback, Settings settings = {},
-               Var<Reactor> reactor = Reactor::global(),
+               Reactor reactor = Reactor::global(),
                Var<Logger> logger = Logger::global()) {
     http_get("http://geoip.ubuntu.com/lookup",
             [=](Error err, Var<http::Response> response) {
@@ -49,7 +49,7 @@ void ip_lookup_impl(Callback<Error, std::string> callback, Settings settings = {
 template <MK_MOCK_AS(dns::query, dns_query)>
 void resolver_lookup_impl(Callback<Error, std::string> callback,
                           Settings settings = {},
-                          Var<Reactor> reactor = Reactor::global(),
+                          Reactor reactor = Reactor::global(),
                           Var<Logger> logger = Logger::global()) {
   dns_query("IN", "A", "whoami.akamai.net",
       [=](Error error, Var<dns::Message> message) {

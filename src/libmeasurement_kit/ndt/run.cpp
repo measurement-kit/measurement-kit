@@ -9,7 +9,7 @@ namespace ndt {
 
 void run_with_specific_server(Var<Entry> entry, std::string address, int port,
                               Callback<Error> callback, Settings settings,
-                              Var<Reactor> reactor, Var<Logger> logger) {
+                              Reactor reactor, Var<Logger> logger) {
     run_with_specific_server_impl<
         protocol::connect, protocol::send_extended_login,
         protocol::recv_and_ignore_kickoff, protocol::wait_in_queue,
@@ -20,7 +20,7 @@ void run_with_specific_server(Var<Entry> entry, std::string address, int port,
 }
 
 void run(Var<Entry> entry, Callback<Error> callback, Settings settings,
-         Var<Reactor> reactor, Var<Logger> logger) {
+         Reactor reactor, Var<Logger> logger) {
     run_impl(entry, callback, settings, reactor, logger);
 }
 

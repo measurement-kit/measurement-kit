@@ -20,13 +20,13 @@ TEST_CASE("Make sure that IP address scrubbing works") {
     auto test = [](std::function<BaseTest(BaseTest &)> f,
                    Callback<std::string /*ip*/, std::string /*entry*/> g) {
         std::string probe_ip;
-        Var<Reactor> reactor = Reactor::make();
-        reactor->run_with_initial_event([&]() {
+        Reactor reactor;
+        reactor.run_with_initial_event([&]() {
             ooni::ip_lookup(
                 [&](Error err, std::string ip_addr) {
                     REQUIRE(!err);
                     probe_ip = ip_addr;
-                    reactor->stop();
+                    reactor.stop();
                 },
                 {}, reactor, Logger::global());
         });

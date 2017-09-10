@@ -117,7 +117,7 @@ TEST_CASE("BouncerReply accessors are robust to missing fields") {
 
 static void request_error(Settings, http::Headers, std::string,
                           Callback<Error, Var<http::Response>> cb,
-                          Var<Reactor> = Reactor::global(),
+                          Reactor = Reactor::global(),
                           Var<Logger> = Logger::global(),
                           Var<http::Response> = nullptr, int = 0) {
     cb(MockedError(), nullptr);
@@ -126,15 +126,15 @@ static void request_error(Settings, http::Headers, std::string,
 TEST_CASE("post_net_tests() works") {
 
     SECTION("On network error") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->run_with_initial_event([=]() {
+        Reactor reactor;
+        reactor.run_with_initial_event([=]() {
             // Mocked http request that returns an invalid-request
             ooni::bouncer::post_net_tests_impl<request_error>(
                 ooni::bouncer::production_bouncer_url(), "web-connectivity",
                 "0.0.1", {"web-connectivity"},
                 [=](Error e, Var<ooni::BouncerReply>) {
                     REQUIRE(e == MockedError());
-                    reactor->stop();
+                    reactor.stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -143,22 +143,22 @@ TEST_CASE("post_net_tests() works") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
     SECTION("When the collector is not found") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->run_with_initial_event([=]() {
+        Reactor reactor;
+        reactor.run_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
                 ooni::bouncer::production_bouncer_url(), "antani", "0.0.1",
                 {"antani"},
                 [=](Error e, Var<ooni::BouncerReply>) {
                     REQUIRE(e == ooni::BouncerCollectorNotFoundError());
-                    reactor->stop();
+                    reactor.stop();
                 },
                 {}, reactor, Logger::global());
         });
     }
 
     SECTION("When the input is correct") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->run_with_initial_event([=]() {
+        Reactor reactor;
+        reactor.run_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
                 ooni::bouncer::production_bouncer_url(), "web-connectivity",
                 "0.0.1", {"web-connectivity"},
@@ -187,7 +187,7 @@ TEST_CASE("post_net_tests() works") {
                                 "web-connectivity", "https"));
                     check_cf(*reply->get_test_helper_alternate(
                                 "web-connectivity", "cloudfront"));
-                    reactor->stop();
+                    reactor.stop();
                 },
                 {}, reactor, Logger::global());
         });

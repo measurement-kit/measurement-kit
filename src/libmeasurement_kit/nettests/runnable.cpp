@@ -33,7 +33,7 @@ Runnable::~Runnable() {
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}
 void Runnable::main(std::string, Settings, Callback<Var<report::Entry>> cb) {
-    reactor->call_soon([=]() { cb(Var<report::Entry>{new report::Entry}); });
+    reactor.call_soon([=]() { cb(Var<report::Entry>{new report::Entry}); });
 }
 void Runnable::fixup_entry(report::Entry &) {}
 
@@ -138,7 +138,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
             } else {
                 logger->debug("net_test: written entry");
             }
-            reactor->call_soon([=]() {
+            reactor.call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
             });
         }, logger);

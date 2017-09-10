@@ -9,15 +9,15 @@
 
 using namespace mk;
 
-static void coroutine(Var<Reactor> reactor, Callback<Error, Continuation<Error>> cb) {
+static void coroutine(Reactor reactor, Callback<Error, Continuation<Error>> cb) {
     // Pretend to do some work
-    reactor->call_later(1.0, [=]() {
+    reactor.call_later(1.0, [=]() {
 
         // Transfer control back to parent and wait for it to restart us
         cb(NoError(), [=](Callback<Error> cb) {
 
             // Pretend again to do some work
-            reactor->call_later(1.0, [=]() {
+            reactor.call_later(1.0, [=]() {
 
                 // Transfer one second and final time control to parent
                 cb(NoError());
@@ -27,8 +27,8 @@ static void coroutine(Var<Reactor> reactor, Callback<Error, Continuation<Error>>
 }
 
 TEST_CASE("The continuation works as expected") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
 
         // Spawn the coroutine and wait for it to pause
         coroutine(reactor, [=](Error err, Continuation<Error> cc) {
@@ -39,7 +39,7 @@ TEST_CASE("The continuation works as expected") {
                 REQUIRE(!err);
 
                 // Coroutine complete get out of here
-                reactor->stop();
+                reactor.stop();
             });
         });
     });

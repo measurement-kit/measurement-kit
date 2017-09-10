@@ -18,12 +18,12 @@ TEST_CASE("mk::parallel() works as expected for empty vector") {
 }
 
 TEST_CASE("mk::parallel() works as expected with all successes") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         std::vector<Continuation<Error>> input;
         for (size_t i = 0; i < 16; ++i) {
             input.push_back([=](Callback<Error> callback) {
-                reactor->call_later(i * 0.1, [=]() {
+                reactor.call_later(i * 0.1, [=]() {
                     callback(NoError());
                 });
             });
@@ -33,18 +33,18 @@ TEST_CASE("mk::parallel() works as expected with all successes") {
             for (auto &sub_error: error.child_errors) {
                 REQUIRE((*sub_error == NoError()));
             }
-            reactor->stop();
+            reactor.stop();
         });
     });
 }
 
 TEST_CASE("mk::parallel() works as expected with some failures") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         std::vector<Continuation<Error>> input;
         for (size_t i = 0; i < 16; ++i) {
             input.push_back([=](Callback<Error> callback) {
-                reactor->call_later(i * 0.1, [=]() {
+                reactor.call_later(i * 0.1, [=]() {
                     if ((i % 2) == 0) {
                         callback(MockedError());
                     } else {
@@ -63,18 +63,18 @@ TEST_CASE("mk::parallel() works as expected with some failures") {
                     REQUIRE((*error.child_errors[i] == NoError()));
                 }
             }
-            reactor->stop();
+            reactor.stop();
         });
     });
 }
 
 TEST_CASE("mk::parallel() works as expected with all failures") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         std::vector<Continuation<Error>> input;
         for (size_t i = 0; i < 16; ++i) {
             input.push_back([=](Callback<Error> callback) {
-                reactor->call_later(i * 0.1, [=]() {
+                reactor.call_later(i * 0.1, [=]() {
                     callback(MockedError());
                 });
             });
@@ -84,7 +84,7 @@ TEST_CASE("mk::parallel() works as expected with all failures") {
             for (auto &sub_error: error.child_errors) {
                 REQUIRE((*sub_error == MockedError()));
             }
-            reactor->stop();
+            reactor.stop();
         });
     });
 }

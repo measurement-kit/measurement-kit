@@ -55,7 +55,7 @@ void mk_traceroute_android_unused() {}
 namespace mk {
 namespace traceroute {
 
-AndroidProber::AndroidProber(bool a, int port, Var<Reactor> r, Var<Logger> l)
+AndroidProber::AndroidProber(bool a, int port, Reactor r, Var<Logger> l)
     : use_ipv4_(a), reactor(r), port_(port), logger(l) {}
 
 void AndroidProber::init() {
@@ -176,7 +176,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
     }
 
     // Note: we bind this, which makes this object non copyable or movable
-    reactor->pollfd(sockfd_, MK_POLLIN, [this](Error err, short flags) {
+    reactor.pollfd(sockfd_, MK_POLLIN, [this](Error err, short flags) {
         event_callback(err, flags);
     }, timeout);
 

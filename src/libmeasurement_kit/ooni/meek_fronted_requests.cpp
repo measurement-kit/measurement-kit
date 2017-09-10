@@ -13,7 +13,7 @@ using namespace mk::report;
 
 void meek_fronted_requests(std::string input, Settings options,
                    Callback<Var<report::Entry>> callback,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+                   Reactor reactor, Var<Logger> logger) {
     Var<Entry> entry(new Entry);
 
     std::string expected_body, outer_host, inner_host;

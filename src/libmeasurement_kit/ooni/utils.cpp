@@ -9,12 +9,12 @@ namespace mk {
 namespace ooni {
 
 void ip_lookup(Callback<Error, std::string> callback, Settings settings,
-               Var<Reactor> reactor, Var<Logger> logger) {
+               Reactor reactor, Var<Logger> logger) {
     ip_lookup_impl(callback, settings, reactor, logger);
 }
 
 void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
-                     Var<Reactor> reactor, Var<Logger> logger) {
+                     Reactor reactor, Var<Logger> logger) {
     resolver_lookup_impl(callback, settings, reactor, logger);
 }
 

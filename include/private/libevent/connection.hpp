@@ -56,7 +56,7 @@ static inline std::string map_bufferevent_event(short what) {
 
 class Connection : public EmitterBase, public NonMovable, public NonCopyable {
   public:
-    static Var<Transport> make(bufferevent *bev, Var<Reactor> reactor,
+    static Var<Transport> make(bufferevent *bev, Reactor reactor,
                                Var<Logger> logger) {
         Connection *conn = new Connection(bev, reactor, logger);
         conn->self = Var<Transport>(conn);
@@ -110,7 +110,7 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
         }
         shutdown_called = true;
         bufferevent_setcb(bev, nullptr, nullptr, nullptr, nullptr);
-        reactor->call_soon([=]() { this->self = nullptr; });
+        reactor.call_soon([=]() { this->self = nullptr; });
     }
 
     template <decltype(getsockname) func> Endpoint sockname_peername_() {
@@ -218,7 +218,7 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
     }
 
   private:
-    Connection(bufferevent *bev, Var<Reactor> reactor, Var<Logger> logger)
+    Connection(bufferevent *bev, Reactor reactor, Var<Logger> logger)
         : EmitterBase{reactor, logger} {
 
         this->bev = bev;

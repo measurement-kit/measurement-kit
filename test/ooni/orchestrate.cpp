@@ -116,15 +116,15 @@ TEST_CASE("Auth::is_valid() works correctly") {
 }
 
 TEST_CASE("orchestrate::login() works correctly") {
-    auto reactor = Reactor::make();
+    Reactor reactor;
 
     SECTION("When the username is missing") {
         Error err;
-        reactor->run_with_initial_event([&]() {
+        reactor.run_with_initial_event([&]() {
             login({}, testing_registry_url(), {}, reactor, Logger::global(),
                   [&](Error &&e, Auth &&) {
                       err = e;
-                      reactor->stop();
+                      reactor.stop();
                   });
         });
         REQUIRE(err == MissingRequiredValueError());
@@ -134,11 +134,11 @@ TEST_CASE("orchestrate::login() works correctly") {
         Auth auth;
         auth.username = "antani";
         Error err;
-        reactor->run_with_initial_event([&]() {
+        reactor.run_with_initial_event([&]() {
             login(std::move(auth), testing_registry_url(), {}, reactor,
                   Logger::global(), [&](Error &&e, Auth &&) {
                       err = e;
-                      reactor->stop();
+                      reactor.stop();
                   });
         });
         REQUIRE(err == MissingRequiredValueError());

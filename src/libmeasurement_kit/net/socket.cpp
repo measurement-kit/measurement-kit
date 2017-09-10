@@ -15,7 +15,7 @@
 namespace mk {
 namespace net {
 
-void pollin(os_socket_t sockfd, double timeout, Var<Reactor> reactor,
+void pollin(os_socket_t sockfd, double timeout, Reactor reactor,
             Var<Logger> logger, Callback<Error> &&callback) {
     libevent::pollfd(sockfd, EV_READ, timeout, reactor, [
         callback = std::move(callback), sockfd, logger
@@ -27,7 +27,7 @@ void pollin(os_socket_t sockfd, double timeout, Var<Reactor> reactor,
     });
 }
 
-void pollout(os_socket_t sockfd, double timeout, Var<Reactor> reactor,
+void pollout(os_socket_t sockfd, double timeout, Reactor reactor,
              Var<Logger> logger, Callback<Error> &&callback) {
     libevent::pollfd(sockfd, EV_WRITE, timeout, reactor, [
         callback = std::move(callback), sockfd, logger

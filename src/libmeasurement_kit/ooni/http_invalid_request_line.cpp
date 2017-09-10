@@ -14,7 +14,7 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
                                               std::string request_line,
                                               Callback<Var<report::Entry>> cb,
                                               Settings settings,
-                                              Var<Reactor> reactor,
+                                              Reactor reactor,
                                               Var<Logger> logger) {
     settings["host"] = endpoint.hostname;
     settings["port"] = endpoint.port;
@@ -41,7 +41,7 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
 
         // We assume to have received all the data after a timeout
         // of 5 seconds.
-        reactor->call_later(timeout, [=]() {
+        reactor.call_later(timeout, [=]() {
             if (*received_data != request_line) {
                 logger->warn("Tampering detected: '%s' != '%s'",
                              received_data->c_str(), request_line.c_str());
@@ -60,7 +60,7 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
 
 void http_invalid_request_line(Settings options,
                                Callback<Var<report::Entry>> cb,
-                               Var<Reactor> reactor, Var<Logger> logger) {
+                               Reactor reactor, Var<Logger> logger) {
     Var<report::Entry> entry(new report::Entry);
     (*entry)["tampering"] = nullptr;
     (*entry)["received"] = report::Entry::array();

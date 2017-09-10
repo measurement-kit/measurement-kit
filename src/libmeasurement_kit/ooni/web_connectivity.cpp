@@ -335,7 +335,7 @@ static void compare_control_experiment(std::string input, Var<Entry> entry,
 static void control_request(http::Headers headers_to_pass_along,
                             Var<Entry> entry, SocketList socket_list,
                             std::string url, Callback<Error> callback,
-                            Settings settings, Var<Reactor> reactor,
+                            Settings settings, Reactor reactor,
                             Var<Logger> logger) {
 
     // Implementation note: this function uses (and modifies) the settings
@@ -405,7 +405,7 @@ static void control_request(http::Headers headers_to_pass_along,
 static void experiment_http_request(
         Var<Entry> entry, std::string url,
         Callback<Error, http::Headers, Var<http::Response>> cb,
-        Settings options, Var<Reactor> reactor,
+        Settings options, Reactor reactor,
         Var<Logger> logger) {
 
     http::Headers headers = constants::COMMON_CLIENT_HEADERS;
@@ -438,7 +438,7 @@ static void experiment_http_request(
 }
 
 static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
-                                   Callback<Error> cb, Var<Reactor> reactor,
+                                   Callback<Error> cb, Reactor reactor,
                                    Var<Logger> logger) {
 
     int socket_count = sockets.size();
@@ -505,7 +505,7 @@ static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
 static void experiment_dns_query(
     Var<Entry> entry, std::string hostname, std::string nameserver,
     Callback<Error, std::vector<std::string>> callback, Settings options,
-    Var<Reactor> reactor, Var<Logger> logger) {
+    Reactor reactor, Var<Logger> logger) {
 
     if (net::is_ip_addr(hostname)) {
         // Don't perform DNS resolutions if it's an IP address
@@ -537,7 +537,7 @@ static void experiment_dns_query(
 }
 
 void web_connectivity(std::string input, Settings options,
-                      Callback<Var<Entry>> callback, Var<Reactor> reactor,
+                      Callback<Var<Entry>> callback, Reactor reactor,
                       Var<Logger> logger) {
     options["http/max_redirects"] = 20;
     Var<Entry> entry(new Entry);

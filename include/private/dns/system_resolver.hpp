@@ -14,7 +14,7 @@ namespace dns {
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
 void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
-                     Settings settings, Var<Reactor> reactor,
+                     Settings settings, Reactor reactor,
                      Var<Logger> logger, Callback<Error, Var<Message>> cb) {
     Query query;
     addrinfo hints = {};
@@ -29,7 +29,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     hints.ai_socktype = SOCK_STREAM;
 
     if (dns_class != MK_DNS_CLASS_IN) {
-        reactor->call_soon([=]() { cb(UnsupportedClassError(), nullptr); });
+        reactor.call_soon([=]() { cb(UnsupportedClassError(), nullptr); });
         return;
     }
 
@@ -41,7 +41,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
         hints.ai_family = AF_UNSPEC;
         hints.ai_flags |= AI_CANONNAME;
     } else {
-        reactor->call_soon([=]() { cb(UnsupportedTypeError(), nullptr); });
+        reactor.call_soon([=]() { cb(UnsupportedTypeError(), nullptr); });
         return;
     }
 
@@ -51,7 +51,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
      */
     ErrorOr<bool> also_cname = settings.get("dns/resolve_also_cname", false);
     if (!also_cname) {
-        reactor->call_soon([=]() { cb(also_cname.as_error(), nullptr); });
+        reactor.call_soon([=]() { cb(also_cname.as_error(), nullptr); });
         return;
     }
     if (*also_cname == true) {

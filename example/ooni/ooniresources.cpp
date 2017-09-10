@@ -30,13 +30,13 @@ int main(int argc, char **argv) {
     }
     argc -= optind, argv += optind;
 
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         mk::ooni::resources::get_latest_release(
             [=](Error error, std::string latest) {
                 if (error) {
                     fprintf(stderr, "error: %s\n", error.explain().c_str());
-                    reactor->stop();
+                    reactor.stop();
                     return;
                 }
                 mk::ooni::resources::get_resources(
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
                                     error.explain().c_str());
                             /* FALLTHROUGH */
                         }
-                        reactor->stop();
+                        reactor.stop();
                     }, settings);
             }, settings);
     });

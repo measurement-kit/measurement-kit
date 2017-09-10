@@ -71,8 +71,8 @@ int main(int argc, char **argv) {
     }
     settings["http/url"] = argv[0];
 
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         http::request(
             settings,
             headers,
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
             [=](Error error, Var<http::Response> response) {
                 if (error) {
                     std::cout << "Error: " << error.explain() << "\n";
-                    reactor->stop();
+                    reactor.stop();
                     return;
                 }
                 std::cout << response->response_line << "\n";
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
                     std::cout << pair.first << ": " << pair.second << "\n";
                 }
                 std::cout << "\n" << response->body << "\n";
-                reactor->stop();
-            });
+                reactor.stop();
+            }, reactor);
     });
 }

@@ -122,10 +122,10 @@ class Transport : public TransportEmitter,
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
 
 void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
-           Var<Reactor> reactor = Reactor::global());
+           Reactor reactor = Reactor::global());
 
 void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
-          Var<Reactor> reactor = Reactor::global());
+          Reactor reactor = Reactor::global());
 
 } // namespace net
 } // namespace mk

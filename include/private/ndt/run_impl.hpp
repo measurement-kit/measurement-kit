@@ -23,7 +23,7 @@ template <Phase connect, Phase send_login, Phase recv_and_ignore_kickoff,
           Cleanup disconnect_and_callback>
 void run_with_specific_server_impl(Var<Entry> entry, std::string address,
                                    int port, Callback<Error> callback,
-                                   Settings settings, Var<Reactor> reactor,
+                                   Settings settings, Reactor reactor,
                                    Var<Logger> logger) {
 
     // Note: this implementation is a template because that allows us to
@@ -123,7 +123,7 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address,
 template <MK_MOCK(run_with_specific_server),
           MK_MOCK_AS(mlabns::query, mlabns_query)>
 void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings,
-              Var<Reactor> reactor, Var<Logger> logger) {
+              Reactor reactor, Var<Logger> logger) {
     ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
     if (!port) {
         callback(InvalidPortError(port.as_error()));

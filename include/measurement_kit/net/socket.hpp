@@ -20,10 +20,10 @@ using os_socket_t = uintptr_t;
 using os_socket_t = int;
 #endif
 
-void pollin(os_socket_t sockfd, double timeout, Var<Reactor> reactor,
+void pollin(os_socket_t sockfd, double timeout, Reactor reactor,
             Var<Logger> logger, Callback<Error> &&callback);
 
-void pollout(os_socket_t sockfd, double timeout, Var<Reactor> reactor,
+void pollout(os_socket_t sockfd, double timeout, Reactor reactor,
              Var<Logger> logger, Callback<Error> &&callback);
 
 } // namespace net

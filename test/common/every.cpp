@@ -14,15 +14,15 @@
 using namespace mk;
 
 TEST_CASE("The every() template works") {
-    Var<Reactor> reactor = Reactor::make();
+    Reactor reactor;
 
     SECTION("When the delay is negative we get an error") {
         Error final_err;
-        reactor->run_with_initial_event([&]() {
+        reactor.run_with_initial_event([&]() {
             every(-1.0, reactor,
                   [&](Error err) {
                       final_err = err;
-                      reactor->stop();
+                      reactor.stop();
                   },
                   []() { return false; }, []() {});
         });
@@ -31,11 +31,11 @@ TEST_CASE("The every() template works") {
 
     SECTION("When the delay is negative the callback is deferred") {
         bool called = false;
-        reactor->run_with_initial_event([&]() {
+        reactor.run_with_initial_event([&]() {
             every(-1.0, reactor,
                   [&](Error /*err*/) {
                       called = true;
-                      reactor->stop();
+                      reactor.stop();
                   },
                   []() { return false; }, []() {});
             REQUIRE(called == false);
@@ -47,8 +47,8 @@ TEST_CASE("The every() template works") {
         double now = 0.0;
         double stop = time_now() + 10.0;
         int count = 0;
-        reactor->run_with_initial_event([&]() {
-            every(1.0, reactor, [&](Error /*err*/) { reactor->stop(); },
+        reactor.run_with_initial_event([&]() {
+            every(1.0, reactor, [&](Error /*err*/) { reactor.stop(); },
                   [&]() { return time_now() > stop; },
                   [&]() {
                       count += 1;

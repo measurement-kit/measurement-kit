@@ -14,7 +14,7 @@ void query(
         std::string name,
         Callback<Error, Var<Message>> cb,
         Settings settings,
-        Var<Reactor> reactor,
+        Reactor reactor,
         Var<Logger> logger) {
     std::string engine = settings.get("dns/engine", std::string("system"));
     logger->log(MK_LOG_DEBUG2, "dns: engine: %s", engine.c_str());
@@ -23,12 +23,12 @@ void query(
     } else if (engine == "system") {
         system_resolver(dns_class, dns_type, name, settings, reactor, logger, cb);
     } else {
-        reactor->call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
+        reactor.call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
     }
 }
 
 void resolve_hostname(std::string hostname, Callback<ResolveHostnameResult> cb,
-                      Settings settings, Var<Reactor> reactor,
+                      Settings settings, Reactor reactor,
                       Var<Logger> logger) {
 
     logger->debug("resolve_hostname: %s", hostname.c_str());

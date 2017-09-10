@@ -26,10 +26,10 @@ namespace libevent {
 
 template <MK_MOCK(event_base_once)>
 void pollfd(net::os_socket_t sockfd, short evflags, double timeout,
-            Var<Reactor> reactor, Callback<Error, short> &&callback) {
+            Reactor reactor, Callback<Error, short> &&callback) {
     timeval tv{};
     auto cbp = new Callback<Error, short>(callback);
-    if (event_base_once(reactor->get_event_base(), sockfd, evflags,
+    if (event_base_once(reactor.get_event_base(), sockfd, evflags,
                         mk_pollfd_cb, cbp, timeval_init(&tv, timeout)) != 0) {
         delete cbp;
         throw std::runtime_error("event_base_once");

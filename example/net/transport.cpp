@@ -58,12 +58,12 @@ int main(int argc, char **argv) {
     }
     http::Url url = http::parse_url(argv[0]);
 
-    Var<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         connect(url.address, url.port, [=](Error error, Var<Transport> tx) {
             if (error) {
                 debug("* error: %d", (int)error);
-                reactor->stop();
+                reactor.stop();
                 return;
             }
             Var<Buffer> incoming(new Buffer);
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
                     debug("* EOF");
                 }
                 tx->close([=]() {
-                    reactor->stop();
+                    reactor.stop();
                 });
             });
             tx->on_data([=](Buffer data) {

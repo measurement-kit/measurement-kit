@@ -62,7 +62,7 @@ using namespace mk::libevent;
 
 void connect_first_of(Var<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings,
-                      Var<Reactor> reactor, Var<Logger> logger, size_t index,
+                      Reactor reactor, Var<Logger> logger, size_t index,
                       Var<std::vector<Error>> errors) {
     logger->log(MK_LOG_DEBUG2, "connect_first_of begin");
     if (!errors) {
@@ -92,7 +92,7 @@ void connect_first_of(Var<ConnectResult> result, int port,
 
 void connect_logic(std::string hostname, int port,
                    Callback<Error, Var<ConnectResult>> cb, Settings settings,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+                   Reactor reactor, Var<Logger> logger) {
 
     Var<ConnectResult> result(new ConnectResult);
     dns::resolve_hostname(hostname,
@@ -140,7 +140,7 @@ void connect_logic(std::string hostname, int port,
 }
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
-                 Callback<Error, bufferevent *> cb, Var<Reactor> reactor,
+                 Callback<Error, bufferevent *> cb, Reactor reactor,
                  Var<Logger> logger) {
     logger->debug("ssl: handshake...");
 
@@ -148,7 +148,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
     static const int flags = BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS;
 
     auto bev = bufferevent_openssl_filter_new(
-        reactor->get_event_base(), orig_bev, ssl, BUFFEREVENT_SSL_CONNECTING,
+        reactor.get_event_base(), orig_bev, ssl, BUFFEREVENT_SSL_CONNECTING,
         flags);
     if (bev == nullptr) {
         bufferevent_free(orig_bev);
@@ -184,14 +184,14 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
 
 void connect_many(std::string address, int port, int num,
                   ConnectManyCb callback, Settings settings,
-                  Var<Reactor> reactor, Var<Logger> logger) {
+                  Reactor reactor, Var<Logger> logger) {
     connect_many_impl<net::connect>(connect_many_make(
         address, port, num, callback, settings, reactor, logger));
 }
 
 void connect(std::string address, int port,
              Callback<Error, Var<Transport>> callback, Settings settings,
-             Var<Reactor> reactor, Var<Logger> logger) {
+             Reactor reactor, Var<Logger> logger) {
     if (settings.find("net/dumb_transport") != settings.end()) {
         callback(NoError(), make_txp<Emitter>(
             0.0, nullptr, reactor, logger));

@@ -12,7 +12,7 @@ namespace ooni {
 using namespace mk::report;
 
 void dns_injection(std::string input, Settings options, Callback<Var<Entry>> cb,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+                   Reactor reactor, Var<Logger> logger) {
     // Use libevent DNS engine for which we can force a specific nameserver.
     options["dns/engine"] = "libevent";
     // Force timeout according to dns_injection specification.

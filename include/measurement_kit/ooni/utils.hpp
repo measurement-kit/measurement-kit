@@ -10,11 +10,11 @@ namespace mk {
 namespace ooni {
 
 void ip_lookup(Callback<Error, std::string> callback, Settings settings = {},
-               Var<Reactor> reactor = Reactor::global(),
+               Reactor reactor = Reactor::global(),
                Var<Logger> logger = Logger::global());
 
 void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
-                     Var<Reactor> reactor = Reactor::global(),
+                     Reactor reactor = Reactor::global(),
                      Var<Logger> logger = Logger::global());
 
 report::Entry represent_string(const std::string &s);

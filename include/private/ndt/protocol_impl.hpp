@@ -74,8 +74,8 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     }, ctx->reactor);
 }
 
-static inline void call_soon(Callback<> &&cb, Var<Reactor> reactor) {
-    reactor->call_soon(std::move(cb));
+static inline void call_soon(Callback<> &&cb, Reactor reactor) {
+    reactor.call_soon(std::move(cb));
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg),

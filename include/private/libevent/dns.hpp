@@ -148,9 +148,9 @@ template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_sockaddr_add),
           typename evdns_base_uptr = evdns_base_uptr,
           MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *
-create_evdns_base(Settings settings, Var<Reactor> reactor = Reactor::global()) {
+create_evdns_base(Settings settings, Reactor reactor = Reactor::global()) {
 
-    event_base *evb = reactor->get_event_base();
+    event_base *evb = reactor.get_event_base();
     const int initialize_nameservers = settings.count("dns/nameserver") ? 0 : 1;
     evdns_base_uptr base(evdns_base_new(evb, initialize_nameservers));
     if (!base) {
@@ -333,7 +333,7 @@ template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
           MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
 void query(QueryClass dns_class, QueryType dns_type, std::string name,
            Callback<Error, Var<Message>> cb, Settings settings,
-           Var<Reactor> reactor, Var<Logger> logger) {
+           Reactor reactor, Var<Logger> logger) {
 
     /*
      * When running OONI tests, we're interested to know not only the IPs

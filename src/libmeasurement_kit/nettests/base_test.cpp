@@ -118,14 +118,12 @@ static void start_internal_(Var<Runnable> &&r, std::promise<void> *promise,
     //
     // 5. the `promise`, if present, allows to make the test synchronous,
     //    while the callback allows to make it asynchronous.
-    assert(!r->reactor);
     Worker::default_tasks_queue()->run_in_background_thread(
           [ r = std::move(r), promise, callback = std::move(callback) ] {
-              r->reactor = Reactor::make();
-              r->reactor->run_with_initial_event([&]() {
+              r->reactor.run_with_initial_event([&]() {
                   r->begin([&](Error) {
                       r->end([&](Error) {
-                          r->reactor->stop();
+                          r->reactor.stop();
                           if (callback) {
                               callback();
                           }
