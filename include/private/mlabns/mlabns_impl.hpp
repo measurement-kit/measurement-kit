@@ -6,6 +6,7 @@
 
 #include "private/common/json.hpp"
 #include "private/common/mock.hpp"
+#include "private/common/settings_get.hpp"
 
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
@@ -18,10 +19,10 @@ namespace mlabns {
 
 static inline ErrorOr<std::string> as_query(Settings &settings) {
     std::string query;
-    std::string policy = settings.get<std::string>("mlabns/policy", "");
-    std::string metro = settings.get<std::string>("mlabns/metro", "");
+    std::string policy = settings_get<std::string>(settings, "mlabns/policy", "");
+    std::string metro = settings_get<std::string>(settings, "mlabns/metro", "");
     std::string address_family =
-        settings.get<std::string>("mlabns/address_family", "");
+        settings_get<std::string>(settings, "mlabns/address_family", "");
     if (policy == "" && metro == "" && address_family == "") {
         return query;
     }
@@ -66,7 +67,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
         callback(query.as_error(), Reply());
         return;
     }
-    std::string url = settings.get("mlabns/base_url", std::string{
+    std::string url = settings_get(settings, "mlabns/base_url", std::string{
                                        "https://mlab-ns.appspot.com/"
                                    });
     std::regex valid_tool("^[a-z]+$");

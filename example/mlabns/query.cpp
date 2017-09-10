@@ -2,6 +2,7 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "private/common/settings_get.hpp"
 #include <measurement_kit/mlabns.hpp>
 
 #include <iostream>
@@ -16,7 +17,7 @@ static const char *kv_usage =
 
 static void print_setting(Settings &settings, std::string key) {
     key = "mlabns/" + key;
-    std::string value = settings.get<std::string>(key, "");
+    std::string value = settings_get<std::string>(settings, key, "");
     std::cout << "> " << key << ": " << value << "\n";
 }
 

@@ -13,6 +13,7 @@
 #include "private/net/emitter.hpp"
 #include "private/net/socks5.hpp"
 #include "private/net/utils.hpp"
+#include "private/common/settings_get.hpp"
 
 #include "private/libevent/connection.hpp"
 #include "private/net/libssl.hpp"
@@ -73,7 +74,7 @@ void connect_first_of(Var<ConnectResult> result, int port,
         cb(*errors, nullptr);
         return;
     }
-    double timeout = settings.get("net/timeout", 30.0);
+    double timeout = settings_get(settings, "net/timeout", 30.0);
     connect_base(result->resolve_result.addresses[index], port,
                  [=](Error err, bufferevent *bev, double connect_time) {
                      errors->push_back(err);
@@ -204,7 +205,7 @@ void connect(std::string address, int port,
     if (settings.find("net/timeout") == settings.end()) {
         settings["net/timeout"] = 30.0;
     }
-    double timeout = settings["net/timeout"].as<double>();
+    double timeout = lexical_cast<double>(settings["net/timeout"]);
     connect_logic(
         address, port,
         [=](Error err, Var<ConnectResult> r) {
@@ -228,7 +229,7 @@ void connect(std::string address, int port,
                     return;
                 }
                 ErrorOr<bool> allow_ssl23 =
-                    settings.get_noexcept("net/allow_ssl23", false);
+                    settings_get_noexcept(settings, "net/allow_ssl23", false);
                 if (!allow_ssl23) {
                     Error err = ValueError();
                     bufferevent_free(r->connected_bev);
@@ -249,7 +250,7 @@ void connect(std::string address, int port,
                                     return;
                                 }
                                 ErrorOr<bool> allow_dirty_shutdown =
-                                    settings.get_noexcept(
+                                    settings_get_noexcept(settings,
                                         "net/ssl_allow_dirty_shutdown", false);
                                 if (!allow_dirty_shutdown) {
                                     Error err = allow_dirty_shutdown.as_error();

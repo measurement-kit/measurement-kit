@@ -5,6 +5,7 @@
 #include "private/common/fmap.hpp"
 #include "private/common/parallel.hpp"
 #include "private/common/range.hpp"
+#include "private/common/settings_get.hpp"
 #include "private/nettests/runnable.hpp"
 
 #include "private/common/utils.hpp"
@@ -42,7 +43,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     Var<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
 
-    double max_rt = options.get("max_runtime", -1.0);
+    double max_rt = settings_get(options, "max_runtime", -1.0);
     double max_rt_tolerance = max_rt / 10.0;
     double delta = mk::time_now() - beginning;
     if (max_rt >= 0.0 && delta > max_rt - max_rt_tolerance) {
@@ -131,7 +132,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         report.write_entry(entry, [=](Error error) {
             if (error) {
                 logger->warn("cannot write entry");
-                if (not options.get("ignore_write_entry_error", true)) {
+                if (not settings_get(options, "ignore_write_entry_error", true)) {
                     cb(error);
                     return;
                 }
@@ -153,9 +154,9 @@ void Runnable::geoip_lookup(Callback<> cb) {
     probe_asn = "AS0";
     probe_cc = "ZZ";
 
-    auto save_ip = options.get("save_real_probe_ip", false);
-    auto save_asn = options.get("save_real_probe_asn", true);
-    auto save_cc = options.get("save_real_probe_cc", true);
+    auto save_ip = settings_get(options, "save_real_probe_ip", false);
+    auto save_asn = settings_get(options, "save_real_probe_asn", true);
+    auto save_cc = settings_get(options, "save_real_probe_cc", true);
 
     // This code block allows the caller to override probe variables
     if (save_ip and options.find("probe_ip") != options.end()) {
@@ -201,7 +202,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
              */
             options["real_probe_ip_"] = ip;
 
-            auto country_path = options.get("geoip_country_path",
+            auto country_path = settings_get(options, "geoip_country_path",
                                             std::string{});
             if (save_cc and country_path != "") {
                 try {
@@ -218,7 +219,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
                 logger->warn("geoip_country_path is not set");
             }
 
-            auto asn_path = options.get("geoip_asn_path", std::string{});
+            auto asn_path = settings_get(options, "geoip_asn_path", std::string{});
             if (save_asn and asn_path != "") {
                 try {
                     probe_asn = *GeoipCache::thread_local_instance()
@@ -257,10 +258,10 @@ void Runnable::open_report(Callback<Error> callback) {
     if (output_filepath == "") {
         output_filepath = generate_output_filepath();
     }
-    if (!options.get("no_file_report", false)) {
+    if (!settings_get(options, "no_file_report", false)) {
         report.add_reporter(FileReporter::make(output_filepath));
     }
-    if (!options.get("no_collector", false)) {
+    if (!settings_get(options, "no_collector", false)) {
         report.add_reporter(OoniReporter::make(options, reactor, logger));
     }
     report.open(callback);
@@ -296,7 +297,7 @@ void Runnable::query_bouncer(Callback<Error> cb) {
         cb(NoError());
         return;
     }
-    auto bouncer = options.get("bouncer_base_url",
+    auto bouncer = settings_get(options, "bouncer_base_url",
             ooni::bouncer::production_bouncer_url());
     logger->info("Contacting bouncer: %s", bouncer.c_str());
     ooni::bouncer::post_net_tests(
@@ -372,7 +373,7 @@ void Runnable::begin(Callback<Error> cb) {
                         }
                         logger->progress(0.1, "open report");
                         if (error and
-                            not options.get("ignore_open_report_error", true)) {
+                            not settings_get(options, "ignore_open_report_error", true)) {
                             cb(error);
                             return;
                         }
@@ -392,7 +393,7 @@ void Runnable::begin(Callback<Error> cb) {
                         Var<size_t> current_entry(new size_t(0));
                         mk::parallel(mk::fmap<size_t, Continuation<Error>>(
                                          mk::range<size_t>(
-                                             options.get("parallelism", 3)),
+                                             settings_get(options, "parallelism", 3)),
                                          [=](size_t thread_id) {
                                              return [=](Callback<Error> cb) {
                                                  run_next_measurement(

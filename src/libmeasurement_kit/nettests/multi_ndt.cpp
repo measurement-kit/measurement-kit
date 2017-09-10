@@ -73,7 +73,7 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
     if (ndt_settings.count("single_test_suite") != 0) {
         ndt_settings["test_suite"] = ndt_settings["single_test_suite"];
     } else {
-        ndt_settings["test_suite"] = MK_NDT_DOWNLOAD;
+        ndt_settings["test_suite"] = std::to_string(MK_NDT_DOWNLOAD);
     }
     logger->set_progress_offset(0.15);
     logger->set_progress_scale(0.35);
@@ -88,7 +88,7 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
         Var<report::Entry> neubot_entry(new report::Entry);
         (*neubot_entry)["failure"] = nullptr;
         Settings neubot_settings{ndt_settings.begin(), ndt_settings.end()};
-        neubot_settings["test_suite"] = MK_NDT_DOWNLOAD_EXT;
+        neubot_settings["test_suite"] = std::to_string(MK_NDT_DOWNLOAD_EXT);
         neubot_settings["mlabns_tool_name"] = "neubot";
         logger->set_progress_offset(0.55);
         logger->set_progress_scale(0.35);

@@ -217,7 +217,7 @@ TEST_CASE("connect_first_of works with empty vector") {
                              REQUIRE(bev == nullptr);
                              reactor->stop();
                          },
-                         {{"net/timeout", 3.14}}, reactor);
+                         {{"net/timeout", std::to_string(3.14)}}, reactor);
     });
 }
 
@@ -239,7 +239,7 @@ TEST_CASE("connect_first_of works when all connect fail") {
                 REQUIRE(bev == nullptr);
                 reactor->stop();
             },
-            {{"net/timeout", 0.00001}}, reactor);
+            {{"net/timeout", std::to_string(0.00001)}}, reactor);
     });
 }
 
@@ -262,7 +262,7 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
                 ::bufferevent_free(bev);
                 reactor->stop();
             },
-            {{"net/timeout", 3.14}}, reactor);
+            {{"net/timeout", std::to_string(3.14)}}, reactor);
     });
 }
 
@@ -285,7 +285,7 @@ TEST_CASE("connect() fails when port is closed or filtered") {
             REQUIRE(e);
             REQUIRE(r->connected_bev == nullptr);
             reactor->stop();
-        }, {{"net/timeout", 1.0}}, reactor);
+        }, {{"net/timeout", std::to_string(1.0)}}, reactor);
     });
 }
 
@@ -299,9 +299,9 @@ TEST_CASE("connect() fails when setting an invalid dns") {
                           reactor->stop();
                       },
                       {{"dns/nameserver", "8.8.8.1"},
-                       {"dns/timeout", 0.001},
+                       {"dns/timeout", std::to_string(0.001)},
                        {"dns/engine", "libevent"},
-                       {"dns/attempts", 1}},
+                       {"dns/attempts", std::to_string(1)}},
                       reactor);
     });
 }
@@ -371,7 +371,7 @@ TEST_CASE("net::connect() can connect to ssl port") {
                     REQUIRE(resolve_result.addresses.size() > 0);
                     txp->close([=]() { reactor->stop(); });
                 },
-                {{"net/ssl", true},
+                {{"net/ssl", std::to_string(true)},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
                 reactor);
     });
@@ -385,7 +385,7 @@ TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
                     REQUIRE(error);
                     reactor->stop();
                 },
-                {{"net/ssl", true},
+                {{"net/ssl", std::to_string(true)},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
                 reactor);
     });
@@ -400,7 +400,7 @@ TEST_CASE("net::connect() ssl fails when presented a certificate with the "
                     REQUIRE(error);
                     reactor->stop();
                 },
-                {{"net/ssl", true},
+                {{"net/ssl", std::to_string(true)},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
                 reactor);
     });
@@ -414,7 +414,7 @@ TEST_CASE("net::connect() ssl works when using SNI") {
                     REQUIRE(!error);
                     txp->close([=]() { reactor->stop(); });
                 },
-                {{"net/ssl", true},
+                {{"net/ssl", std::to_string(true)},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
                 reactor);
     });
@@ -432,7 +432,7 @@ TEST_CASE("net::connect() works in case of error") {
                     REQUIRE(resolve_result.addresses.size() > 0);
                     reactor->stop();
                 },
-                {{"net/timeout", 5.0}},
+                {{"net/timeout", std::to_string(5.0)}},
                 reactor);
     });
 }

@@ -6,6 +6,7 @@
 
 #include <event2/dns.h>
 
+#include "private/common/settings_get.hpp"
 #include "private/ooni/utils.hpp"
 
 namespace mk {
@@ -19,7 +20,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                std::string nameserver, Callback<Error, Var<dns::Message>> cb,
                Settings options, Var<Reactor> reactor, Var<Logger> logger) {
 
-    std::string engine = options.get("dns/engine", std::string{"system"});
+    std::string engine = settings_get(options, "dns/engine", std::string{"system"});
     bool not_system_engine = engine != "system";
     uint16_t resolver_port = 0;
     std::string resolver_hostname;
@@ -36,7 +37,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
         resolver_hostname = maybe_epnt->hostname;
         options["dns/nameserver"] = resolver_hostname;
         options["dns/port"] = resolver_port;
-        options["dns/attempts"] = 1;
+        options["dns/attempts"] = std::to_string(1);
         (*query_entry)["resolver_hostname"] = resolver_hostname;
         (*query_entry)["resolver_port"] = resolver_port;
 
@@ -48,7 +49,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
         // user has already taken the decision whether to also resolve CNAME or
         // not, resolve the CNAME because generally we need that in OONI.
         if (options.count("dns/resolve_also_cname") == 0) {
-            options["dns/resolve_also_cname"] = true;
+            options["dns/resolve_also_cname"] = std::to_string(true);
         }
         // ooniprobe sets them to null when they are not available
         (*query_entry)["resolver_hostname"] = nullptr;
@@ -100,7 +101,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
     (*entry)["socksproxy"] = nullptr;
 
     // Include the name of the agent, like ooni-probe does
-    ErrorOr<int> max_redirects = settings.get("http/max_redirects", 0);
+    ErrorOr<int> max_redirects = settings_get(settings, "http/max_redirects", 0);
     if (!!max_redirects && *max_redirects > 0) {
         (*entry)["agent"] = "redirect";
     }
@@ -113,9 +114,9 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
      * XXX probe ip passed down the stack to allow us to scrub it from the
      * entry; see issue #1110 for plans to make this better.
      */
-    std::string probe_ip = settings.get("real_probe_ip_", std::string{});
+    std::string probe_ip = settings_get(settings, "real_probe_ip_", std::string{});
     auto redact = [=](std::string s) {
-        if (probe_ip != "" && !settings.get("save_real_probe_ip", false)) {
+        if (probe_ip != "" && !settings_get(settings, "save_real_probe_ip", false)) {
             s = mk::ooni::scrub(s, probe_ip);
         }
         return s;
@@ -196,7 +197,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
 
 void tcp_connect(Settings options, Callback<Error, Var<net::Transport>> cb,
                  Var<Reactor> reactor, Var<Logger> logger) {
-    ErrorOr<int> port = options["port"].as_noexcept<int>();
+    ErrorOr<int> port = lexical_cast_noexcept<int>(options["port"]);
     if (!port) {
         cb(port.as_error(), nullptr);
         return;
