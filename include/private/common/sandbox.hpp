@@ -4,8 +4,8 @@
 #ifndef PRIVATE_COMMON_SANDBOX_HPP
 #define PRIVATE_COMMON_SANDBOX_HPP
 
+#include "private/common/maybe.hpp"
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/maybe.hpp>
 
 namespace mk {
 
