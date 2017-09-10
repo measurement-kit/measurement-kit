@@ -32,7 +32,7 @@ static Error fail(std::string, std::string, sockaddr_storage *, socklen_t *) {
 
 TEST_CASE("connect_base deals with evutil_parse_sockaddr_port error") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_base<fail>("130.192.16.172", 80,
                            [=](Error e, bufferevent *b, double) {
                                REQUIRE(e);
@@ -83,7 +83,7 @@ class Fail {
 TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
     // Note: connectivity not required to run this test
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_base<make_sockaddr_proxy, ::bufferevent_socket_new,
                      bufferevent_set_timeouts, Fail::fail>(
             "130.192.16.172", 80,
@@ -143,7 +143,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
 
 TEST_CASE("connect_base works with ipv4") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_base("130.192.16.172", 80,
                      [=](Error err, bufferevent *bev, double) {
                          REQUIRE(!err);
@@ -161,7 +161,7 @@ static bool check_error(Error err) {
 
 TEST_CASE("connect_base works with ipv4 and closed port") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_base("130.192.16.172", 81,
                      [=](Error err, bufferevent *bev, double) {
                          REQUIRE(check_error(err));
@@ -174,7 +174,7 @@ TEST_CASE("connect_base works with ipv4 and closed port") {
 
 TEST_CASE("connect_base works with ipv4 and timeout") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_base("130.192.16.172", 80,
                      [=](Error err, bufferevent *bev, double) {
                          REQUIRE(err == TimeoutError());
@@ -187,7 +187,7 @@ TEST_CASE("connect_base works with ipv4 and timeout") {
 
 TEST_CASE("connect_base works with ipv6") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_base("2a00:1450:4001:801::1004", 80,
                      [=](Error err, bufferevent *bev, double) {
                          /* Coverage note: depending on whether IPv6
@@ -210,7 +210,7 @@ TEST_CASE("connect_base works with ipv6") {
 TEST_CASE("connect_first_of works with empty vector") {
     Var<Reactor> reactor = Reactor::make();
     Var<ConnectResult> result(new ConnectResult);
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_first_of(result, 80,
                          [=](std::vector<Error> errors, bufferevent *bev) {
                              REQUIRE(errors.size() == 0);
@@ -227,7 +227,7 @@ TEST_CASE("connect_first_of works when all connect fail") {
     result->resolve_result.addresses = {
         "130.192.16.172", "130.192.16.172", "130.192.16.172",
     };
-    reactor->loop_with_initial_event([&result, reactor]() {
+    reactor->run_with_initial_event([&result, reactor]() {
         connect_first_of(
             result,
             80,
@@ -249,7 +249,7 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
     result->resolve_result.addresses = {
         "130.192.16.172", "130.192.16.172", "130.192.16.172",
     };
-    reactor->loop_with_initial_event([&result, reactor]() {
+    reactor->run_with_initial_event([&result, reactor]() {
         connect_first_of(
             result,
             80,
@@ -268,7 +268,7 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
 
 TEST_CASE("connect() works with valid IPv4") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_logic("www.google.com", 80, [=](Error e, Var<ConnectResult> r) {
             REQUIRE(!e);
             REQUIRE(r->connected_bev != nullptr);
@@ -280,7 +280,7 @@ TEST_CASE("connect() works with valid IPv4") {
 
 TEST_CASE("connect() fails when port is closed or filtered") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_logic("www.google.com", 81, [=](Error e, Var<ConnectResult> r) {
             REQUIRE(e);
             REQUIRE(r->connected_bev == nullptr);
@@ -291,7 +291,7 @@ TEST_CASE("connect() fails when port is closed or filtered") {
 
 TEST_CASE("connect() fails when setting an invalid dns") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_logic("www.google.com", 80,
                       [=](Error e, Var<ConnectResult> r) {
                           REQUIRE(e);
@@ -308,7 +308,7 @@ TEST_CASE("connect() fails when setting an invalid dns") {
 
 TEST_CASE("net::connect_many() works as expected") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect_many("www.google.com", 80, 3,
                      [=](Error error, std::vector<Var<Transport>> conns) {
                          REQUIRE(!error);
@@ -330,7 +330,7 @@ TEST_CASE("net::connect() works with a custom reactor") {
     // Note: this is how Portolan uses measurement-kit
     Var<Reactor> reactor = Reactor::make();
     auto ok = false;
-    reactor->loop_with_initial_event([&]() {
+    reactor->run_with_initial_event([&]() {
         connect("nexa.polito.it", 22,
                 [&](Error error, Var<Transport> txp) {
                     if (error) {
@@ -347,7 +347,7 @@ TEST_CASE("net::connect() works with a custom reactor") {
 
 TEST_CASE("net::connect() can connect to open port") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect("www.kernel.org", 80, [=](Error error, Var<Transport> txp) {
             REQUIRE(!error);
             auto resolve_result = txp->dns_result();
@@ -361,7 +361,7 @@ TEST_CASE("net::connect() can connect to open port") {
 
 TEST_CASE("net::connect() can connect to ssl port") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect("nexa.polito.it", 443,
                 [=](Error error, Var<Transport> txp) {
                     REQUIRE(!error);
@@ -379,7 +379,7 @@ TEST_CASE("net::connect() can connect to ssl port") {
 
 TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect("expired.badssl.com", 443,
                 [=](Error error, Var<Transport> ) {
                     REQUIRE(error);
@@ -394,7 +394,7 @@ TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
 TEST_CASE("net::connect() ssl fails when presented a certificate with the "
           "wrong hostname") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect("wrong.host.badssl.com", 443,
                 [=](Error error, Var<Transport>) {
                     REQUIRE(error);
@@ -408,7 +408,7 @@ TEST_CASE("net::connect() ssl fails when presented a certificate with the "
 
 TEST_CASE("net::connect() ssl works when using SNI") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect("sha256.badssl.com", 443,
                 [=](Error error, Var<Transport> txp) {
                     REQUIRE(!error);
@@ -422,7 +422,7 @@ TEST_CASE("net::connect() ssl works when using SNI") {
 
 TEST_CASE("net::connect() works in case of error") {
     Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         connect("nexa.polito.it", 81,
                 [=](Error error, Var<Transport> txp) {
                     REQUIRE(error);

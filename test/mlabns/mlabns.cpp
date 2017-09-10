@@ -18,11 +18,12 @@ TEST_CASE("Query works as expected") {
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
 
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         mlabns::query(tool,
-                      [](Error error, mlabns::Reply) {
+                      [=](Error error, mlabns::Reply) {
                           REQUIRE(!error);
-                          break_loop();
+                          reactor->stop();
                       },
                       settings);
     });
@@ -37,11 +38,12 @@ TEST_CASE("Query can pass the settings to the dns level") {
     settings["dns/engine"] = "libevent";
     std::string tool = "neubot";
 
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         mlabns::query(tool,
-                      [](Error error, mlabns::Reply) {
+                      [=](Error error, mlabns::Reply) {
                           REQUIRE(error);
-                          break_loop();
+                          reactor->stop();
                       },
                       settings);
     });
@@ -56,12 +58,13 @@ TEST_CASE("Make sure that an error is passed to callback with invalid "
     settings["mlabns/metro"] = "trn";
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
+    Var<Reactor> reactor = Reactor::make();
 
-    loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         mlabns::query(tool,
-                      [](Error error, mlabns::Reply) {
+                      [=](Error error, mlabns::Reply) {
                           REQUIRE(error);
-                          break_loop();
+                          reactor->stop();
                       },
                       settings);
     });
@@ -75,11 +78,12 @@ TEST_CASE("Make sure that an error is passed to callback with invalid metro "
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
 
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         mlabns::query(tool,
-                      [](Error error, mlabns::Reply) {
+                      [=](Error error, mlabns::Reply) {
                           REQUIRE(error);
-                          break_loop();
+                          reactor->stop();
                       },
                       settings);
     });
@@ -93,11 +97,12 @@ TEST_CASE("Make sure that an error is passed to callback with invalid policy "
     settings["mlabns/policy"] = "antani"; // Invalid
     std::string tool = "neubot";
 
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         mlabns::query(tool,
-                      [](Error error, mlabns::Reply) {
+                      [=](Error error, mlabns::Reply) {
                           REQUIRE(error);
-                          break_loop();
+                          reactor->stop();
                       },
                       settings);
     });
@@ -111,11 +116,12 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
     settings["mlabns/policy"] = "random";
     std::string tool = "antani"; // Invalid
 
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         mlabns::query(tool,
-                      [](Error error, mlabns::Reply) {
+                      [=](Error error, mlabns::Reply) {
                           REQUIRE(error);
-                          break_loop();
+                          reactor->stop();
                       },
                       settings);
     });
@@ -136,11 +142,12 @@ TEST_CASE(
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
 
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         mlabns::query_impl<get_debug_error>(tool,
-                                            [](Error error, mlabns::Reply) {
+                                            [=](Error error, mlabns::Reply) {
                                                 REQUIRE(error == MockedError());
-                                                break_loop();
+                                                reactor->stop();
                                             },
                                             settings,
                                             Reactor::global(),
@@ -172,12 +179,13 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
 
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         mlabns::query_impl<get_debug_invalid_incomplete_json>(
             tool,
-            [](Error error, mlabns::Reply) {
+            [=](Error error, mlabns::Reply) {
                 REQUIRE(error == JsonKeyError());
-                break_loop();
+                reactor->stop();
             },
             settings, Reactor::global(), Logger::global());
     });
@@ -207,12 +215,13 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
 
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         mlabns::query_impl<get_debug_json_with_unexpected_type>(
             tool,
-            [](Error error, mlabns::Reply) {
+            [=](Error error, mlabns::Reply) {
                 REQUIRE(error == JsonDomainError());
-                break_loop();
+                reactor->stop();
             },
             settings, Reactor::global(), Logger::global());
     });
