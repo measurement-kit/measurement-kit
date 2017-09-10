@@ -127,14 +127,14 @@ TEST_CASE("post_net_tests() works") {
 
     SECTION("On network error") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             // Mocked http request that returns an invalid-request
             ooni::bouncer::post_net_tests_impl<request_error>(
                 ooni::bouncer::production_bouncer_url(), "web-connectivity",
                 "0.0.1", {"web-connectivity"},
                 [=](Error e, Var<ooni::BouncerReply>) {
                     REQUIRE(e == MockedError());
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -144,13 +144,13 @@ TEST_CASE("post_net_tests() works") {
 
     SECTION("When the collector is not found") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
                 ooni::bouncer::production_bouncer_url(), "antani", "0.0.1",
                 {"antani"},
                 [=](Error e, Var<ooni::BouncerReply>) {
                     REQUIRE(e == ooni::BouncerCollectorNotFoundError());
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -158,7 +158,7 @@ TEST_CASE("post_net_tests() works") {
 
     SECTION("When the input is correct") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
                 ooni::bouncer::production_bouncer_url(), "web-connectivity",
                 "0.0.1", {"web-connectivity"},
@@ -187,7 +187,7 @@ TEST_CASE("post_net_tests() works") {
                                 "web-connectivity", "https"));
                     check_cf(*reply->get_test_helper_alternate(
                                 "web-connectivity", "cloudfront"));
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });

@@ -125,10 +125,11 @@ TEST_CASE("run() deals with mlab-ns query error") {
 
 TEST_CASE("NDT test run() should work") {
     Var<Entry> entry{new Entry};
-    loop_with_initial_event([=]() {
-        ndt::run(entry, [](Error err) {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        ndt::run(entry, [=](Error err) {
             REQUIRE(!err);
-            break_loop();
+            reactor->stop();
         });
     });
 }

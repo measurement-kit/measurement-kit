@@ -321,12 +321,13 @@ static void fail(Var<Transport>, std::string, Entry, Callback<Error> cb,
 }
 
 TEST_CASE("update_and_fetch_next() deals with update_report error") {
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         collector::update_and_fetch_next_impl<fail>(
             nullptr, MockConnection::make(), "", 1, {},
             [=](Error err) {
                 REQUIRE(err == MockedError());
-                break_loop();
+                reactor->stop();
             },
             {}, Reactor::global(), Logger::global());
     });
@@ -342,37 +343,40 @@ static ErrorOr<Entry> fail(Var<std::istream>, Var<Logger>) {
 }
 
 TEST_CASE("update_and_fetch_next() deals with get_next_entry error") {
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         collector::update_and_fetch_next_impl<success, fail>(
             nullptr, MockConnection::make(), "", 1, {},
             [=](Error err) {
                 REQUIRE(err == MockedError());
-                break_loop();
+                reactor->stop();
             },
             {}, Reactor::global(), Logger::global());
     });
 }
 
 TEST_CASE("submit_report() deals with invalid file") {
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         collector::submit_report_impl(
             "/nonexistent/nonexistent-very-long-filename.txt", "", "",
             [=](Error err) {
                 REQUIRE(err == CannotOpenReportError());
-                break_loop();
+                reactor->stop();
             },
             {}, Reactor::global(), Logger::global());
     });
 }
 
 TEST_CASE("submit_report() deals with get_next_entry error") {
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         collector::submit_report_impl<fail>("test/fixtures/hosts.txt", "", "",
                                             [=](Error err) {
                                                 REQUIRE(err == MockedError());
-                                                break_loop();
+                                                reactor->stop();
                                             },
-                                            {}, Reactor::global(),
+                                            {}, reactor,
                                             Logger::global());
     });
 }
@@ -387,14 +391,15 @@ static void fail(Settings, Callback<Error, Var<Transport>> cb, Var<Reactor>,
 }
 
 TEST_CASE("submit_report() deals with collector_connect error") {
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         collector::submit_report_impl<success, fail>(
             "test/fixtures/hosts.txt", "", "",
             [=](Error err) {
                 REQUIRE(err == MockedError());
-                break_loop();
+                reactor->stop();
             },
-            {}, Reactor::global(), Logger::global());
+            {}, reactor, Logger::global());
     });
 }
 
@@ -409,14 +414,15 @@ static void fail(Var<Transport>, Entry, Callback<Error, std::string> cb,
 }
 
 TEST_CASE("submit_report() deals with collector_create_report error") {
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         collector::submit_report_impl<success, success, fail>(
             "test/fixtures/hosts.txt", "", "",
             [=](Error err) {
                 REQUIRE(err == MockedError());
-                break_loop();
+                reactor->stop();
             },
-            {}, Reactor::global(), Logger::global());
+            {}, reactor, Logger::global());
     });
 }
 
@@ -432,12 +438,13 @@ TEST_CASE("submit_report() deals with collector_create_report error") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("The collector client works as expected") {
-    loop_with_initial_event([=]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         collector::submit_report("test/fixtures/report.njson",
                                  collector::testing_collector_url(),
                                  [=](Error err) {
                                      REQUIRE(err == NoError());
-                                     break_loop();
+                                     reactor->stop();
                                  });
     });
 }
