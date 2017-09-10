@@ -6,7 +6,9 @@
 
 #include "private/common/mock.hpp"
 #include "private/common/parallel.hpp"
-#include "private/common/settings_get.hpp"
+
+#include "private/common/mock.hpp"
+#include "private/common/parallel.hpp"
 
 #include <fstream>
 #include <regex>
@@ -23,8 +25,7 @@ namespace resources {
 using namespace mk::http;
 
 static inline std::string get_base_url(const Settings &settings) {
-    return settings_get(
-        settings,
+    return settings.get(
         "ooni/resources_base_url",
         std::string{
             "https://github.com/OpenObservatory/ooni-resources/releases/"});
@@ -180,8 +181,7 @@ void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
                           * filepaths here we will need to make sure that we
                           * are not writing into bad places.
                           */
-                         std::string dir = settings_get(
-                            settings,
+                         std::string dir = settings.get(
                             "ooni/resources_destdir",
                             std::string{"."}
                          );

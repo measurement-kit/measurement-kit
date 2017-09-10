@@ -68,7 +68,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Var<Logger> log
     logger->debug("socks5: >> domain len=%d", (uint8_t)address.length());
     logger->debug("socks5: >> domain str=%s", address.c_str());
 
-    int portnum = lexical_cast<int>(settings["net/port"]);
+    int portnum = settings["net/port"].as<int>();
     if (portnum < 0 || portnum > 65535) {
         return SocksInvalidPortError();
     }

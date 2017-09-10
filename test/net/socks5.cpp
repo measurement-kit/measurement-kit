@@ -75,7 +75,7 @@ TEST_CASE("format_connect_request() works as expected") {
 
     SECTION("When the port number is negative") {
         ErrorOr<Buffer> rc = socks5_format_connect_request({
-            {"net/address", "130.192.91.211"}, {"net/port", std::to_string(-1)},
+            {"net/address", "130.192.91.211"}, {"net/port", -1},
         });
         REQUIRE(rc.as_error() == SocksInvalidPortError());
         REQUIRE_THROWS_AS(rc.as_value(), Error);
@@ -83,7 +83,7 @@ TEST_CASE("format_connect_request() works as expected") {
 
     SECTION("When the port number is too large") {
         ErrorOr<Buffer> rc = socks5_format_connect_request({
-            {"net/address", "130.192.91.211"}, {"net/port", std::to_string(65536)},
+            {"net/address", "130.192.91.211"}, {"net/port", 65536},
         });
         REQUIRE(rc.as_error() == SocksInvalidPortError());
         REQUIRE_THROWS_AS(rc.as_value(), Error);
@@ -93,7 +93,7 @@ TEST_CASE("format_connect_request() works as expected") {
         std::string address = "130.192.91.211";
         uint16_t orig_port = 8080;
         ErrorOr<Buffer> rc = socks5_format_connect_request({
-            {"net/address", address}, {"net/port", std::to_string(orig_port)},
+            {"net/address", address}, {"net/port", orig_port},
         });
         REQUIRE(rc.as_error() == NoError());
         std::string msg = rc->read(5 + address.length());

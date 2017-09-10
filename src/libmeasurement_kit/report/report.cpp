@@ -4,7 +4,7 @@
 
 #include "private/common/fmap.hpp"
 #include "private/common/parallel.hpp"
-#include "private/common/settings_get.hpp"
+
 #include "private/common/utils.hpp"
 
 #include <measurement_kit/report.hpp>
@@ -28,12 +28,12 @@ void Report::fill_entry(Entry &entry) const {
     entry["probe_ip"] = probe_ip;
     entry["probe_asn"] = probe_asn;
     entry["probe_cc"] = probe_cc;
-    entry["software_name"] = settings_get(options, "software_name", software_name);
+    entry["software_name"] = options.get("software_name", software_name);
     entry["software_version"] =
-        settings_get(options, "software_version", software_version);
+        options.get("software_version", software_version);
     entry["data_format_version"] = data_format_version;
     entry["annotations"]["platform"] =
-        settings_get(options, "platform", std::string{mk_platform()});
+        options.get("platform", std::string{mk_platform()});
     entry["annotations"]["engine_name"] = "libmeasurement_kit";
     entry["annotations"]["engine_version"] = MK_VERSION;
     entry["annotations"]["engine_version_full"] = MK_VERSION_FULL;

@@ -4,7 +4,6 @@
 #ifndef PRIVATE_LIBEVENT_DNS_QUERY_HPP
 #define PRIVATE_LIBEVENT_DNS_QUERY_HPP
 
-#include "private/common/settings_get.hpp"
 #include "private/common/mock.hpp"
 
 #include "../common/utils.hpp"
@@ -342,8 +341,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
      *
      * This is not yet implemented in the libevent engine.
      */
-    ErrorOr<bool> also_cname =
-        settings_get_noexcept(settings, "dns/resolve_also_cname", false);
+    ErrorOr<bool> also_cname = settings.get("dns/resolve_also_cname", false);
     if (!also_cname) {
         cb(also_cname.as_error(), nullptr);
         return;

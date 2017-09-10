@@ -2,7 +2,6 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/settings_get.hpp"
 #include "private/common/utils.hpp"
 #include "private/ooni/constants.hpp"
 #include "private/ooni/utils.hpp"
@@ -190,7 +189,7 @@ static void compare_dns_queries(Var<Entry> entry,
     std::set<std::string> exp_asns;
     std::set<std::string> ctrl_asns;
 
-    std::string asn_p = settings_get(options, "geoip_asn_path", std::string{});
+    std::string asn_p = options.get("geoip_asn_path", std::string{});
     auto ip_location = GeoipCache::thread_local_instance()->get(asn_p);
     for (auto exp_addr : exp_addresses) {
         ErrorOr<std::string> asn = ip_location->resolve_asn(exp_addr);

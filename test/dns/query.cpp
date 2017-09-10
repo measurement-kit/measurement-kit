@@ -114,7 +114,7 @@ TEST_CASE("throw error while fails evdns_set_options for negative attempts") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_attempts_negative>(
-            {{"dns/attempts", std::to_string(-1)}}, Reactor::global())),
+            {{"dns/attempts", -1}}, Reactor::global())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_attempts_negative_flag);
 }

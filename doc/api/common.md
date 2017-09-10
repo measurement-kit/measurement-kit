@@ -29,6 +29,7 @@ The `common` module contains contains the following submodules:
 - [platform](common/platform.md): get platform name
 - [reactor](common/reactor.md): class for dispatching I/O events and timeouts
 - [settings](common/settings.md): class containing test settings
+- [settings_entry](common/settings_entry.md): an entry contained by the settings class
 - [utils](common/utils.md): generic utility functions
 - [var](common/var.md): shared smart pointer with null pointer checks
 - [version](common/version.md): MeasurementKit version macro

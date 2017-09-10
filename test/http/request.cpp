@@ -55,7 +55,7 @@ TEST_CASE("HTTP Request class works as expected") {
     Request request;
     request.init(
         {
-            {"http/max_redirects", std::to_string(2)},
+            {"http/max_redirects", 2},
             {"http/url",
              "http://www.example.com/antani?clacsonato=yes#melandri"},
             {"http/ignore_body", "yes"},
@@ -82,7 +82,7 @@ TEST_CASE("HTTP Request class works as expected with explicit path") {
     Request request;
     request.init(
         {
-            {"http/max_redirects", std::to_string(2)},
+            {"http/max_redirects", 2},
             {"http/url",
              "http://www.example.com/antani?clacsonato=yes#melandri"},
             {"http/path", "/antani?amicimiei"},
@@ -239,7 +239,7 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
                 {// With this connect() succeeds immediately and the
                  // callback receives a dumb Emitter transport that you
                  // can drive by calling its emit_FOO() methods
-                 {"net/dumb_transport", std::to_string(true)}});
+                 {"net/dumb_transport", true}});
     });
     REQUIRE(called == 1);
 }
@@ -264,7 +264,7 @@ TEST_CASE("http::request_recv_response() deals with immediate EOF") {
                 {// With this connect() succeeds immediately and the
                  // callback receives a dumb Emitter transport that you
                  // can drive by calling its emit_FOO() methods
-                 {"net/dumb_transport", std::to_string(true)}});
+                 {"net/dumb_transport", true}});
     });
 }
 
@@ -287,7 +287,7 @@ TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     Settings settings{
         {"http/method", "POST"},
         {"http/http_version", "HTTP/1.1"},
-        {"net/tor_socks_port", std::to_string(9055)},
+        {"net/tor_socks_port", 9055},
     };
 
     settings["http/url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
@@ -303,7 +303,7 @@ TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     Settings settings{
         {"http/method", "POST"},
         {"http/http_version", "HTTP/1.1"},
-        {"net/tor_socks_port", std::to_string(9999)},
+        {"net/tor_socks_port", 9999},
         {"net/socks5_proxy", "127.0.0.1:9055"},
     };
 
@@ -543,7 +543,7 @@ TEST_CASE("http::request() correctly follows redirects") {
         request(
             {
                 {"http/url", "http://fsrn.org"},
-                {"http/max_redirects", std::to_string(32)},
+                {"http/max_redirects", 32},
             },
             {
                 {"Accept", "*/*"},
@@ -569,7 +569,7 @@ TEST_CASE("Headers are preserved across redirects") {
         request(
             {
                 {"http/url", "http://httpbin.org/absolute-redirect/3"},
-                {"http/max_redirects", std::to_string(4)},
+                {"http/max_redirects", 4},
             },
             {
                 {"Spam", "Ham"}, {"Accept", "*/*"},
@@ -602,7 +602,7 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
         request(
             {
                 {"http/url", "http://hushmail.com"},
-                {"http/max_redirects", std::to_string(4)},
+                {"http/max_redirects", 4},
             },
             {
                 {"Accept", "*/*"},
@@ -634,7 +634,7 @@ TEST_CASE("We correctly deal with schema-less redirect") {
             {
                 {"http/url",
                 "https://httpbin.org/redirect-to?url=%2F%2Fhttpbin.org%2Fheaders"},
-                {"http/max_redirects", std::to_string(4)},
+                {"http/max_redirects", 4},
             },
             {
                 {"Accept", "*/*"},

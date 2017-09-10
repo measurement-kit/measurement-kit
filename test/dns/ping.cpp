@@ -22,8 +22,8 @@ TEST_CASE("The dns::ping() template works") {
     double now = time_now();
     Settings settings{
           {"dns/nameserver", "8.8.8.8:53"},
-          {"dns/timeout", std::to_string(0.5)},
-          {"dns/retries", std::to_string(1)},
+          {"dns/timeout", 0.5},
+          {"dns/retries", 1},
           {"dns/engine", "libevent"},
     };
     reactor->run_with_initial_event([&]() {

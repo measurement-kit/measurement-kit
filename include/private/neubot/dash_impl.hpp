@@ -54,7 +54,6 @@
 
 #include "private/common/json.hpp"
 #include "private/common/mock.hpp"
-#include "private/common/settings_get.hpp"
 #include "private/common/utils.hpp"
 #include <measurement_kit/ext/sole.hpp>
 #include <measurement_kit/http.hpp>
@@ -106,42 +105,42 @@ void run_loop_(Var<DashLoopCtx> ctx) {
     // TODO: We may want to move this parsing of options in the setup
     // phase of the test and store them inside `ctx`.
     ErrorOr<bool> fast_scale_down =
-          settings_get_noexcept(ctx->settings, "fast_scale_down", false);
+          ctx->settings.get_noexcept("fast_scale_down", false);
     if (!fast_scale_down) {
         ctx->logger->warn("dash: cannot parse `fast_scale_down' option");
         ctx->cb(fast_scale_down.as_error());
         return;
     }
     ErrorOr<int> constant_bitrate =
-          settings_get_noexcept(ctx->settings, "constant_bitrate", 0);
+          ctx->settings.get_noexcept("constant_bitrate", 0);
     if (!constant_bitrate || *constant_bitrate < 0) {
         ctx->logger->warn("dash: cannot parse `constant_bitrate' option");
         ctx->cb(ValueError());
         return;
     }
     ErrorOr<bool> use_fixed_rates =
-          settings_get_noexcept(ctx->settings, "use_fixed_rates", false);
+          ctx->settings.get_noexcept("use_fixed_rates", false);
     if (!use_fixed_rates) {
         ctx->logger->warn("dash: cannot parse `use_fixed_rates' option");
         ctx->cb(use_fixed_rates.as_error());
         return;
     }
     ErrorOr<int> elapsed_target =
-          settings_get_noexcept(ctx->settings, "elapsed_target", DASH_SECONDS);
+          ctx->settings.get_noexcept("elapsed_target", DASH_SECONDS);
     if (!elapsed_target || *elapsed_target < 0) {
         ctx->logger->warn("dash: cannot parse `elapsed_target' option");
         ctx->cb(ValueError());
         return;
     }
     ErrorOr<int> max_iterations =
-          settings_get_noexcept(ctx->settings, "max_iteration", DASH_MAX_ITERATIONS);
+          ctx->settings.get_noexcept("max_iteration", DASH_MAX_ITERATIONS);
     if (!max_iterations || *max_iterations < 0) {
         ctx->logger->warn("dash: cannot parse `max_iteration' option");
         ctx->cb(ValueError());
         return;
     }
     ErrorOr<int> initial_rate =
-          settings_get_noexcept(ctx->settings, "initial_rate", DASH_INITIAL_RATE);
+          ctx->settings.get_noexcept("initial_rate", DASH_INITIAL_RATE);
     if (!initial_rate || *initial_rate < 0) {
         ctx->logger->warn("dash: cannot parse `initial_rate' option");
         ctx->cb(ValueError());

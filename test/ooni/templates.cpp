@@ -58,8 +58,7 @@ TEST_CASE("dns query template works as expected") {
                         REQUIRE(answers.is_array());
                         break_loop();
                     },
-                    {{"dns/timeout", std::to_string(0.3)},
-                     {"dns/attempts", std::to_string(1)},
+                    {{"dns/timeout", 0.3}, {"dns/attempts", 1},
                      {"dns/engine", "libevent"}});
             }, {{"dns/engine", "libevent"}});
     });
@@ -97,7 +96,7 @@ TEST_CASE("http requests template works as expected") {
                 REQUIRE(!err);
                 templates::http_request(
                     entry, {{"http/url", "http://nexa.polito.it:84/robots.txt"},
-                            {"net/timeout", std::to_string(1.0)}},
+                            {"net/timeout", 1.0}},
                     {}, "", [=](Error err, Var<http::Response>) {
                         REQUIRE(err);
                         nlohmann::json root;

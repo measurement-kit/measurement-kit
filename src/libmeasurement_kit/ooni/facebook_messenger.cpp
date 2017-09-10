@@ -3,7 +3,6 @@
 // information on the copying conditions.
 
 #include "private/common/fcompose.hpp"
-#include "private/common/settings_get.hpp"
 #include "private/common/utils.hpp"
 #include "private/ooni/constants.hpp"
 #include "private/ooni/utils.hpp"
@@ -64,7 +63,7 @@ dns_many(Error error, Var<Entry> entry, Settings options, Var<Reactor> reactor,
                 for (auto answer : message->answers) {
                     if ((answer.ipv4 != "") || (answer.hostname != "")) {
                         std::string asn_p =
-                              settings_get(options, "geoip_asn_path", std::string{});
+                              options.get("geoip_asn_path", std::string{});
                         auto geoip =
                               GeoipCache::thread_local_instance()->get(asn_p);
                         ErrorOr<std::string> asn =

@@ -5,7 +5,8 @@
 #define PRIVATE_NDT_RUN_IMPL_HPP
 
 #include "private/common/mock.hpp"
-#include "private/common/settings_get.hpp"
+
+#include "private/common/mock.hpp"
 
 #include "../ndt/internal.hpp"
 #include <measurement_kit/mlabns.hpp>
@@ -40,7 +41,7 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address,
 
     // If the user has not configured the test_suite to run, default with
     // running the download and the uploade phases of the test.
-    ctx->test_suite |= settings_get(settings, "test_suite", TEST_C2S | TEST_S2C);
+    ctx->test_suite |= settings.get("test_suite", TEST_C2S | TEST_S2C);
 
     dump_settings(ctx->settings, "ndt", ctx->logger);
 
@@ -123,18 +124,18 @@ template <MK_MOCK(run_with_specific_server),
           MK_MOCK_AS(mlabns::query, mlabns_query)>
 void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings,
               Var<Reactor> reactor, Var<Logger> logger) {
-    ErrorOr<int> port = settings_get_noexcept<int>(settings, "port", NDT_PORT);
+    ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
     if (!port) {
         callback(InvalidPortError(port.as_error()));
         return;
     }
-    std::string address = settings_get<std::string>(settings, "address", "");
+    std::string address = settings.get<std::string>("address", "");
     if (address != "") {
         run_with_specific_server(entry, address, *port, callback, settings,
                                  reactor, logger);
         return;
     }
-    mlabns_query(settings_get<std::string>(settings, "mlabns_tool_name", "ndt"),
+    mlabns_query(settings.get<std::string>("mlabns_tool_name", "ndt"),
                  [=](Error err, mlabns::Reply reply) {
                      if (err) {
                          callback(MlabnsQueryError(err));

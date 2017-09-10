@@ -5,7 +5,6 @@
 #define PRIVATE_NETTESTS_UTILS_IMPL_HPP
 
 #include "private/common/mock.hpp"
-#include "private/common/settings_get.hpp"
 #include "../nettests/utils.hpp"
 
 #include <measurement_kit/ooni.hpp>
@@ -82,7 +81,7 @@ Error process_input_filepaths_impl(std::deque<std::string> &inputs,
             return ooni::CannotReadAnyInputFileError();
         }
         ErrorOr<bool> shuffle =
-            settings_get_noexcept<bool>(options, "randomize_input", true);
+            options.get_noexcept<bool>("randomize_input", true);
         if (!shuffle) {
             logger->warn("invalid 'randomize_input' option");
             return shuffle.as_error();

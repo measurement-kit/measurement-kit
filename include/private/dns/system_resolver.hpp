@@ -4,7 +4,6 @@
 #ifndef PRIVATE_DNS_SYSTEM_RESOLVER_HPP
 #define PRIVATE_DNS_SYSTEM_RESOLVER_HPP
 
-#include "private/common/settings_get.hpp"
 #include "private/common/mock.hpp"
 #include <measurement_kit/dns.hpp>
 
@@ -50,8 +49,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
      * When running OONI tests, we're interested to know not only the IPs
      * associated with a specific name, but also to the CNAME.
      */
-    ErrorOr<bool> also_cname =
-        settings_get_noexcept(settings, "dns/resolve_also_cname", false);
+    ErrorOr<bool> also_cname = settings.get("dns/resolve_also_cname", false);
     if (!also_cname) {
         reactor->call_soon([=]() { cb(also_cname.as_error(), nullptr); });
         return;

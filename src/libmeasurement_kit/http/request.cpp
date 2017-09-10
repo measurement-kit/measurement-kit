@@ -3,7 +3,6 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "private/http/request_impl.hpp"
-#include "private/common/settings_get.hpp"
 #include "private/common/utils.hpp"
 
 namespace mk {
@@ -45,10 +44,10 @@ Error Request::init(Settings settings, Headers hdrs, std::string bd) {
         return maybe_url.as_error();
     }
     url = *maybe_url;
-    protocol = settings_get(settings, "http/http_version", std::string("HTTP/1.1"));
-    method = settings_get(settings, "http/method", std::string("GET"));
+    protocol = settings.get("http/http_version", std::string("HTTP/1.1"));
+    method = settings.get("http/method", std::string("GET"));
     // XXX should we really distinguish between path and query here?
-    url_path = settings_get(settings, "http/path", std::string(""));
+    url_path = settings.get("http/path", std::string(""));
     if (url_path != "" && url_path[0] != '/') {
         url_path = "/" + url_path;
     }
@@ -258,8 +257,8 @@ void request(Settings settings, Headers headers, std::string body,
              Callback<Error, Var<Response>> callback, Var<Reactor> reactor,
              Var<Logger> logger, Var<Response> previous, int num_redirs) {
     dump_settings(settings, "request", logger);
-    ErrorOr<int> max_redirects = settings_get_noexcept(
-        settings, "http/max_redirects", 0
+    ErrorOr<int> max_redirects = settings.get_noexcept(
+        "http/max_redirects", 0
     );
     if (!max_redirects) {
         callback(InvalidMaxRedirectsError(max_redirects.as_error()), nullptr);
