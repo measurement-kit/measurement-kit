@@ -3,6 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "private/common/utils.hpp"
+#include "private/common/parallel.hpp"
 #include "private/ooni/constants.hpp"
 #include "private/ooni/utils.hpp"
 
@@ -438,21 +439,21 @@ static void experiment_http_request(
 }
 
 static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
-                                   Callback<Error> cb, Var<Reactor> reactor,
+                                   Callback<Error> cb, Settings options,
+                                   Var<Reactor> reactor,
                                    Var<Logger> logger) {
 
     int socket_count = sockets.size();
-    Var<int> sockets_tested(new int(0));
     // XXX this is very ghetto
     if (socket_count == 0) {
         cb(NoError());
         return;
     }
 
+    ParallelCallback parallel_callback(socket_count, std::move(cb));
+
     auto handle_connect = [=](std::string ip, int port) {
         return [=](Error err, Var<net::Transport> txp) {
-            *sockets_tested += 1;
-            bool close_txp = true;
             Entry result = {
                 {"ip", ip},
                 {"port", port},
@@ -467,7 +468,6 @@ static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
                              ip.c_str(), port);
                 result["status"]["success"] = false;
                 result["status"]["failure"] = err.as_ooni_error();
-                close_txp = false;
             } else {
                 logger->info("web_connectivity: success to connect to %s:%d",
                              ip.c_str(), port);
@@ -475,25 +475,15 @@ static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
                 result["status"]["blocked"] = false;
             }
             (*entry)["tcp_connect"].push_back(result);
-            if (socket_count == *sockets_tested) {
-                if (close_txp == true) {
-                    txp->close([=] { cb(NoError()); });
-                } else {
-                    cb(NoError());
-                }
-            } else {
-                if (close_txp == true) {
-                    // XXX optimistic closure
-                    txp->close([=] {});
-                }
-            }
+            txp->close(nullptr);
+            parallel_callback(NoError());
         };
     };
 
     for (auto socket : sockets) {
         std::string address = socket.first;
         int port = socket.second;
-        Settings connect_options;
+        Settings connect_options{options};
         connect_options["host"] = address;
         connect_options["port"] = port;
         connect_options["net/timeout"] = 10.0;
@@ -656,7 +646,7 @@ void web_connectivity(std::string input, Settings options,
                         options, reactor, logger); // end http_request
 
                 },
-                reactor, logger); // end tcp_connect
+                options, reactor, logger); // end tcp_connect
 
         },
         options, reactor, logger); // end dns_query
