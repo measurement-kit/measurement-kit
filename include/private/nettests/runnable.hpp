@@ -4,6 +4,7 @@
 #ifndef PRIVATE_NETTESTS_RUNNABLE_HPP
 #define PRIVATE_NETTESTS_RUNNABLE_HPP
 
+#include "private/common/parallel.hpp"
 #include <measurement_kit/report.hpp>
 
 #include <ctime>
@@ -58,7 +59,7 @@ class Runnable : public NonCopyable, public NonMovable {
     tm test_start_time;
     double beginning = 0.0;
 
-    void run_next_measurement(size_t, Callback<Error>, size_t, Var<size_t>);
+    void run_next_measurement(size_t, ParallelCallback, size_t, Var<size_t>);
     void query_bouncer(Callback<Error>);
     void geoip_lookup(Callback<>);
     void open_report(Callback<Error>);
