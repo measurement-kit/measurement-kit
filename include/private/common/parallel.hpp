@@ -66,7 +66,7 @@ class ParallelExecutor {
     ParallelExecutor(std::function<void(Error)> &&callback)
         : impl_{mk::make_shared_safe<Impl>(std::move(callback))} {}
 
-    const ParallelExecutor &add(Continuation<Error> &&cc) const {
+    ParallelExecutor &add(Continuation<Error> &&cc) {
         std::unique_lock<std::recursive_mutex> _{impl_->mutex};
         impl_->continuations.push_back(std::move(cc));
         return *this;
@@ -86,7 +86,7 @@ class ParallelExecutor {
         }
     }
 
-    void start(size_t parallelism) const {
+    void start(size_t parallelism) {
         std::unique_lock<std::recursive_mutex> _{impl_->mutex};
         if (parallelism <= 0) {
             impl_->finally(ValueError());
@@ -101,7 +101,13 @@ class ParallelExecutor {
         for (size_t i = 0; i < parallelism; ++i) {
             parallel_next_(impl_, callback);
         }
-        // TODO: invalidate `impl_`?
+        // Invalidate Safe<pointer> to prevent further usage. Attempting to
+        // dereference `impl_` will cause an exception to be thrown.
+        //
+        // Must be done once we've released the lock. Otherwise it might
+        // be that we destroy a locked mutex, which is an exception in libcxx.
+        _.unlock();
+        impl_.pointer.reset();
     }
 
   private:

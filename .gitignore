@@ -36,8 +36,6 @@
 /build/android/jni/spec
 /citizenlab-test-lists.*.csv
 /cmake_install.cmake
-/example/common/fapply
-/example/common/fcompose
 /example/dns/ping
 /example/dns/query
 /example/http/request
@@ -62,17 +60,11 @@
 /test/common/error
 /test/common/error_or
 /test/common/every
-/test/common/fapply
-/test/common/fcar
-/test/common/fcdr
-/test/common/fcompose
-/test/common/freverse
 /test/common/json
 /test/common/locked
 /test/common/logger
 /test/common/maybe
 /test/common/parallel
-/test/common/range
 /test/common/sandbox
 /test/common/settings
 /test/common/utils
