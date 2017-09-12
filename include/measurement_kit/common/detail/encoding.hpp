@@ -4,9 +4,9 @@
 #ifndef MEASUREMENT_KIT_COMMON_DETAIL_ENCODING_HPP
 #define MEASUREMENT_KIT_COMMON_DETAIL_ENCODING_HPP
 
-#include <measurement_kit/common/error.hpp>
-#include "private/portable/citrus_adapt.h"
 #include <measurement_kit/common/detail/base64_encode_.hpp>
+#include <measurement_kit/common/detail/citrus_adapt.h>
+#include <measurement_kit/common/error.hpp>
 
 #include <cassert>
 
