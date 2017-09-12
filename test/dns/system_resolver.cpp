@@ -28,7 +28,7 @@ void run_system_resolver(std::string dns_class, std::string dns_type,
     Var<Logger> logger = Logger::make();
     reactor->run_with_initial_event([&]() {
         system_resolver<getaddrinfo, inet_ntop>(dns_class, dns_type, name,
-                                                reactor, logger,
+                                                {}, reactor, logger,
                                                 [&](Error e, Var<Message> m) {
                                                     reactor->stop();
                                                     cb(e, m);

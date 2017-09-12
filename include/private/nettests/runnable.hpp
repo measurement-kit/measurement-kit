@@ -75,12 +75,14 @@ class Runnable : public NonCopyable, public NonMovable {
 MK_DECLARE_RUNNABLE(DashRunnable);
 MK_DECLARE_RUNNABLE(CaptivePortalRunnable);
 MK_DECLARE_RUNNABLE(DnsInjectionRunnable);
+MK_DECLARE_RUNNABLE(FacebookMessengerRunnable);
 MK_DECLARE_RUNNABLE(HttpHeaderFieldManipulationRunnable);
 MK_DECLARE_RUNNABLE(HttpInvalidRequestLineRunnable);
 MK_DECLARE_RUNNABLE(MeekFrontedRequestsRunnable);
 MK_DECLARE_RUNNABLE(MultiNdtRunnable);
 MK_DECLARE_RUNNABLE(NdtRunnable);
 MK_DECLARE_RUNNABLE(TcpConnectRunnable);
+MK_DECLARE_RUNNABLE(TelegramRunnable);
 
 // Separate definition because it contains extra methods
 class WebConnectivityRunnable : public Runnable {

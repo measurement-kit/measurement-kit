@@ -18,12 +18,14 @@ using namespace mk::nettests;
     XX(dash)                                                                   \
     XX(captiveportal)                                                         \
     XX(dns_injection)                                                          \
+    XX(facebook_messenger)                                                     \
     XX(http_header_field_manipulation)                                         \
     XX(http_invalid_request_line)                                              \
     XX(meek_fronted_requests)                                                  \
     XX(multi_ndt)                                                              \
     XX(ndt)                                                                    \
     XX(tcp_connect)                                                            \
+    XX(telegram)                                                               \
     XX(web_connectivity)
 
 #define XX(_namespace_)                                                        \

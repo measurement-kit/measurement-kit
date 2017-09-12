@@ -61,7 +61,11 @@ std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
             throw GenericError(); /* Avoid g++ warning */
         }
         if (p->ai_canonname != nullptr) {
-            answer.hostname = p->ai_canonname;
+            Answer cname_ans = answer;
+            cname_ans.type = MK_DNS_TYPE_CNAME;
+            cname_ans.hostname = p->ai_canonname;
+            answers.push_back(cname_ans);
+            /* FALLTHROUGH */
         }
         char abuf[128];
         if (inet_ntop(p->ai_family, aptr, abuf, sizeof(abuf)) == nullptr) {
@@ -95,8 +99,8 @@ void getaddrinfo_async(std::string name, addrinfo hints, Var<Reactor> reactor,
         addrinfo *rp = nullptr;
         Error error = getaddrinfo_async_map_error(
             getaddrinfo(name.c_str(), nullptr, &hints, &rp));
-        logger->debug("getaddrinfo('%s') => %s", name.c_str(),
-                      error.as_ooni_error().c_str());
+        logger->debug("getaddrinfo('%s') => error: code=%d, reason='%s'",
+                      name.c_str(), error.code, error.as_ooni_error().c_str());
         std::vector<Answer> answers;
         if (!error && rp != nullptr) {
             try {

@@ -2,8 +2,8 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "private/common/locked.hpp"
 #include "private/libevent/reactor.hpp"
-#include <measurement_kit/common/locked.hpp>
 
 namespace mk {
 

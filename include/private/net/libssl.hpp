@@ -15,11 +15,12 @@
 /// \file private/net/libssl.hpp
 /// \brief Code related to libssl (openssl or libressl).
 
+#include "private/common/locked.hpp"
 #include "private/common/mock.hpp"
 #include "private/ext/tls_internal.h"
+#include "private/net/builtin_ca_bundle.hpp"
 #include <cassert>
 #include <map>
-#include <measurement_kit/common/locked.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
@@ -37,7 +38,7 @@ static inline void libssl_init_once(Var<Logger> logger) {
     locked_global([logger]() {
         static bool initialized = false;
         if (!initialized) {
-            logger->debug("initializing SSL library");
+            logger->log(MK_LOG_DEBUG2, "initializing libssl once");
             SSL_library_init();
             ERR_load_crypto_strings();
             SSL_load_error_strings();
@@ -272,7 +273,8 @@ template <size_t max_cache_size = 64> class Cache {
             if (!maybe_context) {
                 return maybe_context.as_error();
             }
-            logger->debug("ssl: track ctx for: '%s'", ca_bundle_path.c_str());
+            logger->log(MK_LOG_DEBUG2, "ssl: track ctx for: '%s'",
+                        ca_bundle_path.c_str());
             all_[ca_bundle_path] = *maybe_context;
         }
         Var<Context> context = all_[ca_bundle_path];
@@ -316,11 +318,16 @@ Error verify_peer(std::string hostname, SSL *ssl, Var<Logger> logger) {
         logger->warn("ssl: got no certificate");
         return SslNoCertificateError();
     }
-    auto err = tls_check_name(nullptr, server_cert, hostname.c_str());
+    auto match = 0;
+    auto err = tls_check_name(nullptr, server_cert, hostname.c_str(), &match);
     X509_free(server_cert); // Make sure we don't leak memory
     if (err != 0) {
         logger->warn("ssl: got invalid hostname");
         return SslInvalidHostnameError();
+    }
+    if (!match) {
+        logger->warn("ssl: name not present in server certificate");
+        return SslMissingHostnameError();
     }
     return NoError();
 }

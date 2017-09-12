@@ -68,12 +68,14 @@ class BaseTest {
 MK_DECLARE_TEST(DashTest);
 MK_DECLARE_TEST(CaptivePortalTest);
 MK_DECLARE_TEST(DnsInjectionTest);
+MK_DECLARE_TEST(FacebookMessengerTest);
 MK_DECLARE_TEST(HttpHeaderFieldManipulationTest);
 MK_DECLARE_TEST(HttpInvalidRequestLineTest);
 MK_DECLARE_TEST(MeekFrontedRequestsTest);
 MK_DECLARE_TEST(MultiNdtTest);
 MK_DECLARE_TEST(NdtTest);
 MK_DECLARE_TEST(TcpConnectTest);
+MK_DECLARE_TEST(TelegramTest);
 MK_DECLARE_TEST(WebConnectivityTest);
 
 } // namespace nettests

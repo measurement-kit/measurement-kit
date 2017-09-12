@@ -112,6 +112,7 @@
 /test/nettests/captive_portal
 /test/nettests/dash
 /test/nettests/dns_injection
+/test/nettests/facebook_messenger
 /test/nettests/http_header_field_manipulation
 /test/nettests/http_invalid_request_line
 /test/nettests/meek_fronted_requests
@@ -119,6 +120,7 @@
 /test/nettests/ndt
 /test/nettests/runnable
 /test/nettests/tcp_connect
+/test/nettests/telegram
 /test/nettests/utils
 /test/nettests/web_connectivity
 /test/ooni/bouncer

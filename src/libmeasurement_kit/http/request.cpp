@@ -84,6 +84,7 @@ void Request::serialize(net::Buffer &buff, Var<Logger> logger) {
         logger->debug("> %s", s.c_str());
     }
     if (body != "") {
+        logger->log(MK_LOG_DEBUG2, "%s", body.c_str());
         buff << body;
     }
 }
@@ -103,18 +104,21 @@ void request_connect(Settings settings, Callback<Error, Var<Transport>> txp,
 }
 
 void request_send(Var<Transport> txp, Settings settings, Headers headers,
-                  std::string body, Callback<Error, Var<Request>> callback) {
-    request_maybe_send(Request::make(settings, headers, body), txp, callback);
+                  std::string body, Var<Logger> logger,
+                  Callback<Error, Var<Request>> callback) {
+    request_maybe_send(Request::make(settings, headers, body), txp, logger,
+                       callback);
 }
 
 void request_maybe_send(ErrorOr<Var<Request>> request, Var<Transport> txp,
+                        Var<Logger> logger,
                         Callback<Error, Var<Request>> callback) {
     if (!request) {
         callback(request.as_error(), nullptr);
         return;
     }
     Buffer buff;
-    (*request)->serialize(buff);
+    (*request)->serialize(buff, logger);
     net::write(txp, buff, [=](Error err) {
         callback(err, *request);
     });
@@ -123,7 +127,7 @@ void request_maybe_send(ErrorOr<Var<Request>> request, Var<Transport> txp,
 void request_recv_response(Var<Transport> txp,
                            Callback<Error, Var<Response>> cb,
                            Var<Reactor> reactor, Var<Logger> logger) {
-    Var<ResponseParserNg> parser(new ResponseParserNg);
+    Var<ResponseParserNg> parser{new ResponseParserNg{logger}};
     Var<Response> response(new Response);
     Var<bool> prevent_emit(new bool(false));
     Var<bool> valid_response(new bool(false));
@@ -151,11 +155,13 @@ void request_recv_response(Var<Transport> txp,
         if (*prevent_emit == true) {
             return;
         }
+        if (response->body.size() > 0) {
+            logger->log(MK_LOG_DEBUG2, "%s", response->body.c_str());
+        }
         txp->emit_error(NoError());
     });
     txp->on_error([=](Error err) {
-        logger->debug("Received error %s on connection",
-                      err.as_ooni_error().c_str());
+        logger->debug("http: received error %d on connection", err.code);
         if (err == EofError() && *valid_response == true) {
             // Calling parser->on_eof() could trigger parser->on_end() and
             // we don't want this function to call ->emit_error()
@@ -172,11 +178,10 @@ void request_recv_response(Var<Transport> txp,
                 // FALLTHRU
             }
         }
-        logger->debug("Now reacting to delivered error %d", err.code);
         txp->on_error(nullptr);
         txp->on_data(nullptr);
         reactor->call_soon([=]() {
-            logger->log(MK_LOG_DEBUG2, "request_recv_response: end of closure");
+            logger->log(MK_LOG_DEBUG2, "http: end of closure");
             cb(err, response);
         });
     });
@@ -192,7 +197,8 @@ void request_sendrecv(Var<Transport> txp, Settings settings, Headers headers,
 void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
                             Callback<Error, Var<Response>> callback,
                             Var<Reactor> reactor, Var<Logger> logger) {
-    request_maybe_send(request, txp, [=](Error error, Var<Request> request) {
+    request_maybe_send(request, txp, logger,
+                       [=](Error error, Var<Request> request) {
         if (error) {
             Var<Response> response{new Response};
             response->request = request;
@@ -250,7 +256,7 @@ ErrorOr<Url> redirect(const Url &orig_url, const std::string &location) {
 void request(Settings settings, Headers headers, std::string body,
              Callback<Error, Var<Response>> callback, Var<Reactor> reactor,
              Var<Logger> logger, Var<Response> previous, int num_redirs) {
-    dump_settings(settings, "http::request", logger);
+    dump_settings(settings, "request", logger);
     ErrorOr<int> max_redirects = settings.get_noexcept(
         "http/max_redirects", 0
     );

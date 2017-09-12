@@ -4,7 +4,7 @@
 #ifndef PRIVATE_COMMON_EVERY_HPP
 #define PRIVATE_COMMON_EVERY_HPP
 
-#include <measurement_kit/common/maybe.hpp>
+#include "private/common/maybe.hpp"
 #include <measurement_kit/common/reactor.hpp>
 
 namespace mk {
