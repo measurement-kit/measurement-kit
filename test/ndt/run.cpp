@@ -130,7 +130,7 @@ TEST_CASE("NDT test run() should work") {
         ndt::run(entry, [=](Error err) {
             REQUIRE(!err);
             reactor->stop();
-        });
+        }, {}, reactor);
     });
 }
 
