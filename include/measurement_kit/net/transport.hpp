@@ -19,17 +19,17 @@ class TransportEmitter {
   public:
     virtual ~TransportEmitter();
 
-    virtual void emit_connect() = 0;
-    virtual void emit_data(Buffer buf) = 0;
-    virtual void emit_flush() = 0;
-    virtual void emit_error(Error err) = 0;
+    virtual void emit_connect(Error err) = 0;
+    virtual void emit_data(Error err, Buffer buf) = 0;
+    virtual void emit_flush(Error err) = 0;
 
-    virtual void on_connect(Callback<>) = 0;
-    virtual void on_data(Callback<Buffer>) = 0;
-    virtual void on_flush(Callback<>) = 0;
-    virtual void on_error(Callback<Error>) = 0;
+    virtual void on_connect(Callback<Error>) = 0;
+    virtual void on_data(Callback<Error, Buffer>) = 0;
+    virtual void on_flush(Callback<Error>) = 0;
 
     virtual void close(Callback<>) = 0;
+
+    virtual Var<Reactor> get_reactor() = 0;
 };
 
 class TransportRecorder {
@@ -79,10 +79,13 @@ class TransportPollable {
     /*
      * Writing is stopped automatically when the send buffer is empty
      * and, when this happens, the FLUSH event is emitted.
+     *
+     * But you can also trigger it manually, if you wish to do so.
      */
     virtual void start_reading() = 0;
     virtual void stop_reading() = 0;
     virtual void start_writing() = 0;
+    virtual void stop_writing() = 0;
 };
 
 class TransportConnectable {
@@ -121,11 +124,23 @@ class Transport : public TransportEmitter,
 
 void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
-           Var<Reactor> reactor = Reactor::global());
+void continue_writing(Var<Transport> txp,
+                      Callback<Error, std::function<void()> &> cancel);
 
-void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
-          Var<Reactor> reactor = Reactor::global());
+void readn_into(Var<Transport> txp, Var<Buffer>, size_t n, Callback<Error> cb);
+
+void readn(Var<Transport> txp, size_t n, Callback<Error, Buffer> cb);
+
+void read_into(Var<Transport> txp, Var<Buffer>, Callback<Error> cb);
+
+void read(Var<Transport> t, Callback<Error, Buffer> callback);
+
+void continue_reading_into(Var<Transport> txp, Var<Buffer> buff,
+                           Callback<Error, std::function<void()> &> cancel);
+
+void continue_reading(
+      Var<Transport> txp,
+      Callback<Error, Buffer, std::function<void()> &> cancel);
 
 } // namespace net
 } // namespace mk

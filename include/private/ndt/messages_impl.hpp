@@ -25,11 +25,10 @@ namespace messages {
     | type (1) | length (2) | payload (0-65535) |
     +----------+------------+-------------------+
 */
-template <MK_MOCK_AS(net::readn, net_readn_first),
-          MK_MOCK_AS(net::readn, net_readn_second)>
+template <MK_MOCK_AS(net::readn_into, net_readn_first),
+          MK_MOCK_AS(net::readn_into, net_readn_second)>
 void read_ll_impl(Var<Context> ctx,
-                  Callback<Error, uint8_t, std::string> callback,
-                  Var<Reactor> reactor) {
+                  Callback<Error, uint8_t, std::string> callback) {
 
     // Receive message type (1 byte) and length (2 bytes)
     net_readn_first(ctx->txp, ctx->buff, 3, [=](Error err) {
@@ -55,14 +54,13 @@ void read_ll_impl(Var<Context> ctx,
             assert(s.size() == *length);
             ctx->logger->debug("< [%d]: (%d) %s", *length, *type, s.c_str());
             callback(NoError(), *type, s);
-        }, reactor);
-    }, reactor);
+        });
+    });
 }
 
 // Like `read_ll()` but decode the payload using JSON
 template <MK_MOCK(read_ll)>
-void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback,
-                    Var<Reactor> reactor) {
+void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback) {
     read_ll(ctx, [=](Error err, uint8_t type, std::string m) {
         json message;
         if (err) {
@@ -76,14 +74,13 @@ void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback,
             return;
         }
         callback(NoError(), type, message);
-    }, reactor);
+    });
 }
 
 // Like `read_json()` but return the `msg` field only
 template <MK_MOCK(read_json)>
 void read_msg_impl(Var<Context> ctx,
-                   Callback<Error, uint8_t, std::string> callback,
-                   Var<Reactor> reactor) {
+                   Callback<Error, uint8_t, std::string> callback) {
     read_json(ctx, [=](Error error, uint8_t type, json message) {
         if (error) {
             callback(error, 0, "");
@@ -100,7 +97,7 @@ void read_msg_impl(Var<Context> ctx,
             return;
         }
         callback(NoError(), type, s);
-    }, reactor);
+    });
 }
 
 static inline ErrorOr<Buffer> format_any(unsigned char type, json message) {

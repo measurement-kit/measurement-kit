@@ -55,7 +55,7 @@ void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
     });
 }
 
-template <MK_MOCK_AS(net::readn, net_readn)>
+template <MK_MOCK_AS(net::readn_into, net_readn)>
 void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv and ignore kickoff ...");
     net_readn(ctx->txp, ctx->buff, KICKOFF_MESSAGE_SIZE, [=](Error err) {
@@ -71,7 +71,7 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->debug("Got legacy KICKOFF message (ignored)");
         callback(NoError());
-    }, ctx->reactor);
+    });
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg),
@@ -131,7 +131,7 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->debug("Authorized to run the test");
         callback(NoError());
-    }, ctx->reactor);
+    });
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
@@ -151,7 +151,7 @@ void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
         (*ctx->entry)["server_version"] = s;
         // TODO: validate the server version?
         callback(NoError());
-    }, ctx->reactor);
+    });
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
@@ -171,7 +171,7 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
         ctx->granted_suite = split(s);
         ctx->granted_suite_count = ctx->granted_suite.size();
         callback(NoError());
-    }, ctx->reactor);
+    });
 }
 
 template <MK_MOCK_AS(test_c2s::run, test_c2s_run),
@@ -250,10 +250,10 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->debug("Got LOGOUT");
         callback(NoError());
-    }, ctx->reactor);
+    });
 }
 
-template <MK_MOCK_AS(net::read, net_read)>
+template <MK_MOCK_AS(net::read_into, net_read)>
 void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait close ...");
     ctx->txp->set_timeout(1.0);
@@ -278,7 +278,7 @@ void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->debug("ndt: got extra data: %s", buffer->read().c_str());
         callback(DataAfterLogoutError());
-    }, ctx->reactor);
+    });
 }
 
 static inline void disconnect_and_callback_impl(Var<Context> ctx, Error err) {

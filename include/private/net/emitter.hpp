@@ -21,8 +21,9 @@ class EmitterBase : public Transport {
      * TransportEmitter
      */
 
-    void emit_connect() override {
-        logger->log(MK_LOG_DEBUG2, "emitter: emit 'connect' event");
+    void emit_connect(Error err) override {
+        logger->log(MK_LOG_DEBUG2, "emitter: emit 'connect' event (error: %d)",
+                    err.code);
         if (close_pending) {
             logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
             return;
@@ -31,12 +32,12 @@ class EmitterBase : public Transport {
             logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
             return;
         }
-        do_connect();
+        do_connect(err);
     }
 
-    void emit_data(Buffer data) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: emit 'data' event "
-                    "(num_bytes = %zu)", data.length());
+    void emit_data(Error err, Buffer data) override {
+        logger->log(MK_LOG_DEBUG2, "emitter: emit 'data' event (error: %d)"
+                    "(num_bytes = %zu)", err.code, data.length());
         if (close_pending) {
             logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
             return;
@@ -48,11 +49,12 @@ class EmitterBase : public Transport {
             logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
             return;
         }
-        do_data(data);
+        do_data(err, data);
     }
 
-    void emit_flush() override {
-        logger->log(MK_LOG_DEBUG2, "emitter: emit 'flush' event");
+    void emit_flush(Error err) override {
+        logger->log(MK_LOG_DEBUG2, "emitter: emit 'flush' event (error: %d)",
+                    err.code);
         if (close_pending) {
             logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
             return;
@@ -61,30 +63,20 @@ class EmitterBase : public Transport {
             logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
             return;
         }
-        do_flush();
+        do_flush(err);
     }
 
-    void emit_error(Error err) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: emit 'error' event "
-                    "(error = '%s')", err.explain().c_str());
+    void on_connect(Callback<Error> fn) override {
+        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'connect' handler",
+                    (fn != nullptr) ? "" : "un");
         if (close_pending) {
             logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
             return;
         }
-        if (!do_error) {
-            logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
-            return;
-        }
-        do_error(err);
-    }
-
-    void on_connect(std::function<void()> fn) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'connect' handler",
-                    (fn != nullptr) ? "" : "un");
         do_connect = fn;
     }
 
-    void on_data(std::function<void(Buffer)> fn) override {
+    void on_data(Callback<Error, Buffer> fn) override {
         logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'data' handler",
                     (fn != nullptr) ? "" : "un");
         if (close_pending) {
@@ -99,19 +91,24 @@ class EmitterBase : public Transport {
         do_data = fn;
     }
 
-    void on_flush(std::function<void()> fn) override {
+    void on_flush(Callback<Error> fn) override {
         logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'flush' handler",
                     (fn != nullptr) ? "" : "un");
+        if (close_pending) {
+            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            return;
+        }
+        if (fn) {
+            start_writing();
+        } else {
+            stop_writing();
+        }
         do_flush = fn;
     }
 
-    void on_error(std::function<void(Error)> fn) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'error' handler",
-                    (fn != nullptr) ? "" : "un");
-        do_error = fn;
-    }
-
     void close(Callback<> cb) override;
+
+    Var<Reactor> get_reactor() override { return reactor; }
 
     /*
      * TransportRecorder
@@ -225,10 +222,9 @@ class EmitterBase : public Transport {
     Buffer output_buff;
 
   private:
-    Delegate<> do_connect;
-    Delegate<Buffer> do_data;
-    Delegate<> do_flush;
-    Delegate<Error> do_error;
+    Delegate<Error> do_connect;
+    Delegate<Error, Buffer> do_data;
+    Delegate<Error> do_flush;
     bool do_record_received_data = false;
     Buffer received_data_record;
     bool do_record_sent_data = false;
@@ -257,6 +253,7 @@ class Emitter : public EmitterBase {
     void start_reading() override {}
     void stop_reading() override {}
     void start_writing() override {}
+    void stop_writing() override {}
 };
 
 } // namespace net

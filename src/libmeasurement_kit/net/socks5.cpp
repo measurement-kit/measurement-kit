@@ -148,15 +148,9 @@ void socks5_connect(std::string address, int port, Settings settings,
                         r->connected_bev, reactor, logger);
                 Var<Transport> socks5 = make_txp<Socks5>(
                         0.0, r, txp, settings, reactor, logger);
-                socks5->on_connect([=]() {
+                socks5->on_connect([=](Error err) {
                     socks5->on_connect(nullptr);
-                    socks5->on_error(nullptr);
-                    callback(NoError(), socks5);
-                });
-                socks5->on_error([=](Error error) {
-                    socks5->on_connect(nullptr);
-                    socks5->on_error(nullptr);
-                    callback(error, socks5);
+                    callback(err, socks5);
                 });
             },
             settings, reactor, logger);
@@ -170,11 +164,15 @@ void Socks5::socks5_connect_() {
 
     // Step #2: receive the allowed authentication methods
 
-    conn->on_data([this](Buffer d) {
+    conn->on_data([this](Error err, Buffer d) {
+        if (err) {
+            emit_connect(err);
+            return;
+        }
         buffer << d;
         ErrorOr<bool> result = socks5_parse_auth_response(buffer, logger);
         if (!result) {
-            emit_error(result.as_error());
+            emit_connect(result.as_error());
             return;
         }
         if (!*result) {
@@ -185,18 +183,22 @@ void Socks5::socks5_connect_() {
 
         ErrorOr<Buffer> out = socks5_format_connect_request(settings, logger);
         if (!out) {
-            emit_error(out.as_error());
+            emit_connect(out.as_error());
             return;
         }
         conn->write(*out);
 
         // Step #4: receive Tor's response
 
-        conn->on_data([this](Buffer d) {
+        conn->on_data([this](Error err, Buffer d) {
+            if (err) {
+                emit_connect(err);
+                return;
+            }
             buffer << d;
             ErrorOr<bool> rc = socks5_parse_connect_response(buffer, logger);
             if (!rc) {
-                emit_error(rc.as_error());
+                emit_connect(rc.as_error());
                 return;
             }
             if (!*rc) {
@@ -210,14 +212,14 @@ void Socks5::socks5_connect_() {
             // If more data, pass it up
             //
 
-            conn->on_data([this](Buffer d) { emit_data(d); });
-            conn->on_flush([this]() { emit_flush(); });
+            conn->on_data([this](Error e, Buffer d) { emit_data(e, d); });
+            conn->on_flush([this](Error e) { emit_flush(e); });
 
-            emit_connect();
+            emit_connect(NoError());
 
             // Note that emit_connect() may have called close()
             if (!isclosed && buffer.length() > 0) {
-                emit_data(buffer);
+                emit_data(NoError(), buffer);
             }
         });
     });

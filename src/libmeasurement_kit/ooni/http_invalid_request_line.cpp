@@ -32,7 +32,10 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
             return;
         }
         Var<std::string> received_data(new std::string);
-        txp->on_data([=](net::Buffer data) {
+        net::continue_reading(txp, [=](Error /*err*/, net::Buffer data,
+                                       std::function<void()> &/*cancel*/) {
+            // XXX The original code did not check for network errors
+            // and I did not change this during refactoring.
             logger->debug("http_invalid_request_line: on_data: %s",
                           data.peek().c_str());
             *received_data += data.read();
