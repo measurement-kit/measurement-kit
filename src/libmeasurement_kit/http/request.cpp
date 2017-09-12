@@ -125,7 +125,7 @@ void request_maybe_send(ErrorOr<Var<Request>> request, Var<Transport> txp,
 }
 
 void request_recv_response(Var<Transport> txp,
-                           Callback<Error, Var<Response>> cb,
+                           Callback<Error, Var<Response>> cb, Settings settings,
                            Var<Reactor> reactor, Var<Logger> logger) {
     Var<ResponseParserNg> parser{new ResponseParserNg{logger}};
     Var<Response> response(new Response);
@@ -141,8 +141,16 @@ void request_recv_response(Var<Transport> txp,
         *valid_response = true;
     });
 
-    // TODO: here we should honour the `ignore_body` setting
-    parser->on_body([=](std::string s) { response->body += s; });
+    ErrorOr<bool> ignore_body = settings.get("http/ignore_body", false);
+    if (!ignore_body) {
+        cb(ValueError(), response);
+        return;
+    }
+    parser->on_body([=](std::string s) {
+        if (*ignore_body == false) {
+            response->body += s;
+        }
+    });
 
     // TODO: we should improve the parser such that the transport forwards the
     // "error" event to it and then the parser does the right thing, so that the
@@ -191,11 +199,12 @@ void request_sendrecv(Var<Transport> txp, Settings settings, Headers headers,
                       std::string body, Callback<Error, Var<Response>> callback,
                       Var<Reactor> reactor, Var<Logger> logger) {
     request_maybe_sendrecv(Request::make(settings, headers, body), txp,
-                           callback, reactor, logger);
+                           callback, settings, reactor, logger);
 }
 
 void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
                             Callback<Error, Var<Response>> callback,
+                            Settings settings,
                             Var<Reactor> reactor, Var<Logger> logger) {
     request_maybe_send(request, txp, logger,
                        [=](Error error, Var<Request> request) {
@@ -212,7 +221,7 @@ void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
             }
             response->request = request;
             callback(error, response);
-        }, reactor, logger);
+        }, settings, reactor, logger);
     });
 }
 

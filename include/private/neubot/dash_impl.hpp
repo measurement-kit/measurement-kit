@@ -218,6 +218,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
     std::string path = "/dash/download/";
     path += std::to_string(count);
     Settings settings = ctx->settings; /* Make a local copy */
+    settings["http/ignore_body"] = true;
     settings["http/path"] = path;
     settings["http/method"] = "GET";
     ctx->logger->debug("dash: requesting '%s'", path.c_str());
@@ -325,7 +326,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                         run_loop_<http_request_send,
                                   http_request_recv_response>(ctx);
                     },
-                    ctx->reactor, ctx->logger);
+                    ctx->settings, ctx->reactor, ctx->logger);
           });
 }
 
