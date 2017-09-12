@@ -69,6 +69,7 @@
 /test/common/fmap
 /test/common/freverse
 /test/common/json
+/test/common/libevent_reactor
 /test/common/locked
 /test/common/logger
 /test/common/maybe
@@ -91,7 +92,6 @@
 /test/http/response_parser
 /test/libevent/connection
 /test/libevent/dns_error
-/test/libevent/reactor
 /test/mlabns/mlabns
 /test/ndt/measure_speed
 /test/ndt/messages
