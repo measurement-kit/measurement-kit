@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include <measurement_kit/common.hpp>
+#include "private/common/maybe.hpp"
 
 using namespace mk;
 
