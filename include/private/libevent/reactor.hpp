@@ -18,6 +18,7 @@
 #include "private/common/locked.hpp"               // for mk::locked_global
 #include "private/common/mock.hpp"                 // for MK_MOCK
 #include "private/common/worker.hpp"               // for mk::Worker
+#include "private/common/utils.hpp"                // for mk::timeval_init
 #include <cassert>                                 // for assert
 #include <event2/event.h>                          // for event_base_*
 #include <event2/thread.h>                         // for evthread_use_*
@@ -30,7 +31,6 @@
 #include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
 #include <measurement_kit/common/reactor.hpp>      // for mk::Reactor
 #include <measurement_kit/common/socket.hpp>       // for mk::socket_t
-#include <measurement_kit/common/utils.hpp>        // for mk::timeval_init
 #include <measurement_kit/portable/netdb.h>        // for getaddrinfo
 #include <measurement_kit/portable/sys/socket.h>   // for socket
 #include <memory>                                  // for std::unique_ptr

@@ -6,11 +6,8 @@
 
 #include "private/common/encoding.hpp"
 #include "private/common/mock.hpp"
-
-#include "private/common/encoding.hpp"
-#include "private/common/mock.hpp"
-
 #include "../ooni/utils.hpp"
+#include <regex>
 
 using json = nlohmann::json;
 
