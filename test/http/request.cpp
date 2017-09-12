@@ -350,7 +350,7 @@ TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
 
 TEST_CASE("http::request() callback is called if input URL parsing fails") {
     bool called = false;
-    Var<Reactor> reactor;
+    Var<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=, &called]() {
         request({}, {}, "",
             [=, &called](Error err, Var<Response>) {
