@@ -13,13 +13,13 @@ namespace resources {
 
 void get_latest_release(Callback<Error, std::string> callback,
                         Settings settings = {},
-                        Var<Reactor> reactor = Reactor::global(),
+                        Reactor reactor = Reactor::global(),
                         Var<Logger> logger = Logger::global());
 
 void get_manifest_as_json(std::string version,
                           Callback<Error, nlohmann::json> callback,
                           Settings settings = {},
-                          Var<Reactor> reactor = Reactor::global(),
+                          Reactor reactor = Reactor::global(),
                           Var<Logger> logger = Logger::global());
 
 void get_resources_for_country(std::string latest,
@@ -27,12 +27,12 @@ void get_resources_for_country(std::string latest,
                                std::string country,
                                Callback<Error> callback,
                                Settings settings = {},
-                               Var<Reactor> reactor = Reactor::global(),
+                               Reactor reactor = Reactor::global(),
                                Var<Logger> logger = Logger::global());
 
 void get_resources(std::string latest, std::string country,
                    Callback<Error> callback, Settings settings = {},
-                   Var<Reactor> reactor = Reactor::global(),
+                   Reactor reactor = Reactor::global(),
                    Var<Logger> logger = Logger::global());
 
 } // namespace resources

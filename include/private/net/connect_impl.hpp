@@ -40,7 +40,7 @@ template <MK_MOCK(make_sockaddr_proxy), MK_MOCK(bufferevent_socket_new),
 void connect_base(std::string address, int port,
                   Callback<Error, bufferevent *, double> cb,
                   double timeout = 10.0,
-                  Var<Reactor> reactor = Reactor::global(),
+                  Reactor reactor = Reactor::global(),
                   Var<Logger> logger = Logger::global()) {
 
     std::string endpoint = [&]() {
@@ -79,7 +79,7 @@ void connect_base(std::string address, int port,
     static const int flags = BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS;
 
     bufferevent *bev;
-    if ((bev = bufferevent_socket_new(reactor->get_event_base(), -1,
+    if ((bev = bufferevent_socket_new(reactor.get_event_base(), -1,
                                       flags)) == nullptr) {
         throw GenericError(); // This should not happen
     }
@@ -152,7 +152,7 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
 static inline Var<ConnectManyCtx>
 connect_many_make(std::string address, int port, int count,
                   ConnectManyCb callback, Settings settings,
-                  Var<Reactor> reactor, Var<Logger> logger) {
+                  Reactor reactor, Var<Logger> logger) {
     Var<ConnectManyCtx> ctx(new ConnectManyCtx);
     ctx->left = count;
     ctx->callback = callback;

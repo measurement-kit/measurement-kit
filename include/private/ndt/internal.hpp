@@ -116,7 +116,7 @@ struct Context {
     size_t current_test_count = 0;
     Var<Logger> logger = Logger::global();
     int port = NDT_PORT;
-    Var<Reactor> reactor = Reactor::global();
+    Reactor reactor = Reactor::global();
     Settings settings;
     // We always set these two tests because they are the bare minimum
     // required to talk to a NDT server. Other sets could be added as flags
@@ -139,11 +139,11 @@ struct Context {
 namespace messages {
 
 void read_ll(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback,
-             Var<Reactor> reactor = Reactor::global());
+             Reactor reactor = Reactor::global());
 void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback,
-               Var<Reactor> reactor = Reactor::global());
+               Reactor reactor = Reactor::global());
 void read_msg(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback,
-              Var<Reactor> reactor = Reactor::global());
+              Reactor reactor = Reactor::global());
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests);
 ErrorOr<Buffer> format_test_msg(std::string s);
@@ -193,7 +193,7 @@ namespace test_c2s {
 
 void coroutine(Var<Entry>, std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
-               Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
+               Settings settings = {}, Reactor reactor = Reactor::global(),
                Var<Logger> logger = Logger::global());
 
 void run(Var<Context> ctx, Callback<Error> callback);
@@ -245,7 +245,7 @@ struct Params {
 void coroutine(Var<Entry> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb,
                double timeout = 10.0, Settings settings = {},
-               Var<Reactor> reactor = Reactor::global(),
+               Reactor reactor = Reactor::global(),
                Var<Logger> logger = Logger::global());
 
 void finalizing_test(Var<Context> ctx, Var<Entry> cur_entry,

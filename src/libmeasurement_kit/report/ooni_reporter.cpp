@@ -8,7 +8,7 @@
 namespace mk {
 namespace report {
 
-OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
+OoniReporter::OoniReporter(Settings s, Reactor r, Var<Logger> l) {
     settings = s;
     reactor = r;
     logger = l;
@@ -23,7 +23,7 @@ OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
 }
 
 /* static */ Var<BaseReporter> OoniReporter::make(Settings settings,
-        Var<Reactor> reactor, Var<Logger> logger) {
+        Reactor reactor, Var<Logger> logger) {
     Var<OoniReporter> reporter(new OoniReporter(settings, reactor, logger));
     return reporter.as<BaseReporter>();
 }

@@ -19,7 +19,7 @@ using namespace mk::report;
 template <MK_MOCK_AS(net::connect_many, net_connect_many)>
 void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                     Callback<Error, Continuation<Error, double>> cb,
-                    double timeout, Settings settings, Var<Reactor> reactor,
+                    double timeout, Settings settings, Reactor reactor,
                     Var<Logger> logger) {
 
     dump_settings(settings, "ndt/s2c", logger);

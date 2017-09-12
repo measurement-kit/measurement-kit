@@ -55,7 +55,7 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                          std::string test_version,
                          std::list<std::string> helpers,
                          Callback<Error, Var<BouncerReply>> cb,
-                         Settings settings, Var<Reactor> reactor,
+                         Settings settings, Reactor reactor,
                          Var<Logger> logger) {
 
     nlohmann::json request;

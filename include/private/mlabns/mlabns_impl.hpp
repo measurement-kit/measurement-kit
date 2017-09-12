@@ -60,7 +60,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
 
 template <MK_MOCK_AS(http::request_json_no_body, request_json_no_body)>
 void query_impl(std::string tool, Callback<Error, Reply> callback,
-                Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+                Settings settings, Reactor reactor, Var<Logger> logger) {
     ErrorOr<std::string> query = as_query(settings);
     if (!query) {
         callback(query.as_error(), Reply());

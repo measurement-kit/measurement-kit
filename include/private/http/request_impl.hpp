@@ -21,7 +21,7 @@ namespace http {
 
 template <MK_MOCK_AS(net::connect, net_connect)>
 void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
-                          Var<Reactor> reactor = Reactor::global(),
+                          Reactor reactor = Reactor::global(),
                           Var<Logger> logger = Logger::global()) {
     if (settings.find("http/url") == settings.end()) {
         cb(MissingUrlError(), nullptr);
@@ -55,7 +55,7 @@ void request_json_string_impl(
       std::string method, std::string url, std::string data,
       http::Headers headers,
       Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+      Settings settings, Reactor reactor, Var<Logger> logger) {
     settings["http/url"] = url;
     settings["http/method"] = method;
     headers["Content-Type"] = "application/json";

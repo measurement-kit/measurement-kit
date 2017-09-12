@@ -69,31 +69,31 @@ TEST_CASE("fcompose() works as expected with async policy") {
     }
 
     SECTION("For deferred callbacks") {
-        // Simulate deferred callbacks using reactor->call_soon()
-        auto reactor = Reactor::make();
+        // Simulate deferred callbacks using reactor.call_soon()
+        Reactor reactor;
         auto f = fcompose(
               fcompose_policy_async(),
               [reactor](int x, Callback<int, int> &&cb) {
-                  reactor->call_soon(
+                  reactor.call_soon(
                         [ x = std::move(x), cb = std::move(cb) ]() {
                             cb(x, 2);
                         });
               },
               [reactor](int x, int y, Callback<int> &&cb) {
-                  reactor->call_soon([
+                  reactor.call_soon([
                       x = std::move(x), y = std::move(y), cb = std::move(cb)
                   ]() { cb(x + y + 4); });
               },
               [reactor](int x, Callback<int> &&cb) {
-                  reactor->call_soon(
+                  reactor.call_soon(
                         [ x = std::move(x), cb = std::move(cb) ]() {
                             cb(x + 4);
                         });
               });
-        reactor->run_with_initial_event([reactor, f]() mutable {
+        reactor.run_with_initial_event([reactor, f]() mutable {
             f(1, [reactor](int x) {
                 REQUIRE(x == 11);
-                reactor->stop();
+                reactor.stop();
             });
         });
     }

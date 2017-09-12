@@ -17,7 +17,7 @@ namespace test_c2s {
 template <MK_MOCK_AS(net::connect, net_connect)>
 void coroutine_impl(Var<Entry> report_entry, std::string address, int port, double runtime,
                     Callback<Error, Continuation<Error>> cb, double timeout,
-                    Settings settings, Var<Reactor> reactor,
+                    Settings settings, Reactor reactor,
                     Var<Logger> logger) {
 
     // Performance note: This implementation does some string copies

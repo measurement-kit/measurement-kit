@@ -164,11 +164,11 @@ void Client::register_probe(std::string &&password,
     Worker::default_tasks_queue()->run_in_background_thread([
         password = std::move(password), meta = *this, cb = std::move(cb)
     ]() mutable {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->run_with_initial_event([&]() {
+        Reactor reactor;
+        reactor.run_with_initial_event([&]() {
             do_register_probe(std::move(password), meta, reactor,
                               [&](Error &&error, Auth &&auth) {
-                                  reactor->stop();
+                                  reactor.stop();
                                   cb(std::move(error), std::move(auth));
                               });
         });
@@ -184,12 +184,12 @@ void Client::find_location(
     // there the task is synchronous because run_...() is blocking.
     Worker::default_tasks_queue()->run_in_background_thread(
           [ meta = *this, cb = std::move(cb) ]() {
-              Var<Reactor> reactor = Reactor::make();
-              reactor->run_with_initial_event([&]() {
+              Reactor reactor;
+              reactor.run_with_initial_event([&]() {
                   do_find_location(meta, reactor,
                                    [&](Error &&error, std::string &&asn,
                                        std::string &&cc) {
-                                       reactor->stop();
+                                       reactor.stop();
                                        cb(std::move(error), std::move(asn),
                                           std::move(cc));
                                    });
@@ -206,11 +206,11 @@ void Client::update(Auth &&auth, Callback<Error &&, Auth &&> &&cb) const {
     Worker::default_tasks_queue()->run_in_background_thread([
         meta = *this, cb = std::move(cb), auth = std::move(auth)
     ]() mutable {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->run_with_initial_event([&]() {
+        Reactor reactor;
+        reactor.run_with_initial_event([&]() {
             do_update(std::move(auth), meta, reactor,
                       [&](Error &&error, Auth &&auth) {
-                          reactor->stop();
+                          reactor.stop();
                           cb(std::move(error), std::move(auth));
                       });
         });

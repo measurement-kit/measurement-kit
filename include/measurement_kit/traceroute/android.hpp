@@ -64,7 +64,7 @@ class AndroidProber : public NonCopyable,
     /// \param evbase Event base to use (optional)
     AndroidProber(
         bool use_ipv4, int port,
-        Var<Reactor> reactor = Reactor::global(),
+        Reactor reactor = Reactor::global(),
         Var<Logger> logger = Logger::global());
 
     /// Destructor
@@ -88,7 +88,7 @@ class AndroidProber : public NonCopyable,
     bool probe_pending_ = false;   ///< probe is pending
     timespec start_time_{0, 0};    ///< start time
     bool use_ipv4_ = true;         ///< using IPv4?
-    Var<Reactor> reactor;          ///< The reactor
+    Reactor reactor;          ///< The reactor
     int port_ = 0;                 ///< socket port
     Var<Logger> logger = Logger::global();///< logger
 

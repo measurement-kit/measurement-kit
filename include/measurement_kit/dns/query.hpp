@@ -53,7 +53,7 @@ void query(
         std::string name,
         Callback<Error, Var<Message>> func,
         Settings settings = {},
-        Var<Reactor> reactor = Reactor::global(),
+        Reactor reactor = Reactor::global(),
         Var<Logger> logger = Logger::global()
 );
 

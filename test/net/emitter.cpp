@@ -51,7 +51,7 @@ class Helper : public Emitter {
     void start_writing() override {
         REQUIRE(output_buff.read() == "foo");
     }
-    Helper(Var<Reactor> r, Var<Logger> l) : Emitter(r, l) {}
+    Helper(Reactor r, Var<Logger> l) : Emitter(r, l) {}
     ~Helper() override;
 };
 

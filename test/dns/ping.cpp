@@ -18,7 +18,7 @@ using namespace mk;
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("The dns::ping() template works") {
-    Var<Reactor> reactor = Reactor::make();
+    Reactor reactor;
     double now = time_now();
     Settings settings{
           {"dns/nameserver", "8.8.8.8:53"},
@@ -26,7 +26,7 @@ TEST_CASE("The dns::ping() template works") {
           {"dns/retries", 1},
           {"dns/engine", "libevent"},
     };
-    reactor->run_with_initial_event([&]() {
+    reactor.run_with_initial_event([&]() {
         dns::ping_nameserver("IN", "A", "www.google.com", 1.0,
                              Maybe<double>{10.0}, settings, reactor,
                              Logger::global(),
@@ -42,7 +42,7 @@ TEST_CASE("The dns::ping() template works") {
                              },
                              [&](Error err) {
                                  REQUIRE(err == NoError());
-                                 reactor->stop();
+                                 reactor.stop();
                              });
     });
     double delta = time_now() - now;

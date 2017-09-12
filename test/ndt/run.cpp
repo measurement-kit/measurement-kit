@@ -101,7 +101,7 @@ TEST_CASE("run() deals with invalid port error") {
 }
 
 static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
-                 Var<Reactor>, Var<Logger>) {
+                 Reactor, Var<Logger>) {
     cb(MockedError(), mlabns::Reply());
 }
 
@@ -125,10 +125,11 @@ TEST_CASE("run() deals with mlab-ns query error") {
 
 TEST_CASE("NDT test run() should work") {
     Var<Entry> entry{new Entry};
-    loop_with_initial_event([=]() {
-        ndt::run(entry, [](Error err) {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
+        ndt::run(entry, [=](Error err) {
             REQUIRE(!err);
-            break_loop();
+            reactor.stop();
         });
     });
 }

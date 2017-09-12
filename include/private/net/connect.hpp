@@ -35,19 +35,19 @@ typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
 void connect_first_of(Var<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings = {},
-                      Var<Reactor> reactor = Reactor::global(),
+                      Reactor reactor = Reactor::global(),
                       Var<Logger> logger = Logger::global(), size_t index = 0,
                       Var<std::vector<Error>> errors = nullptr);
 
 void connect_logic(std::string hostname, int port,
                    Callback<Error, Var<ConnectResult>> cb,
                    Settings settings = {},
-                   Var<Reactor> reactor = Reactor::global(),
+                   Reactor reactor = Reactor::global(),
                    Var<Logger> logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                  Callback<Error, bufferevent *> cb,
-                 Var<Reactor> = Reactor::global(),
+                 Reactor = Reactor::global(),
                  Var<Logger> = Logger::global());
 
 class ConnectManyCtx {
@@ -58,7 +58,7 @@ class ConnectManyCtx {
     std::string address;
     int port = 0;
     Settings settings;
-    Var<Reactor> reactor = Reactor::global();
+    Reactor reactor = Reactor::global();
     Var<Logger> logger = Logger::global();
 };
 

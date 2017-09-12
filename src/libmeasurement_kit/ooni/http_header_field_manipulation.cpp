@@ -68,7 +68,7 @@ void compare_headers_response(http::Headers headers,
 
 void http_header_field_manipulation(std::string /*input*/, Settings options,
                                     Callback<Var<report::Entry>> callback,
-                                    Var<Reactor> reactor, Var<Logger> logger) {
+                                    Reactor reactor, Var<Logger> logger) {
     Var<Entry> entry(new Entry);
     (*entry)["tampering"] = Entry::object();
     (*entry)["tampering"]["total"] = nullptr;

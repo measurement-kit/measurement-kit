@@ -22,7 +22,7 @@ class Runnable : public NonCopyable, public NonMovable {
     virtual ~Runnable();
 
     Var<Logger> logger = Logger::make();
-    Var<Reactor> reactor; /* Left unspecified on purpose */
+    Reactor reactor;
     Settings options;
     std::list<std::string> input_filepaths;
     std::deque<std::string> inputs;

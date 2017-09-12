@@ -45,8 +45,9 @@ int main(int argc, char **argv) {
     }
     std::string domain = argv[0];
 
-    loop_with_initial_event([&domain, &port, &settings]() {
-        connect(domain, port, [](Error err, Var<Transport> txp) {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
+        connect(domain, port, [=](Error err, Var<Transport> txp) {
             std::cout << "Overall connect result: " << err.as_ooni_error() << "\n";
             auto resolve_result = txp->dns_result();
             std::cout << "input was valid ipv4: " <<
@@ -65,7 +66,7 @@ int main(int argc, char **argv) {
             for (auto e : txp->connect_errors()) {
                 std::cout << "    - " << e.as_ooni_error() << "\n";
             }
-            txp->close([]() { break_loop(); });
+            txp->close([=]() { reactor.stop(); });
         }, settings);
     });
 

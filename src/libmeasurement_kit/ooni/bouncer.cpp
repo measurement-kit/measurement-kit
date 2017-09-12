@@ -87,7 +87,7 @@ namespace bouncer {
 void post_net_tests(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,
                     Callback<Error, Var<BouncerReply>> cb, Settings settings,
-                    Var<Reactor> reactor, Var<Logger> logger) {
+                    Reactor reactor, Var<Logger> logger) {
     post_net_tests_impl(base_bouncer_url, test_name, test_version, helpers, cb,
                         settings, reactor, logger);
 }

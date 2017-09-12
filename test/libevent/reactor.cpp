@@ -95,12 +95,3 @@ TEST_CASE("Reactor: call_later") {
         REQUIRE_THROWS(reactor.call_later(0.0, []() {}));
     }
 }
-
-TEST_CASE("Reactor: pollfd") {
-    SECTION("We deal with event_base_once() failure") {
-        libevent::Reactor<event_base_new, event_base_once_fail,
-                          event_base_dispatch, event_base_loopbreak>
-              reactor;
-        REQUIRE_THROWS(reactor.pollfd(0, 0, 0.0, [](Error, short) {}));
-    }
-}

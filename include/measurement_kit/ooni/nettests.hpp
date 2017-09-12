@@ -10,30 +10,30 @@ namespace mk {
 namespace ooni {
 
 void dns_injection(std::string, Settings, Callback<Var<report::Entry>>,
-                   Var<Reactor> = Reactor::global(),
+                   Reactor = Reactor::global(),
                    Var<Logger> = Logger::global());
 
 void http_invalid_request_line(Settings, Callback<Var<report::Entry>>,
-                               Var<Reactor> = Reactor::global(),
+                               Reactor = Reactor::global(),
                                Var<Logger> = Logger::global());
 
 void tcp_connect(std::string, Settings, Callback<Var<report::Entry>>,
-                 Var<Reactor> = Reactor::global(),
+                 Reactor = Reactor::global(),
                  Var<Logger> = Logger::global());
 
 void web_connectivity(std::string input, Settings,
                       Callback<Var<report::Entry>>,
-                      Var<Reactor> = Reactor::global(),
+                      Reactor = Reactor::global(),
                       Var<Logger> = Logger::global());
 
 void meek_fronted_requests(std::string input, Settings,
                            Callback<Var<report::Entry>>,
-                           Var<Reactor> = Reactor::global(),
+                           Reactor = Reactor::global(),
                            Var<Logger> = Logger::global());
 
 void http_header_field_manipulation(std::string input, Settings,
                                     Callback<Var<report::Entry>>,
-                                    Var<Reactor> = Reactor::global(),
+                                    Reactor = Reactor::global(),
                                     Var<Logger> = Logger::global());
 
 void telegram(Settings, Callback<Var<report::Entry>>,
@@ -41,7 +41,7 @@ void telegram(Settings, Callback<Var<report::Entry>>,
               Var<Logger> = Logger::global());
   
 void facebook_messenger(Settings, Callback<Var<report::Entry>>,
-                        Var<Reactor> = Reactor::global(),
+                        Reactor = Reactor::global(),
                         Var<Logger> = Logger::global());
 
 } // namespace ooni

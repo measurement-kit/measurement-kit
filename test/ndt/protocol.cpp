@@ -14,7 +14,7 @@ using namespace mk::net;
 using json = nlohmann::json;
 
 static void fail(std::string, int, Callback<Error, Var<Transport>> cb, Settings,
-                 Var<Reactor>, Var<Logger>) {
+                 Reactor, Var<Logger>) {
     cb(MockedError(), nullptr);
 }
 
@@ -48,7 +48,7 @@ TEST_CASE("send_extended_login() deals with write error") {
 }
 
 static void fail(Var<Transport>, Var<Buffer>, size_t, Callback<Error> cb,
-                 Var<Reactor> = Reactor::global()) {
+                 Reactor = Reactor::global()) {
     cb(MockedError());
 }
 
@@ -59,7 +59,7 @@ TEST_CASE("recv_and_ignore_kickoff() deals with readn() error") {
 }
 
 static void invalid(Var<Transport>, Var<Buffer> buff, size_t n,
-                    Callback<Error> cb, Var<Reactor> = Reactor::global()) {
+                    Callback<Error> cb, Reactor = Reactor::global()) {
     std::string s(n, 'a');
     buff->write(s);
     cb(NoError());
@@ -72,7 +72,7 @@ TEST_CASE("recv_and_ignore_kickoff() deals with invalid kickoff message") {
 }
 
 static void fail(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                 Var<Reactor> = Reactor::global()) {
+                 Reactor = Reactor::global()) {
     cb(MockedError(), 0, "");
 }
 
@@ -83,7 +83,7 @@ TEST_CASE("wait_in_queue() deals with read() error") {
 }
 
 static void unexpected(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                       Var<Reactor> = Reactor::global()) {
+                       Reactor = Reactor::global()) {
     cb(NoError(), MSG_ERROR, "");
 }
 
@@ -94,7 +94,7 @@ TEST_CASE("wait_in_queue() deals with unexpected message error") {
 }
 
 static void bad_time(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                     Var<Reactor> = Reactor::global()) {
+                     Reactor = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "xo");
 }
 
@@ -104,12 +104,12 @@ TEST_CASE("wait_in_queue() deals with invalid wait time") {
         ctx, [](Error err) { REQUIRE(err == InvalidSrvQueueMessageError()); });
 }
 
-static void call_soon_not_called(Callback<> &&, Var<Reactor>) {
+static void call_soon_not_called(Callback<> &&, Reactor) {
     REQUIRE(false /* should not happen */);
 }
 
 static void s_fault(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "9977" /* SRV_QUEUE_SERVER_FAULT */);
 }
 
@@ -123,7 +123,7 @@ TEST_CASE("wait_in_queue() deals with server-fault wait time") {
 }
 
 static void s_busy(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                   Var<Reactor> = Reactor::global()) {
+                   Reactor = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "9987" /* SRV_QUEUE_SERVER_BUSY */);
 }
 
@@ -137,7 +137,7 @@ TEST_CASE("wait_in_queue() deals with server-busy wait time") {
 }
 
 static void s_busy60s(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                      Var<Reactor> = Reactor::global()) {
+                      Reactor = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "9999" /* SRV_QUEUE_SERVER_BUSY_60s */);
 }
 
@@ -151,13 +151,13 @@ TEST_CASE("wait_in_queue() deals with server-busy-60s wait time") {
 }
 
 static bool call_soon_called_flag = false;
-static void call_soon_called(Callback<> &&, Var<Reactor>) {
+static void call_soon_called(Callback<> &&, Reactor) {
     REQUIRE(!call_soon_called_flag);
     call_soon_called_flag = true;
 }
 
 static void heartbeat(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                      Var<Reactor> = Reactor::global()) {
+                      Reactor = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "9990" /* SRV_QUEUE_HEARTBEAT */);
 }
 
@@ -198,7 +198,7 @@ TEST_CASE("wait_in_queue() deals with format_msg_waiting_error") {
 }
 
 static void nonzero(Var<Context>, Callback<Error, uint8_t, std::string> cb,
-                    Var<Reactor> = Reactor::global()) {
+                    Reactor = Reactor::global()) {
     cb(NoError(), SRV_QUEUE, "1");
 }
 
@@ -215,7 +215,7 @@ TEST_CASE("wait_in_queue() deals with nonzero wait time") {
 
 static void queued_then_whitelisted(Var<Context>,
         Callback<Error, uint8_t, std::string> cb,
-        Var<Reactor> = Reactor::global()) {
+        Reactor = Reactor::global()) {
     static int state = 2;
     REQUIRE(state >= 0);
     cb(NoError(), SRV_QUEUE, std::to_string(state).c_str());
@@ -224,10 +224,11 @@ static void queued_then_whitelisted(Var<Context>,
 
 TEST_CASE("wait_in_queue() reschedules itself until we are white listed") {
     Var<Context> ctx(new Context);
-    loop_with_initial_event([&]() {
-        protocol::wait_in_queue_impl<queued_then_whitelisted>(ctx, [](Error e) {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
+        protocol::wait_in_queue_impl<queued_then_whitelisted>(ctx, [=](Error e) {
             REQUIRE((e == NoError()));
-            break_loop();
+            reactor.stop();
         });
     });
 }
@@ -297,7 +298,7 @@ TEST_CASE("recv_results_and_logout() deals with unexpected message error") {
 }
 
 static void eof_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
-                      Var<Reactor> = Reactor::global()) {
+                      Reactor = Reactor::global()) {
     cb(EofError());
 }
 
@@ -309,7 +310,7 @@ TEST_CASE("wait_close() deals with EofError") {
 }
 
 static void timeout_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
-                          Var<Reactor> = Reactor::global()) {
+                          Reactor = Reactor::global()) {
     cb(TimeoutError());
 }
 
@@ -321,7 +322,7 @@ TEST_CASE("wait_close() deals with TimeoutError") {
 }
 
 static void mocked_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
-                         Var<Reactor> = Reactor::global()) {
+                         Reactor = Reactor::global()) {
     cb(MockedError());
 }
 
@@ -333,7 +334,7 @@ TEST_CASE("wait_close() deals with an error") {
 }
 
 static void no_error(Var<Transport>, Var<Buffer>, Callback<Error> cb,
-                     Var<Reactor> = Reactor::global()) {
+                     Reactor = Reactor::global()) {
     cb(NoError());
 }
 

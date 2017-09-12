@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     std::string query_type = "A";
     double interval = 1.0;
     Maybe<double> max_runtime = 10.0;
-    Var<Reactor> reactor = Reactor::make();
+    Reactor reactor;
     Var<Logger> logger = Logger::make();
     for (int ch; (ch = getopt(argc, argv, "c:e:i:m:N:r:T:t:v")) != -1;) {
         switch (ch) {
@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
         /* NOTREACHED */
     }
     std::string domain = argv[0];
-    reactor->run_with_initial_event([&]() {
+    reactor.run_with_initial_event([&]() {
         logger->info("Entering into the loop");
         dns::ping_nameserver(query_class, query_type, domain, interval,
                              max_runtime, settings, reactor, logger,
@@ -95,7 +95,7 @@ int main(int argc, char **argv) {
                              [=](Error error) {
                                  logger->info("Exiting from the loop: %d",
                                               error.code);
-                                 reactor->stop();
+                                 reactor.stop();
                              });
     });
 }

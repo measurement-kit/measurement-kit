@@ -51,13 +51,14 @@ int main(int argc, char **argv) {
         settings["dns/nameserver"] = nameserver;
     }
 
-    loop_with_initial_event([&query_class, &query_type, &domain, &settings]() {
+    Reactor reactor;
+    reactor.run_with_initial_event([=]() {
         std::cout << query_class << " " << query_type << "\n";
         dns::query(query_class.data(), query_type.data(), domain,
-            [&query_type](Error e, Var<dns::Message> m) {
+            [=](Error e, Var<dns::Message> m) {
                 if (e) {
                     std::cout << "Error: " << e.code << "\n";
-                    break_loop();
+                    reactor.stop();
                     return;
                 }
                 for (auto &s : m->answers) {
@@ -69,9 +70,7 @@ int main(int argc, char **argv) {
                         std::cout << "Unexpected query type\n";
                     }
                 }
-                break_loop();
+                reactor.stop();
             }, settings);
     });
-
-    return 0;
 }

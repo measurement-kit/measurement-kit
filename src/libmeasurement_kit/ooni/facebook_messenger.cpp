@@ -23,11 +23,11 @@ static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
       {"star", "star.c10r.facebook.com"}};
 
 static void
-dns_many(Error error, Var<Entry> entry, Settings options, Var<Reactor> reactor,
+dns_many(Error error, Var<Entry> entry, Settings options, Reactor reactor,
          Var<Logger> logger,
          Callback<Error, Var<Entry>,
                   Var<std::map<std::string, std::vector<std::string>>>,
-                  Settings, Var<Reactor>, Var<Logger>>
+                  Settings, Reactor, Var<Logger>>
                cb) {
     Var<std::map<std::string, std::vector<std::string>>> fb_service_ips(
           new std::map<std::string, std::vector<std::string>>(
@@ -110,7 +110,7 @@ dns_many(Error error, Var<Entry> entry, Settings options, Var<Reactor> reactor,
 static void
 tcp_many(Error error, Var<Entry> entry,
          Var<std::map<std::string, std::vector<std::string>>> fb_service_ips,
-         Settings options, Var<Reactor> reactor, Var<Logger> logger,
+         Settings options, Reactor reactor, Var<Logger> logger,
          Callback<Var<Entry>> cb) {
 
     if (error) {
@@ -187,7 +187,7 @@ tcp_many(Error error, Var<Entry> entry,
 }
 
 void facebook_messenger(Settings options, Callback<Var<report::Entry>> callback,
-                        Var<Reactor> reactor, Var<Logger> logger) {
+                        Reactor reactor, Var<Logger> logger) {
     logger->info("starting facebook_messenger");
     Var<Entry> entry(new Entry);
     mk::fcompose(mk::fcompose_policy_async(), dns_many, tcp_many)(

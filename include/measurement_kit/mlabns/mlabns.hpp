@@ -27,7 +27,7 @@ class Reply {
 
 /// Query mlab-ns and receive response.
 void query(std::string tool, Callback<Error, Reply> callback,
-           Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
+           Settings settings = {}, Reactor reactor = Reactor::global(),
            Var<Logger> logger = Logger::global());
 
 } // namespace mlabns

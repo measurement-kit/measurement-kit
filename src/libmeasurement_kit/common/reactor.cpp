@@ -4,45 +4,19 @@
 
 #include "private/common/locked.hpp"
 #include "private/libevent/reactor.hpp"
+#include <iostream>
 
 namespace mk {
 
-/*static*/ Var<Reactor> Reactor::make() {
-    return locked_global([]() { return Var<Reactor>{new libevent::Reactor<>}; });
-}
+Reactor::Impl::~Impl() {}
 
-Reactor::~Reactor() {}
+Reactor::Reactor() : impl_{std::make_shared<libevent::Reactor<>>()} {}
 
-void Reactor::run_with_initial_event(Callback<> &&cb) {
-    call_soon(std::move(cb));
-    loop();
-}
-
-/*static*/ Var<Reactor> Reactor::global() {
+/*static*/ Reactor Reactor::global() {
     return locked_global([]() {
-        static Var<Reactor> singleton = make();
+        static Reactor singleton;
         return singleton;
     });
-}
-
-void call_soon(Callback<> &&callback, Var<Reactor> reactor) {
-    reactor->call_soon(std::move(callback));
-}
-
-void call_later(double delta, Callback<> &&callback, Var<Reactor> reactor) {
-    reactor->call_later(delta, std::move(callback));
-}
-
-void loop_with_initial_event(Callback<> &&callback, Var<Reactor> reactor) {
-    reactor->run_with_initial_event(std::move(callback));
-}
-
-void loop(Var<Reactor> reactor) {
-    reactor->run();
-}
-
-void break_loop(Var<Reactor> reactor) {
-    reactor->stop();
 }
 
 } // namespace mk

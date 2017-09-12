@@ -16,7 +16,7 @@ void run(
         std::string real_address,
         Var<report::Entry> entry,
         Settings settings,
-        Var<Reactor> reactor,
+        Reactor reactor,
         Var<Logger> logger,
         Callback<Error> callback
 );
@@ -24,7 +24,7 @@ void run(
 void negotiate(
         Var<report::Entry> entry,
         Settings settings,
-        Var<Reactor> reactor,
+        Reactor reactor,
         Var<Logger> logger,
         Callback<Error> callback
 );

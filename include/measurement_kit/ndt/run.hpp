@@ -22,11 +22,11 @@ namespace ndt {
 
 void run_with_specific_server(Var<report::Entry> entry, std::string address, int port,
                               Callback<Error> callback, Settings settings = {},
-                              Var<Reactor> reactor = Reactor::global(),
+                              Reactor reactor = Reactor::global(),
                               Var<Logger> logger = Logger::global());
 
 void run(Var<report::Entry> entry, Callback<Error> callback, Settings settings = {},
-         Var<Reactor> reactor = Reactor::global(),
+         Reactor reactor = Reactor::global(),
          Var<Logger> logger = Logger::global());
 
 } // namespace ndt

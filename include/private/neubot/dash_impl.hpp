@@ -92,7 +92,7 @@ class DashLoopCtx {
     Var<report::Entry> entry;
     int iteration = 1;
     Var<Logger> logger;
-    Var<Reactor> reactor;
+    Reactor reactor;
     std::string real_address;
     Settings settings;
     Var<net::Transport> txp;
@@ -333,7 +333,7 @@ template <MK_MOCK_AS(http::request_connect, http_request_connect),
           MK_MOCK_AS(http::request_send, http_request_send),
           MK_MOCK_AS(http::request_recv_response, http_request_recv_response)>
 void run_impl(std::string url, std::string auth_token, std::string real_address,
-              Var<report::Entry> entry, Settings settings, Var<Reactor> reactor,
+              Var<report::Entry> entry, Settings settings, Reactor reactor,
               Var<Logger> logger, Callback<Error> cb) {
     Var<DashLoopCtx> ctx = Var<DashLoopCtx>::make();
     ctx->auth_token = auth_token;
@@ -387,7 +387,7 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
  */
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
-                     Settings settings, Var<Reactor> reactor,
+                     Settings settings, Reactor reactor,
                      Var<Logger> logger,
                      Callback<Error, std::string, std::string> callback,
                      int iteration = 0, std::string auth_token = "") {
@@ -451,7 +451,7 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
 
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
-              std::string auth, Settings settings, Var<Reactor> reactor,
+              std::string auth, Settings settings, Reactor reactor,
               Var<Logger> logger, Callback<Error> cb) {
     std::string body = (*entry)["receiver_data"].dump();
     logger->debug("Body sent to server: %s", body.c_str());
@@ -490,7 +490,7 @@ template <MK_MOCK_AS(http::request_connect, http_request_connect),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_negotiate),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_collect)>
 void negotiate_with_(std::string hostname, Var<report::Entry> entry,
-                     Settings settings, Var<Reactor> reactor,
+                     Settings settings, Reactor reactor,
                      Var<Logger> logger, Callback<Error> cb) {
     logger->info("Negotiating with: %s", hostname.c_str());
     std::stringstream ss;
@@ -543,7 +543,7 @@ void negotiate_with_(std::string hostname, Var<report::Entry> entry,
 
 template <MK_MOCK_AS(mlabns::query, mlabns_query)>
 void negotiate_impl(Var<report::Entry> entry, Settings settings,
-                    Var<Reactor> reactor, Var<Logger> logger,
+                    Reactor reactor, Var<Logger> logger,
                     Callback<Error> cb) {
     if (settings.find("hostname") != settings.end()) {
         negotiate_with_(settings["hostname"], entry, settings,

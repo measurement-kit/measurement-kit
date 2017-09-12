@@ -33,7 +33,7 @@ namespace bouncer {
 void post_net_tests(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,
                     Callback<Error, Var<BouncerReply>> cb, Settings settings,
-                    Var<Reactor> reactor, Var<Logger> logger);
+                    Reactor reactor, Var<Logger> logger);
 
 #define MK_OONI_PRODUCTION_BOUNCER_URL "https://bouncer.ooni.io"
 #define MK_OONI_TESTING_BOUNCER_URL "https://bouncer.test.ooni.io"

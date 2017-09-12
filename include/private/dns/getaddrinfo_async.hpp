@@ -84,16 +84,16 @@ std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
 }
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
-void getaddrinfo_async(std::string name, addrinfo hints, Var<Reactor> reactor,
+void getaddrinfo_async(std::string name, addrinfo hints, Reactor reactor,
                        Var<Logger> logger,
                        Callback<Error, std::vector<Answer>> cb) {
     /*
      * Move everything down such that there is always just one function in
      * one specific thread having ownership of the state
      */
-    reactor->run_in_background_thread([
+    reactor.call_in_background_thread([
         name = std::move(name), hints = std::move(hints),
-        reactor = std::move(reactor), logger = std::move(logger),
+        reactor, logger = std::move(logger),
         cb = std::move(cb)
     ]() {
         addrinfo *rp = nullptr;
@@ -116,7 +116,7 @@ void getaddrinfo_async(std::string name, addrinfo hints, Var<Reactor> reactor,
          * Pass through call soon such that the callback executes in the
          * thread in which we're running our async I/O loop.
          */
-        reactor->call_soon([
+        reactor.call_soon([
             cb = std::move(cb), error = std::move(error),
             answers = std::move(answers)
         ]() { cb(error, answers); });

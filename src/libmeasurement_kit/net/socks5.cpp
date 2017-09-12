@@ -10,7 +10,7 @@
 namespace mk {
 namespace net {
 
-Socks5::Socks5(Var<Transport> tx, Settings s, Var<Reactor> r, Var<Logger> lp)
+Socks5::Socks5(Var<Transport> tx, Settings s, Reactor r, Var<Logger> lp)
     : Emitter(r, lp), settings(s), conn(tx),
       proxy_address(settings["net/socks5_address"]),
       proxy_port(settings["net/socks5_port"]) {
@@ -124,7 +124,7 @@ ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Var<Logger> logger) 
 
 void socks5_connect(std::string address, int port, Settings settings,
         Callback<Error, Var<Transport>> callback,
-        Var<Reactor> reactor, Var<Logger> logger) {
+        Reactor reactor, Var<Logger> logger) {
 
     auto proxy = settings["net/socks5_proxy"];
     auto pos = proxy.find(":");
