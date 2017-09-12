@@ -27,8 +27,8 @@
  *
  * René Nyffenegger rene.nyffenegger@adp-gmbh.ch
  */
-#ifndef PRIVATE_COMMON_ENCODING_BASE64_IMPL_HPP
-#define PRIVATE_COMMON_ENCODING_BASE64_IMPL_HPP
+#ifndef MEASUREMENT_KIT_COMMON_DETAIL_BASE64_ENCODE__HPP
+#define MEASUREMENT_KIT_COMMON_DETAIL_BASE64_ENCODE__HPP
 
 #include <cstdint>
 #include <string>

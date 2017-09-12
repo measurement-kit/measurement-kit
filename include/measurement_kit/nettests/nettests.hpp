@@ -10,7 +10,6 @@
 #include <string>
 
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/delegate.hpp>
 #include <measurement_kit/common/lexical_cast.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/var.hpp>
@@ -22,10 +21,10 @@ class Runnable;
 
 class BaseTest {
   public:
-    BaseTest &on_logger_eof(Delegate<>);
-    BaseTest &on_log(Delegate<uint32_t, const char *>);
-    BaseTest &on_event(Delegate<const char *>);
-    BaseTest &on_progress(Delegate<double, const char *>);
+    BaseTest &on_logger_eof(Callback<>);
+    BaseTest &on_log(Callback<uint32_t, const char *>);
+    BaseTest &on_event(Callback<const char *>);
+    BaseTest &on_progress(Callback<double, const char *>);
     BaseTest &set_verbosity(uint32_t);
     BaseTest &increase_verbosity();
 
@@ -47,10 +46,10 @@ class BaseTest {
 
     BaseTest &set_options(std::string key, std::string value);
 
-    BaseTest &on_entry(Delegate<std::string>);
-    BaseTest &on_begin(Delegate<>);
-    BaseTest &on_end(Delegate<> cb);
-    BaseTest &on_destroy(Delegate<> cb);
+    BaseTest &on_entry(Callback<std::string>);
+    BaseTest &on_begin(Callback<>);
+    BaseTest &on_end(Callback<> cb);
+    BaseTest &on_destroy(Callback<> cb);
 
     void run();
     void start(Callback<> func);
@@ -74,6 +73,7 @@ MK_DECLARE_TEST(MeekFrontedRequestsTest);
 MK_DECLARE_TEST(MultiNdtTest);
 MK_DECLARE_TEST(NdtTest);
 MK_DECLARE_TEST(TcpConnectTest);
+MK_DECLARE_TEST(TelegramTest);
 MK_DECLARE_TEST(WebConnectivityTest);
 
 } // namespace nettests

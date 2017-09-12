@@ -2,7 +2,7 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/worker.hpp"
+#include <measurement_kit/common/detail/worker.hpp>
 #include "private/nettests/runnable.hpp"
 
 #include <measurement_kit/nettests.hpp>
@@ -13,22 +13,22 @@
 namespace mk {
 namespace nettests {
 
-BaseTest &BaseTest::on_logger_eof(Delegate<> func) {
+BaseTest &BaseTest::on_logger_eof(Callback<> func) {
     runnable->logger->on_eof(func);
     return *this;
 }
 
-BaseTest &BaseTest::on_log(Delegate<uint32_t, const char *> func) {
+BaseTest &BaseTest::on_log(Callback<uint32_t, const char *> func) {
     runnable->logger->on_log(func);
     return *this;
 }
 
-BaseTest &BaseTest::on_event(Delegate<const char *> func) {
+BaseTest &BaseTest::on_event(Callback<const char *> func) {
     runnable->logger->on_event(func);
     return *this;
 }
 
-BaseTest &BaseTest::on_progress(Delegate<double, const char *> func) {
+BaseTest &BaseTest::on_progress(Callback<double, const char *> func) {
     runnable->logger->on_progress(func);
     return *this;
 }
@@ -79,22 +79,22 @@ BaseTest &BaseTest::set_options(std::string key, std::string value) {
     return *this;
 }
 
-BaseTest &BaseTest::on_entry(Delegate<std::string> cb) {
+BaseTest &BaseTest::on_entry(Callback<std::string> cb) {
     runnable->entry_cb = cb;
     return *this;
 }
 
-BaseTest &BaseTest::on_begin(Delegate<> cb) {
+BaseTest &BaseTest::on_begin(Callback<> cb) {
     runnable->begin_cb = cb;
     return *this;
 }
 
-BaseTest &BaseTest::on_end(Delegate<> cb) {
+BaseTest &BaseTest::on_end(Callback<> cb) {
     runnable->end_cbs.push_back(cb);
     return *this;
 }
 
-BaseTest &BaseTest::on_destroy(Delegate<> cb) {
+BaseTest &BaseTest::on_destroy(Callback<> cb) {
     runnable->destroy_cbs.push_back(cb);
     return *this;
 }

@@ -1,12 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
-#include "private/common/parallel.hpp"
-#include "private/common/utils.hpp"
-#include "private/common/waterfall.hpp"
 #include "private/ooni/constants.hpp"
 #include "private/ooni/utils.hpp"
+#include <measurement_kit/common/detail/parallel.hpp>
+#include <measurement_kit/common/detail/utils.hpp>
+#include <measurement_kit/common/detail/waterfall.hpp>
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {

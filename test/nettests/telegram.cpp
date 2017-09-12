@@ -11,8 +11,8 @@
 using namespace mk::nettests;
 using namespace mk;
 
-TEST_CASE("Synchronous facebook_messenger test") {
-    test::nettests::with_test<FacebookMessengerTest>(test::nettests::run_test);
+TEST_CASE("Synchronous telegram test") {
+    test::nettests::with_test<TelegramTest>(test::nettests::run_test);
 }
 
 #else

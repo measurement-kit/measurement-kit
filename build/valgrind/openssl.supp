@@ -24,7 +24,7 @@
    fun:event_base_loop
    fun:_ZN2mk8libevent11poller_loopIXadL_Z9event_newEEXadL_Z10event_freeEEXadL_Z9event_addEEXadL_Z19event_base_dispatchEEEEvNS_3VarI10event_baseEEPNS0_6PollerE
    fun:_ZN2mk8libevent6Poller3runEv
-   fun:_ZN2mk7Reactor23loop_with_initial_eventESt8functionIFvvEE
+   fun:_ZN2mk7Reactor23run_with_initial_eventESt8functionIFvvEE
    fun:_ZL31____C_A_T_C_H____T_E_S_T____*
    fun:_ZN5Catch8runTestsERKNS_3PtrINS_6ConfigEEE
    fun:main

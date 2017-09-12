@@ -2,10 +2,9 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include <measurement_kit/common/detail/utils.hpp>
 #include <measurement_kit/http.hpp>
-
 #include <iostream>
-
 #include <getopt.h>
 
 using namespace mk;
@@ -71,15 +70,16 @@ int main(int argc, char **argv) {
     }
     settings["http/url"] = argv[0];
 
-    loop_with_initial_event([&]() {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         http::request(
             settings,
             headers,
             body,
-            [](Error error, Var<http::Response> response) {
+            [=](Error error, Var<http::Response> response) {
                 if (error) {
                     std::cout << "Error: " << error.explain() << "\n";
-                    break_loop();
+                    reactor->stop();
                     return;
                 }
                 std::cout << response->response_line << "\n";
@@ -87,9 +87,7 @@ int main(int argc, char **argv) {
                     std::cout << pair.first << ": " << pair.second << "\n";
                 }
                 std::cout << "\n" << response->body << "\n";
-                break_loop();
+                reactor->stop();
             });
     });
-
-    return 0;
 }

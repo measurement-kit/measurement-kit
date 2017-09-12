@@ -4,13 +4,10 @@
 #ifndef PRIVATE_OONI_UTILS_IMPL_HPP
 #define PRIVATE_OONI_UTILS_IMPL_HPP
 
-#include "private/common/encoding.hpp"
-#include "private/common/mock.hpp"
-
-#include "private/common/encoding.hpp"
-#include "private/common/mock.hpp"
-
+#include <measurement_kit/common/detail/encoding.hpp>
+#include <measurement_kit/common/detail/mock.hpp>
 #include "../ooni/utils.hpp"
+#include <regex>
 
 using json = nlohmann::json;
 

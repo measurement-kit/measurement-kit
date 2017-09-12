@@ -4,15 +4,15 @@
 
 #include "../cmdline.hpp"
 
-namespace facebook_messenger {
+namespace telegram {
 
-#define USAGE                                                 \
-    "usage: measurement_kit [options] facebook_messenger\n"   \
+#define USAGE                                       \
+    "usage: measurement_kit [options] telegram\n"   \
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
-    mk::nettests::FacebookMessengerTest test;
+    mk::nettests::TelegramTest test;
     int ch;
-    while ((ch = getopt(argc, argv, "B:f:")) != -1) {
+    while ((ch = getopt(argc, argv, "")) != -1) {
         switch (ch) {
         default:
             fprintf(stderr, "%s\n", USAGE);
@@ -30,4 +30,4 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     return 0;
 }
 
-} // namespace facebook_messenger
+} // namespace telegram

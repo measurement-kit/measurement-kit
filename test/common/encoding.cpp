@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include "private/common/encoding.hpp"
+#include <measurement_kit/common/detail/encoding.hpp>
 
 #include <resolv.h>
 

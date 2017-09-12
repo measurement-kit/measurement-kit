@@ -4,9 +4,9 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include "private/common/parallel.hpp"
 #include "private/ext/catch.hpp"
 #include <measurement_kit/common/reactor.hpp>
+#include <measurement_kit/common/detail/parallel.hpp>
 
 using namespace mk;
 

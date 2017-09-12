@@ -4,9 +4,7 @@
 #ifndef PRIVATE_NDT_PROTOCOL_IMPL_HPP
 #define PRIVATE_NDT_PROTOCOL_IMPL_HPP
 
-#include "private/common/mock.hpp"
-
-#include "private/common/mock.hpp"
+#include <measurement_kit/common/detail/mock.hpp>
 
 #include "../ndt/internal.hpp"
 
@@ -72,6 +70,10 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
         ctx->logger->debug("Got legacy KICKOFF message (ignored)");
         callback(NoError());
     }, ctx->reactor);
+}
+
+static inline void call_soon(Callback<> &&cb, Var<Reactor> reactor) {
+    reactor->call_soon(std::move(cb));
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg),

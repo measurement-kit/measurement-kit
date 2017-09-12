@@ -61,6 +61,7 @@
 /test/common/error_or
 /test/common/every
 /test/common/json
+/test/common/libevent_reactor
 /test/common/locked
 /test/common/logger
 /test/common/maybe
@@ -82,7 +83,6 @@
 /test/http/response_parser
 /test/libevent/connection
 /test/libevent/dns_error
-/test/libevent/reactor
 /test/mlabns/mlabns
 /test/ndt/measure_speed
 /test/ndt/messages
@@ -110,6 +110,7 @@
 /test/nettests/ndt
 /test/nettests/runnable
 /test/nettests/tcp_connect
+/test/nettests/telegram
 /test/nettests/utils
 /test/nettests/web_connectivity
 /test/ooni/bouncer

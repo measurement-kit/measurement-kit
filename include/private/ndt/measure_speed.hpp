@@ -4,8 +4,8 @@
 #ifndef PRIVATE_NDT_MEASURE_SPEED_HPP
 #define PRIVATE_NDT_MEASURE_SPEED_HPP
 
+#include <measurement_kit/common/detail/utils.hpp>
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/utils.hpp>
 
 namespace mk {
 namespace ndt {

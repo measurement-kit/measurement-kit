@@ -2,7 +2,7 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/json.hpp"
+#include <measurement_kit/common/detail/json.hpp>
 
 #include <stdio.h>
 
@@ -112,11 +112,11 @@ void Logger::warn(const char *fmt, ...) { XX(this, MK_LOG_WARNING); }
 void Logger::info(const char *fmt, ...) { XX(this, MK_LOG_INFO); }
 void Logger::debug(const char *fmt, ...) { XX(this, MK_LOG_DEBUG); }
 
-void Logger::on_eof(Delegate<> f) {
+void Logger::on_eof(Callback<> f) {
     eof_handlers_.push_back(f);
 }
 
-void Logger::on_event(Delegate<const char *> f) { event_handler_ = f; }
+void Logger::on_event(Callback<const char *> f) { event_handler_ = f; }
 
 void log(uint32_t level, const char *fmt, ...) { XX(Logger::global(), level); }
 void warn(const char *fmt, ...) { XX(Logger::global(), MK_LOG_WARNING); }
@@ -131,7 +131,7 @@ void Logger::increase_verbosity() {
     }
 }
 
-void Logger::on_progress(Delegate<double, const char *> fn) {
+void Logger::on_progress(Callback<double, const char *> fn) {
     progress_handler_ = fn;
 }
 

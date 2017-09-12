@@ -4,9 +4,9 @@
 #ifndef PRIVATE_DNS_PING_HPP
 #define PRIVATE_DNS_PING_HPP
 
-#include "private/common/every.hpp"
-#include "private/common/maybe.hpp"
-
+#include <measurement_kit/common/detail/every.hpp>
+#include <measurement_kit/common/detail/maybe.hpp>
+#include <measurement_kit/common/detail/utils.hpp>
 #include <measurement_kit/dns/query.hpp>
 
 namespace mk {

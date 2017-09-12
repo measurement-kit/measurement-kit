@@ -1,19 +1,19 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef PRIVATE_COMMON_PARALLEL_HPP
-#define PRIVATE_COMMON_PARALLEL_HPP
+#ifndef MEASUREMENT_KIT_COMMON_DETAIL_PARALLEL_HPP
+#define MEASUREMENT_KIT_COMMON_DETAIL_PARALLEL_HPP
 
-#include <algorithm>                               // for std::move, ...
-#include <cstddef>                                 // for size_t
-#include <deque>                                   // for std::deque
-#include <functional>                              // for std::function
-#include <measurement_kit/common/continuation.hpp> // for mk::Continuation
-#include <measurement_kit/common/error.hpp>        // for mk::Error, ...
-#include <measurement_kit/common/safe.hpp>         // for mk::Safe, ...
-#include <memory>                                  // for std::shared_ptr
-#include <mutex>                                   // for std::unique_lock, ...
-#include <stdexcept>                               // for std::runtime_error
+#include <algorithm>                                      // for std::move, ...
+#include <cstddef>                                        // for size_t
+#include <deque>                                          // for std::deque
+#include <functional>                                     // for std::function
+#include <measurement_kit/common/detail/continuation.hpp> // for mk::Continuation
+#include <measurement_kit/common/error.hpp>               // for mk::Error, ...
+#include <measurement_kit/common/var.hpp>                 // for mk::Var, ...
+#include <memory>                                         // for std::shared_ptr
+#include <mutex>     // for std::unique_lock, ...
+#include <stdexcept> // for std::runtime_error
 
 namespace mk {
 
@@ -31,7 +31,7 @@ class ParallelCallback {
     };
 
     ParallelCallback(size_t parallelism, const std::function<void(Error)> &&cb)
-        : impl_{mk::make_shared_safe<Impl>(parallelism, std::move(cb))} {}
+        : impl_{mk::make_shared<Impl>(parallelism, std::move(cb))} {}
 
     void operator()(Error error) const {
         std::unique_lock<std::recursive_mutex> _{impl_->mutex};
@@ -50,7 +50,7 @@ class ParallelCallback {
     }
 
   private:
-    Safe<std::shared_ptr<Impl>> impl_;
+    Var<Imp> impl_;
 };
 
 class ParallelExecutor {
@@ -64,7 +64,7 @@ class ParallelExecutor {
     };
 
     ParallelExecutor(std::function<void(Error)> &&callback)
-        : impl_{mk::make_shared_safe<Impl>(std::move(callback))} {}
+        : impl_{mk::make_shared<Impl>(std::move(callback))} {}
 
     ParallelExecutor &add(Continuation<Error> &&cc) {
         std::unique_lock<std::recursive_mutex> _{impl_->mutex};
@@ -72,8 +72,7 @@ class ParallelExecutor {
         return *this;
     }
 
-    static void parallel_next_(Safe<std::shared_ptr<Impl>> impl,
-                               ParallelCallback callback) {
+    static void parallel_next_(Var<Impl> impl, ParallelCallback callback) {
         std::unique_lock<std::recursive_mutex> _{impl->mutex};
         if (!impl->continuations.empty()) {
             Continuation<Error> continuation;
@@ -101,17 +100,17 @@ class ParallelExecutor {
         for (size_t i = 0; i < parallelism; ++i) {
             parallel_next_(impl_, callback);
         }
-        // Invalidate Safe<pointer> to prevent further usage. Attempting to
+        // Invalidate Var<pointer> to prevent further usage. Attempting to
         // dereference `impl_` will cause an exception to be thrown.
         //
         // Must be done once we've released the lock. Otherwise it might
         // be that we destroy a locked mutex, which is an exception in libcxx.
         _.unlock();
-        impl_.pointer.reset();
+        impl_.reset();
     }
 
   private:
-    Safe<std::shared_ptr<Impl>> impl_;
+    Var<Impl> impl_;
 };
 
 } // namespace mk

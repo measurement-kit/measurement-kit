@@ -1,18 +1,18 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef PRIVATE_COMMON_WATERFALL_HPP
-#define PRIVATE_COMMON_WATERFALL_HPP
+#ifndef MEASUREMENT_KIT_COMMON_DETAIL_WATERFALL_HPP
+#define MEASUREMENT_KIT_COMMON_DETAIL_WATERFALL_HPP
 
-#include <algorithm>                               // for std::move, ...
-#include <cstddef>                                 // for size_t
-#include <deque>                                   // for std::deque
-#include <functional>                              // for std::function
-#include <measurement_kit/common/continuation.hpp> // for mk::Continuation
-#include <measurement_kit/common/error.hpp>        // for mk::Error, ...
-#include <measurement_kit/common/safe.hpp>         // for mk::Safe, ...
-#include <memory>                                  // for std::shared_ptr
-#include <mutex>                                   // for std::unique_lock, ...
+#include <algorithm>                                      // for std::move, ...
+#include <cstddef>                                        // for size_t
+#include <deque>                                          // for std::deque
+#include <functional>                                     // for std::function
+#include <measurement_kit/common/detail/continuation.hpp> // for mk::Continuation
+#include <measurement_kit/common/error.hpp>               // for mk::Error, ...
+#include <measurement_kit/common/var.hpp>                 // for mk::Var, ...
+#include <memory>                                         // for std::shared_ptr
+#include <mutex> // for std::unique_lock, ...
 
 namespace mk {
 
@@ -27,7 +27,7 @@ class WaterfallExecutor {
     };
 
     WaterfallExecutor(std::function<void(Error)> &&callback)
-        : impl_{mk::make_shared_safe<Impl>(std::move(callback))} {}
+        : impl_{mk::make_shared<Impl>(std::move(callback))} {}
 
     WaterfallExecutor &add(Continuation<Error> &&cc) {
         std::unique_lock<std::recursive_mutex> _{impl_->mutex};
@@ -35,7 +35,7 @@ class WaterfallExecutor {
         return *this;
     }
 
-    static void waterfall_next_(Safe<std::shared_ptr<Impl>> impl) {
+    static void waterfall_next_(Var<Impl> impl) {
         std::unique_lock<std::recursive_mutex> _{impl->mutex};
         if (!impl->continuations.empty()) {
             Continuation<Error> continuation;
@@ -56,17 +56,17 @@ class WaterfallExecutor {
     void start() {
         std::unique_lock<std::recursive_mutex> _{impl_->mutex};
         waterfall_next_(impl_);
-        // Invalidate Safe<pointer> to prevent further usage. Attempting to      
+        // Invalidate Var<pointer> to prevent further usage. Attempting to      
         // dereference `impl_` will cause an exception to be thrown. 
         //
         // Must be done once we've released the lock. Otherwise it might
         // be that we destroy a locked mutex, which is an exception in libcxx.
         _.unlock();
-        impl_.pointer.reset();
+        impl_.reset();
     }
 
   private:
-    Safe<std::shared_ptr<Impl>> impl_;
+    Var<Impl> impl_;
 };
 
 } // namespace mk

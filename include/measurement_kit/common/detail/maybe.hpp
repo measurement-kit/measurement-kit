@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef PRIVATE_COMMON_MAYBE_HPP
-#define PRIVATE_COMMON_MAYBE_HPP
+#ifndef MEASUREMENT_KIT_COMMON_DETAIL_MAYBE_HPP
+#define MEASUREMENT_KIT_COMMON_DETAIL_MAYBE_HPP
 
 #include <stdexcept>
 #include <type_traits>
@@ -14,17 +14,17 @@ template <typename T> class Maybe {
     Maybe() {}
     Maybe(T &&t) : value_{std::move(t)}, valid_{true} {}
 
-#define IMPL                                                                   \
+#define DETAIL                                                                   \
     if (!valid_) {                                                             \
         throw std::runtime_error("Maybe is empty");                            \
     }                                                                          \
     return value_
 
-    T &operator*() { IMPL; }
+    T &operator*() { DETAIL; }
 
-    const T &operator*() const { IMPL; }
+    const T &operator*() const { DETAIL; }
 
-#undef IMPL
+#undef DETAIL
 
     operator bool() const { return valid_; }
 

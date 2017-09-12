@@ -5,9 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include "private/common/sandbox.hpp"
-
-#include "private/common/sandbox.hpp"
+#include <measurement_kit/common/detail/sandbox.hpp>
 
 #include <measurement_kit/common.hpp>
 
