@@ -74,6 +74,7 @@ MK_DECLARE_TEST(MeekFrontedRequestsTest);
 MK_DECLARE_TEST(MultiNdtTest);
 MK_DECLARE_TEST(NdtTest);
 MK_DECLARE_TEST(TcpConnectTest);
+MK_DECLARE_TEST(TelegramTest);
 MK_DECLARE_TEST(WebConnectivityTest);
 
 } // namespace nettests
