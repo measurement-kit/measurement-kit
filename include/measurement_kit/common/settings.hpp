@@ -4,15 +4,14 @@
 #ifndef MEASUREMENT_KIT_COMMON_SETTINGS_HPP
 #define MEASUREMENT_KIT_COMMON_SETTINGS_HPP
 
-#include <measurement_kit/common/settings_entry.hpp>
-
+#include <measurement_kit/common/scalar.hpp>
 #include <map>
 
 namespace mk {
 
-class Settings : public std::map<std::string, SettingsEntry> {
+class Settings : public std::map<std::string, Scalar> {
   public:
-    using std::map<std::string, SettingsEntry>::map;
+    using std::map<std::string, Scalar>::map;
 
 #define XX(_rv_, _methname_, _accessor_)                                       \
     template <typename Type>                                                   \

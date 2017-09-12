@@ -4,33 +4,17 @@
 #ifndef MEASUREMENT_KIT_COMMON_LEXICAL_CAST_HPP
 #define MEASUREMENT_KIT_COMMON_LEXICAL_CAST_HPP
 
-#include <measurement_kit/common/error_or.hpp>
-
-#include <sstream>
+#include <measurement_kit/common/scalar.hpp>
 
 namespace mk {
 
 template <typename To, typename From> To lexical_cast(From f) {
-    std::stringstream ss;
-    To value;
-    ss << f;
-    ss >> value;
-    if (!ss.eof()) {
-        throw ValueError(); // Not all input was converted
-    }
-    if (ss.fail()) {
-        throw ValueError(); // Input format was wrong
-    }
-    return value;
+    return Scalar{f}.as<To>();
 }
 
 template <typename To, typename From>
 ErrorOr<To> lexical_cast_noexcept(From f) {
-    try {
-        return lexical_cast<To, From>(f);
-    } catch (Error err) {
-        return err;
-    }
+    return Scalar{f}.as_noexcept<To>();
 }
 
 } // namespace mk
