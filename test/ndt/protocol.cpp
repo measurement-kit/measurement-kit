@@ -224,10 +224,11 @@ static void queued_then_whitelisted(Var<Context>,
 
 TEST_CASE("wait_in_queue() reschedules itself until we are white listed") {
     Var<Context> ctx(new Context);
-    loop_with_initial_event([&]() {
-        protocol::wait_in_queue_impl<queued_then_whitelisted>(ctx, [](Error e) {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        protocol::wait_in_queue_impl<queued_then_whitelisted>(ctx, [=](Error e) {
             REQUIRE((e == NoError()));
-            break_loop();
+            reactor->stop();
         });
     });
 }

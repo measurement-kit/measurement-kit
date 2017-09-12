@@ -176,9 +176,10 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
     }
 
     // Note: we bind this, which makes this object non copyable or movable
-    reactor->pollfd(sockfd_, MK_POLLIN, [this](Error err, short flags) {
-        event_callback(err, flags);
-    }, timeout);
+    reactor->pollfd(sockfd_, MK_POLLIN, timeout,
+                    [this](Error err, short flags) {
+                        event_callback(err, flags);
+                    });
 
     probe_pending_ = true;
 }

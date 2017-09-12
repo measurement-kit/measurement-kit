@@ -50,12 +50,12 @@ TEST_CASE("get_latest_release() works as expected") {
 #if ENABLE_INTEGRATION_TESTS
     SECTION("Integration test") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             ooni::resources::get_latest_release(
                 [=](Error e, std::string s) {
                     REQUIRE(e.code == NoError().code);
                     REQUIRE(s != "");
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -138,12 +138,12 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("When manifest is not an object") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources_for_country_impl(
                 "6", nullptr, "IT",
                 [=](Error err) {
                     REQUIRE(err.code == JsonDomainError().code);
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -151,12 +151,12 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("When manifest does not contain a resources section") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources_for_country_impl(
                 "6", nlohmann::json::object(), "IT",
                 [=](Error err) {
                     REQUIRE(err.code == JsonKeyError().code);
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -164,7 +164,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("When manifest resources are not objects") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             nlohmann::json root;
             root["resources"].push_back(nullptr);
             root["resources"].push_back(nullptr);
@@ -177,7 +177,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
                         REQUIRE(err.child_errors[i]->code ==
                                 JsonDomainError().code);
                     }
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -185,7 +185,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("When manifest resources do not contain the country key") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             nlohmann::json root;
             root["resources"].push_back(nlohmann::json::object());
             root["resources"].push_back(nlohmann::json::object());
@@ -198,7 +198,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
                         REQUIRE(err.child_errors[i]->code ==
                                 JsonKeyError().code);
                     }
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -206,7 +206,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("When a specific country code is selected others are skipped") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
                     "country_code": "IT"
@@ -226,7 +226,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
                     REQUIRE(err.child_errors[0]->code == JsonKeyError().code);
                     REQUIRE(err.child_errors[1]->code == NoError().code);
                     REQUIRE(err.child_errors[2]->code == NoError().code);
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -234,7 +234,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("The ALL selector selects all countries") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
                     "country_code": "IT"
@@ -254,7 +254,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
                     REQUIRE(err.child_errors[0]->code == JsonKeyError().code);
                     REQUIRE(err.child_errors[1]->code == JsonKeyError().code);
                     REQUIRE(err.child_errors[2]->code == JsonKeyError().code);
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -262,7 +262,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("Deals with HTTP GET errors") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
                     "country_code": "IT",
@@ -282,7 +282,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
                     REQUIRE(err.child_errors[0]->code == MockedError().code);
                     REQUIRE(err.child_errors[1]->code == MockedError().code);
                     REQUIRE(err.child_errors[2]->code == MockedError().code);
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -290,7 +290,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("Deals with HTTP GET returning error") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
                     "country_code": "IT",
@@ -311,7 +311,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
                         REQUIRE(err.child_errors[i]->code ==
                                 ooni::CannotGetResourceError().code);
                     }
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -319,7 +319,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("Deals with missing sha256 keys in the manifest") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
                     "country_code": "IT",
@@ -340,7 +340,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
                         REQUIRE(err.child_errors[i]->code ==
                                 JsonKeyError().code);
                     }
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -348,7 +348,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("Deals with invalid sha256 sums") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
                     "country_code": "IT",
@@ -372,7 +372,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
                         REQUIRE(err.child_errors[i]->code ==
                                 ooni::ResourceIntegrityError().code);
                     }
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -380,7 +380,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("Deals with write file I/O error") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
                     "country_code": "IT",
@@ -405,7 +405,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
                         REQUIRE(err.child_errors[i]->code ==
                                 FileIoError().code);
                     }
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -435,12 +435,12 @@ TEST_CASE("get_resources() works as expected") {
 
     SECTION("When get_manifest_as_json() fails") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources_impl<get_manifest_as_json_fail>(
                 "6", "IT",
                 [=](Error error) {
                     REQUIRE(error.code == MockedError().code);
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -448,13 +448,13 @@ TEST_CASE("get_resources() works as expected") {
 
     SECTION("When get_resources_for_country() fails") {
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources_impl<get_manifest_as_json_okay,
                                                 get_resources_for_country_fail>(
                 "6", "IT",
                 [=](Error error) {
                     REQUIRE(error.code == MockedError().code);
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -465,12 +465,12 @@ TEST_CASE("get_resources() works as expected") {
         Var<Reactor> reactor = Reactor::make();
         Var<Logger> logger = Logger::global();
         logger->set_verbosity(MK_LOG_INFO);
-        reactor->loop_with_initial_event([=]() {
+        reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources("6", "ALL",
                                            [=](Error error) {
                                                REQUIRE(error.code ==
                                                        NoError().code);
-                                               reactor->break_loop();
+                                               reactor->stop();
                                            },
                                            {}, reactor, logger);
         });

@@ -21,12 +21,12 @@ TEST_CASE("Make sure that IP address scrubbing works") {
                    Callback<std::string /*ip*/, std::string /*entry*/> g) {
         std::string probe_ip;
         Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([&]() {
+        reactor->run_with_initial_event([&]() {
             ooni::ip_lookup(
                 [&](Error err, std::string ip_addr) {
                     REQUIRE(!err);
                     probe_ip = ip_addr;
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
