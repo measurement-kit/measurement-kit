@@ -137,7 +137,7 @@ TEST_CASE("http::request works as expected") {
                 REQUIRE(md5(response->body) ==
                         "efa2a8f1ba8a6335a8d696f91de69737");
                 reactor->stop();
-            });
+            }, reactor);
     });
 }
 
@@ -159,7 +159,7 @@ TEST_CASE("http::request() works using HTTPS") {
                     REQUIRE(md5(response->body) ==
                             "1be9d96d157a3df328faa30e51faf63a");
                     reactor->stop();
-                });
+                }, reactor);
     });
 }
 
@@ -187,7 +187,7 @@ TEST_CASE("http::request() works as expected over Tor") {
                             "efa2a8f1ba8a6335a8d696f91de69737");
                 }
                 reactor->stop();
-            });
+            }, reactor);
     });
 }
 
@@ -209,7 +209,7 @@ TEST_CASE("http::request correctly receives errors") {
                 REQUIRE(error);
                 REQUIRE(response == nullptr);
                 reactor->stop();
-            });
+            }, reactor);
     });
 }
 
@@ -368,7 +368,7 @@ TEST_CASE("http::request_connect_impl() works for normal connections") {
                                  REQUIRE(!error);
                                  REQUIRE(static_cast<bool>(transport));
                                  transport->close([=]() { reactor->stop(); });
-                             });
+                             }, reactor);
     });
 }
 
@@ -396,7 +396,7 @@ TEST_CASE("http::request_send() works as expected") {
                                  REQUIRE(!error);
                                  transport->close([=]() { reactor->stop(); });
                              });
-            });
+            }, reactor);
     });
 }
 
@@ -426,9 +426,9 @@ TEST_CASE("http::request_recv_response() works as expected") {
                                 REQUIRE(status_code_ok(r->status_code));
                                 REQUIRE(r->body.size() > 0);
                                 transport->close([=]() { reactor->stop(); });
-                            });
+                            }, {}, reactor);
                     });
-            });
+            }, reactor);
     });
 }
 
@@ -450,8 +450,8 @@ TEST_CASE("http::request_sendrecv() works as expected") {
                                      REQUIRE(status_code_ok(r->status_code));
                                      REQUIRE(r->body.size() > 0);
                                      transport->close([=]() { reactor->stop(); });
-                                 });
-            });
+                                 }, reactor);
+            }, reactor);
     });
 }
 
@@ -486,9 +486,9 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
                                 REQUIRE(r->status_code == 200);
                                 REQUIRE(r->body.size() > 0);
                                 transport->close([=]() { reactor->stop(); });
-                            });
+                            }, reactor);
                     });
-            });
+            }, reactor);
     });
 }
 
@@ -520,7 +520,7 @@ TEST_CASE("http::request() works as expected using httpo URLs") {
                     REQUIRE(body["dns"]["address"] == "37.218.247.110:57004");
                 }
                 reactor->stop();
-            });
+            }, reactor);
     });
 }
 
@@ -547,7 +547,7 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
                             "efa2a8f1ba8a6335a8d696f91de69737");
                 }
                 reactor->stop();
-            });
+            }, reactor);
     });
 }
 
@@ -573,7 +573,7 @@ TEST_CASE("http::request() correctly follows redirects") {
                 REQUIRE(response->previous->request->url.address == "fsrn.org");
                 REQUIRE(!response->previous->previous);
                 reactor->stop();
-            });
+            }, reactor);
     });
 }
 
@@ -678,7 +678,7 @@ TEST_CASE("http::request_connect_impl fails without an url") {
                              [=](Error error, Var<Transport>) {
                                  REQUIRE(error == MissingUrlError());
                                  reactor->stop();
-                             });
+                             }, reactor);
     });
 }
 
@@ -689,7 +689,7 @@ TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
                              [=](Error error, Var<Transport>) {
                                  REQUIRE(error == UrlParserError());
                                  reactor->stop();
-                             });
+                             }, reactor);
     });
 }
 
@@ -709,7 +709,7 @@ TEST_CASE("http::request_send fails without url in settings") {
                                  REQUIRE(error == MissingUrlError());
                                  transport->close([=]() { reactor->stop(); });
                              });
-            });
+            }, reactor);
     });
 }
 
@@ -722,7 +722,7 @@ TEST_CASE("http::request() fails if fails request_send()") {
                 [=](Error error, Var<Response>) {
                     REQUIRE(error);
                     reactor->stop();
-                });
+                }, reactor);
     });
 }
 
@@ -818,31 +818,41 @@ static void fail_parsing(Settings, Headers, std::string,
 }
 
 TEST_CASE("request_json_string() works as expected") {
+    Var<Reactor> reactor = Reactor::make();
+
     SECTION("For underlying http::request() failure") {
-        request_json_string_impl<fail_request>(
+        reactor->run_with_initial_event([=]() {
+            request_json_string_impl<fail_request>(
               "GET", "http://www.google.com", "", {},
-              [](Error error, Var<Response>, nlohmann::json) {
+              [=](Error error, Var<Response>, nlohmann::json) {
                   REQUIRE(error == MockedError());
+                    reactor->stop();
               },
-              {}, Reactor::global(), Logger::global());
+              {}, reactor, Logger::global());
+        });
     }
 
     SECTION("For non-200 HTTP status code") {
-        request_json_string_impl<non_200_response>(
+        reactor->run_with_initial_event([=]() {
+            request_json_string_impl<non_200_response>(
               "GET", "http://www.google.com", "", {},
-              [](Error error, Var<Response> resp, nlohmann::json) {
+              [=](Error error, Var<Response> resp, nlohmann::json) {
                   REQUIRE(error.code == NoError().code);
                   REQUIRE(resp->status_code != 200);
+                  reactor->stop();
               },
-              {}, Reactor::global(), Logger::global());
+              {}, reactor, Logger::global());
+        });
     }
 
     SECTION("For json_parse_and_process() error") {
-        request_json_string_impl<fail_parsing>(
+        reactor->run_with_initial_event([=]() {
+            request_json_string_impl<fail_parsing>(
               "GET", "http://www.google.com", "{}", {},
-              [](Error error, Var<Response>, nlohmann::json) {
+              [=](Error error, Var<Response>, nlohmann::json) {
                   REQUIRE(error == JsonParseError());
               },
-              {}, Reactor::global(), Logger::global());
+              {}, reactor, Logger::global());
+        });
     }
 }
