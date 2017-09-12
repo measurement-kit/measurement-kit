@@ -60,7 +60,7 @@ TEST_CASE("dns query template works as expected") {
                         reactor->stop();
                     },
                     {{"dns/timeout", 0.3}, {"dns/attempts", 1},
-                     {"dns/engine", "libevent"}});
+                     {"dns/engine", "libevent"}}, reactor);
             }, {{"dns/engine", "libevent"}}, reactor);
     });
 }

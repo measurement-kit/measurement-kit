@@ -350,11 +350,15 @@ TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
 
 TEST_CASE("http::request() callback is called if input URL parsing fails") {
     bool called = false;
-    request({}, {}, "",
-            [&called](Error err, Var<Response>) {
+    Var<Reactor> reactor;
+    reactor->run_with_initial_event([=, &called]() {
+        request({}, {}, "",
+            [=, &called](Error err, Var<Response>) {
                 called = true;
                 REQUIRE(err == MissingUrlError());
-            });
+                reactor->stop();
+            }, reactor);
+    });
     REQUIRE(called);
 }
 
@@ -487,7 +491,7 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
                                 REQUIRE(r->body.size() > 0);
                                 transport->close([=]() { reactor->stop(); });
                             }, reactor);
-                    });
+                    }, reactor);
             }, reactor);
     });
 }
