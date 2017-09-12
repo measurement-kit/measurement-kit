@@ -4,16 +4,16 @@
 #ifndef MEASUREMENT_KIT_COMMON_DETAIL_PARALLEL_HPP
 #define MEASUREMENT_KIT_COMMON_DETAIL_PARALLEL_HPP
 
-#include <algorithm>                                      // for std::move, ...
-#include <cstddef>                                        // for size_t
-#include <deque>                                          // for std::deque
-#include <functional>                                     // for std::function
-#include <measurement_kit/common/detail/continuation.hpp> // for mk::Continuation
-#include <measurement_kit/common/error.hpp>               // for mk::Error, ...
-#include <measurement_kit/common/var.hpp>                 // for mk::Var, ...
-#include <memory>                                         // for std::shared_ptr
-#include <mutex>     // for std::unique_lock, ...
-#include <stdexcept> // for std::runtime_error
+#include <algorithm>                               // for std::move, ...
+#include <cstddef>                                 // for size_t
+#include <deque>                                   // for std::deque
+#include <functional>                              // for std::function
+#include <measurement_kit/common/continuation.hpp> // for mk::Continuation
+#include <measurement_kit/common/error.hpp>        // for mk::Error, ...
+#include <measurement_kit/common/var.hpp>          // for mk::Var, ...
+#include <memory>                                  // for std::shared_ptr
+#include <mutex>                                   // for std::unique_lock, ...
+#include <stdexcept>                               // for std::runtime_error
 
 namespace mk {
 
@@ -31,7 +31,7 @@ class ParallelCallback {
     };
 
     ParallelCallback(size_t parallelism, const std::function<void(Error)> &&cb)
-        : impl_{mk::make_shared<Impl>(parallelism, std::move(cb))} {}
+        : impl_{std::make_shared<Impl>(parallelism, std::move(cb))} {}
 
     void operator()(Error error) const {
         std::unique_lock<std::recursive_mutex> _{impl_->mutex};
@@ -50,7 +50,7 @@ class ParallelCallback {
     }
 
   private:
-    Var<Imp> impl_;
+    Var<Impl> impl_;
 };
 
 class ParallelExecutor {
@@ -64,7 +64,7 @@ class ParallelExecutor {
     };
 
     ParallelExecutor(std::function<void(Error)> &&callback)
-        : impl_{mk::make_shared<Impl>(std::move(callback))} {}
+        : impl_{std::make_shared<Impl>(std::move(callback))} {}
 
     ParallelExecutor &add(Continuation<Error> &&cc) {
         std::unique_lock<std::recursive_mutex> _{impl_->mutex};

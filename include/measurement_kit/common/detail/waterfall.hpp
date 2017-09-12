@@ -4,15 +4,15 @@
 #ifndef MEASUREMENT_KIT_COMMON_DETAIL_WATERFALL_HPP
 #define MEASUREMENT_KIT_COMMON_DETAIL_WATERFALL_HPP
 
-#include <algorithm>                                      // for std::move, ...
-#include <cstddef>                                        // for size_t
-#include <deque>                                          // for std::deque
-#include <functional>                                     // for std::function
-#include <measurement_kit/common/detail/continuation.hpp> // for mk::Continuation
-#include <measurement_kit/common/error.hpp>               // for mk::Error, ...
-#include <measurement_kit/common/var.hpp>                 // for mk::Var, ...
-#include <memory>                                         // for std::shared_ptr
-#include <mutex> // for std::unique_lock, ...
+#include <algorithm>                               // for std::move, ...
+#include <cstddef>                                 // for size_t
+#include <deque>                                   // for std::deque
+#include <functional>                              // for std::function
+#include <measurement_kit/common/continuation.hpp> // for mk::Continuation
+#include <measurement_kit/common/error.hpp>        // for mk::Error, ...
+#include <measurement_kit/common/var.hpp>          // for mk::Var, ...
+#include <memory>                                  // for std::shared_ptr
+#include <mutex>                                   // for std::unique_lock, ...
 
 namespace mk {
 
@@ -27,7 +27,7 @@ class WaterfallExecutor {
     };
 
     WaterfallExecutor(std::function<void(Error)> &&callback)
-        : impl_{mk::make_shared<Impl>(std::move(callback))} {}
+        : impl_{std::make_shared<Impl>(std::move(callback))} {}
 
     WaterfallExecutor &add(Continuation<Error> &&cc) {
         std::unique_lock<std::recursive_mutex> _{impl_->mutex};
