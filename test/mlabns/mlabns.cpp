@@ -25,7 +25,7 @@ TEST_CASE("Query works as expected") {
                           REQUIRE(!error);
                           reactor->stop();
                       },
-                      settings);
+                      settings, reactor);
     });
 }
 
@@ -45,7 +45,7 @@ TEST_CASE("Query can pass the settings to the dns level") {
                           REQUIRE(error);
                           reactor->stop();
                       },
-                      settings);
+                      settings, reactor);
     });
 }
 
@@ -66,7 +66,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid "
                           REQUIRE(error);
                           reactor->stop();
                       },
-                      settings);
+                      settings, reactor);
     });
 }
 
@@ -85,7 +85,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid metro "
                           REQUIRE(error);
                           reactor->stop();
                       },
-                      settings);
+                      settings, reactor);
     });
 }
 
@@ -104,7 +104,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid policy "
                           REQUIRE(error);
                           reactor->stop();
                       },
-                      settings);
+                      settings, reactor);
     });
 }
 
@@ -123,7 +123,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
                           REQUIRE(error);
                           reactor->stop();
                       },
-                      settings);
+                      settings, reactor);
     });
 }
 
@@ -150,7 +150,7 @@ TEST_CASE(
                                                 reactor->stop();
                                             },
                                             settings,
-                                            Reactor::global(),
+                                            reactor,
                                             Logger::global());
     });
 }
@@ -187,7 +187,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
                 REQUIRE(error == JsonKeyError());
                 reactor->stop();
             },
-            settings, Reactor::global(), Logger::global());
+            settings, reactor, Logger::global());
     });
 }
 
@@ -223,6 +223,6 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
                 REQUIRE(error == JsonDomainError());
                 reactor->stop();
             },
-            settings, Reactor::global(), Logger::global());
+            settings, reactor, Logger::global());
     });
 }
