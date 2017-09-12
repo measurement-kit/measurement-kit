@@ -4,19 +4,15 @@
 #ifndef PRIVATE_OONI_RESOURCES_IMPL_HPP
 #define PRIVATE_OONI_RESOURCES_IMPL_HPP
 
-#include "private/common/mock.hpp"
-#include "private/common/parallel.hpp"
-
-#include "private/common/mock.hpp"
-#include "private/common/parallel.hpp"
+#include <measurement_kit/common/detail/mock.hpp>
+#include <measurement_kit/common/detail/parallel.hpp>
+#include <measurement_kit/common/detail/utils.hpp>
 
 #include <fstream>
 #include <regex>
 
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/ooni.hpp>
-
-#include "../common/utils.hpp"
 
 namespace mk {
 namespace ooni {

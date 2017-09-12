@@ -3,6 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "private/ooni/collector_client_impl.hpp"
+#include <regex>
 
 namespace mk {
 namespace ooni {

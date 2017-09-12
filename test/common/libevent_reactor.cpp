@@ -5,8 +5,8 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include "private/common/utils.hpp"
-#include "private/libevent/reactor.hpp"
+#include <measurement_kit/common/detail/utils.hpp>
+#include <measurement_kit/common/libevent/reactor.hpp>
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

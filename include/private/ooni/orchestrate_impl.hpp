@@ -4,13 +4,13 @@
 #ifndef PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 #define PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 
-#include "private/common/fcompose.hpp"
-#include "private/common/json.hpp"
-#include "private/common/mock.hpp"
+#include <measurement_kit/common/detail/fcompose.hpp>
+#include <measurement_kit/common/detail/json.hpp>
+#include <measurement_kit/common/detail/mock.hpp>
+#include <measurement_kit/common/detail/utils.hpp>
 
 #include <measurement_kit/ooni.hpp>
 
-#include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
 
 namespace mk {

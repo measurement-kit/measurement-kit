@@ -1,18 +1,18 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
+#ifndef MEASUREMENT_KIT_COMMON_DETAIL_ENCODING_HPP
+#define MEASUREMENT_KIT_COMMON_DETAIL_ENCODING_HPP
 
+#include <measurement_kit/common/error.hpp>
 #include "private/portable/citrus_adapt.h"
-#include "private/common/encoding_base64_impl.hpp"
-#include "private/common/encoding.hpp"
-
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/common/detail/base64_encode_.hpp>
 
 #include <cassert>
 
 namespace mk {
 
-Error is_valid_utf8_string(const std::string &s) {
+inline Error is_valid_utf8_string(const std::string &s) {
     _utf8_state state = {};
     size_t r = 1;
     for (char c : s) {
@@ -42,8 +42,9 @@ Error is_valid_utf8_string(const std::string &s) {
     return NoError();
 }
 
-std::string base64_encode(std::string s) {
+inline std::string base64_encode(std::string s) {
     return base64_encode_impl((const uint8_t *)s.data(), s.size());
 }
 
 } // namespace mk
+#endif
