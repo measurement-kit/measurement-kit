@@ -4,11 +4,8 @@
 #ifndef PRIVATE_HTTP_REQUEST_IMPL_HPP
 #define PRIVATE_HTTP_REQUEST_IMPL_HPP
 
-#include "private/common/json.hpp"
-#include "private/common/mock.hpp"
-
-#include "private/common/json.hpp"
-#include "private/common/mock.hpp"
+#include <measurement_kit/common/detail/json.hpp>
+#include <measurement_kit/common/detail/mock.hpp>
 
 #include "../http/response_parser.hpp"
 

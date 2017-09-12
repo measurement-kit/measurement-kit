@@ -5,7 +5,7 @@
 #include <measurement_kit/ooni.hpp>
 
 #include "private/ooni/orchestrate_impl.hpp"
-#include "private/common/worker.hpp"
+#include <measurement_kit/common/detail/worker.hpp>
 
 namespace mk {
 namespace ooni {

@@ -4,9 +4,8 @@
 #ifndef PRIVATE_NET_CONNECT_IMPL_HPP
 #define PRIVATE_NET_CONNECT_IMPL_HPP
 
-#include "private/common/mock.hpp"
-
-#include "private/common/mock.hpp"
+#include <measurement_kit/common/detail/mock.hpp>
+#include <measurement_kit/common/detail/utils.hpp>
 
 #include <measurement_kit/net.hpp>
 
@@ -15,7 +14,6 @@
 #include <cerrno>
 #include <sstream>
 
-#include "../common/utils.hpp"
 #include "../net/connect.hpp"
 #include "../net/utils.hpp"
 
