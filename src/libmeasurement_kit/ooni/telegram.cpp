@@ -15,13 +15,12 @@ namespace ooni {
 using namespace mk::report;
 
 static void tcp_many(const std::vector<std::string> ip_ports, Var<Entry> entry,
-    Settings options, Var<Reactor> reactor, Var<Logger> logger,
-    Callback<Error> all_done_cb) {
+        Settings options, Var<Reactor> reactor, Var<Logger> logger,
+        Callback<Error> all_done_cb) {
     // if any endpoints are unblocked, switch this to false
     (*entry)["telegram_tcp_blocking"] = true;
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
         return [=](Error connect_error, Var<net::Transport> txp) {
-            bool close_txp = true; // if connected, we must disconnect
             Entry result = {
                 {"ip", ip}, {"port", port},
                 {"status", {{"success", nullptr}, {"failure", nullptr}}},
@@ -31,7 +30,6 @@ static void tcp_many(const std::vector<std::string> ip_ports, Var<Entry> entry,
                     ip.c_str(), port);
                 result["status"]["success"] = false;
                 result["status"]["failure"] = connect_error.as_ooni_error();
-                close_txp = false;
             } else {
                 logger->info("telegram: success TCP connecting to %s:%d",
                     ip.c_str(), port);
@@ -39,11 +37,8 @@ static void tcp_many(const std::vector<std::string> ip_ports, Var<Entry> entry,
                 (*entry)["telegram_tcp_blocking"] = true;
             }
             (*entry)["tcp_connect"].push_back(result);
-            if (close_txp == true) {
-                txp->close([=] { done_cb(connect_error); });
-            } else {
-                done_cb(connect_error);
-            }
+            txp->close(nullptr);
+            done_cb(connect_error);
         };
     };
 
@@ -52,8 +47,8 @@ static void tcp_many(const std::vector<std::string> ip_ports, Var<Entry> entry,
         std::list<std::string> ip_port_l = split(ip_port, ":");
         if (ip_port_l.size() != 2) {
             logger->warn("Couldn't split ip_port: %s", ip_port.c_str());
-            // (*entry)["failure"] = ValueError().as_ooni_error();
-            // callback(entry);
+            (*entry)["failure"] = ValueError().as_ooni_error();
+            callback(entry);
             return;
         }
         std::string ip = ip_port_l.front();
@@ -61,8 +56,6 @@ static void tcp_many(const std::vector<std::string> ip_ports, Var<Entry> entry,
 
         options["host"] = ip;
         options["port"] = port;
-        options["net/timeout"] =
-            10.0; // XXX maybe check if this was set upstream?
         continuations.push_back([=](Callback<Error> done_cb) {
             templates::tcp_connect(
                 options, connected_cb(ip, port, done_cb), reactor, logger);
@@ -170,8 +163,6 @@ void telegram(Settings options, Callback<Var<report::Entry>> callback,
         logger->info("calling final callback");
         callback(entry);
     });
-
-    return;
 }
 
 } // namespace ooni
