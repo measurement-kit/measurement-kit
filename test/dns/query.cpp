@@ -293,7 +293,7 @@ TEST_CASE("The libevent resolver works as expected") {
             REQUIRE(message->rtt > 0.0);
             REQUIRE(message->answers[0].ttl > 0);
             reactor->stop();
-        }, {{"dns/engine", "libevent"}});
+        }, {{"dns/engine", "libevent"}}, reactor);
     });
 
     reactor->run_with_initial_event([=]() {
@@ -306,7 +306,7 @@ TEST_CASE("The libevent resolver works as expected") {
                 REQUIRE(message->rtt > 0.0);
                 REQUIRE(message->answers[0].ttl > 0);
                 reactor->stop();
-            }, {{"dns/engine", "libevent"}});
+            }, {{"dns/engine", "libevent"}}, reactor);
     });
 
     reactor->run_with_initial_event([=]() {
@@ -319,7 +319,7 @@ TEST_CASE("The libevent resolver works as expected") {
             REQUIRE(message->rtt > 0.0);
             REQUIRE(message->answers[0].ttl > 0);
             reactor->stop();
-        }, {{"dns/engine", "libevent"}});
+        }, {{"dns/engine", "libevent"}}, reactor);
     });
 
     reactor->run_with_initial_event([=]() {
@@ -338,7 +338,7 @@ TEST_CASE("The libevent resolver works as expected") {
                   }
                   REQUIRE(found);
                   reactor->stop();
-              }, {{"dns/engine", "libevent"}});
+              }, {{"dns/engine", "libevent"}}, reactor);
     });
 
     reactor->run_with_initial_event([=]() {
@@ -351,7 +351,7 @@ TEST_CASE("The libevent resolver works as expected") {
                   REQUIRE(message->rtt > 0.0);
                   REQUIRE(message->answers[0].ttl > 0);
                   reactor->stop();
-              }, {{"dns/engine", "libevent"}});
+              }, {{"dns/engine", "libevent"}}, reactor);
     });
 
     reactor->run_with_initial_event([=]() {
@@ -365,7 +365,7 @@ TEST_CASE("The libevent resolver works as expected") {
                   REQUIRE(message->rtt > 0.0);
                   REQUIRE(message->answers[0].ttl > 0);
                   reactor->stop();
-              }, {{"dns/engine", "libevent"}});
+              }, {{"dns/engine", "libevent"}}, reactor);
     });
 }
 

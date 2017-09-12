@@ -230,7 +230,7 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
                                               REQUIRE(r->status_code == 200);
                                               ++called;
                                               reactor->stop();
-                                          }, reactor, logger);
+                                          }, {}, reactor, logger);
 
                     Buffer data;
                     data << "HTTP/1.1 200 Ok\r\n";
