@@ -5,7 +5,8 @@
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
 #include <measurement_kit/common/aaa_base.hpp>
-#include <measurement_kit/common/delegate.hpp>
+#include <measurement_kit/common/callback.hpp>
+#include <measurement_kit/common/detail/delegate.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/var.hpp>
@@ -47,13 +48,13 @@ class Logger : public NonCopyable, public NonMovable {
     void increase_verbosity();
     uint32_t get_verbosity() { return verbosity_; }
 
-    void on_log(Delegate<uint32_t, const char *> fn) { consumer_ = fn; }
+    void on_log(Callback<uint32_t, const char *> fn) { consumer_ = fn; }
 
-    void on_eof(Delegate<> fn);
+    void on_eof(Callback<> fn);
 
-    void on_event(Delegate<const char *> fn);
+    void on_event(Callback<const char *> fn);
 
-    void on_progress(Delegate<double, const char *> fn);
+    void on_progress(Callback<double, const char *> fn);
 
     void set_logfile(std::string fpath);
 
@@ -97,7 +98,7 @@ inline void set_verbosity(uint32_t v) { Logger::global()->set_verbosity(v); }
 inline void increase_verbosity() { Logger::global()->increase_verbosity(); }
 inline uint32_t get_verbosity() { return Logger::global()->get_verbosity(); }
 
-inline void on_log(Delegate<uint32_t, const char *> fn) {
+inline void on_log(Callback<uint32_t, const char *> fn) {
     Logger::global()->on_log(fn);
 }
 
