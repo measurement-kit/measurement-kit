@@ -258,7 +258,7 @@ TEST_CASE("http::request_recv_response() deals with immediate EOF") {
                                               REQUIRE(!!r);
                                               reactor->stop();
                                           },
-                                          reactor);
+                                          {}, reactor);
                     transport->emit_error(EofError());
                 },
                 {// With this connect() succeeds immediately and the

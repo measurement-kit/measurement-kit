@@ -142,7 +142,7 @@ void request_maybe_send(ErrorOr<Var<Request>>, Var<net::Transport>,
                         Var<Logger>, Callback<Error, Var<Request>>);
 
 void request_recv_response(Var<net::Transport>, Callback<Error, Var<Response>>,
-                           Var<Reactor> = Reactor::global(),
+                           Settings = {}, Var<Reactor> = Reactor::global(),
                            Var<Logger> = Logger::global());
 
 void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
@@ -153,6 +153,7 @@ void request_sendrecv(Var<net::Transport>, Settings, Headers, std::string,
 // Same as above except that the optional Request is passed in explicitly
 void request_maybe_sendrecv(ErrorOr<Var<Request>>, Var<net::Transport>,
                             Callback<Error, Var<Response>>,
+                            Settings = {},
                             Var<Reactor> = Reactor::global(),
                             Var<Logger> = Logger::global());
 
