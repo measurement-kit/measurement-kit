@@ -10,6 +10,7 @@
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
+#include <regex>
 
 using json = nlohmann::json;
 

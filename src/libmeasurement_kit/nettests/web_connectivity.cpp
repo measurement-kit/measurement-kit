@@ -2,8 +2,8 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "private/common/utils.hpp"
 #include "private/nettests/runnable.hpp"
-
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ooni.hpp>
 

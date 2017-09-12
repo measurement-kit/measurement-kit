@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include <random>
+#include <regex>
 
 namespace mk {
 namespace nettests {
