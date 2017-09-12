@@ -30,8 +30,8 @@ class MockConnection : public Emitter, public NonCopyable, public NonMovable {
     // this functionality directly to Emitter
 
   public:
-    static Var<Transport> make() {
-        MockConnection *conn = new MockConnection;
+    static Var<Transport> make(Var<Reactor> reactor) {
+        MockConnection *conn = new MockConnection{reactor};
         conn->self = Var<Transport>(conn);
         return conn->self;
     }
@@ -49,7 +49,7 @@ class MockConnection : public Emitter, public NonCopyable, public NonMovable {
     Callback<> close_cb;
     Var<Transport> self;
 
-    MockConnection() : Emitter(Reactor::global(), Logger::global()) {}
+    MockConnection(Var<Reactor> reactor) : Emitter(reactor, Logger::global()) {}
 };
 
 void MockConnection::close(Callback<> cb) {
@@ -71,11 +71,15 @@ void MockConnection::close(Callback<> cb) {
 */
 
 TEST_CASE("collector:post deals with missing URL") {
-    collector::post_impl(nullptr, "", "",
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        collector::post_impl(nullptr, "", "",
                          [=](Error err, nlohmann::json) {
                              REQUIRE(err == MissingCollectorBaseUrlError());
+                             reactor->stop();
                          },
-                         {}, Reactor::global(), Logger::global());
+                         {}, reactor, Logger::global());
+    });
 }
 
 static void fail(Var<Transport>, Settings, Headers, std::string,
@@ -88,12 +92,16 @@ const static Settings SETTINGS = {
 };
 
 TEST_CASE("collector::post deals with network error") {
-    collector::post_impl<fail>(nullptr, "", "",
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        collector::post_impl<fail>(nullptr, "", "",
                                [=](Error err, nlohmann::json r) {
                                    REQUIRE(err == MockedError());
                                    REQUIRE(r == nullptr);
+                                   reactor->stop();
                                },
-                               SETTINGS, Reactor::global(), Logger::global());
+                               SETTINGS, reactor, Logger::global());
+    });
 }
 
 static void five_hundred(Var<Transport>, Settings, Headers, std::string,
@@ -105,13 +113,17 @@ static void five_hundred(Var<Transport>, Settings, Headers, std::string,
 }
 
 TEST_CASE("collector::post deals with unexpected response") {
-    collector::post_impl<five_hundred>(
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        collector::post_impl<five_hundred>(
         nullptr, "", "",
         [=](Error err, nlohmann::json r) {
             REQUIRE(err == HttpRequestFailedError());
             REQUIRE(r == nullptr);
+            reactor->stop();
         },
-        SETTINGS, Reactor::global(), Logger::global());
+        SETTINGS, reactor, Logger::global());
+    });
 }
 
 static void empty(Var<Transport>, Settings, Headers, std::string,
@@ -123,12 +135,16 @@ static void empty(Var<Transport>, Settings, Headers, std::string,
 }
 
 TEST_CASE("collector::post deals with empty response") {
-    collector::post_impl<empty>(nullptr, "", "",
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        collector::post_impl<empty>(nullptr, "", "",
                                 [=](Error err, nlohmann::json r) {
                                     REQUIRE(err == NoError());
                                     REQUIRE(r == nullptr);
+                                    reactor->stop();
                                 },
-                                SETTINGS, Reactor::global(), Logger::global());
+                                SETTINGS, reactor, Logger::global());
+    });
 }
 
 static void invalid_json(Var<Transport>, Settings, Headers, std::string,
@@ -141,21 +157,29 @@ static void invalid_json(Var<Transport>, Settings, Headers, std::string,
 }
 
 TEST_CASE("collector::post deals with invalid json") {
-    collector::post_impl<invalid_json>(nullptr, "", "",
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        collector::post_impl<invalid_json>(nullptr, "", "",
                                        [=](Error err, nlohmann::json r) {
                                            REQUIRE(err == JsonParseError());
                                            REQUIRE(r == nullptr);
+                                           reactor->stop();
                                        },
-                                       SETTINGS, Reactor::global(),
+                                       SETTINGS, reactor,
                                        Logger::global());
+    });
 }
 
-TEST_CASE("collector:connect deals with missing URL") {
-    collector::connect_impl({},
+TEST_CASE("collector::connect deals with missing URL") {
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        collector::connect_impl({},
                             [=](Error err, Var<Transport>) {
                                 REQUIRE(err == MissingCollectorBaseUrlError());
+                                reactor->stop();
                             },
-                            Reactor::global(), Logger::global());
+                            reactor, Logger::global());
+    });
 }
 
 static void fail(Var<Transport>, std::string, std::string,
@@ -213,34 +237,46 @@ static Entry BAD_ENTRY{
 };
 
 TEST_CASE("collector::create_report deals with entry with missing key") {
-    Entry entry;
-    collector::create_report_impl<fail>(
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        Entry entry;
+        collector::create_report_impl<fail>(
         nullptr, entry,
         [=](Error err, std::string s) {
             REQUIRE(err == MissingMandatoryKeyError());
             REQUIRE(s == "");
+            reactor->stop();
         },
-        {}, Reactor::global(), Logger::global());
+        {}, reactor, Logger::global());
+    });
 }
 
 TEST_CASE("collector::create_report deals with entry with invalid value") {
-    collector::create_report_impl<fail>(
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        collector::create_report_impl<fail>(
         nullptr, BAD_ENTRY,
         [=](Error err, std::string s) {
             REQUIRE(err == InvalidMandatoryValueError());
             REQUIRE(s == "");
+            reactor->stop();
         },
-        {}, Reactor::global(), Logger::global());
+        {}, reactor, Logger::global());
+    });
 }
 
 TEST_CASE("collector::create_report deals with POST error") {
-    collector::create_report_impl<fail>(nullptr, ENTRY,
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        collector::create_report_impl<fail>(nullptr, ENTRY,
                                         [=](Error err, std::string s) {
                                             REQUIRE(err == MockedError());
                                             REQUIRE(s == "");
+                                            reactor->stop();
                                         },
-                                        {}, Reactor::global(),
+                                        {}, reactor,
                                         Logger::global());
+    });
 }
 
 static void wrong_json_type(Var<Transport>, std::string, std::string,
@@ -250,13 +286,17 @@ static void wrong_json_type(Var<Transport>, std::string, std::string,
 }
 
 TEST_CASE("collector::create_report deals with wrong JSON type") {
-    collector::create_report_impl<wrong_json_type>(
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        collector::create_report_impl<wrong_json_type>(
         nullptr, ENTRY,
         [=](Error err, std::string s) {
             REQUIRE(err == JsonDomainError());
             REQUIRE(s == "");
+            reactor->stop();
         },
-        {}, Reactor::global(), Logger::global());
+        {}, reactor, Logger::global());
+    });
 }
 
 static void missing_report_id(Var<Transport>, std::string, std::string,
@@ -267,23 +307,31 @@ static void missing_report_id(Var<Transport>, std::string, std::string,
 }
 
 TEST_CASE("collector::create_report deals with missing report_id") {
-    collector::create_report_impl<missing_report_id>(
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        collector::create_report_impl<missing_report_id>(
         nullptr, ENTRY,
         [=](Error err, std::string s) {
             REQUIRE(err == JsonKeyError());
             REQUIRE(s == "");
+            reactor->stop();
         },
-        {}, Reactor::global(), Logger::global());
+        {}, reactor, Logger::global());
+    });
 }
 
 TEST_CASE("collector::update_report deals with entry with missing key") {
-    Entry entry;
-    collector::update_report_impl<fail>(
+    Var<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        Entry entry;
+        collector::update_report_impl<fail>(
         nullptr, "xx", entry,
         [=](Error err) {
             REQUIRE(err == MissingMandatoryKeyError());
+            reactor->stop();
         },
-        {}, Reactor::global(), Logger::global());
+        {}, reactor, Logger::global());
+    });
 }
 
 TEST_CASE("collector::get_next_entry() works correctly at EOF") {
@@ -324,12 +372,12 @@ TEST_CASE("update_and_fetch_next() deals with update_report error") {
     Var<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         collector::update_and_fetch_next_impl<fail>(
-            nullptr, MockConnection::make(), "", 1, {},
+            nullptr, MockConnection::make(reactor), "", 1, {},
             [=](Error err) {
                 REQUIRE(err == MockedError());
                 reactor->stop();
             },
-            {}, Reactor::global(), Logger::global());
+            {}, reactor, Logger::global());
     });
 }
 
@@ -346,12 +394,12 @@ TEST_CASE("update_and_fetch_next() deals with get_next_entry error") {
     Var<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         collector::update_and_fetch_next_impl<success, fail>(
-            nullptr, MockConnection::make(), "", 1, {},
+            nullptr, MockConnection::make(reactor), "", 1, {},
             [=](Error err) {
                 REQUIRE(err == MockedError());
                 reactor->stop();
             },
-            {}, Reactor::global(), Logger::global());
+            {}, reactor, Logger::global());
     });
 }
 
@@ -364,7 +412,7 @@ TEST_CASE("submit_report() deals with invalid file") {
                 REQUIRE(err == CannotOpenReportError());
                 reactor->stop();
             },
-            {}, Reactor::global(), Logger::global());
+            {}, reactor, Logger::global());
     });
 }
 
@@ -403,9 +451,9 @@ TEST_CASE("submit_report() deals with collector_connect error") {
     });
 }
 
-static void success(Settings, Callback<Error, Var<Transport>> cb, Var<Reactor>,
-                    Var<Logger>) {
-    cb(NoError(), MockConnection::make());
+static void success(Settings, Callback<Error, Var<Transport>> cb,
+                    Var<Reactor> reactor, Var<Logger>) {
+    cb(NoError(), MockConnection::make(reactor));
 }
 
 static void fail(Var<Transport>, Entry, Callback<Error, std::string> cb,
@@ -445,7 +493,7 @@ TEST_CASE("The collector client works as expected") {
                                  [=](Error err) {
                                      REQUIRE(err == NoError());
                                      reactor->stop();
-                                 });
+                                 }, {}, reactor);
     });
 }
 

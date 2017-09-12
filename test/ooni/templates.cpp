@@ -61,7 +61,7 @@ TEST_CASE("dns query template works as expected") {
                     },
                     {{"dns/timeout", 0.3}, {"dns/attempts", 1},
                      {"dns/engine", "libevent"}});
-            }, {{"dns/engine", "libevent"}});
+            }, {{"dns/engine", "libevent"}}, reactor);
     });
 }
 
@@ -72,7 +72,7 @@ TEST_CASE("tcp connect returns error if port is missing") {
             REQUIRE(err);
             REQUIRE(txp == nullptr);
             reactor->stop();
-        });
+        }, reactor);
     });
 }
 
@@ -86,7 +86,7 @@ TEST_CASE("tcp connect returns error if port is invalid") {
                                    REQUIRE(err);
                                    REQUIRE(txp == nullptr);
                                    reactor->stop();
-                               });
+                               }, reactor);
     });
 }
 
@@ -130,8 +130,8 @@ TEST_CASE("http requests template works as expected") {
                         REQUIRE(req.is_object());
                         REQUIRE((req["failure"] != nullptr));
                         reactor->stop();
-                    });
-            });
+                    }, reactor);
+            }, reactor);
     });
 }
 

@@ -22,10 +22,10 @@ using namespace mk;
 TEST_CASE("Typical IPv4 traceroute usage") {
 
     std::string payload(256, '\0');
-    auto prober = Prober<AndroidProber>(true, 11829);
+    Var<Reactor> reactor = Reactor::make();
+    auto prober = Prober<AndroidProber>(true, 11829, reactor);
     auto ttl = 1;
 
-    Var<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([&]() {
         prober.on_result([&](ProbeResult r) {
             std::cout << ttl << " " << r.interface_ip << " " << r.rtt
@@ -63,9 +63,9 @@ TEST_CASE("Typical IPv4 traceroute usage") {
 TEST_CASE("Check whether it works when destination sends reply") {
 
     std::string payload(256, '\0');
-    auto prober = Prober<AndroidProber>(true, 11829);
-    auto ttl = 1;
     Var<Reactor> reactor = Reactor::make();
+    auto prober = Prober<AndroidProber>(true, 11829, reactor);
+    auto ttl = 1;
 
     reactor->run_with_initial_event([&]() {
         prober.on_result([&](ProbeResult r) {
