@@ -48,7 +48,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, Var<Entry> entry,
         if (ip_port_l.size() != 2) {
             logger->warn("Couldn't split ip_port: %s", ip_port.c_str());
             (*entry)["failure"] = ValueError().as_ooni_error();
-            callback(entry);
+            all_done_cb(ValueError());
             return;
         }
         std::string ip = ip_port_l.front();
