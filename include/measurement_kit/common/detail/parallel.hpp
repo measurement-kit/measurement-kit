@@ -1,16 +1,17 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
+#ifndef MEASUREMENT_KIT_COMMON_DETAIL_PARALLEL_HPP
+#define MEASUREMENT_KIT_COMMON_DETAIL_PARALLEL_HPP
 
-#include <measurement_kit/common.hpp>
-
-#include "private/common/parallel.hpp"
+#include <measurement_kit/common/continuation.hpp>
+#include <measurement_kit/common/error.hpp>
 
 namespace mk {
 
-static void run(
-        size_t idx, std::vector<Continuation<Error>> input, Callback<Error> cb,
-        Var<Error> overall, Var<size_t> completed, size_t parallelism) {
+static inline void run(size_t idx, std::vector<Continuation<Error>> input,
+                       Callback<Error> cb, Var<Error> overall,
+                       Var<size_t> completed, size_t parallelism) {
     if (idx < input.size()) {
         input[idx]([=](Error error) {
             // XXX: code not thread safe, to make thread safe we could
@@ -37,8 +38,8 @@ static void run(
     }
 }
 
-void parallel(std::vector<Continuation<Error>> input, Callback<Error> cb,
-              size_t parallelism) {
+static inline void parallel(std::vector<Continuation<Error>> input,
+                            Callback<Error> cb, size_t parallelism = 0) {
     Var<Error> overall(new Error(NoError()));
     if (input.size() <= 0) {
         cb(*overall);
@@ -62,3 +63,4 @@ void parallel(std::vector<Continuation<Error>> input, Callback<Error> cb,
 }
 
 } // namespace mk
+#endif

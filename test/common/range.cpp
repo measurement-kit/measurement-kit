@@ -5,9 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include "private/common/range.hpp"
-
-#include "private/common/range.hpp"
+#include <measurement_kit/common/detail/range.hpp>
 
 #include <measurement_kit/common.hpp>
 

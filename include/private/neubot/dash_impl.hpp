@@ -52,9 +52,9 @@
  *    seems anyway to be a reasonable starting point.)
  */
 
-#include "private/common/json.hpp"
-#include "private/common/mock.hpp"
-#include "private/common/utils.hpp"
+#include <measurement_kit/common/detail/json.hpp>
+#include <measurement_kit/common/detail/mock.hpp>
+#include <measurement_kit/common/detail/utils.hpp>
 #include <measurement_kit/ext/sole.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>

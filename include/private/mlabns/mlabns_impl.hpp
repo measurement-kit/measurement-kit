@@ -4,8 +4,8 @@
 #ifndef PRIVATE_MLABNS_MLABNS_IMPL_HPP
 #define PRIVATE_MLABNS_MLABNS_IMPL_HPP
 
-#include "private/common/json.hpp"
-#include "private/common/mock.hpp"
+#include <measurement_kit/common/detail/json.hpp>
+#include <measurement_kit/common/detail/mock.hpp>
 
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>

@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef PRIVATE_LIBEVENT_REACTOR_HPP
-#define PRIVATE_LIBEVENT_REACTOR_HPP
+#ifndef MEASUREMENT_KIT_COMMON_LIBEVENT_REACTOR_HPP
+#define MEASUREMENT_KIT_COMMON_LIBEVENT_REACTOR_HPP
 
 // # Libevent/reactor
 /*-
@@ -15,30 +15,28 @@
 /// \section Libevent/reactor
 /// \brief Header-only implementation of mk::Reactor based on libevent.
 
-#include "private/common/locked.hpp"               // for mk::locked_global
-#include "private/common/mock.hpp"                 // for MK_MOCK
-#include "private/common/worker.hpp"               // for mk::Worker
-#include "private/common/utils.hpp"                // for mk::timeval_init
-#include <cassert>                                 // for assert
-#include <event2/event.h>                          // for event_base_*
-#include <event2/thread.h>                         // for evthread_use_*
-#include <event2/util.h>                           // for evutil_socket_t
-#include <functional>                              // for std::function
-#include <measurement_kit/common/callback.hpp>     // for mk::Callback
-#include <measurement_kit/common/error.hpp>        // for mk::Error
-#include <measurement_kit/common/logger.hpp>       // for mk::warn
-#include <measurement_kit/common/non_copyable.hpp> // for mk::NonCopyable
-#include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
-#include <measurement_kit/common/reactor.hpp>      // for mk::Reactor
-#include <measurement_kit/common/socket.hpp>       // for mk::socket_t
-#include <measurement_kit/portable/netdb.h>        // for getaddrinfo
-#include <measurement_kit/portable/sys/socket.h>   // for socket
-#include <memory>                                  // for std::unique_ptr
-#include <signal.h>                                // for sigaction
-#include <stdexcept>                               // for std::runtime_error
-#include <system_error>                            // for std::error_condition
-#include <tuple>                                   // for std::tuple
-#include <utility>                                 // for std::move
+#include <cassert>                                  // for assert
+#include <event2/event.h>                           // for event_base_*
+#include <event2/thread.h>                          // for evthread_use_*
+#include <event2/util.h>                            // for evutil_socket_t
+#include <functional>                               // for std::function
+#include <measurement_kit/common/callback.hpp>      // for mk::Callback
+#include <measurement_kit/common/detail/locked.hpp> // for mk::locked_global
+#include <measurement_kit/common/detail/mock.hpp>   // for MK_MOCK
+#include <measurement_kit/common/detail/utils.hpp>  // for mk::timeval_init
+#include <measurement_kit/common/detail/worker.hpp> // for mk::Worker
+#include <measurement_kit/common/error.hpp>         // for mk::Error
+#include <measurement_kit/common/logger.hpp>        // for mk::warn
+#include <measurement_kit/common/non_copyable.hpp>  // for mk::NonCopyable
+#include <measurement_kit/common/non_movable.hpp>   // for mk::NonMovable
+#include <measurement_kit/common/reactor.hpp>       // for mk::Reactor
+#include <measurement_kit/common/socket.hpp>        // for mk::socket_t
+#include <memory>                                   // for std::unique_ptr
+#include <signal.h>                                 // for sigaction
+#include <stdexcept>                                // for std::runtime_error
+#include <system_error>                             // for std::error_condition
+#include <tuple>                                    // for std::tuple
+#include <utility>                                  // for std::move
 
 extern "C" {
 static inline void mk_call_later_cb(evutil_socket_t, short, void *);

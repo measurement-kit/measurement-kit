@@ -21,10 +21,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <measurement_kit/portable/sys/socket.h>
+#include <measurement_kit/common/portable/sys/socket.h>
 
-#include <measurement_kit/portable/arpa/inet.h>
-#include <measurement_kit/portable/netinet/in.h>
+#include <measurement_kit/common/portable/arpa/inet.h>
+#include <measurement_kit/common/portable/netinet/in.h>
 
 #include <string.h>
 
