@@ -24,6 +24,7 @@ using namespace mk::nettests;
     XX(multi_ndt)                                                              \
     XX(ndt)                                                                    \
     XX(tcp_connect)                                                            \
+    XX(telegram)                                                               \
     XX(web_connectivity)
 
 #define XX(_namespace_)                                                        \

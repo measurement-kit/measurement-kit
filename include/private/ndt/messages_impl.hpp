@@ -11,7 +11,7 @@
  */
 #define __STDC_LIMIT_MACROS
 
-#include "private/common/mock.hpp"
+#include <measurement_kit/common/detail/mock.hpp>
 
 #include "../ndt/internal.hpp"
 #include <cassert>

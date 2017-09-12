@@ -2,10 +2,8 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/fcompose.hpp"
-
+#include <measurement_kit/common/detail/fcompose.hpp>
 #include <measurement_kit/common.hpp>
-
 #include <iostream>
 
 static inline void fcompose_sync_example() {

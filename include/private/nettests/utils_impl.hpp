@@ -4,13 +4,14 @@
 #ifndef PRIVATE_NETTESTS_UTILS_IMPL_HPP
 #define PRIVATE_NETTESTS_UTILS_IMPL_HPP
 
-#include "private/common/mock.hpp"
+#include <measurement_kit/common/detail/mock.hpp>
 #include "../nettests/utils.hpp"
 
 #include <measurement_kit/ooni.hpp>
 
 #include <fstream>
 #include <random>
+#include <regex>
 
 namespace mk {
 namespace nettests {

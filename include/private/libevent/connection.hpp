@@ -6,6 +6,7 @@
 
 #include "private/net/emitter.hpp"
 #include "private/net/utils.hpp"
+#include <measurement_kit/common/detail/utils.hpp>
 #include <cassert>
 #include <cerrno>
 #include <event2/buffer.h>
@@ -19,12 +20,11 @@
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/reactor.hpp>
-#include <measurement_kit/common/utils.hpp>
 #include <measurement_kit/net/buffer.hpp>
 #include <measurement_kit/net/error.hpp>
 #include <measurement_kit/net/transport.hpp>
 #include <measurement_kit/net/utils.hpp>
-#include <measurement_kit/portable/sys/socket.h>
+#include <measurement_kit/common/portable/sys/socket.h>
 #include <new>
 #include <openssl/err.h>
 #include <ostream>

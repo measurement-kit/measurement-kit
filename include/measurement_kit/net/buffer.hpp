@@ -5,6 +5,7 @@
 #define MEASUREMENT_KIT_NET_BUFFER_HPP
 
 #include <measurement_kit/common.hpp>
+#include <cstring>
 
 struct evbuffer;
 
