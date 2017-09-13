@@ -163,8 +163,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                 ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
 
                 if (err) {
-                    std::string s = err.explain();
-                    logger->debug("ssl: handshake error: %s", s.c_str());
+                    logger->debug("ssl: handshake error: %s", err.what());
                     bufferevent_free(bev);
                     cb(err, nullptr);
                     return;

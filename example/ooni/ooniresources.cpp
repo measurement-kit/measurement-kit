@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
         mk::ooni::resources::get_latest_release(
             [=](Error error, std::string latest) {
                 if (error) {
-                    fprintf(stderr, "error: %s\n", error.explain().c_str());
+                    fprintf(stderr, "error: %s\n", error.what());
                     reactor->stop();
                     return;
                 }
@@ -43,8 +43,7 @@ int main(int argc, char **argv) {
                     latest, "ALL",
                     [=](Error error) {
                         if (error) {
-                            fprintf(stderr, "error: %s\n",
-                                    error.explain().c_str());
+                            fprintf(stderr, "error: %s\n", error.what());
                             /* FALLTHROUGH */
                         }
                         reactor->stop();

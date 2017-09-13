@@ -110,7 +110,7 @@ errors of the returned error:
                     debug("- %d succeeded", idx);
                     continue;
                 }
-                debug("- %d failed: %s", idx, child_err->explain().c_str());
+                debug("- %d failed: %s", idx, child_err->what());
                 idx += 1;
             }
             // Note: given that `open` is idempotent, here you can

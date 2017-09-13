@@ -218,8 +218,8 @@ void run_tests_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("Run test with id %d ...", *num);
     func(ctx, [=](Error err) {
         ctx->logger->debug("Run test with id %d ... complete (%s)", *num,
-                           err.explain().c_str());
-        (*ctx->entry)["phase_result"][id_to_name(*num)] = err.as_ooni_error();
+                           err.what());
+        (*ctx->entry)["phase_result"][id_to_name(*num)] = err.reason;
         run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx,
                                                                   callback);
     });

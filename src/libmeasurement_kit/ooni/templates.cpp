@@ -80,7 +80,7 @@ void dns_query(SharedPtr<Entry> entry, dns::QueryType query_type,
                            }
                        }
                    } else {
-                       (*query_entry)["failure"] = error.as_ooni_error();
+                       (*query_entry)["failure"] = error.reason;
                    }
                    // TODO add support for bytes received
                    // (*query_entry)["bytes"] = response.get_bytes();
@@ -129,7 +129,7 @@ void http_request(SharedPtr<Entry> entry, Settings settings, http::Headers heade
                 Entry rr;
 
                 if (!!error) {
-                    rr["failure"] = error.as_ooni_error();
+                    rr["failure"] = error.reason;
                 } else {
                     rr["failure"] = nullptr;
                 }

@@ -42,7 +42,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
                      nlohmann::json json_response) mutable {
               if (error) {
                   logger->warn("orchestrator: JSON API error: %s",
-                               error.explain().c_str());
+                               error.what());
                   cb(std::move(error), std::move(auth));
                   return;
               }
@@ -69,7 +69,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
                     });
               if (error) {
                   logger->warn("orchestrator: json processing error: %s",
-                               error.explain().c_str());
+                               error.what());
               }
               cb(std::move(error), std::move(auth));
           },
@@ -116,7 +116,7 @@ void register_probe_(const ClientMetadata &m, std::string password,
                                      nlohmann::json json_response) mutable {
               if (error) {
                   logger->warn("orchestrator: JSON API error: %s",
-                               error.as_ooni_error().c_str());
+                               error.what());
                   cb(std::move(error), std::move(auth));
                   return;
               }
@@ -136,7 +136,7 @@ void register_probe_(const ClientMetadata &m, std::string password,
                     });
               if (error) {
                   logger->warn("orchestrator: JSON processing error: %s",
-                               error.explain().c_str());
+                               error.what());
               } else {
                   logger->info("Registered probe with orchestrator as: '%s'",
                                auth.username.c_str());
@@ -222,7 +222,7 @@ void do_find_location(const ClientMetadata &m, SharedPtr<Reactor> reactor,
                   ErrorOr<std::string> x = callable(db, ip, logger);
                   if (!x) {
                       logger->warn("geoip failed for '%s': %s", ip.c_str(),
-                                   x.as_error().as_ooni_error().c_str());
+                                   x.as_error().what());
                       dest = fallback;
                       return;
                   }

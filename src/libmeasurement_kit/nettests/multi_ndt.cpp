@@ -80,8 +80,8 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
     logger->progress(0.0, "Starting single-stream test");
     ndt::run(ndt_entry, [=](Error ndt_error) {
         if (ndt_error) {
-            (*ndt_entry)["failure"] = ndt_error.as_ooni_error();
-            logger->warn("Test failed: %s", ndt_error.explain().c_str());
+            (*ndt_entry)["failure"] = ndt_error.reason;
+            logger->warn("Test failed: %s", ndt_error.what());
             // FALLTHROUGH
         }
 
@@ -96,8 +96,8 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
         ndt::run(neubot_entry, [=](Error neubot_error) {
             logger->progress(1.0, "Test completed");
             if (neubot_error) {
-                (*neubot_entry)["failure"] = neubot_error.as_ooni_error();
-                logger->warn("Test failed: %s", neubot_error.explain().c_str());
+                (*neubot_entry)["failure"] = neubot_error.reason;
+                logger->warn("Test failed: %s", neubot_error.what());
                 // FALLTHROUGH
             }
             SharedPtr<report::Entry> overall_entry(new report::Entry);
@@ -106,13 +106,9 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
             (*overall_entry)["single_stream"] = *ndt_entry;
             if (ndt_error or neubot_error) {
                 Error overall_error = SequentialOperationError();
-                overall_error.child_errors.push_back(
-                    SharedPtr<Error>{new Error{ndt_error}}
-                );
-                overall_error.child_errors.push_back(
-                    SharedPtr<Error>{new Error{neubot_error}}
-                );
-                (*overall_entry)["failure"] = overall_error.as_ooni_error();
+                overall_error.add_child_error(ndt_error);
+                overall_error.add_child_error(neubot_error);
+                (*overall_entry)["failure"] = overall_error.reason;
                 // FALLTHROUGH
             }
             try {

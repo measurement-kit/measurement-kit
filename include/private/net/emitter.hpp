@@ -66,7 +66,7 @@ class EmitterBase : public Transport {
 
     void emit_error(Error err) override {
         logger->log(MK_LOG_DEBUG2, "emitter: emit 'error' event "
-                    "(error = '%s')", err.explain().c_str());
+                    "(error = '%s')", err.what());
         if (close_pending) {
             logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
             return;

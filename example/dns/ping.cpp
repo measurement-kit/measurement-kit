@@ -77,7 +77,7 @@ int main(int argc, char **argv) {
                              [=](Error err, SharedPtr<dns::Message> m) {
                                  std::cout << query_class << " " << query_type;
                                  if (err) {
-                                     std::cout << " " << err.explain() << "\n";
+                                     std::cout << " " << err << "\n";
                                      return;
                                  }
                                  std::cout << " " << m->rtt;

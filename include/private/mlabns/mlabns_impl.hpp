@@ -83,7 +83,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
         [callback, logger](Error error, SharedPtr<http::Response> /*response*/,
                            nlohmann::json json_response) {
             if (error) {
-                logger->warn("mlabns: HTTP error: %s", error.explain().c_str());
+                logger->warn("mlabns: HTTP error: %s", error.what());
                 callback(error, Reply());
                 return;
             }
@@ -99,8 +99,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
                 reply.country = node.at("country");
             });
             if (err) {
-                logger->warn("mlabns: cannot parse json: %s",
-                             err.explain().c_str());
+                logger->warn("mlabns: cannot parse json: %s", err.what());
             } else {
                 logger->info("Discovered mlab test server: %s",
                              reply.fqdn.c_str());

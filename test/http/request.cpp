@@ -841,7 +841,7 @@ TEST_CASE("request_json_string() works as expected") {
             request_json_string_impl<non_200_response>(
               "GET", "http://www.google.com", "", {},
               [=](Error error, SharedPtr<Response> resp, nlohmann::json) {
-                  REQUIRE(error.code == NoError().code);
+                  REQUIRE(error == NoError());
                   REQUIRE(resp->status_code != 200);
                   reactor->stop();
               },

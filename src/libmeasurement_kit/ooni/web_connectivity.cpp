@@ -395,7 +395,7 @@ static void control_request(http::Headers headers_to_pass_along,
                               return;
                           }
                       }
-                      (*entry)["control_failure"] = error.as_ooni_error();
+                      (*entry)["control_failure"] = error.reason;
                       callback(error);
                       return;
                   },
@@ -428,7 +428,7 @@ static void experiment_http_request(
                             [=](Error err, SharedPtr<http::Response> response) {
                                 if (err) {
                                     (*entry)["http_experiment_failure"] =
-                                        err.as_ooni_error();
+                                        err.reason;
                                     cb(err, headers, response);
                                     return;
                                 }
@@ -466,7 +466,7 @@ static void experiment_tcp_connect(SharedPtr<Entry> entry, SocketList sockets,
                 logger->info("web_connectivity: failed to connect to %s:%d",
                              ip.c_str(), port);
                 result["status"]["success"] = false;
-                result["status"]["failure"] = err.as_ooni_error();
+                result["status"]["failure"] = err.reason;
                 close_txp = false;
             } else {
                 logger->info("web_connectivity: success to connect to %s:%d",
@@ -572,7 +572,7 @@ void web_connectivity(std::string input, Settings options,
 
     if (!url) {
         logger->warn("Invalid test url.");
-        (*entry)["failure"] = url.as_error().as_ooni_error();
+        (*entry)["failure"] = url.as_error().reason;
         callback(entry);
         return;
     }
@@ -595,7 +595,7 @@ void web_connectivity(std::string input, Settings options,
 
             if (err) {
                 logger->warn("web_connectivity: dns-query error: %s",
-                             err.explain().c_str());
+                             err.what());
             }
             logger->info("web_connectivity: starting tcp_connect");
 
@@ -610,7 +610,7 @@ void web_connectivity(std::string input, Settings options,
 
                     if (err) {
                         logger->warn("web_connectivity: tcp-connect error: %s",
-                                     err.explain().c_str());
+                                     err.what());
                     }
 
                     logger->info(
@@ -624,7 +624,7 @@ void web_connectivity(std::string input, Settings options,
                             if (err) {
                                 logger->warn(
                                     "web_connectivity: http-request error: %s",
-                                    err.explain().c_str());
+                                    err.what());
                             }
 
                             logger->info(
@@ -638,7 +638,7 @@ void web_connectivity(std::string input, Settings options,
                                         logger->warn("web_connectivity: "
                                                      "control-request error: "
                                                      "%s",
-                                                     err.explain().c_str());
+                                                     err.what());
                                     }
 
                                     logger->info("web_connectivity: comparing "

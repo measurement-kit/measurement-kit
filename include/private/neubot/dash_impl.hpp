@@ -237,8 +237,7 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
           },
           "", ctx->logger, [=](Error error, SharedPtr<http::Request> req) {
               if (error) {
-                  ctx->logger->warn("dash: request failed: %s",
-                                    error.explain().c_str());
+                  ctx->logger->warn("dash: request failed: %s", error.what());
                   ctx->cb(error);
                   return;
               }
@@ -249,14 +248,14 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
                         if (error) {
                             ctx->logger->warn(
                                   "dash: cannot receive response: %s",
-                                  error.explain().c_str());
+                                  error.what());
                             ctx->cb(error);
                             return;
                         }
                         assert(!!res);
                         if (res->status_code != 200) {
                             ctx->logger->warn("dash: invalid response code: %s",
-                                              error.explain().c_str());
+                                              error.what());
                             ctx->cb(http::HttpRequestFailedError());
                             return;
                         }
@@ -362,7 +361,7 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
           [=](Error error, SharedPtr<net::Transport> txp) {
               if (error) {
                   logger->warn("dash: cannot connect to server: %s",
-                               error.explain().c_str());
+                               error.what());
                   cb(error);
                   return;
               }
@@ -410,8 +409,7 @@ void negotiate_loop_(SharedPtr<report::Entry> entry, SharedPtr<net::Transport> t
           body,
           [=](Error error, SharedPtr<http::Response> res) {
               if (error) {
-                  logger->warn("neubot: negotiate failed: %s",
-                               error.explain().c_str());
+                  logger->warn("neubot: negotiate failed: %s", error.what());
                   callback(error, "", "");
                   return;
               }
@@ -434,7 +432,7 @@ void negotiate_loop_(SharedPtr<report::Entry> entry, SharedPtr<net::Transport> t
                     });
               if (error) {
                   logger->warn("neubot: cannot parse negotiate response: %s",
-                               error.as_ooni_error().c_str());
+                               error.what());
                   callback(error, "", "");
                   return;
               }
@@ -466,8 +464,7 @@ void collect_(SharedPtr<net::Transport> txp, SharedPtr<report::Entry> entry,
           body,
           [=](Error error, SharedPtr<http::Response> res) {
               if (error) {
-                  logger->warn("neubot: collect failed: %s",
-                               error.as_ooni_error().c_str());
+                  logger->warn("neubot: collect failed: %s", error.what());
                   cb(error);
                   return;
               }
@@ -505,7 +502,7 @@ void negotiate_with_(std::string hostname, SharedPtr<report::Entry> entry,
                   // Note: in this case we don't need to close the transport
                   // because we get passed a dumb transport on error
                   logger->warn("neubot: cannot connect to negotiate server: %s",
-                               error.explain().c_str());
+                               error.what());
                   cb(error);
                   return;
               }
@@ -517,7 +514,7 @@ void negotiate_with_(std::string hostname, SharedPtr<report::Entry> entry,
                         std::string real_address) {
                         if (error) {
                             logger->warn("neubot: negotiate failed: %s",
-                                         error.explain().c_str());
+                                         error.what());
                             txp->close([=]() { cb(error); });
                             return;
                         }
@@ -526,7 +523,7 @@ void negotiate_with_(std::string hostname, SharedPtr<report::Entry> entry,
                                  reactor, logger, [=](Error error) {
                                      if (error) {
                                          logger->warn("neubot: test failed: %s",
-                                                      error.explain().c_str());
+                                                      error.what());
                                          /* FALLTHROUGH */
                                      }
                                      logger->info("Collecting results");
@@ -556,7 +553,7 @@ void negotiate_impl(SharedPtr<report::Entry> entry, Settings settings,
                  [=](Error error, mlabns::Reply reply) {
                      if (error) {
                          logger->warn("neubot: mlabns error: %s",
-                                      error.explain().c_str());
+                                      error.what());
                          cb(error);
                          return;
                      }

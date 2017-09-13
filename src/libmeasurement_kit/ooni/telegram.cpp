@@ -29,7 +29,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> e
                 logger->info("telegram: failure TCP connecting to %s:%d",
                     ip.c_str(), port);
                 result["status"]["success"] = false;
-                result["status"]["failure"] = connect_error.as_ooni_error();
+                result["status"]["failure"] = connect_error.reason;
             } else {
                 logger->info("telegram: success TCP connecting to %s:%d",
                     ip.c_str(), port);
@@ -47,7 +47,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> e
         std::list<std::string> ip_port_l = split(ip_port, ":");
         if (ip_port_l.size() != 2) {
             logger->warn("Couldn't split ip_port: %s", ip_port.c_str());
-            (*entry)["failure"] = ValueError().as_ooni_error();
+            (*entry)["failure"] = ValueError().reason;
             all_done_cb(ValueError());
             return;
         }
@@ -82,7 +82,7 @@ static void http_many(const std::vector<std::string> urls, std::string type,
                     "telegram: failure HTTP connecting to %s", url.c_str());
                 if (type == "web") {
                     (*entry)["telegram_web_status"] = "blocked";
-                    (*entry)["telegram_web_failure"] = err.as_ooni_error();
+                    (*entry)["telegram_web_failure"] = err.reason;
                 }
             } else {
                 logger->info(

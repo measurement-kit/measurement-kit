@@ -41,7 +41,7 @@ ErrorOr<SharedPtr<BouncerReply>> create_impl(std::string data, SharedPtr<Logger>
         }
     });
     if (err) {
-        logger->warn("bouncer parsing error: %s", err.explain().c_str());
+        logger->warn("bouncer parsing error: %s", err.what());
         return err;
     }
     return reply;
@@ -72,8 +72,7 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                  request.dump(),
                  [=](Error error, SharedPtr<http::Response> resp) {
                      if (error) {
-                         logger->warn("Bouncer error: %s",
-                                      error.explain().c_str());
+                         logger->warn("Bouncer error: %s", error.what());
                          cb(error, nullptr);
                          return;
                      }

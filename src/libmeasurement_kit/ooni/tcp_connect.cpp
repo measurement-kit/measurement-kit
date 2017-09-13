@@ -18,7 +18,7 @@ void tcp_connect(std::string input, Settings options,
     // is not specified, defaulting to 80 in such case.
     ErrorOr<net::Endpoint> maybe_epnt = net::parse_endpoint(input, 80);
     if (!maybe_epnt) {
-        (*entry)["connection"] = maybe_epnt.as_error().as_ooni_error();
+        (*entry)["connection"] = maybe_epnt.as_error().reason;
         callback(entry);
         return;
     }
@@ -27,7 +27,7 @@ void tcp_connect(std::string input, Settings options,
     templates::tcp_connect(options, [=](Error err, SharedPtr<net::Transport> txp) {
         logger->debug("tcp_connect: Got response to TCP connect test");
         if (err) {
-            (*entry)["connection"] = err.as_ooni_error();
+            (*entry)["connection"] = err.reason;
             callback(entry);
             return;
         }

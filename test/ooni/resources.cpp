@@ -32,7 +32,7 @@ TEST_CASE("get_latest_release() works as expected") {
     SECTION("When http::get() fails") {
         ooni::resources::get_latest_release_impl<get_fail>(
             [=](Error e, std::string s) {
-                REQUIRE(e.code == MockedError().code);
+                REQUIRE(e == MockedError());
                 REQUIRE(s == "");
             },
             {}, Reactor::global(), Logger::global());
@@ -41,7 +41,7 @@ TEST_CASE("get_latest_release() works as expected") {
     SECTION("When response is not a redirection") {
         ooni::resources::get_latest_release_impl<get_500>(
             [=](Error e, std::string s) {
-                REQUIRE(e.code == ooni::CannotGetResourcesVersionError().code);
+                REQUIRE(e == ooni::CannotGetResourcesVersionError());
                 REQUIRE(s == "");
             },
             {}, Reactor::global(), Logger::global());
@@ -53,7 +53,7 @@ TEST_CASE("get_latest_release() works as expected") {
         reactor->run_with_initial_event([=]() {
             ooni::resources::get_latest_release(
                 [=](Error e, std::string s) {
-                    REQUIRE(e.code == NoError().code);
+                    REQUIRE(e == NoError());
                     REQUIRE(s != "");
                     reactor->stop();
                 },
@@ -77,7 +77,7 @@ TEST_CASE("get_manifest_as_json() works as expected") {
     SECTION("When http::get() fails") {
         ooni::resources::get_manifest_as_json_impl<get_fail>(
             "2", [=](Error e, nlohmann::json s) {
-                REQUIRE(e.code == MockedError().code);
+                REQUIRE(e == MockedError());
                 REQUIRE(s == nullptr);
             },
             {}, Reactor::global(), Logger::global());
@@ -86,7 +86,7 @@ TEST_CASE("get_manifest_as_json() works as expected") {
     SECTION("When response is not okay") {
         ooni::resources::get_manifest_as_json_impl<get_500>(
             "2", [=](Error e, nlohmann::json s) {
-                REQUIRE(e.code == ooni::CannotGetResourcesManifestError().code);
+                REQUIRE(e == ooni::CannotGetResourcesManifestError());
                 REQUIRE(s == nullptr);
             },
             {}, Reactor::global(), Logger::global());
@@ -95,7 +95,7 @@ TEST_CASE("get_manifest_as_json() works as expected") {
     SECTION("When the body is not a valid JSON") {
         ooni::resources::get_manifest_as_json_impl<get_invalid_json>(
             "2", [=](Error e, nlohmann::json s) {
-                REQUIRE(e.code == JsonParseError().code);
+                REQUIRE(e == JsonParseError());
                 REQUIRE(s == nullptr);
             },
             {}, Reactor::global(), Logger::global());
@@ -142,7 +142,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
             ooni::resources::get_resources_for_country_impl(
                 "6", nullptr, "IT",
                 [=](Error err) {
-                    REQUIRE(err.code == JsonDomainError().code);
+                    REQUIRE(err == JsonDomainError());
                     reactor->stop();
                 },
                 {}, reactor, Logger::global());
@@ -155,7 +155,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
             ooni::resources::get_resources_for_country_impl(
                 "6", nlohmann::json::object(), "IT",
                 [=](Error err) {
-                    REQUIRE(err.code == JsonKeyError().code);
+                    REQUIRE(err == JsonKeyError());
                     reactor->stop();
                 },
                 {}, reactor, Logger::global());
@@ -172,10 +172,10 @@ TEST_CASE("get_resources_for_country() works as expected") {
             ooni::resources::get_resources_for_country_impl(
                 "6", root, "IT",
                 [=](Error err) {
-                    REQUIRE(err.code == ParallelOperationError().code);
+                    REQUIRE(err == ParallelOperationError());
                     for (size_t i = 0; i < err.child_errors.size(); ++i) {
-                        REQUIRE(err.child_errors[i]->code ==
-                                JsonDomainError().code);
+                        REQUIRE(err.child_errors[i] ==
+                                JsonDomainError());
                     }
                     reactor->stop();
                 },
@@ -193,10 +193,10 @@ TEST_CASE("get_resources_for_country() works as expected") {
             ooni::resources::get_resources_for_country_impl(
                 "6", root, "IT",
                 [=](Error err) {
-                    REQUIRE(err.code == ParallelOperationError().code);
+                    REQUIRE(err == ParallelOperationError());
                     for (size_t i = 0; i < err.child_errors.size(); ++i) {
-                        REQUIRE(err.child_errors[i]->code ==
-                                JsonKeyError().code);
+                        REQUIRE(err.child_errors[i] ==
+                                JsonKeyError());
                     }
                     reactor->stop();
                 },
@@ -219,13 +219,13 @@ TEST_CASE("get_resources_for_country() works as expected") {
             ooni::resources::get_resources_for_country(
                 "6", root, "IT",
                 [=](Error err) {
-                    REQUIRE(err.code == ParallelOperationError().code);
+                    REQUIRE(err == ParallelOperationError());
                     /*
                      * JsonKeyError because `path` is missing.
                      */
-                    REQUIRE(err.child_errors[0]->code == JsonKeyError().code);
-                    REQUIRE(err.child_errors[1]->code == NoError().code);
-                    REQUIRE(err.child_errors[2]->code == NoError().code);
+                    REQUIRE(err.child_errors[0] == JsonKeyError());
+                    REQUIRE(err.child_errors[1] == NoError());
+                    REQUIRE(err.child_errors[2] == NoError());
                     reactor->stop();
                 },
                 {}, reactor, Logger::global());
@@ -247,13 +247,13 @@ TEST_CASE("get_resources_for_country() works as expected") {
             ooni::resources::get_resources_for_country(
                 "6", root, "ALL",
                 [=](Error err) {
-                    REQUIRE(err.code == ParallelOperationError().code);
+                    REQUIRE(err == ParallelOperationError());
                     /*
                      * JsonKeyError because `path` is missing.
                      */
-                    REQUIRE(err.child_errors[0]->code == JsonKeyError().code);
-                    REQUIRE(err.child_errors[1]->code == JsonKeyError().code);
-                    REQUIRE(err.child_errors[2]->code == JsonKeyError().code);
+                    REQUIRE(err.child_errors[0] == JsonKeyError());
+                    REQUIRE(err.child_errors[1] == JsonKeyError());
+                    REQUIRE(err.child_errors[2] == JsonKeyError());
                     reactor->stop();
                 },
                 {}, reactor, Logger::global());
@@ -278,10 +278,10 @@ TEST_CASE("get_resources_for_country() works as expected") {
             ooni::resources::get_resources_for_country_impl<get_fail>(
                 "6", root, "ALL",
                 [=](Error err) {
-                    REQUIRE(err.code == ParallelOperationError().code);
-                    REQUIRE(err.child_errors[0]->code == MockedError().code);
-                    REQUIRE(err.child_errors[1]->code == MockedError().code);
-                    REQUIRE(err.child_errors[2]->code == MockedError().code);
+                    REQUIRE(err == ParallelOperationError());
+                    REQUIRE(err.child_errors[0] == MockedError());
+                    REQUIRE(err.child_errors[1] == MockedError());
+                    REQUIRE(err.child_errors[2] == MockedError());
                     reactor->stop();
                 },
                 {}, reactor, Logger::global());
@@ -306,10 +306,10 @@ TEST_CASE("get_resources_for_country() works as expected") {
             ooni::resources::get_resources_for_country_impl<get_500>(
                 "6", root, "ALL",
                 [=](Error err) {
-                    REQUIRE(err.code == ParallelOperationError().code);
+                    REQUIRE(err == ParallelOperationError());
                     for (size_t i = 0; i < err.child_errors.size(); ++i) {
-                        REQUIRE(err.child_errors[i]->code ==
-                                ooni::CannotGetResourceError().code);
+                        REQUIRE(err.child_errors[i] ==
+                                ooni::CannotGetResourceError());
                     }
                     reactor->stop();
                 },
@@ -335,10 +335,10 @@ TEST_CASE("get_resources_for_country() works as expected") {
             ooni::resources::get_resources_for_country_impl<get_antani_body>(
                 "6", root, "ALL",
                 [=](Error err) {
-                    REQUIRE(err.code == ParallelOperationError().code);
+                    REQUIRE(err == ParallelOperationError());
                     for (size_t i = 0; i < err.child_errors.size(); ++i) {
-                        REQUIRE(err.child_errors[i]->code ==
-                                JsonKeyError().code);
+                        REQUIRE(err.child_errors[i] ==
+                                JsonKeyError());
                     }
                     reactor->stop();
                 },
@@ -367,10 +367,10 @@ TEST_CASE("get_resources_for_country() works as expected") {
             ooni::resources::get_resources_for_country_impl<get_antani_body>(
                 "6", root, "ALL",
                 [=](Error err) {
-                    REQUIRE(err.code == ParallelOperationError().code);
+                    REQUIRE(err == ParallelOperationError());
                     for (size_t i = 0; i < err.child_errors.size(); ++i) {
-                        REQUIRE(err.child_errors[i]->code ==
-                                ooni::ResourceIntegrityError().code);
+                        REQUIRE(err.child_errors[i] ==
+                                ooni::ResourceIntegrityError());
                     }
                     reactor->stop();
                 },
@@ -400,10 +400,10 @@ TEST_CASE("get_resources_for_country() works as expected") {
                                                             io_error>(
                 "6", root, "ALL",
                 [=](Error err) {
-                    REQUIRE(err.code == ParallelOperationError().code);
+                    REQUIRE(err == ParallelOperationError());
                     for (size_t i = 0; i < err.child_errors.size(); ++i) {
-                        REQUIRE(err.child_errors[i]->code ==
-                                FileIoError().code);
+                        REQUIRE(err.child_errors[i] ==
+                                FileIoError());
                     }
                     reactor->stop();
                 },
@@ -439,7 +439,7 @@ TEST_CASE("get_resources() works as expected") {
             ooni::resources::get_resources_impl<get_manifest_as_json_fail>(
                 "6", "IT",
                 [=](Error error) {
-                    REQUIRE(error.code == MockedError().code);
+                    REQUIRE(error == MockedError());
                     reactor->stop();
                 },
                 {}, reactor, Logger::global());
@@ -453,7 +453,7 @@ TEST_CASE("get_resources() works as expected") {
                                                 get_resources_for_country_fail>(
                 "6", "IT",
                 [=](Error error) {
-                    REQUIRE(error.code == MockedError().code);
+                    REQUIRE(error == MockedError());
                     reactor->stop();
                 },
                 {}, reactor, Logger::global());
@@ -468,8 +468,8 @@ TEST_CASE("get_resources() works as expected") {
         reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources("6", "ALL",
                                            [=](Error error) {
-                                               REQUIRE(error.code ==
-                                                       NoError().code);
+                                               REQUIRE(error ==
+                                                       NoError());
                                                reactor->stop();
                                            },
                                            {}, reactor, logger);

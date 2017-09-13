@@ -97,8 +97,7 @@ void connect_base(std::string address, int port,
         if (sys_error == NoError()) {
             sys_error = GenericError(); /* We must report an error */
         }
-        logger->warn("reason why connect() has failed: %s",
-                     sys_error.as_ooni_error().c_str());
+        logger->warn("reason why connect() has failed: %s", sys_error.what());
         cb(sys_error, nullptr, 0.0);
         return;
     }
@@ -114,8 +113,7 @@ void connect_base(std::string address, int port,
                 logger->warn("connect() for %s failed in its callback",
                              endpoint.c_str());
                 bufferevent_free(bev);
-                logger->warn("reason why connect() has failed: %s",
-                             err.as_ooni_error().c_str());
+                logger->warn("reason why connect() has failed: %s", err.what());
                 cb(err, nullptr, 0.0);
                 return;
             }

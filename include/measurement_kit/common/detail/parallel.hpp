@@ -6,6 +6,7 @@
 
 #include <measurement_kit/common/continuation.hpp>
 #include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 namespace mk {
 
@@ -22,7 +23,7 @@ static inline void run(size_t idx, std::vector<Continuation<Error>> input,
                 overall->reason = template_error.reason;
                 // FALLTHROUGH
             }
-            overall->child_errors[idx] = SharedPtr<Error>(new Error(error));
+            overall->child_errors[idx] = error;
             *completed += 1;
             if (*completed == input.size()) {
                 cb(*overall);
@@ -45,7 +46,7 @@ static inline void parallel(std::vector<Continuation<Error>> input,
         cb(*overall);
         return;
     }
-    overall->child_errors.resize(input.size(), nullptr);
+    overall->child_errors.resize(input.size(), NoError());
     SharedPtr<size_t> completed(new size_t(0));
     if (parallelism <= 0) {
         parallelism = input.size();

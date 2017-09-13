@@ -27,7 +27,7 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
     templates::tcp_connect(settings, [=](Error err, SharedPtr<net::Transport> txp) {
         if (err) {
             logger->warn("http_invalid_request_line: error connecting");
-            (*entry)["failure"] = err.as_ooni_error();
+            (*entry)["failure"] = err.reason;
             cb(entry);
             return;
         }
@@ -74,9 +74,9 @@ void http_invalid_request_line(Settings options,
 
     if (!endpoint) {
         logger->warn("Invalid helper endpoint: %s (backend = '%s')",
-                     endpoint.as_error().explain().c_str(),
+                     endpoint.as_error().what(),
                      options["backend"].c_str());
-        (*entry)["failure"] = endpoint.as_error().as_ooni_error();
+        (*entry)["failure"] = endpoint.as_error().reason;
         cb(entry);
         return;
     }
@@ -93,7 +93,7 @@ void http_invalid_request_line(Settings options,
             for (auto &x : (*entry)["failure_list"]) {
                 if (x != nullptr) {
                     (*entry)["failure"]
-                        = ParallelOperationError().as_ooni_error();
+                        = ParallelOperationError().reason;
                     break;
                 }
             }
