@@ -106,11 +106,22 @@ class AsyncRunner : public HasGlobalFactory<AsyncRunner>,
 
   private:
     std::atomic<long long> active_{0};
+    std::mutex barrier_;
     Var<Reactor> reactor_ = Reactor::make();
     std::atomic<bool> running_{false};
     std::thread thread_;
 
     void start_background_thread(Var<Logger> logger) {
+        // N threads can race into this function and can both attempt to
+        // start the shared reactor. All the threads but the first one will
+        // fail and an excepton will be thrown. Fix by preventing multiple
+        // threads from entering into this function. This is actually a
+        // blind fix because I cannot reproduce the problem but it happens
+        // quite predictably to @lorenzoPrimi and @hellais. This should
+        // not be an issue with v0.8.x where the Worker class already has
+        // a barrier preventing this and where we will use a private reactor
+        // for each specific operation anyway.
+        std::unique_lock<std::mutex> _{barrier_};
         if (!running_) {
             std::promise<void> promise;
             std::future<void> future = promise.get_future();
