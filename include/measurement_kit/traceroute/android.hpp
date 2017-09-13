@@ -144,8 +144,7 @@ class AndroidProber : public NonCopyable,
 
     /// Callback invoked when the socket is readable
     /// \param so Socket descriptor
-    /// \param event Event that occurred
-    void event_callback(Error err, short event);
+    void event_callback(Error err);
 
     /// Idempotent cleanup function
     void cleanup();
