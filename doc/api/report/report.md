@@ -26,7 +26,7 @@ class Report {
     Settings options;
 
     Report();
-    void add_reporter(Var<BaseReporter> reporter);
+    void add_reporter(SharedPtr<BaseReporter> reporter);
     void fill_entry(Entry &entry) const;
     Entry get_dummy_entry() const;
     void open(Callback<Error> callback);
@@ -105,7 +105,7 @@ errors of the returned error:
     report.open([=](Error err) {
         if (err) {
             size_t idx = 0;
-            for (Var<Error> child_err: err.child_errors) {
+            for (SharedPtr<Error> child_err: err.child_errors) {
                 if (!child_err) {
                     debug("- %d succeeded", idx);
                     continue;

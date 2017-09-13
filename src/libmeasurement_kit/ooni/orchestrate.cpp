@@ -68,7 +68,7 @@ std::string Auth::dumps() noexcept {
     return json.dump(4);
 }
 
-bool Auth::is_valid(Var<Logger> logger) const noexcept {
+bool Auth::is_valid(SharedPtr<Logger> logger) const noexcept {
     if (!logged_in) {
         logger->debug("orchestrator: not logged in");
         return false;
@@ -164,7 +164,7 @@ void Client::register_probe(std::string &&password,
     Worker::default_tasks_queue()->run_in_background_thread([
         password = std::move(password), meta = *this, cb = std::move(cb)
     ]() mutable {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([&]() {
             do_register_probe(std::move(password), meta, reactor,
                               [&](Error &&error, Auth &&auth) {
@@ -184,7 +184,7 @@ void Client::find_location(
     // there the task is synchronous because run_...() is blocking.
     Worker::default_tasks_queue()->run_in_background_thread(
           [ meta = *this, cb = std::move(cb) ]() {
-              Var<Reactor> reactor = Reactor::make();
+              SharedPtr<Reactor> reactor = Reactor::make();
               reactor->run_with_initial_event([&]() {
                   do_find_location(meta, reactor,
                                    [&](Error &&error, std::string &&asn,
@@ -206,7 +206,7 @@ void Client::update(Auth &&auth, Callback<Error &&, Auth &&> &&cb) const {
     Worker::default_tasks_queue()->run_in_background_thread([
         meta = *this, cb = std::move(cb), auth = std::move(auth)
     ]() mutable {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([&]() {
             do_update(std::move(auth), meta, reactor,
                       [&](Error &&error, Auth &&auth) {

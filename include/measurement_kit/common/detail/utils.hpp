@@ -191,7 +191,7 @@ inline std::string random_str_uppercase(size_t length) {
     return random_within_charset(num_upper, length);
 }
 
-inline void dump_settings(Settings &s, std::string prefix, Var<Logger> logger) {
+inline void dump_settings(Settings &s, std::string prefix, SharedPtr<Logger> logger) {
     logger->log(MK_LOG_DEBUG2, "%s: {", prefix.c_str());
     for (auto pair : s) {
         logger->log(MK_LOG_DEBUG2, "%s:   \"%s\": \"%s\",", prefix.c_str(),

@@ -11,7 +11,7 @@ namespace report {
 
 class FileReporter : public BaseReporter {
   public:
-    static Var<BaseReporter> make(std::string filename);
+    static SharedPtr<BaseReporter> make(std::string filename);
 
     Continuation<Error> open(Report &report) override;
     Continuation<Error> write_entry(Entry entry) override;

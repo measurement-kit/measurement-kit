@@ -10,8 +10,8 @@
 namespace mk {
 
 static inline void run(size_t idx, std::vector<Continuation<Error>> input,
-                       Callback<Error> cb, Var<Error> overall,
-                       Var<size_t> completed, size_t parallelism) {
+                       Callback<Error> cb, SharedPtr<Error> overall,
+                       SharedPtr<size_t> completed, size_t parallelism) {
     if (idx < input.size()) {
         input[idx]([=](Error error) {
             // XXX: code not thread safe, to make thread safe we could
@@ -22,7 +22,7 @@ static inline void run(size_t idx, std::vector<Continuation<Error>> input,
                 overall->reason = template_error.reason;
                 // FALLTHROUGH
             }
-            overall->child_errors[idx] = Var<Error>(new Error(error));
+            overall->child_errors[idx] = SharedPtr<Error>(new Error(error));
             *completed += 1;
             if (*completed == input.size()) {
                 cb(*overall);
@@ -40,13 +40,13 @@ static inline void run(size_t idx, std::vector<Continuation<Error>> input,
 
 static inline void parallel(std::vector<Continuation<Error>> input,
                             Callback<Error> cb, size_t parallelism = 0) {
-    Var<Error> overall(new Error(NoError()));
+    SharedPtr<Error> overall(new Error(NoError()));
     if (input.size() <= 0) {
         cb(*overall);
         return;
     }
     overall->child_errors.resize(input.size(), nullptr);
-    Var<size_t> completed(new size_t(0));
+    SharedPtr<size_t> completed(new size_t(0));
     if (parallelism <= 0) {
         parallelism = input.size();
     }

@@ -53,7 +53,7 @@ for the child errors of the returned no error. For example:
     report.open([=](Error err) {
         if (err) {
             size_t idx = 0;
-            for (Var<Error> child_err: err.child_errors) {
+            for (SharedPtr<Error> child_err: err.child_errors) {
                 if (!child_err and child_err.child_errors.size() >= 1
                     and child_err.child_errors[0] == ReportAlreadyOpenError()) {
                     debug("- %d's open was called more than once", idx);

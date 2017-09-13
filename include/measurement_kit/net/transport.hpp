@@ -119,13 +119,13 @@ class Transport : public TransportEmitter,
  *  required when you need read and write at the same time).
  */
 
-void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
+void write(SharedPtr<Transport> txp, Buffer buf, Callback<Error> cb);
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
-           Var<Reactor> reactor = Reactor::global());
+void readn(SharedPtr<Transport> txp, SharedPtr<Buffer> buff, size_t n, Callback<Error> cb,
+           SharedPtr<Reactor> reactor = Reactor::global());
 
-void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
-          Var<Reactor> reactor = Reactor::global());
+void read(SharedPtr<Transport> t, SharedPtr<Buffer> buff, Callback<Error> callback,
+          SharedPtr<Reactor> reactor = Reactor::global());
 
 } // namespace net
 } // namespace mk

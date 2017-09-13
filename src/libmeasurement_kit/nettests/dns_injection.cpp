@@ -18,7 +18,7 @@ DnsInjectionTest::DnsInjectionTest() : BaseTest() {
 }
 
 void DnsInjectionRunnable::main(std::string input, Settings options,
-                                Callback<Var<report::Entry>> cb) {
+                                Callback<SharedPtr<report::Entry>> cb) {
     ooni::dns_injection(input, options, cb, reactor, logger);
 }
 

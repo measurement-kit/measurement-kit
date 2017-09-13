@@ -8,19 +8,19 @@ namespace mk {
 namespace ndt {
 namespace messages {
 
-void read_ll(Var<Context> ctx,
+void read_ll(SharedPtr<Context> ctx,
              mk::Callback<Error, uint8_t, std::string> callback,
-             Var<Reactor> reactor) {
+             SharedPtr<Reactor> reactor) {
     read_ll_impl(ctx, callback, reactor);
 }
 
-void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback,
-               Var<Reactor> reactor) {
+void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, json> callback,
+               SharedPtr<Reactor> reactor) {
     read_json_impl(ctx, callback, reactor);
 }
 
-void read_msg(Var<Context> ctx, Callback<Error, uint8_t, std::string> cb,
-              Var<Reactor> reactor) {
+void read_msg(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> cb,
+              SharedPtr<Reactor> reactor) {
     read_msg_impl(ctx, cb, reactor);
 }
 
@@ -43,21 +43,21 @@ ErrorOr<Buffer> format_msg_waiting() {
                       });
 }
 
-void write(Var<Context> ctx, Buffer buff, Callback<Error> cb) {
+void write(SharedPtr<Context> ctx, Buffer buff, Callback<Error> cb) {
     std::string s = buff.peek();
     ctx->logger->debug("> [%zu]: (%d) %s", s.length(), s.c_str()[0],
                        s.substr(3).c_str());
     net::write(ctx->txp, buff, cb);
 }
 
-void write_noasync(Var<Context> ctx, Buffer buff) {
+void write_noasync(SharedPtr<Context> ctx, Buffer buff) {
     std::string s = buff.peek();
     ctx->logger->debug("> [%zu]: (%d) %s", s.length(), s.c_str()[0],
                        s.substr(3).c_str());
     ctx->txp->write(buff);
 }
 
-Error add_to_report(Var<Entry> entry, std::string key, std::string item) {
+Error add_to_report(SharedPtr<Entry> entry, std::string key, std::string item) {
     std::list<std::string> list = split(item, ":");
     if (list.size() != 2) {
         return GenericError(); /* XXX use more specific error */

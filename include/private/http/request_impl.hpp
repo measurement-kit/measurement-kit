@@ -17,9 +17,9 @@ namespace http {
 // TODO: mock more functions in request.cpp
 
 template <MK_MOCK_AS(net::connect, net_connect)>
-void request_connect_impl(Settings settings, Callback<Error, Var<Transport>> cb,
-                          Var<Reactor> reactor = Reactor::global(),
-                          Var<Logger> logger = Logger::global()) {
+void request_connect_impl(Settings settings, Callback<Error, SharedPtr<Transport>> cb,
+                          SharedPtr<Reactor> reactor = Reactor::global(),
+                          SharedPtr<Logger> logger = Logger::global()) {
     if (settings.find("http/url") == settings.end()) {
         cb(MissingUrlError(), nullptr);
         return;
@@ -51,15 +51,15 @@ template <MK_MOCK_AS(mk::http::request, request)>
 void request_json_string_impl(
       std::string method, std::string url, std::string data,
       http::Headers headers,
-      Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb,
+      Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     settings["http/url"] = url;
     settings["http/method"] = method;
     headers["Content-Type"] = "application/json";
     logger->debug("%s to %s (body: '%s')", method.c_str(), url.c_str(),
                   data.c_str());
     request(settings, headers, data,
-            [=](Error error, Var<http::Response> response) {
+            [=](Error error, SharedPtr<http::Response> response) {
                 nlohmann::json jresponse;
                 if (error) {
                     cb(error, response, jresponse);

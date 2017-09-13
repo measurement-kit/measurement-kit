@@ -99,7 +99,7 @@ BaseTest &BaseTest::on_destroy(Callback<> cb) {
     return *this;
 }
 
-static void start_internal_(Var<Runnable> &&r, std::promise<void> *promise,
+static void start_internal_(SharedPtr<Runnable> &&r, std::promise<void> *promise,
                             Callback<> &&callback) {
     // Note:
     //

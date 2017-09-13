@@ -14,8 +14,8 @@ namespace ooni {
 using namespace mk::report;
 
 void compare_headers_response(http::Headers headers,
-                             Var<http::Response> response, Var<report::Entry> entry,
-                             Var<Logger> logger) {
+                             SharedPtr<http::Response> response, SharedPtr<report::Entry> entry,
+                             SharedPtr<Logger> logger) {
     if (response->body.empty()) {
         logger->warn("empty response body");
         (*entry)["tampering"]["total"] = true;
@@ -67,9 +67,9 @@ void compare_headers_response(http::Headers headers,
 }
 
 void http_header_field_manipulation(std::string /*input*/, Settings options,
-                                    Callback<Var<report::Entry>> callback,
-                                    Var<Reactor> reactor, Var<Logger> logger) {
-    Var<Entry> entry(new Entry);
+                                    Callback<SharedPtr<report::Entry>> callback,
+                                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<Entry> entry(new Entry);
     (*entry)["tampering"] = Entry::object();
     (*entry)["tampering"]["total"] = nullptr;
     (*entry)["tampering"]["request_line_capitalization"] = nullptr;
@@ -95,7 +95,7 @@ void http_header_field_manipulation(std::string /*input*/, Settings options,
 
     templates::http_request(
         entry, options, headers, body,
-        [=](Error err, Var<http::Response> response) {
+        [=](Error err, SharedPtr<http::Response> response) {
             if (err) {
                 logger->debug(
                     "http_header_field_manipulation: http-request error: %s",

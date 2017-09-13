@@ -15,8 +15,8 @@ namespace mk {
 
 class Reactor {
   public:
-    static Var<Reactor> make();
-    static Var<Reactor> global();
+    static SharedPtr<Reactor> make();
+    static SharedPtr<Reactor> global();
 
     void call_later(double delay, Callback<> &&cb);
     void call_soon(Callback<> &&cb);
@@ -49,35 +49,35 @@ class Reactor {
 void call_later(
         double delay,
         Callback<> callback,
-        Var<Reactor> reactor = Reactor::global()
+        SharedPtr<Reactor> reactor = Reactor::global()
 );
 
 void call_soon(
         Callback<> callback,
-        Var<Reactor> reactor = Reactor::global()
+        SharedPtr<Reactor> reactor = Reactor::global()
 );
 
 // Syntactic sugar
-void run(Var<Reactor> reactor = Reactor::global()) {
+void run(SharedPtr<Reactor> reactor = Reactor::global()) {
     reactor->run();
 }
-void stop(Var<Reactor> reactor = Reactor::global()) {
+void stop(SharedPtr<Reactor> reactor = Reactor::global()) {
     reactor->stop();
 }
 void run_with_initial_event(Callback<> &&func,
-                            Var<Reactor> reactor = Reactor::global()) {
+                            SharedPtr<Reactor> reactor = Reactor::global()) {
     reactor->run_with_initial_event(std::move(func));
 }
 
 // Backward compatibility aliases
-void loop(Var<Reactor> reactor = Reactor::global()) {
+void loop(SharedPtr<Reactor> reactor = Reactor::global()) {
     run(reactor);
 }
-void break_loop(Var<Reactor> reactor = Reactor::global()) {
+void break_loop(SharedPtr<Reactor> reactor = Reactor::global()) {
     stop(reactor);
 }
 void loop_with_initial_event(Callback<> &&func,
-                             Var<Reactor> reactor = Reactor::global()) {
+                             SharedPtr<Reactor> reactor = Reactor::global()) {
     run_with_initial_event(std::move(func));
 }
 
@@ -93,7 +93,7 @@ The `Reactor` abstract interface dispatches I/O events. Most MeasurementKit
 objects refer to a specific `Reactor` object.
 
 The `make()` and `global()` factories return a reactor allocated
-on the heap whose lifecycle is manager using a `Var<>` smart pointer.
+on the heap whose lifecycle is manager using a `SharedPtr<>` smart pointer.
 Specifically, `make()` allocates a new reactor and `global()` returns
 a reference to the global reactor.
 

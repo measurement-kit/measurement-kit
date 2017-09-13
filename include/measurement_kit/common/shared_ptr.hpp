@@ -1,25 +1,26 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_VAR_HPP
-#define MEASUREMENT_KIT_COMMON_VAR_HPP
+#ifndef MEASUREMENT_KIT_COMMON_SHARED_PTR_HPP
+#define MEASUREMENT_KIT_COMMON_SHARED_PTR_HPP
 
 #include <memory>
 #include <stdexcept>
 
 namespace mk {
 
-template <typename T> class Var {
+template <typename T> class SharedPtr {
   public:
     template <typename Deleter>
-    Var(typename std::add_pointer<T>::type p, Deleter &&deleter)
+    SharedPtr(typename std::add_pointer<T>::type p, Deleter &&deleter)
         : ptr_{std::shared_ptr<T>{p, deleter}} {}
 
-    Var(typename std::add_pointer<T>::type p) : ptr_{std::shared_ptr<T>{p}} {}
+    SharedPtr(typename std::add_pointer<T>::type p)
+        : ptr_{std::shared_ptr<T>{p}} {}
 
-    Var(std::shared_ptr<T> &&ptr) : ptr_{ptr} {}
+    SharedPtr(std::shared_ptr<T> &&ptr) : ptr_{ptr} {}
 
-    Var() {}
+    SharedPtr() {}
 
     long use_count() const noexcept { return ptr_.use_count(); }
 
@@ -29,9 +30,7 @@ template <typename T> class Var {
         ptr_.reset(p);
     }
 
-    bool operator==(std::nullptr_t x) const noexcept {
-        return ptr_ == x;
-    }
+    bool operator==(std::nullptr_t x) const noexcept { return ptr_ == x; }
 
     template <typename Deleter>
     void reset(typename std::add_pointer<T>::type p, Deleter &&deleter) {
@@ -54,11 +53,11 @@ template <typename T> class Var {
         return ptr_.operator*();
     }
 
-    template <typename R> Var<R> as() const {
+    template <typename R> SharedPtr<R> as() const {
         return std::dynamic_pointer_cast<R>(ptr_);
     }
 
-    template <typename... A> static Var<T> make(A &&... a) {
+    template <typename... A> static SharedPtr<T> make(A &&... a) {
         return std::make_shared<T>(std::forward<A>(a)...);
     }
 

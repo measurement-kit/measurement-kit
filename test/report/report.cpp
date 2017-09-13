@@ -12,8 +12,8 @@ using namespace mk::report;
 
 class CountedReporter : public BaseReporter {
   public:
-    static Var<CountedReporter> make() {
-        return Var<CountedReporter>(new CountedReporter);
+    static SharedPtr<CountedReporter> make() {
+        return SharedPtr<CountedReporter>(new CountedReporter);
     }
 
     ~CountedReporter() override;
@@ -48,8 +48,8 @@ CountedReporter::~CountedReporter() {}
 
 class FailingReporter : public BaseReporter {
   public:
-    static Var<FailingReporter> make() {
-        return Var<FailingReporter>(new FailingReporter);
+    static SharedPtr<FailingReporter> make() {
+        return SharedPtr<FailingReporter>(new FailingReporter);
     }
 
     ~FailingReporter() override;
@@ -112,8 +112,8 @@ TEST_CASE("The open() method works correctly") {
 }
 
 TEST_CASE("We can retry a partially successful open") {
-    Var<CountedReporter> counted_reporter = CountedReporter::make();
-    Var<FailingReporter> failing_reporter = FailingReporter::make();
+    SharedPtr<CountedReporter> counted_reporter = CountedReporter::make();
+    SharedPtr<FailingReporter> failing_reporter = FailingReporter::make();
     Report report;
     report.add_reporter(counted_reporter.as<BaseReporter>());
     report.add_reporter(failing_reporter.as<BaseReporter>());
@@ -185,8 +185,8 @@ TEST_CASE("The write_entry() method works correctly") {
 }
 
 TEST_CASE("We can retry a partially successful write_entry()") {
-    Var<CountedReporter> counted_reporter = CountedReporter::make();
-    Var<FailingReporter> failing_reporter = FailingReporter::make();
+    SharedPtr<CountedReporter> counted_reporter = CountedReporter::make();
+    SharedPtr<FailingReporter> failing_reporter = FailingReporter::make();
     failing_reporter->open_count = 1; // So open won't fail
     Report report;
     report.add_reporter(counted_reporter.as<BaseReporter>());
@@ -236,8 +236,8 @@ TEST_CASE("The close() method works correctly") {
 }
 
 TEST_CASE("We can retry a partially successful close") {
-    Var<CountedReporter> counted_reporter = CountedReporter::make();
-    Var<FailingReporter> failing_reporter = FailingReporter::make();
+    SharedPtr<CountedReporter> counted_reporter = CountedReporter::make();
+    SharedPtr<FailingReporter> failing_reporter = FailingReporter::make();
     failing_reporter->open_count = 1; // So open won't fail
     Report report;
     report.add_reporter(counted_reporter.as<BaseReporter>());
@@ -266,8 +266,8 @@ TEST_CASE("We can retry a partially successful close") {
 
 class ReturningIdReporter : public BaseReporter {
   public:
-    static Var<ReturningIdReporter> make() {
-        return Var<ReturningIdReporter>(new ReturningIdReporter);
+    static SharedPtr<ReturningIdReporter> make() {
+        return SharedPtr<ReturningIdReporter>(new ReturningIdReporter);
     }
 
     ~ReturningIdReporter() override;

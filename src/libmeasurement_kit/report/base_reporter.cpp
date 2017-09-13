@@ -9,8 +9,8 @@
 namespace mk {
 namespace report {
 
-/* static */ Var<BaseReporter> BaseReporter::make() {
-    return Var<BaseReporter>(new BaseReporter);
+/* static */ SharedPtr<BaseReporter> BaseReporter::make() {
+    return SharedPtr<BaseReporter>(new BaseReporter);
 }
 
 BaseReporter::~BaseReporter() {}

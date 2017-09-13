@@ -61,7 +61,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
 
 template <MK_MOCK_AS(http::request_json_no_body, request_json_no_body)>
 void query_impl(std::string tool, Callback<Error, Reply> callback,
-                Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+                Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     ErrorOr<std::string> query = as_query(settings);
     if (!query) {
         callback(query.as_error(), Reply());
@@ -80,7 +80,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
     logger->debug("query mlabns for tool %s", tool.c_str());
     logger->debug("mlabns url: %s", url.c_str());
     request_json_no_body("GET", url, {},
-        [callback, logger](Error error, Var<http::Response> /*response*/,
+        [callback, logger](Error error, SharedPtr<http::Response> /*response*/,
                            nlohmann::json json_response) {
             if (error) {
                 logger->warn("mlabns: HTTP error: %s", error.explain().c_str());

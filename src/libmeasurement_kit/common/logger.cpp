@@ -11,7 +11,7 @@
 
 namespace mk {
 
-/*static*/ Var<Logger> Logger::make() { return Var<Logger>(new Logger); }
+/*static*/ SharedPtr<Logger> Logger::make() { return SharedPtr<Logger>(new Logger); }
 
 Logger::Logger() {
     consumer_ = [](uint32_t level, const char *s) {

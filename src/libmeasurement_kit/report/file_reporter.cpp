@@ -20,8 +20,8 @@ static Error map_error(std::ostream &file) {
     return GenericError();
 }
 
-/* static */ Var<BaseReporter> FileReporter::make(std::string s) {
-    Var<FileReporter> reporter(new FileReporter);
+/* static */ SharedPtr<BaseReporter> FileReporter::make(std::string s) {
+    SharedPtr<FileReporter> reporter(new FileReporter);
     reporter->filename = s;
     return reporter.as<BaseReporter>();
 }

@@ -19,7 +19,7 @@ TEST_CASE("The constructor works correctly") {
 
 TEST_CASE("open() tells us if it encounters an error") {
     Report report;
-    Var<BaseReporter> reporter = FileReporter::make("/nonexistent/foobar.njson");
+    SharedPtr<BaseReporter> reporter = FileReporter::make("/nonexistent/foobar.njson");
     // This should cause failure on open() because directory doesn't exist
     reporter->open(report)([](Error err) {
         REQUIRE(err);

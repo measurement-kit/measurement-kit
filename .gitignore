@@ -77,8 +77,8 @@
 /test/common/range
 /test/common/sandbox
 /test/common/settings
+/test/common/shared_ptr
 /test/common/utils
-/test/common/var
 /test/common/version
 /test/common/worker
 /test/dns/ping

@@ -18,7 +18,7 @@ MeekFrontedRequestsTest::MeekFrontedRequestsTest() : BaseTest() {
 }
 
 void MeekFrontedRequestsRunnable::main(std::string input, Settings options,
-                                Callback<Var<report::Entry>> cb) {
+                                Callback<SharedPtr<report::Entry>> cb) {
     ooni::meek_fronted_requests(input, options, cb, reactor, logger);
 }
 

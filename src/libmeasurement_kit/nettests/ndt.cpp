@@ -19,8 +19,8 @@ NdtTest::NdtTest() : BaseTest() {
 }
 
 void NdtRunnable::main(std::string, Settings settings,
-                       Callback<Var<report::Entry>> cb) {
-    Var<report::Entry> entry(new report::Entry);
+                       Callback<SharedPtr<report::Entry>> cb) {
+    SharedPtr<report::Entry> entry(new report::Entry);
     (*entry)["failure"] = nullptr;
     // Note: `options` is the class attribute and `settings` is instead a
     // possibly modified copy of the `options` object

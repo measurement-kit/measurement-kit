@@ -18,7 +18,7 @@ FacebookMessengerTest::FacebookMessengerTest() : BaseTest() {
 }
 
 void FacebookMessengerRunnable::main(std::string /*input*/, Settings options,
-                            Callback<Var<report::Entry>> cb) {
+                            Callback<SharedPtr<report::Entry>> cb) {
     ooni::facebook_messenger(options, cb, reactor, logger);
 }
 

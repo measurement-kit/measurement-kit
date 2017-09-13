@@ -16,8 +16,8 @@
 namespace mk {
 namespace nettests {
 
-static Var<std::istream> open_file_(const std::string &path) {
-    return Var<std::istream>{new std::ifstream{path}};
+static SharedPtr<std::istream> open_file_(const std::string &path) {
+    return SharedPtr<std::istream>{new std::ifstream{path}};
 }
 
 static bool readline_(std::istream &input, std::string &line) {
@@ -34,7 +34,7 @@ static void randomize_input_(std::deque<std::string> &inputs) {
 template <MK_MOCK(open_file_), MK_MOCK(readline_), MK_MOCK(randomize_input_)>
 Error process_input_filepaths_impl(std::deque<std::string> &inputs,
     const bool &needs_input, const std::list<std::string> &input_filepaths,
-    const std::string &probe_cc, const Settings &options, Var<Logger> logger,
+    const std::string &probe_cc, const Settings &options, SharedPtr<Logger> logger,
     std::function<void(const std::string &)> on_open_error,
     std::function<void(const std::string &)> on_io_error) {
     if (needs_input) {
@@ -57,7 +57,7 @@ Error process_input_filepaths_impl(std::deque<std::string> &inputs,
             input_filepath = std::regex_replace(input_filepath,
                                                 std::regex{R"(\$\{probe_cc\})"},
                                                 probe_cc_lowercase);
-            Var<std::istream> input_generator = open_file_(input_filepath);
+            SharedPtr<std::istream> input_generator = open_file_(input_filepath);
             if (!input_generator->good()) {
                 logger->warn("cannot open input file");
                 if (!!on_open_error) {

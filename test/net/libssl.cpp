@@ -74,7 +74,7 @@ TEST_CASE("Context::make() works") {
 #endif
 }
 
-static ErrorOr<Var<Context>> context_make_fail(std::string, Var<Logger>) {
+static ErrorOr<SharedPtr<Context>> context_make_fail(std::string, SharedPtr<Logger>) {
     return MockedError();
 }
 

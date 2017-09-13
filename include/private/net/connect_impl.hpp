@@ -38,8 +38,8 @@ template <MK_MOCK(make_sockaddr_proxy), MK_MOCK(bufferevent_socket_new),
 void connect_base(std::string address, int port,
                   Callback<Error, bufferevent *, double> cb,
                   double timeout = 10.0,
-                  Var<Reactor> reactor = Reactor::global(),
-                  Var<Logger> logger = Logger::global()) {
+                  SharedPtr<Reactor> reactor = Reactor::global(),
+                  SharedPtr<Logger> logger = Logger::global()) {
 
     std::string endpoint = [&]() {
         Endpoint endpoint;
@@ -126,7 +126,7 @@ void connect_base(std::string address, int port,
 }
 
 template <MK_MOCK_AS(net::connect, net_connect)>
-void connect_many_impl(Var<ConnectManyCtx> ctx) {
+void connect_many_impl(SharedPtr<ConnectManyCtx> ctx) {
     // Implementation note: this function connects sequentially, which
     // is slower but also much simpler to implement and verify
     if (ctx->left <= 0) {
@@ -135,7 +135,7 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
         return;
     }
     net_connect(ctx->address, ctx->port,
-                [=](Error err, Var<Transport> txp) {
+                [=](Error err, SharedPtr<Transport> txp) {
                     ctx->connections.push_back(std::move(txp));
                     if (err) {
                         ctx->callback(err, ctx->connections);
@@ -147,11 +147,11 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
                 ctx->settings, ctx->reactor, ctx->logger);
 }
 
-static inline Var<ConnectManyCtx>
+static inline SharedPtr<ConnectManyCtx>
 connect_many_make(std::string address, int port, int count,
                   ConnectManyCb callback, Settings settings,
-                  Var<Reactor> reactor, Var<Logger> logger) {
-    Var<ConnectManyCtx> ctx(new ConnectManyCtx);
+                  SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<ConnectManyCtx> ctx(new ConnectManyCtx);
     ctx->left = count;
     ctx->callback = callback;
     ctx->address = address;
@@ -162,8 +162,8 @@ connect_many_make(std::string address, int port, int count,
     return ctx;
 }
 
-static inline Var<Transport> make_txp(Var<Transport> txp, double timeout,
-                                      Var<ConnectResult> r) {
+static inline SharedPtr<Transport> make_txp(SharedPtr<Transport> txp, double timeout,
+                                      SharedPtr<ConnectResult> r) {
     if (timeout > 0.0) {
         txp->set_timeout(timeout);
     }
@@ -176,13 +176,13 @@ static inline Var<Transport> make_txp(Var<Transport> txp, double timeout,
 }
 
 template <typename Type, typename... Args>
-Var<Transport> make_txp(double timeout, Var<ConnectResult> r, Args &&... args) {
+SharedPtr<Transport> make_txp(double timeout, SharedPtr<ConnectResult> r, Args &&... args) {
     // Note: need to pass through `make_shared` because the new Transport that
     // cannot inherit from `shared_ptr` because of the new NDK is less simple
     // to use than the one that inherited from `shared_ptr`. I guess there must
     // be some constructor override that is missing.
     return make_txp(
-          Var<Transport>{std::make_shared<Type>(std::forward<Args>(args)...)},
+          SharedPtr<Transport>{std::make_shared<Type>(std::forward<Args>(args)...)},
           timeout, r);
 }
 

@@ -9,7 +9,7 @@
 #include <measurement_kit/common/detail/delegate.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 #include <cstdint>
 #include <fstream>
@@ -33,7 +33,7 @@ class Logger : public NonCopyable, public NonMovable {
   public:
     // TODO: refactor class to move all implementation in .cpp files
 
-    static Var<Logger> make();
+    static SharedPtr<Logger> make();
 
     void logv(uint32_t, const char *, va_list)
               __attribute__((format(printf, 3, 0)));
@@ -66,8 +66,8 @@ class Logger : public NonCopyable, public NonMovable {
 
     void set_progress_scale(double scale);
 
-    static Var<Logger> global() {
-        static Var<Logger> singleton(new Logger);
+    static SharedPtr<Logger> global() {
+        static SharedPtr<Logger> singleton(new Logger);
         return singleton;
     }
 
@@ -78,7 +78,7 @@ class Logger : public NonCopyable, public NonMovable {
     uint32_t verbosity_ = MK_LOG_WARNING;
     char buffer_[32768];
     std::mutex mutex_;
-    Var<std::ofstream> ofile_;
+    SharedPtr<std::ofstream> ofile_;
     std::list<Delegate<>> eof_handlers_;
     Delegate<const char *> event_handler_;
     Delegate<double, const char *> progress_handler_;
