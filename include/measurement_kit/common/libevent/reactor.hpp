@@ -41,32 +41,10 @@
 extern "C" {
 static inline void mk_call_later_cb(evutil_socket_t, short, void *);
 static inline void mk_pollfd_cb(evutil_socket_t, short, void *);
-static inline void mk_periodic_cb(evutil_socket_t, short, void *);
 }
 
 namespace mk {
 namespace libevent {
-
-// ## EventUptr
-/*-
-     _____                 _   _   _       _
-    | ____|_   _____ _ __ | |_| | | |_ __ | |_ _ __
-    |  _| \ \ / / _ \ '_ \| __| | | | '_ \| __| '__|
-    | |___ \ V /  __/ | | | |_| |_| | |_) | |_| |
-    |_____| \_/ \___|_| |_|\__|\___/| .__/ \__|_|
-                                    |_|
-*/
-/// \subsection EventUptr
-/// \brief Convenience wrapper for managing events
-
-struct EventDeleter {
-    void operator()(event *p) {
-        if (p) {
-            event_free(p);
-        }
-    }
-};
-using EventUptr = std::unique_ptr<event, EventDeleter>;
 
 // ## Reactor
 /*-
@@ -219,8 +197,12 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
     /// \subsection Pollfd
     /// \brief Code to poll system file descriptors.
 
+#define MK_POLLIN (1 << 0)
+
+#define MK_POLLOUT (1 << 1)
+
     void pollfd(socket_t sockfd, short events, double timeout,
-                Callback<Error, short> &&callback) override {
+                Callback<Error, short> &&callback) {
         timeval tv{};
         short evflags = EV_TIMEOUT;
         if ((events & MK_POLLIN) != 0) {
@@ -235,6 +217,18 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
             delete cbp;
             throw std::runtime_error("event_base_once");
         }
+    }
+
+    void pollin(socket_t fd, double timeo, Callback<Error> &&cb) override {
+        pollfd(fd, MK_POLLIN, timeo, [cb = std::move(cb)](Error err, short) {
+            cb(std::move(err));
+        });
+    }
+
+    void pollout(socket_t fd, double timeo, Callback<Error> &&cb) override {
+        pollfd(fd, MK_POLLOUT, timeo, [cb = std::move(cb)](Error err, short) {
+            cb(std::move(err));
+        });
     }
 };
 
@@ -282,10 +276,6 @@ static inline void mk_pollfd_cb(evutil_socket_t, short evflags, void *opaque) {
     // In case of exception here, the stack is going to unwind, tearing down
     // the libevent loop and leaking forever `cbp` and the event once that was
     // used to invoke this callback.
-    (*cbp)(err, flags);
+    (*cbp)(std::move(err), flags);
     delete cbp;
-}
-
-static inline void mk_periodic_cb(evutil_socket_t, short, void *) {
-    /* NOTHING */
 }

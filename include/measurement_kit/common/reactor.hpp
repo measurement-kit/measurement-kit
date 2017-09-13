@@ -11,9 +11,6 @@
 
 struct event_base;
 
-#define MK_POLLIN 1 << 0
-#define MK_POLLOUT 1 << 1
-
 namespace mk {
 
 class Reactor {
@@ -31,12 +28,12 @@ class Reactor {
         especially under Windows, but suitable to integrate with other
         async libraries such as c-ares and perhaps others.
     */
-    virtual void pollfd(
-                socket_t sockfd,
-                short events,
-                double timeout,
-                Callback<Error, short> &&callback
-        ) = 0;
+
+    virtual void pollin(socket_t sockfd, double timeout,
+                        Callback<Error> &&cb) = 0;
+
+    virtual void pollout(socket_t sockfd, double timeout,
+                         Callback<Error> &&cb) = 0;
 
     virtual event_base *get_event_base() = 0;
 
