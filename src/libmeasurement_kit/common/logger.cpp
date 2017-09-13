@@ -3,15 +3,16 @@
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/common/detail/json.hpp>
-
+#include <measurement_kit/common/detail/locked.hpp>
+#include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/ext/json.hpp>
 #include <stdio.h>
-
-#include <measurement_kit/common.hpp>
-#include <measurement_kit/ext.hpp>
 
 namespace mk {
 
-/*static*/ SharedPtr<Logger> Logger::make() { return SharedPtr<Logger>(new Logger); }
+/*static*/ SharedPtr<Logger> Logger::make() {
+    return std::make_shared<Logger>();
+}
 
 Logger::Logger() {
     consumer_ = [](uint32_t level, const char *s) {
@@ -38,15 +39,18 @@ Logger::Logger() {
 }
 
 void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
+
     if (!consumer_ and !ofile_) {
         return;
     }
-    std::lock_guard<std::mutex> lock(mutex_);
+
     int res = vsnprintf(buffer_, sizeof(buffer_), fmt, ap);
 
     // Once we know that res is non-negative we make it unsigned,
     // which allows the compiler to promote the smaller of res and
     // sizeof (buffer) to the correct size if needed.
+
     if (res < 0) {
         res = snprintf(buffer_, sizeof(buffer_),
                        "logger: cannot format message with level %d "
@@ -108,39 +112,60 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
     } while (0)
 
 void Logger::log(uint32_t level, const char *fmt, ...) { XX(this, level); }
+
 void Logger::warn(const char *fmt, ...) { XX(this, MK_LOG_WARNING); }
+
 void Logger::info(const char *fmt, ...) { XX(this, MK_LOG_INFO); }
+
 void Logger::debug(const char *fmt, ...) { XX(this, MK_LOG_DEBUG); }
 
-void Logger::on_eof(Callback<> f) {
-    eof_handlers_.push_back(f);
+void Logger::debug2(const char *fmt, ...) { XX(this, MK_LOG_DEBUG2); }
+
+void Logger::set_verbosity(uint32_t v) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
+    verbosity_ = (v & MK_LOG_VERBOSITY_MASK);
 }
 
-void Logger::on_event(Callback<const char *> f) { event_handler_ = f; }
-
-void log(uint32_t level, const char *fmt, ...) { XX(Logger::global(), level); }
-void warn(const char *fmt, ...) { XX(Logger::global(), MK_LOG_WARNING); }
-void info(const char *fmt, ...) { XX(Logger::global(), MK_LOG_INFO); }
-void debug(const char *fmt, ...) { XX(Logger::global(), MK_LOG_DEBUG); }
-
-#undef XX
-
 void Logger::increase_verbosity() {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
     if (verbosity_ < MK_LOG_VERBOSITY_MASK) {
         ++verbosity_;
     }
 }
 
-void Logger::on_progress(Callback<double, const char *> fn) {
+uint32_t Logger::get_verbosity() {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
+    return verbosity_;
+}
+
+void Logger::on_log(Callback<uint32_t, const char *> &&fn) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
+    consumer_ = std::move(fn);
+}
+
+void Logger::on_eof(Callback<> &&f) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
+    eof_handlers_.push_back(std::move(f));
+}
+
+void Logger::on_event(Callback<const char *> &&f) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
+    event_handler_ = std::move(f);
+}
+
+void Logger::on_progress(Callback<double, const char *> &&fn) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
     progress_handler_ = fn;
 }
 
 void Logger::set_logfile(std::string path) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
     ofile_.reset(new std::ofstream(path));
     // TODO: what to do if we cannot open the logfile? return error?
 }
 
 void Logger::progress(double prog, const char *s) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
     if (progress_handler_) {
         prog = prog * progress_scale_ + progress_offset_;
         try {
@@ -152,6 +177,7 @@ void Logger::progress(double prog, const char *s) {
 }
 
 void Logger::progress_relative(double prog, const char *s) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
     if (progress_handler_) {
         progress_relative_ += prog * progress_scale_;
         try {
@@ -163,12 +189,21 @@ void Logger::progress_relative(double prog, const char *s) {
 }
 
 void Logger::set_progress_offset(double offset) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
     progress_offset_ = offset;
     progress_relative_ = 0.0;
 }
 
 void Logger::set_progress_scale(double scale) {
+    std::unique_lock<std::recursive_mutex> _{mutex_};
     progress_scale_ = scale;
+}
+
+/*static*/ SharedPtr<Logger> Logger::global() {
+    return locked_global([]() {
+        static SharedPtr<Logger> singleton = Logger::make();
+        return singleton;
+    });
 }
 
 Logger::~Logger() {
@@ -180,5 +215,29 @@ Logger::~Logger() {
         }
     }
 }
+
+void log(uint32_t level, const char *fmt, ...) { XX(Logger::global(), level); }
+
+void warn(const char *fmt, ...) { XX(Logger::global(), MK_LOG_WARNING); }
+
+void info(const char *fmt, ...) { XX(Logger::global(), MK_LOG_INFO); }
+
+void debug(const char *fmt, ...) { XX(Logger::global(), MK_LOG_DEBUG); }
+
+void debug2(const char *fmt, ...) { XX(Logger::global(), MK_LOG_DEBUG2); }
+
+void set_verbosity(uint32_t v) { Logger::global()->set_verbosity(v); }
+
+void increase_verbosity() { Logger::global()->increase_verbosity(); }
+
+uint32_t get_verbosity() { return Logger::global()->get_verbosity(); }
+
+void on_log(Callback<uint32_t, const char *> &&fn) {
+    Logger::global()->on_log(std::move(fn));
+}
+
+void set_logfile(std::string path) { Logger::global()->set_logfile(path); }
+
+#undef XX
 
 } // namespace mk

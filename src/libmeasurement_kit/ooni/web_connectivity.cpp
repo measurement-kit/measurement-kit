@@ -377,7 +377,7 @@ static void control_request(http::Headers headers_to_pass_along,
     }
 
     logger->info("Using backend %s", settings["backend"].c_str());
-    logger->log(MK_LOG_DEBUG2, "Body %s", body.c_str());
+    logger->debug2("Body %s", body.c_str());
 
     mk::dump_settings(settings, "web_connectivity", logger);
 

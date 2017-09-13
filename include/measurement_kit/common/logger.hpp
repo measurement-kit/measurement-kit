@@ -4,16 +4,15 @@
 #ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
+#include <cstdint>
+#include <fstream>
+#include <list>
 #include <measurement_kit/common/aaa_base.hpp>
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/detail/delegate.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
-
-#include <cstdint>
-#include <fstream>
-#include <list>
 #include <mutex>
 #include <stdarg.h>
 
@@ -31,30 +30,37 @@ namespace mk {
 
 class Logger : public NonCopyable, public NonMovable {
   public:
-    // TODO: refactor class to move all implementation in .cpp files
-
     static SharedPtr<Logger> make();
+
+    Logger();
 
     void logv(uint32_t, const char *, va_list)
               __attribute__((format(printf, 3, 0)));
+
     void log(uint32_t, const char *, ...)
              __attribute__((format(printf, 3, 4)));
 
     void warn(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+
     void info(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+
     void debug(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
-    void set_verbosity(uint32_t v) { verbosity_ = (v & MK_LOG_VERBOSITY_MASK); }
+    void debug2(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+
+    void set_verbosity(uint32_t v);
+
     void increase_verbosity();
-    uint32_t get_verbosity() { return verbosity_; }
 
-    void on_log(Callback<uint32_t, const char *> fn) { consumer_ = fn; }
+    uint32_t get_verbosity();
 
-    void on_eof(Callback<> fn);
+    void on_log(Callback<uint32_t, const char *> &&fn);
 
-    void on_event(Callback<const char *> fn);
+    void on_eof(Callback<> &&fn);
 
-    void on_progress(Callback<double, const char *> fn);
+    void on_event(Callback<const char *> &&fn);
+
+    void on_progress(Callback<double, const char *> &&fn);
 
     void set_logfile(std::string fpath);
 
@@ -66,10 +72,7 @@ class Logger : public NonCopyable, public NonMovable {
 
     void set_progress_scale(double scale);
 
-    static SharedPtr<Logger> global() {
-        static SharedPtr<Logger> singleton(new Logger);
-        return singleton;
-    }
+    static SharedPtr<Logger> global();
 
     ~Logger();
 
@@ -77,7 +80,7 @@ class Logger : public NonCopyable, public NonMovable {
     Delegate<uint32_t, const char *> consumer_;
     uint32_t verbosity_ = MK_LOG_WARNING;
     char buffer_[32768];
-    std::mutex mutex_;
+    std::recursive_mutex mutex_;
     SharedPtr<std::ofstream> ofile_;
     std::list<Delegate<>> eof_handlers_;
     Delegate<const char *> event_handler_;
@@ -85,26 +88,27 @@ class Logger : public NonCopyable, public NonMovable {
     double progress_offset_ = 0.0;
     double progress_scale_ = 1.0;
     double progress_relative_ = 0.0;
-
-    Logger();
 };
 
 void log(uint32_t, const char *, ...) __attribute__((format(printf, 2, 3)));
+
 void warn(const char *, ...) __attribute__((format(printf, 1, 2)));
-void debug(const char *, ...) __attribute__((format(printf, 1, 2)));
+
 void info(const char *, ...) __attribute__((format(printf, 1, 2)));
 
-inline void set_verbosity(uint32_t v) { Logger::global()->set_verbosity(v); }
-inline void increase_verbosity() { Logger::global()->increase_verbosity(); }
-inline uint32_t get_verbosity() { return Logger::global()->get_verbosity(); }
+void debug(const char *, ...) __attribute__((format(printf, 1, 2)));
 
-inline void on_log(Callback<uint32_t, const char *> fn) {
-    Logger::global()->on_log(fn);
-}
+void debug2(const char *, ...) __attribute__((format(printf, 1, 2)));
 
-inline void set_logfile(std::string path) {
-    Logger::global()->set_logfile(path);
-}
+void set_verbosity(uint32_t v);
+
+void increase_verbosity();
+
+uint32_t get_verbosity();
+
+void on_log(Callback<uint32_t, const char *> &&fn);
+
+void set_logfile(std::string path);
 
 } // namespace mk
 #endif

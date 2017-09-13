@@ -38,7 +38,7 @@ static inline void libssl_init_once(SharedPtr<Logger> logger) {
     locked_global([logger]() {
         static bool initialized = false;
         if (!initialized) {
-            logger->log(MK_LOG_DEBUG2, "initializing libssl once");
+            logger->debug2("initializing libssl once");
             SSL_library_init();
             ERR_load_crypto_strings();
             SSL_load_error_strings();
@@ -273,8 +273,7 @@ template <size_t max_cache_size = 64> class Cache {
             if (!maybe_context) {
                 return maybe_context.as_error();
             }
-            logger->log(MK_LOG_DEBUG2, "ssl: track ctx for: '%s'",
-                        ca_bundle_path.c_str());
+            logger->debug2("ssl: track ctx for: '%s'", ca_bundle_path.c_str());
             all_[ca_bundle_path] = *maybe_context;
         }
         SharedPtr<Context> context = all_[ca_bundle_path];
