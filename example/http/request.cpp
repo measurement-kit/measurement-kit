@@ -70,13 +70,13 @@ int main(int argc, char **argv) {
     }
     settings["http/url"] = argv[0];
 
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         http::request(
             settings,
             headers,
             body,
-            [=](Error error, Var<http::Response> response) {
+            [=](Error error, SharedPtr<http::Response> response) {
                 if (error) {
                     std::cout << "Error: " << error.explain() << "\n";
                     reactor->stop();

@@ -60,7 +60,7 @@ Error process_input_filepaths(
         const std::list<std::string> &input_filepaths,
         const std::string &probe_cc,
         const Settings &options,
-        Var<Logger> logger,
+        SharedPtr<Logger> logger,
         std::function<void(const std::string &)> on_open_error,
         std::function<void(const std::string &)> on_io_error
 );

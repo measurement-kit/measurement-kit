@@ -21,7 +21,7 @@ class Buffer {
 
     ~Buffer() {}
 
-    static Var<Buffer> make();
+    static SharedPtr<Buffer> make();
 
     /*
      * I expect to read (write) from (into) the input (output)
@@ -114,7 +114,7 @@ class Buffer {
 
     void write(size_t count, std::function<size_t(void *, size_t)> func);
 
-    Var<evbuffer> evbuf;
+    SharedPtr<evbuffer> evbuf;
 };
 
 } // namespace net

@@ -58,16 +58,16 @@ int main(int argc, char **argv) {
     }
     http::Url url = http::parse_url(argv[0]);
 
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect(url.address, url.port, [=](Error error, Var<Transport> tx) {
+        connect(url.address, url.port, [=](Error error, SharedPtr<Transport> tx) {
             if (error) {
                 debug("* error: %d", (int)error);
                 reactor->stop();
                 return;
             }
-            Var<Buffer> incoming(new Buffer);
-            Var<bool> reading_meta(new bool(true));
+            SharedPtr<Buffer> incoming(new Buffer);
+            SharedPtr<bool> reading_meta(new bool(true));
             tx->set_timeout(10);
             tx->write("GET " + url.pathquery + " HTTP/1.0\r\n");
             debug("> GET %s HTTP/1.0", url.pathquery.c_str());

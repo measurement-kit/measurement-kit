@@ -18,7 +18,7 @@ HttpInvalidRequestLineTest::HttpInvalidRequestLineTest() : BaseTest() {
 }
 
 void HttpInvalidRequestLineRunnable::main(std::string, Settings options,
-                                          Callback<Var<report::Entry>> cb) {
+                                          Callback<SharedPtr<report::Entry>> cb) {
     ooni::http_invalid_request_line(options, cb, reactor, logger);
 }
 

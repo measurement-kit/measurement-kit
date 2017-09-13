@@ -9,7 +9,7 @@
 
 using namespace mk;
 
-static void coroutine(Var<Reactor> reactor, Callback<Error, Continuation<Error>> cb) {
+static void coroutine(SharedPtr<Reactor> reactor, Callback<Error, Continuation<Error>> cb) {
     // Pretend to do some work
     reactor->call_later(1.0, [=]() {
 
@@ -27,7 +27,7 @@ static void coroutine(Var<Reactor> reactor, Callback<Error, Continuation<Error>>
 }
 
 TEST_CASE("The continuation works as expected") {
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
 
         // Spawn the coroutine and wait for it to pause

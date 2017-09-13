@@ -14,18 +14,18 @@ void run(
         std::string measurement_server_hostname,
         std::string auth_token,
         std::string real_address,
-        Var<report::Entry> entry,
+        SharedPtr<report::Entry> entry,
         Settings settings,
-        Var<Reactor> reactor,
-        Var<Logger> logger,
+        SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger,
         Callback<Error> callback
 );
 
 void negotiate(
-        Var<report::Entry> entry,
+        SharedPtr<report::Entry> entry,
         Settings settings,
-        Var<Reactor> reactor,
-        Var<Logger> logger,
+        SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger,
         Callback<Error> callback
 );
 

@@ -12,9 +12,9 @@ namespace ooni {
 using namespace mk::report;
 
 void meek_fronted_requests(std::string input, Settings options,
-                   Callback<Var<report::Entry>> callback,
-                   Var<Reactor> reactor, Var<Logger> logger) {
-    Var<Entry> entry(new Entry);
+                   Callback<SharedPtr<report::Entry>> callback,
+                   SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<Entry> entry(new Entry);
 
     std::string expected_body, outer_host, inner_host;
 
@@ -59,7 +59,7 @@ void meek_fronted_requests(std::string input, Settings options,
                   inner_url->address.c_str());
 
     templates::http_request(entry, options, headers, body,
-                            [=](Error err, Var<http::Response> response) {
+                            [=](Error err, SharedPtr<http::Response> response) {
                                 if (err) {
                                     logger->debug(
                                         "meek_fronted_requests: http-request error: %s",

@@ -84,8 +84,8 @@ std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
 }
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
-void getaddrinfo_async(std::string name, addrinfo hints, Var<Reactor> reactor,
-                       Var<Logger> logger,
+void getaddrinfo_async(std::string name, addrinfo hints, SharedPtr<Reactor> reactor,
+                       SharedPtr<Logger> logger,
                        Callback<Error, std::vector<Answer>> cb) {
     /*
      * Move everything down such that there is always just one function in

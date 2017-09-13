@@ -12,7 +12,7 @@ namespace net {
 
 class EmitterBase : public Transport {
   public:
-    EmitterBase(Var<Reactor> reactor, Var<Logger> logger)
+    EmitterBase(SharedPtr<Reactor> reactor, SharedPtr<Logger> logger)
         : reactor(reactor), logger(logger) {}
 
     ~EmitterBase() override;
@@ -220,8 +220,8 @@ class EmitterBase : public Transport {
 
   protected:
     // TODO: it would probably better to have accessors
-    Var<Reactor> reactor = Reactor::global();
-    Var<Logger> logger = Logger::global();
+    SharedPtr<Reactor> reactor = Reactor::global();
+    SharedPtr<Logger> logger = Logger::global();
     Buffer output_buff;
 
   private:
@@ -242,7 +242,7 @@ class EmitterBase : public Transport {
 
 class Emitter : public EmitterBase {
   public:
-    Emitter(Var<Reactor> reactor, Var<Logger> logger)
+    Emitter(SharedPtr<Reactor> reactor, SharedPtr<Logger> logger)
         : EmitterBase(reactor, logger) {}
 
     ~Emitter() override;

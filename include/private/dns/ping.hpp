@@ -14,7 +14,7 @@ namespace dns {
 template <typename ResultsCollector, typename Callback>
 void ping_nameserver(QueryClass dns_class, QueryType dns_type, std::string name,
                      double interval, Maybe<double> run_for, Settings settings,
-                     Var<Reactor> reactor, Var<Logger> logger,
+                     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
                      ResultsCollector collector, Callback callback) {
     if (run_for) {
         *run_for += time_now(); /* From relative to absolute timing */
@@ -24,7 +24,7 @@ void ping_nameserver(QueryClass dns_class, QueryType dns_type, std::string name,
           [=]() { return run_for && time_now() > *run_for; },
           [=]() {
               query(dns_class, dns_type, name,
-                    [=](Error err, Var<Message> msg) { collector(err, msg); },
+                    [=](Error err, SharedPtr<Message> msg) { collector(err, msg); },
                     settings, reactor, logger);
           });
 }

@@ -136,7 +136,7 @@ std::string serialize_endpoint(Endpoint epnt) {
 
 int storage_init(sockaddr_storage *storage, socklen_t *salen,
                  const char *family, const char *address, const char *port,
-                 Var<Logger> logger) {
+                 SharedPtr<Logger> logger) {
     int _family;
     /* TODO: support also AF_INET, AF_INET6, ... */
     if (strcmp(family, "PF_INET") == 0) {
@@ -151,7 +151,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen,
 }
 
 int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
-                 const char *address, const char *port, Var<Logger> logger) {
+                 const char *address, const char *port, SharedPtr<Logger> logger) {
     const char *errstr;
     int _port = (int)mkp_strtonum(port, 0, 65535, &errstr);
     if (errstr != nullptr) {
@@ -162,7 +162,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
 }
 
 int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
-                 const char *address, int _port, Var<Logger> logger) {
+                 const char *address, int _port, SharedPtr<Logger> logger) {
     int result;
 
     if (_port < 0 || _port > 65535) {
@@ -219,7 +219,7 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
     return 0;
 }
 
-socket_t socket_create(int domain, int type, int protocol, Var<Logger> logger) {
+socket_t socket_create(int domain, int type, int protocol, SharedPtr<Logger> logger) {
     socket_t filedesc;
     int result;
 

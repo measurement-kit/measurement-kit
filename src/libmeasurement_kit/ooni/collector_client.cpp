@@ -43,59 +43,59 @@ Error valid_entry(Entry entry) {
     return NoError();
 }
 
-void post(Var<Transport> transport, std::string url_extra, std::string body,
+void post(SharedPtr<Transport> transport, std::string url_extra, std::string body,
           Callback<Error, nlohmann::json> callback, Settings conf,
-          Var<Reactor> reactor, Var<Logger> logger) {
+          SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     post_impl(transport, url_extra, body, callback, conf, reactor, logger);
 }
 
-void connect(Settings settings, Callback<Error, Var<Transport>> callback,
-             Var<Reactor> reactor, Var<Logger> logger) {
+void connect(Settings settings, Callback<Error, SharedPtr<Transport>> callback,
+             SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     connect_impl(settings, callback, reactor, logger);
 }
 
-void create_report(Var<Transport> transport, Entry entry,
+void create_report(SharedPtr<Transport> transport, Entry entry,
                    Callback<Error, std::string> callback, Settings settings,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+                   SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     create_report_impl(transport, entry, callback, settings, reactor, logger);
 }
 
 void connect_and_create_report(report::Entry entry,
                                Callback<Error, std::string> callback,
-                               Settings settings, Var<Reactor> reactor,
-                               Var<Logger> logger) {
+                               Settings settings, SharedPtr<Reactor> reactor,
+                               SharedPtr<Logger> logger) {
     connect_and_create_report_impl(entry, callback, settings, reactor, logger);
 }
 
-void update_report(Var<Transport> transport, std::string report_id, Entry entry,
+void update_report(SharedPtr<Transport> transport, std::string report_id, Entry entry,
                    Callback<Error> callback, Settings settings,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+                   SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     update_report_impl(transport, report_id, entry, callback, settings, reactor,
                        logger);
 }
 
 void connect_and_update_report(std::string report_id, report::Entry entry,
                                Callback<Error> callback, Settings settings,
-                               Var<Reactor> reactor, Var<Logger> logger) {
+                               SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     connect_and_update_report_impl(report_id, entry, callback, settings,
                                    reactor, logger);
 }
 
-void close_report(Var<Transport> transport, std::string report_id,
+void close_report(SharedPtr<Transport> transport, std::string report_id,
                   Callback<Error> callback, Settings settings,
-                  Var<Reactor> reactor, Var<Logger> logger) {
+                  SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     close_report_impl(transport, report_id, callback, settings, reactor,
                       logger);
 }
 
 void connect_and_close_report(std::string report_id, Callback<Error> callback,
-                              Settings settings, Var<Reactor> reactor,
-                              Var<Logger> logger) {
+                              Settings settings, SharedPtr<Reactor> reactor,
+                              SharedPtr<Logger> logger) {
     connect_and_close_report_impl(report_id, callback, settings, reactor,
                                   logger);
 }
 
-ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger) {
+ErrorOr<Entry> get_next_entry(SharedPtr<std::istream> file, SharedPtr<Logger> logger) {
     std::string line;
     std::getline(*file, line);
     if (file->eof()) {
@@ -118,7 +118,7 @@ ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger) {
 
 void submit_report(std::string filepath, std::string collector_base_url,
                    Callback<Error> callback, Settings conf,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+                   SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     submit_report_impl(filepath, collector_base_url, "",
                        callback, conf, reactor,
                        logger);
@@ -127,7 +127,7 @@ void submit_report(std::string filepath, std::string collector_base_url,
 void submit_report(std::string filepath, std::string collector_base_url,
                    std::string collector_front_domain,
                    Callback<Error> callback, Settings conf,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+                   SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     submit_report_impl(filepath, collector_base_url,
                        collector_front_domain,
                        callback, conf, reactor,

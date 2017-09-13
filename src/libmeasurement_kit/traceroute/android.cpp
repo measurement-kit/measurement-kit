@@ -55,7 +55,7 @@ void mk_traceroute_android_unused() {}
 namespace mk {
 namespace traceroute {
 
-AndroidProber::AndroidProber(bool a, int port, Var<Reactor> r, Var<Logger> l)
+AndroidProber::AndroidProber(bool a, int port, SharedPtr<Reactor> r, SharedPtr<Logger> l)
     : use_ipv4_(a), reactor(r), port_(port), logger(l) {}
 
 void AndroidProber::init() {

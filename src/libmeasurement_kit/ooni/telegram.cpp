@@ -14,13 +14,13 @@ namespace ooni {
 
 using namespace mk::report;
 
-static void tcp_many(const std::vector<std::string> ip_ports, Var<Entry> entry,
-        Settings options, Var<Reactor> reactor, Var<Logger> logger,
+static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> entry,
+        Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error> all_done_cb) {
     // if any endpoints are unblocked, switch this to false
     (*entry)["telegram_tcp_blocking"] = true;
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
-        return [=](Error connect_error, Var<net::Transport> txp) {
+        return [=](Error connect_error, SharedPtr<net::Transport> txp) {
             Entry result = {
                 {"ip", ip}, {"port", port},
                 {"status", {{"success", nullptr}, {"failure", nullptr}}},
@@ -65,8 +65,8 @@ static void tcp_many(const std::vector<std::string> ip_ports, Var<Entry> entry,
 }
 
 static void http_many(const std::vector<std::string> urls, std::string type,
-    Var<Entry> entry, Settings options, Var<Reactor> reactor,
-    Var<Logger> logger, Callback<Error> all_done_cb) {
+    SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
+    SharedPtr<Logger> logger, Callback<Error> all_done_cb) {
     if (type == "endpoints") {
         // if any endpoints are unblocked, switch this to false
         (*entry)["telegram_tcp_blocking"] = true;
@@ -76,7 +76,7 @@ static void http_many(const std::vector<std::string> urls, std::string type,
         (*entry)["telegram_web_failure"] = nullptr;
     }
     auto http_cb = [=](std::string url, Callback<Error> done_cb) {
-        return [=](Error err, Var<http::Response> response) {
+        return [=](Error err, SharedPtr<http::Response> response) {
             if (!!err) {
                 logger->info(
                     "telegram: failure HTTP connecting to %s", url.c_str());
@@ -112,8 +112,8 @@ static void http_many(const std::vector<std::string> urls, std::string type,
     mk::parallel(continuations, all_done_cb, 3 /* parallelism */);
 }
 
-void telegram(Settings options, Callback<Var<report::Entry>> callback,
-    Var<Reactor> reactor, Var<Logger> logger) {
+void telegram(Settings options, Callback<SharedPtr<report::Entry>> callback,
+    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::vector<std::string> TELEGRAM_WEB_URLS = {
         "http://web.telegram.org/", "https://web.telegram.org/"};
     // should probably just make these std::pair<std::string,int>,
@@ -133,7 +133,7 @@ void telegram(Settings options, Callback<Var<report::Entry>> callback,
         "http://149.154.171.5:80", "http://149.154.171.5:443"};
 
     logger->info("starting telegram test");
-    Var<Entry> entry(new Entry);
+    SharedPtr<Entry> entry(new Entry);
 
     mk::fcompose(mk::fcompose_policy_async(),
         [=](Callback<> cb) {

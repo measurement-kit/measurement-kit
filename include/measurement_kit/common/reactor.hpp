@@ -7,7 +7,7 @@
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/socket.hpp>
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 struct event_base;
 
@@ -18,8 +18,8 @@ namespace mk {
 
 class Reactor {
   public:
-    static Var<Reactor> make();
-    static Var<Reactor> global();
+    static SharedPtr<Reactor> make();
+    static SharedPtr<Reactor> global();
     virtual ~Reactor();
 
     virtual void run_in_background_thread(Callback<> &&cb) = 0;

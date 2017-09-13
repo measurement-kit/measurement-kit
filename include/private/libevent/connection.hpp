@@ -56,10 +56,10 @@ static inline std::string map_bufferevent_event(short what) {
 
 class Connection : public EmitterBase, public NonMovable, public NonCopyable {
   public:
-    static Var<Transport> make(bufferevent *bev, Var<Reactor> reactor,
-                               Var<Logger> logger) {
+    static SharedPtr<Transport> make(bufferevent *bev, SharedPtr<Reactor> reactor,
+                               SharedPtr<Logger> logger) {
         Connection *conn = new Connection(bev, reactor, logger);
-        conn->self = Var<Transport>(conn);
+        conn->self = SharedPtr<Transport>(conn);
         return conn->self;
     }
 
@@ -218,7 +218,7 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
     }
 
   private:
-    Connection(bufferevent *bev, Var<Reactor> reactor, Var<Logger> logger)
+    Connection(bufferevent *bev, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger)
         : EmitterBase{reactor, logger} {
 
         this->bev = bev;
@@ -229,7 +229,7 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
     }
 
     bufferevent *bev = nullptr;
-    Var<Transport> self;
+    SharedPtr<Transport> self;
     Callback<> close_cb;
     bool suppressed_eof = false;
     bool shutdown_called = false;

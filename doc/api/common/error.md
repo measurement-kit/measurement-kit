@@ -27,7 +27,7 @@ class Error : public std::exception {
     std::string as_ooni_error();
     const chat *what() const noexcept override;
 
-    std::vector<Var<Error>> child_errors;
+    std::vector<SharedPtr<Error>> child_errors;
     int code = 0;
     std::string reason;
 };

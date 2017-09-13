@@ -11,7 +11,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 namespace mk {
 
 template <typename Callable, typename StopPredicate, typename Callback>
-void every(double delay, Var<Reactor> reactor, Callback callback,
+void every(double delay, SharedPtr<Reactor> reactor, Callback callback,
            StopPredicate stop_predicate, Callable callable);
 
 }

@@ -10,9 +10,9 @@ namespace ooni {
 using namespace mk::report;
 
 void tcp_connect(std::string input, Settings options,
-                 Callback<Var<Entry>> callback, Var<Reactor> reactor,
-                 Var<Logger> logger) {
-    Var<Entry> entry(new Entry);
+                 Callback<SharedPtr<Entry>> callback, SharedPtr<Reactor> reactor,
+                 SharedPtr<Logger> logger) {
+    SharedPtr<Entry> entry(new Entry);
     (*entry)["connection"] = nullptr;
     // Note: unlike ooni-probe, here we also accept endpoints where the port
     // is not specified, defaulting to 80 in such case.
@@ -24,7 +24,7 @@ void tcp_connect(std::string input, Settings options,
     }
     options["host"] = maybe_epnt->hostname;
     options["port"] = maybe_epnt->port;
-    templates::tcp_connect(options, [=](Error err, Var<net::Transport> txp) {
+    templates::tcp_connect(options, [=](Error err, SharedPtr<net::Transport> txp) {
         logger->debug("tcp_connect: Got response to TCP connect test");
         if (err) {
             (*entry)["connection"] = err.as_ooni_error();

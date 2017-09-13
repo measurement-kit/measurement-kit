@@ -7,8 +7,8 @@
 
 namespace mk {
 
-/*static*/ Var<Reactor> Reactor::make() {
-    return locked_global([]() { return Var<Reactor>{new libevent::Reactor<>}; });
+/*static*/ SharedPtr<Reactor> Reactor::make() {
+    return locked_global([]() { return SharedPtr<Reactor>{new libevent::Reactor<>}; });
 }
 
 Reactor::~Reactor() {}
@@ -18,9 +18,9 @@ void Reactor::run_with_initial_event(Callback<> &&cb) {
     run();
 }
 
-/*static*/ Var<Reactor> Reactor::global() {
+/*static*/ SharedPtr<Reactor> Reactor::global() {
     return locked_global([]() {
-        static Var<Reactor> singleton = make();
+        static SharedPtr<Reactor> singleton = make();
         return singleton;
     });
 }

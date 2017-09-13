@@ -45,9 +45,9 @@ int main(int argc, char **argv) {
     }
     std::string domain = argv[0];
 
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect(domain, port, [=](Error err, Var<Transport> txp) {
+        connect(domain, port, [=](Error err, SharedPtr<Transport> txp) {
             std::cout << "Overall connect result: " << err.as_ooni_error() << "\n";
             auto resolve_result = txp->dns_result();
             std::cout << "input was valid ipv4: " <<

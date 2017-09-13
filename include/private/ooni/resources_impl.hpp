@@ -40,8 +40,8 @@ static inline std::string sanitize_version(const std::string &s) {
 
 template <MK_MOCK_AS(http::get, http_get)>
 void get_latest_release_impl(Callback<Error, std::string> callback,
-                             Settings settings, Var<Reactor> reactor,
-                             Var<Logger> logger) {
+                             Settings settings, SharedPtr<Reactor> reactor,
+                             SharedPtr<Logger> logger) {
     /*
      * Note: this code does not use GitHub's "latest" release feature because
      * upon creating a new release that is marked as latest but it does not
@@ -55,7 +55,7 @@ void get_latest_release_impl(Callback<Error, std::string> callback,
     set_max_redirects(settings);
     auto url = get_base_url(settings) + "download/latest/version";
     logger->info("Downloading latest version; please, be patient...");
-    http_get(url, [=](Error error, Var<Response> response) {
+    http_get(url, [=](Error error, SharedPtr<Response> response) {
         if (error) {
             callback(error, "");
             return;
@@ -73,14 +73,14 @@ void get_latest_release_impl(Callback<Error, std::string> callback,
 template <MK_MOCK_AS(http::get, http_get)>
 void get_manifest_as_json_impl(
         std::string latest, Callback<Error, nlohmann::json> callback,
-        Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+        Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     auto url = get_base_url(settings);
     url += "download/";
     url += latest;
     url += "/manifest.json";
     set_max_redirects(settings);
     logger->info("Downloading manifest; please, be patient...");
-    http_get(url, [=](Error error, Var<Response> response) {
+    http_get(url, [=](Error error, SharedPtr<Response> response) {
         nlohmann::json result;
         if (error) {
             callback(error, result);
@@ -112,8 +112,8 @@ static inline std::string sanitize_path(const std::string &s) {
 template <MK_MOCK_AS(http::get, http_get), MK_MOCK(ostream_bad)>
 void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
                                     std::string country, Callback<Error> cb,
-                                    Settings settings, Var<Reactor> reactor,
-                                    Var<Logger> logger) {
+                                    Settings settings, SharedPtr<Reactor> reactor,
+                                    SharedPtr<Logger> logger) {
     if (!manifest.is_object()) {
         reactor->call_soon([=]() { cb(JsonDomainError()); });
         return;
@@ -153,7 +153,7 @@ void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
             std::string path = sanitize_path(entry["path"]);
             url += path;
             http_get(url,
-                     [=](Error error, Var<Response> response) {
+                     [=](Error error, SharedPtr<Response> response) {
                          if (error) {
                              cb(error);
                              return;
@@ -212,7 +212,7 @@ void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
 template <MK_MOCK(get_manifest_as_json), MK_MOCK(get_resources_for_country)>
 void get_resources_impl(std::string latest, std::string country,
                         Callback<Error> callback, Settings settings,
-                        Var<Reactor> reactor, Var<Logger> logger) {
+                        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     get_manifest_as_json(latest,
                          [=](Error error, nlohmann::json manifest) {
                              if (error) {

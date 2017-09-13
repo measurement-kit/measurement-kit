@@ -23,7 +23,7 @@ namespace mk {
 
 class Logger : public NonCopyable, public NonMovable {
   public:
-    static Var<Logger> make();
+    static SharedPtr<Logger> make();
 
     void logv(uint32_t level, const char *fmt, va_list ap);
     void log(uint32_t level, const char *fmt, ...);
@@ -46,7 +46,7 @@ class Logger : public NonCopyable, public NonMovable {
     void set_progress_offset(double offset);
     void set_progress_scale(double offset);
 
-    static Var<Logger> global();
+    static SharedPtr<Logger> global();
 
     ~Logger();
 };
@@ -88,7 +88,7 @@ are only written if the current verbosity level is not lower than the verbosity
 level of the currently logged message. That is,
 
 ```C++
-    Var<Logger> logger = Logger::make();
+    SharedPtr<Logger> logger = Logger::make();
     logger->set_verbosity(MK_LOG_INFO);
     logger->info("This message will be printed");
     logger->debug("This one won't");
@@ -211,7 +211,7 @@ that set callbacks, change the logger behavior, etc., are not thread safe.
 using namespace mk;
 
 int main() {
-    Var<Logger> logger = Logger::make();
+    SharedPtr<Logger> logger = Logger::make();
 
     logger->set_verbosity(MK_LOG_DEBUG);
     logger->on_log([](uint32_t level, const char *log_line) {

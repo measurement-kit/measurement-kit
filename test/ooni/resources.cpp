@@ -14,16 +14,16 @@ TEST_CASE("sanitize_version() works as expected") {
             "1.2.3");
 }
 
-static void get_fail(std::string, Callback<Error, Var<http::Response>> cb,
-                     http::Headers, Settings, Var<Reactor>, Var<Logger>,
-                     Var<http::Response>, int) {
+static void get_fail(std::string, Callback<Error, SharedPtr<http::Response>> cb,
+                     http::Headers, Settings, SharedPtr<Reactor>, SharedPtr<Logger>,
+                     SharedPtr<http::Response>, int) {
     cb(MockedError(), nullptr);
 }
 
-static void get_500(std::string, Callback<Error, Var<http::Response>> cb,
-                    http::Headers, Settings, Var<Reactor>, Var<Logger>,
-                    Var<http::Response>, int) {
-    Var<http::Response> response{new http::Response};
+static void get_500(std::string, Callback<Error, SharedPtr<http::Response>> cb,
+                    http::Headers, Settings, SharedPtr<Reactor>, SharedPtr<Logger>,
+                    SharedPtr<http::Response>, int) {
+    SharedPtr<http::Response> response{new http::Response};
     response->status_code = 500;
     cb(NoError(), response);
 }
@@ -49,7 +49,7 @@ TEST_CASE("get_latest_release() works as expected") {
 
 #if ENABLE_INTEGRATION_TESTS
     SECTION("Integration test") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             ooni::resources::get_latest_release(
                 [=](Error e, std::string s) {
@@ -64,10 +64,10 @@ TEST_CASE("get_latest_release() works as expected") {
 }
 
 static void get_invalid_json(std::string,
-                             Callback<Error, Var<http::Response>> cb,
-                             http::Headers, Settings, Var<Reactor>, Var<Logger>,
-                             Var<http::Response>, int) {
-    Var<http::Response> response{new http::Response};
+                             Callback<Error, SharedPtr<http::Response>> cb,
+                             http::Headers, Settings, SharedPtr<Reactor>, SharedPtr<Logger>,
+                             SharedPtr<http::Response>, int) {
+    SharedPtr<http::Response> response{new http::Response};
     response->status_code = 200;
     response->body = "{";
     cb(NoError(), response);
@@ -121,10 +121,10 @@ TEST_CASE("sanitize_path() works as expected") {
 }
 
 static void get_antani_body(std::string,
-                            Callback<Error, Var<http::Response>> cb,
-                            http::Headers, Settings, Var<Reactor>, Var<Logger>,
-                            Var<http::Response>, int) {
-    Var<http::Response> response{new http::Response};
+                            Callback<Error, SharedPtr<http::Response>> cb,
+                            http::Headers, Settings, SharedPtr<Reactor>, SharedPtr<Logger>,
+                            SharedPtr<http::Response>, int) {
+    SharedPtr<http::Response> response{new http::Response};
     response->status_code = 200;
     response->body = "antani";
     cb(NoError(), response);
@@ -137,7 +137,7 @@ static bool io_error(const std::ostream &) {
 TEST_CASE("get_resources_for_country() works as expected") {
 
     SECTION("When manifest is not an object") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources_for_country_impl(
                 "6", nullptr, "IT",
@@ -150,7 +150,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
     }
 
     SECTION("When manifest does not contain a resources section") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources_for_country_impl(
                 "6", nlohmann::json::object(), "IT",
@@ -163,7 +163,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
     }
 
     SECTION("When manifest resources are not objects") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             nlohmann::json root;
             root["resources"].push_back(nullptr);
@@ -184,7 +184,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
     }
 
     SECTION("When manifest resources do not contain the country key") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             nlohmann::json root;
             root["resources"].push_back(nlohmann::json::object());
@@ -205,7 +205,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
     }
 
     SECTION("When a specific country code is selected others are skipped") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
@@ -233,7 +233,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
     }
 
     SECTION("The ALL selector selects all countries") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
@@ -261,7 +261,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
     }
 
     SECTION("Deals with HTTP GET errors") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
@@ -289,7 +289,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
     }
 
     SECTION("Deals with HTTP GET returning error") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
@@ -318,7 +318,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
     }
 
     SECTION("Deals with missing sha256 keys in the manifest") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
@@ -347,7 +347,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
     }
 
     SECTION("Deals with invalid sha256 sums") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
@@ -379,7 +379,7 @@ TEST_CASE("get_resources_for_country() works as expected") {
     }
 
     SECTION("Deals with write file I/O error") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             nlohmann::json root = R"({
                 "resources": [{
@@ -414,27 +414,27 @@ TEST_CASE("get_resources_for_country() works as expected") {
 
 static void get_manifest_as_json_fail(std::string,
                                       Callback<Error, nlohmann::json> callback,
-                                      Settings, Var<Reactor>, Var<Logger>) {
+                                      Settings, SharedPtr<Reactor>, SharedPtr<Logger>) {
     callback(MockedError(), nullptr);
 }
 
 static void get_manifest_as_json_okay(std::string,
                                       Callback<Error, nlohmann::json> callback,
-                                      Settings, Var<Reactor>, Var<Logger>) {
+                                      Settings, SharedPtr<Reactor>, SharedPtr<Logger>) {
     callback(NoError(), nullptr);
 }
 
 static void get_resources_for_country_fail(std::string, nlohmann::json,
                                            std::string,
                                            Callback<Error> callback, Settings,
-                                           Var<Reactor>, Var<Logger>) {
+                                           SharedPtr<Reactor>, SharedPtr<Logger>) {
     callback(MockedError());
 }
 
 TEST_CASE("get_resources() works as expected") {
 
     SECTION("When get_manifest_as_json() fails") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources_impl<get_manifest_as_json_fail>(
                 "6", "IT",
@@ -447,7 +447,7 @@ TEST_CASE("get_resources() works as expected") {
     }
 
     SECTION("When get_resources_for_country() fails") {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources_impl<get_manifest_as_json_okay,
                                                 get_resources_for_country_fail>(
@@ -462,8 +462,8 @@ TEST_CASE("get_resources() works as expected") {
 
 #ifdef ENABLE_INTEGRATION_TESTS
     SECTION("Integration test") {
-        Var<Reactor> reactor = Reactor::make();
-        Var<Logger> logger = Logger::global();
+        SharedPtr<Reactor> reactor = Reactor::make();
+        SharedPtr<Logger> logger = Logger::global();
         logger->set_verbosity(MK_LOG_INFO);
         reactor->run_with_initial_event([=]() {
             ooni::resources::get_resources("6", "ALL",

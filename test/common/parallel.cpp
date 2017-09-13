@@ -17,7 +17,7 @@ TEST_CASE("mk::parallel() works as expected for empty vector") {
 }
 
 TEST_CASE("mk::parallel() works as expected with all successes") {
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         std::vector<Continuation<Error>> input;
         for (size_t i = 0; i < 16; ++i) {
@@ -38,7 +38,7 @@ TEST_CASE("mk::parallel() works as expected with all successes") {
 }
 
 TEST_CASE("mk::parallel() works as expected with some failures") {
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         std::vector<Continuation<Error>> input;
         for (size_t i = 0; i < 16; ++i) {
@@ -68,7 +68,7 @@ TEST_CASE("mk::parallel() works as expected with some failures") {
 }
 
 TEST_CASE("mk::parallel() works as expected with all failures") {
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         std::vector<Continuation<Error>> input;
         for (size_t i = 0; i < 16; ++i) {

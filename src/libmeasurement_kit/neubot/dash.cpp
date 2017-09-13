@@ -17,14 +17,14 @@ const std::vector<int> &dash_rates() {
 }
 
 void run(std::string measurement_server_hostname, std::string auth_token,
-         std::string real_address, Var<report::Entry> entry, Settings settings,
-         Var<Reactor> reactor, Var<Logger> logger, Callback<Error> callback) {
+         std::string real_address, SharedPtr<report::Entry> entry, Settings settings,
+         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger, Callback<Error> callback) {
     run_impl(measurement_server_hostname, auth_token, real_address, entry,
              settings, reactor, logger, callback);
 }
 
-void negotiate(Var<report::Entry> entry, Settings settings,
-               Var<Reactor> reactor, Var<Logger> logger,
+void negotiate(SharedPtr<report::Entry> entry, Settings settings,
+               SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
                Callback<Error> callback) {
     negotiate_impl(entry, settings, reactor, logger, callback);
 }

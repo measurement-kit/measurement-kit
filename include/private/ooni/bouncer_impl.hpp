@@ -20,8 +20,8 @@ my_json_parse_process_and_filter_errors(const std::string &data,
 }
 
 template <MK_MOCK(my_json_parse_process_and_filter_errors)>
-ErrorOr<Var<BouncerReply>> create_impl(std::string data, Var<Logger> logger) {
-    Var<BouncerReply> reply{new BouncerReply};
+ErrorOr<SharedPtr<BouncerReply>> create_impl(std::string data, SharedPtr<Logger> logger) {
+    SharedPtr<BouncerReply> reply{new BouncerReply};
     Error err = my_json_parse_process_and_filter_errors(data, [&](auto j) {
         reply->response = j;
         if (reply->response.find("error") != reply->response.end()) {
@@ -51,9 +51,9 @@ template <MK_MOCK_AS(http::request, http_request)>
 void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                          std::string test_version,
                          std::list<std::string> helpers,
-                         Callback<Error, Var<BouncerReply>> cb,
-                         Settings settings, Var<Reactor> reactor,
-                         Var<Logger> logger) {
+                         Callback<Error, SharedPtr<BouncerReply>> cb,
+                         Settings settings, SharedPtr<Reactor> reactor,
+                         SharedPtr<Logger> logger) {
 
     nlohmann::json request;
     nlohmann::json net_tests;
@@ -70,7 +70,7 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
 
     http_request(settings, {{"Content-Type", "application/json"}},
                  request.dump(),
-                 [=](Error error, Var<http::Response> resp) {
+                 [=](Error error, SharedPtr<http::Response> resp) {
                      if (error) {
                          logger->warn("Bouncer error: %s",
                                       error.explain().c_str());
@@ -78,7 +78,7 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                          return;
                      }
 
-                     ErrorOr<Var<BouncerReply>> reply(
+                     ErrorOr<SharedPtr<BouncerReply>> reply(
                          BouncerReply::create(resp->body, logger));
                      if (!reply) {
                          cb(reply.as_error(), nullptr);

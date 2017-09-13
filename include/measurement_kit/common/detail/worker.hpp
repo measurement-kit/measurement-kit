@@ -8,7 +8,7 @@
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 #include <chrono>
 #include <cassert>
@@ -111,8 +111,8 @@ class Worker {
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
-    static Var<Worker> default_tasks_queue() {
-        static Var<Worker> worker = Var<Worker>::make();
+    static SharedPtr<Worker> default_tasks_queue() {
+        static SharedPtr<Worker> worker = SharedPtr<Worker>::make();
         return worker;
     }
 

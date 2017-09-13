@@ -14,7 +14,7 @@ class BouncerReply {
   public:
     nlohmann::json response;
 
-    static ErrorOr<Var<BouncerReply>> create(std::string, Var<Logger>);
+    static ErrorOr<SharedPtr<BouncerReply>> create(std::string, SharedPtr<Logger>);
 
     ErrorOr<std::string> get_collector();
     ErrorOr<std::string> get_collector_alternate(std::string type);
@@ -32,8 +32,8 @@ namespace bouncer {
 
 void post_net_tests(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,
-                    Callback<Error, Var<BouncerReply>> cb, Settings settings,
-                    Var<Reactor> reactor, Var<Logger> logger);
+                    Callback<Error, SharedPtr<BouncerReply>> cb, Settings settings,
+                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger);
 
 #define MK_OONI_PRODUCTION_BOUNCER_URL "https://bouncer.ooni.io"
 #define MK_OONI_TESTING_BOUNCER_URL "https://bouncer.test.ooni.io"

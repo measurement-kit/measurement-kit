@@ -51,11 +51,11 @@ int main(int argc, char **argv) {
         settings["dns/nameserver"] = nameserver;
     }
 
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         std::cout << query_class << " " << query_type << "\n";
         dns::query(query_class.data(), query_type.data(), domain,
-            [=](Error e, Var<dns::Message> m) {
+            [=](Error e, SharedPtr<dns::Message> m) {
                 if (e) {
                     std::cout << "Error: " << e.code << "\n";
                     reactor->stop();

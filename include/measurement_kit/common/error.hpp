@@ -4,7 +4,7 @@
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 #include <string>
 #include <vector>
@@ -17,7 +17,7 @@ class Error : public std::exception {
     Error(int e) : Error(e, "", nullptr) {}
     Error(int e, std::string ooe) : Error(e, ooe, nullptr) {}
 
-    Error(int e, std::string ooe, Var<Error> c) : code(e), reason(ooe) {
+    Error(int e, std::string ooe, SharedPtr<Error> c) : code(e), reason(ooe) {
         if (code != 0 && reason == "") {
             reason = "unknown_failure " + std::to_string(code);
         }
@@ -27,7 +27,7 @@ class Error : public std::exception {
     }
 
     Error(int e, std::string ooe, Error c)
-        : Error(e, ooe, Var<Error>(new Error(c))) {}
+        : Error(e, ooe, SharedPtr<Error>(new Error(c))) {}
 
     operator bool() const { return code != 0; }
 
@@ -41,7 +41,7 @@ class Error : public std::exception {
     const char *what() const noexcept override { return reason.c_str(); }
 
     void add_child_error(const Error &err) {
-        Var<Error> container(new Error(err));
+        SharedPtr<Error> container(new Error(err));
         child_errors.push_back(container);
     }
 
@@ -60,7 +60,7 @@ class Error : public std::exception {
         return s;
     }
 
-    std::vector<Var<Error>> child_errors;
+    std::vector<SharedPtr<Error>> child_errors;
     int code = 0;
     std::string reason;
 };

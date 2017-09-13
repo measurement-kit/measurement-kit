@@ -7,8 +7,8 @@
 namespace mk {
 namespace ooni {
 
-ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data,
-                                                Var<Logger> logger) {
+ErrorOr<SharedPtr<BouncerReply>> BouncerReply::create(std::string data,
+                                                SharedPtr<Logger> logger) {
     return bouncer::create_impl(data, logger);
 }
 
@@ -86,8 +86,8 @@ namespace bouncer {
 
 void post_net_tests(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,
-                    Callback<Error, Var<BouncerReply>> cb, Settings settings,
-                    Var<Reactor> reactor, Var<Logger> logger) {
+                    Callback<Error, SharedPtr<BouncerReply>> cb, Settings settings,
+                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     post_net_tests_impl(base_bouncer_url, test_name, test_version, helpers, cb,
                         settings, reactor, logger);
 }

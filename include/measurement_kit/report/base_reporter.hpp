@@ -14,7 +14,7 @@ class Report;
 
 class BaseReporter : public NonCopyable, public NonMovable {
   public:
-    static Var<BaseReporter> make();
+    static SharedPtr<BaseReporter> make();
 
     virtual ~BaseReporter();
 

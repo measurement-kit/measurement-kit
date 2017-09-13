@@ -22,7 +22,7 @@ enum class HeaderParserState {
 
 class ResponseParserNg : public NonCopyable, public NonMovable {
   public:
-    ResponseParserNg(Var<Logger> = Logger::global());
+    ResponseParserNg(SharedPtr<Logger> = Logger::global());
 
     void on_begin(std::function<void()> fn) { begin_fn_ = fn; }
 
@@ -124,12 +124,12 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     Delegate<std::string> body_fn_;
     Delegate<> end_fn_;
 
-    Var<Logger> logger_ = Logger::global();
+    SharedPtr<Logger> logger_ = Logger::global();
     http_parser parser_;
     http_parser_settings settings_;
     Buffer buffer_;
 
-    // Variables used during parsing
+    // SharedPtriables used during parsing
     Response response_;
     HeaderParserState prev_ = HeaderParserState::NOTHING;
     std::string field_;
