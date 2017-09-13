@@ -31,7 +31,7 @@ TEST_CASE("The dns::ping() template works") {
                              Maybe<double>{10.0}, settings, reactor,
                              Logger::global(),
                              [](Error err, SharedPtr<dns::Message> message) {
-                                 std::cout << err.explain();
+                                 std::cout << err;
                                  if (message) {
                                      std::cout << " " << message->error_code;
                                      for (auto &a : message->answers) {

@@ -30,7 +30,7 @@ TEST_CASE("mk::parallel() works as expected with all successes") {
         mk::parallel(input, [=](Error error) {
             REQUIRE((error == NoError()));
             for (auto &sub_error: error.child_errors) {
-                REQUIRE((*sub_error == NoError()));
+                REQUIRE((sub_error == NoError()));
             }
             reactor->stop();
         });
@@ -57,9 +57,9 @@ TEST_CASE("mk::parallel() works as expected with some failures") {
             REQUIRE((error.child_errors.size() == 16));
             for (size_t i = 0; i < error.child_errors.size(); ++i) {
                 if ((i % 2) == 0) {
-                    REQUIRE((*error.child_errors[i] == MockedError()));
+                    REQUIRE((error.child_errors[i] == MockedError()));
                 } else {
-                    REQUIRE((*error.child_errors[i] == NoError()));
+                    REQUIRE((error.child_errors[i] == NoError()));
                 }
             }
             reactor->stop();
@@ -81,7 +81,7 @@ TEST_CASE("mk::parallel() works as expected with all failures") {
         mk::parallel(input, [=](Error error) {
             REQUIRE((error == ParallelOperationError()));
             for (auto &sub_error: error.child_errors) {
-                REQUIRE((*sub_error == MockedError()));
+                REQUIRE((sub_error == MockedError()));
             }
             reactor->stop();
         });

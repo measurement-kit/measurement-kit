@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
             body,
             [=](Error error, SharedPtr<http::Response> response) {
                 if (error) {
-                    std::cout << "Error: " << error.explain() << "\n";
+                    std::cout << "Error: " << error << "\n";
                     reactor->stop();
                     return;
                 }

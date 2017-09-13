@@ -4,8 +4,6 @@
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
-#include <measurement_kit/common/shared_ptr.hpp>
-
 #include <string>
 #include <vector>
 
@@ -13,67 +11,52 @@ namespace mk {
 
 class Error : public std::exception {
   public:
-    Error() : Error(0, "", nullptr) {}
-    Error(int e) : Error(e, "", nullptr) {}
-    Error(int e, std::string ooe) : Error(e, ooe, nullptr) {}
+    Error() : Error(0, "") {}
 
-    Error(int e, std::string ooe, SharedPtr<Error> c) : code(e), reason(ooe) {
+    Error(int e) : Error(e, "") {}
+
+    Error(int e, std::string r) : code{e}, reason{r} {
         if (code != 0 && reason == "") {
             reason = "unknown_failure " + std::to_string(code);
         }
-        if (c) {
-            child_errors.push_back(c);
-        }
     }
 
-    Error(int e, std::string ooe, Error c)
-        : Error(e, ooe, SharedPtr<Error>(new Error(c))) {}
+    Error(int e, std::string r, const Error &c) : Error(e, r) {
+        child_errors.push_back(c);
+    }
 
     operator bool() const { return code != 0; }
 
     bool operator==(int n) const { return code == n; }
-    bool operator==(Error e) const { return code == e.code; }
-    bool operator!=(int n) const { return code != n; }
-    bool operator!=(Error e) const { return code != e.code; }
 
-    std::string as_ooni_error() { return reason; }
+    bool operator==(Error e) const { return code == e.code; }
+
+    bool operator!=(int n) const { return code != n; }
+
+    bool operator!=(Error e) const { return code != e.code; }
 
     const char *what() const noexcept override { return reason.c_str(); }
 
     void add_child_error(const Error &err) {
-        SharedPtr<Error> container(new Error(err));
-        child_errors.push_back(container);
+        child_errors.push_back(err);
     }
 
-    std::string explain() const {
-        std::string s;
-        s += "{";
-        s += reason;
-        s += "}";
-        if (child_errors.size() > 0) {
-            s += " [";
-            for (auto &e : child_errors) {
-                s += e->explain();
-            }
-            s += "]";
-        }
-        return s;
-    }
-
-    std::vector<SharedPtr<Error>> child_errors;
+    std::vector<Error> child_errors;
     int code = 0;
     std::string reason;
 };
 
-#define MK_DEFINE_ERR(_code_, _name_, _ooe_)                                   \
+#define MK_DEFINE_ERR(_code_, _name_, _reason_)                                \
     class _name_ : public Error {                                              \
       public:                                                                  \
-        _name_() : Error(_code_, _ooe_) {}                                     \
-        _name_(std::string s) : Error(_code_, _ooe_) {                         \
+        _name_() : Error(_code_, _reason_) {}                                  \
+                                                                               \
+        _name_(std::string s) : Error(_code_, _reason_) {                      \
             reason += ": ";                                                    \
             reason += s;                                                       \
         }                                                                      \
-        _name_(Error e) : Error(_code_, _ooe_, e) {}                           \
+                                                                               \
+        _name_(Error e) : Error(_code_, _reason_, e) {}                        \
     };
 
 MK_DEFINE_ERR(0, NoError, "")
@@ -104,4 +87,13 @@ MK_DEFINE_ERR(16, TimeoutError, "generic_timeout_error")
 #define MK_ERR_NDT(x) (8000 + x)
 
 } // namespace mk
+
+namespace std {
+
+inline std::ostream &operator<<(std::ostream &os, const mk::Error &value) {
+    os << value.reason;
+    return os;
+}
+
+} // namespace std
 #endif

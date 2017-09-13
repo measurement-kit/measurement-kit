@@ -169,14 +169,14 @@ TEST_CASE("slurpv() works as expected") {
         auto maybe_res = mk::slurpv_impl<char, fopen_fail>(
             "./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("If first fseek() fails") {
         auto maybe_res = mk::slurpv_impl<char, std::fopen, fseek_fail>(
             "./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("If ftell() fails") {
@@ -184,7 +184,7 @@ TEST_CASE("slurpv() works as expected") {
             mk::slurpv_impl<char, std::fopen, std::fseek, ftell_fail>(
                 "./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("If second fseek() fails") {
@@ -192,7 +192,7 @@ TEST_CASE("slurpv() works as expected") {
             mk::slurpv_impl<char, std::fopen, std::fseek, std::ftell,
                             fseek_fail>("./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("If fread() fails") {
@@ -200,7 +200,7 @@ TEST_CASE("slurpv() works as expected") {
                                          std::ftell, std::fseek, fread_fail>(
             "./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("If fclose() fails") {
@@ -209,7 +209,7 @@ TEST_CASE("slurpv() works as expected") {
                             std::fseek, std::fread, fclose_fail>(
                 "./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("For a file containing UTF-8") {
@@ -284,7 +284,7 @@ TEST_CASE("slurp() works as expected") {
     SECTION("In case of nonexistent file") {
         auto maybe_res = mk::slurp("/nonexistent");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("In case of existent file") {

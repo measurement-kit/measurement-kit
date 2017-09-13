@@ -99,8 +99,8 @@ void http_header_field_manipulation(std::string /*input*/, Settings options,
             if (err) {
                 logger->debug(
                     "http_header_field_manipulation: http-request error: %s",
-                    err.explain().c_str());
-                (*entry)["failure"] = err.as_ooni_error();
+                    err.what());
+                (*entry)["failure"] = err.reason;
             }
 
             if (!response) {
@@ -109,9 +109,8 @@ void http_header_field_manipulation(std::string /*input*/, Settings options,
                 try {
                     compare_headers_response(headers, response, entry, logger);
                 } catch (const std::exception &exc) {
-                    (*entry)["failure"] = exc.what();
-                    logger->warn("exception in "
-                                 "compare_headers_response(): %s",
+                    (*entry)["failure"] = exc.what(); // XXX
+                    logger->warn("exception in compare_headers_response(): %s",
                                  exc.what());
                 }
             }

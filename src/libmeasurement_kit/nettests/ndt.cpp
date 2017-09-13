@@ -26,7 +26,7 @@ void NdtRunnable::main(std::string, Settings settings,
     // possibly modified copy of the `options` object
     ndt::run(entry, [=](Error error) {
         if (error) {
-            (*entry)["failure"] = error.as_ooni_error();
+            (*entry)["failure"] = error.reason;
         }
         try {
             (*entry)["simple"] = mk::ndt::utils::compute_simple_stats(*entry, logger);

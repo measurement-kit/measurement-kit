@@ -208,8 +208,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
                     probe_cc = *GeoipCache::thread_local_instance()
                        ->resolve_country_code(country_path, ip, logger);
                 } catch (const Error &err) {
-                    logger->warn("cannot lookup country code: %s",
-                                 err.explain().c_str());
+                    logger->warn("cannot lookup country code: %s", err.what());
                 }
                 if (probe_cc != "ZZ") {
                     logger->info("Your country: %s", probe_cc.c_str());
@@ -224,8 +223,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
                     probe_asn = *GeoipCache::thread_local_instance()
                         ->resolve_asn(asn_path, ip, logger);
                 } catch (const Error &err) {
-                    logger->warn("cannot lookup asn: %s",
-                                 err.explain().c_str());
+                    logger->warn("cannot lookup asn: %s", err.what());
                 }
                 if (probe_asn != "AS0") {
                     logger->info("Your ISP identifier: %s", probe_asn.c_str());
@@ -367,7 +365,7 @@ void Runnable::begin(Callback<Error> cb) {
                     open_report([=](Error error) {
                         if (error) {
                             logger->warn("Cannot open report: %s",
-                                         error.explain().c_str());
+                                         error.what());
                             // FALLTHROUGH
                         }
                         logger->progress(0.1, "open report");

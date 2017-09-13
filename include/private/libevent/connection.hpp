@@ -189,7 +189,7 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
             }
         }
 
-        logger->warn("Got error: %s", sys_error.as_ooni_error().c_str());
+        logger->warn("Got error: %s", sys_error.what());
         emit_error(sys_error);
     }
 

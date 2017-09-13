@@ -100,7 +100,7 @@ void getaddrinfo_async(std::string name, addrinfo hints, SharedPtr<Reactor> reac
         Error error = getaddrinfo_async_map_error(
             getaddrinfo(name.c_str(), nullptr, &hints, &rp));
         logger->debug("getaddrinfo('%s') => error: code=%d, reason='%s'",
-                      name.c_str(), error.code, error.as_ooni_error().c_str());
+                      name.c_str(), error.code, error.what());
         std::vector<Answer> answers;
         if (!error && rp != nullptr) {
             try {
