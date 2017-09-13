@@ -1,3 +1,8 @@
+# MeasurementKit 0.7.2 [2017-09-13]
+
+- fix(`async_runner`): prevent MT race
+- fix(test): use cURL CA (#1335)
+
 # MeasurementKit 0.7.1 [2017-09-05]
 
 - fix(*): use `gpg` rather than `gpg2` (#1320)
