@@ -1,8 +1,8 @@
 /*
  * Public domain.
  */
-#ifndef SRC_LIBMEASUREMENT_KIT_PORTABLE_CITRUS_ADAPT_H
-#define SRC_LIBMEASUREMENT_KIT_PORTABLE_CITRUS_ADAPT_H
+#ifndef MEASUREMENT_KIT_COMMON_DETAIL_CITRUS_ADAPT_H
+#define MEASUREMENT_KIT_COMMON_DETAIL_CITRUS_ADAPT_H
 
 #include <wchar.h>
 
@@ -20,7 +20,7 @@
 #define _citrus_utf8_ctype_wcrtomb mk_utf8_wcrtomb
 #define _citrus_utf8_ctype_wcsnrtombs mk_utf8_wcsnrtombs
 
-#include "../portable/citrus_ctype.h"
+#include <measurement_kit/common/detail/citrus_ctype.h>
 
 struct _utf8_state {
 	wchar_t	ch;
