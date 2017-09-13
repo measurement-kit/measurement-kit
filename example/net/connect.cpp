@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
                 std::cout << "    - " << e << "\n";
             }
             txp->close([=]() { reactor->stop(); });
-        }, settings);
+        }, settings, reactor);
     });
 
     return 0;
