@@ -4,6 +4,7 @@
 #ifndef MEASUREMENT_KIT_REPORT_FILE_REPORTER_HPP
 #define MEASUREMENT_KIT_REPORT_FILE_REPORTER_HPP
 
+#include <fstream>
 #include <measurement_kit/report/base_reporter.hpp>
 
 namespace mk {

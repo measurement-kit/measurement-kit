@@ -4,6 +4,7 @@
 #ifndef SRC_MEASUREMENT_KIT_CMDLINE_HPP
 #define SRC_MEASUREMENT_KIT_CMDLINE_HPP
 
+#include <list>
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/common.hpp>
 

@@ -14,22 +14,22 @@ namespace mk {
 namespace nettests {
 
 BaseTest &BaseTest::on_logger_eof(Callback<> func) {
-    runnable->logger->on_eof(func);
+    runnable->logger->on_eof(std::move(func));
     return *this;
 }
 
 BaseTest &BaseTest::on_log(Callback<uint32_t, const char *> func) {
-    runnable->logger->on_log(func);
+    runnable->logger->on_log(std::move(func));
     return *this;
 }
 
 BaseTest &BaseTest::on_event(Callback<const char *> func) {
-    runnable->logger->on_event(func);
+    runnable->logger->on_event(std::move(func));
     return *this;
 }
 
 BaseTest &BaseTest::on_progress(Callback<double, const char *> func) {
-    runnable->logger->on_progress(func);
+    runnable->logger->on_progress(std::move(func));
     return *this;
 }
 

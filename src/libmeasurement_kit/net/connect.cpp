@@ -64,12 +64,12 @@ void connect_first_of(SharedPtr<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings,
                       SharedPtr<Reactor> reactor, SharedPtr<Logger> logger, size_t index,
                       SharedPtr<std::vector<Error>> errors) {
-    logger->log(MK_LOG_DEBUG2, "connect_first_of begin");
+    logger->debug2("connect_first_of begin");
     if (!errors) {
         errors.reset(new std::vector<Error>());
     }
     if (index >= result->resolve_result.addresses.size()) {
-        logger->log(MK_LOG_DEBUG2, "connect_first_of all addresses failed");
+        logger->debug2("connect_first_of all addresses failed");
         cb(*errors, nullptr);
         return;
     }
@@ -78,12 +78,12 @@ void connect_first_of(SharedPtr<ConnectResult> result, int port,
                  [=](Error err, bufferevent *bev, double connect_time) {
                      errors->push_back(err);
                      if (err) {
-                         logger->log(MK_LOG_DEBUG2, "connect_first_of failure");
+                         logger->debug2("connect_first_of failure");
                          connect_first_of(result, port, cb, settings,
                                           reactor, logger, index + 1, errors);
                          return;
                      }
-                     logger->log(MK_LOG_DEBUG2, "connect_first_of success");
+                     logger->debug2("connect_first_of success");
                      result->connect_time = connect_time;
                      cb(*errors, bev);
                  },

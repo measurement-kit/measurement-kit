@@ -4,17 +4,10 @@
 #ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
+#include <cstdint>
 #include <measurement_kit/common/aaa_base.hpp>
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/detail/delegate.hpp>
-#include <measurement_kit/common/non_copyable.hpp>
-#include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
-
-#include <cstdint>
-#include <fstream>
-#include <list>
-#include <mutex>
 #include <stdarg.h>
 
 // The numbers [0-31] are reserved for verbosity levels.
@@ -29,82 +22,76 @@
 
 namespace mk {
 
-class Logger : public NonCopyable, public NonMovable {
+class Logger {
   public:
-    // TODO: refactor class to move all implementation in .cpp files
-
     static SharedPtr<Logger> make();
 
-    void logv(uint32_t, const char *, va_list)
-              __attribute__((format(printf, 3, 0)));
-    void log(uint32_t, const char *, ...)
-             __attribute__((format(printf, 3, 4)));
+    static SharedPtr<Logger> global();
 
-    void warn(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
-    void info(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
-    void debug(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+    virtual void logv(uint32_t, const char *, va_list)
+        __attribute__((format(printf, 3, 0))) = 0;
 
-    void set_verbosity(uint32_t v) { verbosity_ = (v & MK_LOG_VERBOSITY_MASK); }
-    void increase_verbosity();
-    uint32_t get_verbosity() { return verbosity_; }
+    virtual void log(uint32_t, const char *, ...)
+        __attribute__((format(printf, 3, 4))) = 0;
 
-    void on_log(Callback<uint32_t, const char *> fn) { consumer_ = fn; }
+    virtual void warn(const char *fmt, ...)
+        __attribute__((format(printf, 2, 3))) = 0;
 
-    void on_eof(Callback<> fn);
+    virtual void info(const char *fmt, ...)
+        __attribute__((format(printf, 2, 3))) = 0;
 
-    void on_event(Callback<const char *> fn);
+    virtual void debug(const char *fmt, ...)
+        __attribute__((format(printf, 2, 3))) = 0;
 
-    void on_progress(Callback<double, const char *> fn);
+    virtual void debug2(const char *fmt, ...)
+        __attribute__((format(printf, 2, 3))) = 0;
 
-    void set_logfile(std::string fpath);
+    virtual void set_verbosity(uint32_t v) = 0;
 
-    void progress(double, const char *);
+    virtual void increase_verbosity() = 0;
 
-    void progress_relative(double, const char *);
+    virtual uint32_t get_verbosity() = 0;
 
-    void set_progress_offset(double offset);
+    virtual void on_log(Callback<uint32_t, const char *> &&fn) = 0;
 
-    void set_progress_scale(double scale);
+    virtual void on_eof(Callback<> &&fn) = 0;
 
-    static SharedPtr<Logger> global() {
-        static SharedPtr<Logger> singleton(new Logger);
-        return singleton;
-    }
+    virtual void on_event(Callback<const char *> &&fn) = 0;
 
-    ~Logger();
+    virtual void on_progress(Callback<double, const char *> &&fn) = 0;
 
-  private:
-    Delegate<uint32_t, const char *> consumer_;
-    uint32_t verbosity_ = MK_LOG_WARNING;
-    char buffer_[32768];
-    std::mutex mutex_;
-    SharedPtr<std::ofstream> ofile_;
-    std::list<Delegate<>> eof_handlers_;
-    Delegate<const char *> event_handler_;
-    Delegate<double, const char *> progress_handler_;
-    double progress_offset_ = 0.0;
-    double progress_scale_ = 1.0;
-    double progress_relative_ = 0.0;
+    virtual void set_logfile(std::string fpath) = 0;
 
-    Logger();
+    virtual void progress(double, const char *) = 0;
+
+    virtual void progress_relative(double, const char *) = 0;
+
+    virtual void set_progress_offset(double offset) = 0;
+
+    virtual void set_progress_scale(double scale) = 0;
+
+    virtual ~Logger();
 };
 
 void log(uint32_t, const char *, ...) __attribute__((format(printf, 2, 3)));
+
 void warn(const char *, ...) __attribute__((format(printf, 1, 2)));
-void debug(const char *, ...) __attribute__((format(printf, 1, 2)));
+
 void info(const char *, ...) __attribute__((format(printf, 1, 2)));
 
-inline void set_verbosity(uint32_t v) { Logger::global()->set_verbosity(v); }
-inline void increase_verbosity() { Logger::global()->increase_verbosity(); }
-inline uint32_t get_verbosity() { return Logger::global()->get_verbosity(); }
+void debug(const char *, ...) __attribute__((format(printf, 1, 2)));
 
-inline void on_log(Callback<uint32_t, const char *> fn) {
-    Logger::global()->on_log(fn);
-}
+void debug2(const char *, ...) __attribute__((format(printf, 1, 2)));
 
-inline void set_logfile(std::string path) {
-    Logger::global()->set_logfile(path);
-}
+void set_verbosity(uint32_t v);
+
+void increase_verbosity();
+
+uint32_t get_verbosity();
+
+void on_log(Callback<uint32_t, const char *> &&fn);
+
+void set_logfile(std::string path);
 
 } // namespace mk
 #endif

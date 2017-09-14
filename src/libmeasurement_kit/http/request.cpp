@@ -84,7 +84,7 @@ void Request::serialize(net::Buffer &buff, SharedPtr<Logger> logger) {
         logger->debug("> %s", s.c_str());
     }
     if (body != "") {
-        logger->log(MK_LOG_DEBUG2, "%s", body.c_str());
+        logger->debug2("%s", body.c_str());
         buff << body;
     }
 }
@@ -164,7 +164,7 @@ void request_recv_response(SharedPtr<Transport> txp,
             return;
         }
         if (response->body.size() > 0) {
-            logger->log(MK_LOG_DEBUG2, "%s", response->body.c_str());
+            logger->debug2("%s", response->body.c_str());
         }
         txp->emit_error(NoError());
     });
@@ -189,7 +189,7 @@ void request_recv_response(SharedPtr<Transport> txp,
         txp->on_error(nullptr);
         txp->on_data(nullptr);
         reactor->call_soon([=]() {
-            logger->log(MK_LOG_DEBUG2, "http: end of closure");
+            logger->debug2("http: end of closure");
             cb(err, response);
         });
     });

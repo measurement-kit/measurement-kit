@@ -4,9 +4,9 @@
 #ifndef PRIVATE_NETTESTS_UTILS_HPP
 #define PRIVATE_NETTESTS_UTILS_HPP
 
-#include <measurement_kit/common.hpp>
-
 #include <deque>
+#include <list>
+#include <measurement_kit/common.hpp>
 
 namespace mk {
 namespace nettests {
