@@ -12,7 +12,7 @@ ErrorOr<SharedPtr<BouncerReply>> BouncerReply::create(std::string data,
     return bouncer::create_impl(data, logger);
 }
 
-nlohmann::json BouncerReply::get_base() {
+Json BouncerReply::get_base() {
     // Note: this method can throw exceptions
     return response["net-tests"][0];
 }

@@ -6,14 +6,13 @@
 
 #include <list>
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext/json.hpp>
 
 namespace mk {
 namespace ooni {
 
 class BouncerReply {
   public:
-    nlohmann::json response;
+    Json response;
 
     static ErrorOr<SharedPtr<BouncerReply>> create(std::string, SharedPtr<Logger>);
 
@@ -26,7 +25,7 @@ class BouncerReply {
     ErrorOr<std::string> get_version();
 
   private:
-    nlohmann::json get_base();
+    Json get_base();
 };
 
 namespace bouncer {

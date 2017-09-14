@@ -25,13 +25,13 @@ TEST_CASE("dns query template works as expected") {
                     entry, "A", "IN", "nexa.polito.it", "8.8.8.1:53",
                     [=](Error err, SharedPtr<dns::Message>) {
                         REQUIRE(!!err);
-                        nlohmann::json answers;
-                        nlohmann::json root;
-                        nlohmann::json query;
+                        Json answers;
+                        Json root;
+                        Json query;
                         int resolver_port;
-                        root = nlohmann::json::parse(entry->dump());
+                        root = Json::parse(entry->dump());
                         REQUIRE(root.is_object());
-                        nlohmann::json queries = root["queries"];
+                        Json queries = root["queries"];
                         REQUIRE(queries.is_array());
                         REQUIRE(queries.size() == 2);
                         /* First query and response (should be ok) */
@@ -103,10 +103,10 @@ TEST_CASE("http requests template works as expected") {
                             {"net/timeout", 1.0}},
                     {}, "", [=](Error err, SharedPtr<http::Response>) {
                         REQUIRE(err);
-                        nlohmann::json root;
-                        nlohmann::json requests;
-                        nlohmann::json req;
-                        root = nlohmann::json::parse(entry->dump());
+                        Json root;
+                        Json requests;
+                        Json req;
+                        root = Json::parse(entry->dump());
                         REQUIRE((root["agent"] == "agent"));
                         REQUIRE((root["socksproxy"] == nullptr));
                         REQUIRE(root.is_object());

@@ -52,7 +52,7 @@
  *    seems anyway to be a reasonable starting point.)
  */
 
-#include <measurement_kit/common/detail/json.hpp>
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/detail/mock.hpp>
 #include <measurement_kit/common/detail/utils.hpp>
 #include <measurement_kit/ext/sole.hpp>
@@ -423,8 +423,8 @@ void negotiate_loop_(SharedPtr<report::Entry> entry, SharedPtr<net::Transport> t
               int queue_pos = 0;
               std::string real_address;
               int unchoked = 0;
-              error = json_parse_process_and_filter_errors(
-                    res->body, [&](nlohmann::json &respbody) {
+              error = json_process(
+                    res->body, [&](Json &respbody) {
                         auth = respbody.at("authorization");
                         queue_pos = respbody.at("queue_pos");
                         real_address = respbody.at("real_address");
@@ -475,8 +475,8 @@ void collect_(SharedPtr<net::Transport> txp, SharedPtr<report::Entry> entry,
               }
               logger->debug("Response received from server: %s",
                             res->body.c_str());
-              error = json_parse_process_and_filter_errors(
-                    res->body, [&](nlohmann::json &json) {
+              error = json_process(
+                    res->body, [&](Json &json) {
                         (*entry)["sender_data"] = json;
                     });
               cb(error);

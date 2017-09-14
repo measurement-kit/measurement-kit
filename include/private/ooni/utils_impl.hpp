@@ -9,8 +9,6 @@
 #include "../ooni/utils.hpp"
 #include <regex>
 
-using json = nlohmann::json;
-
 namespace mk {
 namespace ooni {
 

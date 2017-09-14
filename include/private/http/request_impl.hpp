@@ -4,7 +4,7 @@
 #ifndef PRIVATE_HTTP_REQUEST_IMPL_HPP
 #define PRIVATE_HTTP_REQUEST_IMPL_HPP
 
-#include <measurement_kit/common/detail/json.hpp>
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/detail/mock.hpp>
 
 #include "../http/response_parser.hpp"
@@ -51,7 +51,7 @@ template <MK_MOCK_AS(mk::http::request, request)>
 void request_json_string_impl(
       std::string method, std::string url, std::string data,
       http::Headers headers,
-      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb,
+      Callback<Error, SharedPtr<http::Response>, Json> cb,
       Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     settings["http/url"] = url;
     settings["http/method"] = method;
@@ -60,12 +60,12 @@ void request_json_string_impl(
                   data.c_str());
     request(settings, headers, data,
             [=](Error error, SharedPtr<http::Response> response) {
-                nlohmann::json jresponse;
+                Json jresponse;
                 if (error) {
                     cb(error, response, jresponse);
                     return;
                 }
-                error = json_parse_and_process(response->body, [&](auto json) {
+                error = json_process(response->body, [&](auto json) {
                     jresponse = std::move(json);
                 });
                 cb(error, response, jresponse);

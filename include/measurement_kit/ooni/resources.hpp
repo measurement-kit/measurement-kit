@@ -17,13 +17,13 @@ void get_latest_release(Callback<Error, std::string> callback,
                         SharedPtr<Logger> logger = Logger::global());
 
 void get_manifest_as_json(std::string version,
-                          Callback<Error, nlohmann::json> callback,
+                          Callback<Error, Json> callback,
                           Settings settings = {},
                           SharedPtr<Reactor> reactor = Reactor::global(),
                           SharedPtr<Logger> logger = Logger::global());
 
 void get_resources_for_country(std::string latest,
-                               nlohmann::json manifest,
+                               Json manifest,
                                std::string country,
                                Callback<Error> callback,
                                Settings settings = {},

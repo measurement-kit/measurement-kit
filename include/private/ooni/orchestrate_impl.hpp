@@ -5,7 +5,7 @@
 #define PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 
 #include <measurement_kit/common/detail/fcompose.hpp>
-#include <measurement_kit/common/detail/json.hpp>
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/detail/mock.hpp>
 #include <measurement_kit/common/detail/utils.hpp>
 
@@ -26,7 +26,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
         cb(MissingRequiredValueError(), std::move(auth));
         return;
     };
-    nlohmann::json request{{"username", auth.username},
+    Json request{{"username", auth.username},
                            {"password", auth.password}};
     logger->info("Logging you in with orchestrator");
     logger->debug("orchestrator: sending login request: %s",
@@ -39,7 +39,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
           "POST", registry_url + "/api/v1/login", request, {},
           [ auth = std::move(auth), cb = std::move(cb),
             logger ](Error error, SharedPtr<http::Response> /*http_response*/,
-                     nlohmann::json json_response) mutable {
+                     Json json_response) mutable {
               if (error) {
                   logger->warn("orchestrator: JSON API error: %s",
                                error.what());
@@ -47,7 +47,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
                   return;
               }
               logger->debug("orchestrator: processing login response");
-              error = json_process_and_filter_errors(
+              error = json_process(
                     json_response, [&](auto response) {
                         if (response.find("error") != response.end()) {
                             if (response["error"] ==
@@ -107,20 +107,20 @@ void register_probe_(const ClientMetadata &m, std::string password,
         cb(MissingRequiredValueError(), std::move(auth));
         return;
     }
-    nlohmann::json request = m.as_json();
+    Json request = m.as_json();
     request["password"] = password;
     http_request_json_object(
           "POST", m.registry_url + "/api/v1/register", request, {},
           [ cb = std::move(cb), logger = m.logger,
             auth = std::move(auth) ](Error error, SharedPtr<http::Response> /*resp*/,
-                                     nlohmann::json json_response) mutable {
+                                     Json json_response) mutable {
               if (error) {
                   logger->warn("orchestrator: JSON API error: %s",
                                error.what());
                   cb(std::move(error), std::move(auth));
                   return;
               }
-              error = json_process_and_filter_errors(
+              error = json_process(
                     json_response, [&](auto jresp) {
                         if (jresp.find("error") != jresp.end()) {
                             if (jresp["error"] == "invalid request") {
@@ -150,7 +150,7 @@ template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void update_(const ClientMetadata &m, Auth &&auth, SharedPtr<Reactor> reactor,
              Callback<Error &&, Auth &&> &&cb) {
     std::string update_url = m.registry_url + "/api/v1/update/" + auth.username;
-    nlohmann::json update_request = m.as_json();
+    Json update_request = m.as_json();
     maybe_login(
           std::move(auth), m.registry_url, m.settings, reactor, m.logger, [
               update_url = std::move(update_url),
@@ -170,13 +170,13 @@ void update_(const ClientMetadata &m, Auth &&auth, SharedPtr<Reactor> reactor,
                     {{"Authorization", "Bearer " + auth_token}},
                     [ cb = std::move(cb), logger, auth = std::move(auth) ](
                           Error err, SharedPtr<http::Response> /*resp*/,
-                          nlohmann::json json_response) mutable {
+                          Json json_response) mutable {
                         if (err) {
                             // Note: error printed by maybe_login()
                             cb(std::move(err), std::move(auth));
                             return;
                         }
-                        err = json_process_and_filter_errors(
+                        err = json_process(
                               json_response, [&](auto jresp) {
                                   // XXX add better error handling
                                   if (jresp.find("error") != jresp.end()) {

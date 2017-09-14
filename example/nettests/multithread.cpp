@@ -1,7 +1,6 @@
 // Public domain 2017, Simone Basso <bassosimone@gmail.com.
 
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext.hpp>      // Import nlohmann::json
 #include <measurement_kit/nettests.hpp> // Import mk::nettests
 
 #include <stdio.h>
@@ -107,12 +106,12 @@ int main(void) {
             // Lambda called when events occur. Here we process only download
             // speed updates emitted during the multi-ndt test.
             //
-            // In case `nlohmann::json::parse()` throws an exception, no
+            // In case `Json::parse()` throws an exception, no
             // worries because MK suppress exceptions in the on_event lambda.
             //
             // See the above four points to keep in mind.
             .on_event([&](const char *s) {
-                nlohmann::json doc = nlohmann::json::parse(s);
+                mk::Json doc = mk::Json::parse(s);
                 if (doc["type"] != "download-speed") {
                     return;
                 }
@@ -132,7 +131,7 @@ int main(void) {
             // See the above four points to keep in mind.
             .on_entry([&](std::string s) {
                 schedule([s]() {
-                    nlohmann::json doc = nlohmann::json::parse(s);
+                    mk::Json doc = mk::Json::parse(s);
                     auto simple = doc["test_keys"]["simple"];
                     printf("\nTest summary\n");
                     printf("------------\n");

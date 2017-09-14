@@ -14,13 +14,13 @@ void get_latest_release(Callback<Error, std::string> cb, Settings settings,
 }
 
 void get_manifest_as_json(
-        std::string latest, Callback<Error, nlohmann::json> cb,
+        std::string latest, Callback<Error, Json> cb,
         Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     get_manifest_as_json_impl(latest, cb, settings, reactor, logger);
 }
 
 void get_resources_for_country(std::string version,
-                               nlohmann::json manifest,
+                               Json manifest,
                                std::string country,
                                Callback<Error> callback,
                                Settings settings,
