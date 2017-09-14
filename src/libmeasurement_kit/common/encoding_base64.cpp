@@ -27,15 +27,14 @@
  *
  * René Nyffenegger rene.nyffenegger@adp-gmbh.ch
  */
-#ifndef MEASUREMENT_KIT_COMMON_DETAIL_BASE64_ENCODE__HPP
-#define MEASUREMENT_KIT_COMMON_DETAIL_BASE64_ENCODE__HPP
 
 #include <cstdint>
+#include <measurement_kit/common/detail/encoding.hpp>
 #include <string>
 
 namespace mk {
 
-static std::string base64_encode_impl(const uint8_t *base, size_t len) {
+static inline std::string base64_encode(const uint8_t *base, size_t len) {
     static const std::string b64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                                          "abcdefghijklmnopqrstuvwxyz"
                                          "0123456789+/";
@@ -68,5 +67,8 @@ static std::string base64_encode_impl(const uint8_t *base, size_t len) {
     return res;
 }
 
+std::string base64_encode(std::string s) {
+    return base64_encode((uint8_t *)s.data(), s.size());
+}
+
 } // namespace mk
-#endif

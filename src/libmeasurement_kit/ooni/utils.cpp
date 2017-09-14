@@ -146,7 +146,7 @@ bool is_private_ipv4_addr(const std::string &ipv4_addr) {
 }
 
 report::Entry represent_string(const std::string &s) {
-    Error error = is_valid_utf8_string(s);
+    Error error = utf8_parse(s);
     if (error != NoError()) {
         return report::Entry{{"format", "base64"},
                               {"data", base64_encode(s)}};

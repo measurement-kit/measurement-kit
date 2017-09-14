@@ -91,7 +91,7 @@ void getaddrinfo_async(std::string name, addrinfo hints, SharedPtr<Reactor> reac
      * Move everything down such that there is always just one function in
      * one specific thread having ownership of the state
      */
-    reactor->run_in_background_thread([
+    reactor->call_in_thread([
         name = std::move(name), hints = std::move(hints),
         reactor = std::move(reactor), logger = std::move(logger),
         cb = std::move(cb)
