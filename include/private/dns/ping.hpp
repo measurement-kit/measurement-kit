@@ -5,6 +5,7 @@
 #define PRIVATE_DNS_PING_HPP
 
 #include <measurement_kit/common/detail/every.hpp>
+#include <measurement_kit/common/detail/maybe.hpp>
 #include <measurement_kit/common/detail/utils.hpp>
 #include <measurement_kit/dns/query.hpp>
 
