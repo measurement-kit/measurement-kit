@@ -165,8 +165,8 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
 
     Worker worker;
 
-    void run_in_background_thread(Callback<> &&cb) override {
-        worker.run_in_background_thread(std::move(cb));
+    void call_in_thread(Callback<> &&cb) override {
+        worker.call_in_thread(std::move(cb));
     }
 
     void call_soon(Callback<> &&cb) override { call_later(0.0, std::move(cb)); }

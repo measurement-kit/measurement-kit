@@ -19,7 +19,7 @@ class Reactor {
     static SharedPtr<Reactor> global();
     virtual ~Reactor();
 
-    virtual void run_in_background_thread(Callback<> &&cb) = 0;
+    virtual void call_in_thread(Callback<> &&cb) = 0;
     virtual void call_soon(Callback<> &&cb) = 0;
     virtual void call_later(double, Callback<> &&cb) = 0;
 

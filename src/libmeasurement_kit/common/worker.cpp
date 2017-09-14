@@ -20,7 +20,7 @@
 
 namespace mk {
 
-void Worker::run_in_background_thread(Callback<> &&func) {
+void Worker::call_in_thread(Callback<> &&func) {
     std::unique_lock<std::mutex> _{state->mutex};
 
     // Move function such that the running-in-background thread
