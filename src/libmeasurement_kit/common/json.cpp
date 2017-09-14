@@ -13,6 +13,8 @@ Error json_process(Json &json, std::function<void(Json &)> &&fun) {
         return JsonKeyError();
     } catch (const std::domain_error &) {
         return JsonDomainError();
+    } catch (const Error &failure) {
+        return failure;
     } catch (...) {
         return JsonProcessingError();
     }
