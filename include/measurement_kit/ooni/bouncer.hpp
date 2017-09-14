@@ -4,6 +4,7 @@
 #ifndef MEASUREMENT_KIT_OONI_BOUNCER_HPP
 #define MEASUREMENT_KIT_OONI_BOUNCER_HPP
 
+#include <list>
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/ext/json.hpp>
 

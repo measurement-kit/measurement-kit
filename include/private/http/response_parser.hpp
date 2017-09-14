@@ -6,6 +6,7 @@
 
 #include "../ext/http_parser.h"
 
+#include <measurement_kit/common/detail/delegate.hpp>
 #include <measurement_kit/http.hpp>
 
 #include <type_traits>

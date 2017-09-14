@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <event2/util.h>
 #include <iomanip>
+#include <list>
 #include <measurement_kit/common.hpp>
 #include <openssl/sha.h>
 #include <random>
