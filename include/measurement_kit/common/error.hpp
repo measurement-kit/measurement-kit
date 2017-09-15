@@ -152,7 +152,7 @@ MK_DEFINE_ERR(8, FileEofError, "file_eof_error")
 /// `FileIoError` indicates I/O error when reading a file.
 MK_DEFINE_ERR(9, FileIoError, "file_io_error")
 
-/// \brief`ParallelOperationError` indicates that a parallel operation failed.
+/// \brief `ParallelOperationError` indicates that a parallel operation failed.
 /// In this case, consult the child errors to see more details.
 MK_DEFINE_ERR(10, ParallelOperationError, "parallel_operation_error")
 

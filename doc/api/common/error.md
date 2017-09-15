@@ -199,7 +199,7 @@ The unequality with error compares the error codes for unquality.
 
 `FileIoError` indicates I/O error when reading a file.
 
-\brief`ParallelOperationError` indicates that a parallel operation failed. In this case, consult the child errors to see more details.
+`ParallelOperationError` indicates that a parallel operation failed. In this case, consult the child errors to see more details.
 
 `SequentialOperationError` indicates that a sequential operation has failed. See the child errors for more details.
 

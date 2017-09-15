@@ -31,26 +31,6 @@ using Json = nlohmann::json;
 /// knowing that no exception will be throw and that it is possible to report
 /// the result of processing the JSON asynchronously to a callback.
 ///
-/// The expected usage pattern is like:
-///
-/// ```C++
-///
-/// make_http_request(/* params */, [](Error err, http::Response response) {
-///     if (err || response->code != 200) {
-///         callback((err) ? err : GenericError());
-///         return;
-///     }
-///     err = json_process(response->body, [](Json &root) {
-///         if (!root["status"] == "success") {
-///             throw AuthenticatorError("api_failure");
-///         });
-///         if (!root["authenticated") {
-///             throw AuthenticatorError("not_authenticated");
-///         }
-///     });
-///     callback(err);
-/// });
-///
 /// \return NoError if parsing and processing were okay.
 ///
 /// \return JsonParseError if it cannot parse the JSON.

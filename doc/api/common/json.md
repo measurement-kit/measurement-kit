@@ -36,12 +36,6 @@ json_process() will basically invoke the specified function and trap all the pos
 
 This function is meant to allow processing JSON in asynchronous context knowing that no exception will be throw and that it is possible to report the result of processing the JSON asynchronously to a callback. 
 
-The expected usage pattern is like: 
-
-```C++ 
-
-make_http_request(/* params */, [](Error err, http::Response response) { if (err || response->code != 200) { callback((err) ? err : GenericError()); return; } err = json_process(response->body, [](Json &root) { if (!root["status"] == "success") { throw AuthenticatorError("api_failure"); }); if (!root["authenticated") { throw AuthenticatorError("not_authenticated"); } }); callback(err); }); 
-
 Returns NoError if parsing and processing were okay. 
 
 Returns JsonParseError if it cannot parse the JSON. 
