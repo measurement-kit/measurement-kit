@@ -7,6 +7,7 @@
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/reactor.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 #include <functional>
 
 namespace mk {
