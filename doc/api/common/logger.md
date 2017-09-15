@@ -1,234 +1,215 @@
 # NAME
-Logger &mdash; Log messages processor
+
+`measurement_kit/common/logger.hpp`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
 
-```C++
-#include <measurement_kit/common.hpp>
+```
+#ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
+#define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
-// The numbers [0-31] are reserved for verbosity levels.
 #define MK_LOG_WARNING 0
+
 #define MK_LOG_INFO 1
+
 #define MK_LOG_DEBUG 2
+
 #define MK_LOG_DEBUG2 3
+
 #define MK_LOG_VERBOSITY_MASK 31
 
-// Number above 31 have different semantics:
-#define MK_LOG_EVENT 32          // Event occurred (encoded as JSON)
+#define MK_LOG_EVENT 32
 
 namespace mk {
 
-class Logger : public NonCopyable, public NonMovable {
+class Logger {
   public:
     static SharedPtr<Logger> make();
 
-    void logv(uint32_t level, const char *fmt, va_list ap);
-    void log(uint32_t level, const char *fmt, ...);
-    void warn(const char *fmt, ...);
-    void info(const char *fmt, ...);
-    void debug(const char *fmt, ...);
-
-    void set_verbosity(uint32_t v);
-    void increase_verbosity();
-    uint32_t get_verbosity();
-
-    void on_log(Delegate<uint32_t, const char *> fn);
-    void on_eof(Delegate<> fn);
-    void on_event(Delegate<const char *> fn);
-    void on_progress(Delegate<double, const char *> fn);
-
-    void set_logfile(std::string path);
-
-    void progress(double);
-    void set_progress_offset(double offset);
-    void set_progress_scale(double offset);
-
     static SharedPtr<Logger> global();
 
-    ~Logger();
+    virtual void logv(uint32_t mask, const char *fmt, va_list ap)
+            __attribute__((format(printf, 3, 0))) = 0;
+
+    virtual void log(uint32_t, const char *, ...)
+            __attribute__((format(printf, 3, 4))) = 0;
+
+    virtual void warn(const char *fmt, ...)
+            __attribute__((format(printf, 2, 3))) = 0;
+
+    virtual void info(const char *fmt, ...)
+            __attribute__((format(printf, 2, 3))) = 0;
+
+    virtual void debug(const char *fmt, ...)
+            __attribute__((format(printf, 2, 3))) = 0;
+
+    virtual void debug2(const char *fmt, ...)
+            __attribute__((format(printf, 2, 3))) = 0;
+
+    virtual void set_verbosity(uint32_t v) = 0;
+
+    virtual void increase_verbosity() = 0;
+
+    virtual uint32_t get_verbosity() = 0;
+
+    virtual void on_log(Callback<uint32_t, const char *> &&fn) = 0;
+
+    virtual void on_eof(Callback<> &&fn) = 0;
+
+    virtual void on_event(Callback<const char *> &&fn) = 0;
+
+    virtual void on_progress(Callback<double, const char *> &&fn) = 0;
+
+    virtual void set_logfile(std::string fpath) = 0;
+
+    virtual void progress(double percent, const char *message) = 0;
+
+    virtual void progress_relative(double delta, const char *message) = 0;
+
+    virtual void set_progress_offset(double offset) = 0;
+
+    virtual void set_progress_scale(double scale) = 0;
+
+    virtual ~Logger();
 };
 
-/* Functions using the default logger: */
+void log(uint32_t, const char *, ...) __attribute__((format(printf, 2, 3)));
 
-void log(uint32_T level, const char *fmt, ...);
-void warn(const char *fmt, ...);
-void info(const char *fmt, ...);
-void debug(const char *fmt, ...);
+void warn(const char *, ...) __attribute__((format(printf, 1, 2)));
+
+void info(const char *, ...) __attribute__((format(printf, 1, 2)));
+
+void debug(const char *, ...) __attribute__((format(printf, 1, 2)));
+
+void debug2(const char *, ...) __attribute__((format(printf, 1, 2)));
 
 void set_verbosity(uint32_t v);
+
 void increase_verbosity();
+
 uint32_t get_verbosity();
 
-void on_log(Delegate<uint32_t, const char *> fn);
+void on_log(Callback<uint32_t, const char *> &&fn);
 
 void set_logfile(std::string path);
 
-}
+} // namespace mk
+#endif
 ```
 
 # DESCRIPTION
 
-The `MK_LOG_XXX` macros allow to set verbosity levels and other
-reserved values. Only the first four bits are used to represent levels
-of verbosity, while other bits are used for other purposes.
+`MK_LOG_WARNING` indicates the `WARNING` log severity level.
 
-The `Logger` class specifies how logs are processed. You can change the
-function that receives logs. You can change the verbosity level. And
-of course you can log messages as well.
+`MK_LOG_INFO` indicates the `INFO` log severity level.
 
-The `make()` factory creates a logger wrapped by a shared pointer.
+`MK_LOG_DEBUG` indicates the `DEBUG` log severity level.
 
-The `logv()`, `log()`, `warn()`, `info()`, and `debug()` methods allow to write
-log messages. Specifically, `logv()` and `log()` take an explicit logging
-level argument, while other functions provide it implicitly. Messages
-are only written if the current verbosity level is not lower than the verbosity
-level of the currently logged message. That is,
+`MK_LOG_DEBUG2` indicates the `DEBUG2` log severity level.
 
-```C++
-    SharedPtr<Logger> logger = Logger::make();
-    logger->set_verbosity(MK_LOG_INFO);
-    logger->info("This message will be printed");
-    logger->debug("This one won't");
-```
+`MK_LOG_VERBOSITY_MASK` is a bitmask indicating which bits are being used to specify the severity level. Bits above such mask have another semantic.
 
-The `set_verbosity()`, `increase_verbosity()` and `get_verbosity()` methods
-allow to manage the verbosity level of the logger. The default verbosity
-level is `MK_LOG_WARNING` meaning that messages with verbosity greater than
-that are not logged by default.
+`MK_LOG_EVENT` indicates an event. It is a bit outside of the verbosity mask. This is used to indicate that the current log message is not plaintext but rather a serialized JSON representing an event.
 
-The `on_log` method allow to either set or reset the function called
-for each logging message. Such function is a delegate (i.e. the delegate
-body can safely change the delegate itself) and takes in input the
-verbosity level of the message and the message itself. The default log
-function prints on the standard error output the severity (unless the
-severity is INFO, in which case nothing is printed) followed by the log
-message. For example:
+`Logger` specifies how logs are processed. It is an abstract class usually accessed through SharedPtr, because there can be different implementations of the logger. 
 
-```
-warning: A warning message
-A info message
-debug: A debug message
-debug: A debug2 message
-```
+You can change the verbosity level of the logger, using set_verbosity() and/or increase_verbosity(). The default verbosity is MK_LOG_WARNING meaning that messages with severity lower than warning will not be printed by the logger. 
 
-To disable the log callback, pass `nullptr` to it.
+You can set the function where to log, using on_log(). You can also decide to write the logger output to a file, that you can specify using the set_logfile() method. 
 
-The `on_eof()` method allows to register a function to be called when the
-logger is about to be destroyed. You can call this function multiple times
-to register multiple callbacks, if you wish.
+_BUG_: In the default implementation of Logger, if the log file could not be open or written, such error is silently ignored. 
 
-By default `MK_LOG_EVENT` messages are passed to the log callback. But you
-can route them to the event callback by specifying it using `on_event()`. In
-such case, those messages will be passed to the event callback only,
-meaning that the log callback will not be called for them and they will
-not be written on the logfile. This behavior is meant to transition between
-when events where passed to the log callback and a future where they will
-be either ignored or passed to the event callback.
+_Note_: All methods of the default logger implementation are protected against access from multiple threads by a recursive mutex. 
 
-The `on_progress` method allows to register a delegate to receive
-progress notifications from measurement-kit tests. A progress notification
-is a tuple composed of a double (between 0.0 and 1.0) and a string: the
-double represents the overall percentage of completion whereas the string
-represents the operation currently in progress.
+Appeared in measurement-kit v0.1.0.
 
-The `set_logfile` method instructs the logger to write a copy of each log
-message into the specified log file. Setting the logfile has no impact on
-logs written using `on_log` and *viceversa*. By default no log file is
-specified. It is legal (albeit useless) to have a logger not attached to
-any log file and whose `on_log` callback is `nullptr`.
+`make()` creates an instance of the default logger.
 
-The `progress` method is used to emit progress notifications.
+`global()` returns the global instance of the default logger.
 
-The `set_progress_offset` and `set_progress_scale` methods allow to define,
-respectively, the offset to be added to progress notifications and the
-scale value to multiply the progress notification for. By default the offset
-is 0.0 and the scale is 1.0. These two methods are useful to normalize the
-progress emitted by individual operations (which see _their_ progress as
-a number between 0.0 and 1.0) in the context of a more general progress; e.g.,
-the `MultiNdt` test runs two NDT tests, one using a single TCP stream and
-the other using three TCP streams. Both NDT tests sees their progress as
-between 0.0 and 1.0 but the parent `MultiNdt` class sets the scale equal to
-0.5 and the offset of the second NDT test equal to 0.5, so to normalize
-the progress emitted by the child NDT tests.
+`logv()` writes a log message. Parameter mask is a mask of the verbosity level (e.g. MK_LOG_DEBUG) and possibly other specifiers (e.g. MK_LOG_EVENT). Parameter fmt is the format string. Parameter ap is the argument pointer. 
 
-The `global()` factory returns the default logger.
+In the default logger, the `logv` function behaves as follows: 
 
-The destructor calls the functions registered using `on_eof`.
+The log message will not be written if its verbosity is lower than the currently configured verbosity. 
 
-This module also includes syntactic sugar functions named like `Logger`
-methods that call the namesake method of the default logger. That is:
+If you specify MK_LOG_EVENT and you don't override the default log handler with on_log() and you don't set a specific MK_LOG_EVENT handler with on_event(), the code will check whether the log message is a valid JSON and print an error otherwise. 
 
-```C++
-  mk::debug("Foobar");  // == mk::Logger::global()->debug("Foobar");
-```
+If the verbosity level is such that a log message must be printed, the default logger will use vsnprintf() for formatting the message. If vsnprintf() fails because formatting is not possible, the logger will tell you that. If in any event the internal log buffer is too short, the resulting log message will reflect that by writing `"..."` at the end. 
 
-Internally, the logger implementation MUST be implemented to be thread
-safe, i.e. it MUST be safe to invoke concurrently the logger from multiple
-threads, *as far as* the consistency of the logger internals is
-concerned. Note that this *does not mean at all* that the logger delegate
-can safely access resources owned by another thread. In such case, it is
-the programmer's responsibility than any relevant shared resources are
-locked before they are used, i.e., you MUST use this pattern:
+If MK_LOG_EVENT is specified and you set an handler using on_event(), the message will _only_ be passed to such handler, otherwise it will be passed to the handler specified using on_log(), and otherwise to the default log handler. 
 
-```C++
-    mk::on_log([=](uint32_t level, const char *message) {
-        resource.acquire_lock();
-        // Then you can process the message
-    });
-```
+Processing stops here if you specified MK_LOG_EVENT and you specified also an event handler using on_event(). Otherwise: 
 
-Also note that the implementation MAY use a shared internal buffer meaning that
-log messages SHOULD either immediately consumed or cached if delayed consumption
-is planned. Failure to do so would possibly lead to the latest produced log
-message printed more than once. Instead use this pattern:
+The message will be passed to the log handler (either the default one or one that you set with on_log()). Note that you can disable the log handler with: 
 
-```C++
-    mk::on_log([=](uint32_t level, const char *message) {
-        resource.acquire_lock();
-        std::string copy{message};
-        resource.sched_deferred_consumption(level, copy);
-    });
-```
+```C++ logger->on_log(nullptr); ``` 
 
-Also, note that, being thread safe, the logger MUST lock its internals before
-emitting a log message. Thus, you MUST NOT call the logger from a logger callback
-because this MAY result in deadlock or internal buffer corruption, depending on
-the mutex implementation. Ideally, the log message should be printed on some
-file, or you should save it as described above and then schedule a delayed call to
-properly process the message, if processing it is going to be slow.
+If you set a logfile with set_logfile(), the message will _also_ be written into the logfile.
 
-You MUST NOT set up the logger from multiple thread contexts, because methods
-that set callbacks, change the logger behavior, etc., are not thread safe.
+`log()` calls logv().
 
-# EXAMPLE
+`warn()` calls logv() with MK_LOG_WARNING.
 
-```C++
-#include <measurement_kit/common.hpp>
+`info()` calls logv() with MK_LOG_INFO.
 
-using namespace mk;
+`debug()` calls logv() with MK_LOG_DEBUG.
 
-int main() {
-    SharedPtr<Logger> logger = Logger::make();
+`debug2()` calls logv() with MK_LOG_DEBUG2.
 
-    logger->set_verbosity(MK_LOG_DEBUG);
-    logger->on_log([](uint32_t level, const char *log_line) {
-        printf("<%d> %s\n", level, log_line);
-    });
+`set_verbosity()` allows to set the logger verbosity.
 
-    logger->debug("Format string: %s", "but also arguments");
-    logger->info("Just like printf");
-    logger->warn("Use this for important messages");
-}
-```
+`increase_verbosity()` increases the logger verbosity. That is, if the current verbosity is MK_LOG_INFO, increasing the verbosity will set as new verbosity MK_LOG_DEBUG.
 
-# BUGS
+`get_verbosity()` gets the current verbosity.
 
-If the logfile could not be open, or written, the error is silently
-discarded (i.e. no exceptions thrown, no return values).
+`on_log` allows to set the log handler.
 
-# HISTORY
+`on_eof()` allows to set the EOF handler. You can set more than one handler. All the set handlers will be called when the logger is destroyed. This is used e.g. in Android to free resources.
 
-The `Logger` class appeared in MeasurementKit 0.1.0.
+`on_event()` allows to set the MK_LOG_EVENT handler.
+
+`on_progress()` allows to set the progress handler. Progress is emitted when the test proceeeds.
+
+`set_logfile()` sets the file where to write logs.
+
+`progress()` emits a progress event. Parameter percent is the percentage of completion of the current test. Parameter message is the string describing what the test is currently doing. 
+
+For example: 
+
+```C++ logger->progress(0.1 /* 10% */, "Contacting the bouncer"); ```
+
+`progres_relative()` emits the _relative_ progress. This is just like progress() except that delta is not an absolute percentage indicator, rather a percentage to be added to the current level of completion of the test. Of course, this means that the logger will keep track of the current progress for you. 
+
+_Note_: The presence of both progress() and progress_relative() is probably confusing and we should deprecate progress().
+
+`set_progress_offset()` sets the current offset. Further invocations of progress() or progress_relative() will sum the specified offset to the one passed to them as argument.
+
+`set_progress_scale()` sets the progress scale. Further invocations of progress() or progress_offset() will have their argument multiplied by the selected scale.
+
+`~Logger()` destroys allocated resources.
+
+`log()` call the Logger::log() method of the global logger.
+
+`warn()` call the Logger::warn() method of the global logger.
+
+`info()` call the Logger::info() method of the global logger.
+
+`debug()` call the Logger::debug() method of the global logger.
+
+`debug2()` call the Logger::debug2() method of the global logger.
+
+`set_verbosity()` call the Logger::set_verbosity() method of the global logger.
+
+`increase_verbosity()` call the Logger::increase_verbosity() method of the global logger.
+
+`get_verbosity()` call the Logger::get_verbosity() method of the global logger.
+
+`on_log()` call the Logger::on_log() method of the global logger.
+
+`set_logfile()` call the Logger::set_logfile() method of the global logger.
+

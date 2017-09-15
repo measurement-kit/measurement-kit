@@ -1,0 +1,4 @@
+BUILTIN_STL_SUPPORT = YES
+INPUT = include/measurement_kit/common/
+JAVADOC_AUTOBRIEF = YES
+STRIP_FROM_INC_PATH = include

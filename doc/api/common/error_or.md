@@ -1,146 +1,99 @@
 # NAME
-ErrorOr &mdash; Maybe-like object containing type or error.
+
+`measurement_kit/common/error_or.hpp`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
-```C++
-#include <measurement_kit/common.hpp>
+
+```
+#ifndef MEASUREMENT_KIT_COMMON_ERROR_OR_HPP
+#define MEASUREMENT_KIT_COMMON_ERROR_OR_HPP
 
 namespace mk {
 
 template <typename T> class ErrorOr {
   public:
-    ErrorOr();
-    ErrorOr(T);
-    ErrorOr(Error);
+    ErrorOr() : error_(NotInitializedError()) {}
 
-    operator bool() const;
+    ErrorOr(T value) : value_(value) {}
 
-    const T &as_value() const;
-    T &as_value();
+    ErrorOr(Error error) : error_(error) {}
 
-    Error as_error() const;
+    ErrorOr(Error error, T value) : error_(error), value_(value) {}
 
-    const T &operator*() const;
-    T &operator*();
+    operator bool() const { return error_ == NoError(); }
 
-    const T *operator->() const;
-    T *operator->();
+#define XX                                                                     \
+    if (error_ != 0) {                                                         \
+        throw error_;                                                          \
+    }                                                                          \
+    return value_;
+
+    const T &as_value() const {XX}
+
+    T &as_value() {
+        XX
+    }
+
+#undef XX
+
+    Error as_error() const { return error_; }
+
+    const T &operator*() const { return as_value(); }
+
+    T &operator*() { return as_value(); }
+
+#define XX                                                                     \
+    if (error_ != 0) {                                                         \
+        throw error_;                                                          \
+    }                                                                          \
+    return &value_;
+
+    const T *operator->() const {XX} T *operator->() { XX }
+
+#undef XX
+
+  private:
+    Error error_;
+    T value_;
 };
 
-}
+} // namespace mk
+#endif
 ```
-
-# STABILITY
-2 - Stable
 
 # DESCRIPTION
 
-The `ErrorOr` template class wraps either a type `T` or an `Error`. It is
-commonly used in MeasurementKit to return an error in synchronous functions
-as shown in the following snippet:
+`ErrorOr` wraps either a type or an `Error`. We often use it in synchronous code when we don't want to throw an exception. 
 
-```C++
-    ErrorOr<Result> res = get_result();
-    if (!res) {
-        callback(res.as_error());
-        return;
-    }
-    use_result(*res);
-```
-The first form of the constructor creates an `ErrorOr` object initialized
-with error equal to `NotInitializedError`. This constructor allows
-to write code like the following:
+The following pattern is frequently used in MK: 
 
-```C++
-    ErrorOr<Result> res;
-    // ...
-    
-    /* Note that until assigned:
-    
-    REQUIRE_THROWS_AS(*res, NotInitializedError());
-    REQUIRE(res.as_error() == NotInitializedError()); */
-    
-    // ...
-    res = some_operation();
-```
+```C++ ErrorOr<Result> result = get_result_noexcept(); if (!result) { callback(result.as_error()); return; } use_result(*result); ``` 
 
-The second form of the constructor initializes the `ErrorOr` template
-with a value. The third form of the constructor initialized the `ErrorOr`
-template with an error.
+Attempting to access the value (for example using as_value()) when ErrorOr wraps an error causes such error to be thrown. 
 
-The `operator bool()` method returns true if the underlying error object
-has error code equal to zero, false otherwise. In the former case, we say
-the `ErrorOr` contains a value, otherwise it contains an error.
+ErrorOr firstly appeared in measurement-kit v0.2.0. originally named Maybe. We changed the name later because we have seen that also LLVM has a class called ErrorOr. 
 
-The `as_value()` method returns a reference to the (possibly `const`)
-underlying value, if the `ErrorOr` contains a value; otherwise, the
-contained error is thrown.
+We may probably want to get rid of ErrorOr when we switch to C++17 where unpacking of returned tuple is made pleasant.
 
-The `as_error()` method returns the error field. Calling this method never
-throws, regardless of whether the `ErrorOr` contains an error or
-a value. This method is typically called to access the underlying error
-once `operator bool()` has been used to ascertain that the `ErrorOr`
-contains an error, as shown in the above snippet.
+The default constuctor creates a non-initialized ErrorOr. This means basically constructing it with an error and no value.
 
-The `operator*()` method is an alias for `as_value()`.
+The constructor with value sets the underlying value.
 
-The `operator->()` method returns a (possibly `const`) pointer to the
-underlying field, if the `ErrorOr` contains a value; otherwise, the
-contained error is thrown. This method could be useful to access fields
-of a structure directly.
+The constructor with error sets the underlying error.
 
-# EXAMPLE
+The constructor with error and value sets both.
 
-```C++
-#include <measurement_kit/common.hpp>
+Operator bool returns true if ErrorOr wraps a value.
 
-using namespace mk;
+`as_value()` returns the value if the ErrorOr contains a value and throws an error if ErrorOr contains an error.
 
-class Result {
-  public:
-    unsigned int foo = 17;
-    double bar = 3.14;
-};
+`as_error()` returns the contained error or NoError().
 
-static ErrorOr<int> generate_seventeen() {
-    return 17;
-}
+Operator `*` is a compact way to call as_value().
 
-static ErrorOr<Result> generate_result() {
-    return Result{};
-}
+Operator `->` allows to access the underlying value as a pointer, or throws an error if ErrorOr wraps an error.
 
-static ErrorOr<Result> generate_error() {
-    return MockedError();
-}
-
-int main() {
-    ErrorOr<int> seventeen = generate_seventeen();
-    REQUIRE(!!seventeen);
-    REQUIRE(*seventeen == 17);
-    *seventeen = 42;
-    REQUIRE(*seventeen == 42);
-
-    ErrorOr<Result> result = generate_result();
-    REQUIRE(!!result);
-    REQUIRE(result->foo == 17);
-    REQUIRE(result->bar = 3.14);
-    result->foo = 42;
-    REQUIRE(result->foo == 42);
-
-    ErrorOr<Result> error = generate_error();
-    REQUIRE(!error);
-    REQUIRE_THROWS(*error);
-    REQUIRE_THROWS(error->foo);
-    REQUIRE(error.as_error() == MockedError());
-}
-```
-
-# HISTORY
-
-The `ErrorOr` template class appeared in MeasurementKit 0.2.0. This template class
-was originally called `Maybe` but it was later renamed `ErrorOr` because there is
-[a namesake class with similar purpose in LLVM](http://llvm.org/docs/doxygen/html/classllvm_1_1ErrorOr.html).

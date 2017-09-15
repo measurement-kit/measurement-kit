@@ -1,28 +1,28 @@
 # NAME
-Callback &mdash; Syntactic sugar for writing callbacks.
+
+`measurement_kit/common/callback.hpp`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
-```C++
-#include <measurement_kit/common.hpp>
+
+```
+#ifndef MEASUREMENT_KIT_COMMON_CALLBACK_HPP
+#define MEASUREMENT_KIT_COMMON_CALLBACK_HPP
 
 namespace mk {
 
-template<typename... T> using Callback<T...> = std::function<void(T...)>;
+template <typename... T> using Callback = std::function<void(T...)>;
 
-}
+} // namespace mk
+#endif
 ```
-
-# STABILITY
-2 - Stable
 
 # DESCRIPTION
 
-The `Callback` alias allows to more compactly writing callbacks and SHOULD be
-used to indicate one-shot callbacks instead of `std::function<T>`.
+`Callback` is syntactic sugar for writing callback functions. In general, we try to use `Callback` in the code to name functions that will be called _after_ the function to which they have been passed has returned. That is, the function is supposed to schedule their deffered execution but should not execute it directly. 
 
-# HISTORY
+The `Callback` alias was added in measurement-kit v0.2.0.
 
-The `Callback` alias appeared in MeasurementKit 0.2.0.

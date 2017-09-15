@@ -1,50 +1,35 @@
 # NAME
-NonCopyable &mdash; Forbids copyability
+
+`measurement_kit/common/non_copyable.hpp`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
-```C++
-#include <measurement_kit/common.hpp>
+
+```
+#ifndef MEASUREMENT_KIT_COMMON_NON_COPYABLE_HPP
+#define MEASUREMENT_KIT_COMMON_NON_COPYABLE_HPP
 
 namespace mk {
 
 class NonCopyable {
   public:
+    NonCopyable(const NonCopyable &) = delete;
+    NonCopyable &operator=(const NonCopyable &) = delete;
     NonCopyable(NonCopyable &) = delete;
     NonCopyable &operator=(NonCopyable &) = delete;
+    NonCopyable() {}
 };
 
-}
+} // namespace mk
+#endif
 ```
 
 # DESCRIPTION
 
-Forbids copyability. You should in general
-forbid copyability when you hold low-level pointers that should
-be `free()`d just once. To do this, just inherit from
-`NonCopyable` as in:
+`NonCopyable` makes a derived class non-copyable. You typically need to make non-copyable classes that manage the lifecycle of pointers. 
 
-```C++
-/* Here inheriting from NonCopyable you guarantee that you cannot make
-   by mistake copies of the raw pointer `bar`. Doing that would cause
-   `delete` to be called more than once, which is a memory error. */
-public class Foo : public mk::NonCopyable {
-  public:
-    Foo() {
-        bar = new Bar;
-    }
-    
-    ~Foo() {
-        delete bar;
-    }
-  private:
-    Bar *bar = nullptr;
-};
-```
+Appeared in measurement-kit v0.1.0.
 
-
-# HISTORY
-
-`NonCopyable` appeared in MeasurementKit 0.1.0.

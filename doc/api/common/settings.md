@@ -1,44 +1,57 @@
 # NAME
-Settings &mdash; Map from string to scalar type
+
+`measurement_kit/common/settings.hpp`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
-```C++
+
+```
+#ifndef MEASUREMENT_KIT_COMMON_SETTINGS_HPP
+#define MEASUREMENT_KIT_COMMON_SETTINGS_HPP
+
 namespace mk {
 
-class Settings : public std::map<std::string, SettingsEntry> {
+class Settings : public std::map<std::string, Scalar> {
   public:
-    using std::map<std::string, SettingsEntry>::map;
-    template <typename T> T get(std::string key, T defval);
-    template <typename T> ErrorOr<T> get_noexcept(std::string key, T defval);
+    using std::map<std::string, Scalar>::map;
+
+#define XX(_rv_, _methname_, _accessor_)                                       \
+    template <typename Type>                                                   \
+    _rv_ _methname_(std::string key, Type def_value) const {                   \
+        if (find(key) == end()) {                                              \
+            return def_value;                                                  \
+        }                                                                      \
+        return at(key)._accessor_<Type>();                                     \
+    }
+
+    XX(Type, get, as)
+
+    XX(ErrorOr<Type>, get_noexcept, as_noexcept)
+
+#undef XX
+
+  protected:
+  private:
 };
 
-}
+} // namespace mk
+#endif
 ```
-
-# STABILITY
-
-1 - Experimental
 
 # DESCRIPTION
 
-`Settings` is an extended `std::map` able to map string to any scalar type. We
-use `SettingsEntry` to implement a generic scalar type container.
+`Settings` maps a key string to a Scalar value. This class is used throughout MK to pass around settings. We generally pass Settings around by value, so each function has its private copy. 
 
-In addition to the typical methods of `std::map`, `Settings` also features
-the `get()` and the `get_noexcept()` method.
+Settings is a derived class of std::map<std::string, Scalar>. As such it has all the methods of a standard std::map. 
 
-The `get()` method returns the value
-at `key` if available, otherwise the default value `defval`. An exception may
-be raised if it is not possible to convert the value associated to `key`
-to type `T`.
+Appeared in measurement-kit v0.1.0. 
 
-The `get_noexcept()` method is like `get()` except that it does
-not throw exceptions and instead it returns a `ErrorOr<T>` type.
+Support for mapping from string to any scalar type (rather than to just strings) was added in MK v0.2.0.
 
-# HISTORY
+`get()` returns the specified key if set; otherwise it returns the default value def_value. Throws ValueError if the value associated to key cannot be converted to the specified type.
 
-The `Settings` class appeared in MeasurementKit 0.1.0. Support for mapping to
-any type was added in MeasurementKit 0.2.0.
+`as_noexcept` is like `as()` but return Error rather than throwing.
+
