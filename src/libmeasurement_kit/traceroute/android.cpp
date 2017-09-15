@@ -55,7 +55,7 @@ void mk_traceroute_android_unused() {}
 namespace mk {
 namespace traceroute {
 
-AndroidProber::AndroidProber(bool a, int port, Var<Reactor> r, Var<Logger> l)
+AndroidProber::AndroidProber(bool a, int port, SharedPtr<Reactor> r, SharedPtr<Logger> l)
     : use_ipv4_(a), reactor(r), port_(port), logger(l) {}
 
 void AndroidProber::init() {
@@ -176,10 +176,9 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
     }
 
     // Note: we bind this, which makes this object non copyable or movable
-    reactor->pollfd(sockfd_, MK_POLLIN, timeout,
-                    [this](Error err, short flags) {
-                        event_callback(err, flags);
-                    });
+    reactor->pollin(sockfd_, timeout, [this](Error err) {
+        event_callback(err);
+    });
 
     probe_pending_ = true;
 }
@@ -343,15 +342,15 @@ double AndroidProber::calculate_rtt(struct timespec end,
     return rtt_ms;
 }
 
-void AndroidProber::event_callback(Error err, short flags) {
+void AndroidProber::event_callback(Error err) {
 
-    logger->debug("event_callback(%d, %d)", err.code, flags);
+    logger->debug("event_callback(%s)", err.what());
 
     if (err == net::TimeoutError()) {
         on_timeout();
         timeout_cb_();
 
-    } else if (!err && (flags & MK_POLLIN) != 0) {
+    } else {
         ProbeResult result;
         try {
             result = on_socket_readable();
@@ -360,9 +359,6 @@ void AndroidProber::event_callback(Error err, short flags) {
             return;
         }
         result_cb_(result);
-
-    } else {
-        throw std::runtime_error("Unexpected event error");
     }
 }
 

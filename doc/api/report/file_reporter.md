@@ -13,7 +13,7 @@ namespace report {
 
 class FileReporter : public BaseReporter {
   public:
-    static Var<BaseReporter> make(std::string path);
+    static SharedPtr<BaseReporter> make(std::string path);
     Continuation<Error> open(Report) override;
     Continuation<Error> write_entry(Entry e) override;
     Continuation<Error> close() override;

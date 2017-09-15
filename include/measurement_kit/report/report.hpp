@@ -35,7 +35,7 @@ class Report {
 
     Report();
 
-    void add_reporter(Var<BaseReporter> reporter);
+    void add_reporter(SharedPtr<BaseReporter> reporter);
 
     void fill_entry(Entry &entry) const;
 
@@ -43,12 +43,12 @@ class Report {
 
     void open(Callback<Error> callback);
 
-    void write_entry(Entry entry, Callback<Error> callback, Var<Logger> logger);
+    void write_entry(Entry entry, Callback<Error> callback, SharedPtr<Logger> logger);
 
     void close(Callback<Error> callback);
 
   private:
-    std::vector<Var<BaseReporter>> reporters_;
+    std::vector<SharedPtr<BaseReporter>> reporters_;
 };
 
 } // namespace report

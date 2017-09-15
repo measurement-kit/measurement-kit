@@ -1,0 +1,9 @@
+BUILTIN_STL_SUPPORT = YES
+EXTRACT_ALL = YES
+INPUT = include/measurement_kit/common
+JAVADOC_AUTOBRIEF = YES
+PROJECT_BRIEF = "Portable C++14 network measurement library"
+PROJECT_NAME = measurement-kit
+PROJECT_NUMBER = v0.8.0-dev
+RECURSIVE = NO
+STRIP_FROM_INC_PATH = include

@@ -19,7 +19,7 @@ WebConnectivityTest::WebConnectivityTest() : BaseTest() {
 }
 
 void WebConnectivityRunnable::main(std::string input, Settings options,
-                                   Callback<Var<report::Entry>> cb) {
+                                   Callback<SharedPtr<report::Entry>> cb) {
     ooni::web_connectivity(input, options, cb, reactor, logger);
 }
 

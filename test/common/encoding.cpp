@@ -13,11 +13,11 @@
 
 #include <measurement_kit/common.hpp>
 
-TEST_CASE("is_valid_utf8_string works") {
+TEST_CASE("utf8_parse works") {
 
     SECTION("If the input contains no UTF-8") {
         std::string s = "goodbye, cruel world\n";
-        REQUIRE(mk::is_valid_utf8_string(s) == mk::NoError());
+        REQUIRE(mk::utf8_parse(s) == mk::NoError());
     }
 
     SECTION("If the input contains valid UTF-8") {
@@ -25,7 +25,7 @@ TEST_CASE("is_valid_utf8_string works") {
                                ',', ' ', 'c', 'r', 0xc3, 0xbc, 'e',
                                'l', ' ', 'w', 'o', 'r',  'l',  'd'};
         std::string s{v.begin(), v.end()};
-        REQUIRE(mk::is_valid_utf8_string(s) == mk::NoError());
+        REQUIRE(mk::utf8_parse(s) == mk::NoError());
     }
 
     SECTION("If the input contains an illegal sequence") {
@@ -33,7 +33,7 @@ TEST_CASE("is_valid_utf8_string works") {
                                ',', ' ', 'c', 'r', 0xbc, 0xbc, 'e',
                                'l', ' ', 'w', 'o', 'r',  'l',  'd'};
         std::string s{v.begin(), v.end()};
-        REQUIRE(mk::is_valid_utf8_string(s) == mk::IllegalSequenceError());
+        REQUIRE(mk::utf8_parse(s) == mk::IllegalSequenceError());
     }
 
     SECTION("If there is a null byte in the middle") {
@@ -41,14 +41,14 @@ TEST_CASE("is_valid_utf8_string works") {
                                ',', ' ', 'c', 'r', 0x00, 0x00, 'e',
                                'l', ' ', 'w', 'o', 'r',  'l',  'd'};
         std::string s{v.begin(), v.end()};
-        REQUIRE(mk::is_valid_utf8_string(s) == mk::UnexpectedNullByteError());
+        REQUIRE(mk::utf8_parse(s) == mk::UnexpectedNullByteError());
     }
 
     SECTION("If the UTF-8 sequence is not complete") {
         std::vector<uint8_t> v{'g', 'o', 'o', 'd', 'b', 'y',
                                'e', ',', ' ', 'c', 'r', 0xc3};
         std::string s{v.begin(), v.end()};
-        REQUIRE(mk::is_valid_utf8_string(s) ==
+        REQUIRE(mk::utf8_parse(s) ==
                 mk::IncompleteUtf8SequenceError());
     }
 }

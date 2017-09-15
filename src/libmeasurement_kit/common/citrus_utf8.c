@@ -1,7 +1,11 @@
-/*	$OpenBSD: citrus_utf8.c,v 1.18 2016/09/07 17:15:06 schwarze Exp $ */
-
 /*-
- * Copyright (c) 2002-2004 Tim J. Robbins
+ * Part of measurement-kit <https://measurement-kit.github.io/>.
+ * Measurement-kit is free software under the BSD license. See AUTHORS
+ * and LICENSE for more information on the copying conditions.
+ * =============================================================
+ * Based on $OpenBSD: citrus_utf8.c,v 1.18 2016/09/07 17:15:06 schwarze Exp $
+ *
+ * Portions Copyright (c) 2002-2004 Tim J. Robbins
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,15 +30,15 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/types.h>
+#include <measurement_kit/common/portable/sys/types.h>
 
 #include <errno.h>
 #include <string.h>
 
-#include "private/portable/citrus_adapt.h"
+#include <measurement_kit/common/detail/citrus_ctype.h>
 
 size_t
-_citrus_utf8_ctype_mbrtowc(wchar_t * __restrict pwc,
+mk_utf8_mbrtowc(wchar_t * __restrict pwc,
     const char * __restrict s, size_t n, mbstate_t * __restrict ps)
 {
 	struct _utf8_state *us;
@@ -162,13 +166,13 @@ _citrus_utf8_ctype_mbrtowc(wchar_t * __restrict pwc,
 }
 
 int
-_citrus_utf8_ctype_mbsinit(const mbstate_t * __restrict ps)
+mk_utf8_mbsinit(const mbstate_t * __restrict ps)
 {
 	return ((const struct _utf8_state *)ps)->want == 0;
 }
 
 size_t
-_citrus_utf8_ctype_mbsnrtowcs(wchar_t * __restrict dst,
+mk_utf8_mbsnrtowcs(wchar_t * __restrict dst,
     const char ** __restrict src, size_t nmc, size_t len,
     mbstate_t * __restrict ps)
 {
@@ -194,7 +198,7 @@ _citrus_utf8_ctype_mbsnrtowcs(wchar_t * __restrict dst,
 					return o;
 				r = 1;
 			} else {
-				r = _citrus_utf8_ctype_mbrtowc(NULL, *src + i,
+				r = mk_utf8_mbrtowc(NULL, *src + i,
 				    nmc - i, ps);
 				if (r == (size_t)-1)
 					return r;
@@ -227,7 +231,7 @@ _citrus_utf8_ctype_mbsnrtowcs(wchar_t * __restrict dst,
 			}
 			r = 1;
 		} else {
-			r = _citrus_utf8_ctype_mbrtowc(dst + o, *src + i,
+			r = mk_utf8_mbrtowc(dst + o, *src + i,
 			    nmc - i, ps);
 			if (r == (size_t)-1) {
 				*src += i;
@@ -248,7 +252,7 @@ _citrus_utf8_ctype_mbsnrtowcs(wchar_t * __restrict dst,
 }
 
 size_t
-_citrus_utf8_ctype_wcrtomb(char * __restrict s, wchar_t wc,
+mk_utf8_wcrtomb(char * __restrict s, wchar_t wc,
     mbstate_t * __restrict ps)
 {
 	struct _utf8_state *us;
@@ -307,7 +311,7 @@ _citrus_utf8_ctype_wcrtomb(char * __restrict s, wchar_t wc,
 }
 
 size_t
-_citrus_utf8_ctype_wcsnrtombs(char * __restrict dst,
+mk_utf8_wcsnrtombs(char * __restrict dst,
     const wchar_t ** __restrict src, size_t nwc, size_t len,
     mbstate_t * __restrict ps)
 {
@@ -331,7 +335,7 @@ _citrus_utf8_ctype_wcsnrtombs(char * __restrict dst,
 					return o;
 				r = 1;
 			} else {
-				r = _citrus_utf8_ctype_wcrtomb(buf, wc, ps);
+				r = mk_utf8_wcrtomb(buf, wc, ps);
 				if (r == (size_t)-1)
 					return r;
 			}
@@ -351,14 +355,14 @@ _citrus_utf8_ctype_wcsnrtombs(char * __restrict dst,
 			r = 1;
 		} else if (len - o >= _CITRUS_UTF8_MB_CUR_MAX) {
 			/* Enough space to translate in-place. */
-			r = _citrus_utf8_ctype_wcrtomb(dst + o, wc, ps);
+			r = mk_utf8_wcrtomb(dst + o, wc, ps);
 			if (r == (size_t)-1) {
 				*src += i;
 				return r;
 			}
 		} else {
 			/* May not be enough space; use temp buffer. */
-			r = _citrus_utf8_ctype_wcrtomb(buf, wc, ps);
+			r = mk_utf8_wcrtomb(buf, wc, ps);
 			if (r == (size_t)-1) {
 				*src += i;
 				return r;

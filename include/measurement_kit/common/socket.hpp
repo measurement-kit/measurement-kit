@@ -10,6 +10,9 @@ namespace mk {
 
 #ifdef _WIN32
 using socket_t = uintptr_t;
+#elif DOXYGEN
+/// `socket_t` is a type suitable to contain a system socket.
+using socket_t = platform_dependent;
 #else
 using socket_t = int;
 #endif

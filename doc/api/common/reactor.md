@@ -1,238 +1,99 @@
 # NAME
-Reactor &mdash; Dispatcher of I/O events
+
+`measurement_kit/common/reactor.hpp`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
+
 ```C++
-#include <measurement_kit/common.hpp>
+#ifndef MEASUREMENT_KIT_COMMON_REACTOR_HPP
+#define MEASUREMENT_KIT_COMMON_REACTOR_HPP
+
+struct event_base;
 
 namespace mk {
 
-#define MK_POLLIN /* Unspecified; used by pollfd() */
-#define MK_POLLOUT /* Unspecified; used by pollfd() */
-
 class Reactor {
   public:
-    static Var<Reactor> make();
-    static Var<Reactor> global();
+    static SharedPtr<Reactor> make();
 
-    void call_later(double delay, Callback<> &&cb);
-    void call_soon(Callback<> &&cb);
+    static SharedPtr<Reactor> global();
+
+    virtual ~Reactor();
+
+    virtual void call_in_thread(Callback<> &&cb) = 0;
+
+    virtual void call_soon(Callback<> &&cb) = 0;
+
+    virtual void call_later(double time, Callback<> &&cb) = 0;
+
+    virtual void pollin(
+            socket_t sockfd, double timeout, Callback<Error> &&cb) = 0;
+
+    virtual void pollout(
+            socket_t sockfd, double timeout, Callback<Error> &&cb) = 0;
+
+    virtual event_base *get_event_base() = 0;
 
     void run_with_initial_event(Callback<> &&cb);
-    void run();
-    void stop();
 
-    void pollfd(
-            socket_t sockfd,
-            short events,
-            double timeout,
-            Callback<Error, short> &&callback,
-    );
+    virtual void run() = 0;
 
-    // Backward compatibility aliases
-    void loop() { run(); }
-    void break_loop() { stop(); }
-    void loop_with_initial_event(Callback<> &&func) {
-        run_with_initial_event(std::move(func));
-    }
-    void pollfd(socket_t sockfd, short events, Callback<Error, short> &&cb,
-                double timeout = -1.0) {
-        pollfd(sockfd, events, timeout, std::move(cb));
-    }
-}
+    virtual void stop() = 0;
+};
 
-/* Functional interface (by default using the global reactor): */
-
-void call_later(
-        double delay,
-        Callback<> callback,
-        Var<Reactor> reactor = Reactor::global()
-);
-
-void call_soon(
-        Callback<> callback,
-        Var<Reactor> reactor = Reactor::global()
-);
-
-// Syntactic sugar
-void run(Var<Reactor> reactor = Reactor::global()) {
-    reactor->run();
-}
-void stop(Var<Reactor> reactor = Reactor::global()) {
-    reactor->stop();
-}
-void run_with_initial_event(Callback<> &&func,
-                            Var<Reactor> reactor = Reactor::global()) {
-    reactor->run_with_initial_event(std::move(func));
-}
-
-// Backward compatibility aliases
-void loop(Var<Reactor> reactor = Reactor::global()) {
-    run(reactor);
-}
-void break_loop(Var<Reactor> reactor = Reactor::global()) {
-    stop(reactor);
-}
-void loop_with_initial_event(Callback<> &&func,
-                             Var<Reactor> reactor = Reactor::global()) {
-    run_with_initial_event(std::move(func));
-}
-
+} // namespace mk
+#endif
 ```
-
-# STABILITY
-
-2 - Stable
 
 # DESCRIPTION
 
-The `Reactor` abstract interface dispatches I/O events. Most MeasurementKit
-objects refer to a specific `Reactor` object.
+`Reactor` reacts to I/O events and manages delayed calls. Most MK objects reference a specific Reactor. 
 
-The `make()` and `global()` factories return a reactor allocated
-on the heap whose lifecycle is manager using a `Var<>` smart pointer.
-Specifically, `make()` allocates a new reactor and `global()` returns
-a reference to the global reactor.
+Reactor is an abstract interface because there may be different implementations. The default implementation uses libevent as backend. 
 
-You can schedule a callback to be called immediately using the `call_soon`
-method that takes such callback as its first argument.
+_Note_: Albeit Reactor allows to perform asynchronous I/O on sockets, by calling select() or equivalent, more performant system APIs, typically you want to use code in mk::net to implement asynchronous I/O. In fact, code in mk::net uses the proactor pattern that is more efficient to perform asynchronous I/O, especially under Windows. The feature exposed by Reactor is there mainly to interface with third-party libraries such as, for example, c-ares. 
 
-You can schedule a callback to be called after a specific number
-of seconds using `call_later`. The first argument is the number of
-seconds to wait before calling the callback. The second argument
-is the callback itself.
+Throughout the documentation we will call `I/O thread` the thread that is currently blocked in Reactor::run() dispatching events. 
 
-You can ask the reactor to wait for I/O on a specific socket
-descriptor using `pollfd`. In general, beware that this MAY be less
-efficient than using the `Transport` API (see the `net` package)
-for doing asynchronous I/O. To do so, use the `pollfd` overloaded
-family of methods:
+Available since measurement-kit v0.1.0. 
 
-The first overload of `pollfd` is the preferred form and takes the
-following arguments.  The first argument is a socket file descriptor.
-The second argument is the bitmaks of events you want to monitor
-for; it can be `MK_POLLIN`, to wait for the socket being readable,
-`MK_POLLOUT` to wait for the socket being writable, or `MK_POLLIN
-| MK_POLLOUT` to wait for both. The third argument is the timeout
-after which you want to stop waiting for I/O. Pass a negative value
-to indicate that you don't want any timeout checking. The fourth
-argument is the callback to be called when either the socket is
-ready for I/O or there has been a timeout. The first argument passed
-to the callback indicates whether there was an error (typically
-`TimeoutError`) or not (in such case the error will be `NoError`).
-The second argument passed to the callback indicate whether the
-socket is readable (`MK_POLLIN`), writable (`MK_POLLOUT`), or both
-(`MK_POLLIN | MK_POLLOUT`).
+Originally Reactor was called `Poller` but was renamed in MK v0.2.0. It was significantly reworked in MK v0.4.0, v0.7.0. and v0.8.0.
 
-In second overload of `pollfd` the callback is the third argument and
-the timeout is optional and is the fourth argument. This overload is
-implemented by calling the previous overload with swapped third and fourth
-arguments. This overload is meant as a convenience when you don't want
-to specify any timeout. It also preserves backward compatibility with
-versions of MeasurementKit lower than v0.7.0.
+`make()` returns an instance of the default Reactor. _Note_: The first time a reactor is created, libevent is configured to be thread safe _and_, on Unix, we ignore SIGPIPE.
 
-Other available methods (typically to be called in `main()`) are:
+`global()` returns the global instance of the default Reactor.
 
-The `run_with_initial_event` method runs the reactor and calls the specified
-callback when the reactor is running. This is equivalent to calling
-`call_soon()` with the target callback, followed by `run()`.
+`~Reactor()` destroys any allocated resources.
 
-The `run` method runs the reactor. This is a blocking method that does not
-return until the reactor runs out I/O events to poll for and/or pending
-(possibly delayed) calls. You can also stop a running reactor explicitly
-by calling `stop`. Calling `run` when the reactor is already running
-throws a `std::runtime_error` exception.
+`call_in_thread()` schedules the execution of cb inside a background thread created on demand. A maximum of three such threads can be active at any time. Additionally scheduled callback will wait for a thread to be ready to serve them. When there are no further callbacks to execute, background threads will exit, to save resources. 
 
-The `stop` method stop the reactor. This is an idempotent method that you
-can call many times. This method MAY return while the reactor is still
-running. That is, it only tells the reactor to stop but it does not provide
-the guarantee that, when it returns, the reactor is already stopped.
+Throws std::exception (or a derived class) if it is not possible to create a background thread or schedule the callback. 
 
-The `loop_with_initial_event`, `loop`, and `break_loop` methods are deprecated
-aliases for, respectively, `run_with_initial_event`, `run`, and `stop`.
+If cb throws an exception of type std::exception (or derived from it), such exception is swallowed.
 
-The `get_event_base` is a deprecated method that returns the underlying
-`event_base` used by the reactor. It is deprecated because it exposes in
-great detail our dependency on libevent. Ideally, this method should be
-a method of the specific implementation of the reactor, available only
-when you downcast from reactor to its specific implementation.
+`call_soon() schedules the execution of cb in the I/O thread as soon as possible. 
 
-In addition, this module exposes also syntactic sugar functions:
+Throws std::exception (or a derived class) if it is not possible to schedule the callback. 
 
-The `call_soon`, `call_later`, `loop_with_initial_event`, `loop`, `loop_once`,
-`break_loop`, `run_with_initial_event`, `run`, and `stop` functions are
-syntactic sugar that call the respective method of the global reactor (i.e.
-the one obtained with `Reactor::make()`.
+_BUG_: Any exception thrown by the callback will not be swallowed and will thus cause the stack to unwind.
 
-# GUARANTEES
+`call_later()` is like `call_soon()` except that the callback is scheduled `time` seconds in the future. 
 
-1. it is safe to call `global` and `global_remote` concurrently from
-   multiple threads.
+_BUG_: if time is negative, the callback will never be called.
 
-2. all reactor methods are thread safe.
+`pollin()` will monitor sockfd for readability. Parameter sockfd is the socket to monitor for readability. On Unix system, this can actually be any file descriptor. Parameter timeout is the timeout in seconds. Passing a negative value will imply no timeout. Parameter cb is the callback to be called. The Error argument will be TimeoutError if the timeout expired, NoError otherwise.
 
-3. the reactor MAY actually be a proxy for a real reactor multiplexing I/O
-   running from a background thread. In such case, disposing of the foreground
-   object has no effect on the callbacks scheduled in the real reactor. To
-   guarantee this, the signature of functions taking callbacks is such that
-   they must be moved (explicitly or implicitly), thus giving their ownership
-   to the (possibly running in a background thread) reactor. As a result,
-   once a callback is scheduled, there should be no shared state between
-   different threads. We recommend, in such case, to move any state you
-   might need into the callback closure, e.g.:
+`pollout()` is like pollin() but for writability.
 
-```C++
-        reactor->call_soon([state = std::move(state)]() {
-            // Possibly running in the background I/O thread. Has single
-            // ownership of the shared state.
-        });
-```
+`get_event_base()` returns libevent's event base. Throws std::exception (or a derived class) if the backend is not libevent and you are trying to access the event base. _Note_: we configure the event base to be thread safe using libevent API.
 
-# CAVEATS
+`run_with_initial_event` is syntactic sugar for calling call_soon() immediately followed by run().
 
-1. the `pollfd` interface is typically less efficient that using the
-   `Transport` based interface implemented in `net`.
+`run()` blocks processing I/O events and delayed calls. Throws std::exception (or a derived class) if it is not possible to start the reactor. A common case where this happens is when the reactor is already running. _Note_: This function will return if there is no pending I/O and no delayed calls (either registered to run in background threads or in the I/O thread). This behavior changed in MK v0.8.0 before which run() blocked until stop() was called.
 
-2. callbacks MAY be called from another thread context.
+`stop()` signals to the I/O loop to stop. If the reactor is not running yet, this method has no effect. Throws std::exception (or a derived class) if it is not possible to stop the reactor.
 
-3. there is currently no way to know whether the reactor will run the
-   callbacks in the same or in another thread context.
-
-4. calling `stop` before calling `run` has no effect and will typically lead
-   to your program enter the I/O loop and suddenly leaving it because there
-   is nothing to do. When you want to run "initialization" actions in the
-   context of the I/O loop you should use instead the following pattern:
-
-```C++
-int main(int argc, char **argv) {
-    Reactor reactor = Reactor::make();
-
-    // Allocate objects on the stack before calling the blocking
-    // `run_with_initial_event` method of `reactor`.
-    Object obj{reactor};
-    Foo bar;
-
-    // Capture by reference (`&`) because this method is blocking
-    reactor->run_with_initial_event([&]() {
-        obj.action([&]() {
-            bar.baz();
-            reactor->stop();
-        });
-    });
-}
-```
-
-# HISTORY
-
-The `Reactor` class appeared in MeasurementKit 0.1.0, named `Poller`.
-It was renamed `Reactor` in MeasurementKit 0.2.0. As of MK v0.2.0,
-the `Poller` still exists as a specific implementation of the
-`Reactor` interface described in this manual page. The `Reactor`
-was significantly improved as part of MK v0.4.0 and MK v0.7.0.
-
-Before MK v0.8.0, `Reactor::run()` was blocking until `stop` was
-called. After, `Reactor::run()` will return as soon as there aren't
-pending I/O events or (possibly delayed) calls.

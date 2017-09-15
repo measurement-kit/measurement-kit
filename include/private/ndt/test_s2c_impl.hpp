@@ -15,10 +15,10 @@ namespace test_s2c {
 using namespace mk::report;
 
 template <MK_MOCK_AS(net::connect_many, net_connect_many)>
-void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
+void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, Params params,
                     Callback<Error, Continuation<Error, double>> cb,
-                    double timeout, Settings settings, Var<Reactor> reactor,
-                    Var<Logger> logger) {
+                    double timeout, Settings settings, SharedPtr<Reactor> reactor,
+                    SharedPtr<Logger> logger) {
 
     dump_settings(settings, "ndt/s2c", logger);
 
@@ -26,7 +26,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
     logger->debug("ndt: connect ...");
     net_connect_many(
         address, params.port, params.num_streams,
-        [=](Error err, std::vector<Var<Transport>> txp_list) {
+        [=](Error err, std::vector<SharedPtr<Transport>> txp_list) {
             logger->debug("ndt: connect ... %d", (int)err);
             if (err) {
                 cb(err, nullptr);
@@ -43,10 +43,10 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
                 // The coroutine is resumed and receives data
                 logger->debug("ndt: resume coroutine");
                 logger->debug("Starting download");
-                Var<MeasureSpeed> average(new MeasureSpeed);
+                SharedPtr<MeasureSpeed> average(new MeasureSpeed);
                 // Note: we parse but ignore the server's snap delay
-                Var<MeasureSpeed> snaps(new MeasureSpeed(0.5));
-                Var<size_t> num_completed{new size_t{0}};
+                SharedPtr<MeasureSpeed> snaps(new MeasureSpeed(0.5));
+                SharedPtr<size_t> num_completed{new size_t{0}};
                 size_t num_flows = txp_list.size();
                 log_speed(logger, "download-speed", params.num_streams,
                           0.0, 0.0);
@@ -105,7 +105,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, Params params,
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
-void finalizing_test_impl(Var<Context> ctx, Var<Entry> cur_entry,
+void finalizing_test_impl(SharedPtr<Context> ctx, SharedPtr<Entry> cur_entry,
                           Callback<Error> callback) {
 
     ctx->logger->debug("ndt: recv TEST_MSG ...");
@@ -144,7 +144,7 @@ template <MK_MOCK_AS(messages::read_msg, messages_read_msg_first),
           MK_MOCK_AS(messages::format_test_msg, messages_format_test_msg),
           MK_MOCK_AS(messages::write, messages_write),
           MK_MOCK(finalizing_test)>
-void run_impl(Var<Context> ctx, Callback<Error> callback) {
+void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
@@ -205,7 +205,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->debug("Num-streams: %d", params.num_streams);
 
-        Var<Entry> cur_entry(new Entry);
+        SharedPtr<Entry> cur_entry(new Entry);
         (*cur_entry)["web100_data"] = Entry::object();
         (*cur_entry)["params"] = Entry::object();
         (*cur_entry)["receiver_data"] = Entry::array();
@@ -247,7 +247,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
                         // The server sends us MSG containing throughput
                         ctx->logger->debug("ndt: recv TEST_MSG ...");
                         messages_read_json(ctx, [=](Error err, uint8_t type,
-                                                    json m) {
+                                                    Json m) {
                             ctx->logger->debug("ndt: recv TEST_MSG ... %d",
                                                (int)err);
                             if (err) {

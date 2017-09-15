@@ -1,22 +1,21 @@
 # NAME
-aaa_base &mdash; Headers we always want to include.
+
+`measurement_kit/common/aaa_base.hpp`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
+
 ```C++
-#include <measurement_kit/common.hpp>
+#ifndef MEASUREMENT_KIT_COMMON_AAA_BASE_HPP
+#define MEASUREMENT_KIT_COMMON_AAA_BASE_HPP
+
+#endif
 ```
-
-# STABILITY
-
-2 - Stable
 
 # DESCRIPTION
 
-This module just pulls basic C/C++ headers needed by all other modules.
+This header file contains portability definitions and headers.
 
-# HISTORY
-
-The `aaa_base` header appeared in MeasurementKit 0.3.0.

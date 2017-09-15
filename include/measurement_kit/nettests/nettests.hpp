@@ -12,7 +12,7 @@
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/lexical_cast.hpp>
 #include <measurement_kit/common/settings.hpp>
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 namespace mk {
 
@@ -54,7 +54,7 @@ class BaseTest {
     void run();
     void start(Callback<> func);
 
-    Var<Runnable> runnable;
+    SharedPtr<Runnable> runnable;
     Settings settings;
 };
 

@@ -12,26 +12,26 @@ static const int timeout = 5;
 
 static void send_receive_invalid_request_line(net::Endpoint endpoint,
                                               std::string request_line,
-                                              Callback<Var<report::Entry>> cb,
+                                              Callback<SharedPtr<report::Entry>> cb,
                                               Settings settings,
-                                              Var<Reactor> reactor,
-                                              Var<Logger> logger) {
+                                              SharedPtr<Reactor> reactor,
+                                              SharedPtr<Logger> logger) {
     settings["host"] = endpoint.hostname;
     settings["port"] = endpoint.port;
-    Var<report::Entry> entry{new report::Entry{
+    SharedPtr<report::Entry> entry{new report::Entry{
         {"tampering", nullptr},
         {"received", nullptr},
         {"sent", nullptr},
         {"failure", nullptr}
     }};
-    templates::tcp_connect(settings, [=](Error err, Var<net::Transport> txp) {
+    templates::tcp_connect(settings, [=](Error err, SharedPtr<net::Transport> txp) {
         if (err) {
             logger->warn("http_invalid_request_line: error connecting");
-            (*entry)["failure"] = err.as_ooni_error();
+            (*entry)["failure"] = err.reason;
             cb(entry);
             return;
         }
-        Var<std::string> received_data(new std::string);
+        SharedPtr<std::string> received_data(new std::string);
         txp->on_data([=](net::Buffer data) {
             logger->debug("http_invalid_request_line: on_data: %s",
                           data.peek().c_str());
@@ -59,31 +59,31 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
 }
 
 void http_invalid_request_line(Settings options,
-                               Callback<Var<report::Entry>> cb,
-                               Var<Reactor> reactor, Var<Logger> logger) {
-    Var<report::Entry> entry(new report::Entry);
+                               Callback<SharedPtr<report::Entry>> cb,
+                               SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<report::Entry> entry(new report::Entry);
     (*entry)["tampering"] = nullptr;
     (*entry)["received"] = report::Entry::array();
     (*entry)["sent"] = report::Entry::array();
     (*entry)["tampering_list"] = report::Entry::array();
     (*entry)["failure_list"] = report::Entry::array();
-    Var<int> tests_run(new int(0));
+    SharedPtr<int> tests_run(new int(0));
 
     ErrorOr<net::Endpoint> endpoint =
         mk::net::parse_endpoint(options["backend"], 80);
 
     if (!endpoint) {
         logger->warn("Invalid helper endpoint: %s (backend = '%s')",
-                     endpoint.as_error().explain().c_str(),
+                     endpoint.as_error().what(),
                      options["backend"].c_str());
-        (*entry)["failure"] = endpoint.as_error().as_ooni_error();
+        (*entry)["failure"] = endpoint.as_error().reason;
         cb(entry);
         return;
     }
 
     logger->info("Using helper: %s", options["backend"].c_str());
 
-    auto handle_response = [=](Var<report::Entry> inner) {
+    auto handle_response = [=](SharedPtr<report::Entry> inner) {
         *tests_run += 1;
         (*entry)["tampering_list"].push_back((*inner)["tampering"]);
         (*entry)["received"].push_back((*inner)["received"]);
@@ -93,7 +93,7 @@ void http_invalid_request_line(Settings options,
             for (auto &x : (*entry)["failure_list"]) {
                 if (x != nullptr) {
                     (*entry)["failure"]
-                        = ParallelOperationError().as_ooni_error();
+                        = ParallelOperationError().reason;
                     break;
                 }
             }

@@ -21,15 +21,15 @@ class NdtTest : public NetTest {
 
 void mk::ndt::run(Callback<Error> callback,
                   Settings settings = {},
-                  Var<Logger> logger = Logger::global(),
-                  Var<Reactor> reactor = Reactor::global());
+                  SharedPtr<Logger> logger = Logger::global(),
+                  SharedPtr<Reactor> reactor = Reactor::global());
 
 void mk::ndt::run_with_specific_server(std::string address,
                                        int port,
                                        Callback<Error> callback,
                                        Settings settings = {},
-                                       Var<Logger> logger = Logger::global(),
-                                       Var<Reactor> reactor = Reactor::global());
+                                       SharedPtr<Logger> logger = Logger::global(),
+                                       SharedPtr<Reactor> reactor = Reactor::global());
 ```
 
 # STABILITY

@@ -19,9 +19,9 @@ using namespace mk::net;
 
 */
 
-/*static*/ ErrorOr<Var<Request>> Request::make(Settings settings, Headers headers,
+/*static*/ ErrorOr<SharedPtr<Request>> Request::make(Settings settings, Headers headers,
                                                std::string body) {
-    Var<Request> request(new Request);
+    SharedPtr<Request> request(new Request);
     Error error = request->init(settings, headers, body);
     // Note: the following cannot be simplified using short circuit
     // evaluation because two different types are returned
@@ -54,7 +54,7 @@ Error Request::init(Settings settings, Headers hdrs, std::string bd) {
     return NoError();
 }
 
-void Request::serialize(net::Buffer &buff, Var<Logger> logger) {
+void Request::serialize(net::Buffer &buff, SharedPtr<Logger> logger) {
     buff << method << " ";
     if (url_path != "") {
         buff << url_path;
@@ -84,7 +84,7 @@ void Request::serialize(net::Buffer &buff, Var<Logger> logger) {
         logger->debug("> %s", s.c_str());
     }
     if (body != "") {
-        logger->log(MK_LOG_DEBUG2, "%s", body.c_str());
+        logger->debug2("%s", body.c_str());
         buff << body;
     }
 }
@@ -98,21 +98,21 @@ void Request::serialize(net::Buffer &buff, Var<Logger> logger) {
          |___/
 */
 
-void request_connect(Settings settings, Callback<Error, Var<Transport>> txp,
-                     Var<Reactor> reactor, Var<Logger> logger) {
+void request_connect(Settings settings, Callback<Error, SharedPtr<Transport>> txp,
+                     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_connect_impl(settings, txp, reactor, logger);
 }
 
-void request_send(Var<Transport> txp, Settings settings, Headers headers,
-                  std::string body, Var<Logger> logger,
-                  Callback<Error, Var<Request>> callback) {
+void request_send(SharedPtr<Transport> txp, Settings settings, Headers headers,
+                  std::string body, SharedPtr<Logger> logger,
+                  Callback<Error, SharedPtr<Request>> callback) {
     request_maybe_send(Request::make(settings, headers, body), txp, logger,
                        callback);
 }
 
-void request_maybe_send(ErrorOr<Var<Request>> request, Var<Transport> txp,
-                        Var<Logger> logger,
-                        Callback<Error, Var<Request>> callback) {
+void request_maybe_send(ErrorOr<SharedPtr<Request>> request, SharedPtr<Transport> txp,
+                        SharedPtr<Logger> logger,
+                        Callback<Error, SharedPtr<Request>> callback) {
     if (!request) {
         callback(request.as_error(), nullptr);
         return;
@@ -124,13 +124,13 @@ void request_maybe_send(ErrorOr<Var<Request>> request, Var<Transport> txp,
     });
 }
 
-void request_recv_response(Var<Transport> txp,
-                           Callback<Error, Var<Response>> cb, Settings settings,
-                           Var<Reactor> reactor, Var<Logger> logger) {
-    Var<ResponseParserNg> parser{new ResponseParserNg{logger}};
-    Var<Response> response(new Response);
-    Var<bool> prevent_emit(new bool(false));
-    Var<bool> valid_response(new bool(false));
+void request_recv_response(SharedPtr<Transport> txp,
+                           Callback<Error, SharedPtr<Response>> cb, Settings settings,
+                           SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<ResponseParserNg> parser{new ResponseParserNg{logger}};
+    SharedPtr<Response> response(new Response);
+    SharedPtr<bool> prevent_emit(new bool(false));
+    SharedPtr<bool> valid_response(new bool(false));
 
     // Note: any parser error at this point is an exception catched by the
     // connection code and routed to the error handler function below
@@ -164,7 +164,7 @@ void request_recv_response(Var<Transport> txp,
             return;
         }
         if (response->body.size() > 0) {
-            logger->log(MK_LOG_DEBUG2, "%s", response->body.c_str());
+            logger->debug2("%s", response->body.c_str());
         }
         txp->emit_error(NoError());
     });
@@ -189,32 +189,32 @@ void request_recv_response(Var<Transport> txp,
         txp->on_error(nullptr);
         txp->on_data(nullptr);
         reactor->call_soon([=]() {
-            logger->log(MK_LOG_DEBUG2, "http: end of closure");
+            logger->debug2("http: end of closure");
             cb(err, response);
         });
     });
 }
 
-void request_sendrecv(Var<Transport> txp, Settings settings, Headers headers,
-                      std::string body, Callback<Error, Var<Response>> callback,
-                      Var<Reactor> reactor, Var<Logger> logger) {
+void request_sendrecv(SharedPtr<Transport> txp, Settings settings, Headers headers,
+                      std::string body, Callback<Error, SharedPtr<Response>> callback,
+                      SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_maybe_sendrecv(Request::make(settings, headers, body), txp,
                            callback, settings, reactor, logger);
 }
 
-void request_maybe_sendrecv(ErrorOr<Var<Request>> request, Var<Transport> txp,
-                            Callback<Error, Var<Response>> callback,
+void request_maybe_sendrecv(ErrorOr<SharedPtr<Request>> request, SharedPtr<Transport> txp,
+                            Callback<Error, SharedPtr<Response>> callback,
                             Settings settings,
-                            Var<Reactor> reactor, Var<Logger> logger) {
+                            SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_maybe_send(request, txp, logger,
-                       [=](Error error, Var<Request> request) {
+                       [=](Error error, SharedPtr<Request> request) {
         if (error) {
-            Var<Response> response{new Response};
+            SharedPtr<Response> response{new Response};
             response->request = request;
             callback(error, response);
             return;
         }
-        request_recv_response(txp, [=](Error error, Var<Response> response) {
+        request_recv_response(txp, [=](Error error, SharedPtr<Response> response) {
             if (error) {
                 callback(error, response);
                 return;
@@ -263,8 +263,8 @@ ErrorOr<Url> redirect(const Url &orig_url, const std::string &location) {
 }
 
 void request(Settings settings, Headers headers, std::string body,
-             Callback<Error, Var<Response>> callback, Var<Reactor> reactor,
-             Var<Logger> logger, Var<Response> previous, int num_redirs) {
+             Callback<Error, SharedPtr<Response>> callback, SharedPtr<Reactor> reactor,
+             SharedPtr<Logger> logger, SharedPtr<Response> previous, int num_redirs) {
     dump_settings(settings, "request", logger);
     ErrorOr<int> max_redirects = settings.get_noexcept(
         "http/max_redirects", 0
@@ -275,14 +275,14 @@ void request(Settings settings, Headers headers, std::string body,
     }
     request_connect(
         settings,
-        [=](Error err, Var<Transport> txp) {
+        [=](Error err, SharedPtr<Transport> txp) {
             if (err) {
                 callback(err, nullptr);
                 return;
             }
             request_sendrecv(
                 txp, settings, headers, body,
-                [=](Error error, Var<Response> response) {
+                [=](Error error, SharedPtr<Response> response) {
                     txp->close([=]() {
                         if (error) {
                             callback(error, response);
@@ -335,25 +335,25 @@ bool HeadersComparator::operator() (
 void request_json_string(
       std::string method, std::string url, std::string data,
       http::Headers headers,
-      Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+      Callback<Error, SharedPtr<http::Response>, Json> cb,
+      Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_json_string_impl(method, url, data, headers, cb, settings, reactor,
                              logger);
 }
 
 void request_json_no_body(
       std::string method, std::string url, http::Headers headers,
-      Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+      Callback<Error, SharedPtr<http::Response>, Json> cb,
+      Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_json_string(method, url, "", headers, cb, settings, reactor,
                         logger);
 }
 
 void request_json_object(
-      std::string method, std::string url, nlohmann::json jdata,
+      std::string method, std::string url, Json jdata,
       http::Headers headers,
-      Callback<Error, Var<http::Response>, nlohmann::json> cb,
-      Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+      Callback<Error, SharedPtr<http::Response>, Json> cb,
+      Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_json_string(method, url, jdata.dump(), headers, cb, settings,
                         reactor, logger);
 }

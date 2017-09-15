@@ -14,22 +14,22 @@ namespace mk {
 namespace nettests {
 
 BaseTest &BaseTest::on_logger_eof(Callback<> func) {
-    runnable->logger->on_eof(func);
+    runnable->logger->on_eof(std::move(func));
     return *this;
 }
 
 BaseTest &BaseTest::on_log(Callback<uint32_t, const char *> func) {
-    runnable->logger->on_log(func);
+    runnable->logger->on_log(std::move(func));
     return *this;
 }
 
 BaseTest &BaseTest::on_event(Callback<const char *> func) {
-    runnable->logger->on_event(func);
+    runnable->logger->on_event(std::move(func));
     return *this;
 }
 
 BaseTest &BaseTest::on_progress(Callback<double, const char *> func) {
-    runnable->logger->on_progress(func);
+    runnable->logger->on_progress(std::move(func));
     return *this;
 }
 
@@ -99,7 +99,7 @@ BaseTest &BaseTest::on_destroy(Callback<> cb) {
     return *this;
 }
 
-static void start_internal_(Var<Runnable> &&r, std::promise<void> *promise,
+static void start_internal_(SharedPtr<Runnable> &&r, std::promise<void> *promise,
                             Callback<> &&callback) {
     // Note:
     //
@@ -119,7 +119,7 @@ static void start_internal_(Var<Runnable> &&r, std::promise<void> *promise,
     // 5. the `promise`, if present, allows to make the test synchronous,
     //    while the callback allows to make it asynchronous.
     assert(!r->reactor);
-    Worker::default_tasks_queue()->run_in_background_thread(
+    Worker::default_tasks_queue()->call_in_thread(
           [ r = std::move(r), promise, callback = std::move(callback) ] {
               r->reactor = Reactor::make();
               r->reactor->run_with_initial_event([&]() {

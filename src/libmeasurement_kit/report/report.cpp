@@ -13,7 +13,7 @@ Report::Report() {
     memset(&test_start_time, 0, sizeof (test_start_time));
 }
 
-void Report::add_reporter(Var<BaseReporter> reporter) {
+void Report::add_reporter(SharedPtr<BaseReporter> reporter) {
     reporters_.push_back(reporter);
 }
 
@@ -51,7 +51,7 @@ void Report::open(Callback<Error> callback) {
 }
 
 void Report::write_entry(Entry entry, Callback<Error> callback,
-                         Var<Logger> logger) {
+                         SharedPtr<Logger> logger) {
     if (report_id == "") {
         auto count = 0;
         for (auto &reporter : reporters_) {

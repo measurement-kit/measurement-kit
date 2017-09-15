@@ -13,15 +13,15 @@ namespace ooni {
 
 using namespace mk::report;
 
-static void tcp_many(const std::vector<std::string> ip_ports, Var<Entry> entry,
-        Settings options, Var<Reactor> reactor, Var<Logger> logger,
+static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> entry,
+        Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error> all_done_cb) {
 
     // if any endpoints are unblocked, switch this to false
     (*entry)["telegram_tcp_blocking"] = true;
 
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
-        return [=](Error connect_error, Var<net::Transport> txp) {
+        return [=](Error connect_error, SharedPtr<net::Transport> txp) {
             Entry result = {
                 {"ip", ip}, {"port", port},
                 {"status", {{"success", nullptr}, {"failure", nullptr}}},
@@ -30,7 +30,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, Var<Entry> entry,
                 logger->info("telegram: failure TCP connecting to %s:%d",
                     ip.c_str(), port);
                 result["status"]["success"] = false;
-                result["status"]["failure"] = connect_error.as_ooni_error();
+                result["status"]["failure"] = connect_error.reason;
             } else {
                 logger->info("telegram: success TCP connecting to %s:%d",
                     ip.c_str(), port);
@@ -78,13 +78,13 @@ static void http_many(const std::vector<std::string> urls, std::string type,
     }
 
     auto http_cb = [=](std::string url, Callback<Error> done_cb) {
-        return [=](Error err, Var<http::Response> response) {
+        return [=](Error err, SharedPtr<http::Response> response) {
             if (!!err) {
                 logger->info(
                     "telegram: failure HTTP connecting to %s", url.c_str());
                 if (type == "web") {
                     (*entry)["telegram_web_status"] = "blocked";
-                    (*entry)["telegram_web_failure"] = err.as_ooni_error();
+                    (*entry)["telegram_web_failure"] = err.reason;
                 }
             } else {
                 logger->info(
@@ -115,8 +115,8 @@ static void http_many(const std::vector<std::string> urls, std::string type,
     parallel_executor.start(parallelism);
 }
 
-void telegram(Settings options, Callback<Var<report::Entry>> callback,
-    Var<Reactor> reactor, Var<Logger> logger) {
+void telegram(Settings options, Callback<SharedPtr<report::Entry>> callback,
+    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::vector<std::string> TELEGRAM_WEB_URLS = {
         "http://web.telegram.org/", "https://web.telegram.org/"};
     // should probably just make these std::pair<std::string,int>,
@@ -136,7 +136,7 @@ void telegram(Settings options, Callback<Var<report::Entry>> callback,
         "http://149.154.171.5:80", "http://149.154.171.5:443"};
 
     logger->info("starting telegram test");
-    Var<Entry> entry(new Entry);
+    SharedPtr<Entry> entry(new Entry);
 
     // A parallel executor with parallelism equal to one runs each task,
     // regardless of whether it succeeds or not, in sequence.

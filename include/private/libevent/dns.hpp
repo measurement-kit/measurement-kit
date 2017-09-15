@@ -114,13 +114,13 @@ class QueryContext : public NonMovable, public NonCopyable {
 
     evdns_base *base = nullptr;
 
-    Var<Message> message;
-    Callback<Error, Var<Message>> callback;
+    SharedPtr<Message> message;
+    Callback<Error, SharedPtr<Message>> callback;
 
-    Var<Logger> logger = Logger::global();
+    SharedPtr<Logger> logger = Logger::global();
 
-    QueryContext(evdns_base *b, Callback<Error, Var<Message>> c, Var<Message> m,
-                 Var<Logger> l = Logger::global()) {
+    QueryContext(evdns_base *b, Callback<Error, SharedPtr<Message>> c, SharedPtr<Message> m,
+                 SharedPtr<Logger> l = Logger::global()) {
         base = b;
         callback = c;
         message = m;
@@ -147,7 +147,7 @@ template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_sockaddr_add),
           typename evdns_base_uptr = evdns_base_uptr,
           MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *
-create_evdns_base(Settings settings, Var<Reactor> reactor = Reactor::global()) {
+create_evdns_base(Settings settings, SharedPtr<Reactor> reactor = Reactor::global()) {
 
     event_base *evb = reactor->get_event_base();
     const int initialize_nameservers = settings.count("dns/nameserver") ? 0 : 1;
@@ -217,7 +217,7 @@ create_evdns_base(Settings settings, Var<Reactor> reactor = Reactor::global()) {
 template <MK_MOCK(inet_ntop)>
 static inline std::vector<Answer>
 build_answers_evdns(int code, char type, int count, int ttl, void *addresses,
-                    Var<Logger> logger = Logger::global()) {
+                    SharedPtr<Logger> logger = Logger::global()) {
 
     std::vector<Answer> answers;
 
@@ -331,8 +331,8 @@ template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
           MK_MOCK(evdns_base_resolve_ipv6), MK_MOCK(evdns_base_resolve_reverse),
           MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
 void query(QueryClass dns_class, QueryType dns_type, std::string name,
-           Callback<Error, Var<Message>> cb, Settings settings,
-           Var<Reactor> reactor, Var<Logger> logger) {
+           Callback<Error, SharedPtr<Message>> cb, Settings settings,
+           SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
     /*
      * When running OONI tests, we're interested to know not only the IPs
@@ -350,7 +350,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
         return;
     }
 
-    Var<Message> message(new Message);
+    SharedPtr<Message> message(new Message);
     Query query;
     evdns_base *base;
 

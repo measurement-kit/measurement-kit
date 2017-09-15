@@ -1658,7 +1658,7 @@ class basic_json
     number    | number_float    | @ref number_float_t
     null      | null            | *no value is stored*
 
-    @note Variable-length types (objects, arrays, and strings) are stored as
+    @note SharedPtriable-length types (objects, arrays, and strings) are stored as
     pointers. The size of the union should not exceed 64 bits if the default
     value types are used.
 

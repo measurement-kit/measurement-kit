@@ -13,7 +13,7 @@
 using namespace mk::ooni;
 using namespace mk;
 
-static void upload_report(std::string url, int index, char **argv, Var<Reactor> reactor) {
+static void upload_report(std::string url, int index, char **argv, SharedPtr<Reactor> reactor) {
     if (argv[index] == nullptr) {
         reactor->stop();
         return;
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     argc -= optind;
     argv += optind;
 
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         upload_report(url, 0, argv, reactor);
     });

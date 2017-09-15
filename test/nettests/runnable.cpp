@@ -16,7 +16,7 @@ TEST_CASE("Make sure that on_entry() works") {
         test.reactor = Reactor::make();
         test.reactor->run_with_initial_event([&]() {
             test.entry_cb = [](std::string s) {
-                nlohmann::json entry = nlohmann::json::parse(s);
+                Json entry = Json::parse(s);
                 REQUIRE((entry.at("data_format_version") == "0.2.0"));
                 REQUIRE((entry.at("input") == nullptr));
                 REQUIRE((entry.at("measurement_start_time") != ""));
@@ -85,7 +85,7 @@ TEST_CASE("Ensure we do not save too much information by default") {
         test.options["geoip_asn_path"] = "GeoIPASNum.dat";
         test.reactor->run_with_initial_event([&]() {
             test.entry_cb = [](std::string s) {
-                nlohmann::json entry = nlohmann::json::parse(s);
+                Json entry = Json::parse(s);
                 REQUIRE((entry.at("data_format_version") == "0.2.0"));
                 REQUIRE((entry.at("probe_asn") != "AS0"));
                 REQUIRE((entry.at("probe_cc") != "ZZ"));
@@ -104,7 +104,7 @@ TEST_CASE("Ensure we can save IP address if we want") {
         test.options["save_real_probe_ip"] = true;
         test.reactor->run_with_initial_event([&]() {
             test.entry_cb = [](std::string s) {
-                nlohmann::json entry = nlohmann::json::parse(s);
+                Json entry = Json::parse(s);
                 REQUIRE((entry.at("data_format_version") == "0.2.0"));
                 REQUIRE((entry.at("probe_asn") != "AS0"));
                 REQUIRE((entry.at("probe_cc") != "ZZ"));
@@ -124,7 +124,7 @@ TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
         test.options["save_real_probe_asn"] = false;
         test.reactor->run_with_initial_event([&]() {
             test.entry_cb = [](std::string s) {
-                nlohmann::json entry = nlohmann::json::parse(s);
+                Json entry = Json::parse(s);
                 REQUIRE((entry.at("data_format_version") == "0.2.0"));
                 REQUIRE((entry.at("probe_asn") == "AS0"));
                 REQUIRE((entry.at("probe_cc") == "ZZ"));
@@ -167,7 +167,7 @@ TEST_CASE("Make sure that 'randomize_input' works") {
 
             test.reactor->run_with_initial_event([&]() {
                 test.entry_cb = [&](std::string s) {
-                    nlohmann::json entry = nlohmann::json::parse(s);
+                    Json entry = Json::parse(s);
                     result.push_back(entry["input"]);
                 };
                 test.begin([&](Error) {

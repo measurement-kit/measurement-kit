@@ -22,7 +22,7 @@ using namespace mk;
 TEST_CASE("Typical IPv4 traceroute usage") {
 
     std::string payload(256, '\0');
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     auto prober = Prober<AndroidProber>(true, 11829, reactor);
     auto ttl = 1;
 
@@ -48,7 +48,7 @@ TEST_CASE("Typical IPv4 traceroute usage") {
         });
 
         prober.on_error([&](Error err) {
-            std::cout << ttl << " error: " << err.what() << "\n";
+            std::cout << ttl << " error: " << err << "\n";
             if (ttl >= 64) {
                 reactor->stop();
                 return;
@@ -63,7 +63,7 @@ TEST_CASE("Typical IPv4 traceroute usage") {
 TEST_CASE("Check whether it works when destination sends reply") {
 
     std::string payload(256, '\0');
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     auto prober = Prober<AndroidProber>(true, 11829, reactor);
     auto ttl = 1;
 
@@ -89,7 +89,7 @@ TEST_CASE("Check whether it works when destination sends reply") {
         });
 
         prober.on_error([&](Error err) {
-            std::cout << ttl << " error: " << err.what() << "\n";
+            std::cout << ttl << " error: " << err << "\n";
             if (ttl >= 64) {
                 reactor->stop();
                 return;

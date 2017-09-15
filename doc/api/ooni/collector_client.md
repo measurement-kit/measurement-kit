@@ -13,32 +13,32 @@ std::string production_collector_url();
 
 void mk::ooni::submit_report(std::string filepath, std::string collector_base_url,
         Callback<Error> callback, Settings settings = {},
-        Var<Reactor> reactor = Reactor::global(),
-        Var<Logger> logger = Logger::global());
+        SharedPtr<Reactor> reactor = Reactor::global(),
+        SharedPtr<Logger> logger = Logger::global());
 
 void mk::ooni::submit_report(std::string filepath, std::string collector_base_url,
         std::string collector_front_domain,
         Callback<Error> callback, Settings settings = {},
-        Var<Reactor> reactor = Reactor::global(),
-        Var<Logger> logger = Logger::global());
+        SharedPtr<Reactor> reactor = Reactor::global(),
+        SharedPtr<Logger> logger = Logger::global());
 
-void mk::ooni::connect(Settings settings, Callback<Error, Var<net::Transport>> callback,
-        Var<Reactor> reactor = Reactor::global(), Var<Logger> logger = Logger::global());
+void mk::ooni::connect(Settings settings, Callback<Error, SharedPtr<net::Transport>> callback,
+        SharedPtr<Reactor> reactor = Reactor::global(), SharedPtr<Logger> logger = Logger::global());
 
-void mk::ooni::create_report(Var<net::Transport> txp, report::Entry entry,
+void mk::ooni::create_report(SharedPtr<net::Transport> txp, report::Entry entry,
         Callback<Error, std::string> callback, Settings settings = {},
-        Var<Reactor> reactor = Reactor::global(),
-        Var<Logger> logger = Logger::global());
+        SharedPtr<Reactor> reactor = Reactor::global(),
+        SharedPtr<Logger> logger = Logger::global());
 
-void mk::ooni::update_report(Var<net::Transport> txp, std::string report_id,
+void mk::ooni::update_report(SharedPtr<net::Transport> txp, std::string report_id,
         report::Entry, entry, Callback<Error> callback, Settings settings = {},
-        Var<Reactor> = Reactor::global(),
-        Var<Logger> = Logger::global());
+        SharedPtr<Reactor> = Reactor::global(),
+        SharedPtr<Logger> = Logger::global());
 
-void mk::ooni::close_report(Var<net::Transport> txp, std::string report_id,
+void mk::ooni::close_report(SharedPtr<net::Transport> txp, std::string report_id,
         Callback<Error> callback,
-        Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
-        Var<Logger> logger = Logger::global());
+        Settings settings = {}, SharedPtr<Reactor> reactor = Reactor::global(),
+        SharedPtr<Logger> logger = Logger::global());
 ```
 
 # STABILITY

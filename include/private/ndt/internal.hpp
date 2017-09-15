@@ -92,7 +92,6 @@ static inline std::string id_to_name(int id) {
 namespace mk {
 namespace ndt {
 
-using json = nlohmann::json;
 using namespace mk::net;
 using namespace mk::report;
 
@@ -108,22 +107,22 @@ using namespace mk::report;
 
 struct Context {
     std::string address;
-    Var<Buffer> buff = Buffer::make();
+    SharedPtr<Buffer> buff = Buffer::make();
     Callback<Error> callback;
-    Var<Entry> entry;
+    SharedPtr<Entry> entry;
     std::list<std::string> granted_suite;
     size_t granted_suite_count = 0;
     size_t current_test_count = 0;
-    Var<Logger> logger = Logger::global();
+    SharedPtr<Logger> logger = Logger::global();
     int port = NDT_PORT;
-    Var<Reactor> reactor = Reactor::global();
+    SharedPtr<Reactor> reactor = Reactor::global();
     Settings settings;
     // We always set these two tests because they are the bare minimum
     // required to talk to a NDT server. Other sets could be added as flags
     // by the user using the options passed to the run() function.
     int test_suite = TEST_STATUS | TEST_META;
     double timeout = NDT_TIMEOUT;
-    Var<Transport> txp;
+    SharedPtr<Transport> txp;
 };
 
 /*
@@ -138,21 +137,21 @@ struct Context {
 */
 namespace messages {
 
-void read_ll(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback,
-             Var<Reactor> reactor = Reactor::global());
-void read_json(Var<Context> ctx, Callback<Error, uint8_t, json> callback,
-               Var<Reactor> reactor = Reactor::global());
-void read_msg(Var<Context> ctx, Callback<Error, uint8_t, std::string> callback,
-              Var<Reactor> reactor = Reactor::global());
+void read_ll(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> callback,
+             SharedPtr<Reactor> reactor = Reactor::global());
+void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, Json> callback,
+               SharedPtr<Reactor> reactor = Reactor::global());
+void read_msg(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> callback,
+              SharedPtr<Reactor> reactor = Reactor::global());
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests);
 ErrorOr<Buffer> format_test_msg(std::string s);
 ErrorOr<Buffer> format_msg_waiting();
 
-void write(Var<Context>, Buffer, Callback<Error>);
-void write_noasync(Var<Context>, Buffer);
+void write(SharedPtr<Context>, Buffer, Callback<Error>);
+void write_noasync(SharedPtr<Context>, Buffer);
 
-Error add_to_report(Var<Entry> entry, std::string key, std::string item);
+Error add_to_report(SharedPtr<Entry> entry, std::string key, std::string item);
 
 } // namespace messages
 
@@ -167,16 +166,16 @@ Error add_to_report(Var<Entry> entry, std::string key, std::string item);
 */
 namespace protocol {
 
-void connect(Var<Context> ctx, Callback<Error> callback);
-void send_extended_login(Var<Context> ctx, Callback<Error> callback);
-void recv_and_ignore_kickoff(Var<Context> ctx, Callback<Error> callback);
-void wait_in_queue(Var<Context> ctx, Callback<Error> callback);
-void recv_version(Var<Context> ctx, Callback<Error> callback);
-void recv_tests_id(Var<Context> ctx, Callback<Error> callback);
-void run_tests(Var<Context> ctx, Callback<Error> callback);
-void recv_results_and_logout(Var<Context> ctx, Callback<Error> callback);
-void wait_close(Var<Context> ctx, Callback<Error> callback);
-void disconnect_and_callback(Var<Context> ctx, Error err);
+void connect(SharedPtr<Context> ctx, Callback<Error> callback);
+void send_extended_login(SharedPtr<Context> ctx, Callback<Error> callback);
+void recv_and_ignore_kickoff(SharedPtr<Context> ctx, Callback<Error> callback);
+void wait_in_queue(SharedPtr<Context> ctx, Callback<Error> callback);
+void recv_version(SharedPtr<Context> ctx, Callback<Error> callback);
+void recv_tests_id(SharedPtr<Context> ctx, Callback<Error> callback);
+void run_tests(SharedPtr<Context> ctx, Callback<Error> callback);
+void recv_results_and_logout(SharedPtr<Context> ctx, Callback<Error> callback);
+void wait_close(SharedPtr<Context> ctx, Callback<Error> callback);
+void disconnect_and_callback(SharedPtr<Context> ctx, Error err);
 
 } // namespace protocol
 
@@ -191,12 +190,12 @@ void disconnect_and_callback(Var<Context> ctx, Error err);
 */
 namespace test_c2s {
 
-void coroutine(Var<Entry>, std::string address, int port, double runtime,
+void coroutine(SharedPtr<Entry>, std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
-               Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
-               Var<Logger> logger = Logger::global());
+               Settings settings = {}, SharedPtr<Reactor> reactor = Reactor::global(),
+               SharedPtr<Logger> logger = Logger::global());
 
-void run(Var<Context> ctx, Callback<Error> callback);
+void run(SharedPtr<Context> ctx, Callback<Error> callback);
 
 } // namespace test_c2s
 
@@ -212,7 +211,7 @@ void run(Var<Context> ctx, Callback<Error> callback);
 */
 namespace test_meta {
 
-void run(Var<Context> ctx, Callback<Error> callback);
+void run(SharedPtr<Context> ctx, Callback<Error> callback);
 
 } // namespace test_meta
 
@@ -242,16 +241,16 @@ struct Params {
     Params(int port) : port(port) {}
 };
 
-void coroutine(Var<Entry> report_entry, std::string address, Params params,
+void coroutine(SharedPtr<Entry> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb,
                double timeout = 10.0, Settings settings = {},
-               Var<Reactor> reactor = Reactor::global(),
-               Var<Logger> logger = Logger::global());
+               SharedPtr<Reactor> reactor = Reactor::global(),
+               SharedPtr<Logger> logger = Logger::global());
 
-void finalizing_test(Var<Context> ctx, Var<Entry> cur_entry,
+void finalizing_test(SharedPtr<Context> ctx, SharedPtr<Entry> cur_entry,
                      Callback<Error> callback);
 
-void run(Var<Context> ctx, Callback<Error> callback);
+void run(SharedPtr<Context> ctx, Callback<Error> callback);
 
 } // namespace test_s2c
 
@@ -265,7 +264,7 @@ void run(Var<Context> ctx, Callback<Error> callback);
     Useful functions used by all modules.
 */
 
-inline void log_speed(Var<Logger> logger, std::string type, int num_streams,
+inline void log_speed(SharedPtr<Logger> logger, std::string type, int num_streams,
                       double elapsed, double speed) {
     if (speed > 0 && elapsed < 10.0) {
         std::stringstream ss;

@@ -1,50 +1,48 @@
 # NAME
-version &mdash; MeasurementKit version
+
+`measurement_kit/common/version.h`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
+
 ```C++
-#include <measurement_kit/common/version.h>
+#ifndef MEASUREMENT_KIT_COMMON_VERSION_HPP
+#define MEASUREMENT_KIT_COMMON_VERSION_HPP
 
 #define MK_VERSION "0.8.0-dev"
-#define MK_VERSION_FULL "v0.8.0-dev-6-abcdef"
 
-#define MEASUREMENT_KIT_VERSION MK_VERSION /* Backward compat. */
+#define MEASUREMENT_KIT_VERSION MK_VERSION /* Backward compatibility */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 const char *mk_version(void);
+
 const char *mk_version_full(void);
+
 const char *mk_openssl_version(void);
+
 const char *mk_libevent_version(void);
+
+#ifdef __cplusplus
+} // namespace mk
+#endif
+#endif
 ```
-
-# STABILITY
-
-2 - Stable
 
 # DESCRIPTION
 
-This header defines the `MK_VERSION` macro that allows the programmer
-to know MeasurementKit version number. The `MK_VERSION_FULL` macro
-contains the output of `git describe --tags` and is hence more precise
-than the version contained by `MK_VERSION`. Note that the two version numbers
-will be equal if the current build is a specific tag; otherwise, the version
-with git tag will contain more precise information. Specifically it will
-indicate the closest tag, the number of commits since that tag, and the HEAD
-from which the current release has been built.
+`MK_VERSION` is MK version expressed using semantic versioning.
 
-It also contains a *C linkage* function, `mk_version()` that can be used
-to programmatically retrieve the library version number. The function has C
-linkage so that it can be easily used from languages with foreign functions
-interface. There is also `mk_version_full()` that returns the more
-precise version containing the output of `git describe --tags`.
+`mk_version` returns MK version.
 
-It also contains *C linkage* functions that tell you the version of OpenSSL
-and libevent we are compiling measurement-kit with.
+`mk_version_full` returns the result of `git describe --tags` as run when generating a release tarball or a development build. This is a more comprehensive (hence "full") description of the current version. At a release point, it must be equal to mk_version(). For development builds it may differ. It will indicate the closest in history tag, the number of commits since that tag, and the initial part of the SHA1 of the tip of the current branch.
 
-# HISTORY
+`mk_openssl_version()` returns the OpenSSL version that we link with.
 
-The `version.h` header appeared in MeasurementKit 0.2.0. Support for
-knowing the precise git tag and dependencies versions was added during the
-v0.6 release cycle.
+`mk_libevent_version()` returns the libevent version that we link with.
+

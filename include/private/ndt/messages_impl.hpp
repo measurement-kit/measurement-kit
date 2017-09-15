@@ -27,9 +27,9 @@ namespace messages {
 */
 template <MK_MOCK_AS(net::readn, net_readn_first),
           MK_MOCK_AS(net::readn, net_readn_second)>
-void read_ll_impl(Var<Context> ctx,
+void read_ll_impl(SharedPtr<Context> ctx,
                   Callback<Error, uint8_t, std::string> callback,
-                  Var<Reactor> reactor) {
+                  SharedPtr<Reactor> reactor) {
 
     // Receive message type (1 byte) and length (2 bytes)
     net_readn_first(ctx->txp, ctx->buff, 3, [=](Error err) {
@@ -61,16 +61,16 @@ void read_ll_impl(Var<Context> ctx,
 
 // Like `read_ll()` but decode the payload using JSON
 template <MK_MOCK(read_ll)>
-void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback,
-                    Var<Reactor> reactor) {
+void read_json_impl(SharedPtr<Context> ctx, Callback<Error, uint8_t, Json> callback,
+                    SharedPtr<Reactor> reactor) {
     read_ll(ctx, [=](Error err, uint8_t type, std::string m) {
-        json message;
+        Json message;
         if (err) {
             callback(err, 0, message);
             return;
         }
         try {
-            message = json::parse(m);
+            message = Json::parse(m);
         } catch (const std::invalid_argument &) {
             callback(JsonParseError(), 0, message);
             return;
@@ -81,10 +81,10 @@ void read_json_impl(Var<Context> ctx, Callback<Error, uint8_t, json> callback,
 
 // Like `read_json()` but return the `msg` field only
 template <MK_MOCK(read_json)>
-void read_msg_impl(Var<Context> ctx,
+void read_msg_impl(SharedPtr<Context> ctx,
                    Callback<Error, uint8_t, std::string> callback,
-                   Var<Reactor> reactor) {
-    read_json(ctx, [=](Error error, uint8_t type, json message) {
+                   SharedPtr<Reactor> reactor) {
+    read_json(ctx, [=](Error error, uint8_t type, Json message) {
         if (error) {
             callback(error, 0, "");
             return;
@@ -103,7 +103,7 @@ void read_msg_impl(Var<Context> ctx,
     }, reactor);
 }
 
-static inline ErrorOr<Buffer> format_any(unsigned char type, json message) {
+static inline ErrorOr<Buffer> format_any(unsigned char type, Json message) {
     Buffer out;
     out.write_uint8(type);
     std::string s = message.dump();

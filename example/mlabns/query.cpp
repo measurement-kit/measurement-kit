@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     print_setting(settings, "policy");
     std::cout << "> tool: " << tool << "\n";
 
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         mk::mlabns::query(
             tool, [=](Error error, mk::mlabns::Reply reply) {
