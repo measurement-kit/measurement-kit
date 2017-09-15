@@ -27,11 +27,15 @@ using Continuation = std::function<void(Callback<T...>)>;
 
 For example: 
 
-```C++ static Continuation<Error> measure_foo(std::string address) { return [address = std::move(address)](Callback<Error> &&cb) { foo_start(std::move(address), std::move(cb)); }; } 
+```C++ 
+
+static Continuation<Error> measure_foo(std::string address) { return [address = std::move(address)](Callback<Error> &&cb) { foo_start(std::move(address), std::move(cb)); }; } 
 
 static Continuation<Error> measure_foobar(std::string address) { return [address = std::move(address)](Callback<Error> &&cb) { foobar_start(std::move(address), std::move(cb)); }; } 
 
-ParallelExecutor{} .add(measure_foo(address)) .add(measure_foobar(address)) .start([](Error err) { // This will be called when both are done }); ``` 
+ParallelExecutor{} .add(measure_foo(address)) .add(measure_foobar(address)) .start([](Error err) { // This will be called when both are done }); 
 
-The `Continuation` alias appeared in measurement-kit v0.2.0.
+``` 
+
+Available since measurement-kit v0.2.0.
 

@@ -18,6 +18,7 @@ namespace mk {
 /// For example:
 ///
 /// ```C++
+///
 /// static Continuation<Error> measure_foo(std::string address) {
 ///     return [address = std::move(address)](Callback<Error> &&cb) {
 ///         foo_start(std::move(address), std::move(cb));
@@ -36,9 +37,10 @@ namespace mk {
 ///     .start([](Error err) {
 ///         // This will be called when both are done
 ///     });
+///
 /// ```
 ///
-/// The `Continuation` alias appeared in measurement-kit v0.2.0.
+/// \since v0.2.0.
 template <typename... T>
 using Continuation = std::function<void(Callback<T...>)>;
 
