@@ -60,7 +60,7 @@ def write_description(source, dest):
 def build_documentation_for_file(include_path):
     normalized = include_path.replace("include/", "")
     output_path = (include_path.replace("include/measurement_kit", "doc/api")
-            .replace(".hpp", ".md"))
+            .replace(".hpp", ".md").replace(".h", ".md"))
     outfp = open(output_path, "wb")
     outfp.write("# NAME\n\n")
     outfp.write("`" + normalized + "`")
