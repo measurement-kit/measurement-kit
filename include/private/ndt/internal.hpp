@@ -92,7 +92,6 @@ static inline std::string id_to_name(int id) {
 namespace mk {
 namespace ndt {
 
-using json = nlohmann::json;
 using namespace mk::net;
 using namespace mk::report;
 
@@ -140,7 +139,7 @@ namespace messages {
 
 void read_ll(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> callback,
              SharedPtr<Reactor> reactor = Reactor::global());
-void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, json> callback,
+void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, Json> callback,
                SharedPtr<Reactor> reactor = Reactor::global());
 void read_msg(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> callback,
               SharedPtr<Reactor> reactor = Reactor::global());

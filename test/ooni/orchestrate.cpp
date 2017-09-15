@@ -68,7 +68,7 @@ TEST_CASE("Auth::dump() works correctly") {
     SECTION("with existent file") {
         auth.username = auth.password = "xo";
         REQUIRE(auth.dump(fname) == NoError());
-        nlohmann::json data = nlohmann::json::parse(*slurp(fname));
+        Json data = Json::parse(*slurp(fname));
         REQUIRE(data["username"] == "xo");
         REQUIRE(data["password"] == "xo");
     }

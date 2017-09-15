@@ -72,7 +72,7 @@ void get_latest_release_impl(Callback<Error, std::string> callback,
 
 template <MK_MOCK_AS(http::get, http_get)>
 void get_manifest_as_json_impl(
-        std::string latest, Callback<Error, nlohmann::json> callback,
+        std::string latest, Callback<Error, Json> callback,
         Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     auto url = get_base_url(settings);
     url += "download/";
@@ -81,7 +81,7 @@ void get_manifest_as_json_impl(
     set_max_redirects(settings);
     logger->info("Downloading manifest; please, be patient...");
     http_get(url, [=](Error error, SharedPtr<Response> response) {
-        nlohmann::json result;
+        Json result;
         if (error) {
             callback(error, result);
             return;
@@ -91,7 +91,7 @@ void get_manifest_as_json_impl(
             return;
         }
         try {
-            result = nlohmann::json::parse(response->body);
+            result = Json::parse(response->body);
         } catch (const std::invalid_argument &) {
             callback(JsonParseError(), result);
             return;
@@ -110,7 +110,7 @@ static inline std::string sanitize_path(const std::string &s) {
 }
 
 template <MK_MOCK_AS(http::get, http_get), MK_MOCK(ostream_bad)>
-void get_resources_for_country_impl(std::string latest, nlohmann::json manifest,
+void get_resources_for_country_impl(std::string latest, Json manifest,
                                     std::string country, Callback<Error> cb,
                                     Settings settings, SharedPtr<Reactor> reactor,
                                     SharedPtr<Logger> logger) {
@@ -214,7 +214,7 @@ void get_resources_impl(std::string latest, std::string country,
                         Callback<Error> callback, Settings settings,
                         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     get_manifest_as_json(latest,
-                         [=](Error error, nlohmann::json manifest) {
+                         [=](Error error, Json manifest) {
                              if (error) {
                                  callback(error);
                                  return;

@@ -44,7 +44,7 @@ Error valid_entry(Entry entry) {
 }
 
 void post(SharedPtr<Transport> transport, std::string url_extra, std::string body,
-          Callback<Error, nlohmann::json> callback, Settings conf,
+          Callback<Error, Json> callback, Settings conf,
           SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     post_impl(transport, url_extra, body, callback, conf, reactor, logger);
 }
@@ -108,8 +108,8 @@ ErrorOr<Entry> get_next_entry(SharedPtr<std::istream> file, SharedPtr<Logger> lo
     }
     logger->debug("Read line from report: %s", line.c_str());
     Entry entry;
-    // Works because we are using nlohmann::json::json() as Entry::Entry()
-    auto e = json_parse_and_process(line, [&](auto j) { entry = j; });
+    // Works because we are using Json::json() as Entry::Entry()
+    auto e = json_process(line, [&](auto j) { entry = j; });
     if (e != NoError()) {
         return e;
     }

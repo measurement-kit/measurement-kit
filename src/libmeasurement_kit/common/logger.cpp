@@ -8,13 +8,12 @@
 #include <measurement_kit/common/aaa_base.hpp>
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/detail/delegate.hpp>
-#include <measurement_kit/common/detail/json.hpp>
 #include <measurement_kit/common/detail/locked.hpp>
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
-#include <measurement_kit/ext/json.hpp>
 #include <mutex>
 #include <stdarg.h>
 #include <stdio.h>
@@ -27,7 +26,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
         consumer_ = [](uint32_t level, const char *s) {
             std::string message;
             if ((level & MK_LOG_EVENT) != 0) {
-                Error err = json_parse_and_process(
+                Error err = json_process(
                     s, [&](auto j) { message = j.dump(4); });
                 if (err) {
                     fprintf(

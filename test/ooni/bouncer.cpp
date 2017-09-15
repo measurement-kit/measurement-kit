@@ -9,11 +9,11 @@
 
 using namespace mk;
 
-static Error do_out_of_range(const std::string &, Callback<nlohmann::json &>) {
+static Error do_out_of_range(const std::string &, Callback<Json &> &&) {
     return JsonKeyError();
 }
 
-static Error do_domain_error(const std::string &, Callback<nlohmann::json &>) {
+static Error do_domain_error(const std::string &, Callback<Json &> &&) {
     return JsonDomainError();
 }
 

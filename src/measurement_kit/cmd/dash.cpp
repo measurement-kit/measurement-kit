@@ -3,7 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "../cmdline.hpp"
-#include <measurement_kit/ext/json.hpp>
+#include <measurement_kit/common/json.hpp>
 
 namespace dash {
 
@@ -39,7 +39,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
 
     common_init(initializers, test)
           .on_entry([](std::string s) {
-              nlohmann::json doc = nlohmann::json::parse(s);
+              Json doc = Json::parse(s);
               auto simple = doc["test_keys"]["simple"];
               printf("\nTest summary\n");
               printf("------------\n");

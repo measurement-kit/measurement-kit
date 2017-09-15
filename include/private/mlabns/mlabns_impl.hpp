@@ -4,15 +4,13 @@
 #ifndef PRIVATE_MLABNS_MLABNS_IMPL_HPP
 #define PRIVATE_MLABNS_MLABNS_IMPL_HPP
 
-#include <measurement_kit/common/detail/json.hpp>
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/detail/mock.hpp>
 
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
 #include <regex>
-
-using json = nlohmann::json;
 
 namespace mk {
 namespace mlabns {
@@ -81,7 +79,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
     logger->debug("mlabns url: %s", url.c_str());
     request_json_no_body("GET", url, {},
         [callback, logger](Error error, SharedPtr<http::Response> /*response*/,
-                           nlohmann::json json_response) {
+                           Json json_response) {
             if (error) {
                 logger->warn("mlabns: HTTP error: %s", error.what());
                 callback(error, Reply());
