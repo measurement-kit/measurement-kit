@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# Internal script to keep doc/api/ somewhat updated until we fully
+# switch to use Doxygen at codedocs.xyz.
+
 import collections
 import pprint
 import subprocess
