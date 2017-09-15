@@ -1,192 +1,235 @@
 # NAME
-Error &mdash; Represent and handle errors.
+
+`measurement_kit/common/error.hpp`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
+
 ```C++
-#include <measurement_kit/common.hpp>
+#ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
+#define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
 namespace mk {
 
 class Error : public std::exception {
   public:
-    Error();
-    Error(int code);
-    Error(int code, std::string reason);
-    Error(int code, std::string reason, Error child);
+    Error() : Error(0, "") {}
 
-    operator bool() const;
+    Error(int e) : Error(e, "") {}
 
-    bool operator==(int code);
-    bool operator==(Error error);
-    bool operator!=(int code);
-    bool operator!=(Error error);
+    Error(int e, std::string r) : code{e}, reason{r} {
+        if (code != 0 && reason == "") {
+            reason = "unknown_failure " + std::to_string(code);
+        }
+    }
 
-    std::string as_ooni_error();
-    const chat *what() const noexcept override;
+    Error(int e, std::string r, const Error &c) : Error(e, r) {
+        child_errors.push_back(c);
+    }
 
-    std::vector<SharedPtr<Error>> child_errors;
+    operator bool() const { return code != 0; }
+
+    bool operator==(int n) const { return code == n; }
+
+    bool operator==(Error e) const { return code == e.code; }
+
+    bool operator!=(int n) const { return code != n; }
+
+    bool operator!=(Error e) const { return code != e.code; }
+
+    const char *what() const noexcept override { return reason.c_str(); }
+
+    void add_child_error(const Error &err) { child_errors.push_back(err); }
+
+    std::vector<Error> child_errors;
+
     int code = 0;
+
     std::string reason;
 };
 
-#define MK_DEFINE_ERR(code_, ClassName_, reason_)           \
-    class ClassName_ : public Error {                       \
-      public:                                               \
-        ClassName_() : Error(code_, reason_) {}             \
-        ClassName_(std::string s) : Error(code_, reason_) { \
-            this->reason += " ";                            \
-            this->reason += s;                              \
-        }                                                   \
+#define MK_DEFINE_ERR(_code_, _name_, _reason_)                                \
+    class _name_ : public Error {                                              \
+      public:                                                                  \
+        _name_() : Error(_code_, _reason_) {}                                  \
+                                                                               \
+        _name_(std::string s) : Error(_code_, _reason_) {                      \
+            reason += ": ";                                                    \
+            reason += s;                                                       \
+        }                                                                      \
+                                                                               \
+        _name_(Error e) : Error(_code_, _reason_, e) {}                        \
     };
 
 MK_DEFINE_ERR(0, NoError, "")
-MK_DEFINE_ERR(1, GenericError, "")
-MK_DEFINE_ERR(2, NotInitializedError, "")
-MK_DEFINE_ERR(3, ValueError, "")
-MK_DEFINE_ERR(4, MockedError, "")
-MK_DEFINE_ERR(5, JsonParseError, "")
-MK_DEFINE_ERR(6, JsonKeyError, "")
-MK_DEFINE_ERR(7, JsonDomainError, "")
-MK_DEFINE_ERR(8, FileEofError, "")
-MK_DEFINE_ERR(9, FileIoError, "")
+
+MK_DEFINE_ERR(1, GenericError, "generic_error")
+
+MK_DEFINE_ERR(2, NotInitializedError, "not_initialized")
+
+MK_DEFINE_ERR(3, ValueError, "value_error")
+
+MK_DEFINE_ERR(4, MockedError, "mocked_error")
+
+MK_DEFINE_ERR(5, JsonParseError, "json_parse_error")
+
+MK_DEFINE_ERR(6, JsonKeyError, "json_key_error")
+
+MK_DEFINE_ERR(7, JsonDomainError, "json_domain_error")
+
+MK_DEFINE_ERR(8, FileEofError, "file_eof_error")
+
+MK_DEFINE_ERR(9, FileIoError, "file_io_error")
+
+MK_DEFINE_ERR(10, ParallelOperationError, "parallel_operation_error")
+
+MK_DEFINE_ERR(11, SequentialOperationError, "sequential_operation_error")
+
+MK_DEFINE_ERR(12, IllegalSequenceError, "illegal_sequence")
+
+MK_DEFINE_ERR(13, UnexpectedNullByteError, "unexpected_null_byte")
+
+MK_DEFINE_ERR(14, IncompleteUtf8SequenceError, "incomplete_utf8_sequence")
+
+MK_DEFINE_ERR(15, NotImplementedError, "not_implemented")
+
+MK_DEFINE_ERR(16, TimeoutError, "generic_timeout_error")
+
+MK_DEFINE_ERR(17, JsonProcessingError, "json_processing_error")
 
 #define MK_ERR_NET(x) (1000 + x)
+
 #define MK_ERR_DNS(x) (2000 + x)
+
 #define MK_ERR_HTTP(x) (3000 + x)
+
 #define MK_ERR_TRACEROUTE(x) (4000 + x)
+
 #define MK_ERR_MLABNS(x) (5000 + x)
+
 #define MK_ERR_OONI(x) (6000 + x)
+
 #define MK_ERR_REPORT(x) (7000 + x)
+
 #define MK_ERR_NDT(x) (8000 + x)
 
-}
-```
+} // namespace mk
 
-# STABILITY
-2 - Stable
+namespace std {
+
+inline std::ostream &operator<<(std::ostream &os, const mk::Error &value) {
+    os << value.reason;
+    return os;
+}
+
+} // namespace std
+#endif
+```
 
 # DESCRIPTION
 
-The `Error` class represents an error. It is a derived class of `std::exception`
-so that it could be thrown and catched as an exception. (In general in MeasurementKit
-we prefer passing errors to callbacks rather than throwing them as exceptions, but
-there are some cases where throwing makes sense.)
+`Error` represents an error that occurred. It is a derived class of `std::exception` such that one can throw `Errors` and more generally catch all `std::exception`. (In general in measurement-kit we would rather pass error to callbacks than throw, but there are also some cases where throwing makes sense.) 
 
-The `Error` class has four constructors. The empty constructor constructs an error
-with error code equal to zero (a special value used to indicate that no error has
-actually occurred). The constructor with error code allows to set the error code that
-is wrapped by an error; a nonzero error code indicates failure. The constructor
-with error code and reason allows to set both error code and a reason string; at the
-moment the reason string MUST be a [OONI error string](https://github.com/TheTorProject/ooni-spec/blob/master/data-formats/df-000-base.md#error-strings),
-but this MAY change in the future. The constructor with error code, reason, and
-underlying error allows also to specify that the current error was triggered by
-another, underlying error.
+An error is uniquely identified by the error code that it wraps. By popular convention, the `0` error code indicates no error. 
 
-The bool operator returns true if the `Error` code is nonzero and false if instead
-the error code is zero. It can be used to quickly check whether an error occurred
-as in the following snippet of code:
+In addition to the error code, there is also a reason string that indicates the error that occurred in a more human friendly way. The reason strings are compatible with the failure strings [specified by OONI](https://github.com/TheTorProject/ooni-spec/blob/master/data-formats/df-000-base.md#error-strings). 
 
-```C++
-    func([=](Error err, Result result) {
-        if (err) {
-            callback(err);
-            return;
-        }
-        process_result(result);
-    });
-```
+Error codes may change from one version of measurement-kit to the following one. Reason strings instead should not change unless that is required to track OONI's specification. 
 
-The equality and inequality operators allow to compare errors with error codes and
-with errors. Currently, the comparison is *only* performed on the grounds of the
-error code, hence different error classes having the same error code would be equal,
-as shown in the following snippet of code:
+The reason string corresponding to no error is an empty string. 
 
-```C++
-    MK_DEFINE_ERR(7, FooError, "");
-    MK_DEFINE_ERR(7, FoobarError, "");
-    REQUIRE((FooError() == FoobarError()));
-```
+If there is no reason string corresponding to a specific error code, the default reason string `unknown_error ${code}` is generated. 
 
-The `as_ooni_error()` method allows to obtain the [OONI error string](https://github.com/TheTorProject/ooni-spec/blob/master/data-formats/df-000-base.md#error-strings) corresponding
-to a specific MeasurementKit error. In the future the error returned by `as_ooni_error()`
-MAY be different from the error stored in the `reason` field.
+An error can contain child errors. This is handy when representing the result of a parallel operation where only certain sub-operations may fail. 
 
-The `what()` method overrides the corresponding method of `std::exception`. It
-returns the same string that `as_ooni_error()` returns.
+As of measurement-kit v0.8.0, too many errors are defined. We will try to cut down the total number of errors to around 50. 
 
-The `child_errors` field is vector of smart pointers that MAY be set to
-indicate that the current error was triggered by one or more underlying errors.
-This should allow the programmer to properly layer errors. Thus, one could
-learn that, say, a specific call to an API failed, and that the reason why that
-failed was that it was not possible to establish a network connection, and
-that the reason why that was not possible is that the DNS lookup failed.
+Error appeared in measurement-kit v0.1.0. `MK_DEFINE_ERR` was added in measurement-kit v0.2.0. Between v0.2.0 and v0.7.0 (excluded) we also had the `ErrorContext` class. The Error has been further reworked as part of measurement-kit v0.8.0 as part of a refactoring of common.
 
-The `code` and `reason` fields are, respectively, the integer error code
-uniquely identifying the error and the related textual description. The latter
-MAY NOT necessarily be equal to the value returned by `as_ooni_error()`.
+The default constructor initializes the error code to zero.
 
-The `MK_DEFINE_ERR` macro allows to compactly define a derived class Error by
-specifying the error code, the class name, and the reason. In addition to
-the vanilla error, a derived error has one extra constructor allowing to pass
-additional textual context to be added to the reason.
+The constructor with error initializes the error code to the specified error code.
 
-The `measurement_kit/common.hpp` header uses `MK_DEFINE_ERR` to define *at least*
-also the following generic error codes:
+The constructor with error and reason string initializes both.
 
-- *NoError*: this class MUST have error code equal to zero and SHOULD be used
-  to indicate that no error occurred
+The constructor with error code, reason string, and child error also initializes the child error.
 
-- *GenericError*: this class MAY be used to indicate a generic error but it
-  SHOULD NOT be widely used and specific errors SHOULD be preferred
+The bool operator evaluates to true if the error code is nonzero.
 
-- *NotInitializedError*: this is the error that SHOULD be used when accessing
-  a contained that requires initialization and was not primed
+The equality with error code operator compares the error's error code with the specified error code.
 
-- *ValueError*: this error SHOULD be returned when it is not possible to convert
-  a specific value from one form to another (e.g. a string to integer)
+The equality with error code compares the error codes for equality.
 
-- *MockedError*: this error SHOULD be used in regress tests when mocking the
-  failure of an API, unless specific other errors are required
+The unequality with error code operator compares the error's error code with the specified error code.
 
-- *JsonParseError*: indicates that it was not possible to parse a JSON
+The unequality with error compares the error codes for unquality.
 
-- *JsonKeyError*: indicates that a JSON object does not contain a specific key
+`what` returns the reason string.
 
-To make sure that errors belonging to different MeasurementKit libraries are
-disjoint, `measurement_kit/common.hpp` also defines offsets at which errors of each library
-SHOULD start, as well as useful macros that takes codes relative to a specific
-library and yields absolute error codes. Each MeasurementKit library is given
-room for up to 1,000 error codes. At least the following offsets SHOULD be
-defined by the `measurement_kit/common.hpp` header:
+`add_child_error` allows you tou append additional child errors.
 
-- 0 for the *common* lib
-- 1,000 for the *net* lib
-- 2,000 for the *dns* lib
-- 3,000 for the *http* lib
-- 4,000 for the *traceroute* lib
-- 5,000 for the *mlabns* lib
-- 6,000 for the *ooni* lib
-- 7,000 for the *report* lib
-- 8,000 for the *ndt* lib
+`child_errors` contains all the child errors.
 
-# BUGS
+`code` contains the error code.
 
-Since the only integral value to which `Error` could be converted is `bool` there
-are odd cases where the following statement:
+`reason` contains the reason string.
 
-```C++
-    REQUIRE(err == SomeError());
-```
+`MK_DEFINE_ERR` allows you to quickly define a class derived from Error.
 
-may fail because the two errors are different but `Catch` may still print as
-reason for the failed error `1 == 1` because both classes evaluate to `true` (i.e. `1`)
-even though they internally contain two different errors.
+`NoError` represents the absence of errors.
 
-# HISTORY
+`GenericError` represents all the errors that we don't bother to map more specifically.
 
-The `Error` class appeared in MeasurementKit 0.1.0. The `ErrorContext` class, the
-`MK_DEFINE_ERR` macro, and the macros to compute absolute error codes all appeared
-in MeasurementKit 0.2.0. The `ErrorContext` class was removed in MK v0.7.0.
+`NotInitializedError` is used when a variable that should have been initialized was not.
+
+`ValueError` is used whenever the provided input is invalid.
+
+`MockedError` should only be used in regress tests to indicate that a specific API failed with a mocked error. This is used to make sure that the returned error was actually correctly mocked.
+
+`JsonParseError` indicates that we could not parse a JSON.
+
+`JsonKeyError` indicates that a specific key does not exists in a JSON.
+
+`JsonDomainError` indicates that we are using a JSON of a specific type assuming that it is of another type. For example, the JSON may be `null` and we may be trying to using it like a map from string to string, which obviously is not possible.
+
+`FileEofError` indicates that we hit premature EOF when reading a file.
+
+`FileIoError` indicates I/O error when reading a file.
+
+`ParallelOperationError` indicates that a parallel operation failed. In this case, consult the child errors to see more details.
+
+`SequentialOperationError` indicates that a sequential operation has failed. See the child errors for more details.
+
+`IllegalSequenceError` indicates an illegal UTF-8 sequence.
+
+`UnexpectedNullByteError` indicates an unexpected null byte in a UTF-8 stream.
+
+`IncompleteUtf8SequenceError` indicates an unexpected UTF-8 sequence.
+
+`NotImplementedError` indicates that an operation is not implemented.
+
+`TimeoutError` indicates that a timeout occurred.
+
+`JsonProcessingError` indicates an error processing a JSON.
+
+`MK_ERR_NET` takes a relative error code and returns an error code inside of the error codes space reserved for the net sub-library.
+
+`MK_ERR_DNS` is like MK_ERR_NET but for dns.
+
+`MK_ERR_HTTP` is like MK_ERR_NET but for http.
+
+`MK_ERR_TRACEROUTE` is like MK_ERR_NET but for traceroute.
+
+`MK_ERR_MLABNS` is like MK_ERR_NET but for mlabns.
+
+`MK_ERR_OONI` is like MK_ERR_NET but for ooni.
+
+`MK_ERR_REPORT` is like MK_ERR_NET but for report.
+
+`MK_ERR_NDT` is like MK_ERR_NET but for ndt.
+
+`std::operator<<`'s override allows to print errors as their reason string.
+

@@ -6,6 +6,10 @@
 
 namespace mk {
 
+/// \brief `NonMovable` makes a derived class non-movable. You typically need to
+/// make non-movable classes that manage the lifecycle of pointers.
+///
+/// \since v0.1.0.
 class NonMovable {
   public:
     NonMovable(NonMovable &&) = delete;

@@ -4,7 +4,7 @@
 #ifndef MEASUREMENT_KIT_COMMON_AAA_BASE_HPP
 #define MEASUREMENT_KIT_COMMON_AAA_BASE_HPP
 
-// Portability definition and headers
+/// This header file contains portability definitions and headers.
 
 #include <measurement_kit/common/portable/sys/types.h>
 

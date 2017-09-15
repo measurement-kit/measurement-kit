@@ -6,6 +6,10 @@
 
 namespace mk {
 
+/// \brief `NonCopyable` makes a derived class non-copyable. You typically need
+/// to make non-copyable classes that manage the lifecycle of pointers.
+///
+/// \since v0.1.0.
 class NonCopyable {
   public:
     NonCopyable(const NonCopyable &) = delete;
