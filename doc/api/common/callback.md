@@ -22,7 +22,7 @@ template <typename... T> using Callback = std::function<void(T...)>;
 
 # DESCRIPTION
 
-`Callback` is syntactic sugar for writing callback functions. In general, we try to use `Callback` in the code to name functions that will be called _after_ the function to which they have been passed has returned. That is, the function is supposed to schedule their deffered execution but should not execute it directly. 
+`Callback` is syntactic sugar for writing callback functions. In general, we try to use `Callback` in the code to name functions that will be called _after_ the function to which they have been passed has returned. That is, the function is supposed to schedule their deferred execution but should not execute it directly. 
 
-The `Callback` alias was added in measurement-kit v0.2.0.
+Appeared in measurement-kit v0.2.0.
 
