@@ -12,9 +12,9 @@
 #include <thread>
 
 TEST_CASE("The worker is robust to submitting many tasks in a row") {
-    auto worker = mk::Var<mk::Worker>::make();
+    auto worker = mk::SharedPtr<mk::Worker>::make();
     for (int i = 0; i < 128; ++i) {
-        worker->run_in_background_thread([]() {
+        worker->call_in_thread([]() {
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(2s);
         });

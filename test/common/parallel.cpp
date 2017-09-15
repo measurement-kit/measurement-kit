@@ -40,7 +40,7 @@ TEST_CASE("mk::parallel() works as expected") {
         static constexpr auto delay = 0.1;
         static constexpr auto size = 16;
         Error global_error = MockedError();
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=, &global_error]() {
             ParallelExecutor parallel_executor{[=, &global_error](Error err) {
                 global_error = err;
@@ -61,7 +61,7 @@ TEST_CASE("mk::parallel() works as expected") {
         REQUIRE(global_error.child_errors.size() == size);
         for (size_t i = 0; i < size; ++i) {
             auto sub_error = global_error.child_errors[i];
-            REQUIRE(*sub_error == set_err(i));
+            REQUIRE(sub_error == set_err(i));
         }
     };
 

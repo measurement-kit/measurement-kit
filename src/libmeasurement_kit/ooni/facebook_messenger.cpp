@@ -25,17 +25,17 @@ static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
 
 class MessengerCtx {
   public:
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     std::map<std::string, std::vector<std::string>> fb_service_ips{
         {"stun", {}}, {"b_api", {}},        {"b_graph", {}},
         {"edge", {}}, {"external_cdn", {}}, {"scontent_cdn", {}},
         {"star", {}}};
-    Var<Logger> logger;
+    SharedPtr<Logger> logger;
     Settings options;
-    Var<Reactor> reactor;
+    SharedPtr<Reactor> reactor;
 };
 
-static Continuation<Error> dns_many(Var<MessengerCtx> ctx) {
+static Continuation<Error> dns_many(SharedPtr<MessengerCtx> ctx) {
     return [=](Callback<Error> &&cb) {
         // if we find any inconsistent DNS later, switch this to true
         (*ctx->entry)["facebook_dns_blocking"] = false;
@@ -48,7 +48,7 @@ static Continuation<Error> dns_many(Var<MessengerCtx> ctx) {
         ParallelCallback parallel_callback{names_count, std::move(cb)};
 
         auto dns_cb = [=](std::string service, std::string hostname) {
-            return [=](Error err, Var<dns::Message> message) {
+            return [=](Error err, SharedPtr<dns::Message> message) {
                 if (!!err) {
                     ctx->logger->info("fb_messenger: dns error for %s, %s",
                                       service.c_str(), hostname.c_str());
@@ -100,7 +100,7 @@ static Continuation<Error> dns_many(Var<MessengerCtx> ctx) {
     };
 }
 
-static Continuation<Error> tcp_many(Var<MessengerCtx> ctx) {
+static Continuation<Error> tcp_many(SharedPtr<MessengerCtx> ctx) {
     return [=](Callback<Error> &&cb) {
 
         // if we find any blocked TCP later, switch this to true
@@ -124,7 +124,7 @@ static Continuation<Error> tcp_many(Var<MessengerCtx> ctx) {
         ParallelCallback parallel_callback{ips_count, std::move(cb)};
 
         auto tcp_cb = [=](std::string service, std::string ip, uint16_t port) {
-            return [=](Error err, Var<net::Transport> txp) {
+            return [=](Error err, SharedPtr<net::Transport> txp) {
                 assert(!!txp);
                 Entry current_entry{
                     {"ip", ip}, {"port", port}, {"status", nullptr}};
@@ -168,10 +168,10 @@ static Continuation<Error> tcp_many(Var<MessengerCtx> ctx) {
     };
 }
 
-void facebook_messenger(Settings options, Callback<Var<report::Entry>> cb,
-                        Var<Reactor> reactor, Var<Logger> logger) {
+void facebook_messenger(Settings options, Callback<SharedPtr<report::Entry>> cb,
+                        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     logger->info("starting facebook_messenger");
-    Var<MessengerCtx> ctx{new MessengerCtx};
+    SharedPtr<MessengerCtx> ctx{new MessengerCtx};
     ctx->options = options;
     ctx->reactor = reactor;
     ctx->logger = logger;

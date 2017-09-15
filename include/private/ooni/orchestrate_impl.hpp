@@ -4,10 +4,10 @@
 #ifndef PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 #define PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 
-#include <measurement_kit/common/detail/json.hpp>
 #include <measurement_kit/common/detail/mock.hpp>
 #include <measurement_kit/common/detail/utils.hpp>
 #include <measurement_kit/common/detail/waterfall.hpp>
+#include <measurement_kit/common/json.hpp>
 
 #include <measurement_kit/ooni.hpp>
 
@@ -252,9 +252,9 @@ class RegistryCtx {
     SharedPtr<Reactor> reactor;
 };
 
-static inline Var<RegistryCtx>
-ctx_make_(Auth &&auth, const ClientMetadata &meta, Var<Reactor> reactor) {
-    auto ctx = Var<RegistryCtx>::make();
+static inline SharedPtr<RegistryCtx>
+ctx_make_(Auth &&auth, const ClientMetadata &meta, SharedPtr<Reactor> reactor) {
+    auto ctx = SharedPtr<RegistryCtx>::make();
     ctx->auth = std::move(auth);
     ctx->metadata = meta; // Make a copy
     ctx->reactor = reactor;
@@ -263,7 +263,7 @@ ctx_make_(Auth &&auth, const ClientMetadata &meta, Var<Reactor> reactor) {
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-Continuation<Error> ctx_register_(Var<RegistryCtx> ctx) {
+Continuation<Error> ctx_register_(SharedPtr<RegistryCtx> ctx) {
     return [=](Callback<Error> &&cb) {
         auto p = ctx->auth.password.empty() ? Auth::make_password()
                                             : ctx->auth.password;
@@ -279,7 +279,7 @@ Continuation<Error> ctx_register_(Var<RegistryCtx> ctx) {
 }
 
 template <MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
-Continuation<Error> ctx_retrieve_missing_meta_(Var<RegistryCtx> ctx) {
+Continuation<Error> ctx_retrieve_missing_meta_(SharedPtr<RegistryCtx> ctx) {
     return [=](Callback<Error> &&cb) {
         if (ctx->metadata.platform == "") {
             ctx->metadata.platform = mk_platform();
@@ -310,7 +310,7 @@ Continuation<Error> ctx_retrieve_missing_meta_(Var<RegistryCtx> ctx) {
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-Continuation<Error> ctx_update_(Var<RegistryCtx> ctx) {
+Continuation<Error> ctx_update_(SharedPtr<RegistryCtx> ctx) {
     return [=](Callback<Error> &&cb) {
         update_<http_request_json_object>(
             ctx->metadata, std::move(ctx->auth), ctx->reactor,
@@ -329,7 +329,7 @@ void do_register_probe(std::string &&password, const ClientMetadata &m,
     // retrieve the password from it in `ctx_register_`
     Auth auth;
     auth.password = std::move(password);
-    Var<RegistryCtx> ctx = ctx_make_(std::move(auth), m, reactor);
+    SharedPtr<RegistryCtx> ctx = ctx_make_(std::move(auth), m, reactor);
     WaterfallExecutor{[=](Error e) { cb(std::move(e), std::move(ctx->auth)); }}
         .add(ctx_retrieve_missing_meta_<ooni_ip_lookup>(ctx))
         .add(ctx_register_<http_request_json_object>(ctx))
@@ -340,7 +340,7 @@ template <MK_MOCK_AS(http::request_json_object, http_request_json_object),
           MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
 void do_update(Auth &&auth, const ClientMetadata &m, SharedPtr<Reactor> reactor,
                Callback<Error &&, Auth &&> &&cb) {
-    Var<RegistryCtx> ctx = ctx_make_(std::move(auth), m, reactor);
+    SharedPtr<RegistryCtx> ctx = ctx_make_(std::move(auth), m, reactor);
     WaterfallExecutor{[=](Error e) { cb(std::move(e), std::move(ctx->auth)); }}
         .add(ctx_retrieve_missing_meta_<ooni_ip_lookup>(ctx))
         .add(ctx_update_<http_request_json_object>(ctx))

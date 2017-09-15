@@ -10,7 +10,7 @@
 #include <functional>                              // for std::function
 #include <measurement_kit/common/continuation.hpp> // for mk::Continuation
 #include <measurement_kit/common/error.hpp>        // for mk::Error, ...
-#include <measurement_kit/common/var.hpp>          // for mk::Var, ...
+#include <measurement_kit/common/shared_ptr.hpp>   // for mk::SharedPtr, ...
 #include <memory>                                  // for std::shared_ptr
 #include <mutex>                                   // for std::unique_lock, ...
 
@@ -35,7 +35,7 @@ class WaterfallExecutor {
         return *this;
     }
 
-    static void waterfall_next_(Var<Impl> impl) {
+    static void waterfall_next_(SharedPtr<Impl> impl) {
         std::unique_lock<std::recursive_mutex> _{impl->mutex};
         if (!impl->continuations.empty()) {
             Continuation<Error> continuation;
@@ -56,7 +56,7 @@ class WaterfallExecutor {
     void start() {
         std::unique_lock<std::recursive_mutex> _{impl_->mutex};
         waterfall_next_(impl_);
-        // Invalidate Var<pointer> to prevent further usage. Attempting to      
+        // Invalidate SharedPtr<pointer> to prevent further usage. Attempting to      
         // dereference `impl_` will cause an exception to be thrown. 
         //
         // Must be done once we've released the lock. Otherwise it might
@@ -66,7 +66,7 @@ class WaterfallExecutor {
     }
 
   private:
-    Var<Impl> impl_;
+    SharedPtr<Impl> impl_;
 };
 
 } // namespace mk

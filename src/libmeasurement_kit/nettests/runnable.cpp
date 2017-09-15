@@ -384,7 +384,7 @@ void Runnable::begin(Callback<Error> cb) {
                         }
                         size_t num_entries = inputs.size();
                         // Run `parallelism` measurements in parallel
-                        Var<size_t> current_entry(new size_t(0));
+                        SharedPtr<size_t> current_entry(new size_t(0));
                         ErrorOr<int> parallelism =
                             options.get_noexcept("parallelism", 3);
                         if (!parallelism || *parallelism <= 0) {

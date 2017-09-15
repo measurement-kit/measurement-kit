@@ -65,8 +65,8 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> e
 }
 
 static void http_many(const std::vector<std::string> urls, std::string type,
-        Var<Entry> entry, Settings options, Var<Reactor> reactor,
-        Var<Logger> logger, Callback<Error> all_done_cb) {
+        SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger, Callback<Error> all_done_cb) {
 
     if (type == "endpoints") {
         // if any endpoints are unblocked, switch this to false

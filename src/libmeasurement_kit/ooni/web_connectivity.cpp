@@ -438,10 +438,10 @@ static void experiment_http_request(
                             reactor, logger);
 }
 
-static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
+static void experiment_tcp_connect(SharedPtr<Entry> entry, SocketList sockets,
                                    Callback<Error> cb, Settings options,
-                                   Var<Reactor> reactor,
-                                   Var<Logger> logger) {
+                                   SharedPtr<Reactor> reactor,
+                                   SharedPtr<Logger> logger) {
 
     int socket_count = sockets.size();
     // XXX this is very ghetto
@@ -453,7 +453,7 @@ static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
     ParallelCallback parallel_callback(socket_count, std::move(cb));
 
     auto handle_connect = [=](std::string ip, int port) {
-        return [=](Error err, Var<net::Transport> txp) {
+        return [=](Error err, SharedPtr<net::Transport> txp) {
             Entry result = {
                 {"ip", ip},
                 {"port", port},
@@ -467,7 +467,7 @@ static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
                 logger->info("web_connectivity: failed to connect to %s:%d",
                              ip.c_str(), port);
                 result["status"]["success"] = false;
-                result["status"]["failure"] = err.as_ooni_error();
+                result["status"]["failure"] = err.reason;
             } else {
                 logger->info("web_connectivity: success to connect to %s:%d",
                              ip.c_str(), port);
