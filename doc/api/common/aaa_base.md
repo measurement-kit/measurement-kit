@@ -8,7 +8,7 @@ measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
 
-```
+```C++
 #ifndef MEASUREMENT_KIT_COMMON_AAA_BASE_HPP
 #define MEASUREMENT_KIT_COMMON_AAA_BASE_HPP
 
@@ -17,5 +17,5 @@ measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # DESCRIPTION
 
-
+This header file contains portability definitions and headers.
 

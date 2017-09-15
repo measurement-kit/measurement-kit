@@ -8,7 +8,7 @@ measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
 
-```
+```C++
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_OR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_OR_HPP
 
@@ -67,9 +67,7 @@ template <typename T> class ErrorOr {
 
 # DESCRIPTION
 
-`ErrorOr` wraps either a type or an `Error`. We often use it in synchronous code when we don't want to throw an exception. 
-
-The following pattern is frequently used in MK: 
+`ErrorOr` wraps either a type or an `Error`. We often use ErrorOr in synchronous code when we don't want to throw an exception. The following pattern is frequently used in MK: 
 
 ```C++ ErrorOr<Result> result = get_result_noexcept(); if (!result) { callback(result.as_error()); return; } use_result(*result); ``` 
 

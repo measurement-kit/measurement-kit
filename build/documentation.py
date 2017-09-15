@@ -16,7 +16,7 @@ def gather_code(iterable):
     return proc.communicate("".join(code))[0]
 
 def write_synopsis(source, dest):
-    dest.write("# SYNOPSIS\n\n```\n")
+    dest.write("# SYNOPSIS\n\n```C++\n")
     dest.write(gather_code(source))
     dest.write("```\n\n")
 

@@ -8,7 +8,7 @@ measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
 
-```
+```C++
 #ifndef MEASUREMENT_KIT_COMMON_NON_MOVABLE_HPP
 #define MEASUREMENT_KIT_COMMON_NON_MOVABLE_HPP
 
