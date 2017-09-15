@@ -80,7 +80,7 @@ template <typename T> class SharedPtr {
 
 You should be able to use SharedPtr like you use std::shared_ptr. In particular, you can use std::make_shared to construct objects and then you can store the result of std::make_shared into a SharedPtr. 
 
-Appeared in measurement-kit v0.1.0. 
+Available since measurement-kit v0.1.0. 
 
 Before MK v0.8.0, SharedPtr was named Var.
 

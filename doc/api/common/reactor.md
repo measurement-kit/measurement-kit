@@ -59,7 +59,7 @@ _Note_: Albeit Reactor allows to perform asynchronous I/O on sockets, by calling
 
 Throughout the documentation we will call `I/O thread` the thread that is currently blocked in Reactor::run() dispatching events. 
 
-Appeared in measurement-kit v0.1.0. 
+Available since measurement-kit v0.1.0. 
 
 Originally Reactor was called `Poller` but was renamed in MK v0.2.0. It was significantly reworked in MK v0.4.0, v0.7.0. and v0.8.0.
 

@@ -29,5 +29,5 @@ class NonMovable {
 
 `NonMovable` makes a derived class non-movable. You typically need to make non-movable classes that manage the lifecycle of pointers. 
 
-Appeared in measurement-kit v0.1.0.
+Available since measurement-kit v0.1.0.
 

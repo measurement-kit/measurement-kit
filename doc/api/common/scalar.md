@@ -57,7 +57,7 @@ class Scalar : public std::string {
 
 `Scalar` wraps a scalar value. Internally we use std::stringstream to convert the scalar value to a string. This allows us to access the original scalar value later. See lexical_cast() for a discussion of converting between scalar values using std::stringstream. 
 
-Appeared in measurement-kit v0.2.0. 
+Available since measurement-kit v0.2.0. 
 
 Before MK v0.8.0 Scalar was named SettingsEntry.
 

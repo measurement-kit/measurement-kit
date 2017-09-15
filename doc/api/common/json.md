@@ -54,11 +54,11 @@ Returns any Error (or derived class) that you may throw.
 
 Returns JsonProcessingError if any non-Error exception is thrown. 
 
-Appeared in measurement-kit v0.8.0.
+Available since measurement-kit v0.8.0.
 
 The second form of `json_process` is like the first form except that the first argument is an already parsed JSON. 
 
 Of course, since it does not parse the JSON, this form of json_process should not, in general, return JsonParseError. 
 
-Appeared in measurement-kit v0.8.0.
+Available since measurement-kit v0.8.0.
 

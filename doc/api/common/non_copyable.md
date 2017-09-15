@@ -31,5 +31,5 @@ class NonCopyable {
 
 `NonCopyable` makes a derived class non-copyable. You typically need to make non-copyable classes that manage the lifecycle of pointers. 
 
-Appeared in measurement-kit v0.1.0.
+Available since measurement-kit v0.1.0.
 

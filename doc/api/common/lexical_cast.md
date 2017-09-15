@@ -43,9 +43,9 @@ Returns the converted value provided that conversion is possible.
 
 Throws ValueError if conversion is not possible. 
 
-Appeared in measurement-kit v0.2.0.
+Available since measurement-kit v0.2.0.
 
 `lexical_cast_noexcept` is like lexical_cast() except that it returns, rather than throwing, any error that may occur. 
 
-Appeared in measurement-kit v0.2.0.
+Available since measurement-kit v0.2.0.
 

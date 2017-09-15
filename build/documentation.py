@@ -33,7 +33,7 @@ def gather_doxygen(iterable):
             line = line.replace(r"\param ", "Parameter ")
             line = line.replace(r"\throw ", "Throws ")
             line = line.replace(r"\return ", "Returns ")
-            line = line.replace(r"\since ", "Appeared in measurement-kit ")
+            line = line.replace(r"\since ", "Available since measurement-kit ")
             line = line.replace(r"\bug ", "_BUG_: ")
             line = line.replace(r"\note ", "_Note_: ")
             line = line.replace(r"\p ", "")

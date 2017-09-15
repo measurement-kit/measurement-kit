@@ -125,7 +125,7 @@ _BUG_: In the default implementation of Logger, if the log file could not be ope
 
 _Note_: All methods of the default logger implementation are protected against access from multiple threads by a recursive mutex. 
 
-Appeared in measurement-kit v0.1.0.
+Available since measurement-kit v0.1.0.
 
 `make()` creates an instance of the default logger.
 

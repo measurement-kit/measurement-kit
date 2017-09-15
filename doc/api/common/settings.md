@@ -47,7 +47,7 @@ class Settings : public std::map<std::string, Scalar> {
 
 Settings is a derived class of std::map<std::string, Scalar>. As such it has all the methods of a standard std::map. 
 
-Appeared in measurement-kit v0.1.0. 
+Available since measurement-kit v0.1.0. 
 
 Support for mapping from string to any scalar type (rather than to just strings) was added in MK v0.2.0.
 
