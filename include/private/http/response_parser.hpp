@@ -116,6 +116,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         if (end_fn_) {
             end_fn_();
         }
+        http_parser_pause(&parser_, 1);
         return 0;
     }
 
@@ -130,7 +131,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     http_parser_settings settings_;
     Buffer buffer_;
 
-    // SharedPtriables used during parsing
+    // Variables used during parsing
     Response response_;
     HeaderParserState prev_ = HeaderParserState::NOTHING;
     std::string field_;
