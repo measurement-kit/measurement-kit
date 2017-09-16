@@ -116,6 +116,14 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         if (end_fn_) {
             end_fn_();
         }
+        // Rationale: we want to pause the parser after the first message
+        // because otherwise, if for whatever reason we receive two messages
+        // back to back, only the second will be stored.
+        //
+        // If this will ever become a limitation because we decide for some
+        // reason to reuse the same parser for more than a single response
+        // we can simply fix by allowing the caller to unpause us.
+        http_parser_pause(&parser_, 1);
         return 0;
     }
 
@@ -130,7 +138,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     http_parser_settings settings_;
     Buffer buffer_;
 
-    // SharedPtriables used during parsing
+    // Variables used during parsing
     Response response_;
     HeaderParserState prev_ = HeaderParserState::NOTHING;
     std::string field_;

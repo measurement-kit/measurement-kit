@@ -46,8 +46,79 @@ TEST_CASE("ResponseParserNg works as expected") {
     ResponseParserNg parser;
     std::string body;
 
+    SECTION("With content-length response") {
+        data = "";
+        data += "HTTP/1.2 200 Ok\r\n";
+        data += "Content-Type: text/plain\r\n";
+        data += "Content-Length: 7\r\n";
+        data += "Server: Antani/1.0.0.0\r\n";
+        data += "\r\n";
+        data += "1234567";
+
+        parser.on_response([](Response r) {
+            REQUIRE(r.http_major == 1);
+            REQUIRE(r.http_minor == 2);
+            REQUIRE(r.status_code == 200);
+            REQUIRE(r.reason == "Ok");
+            REQUIRE(r.headers.size() == 3);
+            REQUIRE(r.headers.at("Content-Type") == "text/plain");
+            REQUIRE(r.headers.at("Content-Length") == "7");
+            REQUIRE(r.headers.at("Server") == "Antani/1.0.0.0");
+        });
+
+        body = "";
+        parser.on_body([&body](std::string s) { body += s; });
+        parser.on_end([&body]() { REQUIRE(body == "1234567"); });
+
+        for (auto c : data) {
+            mk::debug("%c\n", c);
+            parser.feed(c);
+        }
+    }
+
+    SECTION("With chunked response") {
+
+        data = "";
+        data += "HTTP/1.1 202 Accepted\r\n";
+        data += "Content-Type: text/html\r\n";
+        data += "Transfer-Encoding: chunked\r\n";
+        data += "Server: Antani/2.0.0.0\r\n";
+        data += "\r\n";
+        data += "3\r\nabc\r\n";
+        data += "3\r\nabc\r\n";
+        data += "3\r\nabc\r\n";
+        data += "0\r\nX-Trailer: trailer\r\n\r\n";
+
+        parser.on_response([](Response r) {
+            REQUIRE(r.http_major == 1);
+            REQUIRE(r.http_minor == 1);
+            REQUIRE(r.status_code == 202);
+            REQUIRE(r.reason == "Accepted");
+            REQUIRE(r.headers.size() == 3);
+            REQUIRE(r.headers.at("Content-Type") == "text/html");
+            REQUIRE(r.headers.at("Transfer-Encoding") == "chunked");
+            REQUIRE(r.headers.at("Server") == "Antani/2.0.0.0");
+        });
+
+        body = "";
+        parser.on_body([&body](std::string s) { body += s; });
+        parser.on_end([&body]() { REQUIRE(body == "abcabcabc"); });
+
+        for (auto c : data) {
+            mk::debug("%c\n", c);
+            parser.feed(c);
+        }
+    }
+}
+
+TEST_CASE("ResponseParserNg stops after first message") {
+    std::string data;
+    ResponseParserNg parser;
+    std::string body;
+
     //
     // Request #1
+    // This should be parsed correctly
     //
 
     data = "";
@@ -80,6 +151,7 @@ TEST_CASE("ResponseParserNg works as expected") {
 
     //
     // Request #2
+    // This should throw because we've already read one message
     //
 
     data = "";
@@ -93,25 +165,21 @@ TEST_CASE("ResponseParserNg works as expected") {
     data += "3\r\nabc\r\n";
     data += "0\r\nX-Trailer: trailer\r\n\r\n";
 
-    parser.on_response([](Response r) {
-        REQUIRE(r.http_major == 1);
-        REQUIRE(r.http_minor == 1);
-        REQUIRE(r.status_code == 202);
-        REQUIRE(r.reason == "Accepted");
-        REQUIRE(r.headers.size() == 3);
-        REQUIRE(r.headers.at("Content-Type") == "text/html");
-        REQUIRE(r.headers.at("Transfer-Encoding") == "chunked");
-        REQUIRE(r.headers.at("Server") == "Antani/2.0.0.0");
+    parser.on_response([](Response) {
+        REQUIRE(false); // Should not happen
     });
 
     body = "";
-    parser.on_body([&body](std::string s) { body += s; });
-    parser.on_end([&body]() { REQUIRE(body == "abcabcabc"); });
+    parser.on_body([&body](std::string) {
+        REQUIRE(false); // Should not happen
+    });
+    parser.on_end([&body]() {
+        REQUIRE(false); // Should not happen
+    });
 
-    for (auto c : data) {
-        mk::debug("%c\n", c);
-        parser.feed(c);
-    }
+    REQUIRE(data.size() > 0);
+    auto c = data.front();
+    REQUIRE_THROWS_AS(parser.feed(c), ParserError);
 }
 
 TEST_CASE("ResponseParserNg eof() works as expected") {
