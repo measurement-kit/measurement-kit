@@ -131,6 +131,7 @@ void request_recv_response(SharedPtr<Transport> txp,
     SharedPtr<Response> response(new Response);
     SharedPtr<bool> prevent_emit(new bool(false));
     SharedPtr<bool> valid_response(new bool(false));
+    SharedPtr<bool> reached_end(new bool(false));
 
     parser->on_response([=](Response r) {
         *response = r;

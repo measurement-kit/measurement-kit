@@ -66,7 +66,7 @@ void read(SharedPtr<Transport> t, SharedPtr<Buffer> buff, Callback<Error> callba
 }
 
 void continue_reading(
-    Var<Transport> txp,
+    SharedPtr<Transport> txp,
     Callback<Error, Buffer, std::function<void()> &> callback) {
     txp->on_data([=](Buffer data) {
         std::function<void()> canceller{[=]() {

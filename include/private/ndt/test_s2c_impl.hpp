@@ -6,7 +6,6 @@
 
 #include <measurement_kit/common/detail/mock.hpp>
 #include "../ndt/internal.hpp"
-#include "private/common/mock.hpp"
 
 namespace mk {
 namespace ndt {
