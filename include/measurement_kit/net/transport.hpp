@@ -128,7 +128,7 @@ void read(SharedPtr<Transport> t, SharedPtr<Buffer> buff, Callback<Error> callba
           SharedPtr<Reactor> reactor = Reactor::global());
 
 void continue_reading(
-      Var<Transport> txp,
+      SharedPtr<Transport> txp,
       Callback<Error, Buffer, std::function<void()> &> callback);
 
 } // namespace net
