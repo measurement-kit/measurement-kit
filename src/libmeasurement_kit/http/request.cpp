@@ -146,11 +146,11 @@ void request_recv_response(SharedPtr<Transport> txp,
         cb(ValueError(), response);
         return;
     }
-    parser->on_body([=](std::string s) {
-        if (*ignore_body == false) {
+    if (*ignore_body != false) {
+        parser->on_body([=](std::string s) {
             response->body += s;
-        }
-    });
+        });
+    }
 
     // TODO: we should improve the parser such that the transport forwards the
     // "error" event to it and then the parser does the right thing, so that the
