@@ -146,7 +146,7 @@ void request_recv_response(SharedPtr<Transport> txp,
         cb(ValueError(), response);
         return;
     }
-    if (*ignore_body != false) {
+    if (*ignore_body == false) {
         parser->on_body([=](std::string s) {
             response->body += s;
         });
