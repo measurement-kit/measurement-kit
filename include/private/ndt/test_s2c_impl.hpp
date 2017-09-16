@@ -74,8 +74,8 @@ void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, Params p
                                     });
                                 }
                                 // TODO: force close the connection after a
-                                // given large amount of time has passed. When
-                                // we do that we can use the `canceller`
+                                // given large amount of time has passed.
+                                // When we do that we can use the `canceller`
                                 // variable ^-).
                                 return;
                             }
