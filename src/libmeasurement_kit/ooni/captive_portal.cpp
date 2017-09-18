@@ -202,8 +202,8 @@ static void dns_random_hostnames(size_t count, size_t length,
         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     // if any random domains resolve, change to false
     // (true means unfiltered)
-    (*entry)["google_dns_cp"]["result"] = true;
-    (*entry)["google_dns_cp"]["addresses"] = Entry::array();
+    (*entry)["vendor_dns_tests"]["google_dns_cp"]["result"] = true;
+    (*entry)["vendor_dns_tests"]["google_dns_cp"]["addresses"] = Entry::array();
     SharedPtr<size_t> names_tested(new size_t(0));
 
     auto dns_cb = [=](std::string hostname) {
@@ -221,11 +221,13 @@ static void dns_random_hostnames(size_t count, size_t length,
             } else {
                 for (auto answer : message->answers) {
                     if ((answer.ipv4 != "")) {
-                        (*entry)["google_dns_cp"]["result"] = false;
+                        (*entry)["vendor_dns_tests"]["google_dns_cp"]
+                                ["result"] = false;
                         logger->info("%s: %s", hostname.c_str(),
                                 answer.ipv4.c_str());
-                        (*entry)["google_dns_cp"]["addresses"].push_back(
-                                answer.ipv4.c_str());
+                        (*entry)["vendor_dns_tests"]["google_dns_cp"]
+                                ["addresses"]
+                                        .push_back(answer.ipv4.c_str());
                     } else {
                         // XXX not sure how to treat blank answers
                         logger->info("%s: blank", hostname.c_str());
@@ -235,7 +237,8 @@ static void dns_random_hostnames(size_t count, size_t length,
             *names_tested += 1;
             assert(*names_tested <= count);
             if (count == *names_tested) {
-                if ((*entry)["google_dns_cp"]["addresses"].empty()) {
+                if ((*entry)["vendor_dns_tests"]["google_dns_cp"]["addresses"]
+                                .empty()) {
                     logger->info(
                             "all returned NXDOMAIN; we call this unfiltered");
                 } else {
