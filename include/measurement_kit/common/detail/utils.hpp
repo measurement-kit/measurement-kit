@@ -137,6 +137,10 @@ std::string random_str(size_t length);
 
 std::string random_str_uppercase(size_t length);
 
+std::string random_str_lower_alpha(size_t length);
+
+std::string random_tld();
+
 void dump_settings(Settings &s, std::string prefix, SharedPtr<Logger> logger);
 
 std::string sha256_of(std::string input);

@@ -1,11 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
-#include "private/common/parallel.hpp"
-#include "private/common/utils.hpp"
 #include "private/ooni/constants.hpp"
 #include "private/ooni/utils.hpp"
+#include <measurement_kit/common/detail/locked.hpp>
+#include <measurement_kit/common/detail/parallel.hpp>
+#include <measurement_kit/common/detail/utils.hpp>
 
 namespace mk {
 namespace ooni {
@@ -38,16 +39,16 @@ static const std::vector<input_t> &gen_http_inputs() {
             i["name"] = "Apple HTTP Captive Portal";
             i["url"] = "http://captive.apple.com";
             i["body"] =
-                  "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</"
-                  "BODY></HTML>\n";
+                    "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</"
+                    "BODY></HTML>\n";
             i["ua"] = "CaptiveNetworkSupport/1.0 wispr";
             is.push_back(i);
             i.clear();
             i["name"] = "Apple HTTP Captive Portal 2";
             i["url"] = "http://captive.apple.com/hotspot_detect.html";
             i["body"] =
-                  "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</"
-                  "BODY></HTML>\n";
+                    "<HTML><HEAD><TITLE>Success</TITLE></HEAD><BODY>Success</"
+                    "BODY></HTML>\n";
             i["ua"] = "CaptiveNetworkSupport/1.0 wispr";
             is.push_back(i);
             i.clear();
@@ -92,22 +93,21 @@ static const std::vector<input_t> &gen_http_inputs() {
     return is;
 }
 
-static void http_many(Var<Entry> entry, Callback<Error> all_done_cb,
-                      Settings options, Var<Reactor> reactor,
-                      Var<Logger> logger) {
+static void http_many(SharedPtr<Entry> entry, Callback<Error> all_done_cb,
+        Settings options, SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger) {
 
     auto http_cb = [=](const input_t &input, Callback<Error> done_cb) {
-        return [=](Error err, Var<http::Response> response) {
+        return [=](Error err, SharedPtr<http::Response> response) {
             // result: true means unfiltered
-            Entry result = {
-                  {"URL", input.at("url")},
-                  {"http_status_number",
-                   nullptr}, // expected status code, if there is one
-                  {"http_status_summary",
-                   nullptr},           // leaving key present (for bw compat.)
-                  {"result", nullptr}, // true means no captive portal
-                  {"User_Agent", nullptr}, // if specified by the vendor
-                  {"failure", nullptr}};
+            Entry result = {{"URL", input.at("url")},
+                    {"http_status_number",
+                            nullptr}, // expected status code, if there is one
+                    {"http_status_summary",
+                            nullptr},    // leaving key present (for bw compat.)
+                    {"result", nullptr}, // true means no captive portal
+                    {"User_Agent", nullptr}, // if specified by the vendor
+                    {"failure", nullptr}};
 
             if (input.count("status")) {
                 result["http_status_number"] = input.at("status");
@@ -117,8 +117,8 @@ static void http_many(Var<Entry> entry, Callback<Error> all_done_cb,
             }
 
             if (!!err) {
-                logger->info("err: %s", err.as_ooni_error().c_str());
-                result["failure"] = err.as_ooni_error();
+                logger->info("err: %s", err.what());
+                result["failure"] = err.reason;
             } else if (!response) {
                 // Should really not happen, no need to be specific
                 logger->warn("null response");
@@ -138,7 +138,7 @@ static void http_many(Var<Entry> entry, Callback<Error> all_done_cb,
                     result["failure"] = "unknown_error";
                 }
                 logger->info("%s unfiltered: %s", input.at("name").c_str(),
-                             unfiltered ? "yes" : "no");
+                        unfiltered ? "yes" : "no");
                 result["result"] = unfiltered;
             }
             (*entry)["vendor_tests"][input.at("name")] = result;
@@ -163,7 +163,7 @@ static void http_many(Var<Entry> entry, Callback<Error> all_done_cb,
         // right URL to connect to and check.
         continuations.push_back([=](Callback<Error> done_cb) {
             templates::http_request(entry, options, headers, body,
-                                    http_cb(input, done_cb), reactor, logger);
+                    http_cb(input, done_cb), reactor, logger);
         });
     }
     mk::parallel(continuations, all_done_cb, 3);
@@ -171,70 +171,69 @@ static void http_many(Var<Entry> entry, Callback<Error> all_done_cb,
 
 // this is the only test that doesn't follow the pattern of those above.
 // this hostname should always resolve to this IP.
-static void dns_msft_ncsi(Var<Entry> entry, Callback<Error> done_cb,
-                          Settings options, Var<Reactor> reactor,
-                          Var<Logger> logger) {
+static void dns_msft_ncsi(SharedPtr<Entry> entry, Callback<Error> done_cb,
+        Settings options, SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger) {
     std::string hostname = "dns.msftncsi.com";
     // Note: we're setting the nameserver to empty, which is going to work
     // as long as we're using the `system` DNS resolver. Using another resolver
     // is something we would notice, because parsing an empty endpoint would
     // fail and we would then see the error inside the report.
     std::string nameserver = "";
-    templates::dns_query(
-          entry, "A", "IN", hostname, nameserver,
-          [=](Error err, Var<dns::Message> message) {
-              if (!!err) {
-                  logger->info("dns_query err: %s",
-                               err.as_ooni_error().c_str());
-                  done_cb(err);
-              } else {
-                  bool unfiltered = false;
-                  for (const auto &a : message->answers) {
-                      // Note: the query is 'A' hence it makes sense that here
-                      // we only deal with IPv4 addresses
-                      (*entry)["vendor_dns_tests"]["ms_dns_cp"].push_back(
-                            a.ipv4);
-                      if (a.ipv4 == "131.107.255.255") {
-                          unfiltered = true;
-                      }
-                  }
-                  logger->info("MS DNS test unfiltered: %s",
-                               (unfiltered ? "yes" : "no"));
-                  done_cb(NoError());
-              }
-          },
-          options, reactor, logger);
+    templates::dns_query(entry, "A", "IN", hostname, nameserver,
+            [=](Error err, SharedPtr<dns::Message> message) {
+                if (!!err) {
+                    logger->info("dns_query err: %s", err.what());
+                    done_cb(err);
+                } else {
+                    bool unfiltered = false;
+                    for (const auto &a : message->answers) {
+                        // Note: the query is 'A' hence it makes sense that here
+                        // we only deal with IPv4 addresses
+                        (*entry)["vendor_dns_tests"]["ms_dns_cp"].push_back(
+                                a.ipv4);
+                        if (a.ipv4 == "131.107.255.255") {
+                            unfiltered = true;
+                        }
+                    }
+                    logger->info("MS DNS test unfiltered: %s",
+                            (unfiltered ? "yes" : "no"));
+                    done_cb(NoError());
+                }
+            },
+            options, reactor, logger);
 }
 
 // DNS A lookups against some random hostnames unlikely to point at anything.
-void dns_random_hostnames(size_t count, size_t length, Var<Entry> entry,
-                          Callback<Error> done_cb, Settings options,
-                          Var<Reactor> reactor, Var<Logger> logger) {
+static void dns_random_hostnames(size_t count, size_t length,
+        SharedPtr<Entry> entry, Callback<Error> done_cb, Settings options,
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     // if any random domains resolve, change to false
     // (true means unfiltered)
     (*entry)["google_dns_cp"]["result"] = true;
     (*entry)["google_dns_cp"]["addresses"] = Entry::array();
-    Var<size_t> names_tested(new size_t(0));
+    SharedPtr<size_t> names_tested(new size_t(0));
 
     auto dns_cb = [=](std::string hostname) {
-        return [=](Error err, Var<dns::Message> message) {
+        return [=](Error err, SharedPtr<dns::Message> message) {
             if (!!err) {
                 if ((err == mk::dns::NotExistError()) ||
-                    (err == mk::dns::HostOrServiceNotProvidedOrNotKnownError())) {
+                        (err == mk::dns::
+                                        HostOrServiceNotProvidedOrNotKnownError())) {
                     logger->info("%s: NXDOMAIN", hostname.c_str());
                 } else {
-                    logger->info("%s", err.as_ooni_error().c_str());
+                    logger->info("%s", err.what());
                     logger->info("captive_portal: dns error for %s",
-                                hostname.c_str());
+                            hostname.c_str());
                 }
             } else {
                 for (auto answer : message->answers) {
                     if ((answer.ipv4 != "")) {
                         (*entry)["google_dns_cp"]["result"] = false;
                         logger->info("%s: %s", hostname.c_str(),
-                            answer.ipv4.c_str());
+                                answer.ipv4.c_str());
                         (*entry)["google_dns_cp"]["addresses"].push_back(
-                            answer.ipv4.c_str());
+                                answer.ipv4.c_str());
                     } else {
                         // XXX not sure how to treat blank answers
                         logger->info("%s: blank", hostname.c_str());
@@ -245,9 +244,11 @@ void dns_random_hostnames(size_t count, size_t length, Var<Entry> entry,
             assert(*names_tested <= count);
             if (count == *names_tested) {
                 if ((*entry)["google_dns_cp"]["addresses"].empty()) {
-                    logger->info("all returned NXDOMAIN; we call this unfiltered");
+                    logger->info(
+                            "all returned NXDOMAIN; we call this unfiltered");
                 } else {
-                    logger->info("unexpectedly resolved something random: evidence of filtering");
+                    logger->info("unexpectedly resolved something random: "
+                                 "evidence of filtering");
                 }
                 done_cb(NoError());
                 return;
@@ -257,7 +258,8 @@ void dns_random_hostnames(size_t count, size_t length, Var<Entry> entry,
 
     std::vector<std::string> hostnames = {};
     for (size_t i = 0; i < count; i++) {
-        hostnames.push_back(mk::random_str_lower_alpha(length) + mk::random_tld());
+        hostnames.push_back(
+                mk::random_str_lower_alpha(length) + mk::random_tld());
     }
 
     for (auto const &hostname : hostnames) {
@@ -265,39 +267,39 @@ void dns_random_hostnames(size_t count, size_t length, Var<Entry> entry,
         // assumption that we're using the `system` DNS resolver.
         constexpr const char *nameserver = "";
         templates::dns_query(entry, "A", "IN", hostname, nameserver,
-                             dns_cb(hostname), options, reactor,
-                             logger);
+                dns_cb(hostname), options, reactor, logger);
     }
 }
 
 void captiveportal(std::string /*input*/, Settings options,
-                   Callback<Var<Entry>> callback, Var<Reactor> reactor,
-                   Var<Logger> logger) {
-    Var<Entry> entry(new Entry);
+        Callback<SharedPtr<Entry>> callback, SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger) {
+    SharedPtr<Entry> entry(new Entry);
     logger->info("starting http_many");
     http_many(entry,
-              [=](Error err) {
-                  if (err) {
-                      logger->warn("http_many error");
-                  }
-                  logger->info("starting dns_msft_ncsi");
-                  dns_msft_ncsi(entry,
-                                [=](Error err) {
-                                    if (err) {
-                                        logger->warn("dns_msft_ncsi error");
-                                    }
-                                    logger->info("starting random hostnames");
-                                    dns_random_hostnames(3, 10, entry,
-                                            [=](Error err) {
-                                                if (err) {
-                                                    logger->warn("dns_msft_ncsi error");
-                                                }
-                                                callback(entry);
-                                            }, options, reactor, logger);
-                                },
-                                options, reactor, logger);
-              },
-              options, reactor, logger);
+            [=](Error err) {
+                if (err) {
+                    logger->warn("http_many error");
+                }
+                logger->info("starting dns_msft_ncsi");
+                dns_msft_ncsi(entry,
+                        [=](Error err) {
+                            if (err) {
+                                logger->warn("dns_msft_ncsi error");
+                            }
+                            logger->info("starting random hostnames");
+                            dns_random_hostnames(3, 10, entry,
+                                    [=](Error err) {
+                                        if (err) {
+                                            logger->warn("dns_msft_ncsi error");
+                                        }
+                                        callback(entry);
+                                    },
+                                    options, reactor, logger);
+                        },
+                        options, reactor, logger);
+            },
+            options, reactor, logger);
 }
 
 } // namespace ooni
