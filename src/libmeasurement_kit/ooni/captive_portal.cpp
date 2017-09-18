@@ -180,8 +180,10 @@ static void dns_msft_ncsi(SharedPtr<Entry> entry, Callback<Error> done_cb,
                 } else {
                     bool unfiltered = false;
                     for (const auto &a : message->answers) {
-                        // Note: the query is 'A' hence it makes sense that here
-                        // we only deal with IPv4 addresses
+                        if (a.type != dns::MK_DNS_TYPE_A) {
+                            // Skip the CNAME associated to that A address
+                            continue;
+                        }
                         (*entry)["vendor_dns_tests"]["ms_dns_cp"].push_back(
                                 a.ipv4);
                         if (a.ipv4 == "131.107.255.255") {
