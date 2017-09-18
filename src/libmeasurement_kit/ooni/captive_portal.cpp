@@ -13,12 +13,6 @@ namespace ooni {
 
 using namespace mk::report;
 
-//
-// Implementation note:
-// all but one of the current vendor tests are HTTP tests.
-// these check either a status code or the body content.
-//
-
 typedef std::map<std::string, std::string> input_t; // Syntactic sugar
 
 static const std::vector<input_t> &gen_http_inputs() {
